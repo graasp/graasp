@@ -13,9 +13,9 @@ import {
   isChildOf,
 } from '@graasp/sdk';
 
-import { NoFileProvided } from '../../utils/errors';
-import { FolderItem, Item, isItemType } from './entities/Item';
-import { validateGeolocation, validateSettings } from './validation';
+import { NoFileProvided } from '../../utils/errors.js';
+import { FolderItem, Item, isItemType } from './entities/Item.js';
+import { validateGeolocation, validateSettings } from './validation.js';
 
 // replace children order with new ids
 export const _fixChildrenOrder = (itemsMap: Map<string, { copy: Item; original: Item }>) => {

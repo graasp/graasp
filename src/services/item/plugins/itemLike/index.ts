@@ -2,11 +2,11 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ActionTriggers } from '@graasp/sdk';
 
-import { notUndefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
-import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
-import common, { create, deleteOne, getLikesForItem, getLikesForMember } from './schemas';
-import { ItemLikeService } from './service';
+import { notUndefined } from '../../../../utils/assertions.js';
+import { buildRepositories } from '../../../../utils/repositories.js';
+import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport/index.js';
+import common, { create, deleteOne, getLikesForItem, getLikesForMember } from './schemas.js';
+import { ItemLikeService } from './service.js';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, items } = fastify;

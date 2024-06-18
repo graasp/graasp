@@ -2,14 +2,14 @@ import { v4 } from 'uuid';
 
 import { HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
-import { mockAuthenticate } from '../../../../../../test/app';
-import { APPS_PUBLISHER_ID, APP_ITEMS_PREFIX } from '../../../../../utils/config';
-import { Actor, Member } from '../../../../member/entities/member';
-import { Item } from '../../../entities/Item';
-import { ItemTestUtils } from '../../../test/fixtures/items';
-import { setItemPublic } from '../../itemTag/test/fixtures';
-import { PublisherRepository } from '../publisherRepository';
-import { AppRepository } from '../repository';
+import { mockAuthenticate } from '../../../../../../test/app.js';
+import { APPS_PUBLISHER_ID, APP_ITEMS_PREFIX } from '../../../../../utils/config.js';
+import { Actor, Member } from '../../../../member/entities/member.js';
+import { Item } from '../../../entities/Item.js';
+import { ItemTestUtils } from '../../../test/fixtures/items.js';
+import { setItemPublic } from '../../itemTag/test/fixtures.js';
+import { PublisherRepository } from '../publisherRepository.js';
+import { AppRepository } from '../repository.js';
 
 export const GRAASP_PUBLISHER = {
   id: APPS_PUBLISHER_ID,

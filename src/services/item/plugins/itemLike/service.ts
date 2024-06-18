@@ -1,8 +1,8 @@
-import { UnauthorizedMember } from '../../../../utils/errors';
-import { Repositories } from '../../../../utils/repositories';
-import { filterOutPackedItems } from '../../../authorization';
-import { ItemService } from '../../../item/service';
-import { Actor } from '../../../member/entities/member';
+import { UnauthorizedMember } from '../../../../utils/errors.js';
+import { Repositories } from '../../../../utils/repositories.js';
+import { filterOutPackedItems } from '../../../authorization.js';
+import { ItemService } from '../../../item/service.js';
+import { Actor } from '../../../member/entities/member.js';
 
 export class ItemLikeService {
   private itemService: ItemService;

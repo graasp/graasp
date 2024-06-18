@@ -1,16 +1,16 @@
-import { MeiliSearch, MultiSearchParams } from 'meilisearch';
+import { MeiliSearch, MultiSearchParams } from 'meilisearch.js';
 import { DataSource } from 'typeorm';
 
 import { FastifyBaseLogger } from 'fastify';
 
-import { Repositories, buildRepositories } from '../../../../../../utils/repositories';
-import FileService from '../../../../../file/service';
-import { Actor } from '../../../../../member/entities/member';
-import { ItemService } from '../../../../service';
-import { ItemCategoryService } from '../../../itemCategory/services/itemCategory';
-import { stripHtml } from '../../../validation/utils';
-import { ItemPublishedService } from '../../service';
-import { MeiliSearchWrapper } from './meilisearch';
+import { Repositories, buildRepositories } from '../../../../../../utils/repositories.js';
+import FileService from '../../../../../file/service.js';
+import { Actor } from '../../../../../member/entities/member.js';
+import { ItemService } from '../../../../service.js';
+import { ItemCategoryService } from '../../../itemCategory/services/itemCategory.js';
+import { stripHtml } from '../../../validation/utils.js';
+import { ItemPublishedService } from '../../service.js';
+import { MeiliSearchWrapper } from './meilisearch.js';
 
 /*
  * Handle search index business logic with Meilisearch

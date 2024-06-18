@@ -7,17 +7,17 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, PermissionLevel, RecaptchaAction } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
-import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { MOCK_CAPTCHA } from '../../../../auth/plugins/captcha/test/utils';
-import { Item } from '../../../../item/entities/Item';
-import { generateRandomEmail } from '../../../../itemLogin/utils';
-import { ItemMembershipRepository } from '../../../../itemMembership/repository';
-import { Member } from '../../../../member/entities/member';
-import { saveMember } from '../../../../member/test/fixtures/members';
-import { ItemTestUtils } from '../../../test/fixtures/items';
-import { Invitation } from '../entity';
-import { InvitationRepository } from '../repository';
+import build, { clearDatabase } from '../../../../../../test/app.js';
+import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config.js';
+import { MOCK_CAPTCHA } from '../../../../auth/plugins/captcha/test/utils.js';
+import { Item } from '../../../../item/entities/Item.js';
+import { generateRandomEmail } from '../../../../itemLogin/utils.js';
+import { ItemMembershipRepository } from '../../../../itemMembership/repository.js';
+import { Member } from '../../../../member/entities/member.js';
+import { saveMember } from '../../../../member/test/fixtures/members.js';
+import { ItemTestUtils } from '../../../test/fixtures/items.js';
+import { Invitation } from '../entity.js';
+import { InvitationRepository } from '../repository.js';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');

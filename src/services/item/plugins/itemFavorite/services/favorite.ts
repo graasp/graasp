@@ -1,11 +1,11 @@
 import { PermissionLevel } from '@graasp/sdk';
 
-import { UnauthorizedMember } from '../../../../../utils/errors';
-import { Repositories } from '../../../../../utils/repositories';
-import { filterOutPackedItems } from '../../../../authorization';
-import { Actor } from '../../../../member/entities/member';
-import { ItemService } from '../../../service';
-import { PackedItemFavorite } from '../entities/ItemFavorite';
+import { UnauthorizedMember } from '../../../../../utils/errors.js';
+import { Repositories } from '../../../../../utils/repositories.js';
+import { filterOutPackedItems } from '../../../../authorization.js';
+import { Actor } from '../../../../member/entities/member.js';
+import { ItemService } from '../../../service.js';
+import { PackedItemFavorite } from '../entities/ItemFavorite.js';
 
 export class FavoriteService {
   private itemService: ItemService;

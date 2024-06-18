@@ -8,21 +8,21 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../test/app';
+import build, { clearDatabase } from '../../../../../test/app.js';
 import {
   APPS_JWT_SECRET,
   AUTH_TOKEN_JWT_SECRET,
   JWT_SECRET,
   PASSWORD_RESET_JWT_SECRET,
   REFRESH_TOKEN_JWT_SECRET,
-} from '../../../../utils/config';
-import { buildRepositories } from '../../../../utils/repositories';
-import { Item } from '../../../item/entities/Item';
-import { ItemTestUtils } from '../../../item/test/fixtures/items';
-import { Member } from '../../../member/entities/member';
-import { saveMember } from '../../../member/test/fixtures/members';
-import { saveMemberAndPassword } from '../password/test/fixtures/password';
-import { encryptPassword } from '../password/utils';
+} from '../../../../utils/config.js';
+import { buildRepositories } from '../../../../utils/repositories.js';
+import { Item } from '../../../item/entities/Item.js';
+import { ItemTestUtils } from '../../../item/test/fixtures/items.js';
+import { Member } from '../../../member/entities/member.js';
+import { saveMember } from '../../../member/test/fixtures/members.js';
+import { saveMemberAndPassword } from '../password/test/fixtures/password.js';
+import { encryptPassword } from '../password/utils.js';
 import {
   authenticateAppsJWT,
   authenticateJWTChallengeVerifier,
@@ -33,7 +33,7 @@ import {
   guestAuthenticateAppsJWT,
   isAuthenticated,
   optionalIsAuthenticated,
-} from './preHandlers';
+} from './preHandlers.js';
 
 // mock datasource
 jest.mock('../../../../plugins/datasource');

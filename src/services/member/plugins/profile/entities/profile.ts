@@ -12,7 +12,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { Member } from '../../../entities/member';
+import { Member } from '../../../entities/member.js';
 
 @Entity()
 @Unique('member-profile', ['member'])

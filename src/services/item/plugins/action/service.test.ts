@@ -10,21 +10,21 @@ import {
   PermissionLevel,
 } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../test/app';
-import { AppDataSource } from '../../../../plugins/datasource';
-import { MemberCannotAccess, UnauthorizedMember } from '../../../../utils/errors';
-import { buildRepositories } from '../../../../utils/repositories';
-import { Action } from '../../../action/entities/action';
-import { ActionService } from '../../../action/services/action';
+import build, { clearDatabase } from '../../../../../test/app.js';
+import { AppDataSource } from '../../../../plugins/datasource.js';
+import { MemberCannotAccess, UnauthorizedMember } from '../../../../utils/errors.js';
+import { buildRepositories } from '../../../../utils/repositories.js';
+import { Action } from '../../../action/entities/action.js';
+import { ActionService } from '../../../action/services/action.js';
 import { MOCK_REQUEST } from '../../../action/services/action.test';
-import { saveActions } from '../../../action/test/fixtures/actions';
-import { MemberService } from '../../../member/service';
-import { saveMember } from '../../../member/test/fixtures/members';
-import { ThumbnailService } from '../../../thumbnail/service';
-import { ItemService } from '../../service';
-import { ItemTestUtils } from '../../test/fixtures/items';
-import { ActionItemService } from './service';
-import { ItemActionType } from './utils';
+import { saveActions } from '../../../action/test/fixtures/actions.js';
+import { MemberService } from '../../../member/service.js';
+import { saveMember } from '../../../member/test/fixtures/members.js';
+import { ThumbnailService } from '../../../thumbnail/service.js';
+import { ItemService } from '../../service.js';
+import { ItemTestUtils } from '../../test/fixtures/items.js';
+import { ActionItemService } from './service.js';
+import { ItemActionType } from './utils.js';
 
 // mock datasource
 jest.mock('../../../../plugins/datasource');

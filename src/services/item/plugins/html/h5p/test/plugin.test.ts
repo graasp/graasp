@@ -9,16 +9,16 @@ import { FastifyInstance, LightMyRequestResponse } from 'fastify';
 
 import { H5PItemExtra, H5PItemType, ItemType } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../../test/app';
-import { H5P_LOCAL_CONFIG, H5P_PATH_PREFIX, TMP_FOLDER } from '../../../../../../utils/config';
-import { Actor } from '../../../../../member/entities/member';
-import { Item, ItemTypeEnumKeys } from '../../../../entities/Item';
-import { ItemTestUtils } from '../../../../test/fixtures/items';
-import { HtmlImportError } from '../../errors';
-import { H5P_FILE_DOT_EXTENSION } from '../constants';
-import { H5PInvalidManifestError } from '../errors';
-import { H5P_PACKAGES } from './fixtures';
-import { expectH5PFiles, injectH5PImport } from './helpers';
+import build, { clearDatabase } from '../../../../../../../test/app.js';
+import { H5P_LOCAL_CONFIG, H5P_PATH_PREFIX, TMP_FOLDER } from '../../../../../../utils/config.js';
+import { Actor } from '../../../../../member/entities/member.js';
+import { Item, ItemTypeEnumKeys } from '../../../../entities/Item.js';
+import { ItemTestUtils } from '../../../../test/fixtures/items.js';
+import { HtmlImportError } from '../../errors.js';
+import { H5P_FILE_DOT_EXTENSION } from '../constants.js';
+import { H5PInvalidManifestError } from '../errors.js';
+import { H5P_PACKAGES } from './fixtures/index.js';
+import { expectH5PFiles, injectH5PImport } from './helpers.js';
 
 const H5P_ACCORDION_FILENAME = path.basename(H5P_PACKAGES.ACCORDION.path);
 

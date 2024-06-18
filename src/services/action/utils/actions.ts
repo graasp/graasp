@@ -2,7 +2,7 @@ import geoip from 'geoip-lite';
 
 import { AggregateFunction, AggregateMetric, Context } from '@graasp/sdk';
 
-import { CLIENT_HOSTS } from '../../../utils/config';
+import { CLIENT_HOSTS } from '../../../utils/config.js';
 
 export const getGeolocationIp = (ip: string | number): geoip.Lookup | null => geoip.lookup(ip);
 

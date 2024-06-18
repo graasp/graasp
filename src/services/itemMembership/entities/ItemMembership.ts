@@ -13,8 +13,8 @@ import {
 
 import { PermissionLevel } from '@graasp/sdk';
 
-import { Item } from '../../item/entities/Item';
-import { Member } from '../../member/entities/member';
+import { Item } from '../../item/entities/Item.js';
+import { Member } from '../../member/entities/member.js';
 
 @Entity()
 @Index('IDX_gist_item_membership_path', { synchronize: false })

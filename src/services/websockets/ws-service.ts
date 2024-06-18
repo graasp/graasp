@@ -4,14 +4,14 @@ import { FastifyBaseLogger } from 'fastify';
 
 import { Websocket } from '@graasp/sdk';
 
-import { Actor, Member } from '../member/entities/member';
+import { Actor, Member } from '../member/entities/member.js';
 import {
   createServerErrorResponse,
   createServerSuccessResponse,
   createServerUpdate,
-} from './message';
-import { MultiInstanceChannelsBroker } from './multi-instance';
-import { WebSocketChannels } from './ws-channels';
+} from './message.js';
+import { MultiInstanceChannelsBroker } from './multi-instance.js';
+import { WebSocketChannels } from './ws-channels.js';
 
 export interface SubscriptionRequest {
   /**

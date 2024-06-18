@@ -1,8 +1,8 @@
 import { FlagType } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../../plugins/datasource';
-import { Member } from '../../../member/entities/member';
-import { ItemFlag } from './itemFlag';
+import { AppDataSource } from '../../../../plugins/datasource.js';
+import { Member } from '../../../member/entities/member.js';
+import { ItemFlag } from './itemFlag.js';
 
 export const ItemFlagRepository = AppDataSource.getRepository(ItemFlag).extend({
   /**

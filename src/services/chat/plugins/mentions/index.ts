@@ -4,17 +4,17 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { MentionStatus } from '@graasp/sdk';
 
-import { notUndefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
-import { isAuthenticated } from '../../../auth/plugins/passport';
-import { ChatMention } from './chatMention';
+import { notUndefined } from '../../../../utils/assertions.js';
+import { buildRepositories } from '../../../../utils/repositories.js';
+import { isAuthenticated } from '../../../auth/plugins/passport/index.js';
+import { ChatMention } from './chatMention.js';
 import commonMentions, {
   clearAllMentions,
   deleteMention,
   getMentions,
   patchMention,
-} from './schemas';
-import { MentionService } from './service';
+} from './schemas.js';
+import { MentionService } from './service.js';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   // isolate plugin content using fastify.register to ensure that the action hook from chat_message will not be called when using mention routes

@@ -5,14 +5,14 @@ import { FastifyBaseLogger } from 'fastify';
 import Etherpad, { AuthorSession } from '@graasp/etherpad-api';
 import { EtherpadItemExtra, ItemType, PermissionLevel } from '@graasp/sdk';
 
-import { MemberCannotWriteItem } from '../../../../utils/errors';
-import { buildRepositories } from '../../../../utils/repositories';
-import { validatePermission } from '../../../authorization';
-import { Member } from '../../../member/entities/member';
-import { Item, isItemType } from '../../entities/Item';
-import { ItemService } from '../../service';
-import { MAX_SESSIONS_IN_COOKIE, PLUGIN_NAME } from './constants';
-import { EtherpadServerError, ItemMissingExtraError } from './errors';
+import { MemberCannotWriteItem } from '../../../../utils/errors.js';
+import { buildRepositories } from '../../../../utils/repositories.js';
+import { validatePermission } from '../../../authorization.js';
+import { Member } from '../../../member/entities/member.js';
+import { Item, isItemType } from '../../entities/Item.js';
+import { ItemService } from '../../service.js';
+import { MAX_SESSIONS_IN_COOKIE, PLUGIN_NAME } from './constants.js';
+import { EtherpadServerError, ItemMissingExtraError } from './errors.js';
 
 /**
  * Handles interactions between items and the remote Etherpad service

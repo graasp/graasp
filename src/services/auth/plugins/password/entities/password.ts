@@ -10,7 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { Member } from '../../../../member/entities/member';
+import { Member } from '../../../../member/entities/member.js';
 
 @Entity()
 @Unique('member-password', ['member'])

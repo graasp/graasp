@@ -2,14 +2,14 @@ import { ConnectionOptions, Queue, Worker } from 'bullmq';
 
 import { FastifyBaseLogger } from 'fastify';
 
-import { SearchService } from './services/item/plugins/published/plugins/search/service';
+import { SearchService } from './services/item/plugins/published/plugins/search/service.js';
 import {
   JOB_SCHEDULING,
   REDIS_HOST,
   REDIS_PASSWORD,
   REDIS_PORT,
   REDIS_USERNAME,
-} from './utils/config';
+} from './utils/config.js';
 
 const connection: ConnectionOptions = {
   host: REDIS_HOST,

@@ -1,17 +1,17 @@
 import { FastifyBaseLogger } from 'fastify';
 
-import build, { clearDatabase } from '../../../../../../test/app';
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { UnauthorizedMember } from '../../../../../utils/errors';
-import { buildRepositories } from '../../../../../utils/repositories';
-import { Action } from '../../../../action/entities/action';
-import { ActionService } from '../../../../action/services/action';
-import { getMemberActions } from '../../../../action/test/fixtures/actions';
-import { ItemService } from '../../../../item/service';
-import { ThumbnailService } from '../../../../thumbnail/service';
-import { MemberService } from '../../../service';
-import { ActionMemberService } from '../service';
-import { saveActionsWithItems } from './utils';
+import build, { clearDatabase } from '../../../../../../test/app.js';
+import { AppDataSource } from '../../../../../plugins/datasource.js';
+import { UnauthorizedMember } from '../../../../../utils/errors.js';
+import { buildRepositories } from '../../../../../utils/repositories.js';
+import { Action } from '../../../../action/entities/action.js';
+import { ActionService } from '../../../../action/services/action.js';
+import { getMemberActions } from '../../../../action/test/fixtures/actions.js';
+import { ItemService } from '../../../../item/service.js';
+import { ThumbnailService } from '../../../../thumbnail/service.js';
+import { MemberService } from '../../../service.js';
+import { ActionMemberService } from '../service.js';
+import { saveActionsWithItems } from './utils.js';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');

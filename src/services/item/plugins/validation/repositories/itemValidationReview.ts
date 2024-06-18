@@ -1,7 +1,7 @@
 import { ItemValidationReviewStatus } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { ItemValidationReview } from '../entities/itemValidationReview';
+import { AppDataSource } from '../../../../../plugins/datasource.js';
+import { ItemValidationReview } from '../entities/itemValidationReview.js';
 
 export const ItemValidationReviewRepository = AppDataSource.getRepository(
   ItemValidationReview,

@@ -2,16 +2,16 @@ import { FastifyInstance } from 'fastify';
 
 import { FolderItemFactory } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../test/app';
-import { AppDataSource } from '../../../../plugins/datasource';
-import { ChatMessageRepository } from '../../../chat/repository';
-import { Member } from '../../../member/entities/member';
-import { saveMembers } from '../../../member/test/fixtures/members';
-import { Item } from '../../entities/Item';
-import { saveAppActions } from '../app/appAction/test/fixtures';
-import { saveAppData } from '../app/appData/test/fixtures';
-import { saveAppSettings } from '../app/appSetting/test/fixtures';
-import { BaseAnalytics } from './base-analytics';
+import build, { clearDatabase } from '../../../../../test/app.js';
+import { AppDataSource } from '../../../../plugins/datasource.js';
+import { ChatMessageRepository } from '../../../chat/repository.js';
+import { Member } from '../../../member/entities/member.js';
+import { saveMembers } from '../../../member/test/fixtures/members.js';
+import { Item } from '../../entities/Item.js';
+import { saveAppActions } from '../app/appAction/test/fixtures.js';
+import { saveAppData } from '../app/appData/test/fixtures.js';
+import { saveAppSettings } from '../app/appSetting/test/fixtures.js';
+import { BaseAnalytics } from './base-analytics.js';
 
 const rawItemRepository = AppDataSource.getRepository(Item);
 

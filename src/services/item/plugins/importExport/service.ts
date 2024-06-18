@@ -13,13 +13,13 @@ import { FastifyBaseLogger, FastifyReply } from 'fastify';
 
 import { ItemType } from '@graasp/sdk';
 
-import { Repositories, buildRepositories } from '../../../../utils/repositories';
-import { UploadEmptyFileError } from '../../../file/utils/errors';
-import { Actor, Member } from '../../../member/entities/member';
-import { Item, isItemType } from '../../entities/Item';
-import { ItemService } from '../../service';
-import FileItemService from '../file/service';
-import { H5PService } from '../html/h5p/service';
+import { Repositories, buildRepositories } from '../../../../utils/repositories.js';
+import { UploadEmptyFileError } from '../../../file/utils/errors.js';
+import { Actor, Member } from '../../../member/entities/member.js';
+import { Item, isItemType } from '../../entities/Item.js';
+import { ItemService } from '../../service.js';
+import FileItemService from '../file/service.js';
+import { H5PService } from '../html/h5p/service.js';
 import {
   DESCRIPTION_EXTENSION,
   GRAASP_DOCUMENT_EXTENSION,
@@ -27,9 +27,9 @@ import {
   LINK_EXTENSION,
   TXT_EXTENSION,
   URL_PREFIX,
-} from './constants';
-import { UnexpectedExportError } from './errors';
-import { buildTextContent } from './utils';
+} from './constants.js';
+import { UnexpectedExportError } from './errors.js';
+import { buildTextContent } from './utils.js';
 
 const magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE);
 const asyncDetectFile = util.promisify(magic.detectFile.bind(magic));

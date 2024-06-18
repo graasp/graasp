@@ -4,14 +4,14 @@ import { FastifyInstance } from 'fastify';
 
 import { MentionStatus } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../test/app';
-import { AppDataSource } from '../../../../plugins/datasource';
-import { Actor } from '../../../member/entities/member';
-import { ChatMentionNotFound, NoChatMentionForMember } from '../../errors';
+import build, { clearDatabase } from '../../../../../test/app.js';
+import { AppDataSource } from '../../../../plugins/datasource.js';
+import { Actor } from '../../../member/entities/member.js';
+import { ChatMentionNotFound, NoChatMentionForMember } from '../../errors.js';
 import { expectChatMentions } from '../../test/chatMention.test';
 import { saveItemWithChatMessages } from '../../test/chatMessage.test';
-import { ChatMention } from './chatMention';
-import { ChatMentionRepository } from './repository';
+import { ChatMention } from './chatMention.js';
+import { ChatMentionRepository } from './repository.js';
 
 // mock datasource
 jest.mock('../../../../plugins/datasource');

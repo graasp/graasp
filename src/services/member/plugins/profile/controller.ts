@@ -2,11 +2,16 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import { buildRepositories } from '../../../../utils/repositories';
-import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
-import { createProfile, getOwnProfile, getProfileForMember, updateMemberProfile } from './schemas';
-import { MemberProfileService } from './service';
-import { IMemberProfile } from './types';
+import { buildRepositories } from '../../../../utils/repositories.js';
+import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport/index.js';
+import {
+  createProfile,
+  getOwnProfile,
+  getProfileForMember,
+  updateMemberProfile,
+} from './schemas.js';
+import { MemberProfileService } from './service.js';
+import { IMemberProfile } from './types.js';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, log } = fastify;

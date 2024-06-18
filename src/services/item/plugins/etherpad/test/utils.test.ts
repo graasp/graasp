@@ -1,6 +1,6 @@
-import { ETHERPAD_API_KEY, ETHERPAD_URL } from '../../../../../utils/config';
-import { EtherpadPluginOptions } from '../types';
-import { validatePluginOptions } from '../utils';
+import { ETHERPAD_API_KEY, ETHERPAD_URL } from '../../../../../utils/config.js';
+import { EtherpadPluginOptions } from '../types.js';
+import { validatePluginOptions } from '../utils.js';
 
 describe('Utils', () => {
   describe('validate plugin options', () => {

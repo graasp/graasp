@@ -5,12 +5,12 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ItemTagType, PermissionLevel } from '@graasp/sdk';
 
-import { IdParam, IdsParams, PaginationParams } from '../../types';
-import { notUndefined } from '../../utils/assertions';
-import { buildRepositories } from '../../utils/repositories';
-import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
-import { resultOfToList } from '../utils';
-import { Item } from './entities/Item';
+import { IdParam, IdsParams, PaginationParams } from '../../types.js';
+import { notUndefined } from '../../utils/assertions.js';
+import { buildRepositories } from '../../utils/repositories.js';
+import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport/index.js';
+import { resultOfToList } from '../utils.js';
+import { Item } from './entities/Item.js';
 import {
   SHOW_HIDDEN_PARRAM,
   TYPES_FILTER_PARAM,
@@ -26,11 +26,11 @@ import {
   getShared,
   moveMany,
   updateMany,
-} from './fluent-schema';
-import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
-import { ItemChildrenParams, ItemSearchParams } from './types';
-import { getPostItemPayloadFromFormData } from './utils';
-import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from './ws/events';
+} from './fluent-schema.js';
+import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation.js';
+import { ItemChildrenParams, ItemSearchParams } from './types.js';
+import { getPostItemPayloadFromFormData } from './utils.js';
+import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from './ws/events.js';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, items, websockets } = fastify;

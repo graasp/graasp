@@ -4,9 +4,9 @@ import { access, copyFile, mkdir, rm } from 'fs/promises';
 import path from 'path';
 import { pipeline } from 'stream/promises';
 
-import { LocalFileConfiguration } from '../interfaces/configuration';
-import { FileRepository } from '../interfaces/fileRepository';
-import { LocalFileNotFound } from '../utils/errors';
+import { LocalFileConfiguration } from '../interfaces/configuration.js';
+import { FileRepository } from '../interfaces/fileRepository.js';
+import { LocalFileNotFound } from '../utils/errors.js';
 
 export class LocalFileRepository implements FileRepository {
   private readonly options: LocalFileConfiguration;

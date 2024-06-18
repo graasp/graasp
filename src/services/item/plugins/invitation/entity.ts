@@ -13,8 +13,8 @@ import { v4 } from 'uuid';
 
 import { PermissionLevel } from '@graasp/sdk';
 
-import { Member } from '../../../member/entities/member';
-import { Item } from '../../entities/Item';
+import { Member } from '../../../member/entities/member.js';
+import { Item } from '../../entities/Item.js';
 
 @Entity()
 @Unique('item-email', ['item', 'email'])

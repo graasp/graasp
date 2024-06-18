@@ -6,8 +6,8 @@ import {
   CountGroupByShouldIncludeAggregateByError,
   CountGroupByShouldIncludeAggregateMetricError,
   InvalidAggregateFunctionError,
-} from './errors';
-import { validateAggregationParameters } from './utils';
+} from './errors.js';
+import { validateAggregationParameters } from './utils.js';
 
 describe('validateAggregationParameters', () => {
   it('AggregateByCannotUserError', () => {

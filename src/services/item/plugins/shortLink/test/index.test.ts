@@ -8,11 +8,11 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../../test/app';
-import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { ShortLinkDuplication, ShortLinkLimitExceed } from '../../../../../utils/errors';
-import { saveMember } from '../../../../member/test/fixtures/members';
-import { ItemPublishedNotFound } from '../../published/errors';
+} from '../../../../../../test/app.js';
+import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config.js';
+import { ShortLinkDuplication, ShortLinkLimitExceed } from '../../../../../utils/errors.js';
+import { saveMember } from '../../../../member/test/fixtures/members.js';
+import { ItemPublishedNotFound } from '../../published/errors.js';
 import {
   MOCK_ALIAS,
   MOCK_ITEM_ID,
@@ -26,7 +26,7 @@ import {
   injectGetShortLink,
   injectPatch,
   injectPost,
-} from './fixtures';
+} from './fixtures.js';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');

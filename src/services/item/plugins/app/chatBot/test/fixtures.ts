@@ -2,7 +2,7 @@ import { ChatCompletion } from 'openai/resources/chat';
 
 import { ChatBotMessage } from '@graasp/sdk';
 
-import * as OpenAICompletion from '../openAICompletion';
+import * as OpenAICompletion from '../openAICompletion.js';
 
 export const DOCKER_MOCKED_RESPONSE =
   'Docker is a platform for developing, shipping, and running applications in lightweight, isolated containers that provide consistency and portability across different environments.';

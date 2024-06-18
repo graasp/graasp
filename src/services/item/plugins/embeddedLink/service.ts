@@ -2,8 +2,8 @@ import fetch from 'node-fetch';
 
 import { FastifyBaseLogger } from 'fastify';
 
-import { InvalidUrl } from './errors';
-import { isValidUrl } from './utils';
+import { InvalidUrl } from './errors.js';
+import { isValidUrl } from './utils.js';
 
 type IframelyLink = {
   rel: string[];

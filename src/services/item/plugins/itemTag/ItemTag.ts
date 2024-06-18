@@ -13,8 +13,8 @@ import { v4 } from 'uuid';
 
 import { ItemTagType } from '@graasp/sdk';
 
-import { Member } from '../../../member/entities/member';
-import { Item } from '../../entities/Item';
+import { Member } from '../../../member/entities/member.js';
+import { Item } from '../../entities/Item.js';
 
 @Entity()
 @Index('IDX_gist_item_tag_path', { synchronize: false })

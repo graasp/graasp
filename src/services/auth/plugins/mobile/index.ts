@@ -5,14 +5,14 @@ import { FastifyPluginAsync } from 'fastify';
 import { RecaptchaAction } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import { notUndefined } from '../../../../utils/assertions';
+import { notUndefined } from '../../../../utils/assertions.js';
 import {
   LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
   MOBILE_DEEP_LINK_PROTOCOL,
-} from '../../../../utils/config';
-import { buildRepositories } from '../../../../utils/repositories';
-import { generateAuthTokensPair, getRedirectionUrl } from '../../utils';
-import captchaPreHandler from '../captcha';
+} from '../../../../utils/config.js';
+import { buildRepositories } from '../../../../utils/repositories.js';
+import { generateAuthTokensPair, getRedirectionUrl } from '../../utils.js';
+import captchaPreHandler from '../captcha/index.js';
 import {
   SHORT_TOKEN_PARAM,
   TOKEN_PARAM,
@@ -20,8 +20,8 @@ import {
   authenticateMobileMagicLink,
   authenticatePassword,
   authenticateRefreshToken,
-} from '../passport';
-import { authWeb, mPasswordLogin, mauth, mlogin, mregister } from './schemas';
+} from '../passport/index.js';
+import { authWeb, mPasswordLogin, mauth, mlogin, mregister } from './schemas.js';
 
 // token based auth and endpoints for mobile
 const plugin: FastifyPluginAsync = async (fastify) => {

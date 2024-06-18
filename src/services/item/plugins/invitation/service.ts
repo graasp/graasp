@@ -5,20 +5,20 @@ import { FastifyBaseLogger } from 'fastify';
 
 import { ItemType, PermissionLevel } from '@graasp/sdk';
 
-import type { MailerDecoration } from '../../../../plugins/mailer';
-import { MAIL } from '../../../../plugins/mailer/langs/constants';
-import { GRAASP_LANDING_PAGE_ORIGIN } from '../../../../utils/constants';
-import { UnauthorizedMember } from '../../../../utils/errors';
-import { Repositories } from '../../../../utils/repositories';
-import { validatePermission } from '../../../authorization';
-import { Item, isItemType } from '../../../item/entities/Item';
-import { ItemService } from '../../../item/service';
-import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
-import { ItemMembershipService } from '../../../itemMembership/service';
-import { Actor, Member } from '../../../member/entities/member';
-import { MemberService } from '../../../member/service';
-import { EMAIL_COLUMN_NAME, GROUP_COL_NAME, buildInvitationLink } from './constants';
-import { Invitation } from './entity';
+import type { MailerDecoration } from '../../../../plugins/mailer/index.js';
+import { MAIL } from '../../../../plugins/mailer/langs/constants.js';
+import { GRAASP_LANDING_PAGE_ORIGIN } from '../../../../utils/constants.js';
+import { UnauthorizedMember } from '../../../../utils/errors.js';
+import { Repositories } from '../../../../utils/repositories.js';
+import { validatePermission } from '../../../authorization.js';
+import { Item, isItemType } from '../../../item/entities/Item.js';
+import { ItemService } from '../../../item/service.js';
+import { ItemMembership } from '../../../itemMembership/entities/ItemMembership.js';
+import { ItemMembershipService } from '../../../itemMembership/service.js';
+import { Actor, Member } from '../../../member/entities/member.js';
+import { MemberService } from '../../../member/service.js';
+import { EMAIL_COLUMN_NAME, GROUP_COL_NAME, buildInvitationLink } from './constants.js';
+import { Invitation } from './entity.js';
 import {
   CantCreateStructureInNoFolderItem,
   MissingEmailColumnInCSVError,
@@ -27,8 +27,8 @@ import {
   MissingGroupInRowError,
   NoDataInFile,
   TemplateItemDoesNotExist,
-} from './errors';
-import { CSVInvite, parseCSV, verifyCSVFileFormat } from './utils';
+} from './errors.js';
+import { CSVInvite, parseCSV, verifyCSVFileFormat } from './utils.js';
 
 export class InvitationService {
   log: FastifyBaseLogger;

@@ -1,16 +1,16 @@
 import { ItemLoginSchemaType } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../plugins/datasource';
-import { Item } from '../../item/entities/Item';
-import { ItemLoginSchema } from '../entities/itemLoginSchema';
+import { AppDataSource } from '../../../plugins/datasource.js';
+import { Item } from '../../item/entities/Item.js';
+import { ItemLoginSchema } from '../entities/itemLoginSchema.js';
 import {
   CannotNestItemLoginSchema,
   ItemLoginSchemaNotFound,
   MissingCredentialsForLoginSchema,
   MissingItemLoginTag,
   UnnecessaryCredentialsForLoginSchema,
-} from '../errors';
-import { loginSchemaRequiresPassword } from '../utils';
+} from '../errors.js';
+import { loginSchemaRequiresPassword } from '../utils.js';
 
 export const ItemLoginSchemaRepository = AppDataSource.getRepository(ItemLoginSchema).extend({
   async getForItemPath(

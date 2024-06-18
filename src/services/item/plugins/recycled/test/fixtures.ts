@@ -1,8 +1,8 @@
 import { PackedItem } from '@graasp/sdk';
 
-import { Member } from '../../../../member/entities/member';
-import { Item } from '../../../entities/Item';
-import { PackedRecycledItemData, RecycledItemData } from '../RecycledItemData';
+import { Member } from '../../../../member/entities/member.js';
+import { Item } from '../../../entities/Item.js';
+import { PackedRecycledItemData, RecycledItemData } from '../RecycledItemData.js';
 
 export const expectRecycledItem = (
   newRecycledItem: RecycledItemData,

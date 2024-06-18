@@ -1,8 +1,8 @@
 import fetch, { Response } from 'node-fetch';
 
-import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN } from '../../../../../utils/config';
-import { EmbeddedLinkService } from '../service';
-import { FAKE_URL, FETCH_RESULT, expectedResult } from './fixtures';
+import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN } from '../../../../../utils/config.js';
+import { EmbeddedLinkService } from '../service.js';
+import { FAKE_URL, FETCH_RESULT, expectedResult } from './fixtures.js';
 
 jest.mock('node-fetch');
 

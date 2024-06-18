@@ -2,13 +2,13 @@ import { EntityManager, In, Repository } from 'typeorm';
 
 import { MentionStatus } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../../plugins/datasource';
-import { Member } from '../../../member/entities/member';
-import { messageMentionSchema } from '../../../member/plugins/export-data/schemas/schemas';
+import { AppDataSource } from '../../../../plugins/datasource.js';
+import { Member } from '../../../member/entities/member.js';
+import { messageMentionSchema } from '../../../member/plugins/export-data/schemas/schemas.js';
 import { schemaToSelectMapper } from '../../../member/plugins/export-data/utils/selection.utils';
-import { ChatMessage } from '../../chatMessage';
-import { ChatMentionNotFound, NoChatMentionForMember } from '../../errors';
-import { ChatMention } from './chatMention';
+import { ChatMessage } from '../../chatMessage.js';
+import { ChatMentionNotFound, NoChatMentionForMember } from '../../errors.js';
+import { ChatMention } from './chatMention.js';
 
 export class ChatMentionRepository {
   repository: Repository<ChatMention>;

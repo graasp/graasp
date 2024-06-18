@@ -1,13 +1,13 @@
 import { PermissionLevel } from '@graasp/sdk';
 
-import { Repositories } from '../../../../utils/repositories';
-import { validatePermissionMany } from '../../../authorization';
-import { Actor, Member } from '../../../member/entities/member';
-import { ItemWrapper } from '../../ItemWrapper';
-import { Item } from '../../entities/Item';
-import { ItemService } from '../../service';
-import { ItemGeolocation, PackedItemGeolocation } from './ItemGeolocation';
-import { MissingGeolocationApiKey } from './errors';
+import { Repositories } from '../../../../utils/repositories.js';
+import { validatePermissionMany } from '../../../authorization.js';
+import { Actor, Member } from '../../../member/entities/member.js';
+import { ItemWrapper } from '../../ItemWrapper.js';
+import { Item } from '../../entities/Item.js';
+import { ItemService } from '../../service.js';
+import { ItemGeolocation, PackedItemGeolocation } from './ItemGeolocation.js';
+import { MissingGeolocationApiKey } from './errors.js';
 
 export class ItemGeolocationService {
   private itemService: ItemService;

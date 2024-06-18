@@ -2,10 +2,10 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { PermissionLevel, UUID } from '@graasp/sdk';
 
-import { notUndefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
-import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
-import graaspSearchPlugin from './plugins/search';
+import { notUndefined } from '../../../../utils/assertions.js';
+import { buildRepositories } from '../../../../utils/repositories.js';
+import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport/index.js';
+import graaspSearchPlugin from './plugins/search/index.js';
 import {
   getCollectionsForMember,
   getInformations,
@@ -14,7 +14,7 @@ import {
   getRecentCollections,
   publishItem,
   unpublishItem,
-} from './schemas';
+} from './schemas.js';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const {

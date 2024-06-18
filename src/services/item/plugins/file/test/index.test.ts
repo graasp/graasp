@@ -9,25 +9,29 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, ItemType, MaxWidth, PermissionLevel, S3FileItemExtra } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
-import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants';
-import { FILE_ITEM_TYPE, ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { MemberCannotAccess, MemberCannotWriteItem } from '../../../../../utils/errors';
+import build, { clearDatabase } from '../../../../../../test/app.js';
+import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants.js';
+import { FILE_ITEM_TYPE, ITEMS_ROUTE_PREFIX } from '../../../../../utils/config.js';
+import { MemberCannotAccess, MemberCannotWriteItem } from '../../../../../utils/errors.js';
 import {
   DownloadFileInvalidParameterError,
   DownloadFileUnexpectedError,
   S3FileNotFound,
   UploadEmptyFileError,
   UploadFileUnexpectedError,
-} from '../../../../file/utils/errors';
-import { ItemTestUtils, expectItem, expectManyItems } from '../../../../item/test/fixtures/items';
-import { ItemMembershipRepository } from '../../../../itemMembership/repository';
-import { saveMember } from '../../../../member/test/fixtures/members';
-import { ThumbnailSizeFormat } from '../../../../thumbnail/constants';
-import { Item } from '../../../entities/Item';
-import { setItemPublic } from '../../itemTag/test/fixtures';
-import { DEFAULT_MAX_STORAGE } from '../utils/constants';
-import { StorageExceeded } from '../utils/errors';
+} from '../../../../file/utils/errors.js';
+import {
+  ItemTestUtils,
+  expectItem,
+  expectManyItems,
+} from '../../../../item/test/fixtures/items.js';
+import { ItemMembershipRepository } from '../../../../itemMembership/repository.js';
+import { saveMember } from '../../../../member/test/fixtures/members.js';
+import { ThumbnailSizeFormat } from '../../../../thumbnail/constants.js';
+import { Item } from '../../../entities/Item.js';
+import { setItemPublic } from '../../itemTag/test/fixtures.js';
+import { DEFAULT_MAX_STORAGE } from '../utils/constants.js';
+import { StorageExceeded } from '../utils/errors.js';
 
 // TODO: LOCAL FILE TESTS
 

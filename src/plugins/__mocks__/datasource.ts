@@ -1,36 +1,36 @@
 import { DataSource } from 'typeorm';
 
-import { DB_TEST_SCHEMA } from '../../../test/constants';
-import { Action } from '../../services/action/entities/action';
-import { MemberPassword } from '../../services/auth/plugins/password/entities/password';
-import { ChatMessage } from '../../services/chat/chatMessage';
-import { ChatMention } from '../../services/chat/plugins/mentions/chatMention';
-import { Item } from '../../services/item/entities/Item';
-import { ActionRequestExport } from '../../services/item/plugins/action/requestExport/requestExport';
-import { AppAction } from '../../services/item/plugins/app/appAction/appAction';
-import { AppData } from '../../services/item/plugins/app/appData/appData';
-import { AppSetting } from '../../services/item/plugins/app/appSetting/appSettings';
-import { App } from '../../services/item/plugins/app/entities/app';
-import { Publisher } from '../../services/item/plugins/app/entities/publisher';
-import { ItemGeolocation } from '../../services/item/plugins/geolocation/ItemGeolocation';
-import { Invitation } from '../../services/item/plugins/invitation/entity';
-import { Category } from '../../services/item/plugins/itemCategory/entities/Category';
-import { ItemCategory } from '../../services/item/plugins/itemCategory/entities/ItemCategory';
-import { ItemFavorite } from '../../services/item/plugins/itemFavorite/entities/ItemFavorite';
-import { ItemFlag } from '../../services/item/plugins/itemFlag/itemFlag';
-import { ItemLike } from '../../services/item/plugins/itemLike/itemLike';
-import { ItemTag } from '../../services/item/plugins/itemTag/ItemTag';
-import { ItemPublished } from '../../services/item/plugins/published/entities/itemPublished';
-import { RecycledItemData } from '../../services/item/plugins/recycled/RecycledItemData';
-import { ShortLink } from '../../services/item/plugins/shortLink/entities/ShortLink';
-import { ItemValidation } from '../../services/item/plugins/validation/entities/ItemValidation';
-import { ItemValidationGroup } from '../../services/item/plugins/validation/entities/ItemValidationGroup';
-import { ItemValidationReview } from '../../services/item/plugins/validation/entities/itemValidationReview';
-import { ItemLogin } from '../../services/itemLogin/entities/itemLogin';
-import { ItemLoginSchema } from '../../services/itemLogin/entities/itemLoginSchema';
-import { ItemMembership } from '../../services/itemMembership/entities/ItemMembership';
-import { Member } from '../../services/member/entities/member';
-import { MemberProfile } from '../../services/member/plugins/profile/entities/profile';
+import { DB_TEST_SCHEMA } from '../../../test/constants.js';
+import { Action } from '../../services/action/entities/action.js';
+import { MemberPassword } from '../../services/auth/plugins/password/entities/password.js';
+import { ChatMessage } from '../../services/chat/chatMessage.js';
+import { ChatMention } from '../../services/chat/plugins/mentions/chatMention.js';
+import { Item } from '../../services/item/entities/Item.js';
+import { ActionRequestExport } from '../../services/item/plugins/action/requestExport/requestExport.js';
+import { AppAction } from '../../services/item/plugins/app/appAction/appAction.js';
+import { AppData } from '../../services/item/plugins/app/appData/appData.js';
+import { AppSetting } from '../../services/item/plugins/app/appSetting/appSettings.js';
+import { App } from '../../services/item/plugins/app/entities/app.js';
+import { Publisher } from '../../services/item/plugins/app/entities/publisher.js';
+import { ItemGeolocation } from '../../services/item/plugins/geolocation/ItemGeolocation.js';
+import { Invitation } from '../../services/item/plugins/invitation/entity.js';
+import { Category } from '../../services/item/plugins/itemCategory/entities/Category.js';
+import { ItemCategory } from '../../services/item/plugins/itemCategory/entities/ItemCategory.js';
+import { ItemFavorite } from '../../services/item/plugins/itemFavorite/entities/ItemFavorite.js';
+import { ItemFlag } from '../../services/item/plugins/itemFlag/itemFlag.js';
+import { ItemLike } from '../../services/item/plugins/itemLike/itemLike.js';
+import { ItemTag } from '../../services/item/plugins/itemTag/ItemTag.js';
+import { ItemPublished } from '../../services/item/plugins/published/entities/itemPublished.js';
+import { RecycledItemData } from '../../services/item/plugins/recycled/RecycledItemData.js';
+import { ShortLink } from '../../services/item/plugins/shortLink/entities/ShortLink.js';
+import { ItemValidation } from '../../services/item/plugins/validation/entities/ItemValidation.js';
+import { ItemValidationGroup } from '../../services/item/plugins/validation/entities/ItemValidationGroup.js';
+import { ItemValidationReview } from '../../services/item/plugins/validation/entities/itemValidationReview.js';
+import { ItemLogin } from '../../services/itemLogin/entities/itemLogin.js';
+import { ItemLoginSchema } from '../../services/itemLogin/entities/itemLoginSchema.js';
+import { ItemMembership } from '../../services/itemMembership/entities/ItemMembership.js';
+import { Member } from '../../services/member/entities/member.js';
+import { MemberProfile } from '../../services/member/plugins/profile/entities/profile.js';
 import {
   CI,
   DB_HOST,
@@ -39,7 +39,7 @@ import {
   DB_PORT,
   DB_USERNAME,
   JEST_WORKER_ID,
-} from '../../utils/config';
+} from '../../utils/config.js';
 
 // mock data source
 // we could use the original file, but for extra security we keep this file

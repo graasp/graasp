@@ -10,8 +10,8 @@ import {
 } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { Item } from '../item/entities/Item';
-import { Member } from '../member/entities/member';
+import { Item } from '../item/entities/Item.js';
+import { Member } from '../member/entities/member.js';
 
 @Entity()
 export class ChatMessage extends BaseEntity {

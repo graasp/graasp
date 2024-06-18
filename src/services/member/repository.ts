@@ -2,10 +2,10 @@ import { EntityManager, In } from 'typeorm';
 
 import { UUID } from '@graasp/sdk';
 
-import { AbstractRepository } from '../../repository';
-import { MemberNotFound } from '../../utils/errors';
-import { mapById } from '../utils';
-import { Member } from './entities/member';
+import { AbstractRepository } from '../../repository.js';
+import { MemberNotFound } from '../../utils/errors.js';
+import { mapById } from '../utils.js';
+import { Member } from './entities/member.js';
 
 export class MemberRepository extends AbstractRepository<Member> {
   constructor(manager?: EntityManager) {

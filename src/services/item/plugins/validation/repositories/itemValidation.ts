@@ -1,8 +1,8 @@
 import { ItemValidationProcess, ItemValidationStatus } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { ItemValidation } from '../entities/ItemValidation';
-import { ItemValidationNotFound } from '../errors';
+import { AppDataSource } from '../../../../../plugins/datasource.js';
+import { ItemValidation } from '../entities/ItemValidation.js';
+import { ItemValidationNotFound } from '../errors.js';
 
 export const ItemValidationRepository = AppDataSource.getRepository(ItemValidation).extend({
   async get(id: string): Promise<ItemValidation | null> {

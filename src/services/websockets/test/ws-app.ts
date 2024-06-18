@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 
 import { CompleteMember } from '@graasp/sdk';
 
-import build from '../../../../test/app';
+import build from '../../../../test/app.js';
 
 const MAX_PORT = 65535;
 const MIN_PORT = 1025;

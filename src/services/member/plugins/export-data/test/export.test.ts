@@ -3,13 +3,13 @@ import path from 'path';
 
 import { FastifyInstance } from 'fastify';
 
-import build, { clearDatabase } from '../../../../../../test/app';
-import { TMP_FOLDER } from '../../../../../utils/config';
-import { buildRepositories } from '../../../../../utils/repositories';
-import { saveItemFavorites } from '../../../../item/plugins/itemFavorite/test/fixtures';
-import { ItemTestUtils } from '../../../../item/test/fixtures/items';
-import { saveMember } from '../../../test/fixtures/members';
-import { ExportMemberDataService } from '../service';
+import build, { clearDatabase } from '../../../../../../test/app.js';
+import { TMP_FOLDER } from '../../../../../utils/config.js';
+import { buildRepositories } from '../../../../../utils/repositories.js';
+import { saveItemFavorites } from '../../../../item/plugins/itemFavorite/test/fixtures.js';
+import { ItemTestUtils } from '../../../../item/test/fixtures/items.js';
+import { saveMember } from '../../../test/fixtures/members.js';
+import { ExportMemberDataService } from '../service.js';
 import { DataArchiver } from '../utils/export.utils';
 
 // mock datasource

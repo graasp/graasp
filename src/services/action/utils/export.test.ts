@@ -6,17 +6,17 @@ import { FastifyInstance } from 'fastify';
 
 import { Context, ExportActionsFormatting } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../test/app';
-import { AppDataSource } from '../../../plugins/datasource';
-import { TMP_FOLDER } from '../../../utils/config';
-import { ChatMessage } from '../../chat/chatMessage';
-import { ChatMessageRepository } from '../../chat/repository';
-import { BaseAnalytics } from '../../item/plugins/action/base-analytics';
-import { ItemTestUtils } from '../../item/test/fixtures/items';
-import { Member } from '../../member/entities/member';
-import { saveMember } from '../../member/test/fixtures/members';
-import { Action } from '../entities/action';
-import { exportActionsInArchive } from './export';
+import build, { clearDatabase } from '../../../../test/app.js';
+import { AppDataSource } from '../../../plugins/datasource.js';
+import { TMP_FOLDER } from '../../../utils/config.js';
+import { ChatMessage } from '../../chat/chatMessage.js';
+import { ChatMessageRepository } from '../../chat/repository.js';
+import { BaseAnalytics } from '../../item/plugins/action/base-analytics.js';
+import { ItemTestUtils } from '../../item/test/fixtures/items.js';
+import { Member } from '../../member/entities/member.js';
+import { saveMember } from '../../member/test/fixtures/members.js';
+import { Action } from '../entities/action.js';
+import { exportActionsInArchive } from './export.js';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');

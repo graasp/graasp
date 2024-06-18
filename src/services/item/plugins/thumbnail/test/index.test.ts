@@ -8,13 +8,13 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, ThumbnailSize } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
-import { ITEMS_ROUTE_PREFIX, THUMBNAILS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { MemberCannotAccess } from '../../../../../utils/errors';
-import { saveMember } from '../../../../member/test/fixtures/members';
-import { ItemTestUtils } from '../../../test/fixtures/items';
-import { setItemPublic } from '../../itemTag/test/fixtures';
-import { UploadFileNotImageError } from '../utils/errors';
+import build, { clearDatabase } from '../../../../../../test/app.js';
+import { ITEMS_ROUTE_PREFIX, THUMBNAILS_ROUTE_PREFIX } from '../../../../../utils/config.js';
+import { MemberCannotAccess } from '../../../../../utils/errors.js';
+import { saveMember } from '../../../../member/test/fixtures/members.js';
+import { ItemTestUtils } from '../../../test/fixtures/items.js';
+import { setItemPublic } from '../../itemTag/test/fixtures.js';
+import { UploadFileNotImageError } from '../utils/errors.js';
 
 const filepath = path.resolve(__dirname, './fixtures/image.png');
 const textPath = path.resolve(__dirname, './fixtures/emptyFile');

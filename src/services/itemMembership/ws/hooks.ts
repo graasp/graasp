@@ -1,10 +1,10 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { Repositories, buildRepositories } from '../../../utils/repositories';
-import { ItemService } from '../../item/service';
-import { WebsocketService } from '../../websockets/ws-service';
-import { ItemMembershipService } from '../service';
-import { ItemMembershipEvent, itemMembershipsTopic } from './events';
+import { Repositories, buildRepositories } from '../../../utils/repositories.js';
+import { ItemService } from '../../item/service.js';
+import { WebsocketService } from '../../websockets/ws-service.js';
+import { ItemMembershipService } from '../service.js';
+import { ItemMembershipEvent, itemMembershipsTopic } from './events.js';
 
 export function registerItemMembershipWsHooks(
   repositories: Repositories,

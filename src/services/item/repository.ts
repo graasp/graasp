@@ -14,7 +14,7 @@ import {
   getParentFromPath,
 } from '@graasp/sdk';
 
-import { AppDataSource } from '../../plugins/datasource';
+import { AppDataSource } from '../../plugins/datasource.js';
 import {
   HierarchyTooDeep,
   InvalidMoveTarget,
@@ -22,15 +22,15 @@ import {
   ItemNotFound,
   TooManyDescendants,
   UnexpectedError,
-} from '../../utils/errors';
-import { MemberIdentifierNotFound } from '../itemLogin/errors';
-import { Member } from '../member/entities/member';
-import { itemSchema } from '../member/plugins/export-data/schemas/schemas';
+} from '../../utils/errors.js';
+import { MemberIdentifierNotFound } from '../itemLogin/errors.js';
+import { Member } from '../member/entities/member.js';
+import { itemSchema } from '../member/plugins/export-data/schemas/schemas.js';
 import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils';
-import { mapById } from '../utils';
-import { FolderItem, Item, ItemExtraUnion, isItemType } from './entities/Item';
-import { ItemChildrenParams } from './types';
-import { _fixChildrenOrder, sortChildrenForTreeWith, sortChildrenWith } from './utils';
+import { mapById } from '../utils.js';
+import { FolderItem, Item, ItemExtraUnion, isItemType } from './entities/Item.js';
+import { ItemChildrenParams } from './types.js';
+import { _fixChildrenOrder, sortChildrenForTreeWith, sortChildrenWith } from './utils.js';
 
 const DEFAULT_COPY_SUFFIX = ' (2)';
 const IS_COPY_REGEX = /\s\(\d+\)$/;

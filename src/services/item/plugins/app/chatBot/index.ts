@@ -2,13 +2,13 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ChatBotMessage, GPTVersion } from '@graasp/sdk';
 
-import { notUndefined } from '../../../../../utils/assertions';
-import { OPENAI_GPT_VERSION } from '../../../../../utils/config';
-import { InvalidJWTItem } from '../../../../../utils/errors';
-import { buildRepositories } from '../../../../../utils/repositories';
-import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
-import { create } from './schemas';
-import { ChatBotService } from './service';
+import { notUndefined } from '../../../../../utils/assertions.js';
+import { OPENAI_GPT_VERSION } from '../../../../../utils/config.js';
+import { InvalidJWTItem } from '../../../../../utils/errors.js';
+import { buildRepositories } from '../../../../../utils/repositories.js';
+import { authenticateAppsJWT } from '../../../../auth/plugins/passport/index.js';
+import { create } from './schemas.js';
+import { ChatBotService } from './service.js';
 
 type QueryParameters = {
   gptVersion?: GPTVersion;

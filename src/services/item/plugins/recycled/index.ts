@@ -4,13 +4,17 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
-import { IdParam, IdsParams } from '../../../../types';
-import { notUndefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
-import { isAuthenticated } from '../../../auth/plugins/passport';
-import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
-import schemas, { getRecycledItemDatas, recycleMany, restoreMany } from './schemas';
-import { RecycledBinService } from './service';
+import { IdParam, IdsParams } from '../../../../types.js';
+import { notUndefined } from '../../../../utils/assertions.js';
+import { buildRepositories } from '../../../../utils/repositories.js';
+import { isAuthenticated } from '../../../auth/plugins/passport/index.js';
+import {
+  ItemOpFeedbackErrorEvent,
+  ItemOpFeedbackEvent,
+  memberItemsTopic,
+} from '../../ws/events.js';
+import schemas, { getRecycledItemDatas, recycleMany, restoreMany } from './schemas.js';
+import { RecycledBinService } from './service.js';
 
 export interface RecycledItemDataOptions {
   /** Max number of items to recycle in a request.

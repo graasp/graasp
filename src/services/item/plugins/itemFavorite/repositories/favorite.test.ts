@@ -2,13 +2,13 @@ import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
-import build, { clearDatabase } from '../../../../../../test/app';
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { saveMember } from '../../../../member/test/fixtures/members';
-import { ItemTestUtils } from '../../../test/fixtures/items';
-import { ItemFavorite } from '../entities/ItemFavorite';
-import { DuplicateFavoriteError, ItemFavoriteNotFound } from '../errors';
-import { FavoriteRepository } from './favorite';
+import build, { clearDatabase } from '../../../../../../test/app.js';
+import { AppDataSource } from '../../../../../plugins/datasource.js';
+import { saveMember } from '../../../../member/test/fixtures/members.js';
+import { ItemTestUtils } from '../../../test/fixtures/items.js';
+import { ItemFavorite } from '../entities/ItemFavorite.js';
+import { DuplicateFavoriteError, ItemFavoriteNotFound } from '../errors.js';
+import { FavoriteRepository } from './favorite.js';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');

@@ -3,19 +3,19 @@ import { FastifyBaseLogger } from 'fastify';
 import { ItemTagType, PermissionLevel, PublishableItemTypeChecker, UUID } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import type { MailerDecoration } from '../../../../plugins/mailer';
-import { MAIL } from '../../../../plugins/mailer/langs/constants';
-import { resultOfToList } from '../../../../services/utils';
-import { UnauthorizedMember } from '../../../../utils/errors';
-import HookManager from '../../../../utils/hook';
-import { Repositories } from '../../../../utils/repositories';
-import { filterOutHiddenItems } from '../../../authorization';
-import { Actor, Member } from '../../../member/entities/member';
-import { ItemWrapper } from '../../ItemWrapper';
-import { Item } from '../../entities/Item';
-import { ItemService } from '../../service';
-import { buildPublishedItemLink } from './constants';
-import { ItemTypeNotAllowedToPublish } from './errors';
+import type { MailerDecoration } from '../../../../plugins/mailer/index.js';
+import { MAIL } from '../../../../plugins/mailer/langs/constants.js';
+import { resultOfToList } from '../../../../services/utils.js';
+import { UnauthorizedMember } from '../../../../utils/errors.js';
+import HookManager from '../../../../utils/hook.js';
+import { Repositories } from '../../../../utils/repositories.js';
+import { filterOutHiddenItems } from '../../../authorization.js';
+import { Actor, Member } from '../../../member/entities/member.js';
+import { ItemWrapper } from '../../ItemWrapper.js';
+import { Item } from '../../entities/Item.js';
+import { ItemService } from '../../service.js';
+import { buildPublishedItemLink } from './constants.js';
+import { ItemTypeNotAllowedToPublish } from './errors.js';
 
 interface ActionCount {
   actionCount: number;

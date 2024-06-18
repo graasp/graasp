@@ -1,14 +1,14 @@
 import { AppDataVisibility, PermissionLevel, UUID } from '@graasp/sdk';
 
-import HookManager from '../../../../../utils/hook';
-import { Repositories } from '../../../../../utils/repositories';
-import { validatePermission } from '../../../../authorization';
-import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
-import { Actor, Member } from '../../../../member/entities/member';
-import { Item } from '../../../entities/Item';
-import { AppData } from './appData';
-import { AppDataNotAccessible, PreventUpdateOtherAppData } from './errors';
-import { InputAppData } from './interfaces/app-data';
+import HookManager from '../../../../../utils/hook.js';
+import { Repositories } from '../../../../../utils/repositories.js';
+import { validatePermission } from '../../../../authorization.js';
+import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership.js';
+import { Actor, Member } from '../../../../member/entities/member.js';
+import { Item } from '../../../entities/Item.js';
+import { AppData } from './appData.js';
+import { AppDataNotAccessible, PreventUpdateOtherAppData } from './errors.js';
+import { InputAppData } from './interfaces/app-data.js';
 
 const ownAppDataAbility = (appData: AppData, member: Actor) => {
   if (!appData.creator || !member) {

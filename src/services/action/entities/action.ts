@@ -12,8 +12,8 @@ import {
 
 import { Context } from '@graasp/sdk';
 
-import { Item } from '../../item/entities/Item';
-import { Member } from '../../member/entities/member';
+import { Item } from '../../item/entities/Item.js';
+import { Member } from '../../member/entities/member.js';
 
 @Entity()
 export class Action extends BaseEntity {

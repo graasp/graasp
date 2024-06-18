@@ -7,10 +7,10 @@ import waitForExpect from 'wait-for-expect';
 
 import { HttpMethod, ItemType } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
-import { LocalFileRepository } from '../../../../file/repositories/local';
-import { ItemTestUtils } from '../../../test/fixtures/items';
-import * as ARCHIVE_CONTENT from './fixtures/archive';
+import build, { clearDatabase } from '../../../../../../test/app.js';
+import { LocalFileRepository } from '../../../../file/repositories/local.js';
+import { ItemTestUtils } from '../../../test/fixtures/items.js';
+import * as ARCHIVE_CONTENT from './fixtures/archive.js';
 
 // we need a different form data for each test
 const createFormData = (filename) => {

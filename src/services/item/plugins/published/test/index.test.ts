@@ -8,28 +8,28 @@ import { FastifyInstance } from 'fastify';
 
 import { CategoryType, HttpMethod, ItemTagType, ItemType, PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { ItemNotFound, MemberCannotAdminItem } from '../../../../../utils/errors';
-import { saveMember, saveMembers } from '../../../../member/test/fixtures/members';
-import { Item } from '../../../entities/Item';
+import build, { clearDatabase } from '../../../../../../test/app.js';
+import { AppDataSource } from '../../../../../plugins/datasource.js';
+import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config.js';
+import { ItemNotFound, MemberCannotAdminItem } from '../../../../../utils/errors.js';
+import { saveMember, saveMembers } from '../../../../member/test/fixtures/members.js';
+import { Item } from '../../../entities/Item.js';
 import {
   ItemTestUtils,
   expectItem,
   expectManyItems,
   expectManyPackedItems,
-} from '../../../test/fixtures/items';
-import { CategoryRepository } from '../../itemCategory/repositories/category';
-import { saveCategories } from '../../itemCategory/test/fixtures';
-import { ItemLike } from '../../itemLike/itemLike';
-import { saveItemLikes } from '../../itemLike/test/utils';
-import { ItemTag } from '../../itemTag/ItemTag';
-import { ItemTagNotFound } from '../../itemTag/errors';
-import { ItemPublished } from '../entities/itemPublished';
-import { ItemPublishedNotFound } from '../errors';
-import { MeiliSearchWrapper } from '../plugins/search/meilisearch';
-import { ItemPublishedRepository } from '../repositories/itemPublished';
+} from '../../../test/fixtures/items.js';
+import { CategoryRepository } from '../../itemCategory/repositories/category.js';
+import { saveCategories } from '../../itemCategory/test/fixtures.js';
+import { ItemLike } from '../../itemLike/itemLike.js';
+import { saveItemLikes } from '../../itemLike/test/utils.js';
+import { ItemTag } from '../../itemTag/ItemTag.js';
+import { ItemTagNotFound } from '../../itemTag/errors.js';
+import { ItemPublished } from '../entities/itemPublished.js';
+import { ItemPublishedNotFound } from '../errors.js';
+import { MeiliSearchWrapper } from '../plugins/search/meilisearch.js';
+import { ItemPublishedRepository } from '../repositories/itemPublished.js';
 
 const testUtils = new ItemTestUtils();
 

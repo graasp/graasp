@@ -5,8 +5,8 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
-import { FETCH_RESULT } from './fixtures';
+import build, { clearDatabase } from '../../../../../../test/app.js';
+import { FETCH_RESULT } from './fixtures.js';
 
 jest.mock('node-fetch');
 

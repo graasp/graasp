@@ -3,22 +3,22 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { AppIdentification, AuthTokenSubject } from '@graasp/sdk';
 
-import { notUndefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
+import { notUndefined } from '../../../../utils/assertions.js';
+import { buildRepositories } from '../../../../utils/repositories.js';
 import {
   guestAuthenticateAppsJWT,
   isAuthenticated,
   optionalIsAuthenticated,
-} from '../../../auth/plugins/passport';
-import appActionPlugin from './appAction';
-import appDataPlugin from './appData';
-import appSettingPlugin from './appSetting';
-import chatBotPlugin from './chatBot';
-import { DEFAULT_JWT_EXPIRATION } from './constants';
-import { createSchema, getMany, getMostUsed, updateSchema } from './fluent-schema';
-import common, { generateToken, getContext } from './schemas';
-import { AppService } from './service';
-import { AppsPluginOptions } from './types';
+} from '../../../auth/plugins/passport/index.js';
+import appActionPlugin from './appAction/index.js';
+import appDataPlugin from './appData/index.js';
+import appSettingPlugin from './appSetting/index.js';
+import chatBotPlugin from './chatBot/index.js';
+import { DEFAULT_JWT_EXPIRATION } from './constants.js';
+import { createSchema, getMany, getMostUsed, updateSchema } from './fluent-schema.js';
+import common, { generateToken, getContext } from './schemas.js';
+import { AppService } from './service.js';
+import { AppsPluginOptions } from './types.js';
 
 const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) => {
   const { jwtSecret, jwtExpiration = DEFAULT_JWT_EXPIRATION, publisherId } = options;

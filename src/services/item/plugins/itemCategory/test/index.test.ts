@@ -5,18 +5,18 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
-import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { MemberCannotAccess } from '../../../../../utils/errors';
-import { Item } from '../../../../item/entities/Item';
-import { saveMember } from '../../../../member/test/fixtures/members';
-import { ItemTestUtils } from '../../../test/fixtures/items';
-import { setItemPublic } from '../../itemTag/test/fixtures';
-import { Category } from '../entities/Category';
-import { ItemCategory } from '../entities/ItemCategory';
-import { DuplicateItemCategoryError } from '../errors';
-import { ItemCategoryRepository } from '../repositories/itemCategory';
-import { saveCategories, saveItemCategories } from './fixtures';
+import build, { clearDatabase } from '../../../../../../test/app.js';
+import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config.js';
+import { MemberCannotAccess } from '../../../../../utils/errors.js';
+import { Item } from '../../../../item/entities/Item.js';
+import { saveMember } from '../../../../member/test/fixtures/members.js';
+import { ItemTestUtils } from '../../../test/fixtures/items.js';
+import { setItemPublic } from '../../itemTag/test/fixtures.js';
+import { Category } from '../entities/Category.js';
+import { ItemCategory } from '../entities/ItemCategory.js';
+import { DuplicateItemCategoryError } from '../errors.js';
+import { ItemCategoryRepository } from '../repositories/itemCategory.js';
+import { saveCategories, saveItemCategories } from './fixtures.js';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');

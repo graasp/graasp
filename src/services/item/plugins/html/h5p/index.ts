@@ -8,14 +8,14 @@ import fp from 'fastify-plugin';
 
 import { ItemType, PermissionLevel } from '@graasp/sdk';
 
-import { notUndefined } from '../../../../../utils/assertions';
-import { CLIENT_HOSTS } from '../../../../../utils/config';
-import { buildRepositories } from '../../../../../utils/repositories';
-import { isAuthenticated } from '../../../../auth/plugins/passport';
-import { validatePermission } from '../../../../authorization';
-import { Member } from '../../../../member/entities/member';
-import { Item, isItemType } from '../../../entities/Item';
-import { FastifyStaticReply } from '../types';
+import { notUndefined } from '../../../../../utils/assertions.js';
+import { CLIENT_HOSTS } from '../../../../../utils/config.js';
+import { buildRepositories } from '../../../../../utils/repositories.js';
+import { isAuthenticated } from '../../../../auth/plugins/passport/index.js';
+import { validatePermission } from '../../../../authorization.js';
+import { Member } from '../../../../member/entities/member.js';
+import { Item, isItemType } from '../../../entities/Item.js';
+import { FastifyStaticReply } from '../types.js';
 import {
   DEFAULT_H5P_ASSETS_ROUTE,
   DEFAULT_H5P_CONTENT_ROUTE,
@@ -23,11 +23,11 @@ import {
   MAX_FILE_SIZE,
   MAX_NON_FILE_FIELDS,
   PLUGIN_NAME,
-} from './constants';
-import { H5PInvalidFileError } from './errors';
-import { renderHtml } from './integration';
-import { h5pImport } from './schemas';
-import { H5PPluginOptions } from './types';
+} from './constants.js';
+import { H5PInvalidFileError } from './errors.js';
+import { renderHtml } from './integration.js';
+import { h5pImport } from './schemas.js';
+import { H5PPluginOptions } from './types.js';
 
 const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify) => {
   // get services from server instance

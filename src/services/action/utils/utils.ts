@@ -6,7 +6,7 @@ import {
   CountGroupByShouldIncludeAggregateByError,
   CountGroupByShouldIncludeAggregateMetricError,
   InvalidAggregateFunctionError,
-} from './errors';
+} from './errors.js';
 
 export const validateAggregationParameters = ({
   countGroupBy,

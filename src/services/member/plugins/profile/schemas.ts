@@ -1,7 +1,7 @@
 import S from 'fluent-json-schema';
 
-import { error, uuid } from '../../../../schemas/fluent-schema';
-import { partialMember } from '../../../item/fluent-schema';
+import { error, uuid } from '../../../../schemas/fluent-schema.js';
+import { partialMember } from '../../../item/fluent-schema.js';
 
 const sharedProporities = {
   bio: { type: 'string' },

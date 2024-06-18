@@ -1,5 +1,5 @@
-import { saveMember } from '../../../../../member/test/fixtures/members';
-import { MemberPasswordRepository } from '../../repository';
+import { saveMember } from '../../../../../member/test/fixtures/members.js';
+import { MemberPasswordRepository } from '../../repository.js';
 
 export const MOCK_PASSWORD = {
   password: 'Passw0rd!',

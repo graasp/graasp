@@ -4,17 +4,17 @@ import { FastifyBaseLogger } from 'fastify';
 
 import { ItemType } from '@graasp/sdk';
 
-import { Member } from '../member/entities/member';
-import { LocalFileRepository } from './repositories/local';
-import { S3FileRepository } from './repositories/s3';
-import FileService from './service';
+import { Member } from '../member/entities/member.js';
+import { LocalFileRepository } from './repositories/local.js';
+import { S3FileRepository } from './repositories/s3.js';
+import FileService from './service.js';
 import {
   CopyFileInvalidPathError,
   CopyFolderInvalidPathError,
   DeleteFileInvalidPathError,
   DeleteFolderInvalidPathError,
   UploadFileUnexpectedError,
-} from './utils/errors';
+} from './utils/errors.js';
 
 const MOCK_LOCAL_CONFIG = {
   storageRootPath: 'root-path',

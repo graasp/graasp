@@ -4,13 +4,13 @@ import path from 'path';
 
 import { DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS } from '@graasp/sdk';
 
-import { MailerDecoration } from '../../../../../plugins/mailer';
-import { MAIL } from '../../../../../plugins/mailer/langs/constants';
-import { TMP_FOLDER } from '../../../../../utils/config';
-import { EXPORT_FILE_EXPIRATION, ZIP_MIMETYPE } from '../../../../action/constants/constants';
-import { CannotWriteFileError } from '../../../../action/utils/errors';
-import FileService from '../../../../file/service';
-import { Member } from '../../../entities/member';
+import { MailerDecoration } from '../../../../../plugins/mailer/index.js';
+import { MAIL } from '../../../../../plugins/mailer/langs/constants.js';
+import { TMP_FOLDER } from '../../../../../utils/config.js';
+import { EXPORT_FILE_EXPIRATION, ZIP_MIMETYPE } from '../../../../action/constants/constants.js';
+import { CannotWriteFileError } from '../../../../action/utils/errors.js';
+import FileService from '../../../../file/service.js';
+import { Member } from '../../../entities/member.js';
 
 /**
  * DataToExport will be used to store each values in its own file with the name of the key.

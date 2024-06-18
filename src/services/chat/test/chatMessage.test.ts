@@ -5,18 +5,22 @@ import { FastifyInstance } from 'fastify';
 
 import { FolderItemFactory, HttpMethod } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../test/app';
-import { AppDataSource } from '../../../plugins/datasource';
-import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
-import { ItemNotFound, MemberCannotAccess } from '../../../utils/errors';
-import { setItemPublic } from '../../item/plugins/itemTag/test/fixtures';
-import { ItemTestUtils } from '../../item/test/fixtures/items';
-import { Member } from '../../member/entities/member';
-import { saveMember } from '../../member/test/fixtures/members';
-import { ChatMessage } from '../chatMessage';
-import { ChatMessageNotFound, MemberCannotDeleteMessage, MemberCannotEditMessage } from '../errors';
-import { ChatMention } from '../plugins/mentions/chatMention';
-import { ChatMessageRepository } from '../repository';
+import build, { clearDatabase } from '../../../../test/app.js';
+import { AppDataSource } from '../../../plugins/datasource.js';
+import { ITEMS_ROUTE_PREFIX } from '../../../utils/config.js';
+import { ItemNotFound, MemberCannotAccess } from '../../../utils/errors.js';
+import { setItemPublic } from '../../item/plugins/itemTag/test/fixtures.js';
+import { ItemTestUtils } from '../../item/test/fixtures/items.js';
+import { Member } from '../../member/entities/member.js';
+import { saveMember } from '../../member/test/fixtures/members.js';
+import { ChatMessage } from '../chatMessage.js';
+import {
+  ChatMessageNotFound,
+  MemberCannotDeleteMessage,
+  MemberCannotEditMessage,
+} from '../errors.js';
+import { ChatMention } from '../plugins/mentions/chatMention.js';
+import { ChatMessageRepository } from '../repository.js';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');

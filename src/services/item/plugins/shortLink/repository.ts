@@ -1,14 +1,14 @@
 import { ShortLinkPatchPayload, ShortLinkPostPayload } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../../plugins/datasource';
+import { AppDataSource } from '../../../../plugins/datasource.js';
 import {
   ItemNotFound,
   ShortLinkDuplication,
   ShortLinkLimitExceed,
   ShortLinkNotFound,
-} from '../../../../utils/errors';
-import { isDuplicateEntryError } from '../../../../utils/typeormError';
-import { ShortLink } from './entities/ShortLink';
+} from '../../../../utils/errors.js';
+import { isDuplicateEntryError } from '../../../../utils/typeormError.js';
+import { ShortLink } from './entities/ShortLink.js';
 
 export const ShortLinkRepository = AppDataSource.getRepository(ShortLink).extend({
   async createOne(postLink: ShortLinkPostPayload): Promise<ShortLink> {

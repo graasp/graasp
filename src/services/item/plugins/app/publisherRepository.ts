@@ -1,5 +1,5 @@
-import { AppDataSource } from '../../../../plugins/datasource';
-import { Publisher } from './entities/publisher';
+import { AppDataSource } from '../../../../plugins/datasource.js';
+import { Publisher } from './entities/publisher.js';
 
 export const PublisherRepository = AppDataSource.getRepository(Publisher).extend({
   async getAllValidAppOrigins() {

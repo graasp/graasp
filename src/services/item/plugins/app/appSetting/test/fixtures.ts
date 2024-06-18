@@ -1,4 +1,4 @@
-import { AppSettingRepository } from '../repository';
+import { AppSettingRepository } from '../repository.js';
 
 export const saveAppSettings = async ({ item, creator }) => {
   const defaultData = { name: 'setting-name', data: { setting: 'value' } };

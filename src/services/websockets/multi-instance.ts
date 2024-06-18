@@ -15,8 +15,8 @@ import { FastifyBaseLogger } from 'fastify';
 
 import { Websocket } from '@graasp/sdk';
 
-import { serverMessageSchema } from './schemas';
-import { WebSocketChannels } from './ws-channels';
+import { serverMessageSchema } from './schemas/index.js';
+import { WebSocketChannels } from './ws-channels.js';
 
 /**
  * Represents deserialized messages sent over Redis

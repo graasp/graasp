@@ -1,9 +1,9 @@
 import { ChatBotMessage, GPTVersion, PermissionLevel } from '@graasp/sdk';
 
-import { Repositories } from '../../../../../utils/repositories';
-import { validatePermission } from '../../../../authorization';
-import { Member } from '../../../../member/entities/member';
-import { fetchOpenAI } from './utils';
+import { Repositories } from '../../../../../utils/repositories.js';
+import { validatePermission } from '../../../../authorization.js';
+import { Member } from '../../../../member/entities/member.js';
+import { fetchOpenAI } from './utils.js';
 
 export class ChatBotService {
   async post(

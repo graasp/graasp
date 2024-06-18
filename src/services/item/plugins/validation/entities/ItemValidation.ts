@@ -11,8 +11,8 @@ import {
 
 import { ItemValidationProcess, ItemValidationStatus } from '@graasp/sdk';
 
-import { Item } from '../../../entities/Item';
-import { ItemValidationGroup } from './ItemValidationGroup';
+import { Item } from '../../../entities/Item.js';
+import { ItemValidationGroup } from './ItemValidationGroup.js';
 
 @Entity()
 export class ItemValidation extends BaseEntity {

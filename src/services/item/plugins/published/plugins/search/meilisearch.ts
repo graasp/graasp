@@ -6,7 +6,7 @@ import {
   MeiliSearchTimeOutError,
   MultiSearchParams,
   TypoTolerance,
-} from 'meilisearch';
+} from 'meilisearch.js';
 import { DataSource } from 'typeorm';
 
 import { FastifyBaseLogger } from 'fastify';
@@ -22,13 +22,13 @@ import {
   S3FileItemExtra,
 } from '@graasp/sdk';
 
-import { MEILISEARCH_STORE_LEGACY_PDF_CONTENT } from '../../../../../../utils/config';
-import { Repositories, buildRepositories } from '../../../../../../utils/repositories';
-import FileService from '../../../../../file/service';
-import { Item, isItemType } from '../../../../entities/Item';
-import { readPdfContent } from '../../../../utils';
-import { stripHtml } from '../../../validation/utils';
-import { ItemPublishedNotFound } from '../../errors';
+import { MEILISEARCH_STORE_LEGACY_PDF_CONTENT } from '../../../../../../utils/config.js';
+import { Repositories, buildRepositories } from '../../../../../../utils/repositories.js';
+import FileService from '../../../../../file/service.js';
+import { Item, isItemType } from '../../../../entities/Item.js';
+import { readPdfContent } from '../../../../utils.js';
+import { stripHtml } from '../../../validation/utils.js';
+import { ItemPublishedNotFound } from '../../errors.js';
 
 const ACTIVE_INDEX = INDEX_NAME;
 const ROTATING_INDEX = `${INDEX_NAME}_tmp`; // Used when reindexing

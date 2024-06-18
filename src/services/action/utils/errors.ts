@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { ErrorFactory } from '@graasp/sdk';
 
-import { PLUGIN_NAME } from '../constants/constants';
+import { PLUGIN_NAME } from '../constants/constants.js';
 
 export const GraaspActionError = ErrorFactory(PLUGIN_NAME);
 export class CannotWriteFileError extends GraaspActionError {

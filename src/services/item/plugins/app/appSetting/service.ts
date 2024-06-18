@@ -1,13 +1,13 @@
 import { PermissionLevel, UUID } from '@graasp/sdk';
 
-import { UnauthorizedMember } from '../../../../../utils/errors';
-import HookManager from '../../../../../utils/hook';
-import { Repositories } from '../../../../../utils/repositories';
-import { Actor, Member } from '../../../../member/entities/member';
-import { Item } from '../../../entities/Item';
-import { ItemService } from '../../../service';
-import { AppSetting } from './appSettings';
-import { InputAppSetting } from './interfaces/app-setting';
+import { UnauthorizedMember } from '../../../../../utils/errors.js';
+import HookManager from '../../../../../utils/hook.js';
+import { Repositories } from '../../../../../utils/repositories.js';
+import { Actor, Member } from '../../../../member/entities/member.js';
+import { Item } from '../../../entities/Item.js';
+import { ItemService } from '../../../service.js';
+import { AppSetting } from './appSettings.js';
+import { InputAppSetting } from './interfaces/app-setting.js';
 
 export class AppSettingService {
   itemService: ItemService;

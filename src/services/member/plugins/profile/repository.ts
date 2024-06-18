@@ -2,10 +2,10 @@ import { v4 } from 'uuid';
 
 import { Member } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../../plugins/datasource';
-import { MemberNotFound } from '../../../../utils/errors';
-import { MemberProfile } from './entities/profile';
-import { IMemberProfile } from './types';
+import { AppDataSource } from '../../../../plugins/datasource.js';
+import { MemberNotFound } from '../../../../utils/errors.js';
+import { MemberProfile } from './entities/profile.js';
+import { IMemberProfile } from './types.js';
 
 const MemberProfileRepository = AppDataSource.getRepository(MemberProfile).extend({
   async createOne(

@@ -12,8 +12,8 @@ import { v4 } from 'uuid';
 
 import { FlagType } from '@graasp/sdk';
 
-import { Item } from '../../../item/entities/Item';
-import { Member } from '../../../member/entities/member';
+import { Item } from '../../../item/entities/Item.js';
+import { Member } from '../../../member/entities/member.js';
 
 @Entity()
 @Unique('item-flag-creator', ['item', 'type', 'creator'])

@@ -1,4 +1,4 @@
-import { EMPTY_OR_SPACED_WORDS_REGEX, NAME_REGEX } from './global';
+import { EMPTY_OR_SPACED_WORDS_REGEX, NAME_REGEX } from './global.js';
 
 describe('Globals', () => {
   describe('Name regex', () => {

@@ -12,17 +12,17 @@ import {
   SECURE_SESSION_EXPIRATION_IN_SECONDS,
   SECURE_SESSION_SECRET_KEY,
   STAGING,
-} from '../../../../utils/config';
-import { Repositories, buildRepositories } from '../../../../utils/repositories';
-import { SHORT_TOKEN_PARAM, TOKEN_PARAM } from './constants';
-import { PassportStrategy } from './strategies';
-import jwtStrategy from './strategies/jwt';
-import jwtAppsStrategy from './strategies/jwtApps';
-import jwtChallengeVerifierStrategy from './strategies/jwtChallengeVerifier';
-import magicLinkStrategy from './strategies/magicLink';
-import passwordStrategy from './strategies/password';
-import passwordResetStrategy from './strategies/passwordReset';
-import strictSessionStrategy from './strategies/strictSession';
+} from '../../../../utils/config.js';
+import { Repositories, buildRepositories } from '../../../../utils/repositories.js';
+import { SHORT_TOKEN_PARAM, TOKEN_PARAM } from './constants.js';
+import { PassportStrategy } from './strategies/index.js';
+import jwtStrategy from './strategies/jwt.js';
+import jwtAppsStrategy from './strategies/jwtApps.js';
+import jwtChallengeVerifierStrategy from './strategies/jwtChallengeVerifier.js';
+import magicLinkStrategy from './strategies/magicLink.js';
+import passwordStrategy from './strategies/password.js';
+import passwordResetStrategy from './strategies/passwordReset.js';
+import strictSessionStrategy from './strategies/strictSession.js';
 
 // This plugin needs to be globally register before using the prehandlers.
 const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {

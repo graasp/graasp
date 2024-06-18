@@ -1,10 +1,10 @@
 import { Readable } from 'stream';
 
-import { Repositories } from '../../../../utils/repositories';
-import FileService from '../../../file/service';
-import { ThumbnailService } from '../../../thumbnail/service';
-import { Actor, Member } from '../../entities/member';
-import { MemberService } from '../../service';
+import { Repositories } from '../../../../utils/repositories.js';
+import FileService from '../../../file/service.js';
+import { ThumbnailService } from '../../../thumbnail/service.js';
+import { Actor, Member } from '../../entities/member.js';
+import { MemberService } from '../../service.js';
 
 export class MemberThumbnailService {
   thumbnailService: ThumbnailService;

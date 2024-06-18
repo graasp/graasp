@@ -12,15 +12,15 @@ import { FastifyBaseLogger } from 'fastify';
 
 import { FileItemType } from '@graasp/sdk';
 
-import { TMP_FOLDER } from '../../../../utils/config';
-import { UnauthorizedMember } from '../../../../utils/errors';
-import { Repositories } from '../../../../utils/repositories';
-import FileService, { FileServiceConfig } from '../../../file/service';
-import { Actor, Member } from '../../../member/entities/member';
-import { Item } from '../../entities/Item';
-import { GraaspHtmlError, HtmlImportError } from './errors';
-import { DEFAULT_MIME_TYPE } from './h5p/constants';
-import { HtmlValidator } from './validator';
+import { TMP_FOLDER } from '../../../../utils/config.js';
+import { UnauthorizedMember } from '../../../../utils/errors.js';
+import { Repositories } from '../../../../utils/repositories.js';
+import FileService, { FileServiceConfig } from '../../../file/service.js';
+import { Actor, Member } from '../../../member/entities/member.js';
+import { Item } from '../../entities/Item.js';
+import { GraaspHtmlError, HtmlImportError } from './errors.js';
+import { DEFAULT_MIME_TYPE } from './h5p/constants.js';
+import { HtmlValidator } from './validator.js';
 
 /**
  * Implementation for the Html service

@@ -5,12 +5,12 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, MentionStatus } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../test/app';
-import { AppDataSource } from '../../../plugins/datasource';
-import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
-import { saveMember } from '../../member/test/fixtures/members';
-import { ChatMentionNotFound, MemberCannotAccessMention } from '../errors';
-import { ChatMention } from '../plugins/mentions/chatMention';
+import build, { clearDatabase } from '../../../../test/app.js';
+import { AppDataSource } from '../../../plugins/datasource.js';
+import { ITEMS_ROUTE_PREFIX } from '../../../utils/config.js';
+import { saveMember } from '../../member/test/fixtures/members.js';
+import { ChatMentionNotFound, MemberCannotAccessMention } from '../errors.js';
+import { ChatMention } from '../plugins/mentions/chatMention.js';
 import { saveItemWithChatMessages } from './chatMessage.test';
 
 // mock datasource

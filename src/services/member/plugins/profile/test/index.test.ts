@@ -4,16 +4,16 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, MemberFactory } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
-import { MEMBER_PROFILE_ROUTE_PREFIX } from '../../../../../utils/config';
-import { saveMember } from '../../../test/fixtures/members';
+import build, { clearDatabase } from '../../../../../../test/app.js';
+import { MEMBER_PROFILE_ROUTE_PREFIX } from '../../../../../utils/config.js';
+import { saveMember } from '../../../test/fixtures/members.js';
 import {
   ANNA_PROFILE,
   BOB_PROFILE,
   getDummyProfile,
   getMemberProfile,
   saveMemberProfile,
-} from './fixtures/profile';
+} from './fixtures/profile.js';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');

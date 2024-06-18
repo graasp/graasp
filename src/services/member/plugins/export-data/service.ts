@@ -1,9 +1,9 @@
-import { MailerDecoration } from '../../../../plugins/mailer';
-import { UnauthorizedMember } from '../../../../utils/errors';
-import { Repositories } from '../../../../utils/repositories';
-import FileService from '../../../file/service';
-import { Item } from '../../../item/entities/Item';
-import { Actor } from '../../entities/member';
+import { MailerDecoration } from '../../../../plugins/mailer/index.js';
+import { UnauthorizedMember } from '../../../../utils/errors.js';
+import { Repositories } from '../../../../utils/repositories.js';
+import FileService from '../../../file/service.js';
+import { Item } from '../../../item/entities/Item.js';
+import { Actor } from '../../entities/member.js';
 import {
   actionArraySchema,
   appActionArraySchema,
@@ -16,7 +16,7 @@ import {
   itemMembershipArraySchema,
   messageArraySchema,
   messageMentionArraySchema,
-} from './schemas/schemas';
+} from './schemas/schemas.js';
 import {
   anonymizeMentionsMessage,
   anonymizeMessages,

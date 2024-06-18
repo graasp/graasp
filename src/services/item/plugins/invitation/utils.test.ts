@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { parseCSV } from './utils';
+import { parseCSV } from './utils.js';
 
 describe('Test utils', () => {
   describe('parseCSV', () => {

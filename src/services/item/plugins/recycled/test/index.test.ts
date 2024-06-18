@@ -14,13 +14,13 @@ import {
   PermissionLevel,
 } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
-import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants';
-import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { saveMember } from '../../../../member/test/fixtures/members';
-import { ItemTestUtils, expectManyItems } from '../../../test/fixtures/items';
-import { RecycledItemDataRepository } from '../repository';
-import { expectManyPackedRecycledItems, expectManyRecycledItems } from './fixtures';
+import build, { clearDatabase } from '../../../../../../test/app.js';
+import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants.js';
+import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config.js';
+import { saveMember } from '../../../../member/test/fixtures/members.js';
+import { ItemTestUtils, expectManyItems } from '../../../test/fixtures/items.js';
+import { RecycledItemDataRepository } from '../repository.js';
+import { expectManyPackedRecycledItems, expectManyRecycledItems } from './fixtures.js';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');

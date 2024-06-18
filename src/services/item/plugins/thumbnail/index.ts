@@ -5,15 +5,15 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ThumbnailSizeType } from '@graasp/sdk';
 
-import { IdParam } from '../../../../types';
-import { notUndefined } from '../../../../utils/assertions';
-import { THUMBNAILS_ROUTE_PREFIX } from '../../../../utils/config';
-import { buildRepositories } from '../../../../utils/repositories';
-import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
-import { UploadFileUnexpectedError } from '../../../file/utils/errors';
-import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
-import { deleteSchema, download, upload } from './schemas';
-import { UploadFileNotImageError } from './utils/errors';
+import { IdParam } from '../../../../types.js';
+import { notUndefined } from '../../../../utils/assertions.js';
+import { THUMBNAILS_ROUTE_PREFIX } from '../../../../utils/config.js';
+import { buildRepositories } from '../../../../utils/repositories.js';
+import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport/index.js';
+import { UploadFileUnexpectedError } from '../../../file/utils/errors.js';
+import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants.js';
+import { deleteSchema, download, upload } from './schemas.js';
+import { UploadFileNotImageError } from './utils/errors.js';
 
 type GraaspThumbnailsOptions = {
   shouldRedirectOnDownload?: boolean;

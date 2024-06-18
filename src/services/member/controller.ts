@@ -2,11 +2,11 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import { IdParam, IdsParams } from '../../types';
-import { notUndefined } from '../../utils/assertions';
-import { buildRepositories } from '../../utils/repositories';
-import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
-import { Member } from './entities/member';
+import { IdParam, IdsParams } from '../../types.js';
+import { notUndefined } from '../../utils/assertions.js';
+import { buildRepositories } from '../../utils/repositories.js';
+import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport/index.js';
+import { Member } from './entities/member.js';
 import {
   deleteOne,
   getCurrent,
@@ -15,7 +15,7 @@ import {
   getOne,
   getStorage,
   updateOne,
-} from './schemas';
+} from './schemas.js';
 
 const controller: FastifyPluginAsync = async (fastify) => {
   const {

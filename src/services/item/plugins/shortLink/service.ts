@@ -7,13 +7,13 @@ import {
   ShortLinkPostPayload,
 } from '@graasp/sdk';
 
-import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
-import { UnauthorizedMember } from '../../../../utils/errors';
-import { Repositories } from '../../../../utils/repositories';
-import { ItemService } from '../../../item/service';
-import { Member } from '../../../member/entities/member';
-import { ItemPublishedNotFound } from '../published/errors';
-import { ItemPublishedService } from '../published/service';
+import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config.js';
+import { UnauthorizedMember } from '../../../../utils/errors.js';
+import { Repositories } from '../../../../utils/repositories.js';
+import { ItemService } from '../../../item/service.js';
+import { Member } from '../../../member/entities/member.js';
+import { ItemPublishedNotFound } from '../published/errors.js';
+import { ItemPublishedService } from '../published/service.js';
 
 export const SHORT_LINKS_ROUTE_PREFIX = '/short-links';
 export const SHORT_LINKS_LIST_ROUTE = '/list';

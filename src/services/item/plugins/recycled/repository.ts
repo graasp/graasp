@@ -2,11 +2,11 @@ import { In } from 'typeorm';
 
 import { PermissionLevel } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../../plugins/datasource';
-import { Member } from '../../../member/entities/member';
-import { Item } from '../../entities/Item';
-import { RecycledItemData } from './RecycledItemData';
-import { CannotRestoreNonDeletedItem } from './errors';
+import { AppDataSource } from '../../../../plugins/datasource.js';
+import { Member } from '../../../member/entities/member.js';
+import { Item } from '../../entities/Item.js';
+import { RecycledItemData } from './RecycledItemData.js';
+import { CannotRestoreNonDeletedItem } from './errors.js';
 
 export const RecycledItemDataRepository = AppDataSource.getRepository(RecycledItemData).extend({
   async getOwnRecycledItemDatas(member: Member): Promise<RecycledItemData[]> {

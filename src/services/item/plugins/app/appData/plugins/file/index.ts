@@ -3,21 +3,21 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { HttpMethod, UUID } from '@graasp/sdk';
 
-import { IdParam } from '../../../../../../../types';
-import { notUndefined } from '../../../../../../../utils/assertions';
-import { Repositories, buildRepositories } from '../../../../../../../utils/repositories';
-import { guestAuthenticateAppsJWT } from '../../../../../../auth/plugins/passport';
+import { IdParam } from '../../../../../../../types.js';
+import { notUndefined } from '../../../../../../../utils/assertions.js';
+import { Repositories, buildRepositories } from '../../../../../../../utils/repositories.js';
+import { guestAuthenticateAppsJWT } from '../../../../../../auth/plugins/passport/index.js';
 import {
   DownloadFileUnexpectedError,
   UploadEmptyFileError,
   UploadFileUnexpectedError,
-} from '../../../../../../file/utils/errors';
-import { Actor, Member } from '../../../../../../member/entities/member';
-import { AppData } from '../../appData';
-import { PreventUpdateAppDataFile } from '../../errors';
-import type { AppDataService } from '../../service';
-import { download, upload } from './schema';
-import AppDataFileService from './service';
+} from '../../../../../../file/utils/errors.js';
+import { Actor, Member } from '../../../../../../member/entities/member.js';
+import { AppData } from '../../appData.js';
+import { PreventUpdateAppDataFile } from '../../errors.js';
+import type { AppDataService } from '../../service.js';
+import { download, upload } from './schema.js';
+import AppDataFileService from './service.js';
 
 export interface GraaspPluginFileOptions {
   maxFileSize?: number; // max size for an uploaded file in bytes

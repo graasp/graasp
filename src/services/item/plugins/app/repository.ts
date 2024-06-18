@@ -2,9 +2,9 @@ import { ArrayContains } from 'typeorm';
 
 import { AuthTokenSubject } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../../plugins/datasource';
-import { App } from './entities/app';
-import { InvalidApplicationOrigin } from './errors';
+import { AppDataSource } from '../../../../plugins/datasource.js';
+import { App } from './entities/app.js';
+import { InvalidApplicationOrigin } from './errors.js';
 
 export const AppRepository = AppDataSource.getRepository(App).extend({
   async getAll(publisherId?: string) {

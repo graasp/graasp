@@ -1,10 +1,10 @@
 import { MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
-import { UUID_REGEX } from '../../../../schemas/global';
+import { UUID_REGEX } from '../../../../schemas/global.js';
 import {
   GET_MOST_LIKED_ITEMS_MAXIMUM,
   GET_MOST_RECENT_ITEMS_MAXIMUM,
-} from '../../../../utils/config';
+} from '../../../../utils/config.js';
 
 const publishEntry = {
   type: 'object',

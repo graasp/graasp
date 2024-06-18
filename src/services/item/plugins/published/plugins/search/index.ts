@@ -1,14 +1,14 @@
 import { StatusCodes } from 'http-status-codes';
-import { MultiSearchParams } from 'meilisearch';
+import { MultiSearchParams } from 'meilisearch.js';
 
 import { FastifyPluginAsync } from 'fastify';
 
 import { ActionTriggers } from '@graasp/sdk';
 
-import { MEILISEARCH_REBUILD_SECRET } from '../../../../../../utils/config';
-import { buildRepositories } from '../../../../../../utils/repositories';
-import { optionalIsAuthenticated } from '../../../../../auth/plugins/passport';
-import { search } from './schemas';
+import { MEILISEARCH_REBUILD_SECRET } from '../../../../../../utils/config.js';
+import { buildRepositories } from '../../../../../../utils/repositories.js';
+import { optionalIsAuthenticated } from '../../../../../auth/plugins/passport/index.js';
+import { search } from './schemas.js';
 
 export type SearchFields = {
   keywords?: string;

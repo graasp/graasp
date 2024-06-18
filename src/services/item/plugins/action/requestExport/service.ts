@@ -8,24 +8,24 @@ import {
   UUID,
 } from '@graasp/sdk';
 
-import { MailerDecoration } from '../../../../../plugins/mailer';
-import { MAIL } from '../../../../../plugins/mailer/langs/constants';
-import { UnauthorizedMember } from '../../../../../utils/errors';
-import { Repositories } from '../../../../../utils/repositories';
-import { EXPORT_FILE_EXPIRATION, ZIP_MIMETYPE } from '../../../../action/constants/constants';
-import { ActionService } from '../../../../action/services/action';
+import { MailerDecoration } from '../../../../../plugins/mailer/index.js';
+import { MAIL } from '../../../../../plugins/mailer/langs/constants.js';
+import { UnauthorizedMember } from '../../../../../utils/errors.js';
+import { Repositories } from '../../../../../utils/repositories.js';
+import { EXPORT_FILE_EXPIRATION, ZIP_MIMETYPE } from '../../../../action/constants/constants.js';
+import { ActionService } from '../../../../action/services/action.js';
 import {
   buildActionFilePath,
   buildItemTmpFolder,
   exportActionsInArchive,
-} from '../../../../action/utils/export';
-import { validatePermission } from '../../../../authorization';
-import FileService from '../../../../file/service';
-import { Actor, Member } from '../../../../member/entities/member';
-import { Item } from '../../../entities/Item';
-import { ItemService } from '../../../service';
-import { ActionItemService } from '../service';
-import { ActionRequestExport } from './requestExport';
+} from '../../../../action/utils/export.js';
+import { validatePermission } from '../../../../authorization.js';
+import FileService from '../../../../file/service.js';
+import { Actor, Member } from '../../../../member/entities/member.js';
+import { Item } from '../../../entities/Item.js';
+import { ItemService } from '../../../service.js';
+import { ActionItemService } from '../service.js';
+import { ActionRequestExport } from './requestExport.js';
 
 export class ActionRequestExportService {
   fileService: FileService;

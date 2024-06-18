@@ -12,8 +12,8 @@ import { v4 } from 'uuid';
 
 import { MentionStatus } from '@graasp/sdk';
 
-import { Member } from '../../../member/entities/member';
-import { ChatMessage } from '../../chatMessage';
+import { Member } from '../../../member/entities/member.js';
+import { ChatMessage } from '../../chatMessage.js';
 
 @Entity()
 export class ChatMention extends BaseEntity {

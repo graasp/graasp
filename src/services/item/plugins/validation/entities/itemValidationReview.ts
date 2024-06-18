@@ -11,8 +11,8 @@ import {
 
 import { ItemValidationReviewStatus } from '@graasp/sdk';
 
-import { Member } from '../../../../member/entities/member';
-import { ItemValidation } from './ItemValidation';
+import { Member } from '../../../../member/entities/member.js';
+import { ItemValidation } from './ItemValidation.js';
 
 @Entity()
 export class ItemValidationReview extends BaseEntity {

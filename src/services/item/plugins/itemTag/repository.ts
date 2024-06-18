@@ -2,17 +2,17 @@ import { Brackets, EntityManager, Repository } from 'typeorm';
 
 import { ItemTagType, ResultOf, getChildFromPath } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../../plugins/datasource';
-import { Member } from '../../../member/entities/member';
-import { mapById } from '../../../utils';
-import { Item } from '../../entities/Item';
-import { ItemTag } from './ItemTag';
+import { AppDataSource } from '../../../../plugins/datasource.js';
+import { Member } from '../../../member/entities/member.js';
+import { mapById } from '../../../utils.js';
+import { Item } from '../../entities/Item.js';
+import { ItemTag } from './ItemTag.js';
 import {
   CannotModifyParentTag,
   ConflictingTagsInTheHierarchy,
   InvalidUseOfItemTagsRepository,
   ItemTagNotFound,
-} from './errors';
+} from './errors.js';
 
 /**
  * Database's first layer of abstraction for Item Tags and (exceptionally) for Tags (at the bottom)

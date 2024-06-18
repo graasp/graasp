@@ -14,7 +14,7 @@ import {
 
 import { ShortLinkPlatform, UUID } from '@graasp/sdk';
 
-import { Item } from '../../../../item/entities/Item';
+import { Item } from '../../../../item/entities/Item.js';
 
 @Entity()
 @Unique(['item', 'platform']) // add constraint to have only one shortlink per context per item

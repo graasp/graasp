@@ -5,13 +5,13 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../../test/app';
-import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
-import { Member } from '../../../../../member/entities/member';
-import { saveMember } from '../../../../../member/test/fixtures/members';
-import { AppTestUtils } from '../../test/fixtures';
-import { AppActionRepository } from '../repository';
-import { saveAppActions } from './fixtures';
+import build, { clearDatabase } from '../../../../../../../test/app.js';
+import { APP_ITEMS_PREFIX } from '../../../../../../utils/config.js';
+import { Member } from '../../../../../member/entities/member.js';
+import { saveMember } from '../../../../../member/test/fixtures/members.js';
+import { AppTestUtils } from '../../test/fixtures.js';
+import { AppActionRepository } from '../repository.js';
+import { saveAppActions } from './fixtures.js';
 
 // mock datasource
 jest.mock('../../../../../../plugins/datasource');

@@ -6,15 +6,15 @@ import { FastifyPluginAsync, FastifyReply, FastifyRequest, PassportUser } from '
 import { RecaptchaAction } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import { AUTH_CLIENT_HOST } from '../../../../utils/config';
-import { MemberAlreadySignedUp } from '../../../../utils/errors';
-import { buildRepositories } from '../../../../utils/repositories';
-import { getRedirectionUrl } from '../../utils';
-import captchaPreHandler from '../captcha';
-import { SHORT_TOKEN_PARAM } from '../passport';
-import { PassportStrategy } from '../passport/strategies';
-import { auth, login, register } from './schemas';
-import { MagicLinkService } from './service';
+import { AUTH_CLIENT_HOST } from '../../../../utils/config.js';
+import { MemberAlreadySignedUp } from '../../../../utils/errors.js';
+import { buildRepositories } from '../../../../utils/repositories.js';
+import { getRedirectionUrl } from '../../utils.js';
+import captchaPreHandler from '../captcha/index.js';
+import { SHORT_TOKEN_PARAM } from '../passport/index.js';
+import { PassportStrategy } from '../passport/strategies/index.js';
+import { auth, login, register } from './schemas.js';
+import { MagicLinkService } from './service.js';
 
 const ERROR_SEARCH_PARAM = 'error';
 const ERROR_SEARCH_PARAM_HAS_ERROR = 'true';

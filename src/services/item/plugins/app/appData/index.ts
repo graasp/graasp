@@ -1,16 +1,16 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { IdParam } from '../../../../../types';
-import { notUndefined } from '../../../../../utils/assertions';
-import { buildRepositories } from '../../../../../utils/repositories';
-import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
-import { ManyItemsGetFilter } from '../interfaces/request';
-import { appDataWsHooks } from '../ws/hooks';
-import { AppData } from './appData';
-import { InputAppData } from './interfaces/app-data';
-import appDataFilePlugin from './plugins/file';
-import common, { create, deleteOne, getForMany, getForOne, updateOne } from './schemas';
-import { AppDataService } from './service';
+import { IdParam } from '../../../../../types.js';
+import { notUndefined } from '../../../../../utils/assertions.js';
+import { buildRepositories } from '../../../../../utils/repositories.js';
+import { authenticateAppsJWT } from '../../../../auth/plugins/passport/index.js';
+import { ManyItemsGetFilter } from '../interfaces/request.js';
+import { appDataWsHooks } from '../ws/hooks.js';
+import { AppData } from './appData.js';
+import { InputAppData } from './interfaces/app-data.js';
+import appDataFilePlugin from './plugins/file/index.js';
+import common, { create, deleteOne, getForMany, getForOne, updateOne } from './schemas.js';
+import { AppDataService } from './service.js';
 
 const appDataPlugin: FastifyPluginAsync = async (fastify) => {
   const { db } = fastify;

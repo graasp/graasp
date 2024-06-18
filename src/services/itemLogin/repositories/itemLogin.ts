@@ -1,8 +1,8 @@
-import { AppDataSource } from '../../../plugins/datasource';
-import { Item } from '../../item/entities/Item';
-import { ItemLogin } from '../entities/itemLogin';
-import { InvalidCredentials, MissingCredentialsForLoginSchema } from '../errors';
-import { encryptPassword, loginSchemaRequiresPassword, validatePassword } from '../utils';
+import { AppDataSource } from '../../../plugins/datasource.js';
+import { Item } from '../../item/entities/Item.js';
+import { ItemLogin } from '../entities/itemLogin.js';
+import { InvalidCredentials, MissingCredentialsForLoginSchema } from '../errors.js';
+import { encryptPassword, loginSchemaRequiresPassword, validatePassword } from '../utils.js';
 
 export const ItemLoginRepository = AppDataSource.getRepository(ItemLogin).extend({
   async getForItemAndMemberId(item: Item, memberId: string): Promise<ItemLogin | null> {

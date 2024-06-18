@@ -1,4 +1,4 @@
-import { idParam } from '../../../../schemas/fluent-schema';
+import { idParam } from '../../../../schemas/fluent-schema.js';
 
 const geolocation = {
   type: 'object',

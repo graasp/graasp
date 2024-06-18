@@ -8,20 +8,20 @@ import { FastifyInstance, LightMyRequestResponse } from 'fastify';
 
 import { MemberFactory, RecaptchaAction } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../test/app';
-import seed from '../../../../../test/mock';
-import { mockCaptchaValidation } from '../../../../../test/utils';
+import build, { clearDatabase } from '../../../../../test/app.js';
+import seed from '../../../../../test/mock/index.js';
+import { mockCaptchaValidation } from '../../../../../test/utils.js';
 import {
   PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES,
   REDIS_HOST,
   REDIS_PASSWORD,
   REDIS_PORT,
   REDIS_USERNAME,
-} from '../../../../utils/config';
-import { Member } from '../../../member/entities/member';
-import { MOCK_CAPTCHA } from '../captcha/test/utils';
-import { MemberPassword } from './entities/password';
-import { encryptPassword } from './utils';
+} from '../../../../utils/config.js';
+import { Member } from '../../../member/entities/member.js';
+import { MOCK_CAPTCHA } from '../captcha/test/utils.js';
+import { MemberPassword } from './entities/password.js';
+import { encryptPassword } from './utils.js';
 
 jest.mock('node-fetch');
 jest.mock('../../../../plugins/datasource');

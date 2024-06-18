@@ -2,12 +2,12 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import { notUndefined } from '../../../../utils/assertions';
-import { GEOLOCATION_API_KEY } from '../../../../utils/config';
-import { buildRepositories } from '../../../../utils/repositories';
-import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
-import { Item } from '../../entities/Item';
-import { ItemGeolocation } from './ItemGeolocation';
+import { notUndefined } from '../../../../utils/assertions.js';
+import { GEOLOCATION_API_KEY } from '../../../../utils/config.js';
+import { buildRepositories } from '../../../../utils/repositories.js';
+import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport/index.js';
+import { Item } from '../../entities/Item.js';
+import { ItemGeolocation } from './ItemGeolocation.js';
 import {
   deleteGeolocation,
   geolocationReverse,
@@ -15,8 +15,8 @@ import {
   getByItem,
   getItemsInBox,
   putGeolocation,
-} from './schemas';
-import { ItemGeolocationService } from './service';
+} from './schemas.js';
+import { ItemGeolocationService } from './service.js';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const {

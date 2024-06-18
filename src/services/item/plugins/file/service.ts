@@ -13,16 +13,16 @@ import {
   getFileExtension,
 } from '@graasp/sdk';
 
-import { Repositories } from '../../../../utils/repositories';
-import { validatePermission } from '../../../authorization';
-import FileService from '../../../file/service';
-import { UploadEmptyFileError } from '../../../file/utils/errors';
-import { Actor, Member } from '../../../member/entities/member';
-import { StorageService } from '../../../member/plugins/storage/service';
-import { randomHexOf4 } from '../../../utils';
-import { ItemService } from '../../service';
-import { readPdfContent } from '../../utils';
-import { ItemThumbnailService } from '../thumbnail/service';
+import { Repositories } from '../../../../utils/repositories.js';
+import { validatePermission } from '../../../authorization.js';
+import FileService from '../../../file/service.js';
+import { UploadEmptyFileError } from '../../../file/utils/errors.js';
+import { Actor, Member } from '../../../member/entities/member.js';
+import { StorageService } from '../../../member/plugins/storage/service.js';
+import { randomHexOf4 } from '../../../utils.js';
+import { ItemService } from '../../service.js';
+import { readPdfContent } from '../../utils.js';
+import { ItemThumbnailService } from '../thumbnail/service.js';
 
 class FileItemService {
   fileService: FileService;

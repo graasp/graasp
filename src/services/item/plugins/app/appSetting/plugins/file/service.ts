@@ -5,14 +5,14 @@ import { MultipartFile } from '@fastify/multipart';
 
 import { FileItemProperties, MAX_ITEM_NAME_LENGTH, UUID } from '@graasp/sdk';
 
-import { Repositories } from '../../../../../../../utils/repositories';
-import FileService from '../../../../../../file/service';
-import { Member } from '../../../../../../member/entities/member';
-import { Item } from '../../../../../entities/Item';
-import { ItemService } from '../../../../../service';
-import { AppSetting } from '../../appSettings';
-import { NotAppSettingFile } from '../../errors';
-import { AppSettingService } from '../../service';
+import { Repositories } from '../../../../../../../utils/repositories.js';
+import FileService from '../../../../../../file/service.js';
+import { Member } from '../../../../../../member/entities/member.js';
+import { Item } from '../../../../../entities/Item.js';
+import { ItemService } from '../../../../../service.js';
+import { AppSetting } from '../../appSettings.js';
+import { NotAppSettingFile } from '../../errors.js';
+import { AppSettingService } from '../../service.js';
 
 class AppSettingFileService {
   appSettingService: AppSettingService;

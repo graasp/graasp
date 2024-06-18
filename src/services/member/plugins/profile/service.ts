@@ -1,9 +1,9 @@
 import { FastifyBaseLogger } from 'fastify';
 
-import { UnauthorizedMember } from '../../../../utils/errors';
-import { Repositories } from '../../../../utils/repositories';
-import { Actor } from '../../../member/entities/member';
-import { IMemberProfile } from './types';
+import { UnauthorizedMember } from '../../../../utils/errors.js';
+import { Repositories } from '../../../../utils/repositories.js';
+import { Actor } from '../../../member/entities/member.js';
+import { IMemberProfile } from './types.js';
 
 export class MemberProfileService {
   log: FastifyBaseLogger;

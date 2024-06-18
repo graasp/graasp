@@ -11,8 +11,8 @@ import {
 } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { Member } from '../../../../member/entities/member';
-import { Item } from '../../../entities/Item';
+import { Member } from '../../../../member/entities/member.js';
+import { Item } from '../../../entities/Item.js';
 
 @Entity()
 @Index(['item', 'name'])

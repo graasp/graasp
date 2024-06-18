@@ -7,9 +7,9 @@ import {
   OpenAILengthError,
   OpenAIQuotaError,
   OpenAIUnknownStopError,
-} from '../../../../../utils/errors';
-import { FinishReason } from './interfaces/finishReason';
-import { openAICompletion } from './openAICompletion';
+} from '../../../../../utils/errors.js';
+import { FinishReason } from './interfaces/finishReason.js';
+import { openAICompletion } from './openAICompletion.js';
 
 export const fetchOpenAI = async (body: ChatBotMessage[], gptVersion: GPTVersion) => {
   try {

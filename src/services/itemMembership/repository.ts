@@ -8,24 +8,24 @@ import {
   getChildFromPath,
 } from '@graasp/sdk';
 
-import { AppDataSource } from '../../plugins/datasource';
-import { Paginated, PaginationParams } from '../../types';
+import { AppDataSource } from '../../plugins/datasource.js';
+import { Paginated, PaginationParams } from '../../types.js';
 import {
   InvalidMembership,
   InvalidPermissionLevel,
   ItemMembershipNotFound,
   ModifyExisting,
-} from '../../utils/errors';
-import { ITEMS_PAGE_SIZE, ITEMS_PAGE_SIZE_MAX } from '../item/constants';
-import { Item } from '../item/entities/Item';
-import { ItemSearchParams, Ordering, SortBy } from '../item/types';
-import { MemberIdentifierNotFound } from '../itemLogin/errors';
-import { Member } from '../member/entities/member';
-import { itemMembershipSchema } from '../member/plugins/export-data/schemas/schemas';
+} from '../../utils/errors.js';
+import { ITEMS_PAGE_SIZE, ITEMS_PAGE_SIZE_MAX } from '../item/constants.js';
+import { Item } from '../item/entities/Item.js';
+import { ItemSearchParams, Ordering, SortBy } from '../item/types.js';
+import { MemberIdentifierNotFound } from '../itemLogin/errors.js';
+import { Member } from '../member/entities/member.js';
+import { itemMembershipSchema } from '../member/plugins/export-data/schemas/schemas.js';
 import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils';
-import { mapById } from '../utils';
-import { ItemMembership } from './entities/ItemMembership';
-import { getPermissionsAtItemSql } from './utils';
+import { mapById } from '../utils.js';
+import { ItemMembership } from './entities/ItemMembership.js';
+import { getPermissionsAtItemSql } from './utils.js';
 
 export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembership).extend({
   /**

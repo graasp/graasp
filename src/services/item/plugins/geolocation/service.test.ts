@@ -4,19 +4,23 @@ import { FastifyBaseLogger, FastifyInstance } from 'fastify';
 
 import { PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../test/app';
-import { AppDataSource } from '../../../../plugins/datasource';
-import { ItemNotFound, MemberCannotAccess, MemberCannotWriteItem } from '../../../../utils/errors';
-import { buildRepositories } from '../../../../utils/repositories';
-import { Actor } from '../../../member/entities/member';
-import { saveMember } from '../../../member/test/fixtures/members';
-import { ThumbnailService } from '../../../thumbnail/service';
-import { ItemWrapper } from '../../ItemWrapper';
-import { ItemService } from '../../service';
-import { ItemTestUtils } from '../../test/fixtures/items';
-import { ItemGeolocation } from './ItemGeolocation';
+import build, { clearDatabase } from '../../../../../test/app.js';
+import { AppDataSource } from '../../../../plugins/datasource.js';
+import {
+  ItemNotFound,
+  MemberCannotAccess,
+  MemberCannotWriteItem,
+} from '../../../../utils/errors.js';
+import { buildRepositories } from '../../../../utils/repositories.js';
+import { Actor } from '../../../member/entities/member.js';
+import { saveMember } from '../../../member/test/fixtures/members.js';
+import { ThumbnailService } from '../../../thumbnail/service.js';
+import { ItemWrapper } from '../../ItemWrapper.js';
+import { ItemService } from '../../service.js';
+import { ItemTestUtils } from '../../test/fixtures/items.js';
+import { ItemGeolocation } from './ItemGeolocation.js';
 import { expectItemGeolocations, saveGeolocation } from './index.test';
-import { ItemGeolocationService } from './service';
+import { ItemGeolocationService } from './service.js';
 
 // mock datasource
 jest.mock('../../../../plugins/datasource');

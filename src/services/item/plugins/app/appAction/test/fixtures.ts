@@ -1,8 +1,8 @@
 import { v4 } from 'uuid';
 
-import { Member } from '../../../../../member/entities/member';
-import { Item } from '../../../../entities/Item';
-import { AppActionRepository } from '../repository';
+import { Member } from '../../../../../member/entities/member.js';
+import { Item } from '../../../../entities/Item.js';
+import { AppActionRepository } from '../repository.js';
 
 export const MOCK_APP_ORIGIN = 'https://app.localhost:3000';
 

@@ -5,12 +5,12 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, ItemType, LinkItemFactory, PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
-import { ItemMembershipRepository } from '../../../../itemMembership/repository';
-import { Actor } from '../../../../member/entities/member';
-import { saveMember } from '../../../../member/test/fixtures/members';
-import { ItemRepository } from '../../../repository';
-import { ItemTestUtils, expectItem } from '../../../test/fixtures/items';
+import build, { clearDatabase } from '../../../../../../test/app.js';
+import { ItemMembershipRepository } from '../../../../itemMembership/repository.js';
+import { Actor } from '../../../../member/entities/member.js';
+import { saveMember } from '../../../../member/test/fixtures/members.js';
+import { ItemRepository } from '../../../repository.js';
+import { ItemTestUtils, expectItem } from '../../../test/fixtures/items.js';
 
 jest.mock('node-fetch');
 

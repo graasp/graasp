@@ -11,7 +11,7 @@ import {
 } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { Publisher } from './publisher';
+import { Publisher } from './publisher.js';
 
 export type AppExtra = {
   image?: string;

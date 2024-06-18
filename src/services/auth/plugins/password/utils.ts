@@ -1,8 +1,8 @@
 import bcrypt from 'bcrypt';
 
-import { SALT_ROUNDS } from '../../../../utils/config';
-import { MemberPassword } from './entities/password';
-import { PasswordNotDefined } from './errors';
+import { SALT_ROUNDS } from '../../../../utils/config.js';
+import { MemberPassword } from './entities/password.js';
+import { PasswordNotDefined } from './errors.js';
 
 export async function verifyCurrentPassword(
   memberPassword?: MemberPassword | null,

@@ -5,14 +5,14 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
-import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { ItemNotFound, MemberCannotAdminItem } from '../../../../../utils/errors';
-import { saveMember } from '../../../../member/test/fixtures/members';
-import { ItemTestUtils } from '../../../test/fixtures/items';
-import { ItemValidationGroupNotFound } from '../errors';
-import { ItemValidationGroupRepository } from '../repositories/ItemValidationGroup';
-import { saveItemValidation } from './utils';
+import build, { clearDatabase } from '../../../../../../test/app.js';
+import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config.js';
+import { ItemNotFound, MemberCannotAdminItem } from '../../../../../utils/errors.js';
+import { saveMember } from '../../../../member/test/fixtures/members.js';
+import { ItemTestUtils } from '../../../test/fixtures/items.js';
+import { ItemValidationGroupNotFound } from '../errors.js';
+import { ItemValidationGroupRepository } from '../repositories/ItemValidationGroup.js';
+import { saveItemValidation } from './utils.js';
 
 const VALIDATION_LOADING_TIME = 2000;
 

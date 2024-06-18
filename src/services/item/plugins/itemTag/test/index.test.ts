@@ -6,14 +6,18 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, ItemTagType } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { ItemNotFound, MemberCannotAccess } from '../../../../../utils/errors';
-import { saveMember } from '../../../../member/test/fixtures/members';
-import { ItemTestUtils } from '../../../test/fixtures/items';
-import { ItemTag } from '../ItemTag';
-import { CannotModifyParentTag, ConflictingTagsInTheHierarchy, ItemTagNotFound } from '../errors';
+import build, { clearDatabase } from '../../../../../../test/app.js';
+import { AppDataSource } from '../../../../../plugins/datasource.js';
+import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config.js';
+import { ItemNotFound, MemberCannotAccess } from '../../../../../utils/errors.js';
+import { saveMember } from '../../../../member/test/fixtures/members.js';
+import { ItemTestUtils } from '../../../test/fixtures/items.js';
+import { ItemTag } from '../ItemTag.js';
+import {
+  CannotModifyParentTag,
+  ConflictingTagsInTheHierarchy,
+  ItemTagNotFound,
+} from '../errors.js';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');

@@ -3,21 +3,21 @@ import { MeiliSearch } from 'meilisearch';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import { JobService } from '../jobs';
-import { ActionService } from '../services/action/services/action';
-import { MobileService } from '../services/auth/plugins/mobile/service';
-import { MemberPasswordService } from '../services/auth/plugins/password/service';
-import { AuthService } from '../services/auth/service';
-import { H5PService } from '../services/item/plugins/html/h5p/service';
-import { ItemCategoryService } from '../services/item/plugins/itemCategory/services/itemCategory';
-import { SearchService } from '../services/item/plugins/published/plugins/search/service';
-import { ItemPublishedService } from '../services/item/plugins/published/service';
-import { ItemThumbnailService } from '../services/item/plugins/thumbnail/service';
-import { ItemService } from '../services/item/service';
-import { ItemMembershipService } from '../services/itemMembership/service';
-import { StorageService } from '../services/member/plugins/storage/service';
-import { MemberService } from '../services/member/service';
-import { ThumbnailService } from '../services/thumbnail/service';
+import { JobService } from '../jobs.js';
+import { ActionService } from '../services/action/services/action.js';
+import { MobileService } from '../services/auth/plugins/mobile/service.js';
+import { MemberPasswordService } from '../services/auth/plugins/password/service.js';
+import { AuthService } from '../services/auth/service.js';
+import { H5PService } from '../services/item/plugins/html/h5p/service.js';
+import { ItemCategoryService } from '../services/item/plugins/itemCategory/services/itemCategory.js';
+import { SearchService } from '../services/item/plugins/published/plugins/search/service.js';
+import { ItemPublishedService } from '../services/item/plugins/published/service.js';
+import { ItemThumbnailService } from '../services/item/plugins/thumbnail/service.js';
+import { ItemService } from '../services/item/service.js';
+import { ItemMembershipService } from '../services/itemMembership/service.js';
+import { StorageService } from '../services/member/plugins/storage/service.js';
+import { MemberService } from '../services/member/service.js';
+import { ThumbnailService } from '../services/thumbnail/service.js';
 import {
   FILE_ITEM_TYPE,
   MEILISEARCH_MASTER_KEY,
@@ -26,7 +26,7 @@ import {
   REDIS_PASSWORD,
   REDIS_PORT,
   REDIS_USERNAME,
-} from '../utils/config';
+} from '../utils/config.js';
 
 const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
   fastify.decorate(

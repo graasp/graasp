@@ -1,11 +1,11 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { notUndefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
-import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
-import { ItemFlag } from './itemFlag';
-import common, { create, getFlags } from './schemas';
-import { ItemFlagService } from './service';
+import { notUndefined } from '../../../../utils/assertions.js';
+import { buildRepositories } from '../../../../utils/repositories.js';
+import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport/index.js';
+import { ItemFlag } from './itemFlag.js';
+import common, { create, getFlags } from './schemas.js';
+import { ItemFlagService } from './service.js';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, items } = fastify;

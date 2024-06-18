@@ -1,20 +1,20 @@
 import { PermissionLevel, UUID } from '@graasp/sdk';
 
-import { MailerDecoration } from '../../plugins/mailer';
-import { MAIL } from '../../plugins/mailer/langs/constants';
-import { PLAYER_HOST } from '../../utils/config';
+import { MailerDecoration } from '../../plugins/mailer/index.js';
+import { MAIL } from '../../plugins/mailer/langs/constants.js';
+import { PLAYER_HOST } from '../../utils/config.js';
 import {
   CannotDeleteOnlyAdmin,
   ItemMembershipNotFound,
   UnauthorizedMember,
-} from '../../utils/errors';
-import HookManager from '../../utils/hook';
-import { Repositories } from '../../utils/repositories';
-import { validatePermission } from '../authorization';
-import { Item } from '../item/entities/Item';
-import { ItemService } from '../item/service';
-import { Actor, Member } from '../member/entities/member';
-import { ItemMembership } from './entities/ItemMembership';
+} from '../../utils/errors.js';
+import HookManager from '../../utils/hook.js';
+import { Repositories } from '../../utils/repositories.js';
+import { validatePermission } from '../authorization.js';
+import { Item } from '../item/entities/Item.js';
+import { ItemService } from '../item/service.js';
+import { Actor, Member } from '../member/entities/member.js';
+import { ItemMembership } from './entities/ItemMembership.js';
 
 export class ItemMembershipService {
   itemService: ItemService;

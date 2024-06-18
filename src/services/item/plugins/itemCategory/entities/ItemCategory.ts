@@ -9,9 +9,9 @@ import {
 } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { Member } from '../../../../member/entities/member';
-import { Item } from '../../../entities/Item';
-import { Category } from './Category';
+import { Member } from '../../../../member/entities/member.js';
+import { Item } from '../../../entities/Item.js';
+import { Category } from './Category.js';
 
 @Entity()
 @Unique('category-item', ['category', 'item'])

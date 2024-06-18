@@ -1,13 +1,13 @@
 import { PermissionLevel } from '@graasp/sdk';
 
-import HookManager from '../../../../../utils/hook';
-import { Repositories } from '../../../../../utils/repositories';
-import { validatePermission } from '../../../../authorization';
-import { Member } from '../../../../member/entities/member';
-import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request';
-import { AppAction } from './appAction';
-import { AppActionNotAccessible } from './errors';
-import { InputAppAction } from './interfaces/app-action';
+import HookManager from '../../../../../utils/hook.js';
+import { Repositories } from '../../../../../utils/repositories.js';
+import { validatePermission } from '../../../../authorization.js';
+import { Member } from '../../../../member/entities/member.js';
+import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request.js';
+import { AppAction } from './appAction.js';
+import { AppActionNotAccessible } from './errors.js';
+import { InputAppAction } from './interfaces/app-action.js';
 
 export class AppActionService {
   hooks = new HookManager<{

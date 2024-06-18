@@ -1,8 +1,8 @@
 import { ExportActionsFormatting, UUID } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { DEFAULT_REQUEST_EXPORT_INTERVAL } from '../../../../action/constants/constants';
-import { ActionRequestExport } from './requestExport';
+import { AppDataSource } from '../../../../../plugins/datasource.js';
+import { DEFAULT_REQUEST_EXPORT_INTERVAL } from '../../../../action/constants/constants.js';
+import { ActionRequestExport } from './requestExport.js';
 
 export const ActionRequestExportRepository = AppDataSource.getRepository(
   ActionRequestExport,

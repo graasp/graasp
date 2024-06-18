@@ -5,7 +5,7 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../test/app';
+import build, { clearDatabase } from '../../../../test/app.js';
 import {
   CannotDeleteOnlyAdmin,
   InvalidMembership,
@@ -15,12 +15,12 @@ import {
   MemberCannotAccess,
   MemberCannotAdminItem,
   ModifyExisting,
-} from '../../../utils/errors';
-import { setItemPublic } from '../../item/plugins/itemTag/test/fixtures';
-import { ItemTestUtils } from '../../item/test/fixtures/items';
-import { saveMember } from '../../member/test/fixtures/members';
-import { ItemMembershipRepository } from '../repository';
-import { expectMembership } from './fixtures/memberships';
+} from '../../../utils/errors.js';
+import { setItemPublic } from '../../item/plugins/itemTag/test/fixtures.js';
+import { ItemTestUtils } from '../../item/test/fixtures/items.js';
+import { saveMember } from '../../member/test/fixtures/members.js';
+import { ItemMembershipRepository } from '../repository.js';
+import { expectMembership } from './fixtures/memberships.js';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');

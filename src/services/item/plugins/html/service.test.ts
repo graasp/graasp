@@ -2,10 +2,10 @@ import { FastifyBaseLogger } from 'fastify';
 
 import { ItemType } from '@graasp/sdk';
 
-import { S3FileConfiguration } from '../../../file/interfaces/configuration';
-import FileService from '../../../file/service';
-import { HtmlService } from './service';
-import { HtmlValidator } from './validator';
+import { S3FileConfiguration } from '../../../file/interfaces/configuration.js';
+import FileService from '../../../file/service.js';
+import { HtmlService } from './service.js';
+import { HtmlValidator } from './validator.js';
 
 class MockValidator implements HtmlValidator {
   isExtensionAllowed() {

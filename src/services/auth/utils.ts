@@ -9,7 +9,7 @@ import {
   CLIENT_HOSTS,
   REFRESH_TOKEN_EXPIRATION_IN_MINUTES,
   REFRESH_TOKEN_JWT_SECRET,
-} from '../../utils/config';
+} from '../../utils/config.js';
 
 const defaultClientHost = BUILDER_HOST;
 

@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 
-import { comparePasswords, encryptPassword } from './utils';
+import { comparePasswords, encryptPassword } from './utils.js';
 
 describe('Utils', () => {
   describe('comparePasswords', () => {

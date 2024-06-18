@@ -2,12 +2,12 @@ import partition from 'lodash.partition';
 
 import { ActionTriggers, PermissionLevel } from '@graasp/sdk';
 
-import { CannotModifyOtherMembers, UnauthorizedMember } from '../../../../utils/errors';
-import { Repositories } from '../../../../utils/repositories';
-import { ActionService } from '../../../action/services/action';
-import { validatePermissionMany } from '../../../authorization';
-import { Item, ItemExtraMap } from '../../../item/entities/Item';
-import { Actor } from '../../entities/member';
+import { CannotModifyOtherMembers, UnauthorizedMember } from '../../../../utils/errors.js';
+import { Repositories } from '../../../../utils/repositories.js';
+import { ActionService } from '../../../action/services/action.js';
+import { validatePermissionMany } from '../../../authorization.js';
+import { Item, ItemExtraMap } from '../../../item/entities/Item.js';
+import { Actor } from '../../entities/member.js';
 
 export const getPreviousMonthFromNow = () => {
   const date = new Date(); // Today's date

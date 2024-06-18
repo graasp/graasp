@@ -1,6 +1,6 @@
 import { PermissionLevel } from '@graasp/sdk';
 
-import { UUID_REGEX } from '../../schemas/global';
+import { UUID_REGEX } from '../../schemas/global.js';
 
 export default {
   $id: 'https://graasp.org/item-memberships/',

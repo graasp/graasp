@@ -6,19 +6,19 @@ import { FastifyInstance } from 'fastify';
 
 import { Context, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { BUILDER_HOST, ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { Action } from '../../../../action/entities/action';
-import { saveMember, saveMembers } from '../../../../member/test/fixtures/members';
-import { ItemTestUtils } from '../../../test/fixtures/items';
-import { saveAppActions } from '../../app/appAction/test/fixtures';
-import { saveAppData } from '../../app/appData/test/fixtures';
-import { saveAppSettings } from '../../app/appSetting/test/fixtures';
-import { CannotPostAction } from '../errors';
-import { ActionRequestExportRepository } from '../requestExport/repository';
-import { ItemActionType } from '../utils';
-import { saveActions } from './fixtures/actions';
+import build, { clearDatabase } from '../../../../../../test/app.js';
+import { AppDataSource } from '../../../../../plugins/datasource.js';
+import { BUILDER_HOST, ITEMS_ROUTE_PREFIX } from '../../../../../utils/config.js';
+import { Action } from '../../../../action/entities/action.js';
+import { saveMember, saveMembers } from '../../../../member/test/fixtures/members.js';
+import { ItemTestUtils } from '../../../test/fixtures/items.js';
+import { saveAppActions } from '../../app/appAction/test/fixtures.js';
+import { saveAppData } from '../../app/appData/test/fixtures.js';
+import { saveAppSettings } from '../../app/appSetting/test/fixtures.js';
+import { CannotPostAction } from '../errors.js';
+import { ActionRequestExportRepository } from '../requestExport/repository.js';
+import { ItemActionType } from '../utils.js';
+import { saveActions } from './fixtures/actions.js';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');

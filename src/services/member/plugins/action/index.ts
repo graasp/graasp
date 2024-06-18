@@ -2,15 +2,15 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { FileItemType } from '@graasp/sdk';
 
-import { IdParam } from '../../../../types';
-import { buildRepositories } from '../../../../utils/repositories';
-import { isAuthenticated } from '../../../auth/plugins/passport';
+import { IdParam } from '../../../../types.js';
+import { buildRepositories } from '../../../../utils/repositories.js';
+import { isAuthenticated } from '../../../auth/plugins/passport/index.js';
 import {
   LocalFileConfiguration,
   S3FileConfiguration,
-} from '../../../file/interfaces/configuration';
-import { deleteAllById, getMemberFilteredActions } from './schemas';
-import { ActionMemberService } from './service';
+} from '../../../file/interfaces/configuration.js';
+import { deleteAllById, getMemberFilteredActions } from './schemas.js';
+import { ActionMemberService } from './service.js';
 
 export interface GraaspActionsOptions {
   shouldSave?: boolean;

@@ -4,13 +4,13 @@ import { FastifyInstance, FastifyReply } from 'fastify';
 
 import { ItemTagType } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../test/app';
-import { buildRepositories } from '../../../../utils/repositories';
-import { ItemTestUtils } from '../../test/fixtures/items';
-import FileItemService from '../file/service';
-import type { H5PService } from '../html/h5p/service';
-import { ItemTagRepository } from '../itemTag/repository';
-import { ImportExportService } from './service';
+import build, { clearDatabase } from '../../../../../test/app.js';
+import { buildRepositories } from '../../../../utils/repositories.js';
+import { ItemTestUtils } from '../../test/fixtures/items.js';
+import FileItemService from '../file/service.js';
+import type { H5PService } from '../html/h5p/service.js';
+import { ItemTagRepository } from '../itemTag/repository.js';
+import { ImportExportService } from './service.js';
 
 // mock datasource
 jest.mock('../../../../plugins/datasource');

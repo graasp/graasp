@@ -1,4 +1,4 @@
-import { UnexpectedError } from './errors';
+import { UnexpectedError } from './errors.js';
 
 /**
  * Throw an error if the object is undefined. Otherwise, return the object in a not-undefined type.

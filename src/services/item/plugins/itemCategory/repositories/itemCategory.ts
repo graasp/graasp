@@ -1,13 +1,13 @@
 import { QueryFailedError } from 'typeorm';
 
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { MemberNotFound } from '../../../../../utils/errors';
-import { DUPLICATE_ENTRY_ERROR_CODE } from '../../../../../utils/typeormError';
-import { itemCategorySchema } from '../../../../member/plugins/export-data/schemas/schemas';
+import { AppDataSource } from '../../../../../plugins/datasource.js';
+import { MemberNotFound } from '../../../../../utils/errors.js';
+import { DUPLICATE_ENTRY_ERROR_CODE } from '../../../../../utils/typeormError.js';
+import { itemCategorySchema } from '../../../../member/plugins/export-data/schemas/schemas.js';
 import { schemaToSelectMapper } from '../../../../member/plugins/export-data/utils/selection.utils';
-import { Item } from '../../../entities/Item';
-import { ItemCategory } from '../entities/ItemCategory';
-import { DuplicateItemCategoryError } from '../errors';
+import { Item } from '../../../entities/Item.js';
+import { ItemCategory } from '../entities/ItemCategory.js';
+import { DuplicateItemCategoryError } from '../errors.js';
 
 /**
  * Database's first layer of abstraction for Categorys

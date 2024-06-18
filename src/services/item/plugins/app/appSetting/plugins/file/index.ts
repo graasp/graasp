@@ -3,24 +3,24 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { HttpMethod, UUID } from '@graasp/sdk';
 
-import { notUndefined } from '../../../../../../../utils/assertions';
-import { Repositories, buildRepositories } from '../../../../../../../utils/repositories';
+import { notUndefined } from '../../../../../../../utils/assertions.js';
+import { Repositories, buildRepositories } from '../../../../../../../utils/repositories.js';
 import {
   authenticateAppsJWT,
   guestAuthenticateAppsJWT,
-} from '../../../../../../auth/plugins/passport';
+} from '../../../../../../auth/plugins/passport/index.js';
 import {
   DownloadFileUnexpectedError,
   UploadEmptyFileError,
   UploadFileUnexpectedError,
-} from '../../../../../../file/utils/errors';
-import { Actor, Member } from '../../../../../../member/entities/member';
-import { DEFAULT_MAX_FILE_SIZE } from '../../../../file/utils/constants';
-import { AppSetting } from '../../appSettings';
-import { PreventUpdateAppSettingFile } from '../../errors';
-import type { AppSettingService } from '../../service';
-import { download, upload } from './schema';
-import AppSettingFileService from './service';
+} from '../../../../../../file/utils/errors.js';
+import { Actor, Member } from '../../../../../../member/entities/member.js';
+import { DEFAULT_MAX_FILE_SIZE } from '../../../../file/utils/constants.js';
+import { AppSetting } from '../../appSettings.js';
+import { PreventUpdateAppSettingFile } from '../../errors.js';
+import type { AppSettingService } from '../../service.js';
+import { download, upload } from './schema.js';
+import AppSettingFileService from './service.js';
 
 export interface GraaspPluginFileOptions {
   maxFileSize?: number; // max size for an uploaded file in bytes

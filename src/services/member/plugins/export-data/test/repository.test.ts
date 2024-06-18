@@ -2,36 +2,36 @@ import { FastifyInstance } from 'fastify';
 
 import { PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { Action } from '../../../../action/entities/action';
-import { ActionRepository } from '../../../../action/repositories/action';
-import { saveActions } from '../../../../action/test/fixtures/actions';
-import { ChatMessage } from '../../../../chat/chatMessage';
-import { ChatMention } from '../../../../chat/plugins/mentions/chatMention';
-import { ChatMentionRepository } from '../../../../chat/plugins/mentions/repository';
-import { ChatMessageRepository } from '../../../../chat/repository';
-import { saveChatMessages } from '../../../../chat/test/fixtures';
-import { AppActionRepository } from '../../../../item/plugins/app/appAction/repository';
-import { saveAppActions } from '../../../../item/plugins/app/appAction/test/fixtures';
-import { AppDataRepository } from '../../../../item/plugins/app/appData/repository';
-import { saveAppData } from '../../../../item/plugins/app/appData/test/fixtures';
-import { AppSettingRepository } from '../../../../item/plugins/app/appSetting/repository';
-import { saveAppSettings } from '../../../../item/plugins/app/appSetting/test/fixtures';
-import { ItemCategoryRepository } from '../../../../item/plugins/itemCategory/repositories/itemCategory';
+import build, { clearDatabase } from '../../../../../../test/app.js';
+import { AppDataSource } from '../../../../../plugins/datasource.js';
+import { Action } from '../../../../action/entities/action.js';
+import { ActionRepository } from '../../../../action/repositories/action.js';
+import { saveActions } from '../../../../action/test/fixtures/actions.js';
+import { ChatMessage } from '../../../../chat/chatMessage.js';
+import { ChatMention } from '../../../../chat/plugins/mentions/chatMention.js';
+import { ChatMentionRepository } from '../../../../chat/plugins/mentions/repository.js';
+import { ChatMessageRepository } from '../../../../chat/repository.js';
+import { saveChatMessages } from '../../../../chat/test/fixtures.js';
+import { AppActionRepository } from '../../../../item/plugins/app/appAction/repository.js';
+import { saveAppActions } from '../../../../item/plugins/app/appAction/test/fixtures.js';
+import { AppDataRepository } from '../../../../item/plugins/app/appData/repository.js';
+import { saveAppData } from '../../../../item/plugins/app/appData/test/fixtures.js';
+import { AppSettingRepository } from '../../../../item/plugins/app/appSetting/repository.js';
+import { saveAppSettings } from '../../../../item/plugins/app/appSetting/test/fixtures.js';
+import { ItemCategoryRepository } from '../../../../item/plugins/itemCategory/repositories/itemCategory.js';
 import {
   saveCategories,
   saveItemCategories,
-} from '../../../../item/plugins/itemCategory/test/fixtures';
-import { FavoriteRepository } from '../../../../item/plugins/itemFavorite/repositories/favorite';
-import { saveItemFavorites } from '../../../../item/plugins/itemFavorite/test/fixtures';
-import { ItemLikeRepository } from '../../../../item/plugins/itemLike/repository';
-import { saveItemLikes } from '../../../../item/plugins/itemLike/test/utils';
-import { ItemRepository } from '../../../../item/repository';
-import { ItemTestUtils } from '../../../../item/test/fixtures/items';
-import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
-import { ItemMembershipRepository } from '../../../../itemMembership/repository';
-import { saveMember } from '../../../test/fixtures/members';
+} from '../../../../item/plugins/itemCategory/test/fixtures.js';
+import { FavoriteRepository } from '../../../../item/plugins/itemFavorite/repositories/favorite.js';
+import { saveItemFavorites } from '../../../../item/plugins/itemFavorite/test/fixtures.js';
+import { ItemLikeRepository } from '../../../../item/plugins/itemLike/repository.js';
+import { saveItemLikes } from '../../../../item/plugins/itemLike/test/utils.js';
+import { ItemRepository } from '../../../../item/repository.js';
+import { ItemTestUtils } from '../../../../item/test/fixtures/items.js';
+import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership.js';
+import { ItemMembershipRepository } from '../../../../itemMembership/repository.js';
+import { saveMember } from '../../../test/fixtures/members.js';
 import {
   actionSchema,
   appActionSchema,
@@ -44,8 +44,8 @@ import {
   itemSchema,
   messageMentionSchema,
   messageSchema,
-} from '../schemas/schemas';
-import { expectNoLeaksAndEquality } from './fixtures';
+} from '../schemas/schemas.js';
+import { expectNoLeaksAndEquality } from './fixtures.js';
 
 /**
  * The repository tests ensure that no unwanted columns are leaked during the export.

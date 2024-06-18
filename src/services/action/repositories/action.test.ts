@@ -11,15 +11,15 @@ import {
   DiscriminatedItem,
 } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../test/app';
-import { AppDataSource } from '../../../plugins/datasource';
-import { ItemTestUtils } from '../../item/test/fixtures/items';
-import { getPreviousMonthFromNow } from '../../member/plugins/action/service';
-import { saveMember } from '../../member/test/fixtures/members';
-import { DEFAULT_ACTIONS_SAMPLE_SIZE } from '../constants/constants';
-import { Action } from '../entities/action';
-import { expectActions, saveActions } from '../test/fixtures/actions';
-import { ActionRepository } from './action';
+import build, { clearDatabase } from '../../../../test/app.js';
+import { AppDataSource } from '../../../plugins/datasource.js';
+import { ItemTestUtils } from '../../item/test/fixtures/items.js';
+import { getPreviousMonthFromNow } from '../../member/plugins/action/service.js';
+import { saveMember } from '../../member/test/fixtures/members.js';
+import { DEFAULT_ACTIONS_SAMPLE_SIZE } from '../constants/constants.js';
+import { Action } from '../entities/action.js';
+import { expectActions, saveActions } from '../test/fixtures/actions.js';
+import { ActionRepository } from './action.js';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');

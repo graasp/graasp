@@ -4,12 +4,12 @@ import { EntityManager, Repository } from 'typeorm';
 
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import { AppDataSource } from '../../../../plugins/datasource';
-import { ALLOWED_SEARCH_LANGS, GEOLOCATION_API_HOST } from '../../../../utils/config';
-import { Actor } from '../../../member/entities/member';
-import { Item } from '../../entities/Item';
-import { ItemGeolocation } from './ItemGeolocation';
-import { MissingGeolocationSearchParams } from './errors';
+import { AppDataSource } from '../../../../plugins/datasource.js';
+import { ALLOWED_SEARCH_LANGS, GEOLOCATION_API_HOST } from '../../../../utils/config.js';
+import { Actor } from '../../../member/entities/member.js';
+import { Item } from '../../entities/Item.js';
+import { ItemGeolocation } from './ItemGeolocation.js';
+import { MissingGeolocationSearchParams } from './errors.js';
 
 export class ItemGeolocationRepository {
   private repository: Repository<ItemGeolocation>;

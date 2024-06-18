@@ -3,17 +3,17 @@ import waitForExpect from 'wait-for-expect';
 
 import { HttpMethod } from '@graasp/sdk';
 
-import { clearDatabase } from '../../../../../../test/app';
-import { TestWsClient } from '../../../../websockets/test/test-websocket-client';
-import { setupWsApp } from '../../../../websockets/test/ws-app';
-import { ItemTestUtils } from '../../../test/fixtures/items';
+import { clearDatabase } from '../../../../../../test/app.js';
+import { TestWsClient } from '../../../../websockets/test/test-websocket-client.js';
+import { setupWsApp } from '../../../../websockets/test/ws-app.js';
+import { ItemTestUtils } from '../../../test/fixtures/items.js';
 import {
   ItemEvent,
   ItemOpFeedbackErrorEvent,
   ItemOpFeedbackEvent,
   memberItemsTopic,
-} from '../../../ws/events';
-import { RecycledItemDataRepository } from '../repository';
+} from '../../../ws/events.js';
+import { RecycledItemDataRepository } from '../repository.js';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');

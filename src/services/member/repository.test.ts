@@ -4,10 +4,10 @@ import { FastifyInstance } from 'fastify';
 
 import { EmailFrequency, MemberFactory } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../test/app';
-import { MemberNotFound } from '../../utils/errors';
-import { MemberRepository } from './repository';
-import { expectMember, saveMember, saveMembers } from './test/fixtures/members';
+import build, { clearDatabase } from '../../../test/app.js';
+import { MemberNotFound } from '../../utils/errors.js';
+import { MemberRepository } from './repository.js';
+import { expectMember, saveMember, saveMembers } from './test/fixtures/members.js';
 
 // mock datasource
 jest.mock('../../plugins/datasource');

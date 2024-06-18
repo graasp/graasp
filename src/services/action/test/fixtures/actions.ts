@@ -1,6 +1,6 @@
 import { ActionFactory, Action as GraaspAction } from '@graasp/sdk';
 
-import { Action } from '../../entities/action';
+import { Action } from '../../entities/action.js';
 
 export const saveActions = async (
   rawRepository,

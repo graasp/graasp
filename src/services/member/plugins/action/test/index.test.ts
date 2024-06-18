@@ -2,8 +2,8 @@ import { StatusCodes } from 'http-status-codes';
 
 import { HttpMethod } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
-import { getDateBeforeOrAfterNow, saveActionsWithItems } from './utils';
+import build, { clearDatabase } from '../../../../../../test/app.js';
+import { getDateBeforeOrAfterNow, saveActionsWithItems } from './utils.js';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');

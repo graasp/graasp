@@ -1,12 +1,12 @@
 import forwarded from '@fastify/forwarded';
 import { FastifyRequest } from 'fastify';
 
-import { Repositories } from '../../../utils/repositories';
-import { ItemService } from '../../item/service';
-import { Actor } from '../../member/entities/member';
-import { MemberService } from '../../member/service';
-import { Action } from '../entities/action';
-import { getGeolocationIp, getView } from '../utils/actions';
+import { Repositories } from '../../../utils/repositories.js';
+import { ItemService } from '../../item/service.js';
+import { Actor } from '../../member/entities/member.js';
+import { MemberService } from '../../member/service.js';
+import { Action } from '../entities/action.js';
+import { getGeolocationIp, getView } from '../utils/actions.js';
 
 export class ActionService {
   itemService: ItemService;

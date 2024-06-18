@@ -2,9 +2,9 @@ import { FastifyBaseLogger, FastifyInstance } from 'fastify';
 
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import { MemberAlreadySignedUp, MemberNotSignedUp } from '../../../../utils/errors';
-import { Repositories } from '../../../../utils/repositories';
-import { Actor } from '../../../member/entities/member';
+import { MemberAlreadySignedUp, MemberNotSignedUp } from '../../../../utils/errors.js';
+import { Repositories } from '../../../../utils/repositories.js';
+import { Actor } from '../../../member/entities/member.js';
 
 export class MobileService {
   log: FastifyBaseLogger;

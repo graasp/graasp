@@ -3,19 +3,19 @@ import waitForExpect from 'wait-for-expect';
 
 import { HttpMethod } from '@graasp/sdk';
 
-import { clearDatabase } from '../../../../../../test/app';
-import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { TestWsClient } from '../../../../websockets/test/test-websocket-client';
-import { setupWsApp } from '../../../../websockets/test/ws-app';
-import { ItemTestUtils } from '../../../test/fixtures/items';
+import { clearDatabase } from '../../../../../../test/app.js';
+import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config.js';
+import { TestWsClient } from '../../../../websockets/test/test-websocket-client.js';
+import { setupWsApp } from '../../../../websockets/test/ws-app.js';
+import { ItemTestUtils } from '../../../test/fixtures/items.js';
 import {
   ItemEvent,
   ItemOpFeedbackErrorEvent,
   ItemOpFeedbackEvent,
   memberItemsTopic,
-} from '../../../ws/events';
-import { ItemValidationGroupRepository } from '../repositories/ItemValidationGroup';
-import { saveItemValidation } from './utils';
+} from '../../../ws/events.js';
+import { ItemValidationGroupRepository } from '../repositories/ItemValidationGroup.js';
+import { saveItemValidation } from './utils.js';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');

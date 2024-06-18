@@ -2,13 +2,13 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 
 import { Authenticator } from '@fastify/passport';
 
-import { APPS_JWT_SECRET } from '../../../../../utils/config';
-import { UnauthorizedMember } from '../../../../../utils/errors';
-import { ItemRepository } from '../../../../item/repository';
-import { Member } from '../../../../member/entities/member';
-import { MemberRepository } from '../../../../member/repository';
-import { PassportStrategy } from '../strategies';
-import { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
+import { APPS_JWT_SECRET } from '../../../../../utils/config.js';
+import { UnauthorizedMember } from '../../../../../utils/errors.js';
+import { ItemRepository } from '../../../../item/repository.js';
+import { Member } from '../../../../member/entities/member.js';
+import { MemberRepository } from '../../../../member/repository.js';
+import { PassportStrategy } from '../strategies/index.js';
+import { CustomStrategyOptions, StrictVerifiedCallback } from '../types.js';
 
 export default (
   passport: Authenticator,

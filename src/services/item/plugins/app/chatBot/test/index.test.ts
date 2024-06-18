@@ -4,17 +4,17 @@ import { FastifyInstance } from 'fastify';
 
 import { GPTVersion, HttpMethod } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../../test/app';
-import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
+import build, { clearDatabase } from '../../../../../../../test/app.js';
+import { APP_ITEMS_PREFIX } from '../../../../../../utils/config.js';
 import {
   OpenAILengthError,
   OpenAITimeOutError,
   OpenAIUnknownStopError,
-} from '../../../../../../utils/errors';
-import { saveMember } from '../../../../../member/test/fixtures/members';
-import { AppTestUtils } from '../../test/fixtures';
-import { FinishReason } from '../interfaces/finishReason';
-import { DOCKER_MOCKED_BODY, DOCKER_MOCKED_RESPONSE, copyArray, mockResponse } from './fixtures';
+} from '../../../../../../utils/errors.js';
+import { saveMember } from '../../../../../member/test/fixtures/members.js';
+import { AppTestUtils } from '../../test/fixtures.js';
+import { FinishReason } from '../interfaces/finishReason.js';
+import { DOCKER_MOCKED_BODY, DOCKER_MOCKED_RESPONSE, copyArray, mockResponse } from './fixtures.js';
 
 // mock datasource
 jest.mock('../../../../../../plugins/datasource');

@@ -7,10 +7,10 @@ import { FastifyInstance } from 'fastify';
 import { HttpMethod, MemberFactory, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
 import { FAILURE_MESSAGES } from '@graasp/translations';
 
-import build, { clearDatabase } from '../../../../../../test/app';
-import { saveMember } from '../../../../member/test/fixtures/members';
-import { MOCK_CAPTCHA } from '../../captcha/test/utils';
-import { MOCK_PASSWORD, saveMemberAndPassword } from './fixtures/password';
+import build, { clearDatabase } from '../../../../../../test/app.js';
+import { saveMember } from '../../../../member/test/fixtures/members.js';
+import { MOCK_CAPTCHA } from '../../captcha/test/utils.js';
+import { MOCK_PASSWORD, saveMemberAndPassword } from './fixtures/password.js';
 
 jest.mock('node-fetch');
 

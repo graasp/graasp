@@ -2,12 +2,12 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ItemTagType } from '@graasp/sdk';
 
-import { IdParam, IdsParams } from '../../../../types';
-import { buildRepositories } from '../../../../utils/repositories';
-import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
-import { Item } from '../../entities/Item';
-import common, { create, deleteOne, getItemTags, getMany } from './schemas';
-import { ItemTagService } from './service';
+import { IdParam, IdsParams } from '../../../../types.js';
+import { buildRepositories } from '../../../../utils/repositories.js';
+import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport/index.js';
+import { Item } from '../../entities/Item.js';
+import common, { create, deleteOne, getItemTags, getMany } from './schemas.js';
+import { ItemTagService } from './service.js';
 
 /**
  * Item tag plugin

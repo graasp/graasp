@@ -1,11 +1,11 @@
-import { AppDataSource } from '../../../../plugins/datasource';
-import { Item } from '../../../item/entities/Item';
-import { MemberIdentifierNotFound } from '../../../itemLogin/errors';
-import { Member } from '../../../member/entities/member';
-import { itemLikeSchema } from '../../../member/plugins/export-data/schemas/schemas';
+import { AppDataSource } from '../../../../plugins/datasource.js';
+import { Item } from '../../../item/entities/Item.js';
+import { MemberIdentifierNotFound } from '../../../itemLogin/errors.js';
+import { Member } from '../../../member/entities/member.js';
+import { itemLikeSchema } from '../../../member/plugins/export-data/schemas/schemas.js';
 import { schemaToSelectMapper } from '../../../member/plugins/export-data/utils/selection.utils';
-import { ItemLikeNotFound } from './errors';
-import { ItemLike } from './itemLike';
+import { ItemLikeNotFound } from './errors.js';
+import { ItemLike } from './itemLike.js';
 
 export const ItemLikeRepository = AppDataSource.getRepository(ItemLike).extend({
   get(entryId: string) {

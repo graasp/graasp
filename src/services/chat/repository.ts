@@ -2,14 +2,14 @@ import { In } from 'typeorm';
 
 import { ResultOf } from '@graasp/sdk';
 
-import { AppDataSource } from '../../plugins/datasource';
-import { MemberIdentifierNotFound } from '../itemLogin/errors';
-import { Member } from '../member/entities/member';
-import { messageSchema } from '../member/plugins/export-data/schemas/schemas';
+import { AppDataSource } from '../../plugins/datasource.js';
+import { MemberIdentifierNotFound } from '../itemLogin/errors.js';
+import { Member } from '../member/entities/member.js';
+import { messageSchema } from '../member/plugins/export-data/schemas/schemas.js';
 import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils';
-import { mapById } from '../utils';
-import { ChatMessage } from './chatMessage';
-import { ChatMessageNotFound } from './errors';
+import { mapById } from '../utils.js';
+import { ChatMessage } from './chatMessage.js';
+import { ChatMessageNotFound } from './errors.js';
 
 export const ChatMessageRepository = AppDataSource.getRepository(ChatMessage).extend({
   /**

@@ -1,7 +1,7 @@
 import { Context } from '@graasp/sdk';
 
-import { BUILDER_HOST } from '../../../utils/config';
-import { getGeolocationIp, getView } from './actions';
+import { BUILDER_HOST } from '../../../utils/config.js';
+import { getGeolocationIp, getView } from './actions.js';
 
 describe('Action Utils', () => {
   it('check geolocation and view properties', async () => {

@@ -2,11 +2,11 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { Context } from '@graasp/sdk';
 
-import { Action } from '../../../../../action/entities/action';
-import { ActionRepository } from '../../../../../action/repositories/action';
-import { Member } from '../../../../../member/entities/member';
-import { Item } from '../../../../entities/Item';
-import { ItemActionType } from '../../utils';
+import { Action } from '../../../../../action/entities/action.js';
+import { ActionRepository } from '../../../../../action/repositories/action.js';
+import { Member } from '../../../../../member/entities/member.js';
+import { Item } from '../../../../entities/Item.js';
+import { ItemActionType } from '../../utils.js';
 
 const getDummyAction = (
   view: Context,

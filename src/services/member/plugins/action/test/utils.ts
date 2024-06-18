@@ -1,10 +1,10 @@
 import { ActionFactory, ActionTriggers, DiscriminatedItem } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { Action } from '../../../../action/entities/action';
-import { saveActions } from '../../../../action/test/fixtures/actions';
-import { ItemTestUtils } from '../../../../item/test/fixtures/items';
-import { saveMember } from '../../../test/fixtures/members';
+import { AppDataSource } from '../../../../../plugins/datasource.js';
+import { Action } from '../../../../action/entities/action.js';
+import { saveActions } from '../../../../action/test/fixtures/actions.js';
+import { ItemTestUtils } from '../../../../item/test/fixtures/items.js';
+import { saveMember } from '../../../test/fixtures/members.js';
 
 const testUtils = new ItemTestUtils();
 const rawRepository = AppDataSource.getRepository(Action);

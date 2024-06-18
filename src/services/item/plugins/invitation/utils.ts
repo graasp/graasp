@@ -5,7 +5,7 @@ import { MultipartFile } from '@fastify/multipart';
 
 import { PermissionLevel } from '@graasp/sdk';
 
-import { CSV_MIMETYPE, EMAIL_COLUMN_NAME } from './constants';
+import { CSV_MIMETYPE, EMAIL_COLUMN_NAME } from './constants.js';
 
 export type CSVInvite = {
   email: string;

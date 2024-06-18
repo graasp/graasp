@@ -1,7 +1,7 @@
 /**
  * Membership websocket events are registered under these topics
  */
-import { ItemMembership } from '../entities/ItemMembership';
+import { ItemMembership } from '../entities/ItemMembership.js';
 
 // memberships of a given item
 export const itemMembershipsTopic = 'memberships/item';

@@ -9,12 +9,12 @@ import {
   ExportActionsFormatting,
 } from '@graasp/sdk';
 
-import { idParam } from '../../../../schemas/fluent-schema';
+import { idParam } from '../../../../schemas/fluent-schema.js';
 import {
   MAX_ACTIONS_SAMPLE_SIZE,
   MIN_ACTIONS_SAMPLE_SIZE,
-} from '../../../action/constants/constants';
-import { item } from '../../fluent-schema';
+} from '../../../action/constants/constants.js';
+import { item } from '../../fluent-schema.js';
 
 // todo: complete schema
 export const baseAnalytics = S.object()

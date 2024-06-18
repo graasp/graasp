@@ -10,8 +10,8 @@ import {
 } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { PackedItem } from '../../ItemWrapper';
-import { Item } from '../../entities/Item';
+import { PackedItem } from '../../ItemWrapper.js';
+import { Item } from '../../entities/Item.js';
 
 @Entity({ name: 'item_geolocation' })
 @Unique('item_geolocation_unique_item', ['item'])

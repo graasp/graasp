@@ -9,20 +9,20 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, MemberFactory, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../test/app';
-import { AppDataSource } from '../../../../plugins/datasource';
+import build, { clearDatabase } from '../../../../../test/app.js';
+import { AppDataSource } from '../../../../plugins/datasource.js';
 import {
   AUTH_TOKEN_JWT_SECRET,
   JWT_SECRET,
   MOBILE_DEEP_LINK_PROTOCOL,
   REFRESH_TOKEN_JWT_SECRET,
-} from '../../../../utils/config';
-import { MemberNotFound } from '../../../../utils/errors';
-import { Member } from '../../../member/entities/member';
-import { expectMember, saveMember } from '../../../member/test/fixtures/members';
-import { MOCK_CAPTCHA } from '../captcha/test/utils';
-import { SHORT_TOKEN_PARAM } from '../passport';
-import { MOCK_PASSWORD, saveMemberAndPassword } from '../password/test/fixtures/password';
+} from '../../../../utils/config.js';
+import { MemberNotFound } from '../../../../utils/errors.js';
+import { Member } from '../../../member/entities/member.js';
+import { expectMember, saveMember } from '../../../member/test/fixtures/members.js';
+import { MOCK_CAPTCHA } from '../captcha/test/utils.js';
+import { SHORT_TOKEN_PARAM } from '../passport/index.js';
+import { MOCK_PASSWORD, saveMemberAndPassword } from '../password/test/fixtures/password.js';
 
 // mock database and decorator plugins
 jest.mock('../../../../plugins/datasource');

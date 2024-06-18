@@ -5,14 +5,14 @@ import fp from 'fastify-plugin';
 
 import Etherpad from '@graasp/etherpad-api';
 
-import { notUndefined } from '../../../../utils/assertions';
-import { isAuthenticated } from '../../../auth/plugins/passport';
-import { ETHERPAD_API_VERSION } from './constants';
-import { wrapErrors } from './etherpad';
-import { createEtherpad, getEtherpadFromItem } from './schemas';
-import { EtherpadItemService } from './service';
-import { EtherpadPluginOptions } from './types';
-import { validatePluginOptions } from './utils';
+import { notUndefined } from '../../../../utils/assertions.js';
+import { isAuthenticated } from '../../../auth/plugins/passport/index.js';
+import { ETHERPAD_API_VERSION } from './constants.js';
+import { wrapErrors } from './etherpad.js';
+import { createEtherpad, getEtherpadFromItem } from './schemas.js';
+import { EtherpadItemService } from './service.js';
+import { EtherpadPluginOptions } from './types.js';
+import { validatePluginOptions } from './utils.js';
 
 const plugin: FastifyPluginAsync<EtherpadPluginOptions> = async (fastify, options) => {
   // get services from server instance

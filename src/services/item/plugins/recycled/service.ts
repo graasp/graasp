@@ -1,12 +1,12 @@
 import { PermissionLevel } from '@graasp/sdk';
 
-import { UnauthorizedMember } from '../../../../utils/errors';
-import HookManager from '../../../../utils/hook';
-import { Repositories } from '../../../../utils/repositories';
-import { validatePermission } from '../../../authorization';
-import { Actor } from '../../../member/entities/member';
-import { ItemWrapper } from '../../ItemWrapper';
-import { Item } from '../../entities/Item';
+import { UnauthorizedMember } from '../../../../utils/errors.js';
+import HookManager from '../../../../utils/hook.js';
+import { Repositories } from '../../../../utils/repositories.js';
+import { validatePermission } from '../../../authorization.js';
+import { Actor } from '../../../member/entities/member.js';
+import { ItemWrapper } from '../../ItemWrapper.js';
+import { Item } from '../../entities/Item.js';
 
 export class RecycledBinService {
   readonly hooks = new HookManager<{

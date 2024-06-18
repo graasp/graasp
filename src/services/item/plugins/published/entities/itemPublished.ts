@@ -11,9 +11,9 @@ import {
 } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { Member } from '../../../../member/entities/member';
-import { PackedItem } from '../../../ItemWrapper';
-import { Item } from '../../../entities/Item';
+import { Member } from '../../../../member/entities/member.js';
+import { PackedItem } from '../../../ItemWrapper.js';
+import { Item } from '../../../entities/Item.js';
 
 @Entity()
 @Index('IDX_gist_item_published_path', { synchronize: false })

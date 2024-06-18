@@ -5,15 +5,15 @@ import { MultipartFile } from '@fastify/multipart';
 
 import { AppDataVisibility, FileItemProperties, UUID } from '@graasp/sdk';
 
-import { Repositories } from '../../../../../../../utils/repositories';
-import FileService from '../../../../../../file/service';
-import { Member } from '../../../../../../member/entities/member';
-import { Item } from '../../../../../entities/Item';
-import { ItemService } from '../../../../../service';
-import { APP_DATA_TYPE_FILE } from '../../../constants';
-import { AppData } from '../../appData';
-import { NotAppDataFile } from '../../errors';
-import { AppDataService } from '../../service';
+import { Repositories } from '../../../../../../../utils/repositories.js';
+import FileService from '../../../../../../file/service.js';
+import { Member } from '../../../../../../member/entities/member.js';
+import { Item } from '../../../../../entities/Item.js';
+import { ItemService } from '../../../../../service.js';
+import { APP_DATA_TYPE_FILE } from '../../../constants.js';
+import { AppData } from '../../appData.js';
+import { NotAppDataFile } from '../../errors.js';
+import { AppDataService } from '../../service.js';
 
 class AppDataFileService {
   appDataService: AppDataService;

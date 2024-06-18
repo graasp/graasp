@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { ErrorFactory } from '@graasp/sdk';
 
-import { EMAIL_COLUMN_NAME, GROUP_COL_NAME, PLUGIN_NAME } from './constants';
+import { EMAIL_COLUMN_NAME, GROUP_COL_NAME, PLUGIN_NAME } from './constants.js';
 
 export const GraaspInvitationsError = ErrorFactory(PLUGIN_NAME);
 

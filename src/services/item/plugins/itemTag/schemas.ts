@@ -1,7 +1,7 @@
 import { MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
-import { UUID_REGEX } from '../../../../schemas/global';
-import { itemTag, itemTagType } from '../../fluent-schema';
+import { UUID_REGEX } from '../../../../schemas/global.js';
+import { itemTag, itemTagType } from '../../fluent-schema.js';
 
 export default {
   $id: 'https://graasp.org/item-tags/',

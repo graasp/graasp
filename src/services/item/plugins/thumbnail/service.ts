@@ -2,11 +2,11 @@ import { Readable } from 'stream';
 
 import { PermissionLevel, ThumbnailSize } from '@graasp/sdk';
 
-import { Repositories } from '../../../../utils/repositories';
-import { validatePermission } from '../../../authorization';
-import { Actor, Member } from '../../../member/entities/member';
-import { ThumbnailService } from '../../../thumbnail/service';
-import { ItemService } from '../../service';
+import { Repositories } from '../../../../utils/repositories.js';
+import { validatePermission } from '../../../authorization.js';
+import { Actor, Member } from '../../../member/entities/member.js';
+import { ThumbnailService } from '../../../thumbnail/service.js';
+import { ItemService } from '../../service.js';
 
 export class ItemThumbnailService {
   thumbnailService: ThumbnailService;

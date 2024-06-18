@@ -3,9 +3,9 @@ import { FastifyBaseLogger, FastifyInstance } from 'fastify';
 import { ActionTriggers, Context } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import { MemberNotSignedUp } from '../../../../utils/errors';
-import { Repositories } from '../../../../utils/repositories';
-import { Actor, Member } from '../../../member/entities/member';
+import { MemberNotSignedUp } from '../../../../utils/errors.js';
+import { Repositories } from '../../../../utils/repositories.js';
+import { Actor, Member } from '../../../member/entities/member.js';
 
 export class MagicLinkService {
   log: FastifyBaseLogger;

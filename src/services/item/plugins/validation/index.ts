@@ -2,12 +2,16 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import { notUndefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
-import { isAuthenticated } from '../../../auth/plugins/passport';
-import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
-import { itemValidation, itemValidationGroup } from './schemas';
-import { ItemValidationService } from './service';
+import { notUndefined } from '../../../../utils/assertions.js';
+import { buildRepositories } from '../../../../utils/repositories.js';
+import { isAuthenticated } from '../../../auth/plugins/passport/index.js';
+import {
+  ItemOpFeedbackErrorEvent,
+  ItemOpFeedbackEvent,
+  memberItemsTopic,
+} from '../../ws/events.js';
+import { itemValidation, itemValidationGroup } from './schemas.js';
+import { ItemValidationService } from './service.js';
 
 type GraaspPluginValidationOptions = {
   imageClassifierApi?: string;

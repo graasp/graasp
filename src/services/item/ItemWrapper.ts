@@ -1,10 +1,10 @@
 import { ItemTagType, ResultOf } from '@graasp/sdk';
 
-import { Repositories } from '../../utils/repositories';
-import { ItemMembership } from '../itemMembership/entities/ItemMembership';
-import { Actor } from '../member/entities/member';
-import { Item } from './entities/Item';
-import { ItemTag } from './plugins/itemTag/ItemTag';
+import { Repositories } from '../../utils/repositories.js';
+import { ItemMembership } from '../itemMembership/entities/ItemMembership.js';
+import { Actor } from '../member/entities/member.js';
+import { Item } from './entities/Item.js';
+import { ItemTag } from './plugins/itemTag/ItemTag.js';
 
 type GraaspItem = Pick<
   Item,

@@ -18,15 +18,15 @@ import { FastifyBaseLogger } from 'fastify';
 
 import { UUID } from '@graasp/sdk';
 
-import { S3_FILE_ITEM_HOST, TMP_FOLDER } from '../../../utils/config';
-import { S3FileConfiguration } from '../interfaces/configuration';
-import { FileRepository } from '../interfaces/fileRepository';
-import { S3_PRESIGNED_EXPIRATION } from '../utils/constants';
+import { S3_FILE_ITEM_HOST, TMP_FOLDER } from '../../../utils/config.js';
+import { S3FileConfiguration } from '../interfaces/configuration.js';
+import { FileRepository } from '../interfaces/fileRepository.js';
+import { S3_PRESIGNED_EXPIRATION } from '../utils/constants.js';
 import {
   DownloadFileUnexpectedError,
   S3FileNotFound,
   UploadFileUnexpectedError,
-} from '../utils/errors';
+} from '../utils/errors.js';
 
 export class S3FileRepository implements FileRepository {
   private readonly options: S3FileConfiguration;

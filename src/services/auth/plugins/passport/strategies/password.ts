@@ -2,11 +2,11 @@ import { Strategy } from 'passport-local';
 
 import { Authenticator } from '@fastify/passport';
 
-import { UnauthorizedMember } from '../../../../../utils/errors';
-import { Repositories } from '../../../../../utils/repositories';
-import { MemberPasswordService } from '../../password/service';
-import { PassportStrategy } from '../strategies';
-import { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
+import { UnauthorizedMember } from '../../../../../utils/errors.js';
+import { Repositories } from '../../../../../utils/repositories.js';
+import { MemberPasswordService } from '../../password/service.js';
+import { PassportStrategy } from '../strategies/index.js';
+import { CustomStrategyOptions, StrictVerifiedCallback } from '../types.js';
 
 export default (
   passport: Authenticator,

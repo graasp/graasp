@@ -1,6 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { createSchema, updateSchema } from './schemas';
+import { createSchema, updateSchema } from './schemas.js';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const {

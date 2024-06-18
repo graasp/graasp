@@ -1,6 +1,6 @@
 import { ItemType, PermissionLevel, UnionOfConst } from '@graasp/sdk';
 
-import { Member } from '../member/entities/member';
+import { Member } from '../member/entities/member.js';
 
 export enum SortBy {
   ItemType = 'item.type',

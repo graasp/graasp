@@ -1,8 +1,8 @@
 import { ItemValidationStatus } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { ItemValidationGroup } from '../entities/ItemValidationGroup';
-import { ItemValidationGroupNotFound } from '../errors';
+import { AppDataSource } from '../../../../../plugins/datasource.js';
+import { ItemValidationGroup } from '../entities/ItemValidationGroup.js';
+import { ItemValidationGroupNotFound } from '../errors.js';
 
 export const ItemValidationGroupRepository = AppDataSource.getRepository(
   ItemValidationGroup,

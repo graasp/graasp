@@ -4,20 +4,20 @@ import { v4 as uuid } from 'uuid';
 
 import { FastifyBaseLogger } from 'fastify';
 
-import { MailerDecoration } from '../../../../plugins/mailer';
-import { MAIL } from '../../../../plugins/mailer/langs/constants';
+import { MailerDecoration } from '../../../../plugins/mailer/index.js';
+import { MAIL } from '../../../../plugins/mailer/langs/constants.js';
 import {
   AUTH_CLIENT_HOST,
   JWT_SECRET,
   PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES,
   PASSWORD_RESET_JWT_SECRET,
-} from '../../../../utils/config';
-import { MemberNotSignedUp, MemberWithoutPassword } from '../../../../utils/errors';
-import { Repositories } from '../../../../utils/repositories';
-import { Member } from '../../../member/entities/member';
-import { SHORT_TOKEN_PARAM } from '../passport';
-import { MemberPasswordRepository } from './repository';
-import { comparePasswords } from './utils';
+} from '../../../../utils/config.js';
+import { MemberNotSignedUp, MemberWithoutPassword } from '../../../../utils/errors.js';
+import { Repositories } from '../../../../utils/repositories.js';
+import { Member } from '../../../member/entities/member.js';
+import { SHORT_TOKEN_PARAM } from '../passport/index.js';
+import { MemberPasswordRepository } from './repository.js';
+import { comparePasswords } from './utils.js';
 
 const REDIS_PREFIX = 'reset-password:';
 

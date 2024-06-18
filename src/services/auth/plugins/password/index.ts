@@ -4,23 +4,23 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ActionTriggers, Context, RecaptchaAction } from '@graasp/sdk';
 
-import { notUndefined } from '../../../../utils/assertions';
-import { LOGIN_TOKEN_EXPIRATION_IN_MINUTES, PUBLIC_URL } from '../../../../utils/config';
-import { buildRepositories } from '../../../../utils/repositories';
-import { getRedirectionUrl } from '../../utils';
-import captchaPreHandler from '../captcha';
+import { notUndefined } from '../../../../utils/assertions.js';
+import { LOGIN_TOKEN_EXPIRATION_IN_MINUTES, PUBLIC_URL } from '../../../../utils/config.js';
+import { buildRepositories } from '../../../../utils/repositories.js';
+import { getRedirectionUrl } from '../../utils.js';
+import captchaPreHandler from '../captcha/index.js';
 import {
   SHORT_TOKEN_PARAM,
   authenticatePassword,
   authenticatePasswordReset,
   isAuthenticated,
-} from '../passport';
+} from '../passport/index.js';
 import {
   passwordLogin,
   patchResetPasswordRequest,
   postResetPasswordRequest,
   updatePassword,
-} from './schemas';
+} from './schemas.js';
 
 const REDIRECTION_URL_PARAM = 'url';
 const AUTHENTICATION_FALLBACK_ROUTE = '/auth';

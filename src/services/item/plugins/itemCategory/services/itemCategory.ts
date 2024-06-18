@@ -1,10 +1,10 @@
 import { PermissionLevel } from '@graasp/sdk';
 
-import HookManager from '../../../../../utils/hook';
-import { Repositories } from '../../../../../utils/repositories';
-import { Actor } from '../../../../member/entities/member';
-import { ItemService } from '../../../service';
-import { ItemCategory } from '../entities/ItemCategory';
+import HookManager from '../../../../../utils/hook.js';
+import { Repositories } from '../../../../../utils/repositories.js';
+import { Actor } from '../../../../member/entities/member.js';
+import { ItemService } from '../../../service.js';
+import { ItemCategory } from '../entities/ItemCategory.js';
 
 export class ItemCategoryService {
   private itemService: ItemService;

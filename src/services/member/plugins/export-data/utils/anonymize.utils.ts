@@ -1,7 +1,7 @@
 import fastJson from 'fast-json-stringify';
 
-import { ChatMessage } from '../../../../chat/chatMessage';
-import { ChatMention } from '../../../../chat/plugins/mentions/chatMention';
+import { ChatMessage } from '../../../../chat/chatMessage.js';
+import { ChatMention } from '../../../../chat/plugins/mentions/chatMention.js';
 
 const ANONYMIZED_ID = 'anonymous-id';
 const CURRENT_ACTOR_ID = 'you';

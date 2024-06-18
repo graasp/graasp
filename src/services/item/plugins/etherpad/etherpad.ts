@@ -1,6 +1,6 @@
 import { default as EtherpadApi } from '@graasp/etherpad-api';
 
-import { EtherpadServerError } from './errors';
+import { EtherpadServerError } from './errors.js';
 
 /**
  * A wrapper for Etherpad which converts errors into graasp error

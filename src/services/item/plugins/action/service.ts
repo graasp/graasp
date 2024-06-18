@@ -11,24 +11,24 @@ import {
   UUID,
 } from '@graasp/sdk';
 
-import { UnauthorizedMember } from '../../../../utils/errors';
-import { Repositories } from '../../../../utils/repositories';
+import { UnauthorizedMember } from '../../../../utils/errors.js';
+import { Repositories } from '../../../../utils/repositories.js';
 import {
   DEFAULT_ACTIONS_SAMPLE_SIZE,
   MAX_ACTIONS_SAMPLE_SIZE,
   MIN_ACTIONS_SAMPLE_SIZE,
-} from '../../../action/constants/constants';
-import { Action } from '../../../action/entities/action';
-import { ActionService } from '../../../action/services/action';
-import { Actor } from '../../../member/entities/member';
-import { MemberService } from '../../../member/service';
-import { Item } from '../../entities/Item';
-import { ItemService } from '../../service';
-import { AppAction } from '../app/appAction/appAction';
-import { AppData } from '../app/appData/appData';
-import { AppSetting } from '../app/appSetting/appSettings';
-import { BaseAnalytics } from './base-analytics';
-import { ItemActionType } from './utils';
+} from '../../../action/constants/constants.js';
+import { Action } from '../../../action/entities/action.js';
+import { ActionService } from '../../../action/services/action.js';
+import { Actor } from '../../../member/entities/member.js';
+import { MemberService } from '../../../member/service.js';
+import { Item } from '../../entities/Item.js';
+import { ItemService } from '../../service.js';
+import { AppAction } from '../app/appAction/appAction.js';
+import { AppData } from '../app/appData/appData.js';
+import { AppSetting } from '../app/appSetting/appSettings.js';
+import { BaseAnalytics } from './base-analytics.js';
+import { ItemActionType } from './utils.js';
 
 export class ActionItemService {
   itemService: ItemService;

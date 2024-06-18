@@ -5,15 +5,15 @@ import {
   MemberCannotAdminItem,
   MemberCannotReadItem,
   MemberCannotWriteItem,
-} from '../utils/errors';
-import { Repositories } from '../utils/repositories';
-import { ItemWrapper, PackedItem } from './item/ItemWrapper';
-import { Item } from './item/entities/Item';
-import { ItemTag } from './item/plugins/itemTag/ItemTag';
-import { ItemTagRepository } from './item/plugins/itemTag/repository';
-import { ItemMembership } from './itemMembership/entities/ItemMembership';
-import { ItemMembershipRepository } from './itemMembership/repository';
-import { Actor } from './member/entities/member';
+} from '../utils/errors.js';
+import { Repositories } from '../utils/repositories.js';
+import { ItemWrapper, PackedItem } from './item/ItemWrapper.js';
+import { Item } from './item/entities/Item.js';
+import { ItemTag } from './item/plugins/itemTag/ItemTag.js';
+import { ItemTagRepository } from './item/plugins/itemTag/repository.js';
+import { ItemMembership } from './itemMembership/entities/ItemMembership.js';
+import { ItemMembershipRepository } from './itemMembership/repository.js';
+import { Actor } from './member/entities/member.js';
 
 const permissionMapping = {
   [PermissionLevel.Read]: [PermissionLevel.Read],

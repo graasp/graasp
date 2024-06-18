@@ -1,10 +1,10 @@
 import { ResultOf } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../../plugins/datasource';
-import { Member } from '../../../member/entities/member';
-import { mapById } from '../../../utils';
-import { Invitation } from './entity';
-import { InvitationNotFound } from './errors';
+import { AppDataSource } from '../../../../plugins/datasource.js';
+import { Member } from '../../../member/entities/member.js';
+import { mapById } from '../../../utils.js';
+import { Invitation } from './entity.js';
+import { InvitationNotFound } from './errors.js';
 
 /**
  * Database's first layer of abstraction for Invitations

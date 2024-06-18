@@ -2,8 +2,8 @@ import { v4 } from 'uuid';
 
 import { FolderItemFactory } from '@graasp/sdk';
 
-import { FolderItem } from './entities/Item';
-import { sortChildrenForTreeWith } from './utils';
+import { FolderItem } from './entities/Item.js';
+import { sortChildrenForTreeWith } from './utils.js';
 
 const buildFolderItem = (
   args: {

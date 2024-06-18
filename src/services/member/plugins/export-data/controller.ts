@@ -2,10 +2,10 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import { buildRepositories } from '../../../../utils/repositories';
-import { isAuthenticated } from '../../../auth/plugins/passport';
-import { exportMemberData } from './schemas/schemas';
-import { ExportMemberDataService } from './service';
+import { buildRepositories } from '../../../../utils/repositories.js';
+import { isAuthenticated } from '../../../auth/plugins/passport/index.js';
+import { exportMemberData } from './schemas/schemas.js';
+import { ExportMemberDataService } from './service.js';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const {

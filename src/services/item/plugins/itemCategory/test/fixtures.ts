@@ -1,11 +1,11 @@
 import { CategoryType } from '@graasp/sdk';
 
-import { Member } from '../../../../member/entities/member';
-import { Item } from '../../../entities/Item';
-import { Category } from '../entities/Category';
-import { ItemCategory } from '../entities/ItemCategory';
-import { CategoryRepository } from '../repositories/category';
-import { ItemCategoryRepository } from '../repositories/itemCategory';
+import { Member } from '../../../../member/entities/member.js';
+import { Item } from '../../../entities/Item.js';
+import { Category } from '../entities/Category.js';
+import { ItemCategory } from '../entities/ItemCategory.js';
+import { CategoryRepository } from '../repositories/category.js';
+import { ItemCategoryRepository } from '../repositories/itemCategory.js';
 
 export const saveCategories = async () => {
   const categories: Category[] = [];

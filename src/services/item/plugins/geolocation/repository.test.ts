@@ -2,13 +2,13 @@ import { FastifyInstance } from 'fastify';
 
 import { ItemType } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../test/app';
-import { AppDataSource } from '../../../../plugins/datasource';
-import { ItemTestUtils } from '../../test/fixtures/items';
-import { RecycledItemDataRepository } from '../recycled/repository';
-import { ItemGeolocation } from './ItemGeolocation';
-import { MissingGeolocationSearchParams } from './errors';
-import { ItemGeolocationRepository } from './repository';
+import build, { clearDatabase } from '../../../../../test/app.js';
+import { AppDataSource } from '../../../../plugins/datasource.js';
+import { ItemTestUtils } from '../../test/fixtures/items.js';
+import { RecycledItemDataRepository } from '../recycled/repository.js';
+import { ItemGeolocation } from './ItemGeolocation.js';
+import { MissingGeolocationSearchParams } from './errors.js';
+import { ItemGeolocationRepository } from './repository.js';
 
 // mock datasource
 jest.mock('../../../../plugins/datasource');

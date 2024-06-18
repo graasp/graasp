@@ -1,6 +1,6 @@
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { Category } from '../entities/Category';
-import { CategoryNotFound } from '../errors';
+import { AppDataSource } from '../../../../../plugins/datasource.js';
+import { Category } from '../entities/Category.js';
+import { CategoryNotFound } from '../errors.js';
 
 export const CategoryRepository = AppDataSource.getRepository(Category).extend({
   async getAll(): Promise<Category[]> {

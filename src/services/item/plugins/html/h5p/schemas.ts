@@ -1,6 +1,6 @@
 import { JSONSchemaType } from 'ajv';
 
-import { H5P } from './validation/h5p';
+import { H5P } from './validation/h5p.js';
 
 export const h5pImport = {
   querystring: {

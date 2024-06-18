@@ -2,14 +2,14 @@ import { In } from 'typeorm';
 
 import { ResultOf } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { MemberIdentifierNotFound } from '../../../../itemLogin/errors';
-import { appActionSchema } from '../../../../member/plugins/export-data/schemas/schemas';
+import { AppDataSource } from '../../../../../plugins/datasource.js';
+import { MemberIdentifierNotFound } from '../../../../itemLogin/errors.js';
+import { appActionSchema } from '../../../../member/plugins/export-data/schemas/schemas.js';
 import { schemaToSelectMapper } from '../../../../member/plugins/export-data/utils/selection.utils';
-import { mapById } from '../../../../utils';
-import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request';
-import { AppAction } from './appAction';
-import { InputAppAction } from './interfaces/app-action';
+import { mapById } from '../../../../utils.js';
+import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request.js';
+import { AppAction } from './appAction.js';
+import { InputAppAction } from './interfaces/app-action.js';
 
 export const AppActionRepository = AppDataSource.getRepository(AppAction).extend({
   async post(itemId: string, memberId: string, body: Partial<InputAppAction>): Promise<AppAction> {

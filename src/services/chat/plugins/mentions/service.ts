@@ -1,15 +1,15 @@
 import { PermissionLevel, buildItemLinkForBuilder } from '@graasp/sdk';
 
-import type { MailerDecoration } from '../../../../plugins/mailer';
-import { MAIL } from '../../../../plugins/mailer/langs/constants';
-import { BUILDER_HOST } from '../../../../utils/config';
-import HookManager from '../../../../utils/hook';
-import { Repositories } from '../../../../utils/repositories';
-import { validatePermission } from '../../../authorization';
-import { Item } from '../../../item/entities/Item';
-import { Member } from '../../../member/entities/member';
-import { ChatMessage } from '../../chatMessage';
-import { MemberCannotAccessMention } from '../../errors';
+import type { MailerDecoration } from '../../../../plugins/mailer/index.js';
+import { MAIL } from '../../../../plugins/mailer/langs/constants.js';
+import { BUILDER_HOST } from '../../../../utils/config.js';
+import HookManager from '../../../../utils/hook.js';
+import { Repositories } from '../../../../utils/repositories.js';
+import { validatePermission } from '../../../authorization.js';
+import { Item } from '../../../item/entities/Item.js';
+import { Member } from '../../../member/entities/member.js';
+import { ChatMessage } from '../../chatMessage.js';
+import { MemberCannotAccessMention } from '../../errors.js';
 
 export class MentionService {
   hooks = new HookManager();

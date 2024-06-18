@@ -15,7 +15,7 @@ import {
 import {
   LocalFileConfiguration,
   S3FileConfiguration,
-} from '../services/file/interfaces/configuration';
+} from '../services/file/interfaces/configuration.js';
 
 enum Environment {
   production = 'production',

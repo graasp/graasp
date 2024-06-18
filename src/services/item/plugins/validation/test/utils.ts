@@ -1,7 +1,7 @@
 import { ItemValidationProcess, ItemValidationStatus } from '@graasp/sdk';
 
-import { ItemValidationGroupRepository } from '../repositories/ItemValidationGroup';
-import { ItemValidationRepository } from '../repositories/itemValidation';
+import { ItemValidationGroupRepository } from '../repositories/ItemValidationGroup.js';
+import { ItemValidationRepository } from '../repositories/itemValidation.js';
 
 export const saveItemValidation = async ({ item }) => {
   const group = await ItemValidationGroupRepository.save({ item });

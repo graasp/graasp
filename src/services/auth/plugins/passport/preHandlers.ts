@@ -1,6 +1,6 @@
 import fastifyPassport from '@fastify/passport';
 
-import { PassportStrategy } from './strategies';
+import { PassportStrategy } from './strategies/index.js';
 
 /**
  * Passport Authenticate function will accept the authenticaction if at least one of the strategies is successful.

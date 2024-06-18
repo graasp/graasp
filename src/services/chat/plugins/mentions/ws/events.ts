@@ -1,7 +1,7 @@
 /**
  * Chat websocket events are registered under these topics
  */
-import { ChatMention } from '../chatMention';
+import { ChatMention } from '../chatMention.js';
 
 // chat mentions topic
 export const chatMentionTopic = 'mentions';

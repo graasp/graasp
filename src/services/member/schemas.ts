@@ -4,7 +4,7 @@ import {
   MIN_USERNAME_LENGTH,
 } from '@graasp/sdk';
 
-import { NAME_REGEX, UUID_REGEX } from '../../schemas/global';
+import { NAME_REGEX, UUID_REGEX } from '../../schemas/global.js';
 
 const EMAIL_REGEX = '^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$';
 

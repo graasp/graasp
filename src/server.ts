@@ -1,9 +1,9 @@
 import fastifyHelmet from '@fastify/helmet';
 import fastify from 'fastify';
 
-import registerAppPlugins from './app';
-import ajvFormats from './schemas/ajvFormats';
-import { initSentry } from './sentry';
+import registerAppPlugins from './app.js';
+import ajvFormats from './schemas/ajvFormats.js';
+import { initSentry } from './sentry.js';
 import {
   APP_VERSION,
   CORS_ORIGIN_REGEX,
@@ -12,9 +12,9 @@ import {
   HOSTNAME,
   PORT,
   PROD,
-} from './utils/config';
+} from './utils/config.js';
 // import fastifyCompress from 'fastify-compress';
-import { GREETING } from './utils/constants';
+import { GREETING } from './utils/constants.js';
 
 const start = async () => {
   const instance = fastify({

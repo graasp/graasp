@@ -1,7 +1,7 @@
-import { Member } from '../../../../member/entities/member';
-import { Item } from '../../../entities/Item';
-import { ItemLike } from '../itemLike';
-import { ItemLikeRepository } from '../repository';
+import { Member } from '../../../../member/entities/member.js';
+import { Item } from '../../../entities/Item.js';
+import { ItemLike } from '../itemLike.js';
+import { ItemLikeRepository } from '../repository.js';
 
 export const saveItemLikes = async (items: Item[], member: Member) => {
   const likes: ItemLike[] = [];

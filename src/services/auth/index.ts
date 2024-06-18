@@ -1,9 +1,9 @@
 import fastifyCors from '@fastify/cors';
 import { FastifyPluginAsync } from 'fastify';
 
-import magicLinkController from './plugins/magicLink';
-import mobileController from './plugins/mobile';
-import passwordController from './plugins/password';
+import magicLinkController from './plugins/magicLink/index.js';
+import mobileController from './plugins/mobile/index.js';
+import passwordController from './plugins/password/index.js';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const {

@@ -1,6 +1,6 @@
 import { ObjectLiteral, QueryBuilder } from 'typeorm';
 
-import { NODE_ENV } from './config';
+import { NODE_ENV } from './config.js';
 
 // Print a query with parameters already filled in, ready to be sent to the database
 // Only for debugging purposes. DO NOT USE in production. (injection risk)

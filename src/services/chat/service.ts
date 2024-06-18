@@ -1,12 +1,12 @@
 import { PermissionLevel } from '@graasp/sdk';
 
-import HookManager from '../../utils/hook';
-import { Repositories } from '../../utils/repositories';
-import { ItemService } from '../item/service';
-import { Actor, Member } from '../member/entities/member';
-import { ChatMessage } from './chatMessage';
-import { MemberCannotDeleteMessage, MemberCannotEditMessage } from './errors';
-import { MentionService } from './plugins/mentions/service';
+import HookManager from '../../utils/hook.js';
+import { Repositories } from '../../utils/repositories.js';
+import { ItemService } from '../item/service.js';
+import { Actor, Member } from '../member/entities/member.js';
+import { ChatMessage } from './chatMessage.js';
+import { MemberCannotDeleteMessage, MemberCannotEditMessage } from './errors.js';
+import { MentionService } from './plugins/mentions/service.js';
 
 export class ChatMessageService {
   hooks = new HookManager();

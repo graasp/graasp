@@ -2,15 +2,15 @@ import Ajv from 'ajv';
 
 import { UUID } from '@graasp/sdk';
 
-import { Action } from '../../../action/entities/action';
-import { ChatMessage } from '../../../chat/chatMessage';
-import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
-import { Member } from '../../../member/entities/member';
-import { Item } from '../../entities/Item';
-import { AppAction } from '../app/appAction/appAction';
-import { AppData } from '../app/appData/appData';
-import { AppSetting } from '../app/appSetting/appSettings';
-import { memberSchema, memberSchemaForAnalytics } from './schemas';
+import { Action } from '../../../action/entities/action.js';
+import { ChatMessage } from '../../../chat/chatMessage.js';
+import { ItemMembership } from '../../../itemMembership/entities/ItemMembership.js';
+import { Member } from '../../../member/entities/member.js';
+import { Item } from '../../entities/Item.js';
+import { AppAction } from '../app/appAction/appAction.js';
+import { AppData } from '../app/appData/appData.js';
+import { AppSetting } from '../app/appSetting/appSettings.js';
+import { memberSchema, memberSchemaForAnalytics } from './schemas.js';
 
 export class BaseAnalytics {
   readonly actions: Action[];

@@ -2,27 +2,27 @@ import { FastifyInstance } from 'fastify';
 
 import { PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { buildRepositories } from '../../../../../utils/repositories';
-import { Action } from '../../../../action/entities/action';
-import { saveActions } from '../../../../action/test/fixtures/actions';
-import { saveChatMessages } from '../../../../chat/test/fixtures';
-import { saveAppActions } from '../../../../item/plugins/app/appAction/test/fixtures';
-import { saveAppData } from '../../../../item/plugins/app/appData/test/fixtures';
-import { saveAppSettings } from '../../../../item/plugins/app/appSetting/test/fixtures';
+import build, { clearDatabase } from '../../../../../../test/app.js';
+import { AppDataSource } from '../../../../../plugins/datasource.js';
+import { buildRepositories } from '../../../../../utils/repositories.js';
+import { Action } from '../../../../action/entities/action.js';
+import { saveActions } from '../../../../action/test/fixtures/actions.js';
+import { saveChatMessages } from '../../../../chat/test/fixtures.js';
+import { saveAppActions } from '../../../../item/plugins/app/appAction/test/fixtures.js';
+import { saveAppData } from '../../../../item/plugins/app/appData/test/fixtures.js';
+import { saveAppSettings } from '../../../../item/plugins/app/appSetting/test/fixtures.js';
 import {
   saveCategories,
   saveItemCategories,
-} from '../../../../item/plugins/itemCategory/test/fixtures';
-import { saveItemFavorites } from '../../../../item/plugins/itemFavorite/test/fixtures';
-import { saveItemLikes } from '../../../../item/plugins/itemLike/test/utils';
-import { ItemTestUtils } from '../../../../item/test/fixtures/items';
-import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
-import { Member } from '../../../entities/member';
-import { saveMember } from '../../../test/fixtures/members';
-import { ExportMemberDataService } from '../service';
-import { expectNoLeakMemberId } from './fixtures';
+} from '../../../../item/plugins/itemCategory/test/fixtures.js';
+import { saveItemFavorites } from '../../../../item/plugins/itemFavorite/test/fixtures.js';
+import { saveItemLikes } from '../../../../item/plugins/itemLike/test/utils.js';
+import { ItemTestUtils } from '../../../../item/test/fixtures/items.js';
+import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership.js';
+import { Member } from '../../../entities/member.js';
+import { saveMember } from '../../../test/fixtures/members.js';
+import { ExportMemberDataService } from '../service.js';
+import { expectNoLeakMemberId } from './fixtures.js';
 
 /**
  * The service tests ensure that no member id of other members are leaked during the export.

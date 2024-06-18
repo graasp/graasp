@@ -1,4 +1,4 @@
-import { SHORT_TOKEN_PARAM, TOKEN_PARAM } from '../passport';
+import { SHORT_TOKEN_PARAM, TOKEN_PARAM } from '../passport/index.js';
 
 export const mregister = {
   body: {

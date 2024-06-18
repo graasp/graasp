@@ -11,23 +11,23 @@ import {
   UUID,
 } from '@graasp/sdk';
 
-import { TMP_FOLDER } from '../../../../utils/config';
-import { Repositories } from '../../../../utils/repositories';
-import { validatePermission } from '../../../authorization';
-import FileService from '../../../file/service';
-import { Member } from '../../../member/entities/member';
-import { Item, isItemType } from '../../entities/Item';
-import { ItemService } from '../../service';
-import { ItemValidationGroup } from './entities/ItemValidationGroup';
+import { TMP_FOLDER } from '../../../../utils/config.js';
+import { Repositories } from '../../../../utils/repositories.js';
+import { validatePermission } from '../../../authorization.js';
+import FileService from '../../../file/service.js';
+import { Member } from '../../../member/entities/member.js';
+import { Item, isItemType } from '../../entities/Item.js';
+import { ItemService } from '../../service.js';
+import { ItemValidationGroup } from './entities/ItemValidationGroup.js';
 import {
   InvalidFileItemError,
   ItemValidationError,
   ProcessExecutionError,
   ProcessNotFoundError,
-} from './errors';
-import { detectFieldNameWithBadWords } from './processes/badWordsDetection';
-import { classifyImage } from './processes/imageClassification';
-import { stripHtml } from './utils';
+} from './errors.js';
+import { detectFieldNameWithBadWords } from './processes/badWordsDetection.js';
+import { classifyImage } from './processes/imageClassification.js';
+import { stripHtml } from './utils.js';
 
 export class ItemValidationService {
   itemService: ItemService;

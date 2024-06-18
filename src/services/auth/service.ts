@@ -3,20 +3,20 @@ import { promisify } from 'util';
 
 import { FastifyBaseLogger } from 'fastify';
 
-import { MailerDecoration } from '../../plugins/mailer';
-import { MAIL } from '../../plugins/mailer/langs/constants';
+import { MailerDecoration } from '../../plugins/mailer/index.js';
+import { MAIL } from '../../plugins/mailer/langs/constants.js';
 import {
   JWT_SECRET,
   LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
   MOBILE_AUTH_URL,
   PUBLIC_URL,
   REGISTER_TOKEN_EXPIRATION_IN_MINUTES,
-} from '../../utils/config';
-import { GRAASP_LANDING_PAGE_ORIGIN } from '../../utils/constants';
-import { Repositories } from '../../utils/repositories';
-import { Member } from '../member/entities/member';
-import { SHORT_TOKEN_PARAM } from './plugins/passport';
-import { getRedirectionUrl } from './utils';
+} from '../../utils/config.js';
+import { GRAASP_LANDING_PAGE_ORIGIN } from '../../utils/constants.js';
+import { Repositories } from '../../utils/repositories.js';
+import { Member } from '../member/entities/member.js';
+import { SHORT_TOKEN_PARAM } from './plugins/passport/index.js';
+import { getRedirectionUrl } from './utils.js';
 
 const promisifiedJwtSign = promisify<
   { sub: string; challenge?: string },

@@ -1,9 +1,9 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { buildRepositories } from '../../../../utils/repositories';
-import { isAuthenticated } from '../../../auth/plugins/passport';
-import common, { create, deleteOne, getFavorite } from './schemas';
-import { FavoriteService } from './services/favorite';
+import { buildRepositories } from '../../../../utils/repositories.js';
+import { isAuthenticated } from '../../../auth/plugins/passport/index.js';
+import common, { create, deleteOne, getFavorite } from './schemas.js';
+import { FavoriteService } from './services/favorite.js';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, items } = fastify;

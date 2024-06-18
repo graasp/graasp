@@ -1,8 +1,8 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { Item } from '../../../../entities/Item';
-import { HtmlImportError, HtmlItemNotFoundError } from '../../errors';
-import { H5PInvalidFileError } from '../errors';
+import { Item } from '../../../../entities/Item.js';
+import { HtmlImportError, HtmlItemNotFoundError } from '../../errors.js';
+import { H5PInvalidFileError } from '../errors.js';
 
 const MOCK_ITEM = new Item();
 

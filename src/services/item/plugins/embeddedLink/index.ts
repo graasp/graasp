@@ -2,14 +2,14 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ItemType } from '@graasp/sdk';
 
-import { Repositories } from '../../../../utils/repositories';
-import { isAuthenticated } from '../../../auth/plugins/passport';
-import { Actor } from '../../../member/entities/member';
-import { Item } from '../../entities/Item';
-import { LinkQueryParameterIsRequired } from './errors';
-import { createSchema, getLinkMetadata, updateExtraSchema } from './schemas';
-import { EmbeddedLinkService } from './service';
-import { ensureProtocol } from './utils';
+import { Repositories } from '../../../../utils/repositories.js';
+import { isAuthenticated } from '../../../auth/plugins/passport/index.js';
+import { Actor } from '../../../member/entities/member.js';
+import { Item } from '../../entities/Item.js';
+import { LinkQueryParameterIsRequired } from './errors.js';
+import { createSchema, getLinkMetadata, updateExtraSchema } from './schemas.js';
+import { EmbeddedLinkService } from './service.js';
+import { ensureProtocol } from './utils.js';
 
 interface GraaspEmbeddedLinkItemOptions {
   /** \<protocol\>://\<hostname\>:\<port\> */

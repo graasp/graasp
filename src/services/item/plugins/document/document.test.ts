@@ -4,12 +4,12 @@ import { FastifyInstance } from 'fastify';
 
 import { DocumentItemFactory, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../test/app';
-import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../test/constants';
-import { ItemMembershipRepository } from '../../../itemMembership/repository';
-import { Actor } from '../../../member/entities/member';
-import { saveMember } from '../../../member/test/fixtures/members';
-import { ItemTestUtils, expectItem } from '../../test/fixtures/items';
+import build, { clearDatabase } from '../../../../../test/app.js';
+import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../test/constants.js';
+import { ItemMembershipRepository } from '../../../itemMembership/repository.js';
+import { Actor } from '../../../member/entities/member.js';
+import { saveMember } from '../../../member/test/fixtures/members.js';
+import { ItemTestUtils, expectItem } from '../../test/fixtures/items.js';
 
 // mock datasource
 jest.mock('../../../../plugins/datasource');

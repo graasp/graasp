@@ -12,7 +12,7 @@ import {
 
 import { ItemLoginSchemaType } from '@graasp/sdk';
 
-import { Item } from '../../item/entities/Item';
+import { Item } from '../../item/entities/Item.js';
 
 @Entity()
 @Unique('item-login-schema', ['item'])

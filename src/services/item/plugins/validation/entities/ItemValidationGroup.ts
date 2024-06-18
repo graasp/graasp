@@ -8,8 +8,8 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-import { Item } from '../../../entities/Item';
-import { ItemValidation } from './ItemValidation';
+import { Item } from '../../../entities/Item.js';
+import { ItemValidation } from './ItemValidation.js';
 
 @Entity()
 export class ItemValidationGroup extends BaseEntity {

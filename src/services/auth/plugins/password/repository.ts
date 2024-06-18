@@ -1,10 +1,10 @@
 import { UUID, isPasswordStrong } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../../plugins/datasource';
-import { EmptyCurrentPassword, InvalidPassword, MemberNotFound } from '../../../../utils/errors';
-import { MemberPassword } from './entities/password';
-import { PasswordNotStrong } from './errors';
-import { encryptPassword, verifyCurrentPassword } from './utils';
+import { AppDataSource } from '../../../../plugins/datasource.js';
+import { EmptyCurrentPassword, InvalidPassword, MemberNotFound } from '../../../../utils/errors.js';
+import { MemberPassword } from './entities/password.js';
+import { PasswordNotStrong } from './errors.js';
+import { encryptPassword, verifyCurrentPassword } from './utils.js';
 
 export const MemberPasswordRepository = AppDataSource.getRepository(MemberPassword).extend({
   async getForMemberId(memberId: string, args: { shouldExist: boolean } = { shouldExist: true }) {

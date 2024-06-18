@@ -1,9 +1,9 @@
 import { ClientHostManager, Context, HttpMethod, PermissionLevel } from '@graasp/sdk';
 
-import { Member } from '../../../../member/entities/member';
-import { ItemTestUtils } from '../../../test/fixtures/items';
-import { setItemPublic } from '../../itemTag/test/fixtures';
-import { SHORT_LINKS_FULL_PREFIX, SHORT_LINKS_LIST_ROUTE } from '../service';
+import { Member } from '../../../../member/entities/member.js';
+import { ItemTestUtils } from '../../../test/fixtures/items.js';
+import { setItemPublic } from '../../itemTag/test/fixtures.js';
+import { SHORT_LINKS_FULL_PREFIX, SHORT_LINKS_LIST_ROUTE } from '../service.js';
 
 export const MOCK_ALIAS = 'mocked-alias';
 export const MOCK_PLATFORM = Context.Player;

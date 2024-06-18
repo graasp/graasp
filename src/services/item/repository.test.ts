@@ -15,18 +15,18 @@ import {
   buildPathFromIds,
 } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../test/app';
+import build, { clearDatabase } from '../../../test/app.js';
 import {
   HierarchyTooDeep,
   InvalidMoveTarget,
   ItemNotFolder,
   ItemNotFound,
   TooManyDescendants,
-} from '../../utils/errors';
-import { saveMember } from '../member/test/fixtures/members';
-import { FolderItem, Item } from './entities/Item';
-import { ItemRepository } from './repository';
-import { ItemTestUtils, expectItem, expectManyItems } from './test/fixtures/items';
+} from '../../utils/errors.js';
+import { saveMember } from '../member/test/fixtures/members.js';
+import { FolderItem, Item } from './entities/Item.js';
+import { ItemRepository } from './repository.js';
+import { ItemTestUtils, expectItem, expectManyItems } from './test/fixtures/items.js';
 
 // mock datasource
 jest.mock('../../plugins/datasource');

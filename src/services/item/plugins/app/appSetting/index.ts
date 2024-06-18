@@ -2,18 +2,18 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ItemType } from '@graasp/sdk';
 
-import { IdParam } from '../../../../../types';
-import { notUndefined } from '../../../../../utils/assertions';
-import { Repositories, buildRepositories } from '../../../../../utils/repositories';
-import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
-import { Actor } from '../../../../member/entities/member';
-import { Item } from '../../../entities/Item';
-import { appSettingsWsHooks } from '../ws/hooks';
-import { AppSetting } from './appSettings';
-import { InputAppSetting } from './interfaces/app-setting';
-import appSettingFilePlugin from './plugins/file';
-import common, { create, deleteOne, getForOne, updateOne } from './schemas';
-import { AppSettingService } from './service';
+import { IdParam } from '../../../../../types.js';
+import { notUndefined } from '../../../../../utils/assertions.js';
+import { Repositories, buildRepositories } from '../../../../../utils/repositories.js';
+import { authenticateAppsJWT } from '../../../../auth/plugins/passport/index.js';
+import { Actor } from '../../../../member/entities/member.js';
+import { Item } from '../../../entities/Item.js';
+import { appSettingsWsHooks } from '../ws/hooks.js';
+import { AppSetting } from './appSettings.js';
+import { InputAppSetting } from './interfaces/app-setting.js';
+import appSettingFilePlugin from './plugins/file/index.js';
+import common, { create, deleteOne, getForOne, updateOne } from './schemas.js';
+import { AppSettingService } from './service.js';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const {

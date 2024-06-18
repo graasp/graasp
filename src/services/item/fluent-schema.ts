@@ -14,10 +14,10 @@ import {
   PermissionLevel,
 } from '@graasp/sdk';
 
-import { error, idParam, idsQuery, uuid } from '../../schemas/fluent-schema';
-import { EMPTY_OR_SPACED_WORDS_REGEX, NAME_REGEX } from '../../schemas/global';
-import { ITEMS_PAGE_SIZE } from './constants';
-import { Ordering, SortBy } from './types';
+import { error, idParam, idsQuery, uuid } from '../../schemas/fluent-schema.js';
+import { EMPTY_OR_SPACED_WORDS_REGEX, NAME_REGEX } from '../../schemas/global.js';
+import { ITEMS_PAGE_SIZE } from './constants.js';
+import { Ordering, SortBy } from './types.js';
 
 export const SHOW_HIDDEN_PARRAM = 'showHidden';
 export const TYPES_FILTER_PARAM = 'types';

@@ -1,7 +1,7 @@
 import { MAX_USERNAME_LENGTH, MIN_USERNAME_LENGTH } from '@graasp/sdk';
 
-import { NAME_REGEX } from '../../../../schemas/global';
-import { SHORT_TOKEN_PARAM } from '../passport';
+import { NAME_REGEX } from '../../../../schemas/global.js';
+import { SHORT_TOKEN_PARAM } from '../passport/index.js';
 
 export const register = {
   body: {

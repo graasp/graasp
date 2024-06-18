@@ -23,9 +23,9 @@ import {
   buildPathFromIds,
 } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../test/app';
-import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../test/constants';
-import { AppDataSource } from '../../../plugins/datasource';
+import build, { clearDatabase } from '../../../../test/app.js';
+import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../test/constants.js';
+import { AppDataSource } from '../../../plugins/datasource.js';
 import {
   HierarchyTooDeep,
   ItemNotFolder,
@@ -33,21 +33,21 @@ import {
   MemberCannotAccess,
   MemberCannotWriteItem,
   TooManyChildren,
-} from '../../../utils/errors';
-import { ItemMembershipRepository } from '../../itemMembership/repository';
-import { Member } from '../../member/entities/member';
-import { saveMember } from '../../member/test/fixtures/members';
-import { PackedItem } from '../ItemWrapper';
-import { Item } from '../entities/Item';
-import { ItemGeolocation } from '../plugins/geolocation/ItemGeolocation';
-import { ItemTag } from '../plugins/itemTag/ItemTag';
-import { Ordering, SortBy } from '../types';
+} from '../../../utils/errors.js';
+import { ItemMembershipRepository } from '../../itemMembership/repository.js';
+import { Member } from '../../member/entities/member.js';
+import { saveMember } from '../../member/test/fixtures/members.js';
+import { PackedItem } from '../ItemWrapper.js';
+import { Item } from '../entities/Item.js';
+import { ItemGeolocation } from '../plugins/geolocation/ItemGeolocation.js';
+import { ItemTag } from '../plugins/itemTag/ItemTag.js';
+import { Ordering, SortBy } from '../types.js';
 import {
   ItemTestUtils,
   expectItem,
   expectManyPackedItems,
   expectPackedItem,
-} from './fixtures/items';
+} from './fixtures/items.js';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');

@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { CoreError } from '../../../../utils/errors';
+import { CoreError } from '../../../../utils/errors.js';
 
 export class AuthenticationError extends CoreError {
   constructor(data?: unknown) {

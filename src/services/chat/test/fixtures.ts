@@ -1,9 +1,9 @@
-import { AppDataSource } from '../../../plugins/datasource';
-import { Item } from '../../item/entities/Item';
-import { Member } from '../../member/entities/member';
-import { ChatMessage } from '../chatMessage';
-import { ChatMention } from '../plugins/mentions/chatMention';
-import { ChatMessageRepository } from '../repository';
+import { AppDataSource } from '../../../plugins/datasource.js';
+import { Item } from '../../item/entities/Item.js';
+import { Member } from '../../member/entities/member.js';
+import { ChatMessage } from '../chatMessage.js';
+import { ChatMention } from '../plugins/mentions/chatMention.js';
+import { ChatMessageRepository } from '../repository.js';
 
 export const saveChatMessages = async ({
   creator,

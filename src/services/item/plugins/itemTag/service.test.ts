@@ -1,8 +1,8 @@
-import { Repositories } from '../../../../utils/repositories';
-import { Actor } from '../../../member/entities/member';
-import { ItemService } from '../../service';
-import { ItemTagRepository } from './repository';
-import { ItemTagService } from './service';
+import { Repositories } from '../../../../utils/repositories.js';
+import { Actor } from '../../../member/entities/member.js';
+import { ItemService } from '../../service.js';
+import { ItemTagRepository } from './repository.js';
+import { ItemTagService } from './service.js';
 
 const itemServiceForTest = {
   getMany: jest.fn().mockReturnValue({ data: {}, errors: [] }),

@@ -1,4 +1,4 @@
-import { notUndefined } from './assertions';
+import { notUndefined } from './assertions.js';
 
 describe('notUndefined', () => {
   it('should throw an error if the object is undefined', () => {

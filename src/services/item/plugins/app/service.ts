@@ -3,13 +3,13 @@ import uniqBy from 'lodash.uniqby';
 
 import { AuthTokenSubject, ItemType, PermissionLevel } from '@graasp/sdk';
 
-import { APPS_JWT_SECRET } from '../../../../utils/config';
-import { Repositories } from '../../../../utils/repositories';
-import { validatePermission } from '../../../authorization';
-import { Actor, Member } from '../../../member/entities/member';
-import { Item, isItemType } from '../../entities/Item';
-import { ItemService } from '../../service';
-import { checkTargetItemAndTokenItemMatch } from './utils';
+import { APPS_JWT_SECRET } from '../../../../utils/config.js';
+import { Repositories } from '../../../../utils/repositories.js';
+import { validatePermission } from '../../../authorization.js';
+import { Actor, Member } from '../../../member/entities/member.js';
+import { Item, isItemType } from '../../entities/Item.js';
+import { ItemService } from '../../service.js';
+import { checkTargetItemAndTokenItemMatch } from './utils.js';
 
 export class AppService {
   itemService: ItemService;

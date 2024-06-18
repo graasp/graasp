@@ -1,6 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { AppDataSource } from './datasource';
+import { AppDataSource } from './datasource.js';
 
 export interface DatabasePluginOptions {
   // uri: string;

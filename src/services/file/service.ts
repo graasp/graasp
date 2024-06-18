@@ -7,12 +7,12 @@ import { FastifyBaseLogger, FastifyReply } from 'fastify';
 
 import { FileItemType, ItemType } from '@graasp/sdk';
 
-import { UnauthorizedMember } from '../../utils/errors';
-import { Actor, Member } from '../member/entities/member';
-import { LocalFileConfiguration, S3FileConfiguration } from './interfaces/configuration';
-import { FileRepository } from './interfaces/fileRepository';
-import { LocalFileRepository } from './repositories/local';
-import { S3FileRepository } from './repositories/s3';
+import { UnauthorizedMember } from '../../utils/errors.js';
+import { Actor, Member } from '../member/entities/member.js';
+import { LocalFileConfiguration, S3FileConfiguration } from './interfaces/configuration.js';
+import { FileRepository } from './interfaces/fileRepository.js';
+import { LocalFileRepository } from './repositories/local.js';
+import { S3FileRepository } from './repositories/s3.js';
 import {
   CopyFileInvalidPathError,
   CopyFolderInvalidPathError,
@@ -21,7 +21,7 @@ import {
   DownloadFileInvalidParameterError,
   UploadFileInvalidParameterError,
   UploadFileUnexpectedError,
-} from './utils/errors';
+} from './utils/errors.js';
 
 export type FileServiceConfig = { s3?: S3FileConfiguration; local?: LocalFileConfiguration };
 

@@ -16,18 +16,18 @@ import {
   buildPathFromIds,
 } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../../plugins/datasource';
-import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
-import { ItemMembershipRepository } from '../../../itemMembership/repository';
-import { Actor, Member } from '../../../member/entities/member';
-import { ItemWrapper, PackedItem } from '../../ItemWrapper';
-import { Item, ItemExtraMap } from '../../entities/Item';
-import { ItemTag } from '../../plugins/itemTag/ItemTag';
-import { ItemTagRepository } from '../../plugins/itemTag/repository';
-import { setItemPublic } from '../../plugins/itemTag/test/fixtures';
-import { ItemPublished } from '../../plugins/published/entities/itemPublished';
-import { RecycledItemDataRepository } from '../../plugins/recycled/repository';
-import { ItemRepository } from '../../repository';
+import { AppDataSource } from '../../../../plugins/datasource.js';
+import { ItemMembership } from '../../../itemMembership/entities/ItemMembership.js';
+import { ItemMembershipRepository } from '../../../itemMembership/repository.js';
+import { Actor, Member } from '../../../member/entities/member.js';
+import { ItemWrapper, PackedItem } from '../../ItemWrapper.js';
+import { Item, ItemExtraMap } from '../../entities/Item.js';
+import { ItemTag } from '../../plugins/itemTag/ItemTag.js';
+import { ItemTagRepository } from '../../plugins/itemTag/repository.js';
+import { setItemPublic } from '../../plugins/itemTag/test/fixtures.js';
+import { ItemPublished } from '../../plugins/published/entities/itemPublished.js';
+import { RecycledItemDataRepository } from '../../plugins/recycled/repository.js';
+import { ItemRepository } from '../../repository.js';
 
 export class ItemTestUtils {
   public itemRepository: ItemRepository;

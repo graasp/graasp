@@ -1,9 +1,9 @@
 import { FastifyInstance } from 'fastify';
 
-import build, { clearDatabase } from '../../../../../../test/app';
-import { saveMember } from '../../../../member/test/fixtures/members';
-import { ItemTestUtils, expectManyItems } from '../../../test/fixtures/items';
-import { ItemPublishedRepository } from './itemPublished';
+import build, { clearDatabase } from '../../../../../../test/app.js';
+import { saveMember } from '../../../../member/test/fixtures/members.js';
+import { ItemTestUtils, expectManyItems } from '../../../test/fixtures/items.js';
+import { ItemPublishedRepository } from './itemPublished.js';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');

@@ -14,12 +14,12 @@ import {
 } from '@graasp/sdk';
 import { FAILURE_MESSAGES } from '@graasp/translations';
 
-import build, { clearDatabase } from '../../../../../test/app';
-import { AppDataSource } from '../../../../plugins/datasource';
-import { AUTH_CLIENT_HOST, JWT_SECRET } from '../../../../utils/config';
-import { Member } from '../../../member/entities/member';
-import { expectMember, saveMember } from '../../../member/test/fixtures/members';
-import { MOCK_CAPTCHA } from '../captcha/test/utils';
+import build, { clearDatabase } from '../../../../../test/app.js';
+import { AppDataSource } from '../../../../plugins/datasource.js';
+import { AUTH_CLIENT_HOST, JWT_SECRET } from '../../../../utils/config.js';
+import { Member } from '../../../member/entities/member.js';
+import { expectMember, saveMember } from '../../../member/test/fixtures/members.js';
+import { MOCK_CAPTCHA } from '../captcha/test/utils.js';
 
 // mock database and decorator plugins
 jest.mock('../../../../plugins/datasource');

@@ -15,10 +15,10 @@ import {
   IMAGE_CLASSIFIER_API,
   ITEMS_ROUTE_PREFIX,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
-} from '../../utils/config';
-import graaspChatbox from '../chat';
-import graaspItemLogin from '../itemLogin';
-import itemController from './controller';
+} from '../../utils/config.js';
+import graaspChatbox from '../chat/index.js';
+import graaspItemLogin from '../itemLogin/index.js';
+import itemController from './controller.js';
 import itemSchema, {
   baseItemCreate,
   create,
@@ -26,30 +26,30 @@ import itemSchema, {
   folderItemCreate,
   shortcutItemCreate,
   updateOne,
-} from './fluent-schema';
-import actionItemPlugin from './plugins/action';
-import graaspApps from './plugins/app';
-import graaspDocumentItem from './plugins/document';
-import graaspEmbeddedLinkItem from './plugins/embeddedLink';
-import { PREFIX_EMBEDDED_LINK } from './plugins/embeddedLink/service';
-import graaspEtherpadPlugin from './plugins/etherpad';
-import graaspFileItem from './plugins/file';
-import itemGeolocationPlugin from './plugins/geolocation/index';
-import graaspH5PPlugin from './plugins/html/h5p';
-import graaspZipPlugin from './plugins/importExport';
-import graaspInvitationsPlugin from './plugins/invitation';
-import graaspCategoryPlugin from './plugins/itemCategory';
-import graaspFavoritePlugin from './plugins/itemFavorite';
-import graaspItemFlags from './plugins/itemFlag';
-import graaspItemLikes from './plugins/itemLike';
-import graaspItemTags from './plugins/itemTag';
-import graaspItemPublish from './plugins/published';
-import graaspRecycledItemData from './plugins/recycled';
-import ShortLinkService from './plugins/shortLink';
-import { SHORT_LINKS_ROUTE_PREFIX } from './plugins/shortLink/service';
-import thumbnailsPlugin from './plugins/thumbnail';
-import graaspValidationPlugin from './plugins/validation';
-import { itemWsHooks } from './ws/hooks';
+} from './fluent-schema.js';
+import actionItemPlugin from './plugins/action/index.js';
+import graaspApps from './plugins/app/index.js';
+import graaspDocumentItem from './plugins/document/index.js';
+import graaspEmbeddedLinkItem from './plugins/embeddedLink/index.js';
+import { PREFIX_EMBEDDED_LINK } from './plugins/embeddedLink/service.js';
+import graaspEtherpadPlugin from './plugins/etherpad/index.js';
+import graaspFileItem from './plugins/file/index.js';
+import itemGeolocationPlugin from './plugins/geolocation/index.js';
+import graaspH5PPlugin from './plugins/html/h5p/index.js';
+import graaspZipPlugin from './plugins/importExport/index.js';
+import graaspInvitationsPlugin from './plugins/invitation/index.js';
+import graaspCategoryPlugin from './plugins/itemCategory/index.js';
+import graaspFavoritePlugin from './plugins/itemFavorite/index.js';
+import graaspItemFlags from './plugins/itemFlag/index.js';
+import graaspItemLikes from './plugins/itemLike/index.js';
+import graaspItemTags from './plugins/itemTag/index.js';
+import graaspItemPublish from './plugins/published/index.js';
+import graaspRecycledItemData from './plugins/recycled/index.js';
+import ShortLinkService from './plugins/shortLink/index.js';
+import { SHORT_LINKS_ROUTE_PREFIX } from './plugins/shortLink/service.js';
+import thumbnailsPlugin from './plugins/thumbnail/index.js';
+import graaspValidationPlugin from './plugins/validation/index.js';
+import { itemWsHooks } from './ws/hooks.js';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.addSchema(itemSchema);

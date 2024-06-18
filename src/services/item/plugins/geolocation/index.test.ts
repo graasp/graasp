@@ -6,14 +6,14 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../test/app';
-import { AppDataSource } from '../../../../plugins/datasource';
-import { GEOLOCATION_API_HOST, ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
-import { MemberCannotAccess } from '../../../../utils/errors';
-import { saveMember } from '../../../member/test/fixtures/members';
-import { ItemWrapper, PackedItem } from '../../ItemWrapper';
-import { ItemTestUtils, expectPackedItem } from '../../test/fixtures/items';
-import { ItemGeolocation, PackedItemGeolocation } from './ItemGeolocation';
+import build, { clearDatabase } from '../../../../../test/app.js';
+import { AppDataSource } from '../../../../plugins/datasource.js';
+import { GEOLOCATION_API_HOST, ITEMS_ROUTE_PREFIX } from '../../../../utils/config.js';
+import { MemberCannotAccess } from '../../../../utils/errors.js';
+import { saveMember } from '../../../member/test/fixtures/members.js';
+import { ItemWrapper, PackedItem } from '../../ItemWrapper.js';
+import { ItemTestUtils, expectPackedItem } from '../../test/fixtures/items.js';
+import { ItemGeolocation, PackedItemGeolocation } from './ItemGeolocation.js';
 
 // mock datasource
 jest.mock('../../../../plugins/datasource');

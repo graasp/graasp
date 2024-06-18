@@ -5,15 +5,15 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../../test/app';
-import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
-import { MemberCannotAdminItem } from '../../../../../../utils/errors';
-import { Member } from '../../../../../member/entities/member';
-import { saveMember } from '../../../../../member/test/fixtures/members';
-import { setItemPublic } from '../../../itemTag/test/fixtures';
-import { AppTestUtils } from '../../test/fixtures';
-import { AppSettingRepository } from '../repository';
-import { saveAppSettings } from './fixtures';
+import build, { clearDatabase } from '../../../../../../../test/app.js';
+import { APP_ITEMS_PREFIX } from '../../../../../../utils/config.js';
+import { MemberCannotAdminItem } from '../../../../../../utils/errors.js';
+import { Member } from '../../../../../member/entities/member.js';
+import { saveMember } from '../../../../../member/test/fixtures/members.js';
+import { setItemPublic } from '../../../itemTag/test/fixtures.js';
+import { AppTestUtils } from '../../test/fixtures.js';
+import { AppSettingRepository } from '../repository.js';
+import { saveAppSettings } from './fixtures.js';
 
 /**
  * Check that `expected` is contained in `values`

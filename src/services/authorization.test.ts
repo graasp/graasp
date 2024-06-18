@@ -1,13 +1,17 @@
 import { ItemTagType, PermissionLevel } from '@graasp/sdk';
 
-import { ItemMembershipRepository } from '../services/itemMembership/repository';
-import { MemberCannotAccess, MemberCannotAdminItem, MemberCannotWriteItem } from '../utils/errors';
-import { validatePermission, validatePermissionMany } from './authorization';
-import { Item } from './item/entities/Item';
-import { ItemTag } from './item/plugins/itemTag/ItemTag';
-import { ItemTagRepository } from './item/plugins/itemTag/repository';
-import { ItemMembership } from './itemMembership/entities/ItemMembership';
-import { Member } from './member/entities/member';
+import { ItemMembershipRepository } from '../services/itemMembership/repository.js';
+import {
+  MemberCannotAccess,
+  MemberCannotAdminItem,
+  MemberCannotWriteItem,
+} from '../utils/errors.js';
+import { validatePermission, validatePermissionMany } from './authorization.js';
+import { Item } from './item/entities/Item.js';
+import { ItemTag } from './item/plugins/itemTag/ItemTag.js';
+import { ItemTagRepository } from './item/plugins/itemTag/repository.js';
+import { ItemMembership } from './itemMembership/entities/ItemMembership.js';
+import { Member } from './member/entities/member.js';
 
 const OWNER = { id: 'owner', name: 'owner' } as Member;
 const SHARED_MEMBER = { id: 'shared', name: 'shared' } as Member;

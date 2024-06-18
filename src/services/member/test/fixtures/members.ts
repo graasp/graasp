@@ -1,8 +1,8 @@
 import { CompleteMember, MemberFactory, MemberType } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import { AppDataSource } from '../../../../plugins/datasource';
-import { Member } from '../../entities/member';
+import { AppDataSource } from '../../../../plugins/datasource.js';
+import { Member } from '../../entities/member.js';
 
 export const saveMember = async (m: CompleteMember = MemberFactory()) => {
   const rawRepository = AppDataSource.getRepository(Member);

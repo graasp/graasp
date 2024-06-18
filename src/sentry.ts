@@ -12,7 +12,7 @@ import {
   SENTRY_ENV,
   SENTRY_PROFILES_SAMPLE_RATE,
   SENTRY_TRACES_SAMPLE_RATE,
-} from './utils/config';
+} from './utils/config.js';
 
 // todo: use graasp-sdk?
 declare module 'fastify' {

@@ -3,12 +3,12 @@ import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity
 
 import { PermissionLevel } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { Actor, Member } from '../../../../member/entities/member';
-import { mapById } from '../../../../utils';
-import { Item } from '../../../entities/Item';
-import { ItemPublished } from '../entities/itemPublished';
-import { ItemPublishedNotFound } from '../errors';
+import { AppDataSource } from '../../../../../plugins/datasource.js';
+import { Actor, Member } from '../../../../member/entities/member.js';
+import { mapById } from '../../../../utils.js';
+import { Item } from '../../../entities/Item.js';
+import { ItemPublished } from '../entities/itemPublished.js';
+import { ItemPublishedNotFound } from '../errors.js';
 
 export class ItemPublishedRepository {
   private repository: Repository<ItemPublished>;

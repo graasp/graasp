@@ -5,7 +5,7 @@
  */
 import { FastifyReply, FastifyRequest } from 'fastify';
 
-import { Member } from '../../member/entities/member';
+import { Member } from '../../member/entities/member.js';
 
 export const createMockMember = (extra?) => ({
   name: 'mockMemberName',

@@ -5,9 +5,9 @@ import path from 'path';
 
 import { ExportActionsFormatting } from '@graasp/sdk';
 
-import { TMP_FOLDER } from '../../../utils/config';
-import { BaseAnalytics } from '../../item/plugins/action/base-analytics';
-import { CannotWriteFileError } from './errors';
+import { TMP_FOLDER } from '../../../utils/config.js';
+import { BaseAnalytics } from '../../item/plugins/action/base-analytics.js';
+import { CannotWriteFileError } from './errors.js';
 
 export const buildItemTmpFolder = (itemId: string): string =>
   path.join(TMP_FOLDER, 'export', itemId);

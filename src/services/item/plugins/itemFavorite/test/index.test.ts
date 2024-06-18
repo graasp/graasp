@@ -4,14 +4,14 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { saveMember } from '../../../../member/test/fixtures/members';
-import { ItemTestUtils } from '../../../test/fixtures/items';
-import { ItemFavorite } from '../entities/ItemFavorite';
-import { DuplicateFavoriteError } from '../errors';
-import { FavoriteRepository } from '../repositories/favorite';
+import build, { clearDatabase } from '../../../../../../test/app.js';
+import { AppDataSource } from '../../../../../plugins/datasource.js';
+import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config.js';
+import { saveMember } from '../../../../member/test/fixtures/members.js';
+import { ItemTestUtils } from '../../../test/fixtures/items.js';
+import { ItemFavorite } from '../entities/ItemFavorite.js';
+import { DuplicateFavoriteError } from '../errors.js';
+import { FavoriteRepository } from '../repositories/favorite.js';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');

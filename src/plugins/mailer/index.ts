@@ -8,8 +8,8 @@ import fp from 'fastify-plugin';
 
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import i18next from './i18n';
-import { applyLayout } from './layout';
+import i18next from './i18n.js';
+import { applyLayout } from './layout.js';
 
 export interface MailerOptions {
   host: string;

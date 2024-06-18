@@ -1,7 +1,7 @@
 import { FastifyBaseLogger } from 'fastify';
 
-import { Actor } from '../services/member/entities/member';
-import { Repositories } from './repositories';
+import { Actor } from '../services/member/entities/member.js';
+import { Repositories } from './repositories.js';
 
 export type Handler<Data> = (
   actor: Actor,

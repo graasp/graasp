@@ -5,12 +5,12 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { PermissionLevel } from '@graasp/sdk';
 
-import { IdParam } from '../../types';
-import { buildRepositories } from '../../utils/repositories';
-import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
-import { PurgeBelowParam } from './interfaces/requests';
-import common, { create, createMany, deleteOne, getItems, updateOne } from './schemas';
-import { membershipWsHooks } from './ws/hooks';
+import { IdParam } from '../../types.js';
+import { buildRepositories } from '../../utils/repositories.js';
+import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport/index.js';
+import { PurgeBelowParam } from './interfaces/requests.js';
+import common, { create, createMany, deleteOne, getItems, updateOne } from './schemas.js';
+import { membershipWsHooks } from './ws/hooks.js';
 
 const ROUTES_PREFIX = '/item-memberships';
 

@@ -2,7 +2,7 @@ import S from 'fluent-json-schema';
 
 import { ItemType } from '@graasp/sdk';
 
-import { error } from '../../../../schemas/fluent-schema';
+import { error } from '../../../../schemas/fluent-schema.js';
 
 // on link creation or update, the only allowed property in extra is the "url" property.
 // all other extra properties are filled by the backend.

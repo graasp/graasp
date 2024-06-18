@@ -2,8 +2,8 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { FileItemType, ItemType } from '@graasp/sdk';
 
-import { LocalFileConfiguration, S3FileConfiguration } from './interfaces/configuration';
-import FileService from './service';
+import { LocalFileConfiguration, S3FileConfiguration } from './interfaces/configuration.js';
+import FileService from './service.js';
 
 export interface GraaspPluginFileOptions {
   fileItemType: FileItemType; // S3 or local

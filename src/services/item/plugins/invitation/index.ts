@@ -4,16 +4,23 @@ import fastifyMultipart from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
-import { IdParam } from '../../../../types';
-import { notUndefined } from '../../../../utils/assertions';
-import { Repositories, buildRepositories } from '../../../../utils/repositories';
-import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
-import { Actor, Member } from '../../../member/entities/member';
-import { MAX_FILE_SIZE } from './constants';
-import { Invitation } from './entity';
-import { NoFileProvidedForInvitations } from './errors';
-import definitions, { deleteOne, getById, getForItem, invite, sendOne, updateOne } from './schema';
-import { InvitationService } from './service';
+import { IdParam } from '../../../../types.js';
+import { notUndefined } from '../../../../utils/assertions.js';
+import { Repositories, buildRepositories } from '../../../../utils/repositories.js';
+import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport/index.js';
+import { Actor, Member } from '../../../member/entities/member.js';
+import { MAX_FILE_SIZE } from './constants.js';
+import { Invitation } from './entity.js';
+import { NoFileProvidedForInvitations } from './errors.js';
+import definitions, {
+  deleteOne,
+  getById,
+  getForItem,
+  invite,
+  sendOne,
+  updateOne,
+} from './schema.js';
+import { InvitationService } from './service.js';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { mailer, db, log, members, items, memberships } = fastify;

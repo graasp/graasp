@@ -1,5 +1,5 @@
-import { Item } from '../entities/Item';
-import { sortChildrenWith } from '../utils';
+import { Item } from '../entities/Item.js';
+import { sortChildrenWith } from '../utils.js';
 
 const a = {
   id: 'a',

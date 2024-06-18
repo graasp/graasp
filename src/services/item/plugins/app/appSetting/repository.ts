@@ -1,13 +1,13 @@
 import { ItemType } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { ItemNotFound } from '../../../../../utils/errors';
-import { MemberIdentifierNotFound } from '../../../../itemLogin/errors';
-import { appSettingSchema } from '../../../../member/plugins/export-data/schemas/schemas';
+import { AppDataSource } from '../../../../../plugins/datasource.js';
+import { ItemNotFound } from '../../../../../utils/errors.js';
+import { MemberIdentifierNotFound } from '../../../../itemLogin/errors.js';
+import { appSettingSchema } from '../../../../member/plugins/export-data/schemas/schemas.js';
 import { schemaToSelectMapper } from '../../../../member/plugins/export-data/utils/selection.utils';
-import { AppSetting } from './appSettings';
-import { AppSettingNotFound, PreventUpdateAppSettingFile } from './errors';
-import { InputAppSetting } from './interfaces/app-setting';
+import { AppSetting } from './appSettings.js';
+import { AppSettingNotFound, PreventUpdateAppSettingFile } from './errors.js';
+import { InputAppSetting } from './interfaces/app-setting.js';
 
 export const AppSettingRepository = AppDataSource.getRepository(AppSetting).extend({
   async post(

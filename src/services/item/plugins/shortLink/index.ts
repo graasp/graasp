@@ -4,11 +4,11 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ShortLinkAvailable, ShortLinkPatchPayload, ShortLinkPostPayload } from '@graasp/sdk';
 
-import { notUndefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
-import { isAuthenticated } from '../../../auth/plugins/passport';
-import { create, restricted_get, update } from './schemas';
-import { SHORT_LINKS_LIST_ROUTE, ShortLinkService } from './service';
+import { notUndefined } from '../../../../utils/assertions.js';
+import { buildRepositories } from '../../../../utils/repositories.js';
+import { isAuthenticated } from '../../../auth/plugins/passport/index.js';
+import { create, restricted_get, update } from './schemas.js';
+import { SHORT_LINKS_LIST_ROUTE, ShortLinkService } from './service.js';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const {

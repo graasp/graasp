@@ -1,5 +1,5 @@
-import { Member } from '../../../member/entities/member';
-import { ItemMembership } from '../../entities/ItemMembership';
+import { Member } from '../../../member/entities/member.js';
+import { ItemMembership } from '../../entities/ItemMembership.js';
 
 export const expectMembership = (
   newMembership:

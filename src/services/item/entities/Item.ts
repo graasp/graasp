@@ -29,8 +29,8 @@ import {
   ShortcutItemExtra,
 } from '@graasp/sdk';
 
-import { Member } from '../../member/entities/member';
-import { ItemGeolocation } from '../plugins/geolocation/ItemGeolocation';
+import { Member } from '../../member/entities/member.js';
+import { ItemGeolocation } from '../plugins/geolocation/ItemGeolocation.js';
 
 // Map of the item types to their item extra
 export type ItemExtraMap = {

@@ -4,19 +4,19 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, ItemLoginSchemaType, MemberFactory, PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../test/app';
-import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
-import { MemberCannotAdminItem } from '../../../utils/errors';
-import { Item } from '../../item/entities/Item';
-import { ItemTestUtils } from '../../item/test/fixtures/items';
-import { Member } from '../../member/entities/member';
-import { expectMinimalMember, saveMember } from '../../member/test/fixtures/members';
-import { ItemLogin } from '../entities/itemLogin';
-import { ItemLoginSchema } from '../entities/itemLoginSchema';
-import { CannotNestItemLoginSchema, ValidMemberSession } from '../errors';
-import { ItemLoginRepository } from '../repositories/itemLogin';
-import { encryptPassword, generateRandomEmail } from '../utils';
-import { USERNAME_LOGIN } from './fixtures';
+import build, { clearDatabase } from '../../../../test/app.js';
+import { ITEMS_ROUTE_PREFIX } from '../../../utils/config.js';
+import { MemberCannotAdminItem } from '../../../utils/errors.js';
+import { Item } from '../../item/entities/Item.js';
+import { ItemTestUtils } from '../../item/test/fixtures/items.js';
+import { Member } from '../../member/entities/member.js';
+import { expectMinimalMember, saveMember } from '../../member/test/fixtures/members.js';
+import { ItemLogin } from '../entities/itemLogin.js';
+import { ItemLoginSchema } from '../entities/itemLoginSchema.js';
+import { CannotNestItemLoginSchema, ValidMemberSession } from '../errors.js';
+import { ItemLoginRepository } from '../repositories/itemLogin.js';
+import { encryptPassword, generateRandomEmail } from '../utils.js';
+import { USERNAME_LOGIN } from './fixtures.js';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');

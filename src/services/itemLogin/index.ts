@@ -2,17 +2,21 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ItemLoginSchemaType } from '@graasp/sdk';
 
-import { buildRepositories } from '../../utils/repositories';
-import { SESSION_KEY, isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
-import { ItemLoginMemberCredentials } from './interfaces/item-login';
+import { buildRepositories } from '../../utils/repositories.js';
+import {
+  SESSION_KEY,
+  isAuthenticated,
+  optionalIsAuthenticated,
+} from '../auth/plugins/passport/index.js';
+import { ItemLoginMemberCredentials } from './interfaces/item-login.js';
 import {
   deleteLoginSchema,
   getLoginSchema,
   getLoginSchemaType,
   login,
   updateLoginSchema,
-} from './schemas';
-import { ItemLoginService } from './service';
+} from './schemas.js';
+import { ItemLoginService } from './service.js';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, items } = fastify;

@@ -10,8 +10,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { Member } from '../../member/entities/member';
-import { ItemLoginSchema } from './itemLoginSchema';
+import { Member } from '../../member/entities/member.js';
+import { ItemLoginSchema } from './itemLoginSchema.js';
 
 @Entity()
 @Unique('item-login-member', ['itemLoginSchema', 'member'])

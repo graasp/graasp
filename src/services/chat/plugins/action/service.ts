@@ -2,9 +2,9 @@ import { FastifyRequest } from 'fastify';
 
 import { UUID } from '@graasp/sdk';
 
-import { Repositories } from '../../../../utils/repositories';
-import { ActionService } from '../../../action/services/action';
-import { ChatMessage } from '../../chatMessage';
+import { Repositories } from '../../../../utils/repositories.js';
+import { ActionService } from '../../../action/services/action.js';
+import { ChatMessage } from '../../chatMessage.js';
 
 enum ChatActionType {
   Create = 'chat_create',

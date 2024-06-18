@@ -1,18 +1,18 @@
 import { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
 
-import databasePlugin from './plugins/database';
-import decoratorPlugin from './plugins/decorator';
-import mailerPlugin from './plugins/mailer';
-import metaPlugin from './plugins/meta';
-import shared from './schemas/fluent-schema';
-import authPlugin from './services/auth';
-import { plugin as passportPlugin } from './services/auth/plugins/passport';
-import filePlugin from './services/file';
-import ItemServiceApi from './services/item';
-import ItemMembershipServiceApi from './services/itemMembership';
-import MemberServiceApi from './services/member';
-import websocketsPlugin from './services/websockets';
+import databasePlugin from './plugins/database.js';
+import decoratorPlugin from './plugins/decorator.js';
+import mailerPlugin from './plugins/mailer/index.js';
+import metaPlugin from './plugins/meta.js';
+import shared from './schemas/fluent-schema.js';
+import authPlugin from './services/auth/index.js';
+import { plugin as passportPlugin } from './services/auth/plugins/passport/index.js';
+import filePlugin from './services/file/index.js';
+import ItemServiceApi from './services/item/index.js';
+import ItemMembershipServiceApi from './services/itemMembership/index.js';
+import MemberServiceApi from './services/member/index.js';
+import websocketsPlugin from './services/websockets/index.js';
 import {
   DATABASE_LOGS,
   FILE_ITEM_PLUGIN_OPTIONS,
@@ -28,7 +28,7 @@ import {
   REDIS_PORT,
   REDIS_USERNAME,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
-} from './utils/config';
+} from './utils/config.js';
 
 export default async function (instance: FastifyInstance): Promise<void> {
   // load some shared schema definitions

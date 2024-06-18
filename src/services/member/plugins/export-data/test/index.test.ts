@@ -6,9 +6,9 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
-import { MEMBER_EXPORT_DATA_ROUTE_PREFIX } from '../../../../../utils/config';
-import { ItemTestUtils } from '../../../../item/test/fixtures/items';
+import build, { clearDatabase } from '../../../../../../test/app.js';
+import { MEMBER_EXPORT_DATA_ROUTE_PREFIX } from '../../../../../utils/config.js';
+import { ItemTestUtils } from '../../../../item/test/fixtures/items.js';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');

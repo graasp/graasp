@@ -5,15 +5,15 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ActionTriggers } from '@graasp/sdk';
 
-import { notUndefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
-import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
-import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
-import { ZIP_FILE_MIME_TYPES } from './constants';
-import { FileIsInvalidArchiveError } from './errors';
-import { zipExport, zipImport } from './schema';
-import { ImportExportService } from './service';
-import { prepareZip } from './utils';
+import { notUndefined } from '../../../../utils/assertions.js';
+import { buildRepositories } from '../../../../utils/repositories.js';
+import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport/index.js';
+import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants.js';
+import { ZIP_FILE_MIME_TYPES } from './constants.js';
+import { FileIsInvalidArchiveError } from './errors.js';
+import { zipExport, zipImport } from './schema.js';
+import { ImportExportService } from './service.js';
+import { prepareZip } from './utils.js';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const {

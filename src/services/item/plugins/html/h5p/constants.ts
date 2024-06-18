@@ -1,4 +1,4 @@
-import { H5P } from './validation/h5p';
+import { H5P } from './validation/h5p.js';
 
 export const MAX_FILE_SIZE = 1024 * 1024 * 50; // 50 MB
 export const MAX_NON_FILE_FIELDS = 0;

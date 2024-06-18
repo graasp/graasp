@@ -2,9 +2,9 @@ import path from 'path';
 import sharp from 'sharp';
 import { Readable } from 'stream';
 
-import FileService from '../file/service';
-import { Actor, Member } from '../member/entities/member';
-import { THUMBNAIL_FORMAT, THUMBNAIL_MIMETYPE, ThumbnailSizeFormat } from './constants';
+import FileService from '../file/service.js';
+import { Actor, Member } from '../member/entities/member.js';
+import { THUMBNAIL_FORMAT, THUMBNAIL_MIMETYPE, ThumbnailSizeFormat } from './constants.js';
 
 export class ThumbnailService {
   fileService: FileService;

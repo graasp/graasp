@@ -1,4 +1,4 @@
-import { EtherpadPluginOptions } from './types';
+import { EtherpadPluginOptions } from './types.js';
 
 export function validatePluginOptions(options: EtherpadPluginOptions) {
   const { url, apiKey } = options;

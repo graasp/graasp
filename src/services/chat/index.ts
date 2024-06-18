@@ -9,20 +9,20 @@
 import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
-import { notUndefined } from '../../utils/assertions';
-import { buildRepositories } from '../../utils/repositories';
-import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
-import { ActionChatService } from './plugins/action/service';
-import mentionPlugin from './plugins/mentions';
+import { notUndefined } from '../../utils/assertions.js';
+import { buildRepositories } from '../../utils/repositories.js';
+import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport/index.js';
+import { ActionChatService } from './plugins/action/service.js';
+import mentionPlugin from './plugins/mentions/index.js';
 import commonChat, {
   clearChat,
   deleteMessage,
   getChat,
   patchMessage,
   publishMessage,
-} from './schemas';
-import { ChatMessageService } from './service';
-import { registerChatWsHooks } from './ws/hooks';
+} from './schemas.js';
+import { ChatMessageService } from './service.js';
+import { registerChatWsHooks } from './ws/hooks.js';
 
 /**
  * Type definition for plugin options

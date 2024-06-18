@@ -1,9 +1,9 @@
 import { FileItemType, MemberStorage } from '@graasp/sdk';
 
-import { Repositories } from '../../../../utils/repositories';
-import { DEFAULT_MAX_STORAGE } from '../../../item/plugins/file/utils/constants';
-import { StorageExceeded } from '../../../item/plugins/file/utils/errors';
-import { Member } from '../../entities/member';
+import { Repositories } from '../../../../utils/repositories.js';
+import { DEFAULT_MAX_STORAGE } from '../../../item/plugins/file/utils/constants.js';
+import { StorageExceeded } from '../../../item/plugins/file/utils/errors.js';
+import { Member } from '../../entities/member.js';
 
 export class StorageService {
   fileItemType: FileItemType;

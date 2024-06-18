@@ -5,16 +5,16 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
-import { MemberCannotAccess } from '../../../../../utils/errors';
-import { Member } from '../../../../member/entities/member';
-import { saveMember } from '../../../../member/test/fixtures/members';
-import { ItemTestUtils, expectManyPackedItems } from '../../../test/fixtures/items';
-import { setItemPublic } from '../../itemTag/test/fixtures';
-import { ItemLikeNotFound } from '../errors';
-import { ItemLike } from '../itemLike';
-import { ItemLikeRepository } from '../repository';
-import { saveItemLikes } from './utils';
+import build, { clearDatabase } from '../../../../../../test/app.js';
+import { MemberCannotAccess } from '../../../../../utils/errors.js';
+import { Member } from '../../../../member/entities/member.js';
+import { saveMember } from '../../../../member/test/fixtures/members.js';
+import { ItemTestUtils, expectManyPackedItems } from '../../../test/fixtures/items.js';
+import { setItemPublic } from '../../itemTag/test/fixtures.js';
+import { ItemLikeNotFound } from '../errors.js';
+import { ItemLike } from '../itemLike.js';
+import { ItemLikeRepository } from '../repository.js';
+import { saveItemLikes } from './utils.js';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');

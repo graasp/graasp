@@ -4,9 +4,9 @@ import { FastifyLoggerInstance } from 'fastify';
 
 import { AppDataVisibility } from '@graasp/sdk';
 
-import { Member } from '../../../../../member/entities/member';
-import { Item } from '../../../../entities/Item';
-import { AppDataRepository } from '../repository';
+import { Member } from '../../../../../member/entities/member.js';
+import { Item } from '../../../../entities/Item.js';
+import { AppDataRepository } from '../repository.js';
 
 export const GRAASP_PUBLISHER_ID = 'publisher-id';
 

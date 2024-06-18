@@ -1,10 +1,10 @@
 import { FastifyBaseLogger, FastifyInstance } from 'fastify';
 
-import build, { clearDatabase } from '../../../test/app';
-import { buildRepositories } from '../../utils/repositories';
-import { ThumbnailService } from '../thumbnail/service';
-import { ItemService } from './service';
-import { ItemTestUtils } from './test/fixtures/items';
+import build, { clearDatabase } from '../../../test/app.js';
+import { buildRepositories } from '../../utils/repositories.js';
+import { ThumbnailService } from '../thumbnail/service.js';
+import { ItemService } from './service.js';
+import { ItemTestUtils } from './test/fixtures/items.js';
 
 // mock datasource
 jest.mock('../../plugins/datasource');

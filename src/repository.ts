@@ -1,6 +1,6 @@
 import { BaseEntity, EntityManager, EntityTarget, Repository } from 'typeorm';
 
-import { AppDataSource } from './plugins/datasource';
+import { AppDataSource } from './plugins/datasource.js';
 
 export abstract class AbstractRepository<T extends BaseEntity> {
   protected repository: Repository<T>;

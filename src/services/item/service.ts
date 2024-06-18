@@ -15,7 +15,7 @@ import {
   getParentFromPath,
 } from '@graasp/sdk';
 
-import { Paginated, PaginationParams } from '../../types';
+import { Paginated, PaginationParams } from '../../types.js';
 import {
   InvalidMembership,
   ItemNotFolder,
@@ -24,25 +24,25 @@ import {
   TooManyChildren,
   TooManyDescendants,
   UnauthorizedMember,
-} from '../../utils/errors';
-import HookManager from '../../utils/hook';
-import { Repositories } from '../../utils/repositories';
+} from '../../utils/errors.js';
+import HookManager from '../../utils/hook.js';
+import { Repositories } from '../../utils/repositories.js';
 import {
   filterOutItems,
   filterOutPackedItems,
   validatePermission,
   validatePermissionMany,
-} from '../authorization';
-import { ItemMembership } from '../itemMembership/entities/ItemMembership';
-import { Actor, Member } from '../member/entities/member';
-import { ThumbnailService } from '../thumbnail/service';
-import { mapById } from '../utils';
-import { ItemWrapper, PackedItem } from './ItemWrapper';
-import { Item, isItemType } from './entities/Item';
-import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
-import { PartialItemGeolocation } from './plugins/geolocation/errors';
-import { ItemTag } from './plugins/itemTag/ItemTag';
-import { ItemChildrenParams, ItemSearchParams } from './types';
+} from '../authorization.js';
+import { ItemMembership } from '../itemMembership/entities/ItemMembership.js';
+import { Actor, Member } from '../member/entities/member.js';
+import { ThumbnailService } from '../thumbnail/service.js';
+import { mapById } from '../utils.js';
+import { ItemWrapper, PackedItem } from './ItemWrapper.js';
+import { Item, isItemType } from './entities/Item.js';
+import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation.js';
+import { PartialItemGeolocation } from './plugins/geolocation/errors.js';
+import { ItemTag } from './plugins/itemTag/ItemTag.js';
+import { ItemChildrenParams, ItemSearchParams } from './types.js';
 
 export class ItemService {
   private log: FastifyBaseLogger;

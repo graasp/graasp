@@ -1,13 +1,13 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { notUndefined } from '../../../../../utils/assertions';
-import { buildRepositories } from '../../../../../utils/repositories';
-import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
-import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request';
-import { appActionsWsHooks } from '../ws/hooks';
-import { InputAppAction } from './interfaces/app-action';
-import common, { create, getForMany, getForOne } from './schemas';
-import { AppActionService } from './service';
+import { notUndefined } from '../../../../../utils/assertions.js';
+import { buildRepositories } from '../../../../../utils/repositories.js';
+import { authenticateAppsJWT } from '../../../../auth/plugins/passport/index.js';
+import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request.js';
+import { appActionsWsHooks } from '../ws/hooks.js';
+import { InputAppAction } from './interfaces/app-action.js';
+import common, { create, getForMany, getForOne } from './schemas.js';
+import { AppActionService } from './service.js';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db } = fastify;

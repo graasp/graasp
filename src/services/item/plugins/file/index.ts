@@ -3,15 +3,15 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { FileItemProperties, HttpMethod, PermissionLevel } from '@graasp/sdk';
 
-import { IdParam } from '../../../../types';
-import { notUndefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
-import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
-import { validatePermission } from '../../../authorization';
-import { Item } from '../../entities/Item';
-import { download, updateSchema, upload } from './schema';
-import FileItemService from './service';
-import { DEFAULT_MAX_FILE_SIZE, MAX_NUMBER_OF_FILES_UPLOAD } from './utils/constants';
+import { IdParam } from '../../../../types.js';
+import { notUndefined } from '../../../../utils/assertions.js';
+import { buildRepositories } from '../../../../utils/repositories.js';
+import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport/index.js';
+import { validatePermission } from '../../../authorization.js';
+import { Item } from '../../entities/Item.js';
+import { download, updateSchema, upload } from './schema.js';
+import FileItemService from './service.js';
+import { DEFAULT_MAX_FILE_SIZE, MAX_NUMBER_OF_FILES_UPLOAD } from './utils/constants.js';
 
 export interface GraaspPluginFileOptions {
   shouldRedirectOnDownload?: boolean; // redirect value on download

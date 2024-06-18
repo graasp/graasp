@@ -2,9 +2,9 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { CompleteMember } from '@graasp/sdk';
 
-import { saveMember } from '../../../../test/fixtures/members';
-import { MemberProfile } from '../../entities/profile';
-import { IMemberProfile } from '../../types';
+import { saveMember } from '../../../../test/fixtures/members.js';
+import { MemberProfile } from '../../entities/profile.js';
+import { IMemberProfile } from '../../types.js';
 
 export const getDummyProfile = (options: Partial<MemberProfile>): Partial<MemberProfile> => {
   const {

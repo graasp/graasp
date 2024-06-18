@@ -1,7 +1,7 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { MEMBER_EXPORT_DATA_ROUTE_PREFIX } from '../../../../utils/config';
-import memberDataController from './controller';
+import { MEMBER_EXPORT_DATA_ROUTE_PREFIX } from '../../../../utils/config.js';
+import memberDataController from './controller.js';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   await fastify.register(

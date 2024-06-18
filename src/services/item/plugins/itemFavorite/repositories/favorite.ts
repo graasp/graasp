@@ -1,13 +1,13 @@
 import { EntityManager, Repository } from 'typeorm';
 
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { DUPLICATE_ENTRY_ERROR_CODE } from '../../../../../utils/typeormError';
-import { MemberIdentifierNotFound } from '../../../../itemLogin/errors';
-import { itemFavoriteSchema } from '../../../../member/plugins/export-data/schemas/schemas';
+import { AppDataSource } from '../../../../../plugins/datasource.js';
+import { DUPLICATE_ENTRY_ERROR_CODE } from '../../../../../utils/typeormError.js';
+import { MemberIdentifierNotFound } from '../../../../itemLogin/errors.js';
+import { itemFavoriteSchema } from '../../../../member/plugins/export-data/schemas/schemas.js';
 import { schemaToSelectMapper } from '../../../../member/plugins/export-data/utils/selection.utils';
-import { Item } from '../../../entities/Item';
-import { ItemFavorite } from '../entities/ItemFavorite';
-import { DuplicateFavoriteError, ItemFavoriteNotFound } from '../errors';
+import { Item } from '../../../entities/Item.js';
+import { ItemFavorite } from '../entities/ItemFavorite.js';
+import { DuplicateFavoriteError, ItemFavoriteNotFound } from '../errors.js';
 
 export class FavoriteRepository {
   private repository: Repository<ItemFavorite>;

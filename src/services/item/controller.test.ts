@@ -12,13 +12,13 @@ import {
   buildPathFromIds,
 } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../test/app';
-import seed from '../../../test/mock';
-import '../../plugins/datasource';
-import { ItemMembership } from '../itemMembership/entities/ItemMembership';
-import { Actor } from '../member/entities/member';
-import { Item } from './entities/Item';
-import { ItemTag } from './plugins/itemTag/ItemTag';
+import build, { clearDatabase } from '../../../test/app.js';
+import seed from '../../../test/mock/index.js';
+import '../../plugins/datasource.js';
+import { ItemMembership } from '../itemMembership/entities/ItemMembership.js';
+import { Actor } from '../member/entities/member.js';
+import { Item } from './entities/Item.js';
+import { ItemTag } from './plugins/itemTag/ItemTag.js';
 
 jest.mock('../../plugins/datasource');
 

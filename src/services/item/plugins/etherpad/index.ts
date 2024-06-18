@@ -1,2 +1,2 @@
-export { default } from './service-api';
-export * from './types';
+export { default } from './service-api.js';
+export * from './types.js';

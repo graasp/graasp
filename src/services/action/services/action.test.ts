@@ -2,14 +2,14 @@ import type { FastifyBaseLogger, FastifyInstance, FastifyRequest } from 'fastify
 
 import { ActionFactory, MemberFactory } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../test/app';
-import { AppDataSource } from '../../../plugins/datasource';
-import { buildRepositories } from '../../../utils/repositories';
-import { ItemService } from '../../item/service';
-import { MemberService } from '../../member/service';
-import { ThumbnailService } from '../../thumbnail/service';
-import { Action } from '../entities/action';
-import { ActionService } from './action';
+import build, { clearDatabase } from '../../../../test/app.js';
+import { AppDataSource } from '../../../plugins/datasource.js';
+import { buildRepositories } from '../../../utils/repositories.js';
+import { ItemService } from '../../item/service.js';
+import { MemberService } from '../../member/service.js';
+import { ThumbnailService } from '../../thumbnail/service.js';
+import { Action } from '../entities/action.js';
+import { ActionService } from './action.js';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');

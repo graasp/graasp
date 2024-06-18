@@ -14,20 +14,24 @@ import {
   HttpMethod,
 } from '@graasp/sdk';
 
-import { IdParam } from '../../../../types';
-import { notUndefined } from '../../../../utils/assertions';
-import { CLIENT_HOSTS } from '../../../../utils/config';
-import { buildRepositories } from '../../../../utils/repositories';
-import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import { IdParam } from '../../../../types.js';
+import { notUndefined } from '../../../../utils/assertions.js';
+import { CLIENT_HOSTS } from '../../../../utils/config.js';
+import { buildRepositories } from '../../../../utils/repositories.js';
+import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport/index.js';
 import {
   LocalFileConfiguration,
   S3FileConfiguration,
-} from '../../../file/interfaces/configuration';
-import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
-import { CannotPostAction } from './errors';
-import { ActionRequestExportService } from './requestExport/service';
-import { exportAction, getAggregateActions, getItemActions, postAction } from './schemas';
-import { ActionItemService } from './service';
+} from '../../../file/interfaces/configuration.js';
+import {
+  ItemOpFeedbackErrorEvent,
+  ItemOpFeedbackEvent,
+  memberItemsTopic,
+} from '../../ws/events.js';
+import { CannotPostAction } from './errors.js';
+import { ActionRequestExportService } from './requestExport/service.js';
+import { exportAction, getAggregateActions, getItemActions, postAction } from './schemas.js';
+import { ActionItemService } from './service.js';
 
 export interface GraaspActionsOptions {
   shouldSave?: boolean;

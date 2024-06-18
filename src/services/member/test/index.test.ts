@@ -5,14 +5,14 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, ItemType, MAX_USERNAME_LENGTH } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../test/app';
-import { AppDataSource } from '../../../plugins/datasource';
-import { DEFAULT_MAX_STORAGE } from '../../../services/item/plugins/file/utils/constants';
-import { FILE_ITEM_TYPE } from '../../../utils/config';
-import { CannotModifyOtherMembers, MemberNotFound } from '../../../utils/errors';
-import { ItemTestUtils } from '../../item/test/fixtures/items';
-import { Member } from '../entities/member';
-import { saveMember, saveMembers } from './fixtures/members';
+import build, { clearDatabase } from '../../../../test/app.js';
+import { AppDataSource } from '../../../plugins/datasource.js';
+import { DEFAULT_MAX_STORAGE } from '../../../services/item/plugins/file/utils/constants.js';
+import { FILE_ITEM_TYPE } from '../../../utils/config.js';
+import { CannotModifyOtherMembers, MemberNotFound } from '../../../utils/errors.js';
+import { ItemTestUtils } from '../../item/test/fixtures/items.js';
+import { Member } from '../entities/member.js';
+import { saveMember, saveMembers } from './fixtures/members.js';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');

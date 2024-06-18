@@ -2,13 +2,13 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { AppDataVisibility, PermissionLevel } from '@graasp/sdk';
 
-import { buildRepositories } from '../../../../../utils/repositories';
-import { validatePermission } from '../../../../authorization';
-import { WebsocketService } from '../../../../websockets/ws-service';
-import { ItemService } from '../../../service';
-import { AppActionService } from '../appAction/service';
-import { AppDataService } from '../appData/service';
-import { AppSettingService } from '../appSetting/service';
+import { buildRepositories } from '../../../../../utils/repositories.js';
+import { validatePermission } from '../../../../authorization.js';
+import { WebsocketService } from '../../../../websockets/ws-service.js';
+import { ItemService } from '../../../service.js';
+import { AppActionService } from '../appAction/service.js';
+import { AppDataService } from '../appData/service.js';
+import { AppSettingService } from '../appSetting/service.js';
 import {
   AppActionEvent,
   AppDataEvent,
@@ -16,8 +16,8 @@ import {
   appActionsTopic,
   appDataTopic,
   appSettingsTopic,
-} from './events';
-import { checkItemIsApp } from './utils';
+} from './events.js';
+import { checkItemIsApp } from './utils.js';
 
 /**
  * helper to register app data topic

@@ -1,7 +1,7 @@
-import { Repositories } from '../../../../utils/repositories';
-import { Actor, Member } from '../../../member/entities/member';
-import { ItemService } from '../../service';
-import { ItemFlag } from './itemFlag';
+import { Repositories } from '../../../../utils/repositories.js';
+import { Actor, Member } from '../../../member/entities/member.js';
+import { ItemService } from '../../service.js';
+import { ItemFlag } from './itemFlag.js';
 
 export class ItemFlagService {
   itemService: ItemService;

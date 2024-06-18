@@ -5,14 +5,14 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
-import { APP_ITEMS_PREFIX } from '../../../../../utils/config';
-import { Actor, Member } from '../../../../member/entities/member';
-import { expectMinimalMember, saveMember } from '../../../../member/test/fixtures/members';
-import { Item } from '../../../entities/Item';
-import { expectItem } from '../../../test/fixtures/items';
-import { setItemPublic } from '../../itemTag/test/fixtures';
-import { AppTestUtils, MOCK_APP_ORIGIN } from './fixtures';
+import build, { clearDatabase } from '../../../../../../test/app.js';
+import { APP_ITEMS_PREFIX } from '../../../../../utils/config.js';
+import { Actor, Member } from '../../../../member/entities/member.js';
+import { expectMinimalMember, saveMember } from '../../../../member/test/fixtures/members.js';
+import { Item } from '../../../entities/Item.js';
+import { expectItem } from '../../../test/fixtures/items.js';
+import { setItemPublic } from '../../itemTag/test/fixtures.js';
+import { AppTestUtils, MOCK_APP_ORIGIN } from './fixtures.js';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');

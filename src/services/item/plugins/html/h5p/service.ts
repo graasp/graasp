@@ -9,14 +9,14 @@ import {
   H5P_FILE_STORAGE_CONFIG,
   H5P_FILE_STORAGE_TYPE,
   H5P_PATH_PREFIX,
-} from '../../../../../utils/config';
-import { Repositories } from '../../../../../utils/repositories';
-import { Actor, Member } from '../../../../member/entities/member';
-import { Item } from '../../../entities/Item';
-import { HtmlService } from '../service';
-import { H5P_FILE_DOT_EXTENSION, H5P_FILE_MIME_TYPE } from './constants';
-import { H5P } from './validation/h5p';
-import { H5PValidator } from './validation/h5p-validator';
+} from '../../../../../utils/config.js';
+import { Repositories } from '../../../../../utils/repositories.js';
+import { Actor, Member } from '../../../../member/entities/member.js';
+import { Item } from '../../../entities/Item.js';
+import { HtmlService } from '../service.js';
+import { H5P_FILE_DOT_EXTENSION, H5P_FILE_MIME_TYPE } from './constants.js';
+import { H5PValidator } from './validation/h5p-validator.js';
+import { H5P } from './validation/h5p.js';
 
 /**
  * Implementation for the H5P service

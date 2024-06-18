@@ -1,8 +1,8 @@
 import { ItemTagType, PermissionLevel } from '@graasp/sdk';
 
-import { Repositories } from '../../../../utils/repositories';
-import { Actor } from '../../../member/entities/member';
-import { ItemService } from '../../service';
+import { Repositories } from '../../../../utils/repositories.js';
+import { Actor } from '../../../member/entities/member.js';
+import { ItemService } from '../../service.js';
 
 export class ItemTagService {
   private itemService: ItemService;

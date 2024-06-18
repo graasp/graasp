@@ -1,4 +1,4 @@
-import { idParam } from '../../../../schemas/fluent-schema';
+import { idParam } from '../../../../schemas/fluent-schema.js';
 
 // schema for removing all actions of a member
 export const deleteAllById = {
