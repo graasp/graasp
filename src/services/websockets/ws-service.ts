@@ -13,7 +13,7 @@ import {
 import { MultiInstanceChannelsBroker } from './multi-instance.js';
 import { WebSocketChannels } from './ws-channels.js';
 
-export interface SubscriptionRequest {
+export type SubscriptionRequest = {
   /**
    * Subscription target channel name
    */
@@ -22,7 +22,7 @@ export interface SubscriptionRequest {
    * Member requesting a subscription
    */
   member: Member;
-}
+};
 
 type ValidationFn = (request: SubscriptionRequest) => Promise<void>;
 
@@ -33,7 +33,7 @@ type ValidationFn = (request: SubscriptionRequest) => Promise<void>;
  */
 export class WebsocketService {
   // store for validation functions indexed by topic
-  private validators: Map<string, ValidationFn> = new Map();
+  private validators = new Map<string, ValidationFn>();
   // channels abstraction reference
   private wsChannels: WebSocketChannels;
   // multi-instance channels broker reference (to send across servers cluster)

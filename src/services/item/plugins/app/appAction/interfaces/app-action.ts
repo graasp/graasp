@@ -1,4 +1,4 @@
-export interface InputAppAction {
-  data: { [key: string]: unknown };
+export type InputAppAction = {
+  data: Record<string, unknown>;
   type: string;
-}
+};

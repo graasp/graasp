@@ -437,11 +437,11 @@ export class UnexpectedError extends CoreError {
   }
 }
 
-interface OpenAIParamsError {
+type OpenAIParamsError = {
   message?: string;
   code?: string;
   statusCode?: number;
-}
+};
 
 export class OpenAIBaseError extends CoreError {
   constructor({

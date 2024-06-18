@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { faker } from '@faker-js/faker';
 import crypto from 'crypto';
 import { StatusCodes } from 'http-status-codes';

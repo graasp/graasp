@@ -19,7 +19,7 @@ import { ItemWrapper } from '../../ItemWrapper.js';
 import { ItemService } from '../../service.js';
 import { ItemTestUtils } from '../../test/fixtures/items.js';
 import { ItemGeolocation } from './ItemGeolocation.js';
-import { expectItemGeolocations, saveGeolocation } from './index.test';
+import { expectItemGeolocations, saveGeolocation } from './index.test.js';
 import { ItemGeolocationService } from './service.js';
 
 // mock datasource
@@ -131,6 +131,7 @@ describe('ItemGeolocationService', () => {
       const { packed: geoloc } = await saveGeolocation({ lat: 1, lng: 2, item, country: 'de' });
 
       const res = await service.getByItem(actor, buildRepositories(), item.id);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expectItemGeolocations([res!], [geoloc]);
     });
 
@@ -147,6 +148,7 @@ describe('ItemGeolocationService', () => {
       });
 
       const res = await service.getByItem(actor, buildRepositories(), item.id);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expectItemGeolocations([res!], [geoloc]);
     });
 
@@ -165,6 +167,7 @@ describe('ItemGeolocationService', () => {
 
       const res = await service.getByItem(actor, buildRepositories(), item.id);
 
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expectItemGeolocations([res!], [geoloc]);
     });
 

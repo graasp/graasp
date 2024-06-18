@@ -44,7 +44,7 @@ class ServiceStatus {
   }
 }
 class HealthyStatus extends ServiceStatus {
-  constructor(message: string = 'Running') {
+  constructor(message = 'Running') {
     super(Status.Healthy, message);
   }
 }

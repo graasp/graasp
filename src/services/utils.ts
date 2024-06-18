@@ -12,7 +12,7 @@ export function mapById<T>({
   findElement: (key: string) => T | undefined;
   buildError?: (key: string) => Error;
 }): ResultOf<T> {
-  const data: { [key: string]: T } = {};
+  const data: Record<string, T> = {};
   const errors: Error[] = [];
   keys.forEach((key) => {
     const m = findElement(key);

@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 import { DateTime } from 'luxon';
 import nock from 'nock';
 import { And, Not } from 'typeorm';
-import * as uuid from 'uuid';
+import { v4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
@@ -28,10 +28,11 @@ const testUtils = new ItemTestUtils();
 const MOCK_GROUP_ID = 'g.s8oes9dhwrvt0zif';
 const MOCK_PAD_READ_ONLY_ID = 'r.s8oes9dhwrvt0zif';
 const MOCK_PAD_NAME = 'mock-pad-name';
+// eslint-disable-next-line no-useless-escape
 const MOCK_PAD_ID = `${MOCK_GROUP_ID}\$${MOCK_PAD_NAME}`;
 const MOCK_AUTHOR_ID = 'a.s8oes9dhwrvt0zif';
 const MOCK_SESSION_ID = 's.s8oes9dhwrvt0zif';
-const MODES: Array<'read' | 'write'> = ['read', 'write'];
+const MODES: ('read' | 'write')[] = ['read', 'write'];
 
 describe('Etherpad service API', () => {
   let app: FastifyInstance;
@@ -572,7 +573,7 @@ describe('Etherpad service API', () => {
       // generate an id for an item that does not exist
       let randomId;
       do {
-        randomId = uuid.v4();
+        randomId = v4();
         // probability if infinitely low, but just for sanity
       } while (randomId === item.id);
       const res = await app.inject(payloadView(mode, randomId));

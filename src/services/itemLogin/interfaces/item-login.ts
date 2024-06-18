@@ -1,12 +1,12 @@
-export interface ItemMemberLogin {
+export type ItemMemberLogin = {
   itemId: string;
   memberId: string;
   createdAt: string;
-}
+};
 
 // Members
-export interface ItemLoginMemberCredentials {
+export type ItemLoginMemberCredentials = {
   memberId?: string;
   username?: string;
   password?: string;
-}
+};

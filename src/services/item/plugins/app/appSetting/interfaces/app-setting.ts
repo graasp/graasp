@@ -1,8 +1,8 @@
 import { UUID } from '@graasp/sdk';
 
-export interface InputAppSetting {
+export type InputAppSetting = {
   name: string;
   itemId: string;
-  data: { [key: string]: unknown };
+  data: Record<string, unknown>;
   id: UUID;
-}
+};

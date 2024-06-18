@@ -60,7 +60,7 @@ export class AppData extends BaseEntity {
   visibility: AppDataVisibility;
 
   @Column('simple-json', { nullable: false, default: '{}' })
-  data: { [key: string]: unknown };
+  data: Record<string, unknown>;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

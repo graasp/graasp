@@ -13,12 +13,12 @@ import { download, updateSchema, upload } from './schema.js';
 import FileItemService from './service.js';
 import { DEFAULT_MAX_FILE_SIZE, MAX_NUMBER_OF_FILES_UPLOAD } from './utils/constants.js';
 
-export interface GraaspPluginFileOptions {
+export type GraaspPluginFileOptions = {
   shouldRedirectOnDownload?: boolean; // redirect value on download
   uploadMaxFileNb?: number; // max number of files to upload at a time
   maxFileSize?: number; // max size for an uploaded file in bytes
   maxMemberStorage?: number; // max storage space for a user
-}
+};
 
 const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, options) => {
   const {

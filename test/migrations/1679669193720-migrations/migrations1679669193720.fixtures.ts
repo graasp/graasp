@@ -271,7 +271,7 @@ export const values = {
 
 // types will be outdated so we don't use them
 export const expected = {
-  member: async (m: any, idx: number) => {
+  member: async (m, idx: number) => {
     const expected = values.member[idx];
     expect(m.id).toEqual(expected.id);
     expect(m.name).toEqual(expected.name);
@@ -283,7 +283,7 @@ export const expected = {
     expect(m.created_at).toBeTruthy();
     expect(m.updated_at).toBeTruthy();
   },
-  item: async (item: any, idx: number) => {
+  item: async (item, idx: number) => {
     const expected = values.item[idx];
     expect(item.id).toEqual(itemId);
     expect(item.name).toEqual(expected.name);
@@ -295,7 +295,7 @@ export const expected = {
     expect(item.created_at).toBeTruthy();
     expect(item.updated_at).toBeTruthy();
   },
-  item_membership: async (im: any, idx: number) => {
+  item_membership: async (im, idx: number) => {
     const expected = values.item_membership[idx];
 
     expect(im.id).toEqual(expected.id);
@@ -305,7 +305,7 @@ export const expected = {
     expect(im.created_at).toBeTruthy();
     expect(im.updated_at).toBeTruthy();
   },
-  invitation: async (invitation: any, idx: number) => {
+  invitation: async (invitation, idx: number) => {
     const expected = values.invitation[idx];
 
     expect(invitation.id).toEqual(expected.id);
@@ -317,7 +317,7 @@ export const expected = {
     expect(invitation.created_at).toBeTruthy();
     expect(invitation.updated_at).toBeTruthy();
   },
-  action: async (action: any, idx: number) => {
+  action: async (action, idx: number) => {
     const expected = values.action[idx];
     expect(action.id).toEqual(expected.id);
     expect(action.item_path).toEqual(expected.item_path);
@@ -330,14 +330,14 @@ export const expected = {
     expect(action.view).toEqual(expected.view);
     expect(action.created_at).toBeTruthy();
   },
-  action_request_export: async (a: any, idx: number) => {
+  action_request_export: async (a, idx: number) => {
     const expected = values.action_request_export[idx];
     expect(a.id).toEqual(expected.id);
     expect(a.item_id).toEqual(expected.item_id);
     expect(a.member_id).toEqual(expected.member_id);
     expect(a.created_at).toBeTruthy();
   },
-  recycled_item: async (recycledItem: any, idx: number) => {
+  recycled_item: async (recycledItem, idx: number) => {
     const expected = values.recycled_item[idx];
     expect(recycledItem.id).toEqual(expected.id);
     expect(recycledItem.item_id).toEqual(expected.item_id);
@@ -345,61 +345,61 @@ export const expected = {
     expect(recycledItem.item_path).toEqual(expected.item_path);
     expect(recycledItem.created_at).toBeTruthy();
   },
-  tag: async (tag: any, idx: number) => {
+  tag: async (tag, idx: number) => {
     const expected = values.tag[idx];
     expect(tag.id).toEqual(expected.id);
     expect(tag.name).toEqual(expected.name);
     expect(tag.nested).toEqual(expected.nested);
     expect(tag.created_at).toBeTruthy();
   },
-  item_tag: async (itemTag: any, idx: number) => {
+  item_tag: async (itemTag, idx: number) => {
     const expected = values.item_tag[idx];
     expect(itemTag.id).toEqual(expected.id);
     expect(itemTag.tag_id).toEqual(expected.tag_id);
     expect(itemTag.creator).toEqual(expected.creator);
     expect(itemTag.created_at).toBeTruthy();
   },
-  category_type: async (ct: any, idx: number) => {
+  category_type: async (ct, idx: number) => {
     const expected = values.category_type[idx];
     expect(ct.id).toEqual(expected.id);
     expect(ct.name).toEqual(expected.name);
   },
-  category: async (c: any, idx: number) => {
+  category: async (c, idx: number) => {
     const expected = values.category[idx];
     expect(c.id).toEqual(expected.id);
     expect(c.name).toEqual(expected.name);
     expect(c.type).toEqual(expected.type);
   },
-  item_category: async (ic: any, idx: number) => {
+  item_category: async (ic, idx: number) => {
     const expected = values.item_category[idx];
     expect(ic.id).toEqual(expected.id);
     expect(ic.category_id).toEqual(expected.category_id);
     expect(ic.item_id).toEqual(expected.item_id);
   },
-  item_validation_process: async (ivp: any, idx: number) => {
+  item_validation_process: async (ivp, idx: number) => {
     const expected = values.item_validation_process[idx];
     expect(ivp.id).toEqual(expected.id);
     expect(ivp.name).toEqual(expected.name);
     expect(ivp.description).toEqual(expected.description);
     expect(ivp.enabled).toEqual(expected.enabled);
   },
-  item_validation_status: async (ivs: any, idx: number) => {
+  item_validation_status: async (ivs, idx: number) => {
     const expected = values.item_validation_status[idx];
     expect(ivs.id).toEqual(expected.id);
     expect(ivs.name).toEqual(expected.name);
   },
-  item_validation: async (iv: any, idx: number) => {
+  item_validation: async (iv, idx: number) => {
     const expected = values.item_validation[idx];
     expect(iv.id).toEqual(expected.id);
     expect(iv.item_id).toEqual(expected.item_id);
     expect(iv.created_at).toBeTruthy();
   },
-  item_validation_review_status: async (ivrs: any, idx: number) => {
+  item_validation_review_status: async (ivrs, idx: number) => {
     const expected = values.item_validation_review_status[idx];
     expect(ivrs.id).toEqual(expected.id);
     expect(ivrs.name).toEqual(expected.name);
   },
-  item_validation_review: async (ivr: any, idx: number) => {
+  item_validation_review: async (ivr, idx: number) => {
     const expected = values.item_validation_review[idx];
     expect(ivr.id).toBeTruthy();
     expect(ivr.item_validation_id).toEqual(expected.item_validation_id);
@@ -409,7 +409,7 @@ export const expected = {
     expect(ivr.created_at).toBeTruthy();
     expect(ivr.updated_at).toBeTruthy();
   },
-  item_validation_group: async (ivg: any, idx: number) => {
+  item_validation_group: async (ivg, idx: number) => {
     const expected = values.item_validation_group[idx];
     expect(ivg.id).toBeTruthy();
     expect(ivg.item_id).toEqual(expected.item_id);
@@ -420,13 +420,13 @@ export const expected = {
     expect(ivg.created_at).toBeTruthy();
     expect(ivg.updated_at).toBeTruthy();
   },
-  item_member_login: async (iml: any, idx: number) => {
+  item_member_login: async (iml, idx: number) => {
     const expected = values.item_member_login[idx];
     expect(iml.item_id).toEqual(expected.item_id);
     expect(iml.member_id).toEqual(expected.member_id);
     expect(iml.created_at).toBeTruthy();
   },
-  chat_message: async (cm: any, idx: number) => {
+  chat_message: async (cm, idx: number) => {
     const expected = values.chat_message[idx];
     expect(cm.id).toEqual(expected.id);
     expect(cm.chat_id).toEqual(expected.chat_id);
@@ -435,7 +435,7 @@ export const expected = {
     expect(cm.created_at).toBeTruthy();
     expect(cm.updated_at).toBeTruthy();
   },
-  chat_mention: async (cm: any, idx: number) => {
+  chat_mention: async (cm, idx: number) => {
     const expected = values.chat_mention[idx];
     expect(cm.id).toEqual(expected.id);
     expect(cm.item_path).toEqual(expected.item_path);
@@ -446,12 +446,12 @@ export const expected = {
     expect(cm.created_at).toBeTruthy();
     expect(cm.updated_at).toBeTruthy();
   },
-  flag: async (flag: any, idx: number) => {
+  flag: async (flag, idx: number) => {
     const expected = values.flag[idx];
     expect(flag.id).toEqual(expected.id);
     expect(flag.name).toEqual(expected.name);
   },
-  item_flag: async (iflag: any, idx: number) => {
+  item_flag: async (iflag, idx: number) => {
     const expected = values.item_flag[idx];
     expect(iflag.id).toEqual(expected.id);
     expect(iflag.flag_id).toEqual(expected.flag_id);
@@ -459,14 +459,14 @@ export const expected = {
     expect(iflag.creator).toEqual(expected.creator);
     expect(iflag.created_at).toBeTruthy();
   },
-  publisher: async (p: any, idx: number) => {
+  publisher: async (p, idx: number) => {
     const expected = values.publisher[idx];
     expect(p.id).toEqual(expected.id);
     expect(p.name).toEqual(expected.name);
     expect(p.origins).toEqual(expected.origins);
     expect(p.created_at).toBeTruthy();
   },
-  app: async (a: any, idx: number) => {
+  app: async (a, idx: number) => {
     const expected = values.app[idx];
     expect(a.id).toEqual(expected.id);
     expect(a.name).toEqual(expected.name);
@@ -476,7 +476,7 @@ export const expected = {
     expect(a.extra).toEqual(expected.extra);
     expect(a.created_at).toBeTruthy();
   },
-  app_data: async (ad: any, idx: number) => {
+  app_data: async (ad, idx: number) => {
     const expected = values.app_data[idx];
     expect(ad.id).toEqual(expected.id);
     expect(ad.member_id).toEqual(expected.member_id);
@@ -487,7 +487,7 @@ export const expected = {
     expect(ad.data).toEqual(expected.data);
     expect(ad.created_at).toBeTruthy();
   },
-  app_action: async (aa: any, idx: number) => {
+  app_action: async (aa, idx: number) => {
     const expected = values.app_action[idx];
     expect(aa.id).toEqual(expected.id);
     expect(aa.member_id).toEqual(expected.member_id);
@@ -496,7 +496,7 @@ export const expected = {
     expect(aa.data).toEqual(expected.data);
     expect(aa.created_at).toBeTruthy();
   },
-  app_setting: async (as: any, idx: number) => {
+  app_setting: async (as, idx: number) => {
     const expected = values.app_setting[idx];
     expect(as.id).toEqual(expected.id);
     expect(as.creator).toEqual(expected.creator);
@@ -506,7 +506,7 @@ export const expected = {
     expect(as.created_at).toBeTruthy();
     expect(as.updated_at).toBeTruthy();
   },
-  item_like: async (il: any, idx: number) => {
+  item_like: async (il, idx: number) => {
     const expected = values.item_like[idx];
     expect(il.id).toEqual(expected.id);
     expect(il.member_id).toEqual(expected.member_id);

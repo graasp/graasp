@@ -1,4 +1,4 @@
 /** Helper type for fastify-static */
-export interface FastifyStaticReply {
+export type FastifyStaticReply = {
   setHeader: (key: string, value: string) => void;
-}
+};

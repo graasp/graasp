@@ -61,7 +61,7 @@ export namespace H5P {
    * The specification is found at
    * https://h5p.org/documentation/developers/json-file-definitions
    */
-  export interface Manifest {
+  export type Manifest = {
     /* Mandatory properties */
 
     /** The title of the H5P would typically be used on pages displaying it, and in system administration lists. This can be any valid string. */
@@ -256,21 +256,21 @@ export namespace H5P {
       | 'zu'
       | 'und';
     /** Libraries that are used by this content type and needs to be preloaded for this content type to work. The dependencies are listed as objects with machineName, majorVersion, and minorVersion. This field must at least contain the main library of the package. */
-    preloadedDependencies: Array<{
+    preloadedDependencies: {
       machineName: string;
       majorVersion: number | string; // examples on h5p.org include both types...
       minorVersion: number | string; // examples on h5p.org include both types...
-    }>;
+    }[];
     /** List of possible embedding methods for the H5P. Specify one or both of "div" and "iframe". */
-    embedTypes: Array<'div' | 'iframe'>;
+    embedTypes: ('div' | 'iframe')[];
 
     /* Optional properties */
 
     /** The name and role of the content authors. Valid values for "role" are "Author", "Editor", "Licensee", "Originator" */
-    authors?: Array<{
+    authors?: {
       name: string;
       role: 'Author' | 'Editor' | 'Licensee' | 'Originator';
-    }>;
+    }[];
     /** The source (a URL) of the licensed material. */
     source?: string;
     /** A code for the content license. The following license codes are recognized: "CC-BY", "CC BY-SA", "CC BY-ND", "CC BY-NC", "CC BY-NC-SA", "CC CC-BY-NC-CD", "CC0 1.0", "GNU GPL", "PD", "ODC PDDL", "CC PDM", "C", "U" (Undisclosed) */
@@ -297,12 +297,12 @@ export namespace H5P {
     /** If a license is valid for a certain period of time, this represents the end year (as a string). */
     yearTo?: string | number;
     /** The changelog. */
-    changes?: Array<{
+    changes?: {
       date: string;
       author: string;
       log: string;
-    }>;
+    }[];
     /** Comments for the editor of the content. This text will not be published as a part of copyright info. */
     authorComments?: string;
-  }
+  };
 }

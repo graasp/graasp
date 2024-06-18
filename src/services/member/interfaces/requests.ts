@@ -1,3 +1,3 @@
-export interface EmailParam {
+export type EmailParam = {
   email: string;
-}
+};

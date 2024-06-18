@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class migrations1679669193720 implements MigrationInterface {
@@ -13,7 +14,6 @@ export class migrations1679669193720 implements MigrationInterface {
           "password" character(60) DEFAULT NULL,
           "type" member_type_enum  NOT NULL DEFAULT 'individual',
           "extra" jsonb NOT NULL DEFAULT '{}'::jsonb,
-        
           "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
           "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'))`);
 
@@ -25,8 +25,7 @@ export class migrations1679669193720 implements MigrationInterface {
             "path" ltree UNIQUE NOT NULL,
             "extra" jsonb NOT NULL DEFAULT '{}'::jsonb,
             "settings" jsonb NOT NULL DEFAULT '{}'::jsonb,
-          
-            "creator" uuid REFERENCES "member" ("id") ON DELETE SET NULL, 
+            "creator" uuid REFERENCES "member" ("id") ON DELETE SET NULL,
             "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
             "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
             )`);
@@ -43,7 +42,7 @@ export class migrations1679669193720 implements MigrationInterface {
           "item_path" ltree REFERENCES "item" ("path") ON DELETE CASCADE ON UPDATE CASCADE,
           "permission" permissions_enum NOT NULL,
           "creator" uuid REFERENCES "member" ("id") ON DELETE SET NULL, -- don"t remove - set creator to NULL
-        
+
           "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE \'utc\'),
           "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE \'utc\'),
             PRIMARY KEY ("member_id", "item_path")
@@ -103,7 +102,7 @@ export class migrations1679669193720 implements MigrationInterface {
     await queryRunner.query(`ALTER TABLE action
             ADD item_path ltree REFERENCES "item" ("path") ON DELETE SET NULL ON UPDATE CASCADE`);
 
-    await queryRunner.query(`UPDATE action as a1 SET item_path = 
+    await queryRunner.query(`UPDATE action as a1 SET item_path =
             (SELECT path FROM item WHERE a1.item_id = item.id)`);
 
     await queryRunner.query('ALTER TABLE action DROP COLUMN item_id');
@@ -157,7 +156,7 @@ export class migrations1679669193720 implements MigrationInterface {
           -- delete row if item is deleted; update path if item's path is updated.
           "item_path" ltree REFERENCES "item" ("path") ON DELETE CASCADE ON UPDATE CASCADE,
           "creator" uuid REFERENCES "member" ("id") ON DELETE SET NULL, -- don't remove - set creator to NULL
-        
+
           "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
           PRIMARY KEY ("tag_id", "item_path")
             )`);
@@ -321,9 +320,9 @@ export class migrations1679669193720 implements MigrationInterface {
             )`);
 
     await queryRunner.query(`CREATE TABLE "chat_message" (
-            "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,                
-            "chat_id" uuid REFERENCES "item" ("id") ON DELETE CASCADE,       
-            "creator" uuid REFERENCES "member" ("id") ON DELETE SET NULL,   
+            "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
+            "chat_id" uuid REFERENCES "item" ("id") ON DELETE CASCADE,
+            "creator" uuid REFERENCES "member" ("id") ON DELETE SET NULL,
             "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
             "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
             "body" character varying(500)
@@ -353,7 +352,7 @@ export class migrations1679669193720 implements MigrationInterface {
 
     await queryRunner.query("CREATE TYPE mention_status AS ENUM ('unread', 'read')");
 
-    await queryRunner.query(`CREATE TABLE "chat_mention" 
+    await queryRunner.query(`CREATE TABLE "chat_mention"
             (
                 "id"         uuid UNIQUE    NOT NULL DEFAULT uuid_generate_v4(),
                 "item_path"  ltree REFERENCES "item" ("path") ON DELETE CASCADE,          -- delete row if item is deleted
@@ -415,14 +414,14 @@ export class migrations1679669193720 implements MigrationInterface {
 
     await queryRunner.query(`CREATE TABLE "app" (
             "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
-        
+
             "name" character varying(250) NOT NULL,
             "description" character varying(250) NOT NULL,
-        
+
             "url" character varying(250) NOT NULL,
             "publisher_id" uuid REFERENCES "publisher" ("id") ON DELETE CASCADE NOT NULL,
             "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
-        
+
             "extra" jsonb NOT NULL DEFAULT '{}'::jsonb
         )`);
 
@@ -435,27 +434,27 @@ export class migrations1679669193720 implements MigrationInterface {
 
     await queryRunner.query(`CREATE TABLE "app_data" (
             "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
-        
+
             -- delete row if member is deleted
             "member_id" uuid REFERENCES "member" ("id") ON DELETE CASCADE NOT NULL,
             -- "session_id" character varying(25), -- TODO: maybe necessary for "public use".
-        
+
             -- delete row if item is deleted
             "item_id" uuid REFERENCES "item" ("id") ON DELETE CASCADE NOT NULL,
-        
+
             "data" jsonb NOT NULL DEFAULT '{}'::jsonb,
             "type" character varying(25),
-        
+
             -- don't remove - set creator to NULL
             "creator" uuid REFERENCES "member" ("id") ON DELETE SET NULL,
-        
+
             -- "ownership" app_data_ownership_enum DEFAULT 'member' NOT NULL,
             "visibility" app_data_visibility_enum DEFAULT 'member' NOT NULL,
-        
+
             -- TODO: I think this is to discard; maybe item should keep a reference to the appId in its settings?
             -- "app_id" uuid REFERENCES "app" ("id"), -- must be set if ownership != ('member' or 'item')
             -- "publisher_id" uuid REFERENCES "publisher" ("id"), -- must be set if ownership != ('member' or 'item')
-        
+
             "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
             "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
         )`);
@@ -478,17 +477,17 @@ export class migrations1679669193720 implements MigrationInterface {
 
     await queryRunner.query(`CREATE TABLE "app_setting" (
             "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
-        
+
             -- delete row if item is deleted
             "item_id" uuid REFERENCES "item" ("id") ON DELETE CASCADE NOT NULL,
-        
+
             "name" character varying(250) NOT NULL,
-        
+
             "data" jsonb NOT NULL DEFAULT '{}'::jsonb,
-        
+
             -- don't remove - set creator to NULL
             "creator" uuid REFERENCES "member" ("id") ON DELETE SET NULL,
-        
+
             "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
             "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
         )`);

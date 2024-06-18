@@ -27,9 +27,9 @@ import { registerChatWsHooks } from './ws/hooks.js';
 /**
  * Type definition for plugin options
  */
-export interface GraaspChatPluginOptions {
+export type GraaspChatPluginOptions = {
   prefix?: string;
-}
+};
 
 const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify) => {
   await fastify.addSchema(commonChat);

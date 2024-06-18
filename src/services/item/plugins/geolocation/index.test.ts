@@ -120,6 +120,7 @@ describe('Item Geolocation', () => {
           lng: geoloc.lng,
           country: geoloc.country,
         });
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         expectPackedItem(result.item, packedItem!);
       });
 
@@ -136,6 +137,7 @@ describe('Item Geolocation', () => {
           lng: geoloc.lng,
           country: null,
         });
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         expectPackedItem(result.item, packedItem!);
       });
 

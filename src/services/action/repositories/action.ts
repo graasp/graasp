@@ -5,7 +5,7 @@ import { AggregateBy, AggregateFunction, AggregateMetric, CountGroupBy, UUID } f
 import { AppDataSource } from '../../../plugins/datasource.js';
 import { MemberIdentifierNotFound } from '../../itemLogin/errors.js';
 import { actionSchema } from '../../member/plugins/export-data/schemas/schemas.js';
-import { schemaToSelectMapper } from '../../member/plugins/export-data/utils/selection.utils';
+import { schemaToSelectMapper } from '../../member/plugins/export-data/utils/selection.utils.js';
 import { DEFAULT_ACTIONS_SAMPLE_SIZE } from '../constants/constants.js';
 import { Action } from '../entities/action.js';
 import { aggregateExpressionNames, buildAggregateExpression } from '../utils/actions.js';

@@ -127,9 +127,9 @@ function registerAppSettingsTopic(
   );
 }
 
-interface GraaspPluginAppDataWsHooksOptions {
+type GraaspPluginAppDataWsHooksOptions = {
   appDataService: AppDataService;
-}
+};
 
 /**
  * Registers real-time websocket events for the app data service
@@ -143,9 +143,9 @@ export const appDataWsHooks: FastifyPluginAsync<GraaspPluginAppDataWsHooksOption
   registerAppDataTopic(websockets, appDataService, items.service);
 };
 
-interface GraaspPluginAppActionsWsHooksOptions {
+type GraaspPluginAppActionsWsHooksOptions = {
   appActionService: AppActionService;
-}
+};
 
 /**
  * Registers real-time websocket events for the app action service
@@ -159,9 +159,9 @@ export const appActionsWsHooks: FastifyPluginAsync<GraaspPluginAppActionsWsHooks
   registerAppActionTopic(websockets, appActionService, items.service);
 };
 
-interface GraaspPluginAppSettingsWsHooksOptions {
+type GraaspPluginAppSettingsWsHooksOptions = {
   appSettingService: AppSettingService;
-}
+};
 
 /**
  * Registers real-time websocket events for the app setting service

@@ -77,7 +77,7 @@ export class InvalidCredentials extends GraaspItemLoginError {
       {
         code: 'GILERR007',
         statusCode: StatusCodes.UNAUTHORIZED,
-        // eslint-disable-next-line quotes
+
         message: "Provided credentials don't match member's",
       },
       data,

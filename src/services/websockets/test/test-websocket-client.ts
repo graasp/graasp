@@ -53,7 +53,7 @@ export class TestWsClient {
     }
 
     /** Ordering is guaranteed in each channel through HTTP semantics */
-    const updates: Array<UpdatesType> = [];
+    const updates: UpdatesType[] = [];
 
     this.ws.on('message', (data) => {
       const update: Websocket.ServerUpdate<UpdatesType> = JSON.parse(data.toString());

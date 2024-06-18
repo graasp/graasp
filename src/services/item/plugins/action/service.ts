@@ -181,13 +181,14 @@ export class ActionItemService {
     ).flat();
 
     // get for all app-item
-    const apps: {
-      [key: UUID]: {
+    const apps: Record<
+      UUID,
+      {
         data: AppData[];
         settings: AppSetting[];
         actions: AppAction[];
-      };
-    } = {};
+      }
+    > = {};
     for (const { id: appId } of [item, ...descendants].filter(
       ({ type }) => type === ItemType.APP,
     )) {

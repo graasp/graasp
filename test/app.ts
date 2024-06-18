@@ -1,17 +1,19 @@
 import { Strategy as CustomStrategy } from 'passport-custom';
 
-import fastifyPassport from '@fastify/passport';
+import fstPassport from '@fastify/passport';
 import fastify from 'fastify';
 
 import { CompleteMember } from '@graasp/sdk';
 
-import registerAppPlugins from '../src/app';
-import ajvFormats from '../src/schemas/ajvFormats';
-import { PassportStrategy } from '../src/services/auth/plugins/passport';
-import { Actor } from '../src/services/member/entities/member';
-import { saveMember } from '../src/services/member/test/fixtures/members';
-import { DB_TEST_SCHEMA } from './constants';
+import registerAppPlugins from '../src/app.js';
+import ajvFormats from '../src/schemas/ajvFormats.js';
+import { PassportStrategy } from '../src/services/auth/plugins/passport/index.js';
+import { Actor } from '../src/services/member/entities/member.js';
+import { saveMember } from '../src/services/member/test/fixtures/members.js';
+import { DB_TEST_SCHEMA } from './constants.js';
 
+const fastifyPassport = fstPassport.default;
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const originalSessionStrategy = fastifyPassport.strategy(PassportStrategy.Session)!;
 let originalStrictSessionStrategy;
 

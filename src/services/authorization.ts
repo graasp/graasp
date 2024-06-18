@@ -78,6 +78,9 @@ export const validatePermissionMany = async (
     if (highest === PermissionLevel.Read || (isPublic && !highest)) {
       const isHidden = tags.data[item.id].find((t) => t.type === ItemTagType.Hidden);
       if (isHidden) {
+        // TODO: We should not use delete on dynamic properties as it is a possible cause of bugs
+        // ref: https://typescript-eslint.io/rules/no-dynamic-delete/
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         delete resultOfMemberships.data[item.id];
         resultOfMemberships.errors.push(new MemberCannotAccess(item.id));
         continue;

@@ -6,7 +6,7 @@ import {
   MeiliSearchTimeOutError,
   MultiSearchParams,
   TypoTolerance,
-} from 'meilisearch.js';
+} from 'meilisearch';
 import { DataSource } from 'typeorm';
 
 import { FastifyBaseLogger } from 'fastify';
@@ -138,9 +138,7 @@ export class MeiliSearchWrapper {
 
   // WORKS ONLY FOR PUBLISHED ITEMS
   async search(queries: MultiSearchParams) {
-    const searchResult = await this.meilisearchClient.multiSearch(queries, {
-      attributesToHighlight: ['*'],
-    });
+    const searchResult = await this.meilisearchClient.multiSearch(queries);
 
     return searchResult;
   }
@@ -164,7 +162,6 @@ export class MeiliSearchWrapper {
       content: await this.getContent(item),
       isPublishedRoot: isPublishedRoot,
       isHidden: isHidden,
-      // todo: fix these types
       createdAt: item.createdAt.toISOString(),
       updatedAt: item.updatedAt.toISOString(),
     };
@@ -175,20 +172,22 @@ export class MeiliSearchWrapper {
     switch (item.type) {
       case ItemType.DOCUMENT:
         return this.removeHTMLTags((item.extra as DocumentItemExtra).document.content); // better way to type extra safely?
-      case ItemType.LOCAL_FILE:
+      case ItemType.LOCAL_FILE: {
         const localExtra = (item.extra as LocalFileItemExtra).file;
         if (localExtra.mimetype === MimeTypes.PDF) {
           return localExtra.content;
         } else {
           return '';
         }
-      case ItemType.S3_FILE:
+      }
+      case ItemType.S3_FILE: {
         const s3extra = (item.extra as S3FileItemExtra).s3File;
         if (s3extra.mimetype === MimeTypes.PDF) {
           return s3extra.content;
         } else {
           return '';
         }
+      }
       default:
         return '';
     }
@@ -340,7 +339,7 @@ export class MeiliSearchWrapper {
   }
 
   // to be executed by async job runner when desired
-  async rebuildIndex(pageSize: number = 10) {
+  async rebuildIndex(pageSize = 10) {
     if (MEILISEARCH_STORE_LEGACY_PDF_CONTENT) {
       // Backfill needed pdf data - Probably remove this when everything work well after deployment
       await this.storeMissingPdfContent(buildRepositories());

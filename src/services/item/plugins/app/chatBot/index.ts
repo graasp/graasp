@@ -23,7 +23,7 @@ const chatBotPlugin: FastifyPluginAsync = async (fastify) => {
   fastify.register(async function (fastify) {
     fastify.post<{
       Params: { itemId: string };
-      Body: Array<ChatBotMessage>;
+      Body: ChatBotMessage[];
       Querystring: QueryParameters;
     }>(
       '/:itemId/chat-bot',

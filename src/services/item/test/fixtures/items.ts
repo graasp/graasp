@@ -234,6 +234,7 @@ export const expectItem = (
 
   if (correctItem.settings) {
     for (const [k, s] of Object.entries(correctItem.settings)) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(newItem.settings![k]).toEqual(s);
     }
   }
@@ -252,18 +253,25 @@ export const expectPackedItem = (
 ) => {
   expectItem(newItem, correctItem, creator, parent);
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   expect(newItem!.permission).toEqual(correctItem?.permission);
 
   const pTag = tags?.find((t) => t.type === ItemTagType.Public);
   if (pTag) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     expect(newItem!.public!.type).toEqual(pTag.type);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     expect(newItem!.public!.id).toEqual(pTag.id);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     expect(newItem!.public!.item!.id).toEqual(pTag.item.id);
   }
   const hTag = tags?.find((t) => t.type === ItemTagType.Hidden);
   if (hTag) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     expect(newItem!.hidden!.type).toEqual(hTag.type);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     expect(newItem!.hidden!.id).toEqual(hTag.id);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     expect(newItem!.hidden!.item!.id).toEqual(hTag.item.id);
   }
 };

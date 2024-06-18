@@ -57,7 +57,9 @@ describe('MemberRepository', () => {
     });
 
     it('throw for undefined id', async () => {
-      expect(memberRepository.get(undefined!)).rejects.toBeInstanceOf(MemberNotFound);
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
+      expect(memberRepository.get(undefined)).rejects.toBeInstanceOf(MemberNotFound);
     });
 
     it('throw for member does not exist', async () => {
@@ -93,7 +95,9 @@ describe('MemberRepository', () => {
     });
 
     it('throw for undefined email', async () => {
-      expect(memberRepository.getByEmail(undefined!)).rejects.toThrow();
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
+      expect(memberRepository.getByEmail(undefined)).rejects.toThrow();
     });
 
     it('return null for unexisting email', async () => {

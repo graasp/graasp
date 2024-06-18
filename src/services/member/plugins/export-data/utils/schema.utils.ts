@@ -2,7 +2,7 @@ export type PropertyType = { type: string };
 export type OneOfType = { oneOf: PropertyType[] };
 export type SchemaType = {
   type: string;
-  properties: { [prop: string]: PropertyType | OneOfType | SchemaType };
+  properties: Record<string, PropertyType | OneOfType | SchemaType>;
 };
 // Extract Properties of Schema Type without the properties attribute
 type SchemaProperties = {

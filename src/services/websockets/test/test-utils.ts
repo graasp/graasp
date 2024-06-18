@@ -72,7 +72,7 @@ export class PortGenerator {
  */
 export function createWsChannels(
   config: TestConfig,
-  heartbeatInterval: number = 30000,
+  heartbeatInterval = 30000,
 ): {
   channels: WebSocketChannels;
   wss: WebSocket.Server;
@@ -103,9 +103,11 @@ export function createWsChannels(
  * In test mode, websocket channels are available
  */
 declare module 'fastify' {
-  interface FastifyInstance {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  type FastifyInstance = {
     _debug_websocketsChannels: WebSocketChannels;
-  }
+  };
 }
 
 /**
@@ -183,7 +185,7 @@ export async function createWsClient(config: TestConfig): Promise<WebSocket> {
 export async function createWsClients(
   config: TestConfig,
   numberClients: number,
-): Promise<Array<WebSocket>> {
+): Promise<WebSocket[]> {
   const clients = Array(numberClients)
     .fill(null)
     .map((_) => createWsClient(config));
@@ -199,7 +201,7 @@ export async function createWsClients(
 export async function clientWait(
   client: WebSocket,
   numberMessages: number,
-): Promise<Websocket.ServerMessage | Array<Websocket.ServerMessage>> {
+): Promise<Websocket.ServerMessage | Websocket.ServerMessage[]> {
   return new Promise((resolve, reject) => {
     client.on('error', (err) => {
       reject(err);
@@ -213,7 +215,7 @@ export async function clientWait(
         else resolve(msg);
       });
     } else {
-      const buffer: Array<Websocket.ServerMessage> = [];
+      const buffer: Websocket.ServerMessage[] = [];
       client.on('message', (data) => {
         const msg = clientSerdes.parse(data.toString());
         if (msg === undefined)
@@ -234,9 +236,9 @@ export async function clientWait(
  * @returns Array containing the received message or array of received messages for each client
  */
 export async function clientsWait(
-  clients: Array<WebSocket>,
+  clients: WebSocket[],
   numberMessages: number,
-): Promise<Array<Websocket.ServerMessage | Array<Websocket.ServerMessage>>> {
+): Promise<(Websocket.ServerMessage | Websocket.ServerMessage[])[]> {
   return Promise.all(clients.map((client) => clientWait(client, numberMessages)));
 }
 

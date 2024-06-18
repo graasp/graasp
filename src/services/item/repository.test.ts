@@ -1,5 +1,4 @@
 // This import is necessary so we only download needed langage. eslint can't find the import because it's dynamic.
-// eslint-disable-next-line import/no-unresolved
 import { faker } from '@faker-js/faker/locale/en';
 import { v4 } from 'uuid';
 
@@ -104,6 +103,7 @@ describe('ItemRepository', () => {
       expect(item.lang).toEqual('en');
       expect(item.description).toEqual(null);
       expect(item.type).toEqual(ItemType.FOLDER);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(item.creator!.id).toEqual(creator.id);
       expect(item.extra).toEqual({ folder: { childrenOrder: [] } });
     });
@@ -122,6 +122,7 @@ describe('ItemRepository', () => {
       expect(item.description).toEqual('description');
       expect(item.type).toEqual(ItemType.DOCUMENT);
       expect(item.lang).toEqual('fr');
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(item.creator!.id).toEqual(creator.id);
       expect(item.extra).toEqual({ document: { content: '' } });
     });
@@ -137,6 +138,7 @@ describe('ItemRepository', () => {
       expect(item.name).toEqual('name');
       expect(item.description).toEqual(null);
       expect(item.type).toEqual(ItemType.FOLDER);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(item.creator!.id).toEqual(creator.id);
     });
   });
@@ -491,6 +493,7 @@ describe('ItemRepository', () => {
 
       expect((await itemRepository.move(item1)).id).toEqual(item1.id);
       const newItem = await testUtils.rawItemRepository.findOneBy({ id: item1.id });
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(newItem!.path).toEqual(buildPathFromIds(item1.id));
     });
     it('move item into parent', async () => {
@@ -499,6 +502,7 @@ describe('ItemRepository', () => {
 
       expect((await itemRepository.move(item1, item2)).id).toEqual(item1.id);
       const newItem = await testUtils.rawItemRepository.findOneBy({ id: item1.id });
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(newItem!.path).toEqual(buildPathFromIds(item2.id, item1.id));
     });
     it('Fail to move items in non-folder parent', async () => {
@@ -627,8 +631,11 @@ describe('ItemRepository', () => {
         where: { name: data.name },
         relations: { creator: true },
       });
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(newItem!.name).toEqual(data.name);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(newItem!.type).toEqual(data.type);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(newItem!.creator!.id).toEqual(actor.id);
     });
     it('post successfully with parent item', async () => {
@@ -640,9 +647,13 @@ describe('ItemRepository', () => {
         where: { name: data.name },
         relations: { creator: true },
       });
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(newItem!.name).toEqual(data.name);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(newItem!.type).toEqual(data.type);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(newItem!.path).toContain(parentItem.path);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(newItem!.creator!.id).toEqual(actor.id);
     });
   });
@@ -653,7 +664,9 @@ describe('ItemRepository', () => {
       const copy = result.copyRoot;
       expect(copy.name).toEqual(`${item.name} (2)`);
       expect(copy.id).not.toEqual(item.id);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(result.treeCopyMap.get(item.id)!.copy.id).toEqual(copy.id);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(result.treeCopyMap.get(item.id)!.original.id).toEqual(item.id);
     });
     it('copy successfully in parent', async () => {
@@ -666,7 +679,9 @@ describe('ItemRepository', () => {
       expect(copy.id).not.toEqual(item.id);
       expect(copy.path).toContain(parentItem.path);
       expect(copy.path).not.toContain(originalParentItem.path);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(result.treeCopyMap.get(item.id)!.copy.id).toEqual(copy.id);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(result.treeCopyMap.get(item.id)!.original.id).toEqual(item.id);
     });
     it('copy multiple times', async () => {
@@ -676,7 +691,9 @@ describe('ItemRepository', () => {
       const copy = result.copyRoot;
       expect(copy.name).toEqual(`${item.name} (2)`);
       expect(copy.id).not.toEqual(item.id);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(result.treeCopyMap.get(item.id)!.copy.id).toEqual(copy.id);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(result.treeCopyMap.get(item.id)!.original.id).toEqual(item.id);
       const secondResult = await itemRepository.copy(copy, actor);
       const secondCopy = secondResult.copyRoot;

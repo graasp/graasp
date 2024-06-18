@@ -3,10 +3,6 @@
  *
  * Tests for {@link WebSocketChannels}
  */
-
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import waitForExpect from 'wait-for-expect';
 import WebSocket, { CLOSED, OPEN } from 'ws';
 

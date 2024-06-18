@@ -2,7 +2,7 @@ import { ReadStream } from 'fs';
 
 import { FastifyBaseLogger } from 'fastify';
 
-export interface FileRepository {
+export type FileRepository = {
   getFileSize(filepath: string): Promise<number | undefined>;
 
   copyFile(args: {
@@ -38,4 +38,4 @@ export interface FileRepository {
     mimetype?: string;
     size?: string;
   }): Promise<void>;
-}
+};

@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 /**
  * Renders the integration HTML for H5P in Graasp
  * @param h5pAssetsBaseUrl Root url where the H5P runtime is located
@@ -8,8 +9,9 @@
 export const renderHtml = (
   h5pAssetsBaseUrl: string,
   h5pContentBaseUrl: string,
-  h5pHostDomains: Array<string>,
-) => `
+  h5pHostDomains: string[],
+) =>
+  `
 <!DOCTYPE html>
 <html>
   <head>

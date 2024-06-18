@@ -273,6 +273,9 @@ export class ItemService {
     for (const [id, _item] of Object.entries(result.data)) {
       // Do not delete if value exist but is null, because no memberships but can be public
       if (itemMemberships?.data[id] === undefined) {
+        // TODO: We should not use delete on dynamic properties as it is a possible cause of bugs
+        // ref: https://typescript-eslint.io/rules/no-dynamic-delete/
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         delete result.data[id];
       }
     }

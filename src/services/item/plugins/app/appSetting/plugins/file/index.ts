@@ -22,11 +22,11 @@ import type { AppSettingService } from '../../service.js';
 import { download, upload } from './schema.js';
 import AppSettingFileService from './service.js';
 
-export interface GraaspPluginFileOptions {
+export type GraaspPluginFileOptions = {
   maxFileSize?: number; // max size for an uploaded file in bytes
 
   appSettingService: AppSettingService;
-}
+};
 
 const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, options) => {
   const { maxFileSize = DEFAULT_MAX_FILE_SIZE, appSettingService } = options;

@@ -51,7 +51,7 @@ export class Action extends BaseEntity {
   type: string;
 
   @Column('simple-json', { nullable: false })
-  extra: { [key: string]: unknown };
+  extra: Record<string, unknown>;
 
   @Column('simple-json', { nullable: true, default: null })
   geolocation?: geoip.Lookup;

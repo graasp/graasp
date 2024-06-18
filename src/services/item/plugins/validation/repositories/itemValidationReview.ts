@@ -27,7 +27,7 @@ export const ItemValidationReviewRepository = AppDataSource.getRepository(
   async patch(
     id: string,
     status: ItemValidationReviewStatus,
-    reason: string = '',
+    reason = '',
     reviewerId: string,
   ): Promise<ItemValidationReview> {
     return this.update(id, { status, reason, reviewerId });

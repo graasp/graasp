@@ -99,7 +99,7 @@ describe('Item Published', () => {
           )}`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
-        const result = (await res.json().data) as { [key: string]: ItemPublished };
+        const result = (await res.json().data) as Record<string, ItemPublished>;
         const items = Object.values(result).map((i) => i.item);
         expectManyItems(items as Item[], [otherParentItem, parentItem]);
       });

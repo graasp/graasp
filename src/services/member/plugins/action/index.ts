@@ -12,11 +12,11 @@ import {
 import { deleteAllById, getMemberFilteredActions } from './schemas.js';
 import { ActionMemberService } from './service.js';
 
-export interface GraaspActionsOptions {
+export type GraaspActionsOptions = {
   shouldSave?: boolean;
   fileItemType: FileItemType;
   fileConfigurations: { s3: S3FileConfiguration; local: LocalFileConfiguration };
-}
+};
 
 const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
   const {

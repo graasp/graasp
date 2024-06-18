@@ -16,18 +16,18 @@ type AppOperations = 'post' | 'patch' | 'delete';
 /**
  * All websocket events for app will have this shape
  */
-interface AppEvent {
+type AppEvent = {
   kind: typeof appDataTopic | typeof appActionsTopic | typeof appSettingsTopic;
   op: AppOperations;
-}
+};
 
 /**
  * Events that affect an app data
  */
-interface AppDataEvent extends AppEvent {
+type AppDataEvent = {
   kind: typeof appDataTopic;
   appData: AppData;
-}
+} & AppEvent;
 
 /**
  * Factory of AppDataEvent
@@ -35,7 +35,7 @@ interface AppDataEvent extends AppEvent {
  * @param appData value of the appData for this event
  * @returns instance of app data event
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 export const AppDataEvent = (op: AppDataEvent['op'], appData: AppData): AppDataEvent => ({
   kind: appDataTopic,
   op,
@@ -45,10 +45,10 @@ export const AppDataEvent = (op: AppDataEvent['op'], appData: AppData): AppDataE
 /**
  * Events that affect an app action
  */
-interface AppActionEvent extends AppEvent {
+type AppActionEvent = {
   kind: typeof appActionsTopic;
   appAction: AppAction;
-}
+} & AppEvent;
 
 /**
  * Factory of AppActionEvent
@@ -56,7 +56,7 @@ interface AppActionEvent extends AppEvent {
  * @param appAction value of the app action for this event
  * @returns instance of app action event
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 export const AppActionEvent = (op: AppActionEvent['op'], appAction: AppAction): AppActionEvent => ({
   kind: appActionsTopic,
   op,
@@ -66,10 +66,10 @@ export const AppActionEvent = (op: AppActionEvent['op'], appAction: AppAction): 
 /**
  * Events that affect an app setting
  */
-interface AppSettingEvent extends AppEvent {
+type AppSettingEvent = {
   kind: typeof appSettingsTopic;
   appSetting: AppSetting;
-}
+} & AppEvent;
 
 /**
  * Factory of AppSettingEvent
@@ -77,7 +77,7 @@ interface AppSettingEvent extends AppEvent {
  * @param appAction value of the app setting for this event
  * @returns instance of app setting event
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 export const AppSettingEvent = (
   op: AppSettingEvent['op'],
   appSetting: AppSetting,

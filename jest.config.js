@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   moduleFileExtensions: ['ts', 'js', 'json', 'node'],
   transform: {
     '^.+\\.(ts|tsx)$': [

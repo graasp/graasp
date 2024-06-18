@@ -33,11 +33,11 @@ import { ActionRequestExportService } from './requestExport/service.js';
 import { exportAction, getAggregateActions, getItemActions, postAction } from './schemas.js';
 import { ActionItemService } from './service.js';
 
-export interface GraaspActionsOptions {
+export type GraaspActionsOptions = {
   shouldSave?: boolean;
   fileItemType: FileItemType;
   fileConfigurations: { s3: S3FileConfiguration; local: LocalFileConfiguration };
-}
+};
 
 const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
   const {
@@ -113,7 +113,7 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
     },
   );
 
-  fastify.route<{ Params: IdParam; Body: { type: string; extra?: { [key: string]: unknown } } }>({
+  fastify.route<{ Params: IdParam; Body: { type: string; extra?: Record<string, unknown> } }>({
     method: HttpMethod.Post,
     url: '/:id/actions',
     schema: postAction,

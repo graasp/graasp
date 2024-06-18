@@ -5,14 +5,14 @@ import { FileItemType, ItemType } from '@graasp/sdk';
 import { LocalFileConfiguration, S3FileConfiguration } from './interfaces/configuration.js';
 import FileService from './service.js';
 
-export interface GraaspPluginFileOptions {
+export type GraaspPluginFileOptions = {
   fileItemType: FileItemType; // S3 or local
 
   fileConfigurations: {
     s3?: S3FileConfiguration;
     local?: LocalFileConfiguration;
   };
-}
+};
 
 const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, options) => {
   const { fileItemType, fileConfigurations } = options;

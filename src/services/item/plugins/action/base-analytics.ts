@@ -18,13 +18,14 @@ export class BaseAnalytics {
   readonly itemMemberships: ItemMembership[];
   readonly descendants: Item[];
   readonly item: Item;
-  readonly apps: {
-    [key: UUID]: {
+  readonly apps: Record<
+    UUID,
+    {
       data: AppData[];
       settings: AppSetting[];
       actions: AppAction[];
-    };
-  };
+    }
+  >;
   readonly chatMessages: ChatMessage[];
   readonly metadata: {
     numActionsRetrieved: number;
@@ -38,13 +39,14 @@ export class BaseAnalytics {
     members: Member[];
     itemMemberships: ItemMembership[];
     chatMessages: ChatMessage[];
-    apps: {
-      [key: UUID]: {
+    apps: Record<
+      UUID,
+      {
         data: AppData[];
         settings: AppSetting[];
         actions: AppAction[];
-      };
-    };
+      }
+    >;
     metadata: {
       numActionsRetrieved: number;
       requestedSampleSize: number;

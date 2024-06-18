@@ -17,9 +17,9 @@ import { ItemService } from '../../service.js';
 import { buildPublishedItemLink } from './constants.js';
 import { ItemTypeNotAllowedToPublish } from './errors.js';
 
-interface ActionCount {
+type ActionCount = {
   actionCount: number;
-}
+};
 export class ItemPublishedService {
   private log: FastifyBaseLogger;
   private itemService: ItemService;
@@ -74,23 +74,18 @@ export class ItemPublishedService {
     // item should be public first
     await itemTagRepository.getType(item, ItemTagType.Public, { shouldThrow: true });
 
-    try {
-      // get item published entry
-      const publishedItem = await itemPublishedRepository.getForItem(item);
+    // get item published entry
+    const publishedItem = await itemPublishedRepository.getForItem(item);
 
-      if (!publishedItem) {
-        return null;
-      }
-      // get views from the actions table
-      const totalViews = await actionRepository.getAggregationForItem(item.path, {
-        view: 'library',
-        types: ['collection-view'],
-      });
-      return { totalViews: (totalViews?.[0] as ActionCount)?.actionCount, ...publishedItem };
-    } catch (err) {
-      // if the error was not expecte we throw it back
-      throw err;
+    if (!publishedItem) {
+      return null;
     }
+    // get views from the actions table
+    const totalViews = await actionRepository.getAggregationForItem(item.path, {
+      view: 'library',
+      types: ['collection-view'],
+    });
+    return { totalViews: (totalViews?.[0] as ActionCount)?.actionCount, ...publishedItem };
   }
 
   async getMany(actor: Actor, repositories: Repositories, itemIds: string[]) {

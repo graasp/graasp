@@ -9,18 +9,18 @@ export const chatMentionTopic = 'mentions';
 /**
  * All websocket events for chat mentions will have this shape
  */
-interface ChatMentionEvent {
+type ChatMentionEvent = {
   op: string;
   mention?: ChatMention;
-}
+};
 
 /**
  * Events for chat mentions
  */
-interface MentionEvent extends ChatMentionEvent {
+type MentionEvent = {
   op: 'publish' | 'delete' | 'update' | 'clear';
   mention?: ChatMention;
-}
+} & ChatMentionEvent;
 
 /**
  * Factory for MentionsEvent
@@ -28,7 +28,7 @@ interface MentionEvent extends ChatMentionEvent {
  * @param mention message value
  * @returns instance of item chat event
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 export const MentionEvent = (op: MentionEvent['op'], mention?: ChatMention): MentionEvent => ({
   op,
   mention,

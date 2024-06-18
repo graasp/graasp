@@ -82,6 +82,9 @@ export class ItemMembershipService {
           await validatePermission(repositories, PermissionLevel.Read, actor, item);
         } catch (e) {
           // if does not have permission, remove data and add error
+          // TODO: We should not use delete on dynamic properties as it is a possible cause of bugs
+          // ref: https://typescript-eslint.io/rules/no-dynamic-delete/
+          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
           delete data[id];
           errors.push(e as Error);
         }

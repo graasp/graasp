@@ -1,14 +1,9 @@
+/* eslint-disable @typescript-eslint/consistent-type-definitions */
 import { DataSource } from 'typeorm';
-
-import 'fastify';
-import { preHandlerHookHandler } from 'fastify';
-
-import { RecaptchaActionType } from '@graasp/sdk';
 
 import { JobService } from '../jobs.js';
 import type { MailerDecoration } from '../plugins/mailer/index.js';
 import { ActionService } from '../services/action/services/action.js';
-import { MagicLinkService } from '../services/auth/plugins/magicLink/service.js';
 import { MobileService } from '../services/auth/plugins/mobile/service.js';
 import { MemberPasswordService } from '../services/auth/plugins/password/service.js';
 import { AuthService } from '../services/auth/service.js';
@@ -26,7 +21,7 @@ import { ItemPublishedService } from '../services/item/plugins/published/service
 import { ItemThumbnailService } from '../services/item/plugins/thumbnail/service.js';
 import ItemService from '../services/item/service.js';
 import ItemMembershipService from '../services/itemMembership/service.js';
-import { Actor, Member } from '../services/member/entities/member.js';
+import { Member } from '../services/member/entities/member.js';
 import { StorageService } from '../services/member/plugins/storage/service.js';
 import { MemberService } from '../services/member/service.js';
 import { ThumbnailService } from '../services/thumbnail/service.js';
@@ -99,7 +94,7 @@ declare module 'fastify' {
     h5p: { service: H5PService };
     etherpad: EtherpadItemService;
 
-    corsPluginOptions: any;
+    corsPluginOptions: FastifyCorsOptions;
     generateRegisterLinkAndEmailIt: (
       member: Partial<Member>, // todo: force some content
       options: {

@@ -7,9 +7,9 @@
  * ! In this file, we distinguish WS channels (part of the {@link WebSocketChannels} abstraction)
  * and Redis channels (from the Redis Pub/Sub mechanism which handles inter-instance communication) !
  */
-import { JTDSchemaType } from 'ajv/dist/core';
-import Ajv from 'ajv/dist/jtd';
-import Redis, { RedisOptions } from 'ioredis';
+import { JTDSchemaType } from 'ajv/dist/core.js';
+import { Ajv } from 'ajv/dist/jtd.js';
+import { Redis, RedisOptions } from 'ioredis';
 
 import { FastifyBaseLogger } from 'fastify';
 
@@ -25,11 +25,11 @@ import { WebSocketChannels } from './ws-channels.js';
  * @param channel name of the WS channel on which to send the notification, or "broadcast" if it should be sent to all
  * @param data data to be sent on the WS channel
  */
-interface RedisMessage {
+type RedisMessage = {
   realm: Websocket.Realm;
   channel: string | 'broadcast';
   data: Websocket.ServerMessage;
-}
+};
 
 /**
  * Factory to transform a ServerMessage into a RedisMessage

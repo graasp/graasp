@@ -113,7 +113,7 @@ export abstract class HtmlService {
     folder: string,
     uploadPath: string,
     log?: FastifyBaseLogger,
-  ): Promise<Array<string>> {
+  ): Promise<string[]> {
     if (!member) {
       throw new UnauthorizedMember(member);
     }
@@ -206,7 +206,7 @@ export abstract class HtmlService {
       log?.error(error);
       // wrap into plugin error type if not ours
       if (!(error instanceof GraaspHtmlError)) {
-        error = new HtmlImportError();
+        throw new HtmlImportError();
       }
       throw error;
     } finally {

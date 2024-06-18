@@ -11,11 +11,11 @@ export const memberItemsTopic = 'item/member';
 /**
  * All websocket events for items will have this shape
  */
-export interface ItemEvent {
+export type ItemEvent = {
   kind: string;
   op: string;
   item: Item;
-}
+};
 
 /**
  * Factory of ItemOpFeedbackEvent

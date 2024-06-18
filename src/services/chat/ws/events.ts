@@ -9,20 +9,20 @@ export const itemChatTopic = 'chat/item';
 /**
  * All websocket events for chats will have this shape
  */
-interface ChatEvent {
+type ChatEvent = {
   kind: string;
   op: string;
   message?: ChatMessage;
-}
+};
 
 /**
  * Events for item chats
  */
-interface ItemChatEvent extends ChatEvent {
+type ItemChatEvent = {
   kind: 'item';
   op: 'publish' | 'delete' | 'update' | 'clear';
   message?: ChatMessage;
-}
+} & ChatEvent;
 
 /**
  * Factory for ItemChatEvent
@@ -30,12 +30,8 @@ interface ItemChatEvent extends ChatEvent {
  * @param message message value
  * @returns instance of item chat event
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const ItemChatEvent = (
-  op: ItemChatEvent['op'],
-  message?: ChatMessage,
-): // eslint-disable-next-line @typescript-eslint/no-unused-vars
-ItemChatEvent => ({
+
+export const ItemChatEvent = (op: ItemChatEvent['op'], message?: ChatMessage): ItemChatEvent => ({
   kind: 'item',
   op,
   message,

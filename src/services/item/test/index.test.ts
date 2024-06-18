@@ -2849,7 +2849,9 @@ describe('Item routes tests', () => {
             expect(itemsInDb[0].lang).toEqual(itemsInDb[1].lang);
             // creator is different
             expect(itemsInDb[0].creator).not.toEqual(itemsInDb[1].creator);
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             expect([creator.id, actor.id]).toContain(itemsInDb[0].creator!.id);
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             expect([creator.id, actor.id]).toContain(itemsInDb[1].creator!.id);
             // id and path are different
             expect(itemsInDb[0].id).not.toEqual(itemsInDb[1].id);

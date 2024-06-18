@@ -16,7 +16,7 @@ import {
 import schemas, { getRecycledItemDatas, recycleMany, restoreMany } from './schemas.js';
 import { RecycledBinService } from './service.js';
 
-export interface RecycledItemDataOptions {
+export type RecycledItemDataOptions = {
   /** Max number of items to recycle in a request.
    * A number above this value will trigger an immediate bad request (400). Defaults to `10`. */
   maxItemsInRequest: number;
@@ -26,7 +26,7 @@ export interface RecycledItemDataOptions {
    * will continue "in the back". **This value should be smaller than `maxItemsInRequest`**
    * otherwise it has no effect. Defaults to `5`. */
   maxItemsWithResponse: number;
-}
+};
 
 const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, options) => {
   const { db, websockets } = fastify;

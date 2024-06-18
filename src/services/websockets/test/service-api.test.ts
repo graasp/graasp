@@ -325,9 +325,9 @@ describe('client requests', () => {
 describe('channel send', () => {
   const t: Partial<{
     server: FastifyInstance;
-    subs1: Array<WebSocket>;
-    subs2: Array<WebSocket>;
-    unsubs: Array<WebSocket>;
+    subs1: WebSocket[];
+    subs2: WebSocket[];
+    unsubs: WebSocket[];
   }> = {};
 
   beforeAll(async () => {

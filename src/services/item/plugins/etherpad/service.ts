@@ -2,7 +2,7 @@ import { DateTime } from 'luxon';
 
 import { FastifyBaseLogger } from 'fastify';
 
-import Etherpad, { AuthorSession } from '@graasp/etherpad-api';
+import { AuthorSession, default as Etherpad } from '@graasp/etherpad-api';
 import { EtherpadItemExtra, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { MemberCannotWriteItem } from '../../../../utils/errors.js';
@@ -19,7 +19,7 @@ import { EtherpadServerError, ItemMissingExtraError } from './errors.js';
  * Exposes API to manage etherpad items inside Graasp
  */
 export class EtherpadItemService {
-  public readonly api: Etherpad;
+  public readonly api: Etherpad.default;
   private readonly padNameFactory: () => string;
   private readonly publicUrl: string;
   private readonly cookieDomain: string;
@@ -27,7 +27,7 @@ export class EtherpadItemService {
   private readonly log: FastifyBaseLogger;
 
   constructor(
-    etherpad: Etherpad,
+    etherpad: Etherpad.default,
     padNameFactory: () => string,
     publicUrl: string,
     cookieDomain: string,
@@ -65,13 +65,14 @@ export class EtherpadItemService {
           await this.api.setHTML({ padID, html });
         }
         break;
-      case 'copy':
+      case 'copy': {
         const { sourceID } = options;
         await this.api.copyPad({
           sourceID,
           destinationID: this.buildPadID({ groupID, padName }),
         });
         break;
+      }
     }
 
     return { groupID, padName };

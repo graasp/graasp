@@ -168,7 +168,7 @@ export class ItemValidationService {
     let result: string | undefined = undefined;
     try {
       switch (process) {
-        case ItemValidationProcess.BadWordsDetection:
+        case ItemValidationProcess.BadWordsDetection: {
           const suspiciousFields = detectFieldNameWithBadWords([
             { name: 'name', value: item.name },
             { name: 'description', value: stripHtml(item.description) },
@@ -179,6 +179,7 @@ export class ItemValidationService {
               ? ItemValidationStatus.Failure
               : ItemValidationStatus.Success;
           break;
+        }
 
         case ItemValidationProcess.ImageChecking:
           if (isItemType(item, ItemType.S3_FILE) || isItemType(item, ItemType.LOCAL_FILE)) {
@@ -230,6 +231,8 @@ export class ItemValidationService {
       // update item validation
       await itemValidationRepository.patch(itemValidation.id, { result, status });
 
+      // TODO: fix this https://eslint.org/docs/latest/rules/no-unsafe-finally
+      // eslint-disable-next-line no-unsafe-finally
       return status;
     }
   }

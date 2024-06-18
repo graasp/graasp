@@ -2,11 +2,11 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { AppDataSource } from './datasource.js';
 
-export interface DatabasePluginOptions {
+export type DatabasePluginOptions = {
   // uri: string;
-  readReplicaUris?: Array<string>;
+  readReplicaUris?: string[];
   logs: boolean;
-}
+};
 
 const plugin: FastifyPluginAsync<DatabasePluginOptions> = async (
   fastify,

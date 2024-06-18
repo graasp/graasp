@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class Migrations1679669193721 implements MigrationInterface {
@@ -62,13 +63,13 @@ export class Migrations1679669193721 implements MigrationInterface {
     // ----- create new tables and insert data from old
 
     await queryRunner.query(`CREATE TABLE "member" (
-            "id" uuid NOT NULL DEFAULT uuid_generate_v4(), 
+            "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
             "name" character varying(100) NOT NULL,
-            "email" character varying(150) NOT NULL UNIQUE, 
-            "extra" text NOT NULL DEFAULT '{}', 
+            "email" character varying(150) NOT NULL UNIQUE,
+            "extra" text NOT NULL DEFAULT '{}',
             "type" character varying  DEFAULT 'individual' NOT NULL,
-            "created_at" TIMESTAMP NOT NULL DEFAULT now(), 
-            "updated_at" TIMESTAMP NOT NULL DEFAULT now(), 
+            "created_at" TIMESTAMP NOT NULL DEFAULT now(),
+            "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
             CONSTRAINT "PK_dcc0ff5b7c575e40d57b48e77b8" PRIMARY KEY ("id"))
             `);
     await queryRunner.query(
@@ -76,16 +77,16 @@ export class Migrations1679669193721 implements MigrationInterface {
     );
 
     await queryRunner.query(`CREATE TABLE "item" (
-                "id" uuid NOT NULL, 
+                "id" uuid NOT NULL,
                 "name" character varying(500) NOT NULL,
                 "type" character varying NOT NULL DEFAULT 'folder',
                 "description" character varying(5000),
-                "path" ltree NOT NULL UNIQUE, 
+                "path" ltree NOT NULL UNIQUE,
                 "creator_id" uuid,
                 "extra" text NOT NULL,
                 "settings" text NOT NULL DEFAULT '{}',
-                "created_at" TIMESTAMP NOT NULL DEFAULT now(), 
-                "updated_at" TIMESTAMP NOT NULL DEFAULT now(), 
+                "created_at" TIMESTAMP NOT NULL DEFAULT now(),
+                "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
                 "deleted_at" TIMESTAMP,
                 CONSTRAINT "PK_ccc0ff5b7c575e40d57b48e77b8" PRIMARY KEY ("id"))
                 `);
@@ -98,12 +99,12 @@ export class Migrations1679669193721 implements MigrationInterface {
                         SELECT created_at FROM recycled_item_old WHERE a1.id = recycled_item_old.item_id)`);
 
     await queryRunner.query(`CREATE TABLE "item_membership" (
-            "id" uuid NOT NULL DEFAULT uuid_generate_v4(), 
+            "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
             "permission" character varying(100) NOT NULL,
             "item_path" ltree NOT NULL REFERENCES item("path") ON DELETE CASCADE ON UPDATE CASCADE,
             "creator_id" uuid REFERENCES member("id") ON DELETE SET NULL,
             "member_id" uuid REFERENCES member("id") ON DELETE CASCADE,
-            "created_at" TIMESTAMP NOT NULL DEFAULT now(), 
+            "created_at" TIMESTAMP NOT NULL DEFAULT now(),
             "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
             CONSTRAINT "PK_ccc0ff5b7c575e40d57b48e77a8" PRIMARY KEY ("member_id", "item_path")
             )`);
@@ -111,7 +112,7 @@ export class Migrations1679669193721 implements MigrationInterface {
       'ALTER TABLE "item_membership" ADD CONSTRAINT "item_membership-item-member" UNIQUE ("item_path", "member_id")',
     );
     await queryRunner.query(
-      `INSERT INTO "item_membership" (id,item_path, member_id, creator_id, permission, created_at, updated_at) 
+      `INSERT INTO "item_membership" (id,item_path, member_id, creator_id, permission, created_at, updated_at)
       SELECT id,item_path, member_id, creator, permission, created_at, updated_at from item_membership_old`,
     );
 
@@ -149,7 +150,7 @@ export class Migrations1679669193721 implements MigrationInterface {
     await queryRunner.query(
       'CREATE TABLE "item_login_schema" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "type" character varying(100) NOT NULL, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "item_path" ltree NOT NULL  REFERENCES item("path") ON DELETE CASCADE ON UPDATE CASCADE, CONSTRAINT "item-login-schema" UNIQUE ("item_path"), CONSTRAINT "PK_ccc0ff5b7c575e40d57b48e77b7" PRIMARY KEY ("id"))',
     );
-    await queryRunner.query(`INSERT INTO "item_login_schema" (type, item_path) 
+    await queryRunner.query(`INSERT INTO "item_login_schema" (type, item_path)
             SELECT (extra->>'itemLogin')::jsonb->>'loginSchema', path FROM item_old WHERE extra->>'itemLogin' IS NOT NULL`);
 
     //         // item login of members
@@ -157,12 +158,12 @@ export class Migrations1679669193721 implements MigrationInterface {
       'CREATE TABLE "item_login" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "password" character varying(100), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "member_id" uuid NOT NULL, "item_login_schema_id" uuid, CONSTRAINT "item-login-member" UNIQUE ("item_login_schema_id", "member_id"), CONSTRAINT "PK_5fa834add54f1c5262a1b012e50" PRIMARY KEY ("id"))',
     );
 
-    await queryRunner.query(`INSERT INTO "item_login" (password, member_id, item_login_schema_id, created_at, updated_at) 
-        SELECT (extra->>\'itemLogin\')::jsonb->>\'password\', m.id, ils.id, im.created_at , im.created_at 
-        FROM member_old as m 
+    await queryRunner.query(`INSERT INTO "item_login" (password, member_id, item_login_schema_id, created_at, updated_at)
+        SELECT (extra->>\'itemLogin\')::jsonb->>\'password\', m.id, ils.id, im.created_at , im.created_at
+        FROM member_old as m
         INNER JOIN item_membership as im ON im.member_id = m.id
-        INNER JOIN item_login_schema as ils ON ils.item_path = im.item_path 
-        
+        INNER JOIN item_login_schema as ils ON ils.item_path = im.item_path
+
         `);
 
     // item published
@@ -185,7 +186,7 @@ export class Migrations1679669193721 implements MigrationInterface {
     await queryRunner.query(
       'ALTER TABLE "item_flag" ADD CONSTRAINT "item-flag-creator" UNIQUE ("item_id", "type", "creator_id")',
     );
-    await queryRunner.query(`INSERT INTO "item_flag" (id,type, creator_id, item_id, created_at) 
+    await queryRunner.query(`INSERT INTO "item_flag" (id,type, creator_id, item_id, created_at)
           SELECT if.id, f.name, if.creator, if.item_id, if.created_at FROM item_flag_old as if
           LEFT JOIN flag_old as f ON f.id=if.flag_id
           `);
@@ -198,7 +199,7 @@ export class Migrations1679669193721 implements MigrationInterface {
     await queryRunner.query(
       'ALTER TABLE "category" ADD CONSTRAINT "category-name-type" UNIQUE ("name", "type")',
     );
-    await queryRunner.query(`INSERT INTO "category" (id, name, type) 
+    await queryRunner.query(`INSERT INTO "category" (id, name, type)
         SELECT c.id, c.name, ct.name FROM category_old as c
         LEFT JOIN category_type_old as ct ON c.type=ct.id
         `);
@@ -210,7 +211,7 @@ export class Migrations1679669193721 implements MigrationInterface {
             category_id uuid REFERENCES category("id") ON DELETE CASCADE,
             "created_at" TIMESTAMP NOT NULL DEFAULT now()
         )`);
-    await queryRunner.query(`INSERT INTO "item_category" (id,item_path, creator_id, category_id) 
+    await queryRunner.query(`INSERT INTO "item_category" (id,item_path, creator_id, category_id)
         SELECT ic.id,i.path, NULL, c.id FROM item_category_old as ic
         LEFT JOIN item_old as i ON i.id=ic.item_id
         LEFT JOIN category_old as c ON c.id=ic.category_id
@@ -220,15 +221,15 @@ export class Migrations1679669193721 implements MigrationInterface {
     );
 
     await queryRunner.query(`CREATE TABLE "chat_message" (
-            "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,                
-            "item_id" uuid REFERENCES "item" ("id") ON DELETE CASCADE,       
-            "creator_id" uuid REFERENCES "member" ("id") ON DELETE SET NULL,   
+            "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
+            "item_id" uuid REFERENCES "item" ("id") ON DELETE CASCADE,
+            "creator_id" uuid REFERENCES "member" ("id") ON DELETE SET NULL,
             "created_at" TIMESTAMP NOT NULL DEFAULT now(),
             "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
             "body" character varying(500) NOT NULL
         )`);
-    await queryRunner.query(`INSERT INTO "chat_message" (id,item_id, creator_id, created_at, updated_at, body) 
-            SELECT id,chat_id, creator, created_at, updated_at, body FROM chat_message_old 
+    await queryRunner.query(`INSERT INTO "chat_message" (id,item_id, creator_id, created_at, updated_at, body)
+            SELECT id,chat_id, creator, created_at, updated_at, body FROM chat_message_old
             `);
 
     await queryRunner.query(
@@ -236,15 +237,15 @@ export class Migrations1679669193721 implements MigrationInterface {
     );
     await queryRunner.query(`CREATE TABLE "chat_mention"  (
                 "id"         uuid UNIQUE    NOT NULL DEFAULT uuid_generate_v4(),
-                "message_id" uuid REFERENCES "chat_message" ("id") ON DELETE CASCADE,     
-                "member_id"  uuid REFERENCES "member" ("id") ON DELETE CASCADE,           
+                "message_id" uuid REFERENCES "chat_message" ("id") ON DELETE CASCADE,
+                "member_id"  uuid REFERENCES "member" ("id") ON DELETE CASCADE,
                 "created_at" TIMESTAMP NOT NULL DEFAULT now(),
                 "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
                 "status" "public"."chat_mention_status_enum" NOT NULL DEFAULT 'unread',
                 PRIMARY KEY ("id")
             )`);
-    await queryRunner.query(`INSERT INTO "chat_mention" (id,message_id, member_id, created_at, updated_at, status) 
-            SELECT id,message_id, member_id, created_at, updated_at, status::text::chat_mention_status_enum FROM chat_mention_old 
+    await queryRunner.query(`INSERT INTO "chat_mention" (id,message_id, member_id, created_at, updated_at, status)
+            SELECT id,message_id, member_id, created_at, updated_at, status::text::chat_mention_status_enum FROM chat_mention_old
             `);
 
     await queryRunner.query(`CREATE TABLE "app_data" (
@@ -258,7 +259,7 @@ export class Migrations1679669193721 implements MigrationInterface {
                 "created_at" TIMESTAMP NOT NULL DEFAULT now(),
                 "updated_at" TIMESTAMP NOT NULL DEFAULT now()
             )`);
-    await queryRunner.query(`INSERT INTO "app_data" (id,item_id, creator_id, created_at, updated_at, member_id,type,visibility,data) 
+    await queryRunner.query(`INSERT INTO "app_data" (id,item_id, creator_id, created_at, updated_at, member_id,type,visibility,data)
                 SELECT id,item_id, creator, created_at, updated_at, member_id,type,visibility,data FROM app_data_old where type is not null
                 `);
     // update downloaded file shape
@@ -274,8 +275,8 @@ export class Migrations1679669193721 implements MigrationInterface {
                     "type" character varying(25)  NOT NULL,
                     "created_at" TIMESTAMP NOT NULL DEFAULT now()
                 )`);
-    await queryRunner.query(`INSERT INTO "app_action" (id,type,item_id,  created_at,  member_id,data) 
-                    SELECT id, type,item_id, created_at,  member_id,data FROM app_action_old 
+    await queryRunner.query(`INSERT INTO "app_action" (id,type,item_id,  created_at,  member_id,data)
+                    SELECT id, type,item_id, created_at,  member_id,data FROM app_action_old
                     `);
 
     await queryRunner.query(
@@ -289,8 +290,8 @@ export class Migrations1679669193721 implements MigrationInterface {
                 "updated_at" TIMESTAMP NOT NULL DEFAULT now()
             )`,
     );
-    await queryRunner.query(`INSERT INTO "app_setting" (id,item_id, creator_id, created_at, updated_at,name,data) 
-                        SELECT id, item_id, creator, created_at, updated_at, name, data FROM app_setting_old 
+    await queryRunner.query(`INSERT INTO "app_setting" (id,item_id, creator_id, created_at, updated_at,name,data)
+                        SELECT id, item_id, creator, created_at, updated_at, name, data FROM app_setting_old
                         `);
     // update downloaded file shape
     await queryRunner.query(
@@ -307,8 +308,8 @@ export class Migrations1679669193721 implements MigrationInterface {
             "created_at" TIMESTAMP NOT NULL DEFAULT now(),
             "updated_at" TIMESTAMP NOT NULL DEFAULT now()
         )`);
-    await queryRunner.query(`INSERT INTO "invitation" (id,item_path, creator_id, created_at, updated_at,name,email,permission) 
-            SELECT id,item_path, creator, created_at, updated_at,name,email,permission FROM invitation_old 
+    await queryRunner.query(`INSERT INTO "invitation" (id,item_path, creator_id, created_at, updated_at,name,email,permission)
+            SELECT id,item_path, creator, created_at, updated_at,name,email,permission FROM invitation_old
             `);
 
     await queryRunner.query(`CREATE TABLE "item_tag" (
@@ -322,9 +323,9 @@ export class Migrations1679669193721 implements MigrationInterface {
     await queryRunner.query(
       'ALTER TABLE "item_tag" ADD CONSTRAINT "item-tag" UNIQUE ("item_path", "type")',
     );
-    await queryRunner.query(`INSERT INTO "item_tag" (id,item_path, creator_id, created_at, type) 
-                SELECT it.id,item_path, creator, it.created_at, t.name FROM item_tag_old as it 
-                INNER JOIN tag_old as t ON t.id = it.tag_id 
+    await queryRunner.query(`INSERT INTO "item_tag" (id,item_path, creator_id, created_at, type)
+                SELECT it.id,item_path, creator, it.created_at, t.name FROM item_tag_old as it
+                INNER JOIN tag_old as t ON t.id = it.tag_id
                 `);
 
     await queryRunner.query(`CREATE TABLE "publisher" (
@@ -334,25 +335,25 @@ export class Migrations1679669193721 implements MigrationInterface {
             "created_at" TIMESTAMP NOT NULL DEFAULT now(),
             "updated_at" TIMESTAMP NOT NULL DEFAULT now()
         )`);
-    await queryRunner.query(`INSERT INTO "publisher" (id, name, created_at,origins) 
+    await queryRunner.query(`INSERT INTO "publisher" (id, name, created_at,origins)
             SELECT id, name, created_at,origins FROM publisher_old
             `);
 
     await queryRunner.query(`CREATE TABLE "app" (
                 "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
                 "key" uuid DEFAULT uuid_generate_v4() UNIQUE NOT NULL,
-            
+
                 "name" character varying(250) NOT NULL,
                 "description" character varying(250) NOT NULL,
-            
+
                 "url" character varying(250) NOT NULL UNIQUE,
                 "publisher_id" uuid REFERENCES "publisher" ("id") ON DELETE CASCADE NOT NULL,
                 "created_at" TIMESTAMP NOT NULL DEFAULT now(),
                 "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
-            
+
                 "extra" text NOT NULL DEFAULT '{}'
             )`);
-    await queryRunner.query(`INSERT INTO "app" (id, key,name, description,url,created_at,extra, publisher_id) 
+    await queryRunner.query(`INSERT INTO "app" (id, key,name, description,url,created_at,extra, publisher_id)
                 SELECT id, id,name, description,url,created_at,extra, publisher_id FROM app_old
                 `);
 
@@ -361,7 +362,7 @@ export class Migrations1679669193721 implements MigrationInterface {
             item_id UUID NOT NULL REFERENCES item("id") ON DELETE CASCADE,
             "created_at" TIMESTAMP NOT NULL DEFAULT now()
             )`);
-    await queryRunner.query(`INSERT INTO "item_validation_group" (id, item_id,created_at) 
+    await queryRunner.query(`INSERT INTO "item_validation_group" (id, item_id,created_at)
                 SELECT id, item_id,created_at FROM item_validation_old
                 `);
 
@@ -375,12 +376,12 @@ export class Migrations1679669193721 implements MigrationInterface {
                     "created_at" TIMESTAMP NOT NULL DEFAULT now(),
                     "updated_at" TIMESTAMP NOT NULL DEFAULT now()
                     )`);
-    await queryRunner.query(`INSERT INTO "item_validation" (id, item_id,process,status,created_at,updated_at,result, item_validation_group_id) 
-                        SELECT ivg.id, ivg.item_id,p.name,ivgs.name,ivg.created_at,ivg.updated_at,result, iv.id 
+    await queryRunner.query(`INSERT INTO "item_validation" (id, item_id,process,status,created_at,updated_at,result, item_validation_group_id)
+                        SELECT ivg.id, ivg.item_id,p.name,ivgs.name,ivg.created_at,ivg.updated_at,result, iv.id
                         FROM item_validation_group_old as ivg
-                        LEFT JOIN item_validation_process_old as p ON p.id = ivg.item_validation_process_id 
-                        LEFT JOIN item_validation_old as iv ON iv.id = ivg.item_validation_id 
-                        LEFT JOIN item_validation_status_old as ivgs ON ivgs.id = ivg.status_id 
+                        LEFT JOIN item_validation_process_old as p ON p.id = ivg.item_validation_process_id
+                        LEFT JOIN item_validation_old as iv ON iv.id = ivg.item_validation_id
+                        LEFT JOIN item_validation_status_old as ivgs ON ivgs.id = ivg.status_id
                         `);
 
     await queryRunner.query(`CREATE TABLE IF NOT EXISTS item_validation_review (
@@ -404,8 +405,8 @@ export class Migrations1679669193721 implements MigrationInterface {
       'ALTER TABLE "action" ADD CONSTRAINT "FK_d1e204f54e77573838087f3c153" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE SET NULL ON UPDATE CASCADE',
     );
 
-    await queryRunner.query(`INSERT INTO "action" (id, view,type,extra,created_at,geolocation,member_id, item_path) 
-        SELECT id, view,action_type,extra,created_at,geolocation,member_id, item_path 
+    await queryRunner.query(`INSERT INTO "action" (id, view,type,extra,created_at,geolocation,member_id, item_path)
+        SELECT id, view,action_type,extra,created_at,geolocation,member_id, item_path
         FROM action_old
         `);
 
@@ -1097,7 +1098,7 @@ export class Migrations1679669193721 implements MigrationInterface {
           "password" character(60) DEFAULT NULL,
           "type" member_type_enum DEFAULT 'individual' NOT NULL,
           "extra" jsonb NOT NULL DEFAULT \'{}\'::jsonb,
-        
+
           "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE \'utc\'),
           "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE \'utc\'))`);
     await queryRunner.query(
@@ -1115,8 +1116,8 @@ export class Migrations1679669193721 implements MigrationInterface {
             "path" ltree UNIQUE NOT NULL,
             "extra" jsonb NOT NULL DEFAULT \'{}\'::jsonb,
             "settings" jsonb NOT NULL DEFAULT \'{}\'::jsonb,
-          
-            "creator" uuid REFERENCES "member_old" ("id") ON DELETE SET NULL, 
+
+            "creator" uuid REFERENCES "member_old" ("id") ON DELETE SET NULL,
             "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE \'utc\'),
             "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE \'utc\')
             )`);
@@ -1132,7 +1133,7 @@ export class Migrations1679669193721 implements MigrationInterface {
           "item_path" ltree REFERENCES "item_old" ("path") ON DELETE CASCADE ON UPDATE CASCADE,
           "permission" permissions_enum NOT NULL,
           "creator" uuid REFERENCES "member_old" ("id") ON DELETE SET NULL, -- don"t remove - set creator to NULL
-        
+
           "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE \'utc\'),
           "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE \'utc\'),
             PRIMARY KEY ("member_id", "item_path")
@@ -1185,8 +1186,8 @@ export class Migrations1679669193721 implements MigrationInterface {
             "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
             PRIMARY KEY ("item_path","email")
         )`);
-    await queryRunner.query(`INSERT INTO "invitation_old" (id,item_path, creator, created_at, updated_at,name,email,permission) 
-            SELECT id,item_path, creator_id, created_at, updated_at,name,email,permission::permissions_enum FROM invitation 
+    await queryRunner.query(`INSERT INTO "invitation_old" (id,item_path, creator, created_at, updated_at,name,email,permission)
+            SELECT id,item_path, creator_id, created_at, updated_at,name,email,permission::permissions_enum FROM invitation
             `);
 
     await queryRunner.query(` CREATE TABLE "recycled_item_old" (
@@ -1210,8 +1211,8 @@ export class Migrations1679669193721 implements MigrationInterface {
           "nested" nested_tag_enum DEFAULT NULL,
           "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
             )`);
-    await queryRunner.query(`INSERT INTO "tag_old" (name) 
-            SELECT DISTINCT type FROM item_tag 
+    await queryRunner.query(`INSERT INTO "tag_old" (name)
+            SELECT DISTINCT type FROM item_tag
             `);
     await queryRunner.query(`INSERT INTO "tag_old" ("id", "name", "nested")
             VALUES ('ea9a3b4e-7b67-44c2-a9df-528b6ae5424f', 'published-item', 'allow')`);
@@ -1223,25 +1224,25 @@ export class Migrations1679669193721 implements MigrationInterface {
           -- delete row if item is deleted; update path if item's path is updated.
           "item_path" ltree REFERENCES "item_old" ("path") ON DELETE CASCADE ON UPDATE CASCADE,
           "creator" uuid REFERENCES "member_old" ("id") ON DELETE SET NULL, -- don't remove - set creator to NULL
-        
+
           "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
           PRIMARY KEY ("tag_id", "item_path")
             )`);
-    await queryRunner.query(`INSERT INTO "item_tag_old" (id,tag_id, item_path, creator, created_at) 
-                    SELECT it.id,t.id, item_path, creator_id, it.created_at FROM item_tag as it 
-                    INNER JOIN tag_old as t ON t.name = it.type 
+    await queryRunner.query(`INSERT INTO "item_tag_old" (id,tag_id, item_path, creator, created_at)
+                    SELECT it.id,t.id, item_path, creator_id, it.created_at FROM item_tag as it
+                    INNER JOIN tag_old as t ON t.name = it.type
                     `);
     // published items
 
-    await queryRunner.query(`INSERT INTO "item_tag_old" (id,tag_id, item_path, creator, created_at) 
-    SELECT ip.id,'ea9a3b4e-7b67-44c2-a9df-528b6ae5424f', item_path, creator_id, ip.created_at FROM item_published as ip 
+    await queryRunner.query(`INSERT INTO "item_tag_old" (id,tag_id, item_path, creator, created_at)
+    SELECT ip.id,'ea9a3b4e-7b67-44c2-a9df-528b6ae5424f', item_path, creator_id, ip.created_at FROM item_published as ip
     `);
 
     await queryRunner.query(`CREATE TABLE IF NOT EXISTS category_type_old (
             id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
             name VARCHAR(20)
             )`);
-    await queryRunner.query(`INSERT INTO "category_type_old" (name) 
+    await queryRunner.query(`INSERT INTO "category_type_old" (name)
             SELECT DISTINCT  c.type FROM category as c
             `);
 
@@ -1251,9 +1252,9 @@ export class Migrations1679669193721 implements MigrationInterface {
             type uuid,
             FOREIGN KEY (type) REFERENCES category_type_old("id") ON DELETE CASCADE
         )`);
-    await queryRunner.query(`INSERT INTO "category_old" (id, name, type) 
+    await queryRunner.query(`INSERT INTO "category_old" (id, name, type)
         SELECT c.id, c.name, t.id FROM category as c
-        INNER JOIN category_type_old as t ON c.type = t.name 
+        INNER JOIN category_type_old as t ON c.type = t.name
         `);
 
     // -- CREATE item_category table
@@ -1265,9 +1266,9 @@ export class Migrations1679669193721 implements MigrationInterface {
             FOREIGN KEY(item_id) REFERENCES item_old(id) ON DELETE CASCADE,
             FOREIGN KEY(category_id) REFERENCES category_old(id) ON DELETE CASCADE
         )`);
-    await queryRunner.query(`INSERT INTO "item_category_old" (id,item_id, category_id) 
+    await queryRunner.query(`INSERT INTO "item_category_old" (id,item_id, category_id)
         SELECT ic.id,i.id, ic.category_id FROM item_category as ic
-        INNER JOIN item as i  ON i.path = ic.item_path 
+        INNER JOIN item as i  ON i.path = ic.item_path
         `);
 
     // -- create table for different validation processes
@@ -1277,8 +1278,8 @@ export class Migrations1679669193721 implements MigrationInterface {
             name VARCHAR(100) NOT NULL,
             enabled BOOLEAN NOT NULL
             )`);
-    await queryRunner.query(`INSERT INTO "item_validation_process_old" ( name, enabled) 
-            SELECT DISTINCT process, true FROM item_validation 
+    await queryRunner.query(`INSERT INTO "item_validation_process_old" ( name, enabled)
+            SELECT DISTINCT process, true FROM item_validation
             `);
 
     // -- create tables for validation and review statuses
@@ -1286,16 +1287,16 @@ export class Migrations1679669193721 implements MigrationInterface {
             id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
             name VARCHAR(50) NOT NULL
             )`);
-    await queryRunner.query(`INSERT INTO "item_validation_status_old" ( name) 
-            SELECT DISTINCT status FROM item_validation 
+    await queryRunner.query(`INSERT INTO "item_validation_status_old" ( name)
+            SELECT DISTINCT status FROM item_validation
             `);
 
     await queryRunner.query(`CREATE TABLE IF NOT EXISTS item_validation_review_status_old (
             id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
             name VARCHAR(50) NOT NULL
             )`);
-    await queryRunner.query(`INSERT INTO "item_validation_review_status_old" ( name) 
-            SELECT DISTINCT status FROM item_validation_review 
+    await queryRunner.query(`INSERT INTO "item_validation_review_status_old" ( name)
+            SELECT DISTINCT status FROM item_validation_review
             `);
 
     // -- create table for automatic validation records
@@ -1305,7 +1306,7 @@ export class Migrations1679669193721 implements MigrationInterface {
             item_id UUID NOT NULL REFERENCES item_old("id") ON DELETE CASCADE,
             created_at timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
             )`);
-    await queryRunner.query(`INSERT INTO "item_validation_old" (id, item_id,created_at) 
+    await queryRunner.query(`INSERT INTO "item_validation_old" (id, item_id,created_at)
                     SELECT id, item_id,created_at FROM item_validation_group
                     `);
 
@@ -1320,12 +1321,12 @@ export class Migrations1679669193721 implements MigrationInterface {
             updated_at timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
             created_at timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
             )`);
-    await queryRunner.query(`INSERT INTO "item_validation_group_old" (id, item_id,item_validation_process_id,status_id,created_at,updated_at,result, item_validation_id) 
-                            SELECT iv.id, iv.item_id,p.id,ivgs.id,iv.created_at,iv.updated_at,result, ivg.id 
+    await queryRunner.query(`INSERT INTO "item_validation_group_old" (id, item_id,item_validation_process_id,status_id,created_at,updated_at,result, item_validation_id)
+                            SELECT iv.id, iv.item_id,p.id,ivgs.id,iv.created_at,iv.updated_at,result, ivg.id
                             FROM item_validation as iv
-                            LEFT JOIN item_validation_process_old as p ON p.name = iv.process 
-                            LEFT JOIN item_validation_group as ivg ON ivg.id = iv.item_validation_group_id 
-                            LEFT JOIN item_validation_status_old as ivgs ON ivgs.name = iv.status 
+                            LEFT JOIN item_validation_process_old as p ON p.name = iv.process
+                            LEFT JOIN item_validation_group as ivg ON ivg.id = iv.item_validation_group_id
+                            LEFT JOIN item_validation_status_old as ivgs ON ivgs.name = iv.status
                             `);
 
     // -- create table for manual validation records
@@ -1347,7 +1348,7 @@ export class Migrations1679669193721 implements MigrationInterface {
             "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
             PRIMARY KEY ("item_id", "member_id")
             )`);
-    await queryRunner.query(`INSERT INTO "item_member_login_old" (item_id,member_id,created_at) 
+    await queryRunner.query(`INSERT INTO "item_member_login_old" (item_id,member_id,created_at)
                                     SELECT i.id, member_id, item_login.created_at
                                     FROM item_login
                                     INNER JOIN item_login_schema as ils on item_login_schema_id=ils.id
@@ -1355,18 +1356,18 @@ export class Migrations1679669193721 implements MigrationInterface {
                                     `);
 
     await queryRunner.query(`CREATE TABLE "chat_message_old" (
-            "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,                
-            "chat_id" uuid REFERENCES "item_old" ("id") ON DELETE CASCADE,       
-            "creator" uuid REFERENCES "member_old" ("id") ON DELETE SET NULL,   
-            "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'), 
+            "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
+            "chat_id" uuid REFERENCES "item_old" ("id") ON DELETE CASCADE,
+            "creator" uuid REFERENCES "member_old" ("id") ON DELETE SET NULL,
+            "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
             updated_at timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
             "body" character varying(500)
         )`);
-    await queryRunner.query(`INSERT INTO "chat_message_old" (id,chat_id, creator, created_at, updated_at, body) 
-            SELECT id,item_id, creator_id, created_at, updated_at, body FROM chat_message 
+    await queryRunner.query(`INSERT INTO "chat_message_old" (id,chat_id, creator, created_at, updated_at, body)
+            SELECT id,item_id, creator_id, created_at, updated_at, body FROM chat_message
             `);
 
-    await queryRunner.query(`CREATE TABLE "chat_mention_old" 
+    await queryRunner.query(`CREATE TABLE "chat_mention_old"
             (
                 "id"         uuid UNIQUE    NOT NULL DEFAULT uuid_generate_v4(),
                 "item_path"  ltree REFERENCES "item_old" ("path") ON DELETE CASCADE,          -- delete row if item is deleted
@@ -1379,7 +1380,7 @@ export class Migrations1679669193721 implements MigrationInterface {
                 PRIMARY KEY ("id")
             )`);
 
-    await queryRunner.query(`INSERT INTO "chat_mention_old" (id,item_path, message_id, member_id, creator, created_at, updated_at, status) 
+    await queryRunner.query(`INSERT INTO "chat_mention_old" (id,item_path, message_id, member_id, creator, created_at, updated_at, status)
             SELECT cm.id,i.path, message_id, member_id, m.creator_id, cm.created_at, cm.updated_at, status::text::mention_status FROM chat_mention as cm
             LEFT JOIN chat_message as m on m.id = cm.message_id
             LEFT JOIN item as i on i.id = m.item_id
@@ -1389,7 +1390,7 @@ export class Migrations1679669193721 implements MigrationInterface {
                 "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
                 "name" character varying(100) NOT NULL
               )`);
-    await queryRunner.query(`INSERT INTO "flag_old" (name) 
+    await queryRunner.query(`INSERT INTO "flag_old" (name)
               SELECT DISTINCT type FROM item_flag
               `);
 
@@ -1400,7 +1401,7 @@ export class Migrations1679669193721 implements MigrationInterface {
                 "creator" uuid REFERENCES "member_old" ("id") ON DELETE SET NULL,
                 "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
               )`);
-    await queryRunner.query(`INSERT INTO "item_flag_old" (id,flag_id, creator, item_id, created_at) 
+    await queryRunner.query(`INSERT INTO "item_flag_old" (id,flag_id, creator, item_id, created_at)
           SELECT if.id, f.id, if.creator_id, if.item_id, if.created_at FROM item_flag as if
           LEFT JOIN flag_old as f ON f.name=if.type
           `);
@@ -1411,53 +1412,53 @@ export class Migrations1679669193721 implements MigrationInterface {
             "origins" character varying(100)[],
             "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
         )`);
-    await queryRunner.query(`INSERT INTO "publisher_old" (id, name, created_at,origins) 
+    await queryRunner.query(`INSERT INTO "publisher_old" (id, name, created_at,origins)
             SELECT id, name, created_at,origins FROM publisher
             `);
 
     await queryRunner.query(`CREATE TABLE "app_old" (
             "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
-        
+
             "name" character varying(250) NOT NULL,
             "description" character varying(250) NOT NULL,
-        
+
             "url" character varying(250) NOT NULL,
             "publisher_id" uuid REFERENCES "publisher_old" ("id") ON DELETE CASCADE NOT NULL,
             "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
-        
+
             "extra" jsonb NOT NULL DEFAULT '{}'::jsonb
         )`);
-    await queryRunner.query(`INSERT INTO "app_old" (id, name, description,url,created_at,extra,publisher_id) 
+    await queryRunner.query(`INSERT INTO "app_old" (id, name, description,url,created_at,extra,publisher_id)
                 SELECT id, name, description,url,created_at,extra::jsonb, publisher_id FROM app
                 `);
 
     await queryRunner.query(`CREATE TABLE "app_data_old" (
             "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
-        
+
             -- delete row if member is deleted
             "member_id" uuid REFERENCES "member_old" ("id") ON DELETE CASCADE NOT NULL,
             -- "session_id" character varying(25), -- TODO: maybe necessary for "public use".
-        
+
             -- delete row if item is deleted
             "item_id" uuid REFERENCES "item_old" ("id") ON DELETE CASCADE NOT NULL,
-        
+
             "data" jsonb NOT NULL DEFAULT '{}'::jsonb,
             "type" character varying(25),
-        
+
             -- don't remove - set creator to NULL
             "creator" uuid REFERENCES "member_old" ("id") ON DELETE SET NULL,
-        
+
             -- "ownership" app_data_ownership_enum DEFAULT 'member' NOT NULL,
             "visibility" app_data_visibility_enum DEFAULT 'member' NOT NULL,
-        
+
             -- TODO: I think this is to discard; maybe item should keep a reference to the appId in its settings?
             -- "app_id" uuid REFERENCES "app_old" ("id"), -- must be set if ownership != ('member' or 'item')
             -- "publisher_id" uuid REFERENCES "publisher_old" ("id"), -- must be set if ownership != ('member' or 'item')
-        
+
             "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
             "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
         )`);
-    await queryRunner.query(`INSERT INTO "app_data_old" (id,item_id, creator, created_at, updated_at, member_id,type,visibility,data) 
+    await queryRunner.query(`INSERT INTO "app_data_old" (id,item_id, creator, created_at, updated_at, member_id,type,visibility,data)
                 SELECT id,item_id, creator_id, created_at, updated_at, member_id,type,visibility::text::app_data_visibility_enum,data::jsonb FROM app_data
                 `);
     await queryRunner.query(
@@ -1472,27 +1473,27 @@ export class Migrations1679669193721 implements MigrationInterface {
             "type" character varying(25),
             "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
         )`);
-    await queryRunner.query(`INSERT INTO "app_action_old" (id,item_id, type, created_at,  member_id,data) 
-                    SELECT id,item_id, type,created_at,  member_id,data::jsonb FROM app_action 
+    await queryRunner.query(`INSERT INTO "app_action_old" (id,item_id, type, created_at,  member_id,data)
+                    SELECT id,item_id, type,created_at,  member_id,data::jsonb FROM app_action
                     `);
 
     await queryRunner.query(`CREATE TABLE "app_setting_old" (
             "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
-        
+
             -- delete row if item is deleted
             "item_id" uuid REFERENCES "item_old" ("id") ON DELETE CASCADE NOT NULL,
-        
+
             "name" character varying(250) NOT NULL,
-        
+
             "data" jsonb NOT NULL DEFAULT '{}'::jsonb,
-        
+
             -- don't remove - set creator to NULL
             "creator" uuid REFERENCES "member_old" ("id") ON DELETE SET NULL,
-        
+
             "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
             "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
         )`);
-    await queryRunner.query(`INSERT INTO "app_setting_old" (id,item_id, creator, created_at, updated_at,name,data) 
+    await queryRunner.query(`INSERT INTO "app_setting_old" (id,item_id, creator, created_at, updated_at,name,data)
                         SELECT id,item_id, creator_id, created_at, updated_at, name,data::jsonb FROM app_setting
                         `);
 
@@ -1533,11 +1534,11 @@ export class Migrations1679669193721 implements MigrationInterface {
     await queryRunner.query(`ALTER TABLE action_old
             ADD item_path ltree REFERENCES "item_old" ("path") ON DELETE SET NULL ON UPDATE CASCADE`);
 
-    await queryRunner.query(`UPDATE action_old as a1 SET item_path = 
+    await queryRunner.query(`UPDATE action_old as a1 SET item_path =
             (SELECT path FROM item WHERE a1.item_id = item.id)`);
     // TODO
 
-    await queryRunner.query(`INSERT INTO "action_old" (id, view,action_type,extra,created_at,geolocation,member_id, item_path, member_type, item_type) 
+    await queryRunner.query(`INSERT INTO "action_old" (id, view,action_type,extra,created_at,geolocation,member_id, item_path, member_type, item_type)
     SELECT action.id, view,action.type,action.extra::jsonb,action.created_at,geolocation::jsonb,member_id,item_path , member.type, item.type
     FROM action
     LEFT JOIN item ON item.path = item_path

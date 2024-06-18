@@ -1,4 +1,4 @@
-export interface EtherpadPluginOptions {
+export type EtherpadPluginOptions = {
   /**
    * URL (incl. protocol and port) of the etherpad server
    */
@@ -18,4 +18,4 @@ export interface EtherpadPluginOptions {
    * secret api key to authorize this app against the etherpad server
    */
   apiKey?: string;
-}
+};

@@ -1,4 +1,4 @@
-import fastifyPassport from '@fastify/passport';
+import fstPassport from '@fastify/passport';
 import fastifySecureSession from '@fastify/secure-session';
 import { FastifyInstance, FastifyPluginAsync, PassportUser } from 'fastify';
 
@@ -15,7 +15,7 @@ import {
 } from '../../../../utils/config.js';
 import { Repositories, buildRepositories } from '../../../../utils/repositories.js';
 import { SHORT_TOKEN_PARAM, TOKEN_PARAM } from './constants.js';
-import { PassportStrategy } from './strategies/index.js';
+import { PassportStrategy } from './strategies.js';
 import jwtStrategy from './strategies/jwt.js';
 import jwtAppsStrategy from './strategies/jwtApps.js';
 import jwtChallengeVerifierStrategy from './strategies/jwtChallengeVerifier.js';
@@ -23,6 +23,8 @@ import magicLinkStrategy from './strategies/magicLink.js';
 import passwordStrategy from './strategies/password.js';
 import passwordResetStrategy from './strategies/passwordReset.js';
 import strictSessionStrategy from './strategies/strictSession.js';
+
+const fastifyPassport = fstPassport.default;
 
 // This plugin needs to be globally register before using the prehandlers.
 const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
@@ -116,6 +118,7 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   );
 
   // Serialize and Deserialize user
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   fastifyPassport.registerUserSerializer(async (user: PassportUser, _req) => user.member!.id);
   fastifyPassport.registerUserDeserializer(async (uuid: string, _req): Promise<PassportUser> => {
     return {

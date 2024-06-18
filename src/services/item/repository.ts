@@ -1,5 +1,5 @@
 import { Brackets, EntityManager, FindManyOptions, In, Repository } from 'typeorm';
-import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
 import { v4 } from 'uuid';
 
 import {
@@ -26,7 +26,7 @@ import {
 import { MemberIdentifierNotFound } from '../itemLogin/errors.js';
 import { Member } from '../member/entities/member.js';
 import { itemSchema } from '../member/plugins/export-data/schemas/schemas.js';
-import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils';
+import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils.js';
 import { mapById } from '../utils.js';
 import { FolderItem, Item, ItemExtraUnion, isItemType } from './entities/Item.js';
 import { ItemChildrenParams } from './types.js';
@@ -482,8 +482,7 @@ export class ItemRepository {
     });
     old2New.set(originalParent.id, { copy: copiedItem, original: originalParent });
 
-    for (let i = 0; i < descendants.length; i++) {
-      const original = descendants[i];
+    for (const original of descendants) {
       const { id, path } = original;
 
       // process to get copy of direct parent

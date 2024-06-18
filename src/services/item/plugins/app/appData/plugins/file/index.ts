@@ -19,11 +19,11 @@ import type { AppDataService } from '../../service.js';
 import { download, upload } from './schema.js';
 import AppDataFileService from './service.js';
 
-export interface GraaspPluginFileOptions {
+export type GraaspPluginFileOptions = {
   maxFileSize?: number; // max size for an uploaded file in bytes
 
   appDataService: AppDataService;
-}
+};
 
 export const DEFAULT_MAX_FILE_SIZE = 1024 * 1024 * 1024; // 1GB
 

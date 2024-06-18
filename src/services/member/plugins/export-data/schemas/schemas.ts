@@ -9,7 +9,7 @@ import {
   STRING_TYPE,
   buildArraySchema,
   buildObjectSchema,
-} from '../utils/schema.utils';
+} from '../utils/schema.utils.js';
 
 export const exportMemberData = {
   response: {
@@ -23,7 +23,7 @@ export const externalItemSchema = buildObjectSchema({
   displayName: STRING_TYPE,
 });
 
-export const externalMemberSchema = (nullable: boolean = false) =>
+export const externalMemberSchema = (nullable = false) =>
   buildObjectSchema(
     {
       name: STRING_TYPE,

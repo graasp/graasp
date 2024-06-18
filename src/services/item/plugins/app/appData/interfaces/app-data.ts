@@ -1,9 +1,9 @@
 import { AppDataVisibility, UUID } from '@graasp/sdk';
 
-export interface InputAppData {
+export type InputAppData = {
   id?: UUID;
-  data: { [key: string]: unknown };
+  data: Record<string, unknown>;
   type: string;
   visibility: AppDataVisibility;
   memberId?: string;
-}
+};

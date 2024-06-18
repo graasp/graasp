@@ -11,10 +11,10 @@ import { createSchema, getLinkMetadata, updateExtraSchema } from './schemas.js';
 import { EmbeddedLinkService } from './service.js';
 import { ensureProtocol } from './utils.js';
 
-interface GraaspEmbeddedLinkItemOptions {
+type GraaspEmbeddedLinkItemOptions = {
   /** \<protocol\>://\<hostname\>:\<port\> */
   iframelyHrefOrigin: string;
-}
+};
 
 const plugin: FastifyPluginAsync<GraaspEmbeddedLinkItemOptions> = async (fastify, options) => {
   const { iframelyHrefOrigin } = options;

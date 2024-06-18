@@ -681,8 +681,7 @@ describe('Short links routes tests', () => {
 
         await testUtils.saveMembership({ item, member: anna, permission: PermissionLevel.Write });
 
-        for (let i = 0; i < platformLinks.length; i++) {
-          const platform = platformLinks[i];
+        for (const platform of platformLinks) {
           const response = await injectPost(app, {
             itemId: item.id,
             alias: `${MOCK_ALIAS}-${platform}`,

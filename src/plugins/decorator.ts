@@ -1,4 +1,4 @@
-import Redis from 'ioredis';
+import RedisBroken from 'ioredis';
 import { MeiliSearch } from 'meilisearch';
 
 import { FastifyPluginAsync } from 'fastify';
@@ -27,6 +27,8 @@ import {
   REDIS_PORT,
   REDIS_USERNAME,
 } from '../utils/config.js';
+
+const Redis = RedisBroken.default;
 
 const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
   fastify.decorate(

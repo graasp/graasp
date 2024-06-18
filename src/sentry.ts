@@ -16,7 +16,7 @@ import {
 
 // todo: use graasp-sdk?
 declare module 'fastify' {
-  interface FastifyRequest {
+  type FastifyRequest = {
     /**
      * Collects metrics for logs, monitoring, traces
      */
@@ -31,7 +31,7 @@ declare module 'fastify' {
         transaction: Sentry.Transaction;
       };
     };
-  }
+  };
 }
 
 const IGNORED_TRANSACTIONS = {

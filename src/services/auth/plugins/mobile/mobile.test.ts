@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { faker } from '@faker-js/faker';
 import crypto from 'crypto';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
@@ -33,7 +34,6 @@ const memberRawRepository = AppDataSource.getRepository(Member);
 // bug: cannot use exported mockCaptchaValidation
 const mockCaptchaValidation = (action: RecaptchaActionType) => {
   (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return { json: async () => ({ success: true, action, score: 1 }) } as Response;
   });
 };

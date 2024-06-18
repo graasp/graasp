@@ -1,5 +1,5 @@
 import { EntityManager, Repository } from 'typeorm';
-import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
 
 import { PermissionLevel } from '@graasp/sdk';
 
@@ -84,10 +84,7 @@ export class ItemPublishedRepository {
   }
 
   // Must Implement a proper Paginated<Type> if more complex pagination is needed in the future
-  async getPaginatedItems(
-    page: number = 1,
-    pageSize: number = 20,
-  ): Promise<[ItemPublished[], number]> {
+  async getPaginatedItems(page = 1, pageSize = 20): Promise<[ItemPublished[], number]> {
     const [items, total] = await this.repository
       .createQueryBuilder('item_published')
       .innerJoinAndSelect('item_published.item', 'item') // will ignore soft deleted item
@@ -118,7 +115,7 @@ export class ItemPublishedRepository {
     return entry;
   }
 
-  async getRecentItems(limit: number = 10): Promise<Item[]> {
+  async getRecentItems(limit = 10): Promise<Item[]> {
     const publishedInfos = await this.repository
       .createQueryBuilder('item_published')
       .innerJoinAndSelect('item_published.item', 'item')
@@ -132,7 +129,7 @@ export class ItemPublishedRepository {
 
   // return public items sorted by most liked
   // bug: does not take into account child items
-  async getLikedItems(limit: number = 10): Promise<Item[]> {
+  async getLikedItems(limit = 10): Promise<Item[]> {
     const itemPublished = await this.repository
       .createQueryBuilder('item_published')
       .innerJoinAndSelect('item_published.item', 'item')

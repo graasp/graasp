@@ -1,4 +1,4 @@
-export interface HtmlValidator {
+export type HtmlValidator = {
   /**
    * Checks whether a given file extension is allowed inside a package
    * @param extension A string representing the file extension (may or may not contain leading dot or be uppercase)
@@ -10,4 +10,4 @@ export interface HtmlValidator {
    * Validates an extracted html package content
    */
   validatePackage(extractedRoot: string): Promise<void>;
-}
+};

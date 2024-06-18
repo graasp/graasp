@@ -11,18 +11,18 @@ import { DEFAULT_LANG } from '@graasp/translations';
 import i18next from './i18n.js';
 import { applyLayout } from './layout.js';
 
-export interface MailerOptions {
+export type MailerOptions = {
   host: string;
   port?: number;
   useSsl?: boolean;
   username: string;
   password: string;
   fromEmail: string;
-}
+};
 
-type CssStyles = { [key: string]: string };
+type CssStyles = Record<string, string>;
 
-export interface MailerDecoration {
+export type MailerDecoration = {
   buildButton: (link: string, text: string) => string;
   buildText: (str: string, cssStyles?: CssStyles) => string;
   sendEmail: (
@@ -35,7 +35,7 @@ export interface MailerDecoration {
   ) => Promise<void>;
   translate: (lang: string) => i18n['t'];
   buildFooter: (lang?: string) => string;
-}
+};
 
 const plugin: FastifyPluginAsync<MailerOptions> = async (fastify, options) => {
   const { host, port = 465, useSsl = true, username: user, password: pass, fromEmail } = options;

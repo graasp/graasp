@@ -1,6 +1,6 @@
 import { DataSource } from 'typeorm';
 
-import { getTableNames } from '../utils';
+import { getTableNames } from '../utils.js';
 
 const memberId = '3e901df0-d246-4672-bb01-34269f4c0fed';
 const itemId = '1e901df0-d246-4672-bb01-34269f4c0fed';
@@ -400,7 +400,11 @@ const values = {
 
 // types will be outdated so we don't use them
 const expected = {
-  member: async (m: any, idx: number, db: DataSource) => {
+  member: async (
+    m: { id; name; type; password; email; extra; created_at; updated_at },
+    idx: number,
+    db: DataSource,
+  ) => {
     const expected = values.member[idx];
     expect(m.id).toEqual(expected.id);
     expect(m.name).toEqual(expected.name);
@@ -420,7 +424,22 @@ const expected = {
       expect(password.password).toEqual(expected.password);
     }
   },
-  item: async (item: any, idx: number, db: DataSource) => {
+  item: async (
+    item: {
+      id;
+      name;
+      creator_id;
+      description;
+      extra;
+      settings;
+      path;
+      created_at;
+      updated_at;
+      deleted_at;
+    },
+    idx: number,
+    db: DataSource,
+  ) => {
     const expected = values.item[idx];
     expect(item.id).toEqual(expected.id);
     expect(item.name).toEqual(expected.name);
@@ -442,7 +461,7 @@ const expected = {
       expect(item.deleted_at).toEqual(deleted.created_at);
     }
   },
-  item_membership: async (im: any, idx: number) => {
+  item_membership: async (im, idx: number) => {
     const expected = values.item_membership[idx];
 
     expect(im.id).toEqual(expected.id);
@@ -452,7 +471,7 @@ const expected = {
     expect(im.created_at.toISOString()).toEqual(expected.created_at);
     expect(im.updated_at.toISOString()).toEqual(expected.created_at);
   },
-  invitation: async (invitation: any, idx: number) => {
+  invitation: async (invitation, idx: number) => {
     const expected = values.invitation[idx];
     expect(invitation.id).toEqual(expected.id);
     expect(invitation.item_path).toEqual(expected.item_path);
@@ -463,7 +482,7 @@ const expected = {
     expect(invitation.created_at.toISOString()).toEqual(expected.created_at);
     expect(invitation.updated_at.toISOString()).toEqual(expected.updated_at);
   },
-  action: async (action: any, idx: number) => {
+  action: async (action, idx: number) => {
     const expected = values.action[idx];
     expect(action.id).toEqual(expected.id);
     expect(action.item_path).toEqual(expected.item_path);
@@ -474,11 +493,11 @@ const expected = {
     expect(action.view).toEqual(expected.view);
     expect(action.created_at.toISOString()).toEqual(expected.created_at);
   },
-  action_request_export: async (a: any, idx: number) => {
+  action_request_export: async (_a) => {
     // we don't keep the data
     // but we make sure inserting the data works
   },
-  recycled_item: async (recycledItem: any, idx: number, db: DataSource) => {
+  recycled_item: async (_recycledItem, idx: number, db: DataSource) => {
     const expected = values.recycled_item[idx];
 
     // table changed name
@@ -490,12 +509,12 @@ const expected = {
     expect(newRecycledItem.creator_id).toEqual(expected.creator);
     expect(newRecycledItem.created_at.toISOString()).toEqual(expected.created_at);
   },
-  tag: async (tag: any, idx: number, db: DataSource) => {
+  tag: async (_tag, _idx: number, db: DataSource) => {
     // we removed this table
     const result = await getTableNames(db);
     expect(result).not.toContain('tag');
   },
-  item_tag: async (itemTag: any, idx: number, db: DataSource) => {
+  item_tag: async (itemTag, idx: number, db: DataSource) => {
     const expected = values.item_tag[idx];
     const type = await values.tag.find(({ id }) => id === expected.tag_id)?.name;
     expect(itemTag.id).toEqual(expected.id);
@@ -513,54 +532,54 @@ const expected = {
       expect(itemPublished.created_at).toEqual(itemTag.created_at);
     }
   },
-  category_type: async (ct: any, idx: number, db: DataSource) => {
+  category_type: async (_ct, _idx: number, db: DataSource) => {
     // we removed this table
     const result = await getTableNames(db);
     expect(result).not.toContain('category_type');
   },
-  category: async (c: any, idx: number, db: DataSource) => {
+  category: async (c, idx: number, _db: DataSource) => {
     const expected = values.category[idx];
     const type = values.category_type.find(({ id }) => expected.type === id)?.name;
     expect(c.id).toEqual(expected.id);
     expect(c.name).toEqual(expected.name);
     expect(c.type).toEqual(type);
   },
-  item_category: async (ic: any, idx: number) => {
+  item_category: async (ic, idx: number) => {
     const expected = values.item_category[idx];
     const path = values.item.find(({ id }) => expected.item_id === id)?.path;
     expect(ic.id).toEqual(expected.id);
     expect(ic.category_id).toEqual(expected.category_id);
     expect(ic.item_path).toEqual(path);
   },
-  item_validation_process: async (ivp: any, idx: number, db: DataSource) => {
+  item_validation_process: async (ivp, idx: number, db: DataSource) => {
     // we removed this table
     const result = await getTableNames(db);
     expect(result).not.toContain('item_validation_process');
   },
-  item_validation_status: async (ivs: any, idx: number, db: DataSource) => {
+  item_validation_status: async (ivs, idx: number, db: DataSource) => {
     // we removed this table
     const result = await getTableNames(db);
     expect(result).not.toContain('item_validation_status');
   },
   // item validation becomes item validation group
-  item_validation: async (iv: any, idx: number, db: DataSource) => {
+  item_validation: async (iv, idx: number, db: DataSource) => {
     const expected = values.item_validation[idx];
     const [ivg] = await db.query(`SELECT * FROM item_validation_group WHERE id= '${expected.id}'`);
     expect(ivg.id).toEqual(expected.id);
     expect(ivg.item_id).toEqual(expected.item_id);
     expect(ivg.created_at.toISOString()).toEqual(expected.created_at);
   },
-  item_validation_review_status: async (ivrs: any, idx: number, db: DataSource) => {
+  item_validation_review_status: async (ivrs, idx: number, db: DataSource) => {
     // we removed this table
     const result = await getTableNames(db);
     expect(result).not.toContain('item_validation_review_status');
   },
-  item_validation_review: async (_ivr: any, _idx: number, db: DataSource) => {
+  item_validation_review: async (_ivr, _idx: number, db: DataSource) => {
     // empty db
     const rows = await db.query('SELECT * FROM item_validation_review');
     expect(rows).toHaveLength(0);
   },
-  item_validation_group: async (ivg: any, idx: number, db: DataSource) => {
+  item_validation_group: async (ivg, idx: number, db: DataSource) => {
     const expected = values.item_validation_group[idx];
     const [iv] = await db.query(`SELECT * FROM item_validation WHERE id= '${expected.id}'`);
     const processName = values.item_validation_process.find(
@@ -578,7 +597,7 @@ const expected = {
     expect(iv.created_at.toISOString()).toEqual(expected.created_at);
     expect(iv.updated_at.toISOString()).toEqual(expected.updated_at);
   },
-  item_member_login: async (_iml: any, idx: number, db: DataSource) => {
+  item_member_login: async (_iml, idx: number, db: DataSource) => {
     // table changed -> item_login and item_login_schema
     const expected = values.item_member_login[idx];
 
@@ -588,7 +607,7 @@ const expected = {
     );
     expect(ils.id).toBeTruthy();
     expect(ils.item_path).toEqual(item?.path);
-    expect(ils.type).toEqual((item?.extra as any)?.itemLogin?.loginSchema);
+    expect(ils.type).toEqual(item?.extra?.itemLogin?.loginSchema);
     expect(ils.created_at.toISOString()).toBeTruthy();
     expect(ils.updated_at.toISOString()).toBeTruthy();
 
@@ -606,7 +625,7 @@ const expected = {
     expect(il.created_at).toEqual(membership.created_at);
     expect(il.updated_at).toEqual(membership.created_at);
   },
-  chat_message: async (cm: any, idx: number) => {
+  chat_message: async (cm, idx: number) => {
     const expected = values.chat_message[idx];
     expect(cm.id).toEqual(expected.id);
     expect(cm.item_id).toEqual(expected.chat_id);
@@ -615,7 +634,7 @@ const expected = {
     expect(cm.created_at.toISOString()).toEqual(expected.created_at);
     expect(cm.updated_at.toISOString()).toEqual(expected.updated_at);
   },
-  chat_mention: async (cm: any, idx: number) => {
+  chat_mention: async (cm, idx: number) => {
     const expected = values.chat_mention[idx];
     expect(cm.id).toEqual(expected.id);
     expect(cm.message_id).toEqual(expected.message_id);
@@ -624,12 +643,12 @@ const expected = {
     expect(cm.created_at.toISOString()).toEqual(expected.created_at);
     expect(cm.updated_at.toISOString()).toEqual(expected.updated_at);
   },
-  flag: async (flag: any, idx: number, db: DataSource) => {
+  flag: async (_flag, _idx: number, db: DataSource) => {
     // we removed this table
     const result = await getTableNames(db);
     expect(result).not.toContain('flag');
   },
-  item_flag: async (iflag: any, idx: number) => {
+  item_flag: async (iflag, idx: number) => {
     const expected = values.item_flag[idx];
     const flag = values.flag.find(({ id }) => id === expected.flag_id);
     expect(iflag.id).toEqual(expected.id);
@@ -638,14 +657,14 @@ const expected = {
     expect(iflag.creator_id).toEqual(expected.creator);
     expect(iflag.created_at.toISOString()).toEqual(expected.created_at);
   },
-  publisher: async (p: any, idx: number) => {
+  publisher: async (p, idx: number) => {
     const expected = values.publisher[idx];
     expect(p.id).toEqual(expected.id);
     expect(p.name).toEqual(expected.name);
     expect(p.origins).toEqual(expected.origins);
     expect(p.created_at.toISOString()).toEqual(expected.created_at);
   },
-  app: async (a: any, idx: number) => {
+  app: async (a, idx: number) => {
     const expected = values.app[idx];
     expect(a.id).toEqual(expected.id);
     expect(a.name).toEqual(expected.name);
@@ -655,7 +674,7 @@ const expected = {
     expect(JSON.parse(a.extra)).toEqual(expected.extra);
     expect(a.created_at.toISOString()).toEqual(expected.created_at);
   },
-  app_data: async (ad: any, idx: number) => {
+  app_data: async (ad, idx: number) => {
     const expected = values.app_data[idx];
     expect(ad.id).toEqual(expected.id);
     expect(ad.member_id).toEqual(expected.member_id);
@@ -671,7 +690,7 @@ const expected = {
       expect(JSON.parse(ad.data)).toEqual(expected.data);
     }
   },
-  app_action: async (aa: any, idx: number) => {
+  app_action: async (aa, idx: number) => {
     const expected = values.app_action[idx];
     expect(aa.id).toEqual(expected.id);
     expect(aa.member_id).toEqual(expected.member_id);
@@ -680,7 +699,7 @@ const expected = {
     expect(JSON.parse(aa.data)).toEqual(expected.data);
     expect(aa.created_at.toISOString()).toEqual(expected.created_at);
   },
-  app_setting: async (as: any, idx: number) => {
+  app_setting: async (as, idx: number) => {
     const expected = values.app_setting[idx];
     expect(as.id).toEqual(expected.id);
     expect(as.creator_id).toEqual(expected.creator);
@@ -695,7 +714,7 @@ const expected = {
       expect(JSON.parse(as.data)).toEqual(expected.data);
     }
   },
-  item_like: async (il: any, idx: number) => {
+  item_like: async (il, idx: number) => {
     const expected = values.item_like[idx];
     expect(il.id).toEqual(expected.id);
     expect(il.creator_id).toEqual(expected.member_id);
@@ -1046,7 +1065,7 @@ const downValues = {
 
 // types will be outdated so we don't use them
 const downExpected = {
-  member: async (m: any, idx: number, db: DataSource) => {
+  member: async (m, idx: number, _db: DataSource) => {
     const expected = downValues.member[idx];
     expect(m.id).toEqual(expected.id);
     expect(m.name).toEqual(expected.name);
@@ -1063,7 +1082,7 @@ const downExpected = {
       expect(m.password).toContain(password);
     }
   },
-  item: async (item: any, idx: number) => {
+  item: async (item, idx: number) => {
     const expected = downValues.item[idx];
     expect(item.id).toEqual(expected.id);
     expect(item.name).toEqual(expected.name);
@@ -1079,12 +1098,12 @@ const downExpected = {
     // does not exist anymore
     expect(item.deleted_at).toBeUndefined();
   },
-  member_password: async (mp: any, idx: number, db) => {
+  member_password: async (mp, idx: number, db) => {
     const expected = downValues.member_password[idx];
-    const [m] = await db.query(`SELECT * FROM member WHERE id=\'${expected.member_id}\'`);
+    const [m] = await db.query(`SELECT * FROM member WHERE id='${expected.member_id}'`);
     expect(m.password).toContain(expected.password);
   },
-  item_membership: async (im: any, idx: number) => {
+  item_membership: async (im, idx: number) => {
     const expected = downValues.item_membership[idx];
     expect(im.id).toEqual(expected.id);
     expect(im.item_path).toEqual(expected.item_path);
@@ -1093,7 +1112,7 @@ const downExpected = {
     expect(im.created_at.toISOString()).toEqual(expected.created_at);
     expect(im.updated_at.toISOString()).toEqual(expected.created_at);
   },
-  invitation: async (invitation: any, idx: number) => {
+  invitation: async (invitation, idx: number) => {
     const expected = downValues.invitation[idx];
     expect(invitation.id).toEqual(expected.id);
     expect(invitation.item_path).toEqual(expected.item_path);
@@ -1104,7 +1123,7 @@ const downExpected = {
     expect(invitation.created_at.toISOString()).toEqual(expected.created_at);
     expect(invitation.updated_at.toISOString()).toEqual(expected.updated_at);
   },
-  action: async (action: any, idx: number) => {
+  action: async (action, idx: number) => {
     const expected = downValues.action[idx];
     const memberType = values.member.find(({ id }) => id === expected.member_id)?.type;
     expect(action.id).toEqual(expected.id);
@@ -1117,11 +1136,11 @@ const downExpected = {
     expect(action.view).toEqual(expected.view);
     expect(action.created_at.toISOString()).toEqual(expected.created_at);
   },
-  action_request_export: async (a: any, idx: number) => {
+  action_request_export: async (_a, _idx: number) => {
     // we don't keep the data
     // but we make sure inserting the data works
   },
-  item_published: async (ip: any, idx: number, db: DataSource) => {
+  item_published: async (ip, idx: number, db: DataSource) => {
     // becomes tag
     const expected = downValues.item_published[idx];
     const [publishedTag] = await db.query("SELECT * FROM tag WHERE name= 'published-item'");
@@ -1130,7 +1149,7 @@ const downExpected = {
     );
     expect(itemTag.creator).toEqual(expected.creator_id);
   },
-  recycled_item_data: async (recycledItem: any, idx: number, db: DataSource) => {
+  recycled_item_data: async (recycledItem, idx: number, db: DataSource) => {
     const expected = downValues.recycled_item_data[idx];
 
     // table changed name
@@ -1145,7 +1164,7 @@ const downExpected = {
     expect(newRecycledItem.created_at.toISOString()).toEqual(expected.created_at);
   },
 
-  item_tag: async (itemTag: any, idx: number, db: DataSource) => {
+  item_tag: async (itemTag, idx: number, db: DataSource) => {
     // table tag is back
     const expected = downValues.item_tag[idx];
     const [tag] = await db.query(`SELECT * FROM tag WHERE name= '${expected.type}'`);
@@ -1155,7 +1174,7 @@ const downExpected = {
     expect(itemTag.creator).toEqual(expected.creator_id);
     expect(itemTag.created_at.toISOString()).toEqual(expected.created_at);
   },
-  category: async (c: any, idx: number, db: DataSource) => {
+  category: async (c, idx: number, db: DataSource) => {
     // category type table is back
     const expected = downValues.category[idx];
     const [categoryType] = await db.query(
@@ -1166,7 +1185,7 @@ const downExpected = {
     expect(c.name).toEqual(expected.name);
     expect(c.type).toEqual(categoryType.id);
   },
-  item_category: async (ic: any, idx: number) => {
+  item_category: async (ic, idx: number) => {
     const expected = downValues.item_category[idx];
     const item = downValues.item.find(({ path }) => expected.item_path === path);
     expect(ic.id).toEqual(expected.id);
@@ -1174,7 +1193,7 @@ const downExpected = {
     expect(ic.item_id).toEqual(item?.id);
   },
   // item validation group becomes item validation
-  item_validation_group: async (_iv: any, idx: number, db: DataSource) => {
+  item_validation_group: async (_iv, idx: number, db: DataSource) => {
     // item
     const expected = downValues.item_validation_group[idx];
     const [iv] = await db.query(`SELECT * FROM item_validation WHERE id= '${expected.id}'`);
@@ -1182,13 +1201,13 @@ const downExpected = {
     expect(iv.item_id).toEqual(expected.item_id);
     expect(iv.created_at.toISOString()).toEqual(expected.created_at);
   },
-  item_validation_review: async (_ivr: any, _idx: number, db: DataSource) => {
+  item_validation_review: async (_ivr, _idx: number, db: DataSource) => {
     // empty db
     const rows = await db.query('SELECT * FROM item_validation_review');
     expect(rows).toHaveLength(0);
   },
   // item validation becomes item validation group
-  item_validation: async (_ivg: any, idx: number, db: DataSource) => {
+  item_validation: async (_ivg, idx: number, db: DataSource) => {
     const expected = downValues.item_validation[idx];
     const [ivg] = await db.query(`SELECT * FROM item_validation_group WHERE id= '${expected.id}'`);
     const [status] = await db.query(
@@ -1206,7 +1225,7 @@ const downExpected = {
     expect(ivg.created_at.toISOString()).toEqual(expected.created_at);
     expect(ivg.updated_at.toISOString()).toEqual(expected.updated_at);
   },
-  item_login_schema: async (_iml: any, idx: number, db: DataSource) => {
+  item_login_schema: async (_iml, idx: number, db: DataSource) => {
     // item_login_schema -> schema in item
     const expected = downValues.item_login_schema[idx];
     const oldItem = downValues.item.find(({ path }) => path === expected.item_path);
@@ -1216,7 +1235,7 @@ const downExpected = {
       expect(item.extra.itemLogin.loginSchema).toEqual(expected.type);
     }
   },
-  item_login: async (_iml: any, idx: number, db: DataSource) => {
+  item_login: async (_iml, idx: number, db: DataSource) => {
     // item_login -> item_member_login
     const expected = downValues.item_login[idx];
     const ils = await downValues.item_login_schema.find(
@@ -1231,7 +1250,7 @@ const downExpected = {
     expect(il.member_id).toEqual(expected.member_id);
     expect(il.created_at.toISOString()).toEqual(expected.created_at);
   },
-  chat_message: async (cm: any, idx: number) => {
+  chat_message: async (cm, idx: number) => {
     const expected = downValues.chat_message[idx];
     expect(cm.id).toEqual(expected.id);
     expect(cm.chat_id).toEqual(expected.item_id);
@@ -1240,7 +1259,7 @@ const downExpected = {
     expect(cm.created_at.toISOString()).toEqual(expected.created_at);
     expect(cm.updated_at.toISOString()).toEqual(expected.updated_at);
   },
-  chat_mention: async (cm: any, idx: number) => {
+  chat_mention: async (cm, idx: number) => {
     const expected = downValues.chat_mention[idx];
     expect(cm.id).toEqual(expected.id);
     expect(cm.message_id).toEqual(expected.message_id);
@@ -1249,7 +1268,7 @@ const downExpected = {
     expect(cm.created_at.toISOString()).toEqual(expected.created_at);
     expect(cm.updated_at.toISOString()).toEqual(expected.updated_at);
   },
-  item_flag: async (iflag: any, idx: number, db: DataSource) => {
+  item_flag: async (iflag, idx: number, db: DataSource) => {
     // flag comes back
     const expected = downValues.item_flag[idx];
     const [flag] = await db.query(`SELECT * FROM flag WHERE name= '${expected.type}'`);
@@ -1260,14 +1279,14 @@ const downExpected = {
     expect(iflag.creator).toEqual(expected.creator_id);
     expect(iflag.created_at.toISOString()).toEqual(expected.created_at);
   },
-  publisher: async (p: any, idx: number) => {
+  publisher: async (p, idx: number) => {
     const expected = downValues.publisher[idx];
     expect(p.id).toEqual(expected.id);
     expect(p.name).toEqual(expected.name);
     expect(p.origins).toEqual(expected.origins);
     expect(p.created_at.toISOString()).toEqual(expected.created_at);
   },
-  app: async (a: any, idx: number) => {
+  app: async (a, idx: number) => {
     const expected = downValues.app[idx];
     expect(a.id).toEqual(expected.id);
     expect(a.name).toEqual(expected.name);
@@ -1277,7 +1296,7 @@ const downExpected = {
     expect(a.extra).toEqual(expected.extra);
     expect(a.created_at.toISOString()).toEqual(expected.created_at);
   },
-  app_data: async (ad: any, idx: number) => {
+  app_data: async (ad, idx: number) => {
     const expected = downValues.app_data[idx];
     expect(ad.id).toEqual(expected.id);
     expect(ad.member_id).toEqual(expected.member_id);
@@ -1293,7 +1312,7 @@ const downExpected = {
     }
     expect(ad.created_at.toISOString()).toEqual(expected.created_at);
   },
-  app_action: async (aa: any, idx: number) => {
+  app_action: async (aa, idx: number) => {
     const expected = downValues.app_action[idx];
     expect(aa.id).toEqual(expected.id);
     expect(aa.member_id).toEqual(expected.member_id);
@@ -1302,7 +1321,7 @@ const downExpected = {
     expect(aa.data).toEqual(expected.data);
     expect(aa.created_at.toISOString()).toEqual(expected.created_at);
   },
-  app_setting: async (as: any, idx: number) => {
+  app_setting: async (as, idx: number) => {
     const expected = downValues.app_setting[idx];
     expect(as.id).toEqual(expected.id);
     expect(as.creator).toEqual(expected.creator_id);
@@ -1317,7 +1336,7 @@ const downExpected = {
       expect(as.data).toEqual(expected.data);
     }
   },
-  item_like: async (il: any, idx: number) => {
+  item_like: async (il, idx: number) => {
     const expected = downValues.item_like[idx];
     expect(il.id).toEqual(expected.id);
     expect(il.member_id).toEqual(expected.creator_id);

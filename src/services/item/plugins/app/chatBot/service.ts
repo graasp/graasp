@@ -10,7 +10,7 @@ export class ChatBotService {
     member: Member,
     repositories: Repositories,
     itemId: string,
-    body: Array<ChatBotMessage>,
+    body: ChatBotMessage[],
     gptVersion: GPTVersion,
   ) {
     const { itemRepository } = repositories;

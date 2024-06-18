@@ -20,15 +20,15 @@ export const buildActionFilePath = (itemId: string, datetime: Date): string =>
 
 export const buildArchiveDateAsName = (timestamp: Date): string => timestamp.toISOString();
 
-export interface ExportActionsInArchiveOutput {
+export type ExportActionsInArchiveOutput = {
   timestamp: Date;
   filepath: string;
-}
+};
 
 type RecursiveObject = { [key: string]: string | number | RecursiveObject };
-type ReturnObject = { [key: string]: string | number };
+type ReturnObject = Record<string, string | number>;
 // flatten object nested keys to have as item.id, member.id to be used for export csv header
-const flattenObject = (obj: RecursiveObject, prefix: string = ''): ReturnObject => {
+const flattenObject = (obj: RecursiveObject, prefix = ''): ReturnObject => {
   return Object.keys(obj).reduce((acc, k) => {
     const pre = prefix.length ? prefix + '.' : '';
     if (typeof obj[k] === 'object' && obj[k] !== null && !Array.isArray(obj[k])) {

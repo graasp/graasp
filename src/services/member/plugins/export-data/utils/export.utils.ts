@@ -18,7 +18,7 @@ import { Member } from '../../../entities/member.js';
  * For instance, if you have { member: [Member, Member, ...], items: [Item, ...], ... },
  * it will be possible to save all members in a member.json file and another one for the items.
  */
-export type DataToExport = { [dataName: string]: object[] };
+export type DataToExport = Record<string, object[]>;
 type ExportDataInArchiveOutput = {
   timestamp: Date;
   filepath: string;

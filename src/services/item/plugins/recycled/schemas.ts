@@ -50,7 +50,7 @@ export const deleteOne = {
 };
 
 // schema for recycling >1 items
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+
 export const recycleMany = (maxItems: number) => ({
   querystring: {
     allOf: [
@@ -67,7 +67,7 @@ export const recycleMany = (maxItems: number) => ({
   },
 });
 // schema for restoring>1 items
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+
 export const restoreMany = (maxItems: number) => ({
   querystring: {
     allOf: [
@@ -84,7 +84,7 @@ export const restoreMany = (maxItems: number) => ({
   },
 });
 // schema for restoring>1 items
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+
 export const deleteMany = (maxItems: number) => ({
   querystring: {
     allOf: [

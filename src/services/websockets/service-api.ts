@@ -21,13 +21,13 @@ import { WebsocketService } from './ws-service.js';
 /**
  * Type definition for plugin options
  */
-export interface WebsocketsPluginOptions {
+export type WebsocketsPluginOptions = {
   prefix: string;
   redis: {
     config: RedisOptions;
     channelName: string;
   };
-}
+};
 
 /**
  * Helper function to log boot message after plugin initialization

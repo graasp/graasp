@@ -5,7 +5,7 @@
  *
  * @author Alexandre CHAU
  */
-import util from 'util';
+import { inspect } from 'node:util';
 import WebSocket from 'ws';
 
 import { FastifyBaseLogger } from 'fastify';
@@ -86,7 +86,7 @@ class Client {
   toString(): string {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { ws, ...props } = this; // ws object log is not very useful
-    return util.inspect(props);
+    return inspect(props);
   }
 }
 
@@ -120,7 +120,7 @@ class WebSocketChannels {
     wsServer: WebSocket.Server,
     serialize: (data: Websocket.ServerMessage) => WebSocket.Data,
     log?: FastifyBaseLogger | Console,
-    heartbeatInterval: number = 30000,
+    heartbeatInterval = 30000,
   ) {
     this.wsServer = wsServer;
     this.channels = new Map();
@@ -289,7 +289,7 @@ class WebSocketChannels {
    * @param onlyIfEmpty remove the channel only if it has no subscribers anymore AND
    *                    its removeIfEmpty flag is set to true
    */
-  channelDelete(channelName: string, onlyIfEmpty: boolean = false): boolean {
+  channelDelete(channelName: string, onlyIfEmpty = false): boolean {
     const channel = this.channels.get(channelName);
     if (channel !== undefined) {
       // don't remove if onlyIfEmpty set but channel is not flagged, or it still has subscribers
