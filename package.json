@@ -38,14 +38,14 @@
     "postinstall": "node .husky/install.mjs",
     "pre-commit": "yarn prettier:check && yarn lint",
     "migration:create": "typeorm migration:create ./src/migrations/migrations",
-    "migration:generate": "npx typeorm-ts-node-commonjs migration:generate src/migrations/migrations -d src/plugins/datasource.ts && yarn build-ts",
-    "migration:run": "npx typeorm-ts-node-commonjs migration:run -d src/plugins/datasource.ts",
-    "migration:revert": "npx typeorm-ts-node-commonjs migration:revert -d src/plugins/datasource.ts",
-    "migration:drop": "npx typeorm-ts-node-commonjs schema:drop -d src/plugins/datasource.ts",
+    "migration:generate": "npx typeorm-ts-node-esm migration:generate src/migrations/migrations -d src/plugins/datasource.ts && yarn build-ts",
+    "migration:run": "npx typeorm-ts-node-esm migration:run -d src/plugins/datasource.ts",
+    "migration:revert": "npx typeorm-ts-node-esm migration:revert -d src/plugins/datasource.ts",
+    "migration:drop": "npx typeorm-ts-node-esm schema:drop -d src/plugins/datasource.ts",
     "migration:fake": "yarn migration:run:fake && migration:revert:fake",
-    "migration:run:fake": "npx typeorm-ts-node-commonjs  migration:run --fake",
-    "migration:revert:fake": "npx typeorm-ts-node-commonjs migration:revert --fake",
-    "migration:check": "npx typeorm-ts-node-commonjs migration:generate src/migrations/migrations --check -d src/plugins/datasource.ts"
+    "migration:run:fake": "npx typeorm-ts-node-esm  migration:run --fake",
+    "migration:revert:fake": "npx typeorm-ts-node-esm migration:revert --fake",
+    "migration:check": "npx typeorm-ts-node-esm migration:generate src/migrations/migrations --check -d src/plugins/datasource.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.590.0",
