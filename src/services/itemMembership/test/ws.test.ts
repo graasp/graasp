@@ -1,9 +1,9 @@
 import { StatusCodes } from 'http-status-codes';
-import waitForExpectDefault from 'wait-for-expect';
 
 import { HttpMethod, PermissionLevel, Websocket, parseStringToDate } from '@graasp/sdk';
 
 import { clearDatabase, mockAuthenticate } from '../../../../test/app.js';
+import { waitForExpect } from '../../../../test/assertions/waitForExpect.js';
 import { MemberCannotAccess } from '../../../utils/errors.js';
 import { ItemTestUtils } from '../../item/test/fixtures/items.js';
 import { saveMember } from '../../member/test/fixtures/members.js';
@@ -11,8 +11,6 @@ import { TestWsClient } from '../../websockets/test/test-websocket-client.js';
 import { setupWsApp } from '../../websockets/test/ws-app.js';
 import { ItemMembership } from '../entities/ItemMembership.js';
 import { ItemMembershipEvent, MembershipEvent, itemMembershipsTopic } from '../ws/events.js';
-
-const waitForExpect = waitForExpectDefault.default;
 
 // mock datasource
 jest.mock('../../../plugins/datasource');

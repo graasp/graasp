@@ -2,7 +2,6 @@ import { StatusCodes } from 'http-status-codes';
 import qs from 'qs';
 import { In } from 'typeorm';
 import { v4 } from 'uuid';
-import waitForExpectDefault from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
 
@@ -15,14 +14,13 @@ import {
 } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app.js';
+import { waitForExpect } from '../../../../../../test/assertions/waitForExpect.js';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants.js';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config.js';
 import { saveMember } from '../../../../member/test/fixtures/members.js';
 import { ItemTestUtils, expectManyItems } from '../../../test/fixtures/items.js';
 import { RecycledItemDataRepository } from '../repository.js';
 import { expectManyPackedRecycledItems, expectManyRecycledItems } from './fixtures.js';
-
-const waitForExpect = waitForExpectDefault.default;
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');

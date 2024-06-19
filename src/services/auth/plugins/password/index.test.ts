@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { faker } from '@faker-js/faker';
 import { StatusCodes } from 'http-status-codes';
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 import jwt from 'jsonwebtoken';
-import waitForExpectDefault from 'wait-for-expect';
 
 import { FastifyInstance, LightMyRequestResponse } from 'fastify';
 
 import { MemberFactory, RecaptchaAction } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app.js';
+import { waitForExpect } from '../../../../../test/assertions/waitForExpect.js';
 import seed from '../../../../../test/mock/index.js';
 import { mockCaptchaValidation } from '../../../../../test/utils.js';
 import {
@@ -23,8 +23,6 @@ import { Member } from '../../../member/entities/member.js';
 import { MOCK_CAPTCHA } from '../captcha/test/utils.js';
 import { MemberPassword } from './entities/password.js';
 import { encryptPassword } from './utils.js';
-
-const waitForExpect = waitForExpectDefault.default;
 
 jest.mock('node-fetch');
 jest.mock('../../../../plugins/datasource');
@@ -54,7 +52,7 @@ describe('Reset Password', () => {
   beforeAll(async () => {
     ({ app } = await build());
     mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
-    mockRedisSetEx = jest.spyOn(Redis.default.prototype, 'setex');
+    mockRedisSetEx = jest.spyOn(Redis.prototype, 'setex');
   });
 
   afterEach(async () => {
@@ -271,7 +269,7 @@ describe('Reset Password', () => {
     // Overwrite the setex method to test the expiration
     mockRedisSetEx.mockImplementationOnce((key, seconds, value) => {
       expect(seconds).toBe(PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES * 60);
-      const redis = new Redis.default({
+      const redis = new Redis({
         host: REDIS_HOST,
         port: REDIS_PORT,
         username: REDIS_USERNAME,

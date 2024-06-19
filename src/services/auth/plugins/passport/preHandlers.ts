@@ -1,8 +1,5 @@
-import fstPassport from '@fastify/passport';
-
+import { graaspPassport } from './plugin.js';
 import { PassportStrategy } from './strategies.js';
-
-const fastifyPassport = fstPassport.default;
 
 /**
  * Passport Authenticate function will accept the authenticaction if at least one of the strategies is successful.
@@ -17,7 +14,7 @@ const fastifyPassport = fstPassport.default;
  * Validate authentication. Allows public authentication, can't fail.
  * Will set the user to `request.user.member` if possible.
  */
-export const optionalIsAuthenticated = fastifyPassport.authenticate([
+export const optionalIsAuthenticated = graaspPassport.authenticate([
   PassportStrategy.MobileJwt,
   PassportStrategy.Session,
 ]);
@@ -26,7 +23,7 @@ export const optionalIsAuthenticated = fastifyPassport.authenticate([
  * Validate authentication.
  * Will set the user to `request.user.member`.
  */
-export const isAuthenticated = fastifyPassport.authenticate([
+export const isAuthenticated = graaspPassport.authenticate([
   PassportStrategy.MobileJwt,
   PassportStrategy.StrictSession,
 ]);
@@ -35,13 +32,13 @@ export const isAuthenticated = fastifyPassport.authenticate([
 /**
  * Classic password authentication to create a session.
  */
-export const authenticatePassword = fastifyPassport.authenticate(PassportStrategy.Password);
+export const authenticatePassword = graaspPassport.authenticate(PassportStrategy.Password);
 
 //-- Magic Link Strategies --//
 /**
  * Classic magic link authentication to create a session.
  */
-export const authenticateMobileMagicLink = fastifyPassport.authenticate(
+export const authenticateMobileMagicLink = graaspPassport.authenticate(
   PassportStrategy.MobileMagicLink,
 );
 
@@ -49,7 +46,7 @@ export const authenticateMobileMagicLink = fastifyPassport.authenticate(
 /**
  * JWT authentication for password reset operation.
  */
-export const authenticatePasswordReset = fastifyPassport.authenticate(
+export const authenticatePasswordReset = graaspPassport.authenticate(
   PassportStrategy.PasswordReset,
   { session: false },
 );
@@ -57,15 +54,14 @@ export const authenticatePasswordReset = fastifyPassport.authenticate(
 /**
  * Refresh Token for mobile authentication
  */
-export const authenticateRefreshToken = fastifyPassport.authenticate(
-  PassportStrategy.RefreshToken,
-  { session: false },
-);
+export const authenticateRefreshToken = graaspPassport.authenticate(PassportStrategy.RefreshToken, {
+  session: false,
+});
 
 /**
  * Mobile Authentication
  */
-export const authenticateJWTChallengeVerifier = fastifyPassport.authenticate(
+export const authenticateJWTChallengeVerifier = graaspPassport.authenticate(
   PassportStrategy.JwtChallengeVerifier,
   { session: false },
 );
@@ -73,14 +69,14 @@ export const authenticateJWTChallengeVerifier = fastifyPassport.authenticate(
 /**
  * Items app authentication
  */
-export const authenticateAppsJWT = fastifyPassport.authenticate(PassportStrategy.AppsJwt, {
+export const authenticateAppsJWT = graaspPassport.authenticate(PassportStrategy.AppsJwt, {
   session: false,
 });
 
 /**
  *  Items app authentication. Allows authentication without member, can fail if item is not found.
  */
-export const guestAuthenticateAppsJWT = fastifyPassport.authenticate(
+export const guestAuthenticateAppsJWT = graaspPassport.authenticate(
   PassportStrategy.OptionalAppsJwt,
   {
     session: false,

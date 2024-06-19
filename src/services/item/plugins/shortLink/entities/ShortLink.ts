@@ -12,7 +12,8 @@ import {
   Unique,
 } from 'typeorm';
 
-import { ShortLinkPlatform, UUID } from '@graasp/sdk';
+import { ShortLinkPlatform } from '@graasp/sdk';
+import type { UUID } from '@graasp/sdk';
 
 import { Item } from '../../../../item/entities/Item.js';
 

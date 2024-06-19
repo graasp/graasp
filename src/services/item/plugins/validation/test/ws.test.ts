@@ -1,9 +1,9 @@
 import { StatusCodes } from 'http-status-codes';
-import waitForExpectDefault from 'wait-for-expect';
 
 import { HttpMethod } from '@graasp/sdk';
 
 import { clearDatabase } from '../../../../../../test/app.js';
+import { waitForExpect } from '../../../../../../test/assertions/waitForExpect.js';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config.js';
 import { TestWsClient } from '../../../../websockets/test/test-websocket-client.js';
 import { setupWsApp } from '../../../../websockets/test/ws-app.js';
@@ -16,8 +16,6 @@ import {
 } from '../../../ws/events.js';
 import { ItemValidationGroupRepository } from '../repositories/ItemValidationGroup.js';
 import { saveItemValidation } from './utils.js';
-
-const waitForExpect = waitForExpectDefault.default;
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');

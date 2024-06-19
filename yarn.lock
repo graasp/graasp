@@ -2188,16 +2188,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/etherpad-api@npm:2.1.1":
+"@graasp/etherpad-api@github:graasp/etherpad-api#remove-default-export":
   version: 2.1.1
-  resolution: "@graasp/etherpad-api@npm:2.1.1"
+  resolution: "@graasp/etherpad-api@https://github.com/graasp/etherpad-api.git#commit=f211ed525f40d7669be5ee0a05eb3a15ce458b38"
   dependencies:
     "@types/sanitize-html": "npm:^2.9.0"
     axios: "npm:^1.3.5"
     compare-versions: "npm:^3.4.0"
     http-errors: "npm:^1.7.1"
     sanitize-html: "npm:^2.10.0"
-  checksum: 10/e78819acfe6a4f28fdc5725129d1b82e26fd271e5f32070e8170b757f79567c5575569373e5d7fd8f3c966c535e5b83b9ef98ab3707666c2029c085564f9dbc9
+  checksum: 10/61552b086aa89f8daf69103b7aace9e20a5eaf95e79d030e045c2c32b1f4870b05791ab8347ffcd7e425ae137662eaf40401fc8d4425f98ad4185922ac861214
   languageName: node
   linkType: hard
 
@@ -7531,7 +7531,7 @@ __metadata:
     "@fastify/static": "npm:6.12.0"
     "@fastify/view": "npm:7.4.1"
     "@fastify/websocket": "npm:7.2.0"
-    "@graasp/etherpad-api": "npm:2.1.1"
+    "@graasp/etherpad-api": "github:graasp/etherpad-api#remove-default-export"
     "@graasp/sdk": "npm:4.13.0"
     "@graasp/translations": "npm:1.23.0"
     "@jest/globals": "npm:29.7.0"
@@ -7626,14 +7626,13 @@ __metadata:
     striptags: "npm:3.2.0"
     supertest: "npm:7.0.0"
     tmp-promise: "npm:3.0.3"
-    ts-jest: "npm:29.1.4"
+    ts-jest: "npm:29.1.5"
     ts-node: "npm:10.9.2"
     typeorm: "npm:0.3.19"
     typescript: "npm:5.4.5"
     typescript-eslint: "npm:7.13.1"
     uuid: "npm:9.0.1"
     vitest: "npm:1.6.0"
-    wait-for-expect: "npm:3.0.2"
     ws: "npm:8.17.0"
     yazl: "npm:2.5.1"
   languageName: unknown
@@ -12382,9 +12381,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-jest@npm:29.1.4":
-  version: 29.1.4
-  resolution: "ts-jest@npm:29.1.4"
+"ts-jest@npm:29.1.5":
+  version: 29.1.5
+  resolution: "ts-jest@npm:29.1.5"
   dependencies:
     bs-logger: "npm:0.x"
     fast-json-stable-stringify: "npm:2.x"
@@ -12414,7 +12413,7 @@ __metadata:
       optional: true
   bin:
     ts-jest: cli.js
-  checksum: 10/3103c0e2f9937ae6bb51918105883565bb2d11cae1121ae20aedd1c4374f843341463a4a1986e02a958d119be0d3a9b996d761bc4aac85152a29385e609fed3c
+  checksum: 10/11a29a49130f1c9bef5aebe8007f6be3e630af6c2dea6b00ff5a86d649321854a43966b4990a43960d77a3f98d7a753b9b7e19c20c42a2d38341d6e67a3e48d1
   languageName: node
   linkType: hard
 
@@ -12953,13 +12952,6 @@ __metadata:
   bin:
     vitest: vitest.mjs
   checksum: 10/ad921a723ac9438636d37111f0b2ea5afd0ba4a7813fb75382b9f75574e10d533cf950573ebb9332a595ce197cb83593737a6b55a3b6e6eb00bddbcd0920a03e
-  languageName: node
-  linkType: hard
-
-"wait-for-expect@npm:3.0.2":
-  version: 3.0.2
-  resolution: "wait-for-expect@npm:3.0.2"
-  checksum: 10/023333b36e962e23a56b4f4ce2ab7166bdba036f096a59f1c531fbfcf1341b43b102ad54f3b684b37a492a53c03ba92829276101070563940be6e29901a532e0
   languageName: node
   linkType: hard
 

@@ -1,30 +1,29 @@
-import { Item } from '../entities/Item.js';
 import { sortChildrenWith } from '../utils.js';
 
 const a = {
   id: 'a',
   createdAt: new Date(),
-} as unknown as Item;
+};
 const b = {
   id: 'b',
   createdAt: new Date(Date.now() + 1),
-} as unknown as Item;
+};
 const c = {
   id: 'c',
   createdAt: new Date(Date.now() + 2),
-} as unknown as Item;
+};
 const d = {
   id: 'd',
   createdAt: new Date(Date.now() + 3),
-} as unknown as Item;
+};
 const e = {
   id: 'e',
   createdAt: new Date(Date.now() + 4),
-} as unknown as Item;
+};
 const f = {
   id: 'f',
   createdAt: new Date(Date.now() + 5),
-} as unknown as Item;
+};
 
 const items = [a, b, c, d, e, f];
 

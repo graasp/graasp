@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import * as os from 'os';
+import os from 'os';
 
 import {
   BUILDER_ITEMS_PREFIX,

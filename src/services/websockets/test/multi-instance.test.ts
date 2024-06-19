@@ -3,11 +3,11 @@
  *
  * Tests for {@link MultiInstanceChannelsBroker}
  */
-import Redis from 'ioredis';
-import waitForExpectDefault from 'wait-for-expect';
+import { Redis } from 'ioredis';
 
 import { Websocket } from '@graasp/sdk';
 
+import { waitForExpect } from '../../../../test/assertions/waitForExpect.js';
 import '../../auth/plugins/passport/preHandlers.js';
 import {
   PortGenerator,
@@ -17,8 +17,6 @@ import {
   createWsClient,
   createWsFastifyInstance,
 } from './test-utils.js';
-
-const waitForExpect = waitForExpectDefault.default;
 
 const portGen = new PortGenerator(5000);
 jest.mock('../../auth/plugins/passport/preHandlers', () => ({
@@ -115,7 +113,7 @@ test.skip('incorrect Redis message format', async () => {
   const server = await createWsFastifyInstance(config, async (instance) => {
     logInfoSpy = jest.spyOn(instance.log, 'info');
   });
-  const pub = new Redis.default({
+  const pub = new Redis({
     host: config.redis.config.host,
   });
   pub.publish(config.redis.channelName, JSON.stringify('Mock invalid redis message'));

@@ -3,7 +3,7 @@ import { v4 } from 'uuid';
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
-import Etherpad from '@graasp/etherpad-api';
+import { Etherpad } from '@graasp/etherpad-api';
 
 import { notUndefined } from '../../../../utils/assertions.js';
 import { isAuthenticated } from '../../../auth/plugins/passport/index.js';
@@ -25,8 +25,6 @@ const plugin: FastifyPluginAsync<EtherpadPluginOptions> = async (fastify, option
 
   // connect to etherpad server
   const etherpad = wrapErrors(
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
     new Etherpad({
       url: etherpadUrl,
       apiKey,

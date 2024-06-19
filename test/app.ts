@@ -1,6 +1,5 @@
 import { Strategy as CustomStrategy } from 'passport-custom';
 
-import fstPassport from '@fastify/passport';
 import fastify from 'fastify';
 
 import { CompleteMember } from '@graasp/sdk';
@@ -8,13 +7,13 @@ import { CompleteMember } from '@graasp/sdk';
 import registerAppPlugins from '../src/app.js';
 import ajvFormats from '../src/schemas/ajvFormats.js';
 import { PassportStrategy } from '../src/services/auth/plugins/passport/index.js';
+import { graaspPassport } from '../src/services/auth/plugins/passport/plugin.js';
 import { Actor } from '../src/services/member/entities/member.js';
 import { saveMember } from '../src/services/member/test/fixtures/members.js';
 import { DB_TEST_SCHEMA } from './constants.js';
 
-const fastifyPassport = fstPassport.default;
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-const originalSessionStrategy = fastifyPassport.strategy(PassportStrategy.Session)!;
+const originalSessionStrategy = graaspPassport.strategy(PassportStrategy.Session)!;
 let originalStrictSessionStrategy;
 
 /**
@@ -23,22 +22,22 @@ let originalStrictSessionStrategy;
  */
 export function mockAuthenticate(actor: Actor) {
   if (!originalStrictSessionStrategy) {
-    originalStrictSessionStrategy = fastifyPassport.strategy(PassportStrategy.StrictSession);
+    originalStrictSessionStrategy = graaspPassport.strategy(PassportStrategy.StrictSession);
   }
   // If an actor is provided, use a custom strategy that always validate the request.
   // This will override the original session strategy to a custom one
   const strategy = new CustomStrategy((_req, done) => done(null, { member: actor }));
-  fastifyPassport.use(PassportStrategy.StrictSession, strategy);
-  fastifyPassport.use(PassportStrategy.Session, strategy);
+  graaspPassport.use(PassportStrategy.StrictSession, strategy);
+  graaspPassport.use(PassportStrategy.Session, strategy);
 }
 
 /**
  * Set the original session strategy back.
  */
 export function unmockAuthenticate() {
-  fastifyPassport.use(PassportStrategy.Session, originalSessionStrategy);
+  graaspPassport.use(PassportStrategy.Session, originalSessionStrategy);
   if (originalStrictSessionStrategy) {
-    fastifyPassport.use(PassportStrategy.StrictSession, originalStrictSessionStrategy);
+    graaspPassport.use(PassportStrategy.StrictSession, originalStrictSessionStrategy);
   }
 }
 

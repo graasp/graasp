@@ -3,9 +3,9 @@
  *
  * Tests for {@link WebSocketChannels}
  */
-import waitForExpectDefault from 'wait-for-expect';
 import WebSocket from 'ws';
 
+import { waitForExpect } from '../../../../test/assertions/waitForExpect.js';
 import { createServerInfo } from '../message.js';
 import {
   PortGenerator,
@@ -15,8 +15,6 @@ import {
   createWsClient,
   createWsClients,
 } from './test-utils.js';
-
-const waitForExpect = waitForExpectDefault.default;
 
 const { CLOSED, OPEN } = WebSocket;
 

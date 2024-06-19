@@ -6,9 +6,9 @@ import {
   JoinColumn,
   OneToOne,
   PrimaryGeneratedColumn,
-  Relation,
   Unique,
 } from 'typeorm';
+import type { Relation } from 'typeorm';
 import { v4 } from 'uuid';
 
 import { PackedItem } from '../../ItemWrapper.js';

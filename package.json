@@ -19,9 +19,10 @@
     "watch-node": "NODE_PATH=./dist nodemon dist/server.js",
     "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"yarn watch-ts\" \"yarn watch-node\"",
     "seed": "ts-node -e 'import seed from \"./test/mock/index\";seed();'",
-    "test": "yarn test:unit && yarn test:e2e",
+    "test:esm": "yarn test:unit && yarn test:e2e",
     "test:unit": "vitest src",
     "test:e2e": "vitest --dir e2e",
+    "test": "jest --forceExit --verbose --runInBand",
     "test:ci": "jest --forceExit --verbose --coverage --silent --maxWorkers=2",
     "test:watch": "yarn test --watchAll",
     "build-ts": "tsc -p tsconfig.build.json",
@@ -63,7 +64,7 @@
     "@fastify/static": "6.12.0",
     "@fastify/view": "7.4.1",
     "@fastify/websocket": "7.2.0",
-    "@graasp/etherpad-api": "2.1.1",
+    "@graasp/etherpad-api": "github:graasp/etherpad-api#remove-default-export",
     "@graasp/sdk": "4.13.0",
     "@graasp/translations": "1.23.0",
     "@rapideditor/country-coder": "5.2.2",
@@ -169,12 +170,11 @@
     "prettier": "2.8.8",
     "standard-version": "9.5.0",
     "supertest": "7.0.0",
-    "ts-jest": "29.1.4",
+    "ts-jest": "29.1.5",
     "ts-node": "10.9.2",
     "typescript": "5.4.5",
     "typescript-eslint": "7.13.1",
-    "vitest": "1.6.0",
-    "wait-for-expect": "3.0.2"
+    "vitest": "1.6.0"
   },
   "packageManager": "yarn@4.3.0"
 }

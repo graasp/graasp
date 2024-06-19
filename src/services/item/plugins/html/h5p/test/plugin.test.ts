@@ -3,13 +3,13 @@ import fs from 'fs';
 import fsp from 'fs/promises';
 import { StatusCodes } from 'http-status-codes';
 import path from 'path';
-import waitForExpectDefault from 'wait-for-expect';
 
 import { FastifyInstance, LightMyRequestResponse } from 'fastify';
 
 import { H5PItemExtra, H5PItemType, ItemType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../../test/app.js';
+import { waitForExpect } from '../../../../../../../test/assertions/waitForExpect.js';
 import { H5P_LOCAL_CONFIG, H5P_PATH_PREFIX, TMP_FOLDER } from '../../../../../../utils/config.js';
 import { Actor } from '../../../../../member/entities/member.js';
 import { Item, ItemTypeEnumKeys } from '../../../../entities/Item.js';
@@ -19,8 +19,6 @@ import { H5P_FILE_DOT_EXTENSION } from '../constants.js';
 import { H5PInvalidManifestError } from '../errors.js';
 import { H5P_PACKAGES } from './fixtures.js';
 import { expectH5PFiles, injectH5PImport } from './helpers.js';
-
-const waitForExpect = waitForExpectDefault.default;
 
 const H5P_ACCORDION_FILENAME = path.basename(H5P_PACKAGES.ACCORDION.path);
 

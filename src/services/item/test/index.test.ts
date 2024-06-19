@@ -4,7 +4,6 @@ import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import path from 'node:path';
 import qs from 'qs';
 import { v4 as uuidv4 } from 'uuid';
-import waitForExpectDefault from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
 
@@ -24,6 +23,7 @@ import {
 } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app.js';
+import { waitForExpect } from '../../../../test/assertions/waitForExpect.js';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../test/constants.js';
 import { AppDataSource } from '../../../plugins/datasource.js';
 import {
@@ -48,8 +48,6 @@ import {
   expectManyPackedItems,
   expectPackedItem,
 } from './fixtures/items.js';
-
-const waitForExpect = waitForExpectDefault.default;
 
 // mock datasource
 jest.mock('../../../plugins/datasource');

@@ -5,13 +5,13 @@
  */
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import waitForExpectDefault from 'wait-for-expect';
 import WebSocket from 'ws';
 
 import { FastifyInstance } from 'fastify';
 
 import { Websocket } from '@graasp/sdk';
 
+import { waitForExpect } from '../../../../test/assertions/waitForExpect.js';
 import '../../auth/plugins/passport/preHandlers.js';
 import { createServerInfo } from '../message.js';
 import {
@@ -25,8 +25,6 @@ import {
   createWsClients,
   createWsFastifyInstance,
 } from './test-utils.js';
-
-const waitForExpect = waitForExpectDefault.default;
 
 const portGen = new PortGenerator(7000);
 jest.mock('../../auth/plugins/passport/preHandlers', () => ({

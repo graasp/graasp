@@ -1,6 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
 
-import fstPassport from '@fastify/passport';
 import { FastifyPluginAsync, FastifyReply, FastifyRequest, PassportUser } from 'fastify';
 
 import { RecaptchaAction } from '@graasp/sdk';
@@ -12,11 +11,10 @@ import { buildRepositories } from '../../../../utils/repositories.js';
 import { getRedirectionUrl } from '../../utils.js';
 import captchaPreHandler from '../captcha/index.js';
 import { SHORT_TOKEN_PARAM } from '../passport/index.js';
+import { graaspPassport } from '../passport/plugin.js';
 import { PassportStrategy } from '../passport/strategies.js';
 import { auth, login, register } from './schemas.js';
 import { MagicLinkService } from './service.js';
-
-const fastifyPassport = fstPassport.default;
 
 const ERROR_SEARCH_PARAM = 'error';
 const ERROR_SEARCH_PARAM_HAS_ERROR = 'true';
@@ -105,7 +103,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/auth',
     {
       schema: auth,
-      preHandler: fastifyPassport.authenticate(
+      preHandler: graaspPassport.authenticate(
         PassportStrategy.WebMagicLink,
         async (
           request: FastifyRequest,

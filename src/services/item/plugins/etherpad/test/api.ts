@@ -1,6 +1,6 @@
 import nock from 'nock';
 
-import Etherpad from '@graasp/etherpad-api';
+import { Etherpad } from '@graasp/etherpad-api';
 
 import { ETHERPAD_API_KEY, ETHERPAD_URL } from '../../../../../utils/config.js';
 import { ETHERPAD_API_VERSION } from '../constants.js';
@@ -15,11 +15,7 @@ type EtherpadApiResponse<T> = [
 ];
 
 type Api = {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-expect-error
   [MethodName in keyof ExtractMethods<Etherpad>]+?: EtherpadApiResponse<
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
     Awaited<ReturnType<Etherpad[MethodName]>>
   >;
 };

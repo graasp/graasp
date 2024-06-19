@@ -3,13 +3,13 @@ import { DateTime } from 'luxon';
 import nock from 'nock';
 import { And, Not } from 'typeorm';
 import { v4 } from 'uuid';
-import waitForExpectDefault from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
 
 import { EtherpadItemType, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app.js';
+import { waitForExpect } from '../../../../../../test/assertions/waitForExpect.js';
 import { ETHERPAD_PUBLIC_URL } from '../../../../../utils/config.js';
 import { ItemNotFound, MemberCannotAccess } from '../../../../../utils/errors.js';
 import { Actor, Member } from '../../../../member/entities/member.js';
@@ -20,8 +20,6 @@ import { MAX_SESSIONS_IN_COOKIE } from '../constants.js';
 import { ItemMissingExtraError } from '../errors.js';
 import { EtherpadItemService } from '../service.js';
 import { setUpApi } from './api.js';
-
-const waitForExpect = waitForExpectDefault.default;
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');

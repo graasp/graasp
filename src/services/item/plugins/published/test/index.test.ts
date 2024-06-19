@@ -2,13 +2,13 @@ import { StatusCodes } from 'http-status-codes';
 import { MultiSearchParams } from 'meilisearch';
 import qs from 'qs';
 import { v4 } from 'uuid';
-import waitForExpectDefault from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
 
 import { CategoryType, HttpMethod, ItemTagType, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app.js';
+import { waitForExpect } from '../../../../../../test/assertions/waitForExpect.js';
 import { AppDataSource } from '../../../../../plugins/datasource.js';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config.js';
 import { ItemNotFound, MemberCannotAdminItem } from '../../../../../utils/errors.js';
@@ -30,8 +30,6 @@ import { ItemPublished } from '../entities/itemPublished.js';
 import { ItemPublishedNotFound } from '../errors.js';
 import { MeiliSearchWrapper } from '../plugins/search/meilisearch.js';
 import { ItemPublishedRepository } from '../repositories/itemPublished.js';
-
-const waitForExpect = waitForExpectDefault.default;
 
 const testUtils = new ItemTestUtils();
 

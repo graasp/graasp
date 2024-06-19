@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { StatusCodes } from 'http-status-codes';
-import waitForExpectDefault from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
 
 import { Context, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app.js';
+import { waitForExpect } from '../../../../../../test/assertions/waitForExpect.js';
 import { AppDataSource } from '../../../../../plugins/datasource.js';
 import { BUILDER_HOST, ITEMS_ROUTE_PREFIX } from '../../../../../utils/config.js';
 import { Action } from '../../../../action/entities/action.js';
@@ -19,8 +19,6 @@ import { CannotPostAction } from '../errors.js';
 import { ActionRequestExportRepository } from '../requestExport/repository.js';
 import { ItemActionType } from '../utils.js';
 import { saveActions } from './fixtures/actions.js';
-
-const waitForExpect = waitForExpectDefault.default;
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');

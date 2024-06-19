@@ -1,4 +1,4 @@
-import fstPassport from '@fastify/passport';
+import { Authenticator } from '@fastify/passport';
 import fastifySecureSession from '@fastify/secure-session';
 import { FastifyInstance, FastifyPluginAsync, PassportUser } from 'fastify';
 
@@ -24,7 +24,7 @@ import passwordStrategy from './strategies/password.js';
 import passwordResetStrategy from './strategies/passwordReset.js';
 import strictSessionStrategy from './strategies/strictSession.js';
 
-const fastifyPassport = fstPassport.default;
+export const graaspPassport = new Authenticator();
 
 // This plugin needs to be globally register before using the prehandlers.
 const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
@@ -34,7 +34,6 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   const repositories: Repositories = buildRepositories();
   const memberRepository = repositories.memberRepository;
   const itemRepository = repositories.itemRepository;
-
   // Mandatory registration for @fastify/passport
   await fastify
     .register(fastifySecureSession, {
@@ -52,20 +51,20 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       // The user must re-authenticate.
       expiry: MAX_SECURE_SESSION_EXPIRATION_IN_SECONDS,
     })
-    .register(fastifyPassport.initialize())
-    .register(fastifyPassport.secureSession());
+    .register(graaspPassport.initialize())
+    .register(graaspPassport.secureSession());
 
   //-- Sessions Strategies --//
-  strictSessionStrategy(fastifyPassport);
+  strictSessionStrategy(graaspPassport);
 
   //-- Password Strategies --//
-  passwordStrategy(fastifyPassport, memberPasswordService, repositories, {
+  passwordStrategy(graaspPassport, memberPasswordService, repositories, {
     propagateError: true,
   });
 
   //-- Magic Link Strategies (JWT) --//
   magicLinkStrategy(
-    fastifyPassport,
+    graaspPassport,
     memberRepository,
     PassportStrategy.MobileMagicLink,
     TOKEN_PARAM,
@@ -73,7 +72,7 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     { propagateError: true },
   );
   magicLinkStrategy(
-    fastifyPassport,
+    graaspPassport,
     memberRepository,
     PassportStrategy.WebMagicLink,
     SHORT_TOKEN_PARAM,
@@ -82,35 +81,23 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   );
 
   //-- JWT Strategies --//
-  passwordResetStrategy(fastifyPassport, memberPasswordService);
-  jwtChallengeVerifierStrategy(fastifyPassport, memberRepository, {
+  passwordResetStrategy(graaspPassport, memberPasswordService);
+  jwtChallengeVerifierStrategy(graaspPassport, memberRepository, {
+    propagateError: true,
+  });
+  jwtStrategy(graaspPassport, memberRepository, PassportStrategy.MobileJwt, AUTH_TOKEN_JWT_SECRET, {
     propagateError: true,
   });
   jwtStrategy(
-    fastifyPassport,
-    memberRepository,
-    PassportStrategy.MobileJwt,
-    AUTH_TOKEN_JWT_SECRET,
-    {
-      propagateError: true,
-    },
-  );
-  jwtStrategy(
-    fastifyPassport,
+    graaspPassport,
     memberRepository,
     PassportStrategy.RefreshToken,
     REFRESH_TOKEN_JWT_SECRET,
     { propagateError: false },
   );
+  jwtAppsStrategy(graaspPassport, memberRepository, itemRepository, PassportStrategy.AppsJwt, true);
   jwtAppsStrategy(
-    fastifyPassport,
-    memberRepository,
-    itemRepository,
-    PassportStrategy.AppsJwt,
-    true,
-  );
-  jwtAppsStrategy(
-    fastifyPassport,
+    graaspPassport,
     memberRepository,
     itemRepository,
     PassportStrategy.OptionalAppsJwt,
@@ -119,8 +106,8 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
 
   // Serialize and Deserialize user
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  fastifyPassport.registerUserSerializer(async (user: PassportUser, _req) => user.member!.id);
-  fastifyPassport.registerUserDeserializer(async (uuid: string, _req): Promise<PassportUser> => {
+  graaspPassport.registerUserSerializer(async (user: PassportUser, _req) => user.member!.id);
+  graaspPassport.registerUserDeserializer(async (uuid: string, _req): Promise<PassportUser> => {
     return {
       member: await memberRepository.get(uuid),
     };

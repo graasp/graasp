@@ -57,20 +57,22 @@ export const _fixChildrenOrder = (itemsMap: Map<string, { copy: Item; original: 
 };
 
 // cannot use sdk sort because of createdAt type
-export const sortChildrenWith = (idsOrder: string[]) => (stElem: Item, ndElem: Item) => {
-  if (idsOrder.indexOf(stElem.id) >= 0 && idsOrder.indexOf(ndElem.id) >= 0) {
-    return idsOrder.indexOf(stElem.id) - idsOrder.indexOf(ndElem.id);
-  }
-  if (idsOrder.indexOf(stElem.id) >= 0) {
-    return -1;
-  }
+export const sortChildrenWith =
+  (idsOrder: string[]) =>
+  <T extends { id: string; createdAt: Date }>(stElem: T, ndElem: T) => {
+    if (idsOrder.indexOf(stElem.id) >= 0 && idsOrder.indexOf(ndElem.id) >= 0) {
+      return idsOrder.indexOf(stElem.id) - idsOrder.indexOf(ndElem.id);
+    }
+    if (idsOrder.indexOf(stElem.id) >= 0) {
+      return -1;
+    }
 
-  if (idsOrder.indexOf(ndElem.id) >= 0) {
-    return 1;
-  }
+    if (idsOrder.indexOf(ndElem.id) >= 0) {
+      return 1;
+    }
 
-  return stElem.createdAt.getTime() - ndElem.createdAt.getTime();
-};
+    return stElem.createdAt.getTime() - ndElem.createdAt.getTime();
+  };
 
 // cannot use sdk sort because of createdAt type
 export const sortChildrenForTreeWith = (descendants: Item[], parentItem: FolderItem): Item[] => {
