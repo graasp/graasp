@@ -19,13 +19,15 @@
     "watch-node": "NODE_PATH=./dist nodemon dist/server.js",
     "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"yarn watch-ts\" \"yarn watch-node\"",
     "seed": "ts-node -e 'import seed from \"./test/mock/index\";seed();'",
-    "test": "jest --forceExit --verbose --runInBand",
+    "test": "yarn test:unit && yarn test:e2e",
+    "test:unit": "vitest src",
+    "test:e2e": "vitest --dir e2e",
     "test:ci": "jest --forceExit --verbose --coverage --silent --maxWorkers=2",
     "test:watch": "yarn test --watchAll",
     "build-ts": "tsc -p tsconfig.build.json",
     "watch-ts": "tsc -w -p tsconfig.build.json",
     "type-check": "tsc --noEmit",
-    "lint": "eslint '**/*.{js,ts}'",
+    "lint": "eslint '{src,test}/**/*.{js,ts}'",
     "prettier:check": "prettier --check \"{src,test}/**/*.ts\"",
     "prettier:write": "prettier --write \"{src,test}/**/*.ts\"",
     "check": "yarn prettier:check && yarn lint && yarn type-check",
@@ -166,11 +168,13 @@
     "pino-pretty": "11.0.0",
     "prettier": "2.8.8",
     "standard-version": "9.5.0",
+    "supertest": "7.0.0",
     "ts-jest": "29.1.4",
     "ts-node": "10.9.2",
     "typescript": "5.4.5",
     "typescript-eslint": "7.13.1",
+    "vitest": "1.6.0",
     "wait-for-expect": "3.0.2"
   },
-  "packageManager": "yarn@4.2.2"
+  "packageManager": "yarn@4.3.0"
 }
