@@ -1,7 +1,7 @@
 import { Strategy as CustomStrategy } from 'passport-custom';
 
 import fastifyPassport from '@fastify/passport';
-import fastify from 'fastify';
+import { fastify } from 'fastify';
 
 import { CompleteMember } from '@graasp/sdk';
 

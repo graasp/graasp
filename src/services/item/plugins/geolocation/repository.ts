@@ -1,3 +1,6 @@
+// this is an esm module, since we are using commonjs it can have unexpected behavior
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 import { iso1A2Code } from '@rapideditor/country-coder';
 import fetch from 'node-fetch';
 import { EntityManager, Repository } from 'typeorm';

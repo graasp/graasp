@@ -1,5 +1,4 @@
 import contentDisposition from 'content-disposition';
-import { ReadStream } from 'fs';
 import { StatusCodes } from 'http-status-codes';
 import { Readable } from 'stream';
 
@@ -93,7 +92,7 @@ class FileService {
     return data;
   }
 
-  async getFile(member: Actor, data): Promise<ReadStream> {
+  async getFile(member: Actor, data): Promise<Readable> {
     const { id, path: filepath } = data;
     if (!filepath || !id) {
       throw new DownloadFileInvalidParameterError({

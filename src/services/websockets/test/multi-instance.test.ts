@@ -3,7 +3,7 @@
  *
  * Tests for {@link MultiInstanceChannelsBroker}
  */
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 import waitForExpect from 'wait-for-expect';
 
 import { Websocket } from '@graasp/sdk';

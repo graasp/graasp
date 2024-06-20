@@ -1,4 +1,4 @@
-import fastifyCors from '@fastify/cors';
+import { fastifyCors } from '@fastify/cors';
 import { FastifyPluginAsync } from 'fastify';
 
 import memberController from './controller';
