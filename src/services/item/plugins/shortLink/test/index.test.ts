@@ -83,6 +83,7 @@ describe('Short links routes tests', () => {
           itemId: MOCK_ITEM_ID,
           platform: MOCK_PLATFORM,
         });
+        console.log(response);
         expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
 
         const check = await injectGet(app, ALIAS);

@@ -2026,7 +2026,7 @@ __metadata:
 
 "@graasp/sdk@github:graasp/graasp-sdk#improve-package-distribution":
   version: 4.13.0
-  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=81e1f3518c9a241f1e1d1ee67fb2b866db7cea5b"
+  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=e92f50740eb47d4d5387a287fb2a578e94220e6c"
   dependencies:
     "@faker-js/faker": "npm:8.4.1"
     filesize: "npm:10.1.2"

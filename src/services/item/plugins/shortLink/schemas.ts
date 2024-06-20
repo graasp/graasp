@@ -6,7 +6,7 @@ const shortLinkPayload = {
   type: 'object',
   properties: {
     alias: { type: 'string', minLength: 6, maxLength: 255, pattern: '^[a-zA-Z0-9-]*$' },
-    platform: { type: 'string', enum: Object.keys(ShortLinkPlatform) },
+    platform: { type: 'string', enum: Object.values(ShortLinkPlatform) },
     itemId: {
       type: 'string',
       pattern: UUID,

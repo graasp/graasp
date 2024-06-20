@@ -31,8 +31,6 @@ export class ShortLinkService {
   async post(member: Member, repositories: Repositories, shortLink: ShortLinkPostPayload) {
     const { shortLinkRepository } = repositories;
 
-    if (!member) throw new UnauthorizedMember();
-
     // check that the item is published if platform is Library
     if (shortLink.platform === ShortLinkPlatform.Library) {
       // Will throw exception if not published or not tagged.
