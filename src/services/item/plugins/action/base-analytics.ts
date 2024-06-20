@@ -1,4 +1,4 @@
-import Ajv from 'ajv';
+import { Ajv } from 'ajv';
 
 import { UUID } from '@graasp/sdk';
 

@@ -61,7 +61,7 @@
     "@fastify/view": "7.4.1",
     "@fastify/websocket": "7.2.0",
     "@graasp/etherpad-api": "2.1.1",
-    "@graasp/sdk": "4.13.0",
+    "@graasp/sdk": "github:graasp/graasp-sdk#improve-package-distribution",
     "@graasp/translations": "github:graasp/graasp-translations#remove-json-assertion",
     "@rapideditor/country-coder": "5.2.2",
     "@sentry/node": "7.116.0",

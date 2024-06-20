@@ -2024,9 +2024,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@npm:4.13.0":
+"@graasp/sdk@github:graasp/graasp-sdk#improve-package-distribution":
   version: 4.13.0
-  resolution: "@graasp/sdk@npm:4.13.0"
+  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=85898624f6e903bce737d2533b9c456165ffcbbe"
   dependencies:
     "@faker-js/faker": "npm:8.4.1"
     filesize: "npm:10.1.2"
@@ -2035,18 +2035,18 @@ __metadata:
   peerDependencies:
     date-fns: ^3
     uuid: ^9 || ^10.0.0
-  checksum: 10/13ee13a6025172016efcecb36b1d7d052439dfb3daa0817559031f4c8b8bd6abc14cd328ffae174225378c51252cd63bee4195234d279605879e56971f90907c
+  checksum: 10/f4a8bd5ed5e09907bd20186faa2505b2353720631f27e5adfa8f683402598c5fb41d2e2a00329ced15e70b6c50474132799ffea1b46f1963db692e0482af46c8
   languageName: node
   linkType: hard
 
 "@graasp/translations@github:graasp/graasp-translations#remove-json-assertion":
   version: 1.28.1
-  resolution: "@graasp/translations@https://github.com/graasp/graasp-translations.git#commit=53aa297cdcda0ba1579d843dd768e8aaeee1a1b1"
+  resolution: "@graasp/translations@https://github.com/graasp/graasp-translations.git#commit=e4b6a54b788c2f714aa8f7d54d9c647e261500ab"
   dependencies:
     vite-plugin-dts: "npm:3.9.1"
   peerDependencies:
     i18next: ^23.8.1
-  checksum: 10/97f344b11efb1421d412b331d484b9c2864e2fd657dd4e22df799649c29fc9d26d6a6c9f35aa57cc935185fdfdf4f3d83c2edc1fd1e64a134e033f308e28fb5f
+  checksum: 10/a589096965a838889913c3f365e0ffbdf0856d081daeb605f34b90db8f283d3c091d758572863aeeace8bdc32453fac42d2502ac0498a0f53b66c5f88d181de4
   languageName: node
   linkType: hard
 
@@ -7625,7 +7625,7 @@ __metadata:
     "@fastify/view": "npm:7.4.1"
     "@fastify/websocket": "npm:7.2.0"
     "@graasp/etherpad-api": "npm:2.1.1"
-    "@graasp/sdk": "npm:4.13.0"
+    "@graasp/sdk": "github:graasp/graasp-sdk#improve-package-distribution"
     "@graasp/translations": "github:graasp/graasp-translations#remove-json-assertion"
     "@jest/globals": "npm:29.7.0"
     "@rapideditor/country-coder": "npm:5.2.2"

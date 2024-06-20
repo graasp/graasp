@@ -1,5 +1,5 @@
-import fastifyHelmet from '@fastify/helmet';
-import fastify from 'fastify';
+import { fastifyHelmet } from '@fastify/helmet';
+import { fastify } from 'fastify';
 
 import registerAppPlugins from './app';
 import ajvFormats from './schemas/ajvFormats';

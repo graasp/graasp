@@ -1,6 +1,6 @@
 import archiver from 'archiver';
 import fs, { mkdirSync } from 'fs';
-import Papa from 'papaparse';
+import { unparse } from 'papaparse';
 import path from 'path';
 
 import { ExportActionsFormatting } from '@graasp/sdk';
@@ -49,7 +49,7 @@ const writeFileForFormat = (
     switch (format) {
       case ExportActionsFormatting.CSV: {
         const newData = data.map((obj) => flattenObject(obj as RecursiveObject));
-        const csv = Papa.unparse(newData, {
+        const csv = unparse(newData, {
           header: true,
           delimiter: ',',
         });

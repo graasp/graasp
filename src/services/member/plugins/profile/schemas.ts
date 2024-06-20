@@ -1,4 +1,4 @@
-import S from 'fluent-json-schema';
+import { S } from 'fluent-json-schema';
 
 import { error, uuid } from '../../../../schemas/fluent-schema';
 import { partialMember } from '../../../item/fluent-schema';

@@ -8,8 +8,8 @@
  * and Redis channels (from the Redis Pub/Sub mechanism which handles inter-instance communication) !
  */
 import { JTDSchemaType } from 'ajv/dist/core';
-import Ajv from 'ajv/dist/jtd';
-import Redis, { RedisOptions } from 'ioredis';
+import { Ajv } from 'ajv/dist/jtd';
+import { Redis, RedisOptions } from 'ioredis';
 
 import { FastifyBaseLogger } from 'fastify';
 

@@ -1,4 +1,4 @@
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 import { MeiliSearch } from 'meilisearch';
 
 import { FastifyPluginAsync } from 'fastify';

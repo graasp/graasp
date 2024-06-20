@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 import { DateTime } from 'luxon';
 import nock from 'nock';
 import { And, Not } from 'typeorm';
-import * as uuid from 'uuid';
+import { v4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
@@ -572,7 +572,7 @@ describe('Etherpad service API', () => {
       // generate an id for an item that does not exist
       let randomId;
       do {
-        randomId = uuid.v4();
+        randomId = v4();
         // probability if infinitely low, but just for sanity
       } while (randomId === item.id);
       const res = await app.inject(payloadView(mode, randomId));
