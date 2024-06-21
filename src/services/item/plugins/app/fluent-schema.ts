@@ -1,4 +1,4 @@
-import S from 'fluent-json-schema';
+import { S } from 'fluent-json-schema';
 
 // we don't want to return the id since it's the key!
 export const appSchema = S.object()

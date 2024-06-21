@@ -1,4 +1,4 @@
-import Ajv from 'ajv';
+import { Ajv } from 'ajv';
 import fs from 'fs';
 import { readFile } from 'fs/promises';
 import path from 'path';

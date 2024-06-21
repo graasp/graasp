@@ -2,7 +2,7 @@ import WebSocket from 'ws';
 
 import { FastifyBaseLogger } from 'fastify';
 
-import { Websocket } from '@graasp/sdk';
+import { Websocket as GraaspWS } from '@graasp/sdk';
 
 import { Actor, Member } from '../member/entities/member';
 import {
@@ -39,14 +39,14 @@ export class WebsocketService {
   // multi-instance channels broker reference (to send across servers cluster)
   private wsMultiBroker: MultiInstanceChannelsBroker;
   // parser function that converts raw client websocket data into JS
-  private parse: (data: WebSocket.Data) => Websocket.ClientMessage | undefined;
+  private parse: (data: WebSocket.Data) => GraaspWS.ClientMessage | undefined;
   // logger
   private logger: FastifyBaseLogger;
 
   constructor(
     wsChannels: WebSocketChannels,
     wsMultiBroker: MultiInstanceChannelsBroker,
-    parse: (data: WebSocket.Data) => Websocket.ClientMessage | undefined,
+    parse: (data: WebSocket.Data) => GraaspWS.ClientMessage | undefined,
     log: FastifyBaseLogger,
   ) {
     this.wsChannels = wsChannels;
@@ -72,12 +72,12 @@ export class WebsocketService {
    * Helper to handle client subscribe and subscribeOnly actions
    */
   private async handleSubscribe(
-    request: Websocket.ClientSubscribe | Websocket.ClientSubscribeOnly,
+    request: GraaspWS.ClientSubscribe | GraaspWS.ClientSubscribeOnly,
     member: Actor,
     client: WebSocket,
     subscribeFn: (client: WebSocket, channelName: string) => boolean,
   ) {
-    let res: Websocket.ServerMessage;
+    let res: GraaspWS.ServerMessage;
 
     // prevent public subscribe
     if (!member) {
@@ -91,7 +91,7 @@ export class WebsocketService {
     const validate = this.validators.get(request.topic);
     if (validate === undefined) {
       this.logger.info(`graasp-plugin-websockets: Validator not found for topic ${request.topic}`);
-      res = createServerErrorResponse(new Websocket.NotFoundError(), request);
+      res = createServerErrorResponse(new GraaspWS.NotFoundError(), request);
     } else {
       try {
         await validate({
@@ -109,7 +109,7 @@ export class WebsocketService {
 
         res = subscribeFn(client, scopedChannel)
           ? createServerSuccessResponse(request)
-          : createServerErrorResponse(new Websocket.NotFoundError(), request);
+          : createServerErrorResponse(new GraaspWS.NotFoundError(), request);
       } catch (error) {
         res = createServerErrorResponse(error as Error, request);
       }
@@ -121,12 +121,12 @@ export class WebsocketService {
   /**
    * Helper to handle unsubscribe action
    */
-  private handleUnsubscribe(request: Websocket.ClientUnsubscribe, client: WebSocket) {
+  private handleUnsubscribe(request: GraaspWS.ClientUnsubscribe, client: WebSocket) {
     // scope channel into topic
     const scopedChannel = this.scope(request.channel, request.topic);
     const res = this.wsChannels.clientUnsubscribe(client, scopedChannel)
       ? createServerSuccessResponse(request)
-      : createServerErrorResponse(new Websocket.NotFoundError(), request);
+      : createServerErrorResponse(new GraaspWS.NotFoundError(), request);
     this.wsChannels.clientSend(client, res);
     // preemptively remove channel if empty
     this.wsChannels.channelDelete(scopedChannel, true);
@@ -148,30 +148,30 @@ export class WebsocketService {
         `graasp-plugin-websockets: Bad client request (memberID: ${member?.id} with message`,
         data?.toString(),
       );
-      const err = new Websocket.BadRequestError();
+      const err = new GraaspWS.BadRequestError();
       this.wsChannels.clientSend(client, createServerErrorResponse(err));
       return;
     }
 
     // request is now type-safe as ClientMessage
     switch (request.action) {
-      case Websocket.ClientActions.Disconnect: {
+      case GraaspWS.ClientActions.Disconnect: {
         this.wsChannels.clientRemove(client);
         break;
       }
-      case Websocket.ClientActions.Subscribe: {
+      case GraaspWS.ClientActions.Subscribe: {
         this.handleSubscribe(request, member, client, (client, channel) =>
           this.wsChannels.clientSubscribe(client, channel),
         );
         break;
       }
-      case Websocket.ClientActions.SubscribeOnly: {
+      case GraaspWS.ClientActions.SubscribeOnly: {
         this.handleSubscribe(request, member, client, (client, channel) =>
           this.wsChannels.clientSubscribeOnly(client, channel),
         );
         break;
       }
-      case Websocket.ClientActions.Unsubscribe: {
+      case GraaspWS.ClientActions.Unsubscribe: {
         this.handleUnsubscribe(request, client);
         break;
       }

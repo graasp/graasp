@@ -1,4 +1,4 @@
-import dotenv from 'dotenv';
+import { config } from 'dotenv';
 import os from 'os';
 
 import {
@@ -30,16 +30,16 @@ export const NODE_ENV: string | undefined = process.env.NODE_ENV;
 export const ENVIRONMENT: Environment = (() => {
   switch (NODE_ENV) {
     case Environment.production:
-      dotenv.config({ path: '.env.production', override: true });
+      config({ path: '.env.production', override: true });
       return Environment.production;
     case Environment.staging:
-      dotenv.config({ path: '.env.staging', override: true });
+      config({ path: '.env.staging', override: true });
       return Environment.staging;
     case Environment.test:
-      dotenv.config({ path: '.env.test', override: true });
+      config({ path: '.env.test', override: true });
       return Environment.test;
     default:
-      dotenv.config({ path: '.env.development', override: true });
+      config({ path: '.env.development', override: true });
       return Environment.development;
   }
 })();

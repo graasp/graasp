@@ -1,4 +1,4 @@
-import { ChatCompletion } from 'openai/resources/chat';
+import { ChatCompletion } from 'openai/resources/chat/index';
 
 import { ChatBotMessage } from '@graasp/sdk';
 

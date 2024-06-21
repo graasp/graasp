@@ -1,4 +1,4 @@
-import S, { JSONSchema, ObjectSchema } from 'fluent-json-schema';
+import { JSONSchema, ObjectSchema, S } from 'fluent-json-schema';
 import { StatusCodes } from 'http-status-codes';
 
 import { FastifySchema } from 'fastify';

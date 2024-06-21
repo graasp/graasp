@@ -2015,9 +2015,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@npm:4.13.0":
-  version: 4.13.0
-  resolution: "@graasp/sdk@npm:4.13.0"
+"@graasp/sdk@npm:4.14.1":
+  version: 4.14.1
+  resolution: "@graasp/sdk@npm:4.14.1"
   dependencies:
     "@faker-js/faker": "npm:8.4.1"
     filesize: "npm:10.1.2"
@@ -2026,16 +2026,16 @@ __metadata:
   peerDependencies:
     date-fns: ^3
     uuid: ^9 || ^10.0.0
-  checksum: 10/13ee13a6025172016efcecb36b1d7d052439dfb3daa0817559031f4c8b8bd6abc14cd328ffae174225378c51252cd63bee4195234d279605879e56971f90907c
+  checksum: 10/689c8632a7bbe534afc7a273210f640aabaa940c79eab4047bdef951e6583f74df202ed30c0632e36010cae135b12fe3570516044be8d80e0cb9b6094370a04b
   languageName: node
   linkType: hard
 
-"@graasp/translations@npm:1.23.0":
-  version: 1.23.0
-  resolution: "@graasp/translations@npm:1.23.0"
-  dependencies:
-    i18next: "npm:23.7.16"
-  checksum: 10/dc0d605b520a28deb1ad3054323dc4b71f709b79adf5924552c602f3c3ed2fa7c3c8538a3015c86c8db05867159df4b2f6ad18583766b2b97c8dd850952d29e2
+"@graasp/translations@npm:1.28.2":
+  version: 1.28.2
+  resolution: "@graasp/translations@npm:1.28.2"
+  peerDependencies:
+    i18next: ^23.8.1
+  checksum: 10/db64e173beee149459955eed3435318efc0b1cdd3262bf49ae2077c88a932ae724043768f8739a06c256dfa15950159357c41ff9ac21bbb7bee76290be6bcd24
   languageName: node
   linkType: hard
 
@@ -7363,8 +7363,8 @@ __metadata:
     "@fastify/view": "npm:7.4.1"
     "@fastify/websocket": "npm:7.2.0"
     "@graasp/etherpad-api": "npm:2.1.1"
-    "@graasp/sdk": "npm:4.13.0"
-    "@graasp/translations": "npm:1.23.0"
+    "@graasp/sdk": "npm:4.14.1"
+    "@graasp/translations": "npm:1.28.2"
     "@jest/globals": "npm:29.7.0"
     "@rapideditor/country-coder": "npm:5.2.2"
     "@sentry/node": "npm:7.116.0"
@@ -7758,15 +7758,6 @@ __metadata:
   dependencies:
     "@babel/runtime": "npm:^7.23.2"
   checksum: 10/3a8e0d5d2b9ac6c6fa8c2180452aaf816d60e1cc790da69d6be515feec85553f8af9fcc19414ade1a621f08236e84f38df4415a8234919fa97fa2e35624e86b6
-  languageName: node
-  linkType: hard
-
-"i18next@npm:23.7.16":
-  version: 23.7.16
-  resolution: "i18next@npm:23.7.16"
-  dependencies:
-    "@babel/runtime": "npm:^7.23.2"
-  checksum: 10/77e74c07a73316f6fb6678a5a3e8ce58a6e66be457dd1ccd23941e9fc57ad8e1da55193fa6328c70b86073337b776cd267f3c13c6309f548b3116f27a1e41787
   languageName: node
   linkType: hard
 

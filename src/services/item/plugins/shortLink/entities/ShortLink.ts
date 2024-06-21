@@ -12,7 +12,7 @@ import {
   Unique,
 } from 'typeorm';
 
-import { ShortLinkPlatform, UUID } from '@graasp/sdk';
+import { ShortLinkPlatform, UUID, UnionOfConst } from '@graasp/sdk';
 
 import { Item } from '../../../../item/entities/Item';
 
@@ -23,8 +23,8 @@ export class ShortLink extends BaseEntity {
   @PrimaryColumn({ type: 'varchar', length: 255 })
   alias: string;
 
-  @Column({ type: 'enum', enum: Object.keys(ShortLinkPlatform), nullable: false })
-  platform: keyof typeof ShortLinkPlatform;
+  @Column({ type: 'enum', enum: Object.values(ShortLinkPlatform), nullable: false })
+  platform: UnionOfConst<typeof ShortLinkPlatform>;
 
   @CreateDateColumn({ type: 'timestamp', default: () => 'NOW()' })
   createdAt: Date;

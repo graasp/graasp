@@ -1,6 +1,6 @@
 import { UUID } from 'crypto';
 
-import fastifyCors from '@fastify/cors';
+import { fastifyCors } from '@fastify/cors';
 import { FastifyPluginAsync } from 'fastify';
 
 import { PermissionLevel } from '@graasp/sdk';

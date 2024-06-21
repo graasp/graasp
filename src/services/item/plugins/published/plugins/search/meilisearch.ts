@@ -138,9 +138,7 @@ export class MeiliSearchWrapper {
 
   // WORKS ONLY FOR PUBLISHED ITEMS
   async search(queries: MultiSearchParams) {
-    const searchResult = await this.meilisearchClient.multiSearch(queries, {
-      attributesToHighlight: ['*'],
-    });
+    const searchResult = await this.meilisearchClient.multiSearch(queries);
 
     return searchResult;
   }

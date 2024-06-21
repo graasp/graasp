@@ -1,5 +1,5 @@
 import fastifyPassport from '@fastify/passport';
-import fastifySecureSession from '@fastify/secure-session';
+import { fastifySecureSession } from '@fastify/secure-session';
 import { FastifyInstance, FastifyPluginAsync, PassportUser } from 'fastify';
 
 import {

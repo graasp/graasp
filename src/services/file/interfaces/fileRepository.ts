@@ -1,4 +1,4 @@
-import { ReadStream } from 'fs';
+import { Readable } from 'stream';
 
 import { FastifyBaseLogger } from 'fastify';
 
@@ -18,7 +18,7 @@ export interface FileRepository {
   deleteFile(args: { filepath: string }): Promise<void>;
   deleteFolder(args: { folderPath: string }): Promise<void>;
 
-  getFile(args: { filepath: string; id: string }, log?: FastifyBaseLogger): Promise<ReadStream>;
+  getFile(args: { filepath: string; id: string }, log?: FastifyBaseLogger): Promise<Readable>;
 
   getUrl(
     args: {
@@ -32,7 +32,7 @@ export interface FileRepository {
   ): Promise<string>;
 
   uploadFile(args: {
-    fileStream: ReadableStream;
+    fileStream: Readable;
     memberId: string;
     filepath: string;
     mimetype?: string;

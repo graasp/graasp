@@ -1,7 +1,7 @@
 import fetch from 'node-fetch';
 import qs from 'qs';
 
-import forwarded from '@fastify/forwarded';
+import { forwarded } from '@fastify/forwarded';
 import { FastifyReply, FastifyRequest, RouteHandlerMethod } from 'fastify';
 
 import { RecaptchaActionType } from '@graasp/sdk';

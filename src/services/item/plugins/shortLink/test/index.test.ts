@@ -666,7 +666,7 @@ describe('Short links routes tests', () => {
     });
 
     describe('GET /short-links/list/:itemId', () => {
-      const platformLinks = [ShortLinkPlatform.builder, ShortLinkPlatform.player];
+      const platformLinks = [ShortLinkPlatform.Builder, ShortLinkPlatform.Player];
       beforeEach(async () => {
         cedric = await saveMember();
         anna = await saveMember();

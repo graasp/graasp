@@ -1,4 +1,4 @@
-import forwarded from '@fastify/forwarded';
+import { forwarded } from '@fastify/forwarded';
 import { FastifyRequest } from 'fastify';
 
 import { Repositories } from '../../../utils/repositories';
