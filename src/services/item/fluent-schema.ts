@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifySchema } from 'fastify';
 
 import {
+  Alignment,
   DescriptionPlacement,
   ItemTagType,
   ItemType,
@@ -44,7 +45,8 @@ export const settings = S.object()
   .prop('showLinkIframe', S.boolean())
   .prop('showLinkButton', S.boolean())
   // file settings
-  .prop('maxWidth', S.enum(Object.values(MaxWidth)));
+  .prop('maxWidth', S.enum(Object.values(MaxWidth)))
+  .prop('alignment', S.enum(Object.values(Alignment)));
 
 export const partialMember = S.object()
   .additionalProperties(false)
