@@ -2015,9 +2015,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@npm:4.14.1":
+"@graasp/sdk@github:graasp/graasp-sdk#add-alignment-enum":
   version: 4.14.1
-  resolution: "@graasp/sdk@npm:4.14.1"
+  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=a1697ee9f52598686113f88db4ce53234b58f401"
   dependencies:
     "@faker-js/faker": "npm:8.4.1"
     filesize: "npm:10.1.2"
@@ -2026,7 +2026,7 @@ __metadata:
   peerDependencies:
     date-fns: ^3
     uuid: ^9 || ^10.0.0
-  checksum: 10/689c8632a7bbe534afc7a273210f640aabaa940c79eab4047bdef951e6583f74df202ed30c0632e36010cae135b12fe3570516044be8d80e0cb9b6094370a04b
+  checksum: 10/6809246c36999bcb3f79cb281043db0274e13807c4ba07094213d37a5a7b9dfb6d17851be3d3c81396eb654396c1a2302b10a712032ec0ea57b8848278f8fd70
   languageName: node
   linkType: hard
 
@@ -7363,7 +7363,7 @@ __metadata:
     "@fastify/view": "npm:7.4.1"
     "@fastify/websocket": "npm:7.2.0"
     "@graasp/etherpad-api": "npm:2.1.1"
-    "@graasp/sdk": "npm:4.14.1"
+    "@graasp/sdk": "github:graasp/graasp-sdk#add-alignment-enum"
     "@graasp/translations": "npm:1.28.2"
     "@jest/globals": "npm:29.7.0"
     "@rapideditor/country-coder": "npm:5.2.2"
