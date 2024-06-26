@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 import { DateTime } from 'luxon';
-import nock from 'nock';
+import { cleanAll } from 'nock';
 import { And, Not } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
@@ -58,7 +58,7 @@ describe('Etherpad service API', () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
     app.close();
-    nock.cleanAll();
+    cleanAll();
   });
 
   describe('create a pad', () => {
@@ -179,7 +179,7 @@ describe('Etherpad service API', () => {
       const res = await app.inject(payloadCreate);
       expect(res.statusCode).toBe(StatusCodes.OK);
       item = res.json();
-      nock.cleanAll();
+      cleanAll();
     });
 
     it('views a pad in read mode successfully', async () => {
@@ -685,7 +685,7 @@ describe('Etherpad service API', () => {
       const res = await app.inject(payloadCreate);
       expect(res.statusCode).toBe(StatusCodes.OK);
       item = res.json();
-      nock.cleanAll();
+      cleanAll();
     });
 
     it('deletes pad when item is deleted', async () => {

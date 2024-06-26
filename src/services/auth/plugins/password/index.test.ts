@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { StatusCodes } from 'http-status-codes';
-import Redis from 'ioredis';
-import jwt from 'jsonwebtoken';
+import { Redis } from 'ioredis';
+import { sign } from 'jsonwebtoken';
 import waitForExpect from 'wait-for-expect';
 
 import { FastifyInstance, LightMyRequestResponse } from 'fastify';
@@ -236,7 +236,7 @@ describe('Reset Password', () => {
           password: newPassword,
         },
         headers: {
-          Authorization: `Bearer ${jwt.sign({}, 'invalid-token')}`,
+          Authorization: `Bearer ${sign({}, 'invalid-token')}`,
         },
       });
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);

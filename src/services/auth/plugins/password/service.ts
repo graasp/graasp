@@ -1,5 +1,5 @@
-import Redis from 'ioredis';
-import jwt from 'jsonwebtoken';
+import { Redis } from 'ioredis';
+import { sign } from 'jsonwebtoken';
 import { v4 as uuid } from 'uuid';
 
 import { FastifyBaseLogger } from 'fastify';
@@ -39,7 +39,7 @@ export class MemberPasswordService {
    * @returns A promise to be resolved with the generated token.
    */
   generateToken(data: { sub: string; challenge?: string }, expiration: string) {
-    return jwt.sign(data, JWT_SECRET, {
+    return sign(data, JWT_SECRET, {
       expiresIn: expiration,
     });
   }
@@ -100,7 +100,7 @@ export class MemberPasswordService {
       return;
     }
     const payload = { uuid: uuid() };
-    const token = jwt.sign(payload, PASSWORD_RESET_JWT_SECRET, {
+    const token = sign(payload, PASSWORD_RESET_JWT_SECRET, {
       expiresIn: `${PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES}m`,
     });
     this.redis.setex(

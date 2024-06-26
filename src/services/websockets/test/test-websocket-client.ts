@@ -1,4 +1,4 @@
-import WebSocket from 'ws';
+import { WebSocket } from 'ws';
 
 import { Websocket, parseStringToDate } from '@graasp/sdk';
 

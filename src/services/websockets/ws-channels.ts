@@ -6,7 +6,7 @@
  * @author Alexandre CHAU
  */
 import util from 'util';
-import WebSocket from 'ws';
+import { Data, Server, WebSocket } from 'ws';
 
 import { FastifyBaseLogger } from 'fastify';
 
@@ -96,13 +96,13 @@ class Client {
  */
 class WebSocketChannels {
   // Underlying WebSocket server
-  wsServer: WebSocket.Server;
+  wsServer: Server;
   // Collection of existing channels, identified by name for lookup
   channels: Map<string, Channel>;
   // Collection of all client subscriptions, identified by socket for lookup
   subscriptions: Map<WebSocket, Client>;
   // Serializer function
-  serialize: (data: Websocket.ServerMessage) => WebSocket.Data;
+  serialize: (data: Websocket.ServerMessage) => Data;
   // Heartbeat interval instance
   heartbeat: NodeJS.Timeout;
   // Logging interface
@@ -117,8 +117,8 @@ class WebSocketChannels {
    *                          MUST be at least an order of magnitude higher than network RTT
    */
   constructor(
-    wsServer: WebSocket.Server,
-    serialize: (data: Websocket.ServerMessage) => WebSocket.Data,
+    wsServer: Server,
+    serialize: (data: Websocket.ServerMessage) => Data,
     log?: FastifyBaseLogger | Console,
     heartbeatInterval: number = 30000,
   ) {

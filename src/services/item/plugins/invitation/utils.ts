@@ -1,5 +1,5 @@
 import { Readable } from 'node:stream';
-import Papa from 'papaparse';
+import { parse } from 'papaparse';
 
 import { MultipartFile } from '@fastify/multipart';
 
@@ -16,7 +16,7 @@ export type CSVInvite = {
 
 export const parseCSV = (stream: Readable): Promise<{ rows: CSVInvite[]; header: string[] }> => {
   return new Promise((resolve, reject) => {
-    Papa.parse<CSVInvite>(stream, {
+    parse<CSVInvite>(stream, {
       // get the headers from the file
       header: true,
       // do not try to convert the values to other types (everything will be a string)

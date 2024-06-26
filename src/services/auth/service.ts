@@ -1,4 +1,4 @@
-import jwt, { Secret, SignOptions } from 'jsonwebtoken';
+import { Secret, SignOptions, sign } from 'jsonwebtoken';
 import { promisify } from 'util';
 
 import { FastifyBaseLogger } from 'fastify';
@@ -23,7 +23,7 @@ const promisifiedJwtSign = promisify<
   Secret,
   SignOptions,
   string
->(jwt.sign);
+>(sign);
 
 export class AuthService {
   log: FastifyBaseLogger;

@@ -1,5 +1,5 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
-import jwt from 'jsonwebtoken';
+import { sign } from 'jsonwebtoken';
 import fetch from 'node-fetch';
 import { v4 } from 'uuid';
 
@@ -311,7 +311,7 @@ describe('Auth routes tests', () => {
   describe('GET /auth', () => {
     it('Authenticate successfully', async () => {
       const member = await saveMember();
-      const t = jwt.sign({ sub: member.id }, JWT_SECRET);
+      const t = sign({ sub: member.id }, JWT_SECRET);
       const response = await app.inject({
         method: HttpMethod.Get,
         url: `/auth?t=${t}`,
@@ -321,7 +321,7 @@ describe('Auth routes tests', () => {
     });
 
     it('Fail if token contains undefined memberId', async () => {
-      const t = jwt.sign({ sub: undefined }, JWT_SECRET);
+      const t = sign({ sub: undefined }, JWT_SECRET);
       const response = await app.inject({
         method: HttpMethod.Get,
         url: `/auth?t=${t}`,
@@ -333,7 +333,7 @@ describe('Auth routes tests', () => {
     });
 
     it('Fail if token contains unknown member id', async () => {
-      const t = jwt.sign({ sub: v4() }, JWT_SECRET);
+      const t = sign({ sub: v4() }, JWT_SECRET);
       const response = await app.inject({
         method: HttpMethod.Get,
         url: `/auth?t=${t}`,
@@ -346,7 +346,7 @@ describe('Auth routes tests', () => {
 
     it('Fail to authenticate if token is invalid', async () => {
       const member = await saveMember();
-      const t = jwt.sign({ sub: member.id }, 'secret');
+      const t = sign({ sub: member.id }, 'secret');
       const response = await app.inject({
         method: HttpMethod.Get,
         url: `/auth?t=${t}`,

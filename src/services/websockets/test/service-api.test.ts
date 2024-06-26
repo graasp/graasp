@@ -6,11 +6,11 @@
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import waitForExpect from 'wait-for-expect';
-import WebSocket from 'ws';
+import { WebSocket } from 'ws';
 
 import { FastifyInstance } from 'fastify';
 
-import { Websocket } from '@graasp/sdk';
+import { Websocket as GraaspWebsocket } from '@graasp/sdk';
 
 import '../../auth/plugins/passport/preHandlers';
 import { createServerInfo } from '../message';
@@ -96,18 +96,18 @@ describe('internal state', () => {
 
       // subscribe to channel "a" and await ack
       const ack = clientWait(t.client!, 1);
-      const request: Websocket.ClientMessage = {
-        realm: Websocket.Realms.Notif,
-        action: Websocket.ClientActions.Subscribe,
+      const request: GraaspWebsocket.ClientMessage = {
+        realm: GraaspWebsocket.Realms.Notif,
+        action: GraaspWebsocket.ClientActions.Subscribe,
         channel: 'a',
         topic: 'foo',
       };
       clientSend(t.client!, request);
 
       expect(await ack).toStrictEqual({
-        realm: Websocket.Realms.Notif,
-        type: Websocket.ServerMessageTypes.Response,
-        status: Websocket.ResponseStatuses.Success,
+        realm: GraaspWebsocket.Realms.Notif,
+        type: GraaspWebsocket.ServerMessageTypes.Response,
+        status: GraaspWebsocket.ResponseStatuses.Success,
         request,
       });
       expect(t.server!._debug_websocketsChannels.channels.get('foo/a')?.subscribers.size).toEqual(
@@ -118,17 +118,17 @@ describe('internal state', () => {
     test('flagged channel removed when last subscriber leaves', async () => {
       // unsubscribe from channel "a" and await ack
       const ack2 = clientWait(t.client!, 1);
-      const request2: Websocket.ClientMessage = {
-        realm: Websocket.Realms.Notif,
-        action: Websocket.ClientActions.Unsubscribe,
+      const request2: GraaspWebsocket.ClientMessage = {
+        realm: GraaspWebsocket.Realms.Notif,
+        action: GraaspWebsocket.ClientActions.Unsubscribe,
         topic: 'foo',
         channel: 'a',
       };
       clientSend(t.client!, request2);
       expect(await ack2).toStrictEqual({
-        realm: Websocket.Realms.Notif,
-        type: Websocket.ServerMessageTypes.Response,
-        status: Websocket.ResponseStatuses.Success,
+        realm: GraaspWebsocket.Realms.Notif,
+        type: GraaspWebsocket.ServerMessageTypes.Response,
+        status: GraaspWebsocket.ResponseStatuses.Success,
         request: request2,
       });
       expect(t.server!._debug_websocketsChannels.channels.get('foo/a')).toBeUndefined();
@@ -184,9 +184,9 @@ describe('client requests', () => {
     const response = clientWait(t.client!, 1);
     t.client!.send(JSON.stringify(msg));
     expect(await response).toStrictEqual({
-      realm: Websocket.Realms.Notif,
-      status: Websocket.ResponseStatuses.Error,
-      type: Websocket.ServerMessageTypes.Response,
+      realm: GraaspWebsocket.Realms.Notif,
+      status: GraaspWebsocket.ResponseStatuses.Error,
+      type: GraaspWebsocket.ServerMessageTypes.Response,
       error: {
         name: 'BAD_REQUEST',
         message: 'Websocket: Request message format was not understood by the server',
@@ -200,19 +200,19 @@ describe('client requests', () => {
     const channels = ['1', '2', '3', '4'];
     channels.forEach((c) =>
       clientSend(t.client!, {
-        realm: Websocket.Realms.Notif,
-        action: Websocket.ClientActions.SubscribeOnly,
+        realm: GraaspWebsocket.Realms.Notif,
+        action: GraaspWebsocket.ClientActions.SubscribeOnly,
         channel: c,
         topic: 'foo',
       }),
     );
     const expectedAckMsgs = channels.map((c) => ({
-      realm: Websocket.Realms.Notif,
-      type: Websocket.ServerMessageTypes.Response,
-      status: Websocket.ResponseStatuses.Success,
+      realm: GraaspWebsocket.Realms.Notif,
+      type: GraaspWebsocket.ServerMessageTypes.Response,
+      status: GraaspWebsocket.ResponseStatuses.Success,
       request: {
-        realm: Websocket.Realms.Notif,
-        action: Websocket.ClientActions.SubscribeOnly,
+        realm: GraaspWebsocket.Realms.Notif,
+        action: GraaspWebsocket.ClientActions.SubscribeOnly,
         channel: c,
         topic: 'foo',
       },
@@ -225,45 +225,45 @@ describe('client requests', () => {
       t.server!._debug_websocketsChannels.channelSend('foo/' + c, createServerInfo('hello' + c)),
     );
     expect(await msg).toStrictEqual({
-      realm: Websocket.Realms.Notif,
-      type: Websocket.ServerMessageTypes.Info,
+      realm: GraaspWebsocket.Realms.Notif,
+      type: GraaspWebsocket.ServerMessageTypes.Info,
       message: 'hello4',
     });
   });
 
   test('unsubscribe', async () => {
     let ack;
-    let req: Websocket.ClientMessage;
+    let req: GraaspWebsocket.ClientMessage;
 
     // subscribe client to channel 1
     req = {
-      realm: Websocket.Realms.Notif,
-      action: Websocket.ClientActions.Subscribe,
+      realm: GraaspWebsocket.Realms.Notif,
+      action: GraaspWebsocket.ClientActions.Subscribe,
       channel: '1',
       topic: 'foo',
     };
     ack = clientWait(t.client!, 1);
     clientSend(t.client!, req);
     expect(await ack).toStrictEqual({
-      realm: Websocket.Realms.Notif,
-      type: Websocket.ServerMessageTypes.Response,
-      status: Websocket.ResponseStatuses.Success,
+      realm: GraaspWebsocket.Realms.Notif,
+      type: GraaspWebsocket.ServerMessageTypes.Response,
+      status: GraaspWebsocket.ResponseStatuses.Success,
       request: req,
     });
 
     // unsubscribe client from channel 1
     ack = clientWait(t.client!, 1);
     req = {
-      realm: Websocket.Realms.Notif,
-      action: Websocket.ClientActions.Unsubscribe,
+      realm: GraaspWebsocket.Realms.Notif,
+      action: GraaspWebsocket.ClientActions.Unsubscribe,
       topic: 'foo',
       channel: '1',
     };
     clientSend(t.client!, req);
     expect(await ack).toStrictEqual({
-      realm: Websocket.Realms.Notif,
-      type: Websocket.ServerMessageTypes.Response,
-      status: Websocket.ResponseStatuses.Success,
+      realm: GraaspWebsocket.Realms.Notif,
+      type: GraaspWebsocket.ServerMessageTypes.Response,
+      status: GraaspWebsocket.ResponseStatuses.Success,
       request: req,
     });
 
@@ -277,8 +277,8 @@ describe('client requests', () => {
 
     // subscribe again client to channel
     req = {
-      realm: Websocket.Realms.Notif,
-      action: Websocket.ClientActions.Subscribe,
+      realm: GraaspWebsocket.Realms.Notif,
+      action: GraaspWebsocket.ClientActions.Subscribe,
       channel: '1',
       topic: 'foo',
     };
@@ -289,9 +289,9 @@ describe('client requests', () => {
       message: 'you should not receive me',
     });
     expect(ackMsg).toStrictEqual({
-      realm: Websocket.Realms.Notif,
-      type: Websocket.ServerMessageTypes.Response,
-      status: Websocket.ResponseStatuses.Success,
+      realm: GraaspWebsocket.Realms.Notif,
+      type: GraaspWebsocket.ServerMessageTypes.Response,
+      status: GraaspWebsocket.ResponseStatuses.Success,
       request: req,
     });
 
@@ -304,8 +304,8 @@ describe('client requests', () => {
       body: 'you should not receive me',
     });
     expect(data).toStrictEqual({
-      realm: Websocket.Realms.Notif,
-      type: Websocket.ServerMessageTypes.Info,
+      realm: GraaspWebsocket.Realms.Notif,
+      type: GraaspWebsocket.ServerMessageTypes.Info,
       message: 'hello again',
     });
   });
@@ -313,8 +313,8 @@ describe('client requests', () => {
   test('disconnect', async () => {
     expect(t.server!._debug_websocketsChannels.subscriptions.size).toEqual(1);
     clientSend(t.client!, {
-      realm: Websocket.Realms.Notif,
-      action: Websocket.ClientActions.Disconnect,
+      realm: GraaspWebsocket.Realms.Notif,
+      action: GraaspWebsocket.ClientActions.Disconnect,
     });
     await waitForExpect(() => {
       expect(t.server!._debug_websocketsChannels.subscriptions.size).toEqual(0);
@@ -348,8 +348,8 @@ describe('channel send', () => {
     ack = clientsWait(t.subs1, 1);
     t.subs1.forEach((client) =>
       clientSend(client, {
-        realm: Websocket.Realms.Notif,
-        action: Websocket.ClientActions.Subscribe,
+        realm: GraaspWebsocket.Realms.Notif,
+        action: GraaspWebsocket.ClientActions.Subscribe,
         channel: '1',
         topic: 'foo',
       }),
@@ -361,8 +361,8 @@ describe('channel send', () => {
     ack = clientsWait(t.subs2, 1);
     t.subs2.forEach((client) =>
       clientSend(client, {
-        realm: Websocket.Realms.Notif,
-        action: Websocket.ClientActions.Subscribe,
+        realm: GraaspWebsocket.Realms.Notif,
+        action: GraaspWebsocket.ClientActions.Subscribe,
         channel: '2',
         topic: 'foo',
       }),
@@ -446,22 +446,22 @@ describe('error cases', () => {
   test('rejected validation', async () => {
     t.server!.websockets!.register('foo', async (_req) => {
       // always reject
-      throw new Websocket.AccessDeniedError();
+      throw new GraaspWebsocket.AccessDeniedError();
     });
 
     // subscribe to channel a, expect error response
     const ack = clientWait(t.client!, 1);
-    const request: Websocket.ClientMessage = {
-      realm: Websocket.Realms.Notif,
-      action: Websocket.ClientActions.Subscribe,
+    const request: GraaspWebsocket.ClientMessage = {
+      realm: GraaspWebsocket.Realms.Notif,
+      action: GraaspWebsocket.ClientActions.Subscribe,
       channel: 'a',
       topic: 'foo',
     };
     clientSend(t.client!, request);
     expect(await ack).toStrictEqual({
-      realm: Websocket.Realms.Notif,
-      type: Websocket.ServerMessageTypes.Response,
-      status: Websocket.ResponseStatuses.Error,
+      realm: GraaspWebsocket.Realms.Notif,
+      type: GraaspWebsocket.ServerMessageTypes.Response,
+      status: GraaspWebsocket.ResponseStatuses.Error,
       error: {
         name: 'ACCESS_DENIED',
         message: 'Websocket: Access denied for the requested resource',

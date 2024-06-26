@@ -1,4 +1,4 @@
-import fastifyCors from '@fastify/cors';
+import { fastifyCors } from '@fastify/cors';
 import { FastifyPluginAsync } from 'fastify';
 
 import { AppIdentification, AuthTokenSubject } from '@graasp/sdk';

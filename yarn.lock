@@ -2015,9 +2015,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@github:graasp/graasp-sdk#add-alignment-enum":
-  version: 4.14.1
-  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=a1697ee9f52598686113f88db4ce53234b58f401"
+"@graasp/sdk@npm:4.15.0":
+  version: 4.15.0
+  resolution: "@graasp/sdk@npm:4.15.0"
   dependencies:
     "@faker-js/faker": "npm:8.4.1"
     filesize: "npm:10.1.2"
@@ -2026,16 +2026,16 @@ __metadata:
   peerDependencies:
     date-fns: ^3
     uuid: ^9 || ^10.0.0
-  checksum: 10/6809246c36999bcb3f79cb281043db0274e13807c4ba07094213d37a5a7b9dfb6d17851be3d3c81396eb654396c1a2302b10a712032ec0ea57b8848278f8fd70
+  checksum: 10/02bd822171627b980804d702ac772635ba7288e10da9f8e2cce47893b79c663c410c51e3152e527151449c20f902b08e518a0aac420e059b027e387fb0b6f9e4
   languageName: node
   linkType: hard
 
-"@graasp/translations@npm:1.28.2":
-  version: 1.28.2
-  resolution: "@graasp/translations@npm:1.28.2"
+"@graasp/translations@npm:1.30.3":
+  version: 1.30.3
+  resolution: "@graasp/translations@npm:1.30.3"
   peerDependencies:
     i18next: ^23.8.1
-  checksum: 10/db64e173beee149459955eed3435318efc0b1cdd3262bf49ae2077c88a932ae724043768f8739a06c256dfa15950159357c41ff9ac21bbb7bee76290be6bcd24
+  checksum: 10/4b1dce4a5dba01994607337698c9dd57d1c1d2bb82a8bb14b5bc8dc184376255e764891457310d3f030b8ac15fec1cda48cbbb427ba247f8c3fc1f30a96436da
   languageName: node
   linkType: hard
 
@@ -7363,8 +7363,8 @@ __metadata:
     "@fastify/view": "npm:7.4.1"
     "@fastify/websocket": "npm:7.2.0"
     "@graasp/etherpad-api": "npm:2.1.1"
-    "@graasp/sdk": "github:graasp/graasp-sdk#add-alignment-enum"
-    "@graasp/translations": "npm:1.28.2"
+    "@graasp/sdk": "npm:4.15.0"
+    "@graasp/translations": "npm:1.30.3"
     "@jest/globals": "npm:29.7.0"
     "@rapideditor/country-coder": "npm:5.2.2"
     "@sentry/node": "npm:7.116.0"

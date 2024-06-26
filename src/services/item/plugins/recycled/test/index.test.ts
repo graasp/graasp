@@ -1,5 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
-import qs from 'qs';
+import { stringify } from 'qs';
 import { In } from 'typeorm';
 import { v4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
@@ -150,7 +150,7 @@ describe('Recycle Bin Tests', () => {
         it('Successfully recycle many items', async () => {
           const res = await app.inject({
             method: HttpMethod.Post,
-            url: `/items/recycle?${qs.stringify({ id: itemIds }, { arrayFormat: 'repeat' })}`,
+            url: `/items/recycle?${stringify({ id: itemIds }, { arrayFormat: 'repeat' })}`,
           });
           expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
 
@@ -182,7 +182,7 @@ describe('Recycle Bin Tests', () => {
           const { item: errorItem } = await testUtils.saveRecycledItem(member);
           const res = await app.inject({
             method: HttpMethod.Post,
-            url: `/items/recycle?${qs.stringify(
+            url: `/items/recycle?${stringify(
               { id: [items.map(({ id }) => id), errorItem.id] },
               { arrayFormat: 'repeat' },
             )}`,
@@ -216,7 +216,7 @@ describe('Recycle Bin Tests', () => {
 
           const res = await app.inject({
             method: HttpMethod.Post,
-            url: `/items/recycle?${qs.stringify(
+            url: `/items/recycle?${stringify(
               { id: items.map(({ id }) => id) },
               { arrayFormat: 'repeat' },
             )}`,
@@ -227,7 +227,7 @@ describe('Recycle Bin Tests', () => {
         it('Bad request for invalid id', async () => {
           const res = await app.inject({
             method: HttpMethod.Post,
-            url: `/items/recycle?${qs.stringify(
+            url: `/items/recycle?${stringify(
               { id: ['invalid-id', v4()] },
               { arrayFormat: 'repeat' },
             )}`,
@@ -265,7 +265,7 @@ describe('Recycle Bin Tests', () => {
           const nonRecycledItemsCount = await testUtils.rawItemRepository.count();
           const response = await app.inject({
             method: HttpMethod.Post,
-            url: `${ITEMS_ROUTE_PREFIX}/restore?${qs.stringify(
+            url: `${ITEMS_ROUTE_PREFIX}/restore?${stringify(
               { id: itemIds },
               { arrayFormat: 'repeat' },
             )}`,
@@ -284,7 +284,7 @@ describe('Recycle Bin Tests', () => {
         it('Bad request for invalid id', async () => {
           const res = await app.inject({
             method: HttpMethod.Post,
-            url: `${ITEMS_ROUTE_PREFIX}/restore?${qs.stringify(
+            url: `${ITEMS_ROUTE_PREFIX}/restore?${stringify(
               { id: ['invalid-id', v4()] },
               { arrayFormat: 'repeat' },
             )}`,
@@ -297,7 +297,7 @@ describe('Recycle Bin Tests', () => {
           const sameId = v4();
           const res = await app.inject({
             method: HttpMethod.Post,
-            url: `${ITEMS_ROUTE_PREFIX}/restore?${qs.stringify(
+            url: `${ITEMS_ROUTE_PREFIX}/restore?${stringify(
               { id: [sameId, sameId] },
               { arrayFormat: 'repeat' },
             )}`,
@@ -309,7 +309,7 @@ describe('Recycle Bin Tests', () => {
         it('Bad request if submit too many ids', async () => {
           const res = await app.inject({
             method: HttpMethod.Post,
-            url: `${ITEMS_ROUTE_PREFIX}/restore?${qs.stringify(
+            url: `${ITEMS_ROUTE_PREFIX}/restore?${stringify(
               { id: Array.from({ length: MAX_TARGETS_FOR_MODIFY_REQUEST }, () => v4()) },
               { arrayFormat: 'repeat' },
             )}`,
@@ -330,7 +330,7 @@ describe('Recycle Bin Tests', () => {
 
           const res = await app.inject({
             method: HttpMethod.Post,
-            url: `${ITEMS_ROUTE_PREFIX}/restore?${qs.stringify(
+            url: `${ITEMS_ROUTE_PREFIX}/restore?${stringify(
               { id: [itemIds, item.id] },
               { arrayFormat: 'repeat' },
             )}`,
@@ -354,7 +354,7 @@ describe('Recycle Bin Tests', () => {
 
           const res = await app.inject({
             method: HttpMethod.Post,
-            url: `${ITEMS_ROUTE_PREFIX}/restore?${qs.stringify(
+            url: `${ITEMS_ROUTE_PREFIX}/restore?${stringify(
               { id: [itemIds, v4()] },
               { arrayFormat: 'repeat' },
             )}`,

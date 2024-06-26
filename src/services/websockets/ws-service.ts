@@ -1,4 +1,4 @@
-import WebSocket from 'ws';
+import { Data, WebSocket } from 'ws';
 
 import { FastifyBaseLogger } from 'fastify';
 
@@ -39,14 +39,14 @@ export class WebsocketService {
   // multi-instance channels broker reference (to send across servers cluster)
   private wsMultiBroker: MultiInstanceChannelsBroker;
   // parser function that converts raw client websocket data into JS
-  private parse: (data: WebSocket.Data) => GraaspWS.ClientMessage | undefined;
+  private parse: (data: Data) => GraaspWS.ClientMessage | undefined;
   // logger
   private logger: FastifyBaseLogger;
 
   constructor(
     wsChannels: WebSocketChannels,
     wsMultiBroker: MultiInstanceChannelsBroker,
-    parse: (data: WebSocket.Data) => GraaspWS.ClientMessage | undefined,
+    parse: (data: Data) => GraaspWS.ClientMessage | undefined,
     log: FastifyBaseLogger,
   ) {
     this.wsChannels = wsChannels;
@@ -139,7 +139,7 @@ export class WebsocketService {
    * @param member member performing the request
    * @param socket client socket
    */
-  handleRequest(data: WebSocket.Data, member: Actor, client: WebSocket): void {
+  handleRequest(data: Data, member: Actor, client: WebSocket): void {
     const request = this.parse(typeof data === 'string' ? data : data?.toString());
 
     // validation error, send bad request

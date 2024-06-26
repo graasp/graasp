@@ -61,8 +61,8 @@
     "@fastify/view": "7.4.1",
     "@fastify/websocket": "7.2.0",
     "@graasp/etherpad-api": "2.1.1",
-    "@graasp/sdk": "github:graasp/graasp-sdk#add-alignment-enum",
-    "@graasp/translations": "1.28.2",
+    "@graasp/sdk": "4.15.0",
+    "@graasp/translations": "1.30.3",
     "@rapideditor/country-coder": "5.2.2",
     "@sentry/node": "7.116.0",
     "@sentry/tracing": "7.114.0",
@@ -171,5 +171,5 @@
     "typescript": "5.3.3",
     "wait-for-expect": "3.0.2"
   },
-  "packageManager": "yarn@4.2.2"
+  "packageManager": "yarn@4.3.1"
 }

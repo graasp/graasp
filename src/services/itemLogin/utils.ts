@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+import { compare, hash } from 'bcrypt';
 
 import { ItemLoginSchemaType } from '@graasp/sdk';
 
@@ -8,12 +8,12 @@ const saltRounds = 10;
 
 // TODO: reuse from password plugin?
 export const encryptPassword = async (password: string): Promise<string> =>
-  bcrypt.hash(password, saltRounds);
+  hash(password, saltRounds);
 
 export const validatePassword = async (
   plainTextPassword: string,
   passwordHash: string,
-): Promise<boolean> => bcrypt.compare(plainTextPassword, passwordHash);
+): Promise<boolean> => compare(plainTextPassword, passwordHash);
 
 export const loginSchemaRequiresPassword = (loginSchema: ItemLoginSchemaType): boolean =>
   loginSchema === ItemLoginSchemaType.UsernameAndPassword ||

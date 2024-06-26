@@ -1,4 +1,4 @@
-import yazl from 'yazl';
+import { ZipFile } from 'yazl';
 
 import { FastifyInstance, FastifyReply } from 'fastify';
 
@@ -29,7 +29,7 @@ describe('ZIP routes tests', () => {
   describe('export', () => {
     it('Do not include hidden children', async () => {
       ({ app, actor } = await build());
-      const mock = jest.spyOn(yazl.ZipFile.prototype, 'addEmptyDirectory');
+      const mock = jest.spyOn(ZipFile.prototype, 'addEmptyDirectory');
       const { item } = await testUtils.saveItemAndMembership({
         member: actor,
       });

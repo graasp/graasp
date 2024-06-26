@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 
-import fastifyMultipart from '@fastify/multipart';
-import fastifyStatic from '@fastify/static';
+import { fastifyMultipart } from '@fastify/multipart';
+import { fastifyStatic } from '@fastify/static';
 import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 

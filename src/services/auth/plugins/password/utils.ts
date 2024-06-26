@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+import { compare, hash } from 'bcrypt';
 
 import { SALT_ROUNDS } from '../../../../utils/config';
 import { MemberPassword } from './entities/password';
@@ -9,9 +9,9 @@ export async function verifyCurrentPassword(
   password?: string,
 ) {
   /* verified: stores the output of bcrypt.compare().
-  bcrypt.compare() allows to compare the provided password with a stored hash. 
+  bcrypt.compare() allows to compare the provided password with a stored hash.
   It deduces the salt from the hash and is able to then hash the provided password correctly for comparison
-  if they match, verified is true 
+  if they match, verified is true
   if they do not match, verified is false
   */
   // if the member already has a password set: return verified
@@ -19,8 +19,7 @@ export async function verifyCurrentPassword(
     if (!password) {
       throw new PasswordNotDefined();
     }
-    const verified = bcrypt
-      .compare(password, memberPassword.password)
+    const verified = compare(password, memberPassword.password)
       .then((res) => res)
       .catch((err) => console.error(err.message));
     return verified;
@@ -36,16 +35,15 @@ export async function verifyCurrentPassword(
  * @returns A promise to be either resolved with the comparison result
  */
 export async function comparePasswords(password: string, hash: string): Promise<boolean> {
-  return bcrypt.compare(password, hash);
+  return compare(password, hash);
 }
 
 export async function encryptPassword(password: string) {
   /* encrypted: stores the output of bcrypt.hash().
-  bcrypt.hash() creates the salt and hashes the password. 
-  A new hash is created each time the function is run, regardless of the password being the same. 
+  bcrypt.hash() creates the salt and hashes the password.
+  A new hash is created each time the function is run, regardless of the password being the same.
   */
-  const encrypted = bcrypt
-    .hash(password, SALT_ROUNDS)
+  const encrypted = hash(password, SALT_ROUNDS)
     .then((hash) => hash)
     .catch((err) => {
       console.error(err.message);

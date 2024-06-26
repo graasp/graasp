@@ -1,13 +1,13 @@
 import fs, { existsSync } from 'fs';
 import { readFile } from 'fs/promises';
 import mime from 'mime-types';
-import mmm from 'mmmagic';
+import { MAGIC_MIME_TYPE, Magic } from 'mmmagic';
 import fetch from 'node-fetch';
 import path from 'path';
 import sanitize from 'sanitize-html';
 import { DataSource } from 'typeorm';
 import util from 'util';
-import yazl, { ZipFile } from 'yazl';
+import { ZipFile } from 'yazl';
 
 import { FastifyBaseLogger, FastifyReply } from 'fastify';
 
@@ -31,7 +31,7 @@ import {
 import { UnexpectedExportError } from './errors';
 import { buildTextContent } from './utils';
 
-const magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE);
+const magic = new Magic(MAGIC_MIME_TYPE);
 const asyncDetectFile = util.promisify(magic.detectFile.bind(magic));
 
 export class ImportExportService {
@@ -306,7 +306,7 @@ export class ImportExportService {
     { item, reply }: { item: Item; reply: FastifyReply },
   ) {
     // init archive
-    const archive = new yazl.ZipFile();
+    const archive = new ZipFile();
     archive.outputStream.on('error', function (err) {
       throw new UnexpectedExportError(err);
     });

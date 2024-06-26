@@ -4,7 +4,7 @@ import { lstat, mkdir, readdir } from 'fs/promises';
 import mime from 'mime';
 import path from 'path';
 import { pipeline } from 'stream/promises';
-import tmp from 'tmp-promise';
+import { dir } from 'tmp-promise';
 import { v4 } from 'uuid';
 
 import { MultipartFile } from '@fastify/multipart';
@@ -168,7 +168,7 @@ export abstract class HtmlService {
     log?: FastifyBaseLogger,
   ): Promise<Item> {
     const contentId = v4();
-    const tmpDir = await tmp.dir({ tmpdir: this.tempDir, unsafeCleanup: true });
+    const tmpDir = await dir({ tmpdir: this.tempDir, unsafeCleanup: true });
     const targetFolder = path.join(tmpDir.path, contentId);
     const remoteRootPath = this.buildRootPath(this.pathPrefix, contentId);
 

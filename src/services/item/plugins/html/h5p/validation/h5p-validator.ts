@@ -2,7 +2,7 @@ import { Ajv } from 'ajv';
 import fs from 'fs';
 import { readFile } from 'fs/promises';
 import path from 'path';
-import secureJSON from 'secure-json-parse';
+import { safeParse } from 'secure-json-parse';
 
 import { HtmlValidator } from '../../validator';
 import { H5PInvalidManifestError } from '../errors';
@@ -52,7 +52,7 @@ export class H5PValidator implements HtmlValidator {
 
     // Check if h5p.json manifest file has expected JSON structure
     const manifestJSON = await readFile(manifestPath, { encoding: 'utf-8' });
-    let manifest = secureJSON.safeParse(manifestJSON);
+    let manifest = safeParse(manifestJSON);
 
     if (manifest === null || !this.isValidManifest(manifest)) {
       const errors = this.isValidManifest.errors
