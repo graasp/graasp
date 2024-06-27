@@ -8,7 +8,7 @@ import { error } from '../../../../schemas/fluent-schema';
 // all other extra properties are filled by the backend.
 const strictUrlProperty = S.object()
   .additionalProperties(false)
-  .prop('url', S.string().format('url'))
+  .prop('url', S.string().format('uri-reference'))
   .required(['url']);
 
 // schema defining the properties that can be supplied on the "extra" for the link item on creation
@@ -30,7 +30,9 @@ export const updateExtraSchema = S.object()
   .required([ItemType.LINK]);
 
 export const getLinkMetadata = {
-  querystring: S.object().additionalProperties(false).prop('link', S.string().format('url')),
+  querystring: S.object()
+    .additionalProperties(false)
+    .prop('link', S.string().format('uri-reference')),
   response: {
     '2xx': S.object()
       .additionalProperties(false)

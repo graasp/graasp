@@ -3,7 +3,7 @@ import { stringify } from 'qs';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType, MAX_USERNAME_LENGTH } from '@graasp/sdk';
+import { HttpMethod, ItemType, MAX_USERNAME_LENGTH, MemberFactory } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
 import { AppDataSource } from '../../../plugins/datasource';
@@ -434,6 +434,28 @@ describe('Member routes tests', () => {
 
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(response.json().errors[0]).toEqual(new MemberNotFound(email));
+      });
+
+      /**
+       * Regression test for https://github.com/graasp/graasp/issues/1128
+       * `.swiss` extension did not pass the email regex validation and
+       * results were stripped out by AJV.
+       */
+      it('Returns emails with longer domains', async () => {
+        const member = await saveMember(MemberFactory({ email: 'bob@edu.swiss' }));
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: `/members/search?email=${member.email}`,
+        });
+        if (!member.email) {
+          throw new Error();
+        }
+
+        const m = response.json().data[member.email];
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        expect(m.name).toEqual(member.name);
+        expect(m.id).toEqual(member.id);
+        expect(m.email).toEqual(member.email);
       });
     });
   });
