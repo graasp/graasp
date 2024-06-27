@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import { sign } from 'jsonwebtoken';
 
 import { FastifyBaseLogger } from 'fastify';
 
@@ -40,10 +40,10 @@ export function generateAuthTokensPair(memberId: string): {
   refreshToken: string;
 } {
   const [authToken, refreshToken] = [
-    jwt.sign({ sub: memberId }, AUTH_TOKEN_JWT_SECRET, {
+    sign({ sub: memberId }, AUTH_TOKEN_JWT_SECRET, {
       expiresIn: AUTH_TOKEN_EXPIRATION_IN_MINUTES * 60,
     }),
-    jwt.sign({ sub: memberId }, REFRESH_TOKEN_JWT_SECRET, {
+    sign({ sub: memberId }, REFRESH_TOKEN_JWT_SECRET, {
       expiresIn: REFRESH_TOKEN_EXPIRATION_IN_MINUTES * 60,
     }),
   ];

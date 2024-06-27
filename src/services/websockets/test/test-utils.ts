@@ -3,12 +3,12 @@
  *
  * Test utility functions and configuration
  */
-import WebSocket from 'ws';
+import { Server, WebSocket } from 'ws';
 
 import { type FastifyInstance, fastify } from 'fastify';
 import fp from 'fastify-plugin';
 
-import { Websocket } from '@graasp/sdk';
+import { Websocket as GraaspWebsocket } from '@graasp/sdk';
 
 import { REDIS_HOST } from '../../../utils/config';
 import { AjvMessageSerializer } from '../message-serializer';
@@ -75,9 +75,9 @@ export function createWsChannels(
   heartbeatInterval: number = 30000,
 ): {
   channels: WebSocketChannels;
-  wss: WebSocket.Server;
+  wss: Server;
 } {
-  const server = new WebSocket.Server({ port: config.port });
+  const server = new Server({ port: config.port });
   const wsChannels = new WebSocketChannels(
     server,
     serverSerdes.serialize,
@@ -199,7 +199,7 @@ export async function createWsClients(
 export async function clientWait(
   client: WebSocket,
   numberMessages: number,
-): Promise<Websocket.ServerMessage | Array<Websocket.ServerMessage>> {
+): Promise<GraaspWebsocket.ServerMessage | Array<GraaspWebsocket.ServerMessage>> {
   return new Promise((resolve, reject) => {
     client.on('error', (err) => {
       reject(err);
@@ -213,7 +213,7 @@ export async function clientWait(
         else resolve(msg);
       });
     } else {
-      const buffer: Array<Websocket.ServerMessage> = [];
+      const buffer: Array<GraaspWebsocket.ServerMessage> = [];
       client.on('message', (data) => {
         const msg = clientSerdes.parse(data.toString());
         if (msg === undefined)
@@ -236,7 +236,7 @@ export async function clientWait(
 export async function clientsWait(
   clients: Array<WebSocket>,
   numberMessages: number,
-): Promise<Array<Websocket.ServerMessage | Array<Websocket.ServerMessage>>> {
+): Promise<Array<GraaspWebsocket.ServerMessage | Array<GraaspWebsocket.ServerMessage>>> {
   return Promise.all(clients.map((client) => clientWait(client, numberMessages)));
 }
 
@@ -245,7 +245,7 @@ export async function clientsWait(
  * @param client WebSocket client to send from
  * @param data ClientMessage to be sent
  */
-export function clientSend(client: WebSocket, data: Websocket.ClientMessage): void {
+export function clientSend(client: WebSocket, data: GraaspWebsocket.ClientMessage): void {
   client.send(clientSerdes.serialize(data));
 }
 
@@ -260,17 +260,17 @@ export async function expectClientSubscribe(
   channel: string,
 ): Promise<void> {
   const ack = clientWait(client, 1);
-  const req: Websocket.ClientMessage = {
-    realm: Websocket.Realms.Notif,
-    action: Websocket.ClientActions.Subscribe,
+  const req: GraaspWebsocket.ClientMessage = {
+    realm: GraaspWebsocket.Realms.Notif,
+    action: GraaspWebsocket.ClientActions.Subscribe,
     topic,
     channel,
   };
   clientSend(client, req);
   return expect(await ack).toStrictEqual({
-    realm: Websocket.Realms.Notif,
-    type: Websocket.ServerMessageTypes.Response,
-    status: Websocket.ResponseStatuses.Success,
+    realm: GraaspWebsocket.Realms.Notif,
+    type: GraaspWebsocket.ServerMessageTypes.Response,
+    status: GraaspWebsocket.ResponseStatuses.Success,
     req,
   });
 }

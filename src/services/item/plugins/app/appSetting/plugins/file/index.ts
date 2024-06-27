@@ -1,4 +1,4 @@
-import fastifyMultipart from '@fastify/multipart';
+import { fastifyMultipart } from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 
 import { HttpMethod, UUID } from '@graasp/sdk';

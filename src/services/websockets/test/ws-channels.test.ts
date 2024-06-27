@@ -8,7 +8,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import waitForExpect from 'wait-for-expect';
-import WebSocket, { CLOSED, OPEN } from 'ws';
+import { CLOSED, OPEN, WebSocket } from 'ws';
 
 import { createServerInfo } from '../message';
 import {

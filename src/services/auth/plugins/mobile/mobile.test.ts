@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker';
 import crypto from 'crypto';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
-import jwt from 'jsonwebtoken';
+import { sign } from 'jsonwebtoken';
 import fetch, { type Response } from 'node-fetch';
 import { v4 } from 'uuid';
 
@@ -408,7 +408,7 @@ describe('Mobile Endpoints', () => {
       // compute challenge from verifier
       const challenge = crypto.createHash('sha256').update(verifier).digest('hex');
 
-      const t = jwt.sign({ sub: member.id, challenge }, JWT_SECRET);
+      const t = sign({ sub: member.id, challenge }, JWT_SECRET);
 
       const response = await app.inject({
         method: HttpMethod.Post,
@@ -425,7 +425,7 @@ describe('Mobile Endpoints', () => {
 
     it('Fail to authenticate if verifier and challenge do not match', async () => {
       const member = await saveMember();
-      const t = jwt.sign({ sub: member.id }, JWT_SECRET);
+      const t = sign({ sub: member.id }, JWT_SECRET);
       const verifier = 'verifier';
       const response = await app.inject({
         method: HttpMethod.Post,
@@ -458,7 +458,7 @@ describe('Mobile Endpoints', () => {
       // compute challenge from verifier
       const challenge = crypto.createHash('sha256').update(verifier).digest('hex');
 
-      const t = jwt.sign({ sub: undefined, challenge }, JWT_SECRET);
+      const t = sign({ sub: undefined, challenge }, JWT_SECRET);
 
       const response = await app.inject({
         method: HttpMethod.Post,
@@ -477,7 +477,7 @@ describe('Mobile Endpoints', () => {
   describe('GET /m/auth/refresh', () => {
     it('Refresh tokens successfully', async () => {
       const member = await saveMember();
-      const t = jwt.sign({ sub: member.id }, REFRESH_TOKEN_JWT_SECRET);
+      const t = sign({ sub: member.id }, REFRESH_TOKEN_JWT_SECRET);
       const response = await app.inject({
         method: HttpMethod.Get,
         url: '/m/auth/refresh',
@@ -490,7 +490,7 @@ describe('Mobile Endpoints', () => {
       expect(response.json()).toHaveProperty('authToken');
     });
     it('Throw if token contains undefined member id', async () => {
-      const t = jwt.sign({ sub: undefined }, REFRESH_TOKEN_JWT_SECRET);
+      const t = sign({ sub: undefined }, REFRESH_TOKEN_JWT_SECRET);
       const response = await app.inject({
         method: HttpMethod.Get,
         url: '/m/auth/refresh',
@@ -502,7 +502,7 @@ describe('Mobile Endpoints', () => {
     });
     it('Fail if token is invalid', async () => {
       const member = await saveMember();
-      const t = jwt.sign({ sub: member.id }, 'INVALID_SECRET');
+      const t = sign({ sub: member.id }, 'INVALID_SECRET');
       const response = await app.inject({
         method: HttpMethod.Get,
         url: '/m/auth/refresh',
@@ -516,7 +516,7 @@ describe('Mobile Endpoints', () => {
   describe('GET /m/auth/web', () => {
     it('set cookie for valid token', async () => {
       const member = await saveMember();
-      const token = jwt.sign({ sub: member.id }, AUTH_TOKEN_JWT_SECRET);
+      const token = sign({ sub: member.id }, AUTH_TOKEN_JWT_SECRET);
       const response = await app.inject({
         method: HttpMethod.Get,
         url: '/m/auth/web',
@@ -526,7 +526,7 @@ describe('Mobile Endpoints', () => {
       expect(response.headers).toHaveProperty('set-cookie');
     });
     it('Throw if token contains undefined member id', async () => {
-      const token = jwt.sign({ sub: undefined }, AUTH_TOKEN_JWT_SECRET);
+      const token = sign({ sub: undefined }, AUTH_TOKEN_JWT_SECRET);
       const response = await app.inject({
         method: HttpMethod.Get,
         url: '/m/auth/web',
@@ -537,7 +537,7 @@ describe('Mobile Endpoints', () => {
     });
     it('Throw if token contains non-existent member', async () => {
       const memberId = v4();
-      const token = jwt.sign({ sub: memberId }, AUTH_TOKEN_JWT_SECRET);
+      const token = sign({ sub: memberId }, AUTH_TOKEN_JWT_SECRET);
       const response = await app.inject({
         method: HttpMethod.Get,
         url: '/m/auth/web',
@@ -548,7 +548,7 @@ describe('Mobile Endpoints', () => {
     });
     it('Fail if token is invalid', async () => {
       const member = await saveMember();
-      const token = jwt.sign({ sub: member.id }, 'INVALID_SECRET');
+      const token = sign({ sub: member.id }, 'INVALID_SECRET');
       const response = await app.inject({
         method: HttpMethod.Get,
         url: '/m/auth/web',

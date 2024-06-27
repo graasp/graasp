@@ -1,5 +1,5 @@
 import fs from 'fs';
-import fse from 'fs-extra';
+import { copy as fseCopy } from 'fs-extra';
 import { access, copyFile, mkdir, rm } from 'fs/promises';
 import path from 'path';
 import { pipeline } from 'stream/promises';
@@ -41,7 +41,7 @@ export class LocalFileRepository implements FileRepository {
     await mkdir(path.dirname(newFullPath), { recursive: true });
 
     // use fs-extra for recursive folder copy
-    await fse.copy(originalFullPath, newFullPath);
+    await fseCopy(originalFullPath, newFullPath);
 
     return newFolderPath;
   }

@@ -2,7 +2,7 @@ import FormData from 'form-data';
 import fs from 'fs';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import path from 'node:path';
-import qs from 'qs';
+import { stringify } from 'qs';
 import { v4 as uuidv4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
 
@@ -684,7 +684,7 @@ describe('Item routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/items?${qs.stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
+        url: `/items?${stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
       });
       expect(response.statusCode).toBe(StatusCodes.OK);
       expect(response.json().errors[0]).toMatchObject(new MemberCannotAccess(item.id));
@@ -704,10 +704,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items?${qs.stringify(
-            { id: items.map(({ id }) => id) },
-            { arrayFormat: 'repeat' },
-          )}`,
+          url: `/items?${stringify({ id: items.map(({ id }) => id) }, { arrayFormat: 'repeat' })}`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -724,7 +721,7 @@ describe('Item routes tests', () => {
         const { item } = await testUtils.saveItemAndMembership({ member: actor });
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items?${qs.stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
+          url: `/items?${stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
         });
 
         expectPackedItem(response.json().data[item.id], {
@@ -739,7 +736,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items?${qs.stringify({ id: [item.id, 'invalid-id'] }, { arrayFormat: 'repeat' })}`,
+          url: `/items?${stringify({ id: [item.id, 'invalid-id'] }, { arrayFormat: 'repeat' })}`,
         });
 
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
@@ -753,7 +750,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items?${qs.stringify(
+          url: `/items?${stringify(
             { id: [...items.map(({ id }) => id), missingId] },
             { arrayFormat: 'repeat' },
           )}`,
@@ -787,10 +784,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items?${qs.stringify(
-            { id: items.map(({ id }) => id) },
-            { arrayFormat: 'repeat' },
-          )}`,
+          url: `/items?${stringify({ id: items.map(({ id }) => id) }, { arrayFormat: 'repeat' })}`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -2281,7 +2275,7 @@ describe('Item routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: `/items?${qs.stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
+        url: `/items?${stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
         payload,
       });
 
@@ -2298,10 +2292,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items?${qs.stringify(
-            { id: items.map(({ id }) => id) },
-            { arrayFormat: 'repeat' },
-          )}`,
+          url: `/items?${stringify({ id: items.map(({ id }) => id) }, { arrayFormat: 'repeat' })}`,
           payload,
         });
 
@@ -2326,7 +2317,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items?${qs.stringify(
+          url: `/items?${stringify(
             { id: [...items.map(({ id }) => id), missingItemId] },
             { arrayFormat: 'repeat' },
           )}`,
@@ -2351,10 +2342,7 @@ describe('Item routes tests', () => {
       it('Bad Request for one invalid id', async () => {
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items?${qs.stringify(
-            { id: [uuidv4(), 'invalid-id'] },
-            { arrayFormat: 'repeat' },
-          )}`,
+          url: `/items?${stringify({ id: [uuidv4(), 'invalid-id'] }, { arrayFormat: 'repeat' })}`,
           payload,
         });
 
@@ -2372,10 +2360,7 @@ describe('Item routes tests', () => {
         };
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items?${qs.stringify(
-            { id: items.map(({ id }) => id) },
-            { arrayFormat: 'repeat' },
-          )}`,
+          url: `/items?${stringify({ id: items.map(({ id }) => id) }, { arrayFormat: 'repeat' })}`,
           payload: payload1,
         });
 
@@ -2394,7 +2379,7 @@ describe('Item routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Delete,
-        url: `/items?${qs.stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
+        url: `/items?${stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -2412,10 +2397,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: `/items?${qs.stringify(
-            { id: items.map(({ id }) => id) },
-            { arrayFormat: 'repeat' },
-          )}`,
+          url: `/items?${stringify({ id: items.map(({ id }) => id) }, { arrayFormat: 'repeat' })}`,
         });
 
         expect(response.json()).toEqual(items.map(({ id }) => id));
@@ -2434,7 +2416,7 @@ describe('Item routes tests', () => {
         await testUtils.saveItemAndMembership({ member: actor, parentItem: item1 });
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: `/items?${qs.stringify({ id: [item1.id] }, { arrayFormat: 'repeat' })}`,
+          url: `/items?${stringify({ id: [item1.id] }, { arrayFormat: 'repeat' })}`,
         });
 
         expect(response.json()).toEqual([item1.id]);
@@ -2461,7 +2443,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: `/items?${qs.stringify({ id: [parent.id] }, { arrayFormat: 'repeat' })}`,
+          url: `/items?${stringify({ id: [parent.id] }, { arrayFormat: 'repeat' })}`,
         });
 
         expect(response.json()).toEqual([parent.id]);
@@ -2486,7 +2468,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: `/items?${qs.stringify(
+          url: `/items?${stringify(
             { id: [...items.map(({ id }) => id), 'invalid-id'] },
             { arrayFormat: 'repeat' },
           )}`,
@@ -2504,7 +2486,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: `/items?${qs.stringify(
+          url: `/items?${stringify(
             { id: [...items.map(({ id }) => id), missingId] },
             { arrayFormat: 'repeat' },
           )}`,
@@ -2536,7 +2518,7 @@ describe('Item routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/move?${qs.stringify(
+        url: `/items/move?${stringify(
           { id: items.map(({ id }) => id) },
           { arrayFormat: 'repeat' },
         )}`,
@@ -2559,7 +2541,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/move?${qs.stringify(
+          url: `/items/move?${stringify(
             { id: items.map(({ id }) => id) },
             { arrayFormat: 'repeat' },
           )}`,
@@ -2594,7 +2576,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/move?${qs.stringify(
+          url: `/items/move?${stringify(
             { id: items.map(({ id }) => id) },
             { arrayFormat: 'repeat' },
           )}`,
@@ -2622,7 +2604,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/move?${qs.stringify({ id: item.id }, { arrayFormat: 'repeat' })}`,
+          url: `/items/move?${stringify({ id: item.id }, { arrayFormat: 'repeat' })}`,
           payload: {},
         });
 
@@ -2652,7 +2634,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/move?${qs.stringify({ id: item.id }, { arrayFormat: 'repeat' })}`,
+          url: `/items/move?${stringify({ id: item.id }, { arrayFormat: 'repeat' })}`,
           payload: { parentId: parentItem.id },
         });
 
@@ -2681,7 +2663,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/move?${qs.stringify(
+          url: `/items/move?${stringify(
             { id: items.map(({ id }) => id) },
             { arrayFormat: 'repeat' },
           )}`,
@@ -2708,7 +2690,7 @@ describe('Item routes tests', () => {
         const items = await saveNbOfItems({ nb: 3, actor, parentItem });
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/move?${qs.stringify(
+          url: `/items/move?${stringify(
             { id: [...items.map(({ id }) => id), 'invalid-id'] },
             { arrayFormat: 'repeat' },
           )}`,
@@ -2724,7 +2706,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/move?${qs.stringify(
+          url: `/items/move?${stringify(
             { id: [...items.map(({ id }) => id), uuidv4()] },
             { arrayFormat: 'repeat' },
           )}`,
@@ -2751,7 +2733,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/move?${qs.stringify(
+          url: `/items/move?${stringify(
             { id: items.map(({ id }) => id) },
             { arrayFormat: 'repeat' },
           )}`,
@@ -2785,7 +2767,7 @@ describe('Item routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/copy?${qs.stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
+        url: `/items/copy?${stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
         payload: {},
       });
 
@@ -2811,7 +2793,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/copy?${qs.stringify(
+          url: `/items/copy?${stringify(
             { id: items.map(({ id }) => id) },
             { arrayFormat: 'repeat' },
           )}`,
@@ -2870,7 +2852,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/copy?${qs.stringify(
+          url: `/items/copy?${stringify(
             { id: items.map(({ id }) => id) },
             { arrayFormat: 'repeat' },
           )}`,
@@ -2915,7 +2897,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/copy?${qs.stringify(
+          url: `/items/copy?${stringify(
             { id: items.map(({ id }) => id) },
             { arrayFormat: 'repeat' },
           )}`,
@@ -2987,7 +2969,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/copy?${qs.stringify({ id: item.id }, { arrayFormat: 'repeat' })}`,
+          url: `/items/copy?${stringify({ id: item.id }, { arrayFormat: 'repeat' })}`,
           payload: {},
         });
 
@@ -3013,7 +2995,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/copy?${qs.stringify(
+          url: `/items/copy?${stringify(
             { id: items.map(({ id }) => id) },
             { arrayFormat: 'repeat' },
           )}`,
@@ -3045,7 +3027,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/copy?${qs.stringify(
+          url: `/items/copy?${stringify(
             { id: [...items.map(({ id }) => id), 'invalid-id'] },
             { arrayFormat: 'repeat' },
           )}`,
@@ -3063,7 +3045,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/copy?${qs.stringify(
+          url: `/items/copy?${stringify(
             { id: [...items.map(({ id }) => id), missingId] },
             { arrayFormat: 'repeat' },
           )}`,
@@ -3092,7 +3074,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/copy?${qs.stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
+          url: `/items/copy?${stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
           payload: {
             parentId: parentItem.id,
           },
@@ -3113,7 +3095,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/copy?${qs.stringify(
+          url: `/items/copy?${stringify(
             { id: items.map(({ id }) => id) },
             { arrayFormat: 'repeat' },
           )}`,
@@ -3146,7 +3128,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/copy?${qs.stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
+          url: `/items/copy?${stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
           payload: {
             parentId: parentItem.id,
           },

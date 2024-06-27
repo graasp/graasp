@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import { sign } from 'jsonwebtoken';
 import uniqBy from 'lodash.uniqby';
 
 import { AuthTokenSubject, ItemType, PermissionLevel } from '@graasp/sdk';
@@ -57,7 +57,7 @@ export class AppService {
       appDetails,
     );
 
-    const token = jwt.sign({ sub: authTokenSubject }, APPS_JWT_SECRET, {
+    const token = sign({ sub: authTokenSubject }, APPS_JWT_SECRET, {
       expiresIn: `${this.jwtExpiration}m`,
     });
     return { token };

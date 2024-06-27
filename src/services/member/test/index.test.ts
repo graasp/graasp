@@ -1,5 +1,5 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
-import qs from 'qs';
+import { stringify } from 'qs';
 
 import { FastifyInstance } from 'fastify';
 
@@ -250,7 +250,7 @@ describe('Member routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/members?${qs.stringify(
+          url: `/members?${stringify(
             { id: members.map(({ id }) => id) },
             { arrayFormat: 'repeat' },
           )}`,
@@ -278,7 +278,7 @@ describe('Member routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/members?${qs.stringify(
+          url: `/members?${stringify(
             { id: members.map(({ id }) => id) },
             { arrayFormat: 'repeat' },
           )}`,
@@ -300,7 +300,7 @@ describe('Member routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/members?${qs.stringify({ id: members[0].id }, { arrayFormat: 'repeat' })}`,
+          url: `/members?${stringify({ id: members[0].id }, { arrayFormat: 'repeat' })}`,
         });
 
         if (!members[0].id) {
@@ -321,7 +321,7 @@ describe('Member routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/members?${qs.stringify(
+          url: `/members?${stringify(
             { id: [members[0].id, members[0].id] },
             { arrayFormat: 'repeat' },
           )}`,
@@ -336,7 +336,7 @@ describe('Member routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/members?${qs.stringify(
+          url: `/members?${stringify(
             { id: [members.map(({ id }) => id), 'invalid-id'] },
             { arrayFormat: 'repeat' },
           )}`,
@@ -353,7 +353,7 @@ describe('Member routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/members?${qs.stringify(
+          url: `/members?${stringify(
             { id: [memberId, ...members.map(({ id }) => id)] },
             { arrayFormat: 'repeat' },
           )}`,

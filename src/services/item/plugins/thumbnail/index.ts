@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 
-import fastifyMultipart from '@fastify/multipart';
+import { fastifyMultipart } from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 
 import { ThumbnailSizeType } from '@graasp/sdk';
