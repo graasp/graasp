@@ -6,7 +6,25 @@ import {
 
 import { NAME_REGEX, UUID_REGEX } from '../../schemas/global';
 
-const EMAIL_REGEX = '^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$';
+/**
+ * This allows email adresses that are structured as follows:
+ * - at least one of
+ *   - word character
+ *   - dash
+ *   - dot
+ * - the @ symbol
+ * - multiple times
+ *   - at least one of
+ *     - word cahracter
+ *     - dash
+ *   - a dot
+ * - a tld extension that is between 2 and 63 chars long
+ *
+ * The maximum length of the TLD is defined by https://www.rfc-editor.org/rfc/rfc1034
+ * and is 63 octets (chars)
+ *
+ */
+export const EMAIL_REGEX = '^[.-\\w]+@[.-\\w]+.[-\\w]{2,63}$';
 
 export default {
   $id: 'https://graasp.org/members/',
