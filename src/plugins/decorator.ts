@@ -39,7 +39,7 @@ const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
     }),
   );
 
-  fastify.decorate('members', { service: new MemberService() });
+  fastify.decorate('members', { service: new MemberService(fastify.mailer, fastify.log) });
 
   const thumbnailService = new ThumbnailService(fastify.files.service, true, 'thumbnails');
   fastify.decorate('thumbnails', { service: thumbnailService });

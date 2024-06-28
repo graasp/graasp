@@ -53,6 +53,13 @@ export const authenticatePasswordReset = fastifyPassport.authenticate(
 );
 
 /**
+ * JWT authentication for email change operation.
+ */
+export const authenticateEmailChange = fastifyPassport.authenticate(PassportStrategy.EmailChange, {
+  session: false,
+});
+
+/**
  * Refresh Token for mobile authentication
  */
 export const authenticateRefreshToken = fastifyPassport.authenticate(

@@ -16,6 +16,7 @@ import {
   LocalFileConfiguration,
   S3FileConfiguration,
 } from '../services/file/interfaces/configuration';
+import { notUndefined } from './assertions';
 
 enum Environment {
   production = 'production',
@@ -201,6 +202,13 @@ if (!PASSWORD_RESET_JWT_SECRET) {
 /** Password reset token expiration, in minutes */
 export const PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES: number =
   Number(process.env.PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES) || 1440;
+
+/** Email change token Secret */
+export const EMAIL_CHANGE_JWT_SECRET: string = notUndefined(process.env.EMAIL_CHANGE_JWT_SECRET);
+
+/** Email change token expiration, in minutes */
+export const EMAIL_CHANGE_JWT_EXPIRATION_IN_MINUTES: number =
+  Number(process.env.EMAIL_CHANGE_JWT_EXPIRATION_IN_MINUTES) || 1440;
 
 // Graasp mailer config
 if (

@@ -32,5 +32,12 @@
   "RESET_PASSWORD_TITLE": "Reset Password",
   "RESET_PASSWORD_TEXT": "You requested to reset your password. Click on the following button to set a new password.",
   "RESET_PASSWORD_BUTTON_TEXT": "Reset Password",
-  "RESET_PASSWORD_NOT_REQUESTED": "If you didn't request to reset your password, no further action is required."
+  "RESET_PASSWORD_NOT_REQUESTED": "If you didn't request to reset your password, no further action is required.",
+  "CHANGE_EMAIL_TITLE": "Change your email",
+  "CHANGE_EMAIL_TEXT": "You requested to change your email. Click on the following button to confirm the change.",
+  "CHANGE_EMAIL_BUTTON_TEXT": "Validate Email Change",
+  "CHANGE_EMAIL_NOT_REQUESTED": "If you didn't request this change, please ignore this email.",
+
+  "CONFIRM_CHANGE_EMAIL_TITLE": "Your email has been changed",
+  "CONFIRM_CHANGE_EMAIL_TEXT": "You requested to change your email to {{newEmail}}. Your email has been successfully updated."
 }

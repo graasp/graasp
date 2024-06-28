@@ -4,7 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import { sign, verify } from 'jsonwebtoken';
 import { v4 } from 'uuid';
 
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, PassportUser } from 'fastify';
 
 import { HttpMethod } from '@graasp/sdk';
 
@@ -12,6 +12,7 @@ import build, { clearDatabase } from '../../../../../test/app';
 import {
   APPS_JWT_SECRET,
   AUTH_TOKEN_JWT_SECRET,
+  EMAIL_CHANGE_JWT_SECRET,
   JWT_SECRET,
   PASSWORD_RESET_JWT_SECRET,
   REFRESH_TOKEN_JWT_SECRET,
@@ -25,6 +26,7 @@ import { saveMemberAndPassword } from '../password/test/fixtures/password';
 import { encryptPassword } from '../password/utils';
 import {
   authenticateAppsJWT,
+  authenticateEmailChange,
   authenticateJWTChallengeVerifier,
   authenticateMobileMagicLink,
   authenticatePassword,
@@ -385,6 +387,65 @@ describe('Passport Plugin', () => {
     });
     it('Valid JWT Member', async () => {
       handler.mockImplementation(({ user }) => expect(user.passwordResetRedisKey).toEqual(uuid));
+      const response = await app.inject({
+        path: MOCKED_ROUTE,
+        headers: { authorization: `Bearer ${token}` },
+      });
+      expect(handler).toHaveBeenCalledTimes(1);
+      expect(response.statusCode).toBe(StatusCodes.OK);
+    });
+  });
+  describe('authenticateEmailChange', () => {
+    let newEmail: string;
+    beforeEach(async () => {
+      preHandler.mockImplementation(authenticateEmailChange);
+      newEmail = faker.internet.email().toLowerCase();
+    });
+    it('Unauthenticated', async () => {
+      handler.mockImplementation(shouldNotBeCalled);
+      const response = await app.inject({ path: MOCKED_ROUTE });
+      expect(handler).toHaveBeenCalledTimes(0);
+      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    });
+    it('Unknown JWT uuid', async () => {
+      const token = sign({ uuid: v4(), oldEmail: 'abc', newEmail: 'def' }, EMAIL_CHANGE_JWT_SECRET);
+      handler.mockImplementation(shouldNotBeCalled);
+      const response = await app.inject({
+        path: MOCKED_ROUTE,
+        headers: { authorization: `Bearer ${token}` },
+      });
+      expect(handler).toHaveBeenCalledTimes(0);
+      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    });
+    it('Bad old email', async () => {
+      const token = sign({ uuid: member.id, oldEmail: 'abc', newEmail }, EMAIL_CHANGE_JWT_SECRET);
+      handler.mockImplementation(shouldNotBeCalled);
+      const response = await app.inject({
+        path: MOCKED_ROUTE,
+        headers: { authorization: `Bearer ${token}` },
+      });
+      expect(handler).toHaveBeenCalledTimes(0);
+      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    });
+    it('Invalid JWT', async () => {
+      const token = sign({ uuid: member.id, oldEmail: member.email, newEmail }, 'invalid');
+      handler.mockImplementation(shouldNotBeCalled);
+      const response = await app.inject({
+        path: MOCKED_ROUTE,
+        headers: { authorization: `Bearer ${token}` },
+      });
+      expect(handler).toHaveBeenCalledTimes(0);
+      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    });
+    it('Valid JWT Member', async () => {
+      const token = sign(
+        { uuid: member.id, oldEmail: member.email, newEmail },
+        EMAIL_CHANGE_JWT_SECRET,
+      );
+      handler.mockImplementation(({ user }: { user: PassportUser }) => {
+        expect(user.member).toEqual(member);
+        expect(user.emailChange?.newEmail).toEqual(newEmail);
+      });
       const response = await app.inject({
         path: MOCKED_ROUTE,
         headers: { authorization: `Bearer ${token}` },

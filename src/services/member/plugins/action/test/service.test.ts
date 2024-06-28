@@ -2,6 +2,7 @@ import { FastifyBaseLogger } from 'fastify';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { AppDataSource } from '../../../../../plugins/datasource';
+import { MailerDecoration } from '../../../../../plugins/mailer';
 import { UnauthorizedMember } from '../../../../../utils/errors';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { Action } from '../../../../action/entities/action';
@@ -19,7 +20,10 @@ const itemService = new ItemService(
   {} as unknown as ThumbnailService,
   {} as unknown as FastifyBaseLogger,
 );
-const memberService = new MemberService();
+const memberService = new MemberService(
+  {} as unknown as MailerDecoration,
+  {} as unknown as FastifyBaseLogger,
+);
 
 const actionService = new ActionService(itemService, memberService);
 const service = new ActionMemberService(actionService);

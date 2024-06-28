@@ -16,6 +16,7 @@ import {
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
 import { SHORT_TOKEN_PARAM, TOKEN_PARAM } from './constants';
 import { PassportStrategy } from './strategies';
+import emailChangeStrategy from './strategies/emailChange';
 import jwtStrategy from './strategies/jwt';
 import jwtAppsStrategy from './strategies/jwtApps';
 import jwtChallengeVerifierStrategy from './strategies/jwtChallengeVerifier';
@@ -81,6 +82,7 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
 
   //-- JWT Strategies --//
   passwordResetStrategy(fastifyPassport, memberPasswordService);
+  emailChangeStrategy(fastifyPassport, memberRepository);
   jwtChallengeVerifierStrategy(fastifyPassport, memberRepository, {
     propagateError: true,
   });

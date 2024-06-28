@@ -120,6 +120,9 @@ declare module 'fastify' {
   interface PassportUser {
     member?: Member;
     passwordResetRedisKey?: string; // Used for Password Reset
+    emailChange?: {
+      newEmail: string;
+    }; // Used for Email modification
     app?: {
       // Used for App Authentication
       item: Item;
