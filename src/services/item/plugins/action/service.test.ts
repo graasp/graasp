@@ -12,6 +12,7 @@ import {
 
 import build, { clearDatabase } from '../../../../../test/app';
 import { AppDataSource } from '../../../../plugins/datasource';
+import { MailerDecoration } from '../../../../plugins/mailer';
 import { MemberCannotAccess, UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { Action } from '../../../action/entities/action';
@@ -32,7 +33,10 @@ const itemService = new ItemService(
   {} as unknown as ThumbnailService,
   {} as unknown as FastifyBaseLogger,
 );
-const memberService = new MemberService();
+const memberService = new MemberService(
+  {} as unknown as MailerDecoration,
+  {} as unknown as FastifyBaseLogger,
+);
 const service = new ActionItemService(
   new ActionService(itemService, memberService),
   itemService,

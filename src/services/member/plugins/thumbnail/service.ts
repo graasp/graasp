@@ -20,7 +20,7 @@ export class MemberThumbnailService {
     await this.thumbnailService.upload(actor, actor.id, file);
 
     // update item that should have thumbnail
-    await this.memberService.patch(actor, repositories, actor.id, {
+    await this.memberService.patch(repositories, actor.id, {
       extra: { hasAvatar: true },
     });
   }

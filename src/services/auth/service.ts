@@ -29,7 +29,7 @@ export class AuthService {
   log: FastifyBaseLogger;
   mailer: MailerDecoration;
 
-  constructor(mailer, log) {
+  constructor(mailer: MailerDecoration, log: FastifyBaseLogger) {
     this.mailer = mailer;
     this.log = log;
   }
@@ -120,6 +120,6 @@ export class AuthService {
   };
 
   async validateMemberId(repositories: Repositories, memberId: string): Promise<boolean> {
-    return (await repositories.memberRepository.get(memberId)) !== undefined;
+    return !!(await repositories.memberRepository.get(memberId));
   }
 }

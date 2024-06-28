@@ -4,6 +4,7 @@ import { ActionFactory, MemberFactory } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
 import { AppDataSource } from '../../../plugins/datasource';
+import { MailerDecoration } from '../../../plugins/mailer';
 import { buildRepositories } from '../../../utils/repositories';
 import { ItemService } from '../../item/service';
 import { MemberService } from '../../member/service';
@@ -16,7 +17,7 @@ jest.mock('../../../plugins/datasource');
 
 const service = new ActionService(
   new ItemService({} as unknown as ThumbnailService, {} as unknown as FastifyBaseLogger),
-  new MemberService(),
+  new MemberService({} as unknown as MailerDecoration, {} as unknown as FastifyBaseLogger),
 );
 const rawRepository = AppDataSource.getRepository(Action);
 

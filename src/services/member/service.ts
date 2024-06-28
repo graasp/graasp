@@ -1,16 +1,39 @@
+import { sign as jwtSign } from 'jsonwebtoken';
+
+import { FastifyBaseLogger } from 'fastify';
+
 import { UUID } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
+import { MailerDecoration } from '../../plugins/mailer';
+import { MAIL } from '../../plugins/mailer/langs/constants';
+import {
+  ACCOUNT_HOST,
+  EMAIL_CHANGE_JWT_EXPIRATION_IN_MINUTES,
+  EMAIL_CHANGE_JWT_SECRET,
+} from '../../utils/config';
 import { CannotModifyOtherMembers, MemberAlreadySignedUp } from '../../utils/errors';
 import HookManager from '../../utils/hook';
 import { Repositories } from '../../utils/repositories';
+import { SHORT_TOKEN_PARAM } from '../auth/plugins/passport';
 import { Actor, Member } from './entities/member';
 
 export class MemberService {
   hooks = new HookManager();
+  private readonly mailer: MailerDecoration;
+  private readonly log: FastifyBaseLogger;
+
+  constructor(mailer: MailerDecoration, log: FastifyBaseLogger) {
+    this.mailer = mailer;
+    this.log = log;
+  }
 
   async get(actor: Actor, { memberRepository }: Repositories, id: string) {
     return memberRepository.get(id);
+  }
+
+  async getByEmail({ memberRepository }: Repositories, email: string) {
+    return await memberRepository.getByEmail(email);
   }
 
   async getMany(actor: Actor, { memberRepository }: Repositories, ids: string[]) {
@@ -59,15 +82,10 @@ export class MemberService {
   }
 
   async patch(
-    actor: Actor,
     { memberRepository }: Repositories,
     id: UUID,
     body: Partial<Pick<Member, 'extra' | 'email' | 'name' | 'enableSaveActions'>>,
   ) {
-    if (!actor || actor.id !== id) {
-      throw new CannotModifyOtherMembers(id);
-    }
-
     return memberRepository.patch(id, {
       name: body.name,
       email: body.email,
@@ -82,5 +100,53 @@ export class MemberService {
     }
 
     return memberRepository.deleteOne(id);
+  }
+
+  createEmailChangeRequest(member: Member, newEmail: string) {
+    const payload = { uuid: member.id, oldEmail: member.email, newEmail };
+    return jwtSign(payload, EMAIL_CHANGE_JWT_SECRET, {
+      expiresIn: `${EMAIL_CHANGE_JWT_EXPIRATION_IN_MINUTES}m`,
+    });
+  }
+
+  /**
+   * Send an email to the member with a link to reset their password.
+   * The link targets to a frontend endpoint that will handle the password reset.
+   * @param email The email of destination
+   * @param token The JSON Web Token to reset the password.
+   * @param lang The language to use for the email.
+   * @returns void
+   */
+  sendEmailChangeRequest(newEmail: string, token: string, lang: string): void {
+    const translated = this.mailer.translate(lang);
+    const subject = translated(MAIL.CHANGE_EMAIL_TITLE);
+    const destination = new URL('/email/change', ACCOUNT_HOST.url);
+    destination.searchParams.set(SHORT_TOKEN_PARAM, token);
+    const link = destination.toString();
+
+    const html = `
+      ${this.mailer.buildText(translated(MAIL.CHANGE_EMAIL_TEXT))}
+      ${this.mailer.buildButton(link, translated(MAIL.CHANGE_EMAIL_BUTTON_TEXT))}
+      ${this.mailer.buildText(translated(MAIL.CHANGE_EMAIL_NOT_REQUESTED))}`;
+
+    const footer = this.mailer.buildFooter(lang);
+
+    // don't wait for mailer's response; log error and link if it fails.
+    this.mailer
+      .sendEmail(subject, newEmail, link, html, footer)
+      .catch((err) => this.log.warn(err, `mailer failed. link: ${link}`));
+  }
+
+  mailConfirmEmailChangeRequest(oldEmail: string, newEmail: string, lang: string) {
+    const translated = this.mailer.translate(lang);
+    const subject = translated(MAIL.CONFIRM_CHANGE_EMAIL_TITLE);
+    const text = translated(MAIL.CONFIRM_CHANGE_EMAIL_TEXT, { newEmail });
+
+    const footer = this.mailer.buildFooter(lang);
+
+    // don't wait for mailer's response; log error and link if it fails.
+    this.mailer
+      .sendEmail(subject, oldEmail, text, text, footer)
+      .catch((err) => this.log.warn(err, `mailer failed.`));
   }
 }

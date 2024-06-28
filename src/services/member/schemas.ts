@@ -1,3 +1,7 @@
+import { StatusCodes } from 'http-status-codes';
+
+import { FastifySchema } from 'fastify';
+
 import {
   MAX_TARGETS_FOR_READ_REQUEST,
   MAX_USERNAME_LENGTH,
@@ -216,5 +220,27 @@ export const deleteOne = {
   params: { $ref: 'https://graasp.org/#/definitions/idParam' },
   response: {
     200: { $ref: 'https://graasp.org/members/#/definitions/member' },
+  },
+};
+
+export const postChangeEmail: FastifySchema = {
+  body: {
+    type: 'object',
+    properties: {
+      email: { type: 'string', format: 'email' },
+    },
+    additionalProperties: false,
+  },
+  response: {
+    [StatusCodes.NO_CONTENT]: {},
+    [StatusCodes.UNAUTHORIZED]: {},
+  },
+};
+
+export const patchChangeEmail: FastifySchema = {
+  response: {
+    [StatusCodes.NO_CONTENT]: {},
+    [StatusCodes.CONFLICT]: {},
+    [StatusCodes.UNAUTHORIZED]: {},
   },
 };
