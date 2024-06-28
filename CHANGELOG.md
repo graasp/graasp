@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.43.0](https://github.com/graasp/graasp/compare/v1.42.1...v1.43.0) (2024-06-28)
+
+
+### Features
+
+* member edit email ([#1122](https://github.com/graasp/graasp/issues/1122)) ([39e5d7b](https://github.com/graasp/graasp/commit/39e5d7b4af9abc8e56ee8cd5166f005fd4dee85b))
+
+
+### Bug Fixes
+
+* add alignment setting ([#1124](https://github.com/graasp/graasp/issues/1124)) ([7b428b4](https://github.com/graasp/graasp/commit/7b428b414baa6edec7271912572ea1ba2f4d9d82))
+* email regex for .swiss emails ([#1129](https://github.com/graasp/graasp/issues/1129)) ([eef770c](https://github.com/graasp/graasp/commit/eef770c8c6a5bef45f33477df3ed9dcfcedad24f))
+* eslint warnings ([#1126](https://github.com/graasp/graasp/issues/1126)) ([79cadc3](https://github.com/graasp/graasp/commit/79cadc3ddd560744a0d0a96181e9cb0ab01d4a34))
+* update translations ([#1120](https://github.com/graasp/graasp/issues/1120)) ([869e727](https://github.com/graasp/graasp/commit/869e727809c343885544014fc6ee20c5dab77a44))
+
 ## [1.42.1](https://github.com/graasp/graasp/compare/v1.42.0...v1.42.1) (2024-06-13)
 
 
