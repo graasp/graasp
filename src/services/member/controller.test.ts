@@ -81,7 +81,7 @@ describe('Member Controller', () => {
         url: '/members/current/email/change',
         body: { email: member.email },
       });
-      expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
+      expect(response.statusCode).toBe(StatusCodes.CONFLICT);
       expect(mockSendEmail).not.toHaveBeenCalled();
       // Email didn't change
       const rawMember = await memberRawRepository.findOneBy({ id: member.id });
