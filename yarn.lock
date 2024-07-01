@@ -1897,13 +1897,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/passport@npm:2.4.0":
-  version: 2.4.0
-  resolution: "@fastify/passport@npm:2.4.0"
+"@fastify/passport@npm:2.5.0":
+  version: 2.5.0
+  resolution: "@fastify/passport@npm:2.5.0"
   dependencies:
     "@fastify/flash": "npm:^5.0.0"
     fastify-plugin: "npm:^4.0.0"
-  checksum: 10/236cf4a2045a065d8b3e41af7cee933c96cbd6df86bed32583ae5ea4ae2fea6124e3eff80a3471f6768c947fba80578c9ba43e44dfeeafd57e897f7515650b3c
+  checksum: 10/769d0ac4dda06e845b47893ddfcc452231390d74f202f724a76392ed9433325371d5d995bc316d073918c977a7da72f7c518e6fb4682339e6ed4e609d13669ec
   languageName: node
   linkType: hard
 
@@ -7425,7 +7425,7 @@ __metadata:
     "@fastify/forwarded": "npm:2.2.0"
     "@fastify/helmet": "npm:11.1.1"
     "@fastify/multipart": "npm:7.7.3"
-    "@fastify/passport": "npm:2.4.0"
+    "@fastify/passport": "npm:2.5.0"
     "@fastify/secure-session": "npm:7.5.1"
     "@fastify/static": "npm:6.12.0"
     "@fastify/view": "npm:7.4.1"
