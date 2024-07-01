@@ -39,7 +39,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     limits: {
       // fieldNameSize: 0,             // Max field name size in bytes (Default: 100 bytes).
       // fieldSize: 1000000,           // Max field value size in bytes (Default: 1MB).
-      fields: 5, // Max number of non-file fields (Default: Infinity).
+      fields: 0, // Max number of non-file fields (Default: Infinity).
       // allow some fields for app data and app setting
       fileSize: maxFileSize, // For multipart forms, the max file size (Default: Infinity).
       files: uploadMaxFileNb, // Max number of file fields (Default: Infinity).

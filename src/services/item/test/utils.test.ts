@@ -1,63 +1,64 @@
-import { Item } from '../entities/Item';
+import { ItemType } from '@graasp/sdk';
+
+import { FolderItem, Item } from '../entities/Item';
 import { sortChildrenForTreeWith } from '../utils';
 
+const parentItem = {
+  id: 'parent',
+  path: `parent`,
+  createdAt: new Date(),
+  type: ItemType.FOLDER,
+  order: 1,
+} as unknown as FolderItem;
 const a = {
   id: 'a',
+  path: `parent.a`,
   createdAt: new Date(),
+  order: 1,
+  type: ItemType.FOLDER,
 } as unknown as Item;
 const b = {
   id: 'b',
+  path: `parent.b`,
+  type: ItemType.FOLDER,
   createdAt: new Date(Date.now() + 1),
+  order: 2,
 } as unknown as Item;
 const c = {
   id: 'c',
+  path: `parent.c`,
+  type: ItemType.FOLDER,
   createdAt: new Date(Date.now() + 2),
+  order: 3,
 } as unknown as Item;
 const d = {
   id: 'd',
+  path: `parent.c.d`,
+  type: ItemType.FOLDER,
   createdAt: new Date(Date.now() + 3),
+  order: 1,
 } as unknown as Item;
 const e = {
   id: 'e',
+  type: ItemType.FOLDER,
+  path: `parent.a.e`,
   createdAt: new Date(Date.now() + 4),
+  order: 1,
 } as unknown as Item;
 const f = {
   id: 'f',
+  type: ItemType.FOLDER,
+  path: `parent.a.f`,
   createdAt: new Date(Date.now() + 5),
+  order: 3,
 } as unknown as Item;
 
-const items = [a, b, c, d, e, f];
+const items: Item[] = [a, b, c, d, e, f];
 
 describe('sortChildrenForTreeWith', () => {
-  it('Order correctly with all items in order list', () => {
+  it('Order correctly with all items in order', () => {
     const result = [a, e, f, b, c, d];
-    const order = result.map(({ id }) => id);
-    const copy = [...items];
-    copy.sort(sortChildrenForTreeWith(order));
-
-    expect(copy).toEqual(result);
-  });
-  it('Order correctly with some items missing in order list', () => {
-    const result = [e, b, f, d];
-    const order = result.map(({ id }) => id);
-    const copy = [...items];
-    copy.sort(sortChildrenForTreeWith(order));
-
-    expect(copy).toEqual([...result, a, c]);
-  });
-  it('Order correctly with empty order list', () => {
-    const result = [...items];
-    items.sort(sortChildrenForTreeWith([]));
-
-    expect(items).toEqual(result);
-  });
-  it('Order correctly with non existing items in order list', () => {
-    const result = [e, b, f, d];
-    const order = result.map(({ id }) => id);
-    const orderWithRandomIds = ['x', ...order, 'y'];
-    const copy = [...items];
-    copy.sort(sortChildrenForTreeWith(orderWithRandomIds));
-
-    expect(copy).toEqual([...result, a, c]);
+    const sorted = sortChildrenForTreeWith(items, parentItem);
+    expect(sorted).toEqual(result);
   });
 });

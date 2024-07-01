@@ -770,7 +770,6 @@ export class ItemService {
   async rescaleOrder(member: Member, repositories: Repositories, item: Item) {
     const parentId = getParentFromPath(item.path);
     if (parentId) {
-      // TODO: get siblings!!!!!!!
       const parentItem = await this.get(member, repositories, parentId);
       await repositories.itemRepository.rescaleOrder(parentItem);
     }

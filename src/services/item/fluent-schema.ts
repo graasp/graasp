@@ -316,10 +316,10 @@ export const reorder = {
   params: S.object().prop('id', uuid),
   body: S.object().additionalProperties(false).prop('previousItemId', uuid),
 
-  // response: {
-  //   202: S.array().items(uuid), // ids > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE
-  //   '4xx': error,
-  // },
+  response: {
+    200: S.array().items(packedItem),
+    '4xx': error,
+  },
 };
 
 export const deleteMany = {
@@ -332,22 +332,12 @@ export const deleteMany = {
   },
 };
 
-// const moveOne = {
-//   params: idParam,
-//   body: S.object().additionalProperties(false).prop('parentId', uuid),
-// };
-
 export const moveMany = {
   querystring: S.object()
     .prop('id', S.array().maxItems(MAX_TARGETS_FOR_MODIFY_REQUEST))
     .extend(idsQuery),
   body: S.object().additionalProperties(false).prop('parentId', uuid),
 };
-
-// const copyOne = {
-//   params: idParam,
-//   body: S.object().additionalProperties(false).prop('parentId', uuid),
-// };
 
 export const copyMany = {
   querystring: S.object()

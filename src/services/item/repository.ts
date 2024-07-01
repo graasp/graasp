@@ -17,6 +17,7 @@ import {
 
 import { AppDataSource } from '../../plugins/datasource';
 import {
+  CannotReorderOneItem,
   HierarchyTooDeep,
   InvalidMoveTarget,
   ItemNotFolder,
@@ -716,9 +717,9 @@ export class ItemRepository {
   async reorder(item: Item, previousItemId?: string) {
     const ids = getIdsFromPath(item.path);
 
-    // TODO !!!!!!!!!!!
+    // cannot reorder among only one item
     if (ids.length <= 1) {
-      throw new Error('no parent');
+      throw new CannotReorderOneItem(item.id);
     }
 
     const parentPath = buildPathFromIds(...ids.slice(0, -1));
@@ -741,11 +742,11 @@ export class ItemRepository {
   async rescaleOrder(parentItem: Item) {
     const children = await this.getChildren(parentItem, { ordered: true }, { withOrder: true });
 
-    if (!children.length) {
+    // no need to rescale for less than 2 items
+    if (children.length < 2) {
       return;
     }
 
-    // TODO: TO MOVE !!!!
     const minInterval = (arr) =>
       Math.min(...arr.slice(1).map((val, key) => Math.abs(val - arr[key])));
     const min = minInterval(children.map(({ order }) => order));
