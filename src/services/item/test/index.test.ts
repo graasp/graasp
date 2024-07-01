@@ -346,6 +346,26 @@ describe('Item routes tests', () => {
         expect(await AppDataSource.getRepository(Item).count()).toEqual(1);
       });
 
+      it('Create successfully with previous item id', async () => {
+        const member = await saveMember();
+        const payload = FolderItemFactory();
+        const { item: parentItem } = await testUtils.saveItemAndMembership({ member });
+        const previousItem = await testUtils.saveItem({ parentItem, order: 1 });
+        const afterItem = await testUtils.saveItem({ parentItem, order: 2 });
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `/items`,
+          query: { parentId: parentItem.id, previousItemId: previousItem.id },
+          payload,
+        });
+
+        const newItem = response.json();
+        expectItem(newItem, payload, actor);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        await testUtils.expectOrder(newItem.id, previousItem.id, afterItem.id);
+      });
+
       it('Throw if geolocation is partial', async () => {
         const payload = FolderItemFactory();
         const response = await app.inject({
