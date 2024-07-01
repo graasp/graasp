@@ -7,7 +7,7 @@
   "SIGN_UP_BUTTON_TEXT": "يسجل",
   "SIGN_IN_TEXT": "لقد طلبت منا أن نرسل إليك رابطًا سحريًا لتسجيل الدخول بسرعة إلى حسابك. هنا تذهب:",
   "SIGN_IN_NOT_REQUESTED": "إذا لم تكن قد طلبت الارتباط، فلا يلزم اتخاذ أي إجراء آخر. ستنتهي صلاحيته قريبًا، لا تقلق، حسابك وبياناتك آمنة.",
-  "EXPORT_ACTIONS_TEXT": "لقد طلبت تنزيل الإجراءات من العنصر {{itemName}}، إليك الرابط لتنزيل الملفات. سيكون متاحًا لمدة {{days}} يوم",
+  "EXPORT_ACTIONS_TEXT": "لقد طلبت تنزيل الإجراءات من العنصر {{itemName}} كملفات {{exportFormat}}، إليك الرابط لتنزيل الملفات. سيكون متاحًا لمدة {{days}} يوم",
   "EXPORT_ACTIONS_BUTTON_TEXT": "تحميل",
   "SIGN_IN_TITLE": "رابط تسجيل الدخول",
   "SIGN_UP_TITLE": "يسجل",
@@ -29,13 +29,14 @@
   "EXPORT_MEMBER_DATA_TEXT": "لقد طلبت تنزيل جميع بياناتك، إليك رابط تنزيل الأرشيف. سيكون متاحًا لمدة {{days}} يوم",
   "EXPORT_MEMBER_DATA_TITLE": "قم بتنزيل بياناتك",
   "EXPORT_MEMBER_DATA_BUTTON_TEXT": "تحميل",
-  "USER_AGREEMENTS_MAIL_TEXT": "* بالنقر على <strong>{{signUpButtonText}}</strong>، فإنك توافق على <a href=\"{{graaspLandingPageOrigin}}/terms\">شروط الخدمة</a> و<a href=\"{ {graaspLandingPageOrigin}}/privacy\">سياسة الخصوصية</a>.",
   "RESET_PASSWORD_TITLE": "إعادة تعيين كلمة المرور",
   "RESET_PASSWORD_TEXT": "لقد طلبت إعادة تعيين كلمة المرور الخاصة بك. انقر على الزر التالي لإعادة تعيين كلمة المرور الخاصة بك.",
   "RESET_PASSWORD_BUTTON_TEXT": "إعادة تعيين كلمة المرور",
   "RESET_PASSWORD_NOT_REQUESTED": "إذا لم تكن قد طلبت إعادة تعيين كلمة المرور، فلا يلزم اتخاذ أي إجراء آخر. ستنتهي صلاحيته قريبًا، لا تقلق، حسابك وبياناتك آمنة.",
-  "RESET_PASSWORD_NOT_REQUESTED": "إذا لم تكن قد طلبت إعادة تعيين كلمة المرور، فلا يلزم اتخاذ أي إجراء آخر. ستنتهي صلاحيته قريبًا، لا تقلق، حسابك وبياناتك آمنة.",
-  "EXPORT_MEMBER_DATA_TEXT": "لقد طلبت تنزيل جميع بياناتك، إليك رابط تنزيل الأرشيف. سيكون متاحًا لمدة {{days}} يوم",
-  "EXPORT_MEMBER_DATA_TITLE": "قم بتنزيل بياناتك",
-  "EXPORT_MEMBER_DATA_BUTTON_TEXT": "تحميل"
+  "CHANGE_EMAIL_TITLE": "قم بتغيير بريدك الإلكتروني",
+  "CHANGE_EMAIL_TEXT": "لقد طلبت تغيير البريد الإلكتروني الخاص بك. انقر على الزر التالي لتأكيد التغيير.",
+  "CHANGE_EMAIL_BUTTON_TEXT": "التحقق من صحة تغيير البريد الإلكتروني",
+  "CHANGE_EMAIL_NOT_REQUESTED": "إذا لم تطلب هذا التغيير، فيرجى تجاهل هذه الرسالة الإلكترونية.",
+  "CONFIRM_CHANGE_EMAIL_TITLE": "لقد تم تغيير بريدك الإلكتروني",
+  "CONFIRM_CHANGE_EMAIL_TEXT": "لقد طلبت تغيير بريدك الإلكتروني إلى {{newEmail}}. لقد تم تحديث بريدك الإلكتروني بنجاح."
 }
