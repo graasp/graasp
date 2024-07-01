@@ -7,7 +7,7 @@
   "SIGN_UP_BUTTON_TEXT": "Registrati",
   "SIGN_IN_TEXT": "Ci hai chiesto di inviarti un link magico per accedere rapidamente al tuo account. Eccolo qua:",
   "SIGN_IN_NOT_REQUESTED": "Se non hai richiesto il link, non sono necessarie ulteriori azioni. Scadrà presto, non preoccuparti, il tuo account e i tuoi dati sono al sicuro.",
-  "EXPORT_ACTIONS_TEXT": "Hai richiesto di scaricare le azioni dell'elemento {{itemName}}, ecco il link per scaricare i file. Sarà disponibile per {{days}} giorni",
+  "EXPORT_ACTIONS_TEXT": "Hai richiesto di scaricare le azioni dall'elemento {{itemName}} come file {{exportFormat}}, ecco il collegamento per scaricare i file. Sarà disponibile per {{days}} giorni",
   "EXPORT_ACTIONS_BUTTON_TEXT": "Scarica",
   "SIGN_IN_TITLE": "Link di accesso",
   "SIGN_UP_TITLE": "Registrati",
@@ -26,8 +26,17 @@
   "FOOTER": "Hai ricevuto questa email a causa del tuo account su <a href=\"https://graasp.org\">Graasp</a>",
   "POWERED_BY": "Fornito da <a href=\"https://graasp.org\">Graasp</a>.",
   "USER_AGREEMENTS_MAIL_TEXT": "* Facendo clic su <strong>{{signUpButtonText}}</strong>, accetti i <a href=\"{{graaspLandingPageOrigin}}/terms\">termini di servizio</a> e i <a href=\"{ {graaspLandingPageOrigin}}/privacy\">informativa sulla privacy</a>.",
+  "EXPORT_MEMBER_DATA_TEXT": "Hai richiesto di scaricare tutti i tuoi dati, ecco il link per scaricare l'archivio. Sarà disponibile per {{days}} giorni",
+  "EXPORT_MEMBER_DATA_TITLE": "Scarica i tuoi dati",
+  "EXPORT_MEMBER_DATA_BUTTON_TEXT": "Scaricamento",
   "RESET_PASSWORD_TITLE": "Reimposta la password",
   "RESET_PASSWORD_TEXT": "Hai richiesto di reimpostare la tua password. Clicca sul bottone sottostante per completare il processo.",
   "RESET_PASSWORD_BUTTON_TEXT": "Reimposta la password",
-  "RESET_PASSWORD_NOT_REQUESTED": "Se non hai richiesto la reimpostazione della password, non sono necessarie ulteriori azioni. Il link scadrà presto."
+  "RESET_PASSWORD_NOT_REQUESTED": "Se non hai richiesto la reimpostazione della password, non sono necessarie ulteriori azioni. Il link scadrà presto.",
+  "CHANGE_EMAIL_TITLE": "Cambia la tua email",
+  "CHANGE_EMAIL_TEXT": "Hai richiesto di modificare la tua email. Fare clic sul pulsante seguente per confermare la modifica.",
+  "CHANGE_EMAIL_BUTTON_TEXT": "Convalida la modifica dell'e-mail",
+  "CHANGE_EMAIL_NOT_REQUESTED": "Se non hai richiesto tu questa modifica, ignora questa email.",
+  "CONFIRM_CHANGE_EMAIL_TITLE": "La tua email è stata modificata",
+  "CONFIRM_CHANGE_EMAIL_TEXT": "Hai richiesto di modificare la tua email in {{newEmail}}. La tua email è stata aggiornata con successo."
 }

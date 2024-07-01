@@ -7,7 +7,7 @@ import { Repositories } from '../../utils/repositories';
 import { ItemService } from '../item/service';
 import { Actor, Member } from '../member/entities/member';
 import { ItemLoginSchema } from './entities/itemLoginSchema';
-import { InvalidMember, MemberIdentifierNotFound, ValidMemberSession } from './errors';
+import { ValidMemberSession } from './errors';
 import { ItemLoginMemberCredentials } from './interfaces/item-login';
 import { encryptPassword, generateRandomEmail } from './utils';
 
@@ -47,18 +47,11 @@ export class ItemLoginService {
       throw new ValidMemberSession(actor);
     }
 
-    const { username, memberId, password } = credentials; // TODO: allow for "empty" username and generate one (anonymous, anonymous+password)
+    const { username, password } = credentials; // TODO: allow for "empty" username and generate one (anonymous, anonymous+password)
     let bondMember: Member | undefined = undefined;
     if (username) {
       bondMember = await this.loginWithUsername(actor, repositories, itemId, {
         username,
-        password,
-      });
-    }
-
-    if (memberId) {
-      bondMember = await this.loginWithMemberId(actor, repositories, itemId, {
-        memberId,
         password,
       });
     }
@@ -121,50 +114,6 @@ export class ItemLoginService {
 
       // create item login
       await this.linkMember(actor, repositories, itemLoginSchema, bondMember, encryptedPassword);
-    }
-
-    return bondMember;
-  }
-
-  async loginWithMemberId(
-    actor: Actor,
-    repositories: Repositories,
-    itemId: UUID,
-    { memberId, password }: { memberId: UUID; password?: string },
-  ) {
-    const { memberRepository, itemRepository, itemLoginRepository, itemLoginSchemaRepository } =
-      repositories;
-
-    const item = await itemRepository.get(itemId);
-
-    // member w/ `memberId` needs to exist
-    const bondMember = await memberRepository.get(memberId);
-    if (!bondMember) {
-      throw new MemberIdentifierNotFound(memberId);
-    }
-
-    // initial validation
-    const itemLoginSchema = (await itemLoginSchemaRepository.getForItemPath(item.path, {
-      shouldExist: true,
-    })) as ItemLoginSchema;
-
-    const itemLogin = await itemLoginRepository.getForItemAndMemberId(item, memberId);
-
-    // login user given credentials
-    if (itemLogin) {
-      await itemLoginRepository.validateCredentials(password, itemLogin);
-    } else {
-      // TODO
-      // possibly using a memberId of a "normally" registered graasp member
-      const isGraaspAccount = bondMember;
-      if (!isGraaspAccount) {
-        throw new InvalidMember(memberId);
-      }
-
-      // NECESSARY??
-      // await itemLoginRepository.validateCredentials( password, itemLogin);
-
-      await this.linkMember(actor, repositories, itemLoginSchema, bondMember, password);
     }
 
     return bondMember;

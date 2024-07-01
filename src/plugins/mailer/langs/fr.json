@@ -7,7 +7,7 @@
   "SIGN_UP_BUTTON_TEXT": "S'inscrire",
   "SIGN_IN_TEXT": "Vous nous avez demandé un lien magique pour vous connecter rapidement. Il est là:",
   "SIGN_IN_NOT_REQUESTED": "Si vous n'avez pas demandé de lien, aucune action supplémentaire n'est requise. Il va bientôt expirer, ne vous inquiétez pas votre compte et vos données sont en sécurité.",
-  "EXPORT_ACTIONS_TEXT": "Une demande d'export des traces analytiques pour l'élément {{itemName}} a bien été reçue, voici le lien pour télécharger les fichiers. Les fichiers seront disponibles pendant {{days}} jours.",
+  "EXPORT_ACTIONS_TEXT": "Vous avez demandé à télécharger les actions de l'élément {{itemName}} sous forme de fichiers {{exportFormat}}, voici le lien pour télécharger les fichiers. Il sera disponible pendant {{days}} jours",
   "EXPORT_ACTIONS_BUTTON_TEXT": "Télécharger",
   "SIGN_IN_TITLE": "Lien de connexion",
   "SIGN_UP_TITLE": "Inscription",
@@ -26,8 +26,17 @@
   "FOOTER": "Cet email vous a été envoyé car vous avez un compte sur <a href=\"https://graasp.org\">Graasp</a>",
   "POWERED_BY": "Conçu par <a href=\"https://graasp.org\">Graasp</a>.",
   "USER_AGREEMENTS_MAIL_TEXT": "* En cliquant sur <strong>{{signUpButtonText}}</strong>, vous acceptez les <a href=\"{{graaspLandingPageOrigin}}/fr/terms\">conditions d'utilisation</a> et la <a href=\"{{graaspLandingPageOrigin}}/fr/privacy\">politique de confidentialité</a>.",
+  "EXPORT_MEMBER_DATA_TEXT": "Vous avez demandé à télécharger toutes vos données, voici le lien pour télécharger l'archive. Il sera disponible pendant {{days}} jours",
+  "EXPORT_MEMBER_DATA_TITLE": "Téléchargez vos données",
+  "EXPORT_MEMBER_DATA_BUTTON_TEXT": "Télécharger",
   "RESET_PASSWORD_TITLE": "Réinitialiser votre mot de passe",
   "RESET_PASSWORD_TEXT": "Vous nous avez demandé de réinitialiser votre mot de passe. Cliquez sur le bouton ci-dessous pour continuer.",
   "RESET_PASSWORD_BUTTON_TEXT": "Réinitialiser le mot de passe",
-  "RESET_PASSWORD_NOT_REQUESTED": "Si vous n'avez pas demandé la réinitialisation de votre mot de passe, aucune action supplémentaire n'est requise. Vous pouvez continuer à utiliser votre mot de passe. Ce lien va bientôt expirer."
+  "RESET_PASSWORD_NOT_REQUESTED": "Si vous n'avez pas demandé la réinitialisation de votre mot de passe, aucune action supplémentaire n'est requise. Vous pouvez continuer à utiliser votre mot de passe. Ce lien va bientôt expirer.",
+  "CHANGE_EMAIL_TITLE": "Changez votre email",
+  "CHANGE_EMAIL_TEXT": "Vous avez demandé à modifier votre email. Cliquez sur le bouton suivant pour confirmer le changement.",
+  "CHANGE_EMAIL_BUTTON_TEXT": "Valider le changement d'e-mail",
+  "CHANGE_EMAIL_NOT_REQUESTED": "Si vous n'avez pas demandé ce changement, veuillez ignorer cet e-mail.",
+  "CONFIRM_CHANGE_EMAIL_TITLE": "Votre email a été modifié",
+  "CONFIRM_CHANGE_EMAIL_TEXT": "Vous avez demandé à changer votre adresse e-mail en {{newEmail}}. Votre email a été mis à jour avec succès."
 }

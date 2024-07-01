@@ -6,7 +6,6 @@ export interface ItemMemberLogin {
 
 // Members
 export interface ItemLoginMemberCredentials {
-  memberId?: string;
   username?: string;
   password?: string;
 }

@@ -7,7 +7,7 @@
   "SIGN_UP_BUTTON_TEXT": "Registro",
   "SIGN_IN_TEXT": "Has solicitado que enviemos un enlace mágico para iniciar sesión rápidamente en tu cuenta. Aquí lo tienes:",
   "SIGN_IN_NOT_REQUESTED": "Si no has solicitado el enlace, no es necesario realizar ninguna otra acción. Caducará pronto, no te preocupes, tu cuenta y tus datos están seguros.",
-  "EXPORT_ACTIONS_TEXT": "Has solicitado descargar acciones del elemento {{itemName}}, aquí está el enlace para descargar los archivos. Estará disponible durante {{days}} días",
+  "EXPORT_ACTIONS_TEXT": "Solicitó descargar acciones del elemento {{itemName}} como archivos {{exportFormat}}, aquí está el enlace para descargar los archivos. Estará disponible durante {{days}} días",
   "EXPORT_ACTIONS_BUTTON_TEXT": "Descargar",
   "SIGN_IN_TITLE": "Enlace de inicio de sesión",
   "SIGN_UP_TITLE": "Registro",
@@ -32,5 +32,11 @@
   "RESET_PASSWORD_TITLE": "Restablecer contraseña",
   "RESET_PASSWORD_TEXT": "Has solicitado restablecer tu contraseña. Haz clic en el siguiente botón para continuar con el proceso.",
   "RESET_PASSWORD_BUTTON_TEXT": "Restablecer contraseña",
-  "RESET_PASSWORD_NOT_REQUESTED": "Si no has solicitado restablecer tu contraseña, no es necesario realizar ninguna otra acción."
+  "RESET_PASSWORD_NOT_REQUESTED": "Si no has solicitado restablecer tu contraseña, no es necesario realizar ninguna otra acción.",
+  "CHANGE_EMAIL_TITLE": "Cambia tu correo electrónico",
+  "CHANGE_EMAIL_TEXT": "Solicitaste cambiar tu correo electrónico. Haga clic en el siguiente botón para confirmar el cambio.",
+  "CHANGE_EMAIL_BUTTON_TEXT": "Validar cambio de correo electrónico",
+  "CHANGE_EMAIL_NOT_REQUESTED": "Si no solicitó este cambio, ignore este correo electrónico.",
+  "CONFIRM_CHANGE_EMAIL_TITLE": "Tu correo electrónico ha sido cambiado.",
+  "CONFIRM_CHANGE_EMAIL_TEXT": "Solicitó cambiar su correo electrónico a {{newEmail}}. Su correo electrónico se ha actualizado correctamente."
 }
