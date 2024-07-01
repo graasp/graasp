@@ -7,7 +7,7 @@
   "SIGN_UP_BUTTON_TEXT": "Registrieren",
   "SIGN_IN_TEXT": "Sie haben uns gebeten, Ihnen einen magischen Link zu senden, damit Sie sich schnell bei Ihrem Konto anmelden können. Los geht's:",
   "SIGN_IN_NOT_REQUESTED": "Wenn Sie den Link nicht angefordert haben, sind keine weiteren Maßnahmen erforderlich. Es läuft bald ab. Machen Sie sich keine Sorgen, Ihr Konto und Ihre Daten sind sicher.",
-  "EXPORT_ACTIONS_TEXT": "Sie haben den Download von Aktionen des Artikels {{itemName}} angefordert. Hier finden Sie den Link zum Herunterladen der Dateien. Es wird für {{days}} Tage verfügbar sein",
+  "EXPORT_ACTIONS_TEXT": "Sie haben angefordert, Aktionen vom Element {{itemName}} als {{exportFormat}}-Dateien herunterzuladen. Hier ist der Link zum Herunterladen der Dateien. Er wird für {{days}} Tage verfügbar sein.",
   "EXPORT_ACTIONS_BUTTON_TEXT": "Herunterladen",
   "SIGN_IN_TITLE": "Anmeldelink",
   "SIGN_UP_TITLE": "Registrieren",
@@ -26,8 +26,17 @@
   "FOOTER": "Sie erhalten diese E-Mail aufgrund Ihres Kontos bei <a href=\"https://graasp.org/de\">Graasp</a>",
   "POWERED_BY": "Unterstützt von <a href=\"https://graasp.org/de\">Graasp</a>.",
   "USER_AGREEMENTS_MAIL_TEXT": "* Indem Sie auf <strong>{{signUpButtonText}}</strong> klicken, stimmen Sie den <a href=\"{{graaspLandingPageOrigin}}/terms\">Servicebedingungen</a> und der <a href=\"{{graaspLandingPageOrigin}}/privacy\">Datenschutzrichtlinie</a> zu.",
+  "EXPORT_MEMBER_DATA_TEXT": "Sie haben den Download aller Ihrer Daten angefordert. Hier ist der Link zum Download des Archivs. Es wird für {{days}} Tage verfügbar sein.",
+  "EXPORT_MEMBER_DATA_TITLE": "Laden Sie Ihre Daten herunter",
+  "EXPORT_MEMBER_DATA_BUTTON_TEXT": "Herunterladen",
   "RESET_PASSWORD_TITLE": "Passwort zurücksetzen",
   "RESET_PASSWORD_TEXT": "Sie haben uns gebeten, Ihr Passwort zurückzusetzen. Klicken Sie auf den folgenden Link, um fortzufahren.",
   "RESET_PASSWORD_BUTTON_TEXT": "Passwort zurücksetzen",
-  "RESET_PASSWORD_NOT_REQUESTED": "Wenn Sie Ihr Passwort nicht zurücksetzen möchten, können Sie diese E-Mail einfach ignorieren."
+  "RESET_PASSWORD_NOT_REQUESTED": "Wenn Sie Ihr Passwort nicht zurücksetzen möchten, können Sie diese E-Mail einfach ignorieren.",
+  "CHANGE_EMAIL_TITLE": "Ändern Sie Ihre E-Mail",
+  "CHANGE_EMAIL_TEXT": "Sie haben eine Änderung Ihrer E-Mail-Adresse beantragt. Klicken Sie auf die folgende Schaltfläche, um die Änderung zu bestätigen.",
+  "CHANGE_EMAIL_BUTTON_TEXT": "E-Mail-Änderung validieren",
+  "CHANGE_EMAIL_NOT_REQUESTED": "Wenn Sie diese Änderung nicht angefordert haben, ignorieren Sie diese E-Mail bitte.",
+  "CONFIRM_CHANGE_EMAIL_TITLE": "Ihre E-Mail wurde geändert",
+  "CONFIRM_CHANGE_EMAIL_TEXT": "Sie haben beantragt, Ihre E-Mail-Adresse in {{newEmail}} zu ändern. Ihre E-Mail-Adresse wurde erfolgreich aktualisiert."
 }
