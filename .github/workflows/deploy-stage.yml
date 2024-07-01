@@ -128,7 +128,7 @@ jobs:
             JOB_SCHEDULING=${{ vars.JOB_SCHEDULING || false }}
             JWT_SECRET=${{ secrets.JWT_SECRET }}
             PASSWORD_RESET_JWT_SECRET=${{ secrets.PASSWORD_RESET_JWT_SECRET }}
-            EMAIL_CHANGE_JWT_SECRET: ${{ secrets.EMAIL_CHANGE_JWT_SECRET }}
+            EMAIL_CHANGE_JWT_SECRET=${{ secrets.EMAIL_CHANGE_JWT_SECRET }}
             LIBRARY_CLIENT_HOST=${{ vars.LIBRARY_CLIENT_HOST }}
             LOG_LEVEL=${{ vars.LOG_LEVEL }}
             MAILER_CONFIG_FROM_EMAIL=${{ secrets.MAILER_CONFIG_FROM_EMAIL }}
