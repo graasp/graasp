@@ -59,10 +59,10 @@ const plugin: FastifyPluginAsync<WebsocketsPluginOptions> = async (fastify, opti
     errorHandler: (error, conn, _req, _reply) => {
       // remove client if needed
       if (wsChannels) {
-        wsChannels.clientRemove(conn.socket);
+        wsChannels.clientRemove(conn);
       }
       log.error(`graasp-plugin-websockets: an error occured: ${error}\n\tDestroying connection`);
-      conn.destroy();
+      conn.terminate();
     },
   });
 
@@ -94,7 +94,7 @@ const plugin: FastifyPluginAsync<WebsocketsPluginOptions> = async (fastify, opti
     { websocket: true, preHandler: optionalIsAuthenticated },
     (conn, req) => {
       // raw websocket client
-      const client = conn.socket;
+      const client = conn;
       // member from valid session
       const { user } = req;
 

@@ -15,7 +15,7 @@ const OTHER_MEMBER = { id: 'other', name: 'other' } as Member;
 const ITEM = { id: 'item' } as Item;
 const ownerMembership = { member: OWNER, permission: PermissionLevel.Admin } as ItemMembership;
 const buildSharedMembership = (permission: PermissionLevel, item: Item = ITEM) =>
-  ({ member: SHARED_MEMBER, permission, item } as ItemMembership);
+  ({ member: SHARED_MEMBER, permission, item }) as ItemMembership;
 
 jest.mock('./item/plugins/itemTag/repository');
 

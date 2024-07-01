@@ -73,8 +73,10 @@ describe('asynchronous feedback', () => {
 
   it('member that initated the export operation receives success feedback', async () => {
     const { item } = await testUtils.saveItemAndMembership({ member: actor });
+    // we remove the search_document key as it is not serialized in the websockets
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // const { search_document, ...item } = rawItem;
     const memberUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
-
     const response = await app.inject({
       method: HttpMethod.Post,
       url: `/items/${item.id}/actions/export`,
@@ -84,6 +86,8 @@ describe('asynchronous feedback', () => {
     await waitForExpect(() => {
       const [feedbackUpdate] = memberUpdates;
       expect(feedbackUpdate).toMatchObject(
+        // we need to silence this error as the constructor expects to receive an Item with the search_document key present but we need to remove it otherwise the check is falsy
+
         ItemOpFeedbackEvent('export', [item.id], { [item.id]: item }),
       );
     });
