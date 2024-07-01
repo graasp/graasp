@@ -76,7 +76,7 @@
     "dotenv": "16.4.5",
     "eta": "2.2.0",
     "extract-zip": "2.0.1",
-    "fast-json-stringify": "5.16.0",
+    "fast-json-stringify": "5.16.1",
     "fastify": "4.27.0",
     "fastify-nodemailer": "5.0.0",
     "fastify-plugin": "4.5.1",
