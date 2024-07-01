@@ -17,6 +17,7 @@ import {
   S3FileConfiguration,
 } from '../services/file/interfaces/configuration';
 import { notUndefined } from './assertions';
+import { ExpectedEnvVariable } from './errors';
 
 enum Environment {
   production = 'production',
@@ -204,7 +205,10 @@ export const PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES: number =
   Number(process.env.PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES) || 1440;
 
 /** Email change token Secret */
-export const EMAIL_CHANGE_JWT_SECRET: string = notUndefined(process.env.EMAIL_CHANGE_JWT_SECRET);
+export const EMAIL_CHANGE_JWT_SECRET: string = notUndefined(
+  process.env.EMAIL_CHANGE_JWT_SECRET,
+  new ExpectedEnvVariable('EMAIL_CHANGE_JWT_SECRET'),
+);
 
 /** Email change token expiration, in minutes */
 export const EMAIL_CHANGE_JWT_EXPIRATION_IN_MINUTES: number =
