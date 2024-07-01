@@ -18,14 +18,20 @@ const checksum = {
  */
 export function injectH5PImport(
   app: FastifyInstance,
-  options?: { filePath?: string; parentId?: string },
+  options?: { filePath?: string; parentId?: string; previousItemId?: string },
 ) {
-  const { filePath, parentId } = options ?? {};
+  const { filePath, parentId, previousItemId } = options ?? {};
 
   const formData = new FormData();
   formData.append('file', fs.createReadStream(filePath ?? H5P_PACKAGES.ACCORDION.path));
 
-  const query = parentId ? { parentId } : undefined;
+  const query: { parentId?: string; previousItemId?: string } = {};
+  if (options?.parentId) {
+    query.parentId = parentId;
+  }
+  if (options?.previousItemId) {
+    query.previousItemId = previousItemId;
+  }
 
   return app.inject({
     method: 'POST',

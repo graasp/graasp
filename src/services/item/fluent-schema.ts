@@ -170,7 +170,10 @@ export const create =
     if (itemTypeSchema) itemSchemas.push(itemTypeSchema.extend(baseItemCreate));
 
     return {
-      querystring: S.object().additionalProperties(false).prop('parentId', uuid),
+      querystring: S.object()
+        .additionalProperties(false)
+        .prop('parentId', uuid)
+        .prop('previousItemId', uuid),
       body: S.object().oneOf(itemSchemas),
       response: { '2xx': item, '4xx': error },
     };
@@ -217,7 +220,7 @@ export const getChildren = {
   params: idParam,
   querystring: S.object()
     .additionalProperties(false)
-    .prop('ordered', S.boolean())
+    .prop('ordered', S.boolean().default(true))
     .prop('types', S.array().items(S.enum(Object.values(ItemType)))),
   response: {
     200: S.array().items(packedItem),
@@ -309,10 +312,15 @@ export const updateMany = ({ body }) => {
   };
 };
 
-// const deleteOne = {
-//   params: idParam,
-//   response: { 200: item, '4xx': error },
-// };
+export const reorder = {
+  params: S.object().prop('id', uuid),
+  body: S.object().additionalProperties(false).prop('previousItemId', uuid),
+
+  response: {
+    200: S.array().items(packedItem),
+    '4xx': error,
+  },
+};
 
 export const deleteMany = {
   querystring: S.object()
@@ -324,22 +332,12 @@ export const deleteMany = {
   },
 };
 
-// const moveOne = {
-//   params: idParam,
-//   body: S.object().additionalProperties(false).prop('parentId', uuid),
-// };
-
 export const moveMany = {
   querystring: S.object()
     .prop('id', S.array().maxItems(MAX_TARGETS_FOR_MODIFY_REQUEST))
     .extend(idsQuery),
   body: S.object().additionalProperties(false).prop('parentId', uuid),
 };
-
-// const copyOne = {
-//   params: idParam,
-//   body: S.object().additionalProperties(false).prop('parentId', uuid),
-// };
 
 export const copyMany = {
   querystring: S.object()

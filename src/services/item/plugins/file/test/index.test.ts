@@ -506,7 +506,6 @@ describe('File Item routes tests', () => {
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}`,
         payload: { settings: { maxWidth: MaxWidth.Small } },
       });
-      console.log(response.json());
       expect(response.json().settings.maxWidth).toEqual(MaxWidth.Small);
     });
 

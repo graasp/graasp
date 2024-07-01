@@ -110,7 +110,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     await fileItemService.copy(actor, repositories, { original, copy });
   });
 
-  fastify.route<{ Querystring: IdParam; Body: unknown }>({
+  fastify.route<{ Querystring: IdParam & { previousItemId?: string }; Body: unknown }>({
     method: HttpMethod.Post,
     url: '/upload',
     schema: upload,
@@ -118,7 +118,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     handler: async (request) => {
       const {
         user,
-        query: { id: parentId },
+        query: { id: parentId, previousItemId },
         log,
       } = request;
       const member = notUndefined(user?.member);
@@ -134,6 +134,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
       const files = request.files();
       const items: Item[] = [];
       const errors: Error[] = [];
+
       for await (const fileObject of files) {
         const { filename, mimetype, file: stream } = fileObject;
 
@@ -148,6 +149,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
               filename,
               mimetype,
               stream,
+              previousItemId,
             });
             items.push(i);
           } catch (e) {
@@ -160,6 +162,11 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
             stream.emit('end');
           }
         });
+      }
+
+      // rescale is necessary when uploading multiple files: they have the same order number
+      if (items.length) {
+        await itemService.rescaleOrder(member, buildRepositories(), items[0]);
       }
 
       return {

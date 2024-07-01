@@ -21,7 +21,7 @@ import { ItemMembership } from '../../../itemMembership/entities/ItemMembership'
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { Actor, Member } from '../../../member/entities/member';
 import { ItemWrapper, PackedItem } from '../../ItemWrapper';
-import { Item, ItemExtraMap } from '../../entities/Item';
+import { DEFAULT_ORDER, Item, ItemExtraMap } from '../../entities/Item';
 import { ItemTag } from '../../plugins/itemTag/ItemTag';
 import { ItemTagRepository } from '../../plugins/itemTag/repository';
 import { setItemPublic } from '../../plugins/itemTag/test/fixtures';
@@ -91,6 +91,7 @@ export class ItemTestUtils {
       createdAt: new Date(item.createdAt),
       updatedAt: new Date(item.updatedAt),
       deletedAt: null,
+      order: args?.order ?? DEFAULT_ORDER,
     };
   }
 
@@ -99,12 +100,14 @@ export class ItemTestUtils {
     item = {},
     actor = null,
     parentItem,
+    order,
   }: {
     parentItem?: Item;
     actor?: Actor | null;
     item?: Partial<Item>;
+    order?: number;
   }) {
-    const value = this.createItem({ ...item, creator: actor, parentItem });
+    const value = this.createItem({ ...item, creator: actor, parentItem, order });
     return this.rawItemRepository.save(value);
   }
 
@@ -202,6 +205,31 @@ export class ItemTestUtils {
       await this.rawItemPublishedRepository.save({ item, creator: member });
     }
     return { items, packedItems, tags };
+  };
+
+  expectOrder = async (itemId: string, previousItemId: string, nextItemId?: string) => {
+    const rawItem = await this.rawItemRepository.findOne({
+      where: { id: itemId },
+      select: { order: true },
+    });
+    const previousItem = await this.rawItemRepository.findOne({
+      where: { id: previousItemId },
+      select: { order: true },
+    });
+    let nextItem;
+    const thisOrder = parseInt(rawItem!.order! as unknown as string);
+    expect(thisOrder).toBeGreaterThan(parseInt(previousItem!.order! as unknown as string));
+
+    if (nextItemId) {
+      nextItem = await this.rawItemRepository.findOne({
+        where: { id: nextItemId },
+        select: { order: true },
+      });
+      const nextOrder = nextItem.order! as unknown as string;
+      if (nextOrder) {
+        expect(thisOrder).toBeLessThan(parseInt(nextOrder));
+      }
+    }
   };
 }
 export const expectItem = (
