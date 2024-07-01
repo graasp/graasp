@@ -433,6 +433,19 @@ export class NoFileProvided extends CoreError {
   }
 }
 
+export class CannotReorderOneItem extends CoreError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GERR034',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: 'Expected item to contain more than one child',
+      },
+      data,
+    );
+  }
+}
+
 export class DatabaseError extends CoreError {
   constructor(data?: unknown) {
     super({ code: 'GERR998', statusCode: 500, message: FAILURE_MESSAGES.DATABASE_ERROR }, data);

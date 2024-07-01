@@ -116,6 +116,7 @@ const datas: {
         settings: { hasThumbnail: false, ccLicenseAdaption: 'CC BY' },
         lang: 'en',
         deletedAt: undefined,
+        order: 20,
       },
       {
         id: sharedIds.publicChildGeolocDocument,
@@ -129,6 +130,7 @@ const datas: {
         settings: { hasThumbnail: false },
         lang: 'en',
         deletedAt: undefined,
+        order: 20,
       },
       {
         id: sharedIds.hiddenChildItem,
@@ -142,6 +144,7 @@ const datas: {
         settings: { hasThumbnail: false },
         lang: 'en',
         deletedAt: undefined,
+        order: 20,
       },
       {
         id: sharedIds.publicChildChatboxItem,
@@ -155,6 +158,7 @@ const datas: {
         settings: { hasThumbnail: false, showChatbox: true },
         lang: 'en',
         deletedAt: undefined,
+        order: 20,
       },
     ],
   },
