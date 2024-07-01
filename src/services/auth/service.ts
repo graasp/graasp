@@ -1,5 +1,4 @@
-import { Secret, SignOptions, sign } from 'jsonwebtoken';
-import { promisify } from 'util';
+import { sign } from 'jsonwebtoken';
 
 import { FastifyBaseLogger } from 'fastify';
 
@@ -18,13 +17,6 @@ import { Member } from '../member/entities/member';
 import { SHORT_TOKEN_PARAM } from './plugins/passport';
 import { getRedirectionUrl } from './utils';
 
-const promisifiedJwtSign = promisify<
-  { sub: string; challenge?: string },
-  Secret,
-  SignOptions,
-  string
->(sign);
-
 export class AuthService {
   log: FastifyBaseLogger;
   mailer: MailerDecoration;
@@ -34,20 +26,20 @@ export class AuthService {
     this.log = log;
   }
 
-  generateToken(data, expiration) {
-    return promisifiedJwtSign(data, JWT_SECRET, {
+  generateToken(data: object, expiration?: string | number) {
+    return sign(data, JWT_SECRET, {
       expiresIn: expiration,
     });
   }
 
   generateRegisterLinkAndEmailIt = async (
     member: Member,
-    options: { challenge?; url?: string } = {},
+    options: { challenge?: string; url?: string } = {},
   ): Promise<void> => {
     const { challenge, url } = options;
 
     // generate token with member info and expiration
-    const token = await promisifiedJwtSign({ sub: member.id, challenge }, JWT_SECRET, {
+    const token = sign({ sub: member.id, challenge, emailValidation: true }, JWT_SECRET, {
       expiresIn: `${REGISTER_TOKEN_EXPIRATION_IN_MINUTES}m`,
     });
 
@@ -91,7 +83,7 @@ export class AuthService {
     const { challenge, lang, url } = options;
 
     // generate token with member info and expiration
-    const token = await promisifiedJwtSign({ sub: member.id, challenge }, JWT_SECRET, {
+    const token = sign({ sub: member.id, challenge }, JWT_SECRET, {
       expiresIn: `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
     });
 

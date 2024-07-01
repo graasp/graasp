@@ -4,6 +4,7 @@ import { ItemLoginSchemaType } from '@graasp/sdk';
 
 import { buildRepositories } from '../../utils/repositories';
 import { SESSION_KEY, isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
+import { validatedMember, whitelistRoles } from '../auth/plugins/roles';
 import { ItemLoginMemberCredentials } from './interfaces/item-login';
 import {
   deleteLoginSchema,
@@ -79,7 +80,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       schema: updateLoginSchema,
 
       // set member in request - throws if does not exist
-      preHandler: isAuthenticated,
+      preHandler: [isAuthenticated, whitelistRoles(validatedMember)],
     },
     async ({ user, params: { id: itemId }, body: { type } }) => {
       return db.transaction(async (manager) => {
@@ -94,7 +95,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       schema: deleteLoginSchema,
 
       // set member in request - throws if does not exist
-      preHandler: isAuthenticated,
+      preHandler: [isAuthenticated, whitelistRoles(validatedMember)],
     },
     async ({ user, params: { id: itemId } }) => {
       return db.transaction(async (manager) => {

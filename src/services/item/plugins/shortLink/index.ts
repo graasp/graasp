@@ -7,6 +7,7 @@ import { ShortLinkAvailable, ShortLinkPatchPayload, ShortLinkPostPayload } from 
 import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
+import { validatedMember, whitelistRoles } from '../../../auth/plugins/roles';
 import { create, restricted_get, update } from './schemas';
 import { SHORT_LINKS_LIST_ROUTE, ShortLinkService } from './service';
 
@@ -65,7 +66,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         '/',
         {
           schema: create,
-          preHandler: isAuthenticated,
+          preHandler: [isAuthenticated, whitelistRoles(validatedMember)],
         },
         async ({ user, body: shortLink }) => {
           const member = notUndefined(user?.member);
@@ -82,7 +83,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       fastify.delete<{ Params: { alias: string } }>(
         '/:alias',
-        { preHandler: isAuthenticated },
+        { preHandler: [isAuthenticated, whitelistRoles(validatedMember)] },
         async ({ user, params: { alias } }) => {
           const member = notUndefined(user?.member);
           return db.transaction(async (manager) => {
@@ -100,7 +101,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         '/:alias',
         {
           schema: update,
-          preHandler: isAuthenticated,
+          preHandler: [isAuthenticated, whitelistRoles(validatedMember)],
         },
         async ({ user, body: shortLink, params: { alias } }) => {
           const member = notUndefined(user?.member);

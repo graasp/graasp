@@ -1,11 +1,12 @@
 import { StatusCodes } from 'http-status-codes';
 
 import fastifyPassport from '@fastify/passport';
-import { FastifyPluginAsync, FastifyReply, FastifyRequest, PassportUser } from 'fastify';
+import { FastifyPluginAsync, PassportUser } from 'fastify';
 
 import { RecaptchaAction } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
+import { notUndefined } from '../../../../utils/assertions';
 import { AUTH_CLIENT_HOST } from '../../../../utils/config';
 import { MemberAlreadySignedUp } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
@@ -105,12 +106,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       schema: auth,
       preHandler: fastifyPassport.authenticate(
         PassportStrategy.WebMagicLink,
-        async (
-          request: FastifyRequest,
-          reply: FastifyReply,
-          err: null | Error,
-          user?: PassportUser,
-        ) => {
+        async (request, reply, err, user?: PassportUser, info?: Record<string, unknown>) => {
           // This function is called after the strategy has been executed.
           // It is necessary, so we match the behavior of the original implementation.
           if (!user || err) {
@@ -120,16 +116,27 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             reply.redirect(StatusCodes.SEE_OTHER, target.toString());
           } else {
             request.logIn(user, { session: true });
+            request.authInfo = info;
           }
         },
       ),
     },
     async (request, reply) => {
       const {
+        user,
+        authInfo,
         query: { url },
         log,
       } = request;
+      const member = notUndefined(user?.member);
       const redirectionUrl = getRedirectionUrl(log, url ? decodeURIComponent(url) : undefined);
+      await db.transaction(async (manager) => {
+        const repositories = buildRepositories(manager);
+        memberService.refreshLastAuthenticatedAt(member.id, repositories);
+        if (authInfo?.emailValidation && !member.isValidated) {
+          memberService.validate(member.id, repositories);
+        }
+      });
       reply.redirect(StatusCodes.SEE_OTHER, redirectionUrl);
     },
   );
