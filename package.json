@@ -100,7 +100,7 @@
     "mime-types": "2.1.35",
     "mmmagic": "0.5.3",
     "node-fetch": "2",
-    "openai": "4.48.1",
+    "openai": "4.48.3",
     "papaparse": "^5.4.1",
     "passport-custom": "1.1.1",
     "passport-jwt": "4.0.1",
