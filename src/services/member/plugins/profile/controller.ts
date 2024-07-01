@@ -4,6 +4,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import { validatedMember, whitelistRoles } from '../../../auth/plugins/roles';
 import { createProfile, getOwnProfile, getProfileForMember, updateMemberProfile } from './schemas';
 import { MemberProfileService } from './service';
 import { IMemberProfile } from './types';
@@ -17,7 +18,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/',
     {
       schema: createProfile,
-      preHandler: isAuthenticated,
+      preHandler: [isAuthenticated, whitelistRoles(validatedMember)],
     },
     async (request, reply) => {
       const { user, body: data } = request;
@@ -49,7 +50,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.patch<{ Body: Partial<IMemberProfile> }>(
     '/',
-    { schema: updateMemberProfile, preHandler: isAuthenticated },
+    { schema: updateMemberProfile, preHandler: [isAuthenticated, whitelistRoles(validatedMember)] },
     async ({ user, body }) => {
       return db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);

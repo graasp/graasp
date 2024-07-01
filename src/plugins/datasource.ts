@@ -25,9 +25,11 @@ import { ShortLink } from '../services/item/plugins/shortLink/entities/ShortLink
 import { ItemValidation } from '../services/item/plugins/validation/entities/ItemValidation';
 import { ItemValidationGroup } from '../services/item/plugins/validation/entities/ItemValidationGroup';
 import { ItemValidationReview } from '../services/item/plugins/validation/entities/itemValidationReview';
+import { Guest } from '../services/itemLogin/entities/guest';
 import { ItemLogin } from '../services/itemLogin/entities/itemLogin';
 import { ItemLoginSchema } from '../services/itemLogin/entities/itemLoginSchema';
 import { ItemMembership } from '../services/itemMembership/entities/ItemMembership';
+import { Account } from '../services/member/entities/account';
 import { Member } from '../services/member/entities/member';
 import { MemberProfile } from '../services/member/plugins/profile/entities/profile';
 import {
@@ -68,6 +70,8 @@ export const AppDataSource = new DataSource({
 
   entities: [
     Member,
+    Account,
+    Guest,
     Item,
     ItemMembership,
     MemberPassword,

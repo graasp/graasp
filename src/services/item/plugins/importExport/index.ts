@@ -8,6 +8,7 @@ import { ActionTriggers } from '@graasp/sdk';
 import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import { validatedMember, whitelistRoles } from '../../../auth/plugins/roles';
 import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
 import { ZIP_FILE_MIME_TYPES } from './constants';
 import { FileIsInvalidArchiveError } from './errors';
@@ -42,7 +43,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.post<{ Querystring: { parentId?: string } }>(
     '/zip-import',
-    { schema: zipImport, preHandler: isAuthenticated },
+    { schema: zipImport, preHandler: [isAuthenticated, whitelistRoles(validatedMember)] },
     async (request, reply) => {
       const {
         user,

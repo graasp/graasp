@@ -8,6 +8,7 @@ import { IdParam } from '../../../../types';
 import { notUndefined } from '../../../../utils/assertions';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import { validatedMember, whitelistRoles } from '../../../auth/plugins/roles';
 import { Actor, Member } from '../../../member/entities/member';
 import { MAX_FILE_SIZE } from './constants';
 import { Invitation } from './entity';
@@ -56,7 +57,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:id/invite',
     {
       schema: invite,
-      preHandler: isAuthenticated,
+      preHandler: [isAuthenticated, whitelistRoles(validatedMember)],
     },
     async ({ user, body, params }) => {
       return db.transaction(async (manager) => {
@@ -76,7 +77,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     // post invitations from a csv file
     fastify.post<{ Params: IdParam; Querystring: { templateId: string } }>(
       '/:id/invitations/upload-csv',
-      { preHandler: isAuthenticated },
+      { preHandler: [isAuthenticated, whitelistRoles(validatedMember)] },
       async (request) => {
         const { query, params, user } = request;
         const member = notUndefined(user?.member);
@@ -133,7 +134,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // update invitation
   fastify.patch<{ Params: { id: string; invitationId: string }; Body: Partial<Invitation> }>(
     '/:id/invitations/:invitationId',
-    { schema: updateOne, preHandler: isAuthenticated },
+    { schema: updateOne, preHandler: [isAuthenticated, whitelistRoles(validatedMember)] },
     async ({ user, params, body }) => {
       const { invitationId } = params;
 
@@ -151,7 +152,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // delete invitation
   fastify.delete<{ Params: { id: string; invitationId: string } }>(
     '/:id/invitations/:invitationId',
-    { schema: deleteOne, preHandler: isAuthenticated },
+    { schema: deleteOne, preHandler: [isAuthenticated, whitelistRoles(validatedMember)] },
     async ({ user, params }) => {
       const { invitationId } = params;
 
@@ -164,7 +165,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // resend invitation mail
   fastify.post<{ Params: { id: string; invitationId: string } }>(
     '/:id/invitations/:invitationId/send',
-    { schema: sendOne, preHandler: isAuthenticated },
+    { schema: sendOne, preHandler: [isAuthenticated, whitelistRoles(validatedMember)] },
     async ({ user, params }, reply) => {
       const { invitationId } = params;
 

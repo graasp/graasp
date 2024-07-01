@@ -29,6 +29,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     log,
     db,
     memberPassword: { service: memberPasswordService },
+    members: { service: memberService },
     mobile: { service: mobileService },
   } = fastify;
 
@@ -123,8 +124,15 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       schema: mauth,
       preHandler: authenticateJWTChallengeVerifier,
     },
-    async ({ user }) => {
+    async ({ user, authInfo }) => {
       const member = notUndefined(user?.member);
+      await db.transaction(async (manager) => {
+        const repositories = buildRepositories(manager);
+        memberService.refreshLastAuthenticatedAt(member.id, repositories);
+        if (authInfo?.emailValidation && !member.isValidated) {
+          memberService.validate(member.id, repositories);
+        }
+      });
       return generateAuthTokensPair(member.id);
     },
   );

@@ -8,6 +8,7 @@ import { PermissionLevel } from '@graasp/sdk';
 import { IdParam } from '../../types';
 import { buildRepositories } from '../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
+import { validatedMember, whitelistRoles } from '../auth/plugins/roles';
 import { PurgeBelowParam } from './interfaces/requests';
 import common, { create, createMany, deleteOne, getItems, updateOne } from './schemas';
 import { membershipWsHooks } from './ws/hooks';
@@ -49,7 +50,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         Body: { permission: PermissionLevel; memberId: string };
       }>(
         '/',
-        { schema: create, preHandler: isAuthenticated },
+        { schema: create, preHandler: [isAuthenticated, whitelistRoles(validatedMember)] },
         async ({ user, query: { itemId }, body }) => {
           return db.transaction((manager) => {
             return itemMembershipService.post(user?.member, buildRepositories(manager), {
@@ -67,7 +68,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         Body: { memberships: { permission: PermissionLevel; memberId: UUID }[] };
       }>(
         '/:itemId',
-        { schema: createMany, preHandler: isAuthenticated },
+        { schema: createMany, preHandler: [isAuthenticated, whitelistRoles(validatedMember)] },
         async ({ user, params: { itemId }, body }) => {
           // BUG: because we use this call to save csv member
           // we have to return immediately
@@ -91,7 +92,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         '/:id',
         {
           schema: updateOne,
-          preHandler: isAuthenticated,
+          preHandler: [isAuthenticated, whitelistRoles(validatedMember)],
         },
         async ({ user, params: { id }, body }) => {
           return db.transaction((manager) => {

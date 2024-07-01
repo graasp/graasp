@@ -6,7 +6,7 @@ import { UnauthorizedMember } from '../../../../../utils/errors';
 import { Repositories } from '../../../../../utils/repositories';
 import { MemberPasswordService } from '../../password/service';
 import { PassportStrategy } from '../strategies';
-import { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
+import { CustomStrategyOptions } from '../types';
 
 export default (
   passport: Authenticator,
@@ -20,7 +20,7 @@ export default (
       {
         usernameField: 'email',
       },
-      async (email, password, done: StrictVerifiedCallback) => {
+      async (email, password, done) => {
         try {
           const member = await memberPasswordService.authenticate(repositories, email, password);
           if (member) {

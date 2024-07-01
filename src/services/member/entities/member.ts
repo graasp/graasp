@@ -1,41 +1,25 @@
-import {
-  BaseEntity,
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-  Unique,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Check, ChildEntity, Column, Unique } from 'typeorm';
 
 import { CompleteMember, MemberType } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
-@Entity()
+import { Account } from './account';
+
+const TYPE = MemberType.Individual;
+
+@ChildEntity(TYPE)
 @Unique('email', ['email'])
-export class Member extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @Column({
-    nullable: false,
-    length: 100,
-  })
-  name: string;
-
+@Check(`"email" IS NOT NULL OR "type" != '${TYPE}'`)
+@Check(`"extra" IS NOT NULL OR "type" != '${TYPE}'`)
+@Check(`"enable_save_actions" IS NOT NULL OR "type" != '${TYPE}'`)
+@Check(`"is_validated" IS NOT NULL OR "type" != '${TYPE}'`)
+export class Member extends Account {
   @Column({
     nullable: false,
     length: 150,
     unique: true,
   })
   email: string;
-
-  @Column({
-    nullable: false,
-    default: MemberType.Individual,
-    enum: Object.values(MemberType),
-  })
-  type: `${MemberType}` | MemberType;
 
   @Column('simple-json', { nullable: false, default: '{}' })
   extra: CompleteMember['extra'];
@@ -53,19 +37,12 @@ export class Member extends BaseEntity {
   })
   enableSaveActions: boolean;
 
-  @CreateDateColumn({
-    update: false,
-    name: 'created_at',
+  @Column({
+    default: false,
+    name: 'is_validated',
     nullable: false,
   })
-  createdAt: Date;
-
-  @UpdateDateColumn({
-    update: false,
-    name: 'updated_at',
-    nullable: false,
-  })
-  updatedAt: Date;
+  isValidated: boolean;
 
   get lang(): string {
     return (this.extra.lang as string) ?? DEFAULT_LANG;

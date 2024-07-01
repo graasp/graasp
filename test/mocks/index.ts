@@ -30,17 +30,20 @@ export default async function seed(
   if (!AppDataSource.isInitialized) {
     await AppDataSource.initialize();
   }
-
-  console.log('Pushing mock data on database...');
+  const result: { [K in keyof typeof datas]: BaseEntity[] } = {};
   // Begin transation.
   await db.transaction(async (manager) => {
-    for (const table of Object.values(datas)) {
+    for (const key in datas) {
+      const table = datas[key];
+      const entities: BaseEntity[] = [];
       for (const mockEntity of table.entities) {
         const entity: BaseEntity = new table.constructor();
         Object.assign(entity, table.factory ? table.factory(mockEntity) : mockEntity);
-        await manager.save(entity);
+        const e = await manager.save(entity);
+        entities.push(e);
       }
+      result[key] = entities;
     }
   });
-  console.log('Database has been fed by mock data!');
+  return result;
 }

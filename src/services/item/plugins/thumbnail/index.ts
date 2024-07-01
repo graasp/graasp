@@ -10,6 +10,7 @@ import { notUndefined } from '../../../../utils/assertions';
 import { THUMBNAILS_ROUTE_PREFIX } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import { validatedMember, whitelistRoles } from '../../../auth/plugins/roles';
 import { UploadFileUnexpectedError } from '../../../file/utils/errors';
 import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
 import { deleteSchema, download, upload } from './schemas';
@@ -46,7 +47,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
     `/:id${THUMBNAILS_ROUTE_PREFIX}`,
     {
       schema: upload,
-      preHandler: isAuthenticated,
+      preHandler: [isAuthenticated, whitelistRoles(validatedMember)],
     },
     async (request, reply) => {
       const {
@@ -103,7 +104,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
 
   fastify.delete<{ Params: IdParam }>(
     `/:id${THUMBNAILS_ROUTE_PREFIX}`,
-    { schema: deleteSchema, preHandler: isAuthenticated },
+    { schema: deleteSchema, preHandler: [isAuthenticated, whitelistRoles(validatedMember)] },
     async (request, reply) => {
       const {
         user,

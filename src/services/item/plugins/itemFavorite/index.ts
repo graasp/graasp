@@ -2,6 +2,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
+import { validatedMember, whitelistRoles } from '../../../auth/plugins/roles';
 import common, { create, deleteOne, getFavorite } from './schemas';
 import { FavoriteService } from './services/favorite';
 
@@ -24,7 +25,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // insert favorite
   fastify.post<{ Params: { itemId: string } }>(
     '/favorite/:itemId',
-    { schema: create, preHandler: isAuthenticated },
+    { schema: create, preHandler: [isAuthenticated, whitelistRoles(validatedMember)] },
     async ({ user, params: { itemId } }) => {
       return db.transaction(async (manager) => {
         return favoriteService.post(user?.member, buildRepositories(manager), itemId);
@@ -35,7 +36,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // delete favorite
   fastify.delete<{ Params: { itemId: string } }>(
     '/favorite/:itemId',
-    { schema: deleteOne, preHandler: isAuthenticated },
+    { schema: deleteOne, preHandler: [isAuthenticated, whitelistRoles(validatedMember)] },
     async ({ user, params: { itemId } }) => {
       return db.transaction(async (manager) => {
         return favoriteService.delete(user?.member, buildRepositories(manager), itemId);

@@ -5,6 +5,7 @@ import { ActionTriggers } from '@graasp/sdk';
 import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import { validatedMember, whitelistRoles } from '../../../auth/plugins/roles';
 import common, { create, deleteOne, getLikesForItem, getLikesForMember } from './schemas';
 import { ItemLikeService } from './service';
 
@@ -39,7 +40,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // create item like entry
   fastify.post<{ Params: { itemId: string } }>(
     '/:itemId/like',
-    { schema: create, preHandler: isAuthenticated },
+    { schema: create, preHandler: [isAuthenticated, whitelistRoles(validatedMember)] },
     async (request) => {
       const {
         user,
@@ -66,7 +67,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // delete item like entry
   fastify.delete<{ Params: { itemId: string } }>(
     '/:itemId/like',
-    { schema: deleteOne, preHandler: isAuthenticated },
+    { schema: deleteOne, preHandler: [isAuthenticated, whitelistRoles(validatedMember)] },
     async (request) => {
       const {
         user,

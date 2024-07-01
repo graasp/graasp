@@ -9,7 +9,7 @@ export type StrictVerifiedCallback = (
   // If false, the authentication will fail with a 401 Unauthorize if no error is provided.
   user: PassportUser | false,
 
-  info?: never, // Currently not used.
+  info?: unknown, // Data passed to `req.authInfo`
 ) => void;
 
 export type CustomStrategyOptions = {

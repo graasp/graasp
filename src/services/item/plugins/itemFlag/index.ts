@@ -3,6 +3,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import { validatedMember, whitelistRoles } from '../../../auth/plugins/roles';
 import { ItemFlag } from './itemFlag';
 import common, { create, getFlags } from './schemas';
 import { ItemFlagService } from './service';
@@ -27,7 +28,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // create item flag
   fastify.post<{ Params: { itemId: string }; Body: Partial<ItemFlag> }>(
     '/:itemId/flags',
-    { schema: create, preHandler: isAuthenticated },
+    { schema: create, preHandler: [isAuthenticated, whitelistRoles(validatedMember)] },
     async ({ user, params: { itemId }, body }) => {
       return db.transaction(async (manager) => {
         const member = notUndefined(user?.member);
