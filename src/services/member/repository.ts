@@ -11,7 +11,6 @@ export class MemberRepository extends AbstractRepository<Member> {
   constructor(manager?: EntityManager) {
     super(Member, manager);
   }
-
   async deleteOne(id: string) {
     return this.repository.delete(id);
   }

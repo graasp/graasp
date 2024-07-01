@@ -66,12 +66,12 @@ export class ItemPublishedRepository {
       )
       // add a condition to the join to keep only relations for the memberId we are interested in
       // this removes the need for the memberId in the where condition
-      .innerJoin('member', 'm', 'im.member_id = m.id and m.id = :memberId', {
+      .innerJoin('account', 'm', 'im.member_id = m.id and m.id = :memberId', {
         memberId,
       })
       // these two joins are for typeorm to get the relation data
       .innerJoinAndSelect('pi.item', 'item') // will ignore soft delted items
-      .innerJoinAndSelect('item.creator', 'member') // will ignore null creators (deleted accounts)
+      .innerJoinAndSelect('item.creator', 'account') // will ignore null creators (deleted accounts)
       .getMany();
 
     return itemPublished.map(({ item }) => item);
