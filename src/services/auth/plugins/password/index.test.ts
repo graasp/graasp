@@ -9,7 +9,7 @@ import { FastifyInstance, LightMyRequestResponse } from 'fastify';
 import { MemberFactory, RecaptchaAction } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
-import seed from '../../../../../test/mock';
+import seed from '../../../../../test/mocks';
 import { mockCaptchaValidation } from '../../../../../test/utils';
 import {
   PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES,

@@ -6,6 +6,7 @@ import { notUndefined } from '../../../../utils/assertions';
 import { GEOLOCATION_API_KEY } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import { validatedMember, whitelistRoles } from '../../../auth/plugins/roles';
 import { Item } from '../../entities/Item';
 import { ItemGeolocation } from './ItemGeolocation';
 import {
@@ -68,7 +69,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/:id/geolocation',
       {
         schema: putGeolocation,
-        preHandler: isAuthenticated,
+        preHandler: [isAuthenticated, whitelistRoles(validatedMember)],
       },
       async ({ user, body, params }, reply) => {
         return db.transaction(async (manager) => {
@@ -87,7 +88,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/:id/geolocation',
       {
         schema: deleteGeolocation,
-        preHandler: isAuthenticated,
+        preHandler: [isAuthenticated, whitelistRoles(validatedMember)],
       },
       async ({ user, params }, reply) => {
         return db.transaction(async (manager) => {

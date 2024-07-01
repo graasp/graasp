@@ -19,6 +19,7 @@ import { notUndefined } from '../../../../utils/assertions';
 import { CLIENT_HOSTS } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import { validatedMember, whitelistRoles } from '../../../auth/plugins/roles';
 import {
   LocalFileConfiguration,
   S3FileConfiguration,
@@ -149,7 +150,7 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
     method: 'POST',
     url: '/:id/actions/export',
     schema: exportAction,
-    preHandler: isAuthenticated,
+    preHandler: [isAuthenticated, whitelistRoles(validatedMember)],
     handler: async (request, reply) => {
       const {
         user,

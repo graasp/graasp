@@ -12,6 +12,7 @@ import { notUndefined } from '../../../../../utils/assertions';
 import { CLIENT_HOSTS } from '../../../../../utils/config';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { isAuthenticated } from '../../../../auth/plugins/passport';
+import { validatedMember, whitelistRoles } from '../../../../auth/plugins/roles';
 import { validatePermission } from '../../../../authorization';
 import { Member } from '../../../../member/entities/member';
 import { Item, isItemType } from '../../../entities/Item';
@@ -123,7 +124,7 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify) => {
 
     fastify.post<{ Querystring: { parentId?: string } }>(
       '/h5p-import',
-      { schema: h5pImport, preHandler: isAuthenticated },
+      { schema: h5pImport, preHandler: [isAuthenticated, whitelistRoles(validatedMember)] },
       async (request) => {
         const {
           user,

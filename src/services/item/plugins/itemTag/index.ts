@@ -5,6 +5,7 @@ import { ItemTagType } from '@graasp/sdk';
 import { IdParam, IdsParams } from '../../../../types';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import { validatedMember, whitelistRoles } from '../../../auth/plugins/roles';
 import { Item } from '../../entities/Item';
 import common, { create, deleteOne, getItemTags, getMany } from './schemas';
 import { ItemTagService } from './service';
@@ -56,7 +57,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.post<{ Params: { itemId: string; type: ItemTagType } }>(
     '/:itemId/tags/:type',
-    { schema: create, preHandler: isAuthenticated },
+    { schema: create, preHandler: [isAuthenticated, whitelistRoles(validatedMember)] },
     async ({ user, params: { itemId, type } }) => {
       return db.transaction(async (manager) => {
         return iTS.post(user?.member, buildRepositories(manager), itemId, type);
@@ -67,7 +68,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // delete item tag
   fastify.delete<{ Params: { itemId: string; type: ItemTagType } & IdParam }>(
     '/:itemId/tags/:type',
-    { schema: deleteOne, preHandler: isAuthenticated },
+    { schema: deleteOne, preHandler: [isAuthenticated, whitelistRoles(validatedMember)] },
     async ({ user, params: { itemId, type } }) => {
       return db.transaction(async (manager) => {
         return iTS.deleteOne(user?.member, buildRepositories(manager), itemId, type);

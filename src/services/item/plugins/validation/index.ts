@@ -5,6 +5,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
+import { validatedMember, whitelistRoles } from '../../../auth/plugins/roles';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
 import { itemValidation, itemValidationGroup } from './schemas';
 import { ItemValidationService } from './service';
@@ -66,7 +67,7 @@ const plugin: FastifyPluginAsync<GraaspPluginValidationOptions> = async (fastify
     '/:itemId/validate',
     {
       schema: itemValidation,
-      preHandler: isAuthenticated,
+      preHandler: [isAuthenticated, whitelistRoles(validatedMember)],
     },
     async (request, reply) => {
       const {

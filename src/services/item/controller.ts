@@ -9,6 +9,7 @@ import { IdParam, IdsParams, PaginationParams } from '../../types';
 import { notUndefined } from '../../utils/assertions';
 import { buildRepositories } from '../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
+import { validatedMember, whitelistRoles } from '../auth/plugins/roles';
 import { resultOfToList } from '../utils';
 import { Item } from './entities/Item';
 import {
@@ -48,7 +49,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/',
     {
       schema: items.extendCreateSchema(),
-      preHandler: isAuthenticated,
+      preHandler: [isAuthenticated, whitelistRoles(validatedMember)],
     },
     async (request) => {
       const {
@@ -90,7 +91,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     }>(
       '/with-thumbnail',
       {
-        preHandler: isAuthenticated,
+        preHandler: [isAuthenticated, whitelistRoles(validatedMember)],
       },
       async (request) => {
         const {
@@ -217,7 +218,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:id',
     {
       schema: items.extendExtrasUpdateSchema(),
-      preHandler: isAuthenticated,
+      preHandler: [isAuthenticated, whitelistRoles(validatedMember)],
     },
     async (request) => {
       const {
@@ -238,7 +239,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/',
     {
       schema: updateMany(items.extendExtrasUpdateSchema()),
-      preHandler: isAuthenticated,
+      preHandler: [isAuthenticated, whitelistRoles(validatedMember)],
     },
     async (request, reply) => {
       const {
@@ -283,7 +284,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/',
     {
       schema: deleteMany,
-      preHandler: isAuthenticated,
+      preHandler: [isAuthenticated, whitelistRoles(validatedMember)],
     },
     async (request, reply) => {
       const {
@@ -323,66 +324,80 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     Body: {
       parentId?: string;
     };
-  }>('/move', { schema: moveMany, preHandler: isAuthenticated }, async (request, reply) => {
-    const {
-      user,
-      query: { id: ids },
-      body: { parentId },
-      log,
-    } = request;
-    const member = notUndefined(user?.member);
-    db.transaction(async (manager) => {
-      const repositories = buildRepositories(manager);
-      const results = await itemService.moveMany(member, repositories, ids, parentId);
-      await actionItemService.postManyMoveAction(request, repositories, results.items);
-      return results;
-    })
-      .then(({ items, moved }) => {
-        websockets.publish(
-          memberItemsTopic,
-          member.id,
-          ItemOpFeedbackEvent('move', ids, { items, moved }),
-        );
+  }>(
+    '/move',
+    {
+      schema: moveMany,
+      preHandler: [isAuthenticated, whitelistRoles(validatedMember)],
+    },
+    async (request, reply) => {
+      const {
+        user,
+        query: { id: ids },
+        body: { parentId },
+        log,
+      } = request;
+      const member = notUndefined(user?.member);
+      db.transaction(async (manager) => {
+        const repositories = buildRepositories(manager);
+        const results = await itemService.moveMany(member, repositories, ids, parentId);
+        await actionItemService.postManyMoveAction(request, repositories, results.items);
+        return results;
       })
-      .catch((e) => {
-        log.error(e);
-        websockets.publish(memberItemsTopic, member.id, ItemOpFeedbackErrorEvent('move', ids, e));
-      });
-    reply.status(StatusCodes.ACCEPTED);
-    return ids;
-  });
+        .then(({ items, moved }) => {
+          websockets.publish(
+            memberItemsTopic,
+            member.id,
+            ItemOpFeedbackEvent('move', ids, { items, moved }),
+          );
+        })
+        .catch((e) => {
+          log.error(e);
+          websockets.publish(memberItemsTopic, member.id, ItemOpFeedbackErrorEvent('move', ids, e));
+        });
+      reply.status(StatusCodes.ACCEPTED);
+      return ids;
+    },
+  );
 
   fastify.post<{
     Querystring: IdsParams;
     Body: { parentId: string };
-  }>('/copy', { schema: copyMany, preHandler: isAuthenticated }, async (request, reply) => {
-    const {
-      user,
-      query: { id: ids },
-      body: { parentId },
-      log,
-    } = request;
-    const member = notUndefined(user?.member);
-    db.transaction(async (manager) => {
-      const repositories = buildRepositories(manager);
-      return await itemService.copyMany(member, repositories, ids, {
-        parentId,
-      });
-    })
-      .then(({ items, copies }) => {
-        websockets.publish(
-          memberItemsTopic,
-          member.id,
-          ItemOpFeedbackEvent('copy', ids, { items, copies }),
-        );
+  }>(
+    '/copy',
+    {
+      schema: copyMany,
+      preHandler: [isAuthenticated, whitelistRoles(validatedMember)],
+    },
+    async (request, reply) => {
+      const {
+        user,
+        query: { id: ids },
+        body: { parentId },
+        log,
+      } = request;
+      const member = notUndefined(user?.member);
+      db.transaction(async (manager) => {
+        const repositories = buildRepositories(manager);
+        return await itemService.copyMany(member, repositories, ids, {
+          parentId,
+        });
       })
-      .catch((e) => {
-        log.error(e);
-        websockets.publish(memberItemsTopic, member.id, ItemOpFeedbackErrorEvent('copy', ids, e));
-      });
-    reply.status(StatusCodes.ACCEPTED);
-    return ids;
-  });
+        .then(({ items, copies }) => {
+          websockets.publish(
+            memberItemsTopic,
+            member.id,
+            ItemOpFeedbackEvent('copy', ids, { items, copies }),
+          );
+        })
+        .catch((e) => {
+          log.error(e);
+          websockets.publish(memberItemsTopic, member.id, ItemOpFeedbackErrorEvent('copy', ids, e));
+        });
+      reply.status(StatusCodes.ACCEPTED);
+      return ids;
+    },
+  );
 };
 
 export default plugin;

@@ -5,6 +5,7 @@ import { PermissionLevel, UUID } from '@graasp/sdk';
 import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import { validatedMember, whitelistRoles } from '../../../auth/plugins/roles';
 import graaspSearchPlugin from './plugins/search';
 import {
   getCollectionsForMember,
@@ -72,7 +73,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.post<{ Params: { itemId: string } }>(
     '/collections/:itemId/publish',
     {
-      preHandler: isAuthenticated,
+      preHandler: [isAuthenticated, whitelistRoles(validatedMember)],
       schema: publishItem,
     },
     async ({ params, user }) => {
@@ -93,7 +94,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.delete<{ Params: { itemId: string } }>(
     '/collections/:itemId/unpublish',
     {
-      preHandler: isAuthenticated,
+      preHandler: [isAuthenticated, whitelistRoles(validatedMember)],
       schema: unpublishItem,
     },
     async ({ params, user }) => {

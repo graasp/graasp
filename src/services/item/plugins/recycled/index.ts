@@ -8,6 +8,7 @@ import { IdParam, IdsParams } from '../../../../types';
 import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
+import { validatedMember, whitelistRoles } from '../../../auth/plugins/roles';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
 import schemas, { getRecycledItemDatas, recycleMany, restoreMany } from './schemas';
 import { RecycledBinService } from './service';
@@ -51,7 +52,10 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
   // recycle multiple items
   fastify.post<{ Querystring: IdsParams }>(
     '/recycle',
-    { schema: recycleMany(maxItemsInRequest), preHandler: isAuthenticated },
+    {
+      schema: recycleMany(maxItemsInRequest),
+      preHandler: [isAuthenticated, whitelistRoles(validatedMember)],
+    },
     async (request, reply) => {
       const {
         query: { id: ids },
@@ -84,7 +88,10 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
   // restore multiple items
   fastify.post<{ Querystring: IdsParams }>(
     '/restore',
-    { schema: restoreMany(maxItemsInRequest), preHandler: isAuthenticated },
+    {
+      schema: restoreMany(maxItemsInRequest),
+      preHandler: [isAuthenticated, whitelistRoles(validatedMember)],
+    },
     async (request, reply) => {
       const {
         query: { id: ids },

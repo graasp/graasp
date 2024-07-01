@@ -7,6 +7,7 @@ import { MentionStatus } from '@graasp/sdk';
 import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
+import { validatedMember, whitelistRoles } from '../../../auth/plugins/roles';
 import { ChatMention } from './chatMention';
 import commonMentions, {
   clearAllMentions,
@@ -74,7 +75,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     Body: { status: MentionStatus };
   }>(
     '/mentions/:mentionId',
-    { schema: patchMention, preHandler: isAuthenticated },
+    { schema: patchMention, preHandler: [isAuthenticated, whitelistRoles(validatedMember)] },
     async ({ user, params: { mentionId }, body: { status } }) => {
       return db.transaction(async (manager) => {
         const member = notUndefined(user?.member);
@@ -86,7 +87,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // delete one mention by id
   fastify.delete<{ Params: { mentionId: string } }>(
     '/mentions/:mentionId',
-    { schema: deleteMention, preHandler: isAuthenticated },
+    { schema: deleteMention, preHandler: [isAuthenticated, whitelistRoles(validatedMember)] },
     async ({ user, params: { mentionId } }) => {
       return db.transaction(async (manager) => {
         const member = notUndefined(user?.member);
@@ -98,7 +99,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // delete all mentions for a user
   fastify.delete(
     '/mentions',
-    { schema: clearAllMentions, preHandler: isAuthenticated },
+    { schema: clearAllMentions, preHandler: [isAuthenticated, whitelistRoles(validatedMember)] },
     async ({ user }, reply) => {
       await db.transaction(async (manager) => {
         const member = notUndefined(user?.member);

@@ -12,6 +12,7 @@ import fp from 'fastify-plugin';
 import { notUndefined } from '../../utils/assertions';
 import { buildRepositories } from '../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
+import { validatedMember, whitelistRoles } from '../auth/plugins/roles';
 import { ActionChatService } from './plugins/action/service';
 import mentionPlugin from './plugins/mentions';
 import commonChat, {
@@ -72,7 +73,7 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify) => {
       '/:itemId/chat',
       {
         schema: publishMessage,
-        preHandler: isAuthenticated,
+        preHandler: [isAuthenticated, whitelistRoles(validatedMember)],
       },
       async (request) => {
         const {
@@ -101,7 +102,7 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify) => {
       '/:itemId/chat/:messageId',
       {
         schema: patchMessage,
-        preHandler: isAuthenticated,
+        preHandler: [isAuthenticated, whitelistRoles(validatedMember)],
       },
       async (request) => {
         const {
@@ -124,7 +125,7 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify) => {
       '/:itemId/chat/:messageId',
       {
         schema: deleteMessage,
-        preHandler: isAuthenticated,
+        preHandler: [isAuthenticated, whitelistRoles(validatedMember)],
       },
       async (request) => {
         const {
@@ -146,7 +147,7 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify) => {
       '/:itemId/chat',
       {
         schema: clearChat,
-        preHandler: isAuthenticated,
+        preHandler: [isAuthenticated, whitelistRoles(validatedMember)],
       },
       async (request) => {
         const {

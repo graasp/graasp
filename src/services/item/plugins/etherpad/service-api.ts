@@ -7,6 +7,7 @@ import Etherpad from '@graasp/etherpad-api';
 
 import { notUndefined } from '../../../../utils/assertions';
 import { isAuthenticated } from '../../../auth/plugins/passport';
+import { validatedMember, whitelistRoles } from '../../../auth/plugins/roles';
 import { ETHERPAD_API_VERSION } from './constants';
 import { wrapErrors } from './etherpad';
 import { createEtherpad, getEtherpadFromItem } from './schemas';
@@ -50,7 +51,7 @@ const plugin: FastifyPluginAsync<EtherpadPluginOptions> = async (fastify, option
        */
       fastify.post<{ Querystring: { parentId?: string }; Body: { name: string } }>(
         '/create',
-        { schema: createEtherpad, preHandler: isAuthenticated },
+        { schema: createEtherpad, preHandler: [isAuthenticated, whitelistRoles(validatedMember)] },
         async (request) => {
           const {
             user,
