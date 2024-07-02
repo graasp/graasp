@@ -58,7 +58,7 @@
     "@fastify/secure-session": "7.5.1",
     "@fastify/static": "7.0.4",
     "@fastify/view": "9.1.0",
-    "@fastify/websocket": "10.0.1",
+    "@fastify/websocket": "7.2.0",
     "@graasp/etherpad-api": "2.1.1",
     "@graasp/sdk": "4.15.1",
     "@graasp/translations": "1.31.0",

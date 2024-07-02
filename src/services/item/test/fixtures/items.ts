@@ -105,12 +105,7 @@ export class ItemTestUtils {
     item?: Partial<Item>;
   }) {
     const value = this.createItem({ ...item, creator: actor, parentItem });
-    await this.rawItemRepository.save(value);
-    const createdItem = await this.rawItemRepository.findOneBy({ id: value.id });
-    if (!createdItem) {
-      throw new Error('Expected created Item to exist but it was not found');
-    }
-    return createdItem;
+    return this.rawItemRepository.save(value);
   }
 
   savePublicItem = async ({

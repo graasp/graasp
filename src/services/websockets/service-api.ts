@@ -98,14 +98,14 @@ const plugin: FastifyPluginAsync<WebsocketsPluginOptions> = async (fastify, opti
       // member from valid session
       const { user } = req;
 
-      wsChannels.clientRegister(client);
+      wsChannels.clientRegister(client.socket);
 
-      client.on('message', (msg) => wsService.handleRequest(msg, user?.member, client));
+      client.on('message', (msg) => wsService.handleRequest(msg, user?.member, client.socket));
 
       client.on('error', log.error);
 
       client.on('close', (_code, _reason) => {
-        wsChannels.clientRemove(client);
+        wsChannels.clientRemove(client.socket);
       });
     },
   );

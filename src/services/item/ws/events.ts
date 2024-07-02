@@ -5,8 +5,6 @@ import { FeedBackOperationType, ItemOpFeedbackEvent as ItemOpFeedbackEventType }
 
 import { Item } from '../entities/Item';
 
-type SerializedItem = Omit<Item, 'search_document'>;
-
 // changes on items of given user
 export const memberItemsTopic = 'item/member';
 
@@ -16,7 +14,7 @@ export const memberItemsTopic = 'item/member';
 export interface ItemEvent {
   kind: string;
   op: string;
-  item: SerializedItem;
+  item: Item;
 }
 
 /**
@@ -28,10 +26,10 @@ export interface ItemEvent {
  */
 export const ItemOpFeedbackEvent = <T extends FeedBackOperationType>(
   op: T,
-  resource: ItemOpFeedbackEventType<SerializedItem, T>['resource'],
-  result: ItemOpFeedbackEventType<SerializedItem, T>['result'],
+  resource: ItemOpFeedbackEventType<Item, T>['resource'],
+  result: ItemOpFeedbackEventType<Item, T>['result'],
   errors?: Error[],
-): ItemOpFeedbackEventType<SerializedItem, T> => ({
+): ItemOpFeedbackEventType<Item, T> => ({
   kind: 'feedback',
   op,
   resource,
@@ -49,9 +47,9 @@ export const ItemOpFeedbackEvent = <T extends FeedBackOperationType>(
  */
 export const ItemOpFeedbackErrorEvent = <T extends FeedBackOperationType>(
   op: T,
-  resource: ItemOpFeedbackEventType<SerializedItem, T>['resource'],
+  resource: ItemOpFeedbackEventType<Item, T>['resource'],
   error: Error,
-): ItemOpFeedbackEventType<SerializedItem, T> => ({
+): ItemOpFeedbackEventType<Item, T> => ({
   kind: 'feedback',
   op,
   resource,
