@@ -74,7 +74,6 @@ describe('asynchronous feedback', () => {
   it('member that initated the export operation receives success feedback', async () => {
     const { item } = await testUtils.saveItemAndMembership({ member: actor });
     const memberUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
-
     const response = await app.inject({
       method: HttpMethod.Post,
       url: `/items/${item.id}/actions/export`,
