@@ -32,13 +32,17 @@ export const getDummyProfile = (options: Partial<MemberProfile>): Partial<Member
 export const saveMemberProfile = async (m: CompleteMember, profile: IMemberProfile) => {
   const member = await saveMember(m);
   const memberProfile = MemberProfile.create({ ...profile, member });
-  const savedMember = await MemberProfile.save(memberProfile);
+  const savedMemberProfile = await MemberProfile.save(memberProfile);
 
-  return savedMember;
+  return savedMemberProfile;
 };
 
 export const getMemberProfile = async (id: string) => {
-  return MemberProfile.findOneBy({ id });
+  const profile = await MemberProfile.findOneBy({ id });
+  if (!profile) {
+    throw new Error('Unable to find profile, but it should exist');
+  }
+  return profile;
 };
 
 export const ANNA_PROFILE = {

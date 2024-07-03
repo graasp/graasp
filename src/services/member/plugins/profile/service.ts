@@ -1,28 +1,24 @@
 import { FastifyBaseLogger } from 'fastify';
 
-import { UnauthorizedMember } from '../../../../utils/errors';
+import { UUID } from '@graasp/sdk';
+
 import { Repositories } from '../../../../utils/repositories';
-import { Actor } from '../../../member/entities/member';
+import { Actor, Member } from '../../../member/entities/member';
 import { IMemberProfile } from './types';
 
 export class MemberProfileService {
-  log: FastifyBaseLogger;
+  private log: FastifyBaseLogger;
 
   constructor(log: FastifyBaseLogger) {
     this.log = log;
   }
 
-  async post(member: Actor, repositories: Repositories, data: IMemberProfile) {
-    const { memberProfileRepository } = repositories;
-    if (!member?.id) {
-      throw new UnauthorizedMember();
-    }
+  async post(member: Member, { memberProfileRepository }: Repositories, data: IMemberProfile) {
     const profile = await memberProfileRepository.createOne({ ...data, member });
     return profile;
   }
 
-  async get(memberId: string, repositories: Repositories) {
-    const { memberProfileRepository } = repositories;
+  async get(_actor: Actor, { memberProfileRepository }: Repositories, memberId: UUID) {
     const memberProfile = await memberProfileRepository.getByMemberId(memberId, {
       visibility: true,
     });
@@ -33,22 +29,16 @@ export class MemberProfileService {
     return memberProfile;
   }
 
-  async getOwn(member: Actor, repositories: Repositories) {
-    const { memberProfileRepository } = repositories;
-    if (!member?.id) {
-      throw new UnauthorizedMember();
-    }
+  async getOwn(member: Member, { memberProfileRepository }: Repositories) {
     const memberProfile = await memberProfileRepository.getByMemberId(member.id);
     return memberProfile;
   }
 
-  async patch(member: Actor, repositories: Repositories, data: Partial<IMemberProfile>) {
-    const { memberProfileRepository } = repositories;
-
-    if (!member?.id) {
-      throw new UnauthorizedMember();
-    }
-
+  async patch(
+    member: Member,
+    { memberProfileRepository }: Repositories,
+    data: Partial<IMemberProfile>,
+  ) {
     return memberProfileRepository.patch(member.id, data);
   }
 }

@@ -49,6 +49,7 @@ export const settings = S.object()
   .prop('alignment', S.enum(Object.values(Alignment)));
 
 export const partialMember = S.object()
+  .additionalProperties(false)
   .prop('id', uuid)
   .prop('name', S.string())
   .prop('email', S.string().format('email'));
