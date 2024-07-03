@@ -49,13 +49,11 @@ export const settings = S.object()
   .prop('alignment', S.enum(Object.values(Alignment)));
 
 export const partialMember = S.object()
-  .additionalProperties(false)
   .prop('id', uuid)
   .prop('name', S.string())
   .prop('email', S.string().format('email'));
 
 export const item = S.object()
-  .additionalProperties(false)
   .prop('id', uuid)
   .prop('name', S.string())
   .prop('displayName', S.string())
@@ -66,7 +64,7 @@ export const item = S.object()
   .prop('settings', settings)
   .prop('lang', S.string())
   // creator could have been deleted
-  .prop('creator', S.ifThenElse(S.not(S.null()), partialMember, S.null()))
+  .prop('creator', S.object().ifThenElse(S.null(), S.null(), partialMember))
   /**
    * for some reason setting these date fields as "type: 'string'"
    * makes the serialization fail using the anyOf.
@@ -176,12 +174,12 @@ export const create =
     };
   };
 
-export const getOne = {
+export const getOne: FastifySchema = {
   params: idParam,
   response: { 200: packedItem, '4xx': error },
 };
 
-export const getAccessible = {
+export const getAccessible: FastifySchema = {
   querystring: S.object()
     .prop('page', S.number().default(1))
     .prop('name', S.string())
@@ -200,7 +198,7 @@ export const getAccessible = {
   },
 };
 
-export const getMany = {
+export const getMany: FastifySchema = {
   querystring: S.object()
     .prop('id', S.array().minItems(1).maxItems(MAX_TARGETS_FOR_READ_REQUEST))
     .extend(idsQuery),

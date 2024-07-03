@@ -16,12 +16,11 @@ const memberSharedSchema = S.object()
   .prop('twitterID', S.anyOf([S.string(), S.null()]));
 
 export const profileMember = S.object()
-  .additionalProperties(false)
   .prop('id', uuid)
   .prop('visibility', S.boolean())
   .prop('member', partialMember)
-  .prop('createdAt', S.raw({}))
-  .prop('updatedAt', S.raw({}))
+  .prop('createdAt', S.string().format('date-time'))
+  .prop('updatedAt', S.string().format('date-time'))
   .extend(memberSharedSchema);
 
 export const createProfile = {
@@ -29,11 +28,7 @@ export const createProfile = {
     201: profileMember,
     '4xx': error,
   },
-  body: S.object()
-    .prop('visibility', S.boolean())
-    .additionalProperties(false)
-    .required(['bio'])
-    .extend(memberSharedSchema),
+  body: S.object().prop('visibility', S.boolean()).required(['bio']).extend(memberSharedSchema),
 };
 
 export const getProfileForMember = {
@@ -83,8 +78,5 @@ export const updateMemberProfile = {
     200: profileMember,
     '4xx': error,
   },
-  body: S.object()
-    .additionalProperties(false)
-    .prop('visibility', S.boolean())
-    .extend(memberSharedSchema),
+  body: S.object().prop('visibility', S.boolean()).extend(memberSharedSchema),
 };

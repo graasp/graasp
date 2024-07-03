@@ -57,6 +57,7 @@ const build = async ({ member }: { member?: CompleteMember | null } = {}) => {
     ajv: {
       customOptions: {
         coerceTypes: 'array',
+        allowUnionTypes: true,
       },
       plugins: [ajvFormats],
     },

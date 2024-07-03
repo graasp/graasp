@@ -9,7 +9,7 @@ import { H5PInvalidManifestError } from '../errors';
 import { h5pManifestSchema } from '../schemas';
 import { H5P } from './h5p';
 
-const ajv = new Ajv();
+const ajv = new Ajv({ allowUnionTypes: true });
 
 /**
  * Utility class containing the logic to validate a .h5p package

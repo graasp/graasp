@@ -8,6 +8,7 @@ import {
   MIN_USERNAME_LENGTH,
 } from '@graasp/sdk';
 
+import { error } from '../../schemas/fluent-schema';
 import { NAME_REGEX, UUID_REGEX } from '../../schemas/global';
 
 /**
@@ -212,7 +213,7 @@ export const updateOne: FastifySchema = {
   body: { $ref: 'https://graasp.org/members/#/definitions/partialMemberRequireOne' },
   response: {
     [StatusCodes.OK]: { $ref: 'https://graasp.org/members/#/definitions/currentMember' },
-    [StatusCodes.FORBIDDEN]: {},
+    [StatusCodes.FORBIDDEN]: error,
   },
 };
 
