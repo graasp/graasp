@@ -29,6 +29,7 @@ import HookManager from '../../utils/hook';
 import { Repositories } from '../../utils/repositories';
 import {
   filterOutItems,
+  filterOutPackedDescendants,
   filterOutPackedItems,
   validatePermission,
   validatePermissionMany,
@@ -396,14 +397,14 @@ export class ItemService {
     const item = await this.get(actor, repositories, itemId);
 
     if (!isItemType(item, ItemType.FOLDER)) {
-      return [];
+      return { item, descendants: [] };
     }
 
-    return itemRepository.getDescendants(item, options);
+    return { item, descendants: await itemRepository.getDescendants(item, options) };
   }
 
   async getFilteredDescendants(actor: Actor, repositories: Repositories, itemId: UUID) {
-    const descendants = await this.getDescendants(actor, repositories, itemId);
+    const { descendants } = await this.getDescendants(actor, repositories, itemId);
     if (!descendants.length) {
       return [];
     }
@@ -417,11 +418,11 @@ export class ItemService {
     itemId: UUID,
     options?: { showHidden?: boolean; types?: string[] },
   ) {
-    const descendants = await this.getDescendants(actor, repositories, itemId, options);
+    const { descendants, item } = await this.getDescendants(actor, repositories, itemId, options);
     if (!descendants.length) {
       return [];
     }
-    return filterOutPackedItems(actor, repositories, descendants, options);
+    return filterOutPackedDescendants(actor, repositories, item, descendants, options);
   }
 
   async getParents(actor: Actor, repositories: Repositories, itemId: UUID) {

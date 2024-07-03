@@ -232,7 +232,6 @@ export class ItemRepository {
 
     query.orderBy('item.path', 'ASC');
     const descendants = await query.getMany();
-
     return sortChildrenForTreeWith(descendants, item);
   }
 

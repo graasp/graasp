@@ -229,6 +229,53 @@ const _filterOutItems = async (
   });
   return { items: filteredItems, memberships, tags };
 };
+/**
+ * Internal filtering function that takes out limited items (eg. hidden children)
+ * WARNING: the return values for tags and memberships are different from the other filter out functions
+ *  */
+const _filterOutDescendants = async (
+  actor: Actor,
+  repositories: Repositories,
+  item: Item,
+  descendants: Item[],
+  options?: { showHidden?: boolean },
+) => {
+  const { itemMembershipRepository } = repositories;
+  const showHidden = options?.showHidden ?? true;
+  if (!descendants.length) {
+    return { items: [], memberships: [], tags: [] };
+  }
+
+  // TODO: optimize with on query
+  const allMemberships = actor
+    ? await itemMembershipRepository.getAllBelow(item, actor.id, {
+        considerLocal: true,
+        selectItem: true,
+      })
+    : [];
+  const tags = await repositories.itemTagRepository.getManyBelow(item, [
+    ItemTagType.Hidden,
+    ItemTagType.Public,
+  ]);
+  const filteredItems = descendants.filter((item) => {
+    const isHidden = tags.find(
+      (t) => item.path.includes(t.item.path) && t.type === ItemTagType.Hidden,
+    );
+    if (isHidden && !showHidden) {
+      return false;
+    }
+    const memberships = allMemberships.filter((m) => item.path.includes(m.item.path));
+    const permission = PermissionLevelCompare.getHighest(
+      memberships.map(({ permission }) => permission),
+    );
+
+    // return item if has at least write permission or is not hidden
+    return (
+      (permission && PermissionLevelCompare.gte(permission, PermissionLevel.Write)) || !isHidden
+    );
+  });
+  return { items: filteredItems, memberships: allMemberships, tags };
+};
 
 /**
  * Filtering function that takes out limited items (eg. hidden children)
@@ -266,6 +313,33 @@ export const filterOutPackedItems = async (
       tags?.data[item.id],
     ).packed();
   });
+};
+
+/**
+ * Filtering function that takes out limited descendants (eg. hidden children) and return packed items
+ *  */
+export const filterOutPackedDescendants = async (
+  actor: Actor,
+  repositories,
+  itemId,
+  descendants: Item[],
+  options?: { showHidden?: boolean },
+): Promise<PackedItem[]> => {
+  const {
+    items: filteredItems,
+    memberships,
+    tags,
+  } = await _filterOutDescendants(actor, repositories, itemId, descendants, options);
+  const d = filteredItems.map((item) => {
+    const permissions = memberships
+      .filter((m) => item.path.includes(m.item.path))
+      .map(({ permission }) => permission);
+    const itemTags = tags.filter((t) => item.path.includes(t.item.path));
+    const permission = PermissionLevelCompare.getHighest(permissions);
+    // return packed item
+    return new ItemWrapper(item, permission ? { permission } : undefined, itemTags).packed();
+  });
+  return d;
 };
 
 /**
