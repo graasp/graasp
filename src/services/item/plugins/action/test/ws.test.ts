@@ -16,6 +16,7 @@ import {
   memberItemsTopic,
 } from '../../../ws/events';
 import { ActionRequestExportRepository } from '../requestExport/repository';
+import { expectExportFeedbackOp } from './utils';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
@@ -85,10 +86,7 @@ describe('asynchronous feedback', () => {
     await waitForExpect(() => {
       const [feedbackUpdate] = memberUpdates as ItemOpFeedbackEventType<Item, 'export'>[];
       const expected = ItemOpFeedbackEvent('export', [item.id], { [item.id]: item });
-      expect(feedbackUpdate.kind).toEqual(expected.kind);
-      expect(feedbackUpdate.op).toEqual(expected.op);
-      expect(feedbackUpdate.resource).toEqual(expected.resource);
-      expect(feedbackUpdate.result!.id).toEqual(expected.result!.id);
+      expectExportFeedbackOp(feedbackUpdate, expected);
     });
   });
 
