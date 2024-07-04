@@ -124,11 +124,11 @@ export class ItemTagRepository {
 
   /**
    * return item tag with given for all items below given item, including item's
-   * @param items
-   * @param tagTypes
-   * @returns
+   * @param item item use to refer to its descendants
+   * @param tagTypes tag types to retrieve
+   * @returns tags array
    */
-  async getManyBelow(item: Item, tagTypes: ItemTagType[]): Promise<ItemTag[]> {
+  async getManyBelowAndSelf(item: Item, tagTypes: ItemTagType[]): Promise<ItemTag[]> {
     const query = this.repository
       .createQueryBuilder('itemTag')
       .leftJoinAndSelect('itemTag.item', 'item');

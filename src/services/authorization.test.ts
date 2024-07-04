@@ -1,11 +1,22 @@
-import { ItemTagType, PermissionLevel } from '@graasp/sdk';
+import {
+  FolderItemFactory,
+  ItemTagType,
+  PackedFolderItemFactory,
+  PermissionLevel,
+} from '@graasp/sdk';
 
 import { ItemMembershipRepository } from '../services/itemMembership/repository';
 import { MemberCannotAccess, MemberCannotAdminItem, MemberCannotWriteItem } from '../utils/errors';
-import { validatePermission, validatePermissionMany } from './authorization';
+import {
+  filterOutPackedDescendants,
+  validatePermission,
+  validatePermissionMany,
+} from './authorization';
+import { PackedItem } from './item/ItemWrapper';
 import { Item } from './item/entities/Item';
 import { ItemTag } from './item/plugins/itemTag/ItemTag';
 import { ItemTagRepository } from './item/plugins/itemTag/repository';
+import { expectPackedItem } from './item/test/fixtures/items';
 import { ItemMembership } from './itemMembership/entities/ItemMembership';
 import { Member } from './member/entities/member';
 
@@ -3181,5 +3192,134 @@ describe('validatePermissionMany for many items', () => {
     expect(result2.errors[0]).toBeInstanceOf(MemberCannotAdminItem);
     expect(result2.data[PUBLIC_ITEM.id]).toBeUndefined();
     expect(result2.errors[1]).toBeInstanceOf(MemberCannotAccess);
+  });
+});
+
+describe('filterOutPackedDescendants', () => {
+  let repositories;
+  const item = FolderItemFactory() as unknown as Item;
+
+  // raw descendants to pass to function
+  const descendants = [
+    FolderItemFactory({ parentItem: item }) as unknown as Item,
+    FolderItemFactory({ parentItem: item }) as unknown as Item,
+    FolderItemFactory({ parentItem: item }) as unknown as Item,
+    FolderItemFactory({ parentItem: item }) as unknown as Item,
+    FolderItemFactory({ parentItem: item }) as unknown as Item,
+  ];
+  const hiddenTag = { type: ItemTagType.Hidden, item: descendants[2] } as ItemTag;
+
+  /** build packed descendants for checking returned values
+   * types don't play nicely because factory does not use the same types as the backend
+   */
+  const buildPackedDescendants = (permission, hiddenTag): PackedItem[] => {
+    const arr = descendants.map((descendant) =>
+      PackedFolderItemFactory(descendant as never, {
+        permission,
+      }),
+    );
+    const idx = arr.findIndex(({ id }) => id === hiddenTag.item.id);
+    arr[idx].hidden = hiddenTag;
+    return arr as unknown as PackedItem[];
+  };
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('Admin returns all', async () => {
+    // one parent membership
+    const memberships = [{ item, member: OWNER, permission: PermissionLevel.Admin }];
+    // packed descendants for expect
+    // one item is hidden but this item should be returned
+    const packedDescendants = buildPackedDescendants(memberships[0].permission, hiddenTag);
+
+    repositories = {
+      itemMembershipRepository: {
+        getAllBelow: jest.fn(async () => memberships),
+      },
+      itemTagRepository: {
+        getManyBelowAndSelf: jest.fn(async () => [hiddenTag]),
+      },
+    };
+
+    const result = await filterOutPackedDescendants(OWNER, repositories, item, descendants);
+
+    expect(descendants).toHaveLength(result.length);
+    for (let i = 0; i < result.length; i += 1) {
+      expectPackedItem(packedDescendants[i], result[i]);
+    }
+  });
+
+  it('Writer returns all', async () => {
+    // one parent membership
+    const memberships = [{ item, member: OWNER, permission: PermissionLevel.Write }];
+    // packed descendants for expect
+    // one item is hidden but this item should be returned
+    const packedDescendants = buildPackedDescendants(memberships[0].permission, hiddenTag);
+
+    repositories = {
+      itemMembershipRepository: {
+        getAllBelow: jest.fn(async () => memberships),
+      },
+      itemTagRepository: {
+        getManyBelowAndSelf: jest.fn(async () => [hiddenTag]),
+      },
+    };
+
+    const result = await filterOutPackedDescendants(OWNER, repositories, item, descendants);
+
+    expect(descendants).toHaveLength(result.length);
+    for (let i = 0; i < result.length; i += 1) {
+      expectPackedItem(packedDescendants[i], result[i]);
+    }
+  });
+
+  it('Reader does not return hidden', async () => {
+    // one parent membership
+    const memberships = [{ item, member: OWNER, permission: PermissionLevel.Read }];
+    // packed descendants for expect
+    // one item is hidden, this item should not be returned!
+    const packedDescendants = buildPackedDescendants(memberships[0].permission, hiddenTag);
+
+    repositories = {
+      itemMembershipRepository: {
+        getAllBelow: jest.fn(async () => memberships),
+      },
+      itemTagRepository: {
+        getManyBelowAndSelf: jest.fn(async () => [hiddenTag]),
+      },
+    };
+
+    const result = await filterOutPackedDescendants(OWNER, repositories, item, descendants);
+
+    expect(result).toHaveLength(descendants.length - 1);
+    result.forEach((r) => {
+      const d = packedDescendants.find((i) => i.id === r.id);
+      expectPackedItem(d, r);
+    });
+  });
+
+  it('No membership does not return hidden', async () => {
+    // packed descendants for expect
+    // one item is hidden, this item should not be returned!
+    const packedDescendants = buildPackedDescendants(null, hiddenTag);
+
+    repositories = {
+      itemMembershipRepository: {
+        getAllBelow: jest.fn(async () => []),
+      },
+      itemTagRepository: {
+        getManyBelowAndSelf: jest.fn(async () => [hiddenTag]),
+      },
+    };
+
+    const result = await filterOutPackedDescendants(OWNER, repositories, item, descendants);
+
+    expect(result).toHaveLength(descendants.length - 1);
+    result.forEach((r) => {
+      const d = packedDescendants.find((i) => i.id === r.id);
+      expectPackedItem(d, r);
+    });
   });
 });

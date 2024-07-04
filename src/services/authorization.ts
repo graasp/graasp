@@ -30,7 +30,6 @@ const permissionMapping = {
  * @param item
  * @throws if the user cannot access the item
  */
-
 export const validatePermissionMany = async (
   {
     itemMembershipRepository,
@@ -270,6 +269,8 @@ export const filterOutPackedItems = async (
 
 /**
  * Filtering function that takes out limited descendants (eg. hidden children) and return packed items
+ * @param item item is parent of descendants, suppose actor has at least access to it
+ * @param descendants flat list of descendants of item
  *  */
 export const filterOutPackedDescendants = async (
   actor: Actor,
@@ -278,20 +279,20 @@ export const filterOutPackedDescendants = async (
   descendants: Item[],
   options?: { showHidden?: boolean },
 ): Promise<PackedItem[]> => {
-  const { itemMembershipRepository } = repositories;
+  const { itemMembershipRepository, itemTagRepository } = repositories;
   const showHidden = options?.showHidden ?? true;
+
   if (!descendants.length) {
     return [];
   }
 
-  // TODO: optimize with on query
   const allMemberships = actor
     ? await itemMembershipRepository.getAllBelow(item, actor.id, {
         considerLocal: true,
         selectItem: true,
       })
     : [];
-  const tags = await repositories.itemTagRepository.getManyBelow(item, [
+  const tags = await itemTagRepository.getManyBelowAndSelf(item, [
     ItemTagType.Hidden,
     ItemTagType.Public,
   ]);
@@ -312,6 +313,7 @@ export const filterOutPackedDescendants = async (
         if (i.hidden && !showHidden) {
           return false;
         }
+
         // return item if has at least write permission or is not hidden
         return (
           (i.permission && PermissionLevelCompare.gte(i.permission, PermissionLevel.Write)) ||
