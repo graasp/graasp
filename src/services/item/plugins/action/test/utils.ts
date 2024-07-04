@@ -1,7 +1,7 @@
 import { ItemOpFeedbackEvent } from '@graasp/sdk';
 
 import { Item } from '../../../entities/Item';
-import { expectManyItems } from '../../../test/fixtures/items';
+import { expectItem, expectManyItems } from '../../../test/fixtures/items';
 
 export const expectExportFeedbackOp = <
   S extends {
@@ -15,7 +15,7 @@ export const expectExportFeedbackOp = <
   expect(result.op).toEqual(expected.op);
   expect(result.resource).toEqual(expected.resource);
   if (expected.result) {
-    expect(result.result!.id).toEqual(expected.result!.id);
+    expectItem(result.result, expected.result);
   }
   if (expected.errors) {
     expect(result.errors).toEqual(expected.errors);
@@ -37,13 +37,9 @@ export const expectCopyFeedbackOp = (
   }
 };
 
-export const expectMoveFeedbackOp = <
-  S extends {
-    id: string;
-  },
->(
-  result: ItemOpFeedbackEvent<S, 'move'>,
-  expected: ItemOpFeedbackEvent<S, 'move'>,
+export const expectMoveFeedbackOp = (
+  result: ItemOpFeedbackEvent<Item, 'move'>,
+  expected: ItemOpFeedbackEvent<Item, 'move'>,
 ) => {
   expect(result.kind).toEqual(expected.kind);
   expect(result.op).toEqual(expected.op);
@@ -61,14 +57,15 @@ export const expectDeleteFeedbackOp = <
     id: string;
   },
 >(
-  result: ItemOpFeedbackEvent<S, 'delete'>,
-  expected: ItemOpFeedbackEvent<S, 'delete'>,
+  result: ItemOpFeedbackEvent<Item, 'delete'>,
+  expected: ItemOpFeedbackEvent<Item, 'delete'>,
 ) => {
   expect(result.kind).toEqual(expected.kind);
   expect(result.op).toEqual(expected.op);
   expect(result.resource).toEqual(expected.resource);
+
   if (expected.result) {
-    expectManyItems(result.result!.items, expected.result!.items);
+    expectItem(result.result, expected.result);
   }
   if (expected.errors) {
     expect(result.errors).toEqual(expected.errors);
@@ -87,7 +84,7 @@ export const expectUpdateFeedbackOp = <
   expect(result.op).toEqual(expected.op);
   expect(result.resource).toEqual(expected.resource);
   if (expected.result) {
-    expectManyItems(result.result!.items, expected.result!.items);
+    expectItem(result.result, expected.result);
   }
   if (expected.errors) {
     expect(result.errors).toEqual(expected.errors);
