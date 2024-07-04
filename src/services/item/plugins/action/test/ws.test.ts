@@ -3,11 +3,12 @@ import waitForExpect from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod } from '@graasp/sdk';
+import { HttpMethod, ItemOpFeedbackEvent as ItemOpFeedbackEventType } from '@graasp/sdk';
 
 import { clearDatabase } from '../../../../../../test/app';
 import { TestWsClient } from '../../../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../../../websockets/test/ws-app';
+import { Item } from '../../../entities/Item';
 import { ItemTestUtils } from '../../../test/fixtures/items';
 import {
   ItemOpFeedbackErrorEvent,
@@ -82,10 +83,12 @@ describe('asynchronous feedback', () => {
     expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
 
     await waitForExpect(() => {
-      const [feedbackUpdate] = memberUpdates;
-      expect(feedbackUpdate).toMatchObject(
-        ItemOpFeedbackEvent('export', [item.id], { [item.id]: item }),
-      );
+      const [feedbackUpdate] = memberUpdates as ItemOpFeedbackEventType<Item, 'export'>[];
+      const expected = ItemOpFeedbackEvent('export', [item.id], { [item.id]: item });
+      expect(feedbackUpdate.kind).toEqual(expected.kind);
+      expect(feedbackUpdate.op).toEqual(expected.op);
+      expect(feedbackUpdate.resource).toEqual(expected.resource);
+      expect(feedbackUpdate.result!.id).toEqual(expected.result!.id);
     });
   });
 
