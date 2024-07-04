@@ -1,19 +1,20 @@
 import { StatusCodes } from 'http-status-codes';
 import waitForExpect from 'wait-for-expect';
 
-import { HttpMethod } from '@graasp/sdk';
+import { HttpMethod, ItemOpFeedbackEvent as ItemOpFeedbackEventType } from '@graasp/sdk';
 
 import { clearDatabase } from '../../../../../../test/app';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { TestWsClient } from '../../../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../../../websockets/test/ws-app';
+import { Item } from '../../../entities/Item';
 import { ItemTestUtils } from '../../../test/fixtures/items';
 import {
-  ItemEvent,
   ItemOpFeedbackErrorEvent,
   ItemOpFeedbackEvent,
   memberItemsTopic,
 } from '../../../ws/events';
+import { expectValidateFeedbackOp } from '../../action/test/utils';
 import { ItemValidationGroupRepository } from '../repositories/ItemValidationGroup';
 import { saveItemValidation } from './utils';
 
@@ -42,7 +43,7 @@ describe('asynchronous feedback', () => {
     const { item } = await testUtils.saveItemAndMembership({ member: actor });
     await saveItemValidation({ item });
 
-    const memberUpdates = await ws.subscribe<ItemEvent>({
+    const memberUpdates = await ws.subscribe<ItemOpFeedbackEventType<Item, 'validate'>>({
       topic: memberItemsTopic,
       channel: actor.id,
     });
@@ -56,7 +57,8 @@ describe('asynchronous feedback', () => {
 
     await waitForExpect(() => {
       const [feedbackUpdate] = memberUpdates;
-      expect(feedbackUpdate).toMatchObject(
+      expectValidateFeedbackOp(
+        feedbackUpdate,
         ItemOpFeedbackEvent('validate', [item.id], { [item.id]: item }),
       );
     });
@@ -66,7 +68,7 @@ describe('asynchronous feedback', () => {
     const { item } = await testUtils.saveItemAndMembership({ member: actor });
     await saveItemValidation({ item });
 
-    const memberUpdates = await ws.subscribe<ItemEvent>({
+    const memberUpdates = await ws.subscribe<ItemOpFeedbackEventType<Item, 'validate'>>({
       topic: memberItemsTopic,
       channel: actor.id,
     });
@@ -84,7 +86,8 @@ describe('asynchronous feedback', () => {
 
     await waitForExpect(() => {
       const [feedbackUpdate] = memberUpdates;
-      expect(feedbackUpdate).toMatchObject(
+      expectValidateFeedbackOp(
+        feedbackUpdate,
         ItemOpFeedbackErrorEvent('validate', [item.id], new Error('mock error')),
       );
     });

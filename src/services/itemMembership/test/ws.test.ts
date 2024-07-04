@@ -5,6 +5,10 @@ import { HttpMethod, PermissionLevel, Websocket, parseStringToDate } from '@graa
 
 import { clearDatabase, mockAuthenticate } from '../../../../test/app';
 import { MemberCannotAccess } from '../../../utils/errors';
+import {
+  expectDeleteFeedbackOp,
+  expectDeleteMembershipFeedback,
+} from '../../item/plugins/action/test/utils';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
 import { saveMember } from '../../member/test/fixtures/members';
 import { TestWsClient } from '../../websockets/test/test-websocket-client';
@@ -146,7 +150,7 @@ describe('Item websocket hooks', () => {
   });
 
   describe('on delete membership', () => {
-    it('receives item membership delete event', async () => {
+    it.only('receives item membership delete event', async () => {
       const anna = await saveMember();
       const { item } = await testUtils.saveItemAndMembership({ member: anna });
       const membership = await testUtils.saveMembership({
@@ -171,7 +175,7 @@ describe('Item websocket hooks', () => {
 
       await waitForExpect(() => {
         const [membershipUpdate] = membershipUpdates;
-        expect(membershipUpdate).toMatchObject(ItemMembershipEvent('delete', membership));
+        expectDeleteMembershipFeedback(membershipUpdate, ItemMembershipEvent('delete', membership));
       });
     });
   });

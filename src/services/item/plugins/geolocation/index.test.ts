@@ -14,6 +14,7 @@ import { saveMember } from '../../../member/test/fixtures/members';
 import { ItemWrapper, PackedItem } from '../../ItemWrapper';
 import { ItemTestUtils, expectPackedItem } from '../../test/fixtures/items';
 import { ItemGeolocation, PackedItemGeolocation } from './ItemGeolocation';
+import { expectPackedItemGeolocations } from './test/utils';
 
 // mock datasource
 jest.mock('../../../../plugins/datasource');
@@ -26,33 +27,6 @@ export const saveGeolocation = async (
 ) => {
   const geoloc = await repository.save(args);
   return { geoloc, packed: { ...geoloc, item: args.item } };
-};
-
-export const expectItemGeolocations = (
-  results: PackedItemGeolocation[] | null,
-  expected: PackedItemGeolocation[],
-) => {
-  for (const ig of expected) {
-    const publicTest = ig.item.public?.id
-      ? { public: expect.objectContaining({ id: ig.item.public.id }) }
-      : {};
-
-    expect(results).toContainEqual(
-      expect.objectContaining({
-        lat: ig.lat,
-        lng: ig.lng,
-        addressLabel: ig.addressLabel,
-        country: ig.country,
-        item: expect.objectContaining({
-          id: ig.item.id,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          creator: expect.objectContaining({ id: ig.item.creator!.id }),
-          permission: ig.item.permission,
-          ...publicTest,
-        }),
-      }),
-    );
-  }
 };
 
 describe('Item Geolocation', () => {
@@ -84,7 +58,7 @@ describe('Item Geolocation', () => {
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
         const result = res.json();
-        expectItemGeolocations([result], [{ ...geoloc, item: packedItem }]);
+        expectPackedItemGeolocations([result], [{ ...geoloc, item: packedItem }]);
       });
 
       it('Throws for non public item', async () => {
@@ -190,7 +164,7 @@ describe('Item Geolocation', () => {
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
         expect(res.json()).toHaveLength(0);
-        expectItemGeolocations(res.json(), []);
+        expectPackedItemGeolocations(res.json(), []);
       });
 
       it('Get public item geolocations within public item', async () => {
@@ -226,7 +200,7 @@ describe('Item Geolocation', () => {
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
         expect(res.json()).toHaveLength(3);
-        expectItemGeolocations(res.json(), [geoloc1, geoloc2, geoloc3]);
+        expectPackedItemGeolocations(res.json(), [geoloc1, geoloc2, geoloc3]);
       });
     });
 
@@ -291,7 +265,7 @@ describe('Item Geolocation', () => {
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
         expect(res.json()).toHaveLength(3);
-        expectItemGeolocations(res.json(), [geoloc1, geoloc2, geoloc3]);
+        expectPackedItemGeolocations(res.json(), [geoloc1, geoloc2, geoloc3]);
       });
 
       it('Get item geolocations with search strings', async () => {
@@ -332,7 +306,7 @@ describe('Item Geolocation', () => {
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
         expect(res.json()).toHaveLength(3);
-        expectItemGeolocations(res.json(), [geoloc1, geoloc2, geoloc3]);
+        expectPackedItemGeolocations(res.json(), [geoloc1, geoloc2, geoloc3]);
       });
 
       it('Get item geolocations within parent item', async () => {
@@ -371,7 +345,7 @@ describe('Item Geolocation', () => {
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
         expect(res.json()).toHaveLength(2);
-        expectItemGeolocations(res.json(), [geoloc1, geoloc2]);
+        expectPackedItemGeolocations(res.json(), [geoloc1, geoloc2]);
       });
 
       it('Throw for incorrect parent item id', async () => {

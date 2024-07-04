@@ -8,6 +8,7 @@ import { ItemTestUtils } from '../../test/fixtures/items';
 import { RecycledItemDataRepository } from '../recycled/repository';
 import { ItemGeolocation } from './ItemGeolocation';
 import { MissingGeolocationSearchParams } from './errors';
+import { expectPackedItemGeolocations } from './index.test';
 import { ItemGeolocationRepository } from './repository';
 
 // mock datasource
@@ -282,7 +283,7 @@ describe('ItemGeolocationRepository', () => {
         },
       );
       expect(res1).toHaveLength(1);
-      expect(res1).toContainEqual(geolocParent);
+      expectPackedItemGeolocations(res1, [geolocParent]);
     });
 
     it('return only item within keywords in name', async () => {
@@ -312,7 +313,7 @@ describe('ItemGeolocationRepository', () => {
       });
       expect(res).toHaveLength(2);
       expect(res).toContainEqual(geolocParent);
-      expect(res).toContainEqual(geoloc);
+      expectPackedItemGeolocations(res, [geoloc, geolocParent]);
     });
 
     it('return only item within keywords in description', async () => {
@@ -341,7 +342,7 @@ describe('ItemGeolocationRepository', () => {
         keywords: ['public'],
       });
       expect(res).toHaveLength(1);
-      expect(res).toContainEqual(geolocParent);
+      expectPackedItemGeolocations(res, [geolocParent]);
     });
 
     it('return only item within keywords in tags', async () => {
@@ -370,7 +371,7 @@ describe('ItemGeolocationRepository', () => {
         keywords: ['public'],
       });
       expect(res).toHaveLength(1);
-      expect(res).toContainEqual(geolocParent);
+      expectPackedItemGeolocations(res, [geolocParent]);
     });
 
     it('return only item with keywords in file content', async () => {
@@ -426,7 +427,7 @@ describe('ItemGeolocationRepository', () => {
         keywords: ['public'],
       });
       expect(res).toHaveLength(1);
-      expect(res).toContainEqual(geoloc);
+      expectPackedItemGeolocations(res, [geoloc]);
     });
 
     it('return only item with keywords in s3File content', async () => {
@@ -481,7 +482,7 @@ describe('ItemGeolocationRepository', () => {
         keywords: ['public'],
       });
       expect(res).toHaveLength(1);
-      expect(res).toContainEqual(geoloc);
+      expectPackedItemGeolocations(res, [geoloc]);
     });
 
     it('return only item with keywords in document content', async () => {
@@ -529,7 +530,7 @@ describe('ItemGeolocationRepository', () => {
         keywords: ['public'],
       });
       expect(res).toHaveLength(1);
-      expect(res).toContainEqual(geoloc);
+      expectPackedItemGeolocations(res, [geoloc]);
     });
 
     it('return only non-recycled items', async () => {
@@ -560,7 +561,7 @@ describe('ItemGeolocationRepository', () => {
         lng2: 4,
       });
       expect(res).toHaveLength(1);
-      expect(res).toContainEqual(geoloc2);
+      expectPackedItemGeolocations(res, [geoloc2]);
     });
 
     it('return only children for given parent item with bounds', async () => {
@@ -600,7 +601,7 @@ describe('ItemGeolocationRepository', () => {
         parentItem,
       );
       expect(res).toHaveLength(1);
-      expect(res).toContainEqual(geoloc);
+      expectPackedItemGeolocations(res, [geoloc]);
     });
 
     it('return only children for given parent item', async () => {
@@ -631,7 +632,7 @@ describe('ItemGeolocationRepository', () => {
 
       const res = await repository.getItemsIn(actor, {}, parentItem);
       expect(res).toHaveLength(1);
-      expect(res).toContainEqual(geoloc);
+      expectPackedItemGeolocations(res, [geoloc]);
     });
 
     it('throw if does not provide parent item or lat lng', async () => {
