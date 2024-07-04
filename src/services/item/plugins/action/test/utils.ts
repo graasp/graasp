@@ -1,5 +1,8 @@
 import { ItemOpFeedbackEvent } from '@graasp/sdk';
 
+import { Item } from '../../../entities/Item';
+import { expectManyItems } from '../../../test/fixtures/items';
+
 export const expectExportFeedbackOp = <
   S extends {
     id: string;
@@ -19,21 +22,15 @@ export const expectExportFeedbackOp = <
   }
 };
 
-export const expectCopyFeedbackOp = <
-  S extends {
-    id: string;
-  },
->(
-  result: ItemOpFeedbackEvent<S, 'copy'>,
-  expected: ItemOpFeedbackEvent<S, 'copy'>,
+export const expectCopyFeedbackOp = (
+  result: ItemOpFeedbackEvent<Item, 'copy'>,
+  expected: ItemOpFeedbackEvent<Item, 'copy'>,
 ) => {
-  console.log(expected);
-
   expect(result.kind).toEqual(expected.kind);
   expect(result.op).toEqual(expected.op);
   expect(result.resource).toEqual(expected.resource);
   if (expected.result) {
-    expect(result.result!.items).toEqual(expected.result!.items);
+    expectManyItems(result.result!.items, expected.result!.items);
   }
   if (expected.errors) {
     expect(result.errors).toEqual(expected.errors);
@@ -52,7 +49,7 @@ export const expectMoveFeedbackOp = <
   expect(result.op).toEqual(expected.op);
   expect(result.resource).toEqual(expected.resource);
   if (expected.result) {
-    expect(result.result!.items).toEqual(expected.result!.items);
+    expectManyItems(result.result!.items, expected.result!.items);
   }
   if (expected.errors) {
     expect(result.errors).toEqual(expected.errors);
@@ -71,7 +68,7 @@ export const expectDeleteFeedbackOp = <
   expect(result.op).toEqual(expected.op);
   expect(result.resource).toEqual(expected.resource);
   if (expected.result) {
-    expect(result.result!.items).toEqual(expected.result!.items);
+    expectManyItems(result.result!.items, expected.result!.items);
   }
   if (expected.errors) {
     expect(result.errors).toEqual(expected.errors);
@@ -90,7 +87,7 @@ export const expectUpdateFeedbackOp = <
   expect(result.op).toEqual(expected.op);
   expect(result.resource).toEqual(expected.resource);
   if (expected.result) {
-    expect(result.result!.items).toEqual(expected.result!.items);
+    expectManyItems(result.result!.items, expected.result!.items);
   }
   if (expected.errors) {
     expect(result.errors).toEqual(expected.errors);
