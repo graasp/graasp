@@ -133,7 +133,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
     async ({ user, params: { id } }) => {
       const item = await itemService.getPacked(user?.member, buildRepositories(), id);
-      console.log(item);
       return item;
     },
   );

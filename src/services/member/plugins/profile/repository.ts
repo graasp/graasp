@@ -59,6 +59,14 @@ class MemberProfileRepository {
   }
 
   async patch(memberId: string, data: Partial<IMemberProfile>): Promise<MemberProfile | null> {
+    /**
+     * this function is a test to try to make the queries more efficient while still
+     * getting the return values in one go.
+     * but this is really type unsafe, sinc ewe have to use the raw sql output provided by typeorm
+     * the normal `update` method from typeorm results in 3 Sql queries (because it needs to fetch the relation beforehand) and does not even allow us to get the resulting data.
+     *
+     * Not using the ORM means that the datetime columns are not updated from snake_case to camelCase, so they are not present at validation
+     */
     const {
       raw: [profile],
     } = await this.repository
@@ -70,10 +78,6 @@ class MemberProfileRepository {
       .execute();
 
     return profile;
-    // await this.repository.update({ member: { id: memberId } }, data);
-    // const profile = await this.repository.findOneBy({ member: { id: memberId } });
-    // return profile;
-    // return null;
   }
 }
 
