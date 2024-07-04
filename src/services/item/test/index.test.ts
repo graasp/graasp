@@ -182,7 +182,6 @@ describe('Item routes tests', () => {
         // a membership is created for this item
         const membership = await ItemMembershipRepository.findOneBy({ item: { id: newItem.id } });
         expect(membership?.permission).toEqual(PermissionLevel.Admin);
-
         // check some creator properties are not leaked
         expect(newItem.creator.id).toBeTruthy();
         expect(newItem.creator.createdAt).toBeFalsy();

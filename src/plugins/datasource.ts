@@ -63,7 +63,7 @@ export const AppDataSource = new DataSource({
   poolSize: DB_CONNECTION_POOL_SIZE, // *2 because of the number of tasks
   // log queries that take more than 2s to execute
   maxQueryExecutionTime: 2000,
-  logging: ['migration', 'error', 'query'],
+  logging: ['migration', 'error'],
   migrationsRun: true,
 
   entities: [

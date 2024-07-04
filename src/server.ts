@@ -35,7 +35,6 @@ const start = async () => {
         // This allow routes that take array to correctly interpret single values as an array
         // https://github.com/fastify/fastify/blob/main/docs/Validation-and-Serialization.md
         coerceTypes: 'array',
-        allowUnionTypes: true,
       },
       plugins: [ajvFormats],
     },

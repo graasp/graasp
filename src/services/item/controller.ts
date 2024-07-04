@@ -132,7 +132,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: optionalIsAuthenticated,
     },
     async ({ user, params: { id } }) => {
-      return itemService.getPacked(user?.member, buildRepositories(), id);
+      const item = await itemService.getPacked(user?.member, buildRepositories(), id);
+      console.log(item);
+      return item;
     },
   );
 

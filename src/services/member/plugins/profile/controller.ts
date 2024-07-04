@@ -35,7 +35,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     { schema: getProfileForMember, preHandler: optionalIsAuthenticated },
     async ({ user, params: { memberId } }, reply) => {
       const profile = await memberProfileService.get(user?.member, buildRepositories(), memberId);
-      console.log(profile);
       if (!profile) {
         reply.status(StatusCodes.NO_CONTENT);
         return;

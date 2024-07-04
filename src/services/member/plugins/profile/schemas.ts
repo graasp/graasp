@@ -28,7 +28,7 @@ export const createProfile = {
   body: S.object()
     .additionalProperties(false)
     .prop('visibility', S.boolean())
-    // QUESTION: why is the always required ? Can't we only update a social link ?
+    // QUESTION: why is the bio always required ? Can't we only update a social link ?
     .required(['bio'])
     .extend(memberSharedSchema),
   response: {

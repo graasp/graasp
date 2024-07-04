@@ -69,7 +69,6 @@ class MemberProfileRepository {
       .returning('*')
       .execute();
 
-    console.log(profile);
     return profile;
     // await this.repository.update({ member: { id: memberId } }, data);
     // const profile = await this.repository.findOneBy({ member: { id: memberId } });
