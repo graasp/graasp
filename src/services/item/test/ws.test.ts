@@ -14,12 +14,7 @@ import {
   expectUpdateFeedbackOp,
 } from '../plugins/action/test/utils';
 import { ItemRepository } from '../repository';
-import {
-  ItemEvent,
-  ItemOpFeedbackErrorEvent,
-  ItemOpFeedbackEvent,
-  memberItemsTopic,
-} from '../ws/events';
+import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../ws/events';
 import { ItemTestUtils, expectItem } from './fixtures/items';
 
 // mock datasource

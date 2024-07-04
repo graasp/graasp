@@ -15,7 +15,7 @@ export const expectExportFeedbackOp = <
   expect(result.op).toEqual(expected.op);
   expect(result.resource).toEqual(expected.resource);
   if (expected.result) {
-    expectItem(result.result, expected.result);
+    expectItem(Object.values(result.result!)[0], Object.values(expected.result)[0]);
   }
   if (expected.errors) {
     expect(result.errors).toEqual(expected.errors);
@@ -52,11 +52,7 @@ export const expectMoveFeedbackOp = (
   }
 };
 
-export const expectDeleteFeedbackOp = <
-  S extends {
-    id: string;
-  },
->(
+export const expectDeleteFeedbackOp = (
   result: ItemOpFeedbackEvent<Item, 'delete'>,
   expected: ItemOpFeedbackEvent<Item, 'delete'>,
 ) => {
@@ -65,7 +61,7 @@ export const expectDeleteFeedbackOp = <
   expect(result.resource).toEqual(expected.resource);
 
   if (expected.result) {
-    expectItem(result.result, expected.result);
+    expectItem(Object.values(result.result!)[0], Object.values(expected.result)[0]);
   }
   if (expected.errors) {
     expect(result.errors).toEqual(expected.errors);
@@ -84,7 +80,7 @@ export const expectUpdateFeedbackOp = <
   expect(result.op).toEqual(expected.op);
   expect(result.resource).toEqual(expected.resource);
   if (expected.result) {
-    expectItem(result.result, expected.result);
+    expectItem(Object.values(result.result!)[0], Object.values(expected.result)[0]);
   }
   if (expected.errors) {
     expect(result.errors).toEqual(expected.errors);
