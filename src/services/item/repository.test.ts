@@ -23,7 +23,7 @@ import {
   ItemNotFound,
   TooManyDescendants,
 } from '../../utils/errors';
-import { saveMember } from '../member/test/fixtures/members';
+import { expectMember, saveMember } from '../member/test/fixtures/members';
 import { FolderItem, Item } from './entities/Item';
 import { ItemRepository } from './repository';
 import { ItemTestUtils, expectItem, expectManyItems } from './test/fixtures/items';
@@ -172,9 +172,9 @@ describe('ItemRepository', () => {
     it('get item successfully', async () => {
       const item = await testUtils.saveItem({ actor });
       const result = await itemRepository.get(item.id);
-      expect(result).toMatchObject(item);
+      expectItem(result, item);
       // contains creator
-      expect(result.creator).toMatchObject(actor);
+      expectMember(result.creator, actor);
     });
     it('Not found for missing item given id', async () => {
       const id = v4();

@@ -20,11 +20,7 @@ import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemTestUtils, expectItem, expectManyItems } from '../../../test/fixtures/items';
 import { RecycledItemDataRepository } from '../repository';
-import {
-  expectManyPackedRecycledItems,
-  expectManyRecycledItems,
-  expectRecycledItem,
-} from './fixtures';
+import { expectManyPackedRecycledItems, expectManyRecycledItems } from './fixtures';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');

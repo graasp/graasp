@@ -493,7 +493,7 @@ describe('Item Published', () => {
         expect(res.statusCode).toBe(StatusCodes.OK);
         expectPublishedEntry(res.json(), { item, creator: member });
         expect(indexSpy).toHaveBeenCalledTimes(1);
-        expect(indexSpy.mock.calls[0][0]).toMatchObject(item);
+        expectItem(indexSpy.mock.calls[0][0], item);
       });
 
       it('Throws when unpublish non-published item', async () => {
