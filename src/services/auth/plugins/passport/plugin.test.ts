@@ -19,9 +19,9 @@ import {
 } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
 import { Item } from '../../../item/entities/Item';
-import { ItemTestUtils } from '../../../item/test/fixtures/items';
+import { ItemTestUtils, expectItem } from '../../../item/test/fixtures/items';
 import { Member } from '../../../member/entities/member';
-import { saveMember } from '../../../member/test/fixtures/members';
+import { expectMember, saveMember } from '../../../member/test/fixtures/members';
 import { saveMemberAndPassword } from '../password/test/fixtures/password';
 import { encryptPassword } from '../password/utils';
 import {
@@ -40,6 +40,15 @@ import {
 // mock datasource
 jest.mock('../../../../plugins/datasource');
 const MOCKED_ROUTE = '/mock-route';
+
+const expectUserApp = (
+  user: PassportUser,
+  expected: { item: Item; key: string; origin: string },
+) => {
+  expectItem(user.app!.item, expected.item);
+  expect(user.app!.key).toEqual(expected.key);
+  expect(user.app!.origin).toEqual(expected.origin);
+};
 
 /**
  * Send a request to the auth route to log in a member, and return the set-cookie header
@@ -113,7 +122,7 @@ describe('Passport Plugin', () => {
     });
     it('Valid JWT Member', async () => {
       const token = sign({ sub: member.id }, AUTH_TOKEN_JWT_SECRET);
-      handler.mockImplementation(({ user }) => expect(user.member).toEqual(member));
+      handler.mockImplementation(({ user }) => expectMember(user.member, member));
       const response = await app.inject({
         path: MOCKED_ROUTE,
         headers: { authorization: `Bearer ${token}` },
@@ -133,7 +142,7 @@ describe('Passport Plugin', () => {
     });
     it('Valid Session Member', async () => {
       const cookie = await logIn(app, member);
-      handler.mockImplementation(({ user }) => expect(user.member).toEqual(member));
+      handler.mockImplementation(({ user }) => expectMember(user.member, member));
       const response = await app.inject({
         path: MOCKED_ROUTE,
         headers: { cookie },
@@ -175,7 +184,7 @@ describe('Passport Plugin', () => {
     });
     it('Valid JWT Member', async () => {
       const token = sign({ sub: member.id }, AUTH_TOKEN_JWT_SECRET);
-      handler.mockImplementation(({ user }) => expect(user.member).toEqual(member));
+      handler.mockImplementation(({ user }) => expectMember(user.member, member));
       const response = await app.inject({
         path: MOCKED_ROUTE,
         headers: { authorization: `Bearer ${token}` },
@@ -195,7 +204,7 @@ describe('Passport Plugin', () => {
     });
     it('Valid Session Member', async () => {
       const cookie = await logIn(app, member);
-      handler.mockImplementation(({ user }) => expect(user.member).toEqual(member));
+      handler.mockImplementation(({ user }) => expectMember(user.member, member));
       const response = await app.inject({
         path: MOCKED_ROUTE,
         headers: { cookie },
@@ -287,7 +296,7 @@ describe('Passport Plugin', () => {
       expect(response.statusCode).toBe(StatusCodes.NOT_ACCEPTABLE);
     });
     it('Authenticated', async () => {
-      handler.mockImplementation(({ user }) => expect(user.member).toEqual(newMember));
+      handler.mockImplementation(({ user }) => expectMember(user.member, newMember));
       const response = await app.inject({
         method: HttpMethod.Post,
         path: MOCKED_ROUTE,
@@ -332,7 +341,7 @@ describe('Passport Plugin', () => {
     });
     it('Valid JWT Member', async () => {
       const token = sign({ sub: member.id }, AUTH_TOKEN_JWT_SECRET);
-      handler.mockImplementation(({ user }) => expect(user.member).toEqual(member));
+      handler.mockImplementation(({ user }) => expectMember(user.member, member));
       const response = await app.inject({
         path: MOCKED_ROUTE,
         query: { token },
@@ -443,7 +452,7 @@ describe('Passport Plugin', () => {
         EMAIL_CHANGE_JWT_SECRET,
       );
       handler.mockImplementation(({ user }: { user: PassportUser }) => {
-        expect(user.member).toEqual(member);
+        expectMember(user.member, member);
         expect(user.emailChange?.newEmail).toEqual(newEmail);
       });
       const response = await app.inject({
@@ -486,7 +495,7 @@ describe('Passport Plugin', () => {
     });
     it('Valid JWT Member', async () => {
       const token = sign({ sub: member.id }, REFRESH_TOKEN_JWT_SECRET);
-      handler.mockImplementation(({ user }) => expect(user.member).toEqual(member));
+      handler.mockImplementation(({ user }) => expectMember(user.member, member));
       const response = await app.inject({
         path: MOCKED_ROUTE,
         headers: { authorization: `Bearer ${token}` },
@@ -596,7 +605,7 @@ describe('Passport Plugin', () => {
     });
     it('Valid JWT Member', async () => {
       const token = sign({ sub: member.id, challenge }, JWT_SECRET);
-      handler.mockImplementation(({ user }) => expect(user.member).toEqual(member));
+      handler.mockImplementation(({ user }) => expectMember(user.member, member));
       const response = await app.inject({
         method: HttpMethod.Post,
         path: MOCKED_ROUTE,
@@ -711,8 +720,8 @@ describe('Passport Plugin', () => {
         APPS_JWT_SECRET,
       );
       handler.mockImplementation(({ user }) => {
-        expect(user.app).toEqual({ item, key, origin });
-        expect(user.member).toEqual(member);
+        expectUserApp(user, { item, key, origin });
+        expectMember(user.member, member);
       });
       const response = await app.inject({
         path: MOCKED_ROUTE,
@@ -745,7 +754,7 @@ describe('Passport Plugin', () => {
         APPS_JWT_SECRET,
       );
       handler.mockImplementation(({ user }) => {
-        expect(user.app).toEqual({ item, key, origin });
+        expectUserApp(user, { item, key, origin });
         expect(user.member).toBeUndefined();
       });
       const response = await app.inject({
@@ -758,7 +767,7 @@ describe('Passport Plugin', () => {
     it('Unspecified JWT Member', async () => {
       const token = sign({ sub: { itemId: item.id, key, origin } }, APPS_JWT_SECRET);
       handler.mockImplementation(({ user }) => {
-        expect(user.app).toEqual({ item, key, origin });
+        expectUserApp(user, { item, key, origin });
         expect(user.member).toBeUndefined();
       });
       const response = await app.inject({
@@ -830,8 +839,8 @@ describe('Passport Plugin', () => {
         APPS_JWT_SECRET,
       );
       handler.mockImplementation(({ user }) => {
-        expect(user.app).toEqual({ item, key, origin });
-        expect(user.member).toEqual(member);
+        expectUserApp(user, { item, key, origin });
+        expectMember(user.member, member);
       });
       const response = await app.inject({
         path: MOCKED_ROUTE,

@@ -2006,9 +2006,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@npm:4.15.1":
-  version: 4.15.1
-  resolution: "@graasp/sdk@npm:4.15.1"
+"@graasp/sdk@npm:4.16.0":
+  version: 4.16.0
+  resolution: "@graasp/sdk@npm:4.16.0"
   dependencies:
     "@faker-js/faker": "npm:8.4.1"
     filesize: "npm:10.1.2"
@@ -2017,7 +2017,7 @@ __metadata:
   peerDependencies:
     date-fns: ^3
     uuid: ^9 || ^10.0.0
-  checksum: 10/17722029c75b0d43d0cbcbef24f7947434980ad26792c2fbb14ac3dc5b1a4a7dfc791b3d273c7a03b0650dbad7074598ac2bc04d307ea43d5d66bacaf3bc6edd
+  checksum: 10/c781abbef97b6d8aee02cb561e8bee3ccffb183c1e4e4fc45427d678448455394721cca3b01ad8ea1bda0215c53549a5c3ddb023f327a79b1571325d9f218340
   languageName: node
   linkType: hard
 
@@ -7431,7 +7431,7 @@ __metadata:
     "@fastify/view": "npm:7.4.1"
     "@fastify/websocket": "npm:7.2.0"
     "@graasp/etherpad-api": "npm:2.1.1"
-    "@graasp/sdk": "npm:4.15.1"
+    "@graasp/sdk": "npm:4.16.0"
     "@graasp/translations": "npm:1.30.3"
     "@jest/globals": "npm:29.7.0"
     "@rapideditor/country-coder": "npm:5.2.2"
@@ -7494,7 +7494,7 @@ __metadata:
     geoip-lite: "npm:1.4.10"
     h5p-standalone: "npm:3.6.0"
     http-status-codes: "npm:2.3.0"
-    husky: "npm:9.0.11"
+    husky: "npm:8.0.3"
     i18next: "npm:23.11.5"
     ioredis: "npm:5.4.1"
     is-url-http: "npm:2.3.8"
@@ -7811,12 +7811,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"husky@npm:9.0.11":
-  version: 9.0.11
-  resolution: "husky@npm:9.0.11"
+"husky@npm:8.0.3":
+  version: 8.0.3
+  resolution: "husky@npm:8.0.3"
   bin:
-    husky: bin.mjs
-  checksum: 10/8a9b7cb9dc8494b470b3b47b386e65d579608c6206da80d3cc8b71d10e37947264af3dfe00092368dad9673b51d2a5ee87afb4b2291e77ba9e7ec1ac36e56cd1
+    husky: lib/bin.js
+  checksum: 10/b754cf70fdc97c3b60fec5b80056b9c11436464953b1691bf2b5dcf0081fb6685d2c5f47abb8b2b1c49f504aabea5321fdd6496f8b755d9f6e7525a493406abb
   languageName: node
   linkType: hard
 

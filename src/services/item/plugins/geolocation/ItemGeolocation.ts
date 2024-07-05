@@ -52,7 +52,7 @@ export class ItemGeolocation extends BaseEntity {
 
 export type PackedItemGeolocation = Pick<
   ItemGeolocation,
-  'id' | 'lat' | 'lng' | 'addressLabel' | 'country' | 'createdAt' | 'updatedAt'
+  'id' | 'lat' | 'lng' | 'addressLabel' | 'helperLabel' | 'country' | 'createdAt' | 'updatedAt'
 > & {
   item: PackedItem;
 };

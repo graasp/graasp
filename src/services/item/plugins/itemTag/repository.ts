@@ -122,6 +122,26 @@ export class ItemTagRepository {
     return { data: idToItemTags, errors: mapByPath.errors };
   }
 
+  /**
+   * return item tag with given for all items below given item, including item's
+   * @param item item use to refer to its descendants
+   * @param tagTypes tag types to retrieve
+   * @returns tags array
+   */
+  async getManyBelowAndSelf(item: Item, tagTypes: ItemTagType[]): Promise<ItemTag[]> {
+    const query = this.repository
+      .createQueryBuilder('itemTag')
+      .leftJoinAndSelect('itemTag.item', 'item');
+
+    query.where(`item.path <@ :path`, { path: item.path });
+
+    const tags: ItemTag[] = await query
+      .andWhere('itemTag.type IN (:...types)', { types: tagTypes })
+      .getMany();
+
+    return tags;
+  }
+
   async hasForMany(items: Item[], tagType: ItemTagType): Promise<ResultOf<boolean>> {
     const query = this.repository
       .createQueryBuilder('itemTag')

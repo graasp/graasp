@@ -87,10 +87,22 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
    * @param memberId
    * @returns
    */
-  async getAllBelow(item: Item, memberId?: string): Promise<ItemMembership[]> {
-    const query = this.createQueryBuilder('item_membership')
-      .andWhere('item_membership.item_path <@ :path', { path: item.path })
-      .andWhere('item_membership.item_path != :path', { path: item.path });
+  async getAllBelow(
+    item: Item,
+    memberId?: string,
+    {
+      considerLocal = false,
+      selectItem = false,
+    }: { considerLocal?: boolean; selectItem?: boolean } = {},
+  ): Promise<ItemMembership[]> {
+    const query = this.createQueryBuilder('item_membership').andWhere(
+      'item_membership.item_path <@ :path',
+      { path: item.path },
+    );
+
+    if (!considerLocal) {
+      query.andWhere('item_membership.item_path != :path', { path: item.path });
+    }
 
     // if member is specified, select only this user
     if (memberId) {
@@ -99,6 +111,10 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     // otherwise return members' info
     else {
       query.leftJoinAndSelect('item_membership.member', 'member');
+    }
+
+    if (selectItem) {
+      query.leftJoinAndSelect('item_membership.item', 'item');
     }
 
     return query.getMany();
@@ -300,7 +316,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     return result;
   },
 
-  // check member's membership "at" item
+  /** check member's membership "at" item */
   async getInherited(
     item: Item,
     member: Member,

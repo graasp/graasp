@@ -9,6 +9,7 @@ import { RecycledItemDataRepository } from '../recycled/repository';
 import { ItemGeolocation } from './ItemGeolocation';
 import { MissingGeolocationSearchParams } from './errors';
 import { ItemGeolocationRepository } from './repository';
+import { expectItemGeolocations } from './test/utils';
 
 // mock datasource
 jest.mock('../../../../plugins/datasource');
@@ -168,24 +169,21 @@ describe('ItemGeolocationRepository', () => {
     it('returns items in box', async () => {
       const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
       const { item } = await testUtils.saveItemAndMembership({ member: actor, parentItem });
-      const geoloc = { lat: 1, lng: 2, item, country: 'de' };
-      await rawRepository.save(geoloc);
-      const geolocParent = {
+      const geoloc = await rawRepository.save({ lat: 1, lng: 2, item, country: 'de' });
+      const geolocParent = await rawRepository.save({
         lat: 1,
         lng: 2,
         item: parentItem,
         country: 'de',
         helperLabel: 'helper',
-      };
-      await rawRepository.save(geolocParent);
+      });
 
       // noise
       await testUtils.saveItemAndMembership({ member: actor, parentItem });
 
       const res = await repository.getItemsIn(actor, { lat1: 0, lat2: 4, lng1: 0, lng2: 4 });
       expect(res).toHaveLength(2);
-      expect(res).toContainEqual(geoloc);
-      expect(res).toContainEqual(geolocParent);
+      expectItemGeolocations(res, [geoloc, geolocParent]);
     });
 
     it('returns nothing', async () => {
@@ -206,18 +204,20 @@ describe('ItemGeolocationRepository', () => {
     it('returns with swapped values', async () => {
       const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
       const { item } = await testUtils.saveItemAndMembership({ member: actor, parentItem });
-      const geoloc = { lat: 1, lng: 2, item, country: 'de' };
-      await rawRepository.save(geoloc);
-      const geolocParent = { lat: 1, lng: 2, item: parentItem, country: 'de' };
-      await rawRepository.save(geolocParent);
+      const geoloc = await rawRepository.save({ lat: 1, lng: 2, item, country: 'de' });
+      const geolocParent = await rawRepository.save({
+        lat: 1,
+        lng: 2,
+        item: parentItem,
+        country: 'de',
+      });
 
       // noise
       await testUtils.saveItemAndMembership({ member: actor, parentItem });
 
       const res = await repository.getItemsIn(actor, { lat1: 0, lat2: 4, lng1: 0, lng2: 4 });
       expect(res).toHaveLength(2);
-      expect(res).toContainEqual(geoloc);
-      expect(res).toContainEqual(geolocParent);
+      expectItemGeolocations(res, [geoloc, geolocParent]);
     });
 
     it('return with keywords in english and french', async () => {
@@ -232,8 +232,12 @@ describe('ItemGeolocationRepository', () => {
       });
       const geoloc = { lat: 1, lng: 2, item, country: 'de' };
       await rawRepository.save(geoloc);
-      const geolocParent = { lat: 1, lng: 2, item: parentItem, country: 'de' };
-      await rawRepository.save(geolocParent);
+      const geolocParent = await rawRepository.save({
+        lat: 1,
+        lng: 2,
+        item: parentItem,
+        country: 'de',
+      });
 
       // noise
       await testUtils.saveItemAndMembership({ member: actor, parentItem });
@@ -249,7 +253,7 @@ describe('ItemGeolocationRepository', () => {
         },
       );
       expect(res).toHaveLength(1);
-      expect(res).toContainEqual(geolocParent);
+      expectItemGeolocations(res, [geolocParent]);
     });
 
     it('return with keywords in english and spanish', async () => {
@@ -264,8 +268,12 @@ describe('ItemGeolocationRepository', () => {
       });
       const geoloc = { lat: 1, lng: 2, item, country: 'de', helperLabel: 'helper' };
       await rawRepository.save(geoloc);
-      const geolocParent = { lat: 1, lng: 2, item: parentItem, country: 'de' };
-      await rawRepository.save(geolocParent);
+      const geolocParent = await rawRepository.save({
+        lat: 1,
+        lng: 2,
+        item: parentItem,
+        country: 'de',
+      });
 
       // noise
       await testUtils.saveItemAndMembership({ member: actor, parentItem });
@@ -282,7 +290,7 @@ describe('ItemGeolocationRepository', () => {
         },
       );
       expect(res1).toHaveLength(1);
-      expect(res1).toContainEqual(geolocParent);
+      expectItemGeolocations(res1, [geolocParent]);
     });
 
     it('return only item within keywords in name', async () => {
@@ -295,10 +303,13 @@ describe('ItemGeolocationRepository', () => {
         member: actor,
         parentItem,
       });
-      const geoloc = { lat: 1, lng: 2, item, country: 'de' };
-      await rawRepository.save(geoloc);
-      const geolocParent = { lat: 1, lng: 2, item: parentItem, country: 'de' };
-      await rawRepository.save(geolocParent);
+      const geoloc = await rawRepository.save({ lat: 1, lng: 2, item, country: 'de' });
+      const geolocParent = await rawRepository.save({
+        lat: 1,
+        lng: 2,
+        item: parentItem,
+        country: 'de',
+      });
 
       // noise
       await testUtils.saveItemAndMembership({ member: actor, parentItem });
@@ -311,8 +322,7 @@ describe('ItemGeolocationRepository', () => {
         keywords: ['public', 'private'],
       });
       expect(res).toHaveLength(2);
-      expect(res).toContainEqual(geolocParent);
-      expect(res).toContainEqual(geoloc);
+      expectItemGeolocations(res, [geoloc, geolocParent]);
     });
 
     it('return only item within keywords in description', async () => {
@@ -325,10 +335,13 @@ describe('ItemGeolocationRepository', () => {
         member: actor,
         parentItem,
       });
-      const geoloc = { lat: 1, lng: 2, item, country: 'de' };
-      await rawRepository.save(geoloc);
-      const geolocParent = { lat: 1, lng: 2, item: parentItem, country: 'de' };
-      await rawRepository.save(geolocParent);
+      await rawRepository.save({ lat: 1, lng: 2, item, country: 'de' });
+      const geolocParent = await rawRepository.save({
+        lat: 1,
+        lng: 2,
+        item: parentItem,
+        country: 'de',
+      });
 
       // noise
       await testUtils.saveItemAndMembership({ member: actor, parentItem });
@@ -341,7 +354,7 @@ describe('ItemGeolocationRepository', () => {
         keywords: ['public'],
       });
       expect(res).toHaveLength(1);
-      expect(res).toContainEqual(geolocParent);
+      expectItemGeolocations(res, [geolocParent]);
     });
 
     it('return only item within keywords in tags', async () => {
@@ -354,10 +367,13 @@ describe('ItemGeolocationRepository', () => {
         member: actor,
         parentItem,
       });
-      const geoloc = { lat: 1, lng: 2, item, country: 'de' };
-      await rawRepository.save(geoloc);
-      const geolocParent = { lat: 1, lng: 2, item: parentItem, country: 'de' };
-      await rawRepository.save(geolocParent);
+      await rawRepository.save({ lat: 1, lng: 2, item, country: 'de' });
+      const geolocParent = await rawRepository.save({
+        lat: 1,
+        lng: 2,
+        item: parentItem,
+        country: 'de',
+      });
 
       // noise
       await testUtils.saveItemAndMembership({ member: actor, parentItem });
@@ -370,7 +386,7 @@ describe('ItemGeolocationRepository', () => {
         keywords: ['public'],
       });
       expect(res).toHaveLength(1);
-      expect(res).toContainEqual(geolocParent);
+      expectItemGeolocations(res, [geolocParent]);
     });
 
     it('return only item with keywords in file content', async () => {
@@ -393,10 +409,8 @@ describe('ItemGeolocationRepository', () => {
         member: actor,
         parentItem,
       });
-      const geoloc = { lat: 1, lng: 2, item: item1, country: 'de' };
-      await rawRepository.save(geoloc);
-      const geolocParent = { lat: 1, lng: 2, item: parentItem, country: 'de' };
-      await rawRepository.save(geolocParent);
+      const geoloc = await rawRepository.save({ lat: 1, lng: 2, item: item1, country: 'de' });
+      await rawRepository.save({ lat: 1, lng: 2, item: parentItem, country: 'de' });
 
       // noise
       await testUtils.saveItemAndMembership({ member: actor, parentItem });
@@ -426,7 +440,7 @@ describe('ItemGeolocationRepository', () => {
         keywords: ['public'],
       });
       expect(res).toHaveLength(1);
-      expect(res).toContainEqual(geoloc);
+      expectItemGeolocations(res, [geoloc]);
     });
 
     it('return only item with keywords in s3File content', async () => {
@@ -448,10 +462,8 @@ describe('ItemGeolocationRepository', () => {
         },
         member: actor,
       });
-      const geoloc = { lat: 1, lng: 2, item: item1, country: 'de' };
-      await rawRepository.save(geoloc);
-      const geolocParent = { lat: 1, lng: 2, item: parentItem, country: 'de' };
-      await rawRepository.save(geolocParent);
+      const geoloc = await rawRepository.save({ lat: 1, lng: 2, item: item1, country: 'de' });
+      await rawRepository.save({ lat: 1, lng: 2, item: parentItem, country: 'de' });
 
       // noise
       await testUtils.saveItemAndMembership({ member: actor, parentItem });
@@ -481,7 +493,7 @@ describe('ItemGeolocationRepository', () => {
         keywords: ['public'],
       });
       expect(res).toHaveLength(1);
-      expect(res).toContainEqual(geoloc);
+      expectItemGeolocations(res, [geoloc]);
     });
 
     it('return only item with keywords in document content', async () => {
@@ -500,10 +512,14 @@ describe('ItemGeolocationRepository', () => {
         member: actor,
         parentItem,
       });
-      const geoloc = { lat: 1, lng: 2, item: item1, country: 'de', helperLabel: 'helper' };
-      await rawRepository.save(geoloc);
-      const geolocParent = { lat: 1, lng: 2, item: parentItem, country: 'de' };
-      await rawRepository.save(geolocParent);
+      const geoloc = await rawRepository.save({
+        lat: 1,
+        lng: 2,
+        item: item1,
+        country: 'de',
+        helperLabel: 'helper',
+      });
+      await rawRepository.save({ lat: 1, lng: 2, item: parentItem, country: 'de' });
 
       // noise
       await testUtils.saveItemAndMembership({ member: actor, parentItem });
@@ -529,7 +545,7 @@ describe('ItemGeolocationRepository', () => {
         keywords: ['public'],
       });
       expect(res).toHaveLength(1);
-      expect(res).toContainEqual(geoloc);
+      expectItemGeolocations(res, [geoloc]);
     });
 
     it('return only non-recycled items', async () => {
@@ -560,7 +576,7 @@ describe('ItemGeolocationRepository', () => {
         lng2: 4,
       });
       expect(res).toHaveLength(1);
-      expect(res).toContainEqual(geoloc2);
+      expectItemGeolocations(res, [geoloc2]);
     });
 
     it('return only children for given parent item with bounds', async () => {
@@ -571,8 +587,7 @@ describe('ItemGeolocationRepository', () => {
         member: actor,
         parentItem,
       });
-      const geoloc = { lat: 1, lng: 2, item: item1, country: 'de' };
-      await rawRepository.save(geoloc);
+      const geoloc = await rawRepository.save({ lat: 1, lng: 2, item: item1, country: 'de' });
 
       // noise
       await testUtils.saveItemAndMembership({ member: actor });
@@ -600,7 +615,7 @@ describe('ItemGeolocationRepository', () => {
         parentItem,
       );
       expect(res).toHaveLength(1);
-      expect(res).toContainEqual(geoloc);
+      expectItemGeolocations(res, [geoloc]);
     });
 
     it('return only children for given parent item', async () => {
@@ -611,8 +626,7 @@ describe('ItemGeolocationRepository', () => {
         member: actor,
         parentItem,
       });
-      const geoloc = { lat: 1, lng: 2, item: item1, country: 'de' };
-      await rawRepository.save(geoloc);
+      const geoloc = await rawRepository.save({ lat: 1, lng: 2, item: item1, country: 'de' });
 
       // noise
       await testUtils.saveItemAndMembership({ member: actor });
@@ -631,7 +645,7 @@ describe('ItemGeolocationRepository', () => {
 
       const res = await repository.getItemsIn(actor, {}, parentItem);
       expect(res).toHaveLength(1);
-      expect(res).toContainEqual(geoloc);
+      expectItemGeolocations(res, [geoloc]);
     });
 
     it('throw if does not provide parent item or lat lng', async () => {

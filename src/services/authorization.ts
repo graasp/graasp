@@ -30,7 +30,6 @@ const permissionMapping = {
  * @param item
  * @throws if the user cannot access the item
  */
-
 export const validatePermissionMany = async (
   {
     itemMembershipRepository,
@@ -266,6 +265,62 @@ export const filterOutPackedItems = async (
       tags?.data[item.id],
     ).packed();
   });
+};
+
+/**
+ * Filtering function that takes out limited descendants (eg. hidden children) and return packed items
+ * @param item item is parent of descendants, suppose actor has at least access to it
+ * @param descendants flat list of descendants of item
+ *  */
+export const filterOutPackedDescendants = async (
+  actor: Actor,
+  repositories,
+  item: Item,
+  descendants: Item[],
+  options?: { showHidden?: boolean },
+): Promise<PackedItem[]> => {
+  const { itemMembershipRepository, itemTagRepository } = repositories;
+  const showHidden = options?.showHidden ?? true;
+
+  if (!descendants.length) {
+    return [];
+  }
+
+  const allMemberships = actor
+    ? await itemMembershipRepository.getAllBelow(item, actor.id, {
+        considerLocal: true,
+        selectItem: true,
+      })
+    : [];
+  const tags = await itemTagRepository.getManyBelowAndSelf(item, [
+    ItemTagType.Hidden,
+    ItemTagType.Public,
+  ]);
+
+  return (
+    descendants
+      // packed item
+      .map((item) => {
+        const permissions = allMemberships
+          .filter((m) => item.path.includes(m.item.path))
+          .map(({ permission }) => permission);
+        const permission = PermissionLevelCompare.getHighest(permissions);
+        const itemTags = tags.filter((t) => item.path.includes(t.item.path));
+
+        return new ItemWrapper(item, permission ? { permission } : undefined, itemTags).packed();
+      })
+      .filter((i) => {
+        if (i.hidden && !showHidden) {
+          return false;
+        }
+
+        // return item if has at least write permission or is not hidden
+        return (
+          (i.permission && PermissionLevelCompare.gte(i.permission, PermissionLevel.Write)) ||
+          !i.hidden
+        );
+      })
+  );
 };
 
 /**

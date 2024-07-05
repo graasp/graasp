@@ -18,7 +18,7 @@ import build, { clearDatabase } from '../../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { saveMember } from '../../../../member/test/fixtures/members';
-import { ItemTestUtils, expectManyItems } from '../../../test/fixtures/items';
+import { ItemTestUtils, expectItem, expectManyItems } from '../../../test/fixtures/items';
 import { RecycledItemDataRepository } from '../repository';
 import { expectManyPackedRecycledItems, expectManyRecycledItems } from './fixtures';
 
@@ -416,10 +416,7 @@ describe('Recycle Bin Tests', () => {
         relations: { creator: true },
       });
       // the recycle/restore operation changed the updatedAt value, but we can't know when from the outside
-      expect({ ...restoredChild, updatedAt: undefined }).toMatchObject({
-        ...childItem,
-        updatedAt: undefined,
-      });
+      expectItem(restoredChild!, childItem);
     });
   });
 });
