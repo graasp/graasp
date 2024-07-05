@@ -45,14 +45,15 @@ export const getMemberProfile = async (id: string) => {
   return profile;
 };
 
-export const ANNA_PROFILE = {
+export const ANNA_PROFILE: IMemberProfile = {
   bio: "Hi, I'm Anna, an english teacher",
   facebookID: 'anna',
   twitterID: '',
   linkedinID: 'anna',
+  visibility: false,
 };
 
-export const BOB_PROFILE = {
+export const BOB_PROFILE: IMemberProfile = {
   bio: "Hi, I'm Bob, a science teacher",
   facebookID: 'bob',
   twitterID: '',
