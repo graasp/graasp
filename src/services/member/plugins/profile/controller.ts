@@ -12,9 +12,9 @@ import { MemberProfileService } from './service';
 import { IMemberProfile } from './types';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { db, log } = fastify;
+  const { db } = fastify;
 
-  const memberProfileService = new MemberProfileService(log);
+  const memberProfileService = new MemberProfileService();
 
   fastify.get<{ Params: { memberId: string } }>(
     '/own',

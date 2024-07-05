@@ -61,7 +61,7 @@
     "@fastify/websocket": "7.2.0",
     "@graasp/etherpad-api": "2.1.1",
     "@graasp/sdk": "4.16.0",
-    "@graasp/translations": "1.30.3",
+    "@graasp/translations": "1.31.2",
     "@rapideditor/country-coder": "5.2.2",
     "@sentry/node": "7.118.0",
     "@sentry/tracing": "7.114.0",

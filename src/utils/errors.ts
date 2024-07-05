@@ -149,14 +149,25 @@ export class TooManyDescendants extends CoreError {
 export class InvalidMoveTarget extends CoreError {
   constructor(data?: unknown) {
     super(
-      { code: 'GERR012', statusCode: 400, message: FAILURE_MESSAGES.INVALID_MOVE_TARGET },
+      {
+        code: 'GERR012',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: FAILURE_MESSAGES.INVALID_MOVE_TARGET,
+      },
       data,
     );
   }
 }
 export class MemberNotFound extends CoreError {
   constructor(data?: unknown) {
-    super({ code: 'GERR013', statusCode: 404, message: FAILURE_MESSAGES.MEMBER_NOT_FOUND }, data);
+    super(
+      {
+        code: 'GERR013',
+        statusCode: StatusCodes.NOT_FOUND,
+        message: FAILURE_MESSAGES.MEMBER_NOT_FOUND,
+      },
+      data,
+    );
   }
 }
 export class CannotModifyOtherMembers extends CoreError {
@@ -349,7 +360,11 @@ export class UnauthorizedMember extends CoreError {
 export class EmailNotAllowed extends CoreError {
   constructor(data?: unknown) {
     super(
-      { code: 'GERR027', statusCode: 403, message: 'Your email is not allowed to sign up' },
+      {
+        code: 'GERR027',
+        statusCode: StatusCodes.FORBIDDEN,
+        message: 'Your email is not allowed to sign up',
+      },
       data,
     );
   }
@@ -435,13 +450,27 @@ export class NoFileProvided extends CoreError {
 
 export class DatabaseError extends CoreError {
   constructor(data?: unknown) {
-    super({ code: 'GERR998', statusCode: 500, message: FAILURE_MESSAGES.DATABASE_ERROR }, data);
+    super(
+      {
+        code: 'GERR998',
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        message: FAILURE_MESSAGES.DATABASE_ERROR,
+      },
+      data,
+    );
   }
 }
 
 export class UnexpectedError extends CoreError {
   constructor(data?: unknown) {
-    super({ code: 'GERR999', statusCode: 500, message: FAILURE_MESSAGES.UNEXPECTED_ERROR }, data);
+    super(
+      {
+        code: 'GERR999',
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        message: FAILURE_MESSAGES.UNEXPECTED_ERROR,
+      },
+      data,
+    );
     this.origin = 'unknown';
   }
 }
@@ -456,7 +485,7 @@ export class OpenAIBaseError extends CoreError {
   constructor({
     message = 'An unknown error occured',
     code = 'GERR1000',
-    statusCode = 500,
+    statusCode = StatusCodes.INTERNAL_SERVER_ERROR,
   }: OpenAIParamsError = {}) {
     super({ code: code, statusCode: statusCode, message: message });
     this.origin = 'OpenAI';
@@ -487,14 +516,14 @@ export class OpenAITimeOutError extends OpenAIBaseError {
 export class OpenAIQuotaError extends OpenAIBaseError {
   constructor() {
     const message = 'This token exceeded current quota, please check plan and billing details.';
-    super({ code: 'GERR1004', message: message, statusCode: 429 });
+    super({ code: 'GERR1004', message: message, statusCode: StatusCodes.TOO_MANY_REQUESTS });
   }
 }
 
 export class OpenAIBadVersion extends OpenAIBaseError {
   constructor(gptVersion: string, validVersions: string) {
     const message = `The gpt-version '${gptVersion}' is not a valid version. Try one of these instead: "${validVersions}".`;
-    super({ code: 'GERR1005', message: message, statusCode: 400 });
+    super({ code: 'GERR1005', message: message, statusCode: StatusCodes.BAD_REQUEST });
   }
 }
 

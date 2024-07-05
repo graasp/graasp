@@ -1,5 +1,3 @@
-import { FastifyBaseLogger } from 'fastify';
-
 import { UUID } from '@graasp/sdk';
 
 import { Repositories } from '../../../../utils/repositories';
@@ -7,14 +5,8 @@ import { Member } from '../../../member/entities/member';
 import { IMemberProfile } from './types';
 
 export class MemberProfileService {
-  private log: FastifyBaseLogger;
-
-  constructor(log: FastifyBaseLogger) {
-    this.log = log;
-  }
-
   async post(member: Member, { memberProfileRepository }: Repositories, data: IMemberProfile) {
-    const profile = await memberProfileRepository.createOne({ ...data, member });
+    const profile = await memberProfileRepository.createOne(member, data);
     return profile;
   }
 
