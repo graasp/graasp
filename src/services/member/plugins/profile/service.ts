@@ -3,7 +3,7 @@ import { FastifyBaseLogger } from 'fastify';
 import { UUID } from '@graasp/sdk';
 
 import { Repositories } from '../../../../utils/repositories';
-import { Actor, Member } from '../../../member/entities/member';
+import { Member } from '../../../member/entities/member';
 import { IMemberProfile } from './types';
 
 export class MemberProfileService {
@@ -18,7 +18,7 @@ export class MemberProfileService {
     return profile;
   }
 
-  async get(_actor: Actor, { memberProfileRepository }: Repositories, memberId: UUID) {
+  async get({ memberProfileRepository }: Repositories, memberId: UUID) {
     const memberProfile = await memberProfileRepository.getByMemberId(memberId, {
       visibility: true,
     });

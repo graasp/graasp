@@ -107,10 +107,7 @@ const controller: FastifyPluginAsync = async (fastify) => {
 
   // delete member
   /**
-   * @deprecated
-   * TODO: Fix this endpoint as it should not need the member ID.
-   * We only want to delete the currently authenticated member
-   * and this information is already provided by the session
+   * @deprecated use the delete member function without the id param
    */
   fastify.delete<{ Params: IdParam }>(
     '/:id',
@@ -139,7 +136,7 @@ const controller: FastifyPluginAsync = async (fastify) => {
       const { user } = request;
       const member = notUndefined(user?.member);
       return db.transaction(async (manager) => {
-        await memberService.deleteCurrent(member, buildRepositories(manager));
+        await memberService.deleteCurrent(member.id, buildRepositories(manager));
         // logout member
         request.logOut();
         // remove session from browser
