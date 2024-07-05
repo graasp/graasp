@@ -628,6 +628,7 @@ describe('Item Published', () => {
         const expectedQuery: MultiSearchParams = {
           queries: [
             {
+              attributesToHighlight: ['*'],
               q: 'random query',
               filter: '(random filter) AND isHidden = false',
               indexUid: 'index',
@@ -655,6 +656,7 @@ describe('Item Published', () => {
         const expectedQuery: MultiSearchParams = {
           queries: [
             {
+              attributesToHighlight: ['*'],
               q: 'random query',
               filter: 'isHidden = false',
               indexUid: 'index',

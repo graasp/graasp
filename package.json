@@ -138,7 +138,7 @@
     "@types/lodash.partition": "^4",
     "@types/mime": "3.0.4",
     "@types/mmmagic": "0.4.33",
-    "@types/node": "18.15.13",
+    "@types/node": "20.14.9",
     "@types/node-fetch": "2",
     "@types/papaparse": "5.3.14",
     "@types/passport-jwt": "4.0.1",
