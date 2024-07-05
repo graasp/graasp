@@ -1,6 +1,5 @@
 import { ItemOpFeedbackEvent } from '@graasp/sdk';
 
-import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
 import { expectMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { MembershipEvent } from '../../../../itemMembership/ws/events';
 import { Item } from '../../../entities/Item';

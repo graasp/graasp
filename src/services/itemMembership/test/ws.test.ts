@@ -5,10 +5,7 @@ import { HttpMethod, PermissionLevel, Websocket, parseStringToDate } from '@graa
 
 import { clearDatabase, mockAuthenticate } from '../../../../test/app';
 import { MemberCannotAccess } from '../../../utils/errors';
-import {
-  expectDeleteFeedbackOp,
-  expectDeleteMembershipFeedback,
-} from '../../item/plugins/action/test/utils';
+import { expectDeleteMembershipFeedback } from '../../item/plugins/action/test/utils';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
 import { saveMember } from '../../member/test/fixtures/members';
 import { TestWsClient } from '../../websockets/test/test-websocket-client';
