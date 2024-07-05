@@ -15,8 +15,9 @@ import { ItemWrapper } from '../../ItemWrapper';
 import { ItemService } from '../../service';
 import { ItemTestUtils } from '../../test/fixtures/items';
 import { ItemGeolocation } from './ItemGeolocation';
-import { expectItemGeolocations, saveGeolocation } from './index.test';
+import { saveGeolocation } from './index.test';
 import { ItemGeolocationService } from './service';
+import { expectPackedItemGeolocations } from './test/utils';
 
 // mock datasource
 jest.mock('../../../../plugins/datasource');
@@ -127,7 +128,7 @@ describe('ItemGeolocationService', () => {
       const { packed: geoloc } = await saveGeolocation({ lat: 1, lng: 2, item, country: 'de' });
 
       const res = await service.getByItem(actor, buildRepositories(), item.id);
-      expectItemGeolocations([res!], [geoloc]);
+      expectPackedItemGeolocations([res!], [geoloc]);
     });
 
     it('get successfully for public item', async () => {
@@ -143,7 +144,7 @@ describe('ItemGeolocationService', () => {
       });
 
       const res = await service.getByItem(actor, buildRepositories(), item.id);
-      expectItemGeolocations([res!], [geoloc]);
+      expectPackedItemGeolocations([res!], [geoloc]);
     });
 
     it('return inherited geoloc', async () => {
@@ -161,7 +162,7 @@ describe('ItemGeolocationService', () => {
 
       const res = await service.getByItem(actor, buildRepositories(), item.id);
 
-      expectItemGeolocations([res!], [geoloc]);
+      expectPackedItemGeolocations([res!], [geoloc]);
     });
 
     it('return null if does not have geolocation', async () => {
@@ -228,7 +229,7 @@ describe('ItemGeolocationService', () => {
         lng2: 4,
       });
       expect(res).toHaveLength(2);
-      expectItemGeolocations(res, [geoloc1, geoloc2]);
+      expectPackedItemGeolocations(res, [geoloc1, geoloc2]);
     });
 
     it('ignore public root item', async () => {
@@ -274,7 +275,7 @@ describe('ItemGeolocationService', () => {
         lng2: 4,
       });
       expect(res).toHaveLength(1);
-      expectItemGeolocations(res, [geoloc1]);
+      expectPackedItemGeolocations(res, [geoloc1]);
     });
 
     it('get successfully inside public item', async () => {
@@ -297,7 +298,7 @@ describe('ItemGeolocationService', () => {
         lng2: 4,
       });
       expect(res).toHaveLength(1);
-      expectItemGeolocations(res, [geoloc]);
+      expectPackedItemGeolocations(res, [geoloc]);
     });
 
     it('get successfully geolocalized child in public item', async () => {
@@ -324,7 +325,7 @@ describe('ItemGeolocationService', () => {
         lng2: 4,
       });
       expect(res).toHaveLength(1);
-      expectItemGeolocations(res, [geoloc]);
+      expectPackedItemGeolocations(res, [geoloc]);
     });
 
     it('return empty for nothing in box', async () => {

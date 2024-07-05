@@ -147,7 +147,7 @@ describe('Item websocket hooks', () => {
   });
 
   describe('on delete membership', () => {
-    it.only('receives item membership delete event', async () => {
+    it('receives item membership delete event', async () => {
       const anna = await saveMember();
       const { item } = await testUtils.saveItemAndMembership({ member: anna });
       const membership = await testUtils.saveMembership({
