@@ -17,6 +17,7 @@ import build, { clearDatabase } from '../../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { saveMember } from '../../../../member/test/fixtures/members';
+import { Item } from '../../../entities/Item';
 import { ItemTestUtils, expectItem, expectManyItems } from '../../../test/fixtures/items';
 import { RecycledItemDataRepository } from '../repository';
 import { expectManyPackedRecycledItems, expectManyRecycledItems } from './fixtures';
@@ -183,7 +184,7 @@ describe('Recycle Bin Tests', () => {
           const res = await app.inject({
             method: HttpMethod.Post,
             url: '/items/recycle',
-            query: { id: [items.map(({ id }) => id), errorItem.id] },
+            query: { id: [...items.map(({ id }) => id), errorItem.id] },
           });
 
           expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -245,7 +246,8 @@ describe('Recycle Bin Tests', () => {
       });
 
       describe('Signed In', () => {
-        let items, itemIds;
+        let items: Item[];
+        let itemIds: string[];
         beforeEach(async () => {
           ({ app, actor } = await build());
           const { item: item1 } = await testUtils.saveRecycledItem(actor);
@@ -317,7 +319,7 @@ describe('Recycle Bin Tests', () => {
           const res = await app.inject({
             method: HttpMethod.Post,
             url: `${ITEMS_ROUTE_PREFIX}/restore`,
-            query: { id: [itemIds, item.id] },
+            query: { id: [...itemIds, item.id] },
           });
           expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
 
@@ -339,7 +341,7 @@ describe('Recycle Bin Tests', () => {
           const res = await app.inject({
             method: HttpMethod.Post,
             url: `${ITEMS_ROUTE_PREFIX}/restore`,
-            query: { id: [itemIds, v4()] },
+            query: { id: [...itemIds, v4()] },
           });
           expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
 
