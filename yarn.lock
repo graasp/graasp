@@ -7506,7 +7506,7 @@ __metadata:
     lodash.partition: "npm:4.6.0"
     lodash.uniqby: "npm:4.7.0"
     luxon: "npm:3.4.4"
-    meilisearch: "npm:0.40.0"
+    meilisearch: "npm:0.41.0"
     mime: "npm:3.0.0"
     mime-types: "npm:2.1.35"
     mmmagic: "npm:0.5.3"
@@ -9501,12 +9501,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"meilisearch@npm:0.40.0":
-  version: 0.40.0
-  resolution: "meilisearch@npm:0.40.0"
+"meilisearch@npm:0.41.0":
+  version: 0.41.0
+  resolution: "meilisearch@npm:0.41.0"
   dependencies:
     cross-fetch: "npm:^3.1.6"
-  checksum: 10/9fb3471b4d7ced99c8746445886367702e66ce76e7cc59a532df587232716bb418f47ad4e7ab805c7849cfee11d93581eae58241e1f91d057dd1c0a9bd8593cf
+  checksum: 10/c09a874a81cc7b955ab8915b47f3638f961739e9dd64995bac95e01f0d457e1f1676dbd3466d037c4fce3c40db999cef77d6150aa134405eb6da7b9a1cdcf8fe
   languageName: node
   linkType: hard
 
