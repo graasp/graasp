@@ -30,7 +30,7 @@ jobs:
       # Trigger an 'on: repository_dispatch' workflow to run in graasp-deploy repository
       - name: Push tag to Graasp Deploy (Staging)
         if: ${{ steps.release.outputs.releases_created == 'true' }}
-        uses: peter-evans/repository-dispatch@v2
+        uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           repository: graasp/graasp-deploy
