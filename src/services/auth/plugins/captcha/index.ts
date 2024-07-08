@@ -1,5 +1,4 @@
 import fetch from 'node-fetch';
-import { stringify } from 'qs';
 
 import { forwarded } from '@fastify/forwarded';
 import { FastifyReply, FastifyRequest, RouteHandlerMethod } from 'fastify';
@@ -52,16 +51,15 @@ async function validateCaptcha(
   const addresses = forwarded(request.raw);
   const ip = addresses.pop();
 
-  const verificationURL = `${RECAPTCHA_VERIFY_LINK}${stringify(
-    {
-      response: captcha,
-      secret: RECAPTCHA_SECRET_ACCESS_KEY,
-      remoteip: ip,
-    },
-    {
-      addQueryPrefix: true,
-    },
-  )}`;
+  const verificationURL = new URL(RECAPTCHA_VERIFY_LINK);
+  const searchParams = new URLSearchParams({
+    response: captcha,
+    secret: RECAPTCHA_SECRET_ACCESS_KEY,
+  });
+  if (ip) {
+    searchParams.set('remoteip', ip);
+  }
+  verificationURL.search = searchParams.toString();
 
   const response = await fetch(verificationURL);
   const data: CaptchaResponse = await response.json();

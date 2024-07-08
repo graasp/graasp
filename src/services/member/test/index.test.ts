@@ -1,5 +1,4 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
-import { stringify } from 'qs';
 
 import { FastifyInstance } from 'fastify';
 
@@ -250,10 +249,8 @@ describe('Member routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/members?${stringify(
-            { id: members.map(({ id }) => id) },
-            { arrayFormat: 'repeat' },
-          )}`,
+          url: '/members',
+          query: { id: members.map(({ id }) => id) },
         });
         const result = response.json();
         expect(result.data).toBeTruthy();
@@ -278,10 +275,8 @@ describe('Member routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/members?${stringify(
-            { id: members.map(({ id }) => id) },
-            { arrayFormat: 'repeat' },
-          )}`,
+          url: '/members',
+          query: { id: members.map(({ id }) => id) },
         });
         const result = response.json();
         expect(result.data).toBeTruthy();
@@ -300,7 +295,8 @@ describe('Member routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/members?${stringify({ id: members[0].id }, { arrayFormat: 'repeat' })}`,
+          url: '/members',
+          query: { id: members[0].id },
         });
 
         if (!members[0].id) {
@@ -321,10 +317,8 @@ describe('Member routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/members?${stringify(
-            { id: [members[0].id, members[0].id] },
-            { arrayFormat: 'repeat' },
-          )}`,
+          url: '/members',
+          query: { id: [members[0].id, members[0].id] },
         });
 
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
@@ -332,14 +326,12 @@ describe('Member routes tests', () => {
       });
 
       it('Returns Bad Request for one invalid id', async () => {
-        const members = await saveMembers();
+        await saveMembers();
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/members?${stringify(
-            { id: [members.map(({ id }) => id), 'invalid-id'] },
-            { arrayFormat: 'repeat' },
-          )}`,
+          url: '/members',
+          query: { id: 'invalid-id' },
         });
 
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
@@ -353,10 +345,8 @@ describe('Member routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/members?${stringify(
-            { id: [memberId, ...members.map(({ id }) => id)] },
-            { arrayFormat: 'repeat' },
-          )}`,
+          url: '/members',
+          query: { id: [memberId, ...members.map(({ id }) => id)] },
         });
 
         // TODO: currently we do not return empty values

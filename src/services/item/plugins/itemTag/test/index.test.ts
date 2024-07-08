@@ -1,5 +1,4 @@
 import { StatusCodes } from 'http-status-codes';
-import { stringify } from 'qs';
 import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
@@ -181,10 +180,8 @@ describe('Tags', () => {
 
         const res = await app.inject({
           method: HttpMethod.Get,
-          url: `${ITEMS_ROUTE_PREFIX}/tags?${stringify(
-            { id: [item1.id, item2.id] },
-            { arrayFormat: 'repeat' },
-          )}`,
+          url: `${ITEMS_ROUTE_PREFIX}/tags`,
+          query: { id: [item1.id, item2.id] },
         });
 
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -198,7 +195,8 @@ describe('Tags', () => {
         const ids = ['invalid-id', v4()];
         const res = await app.inject({
           method: HttpMethod.Get,
-          url: `${ITEMS_ROUTE_PREFIX}/tags?${stringify({ id: ids }, { arrayFormat: 'repeat' })}`,
+          url: `${ITEMS_ROUTE_PREFIX}/tags`,
+          query: { id: ids },
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
@@ -209,7 +207,8 @@ describe('Tags', () => {
         const ids = [item.id, v4()];
         const res = await app.inject({
           method: HttpMethod.Get,
-          url: `${ITEMS_ROUTE_PREFIX}/tags?${stringify({ id: ids }, { arrayFormat: 'repeat' })}`,
+          url: `${ITEMS_ROUTE_PREFIX}/tags`,
+          query: { id: ids },
         });
         expectItemTags(res.json().data[ids[0]], tags);
         expect(res.json().errors[0]).toMatchObject(new ItemNotFound(expect.anything()));
@@ -224,7 +223,8 @@ describe('Tags', () => {
 
         const res = await app.inject({
           method: HttpMethod.Get,
-          url: `${ITEMS_ROUTE_PREFIX}/tags?${stringify({ id: ids }, { arrayFormat: 'repeat' })}`,
+          url: `${ITEMS_ROUTE_PREFIX}/tags`,
+          query: { id: ids },
         });
         expect(res.json().data[ids[1]]).toBeUndefined();
         expect(res.json().errors[0]).toMatchObject(new MemberCannotAccess(expect.anything()));
