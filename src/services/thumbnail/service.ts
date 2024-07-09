@@ -1,28 +1,34 @@
 import path from 'path';
 import sharp from 'sharp';
 import { Readable } from 'stream';
+import { injectable } from 'tsyringe';
 
 import FileService from '../file/service';
 import { Actor, Member } from '../member/entities/member';
 import { THUMBNAIL_FORMAT, THUMBNAIL_MIMETYPE, ThumbnailSizeFormat } from './constants';
 
+export const AVATAR_THUMBNAIL_PREFIX = 'avatars';
+export const ITEM_THUMBNAIL_PREFIX = 'thumbnails';
+
+@injectable()
 export class ThumbnailService {
-  fileService: FileService;
-  shouldRedirectOnDownload: boolean;
-  prefix: string;
+  private readonly _fileService: FileService;
+  private _prefix: string = ITEM_THUMBNAIL_PREFIX;
 
-  constructor(fileService: FileService, shouldRedirectOnDownload: boolean, prefix: string) {
-    this.shouldRedirectOnDownload = shouldRedirectOnDownload;
-    this.fileService = fileService;
-    this.prefix = prefix ?? 'thumbnails';
+  constructor(fileService: FileService) {
+    this._fileService = fileService;
   }
 
-  buildFilePath(itemId: string, name: string) {
-    return path.join(this.prefix, itemId, name);
+  public set prefix(prefix: string) {
+    this._prefix = prefix;
   }
 
-  buildFolderPath(itemId: string) {
-    return path.join(this.prefix, itemId);
+  private buildFilePath(itemId: string, name: string) {
+    return path.join(this._prefix, itemId, name);
+  }
+
+  private buildFolderPath(itemId: string) {
+    return path.join(this._prefix, itemId);
   }
 
   async upload(actor: Member, id: string, file: Readable) {
@@ -42,7 +48,7 @@ export class ThumbnailService {
         );
 
         // upload file
-        await this.fileService.upload(actor, {
+        await this._fileService.upload(actor, {
           file: pipeline,
           filepath: this.buildFilePath(id, sizeName),
           mimetype: THUMBNAIL_MIMETYPE,
@@ -52,7 +58,7 @@ export class ThumbnailService {
   }
 
   async getUrl(actor: Actor, { id, size }: { size: string; id: string }) {
-    const result = await this.fileService.getUrl(actor, {
+    const result = await this._fileService.getUrl(actor, {
       path: this.buildFilePath(id, size),
       id,
     });
@@ -60,7 +66,7 @@ export class ThumbnailService {
     return result;
   }
   async getFile(actor: Actor, { id, size }: { size: string; id: string }) {
-    const result = await this.fileService.getFile(actor, {
+    const result = await this._fileService.getFile(actor, {
       path: this.buildFilePath(id, size),
       id,
     });
@@ -70,12 +76,22 @@ export class ThumbnailService {
 
   async delete(actor: Member, { id, size }: { size: string; id: string }) {
     const filePath = this.buildFilePath(id, size);
-    await this.fileService.delete(actor, filePath);
+    await this._fileService.delete(actor, filePath);
   }
 
   async copyFolder(actor: Member, { originalId, newId }: { originalId: string; newId: string }) {
     const originalFolderPath = this.buildFolderPath(originalId);
     const newFolderPath = this.buildFolderPath(newId);
-    await this.fileService.copyFolder(actor, { originalFolderPath, newFolderPath });
+    await this._fileService.copyFolder(actor, { originalFolderPath, newFolderPath });
+  }
+}
+
+/**
+ * Allow to inject the ThumbnailService with a specific prefix.
+ */
+export class ThumbnailServiceTransformer {
+  public transform(thumbnailService: ThumbnailService, prefix: string) {
+    thumbnailService.prefix = prefix;
+    return thumbnailService;
   }
 }

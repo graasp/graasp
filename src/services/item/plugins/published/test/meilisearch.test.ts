@@ -10,10 +10,9 @@ import {
 } from 'meilisearch';
 import { DataSource, EntityManager } from 'typeorm';
 
-import { FastifyBaseLogger } from 'fastify';
-
 import { IndexItem, ItemType, MimeTypes, S3FileItemExtra } from '@graasp/sdk';
 
+import { BaseLogger } from '../../../../../logger';
 import * as repositoriesModule from '../../../../../utils/repositories';
 import FileService from '../../../../file/service';
 import { ItemMembershipRepository } from '../../../../itemMembership/repository';
@@ -42,7 +41,7 @@ describe('MeilisearchWrapper', () => {
   const logger = {
     info: jest.fn(),
     error: jest.fn(),
-  } as unknown as jest.Mocked<FastifyBaseLogger>;
+  } as unknown as jest.Mocked<BaseLogger>;
   const fileService = {} as jest.Mocked<FileService>;
 
   const datasource = {

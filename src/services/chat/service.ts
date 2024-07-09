@@ -1,3 +1,5 @@
+import { singleton } from 'tsyringe';
+
 import { PermissionLevel } from '@graasp/sdk';
 
 import HookManager from '../../utils/hook';
@@ -8,10 +10,11 @@ import { ChatMessage } from './chatMessage';
 import { MemberCannotDeleteMessage, MemberCannotEditMessage } from './errors';
 import { MentionService } from './plugins/mentions/service';
 
+@singleton()
 export class ChatMessageService {
   hooks = new HookManager();
-  mentionService: MentionService;
-  itemService: ItemService;
+  private readonly mentionService: MentionService;
+  private readonly itemService: ItemService;
 
   constructor(itemService: ItemService, mentionService: MentionService) {
     this.itemService = itemService;

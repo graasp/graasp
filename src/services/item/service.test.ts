@@ -1,6 +1,7 @@
-import { FastifyBaseLogger, FastifyInstance } from 'fastify';
+import { FastifyInstance } from 'fastify';
 
 import build, { clearDatabase } from '../../../test/app';
+import { BaseLogger } from '../../logger';
 import { buildRepositories } from '../../utils/repositories';
 import { ThumbnailService } from '../thumbnail/service';
 import { ItemService } from './service';
@@ -12,7 +13,7 @@ const testUtils = new ItemTestUtils();
 const mockedThumbnailService = {
   copyFolder: jest.fn(),
 } as unknown as jest.Mocked<ThumbnailService>;
-const service = new ItemService(mockedThumbnailService, {} as unknown as FastifyBaseLogger);
+const service = new ItemService(mockedThumbnailService, {} as unknown as BaseLogger);
 
 describe('Item Service', () => {
   let app: FastifyInstance;

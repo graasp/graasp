@@ -1,3 +1,5 @@
+import { singleton } from 'tsyringe';
+
 import { FastifyRequest } from 'fastify';
 
 import { UUID } from '@graasp/sdk';
@@ -13,8 +15,9 @@ enum ChatActionType {
   Clear = 'chat_clear',
 }
 
+@singleton()
 export class ActionChatService {
-  actionService: ActionService;
+  private readonly actionService: ActionService;
 
   constructor(actionService: ActionService) {
     this.actionService = actionService;

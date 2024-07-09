@@ -2,6 +2,7 @@ import fastifyPassport from '@fastify/passport';
 import { fastifySecureSession } from '@fastify/secure-session';
 import { FastifyInstance, FastifyPluginAsync, PassportUser } from 'fastify';
 
+import { resolveDependency } from '../../../../di/utils';
 import {
   AUTH_TOKEN_JWT_SECRET,
   COOKIE_DOMAIN,
@@ -14,6 +15,7 @@ import {
   STAGING,
 } from '../../../../utils/config';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
+import { MemberPasswordService } from '../password/service';
 import { SHORT_TOKEN_PARAM, TOKEN_PARAM } from './constants';
 import { PassportStrategy } from './strategies';
 import emailChangeStrategy from './strategies/emailChange';
@@ -27,9 +29,7 @@ import strictSessionStrategy from './strategies/strictSession';
 
 // This plugin needs to be globally register before using the prehandlers.
 const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
-  const {
-    memberPassword: { service: memberPasswordService },
-  } = fastify;
+  const memberPasswordService = resolveDependency(MemberPasswordService);
   const repositories: Repositories = buildRepositories();
   const memberRepository = repositories.memberRepository;
   const itemRepository = repositories.itemRepository;

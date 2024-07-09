@@ -10,11 +10,13 @@ import { FastifyInstance } from 'fastify';
 import { EtherpadItemType, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
+import { resolveDependency } from '../../../../../di/utils';
 import { ETHERPAD_PUBLIC_URL } from '../../../../../utils/config';
 import { ItemNotFound, MemberCannotAccess } from '../../../../../utils/errors';
 import { Actor, Member } from '../../../../member/entities/member';
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { Item } from '../../../entities/Item';
+import { ItemService } from '../../../service';
 import { ItemTestUtils } from '../../../test/fixtures/items';
 import { MAX_SESSIONS_IN_COOKIE } from '../constants';
 import { ItemMissingExtraError } from '../errors';
@@ -139,7 +141,7 @@ describe('Etherpad service API', () => {
       });
 
       // override item creation: ensure that it fails
-      jest.spyOn(app.items.service, 'post').mockImplementationOnce(() => {
+      jest.spyOn(resolveDependency(ItemService), 'post').mockImplementationOnce(() => {
         throw new Error('mock error');
       });
       const res = await app.inject(payloadCreate);

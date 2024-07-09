@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { singleton } from 'tsyringe';
 
 import {
   Context,
@@ -8,12 +9,11 @@ import {
   UUID,
 } from '@graasp/sdk';
 
-import { MailerDecoration } from '../../../../../plugins/mailer';
 import { MAIL } from '../../../../../plugins/mailer/langs/constants';
+import { MailerService } from '../../../../../plugins/mailer/service';
 import { UnauthorizedMember } from '../../../../../utils/errors';
 import { Repositories } from '../../../../../utils/repositories';
 import { EXPORT_FILE_EXPIRATION, ZIP_MIMETYPE } from '../../../../action/constants/constants';
-import { ActionService } from '../../../../action/services/action';
 import {
   buildActionFilePath,
   buildItemTmpFolder,
@@ -27,25 +27,23 @@ import { ItemService } from '../../../service';
 import { ActionItemService } from '../service';
 import { ActionRequestExport } from './requestExport';
 
+@singleton()
 export class ActionRequestExportService {
-  fileService: FileService;
-  actionItemService: ActionItemService;
-  itemService: ItemService;
-  actionService: ActionService;
-  mailer: MailerDecoration;
+  private readonly fileService: FileService;
+  private readonly actionItemService: ActionItemService;
+  private readonly itemService: ItemService;
+  private readonly mailerService: MailerService;
 
   constructor(
-    actionService: ActionService,
     actionItemService: ActionItemService,
     itemService: ItemService,
     fileService: FileService,
-    mailer,
+    mailerService: MailerService,
   ) {
-    this.actionService = actionService;
     this.actionItemService = actionItemService;
     this.itemService = itemService;
     this.fileService = fileService;
-    this.mailer = mailer;
+    this.mailerService = mailerService;
   }
 
   async request(
@@ -121,7 +119,7 @@ export class ActionRequestExportService {
 
     // factor out
     const lang = actor.lang;
-    const t = this.mailer.translate(lang);
+    const t = this.mailerService.translate(lang);
 
     const text = t(MAIL.EXPORT_ACTIONS_TEXT, {
       itemName: item.name,
@@ -129,14 +127,14 @@ export class ActionRequestExportService {
       exportFormat: format,
     });
     const html = `
-      ${this.mailer.buildText(text)}
-      ${this.mailer.buildButton(link, t(MAIL.EXPORT_ACTIONS_BUTTON_TEXT))}
+      ${this.mailerService.buildText(text)}
+      ${this.mailerService.buildButton(link, t(MAIL.EXPORT_ACTIONS_BUTTON_TEXT))}
     `;
     const title = t(MAIL.EXPORT_ACTIONS_TITLE, { itemName: item.name });
 
-    const footer = this.mailer.buildFooter(lang);
+    const footer = this.mailerService.buildFooter(lang);
 
-    this.mailer.sendEmail(title, actor.email, link, html, footer).catch((err) => {
+    this.mailerService.sendEmail(title, actor.email, link, html, footer).catch((err) => {
       console.debug(err, `mailer failed. export zip link: ${link}`);
     });
   }

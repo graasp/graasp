@@ -3,6 +3,7 @@ import path from 'path';
 import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
 import { withFile as withTmpFile } from 'tmp-promise';
+import { singleton } from 'tsyringe';
 
 import {
   FileItemProperties,
@@ -24,31 +25,29 @@ import { ItemService } from '../../service';
 import { readPdfContent } from '../../utils';
 import { ItemThumbnailService } from '../thumbnail/service';
 
+@singleton()
 class FileItemService {
-  fileService: FileService;
-  itemService: ItemService;
-  storageService: StorageService;
-  itemThumbnailService: ItemThumbnailService;
-  shouldRedirectOnDownload: boolean;
-
-  buildFilePath(extension?: string) {
-    // TODO: CHANGE ??
-    const filepath = `${randomHexOf4()}/${randomHexOf4()}/${randomHexOf4()}-${Date.now()}${extension}`;
-    return path.join('files', filepath);
-  }
+  private readonly fileService: FileService;
+  private readonly itemService: ItemService;
+  private readonly storageService: StorageService;
+  private readonly itemThumbnailService: ItemThumbnailService;
 
   constructor(
     fileService: FileService,
     itemService: ItemService,
     storageService: StorageService,
     itemThumbnailService: ItemThumbnailService,
-    shouldRedirectOnDownload: boolean,
   ) {
     this.fileService = fileService;
     this.itemService = itemService;
     this.storageService = storageService;
     this.itemThumbnailService = itemThumbnailService;
-    this.shouldRedirectOnDownload = shouldRedirectOnDownload;
+  }
+
+  public buildFilePath(extension?: string) {
+    // TODO: CHANGE ??
+    const filepath = `${randomHexOf4()}/${randomHexOf4()}/${randomHexOf4()}-${Date.now()}${extension}`;
+    return path.join('files', filepath);
   }
 
   async upload(
@@ -110,10 +109,10 @@ class FileItemService {
       const item = {
         name,
         description,
-        type: this.fileService.type,
+        type: this.fileService.fileType,
         extra: {
           // this is needed because if we directly use `this.fileService.type` then TS widens the type to `string` which we do not want
-          ...(this.fileService.type === ItemType.LOCAL_FILE
+          ...(this.fileService.fileType === ItemType.LOCAL_FILE
             ? { [ItemType.LOCAL_FILE]: fileProperties }
             : { [ItemType.S3_FILE]: fileProperties }),
         },
@@ -158,7 +157,7 @@ class FileItemService {
     // check rights
     const item = await repositories.itemRepository.get(itemId);
     await validatePermission(repositories, PermissionLevel.Read, actor, item);
-    const extraData = item.extra[this.fileService.type] as FileItemProperties;
+    const extraData = item.extra[this.fileService.fileType] as FileItemProperties;
     const result = await this.fileService.getFile(actor, {
       id: itemId,
       ...extraData,
@@ -180,7 +179,7 @@ class FileItemService {
     // check rights
     const item = await repositories.itemRepository.get(itemId);
     await validatePermission(repositories, PermissionLevel.Read, actor, item);
-    const extraData = item.extra[this.fileService.type] as FileItemProperties;
+    const extraData = item.extra[this.fileService.fileType] as FileItemProperties;
     const result = await this.fileService.getUrl(actor, {
       id: itemId,
       ...extraData,
@@ -191,7 +190,7 @@ class FileItemService {
 
   async copy(actor: Member, repositories: Repositories, { copy }: { original; copy }) {
     const { id, extra } = copy; // full copy with new `id`
-    const { path: originalPath, mimetype } = extra[this.fileService.type];
+    const { path: originalPath, mimetype } = extra[this.fileService.fileType];
     // filenames are not used
     const newFilePath = this.buildFilePath();
 
@@ -210,7 +209,7 @@ class FileItemService {
     const filepath = await this.fileService.copy(actor, data);
 
     // update item copy's 'extra'
-    if (this.fileService.type === ItemType.S3_FILE) {
+    if (this.fileService.fileType === ItemType.S3_FILE) {
       await repositories.itemRepository.patch(copy.id, {
         extra: { s3File: { ...extra.s3File, path: filepath } },
       });

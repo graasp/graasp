@@ -2,11 +2,13 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ChatBotMessage, GPTVersion } from '@graasp/sdk';
 
+import { resolveDependency } from '../../../../../di/utils';
 import { notUndefined } from '../../../../../utils/assertions';
 import { OPENAI_GPT_VERSION } from '../../../../../utils/config';
 import { InvalidJWTItem } from '../../../../../utils/errors';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
+import { ItemService } from '../../../service';
 import { create } from './schemas';
 import { ChatBotService } from './service';
 
@@ -15,9 +17,7 @@ type QueryParameters = {
 };
 
 const chatBotPlugin: FastifyPluginAsync = async (fastify) => {
-  const {
-    items: { service: itemService },
-  } = fastify;
+  const itemService = resolveDependency(ItemService);
   const chatBotService = new ChatBotService();
 
   fastify.register(async function (fastify) {

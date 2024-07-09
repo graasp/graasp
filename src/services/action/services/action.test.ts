@@ -1,10 +1,11 @@
-import type { FastifyBaseLogger, FastifyInstance, FastifyRequest } from 'fastify';
+import type { FastifyInstance, FastifyRequest } from 'fastify';
 
 import { ActionFactory, MemberFactory } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
+import { BaseLogger } from '../../../logger';
 import { AppDataSource } from '../../../plugins/datasource';
-import { MailerDecoration } from '../../../plugins/mailer';
+import { MailerService } from '../../../plugins/mailer/service';
 import { buildRepositories } from '../../../utils/repositories';
 import { ItemService } from '../../item/service';
 import { MemberService } from '../../member/service';
@@ -16,8 +17,8 @@ import { ActionService } from './action';
 jest.mock('../../../plugins/datasource');
 
 const service = new ActionService(
-  new ItemService({} as unknown as ThumbnailService, {} as unknown as FastifyBaseLogger),
-  new MemberService({} as unknown as MailerDecoration, {} as unknown as FastifyBaseLogger),
+  new ItemService({} as unknown as ThumbnailService, {} as unknown as BaseLogger),
+  new MemberService({} as unknown as MailerService, {} as unknown as BaseLogger),
 );
 const rawRepository = AppDataSource.getRepository(Action);
 

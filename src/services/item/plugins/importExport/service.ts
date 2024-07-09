@@ -9,10 +9,11 @@ import { DataSource } from 'typeorm';
 import util from 'util';
 import { ZipFile } from 'yazl';
 
-import { FastifyBaseLogger, FastifyReply } from 'fastify';
+import { FastifyReply } from 'fastify';
 
 import { ItemType } from '@graasp/sdk';
 
+import { BaseLogger } from '../../../../logger';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { Actor, Member } from '../../../member/entities/member';
@@ -35,24 +36,24 @@ const magic = new Magic(MAGIC_MIME_TYPE);
 const asyncDetectFile = util.promisify(magic.detectFile.bind(magic));
 
 export class ImportExportService {
-  fileItemService: FileItemService;
-  h5pService: H5PService;
-  itemService: ItemService;
-  db: DataSource;
-  logger: FastifyBaseLogger;
+  private readonly fileItemService: FileItemService;
+  private readonly h5pService: H5PService;
+  private readonly itemService: ItemService;
+  private readonly db: DataSource;
+  private readonly log: BaseLogger;
 
   constructor(
     db: DataSource,
     fileItemService: FileItemService,
     itemService: ItemService,
     h5pService: H5PService,
-    log: FastifyBaseLogger,
+    log: BaseLogger,
   ) {
     this.db = db;
     this.fileItemService = fileItemService;
     this.h5pService = h5pService;
     this.itemService = itemService;
-    this.logger = log;
+    this.log = log;
   }
 
   private async _getDescriptionForFilepath(filepath: string): Promise<string> {
@@ -83,11 +84,10 @@ export class ImportExportService {
       folderPath: string;
       parent?: Item;
     },
-    log: FastifyBaseLogger,
   ): Promise<Item | null> {
     const { filename, folderPath, parent } = options;
 
-    log.debug(`handling '${filename}'`);
+    this.log.debug(`handling '${filename}'`);
 
     // ignore hidden files such as .DS_STORE
     if (filename.startsWith('.')) {
@@ -108,7 +108,7 @@ export class ImportExportService {
 
       const description = await this._getDescriptionForFilepath(path.join(filepath, filename));
 
-      log.debug(`create folder from '${filename}'`);
+      this.log.debug(`create folder from '${filename}'`);
       return this.itemService.post(actor, repositories, {
         item: {
           description,
@@ -334,13 +334,11 @@ export class ImportExportService {
    * @param repositories
    * @param options.parent parent item might be saved in
    * @param options.folderPath current path in archive of the parent
-   * @param log logger
    */
   async _import(
     actor: Member,
     repositories: Repositories,
     { parent, folderPath }: { parent?: Item; folderPath: string },
-    log: FastifyBaseLogger,
   ) {
     const filenames = fs.readdirSync(folderPath);
 
@@ -353,16 +351,11 @@ export class ImportExportService {
           // transaction is necessary since we are adding data
           // we don't add it at the very top to allow partial zip to be updated
           await this.db.transaction(async (manager) => {
-            const item = await this._saveItemFromFilename(
-              actor,
-              buildRepositories(manager),
-              {
-                filename,
-                folderPath,
-                parent,
-              },
-              log,
-            );
+            const item = await this._saveItemFromFilename(actor, buildRepositories(manager), {
+              filename,
+              folderPath,
+              parent,
+            });
             if (item) {
               items.push(item);
             }
@@ -370,10 +363,10 @@ export class ImportExportService {
         } catch (e) {
           if (e instanceof UploadEmptyFileError) {
             // ignore empty files
-            log.debug(`ignore ${filename} because it is empty`);
+            this.log.debug(`ignore ${filename} because it is empty`);
           } else {
             // improvement: return a list of failed imports
-            log.error(e);
+            this.log.error(e);
             throw e;
           }
         }
@@ -384,15 +377,10 @@ export class ImportExportService {
     for (const newItem of items) {
       const { type, name } = newItem;
       if (type === ItemType.FOLDER) {
-        await this._import(
-          actor,
-          repositories,
-          {
-            folderPath: path.join(folderPath, name),
-            parent: newItem,
-          },
-          log,
-        );
+        await this._import(actor, repositories, {
+          folderPath: path.join(folderPath, name),
+          parent: newItem,
+        });
       }
     }
   }
@@ -405,7 +393,6 @@ export class ImportExportService {
       targetFolder,
       parentId,
     }: { folderPath: string; targetFolder: string; parentId?: string },
-    log: FastifyBaseLogger,
   ): Promise<void> {
     let parent;
     if (parentId) {
@@ -413,7 +400,7 @@ export class ImportExportService {
       parent = await this.itemService.get(actor, repositories, parentId);
     }
 
-    await this._import(actor, repositories, { parent, folderPath }, log);
+    await this._import(actor, repositories, { parent, folderPath });
 
     // delete zip and content
     fs.rmSync(targetFolder, { recursive: true });

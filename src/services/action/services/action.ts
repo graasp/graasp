@@ -1,3 +1,5 @@
+import { singleton } from 'tsyringe';
+
 import { forwarded } from '@fastify/forwarded';
 import { FastifyRequest } from 'fastify';
 
@@ -8,6 +10,7 @@ import { MemberService } from '../../member/service';
 import { Action } from '../entities/action';
 import { getGeolocationIp, getView } from '../utils/actions';
 
+@singleton()
 export class ActionService {
   itemService: ItemService;
   memberService: MemberService;

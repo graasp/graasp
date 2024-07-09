@@ -151,3 +151,13 @@ export class DownloadFileUnexpectedError extends GraaspFileError {
     );
   }
 }
+
+export class MalformedFileConfigError extends GraaspFileError {
+  constructor(message: string) {
+    super({
+      code: 'GPFERR012',
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      message,
+    });
+  }
+}

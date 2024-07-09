@@ -2,6 +2,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { FileItemType } from '@graasp/sdk';
 
+import { resolveDependency } from '../../../../di/utils';
 import { IdParam } from '../../../../types';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
@@ -19,12 +20,9 @@ export interface GraaspActionsOptions {
 }
 
 const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
-  const {
-    actions: { service: actionService },
-    db,
-  } = fastify;
+  const { db } = fastify;
 
-  const actionMemberService = new ActionMemberService(actionService);
+  const actionMemberService = resolveDependency(ActionMemberService);
 
   fastify.get<{ Querystring: { startDate?: string; endDate?: string } }>(
     '/actions',

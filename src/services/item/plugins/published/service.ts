@@ -1,10 +1,11 @@
-import { FastifyBaseLogger } from 'fastify';
+import { singleton } from 'tsyringe';
 
 import { ItemTagType, PermissionLevel, PublishableItemTypeChecker, UUID } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import type { MailerDecoration } from '../../../../plugins/mailer';
+import { BaseLogger } from '../../../../logger';
 import { MAIL } from '../../../../plugins/mailer/langs/constants';
+import { MailerService } from '../../../../plugins/mailer/service';
 import { resultOfToList } from '../../../../services/utils';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import HookManager from '../../../../utils/hook';
@@ -20,20 +21,22 @@ import { ItemTypeNotAllowedToPublish } from './errors';
 interface ActionCount {
   actionCount: number;
 }
+
+@singleton()
 export class ItemPublishedService {
-  private log: FastifyBaseLogger;
+  private log: BaseLogger;
   private itemService: ItemService;
-  private mailer: MailerDecoration;
+  private mailerService: MailerService;
 
   hooks = new HookManager<{
     create: { pre: { item: Item }; post: { item: Item } };
     delete: { pre: { item: Item }; post: { item: Item } };
   }>();
 
-  constructor(itemService: ItemService, mailer: MailerDecoration, log) {
+  constructor(itemService: ItemService, mailerService: MailerService, log: BaseLogger) {
     this.log = log;
     this.itemService = itemService;
-    this.mailer = mailer;
+    this.mailerService = mailerService;
   }
 
   async _notifyContributors(actor: Member, repositories: Repositories, item: Item): Promise<void> {
@@ -49,19 +52,19 @@ export class ItemPublishedService {
 
     for (const member of contributors) {
       const lang = member.lang ?? DEFAULT_LANG;
-      const t = this.mailer.translate(lang);
+      const t = this.mailerService.translate(lang);
 
       const text = t(MAIL.PUBLISH_ITEM_TEXT, { itemName: item.name });
       const html = `
-        ${this.mailer.buildText(text)}
-        ${this.mailer.buildButton(link, t(MAIL.PUBLISH_ITEM_BUTTON_TEXT))}
+        ${this.mailerService.buildText(text)}
+        ${this.mailerService.buildButton(link, t(MAIL.PUBLISH_ITEM_BUTTON_TEXT))}
       `;
       const title = t(MAIL.PUBLISH_ITEM_TITLE, { itemName: item.name });
 
-      const footer = this.mailer.buildFooter(lang);
+      const footer = this.mailerService.buildFooter(lang);
 
-      await this.mailer.sendEmail(title, member.email, link, html, footer).catch((err) => {
-        this.log.warn(err, `mailer failed. published link: ${link}`);
+      await this.mailerService.sendEmail(title, member.email, link, html, footer).catch((err) => {
+        this.log.warn(err, `mailerService failed. published link: ${link}`);
       });
     }
   }

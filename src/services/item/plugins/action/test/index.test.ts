@@ -7,7 +7,9 @@ import { FastifyInstance } from 'fastify';
 import { Context, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
+import { resolveDependency } from '../../../../../di/utils';
 import { AppDataSource } from '../../../../../plugins/datasource';
+import { MailerService } from '../../../../../plugins/mailer/service';
 import { BUILDER_HOST, ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { Action } from '../../../../action/entities/action';
 import { saveMember, saveMembers } from '../../../../member/test/fixtures/members';
@@ -204,7 +206,8 @@ describe('Action Plugin Tests', () => {
   describe('POST /:id/actions/export', () => {
     it('Create archive and send email', async () => {
       ({ app, actor } = await build());
-      const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
+      const mailerService = resolveDependency(MailerService);
+      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
 
       const { item } = await testUtils.saveItemAndMembership({
         member: actor,
@@ -225,7 +228,8 @@ describe('Action Plugin Tests', () => {
 
     it('Create archive for item with an app and send email', async () => {
       ({ app, actor } = await build());
-      const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
+      const mailerService = resolveDependency(MailerService);
+      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
 
       const { item } = await testUtils.saveItemAndMembership({
         member: actor,
@@ -254,7 +258,8 @@ describe('Action Plugin Tests', () => {
 
     it('Create archive if last export is old and send email', async () => {
       ({ app, actor } = await build());
-      const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
+      const mailerService = resolveDependency(MailerService);
+      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
 
       const { item } = await testUtils.saveItemAndMembership({
         member: actor,
@@ -290,7 +295,8 @@ describe('Action Plugin Tests', () => {
 
     it('Does not create archive if last export is recent, but send email', async () => {
       ({ app, actor } = await build());
-      const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
+      const mailerService = resolveDependency(MailerService);
+      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
 
       const { item } = await testUtils.saveItemAndMembership({
         member: actor,

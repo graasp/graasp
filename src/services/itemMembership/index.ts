@@ -5,20 +5,21 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { PermissionLevel } from '@graasp/sdk';
 
+import { resolveDependency } from '../../di/utils';
 import { IdParam } from '../../types';
 import { buildRepositories } from '../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
 import { PurgeBelowParam } from './interfaces/requests';
 import common, { create, createMany, deleteOne, getItems, updateOne } from './schemas';
+import { ItemMembershipService } from './service';
 import { membershipWsHooks } from './ws/hooks';
 
 const ROUTES_PREFIX = '/item-memberships';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const {
-    db,
-    memberships: { service: itemMembershipService },
-  } = fastify;
+  const { db } = fastify;
+
+  const itemMembershipService = resolveDependency(ItemMembershipService);
 
   // schemas
   fastify.addSchema(common);

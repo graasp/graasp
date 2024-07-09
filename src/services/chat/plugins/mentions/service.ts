@@ -1,7 +1,9 @@
+import { singleton } from 'tsyringe';
+
 import { PermissionLevel, buildItemLinkForBuilder } from '@graasp/sdk';
 
-import type { MailerDecoration } from '../../../../plugins/mailer';
 import { MAIL } from '../../../../plugins/mailer/langs/constants';
+import { MailerService } from '../../../../plugins/mailer/service';
 import { BUILDER_HOST } from '../../../../utils/config';
 import HookManager from '../../../../utils/hook';
 import { Repositories } from '../../../../utils/repositories';
@@ -11,12 +13,13 @@ import { Member } from '../../../member/entities/member';
 import { ChatMessage } from '../../chatMessage';
 import { MemberCannotAccessMention } from '../../errors';
 
+@singleton()
 export class MentionService {
   hooks = new HookManager();
-  mailer: MailerDecoration;
+  private readonly mailerService: MailerService;
 
-  constructor(mailer: MailerDecoration) {
-    this.mailer = mailer;
+  constructor(mailerService: MailerService) {
+    this.mailerService = mailerService;
   }
 
   async sendMentionNotificationEmail({
@@ -35,26 +38,26 @@ export class MentionService {
     });
     const lang = member?.extra?.lang as string;
 
-    const translated = this.mailer.translate(lang);
+    const translated = this.mailerService.translate(lang);
     const subject = translated(MAIL.CHAT_MENTION_TITLE, {
       creatorName: creator.name,
       itemName: item.name,
     });
     const html = `
-    ${this.mailer.buildText(translated(MAIL.GREETINGS))}
-    ${this.mailer.buildText(
+    ${this.mailerService.buildText(translated(MAIL.GREETINGS))}
+    ${this.mailerService.buildText(
       translated(MAIL.CHAT_MENTION_TEXT, {
         creatorName: creator.name,
         itemName: item.name,
       }),
     )}
-    ${this.mailer.buildButton(itemLink, translated(MAIL.CHAT_MENTION_BUTTON_TEXT))}`;
+    ${this.mailerService.buildButton(itemLink, translated(MAIL.CHAT_MENTION_BUTTON_TEXT))}`;
 
-    const footer = this.mailer.buildFooter(lang);
+    const footer = this.mailerService.buildFooter(lang);
 
-    this.mailer.sendEmail(subject, member.email, itemLink, html, footer).catch((err) => {
+    this.mailerService.sendEmail(subject, member.email, itemLink, html, footer).catch((err) => {
       console.error(err);
-      // log.warn(err, `mailer failed. notification link: ${itemLink}`);
+      // log.warn(err, `mailerService failed. notification link: ${itemLink}`);
     });
   }
 

@@ -2,18 +2,21 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ActionTriggers } from '@graasp/sdk';
 
+import { resolveDependency } from '../../../../di/utils';
 import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
+import { ActionService } from '../../../action/services/action';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import { ItemService } from '../../service';
 import common, { create, deleteOne, getLikesForItem, getLikesForMember } from './schemas';
 import { ItemLikeService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { db, items } = fastify;
+  const { db } = fastify;
 
-  const itemLikeService = new ItemLikeService(items.service);
-  const actionService = fastify.actions.service;
-  const itemService = fastify.items.service;
+  const itemService = resolveDependency(ItemService);
+  const itemLikeService = new ItemLikeService(itemService);
+  const actionService = resolveDependency(ActionService);
 
   fastify.addSchema(common);
   //get liked entry for member

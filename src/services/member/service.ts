@@ -1,12 +1,12 @@
 import { sign as jwtSign } from 'jsonwebtoken';
-
-import { FastifyBaseLogger } from 'fastify';
+import { singleton } from 'tsyringe';
 
 import { UUID } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import { MailerDecoration } from '../../plugins/mailer';
+import { BaseLogger } from '../../logger';
 import { MAIL } from '../../plugins/mailer/langs/constants';
+import { MailerService } from '../../plugins/mailer/service';
 import {
   ACCOUNT_HOST,
   EMAIL_CHANGE_JWT_EXPIRATION_IN_MINUTES,
@@ -18,13 +18,14 @@ import { Repositories } from '../../utils/repositories';
 import { SHORT_TOKEN_PARAM } from '../auth/plugins/passport';
 import { Actor, Member } from './entities/member';
 
+@singleton()
 export class MemberService {
   hooks = new HookManager();
-  private readonly mailer: MailerDecoration;
-  private readonly log: FastifyBaseLogger;
+  private readonly mailerService: MailerService;
+  private readonly log: BaseLogger;
 
-  constructor(mailer: MailerDecoration, log: FastifyBaseLogger) {
-    this.mailer = mailer;
+  constructor(mailerService: MailerService, log: BaseLogger) {
+    this.mailerService = mailerService;
     this.log = log;
   }
 
@@ -118,34 +119,34 @@ export class MemberService {
    * @returns void
    */
   sendEmailChangeRequest(newEmail: string, token: string, lang: string): void {
-    const translated = this.mailer.translate(lang);
+    const translated = this.mailerService.translate(lang);
     const subject = translated(MAIL.CHANGE_EMAIL_TITLE);
     const destination = new URL('/email/change', ACCOUNT_HOST.url);
     destination.searchParams.set(SHORT_TOKEN_PARAM, token);
     const link = destination.toString();
 
     const html = `
-      ${this.mailer.buildText(translated(MAIL.CHANGE_EMAIL_TEXT))}
-      ${this.mailer.buildButton(link, translated(MAIL.CHANGE_EMAIL_BUTTON_TEXT))}
-      ${this.mailer.buildText(translated(MAIL.CHANGE_EMAIL_NOT_REQUESTED))}`;
+      ${this.mailerService.buildText(translated(MAIL.CHANGE_EMAIL_TEXT))}
+      ${this.mailerService.buildButton(link, translated(MAIL.CHANGE_EMAIL_BUTTON_TEXT))}
+      ${this.mailerService.buildText(translated(MAIL.CHANGE_EMAIL_NOT_REQUESTED))}`;
 
-    const footer = this.mailer.buildFooter(lang);
+    const footer = this.mailerService.buildFooter(lang);
 
     // don't wait for mailer's response; log error and link if it fails.
-    this.mailer
+    this.mailerService
       .sendEmail(subject, newEmail, link, html, footer)
       .catch((err) => this.log.warn(err, `mailer failed. link: ${link}`));
   }
 
   mailConfirmEmailChangeRequest(oldEmail: string, newEmail: string, lang: string) {
-    const translated = this.mailer.translate(lang);
+    const translated = this.mailerService.translate(lang);
     const subject = translated(MAIL.CONFIRM_CHANGE_EMAIL_TITLE);
     const text = translated(MAIL.CONFIRM_CHANGE_EMAIL_TEXT, { newEmail });
 
-    const footer = this.mailer.buildFooter(lang);
+    const footer = this.mailerService.buildFooter(lang);
 
     // don't wait for mailer's response; log error and link if it fails.
-    this.mailer
+    this.mailerService
       .sendEmail(subject, oldEmail, text, text, footer)
       .catch((err) => this.log.warn(err, `mailer failed.`));
   }

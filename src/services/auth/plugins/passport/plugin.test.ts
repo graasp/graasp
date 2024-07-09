@@ -9,6 +9,7 @@ import { FastifyInstance, PassportUser } from 'fastify';
 import { HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
+import { resolveDependency } from '../../../../di/utils';
 import {
   APPS_JWT_SECRET,
   AUTH_TOKEN_JWT_SECRET,
@@ -22,6 +23,7 @@ import { Item } from '../../../item/entities/Item';
 import { ItemTestUtils, expectItem } from '../../../item/test/fixtures/items';
 import { Member } from '../../../member/entities/member';
 import { expectMember, saveMember } from '../../../member/test/fixtures/members';
+import { MemberPasswordService } from '../password/service';
 import { saveMemberAndPassword } from '../password/test/fixtures/password';
 import { encryptPassword } from '../password/utils';
 import {
@@ -360,7 +362,8 @@ describe('Passport Plugin', () => {
       newMember = await saveMember();
       password = faker.internet.password({ prefix: '!1Aa' });
       await saveMemberAndPassword(newMember, { hashed: await encryptPassword(password) });
-      const result = await app.memberPassword.service.createResetPasswordRequest(
+      const memberPasswordService = resolveDependency(MemberPasswordService);
+      const result = await memberPasswordService.createResetPasswordRequest(
         buildRepositories(),
         newMember.email,
       );

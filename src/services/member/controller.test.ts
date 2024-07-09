@@ -7,7 +7,9 @@ import { FastifyInstance } from 'fastify';
 import { HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../test/app';
+import { resolveDependency } from '../../di/utils';
 import { AppDataSource } from '../../plugins/datasource';
+import { MailerService } from '../../plugins/mailer/service';
 import { ACCOUNT_HOST, EMAIL_CHANGE_JWT_SECRET } from '../../utils/config';
 import { Actor, Member } from './entities/member';
 import { saveMember } from './test/fixtures/members';
@@ -26,7 +28,7 @@ describe('Member Controller', () => {
   beforeEach(async () => {
     member = await saveMember();
     mockAuthenticate(member as Actor);
-    mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
+    mockSendEmail = jest.spyOn(resolveDependency(MailerService), 'sendEmail');
   });
   afterEach(async () => {
     await clearDatabase(app.db);

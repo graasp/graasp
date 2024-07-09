@@ -3,10 +3,12 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { HttpMethod, UUID } from '@graasp/sdk';
 
+import { resolveDependency } from '../../../../../../../di/utils';
 import { IdParam } from '../../../../../../../types';
 import { notUndefined } from '../../../../../../../utils/assertions';
 import { Repositories, buildRepositories } from '../../../../../../../utils/repositories';
 import { guestAuthenticateAppsJWT } from '../../../../../../auth/plugins/passport';
+import FileService from '../../../../../../file/service';
 import {
   DownloadFileUnexpectedError,
   UploadEmptyFileError,
@@ -15,7 +17,7 @@ import {
 import { Actor, Member } from '../../../../../../member/entities/member';
 import { AppData } from '../../appData';
 import { PreventUpdateAppDataFile } from '../../errors';
-import type { AppDataService } from '../../service';
+import { AppDataService } from '../../service';
 import { download, upload } from './schema';
 import AppDataFileService from './service';
 
@@ -34,15 +36,11 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     appDataService,
   } = options;
 
-  const {
-    db,
-    files: { service: fileService },
-    items,
-  } = fastify;
+  const { db } = fastify;
 
-  const { service: itemService } = items;
+  const fileService = resolveDependency(FileService);
 
-  const appDataFileService = new AppDataFileService(appDataService, fileService, itemService);
+  const appDataFileService = resolveDependency(AppDataFileService);
 
   fastify.register(fastifyMultipart, {
     limits: {
@@ -73,7 +71,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     args: { appData: Partial<AppData> },
   ) => {
     const { appData } = args;
-    if (appData?.data && appData.data[fileService.type]) {
+    if (appData?.data && appData.data[fileService.fileType]) {
       throw new PreventUpdateAppDataFile(appData.id);
     }
   };

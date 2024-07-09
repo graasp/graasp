@@ -1,7 +1,7 @@
-import { MailerDecoration } from '../../../../plugins/mailer';
+import { singleton } from 'tsyringe';
+
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
-import FileService from '../../../file/service';
 import { Item } from '../../../item/entities/Item';
 import { Actor } from '../../entities/member';
 import {
@@ -24,26 +24,22 @@ import {
 } from './utils/anonymize.utils';
 import { RequestDataExportService } from './utils/export.utils';
 
+@singleton()
 export class ExportMemberDataService {
-  async requestDataExport({
-    actor,
-    repositories,
-    fileService,
-    mailer,
-  }: {
-    actor: Actor;
-    repositories: Repositories;
-    fileService: FileService;
-    mailer: MailerDecoration;
-  }) {
+  private readonly requestDataExportService: RequestDataExportService;
+
+  constructor(requestDataExportService: RequestDataExportService) {
+    this.requestDataExportService = requestDataExportService;
+  }
+
+  async requestDataExport({ actor, repositories }: { actor: Actor; repositories: Repositories }) {
     if (!actor) {
       throw new UnauthorizedMember(actor);
     }
 
     // get the data to export
     const dataRetriever = async () => await this.getAllData(actor, repositories);
-    const requestExportService = new RequestDataExportService(fileService, mailer);
-    await requestExportService.requestExport(actor, actor.id, dataRetriever);
+    await this.requestDataExportService.requestExport(actor, actor.id, dataRetriever);
   }
 
   async getAllData(actor: Actor, repositories: Repositories) {

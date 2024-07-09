@@ -2,18 +2,15 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
+import { resolveDependency } from '../../../../di/utils';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import { exportMemberData } from './schemas/schemas';
 import { ExportMemberDataService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const {
-    files: { service: fileService },
-    mailer,
-    db,
-  } = fastify;
-  const exportMemberDataService = new ExportMemberDataService();
+  const { db } = fastify;
+  const exportMemberDataService = resolveDependency(ExportMemberDataService);
 
   // download all related data to the given user
   fastify.post(
@@ -29,8 +26,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         await exportMemberDataService.requestDataExport({
           actor: user?.member,
           repositories,
-          fileService,
-          mailer,
         });
       });
 

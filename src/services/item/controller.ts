@@ -5,6 +5,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ItemTagType, PermissionLevel } from '@graasp/sdk';
 
+import { resolveDependency } from '../../di/utils';
 import { IdParam, IdsParams, PaginationParams } from '../../types';
 import { notUndefined } from '../../utils/assertions';
 import { buildRepositories } from '../../utils/repositories';
@@ -27,15 +28,17 @@ import {
   moveMany,
   updateMany,
 } from './fluent-schema';
+import { ActionItemService } from './plugins/action/service';
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
+import { ItemService } from './service';
 import { ItemChildrenParams, ItemSearchParams } from './types';
 import { getPostItemPayloadFromFormData } from './utils';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from './ws/events';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, items, websockets } = fastify;
-  const itemService = items.service;
-  const actionItemService = items.actions.service;
+  const itemService = resolveDependency(ItemService);
+  const actionItemService = resolveDependency(ActionItemService);
 
   // create item
   // question: add link hook here? or have another endpoint?

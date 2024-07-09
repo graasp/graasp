@@ -3,6 +3,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { AppIdentification, AuthTokenSubject } from '@graasp/sdk';
 
+import { resolveDependency } from '../../../../di/utils';
 import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import {
@@ -10,6 +11,7 @@ import {
   isAuthenticated,
   optionalIsAuthenticated,
 } from '../../../auth/plugins/passport';
+import { ItemService } from '../../service';
 import appActionPlugin from './appAction';
 import appDataPlugin from './appData';
 import appSettingPlugin from './appSetting';
@@ -28,8 +30,10 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
   }
 
   const {
-    items: { service: itemService, extendCreateSchema, extendExtrasUpdateSchema },
+    items: { extendCreateSchema, extendExtrasUpdateSchema },
   } = fastify;
+
+  const itemService = resolveDependency(ItemService);
 
   // "install" custom schema for validating document items creation
   extendCreateSchema(createSchema);

@@ -1,14 +1,16 @@
 import { FastifyPluginAsync } from 'fastify';
 
+import { resolveDependency } from '../../../../di/utils';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import common, { create, deleteOne, getCategories, getItemCategories } from './schemas';
 import { CategoryService } from './services/category';
+import { ItemCategoryService } from './services/itemCategory';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db } = fastify;
-  const itemCategoryService = fastify.itemsCategory.service;
-  const categoryService = new CategoryService();
+  const itemCategoryService = resolveDependency(ItemCategoryService);
+  const categoryService = resolveDependency(CategoryService);
 
   // schemas
   fastify.addSchema(common);

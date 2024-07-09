@@ -1,12 +1,13 @@
 import groupby from 'lodash.groupby';
+import { singleton } from 'tsyringe';
 
 import { MultipartFile } from '@fastify/multipart';
-import { FastifyBaseLogger } from 'fastify';
 
 import { ItemType, PermissionLevel } from '@graasp/sdk';
 
-import type { MailerDecoration } from '../../../../plugins/mailer';
+import { BaseLogger } from '../../../../logger';
 import { MAIL } from '../../../../plugins/mailer/langs/constants';
+import { MailerService } from '../../../../plugins/mailer/service';
 import { GRAASP_LANDING_PAGE_ORIGIN } from '../../../../utils/constants';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
@@ -30,22 +31,23 @@ import {
 } from './errors';
 import { CSVInvite, parseCSV, verifyCSVFileFormat } from './utils';
 
+@singleton()
 export class InvitationService {
-  log: FastifyBaseLogger;
-  mailer: MailerDecoration;
-  itemService: ItemService;
-  memberService: MemberService;
-  itemMembershipService: ItemMembershipService;
+  private readonly log: BaseLogger;
+  private readonly mailerService: MailerService;
+  private readonly itemService: ItemService;
+  private readonly memberService: MemberService;
+  private readonly itemMembershipService: ItemMembershipService;
 
   constructor(
-    log,
-    mailer,
+    log: BaseLogger,
+    mailerService: MailerService,
     itemService: ItemService,
     memberService: MemberService,
     itemMembershipService: ItemMembershipService,
   ) {
     this.log = log;
-    this.mailer = mailer;
+    this.mailerService = mailerService;
     this.itemService = itemService;
     this.memberService = memberService;
     this.itemMembershipService = itemMembershipService;
@@ -61,16 +63,16 @@ export class InvitationService {
     const lang = actor.lang;
     const link = buildInvitationLink(invitation);
 
-    const t = this.mailer.translate(lang);
+    const t = this.mailerService.translate(lang);
 
     const text = t(MAIL.INVITATION_TEXT, {
       itemName: item.name,
       creatorName: actor.name,
     });
     const html = `
-      ${this.mailer.buildText(text)}
-      ${this.mailer.buildButton(link, t(MAIL.SIGN_UP_BUTTON_TEXT))}
-      ${this.mailer.buildText(
+      ${this.mailerService.buildText(text)}
+      ${this.mailerService.buildButton(link, t(MAIL.SIGN_UP_BUTTON_TEXT))}
+      ${this.mailerService.buildText(
         t(MAIL.USER_AGREEMENTS_MAIL_TEXT, {
           signUpButtonText: t(MAIL.SIGN_UP_BUTTON_TEXT),
           graaspLandingPageOrigin: GRAASP_LANDING_PAGE_ORIGIN,
@@ -83,10 +85,10 @@ export class InvitationService {
       itemName: item.name,
     });
 
-    const footer = this.mailer.buildFooter(lang);
+    const footer = this.mailerService.buildFooter(lang);
 
-    this.mailer.sendEmail(title, email, link, html, footer).catch((err) => {
-      this.log.warn(err, `mailer failed. invitation link: ${link}`);
+    this.mailerService.sendEmail(title, email, link, html, footer).catch((err) => {
+      this.log.warn(err, `mailerService failed. invitation link: ${link}`);
     });
   }
 
@@ -211,7 +213,7 @@ export class InvitationService {
         rows.find((r) => r.email === account.email)?.permission || PermissionLevel.Read;
       return { permission, memberId: account.id };
     });
-    this.log.debug(membershipsToCreate, 'memberships to create');
+    this.log.debug(`${JSON.stringify(membershipsToCreate)} memberships to create`);
 
     // create memberships for accounts that already exist
     const memberships = await this.itemMembershipService.postMany(
@@ -227,7 +229,7 @@ export class InvitationService {
       const permission = rows.find((r) => r.email === email)?.permission || PermissionLevel.Read;
       return { email, permission };
     });
-    this.log.debug(invitationsToCreate, 'invitations to create');
+    this.log.debug(`${JSON.stringify(invitationsToCreate)} invitations to create`);
 
     // create invitations for accounts that do not exist yet
     const invitations = await this.postManyForItem(

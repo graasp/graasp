@@ -1,3 +1,5 @@
+import { singleton } from 'tsyringe';
+
 import { PermissionLevel, UUID } from '@graasp/sdk';
 
 import { UnauthorizedMember } from '../../../../../utils/errors';
@@ -9,8 +11,9 @@ import { ItemService } from '../../../service';
 import { AppSetting } from './appSettings';
 import { InputAppSetting } from './interfaces/app-setting';
 
+@singleton()
 export class AppSettingService {
-  itemService: ItemService;
+  private readonly itemService: ItemService;
   hooks = new HookManager<{
     post: {
       pre: { appSetting: Partial<InputAppSetting>; itemId: string };

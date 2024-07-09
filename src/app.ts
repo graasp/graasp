@@ -1,61 +1,42 @@
+// needed to use decorators for Dependency Injection
+// should not be reimported in any other files !
+import 'reflect-metadata';
+
 import { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
 
+import { registerDependencies } from './di/container';
 import databasePlugin from './plugins/database';
-import decoratorPlugin from './plugins/decorator';
-import mailerPlugin from './plugins/mailer';
 import metaPlugin from './plugins/meta';
 import shared from './schemas/fluent-schema';
 import authPlugin from './services/auth';
 import { plugin as passportPlugin } from './services/auth/plugins/passport';
-import filePlugin from './services/file';
 import ItemServiceApi from './services/item';
 import ItemMembershipServiceApi from './services/itemMembership';
 import MemberServiceApi from './services/member';
 import websocketsPlugin from './services/websockets';
 import {
   DATABASE_LOGS,
-  FILE_ITEM_PLUGIN_OPTIONS,
-  FILE_ITEM_TYPE,
-  MAILER_CONFIG_FROM_EMAIL,
-  MAILER_CONFIG_PASSWORD,
-  MAILER_CONFIG_SMTP_HOST,
-  MAILER_CONFIG_SMTP_PORT,
-  MAILER_CONFIG_SMTP_USE_SSL,
-  MAILER_CONFIG_USERNAME,
   REDIS_HOST,
   REDIS_PASSWORD,
   REDIS_PORT,
   REDIS_USERNAME,
-  S3_FILE_ITEM_PLUGIN_OPTIONS,
 } from './utils/config';
 
 export default async function (instance: FastifyInstance): Promise<void> {
   // load some shared schema definitions
   instance.addSchema(shared);
-  // file
-  await instance.register(fp(filePlugin), {
-    fileItemType: FILE_ITEM_TYPE,
-    fileConfigurations: {
-      s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
-      local: FILE_ITEM_PLUGIN_OPTIONS,
-    },
+
+  // db should be registered before the dependencies.
+  await instance.register(fp(databasePlugin), {
+    logs: DATABASE_LOGS,
   });
+
+  // register some dependencies manually
+  registerDependencies(instance);
 
   await instance
     .register(fp(metaPlugin))
-    .register(fp(databasePlugin), {
-      logs: DATABASE_LOGS,
-    })
-    .register(mailerPlugin, {
-      host: MAILER_CONFIG_SMTP_HOST,
-      port: MAILER_CONFIG_SMTP_PORT,
-      useSsl: MAILER_CONFIG_SMTP_USE_SSL,
-      username: MAILER_CONFIG_USERNAME,
-      password: MAILER_CONFIG_PASSWORD,
-      fromEmail: MAILER_CONFIG_FROM_EMAIL,
-    })
-    .register(fp(decoratorPlugin))
     .register(fp(passportPlugin))
     // need to be defined before member and item for auth check
     .register(fp(authPlugin));

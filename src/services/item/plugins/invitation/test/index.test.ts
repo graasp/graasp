@@ -8,6 +8,8 @@ import { FastifyInstance } from 'fastify';
 import { HttpMethod, PermissionLevel, RecaptchaAction } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
+import { resolveDependency } from '../../../../../di/utils';
+import { MailerService } from '../../../../../plugins/mailer/service';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { MOCK_CAPTCHA } from '../../../../auth/plugins/captcha/test/utils';
 import { Item } from '../../../../item/entities/Item';
@@ -32,8 +34,9 @@ jest.mock('node-fetch');
   return { json: async () => ({ success: true, action: RecaptchaAction.SignUp, score: 1 }) } as any;
 });
 
-const mockEmail = (app) => {
-  return jest.spyOn(app.mailer, 'sendEmail').mockImplementation(async () => {
+const mockEmail = () => {
+  const mailerService = resolveDependency(MailerService);
+  return jest.spyOn(mailerService, 'sendEmail').mockImplementation(async () => {
     // do nothing
     console.debug('SEND EMAIL');
   });
@@ -102,7 +105,7 @@ describe('Invitation Plugin', () => {
       });
 
       it('create invitations successfully', async () => {
-        const mockSendMail = mockEmail(app);
+        const mockSendMail = mockEmail();
 
         const { item, invitations } = await createInvitations({ member: actor });
 
@@ -454,7 +457,7 @@ describe('Invitation Plugin', () => {
         ({ item, invitations } = await saveInvitations({ member: actor }));
       });
       it('resend invitation successfully', async () => {
-        const mockSendMail = mockEmail(app);
+        const mockSendMail = mockEmail();
 
         const response = await app.inject({
           method: HttpMethod.Post,

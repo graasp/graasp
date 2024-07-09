@@ -7,6 +7,8 @@ import { FastifyInstance } from 'fastify';
 import { HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
+import { resolveDependency } from '../../../../../di/utils';
+import { MailerService } from '../../../../../plugins/mailer/service';
 import { MEMBER_EXPORT_DATA_ROUTE_PREFIX } from '../../../../../utils/config';
 import { ItemTestUtils } from '../../../../item/test/fixtures/items';
 
@@ -74,7 +76,8 @@ describe('Export Member Data Plugin Tests', () => {
 
     it('Create archive and send email', async () => {
       ({ app, actor } = await build());
-      const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
+      const mailerService = resolveDependency(MailerService);
+      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
 
       await testUtils.saveItem({ actor });
 

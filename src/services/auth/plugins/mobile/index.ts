@@ -5,6 +5,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { RecaptchaAction } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
+import { resolveDependency } from '../../../../di/utils';
 import { notUndefined } from '../../../../utils/assertions';
 import {
   LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
@@ -21,16 +22,16 @@ import {
   authenticatePassword,
   authenticateRefreshToken,
 } from '../passport';
+import { MemberPasswordService } from '../password/service';
 import { authWeb, mPasswordLogin, mauth, mlogin, mregister } from './schemas';
+import { MobileService } from './service';
 
 // token based auth and endpoints for mobile
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const {
-    log,
-    db,
-    memberPassword: { service: memberPasswordService },
-    mobile: { service: mobileService },
-  } = fastify;
+  const { log, db } = fastify;
+
+  const mobileService = new MobileService(fastify, log);
+  const memberPasswordService = resolveDependency(MemberPasswordService);
 
   // no need to add CORS support here - only used by mobile app
 

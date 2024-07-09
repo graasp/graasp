@@ -3,12 +3,14 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { HttpMethod, UUID } from '@graasp/sdk';
 
+import { resolveDependency } from '../../../../../../../di/utils';
 import { notUndefined } from '../../../../../../../utils/assertions';
 import { Repositories, buildRepositories } from '../../../../../../../utils/repositories';
 import {
   authenticateAppsJWT,
   guestAuthenticateAppsJWT,
 } from '../../../../../../auth/plugins/passport';
+import FileService from '../../../../../../file/service';
 import {
   DownloadFileUnexpectedError,
   UploadEmptyFileError,
@@ -24,26 +26,16 @@ import AppSettingFileService from './service';
 
 export interface GraaspPluginFileOptions {
   maxFileSize?: number; // max size for an uploaded file in bytes
-
   appSettingService: AppSettingService;
 }
 
 const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, options) => {
   const { maxFileSize = DEFAULT_MAX_FILE_SIZE, appSettingService } = options;
 
-  const {
-    db,
-    files: { service: fileService },
-    items,
-  } = fastify;
+  const { db } = fastify;
 
-  const { service: itemService } = items;
-
-  const appSettingFileService = new AppSettingFileService(
-    appSettingService,
-    fileService,
-    itemService,
-  );
+  const fileService = resolveDependency(FileService);
+  const appSettingFileService = resolveDependency(AppSettingFileService);
 
   fastify.register(fastifyMultipart, {
     limits: {
@@ -74,7 +66,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     { appSettings }: { appSettings: AppSetting[]; originalItemId: string; copyItemId: string },
   ) => {
     // copy file only if content is a file
-    const isFileSetting = (a: AppSetting) => a.data[fileService.type];
+    const isFileSetting = (a: AppSetting) => a.data[fileService.fileType];
     const toCopy = appSettings.filter(isFileSetting);
     if (toCopy.length) {
       await appSettingFileService.copyMany(actor, repositories, toCopy);
@@ -89,7 +81,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     { appSetting }: { appSetting: Partial<AppSetting> },
   ) => {
     if (appSetting?.data) {
-      if (appSetting.data[fileService.type]) {
+      if (appSetting.data[fileService.fileType]) {
         throw new PreventUpdateAppSettingFile(appSetting);
       }
     }
