@@ -242,6 +242,7 @@ export const postChangeEmail: FastifySchema = {
   },
   response: {
     [StatusCodes.NO_CONTENT]: {},
+    [StatusCodes.CONFLICT]: {},
     [StatusCodes.UNAUTHORIZED]: {},
   },
 };
