@@ -201,10 +201,6 @@ describe('Item routes tests', () => {
         expectItem(newItem, payload, actor, parent);
         expect(response.statusCode).toBe(StatusCodes.OK);
 
-        const updatedParent = await testUtils.itemRepository.get(parent.id);
-        // check parent has been updated
-        expect(updatedParent.extra).toEqual({ folder: { childrenOrder: [newItem.id] } });
-
         // a membership does not need to be created for item with admin rights
         const nbItemMemberships = await ItemMembershipRepository.count();
         expect(nbItemMemberships).toEqual(1);
@@ -226,10 +222,6 @@ describe('Item routes tests', () => {
 
         expectItem(newItem, payload, actor, parent);
         expect(response.statusCode).toBe(StatusCodes.OK);
-
-        const updatedParent = await testUtils.itemRepository.get(parent.id);
-        // check parent has been updated
-        expect(updatedParent.extra).toEqual({ folder: { childrenOrder: [newItem.id] } });
 
         // a membership does not need to be created for item with admin rights
         const nbItemMemberships = await ItemMembershipRepository.count();
@@ -347,9 +339,8 @@ describe('Item routes tests', () => {
       });
 
       it('Create successfully with previous item id', async () => {
-        const member = await saveMember();
         const payload = FolderItemFactory();
-        const { item: parentItem } = await testUtils.saveItemAndMembership({ member });
+        const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
         const previousItem = await testUtils.saveItem({ parentItem, item: { order: 1 } });
         const afterItem = await testUtils.saveItem({ parentItem, item: { order: 2 } });
         const response = await app.inject({

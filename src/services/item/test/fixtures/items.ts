@@ -215,8 +215,8 @@ export class ItemTestUtils {
       select: { order: true },
     });
     let nextItem;
-    const thisOrder = parseInt(rawItem!.order! as unknown as string);
-    expect(thisOrder).toBeGreaterThan(parseInt(previousItem!.order! as unknown as string));
+    const thisOrder = parseFloat(rawItem!.order! as unknown as string);
+    expect(thisOrder).toBeGreaterThan(parseFloat(previousItem!.order! as unknown as string));
 
     if (nextItemId) {
       nextItem = await this.rawItemRepository.findOne({
@@ -225,7 +225,7 @@ export class ItemTestUtils {
       });
       const nextOrder = nextItem.order! as unknown as string;
       if (nextOrder) {
-        expect(thisOrder).toBeLessThan(parseInt(nextOrder));
+        expect(thisOrder).toBeLessThan(parseFloat(nextOrder));
       }
     }
   };
