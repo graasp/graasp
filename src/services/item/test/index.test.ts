@@ -350,8 +350,8 @@ describe('Item routes tests', () => {
         const member = await saveMember();
         const payload = FolderItemFactory();
         const { item: parentItem } = await testUtils.saveItemAndMembership({ member });
-        const previousItem = await testUtils.saveItem({ parentItem, order: 1 });
-        const afterItem = await testUtils.saveItem({ parentItem, order: 2 });
+        const previousItem = await testUtils.saveItem({ parentItem, item: { order: 1 } });
+        const afterItem = await testUtils.saveItem({ parentItem, item: { order: 2 } });
         const response = await app.inject({
           method: HttpMethod.Post,
           url: `/items`,

@@ -11,12 +11,15 @@ import {
   PermissionLevelCompare,
   ResultOf,
   UUID,
+  buildPathFromIds,
+  getIdsFromPath,
   getParentFromPath,
 } from '@graasp/sdk';
 
 import { BaseLogger } from '../../logger';
 import { Paginated, PaginationParams } from '../../types';
 import {
+  CannotReorderRootItem,
   InvalidMembership,
   ItemNotFolder,
   MemberCannotWriteItem,
@@ -758,7 +761,16 @@ export class ItemService {
   ) {
     const item = await this.get(actor, repositories, itemId);
 
-    return repositories.itemRepository.reorder(item, body.previousItemId);
+    const ids = getIdsFromPath(item.path);
+
+    // cannot reorder root item
+    if (ids.length <= 1) {
+      throw new CannotReorderRootItem(item.id);
+    }
+
+    const parentPath = buildPathFromIds(...ids.slice(0, -1));
+
+    return repositories.itemRepository.reorder(item, parentPath, body.previousItemId);
   }
 
   /**

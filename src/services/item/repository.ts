@@ -11,13 +11,11 @@ import {
   PermissionLevel,
   buildPathFromIds,
   getChildFromPath,
-  getIdsFromPath,
   getParentFromPath,
 } from '@graasp/sdk';
 
 import { AppDataSource } from '../../plugins/datasource';
 import {
-  CannotReorderOneItem,
   HierarchyTooDeep,
   InvalidMoveTarget,
   ItemNotFolder,
@@ -201,7 +199,10 @@ export class ItemRepository {
     }
 
     if (params?.ordered) {
-      query.orderBy('item.order', 'ASC');
+      query
+        .orderBy('item.order', 'ASC')
+        // backup order by in case two items has same ordering
+        .addOrderBy('item.created_at', 'ASC');
     } else {
       query.orderBy('item.createdAt', 'ASC');
     }
@@ -501,44 +502,57 @@ export class ItemRepository {
 
     // handle descendants - change path
     if (isItemType(original, ItemType.FOLDER)) {
-      const descendants = await this.getDescendants(original, {
-        ordered: true,
-        selectOrder: true,
-      });
-      for (let i = 0; i < descendants.length; i++) {
-        const original = descendants[i];
-        const { id, path } = original;
-
-        // process to get copy of direct parent
-        const pathSplit = path.split('.');
-        const oldPath = pathSplit.pop();
-        // this shouldn't happen
-        if (!oldPath) {
-          throw new Error('Path is not defined');
-        }
-        const oldParentPath = pathSplit.pop();
-        // this shouldn't happen
-        if (!oldParentPath) {
-          throw new Error('Path is not defined');
-        }
-        const oldParentId_ = getChildFromPath(oldParentPath);
-        const oldParentObject = old2New.get(oldParentId_);
-        // this shouldn't happen
-        if (!oldParentObject) {
-          throw new Error('Old parent is not defined');
-        }
-
-        const copiedItem = this.createOne({
-          ...original,
-          creator,
-          parent: oldParentObject.copy,
-        });
-
-        old2New.set(id, { copy: copiedItem, original });
-      }
+      await this.copyDescendants(original, creator, old2New);
     }
 
     return old2New;
+  }
+
+  /**
+   * add in map generated copies for descendants of item, in given map
+   * @param original
+   * @param old2New mapping from original item to copied data, in-place updates
+   */
+  private async copyDescendants(
+    original: FolderItem,
+    creator: Member,
+    old2New: Map<string, { copy: Item; original: Item }>,
+  ): Promise<void> {
+    const descendants = await this.getDescendants(original, {
+      ordered: true,
+      selectOrder: true,
+    });
+    for (let i = 0; i < descendants.length; i++) {
+      const original = descendants[i];
+      const { id, path } = original;
+
+      // process to get copy of direct parent
+      const pathSplit = path.split('.');
+      const oldPath = pathSplit.pop();
+      // this shouldn't happen
+      if (!oldPath) {
+        throw new Error('Path is not defined');
+      }
+      const oldParentPath = pathSplit.pop();
+      // this shouldn't happen
+      if (!oldParentPath) {
+        throw new Error('Path is not defined');
+      }
+      const oldParentId_ = getChildFromPath(oldParentPath);
+      const oldParentObject = old2New.get(oldParentId_);
+      // this shouldn't happen
+      if (!oldParentObject) {
+        throw new Error('Old parent is not defined');
+      }
+
+      const copiedItem = this.createOne({
+        ...original,
+        creator,
+        parent: oldParentObject.copy,
+      });
+
+      old2New.set(id, { copy: copiedItem, original });
+    }
   }
 
   /**
@@ -655,7 +669,7 @@ export class ItemRepository {
 
     const q = this.repository
       .createQueryBuilder('item')
-      // default value: self order + defaultordervalue to increase of one the order
+      // default value: self order + "default order value" to increase of one the order
       .select(
         '(item.order + (lead(item.order, 1, item.order + (' +
           DEFAULT_ORDER +
@@ -709,21 +723,12 @@ export class ItemRepository {
 
     const result = await q.getOne();
     if (result && result.order) {
-      return result.order - result.order / 2;
+      return result.order / 2;
     }
     return DEFAULT_ORDER;
   }
 
-  async reorder(item: Item, previousItemId?: string) {
-    const ids = getIdsFromPath(item.path);
-
-    // cannot reorder among only one item
-    if (ids.length <= 1) {
-      throw new CannotReorderOneItem(item.id);
-    }
-
-    const parentPath = buildPathFromIds(...ids.slice(0, -1));
-
+  async reorder(item: Item, parentPath: Item['path'], previousItemId?: string) {
     // no defined previous item is set at beginning
     let order;
     if (!previousItemId) {
@@ -732,26 +737,30 @@ export class ItemRepository {
     } else {
       order = await this.getNextOrderCount(parentPath, previousItemId);
     }
-
     await this.repository.update(item.id, { order });
 
-    // todo: optimize
+    // TODO: optimize
     return this.get(item.id);
   }
 
   async rescaleOrder(parentItem: Item) {
     const children = await this.getChildren(parentItem, { ordered: true }, { withOrder: true });
-
     // no need to rescale for less than 2 items
     if (children.length < 2) {
       return;
     }
 
+    // rescale if some children have the same values or if a child does not have an order value
+    // these cases shouldn't happen otherwise it will lead to flickering
+    const hasNullOrder = children.some(({ order }) => !order);
+    const hasDuplicatedOrder =
+      [...new Set(children.map(({ order }) => order)).keys()].length !== children.length;
+
     const minInterval = (arr) =>
       Math.min(...arr.slice(1).map((val, key) => Math.abs(val - arr[key])));
     const min = minInterval(children.map(({ order }) => order));
 
-    if (min < RESCALE_ORDER_THRESHOLD) {
+    if (min < RESCALE_ORDER_THRESHOLD || hasNullOrder || hasDuplicatedOrder) {
       // rescale order from multiple of default order
       const values: Pick<Item, 'id' | 'order'>[] = children.map(({ id }, idx) => ({
         id,
@@ -760,8 +769,8 @@ export class ItemRepository {
 
       // can update in disorder
       await Promise.all(
-        values.map((i) => {
-          this.repository.update(i.id, i);
+        values.map(async (i) => {
+          return this.repository.update(i.id, i);
         }),
       );
     }

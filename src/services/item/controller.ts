@@ -75,10 +75,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       reply.send(item);
 
-      const repositories = buildRepositories();
-      // background operations, no need to await
-      actionItemService.postPostAction(request, repositories, item);
-      itemService.rescaleOrder(user?.member, repositories, item);
+      // background operations
+      await actionItemService.postPostAction(request, buildRepositories(), item);
+      await db.transaction(async (manager) => {
+        const repositories = buildRepositories(manager);
+        await itemService.rescaleOrder(user?.member, repositories, item);
+      });
     },
   );
 
@@ -315,7 +317,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       reply.send(item);
 
       // background operation, no need to await
-      itemService.rescaleOrder(member, buildRepositories(), item);
+      await db.transaction(async (manager) => {
+        await itemService.rescaleOrder(member, buildRepositories(manager), item);
+      });
     },
   );
 

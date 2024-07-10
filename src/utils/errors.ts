@@ -448,13 +448,13 @@ export class NoFileProvided extends CoreError {
   }
 }
 
-export class CannotReorderOneItem extends CoreError {
+export class CannotReorderRootItem extends CoreError {
   constructor(data?: unknown) {
     super(
       {
         code: 'GERR034',
         statusCode: StatusCodes.BAD_REQUEST,
-        message: 'Expected item to contain more than one child',
+        message: 'Cannot reorder items at root',
       },
       data,
     );

@@ -100,14 +100,12 @@ export class ItemTestUtils {
     item = {},
     actor = null,
     parentItem,
-    order,
   }: {
     parentItem?: Item;
     actor?: Actor | null;
     item?: Partial<Item>;
-    order?: number;
   }) {
-    const value = this.createItem({ ...item, creator: actor, parentItem, order });
+    const value = this.createItem({ ...item, creator: actor, parentItem });
     return this.rawItemRepository.save(value);
   }
 
