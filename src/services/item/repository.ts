@@ -745,6 +745,7 @@ export class ItemRepository {
 
   async rescaleOrder(parentItem: Item) {
     const children = await this.getChildren(parentItem, { ordered: true }, { withOrder: true });
+
     // no need to rescale for less than 2 items
     if (children.length < 2) {
       return;
@@ -753,8 +754,7 @@ export class ItemRepository {
     // rescale if some children have the same values or if a child does not have an order value
     // these cases shouldn't happen otherwise it will lead to flickering
     const hasNullOrder = children.some(({ order }) => !order);
-    const hasDuplicatedOrder =
-      [...new Set(children.map(({ order }) => order)).keys()].length !== children.length;
+    const hasDuplicatedOrder = new Set(children.map(({ order }) => order)).size !== children.length;
 
     const minInterval = (arr) =>
       Math.min(...arr.slice(1).map((val, key) => Math.abs(val - arr[key])));

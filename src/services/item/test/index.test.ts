@@ -9,7 +9,6 @@ import { FastifyInstance } from 'fastify';
 
 import {
   DescriptionPlacement,
-  FolderItemExtra,
   FolderItemFactory,
   HttpMethod,
   ItemTagType,
@@ -184,33 +183,19 @@ describe('Item routes tests', () => {
         // check some creator properties are not leaked
         expect(newItem.creator.id).toBeTruthy();
         expect(newItem.creator.createdAt).toBeFalsy();
+
+        // order is null for root
+        expect(await testUtils.getOrderForItemId(newItem.id)).toBeNull();
       });
 
       it('Create successfully in parent item', async () => {
         const { item: parent } = await testUtils.saveItemAndMembership({
           member: actor,
         });
-        const payload = FolderItemFactory();
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items?parentId=${parent.id}`,
-          payload,
-        });
-        const newItem = response.json();
-
-        expectItem(newItem, payload, actor, parent);
-        expect(response.statusCode).toBe(StatusCodes.OK);
-
-        // a membership does not need to be created for item with admin rights
-        const nbItemMemberships = await ItemMembershipRepository.count();
-        expect(nbItemMemberships).toEqual(1);
-      });
-
-      it('Create successfully in legacy parent item', async () => {
-        const { item: parent } = await testUtils.saveItemAndMembership({
-          member: actor,
-          // hack to simulate a legacy folder item that had an empty extra (no folder.childrenOrder)
-          item: { extra: {} as FolderItemExtra },
+        // child
+        const child = await testUtils.saveItem({
+          actor,
+          parentItem: parent,
         });
         const payload = FolderItemFactory();
         const response = await app.inject({
@@ -226,6 +211,9 @@ describe('Item routes tests', () => {
         // a membership does not need to be created for item with admin rights
         const nbItemMemberships = await ItemMembershipRepository.count();
         expect(nbItemMemberships).toEqual(1);
+
+        // add at beginning
+        await testUtils.expectOrder(newItem.id, undefined, child.id);
       });
 
       it('Create successfully in shared parent item', async () => {
@@ -338,7 +326,7 @@ describe('Item routes tests', () => {
         expect(await AppDataSource.getRepository(Item).count()).toEqual(1);
       });
 
-      it('Create successfully with previous item id', async () => {
+      it('Create successfully with between children', async () => {
         const payload = FolderItemFactory();
         const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
         const previousItem = await testUtils.saveItem({ parentItem, item: { order: 1 } });
@@ -355,6 +343,45 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
 
         await testUtils.expectOrder(newItem.id, previousItem.id, afterItem.id);
+      });
+
+      it('Create successfully at end', async () => {
+        const payload = FolderItemFactory();
+        const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
+        // first item noise
+        await testUtils.saveItem({ parentItem, item: { order: 1 } });
+        const afterItem = await testUtils.saveItem({ parentItem, item: { order: 2 } });
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `/items`,
+          query: { parentId: parentItem.id, previousItemId: afterItem.id },
+          payload,
+        });
+
+        const newItem = response.json();
+        expectItem(newItem, payload, actor);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        await testUtils.expectOrder(newItem.id, undefined, afterItem.id);
+      });
+
+      it('Create successfully after invalid child adds at beginning', async () => {
+        const payload = FolderItemFactory();
+        const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
+        // first item noise
+        const child = await testUtils.saveItem({ parentItem, item: { order: 1 } });
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `/items`,
+          query: { parentId: parentItem.id, previousItemId: uuidv4() },
+          payload,
+        });
+
+        const newItem = response.json();
+        expectItem(newItem, payload, actor);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        await testUtils.expectOrder(newItem.id, undefined, child.id);
       });
 
       it('Throw if geolocation is partial', async () => {
@@ -2577,6 +2604,14 @@ describe('Item routes tests', () => {
             });
             expect(im).toBeNull();
           }
+
+          // order is defined, order is not guaranteed because moving is done in parallel
+          const orders = await Promise.all(
+            items.map(async (i) => await testUtils.getOrderForItemId(i.id)),
+          );
+          orders.forEach((o) => expect(o).toBeGreaterThan(0));
+          // unique values
+          expect(orders.length).toEqual(new Set(orders).size);
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
 
@@ -2601,6 +2636,9 @@ describe('Item routes tests', () => {
               throw new Error('item does not exist!');
             }
             expect(result.path.startsWith(parentItem.path)).toBeFalsy();
+
+            // order is defined, order is not guaranteed because moving is done in parallel
+            expect(await testUtils.getOrderForItemId(item.id)).toBeNull();
           }
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
@@ -2837,6 +2875,8 @@ describe('Item routes tests', () => {
             // id and path are different
             expect(itemsInDb[0].id).not.toEqual(itemsInDb[1].id);
             expect(itemsInDb[0].path).not.toEqual(itemsInDb[1].path);
+
+            expect(await testUtils.getOrderForItemId(itemsInDb2[0].id)).toBeNull();
           }
 
           // check it created a new membership per item
@@ -2867,6 +2907,7 @@ describe('Item routes tests', () => {
           // contains twice the items (and the target item)
           const newCount = await testUtils.rawItemRepository.count();
           expect(newCount).toEqual(initialCount + items.length);
+          const orders: (number | null)[] = [];
           for (const { name } of items) {
             const itemsInDb = await testUtils.rawItemRepository.findBy({ name });
             expect(itemsInDb).toHaveLength(1);
@@ -2875,11 +2916,17 @@ describe('Item routes tests', () => {
               name: `${name} (2)`,
             });
             expect(itemsInDbCopied).toHaveLength(1);
+            orders.push(await testUtils.getOrderForItemId(itemsInDbCopied[0].id));
           }
 
           // check it did not create a new membership because user is admin of parent
           const newCountMembership = await ItemMembershipRepository.count();
           expect(newCountMembership).toEqual(initialCountMembership);
+
+          // order is defined, order is not guaranteed because moving is done in parallel
+          orders.forEach((o) => expect(o).toBeGreaterThan(0));
+          // unique values
+          expect(orders.length).toEqual(new Set(orders).size);
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
 
@@ -3010,6 +3057,8 @@ describe('Item routes tests', () => {
             expect(itemsInDb1).toHaveLength(1);
             const itemsInDb2 = await testUtils.rawItemRepository.findBy({ name: `${name} (2)` });
             expect(itemsInDb2).toHaveLength(1);
+
+            expect(await testUtils.getOrderForItemId(itemsInDb2[0].id)).toBeNull();
           }
 
           // check it did not create a new membership because user is admin of parent
@@ -3132,6 +3181,144 @@ describe('Item routes tests', () => {
           const results = await itemGeolocationRepository.count();
           expect(results).toEqual(2);
         }, MULTIPLE_ITEMS_LOADING_TIME);
+      });
+    });
+  });
+
+  // copy many items
+  describe('PATCH /items/id/reorder', () => {
+    it('Throws if signed out', async () => {
+      ({ app } = await build({ member: null }));
+      const member = await saveMember();
+      const { item: parentItem } = await testUtils.saveItemAndMembership({ member });
+      const toReorder = await testUtils.saveItem({
+        actor: member,
+        parentItem,
+      });
+      const previousItem = await testUtils.saveItem({
+        actor: member,
+        parentItem,
+      });
+
+      const response = await app.inject({
+        method: HttpMethod.Patch,
+        url: `/items/${toReorder.id}/reorder`,
+        payload: {
+          previousItemId: previousItem.id,
+        },
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    });
+
+    describe('Signed In', () => {
+      beforeEach(async () => {
+        ({ app, actor } = await build());
+      });
+      it('reorder at beginning', async () => {
+        const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
+        const toReorder = await testUtils.saveItem({
+          actor,
+          parentItem,
+          item: { order: 10 },
+        });
+        const previousItem = await testUtils.saveItem({
+          actor,
+          parentItem,
+          item: { order: 5 },
+        });
+
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `/items/${toReorder.id}/reorder`,
+          payload: {
+            previousItemId: previousItem.id,
+          },
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        await testUtils.expectOrder(toReorder.id, previousItem.id);
+      });
+
+      it('reorder at end', async () => {
+        const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
+        const toReorder = await testUtils.saveItem({
+          actor,
+          parentItem,
+          item: { order: 10 },
+        });
+        // first item
+        await testUtils.saveItem({
+          actor,
+          parentItem,
+          item: { order: 5 },
+        });
+        const previousItem = await testUtils.saveItem({
+          actor,
+          parentItem,
+          item: { order: 15 },
+        });
+
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `/items/${toReorder.id}/reorder`,
+          payload: {
+            previousItemId: previousItem.id,
+          },
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        await testUtils.expectOrder(toReorder.id, previousItem.id);
+      });
+
+      it('reorder in between', async () => {
+        const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
+        const toReorder = await testUtils.saveItem({
+          actor,
+          parentItem,
+          item: { order: 20 },
+        });
+        const previousItem = await testUtils.saveItem({
+          actor,
+          parentItem,
+          item: { order: 5 },
+        });
+        const afterItem = await testUtils.saveItem({
+          actor,
+          parentItem,
+          item: { order: 15 },
+        });
+
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `/items/${toReorder.id}/reorder`,
+          payload: {
+            previousItemId: previousItem.id,
+          },
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        await testUtils.expectOrder(toReorder.id, previousItem.id, afterItem.id);
+      });
+
+      it('reorder in root throws', async () => {
+        const { item: toReorder } = await testUtils.saveItemAndMembership({
+          member: actor,
+        });
+        const { item: previousItem } = await testUtils.saveItemAndMembership({
+          member: actor,
+        });
+
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `/items/${toReorder.id}/reorder`,
+          payload: {
+            previousItemId: previousItem.id,
+          },
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+        expect(await testUtils.getOrderForItemId(toReorder.id)).toBeNull();
       });
     });
   });

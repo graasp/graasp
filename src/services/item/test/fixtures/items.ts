@@ -91,7 +91,8 @@ export class ItemTestUtils {
       createdAt: new Date(item.createdAt),
       updatedAt: new Date(item.updatedAt),
       deletedAt: null,
-      order: args?.order ?? DEFAULT_ORDER,
+      // allows null order for root items
+      order: args?.parentItem ? args.order ?? DEFAULT_ORDER : null,
     };
   }
 
@@ -205,27 +206,39 @@ export class ItemTestUtils {
     return { items, packedItems, tags };
   };
 
-  expectOrder = async (itemId: string, previousItemId: string, nextItemId?: string) => {
-    const rawItem = await this.rawItemRepository.findOne({
-      where: { id: itemId },
-      select: { order: true },
-    });
-    const previousItem = await this.rawItemRepository.findOne({
-      where: { id: previousItemId },
-      select: { order: true },
-    });
-    let nextItem;
-    const thisOrder = parseFloat(rawItem!.order! as unknown as string);
-    expect(thisOrder).toBeGreaterThan(parseFloat(previousItem!.order! as unknown as string));
+  getOrderForItemId = async (itemId: Item['id']): Promise<number | null> => {
+    const order = (await this.rawItemRepository
+      .createQueryBuilder('item')
+      .select('item."order"')
+      .where(`id = '${itemId}'`)
+      // needs to get raw otherwise we cannot get null order
+      .getRawOne<{ order: string }>())!.order;
+    // return null value
+    // TODO: check returns null
+    if (!order) {
+      return order as unknown as null;
+    }
+    // return float order
+    return parseFloat(order);
+  };
+
+  expectOrder = async (itemId: string, previousItemId?: string, nextItemId?: string) => {
+    const thisOrder = await this.getOrderForItemId(itemId);
+    if (previousItemId) {
+      const previousItemOrder = (await this.getOrderForItemId(previousItemId))!;
+      if (previousItemOrder) {
+        expect(thisOrder).toBeGreaterThan(previousItemOrder);
+      } else {
+        expect(thisOrder).toBeNull();
+      }
+    }
 
     if (nextItemId) {
-      nextItem = await this.rawItemRepository.findOne({
-        where: { id: nextItemId },
-        select: { order: true },
-      });
-      const nextOrder = nextItem.order! as unknown as string;
+      const nextOrder = await this.getOrderForItemId(nextItemId);
       if (nextOrder) {
-        expect(thisOrder).toBeLessThan(parseFloat(nextOrder));
+        expect(thisOrder).toBeLessThan(nextOrder);
+      } else {
+        expect(thisOrder).toBeNull();
       }
     }
   };

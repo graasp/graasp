@@ -343,9 +343,12 @@ export class InvitationService {
     }>();
     for await (const [groupName, users] of Object.entries(dataByGroupName)) {
       // Copy the template to the new location
-      const { copy: newItem } = await this.itemService.copy(actor, repositories, templateId, {
-        parentId,
-      });
+      const { copy: newItem } = await this.itemService.copy(
+        actor,
+        repositories,
+        templateId,
+        parentItem,
+      );
       // edit name of parent element to match the name of the group
       await this.itemService.patch(actor, repositories, newItem.id, { name: groupName });
       const { memberships, invitations } = await this._createMembershipsAndInvitationsForUserList(

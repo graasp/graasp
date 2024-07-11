@@ -317,7 +317,7 @@ export const reorder = {
   body: S.object().additionalProperties(false).prop('previousItemId', uuid),
 
   response: {
-    [StatusCodes.OK]: S.array().items(packedItem),
+    [StatusCodes.OK]: item,
     '4xx': error,
   },
 };

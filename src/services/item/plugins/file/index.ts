@@ -156,7 +156,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
 
       // rescale is necessary when uploading multiple files: they have the same order number
       if (items.length) {
-        await itemService.rescaleOrder(member, buildRepositories(), items[0]);
+        await itemService.rescaleOrderForParent(member, buildRepositories(), items[0]);
       }
 
       return {
