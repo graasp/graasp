@@ -62,9 +62,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         body: data,
       } = request;
 
+      const actor = notUndefined(user?.member);
+
       const item = await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
-        const item = await itemService.post(user?.member, repositories, {
+        const item = await itemService.post(actor, repositories, {
           item: data,
           previousItemId,
           parentId,
@@ -79,7 +81,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       await actionItemService.postPostAction(request, buildRepositories(), item);
       await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
-        await itemService.rescaleOrderForParent(user?.member, repositories, item);
+        await itemService.rescaleOrderForParent(actor, repositories, item);
       });
     },
   );
