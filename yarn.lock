@@ -7597,7 +7597,7 @@ __metadata:
     pdf-text-reader: "npm:3.0.2"
     pg: "npm:8.12.0"
     pino-pretty: "npm:11.0.0"
-    prettier: "npm:2.8.8"
+    prettier: "npm:3.3.2"
     qs: "npm:6.12.1"
     reflect-metadata: "npm:0.2.2"
     sanitize-html: "npm:2.13.0"
@@ -10933,12 +10933,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:2.8.8":
-  version: 2.8.8
-  resolution: "prettier@npm:2.8.8"
+"prettier@npm:3.3.2":
+  version: 3.3.2
+  resolution: "prettier@npm:3.3.2"
   bin:
-    prettier: bin-prettier.js
-  checksum: 10/00cdb6ab0281f98306cd1847425c24cbaaa48a5ff03633945ab4c701901b8e96ad558eb0777364ffc312f437af9b5a07d0f45346266e8245beaf6247b9c62b24
+    prettier: bin/prettier.cjs
+  checksum: 10/83214e154afa5aa9b664c2506640212323eb1376b13379b2413dc351b7de0687629dca3f00ff2ec895ebd7e3a2adb7d7e231b6c77606e2358137f2150807405b
   languageName: node
   linkType: hard
 

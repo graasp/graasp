@@ -14,7 +14,7 @@ export const mockResponse = (response: Response) => {
 
 export const mockHeaderResponse = (headers: { [key: string]: string }) => {
   (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(
-    async () => ({ headers: new Headers(headers) } as Response),
+    async () => ({ headers: new Headers(headers) }) as Response,
   );
 };
 
