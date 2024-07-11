@@ -32,23 +32,28 @@ export const getDummyProfile = (options: Partial<MemberProfile>): Partial<Member
 export const saveMemberProfile = async (m: CompleteMember, profile: IMemberProfile) => {
   const member = await saveMember(m);
   const memberProfile = MemberProfile.create({ ...profile, member });
-  const savedMember = await MemberProfile.save(memberProfile);
+  const savedMemberProfile = await MemberProfile.save(memberProfile);
 
-  return savedMember;
+  return savedMemberProfile;
 };
 
 export const getMemberProfile = async (id: string) => {
-  return MemberProfile.findOneBy({ id });
+  const profile = await MemberProfile.findOneBy({ id });
+  if (!profile) {
+    throw new Error('Unable to find profile, but it should exist');
+  }
+  return profile;
 };
 
-export const ANNA_PROFILE = {
+export const ANNA_PROFILE: IMemberProfile = {
   bio: "Hi, I'm Anna, an english teacher",
   facebookID: 'anna',
   twitterID: '',
   linkedinID: 'anna',
+  visibility: false,
 };
 
-export const BOB_PROFILE = {
+export const BOB_PROFILE: IMemberProfile = {
   bio: "Hi, I'm Bob, a science teacher",
   facebookID: 'bob',
   twitterID: '',

@@ -95,6 +95,10 @@ export class MemberService {
     });
   }
 
+  async deleteCurrent(memberId: string, { memberRepository }: Repositories) {
+    return memberRepository.deleteOne(memberId);
+  }
+
   async deleteOne(actor: Actor, { memberRepository }: Repositories, id: UUID) {
     if (!actor || actor.id !== id) {
       throw new CannotModifyOtherMembers(id);

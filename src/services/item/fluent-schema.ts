@@ -176,12 +176,12 @@ export const create =
     };
   };
 
-export const getOne = {
+export const getOne: FastifySchema = {
   params: idParam,
   response: { 200: packedItem, '4xx': error },
 };
 
-export const getAccessible = {
+export const getAccessible: FastifySchema = {
   querystring: S.object()
     .prop('page', S.number().default(1))
     .prop('name', S.string())
@@ -200,7 +200,7 @@ export const getAccessible = {
   },
 };
 
-export const getMany = {
+export const getMany: FastifySchema = {
   querystring: S.object()
     .prop('id', S.array().minItems(1).maxItems(MAX_TARGETS_FOR_READ_REQUEST))
     .extend(idsQuery),

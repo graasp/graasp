@@ -8,6 +8,7 @@ import {
   MIN_USERNAME_LENGTH,
 } from '@graasp/sdk';
 
+import { error } from '../../schemas/fluent-schema';
 import { NAME_REGEX, UUID_REGEX } from '../../schemas/global';
 
 /**
@@ -93,14 +94,14 @@ export default {
 };
 
 // schema for getting current member
-export const getCurrent = {
+export const getCurrent: FastifySchema = {
   response: {
     200: { $ref: 'https://graasp.org/members/#/definitions/currentMember' },
   },
 };
 
 // schema for getting current member's storage limits
-export const getStorage = {
+export const getStorage: FastifySchema = {
   response: {
     200: {
       type: 'object',
@@ -119,7 +120,7 @@ export const getStorage = {
 };
 
 // schema for getting a member
-export const getOne = {
+export const getOne: FastifySchema = {
   params: { $ref: 'https://graasp.org/#/definitions/idParam' },
   response: {
     200: { $ref: 'https://graasp.org/members/#/definitions/member' },
@@ -127,7 +128,7 @@ export const getOne = {
 };
 
 // schema for getting >1 members
-export const getMany = {
+export const getMany: FastifySchema = {
   querystring: {
     allOf: [
       { $ref: 'https://graasp.org/#/definitions/idsQuery' },
@@ -166,7 +167,7 @@ export const getMany = {
 };
 
 // schema for getting members by
-export const getManyBy = {
+export const getManyBy: FastifySchema = {
   querystring: {
     type: 'object',
     properties: {
@@ -207,19 +208,27 @@ export const getManyBy = {
 };
 
 // schema for updating own member
-export const updateOne = {
+export const updateOne: FastifySchema = {
   params: { $ref: 'https://graasp.org/#/definitions/idParam' },
   body: { $ref: 'https://graasp.org/members/#/definitions/partialMemberRequireOne' },
   response: {
-    200: { $ref: 'https://graasp.org/members/#/definitions/currentMember' },
+    [StatusCodes.OK]: { $ref: 'https://graasp.org/members/#/definitions/currentMember' },
+    [StatusCodes.FORBIDDEN]: error,
   },
 };
 
-// schema for getting a member
-export const deleteOne = {
+// schema for deleting a member
+export const deleteOne: FastifySchema = {
   params: { $ref: 'https://graasp.org/#/definitions/idParam' },
   response: {
-    200: { $ref: 'https://graasp.org/members/#/definitions/member' },
+    [StatusCodes.NO_CONTENT]: {},
+  },
+};
+
+// schema for deleting the current member
+export const deleteCurrent: FastifySchema = {
+  response: {
+    [StatusCodes.NO_CONTENT]: {},
   },
 };
 

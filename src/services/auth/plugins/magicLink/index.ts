@@ -135,7 +135,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   // logout
   fastify.get('/logout', async (request, reply) => {
-    request.logOut();
+    // logout user, so subsequent calls can not make use of the current user.
+    request.logout();
+    // remove session so the cookie is removed by the browser
+    request.session.delete();
     reply.status(StatusCodes.NO_CONTENT);
   });
 };

@@ -1,15 +1,11 @@
 meta {
-  name: Current Member
+  name: Delete Current Member
   type: http
-  seq: 1
+  seq: 2
 }
 
-get {
+delete {
   url: {{host}}/members/current
   body: none
   auth: inherit
-}
-
-vars:post-response {
-  member_id: res("id")
 }

@@ -17,6 +17,7 @@ import { Member } from './entities/member';
 import { EmailAlreadyTaken } from './error';
 import { StorageService } from './plugins/storage/service';
 import {
+  deleteCurrent,
   deleteOne,
   getCurrent,
   getMany,
@@ -105,12 +106,41 @@ const controller: FastifyPluginAsync = async (fastify) => {
   );
 
   // delete member
+  /**
+   * @deprecated use the delete member function without the id param
+   */
   fastify.delete<{ Params: IdParam }>(
     '/:id',
     { schema: deleteOne, preHandler: isAuthenticated },
-    async ({ user, params: { id } }, reply) => {
+    async (request, reply) => {
+      const {
+        user,
+        params: { id },
+      } = request;
       return db.transaction(async (manager) => {
         await memberService.deleteOne(user?.member, buildRepositories(manager), id);
+        // logout member
+        request.logOut();
+        // remove session from browser
+        request.session.delete();
+        reply.status(StatusCodes.NO_CONTENT);
+      });
+    },
+  );
+
+  // delete current member
+  fastify.delete(
+    '/current',
+    { schema: deleteCurrent, preHandler: isAuthenticated },
+    async (request, reply) => {
+      const { user } = request;
+      const member = notUndefined(user?.member);
+      return db.transaction(async (manager) => {
+        await memberService.deleteCurrent(member.id, buildRepositories(manager));
+        // logout member
+        request.logOut();
+        // remove session from browser
+        request.session.delete();
         reply.status(StatusCodes.NO_CONTENT);
       });
     },

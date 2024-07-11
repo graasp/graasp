@@ -1,7 +1,7 @@
-export interface IMemberProfile {
+export type IMemberProfile = {
   bio: string;
-  visibility?: boolean;
-  facebookID?: string;
-  linkedinID?: string;
-  twitterID?: string;
-}
+  visibility: boolean;
+  facebookID: string;
+  linkedinID: string;
+  twitterID: string;
+};

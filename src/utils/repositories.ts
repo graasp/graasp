@@ -59,7 +59,7 @@ export type Repositories = {
   mentionRepository: ChatMentionRepository;
   publisherRepository: typeof PublisherRepository;
   recycledItemRepository: typeof RecycledItemDataRepository;
-  memberProfileRepository: typeof MemberProfileRepository;
+  memberProfileRepository: MemberProfileRepository;
   shortLinkRepository: typeof ShortLinkRepository;
   itemGeolocationRepository: ItemGeolocationRepository;
 };
@@ -119,9 +119,7 @@ export const buildRepositories = (manager?: EntityManager): Repositories => ({
   actionRequestExportRepository: manager
     ? manager.withRepository(ActionRequestExportRepository)
     : ActionRequestExportRepository,
-  memberProfileRepository: manager
-    ? manager.withRepository(MemberProfileRepository)
-    : MemberProfileRepository,
+  memberProfileRepository: new MemberProfileRepository(manager),
   shortLinkRepository: manager ? manager.withRepository(ShortLinkRepository) : ShortLinkRepository,
   itemGeolocationRepository: new ItemGeolocationRepository(manager),
 });
