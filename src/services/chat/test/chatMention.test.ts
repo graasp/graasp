@@ -209,9 +209,8 @@ describe('Chat Mention tests', () => {
 
       beforeEach(async () => {
         ({ app, actor } = await build());
-        ({ chatMessages, chatMentions, members } = await saveItemWithChatMessagesAndMentions(
-          actor,
-        ));
+        ({ chatMessages, chatMentions, members } =
+          await saveItemWithChatMessagesAndMentions(actor));
       });
 
       it('Delete successfully', async () => {
