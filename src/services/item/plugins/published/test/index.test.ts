@@ -9,7 +9,9 @@ import { FastifyInstance } from 'fastify';
 import { CategoryType, HttpMethod, ItemTagType, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
+import { resolveDependency } from '../../../../../di/utils';
 import { AppDataSource } from '../../../../../plugins/datasource';
+import { MailerService } from '../../../../../plugins/mailer/service';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { ItemNotFound, MemberCannotAdminItem } from '../../../../../utils/errors';
 import { saveMember, saveMembers } from '../../../../member/test/fixtures/members';
@@ -319,7 +321,8 @@ describe('Item Published', () => {
       });
 
       it('Publish item with admin rights and send notification', async () => {
-        const sendEmailMock = jest.spyOn(app.mailer, 'sendEmail');
+        const mailerService = resolveDependency(MailerService);
+        const sendEmailMock = jest.spyOn(mailerService, 'sendEmail');
 
         const member = await saveMember();
         const { item } = await testUtils.saveItemAndMembership({

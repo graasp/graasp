@@ -16,7 +16,7 @@ import { Readable } from 'stream';
 
 import { FastifyBaseLogger } from 'fastify';
 
-import { UUID } from '@graasp/sdk';
+import { ItemType, UUID } from '@graasp/sdk';
 
 import { S3_FILE_ITEM_HOST, TMP_FOLDER } from '../../../utils/config';
 import { S3FileConfiguration } from '../interfaces/configuration';
@@ -53,6 +53,10 @@ export class S3FileRepository implements FileRepository {
       // this overrides the default endpoint (amazonaws.com) with S3_FILE_ITEM_HOST
       endpoint: S3_FILE_ITEM_HOST,
     });
+  }
+
+  get fileType() {
+    return ItemType.S3_FILE;
   }
 
   async getFileSize(filepath: string) {

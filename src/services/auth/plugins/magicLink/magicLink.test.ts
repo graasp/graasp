@@ -15,7 +15,9 @@ import {
 import { FAILURE_MESSAGES } from '@graasp/translations';
 
 import build, { clearDatabase } from '../../../../../test/app';
+import { resolveDependency } from '../../../../di/utils';
 import { AppDataSource } from '../../../../plugins/datasource';
+import { MailerService } from '../../../../plugins/mailer/service';
 import { AUTH_CLIENT_HOST, JWT_SECRET } from '../../../../utils/config';
 import { Member } from '../../../member/entities/member';
 import { expectMember, saveMember } from '../../../member/test/fixtures/members';
@@ -37,9 +39,11 @@ export const mockCaptchaValidation = (action: RecaptchaActionType) => {
 
 describe('Auth routes tests', () => {
   let app: FastifyInstance;
+  let mailerService: MailerService;
 
   beforeEach(async () => {
     ({ app } = await build({ member: null }));
+    mailerService = resolveDependency(MailerService);
   });
 
   afterEach(async () => {
@@ -57,7 +61,7 @@ describe('Auth routes tests', () => {
     it('Sign Up successfully', async () => {
       const email = 'someemail@email.com';
       const name = 'anna';
-      const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/register',
@@ -86,7 +90,7 @@ describe('Auth routes tests', () => {
       const name = 'anna';
       const lang = 'fr';
 
-      const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/register?lang=${lang}`,
@@ -128,7 +132,7 @@ describe('Auth routes tests', () => {
       const name = 'anna';
       const enableSaveActions = false;
 
-      const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/register`,
@@ -156,7 +160,7 @@ describe('Auth routes tests', () => {
       const name = 'anna';
       const enableSaveActions = true;
 
-      const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/register`,
@@ -182,7 +186,7 @@ describe('Auth routes tests', () => {
     it('Sign Up fallback to login for already register member', async () => {
       // register already existing member
       const member = await saveMember();
-      const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
 
       const response = await app.inject({
         method: HttpMethod.Post,
@@ -229,7 +233,7 @@ describe('Auth routes tests', () => {
     });
     it('Sign In successfully', async () => {
       const member = await saveMember();
-      const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/login',
@@ -249,7 +253,7 @@ describe('Auth routes tests', () => {
     it('Sign In successfully with given lang', async () => {
       const member = await saveMember(MemberFactory({ extra: { lang: 'fr' } }));
       const { lang } = member.extra;
-      const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/login?lang=${lang}`,
@@ -269,7 +273,7 @@ describe('Auth routes tests', () => {
     it('Sign In does send not found on non-existing email', async () => {
       const email = 'some@email.com';
 
-      const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/login',

@@ -4,11 +4,14 @@ import { fastifyMultipart } from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
+import { resolveDependency } from '../../../../di/utils';
+import { MailerService } from '../../../../plugins/mailer/service';
 import { IdParam } from '../../../../types';
 import { notUndefined } from '../../../../utils/assertions';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { Actor, Member } from '../../../member/entities/member';
+import { MemberService } from '../../../member/service';
 import { MAX_FILE_SIZE } from './constants';
 import { Invitation } from './entity';
 import { NoFileProvidedForInvitations } from './errors';
@@ -16,22 +19,17 @@ import definitions, { deleteOne, getById, getForItem, invite, sendOne, updateOne
 import { InvitationService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { mailer, db, log, members, items, memberships } = fastify;
+  const { db } = fastify;
+  const mailerService = resolveDependency(MailerService);
+  const memberService = resolveDependency(MemberService);
+  const invitationService = resolveDependency(InvitationService);
 
-  if (!mailer) {
+  if (!mailerService) {
     throw new Error('Mailer plugin is not defined');
   }
 
   fastify.addSchema(definitions);
   // register multipart plugin for use in the invitations API
-
-  const invitationService = new InvitationService(
-    log,
-    mailer,
-    items.service,
-    members.service,
-    memberships.service,
-  );
 
   // post hook: remove invitations on member creation
   const hook = async (actor: Actor, repositories: Repositories, args: { member: Member }) => {
@@ -39,7 +37,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     await invitationService.createToMemberships(actor, repositories, args.member);
     await repositories.invitationRepository.deleteForEmail(email);
   };
-  members.service.hooks.setPostHook('create', hook);
+  memberService.hooks.setPostHook('create', hook);
 
   // get an invitation by id
   // does not require authentication

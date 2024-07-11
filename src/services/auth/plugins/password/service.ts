@@ -1,11 +1,11 @@
 import { Redis } from 'ioredis';
 import { sign } from 'jsonwebtoken';
+import { singleton } from 'tsyringe';
 import { v4 as uuid } from 'uuid';
 
-import { FastifyBaseLogger } from 'fastify';
-
-import { MailerDecoration } from '../../../../plugins/mailer';
+import { BaseLogger } from '../../../../logger';
 import { MAIL } from '../../../../plugins/mailer/langs/constants';
+import { MailerService } from '../../../../plugins/mailer/service';
 import {
   AUTH_CLIENT_HOST,
   JWT_SECRET,
@@ -21,13 +21,14 @@ import { comparePasswords } from './utils';
 
 const REDIS_PREFIX = 'reset-password:';
 
+@singleton()
 export class MemberPasswordService {
-  log: FastifyBaseLogger;
-  mailer: MailerDecoration;
-  redis: Redis;
+  private readonly log: BaseLogger;
+  private readonly mailerService: MailerService;
+  private readonly redis: Redis;
 
-  constructor(mailer: MailerDecoration, log: FastifyBaseLogger, redis: Redis) {
-    this.mailer = mailer;
+  constructor(mailerService: MailerService, log: BaseLogger, redis: Redis) {
+    this.mailerService = mailerService;
     this.log = log;
     this.redis = redis;
   }
@@ -120,7 +121,7 @@ export class MemberPasswordService {
    * @returns void
    */
   mailResetPasswordRequest(email: string, token: string, lang: string): void {
-    const translated = this.mailer.translate(lang);
+    const translated = this.mailerService.translate(lang);
     const subject = translated(MAIL.RESET_PASSWORD_TITLE);
     // auth.graasp.org/reset-password?t=<token>
     const domain = AUTH_CLIENT_HOST;
@@ -129,16 +130,16 @@ export class MemberPasswordService {
     const link = destination.toString();
 
     const html = `
-      ${this.mailer.buildText(translated(MAIL.RESET_PASSWORD_TEXT))}
-      ${this.mailer.buildButton(link, translated(MAIL.RESET_PASSWORD_BUTTON_TEXT))}
-      ${this.mailer.buildText(translated(MAIL.RESET_PASSWORD_NOT_REQUESTED))}`;
+      ${this.mailerService.buildText(translated(MAIL.RESET_PASSWORD_TEXT))}
+      ${this.mailerService.buildButton(link, translated(MAIL.RESET_PASSWORD_BUTTON_TEXT))}
+      ${this.mailerService.buildText(translated(MAIL.RESET_PASSWORD_NOT_REQUESTED))}`;
 
-    const footer = this.mailer.buildFooter(lang);
+    const footer = this.mailerService.buildFooter(lang);
 
-    // don't wait for mailer's response; log error and link if it fails.
-    this.mailer
+    // don't wait for mailerService's response; log error and link if it fails.
+    this.mailerService
       .sendEmail(subject, email, link, html, footer)
-      .catch((err) => this.log.warn(err, `mailer failed. link: ${link}`));
+      .catch((err) => this.log.warn(err, `mailerService failed. link: ${link}`));
   }
 
   /**

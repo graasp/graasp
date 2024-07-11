@@ -7,8 +7,8 @@ import { Repositories } from '../../../../utils/repositories';
 import { Actor } from '../../../member/entities/member';
 
 export class MobileService {
-  log: FastifyBaseLogger;
-  fastify: FastifyInstance;
+  private readonly log: FastifyBaseLogger;
+  private readonly fastify: FastifyInstance;
 
   constructor(fastify: FastifyInstance, log: FastifyBaseLogger) {
     this.log = log;

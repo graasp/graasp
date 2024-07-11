@@ -1,14 +1,14 @@
 import { fastifyCors } from '@fastify/cors';
 import { FastifyPluginAsync } from 'fastify';
 
+import { resolveDependency } from '../../di/utils';
 import magicLinkController from './plugins/magicLink';
 import mobileController from './plugins/mobile';
 import passwordController from './plugins/password';
+import { AuthService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const {
-    authentication: { service: authService },
-  } = fastify;
+  const authService = resolveDependency(AuthService);
 
   // TODO: decorate auth service and use it instead of decorating function
   fastify.decorate('generateRegisterLinkAndEmailIt', authService.generateRegisterLinkAndEmailIt);

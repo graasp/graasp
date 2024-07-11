@@ -2,10 +2,12 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ItemType } from '@graasp/sdk';
 
+import { resolveDependency } from '../../../../di/utils';
 import { Repositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import { Actor } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
+import { ItemService } from '../../service';
 import { LinkQueryParameterIsRequired } from './errors';
 import { createSchema, getLinkMetadata, updateExtraSchema } from './schemas';
 import { EmbeddedLinkService } from './service';
@@ -20,9 +22,10 @@ const plugin: FastifyPluginAsync<GraaspEmbeddedLinkItemOptions> = async (fastify
   const { iframelyHrefOrigin } = options;
   const {
     log,
-    items: { extendCreateSchema, extendExtrasUpdateSchema, service: itemService },
+    items: { extendCreateSchema, extendExtrasUpdateSchema },
   } = fastify;
-  const embeddedLinkService = new EmbeddedLinkService();
+  const itemService = resolveDependency(ItemService);
+  const embeddedLinkService = resolveDependency(EmbeddedLinkService);
 
   if (!iframelyHrefOrigin) {
     throw new Error('graasp-embedded-link-item: mandatory options missing');

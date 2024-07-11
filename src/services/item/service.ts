@@ -1,6 +1,5 @@
 import { Readable } from 'stream';
-
-import { FastifyBaseLogger } from 'fastify';
+import { singleton } from 'tsyringe';
 
 import {
   ItemType,
@@ -15,6 +14,7 @@ import {
   getParentFromPath,
 } from '@graasp/sdk';
 
+import { BaseLogger } from '../../logger';
 import { Paginated, PaginationParams } from '../../types';
 import {
   InvalidMembership,
@@ -45,8 +45,9 @@ import { PartialItemGeolocation } from './plugins/geolocation/errors';
 import { ItemTag } from './plugins/itemTag/ItemTag';
 import { ItemChildrenParams, ItemSearchParams } from './types';
 
+@singleton()
 export class ItemService {
-  private log: FastifyBaseLogger;
+  private log: BaseLogger;
   private thumbnailService: ThumbnailService;
 
   hooks = new HookManager<{
@@ -72,9 +73,9 @@ export class ItemService {
     };
   }>();
 
-  constructor(thumbnailService: ThumbnailService, logger: FastifyBaseLogger) {
+  constructor(thumbnailService: ThumbnailService, log: BaseLogger) {
     this.thumbnailService = thumbnailService;
-    this.log = logger;
+    this.log = log;
   }
 
   async post(

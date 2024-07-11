@@ -8,6 +8,7 @@ import fp from 'fastify-plugin';
 
 import { ItemType, PermissionLevel } from '@graasp/sdk';
 
+import { resolveDependency } from '../../../../../di/utils';
 import { notUndefined } from '../../../../../utils/assertions';
 import { CLIENT_HOSTS } from '../../../../../utils/config';
 import { buildRepositories } from '../../../../../utils/repositories';
@@ -15,6 +16,7 @@ import { isAuthenticated } from '../../../../auth/plugins/passport';
 import { validatePermission } from '../../../../authorization';
 import { Member } from '../../../../member/entities/member';
 import { Item, isItemType } from '../../../entities/Item';
+import { ItemService } from '../../../service';
 import { FastifyStaticReply } from '../types';
 import {
   DEFAULT_H5P_ASSETS_ROUTE,
@@ -27,15 +29,15 @@ import {
 import { H5PInvalidFileError } from './errors';
 import { renderHtml } from './integration';
 import { h5pImport } from './schemas';
+import { H5PService } from './service';
 import { H5PPluginOptions } from './types';
 
 const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify) => {
   // get services from server instance
-  const {
-    items: { service: itemService },
-    h5p: { service: h5pService },
-    db,
-  } = fastify;
+  const { db } = fastify;
+
+  const itemService = resolveDependency(ItemService);
+  const h5pService = resolveDependency(H5PService);
 
   // question: this is difficult to move this in the service because of the transaction
   /**
@@ -70,7 +72,7 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify) => {
    * In the future, consider refactoring the fileService so that it can be grabbed from the
    * core instance and can serve the files directly (with an option to use or not auth)
    */
-  if (h5pService.fileService.type === ItemType.LOCAL_FILE) {
+  if (h5pService.fileService.fileType === ItemType.LOCAL_FILE) {
     /** Helper to set CORS headers policy */
     const setHeaders = (response: FastifyStaticReply) => {
       response.setHeader('Cross-Origin-Resource-Policy', 'same-site');

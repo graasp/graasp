@@ -5,9 +5,13 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ActionTriggers } from '@graasp/sdk';
 
+import { resolveDependency } from '../../../../di/utils';
+import { BaseLogger } from '../../../../logger';
 import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
+import { ActionService } from '../../../action/services/action';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import { ItemService } from '../../service';
 import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
 import { ZIP_FILE_MIME_TYPES } from './constants';
 import { FileIsInvalidArchiveError } from './errors';
@@ -16,18 +20,10 @@ import { ImportExportService } from './service';
 import { prepareZip } from './utils';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const {
-    items: {
-      service: iS,
-      files: { service: fS },
-    },
-    actions: { service: aS },
-    h5p: { service: h5pService },
-    log: fastifyLogger,
-    db,
-  } = fastify;
-
-  const importExportService = new ImportExportService(db, fS, iS, h5pService, fastifyLogger);
+  const log = resolveDependency(BaseLogger);
+  const itemService = resolveDependency(ItemService);
+  const actionService = resolveDependency(ActionService);
+  const importExportService = resolveDependency(ImportExportService);
 
   fastify.register(fastifyMultipart, {
     limits: {
@@ -70,16 +66,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       // create items from folder
       // does not wait
       importExportService
-        .import(
-          member,
-          buildRepositories(),
-          {
-            folderPath,
-            targetFolder,
-            parentId,
-          },
-          log,
-        )
+        .import(member, buildRepositories(), {
+          folderPath,
+          targetFolder,
+          parentId,
+        })
         .catch((e) => {
           log.error(e);
         });
@@ -98,11 +89,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       const {
         user,
         params: { itemId },
-        log,
       } = request;
       const member = user?.member;
       const repositories = buildRepositories();
-      const item = await iS.get(member, repositories, itemId);
+      const item = await itemService.get(member, repositories, itemId);
 
       // generate archive stream
       const archiveStream = await importExportService.export(member, repositories, {
@@ -116,7 +106,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         type: ActionTriggers.ItemDownload,
         extra: { itemId: item?.id },
       };
-      await aS.postMany(member, repositories, request, [action]);
+      await actionService.postMany(member, repositories, request, [action]);
 
       try {
         reply.raw.setHeader(

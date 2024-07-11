@@ -2,6 +2,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { AppDataVisibility, PermissionLevel } from '@graasp/sdk';
 
+import { resolveDependency } from '../../../../../di/utils';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { validatePermission } from '../../../../authorization';
 import { WebsocketService } from '../../../../websockets/ws-service';
@@ -138,9 +139,10 @@ export const appDataWsHooks: FastifyPluginAsync<GraaspPluginAppDataWsHooksOption
   fastify,
   options,
 ) => {
-  const { websockets, items } = fastify;
+  const { websockets } = fastify;
   const { appDataService } = options;
-  registerAppDataTopic(websockets, appDataService, items.service);
+  const itemService = resolveDependency(ItemService);
+  registerAppDataTopic(websockets, appDataService, itemService);
 };
 
 interface GraaspPluginAppActionsWsHooksOptions {
@@ -154,9 +156,10 @@ export const appActionsWsHooks: FastifyPluginAsync<GraaspPluginAppActionsWsHooks
   fastify,
   options,
 ) => {
-  const { websockets, items } = fastify;
+  const { websockets } = fastify;
   const { appActionService } = options;
-  registerAppActionTopic(websockets, appActionService, items.service);
+  const itemService = resolveDependency(ItemService);
+  registerAppActionTopic(websockets, appActionService, itemService);
 };
 
 interface GraaspPluginAppSettingsWsHooksOptions {
@@ -170,7 +173,8 @@ export const appSettingsWsHooks: FastifyPluginAsync<GraaspPluginAppSettingsWsHoo
   fastify,
   options,
 ) => {
-  const { websockets, items } = fastify;
+  const { websockets } = fastify;
   const { appSettingService } = options;
-  registerAppSettingsTopic(websockets, appSettingService, items.service);
+  const itemService = resolveDependency(ItemService);
+  registerAppSettingsTopic(websockets, appSettingService, itemService);
 };

@@ -1,4 +1,5 @@
 import { Readable } from 'stream';
+import { singleton } from 'tsyringe';
 
 import { PermissionLevel, ThumbnailSize } from '@graasp/sdk';
 
@@ -8,6 +9,7 @@ import { Actor, Member } from '../../../member/entities/member';
 import { ThumbnailService } from '../../../thumbnail/service';
 import { ItemService } from '../../service';
 
+@singleton()
 export class ItemThumbnailService {
   thumbnailService: ThumbnailService;
   itemService: ItemService;

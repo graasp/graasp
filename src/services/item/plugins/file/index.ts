@@ -3,38 +3,37 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { FileItemProperties, HttpMethod, PermissionLevel } from '@graasp/sdk';
 
+import { resolveDependency } from '../../../../di/utils';
 import { IdParam } from '../../../../types';
 import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { validatePermission } from '../../../authorization';
+import FileService from '../../../file/service';
+import { StorageService } from '../../../member/plugins/storage/service';
 import { Item } from '../../entities/Item';
+import { ItemService } from '../../service';
 import { download, updateSchema, upload } from './schema';
 import FileItemService from './service';
 import { DEFAULT_MAX_FILE_SIZE, MAX_NUMBER_OF_FILES_UPLOAD } from './utils/constants';
 
 export interface GraaspPluginFileOptions {
-  shouldRedirectOnDownload?: boolean; // redirect value on download
   uploadMaxFileNb?: number; // max number of files to upload at a time
   maxFileSize?: number; // max size for an uploaded file in bytes
   maxMemberStorage?: number; // max storage space for a user
 }
 
 const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, options) => {
-  const {
-    uploadMaxFileNb = MAX_NUMBER_OF_FILES_UPLOAD,
-    maxFileSize = DEFAULT_MAX_FILE_SIZE,
-    shouldRedirectOnDownload = true,
-  } = options;
+  const { uploadMaxFileNb = MAX_NUMBER_OF_FILES_UPLOAD, maxFileSize = DEFAULT_MAX_FILE_SIZE } =
+    options;
 
-  const {
-    db,
-    files: { service: fileService },
-    items,
-    storage: { service: storageService },
-  } = fastify;
+  const { db, items } = fastify;
+  const { extendExtrasUpdateSchema } = items;
 
-  const { service: itemService, extendExtrasUpdateSchema } = items;
+  const fileService = resolveDependency(FileService);
+  const itemService = resolveDependency(ItemService);
+  const storageService = resolveDependency(StorageService);
+  const fileItemService = resolveDependency(FileItemService);
 
   fastify.register(fastifyMultipart, {
     limits: {
@@ -49,16 +48,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   });
 
   // "install" custom schema for validating file items update
-  extendExtrasUpdateSchema(updateSchema(fileService.type));
-
-  const fileItemService = new FileItemService(
-    fileService,
-    items.service,
-    storageService,
-    items.thumbnails.service,
-    shouldRedirectOnDownload,
-  );
-  items.files = { service: fileItemService };
+  extendExtrasUpdateSchema(updateSchema(fileService.fileType));
 
   // register post delete handler to remove the file object after item delete
   itemService.hooks.setPostHook(
@@ -69,8 +59,8 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
       }
       try {
         // delete file only if type is the current file type
-        if (!id || type !== fileService.type) return;
-        const filepath = (extra[fileService.type] as FileItemProperties).path;
+        if (!id || type !== fileService.fileType) return;
+        const filepath = (extra[fileService.fileType] as FileItemProperties).path;
         await fileService.delete(actor, filepath);
       } catch (err) {
         // we catch the error, it ensures the item is deleted even if the file is not
@@ -89,8 +79,8 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     const { id, type } = item; // full copy with new `id`
 
     // copy file only if type is the current file type
-    if (!id || type !== fileService.type) return;
-    const size = (item.extra[fileService.type] as FileItemProperties & { size?: number })?.size;
+    if (!id || type !== fileService.fileType) return;
+    const size = (item.extra[fileService.fileType] as FileItemProperties & { size?: number })?.size;
 
     await storageService.checkRemainingStorage(actor, repositories, size);
   });
@@ -104,7 +94,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     const { id, type } = copy; // full copy with new `id`
 
     // copy file only if type is the current file type
-    if (!id || type !== fileService.type) {
+    if (!id || type !== fileService.fileType) {
       return;
     }
     await fileItemService.copy(actor, repositories, { original, copy });

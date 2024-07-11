@@ -1,10 +1,8 @@
-import { MeiliSearch, MultiSearchParams } from 'meilisearch';
-import { DataSource } from 'typeorm';
+import { MultiSearchParams } from 'meilisearch';
+import { singleton } from 'tsyringe';
 
-import { FastifyBaseLogger } from 'fastify';
-
-import { Repositories, buildRepositories } from '../../../../../../utils/repositories';
-import FileService from '../../../../../file/service';
+import { BaseLogger } from '../../../../../../logger';
+import { Repositories } from '../../../../../../utils/repositories';
 import { Actor } from '../../../../../member/entities/member';
 import { ItemService } from '../../../../service';
 import { ItemCategoryService } from '../../../itemCategory/services/itemCategory';
@@ -16,31 +14,21 @@ import { MeiliSearchWrapper } from './meilisearch';
  * Handle search index business logic with Meilisearch
  * Ideally we try to keep the public method idempotent. You can "delete" unexisting items and indexing work for first indexation and for updates.
  */
+@singleton()
 export class SearchService {
-  itemService: ItemService;
-  fileService: FileService;
-  meilisearchClient: MeiliSearchWrapper;
-  db: DataSource;
-  logger: FastifyBaseLogger;
+  private readonly meilisearchClient: MeiliSearchWrapper;
+  private readonly logger: BaseLogger;
+
   constructor(
     itemService: ItemService,
-    fileService: FileService,
     itemPublishedService: ItemPublishedService,
     itemCategoryService: ItemCategoryService,
-    db: DataSource,
-    meilisearchConnection: MeiliSearch,
-    logger: FastifyBaseLogger,
+    meilisearchClient: MeiliSearchWrapper,
+    logger: BaseLogger,
   ) {
-    this.itemService = itemService;
-    this.fileService = fileService;
-    this.meilisearchClient = new MeiliSearchWrapper(db, meilisearchConnection, fileService, logger);
+    this.meilisearchClient = meilisearchClient;
     this.logger = logger;
-    this.registerSearchHooks(
-      buildRepositories(),
-      itemService,
-      itemPublishedService,
-      itemCategoryService,
-    );
+    this.registerSearchHooks(itemService, itemPublishedService, itemCategoryService);
   }
 
   private removeHTMLTags(s: string): string {
@@ -77,7 +65,6 @@ export class SearchService {
   // Registers all hooks related to sync between database and meilisearch index
   // Make sure to not throw if indexation fail, so that the app can continue to work if Meilisearch is down.
   private registerSearchHooks(
-    repositories: Repositories,
     itemService: ItemService,
     itemPublishedService: ItemPublishedService,
     ItemCategoryService: ItemCategoryService,

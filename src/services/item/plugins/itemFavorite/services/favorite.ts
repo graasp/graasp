@@ -1,3 +1,5 @@
+import { singleton } from 'tsyringe';
+
 import { PermissionLevel } from '@graasp/sdk';
 
 import { UnauthorizedMember } from '../../../../../utils/errors';
@@ -7,6 +9,7 @@ import { Actor } from '../../../../member/entities/member';
 import { ItemService } from '../../../service';
 import { PackedItemFavorite } from '../entities/ItemFavorite';
 
+@singleton()
 export class FavoriteService {
   private itemService: ItemService;
 

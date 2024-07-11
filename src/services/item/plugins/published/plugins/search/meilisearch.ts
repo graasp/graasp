@@ -9,8 +9,6 @@ import {
 } from 'meilisearch';
 import { DataSource } from 'typeorm';
 
-import { FastifyBaseLogger } from 'fastify';
-
 import {
   DocumentItemExtra,
   INDEX_NAME,
@@ -22,6 +20,7 @@ import {
   S3FileItemExtra,
 } from '@graasp/sdk';
 
+import { BaseLogger } from '../../../../../../logger';
 import { MEILISEARCH_STORE_LEGACY_PDF_CONTENT } from '../../../../../../utils/config';
 import { Repositories, buildRepositories } from '../../../../../../utils/repositories';
 import FileService from '../../../../../file/service';
@@ -65,16 +64,17 @@ const TYPO_TOLERANCE: TypoTolerance = {
  * Ideally we try to keep the public method idempotent. You can "delete" unexisting items and indexing work for first indexation and for updates.
  */
 export class MeiliSearchWrapper {
-  private meilisearchClient: MeiliSearch;
-  indexDictionary: Record<string, Index<IndexItem>> = {};
-  fileService: FileService;
-  db: DataSource;
-  logger: FastifyBaseLogger;
+  private readonly meilisearchClient: MeiliSearch;
+  private readonly indexDictionary: Record<string, Index<IndexItem>> = {};
+  private readonly fileService: FileService;
+  private readonly db: DataSource;
+  private readonly logger: BaseLogger;
+
   constructor(
     db: DataSource,
     meilisearchConnection: MeiliSearch,
     fileService: FileService,
-    logger: FastifyBaseLogger,
+    logger: BaseLogger,
   ) {
     this.meilisearchClient = meilisearchConnection;
     this.fileService = fileService;

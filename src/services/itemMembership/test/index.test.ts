@@ -6,6 +6,8 @@ import { FastifyInstance } from 'fastify';
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
+import { resolveDependency } from '../../../di/utils';
+import { MailerService } from '../../../plugins/mailer/service';
 import {
   CannotDeleteOnlyAdmin,
   InvalidMembership,
@@ -270,7 +272,8 @@ describe('Membership routes tests', () => {
         ({ app, actor } = await build());
       });
       it('Create new membership successfully', async () => {
-        const notificationMock = jest.spyOn(app.mailer, 'sendEmail');
+        const mailerService = resolveDependency(MailerService);
+        const notificationMock = jest.spyOn(mailerService, 'sendEmail');
 
         const { item } = await testUtils.saveItemAndMembership({ member: actor });
         const member = await saveMember();
@@ -471,7 +474,8 @@ describe('Membership routes tests', () => {
       });
 
       it('Create new memberships successfully', async () => {
-        const notificationMock = jest.spyOn(app.mailer, 'sendEmail');
+        const mailerService = resolveDependency(MailerService);
+        const notificationMock = jest.spyOn(mailerService, 'sendEmail');
         const { item } = await testUtils.saveItemAndMembership({ member: actor });
         const member1 = await saveMember();
         const member2 = await saveMember();

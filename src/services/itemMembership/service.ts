@@ -1,7 +1,9 @@
+import { singleton } from 'tsyringe';
+
 import { PermissionLevel, UUID } from '@graasp/sdk';
 
-import { MailerDecoration } from '../../plugins/mailer';
 import { MAIL } from '../../plugins/mailer/langs/constants';
+import { MailerService } from '../../plugins/mailer/service';
 import { PLAYER_HOST } from '../../utils/config';
 import {
   CannotDeleteOnlyAdmin,
@@ -16,18 +18,19 @@ import { ItemService } from '../item/service';
 import { Actor, Member } from '../member/entities/member';
 import { ItemMembership } from './entities/ItemMembership';
 
+@singleton()
 export class ItemMembershipService {
-  itemService: ItemService;
-  mailer: MailerDecoration;
+  private readonly itemService: ItemService;
+  private readonly mailerService: MailerService;
   hooks = new HookManager<{
     create: { pre: Partial<ItemMembership>; post: ItemMembership };
     update: { pre: ItemMembership; post: ItemMembership };
     delete: { pre: ItemMembership; post: ItemMembership };
   }>();
 
-  constructor(itemService: ItemService, mailer: MailerDecoration) {
+  constructor(itemService: ItemService, mailerService: MailerService) {
     this.itemService = itemService;
-    this.mailer = mailer;
+    this.mailerService = mailerService;
   }
 
   async _notifyMember(
@@ -39,25 +42,25 @@ export class ItemMembershipService {
     const link = new URL(item.id, PLAYER_HOST.url).toString();
 
     const lang = member.lang;
-    const t = this.mailer.translate(lang);
+    const t = this.mailerService.translate(lang);
 
     const text = t(MAIL.SHARE_ITEM_TEXT, { itemName: item.name });
     const html = `
-        ${this.mailer.buildText(text)}
-        ${this.mailer.buildButton(link, t(MAIL.SHARE_ITEM_BUTTON))}
+        ${this.mailerService.buildText(text)}
+        ${this.mailerService.buildButton(link, t(MAIL.SHARE_ITEM_BUTTON))}
       `;
 
     const title = t(MAIL.SHARE_ITEM_TITLE, { creatorName: actor.name, itemName: item.name });
 
-    const footer = this.mailer.buildFooter(lang);
+    const footer = this.mailerService.buildFooter(lang);
 
-    await this.mailer
+    await this.mailerService
       .sendEmail(title, member.email, link, html, footer)
       .then(() => {
         console.debug('send email on membership creation');
       })
       .catch((err) => {
-        console.error(err, `mailer failed. shared link: ${link}`);
+        console.error(err, `mailerService failed. shared link: ${link}`);
       });
   }
 

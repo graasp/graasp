@@ -2,6 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
+import { resolveDependency } from '../../di/utils';
 import { IdParam, IdsParams } from '../../types';
 import { notUndefined } from '../../utils/assertions';
 import { CannotModifyOtherMembers } from '../../utils/errors';
@@ -11,8 +12,10 @@ import {
   isAuthenticated,
   optionalIsAuthenticated,
 } from '../auth/plugins/passport';
+import FileService from '../file/service';
 import { Member } from './entities/member';
 import { EmailAlreadyTaken } from './error';
+import { StorageService } from './plugins/storage/service';
 import {
   deleteOne,
   getCurrent,
@@ -24,14 +27,13 @@ import {
   postChangeEmail,
   updateOne,
 } from './schemas';
+import { MemberService } from './service';
 
 const controller: FastifyPluginAsync = async (fastify) => {
-  const {
-    db,
-    members: { service: memberService },
-    storage: { service: storageService },
-    files: { service: fileService },
-  } = fastify;
+  const { db } = fastify;
+  const fileService = resolveDependency(FileService);
+  const memberService = resolveDependency(MemberService);
+  const storageService = resolveDependency(StorageService);
 
   // get current
   fastify.get('/current', { schema: getCurrent, preHandler: isAuthenticated }, async ({ user }) => {
@@ -44,7 +46,7 @@ const controller: FastifyPluginAsync = async (fastify) => {
     { schema: getStorage, preHandler: isAuthenticated },
     async ({ user }) => {
       const member = notUndefined(user?.member);
-      return storageService.getStorageLimits(member, fileService.type, buildRepositories());
+      return storageService.getStorageLimits(member, fileService.fileType, buildRepositories());
     },
   );
 

@@ -10,12 +10,12 @@ import { saveItemFavorites } from '../../../../item/plugins/itemFavorite/test/fi
 import { ItemTestUtils } from '../../../../item/test/fixtures/items';
 import { saveMember } from '../../../test/fixtures/members';
 import { ExportMemberDataService } from '../service';
-import { DataArchiver } from '../utils/export.utils';
+import { DataArchiver, RequestDataExportService } from '../utils/export.utils';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
 const itemTestUtils = new ItemTestUtils();
-const exportMemberDataService = new ExportMemberDataService();
+const exportMemberDataService = new ExportMemberDataService({} as RequestDataExportService);
 
 const storageFolder = path.join(TMP_FOLDER, 'export-data');
 const archiveFileName = 'test-archiver';

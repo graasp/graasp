@@ -6,7 +6,9 @@ import { FastifyInstance } from 'fastify';
 import { FolderItemFactory, HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
+import { resolveDependency } from '../../../di/utils';
 import { AppDataSource } from '../../../plugins/datasource';
+import { MailerService } from '../../../plugins/mailer/service';
 import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
 import { ItemNotFound, MemberCannotAccess } from '../../../utils/errors';
 import { setItemPublic } from '../../item/plugins/itemTag/test/fixtures';
@@ -185,7 +187,8 @@ describe('Chat Message tests', () => {
       });
 
       it('Post successfully with mentions', async () => {
-        const mock = jest.spyOn(app.mailer, 'sendEmail');
+        const mailerService = resolveDependency(MailerService);
+        const mock = jest.spyOn(mailerService, 'sendEmail');
 
         const members = await memberRawRepository.find();
         const payload = { body: 'hello', mentions: members.map(({ id }) => id) };

@@ -1,10 +1,10 @@
 import { Secret, SignOptions, sign } from 'jsonwebtoken';
+import { singleton } from 'tsyringe';
 import { promisify } from 'util';
 
-import { FastifyBaseLogger } from 'fastify';
-
-import { MailerDecoration } from '../../plugins/mailer';
+import { BaseLogger } from '../../logger';
 import { MAIL } from '../../plugins/mailer/langs/constants';
+import { MailerService } from '../../plugins/mailer/service';
 import {
   JWT_SECRET,
   LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
@@ -25,12 +25,13 @@ const promisifiedJwtSign = promisify<
   string
 >(sign);
 
+@singleton()
 export class AuthService {
-  log: FastifyBaseLogger;
-  mailer: MailerDecoration;
+  private readonly log: BaseLogger;
+  private readonly mailerService: MailerService;
 
-  constructor(mailer: MailerDecoration, log: FastifyBaseLogger) {
-    this.mailer = mailer;
+  constructor(mailerService: MailerService, log: BaseLogger) {
+    this.mailerService = mailerService;
     this.log = log;
   }
 
@@ -60,13 +61,13 @@ export class AuthService {
 
     const lang = member.lang;
 
-    const translated = this.mailer.translate(lang);
+    const translated = this.mailerService.translate(lang);
     const subject = translated(MAIL.SIGN_UP_TITLE);
     const greetingsAndSignupText = `${translated(MAIL.GREETINGS)} ${translated(MAIL.SIGN_UP_TEXT)}`;
     const html = `
-    ${this.mailer.buildText(greetingsAndSignupText)}
-    ${this.mailer.buildButton(link, translated(MAIL.SIGN_UP_BUTTON_TEXT))}
-    ${this.mailer.buildText(
+    ${this.mailerService.buildText(greetingsAndSignupText)}
+    ${this.mailerService.buildButton(link, translated(MAIL.SIGN_UP_BUTTON_TEXT))}
+    ${this.mailerService.buildText(
       translated(MAIL.USER_AGREEMENTS_MAIL_TEXT, {
         signUpButtonText: translated(MAIL.SIGN_UP_BUTTON_TEXT),
         graaspLandingPageOrigin: GRAASP_LANDING_PAGE_ORIGIN,
@@ -74,14 +75,14 @@ export class AuthService {
       // Add margin top of -15px to remove 15px margin bottom of the button.
       { 'text-align': 'center', 'font-size': '10px', 'margin-top': '-15px' },
     )}
-    ${this.mailer.buildText(translated(MAIL.SIGN_UP_NOT_REQUESTED))}`;
+    ${this.mailerService.buildText(translated(MAIL.SIGN_UP_NOT_REQUESTED))}`;
 
-    const footer = this.mailer.buildFooter(lang);
+    const footer = this.mailerService.buildFooter(lang);
 
-    // don't wait for mailer's response; log error and link if it fails.
-    this.mailer
+    // don't wait for mailerService's response; log error and link if it fails.
+    this.mailerService
       .sendEmail(subject, member.email, link, html, footer)
-      .catch((err) => this.log.warn(err, `mailer failed. link: ${link}`));
+      .catch((err) => this.log.warn(err, `mailerService failed. link: ${link}`));
   };
 
   generateLoginLinkAndEmailIt = async (
@@ -104,19 +105,19 @@ export class AuthService {
 
     const memberLang = member.lang ?? lang;
 
-    const translated = this.mailer.translate(memberLang);
+    const translated = this.mailerService.translate(memberLang);
     const subject = translated(MAIL.SIGN_IN_TITLE);
     const html = `
-    ${this.mailer.buildText(translated(MAIL.SIGN_IN_TEXT))}
-    ${this.mailer.buildButton(link, translated(MAIL.SIGN_IN_BUTTON_TEXT))}
-    ${this.mailer.buildText(translated(MAIL.SIGN_IN_NOT_REQUESTED))}`;
+    ${this.mailerService.buildText(translated(MAIL.SIGN_IN_TEXT))}
+    ${this.mailerService.buildButton(link, translated(MAIL.SIGN_IN_BUTTON_TEXT))}
+    ${this.mailerService.buildText(translated(MAIL.SIGN_IN_NOT_REQUESTED))}`;
 
-    const footer = this.mailer.buildFooter(lang);
+    const footer = this.mailerService.buildFooter(lang);
 
-    // don't wait for mailer's response; log error and link if it fails.
-    this.mailer
+    // don't wait for mailerService's response; log error and link if it fails.
+    this.mailerService
       .sendEmail(subject, member.email, link, html, footer)
-      .catch((err) => this.log.warn(err, `mailer failed. link: ${link}`));
+      .catch((err) => this.log.warn(err, `mailerService failed. link: ${link}`));
   };
 
   async validateMemberId(repositories: Repositories, memberId: string): Promise<boolean> {

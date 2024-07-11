@@ -316,6 +316,7 @@ if (H5P_FILE_STORAGE_TYPE === ItemType.LOCAL_FILE) {
 export const H5P_LOCAL_CONFIG = {
   local: {
     storageRootPath: process.env.H5P_STORAGE_ROOT_PATH,
+    localFilesHost: process.env.H5P_FILE_STORAGE_HOST,
   } as LocalFileConfiguration,
 };
 
@@ -349,7 +350,7 @@ export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
 export const REDIS_USERNAME = process.env.REDIS_USERNAME;
 
 // validation
-export const IMAGE_CLASSIFIER_API = process.env.IMAGE_CLASSIFIER_API;
+export const IMAGE_CLASSIFIER_API = process.env.IMAGE_CLASSIFIER_API ?? '';
 
 export const FILE_ITEM_PLUGIN_OPTIONS: LocalFileConfiguration = {
   storageRootPath: FILE_STORAGE_ROOT_PATH ?? 'root',
@@ -420,7 +421,7 @@ export const ALLOWED_SEARCH_LANGS = {
 };
 
 // Geolocation API Key
-export const GEOLOCATION_API_KEY = process.env.GEOLOCATION_API_KEY;
+export const GEOLOCATION_API_KEY = process.env.GEOLOCATION_API_KEY ?? '';
 export const GEOLOCATION_API_HOST = process.env.GEOLOCATION_API_HOST;
 
 ////////////

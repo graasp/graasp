@@ -1,14 +1,18 @@
+import { inject, singleton } from 'tsyringe';
+
 import { FileItemType, MemberStorage } from '@graasp/sdk';
 
+import { FILE_ITEM_TYPE_DI_KEY } from '../../../../di/constants';
 import { Repositories } from '../../../../utils/repositories';
 import { DEFAULT_MAX_STORAGE } from '../../../item/plugins/file/utils/constants';
 import { StorageExceeded } from '../../../item/plugins/file/utils/errors';
 import { Member } from '../../entities/member';
 
+@singleton()
 export class StorageService {
-  fileItemType: FileItemType;
+  private fileItemType: FileItemType;
 
-  constructor(fileItemType: FileItemType) {
+  constructor(@inject(FILE_ITEM_TYPE_DI_KEY) fileItemType: FileItemType) {
     this.fileItemType = fileItemType;
   }
 

@@ -11,6 +11,8 @@ import { MemberFactory, RecaptchaAction } from '@graasp/sdk';
 import build, { clearDatabase } from '../../../../../test/app';
 import seed from '../../../../../test/mock';
 import { mockCaptchaValidation } from '../../../../../test/utils';
+import { resolveDependency } from '../../../../di/utils';
+import { MailerService } from '../../../../plugins/mailer/service';
 import {
   PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES,
   REDIS_HOST,
@@ -46,11 +48,13 @@ async function login(
 describe('Reset Password', () => {
   let app: FastifyInstance;
   let entities: { id: string; email: string; password?: string }[];
+  let mailerService: MailerService;
   let mockSendEmail;
   let mockRedisSetEx;
   beforeAll(async () => {
     ({ app } = await build());
-    mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
+    mailerService = resolveDependency(MailerService);
+    mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
     mockRedisSetEx = jest.spyOn(Redis.prototype, 'setex');
   });
 

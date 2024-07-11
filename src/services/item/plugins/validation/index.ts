@@ -2,29 +2,20 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
+import { resolveDependency } from '../../../../di/utils';
 import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
+import { ItemPublishedService } from '../published/service';
 import { itemValidation, itemValidationGroup } from './schemas';
 import { ItemValidationService } from './service';
 
-type GraaspPluginValidationOptions = {
-  imageClassifierApi?: string;
-};
+const plugin: FastifyPluginAsync = async (fastify) => {
+  const { db, websockets } = fastify;
 
-const plugin: FastifyPluginAsync<GraaspPluginValidationOptions> = async (fastify, options) => {
-  const {
-    items: { service: iS },
-    db,
-    files: { service: fileService },
-    itemsPublished: { service: publishService },
-    websockets,
-  } = fastify;
-
-  const { imageClassifierApi } = options;
-
-  const validationService = new ItemValidationService(iS, fileService, imageClassifierApi);
+  const validationService = resolveDependency(ItemValidationService);
+  const publishService = resolveDependency(ItemPublishedService);
 
   // get validation status of given itemId
   fastify.get<{ Params: { itemId: string } }>(

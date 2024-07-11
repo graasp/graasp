@@ -1,17 +1,16 @@
 import contentDisposition from 'content-disposition';
 import { StatusCodes } from 'http-status-codes';
 import { Readable } from 'stream';
+import { inject, singleton } from 'tsyringe';
 
-import { FastifyBaseLogger, FastifyReply } from 'fastify';
+import { FastifyReply } from 'fastify';
 
-import { FileItemType, ItemType } from '@graasp/sdk';
-
+import { FILE_REPOSITORY_DI_KEY } from '../../di/constants';
+import { BaseLogger } from '../../logger';
 import { UnauthorizedMember } from '../../utils/errors';
 import { Actor, Member } from '../member/entities/member';
 import { LocalFileConfiguration, S3FileConfiguration } from './interfaces/configuration';
 import { FileRepository } from './interfaces/fileRepository';
-import { LocalFileRepository } from './repositories/local';
-import { S3FileRepository } from './repositories/s3';
 import {
   CopyFileInvalidPathError,
   CopyFolderInvalidPathError,
@@ -24,37 +23,18 @@ import {
 
 export type FileServiceConfig = { s3?: S3FileConfiguration; local?: LocalFileConfiguration };
 
+@singleton()
 class FileService {
-  repository: FileRepository;
-  /** file type */
-  type: FileItemType;
+  private repository: FileRepository;
+  private logger: BaseLogger;
 
-  config: { s3?: S3FileConfiguration; local?: LocalFileConfiguration };
-  logger: FastifyBaseLogger;
-
-  constructor(
-    options: { s3?: S3FileConfiguration; local?: LocalFileConfiguration },
-    fileItemType: FileItemType,
-    log: FastifyBaseLogger,
-  ) {
-    this.type = fileItemType;
-    switch (fileItemType) {
-      case ItemType.S3_FILE:
-        if (!options.s3) {
-          throw new Error('S3 config is not defined');
-        }
-        this.repository = new S3FileRepository(options.s3);
-        break;
-      case ItemType.LOCAL_FILE:
-      default:
-        if (!options.local) {
-          throw new Error('local config is not defined');
-        }
-        this.repository = new LocalFileRepository(options.local);
-        break;
-    }
-    this.config = options;
+  constructor(@inject(FILE_REPOSITORY_DI_KEY) repository: FileRepository, log: BaseLogger) {
+    this.repository = repository;
     this.logger = log;
+  }
+
+  public get fileType() {
+    return this.repository.fileType;
   }
 
   async getFileSize(actor: Actor, filepath: string) {

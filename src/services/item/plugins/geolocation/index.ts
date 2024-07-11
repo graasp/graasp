@@ -2,8 +2,8 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
+import { resolveDependency } from '../../../../di/utils';
 import { notUndefined } from '../../../../utils/assertions';
-import { GEOLOCATION_API_KEY } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { Item } from '../../entities/Item';
@@ -19,12 +19,9 @@ import {
 import { ItemGeolocationService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const {
-    db,
-    items: { service: iS },
-  } = fastify;
+  const { db } = fastify;
 
-  const itemGeolocationService = new ItemGeolocationService(iS, GEOLOCATION_API_KEY);
+  const itemGeolocationService = resolveDependency(ItemGeolocationService);
 
   fastify.register(async function (fastify) {
     fastify.get<{ Params: { id: Item['id'] } }>(

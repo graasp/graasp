@@ -1,5 +1,6 @@
 import { mkdirSync } from 'fs';
 import path from 'path';
+import { inject, singleton } from 'tsyringe';
 
 import {
   ItemType,
@@ -11,6 +12,7 @@ import {
   UUID,
 } from '@graasp/sdk';
 
+import { IMAGE_CLASSIFIER_API_DI_KEY } from '../../../../di/constants';
 import { TMP_FOLDER } from '../../../../utils/config';
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
@@ -29,12 +31,17 @@ import { detectFieldNameWithBadWords } from './processes/badWordsDetection';
 import { classifyImage } from './processes/imageClassification';
 import { stripHtml } from './utils';
 
+@singleton()
 export class ItemValidationService {
-  itemService: ItemService;
-  fileService: FileService;
-  imageClassifierApi?: string;
+  private readonly itemService: ItemService;
+  private readonly fileService: FileService;
+  private readonly imageClassifierApi: string;
 
-  constructor(itemService: ItemService, fileService: FileService, imageClassifierApi?: string) {
+  constructor(
+    itemService: ItemService,
+    fileService: FileService,
+    @inject(IMAGE_CLASSIFIER_API_DI_KEY) imageClassifierApi: string,
+  ) {
     this.itemService = itemService;
     this.fileService = fileService;
     this.imageClassifierApi = imageClassifierApi;
@@ -112,7 +119,7 @@ export class ItemValidationService {
               // if item is not of type 'file', skip the image checking
               if (
                 process === ItemValidationProcess.ImageChecking &&
-                item?.type !== this.fileService.type
+                item?.type !== this.fileService.fileType
               ) {
                 return undefined;
               }

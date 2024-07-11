@@ -6,9 +6,11 @@ import { FastifyPluginAsync, FastifyReply, FastifyRequest, PassportUser } from '
 import { RecaptchaAction } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
+import { resolveDependency } from '../../../../di/utils';
 import { AUTH_CLIENT_HOST } from '../../../../utils/config';
 import { MemberAlreadySignedUp } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
+import { MemberService } from '../../../member/service';
 import { getRedirectionUrl } from '../../utils';
 import captchaPreHandler from '../captcha';
 import { SHORT_TOKEN_PARAM } from '../passport';
@@ -20,12 +22,9 @@ const ERROR_SEARCH_PARAM = 'error';
 const ERROR_SEARCH_PARAM_HAS_ERROR = 'true';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const {
-    log,
-    db,
-    members: { service: memberService },
-  } = fastify;
+  const { log, db } = fastify;
 
+  const memberService = resolveDependency(MemberService);
   const magicLinkService = new MagicLinkService(fastify, log);
   // register
   fastify.post<{

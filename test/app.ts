@@ -6,6 +6,7 @@ import { fastify } from 'fastify';
 import { CompleteMember } from '@graasp/sdk';
 
 import registerAppPlugins from '../src/app';
+import { resetDependencies } from '../src/di/utils';
 import ajvFormats from '../src/schemas/ajvFormats';
 import { PassportStrategy } from '../src/services/auth/plugins/passport';
 import { Actor } from '../src/services/member/entities/member';
@@ -41,6 +42,10 @@ export function unmockAuthenticate() {
 }
 
 const build = async ({ member }: { member?: CompleteMember | null } = {}) => {
+  // Reset dependencies before each test to ensure
+  // having new singleton instances in every tests.
+  resetDependencies();
+
   const app = fastify({
     disableRequestLogging: true,
     logger: {

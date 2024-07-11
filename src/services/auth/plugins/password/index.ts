@@ -4,9 +4,11 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ActionTriggers, Context, RecaptchaAction } from '@graasp/sdk';
 
+import { resolveDependency } from '../../../../di/utils';
 import { notUndefined } from '../../../../utils/assertions';
 import { LOGIN_TOKEN_EXPIRATION_IN_MINUTES, PUBLIC_URL } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
+import { ActionService } from '../../../action/services/action';
 import { getRedirectionUrl } from '../../utils';
 import captchaPreHandler from '../captcha';
 import {
@@ -21,15 +23,16 @@ import {
   postResetPasswordRequest,
   updatePassword,
 } from './schemas';
+import { MemberPasswordService } from './service';
 
 const REDIRECTION_URL_PARAM = 'url';
 const AUTHENTICATION_FALLBACK_ROUTE = '/auth';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const {
-    db,
-    memberPassword: { service: memberPasswordService },
-  } = fastify;
+  const { db } = fastify;
+  const actionService = resolveDependency(ActionService);
+  const memberPasswordService = resolveDependency(MemberPasswordService);
+
   // login with password
   fastify.post<{
     Body: { email: string; password: string; captcha: string; url?: string };
@@ -121,7 +124,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           extra: {},
         };
         // Do not await the action to be saved. It is not critical.
-        fastify.actions.service.postMany(member, repositories, request, [action]);
+        actionService.postMany(member, repositories, request, [action]);
       }
     },
   );
@@ -159,7 +162,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         extra: {},
       };
       // Do not await the action to be saved. It is not critical.
-      fastify.actions.service.postMany(member, repositories, request, [action]);
+      actionService.postMany(member, repositories, request, [action]);
     },
   );
 };

@@ -1,11 +1,12 @@
 import archiver from 'archiver';
 import fs, { mkdirSync } from 'fs';
 import path from 'path';
+import { singleton } from 'tsyringe';
 
 import { DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS } from '@graasp/sdk';
 
-import { MailerDecoration } from '../../../../../plugins/mailer';
 import { MAIL } from '../../../../../plugins/mailer/langs/constants';
+import { MailerService } from '../../../../../plugins/mailer/service';
 import { TMP_FOLDER } from '../../../../../utils/config';
 import { EXPORT_FILE_EXPIRATION, ZIP_MIMETYPE } from '../../../../action/constants/constants';
 import { CannotWriteFileError } from '../../../../action/utils/errors';
@@ -181,15 +182,16 @@ export class ArchiveDataExporter {
   }
 }
 
+@singleton()
 export class RequestDataExportService {
-  private fileService: FileService;
-  private mailer: MailerDecoration;
+  private readonly fileService: FileService;
+  private readonly mailerService: MailerService;
 
   private readonly ROOT_EXPORT_FOLDER = 'export';
 
-  constructor(fileService: FileService, mailer: MailerDecoration) {
+  constructor(fileService: FileService, mailerService: MailerService) {
     this.fileService = fileService;
-    this.mailer = mailer;
+    this.mailerService = mailerService;
   }
 
   private async _sendExportLinkInMail(actor: Member, exportId: string, archiveDate: Date) {
@@ -202,21 +204,21 @@ export class RequestDataExportService {
 
     // factor out
     const lang = actor.lang;
-    const t = this.mailer.translate(lang);
+    const t = this.mailerService.translate(lang);
 
     const text = t(MAIL.EXPORT_MEMBER_DATA_TEXT, {
       days: DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS,
     });
     const html = `
-        ${this.mailer.buildText(text)}
-        ${this.mailer.buildButton(link, t(MAIL.EXPORT_MEMBER_DATA_BUTTON_TEXT))}
+        ${this.mailerService.buildText(text)}
+        ${this.mailerService.buildButton(link, t(MAIL.EXPORT_MEMBER_DATA_BUTTON_TEXT))}
       `;
     const title = t(MAIL.EXPORT_MEMBER_DATA_TITLE);
 
-    const footer = this.mailer.buildFooter(lang);
+    const footer = this.mailerService.buildFooter(lang);
 
-    this.mailer.sendEmail(title, actor.email, link, html, footer).catch((err) => {
-      console.debug(err, `mailer failed. export zip link: ${link}`);
+    this.mailerService.sendEmail(title, actor.email, link, html, footer).catch((err) => {
+      console.debug(err, `mailerService failed. export zip link: ${link}`);
     });
   }
 

@@ -1,4 +1,5 @@
 import path from 'path';
+import { singleton } from 'tsyringe';
 import { v4 } from 'uuid';
 
 import { MultipartFile } from '@fastify/multipart';
@@ -14,10 +15,11 @@ import { AppSetting } from '../../appSettings';
 import { NotAppSettingFile } from '../../errors';
 import { AppSettingService } from '../../service';
 
+@singleton()
 class AppSettingFileService {
-  appSettingService: AppSettingService;
-  fileService: FileService;
-  itemService: ItemService;
+  private readonly appSettingService: AppSettingService;
+  private readonly fileService: FileService;
+  private readonly itemService: ItemService;
 
   buildFilePath(itemId: UUID, appSettingId: UUID) {
     return path.join('apps', 'app-setting', itemId, appSettingId);
@@ -74,7 +76,7 @@ class AppSettingFileService {
       id: appSettingId,
       name,
       data: {
-        [this.fileService.type]: fileProperties,
+        [this.fileService.fileType]: fileProperties,
       },
     });
 
@@ -93,7 +95,7 @@ class AppSettingFileService {
       item.id,
       appSettingId,
     );
-    const fileProp = appSetting.data[this.fileService.type];
+    const fileProp = appSetting.data[this.fileService.fileType];
     if (!fileProp) {
       throw new NotAppSettingFile(appSetting);
     }
@@ -109,7 +111,7 @@ class AppSettingFileService {
   }
 
   async copyMany(actor: Member, repositories: Repositories, toCopy: AppSetting[]) {
-    const fileItemType = this.fileService.type;
+    const fileItemType = this.fileService.fileType;
     for (const appS of toCopy) {
       if (!appS.data) {
         throw new Error('App setting file is not correctly defined');
@@ -145,7 +147,7 @@ class AppSettingFileService {
     // TODO: check rights? but only use in posthook
     try {
       // delete file only if type is the current file type
-      const fileProp = appSetting?.data?.[this.fileService.type] as FileItemProperties;
+      const fileProp = appSetting?.data?.[this.fileService.fileType] as FileItemProperties;
       if (!fileProp) {
         return;
       }

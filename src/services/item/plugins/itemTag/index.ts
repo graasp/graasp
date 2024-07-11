@@ -2,10 +2,12 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ItemTagType } from '@graasp/sdk';
 
+import { resolveDependency } from '../../../../di/utils';
 import { IdParam, IdsParams } from '../../../../types';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { Item } from '../../entities/Item';
+import { ItemService } from '../../service';
 import common, { create, deleteOne, getItemTags, getMany } from './schemas';
 import { ItemTagService } from './service';
 
@@ -20,9 +22,10 @@ import { ItemTagService } from './service';
  */
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { db, items } = fastify;
+  const { db } = fastify;
 
-  const iTS = new ItemTagService(items.service);
+  const itemService = resolveDependency(ItemService);
+  const itemTagService = resolveDependency(ItemTagService);
 
   // schemas
   fastify.addSchema(common);
@@ -34,14 +37,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   const hook = async (actor, repositories, { original, copy }: { original: Item; copy: Item }) => {
     await repositories.itemTagRepository.copyAll(actor, original, copy, [ItemTagType.Public]);
   };
-  items.service.hooks.setPostHook('copy', hook);
+  itemService.hooks.setPostHook('copy', hook);
 
   // get item tags
   fastify.get<{ Params: { itemId: string } }>(
     '/:itemId/tags',
     { schema: getItemTags, preHandler: optionalIsAuthenticated },
     async ({ user, params: { itemId } }) => {
-      return iTS.getForItem(user?.member, buildRepositories(), itemId);
+      return itemTagService.getForItem(user?.member, buildRepositories(), itemId);
     },
   );
 
@@ -50,7 +53,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/tags',
     { schema: getMany, preHandler: optionalIsAuthenticated },
     async ({ user, query: { id: ids } }) => {
-      return iTS.getForManyItems(user?.member, buildRepositories(), ids);
+      return itemTagService.getForManyItems(user?.member, buildRepositories(), ids);
     },
   );
 
@@ -59,7 +62,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     { schema: create, preHandler: isAuthenticated },
     async ({ user, params: { itemId, type } }) => {
       return db.transaction(async (manager) => {
-        return iTS.post(user?.member, buildRepositories(manager), itemId, type);
+        return itemTagService.post(user?.member, buildRepositories(manager), itemId, type);
       });
     },
   );
@@ -70,7 +73,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     { schema: deleteOne, preHandler: isAuthenticated },
     async ({ user, params: { itemId, type } }) => {
       return db.transaction(async (manager) => {
-        return iTS.deleteOne(user?.member, buildRepositories(manager), itemId, type);
+        return itemTagService.deleteOne(user?.member, buildRepositories(manager), itemId, type);
       });
     },
   );

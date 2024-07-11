@@ -2,8 +2,10 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ItemLoginSchemaType } from '@graasp/sdk';
 
+import { resolveDependency } from '../../di/utils';
 import { buildRepositories } from '../../utils/repositories';
 import { SESSION_KEY, isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
+import { ItemService } from '../item/service';
 import { ItemLoginMemberCredentials } from './interfaces/item-login';
 import {
   deleteLoginSchema,
@@ -15,9 +17,10 @@ import {
 import { ItemLoginService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { db, items } = fastify;
+  const { db } = fastify;
 
-  const iLService = new ItemLoginService(fastify, items.service);
+  const itemService = resolveDependency(ItemService);
+  const itemLoginService = new ItemLoginService(fastify, itemService);
 
   // get login schema type for item
   // used to trigger item login for student
@@ -27,7 +30,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     { schema: getLoginSchemaType, preHandler: optionalIsAuthenticated },
     async ({ user, params: { id: itemId } }) => {
       const value =
-        (await iLService.getSchemaType(user?.member, buildRepositories(), itemId)) ?? null;
+        (await itemLoginService.getSchemaType(user?.member, buildRepositories(), itemId)) ?? null;
       return value;
     },
   );
@@ -40,7 +43,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: isAuthenticated,
     },
     async ({ user, params: { id: itemId } }) => {
-      const value = (await iLService.get(user?.member, buildRepositories(), itemId)) ?? {};
+      const value = (await itemLoginService.get(user?.member, buildRepositories(), itemId)) ?? {};
       return value;
     },
   );
@@ -60,7 +63,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
     async ({ body, user, session, params }) => {
       return db.transaction(async (manager) => {
-        const bondMember = await iLService.login(
+        const bondMember = await itemLoginService.login(
           user?.member,
           buildRepositories(manager),
           params.id,
@@ -83,7 +86,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
     async ({ user, params: { id: itemId }, body: { type } }) => {
       return db.transaction(async (manager) => {
-        return iLService.put(user?.member, buildRepositories(manager), itemId, type);
+        return itemLoginService.put(user?.member, buildRepositories(manager), itemId, type);
       });
     },
   );
@@ -98,7 +101,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
     async ({ user, params: { id: itemId } }) => {
       return db.transaction(async (manager) => {
-        return iLService.delete(user?.member, buildRepositories(manager), itemId);
+        return itemLoginService.delete(user?.member, buildRepositories(manager), itemId);
       });
     },
   );

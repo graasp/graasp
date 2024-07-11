@@ -14,15 +14,18 @@ import {
   HttpMethod,
 } from '@graasp/sdk';
 
+import { resolveDependency } from '../../../../di/utils';
 import { IdParam } from '../../../../types';
 import { notUndefined } from '../../../../utils/assertions';
 import { CLIENT_HOSTS } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
+import { ActionService } from '../../../action/services/action';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import {
   LocalFileConfiguration,
   S3FileConfiguration,
 } from '../../../file/interfaces/configuration';
+import { ItemService } from '../../service';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
 import { CannotPostAction } from './errors';
 import { ActionRequestExportService } from './requestExport/service';
@@ -36,26 +39,12 @@ export interface GraaspActionsOptions {
 }
 
 const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
-  const {
-    files: { service: fileService },
-    actions: { service: actionService },
-    items: { service: itemService },
-    members: { service: memberService },
-    mailer,
-    db,
-    websockets,
-  } = fastify;
+  const { db, websockets } = fastify;
 
-  const actionItemService = new ActionItemService(actionService, itemService, memberService);
-  fastify.items.actions = { service: actionItemService };
-
-  const requestExportService = new ActionRequestExportService(
-    actionService,
-    actionItemService,
-    itemService,
-    fileService,
-    mailer,
-  );
+  const itemService = resolveDependency(ItemService);
+  const actionService = resolveDependency(ActionService);
+  const actionItemService = resolveDependency(ActionItemService);
+  const requestExportService = resolveDependency(ActionRequestExportService);
 
   const allowedOrigins = Object.values(CLIENT_HOSTS).map(({ url }) => url.origin);
 
