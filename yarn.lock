@@ -2067,12 +2067,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/translations@npm:1.31.2":
-  version: 1.31.2
-  resolution: "@graasp/translations@npm:1.31.2"
+"@graasp/translations@npm:1.31.3":
+  version: 1.31.3
+  resolution: "@graasp/translations@npm:1.31.3"
   peerDependencies:
     i18next: ^23.8.1
-  checksum: 10/8f7d8065ffdb017a374d00e86156f06213cc720a8d85c4ac362cc08a1419bf185b1e23d0d916f02f3f37763e7d78313dae44658d5871a65ea5492ea3dfa8ee5c
+  checksum: 10/ddfa3e23b13ec0782a89d4ed52bdd41c835b67cd347f31d34fd0c4de8ef03eb6f040b63fc03369ac2b571b03d20cb3e8b5bf379a942bb8e2ce799cc31e2ee23b
   languageName: node
   linkType: hard
 
@@ -7509,7 +7509,7 @@ __metadata:
     "@fastify/websocket": "npm:7.2.0"
     "@graasp/etherpad-api": "npm:2.1.1"
     "@graasp/sdk": "npm:4.16.0"
-    "@graasp/translations": "npm:1.31.2"
+    "@graasp/translations": "npm:1.31.3"
     "@jest/globals": "npm:29.7.0"
     "@rapideditor/country-coder": "npm:5.2.2"
     "@sentry/node": "npm:7.118.0"
