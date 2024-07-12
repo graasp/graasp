@@ -7,6 +7,7 @@ export const upload = {
     type: 'object',
     properties: {
       id: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      previousItemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
     additionalProperties: false,
   },

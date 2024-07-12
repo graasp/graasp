@@ -53,6 +53,7 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify) => {
     filename: string,
     contentId: string,
     parentId?: string,
+    previousItemId?: string,
   ): Promise<Item> {
     const metadata = {
       name: h5pService.buildH5PPath('', filename),
@@ -63,6 +64,7 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify) => {
       return itemService.post(member, buildRepositories(manager), {
         item: metadata,
         parentId,
+        previousItemId,
       });
     });
   }
@@ -123,14 +125,14 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify) => {
 
     /* routes in this scope are authenticated */
 
-    fastify.post<{ Querystring: { parentId?: string } }>(
+    fastify.post<{ Querystring: { parentId?: string; previousItemId?: string } }>(
       '/h5p-import',
       { schema: h5pImport, preHandler: isAuthenticated },
       async (request) => {
         const {
           user,
           log,
-          query: { parentId },
+          query: { parentId, previousItemId },
         } = request;
         const member = notUndefined(user?.member);
         return db.transaction(async (manager) => {
@@ -145,13 +147,22 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify) => {
           // WARNING: cannot destructure { file } = request, which triggers an undefined TypeError internally
           // (maybe getter performs side-effect on promise handler?)
           // so use request.file notation instead
+          // const h5pFiles = await request.files();
           const h5pFile = await request.file();
 
           if (!h5pFile) {
             throw new H5PInvalidFileError(h5pFile);
           }
 
-          return h5pService.createItem(member, repositories, h5pFile, createH5PItem, parentId, log);
+          return await h5pService.createItem(
+            member,
+            repositories,
+            h5pFile,
+            createH5PItem,
+            parentId,
+            previousItemId,
+            log,
+          );
         });
       },
     );

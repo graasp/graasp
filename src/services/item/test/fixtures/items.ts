@@ -21,7 +21,7 @@ import { ItemMembership } from '../../../itemMembership/entities/ItemMembership'
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { Actor, Member } from '../../../member/entities/member';
 import { ItemWrapper, PackedItem } from '../../ItemWrapper';
-import { Item, ItemExtraMap } from '../../entities/Item';
+import { DEFAULT_ORDER, Item, ItemExtraMap } from '../../entities/Item';
 import { ItemTag } from '../../plugins/itemTag/ItemTag';
 import { ItemTagRepository } from '../../plugins/itemTag/repository';
 import { setItemPublic } from '../../plugins/itemTag/test/fixtures';
@@ -91,6 +91,8 @@ export class ItemTestUtils {
       createdAt: new Date(item.createdAt),
       updatedAt: new Date(item.updatedAt),
       deletedAt: null,
+      // allows null order for root items
+      order: args?.parentItem ? args.order ?? DEFAULT_ORDER : null,
     };
   }
 
@@ -202,6 +204,43 @@ export class ItemTestUtils {
       await this.rawItemPublishedRepository.save({ item, creator: member });
     }
     return { items, packedItems, tags };
+  };
+
+  getOrderForItemId = async (itemId: Item['id']): Promise<number | null> => {
+    const order = (await this.rawItemRepository
+      .createQueryBuilder('item')
+      .select('item."order"')
+      .where(`id = '${itemId}'`)
+      // needs to get raw otherwise we cannot get null order
+      .getRawOne<{ order: string }>())!.order;
+    // return null value
+    // TODO: check returns null
+    if (!order) {
+      return order as unknown as null;
+    }
+    // return float order
+    return parseFloat(order);
+  };
+
+  expectOrder = async (itemId: string, previousItemId?: string, nextItemId?: string) => {
+    const thisOrder = await this.getOrderForItemId(itemId);
+    if (previousItemId) {
+      const previousItemOrder = (await this.getOrderForItemId(previousItemId))!;
+      if (previousItemOrder) {
+        expect(thisOrder).toBeGreaterThan(previousItemOrder);
+      } else {
+        expect(thisOrder).toBeNull();
+      }
+    }
+
+    if (nextItemId) {
+      const nextOrder = await this.getOrderForItemId(nextItemId);
+      if (nextOrder) {
+        expect(thisOrder).toBeLessThan(nextOrder);
+      } else {
+        expect(thisOrder).toBeNull();
+      }
+    }
   };
 }
 export const expectItem = (

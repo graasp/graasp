@@ -35,7 +35,7 @@ describe('Item Service', () => {
         member: actor,
         item: { settings: { hasThumbnail: true } },
       });
-      await service.copy(actor, buildRepositories(), item.id, {});
+      await service.copy(actor, buildRepositories(), item.id);
       expect(mockedThumbnailService.copyFolder).toHaveBeenCalled();
     });
     it('Should not copy thumbnails on item copy if original has no thumbnails', async () => {
@@ -43,7 +43,7 @@ describe('Item Service', () => {
         member: actor,
         item: { settings: { hasThumbnail: false } },
       });
-      await service.copy(actor, buildRepositories(), item.id, {});
+      await service.copy(actor, buildRepositories(), item.id);
       expect(mockedThumbnailService.copyFolder).not.toHaveBeenCalled();
     });
   });

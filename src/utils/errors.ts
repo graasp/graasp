@@ -448,6 +448,19 @@ export class NoFileProvided extends CoreError {
   }
 }
 
+export class CannotReorderRootItem extends CoreError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GERR034',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: 'Cannot reorder items at root',
+      },
+      data,
+    );
+  }
+}
+
 export class DatabaseError extends CoreError {
   constructor(data?: unknown) {
     super(

@@ -11,12 +11,15 @@ import {
   PermissionLevelCompare,
   ResultOf,
   UUID,
+  buildPathFromIds,
+  getIdsFromPath,
   getParentFromPath,
 } from '@graasp/sdk';
 
 import { BaseLogger } from '../../logger';
 import { Paginated, PaginationParams } from '../../types';
 import {
+  CannotReorderRootItem,
   InvalidMembership,
   ItemNotFolder,
   MemberCannotWriteItem,
@@ -39,7 +42,7 @@ import { Actor, Member } from '../member/entities/member';
 import { ThumbnailService } from '../thumbnail/service';
 import { mapById } from '../utils';
 import { ItemWrapper, PackedItem } from './ItemWrapper';
-import { Item, isItemType } from './entities/Item';
+import { FolderItem, Item, isItemType } from './entities/Item';
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
 import { PartialItemGeolocation } from './plugins/geolocation/errors';
 import { ItemTag } from './plugins/itemTag/ItemTag';
@@ -86,6 +89,7 @@ export class ItemService {
       parentId?: string;
       geolocation?: Pick<ItemGeolocation, 'lat' | 'lng'>;
       thumbnail?: Readable;
+      previousItemId?: Item['id'];
     },
   ): Promise<Item> {
     if (!actor) {
@@ -131,6 +135,18 @@ export class ItemService {
       if (descendants.length + 1 > MAX_NUMBER_OF_CHILDREN) {
         throw new TooManyChildren();
       }
+
+      // no previous item adds at the beginning
+      if (!args.previousItemId) {
+        item.order = await repositories.itemRepository.getFirstOrderValue(parentItem.path);
+      }
+      // define order, from given previous item id if exists
+      else {
+        item.order = await repositories.itemRepository.getNextOrderCount(
+          parentItem.path,
+          args.previousItemId,
+        );
+      }
     }
 
     this.log.debug(`create item ${item.name}`);
@@ -148,16 +164,6 @@ export class ItemService {
         member: actor,
         creator: actor,
         permission: PermissionLevel.Admin,
-      });
-    }
-
-    if (parentId && parentItem) {
-      this.log.debug(`update parent ${parentId} children order with new child`);
-      // add new item id in parent extra.folder.childrenOrder
-      // the optional on "folder" is present to support legacy data where the extra might be an empty object
-      const newChildrenOrder = [...(parentItem.extra.folder?.childrenOrder ?? []), createdItem.id];
-      await itemRepository.patch(parentItem.id, {
-        extra: { folder: { ...parentItem.extra.folder, childrenOrder: newChildrenOrder } },
       });
     }
 
@@ -371,7 +377,6 @@ export class ItemService {
     params?: ItemChildrenParams,
   ) {
     const children = await this._getChildren(actor, repositories, itemId, params);
-
     // TODO optimize?
     return filterOutItems(actor, repositories, children);
   }
@@ -570,18 +575,13 @@ export class ItemService {
   }
 
   /////// -------- MOVE
-  async move(actor: Actor, repositories: Repositories, itemId: UUID, toItemId?: UUID) {
+  async move(actor: Actor, repositories: Repositories, itemId: UUID, parentItem?: FolderItem) {
     if (!actor) {
       throw new UnauthorizedMember(actor);
     }
 
     const { itemRepository } = repositories;
-    // TODO: check memberships
-    let parentItem;
-    if (toItemId) {
-      parentItem = await itemRepository.get(toItemId);
-      await validatePermission(repositories, PermissionLevel.Write, actor, parentItem);
-    }
+
     const item = await itemRepository.get(itemId);
 
     await validatePermission(repositories, PermissionLevel.Admin, actor, item);
@@ -619,9 +619,20 @@ export class ItemService {
       throw new UnauthorizedMember(actor);
     }
 
+    let parentItem;
+    if (toItemId) {
+      parentItem = await this.get(actor, repositories, toItemId, PermissionLevel.Write);
+    }
+
     const results = await Promise.all(
-      itemIds.map((id) => this.move(actor, repositories, id, toItemId)),
+      itemIds.map((id) => this.move(actor, repositories, id, parentItem)),
     );
+
+    // newly moved items needs rescaling since they are added in parallel
+    if (parentItem) {
+      await repositories.itemRepository.rescaleOrder(parentItem);
+    }
+
     return { items: results.map(({ item }) => item), moved: results.map(({ moved }) => moved) };
   }
 
@@ -660,7 +671,7 @@ export class ItemService {
   }
 
   /////// -------- COPY
-  async copy(actor: Actor, repositories: Repositories, itemId: UUID, args: { parentId?: UUID }) {
+  async copy(actor: Actor, repositories: Repositories, itemId: UUID, parentItem?: FolderItem) {
     if (!actor) {
       throw new UnauthorizedMember(actor);
     }
@@ -669,19 +680,14 @@ export class ItemService {
 
     const item = await this.get(actor, repositories, itemId);
 
-    // check how "big the tree is" below the item
-    await itemRepository.checkNumberOfDescendants(item, MAX_DESCENDANTS_FOR_COPY);
-
-    // TODO: check memberships
-    let parentItem;
-    if (args.parentId) {
-      parentItem = await itemRepository.get(args.parentId);
-      await validatePermission(repositories, PermissionLevel.Write, actor, parentItem);
-
+    if (parentItem) {
       // check how deep (number of levels) the resulting tree will be
       const levelsToFarthestChild = await itemRepository.getNumberOfLevelsToFarthestChild(item);
       await itemRepository.checkHierarchyDepth(parentItem, levelsToFarthestChild);
     }
+
+    // check how "big the tree is" below the item
+    await itemRepository.checkNumberOfDescendants(item, MAX_DESCENDANTS_FOR_COPY);
 
     let items = [item];
     if (isItemType(item, ItemType.FOLDER)) {
@@ -742,9 +748,56 @@ export class ItemService {
     itemIds: string[],
     args: { parentId?: UUID },
   ) {
+    const { itemRepository } = repositories;
+
+    let parentItem;
+    if (args.parentId) {
+      parentItem = await this.get(actor, repositories, args.parentId, PermissionLevel.Write);
+    }
+
     const results = await Promise.all(
-      itemIds.map((id) => this.copy(actor, repositories, id, args)),
+      itemIds.map((id) => this.copy(actor, repositories, id, parentItem)),
     );
+
+    // rescale order because copies happen in parallel
+    if (parentItem) {
+      await itemRepository.rescaleOrder(parentItem);
+    }
+
     return { items: results.map(({ item }) => item), copies: results.map(({ copy }) => copy) };
+  }
+
+  async reorder(
+    actor: Member,
+    repositories: Repositories,
+    itemId: string,
+    body: { previousItemId?: string },
+  ) {
+    const item = await this.get(actor, repositories, itemId);
+
+    const ids = getIdsFromPath(item.path);
+
+    // cannot reorder root item
+    if (ids.length <= 1) {
+      throw new CannotReorderRootItem(item.id);
+    }
+
+    const parentPath = buildPathFromIds(...ids.slice(0, -1));
+
+    return repositories.itemRepository.reorder(item, parentPath, body.previousItemId);
+  }
+
+  /**
+   * Rescale order of children (of itemId's parent) if necessary
+   * @param member
+   * @param repositories
+   * @param itemId item whose parent get its children order rescaled if necessary
+   */
+  async rescaleOrderForParent(member: Member, repositories: Repositories, item: Item) {
+    const parentId = getParentFromPath(item.path);
+    if (parentId) {
+      const parentItem = await this.get(member, repositories, parentId);
+      await repositories.itemRepository.rescaleOrder(parentItem);
+    }
   }
 }

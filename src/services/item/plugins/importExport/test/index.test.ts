@@ -125,7 +125,7 @@ describe('ZIP routes tests', () => {
             );
           } else if (item.type === ItemType.FOLDER) {
             // loosely check the
-            expect(item.extra).toEqual({ [ItemType.FOLDER]: { childrenOrder: expect.anything() } });
+            expect(item.extra).toEqual({ [ItemType.FOLDER]: {} });
           } else {
             expect(item.extra).toEqual(file.extra);
           }

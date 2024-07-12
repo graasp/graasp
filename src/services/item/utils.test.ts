@@ -1,37 +1,27 @@
-import { v4 } from 'uuid';
-
 import { FolderItemFactory } from '@graasp/sdk';
 
 import { FolderItem } from './entities/Item';
 import { sortChildrenForTreeWith } from './utils';
 
-const buildFolderItem = (
-  args: {
-    parentItem?: FolderItem;
-    extra?: { folder: { childrenOrder: string[] } };
-  } = {},
-) => {
+const buildFolderItem = (args: { parentItem?: FolderItem; order: number }) => {
   const item = FolderItemFactory(args) as unknown as FolderItem;
-  // change date time for it to work with the backend data
-  item.createdAt = new Date(item.createdAt);
+  // set order that is backend only data
+  item.order = args.order;
   return item;
 };
 
 describe('sortChildrenForTreeWith', () => {
   it('return empty for empty descendants', () => {
-    const res = sortChildrenForTreeWith([], buildFolderItem());
+    const res = sortChildrenForTreeWith([], buildFolderItem({ order: 1 }));
     expect(res).toHaveLength(0);
   });
 
   it('return correct result for one-level descendants', () => {
-    const parentItem = buildFolderItem();
-    const first = buildFolderItem({ parentItem });
-    const second = buildFolderItem({ parentItem });
-    const third = buildFolderItem({ parentItem });
-    // non listed child
-    const fourth = buildFolderItem({ parentItem });
-    parentItem.extra.folder.childrenOrder = [first.id, second.id, third.id];
-    const descendants = [second, third, fourth, first];
+    const parentItem = buildFolderItem({ order: 12 });
+    const first = buildFolderItem({ parentItem, order: 1 });
+    const second = buildFolderItem({ parentItem, order: 2 });
+    const third = buildFolderItem({ parentItem, order: 3 });
+    const descendants = [second, third, first];
 
     const res = sortChildrenForTreeWith(descendants, parentItem);
 
@@ -39,34 +29,29 @@ describe('sortChildrenForTreeWith', () => {
     expect(res[0]).toEqual(first);
     expect(res[1]).toEqual(second);
     expect(res[2]).toEqual(third);
-    expect(res[3]).toEqual(fourth);
   });
 
   it('return correct result for two-level descendants', () => {
     // 1st level
-    const parentItem = buildFolderItem();
-    const first = buildFolderItem({ parentItem });
-    const second = buildFolderItem({ parentItem });
-    const third = buildFolderItem({ parentItem });
-    parentItem.extra.folder.childrenOrder = [first.id, second.id, third.id];
+    const parentItem = buildFolderItem({ order: 3 });
+    const first = buildFolderItem({ parentItem, order: 1 });
+    const second = buildFolderItem({ parentItem, order: 2 });
+    const third = buildFolderItem({ parentItem, order: 3 });
     const parentDescendants = [second, third, first];
 
     // 2nd level for first element
-    const firstFirst = buildFolderItem({ parentItem: first });
-    const firstSecond = buildFolderItem({ parentItem: first });
-    const firstThird = buildFolderItem({ parentItem: first });
-    first.extra.folder.childrenOrder = [firstFirst.id, firstSecond.id, firstThird.id];
+    const firstFirst = buildFolderItem({ parentItem: first, order: 1 });
+    const firstSecond = buildFolderItem({ parentItem: first, order: 2 });
+    const firstThird = buildFolderItem({ parentItem: first, order: 3 });
     const firstDescendants = [firstThird, firstFirst, firstSecond];
 
-    // 2nd level for second element - missing ids
-    const secondChild = buildFolderItem({ parentItem: second });
-    second.extra.folder.childrenOrder = [v4(), v4(), v4()];
+    // 2nd level for second element
+    const secondChild = buildFolderItem({ parentItem: second, order: 3 });
 
     // 2nd level for third element
-    const thirdFirst = buildFolderItem({ parentItem: third });
-    const thirdSecond = buildFolderItem({ parentItem: third });
-    const thirdThird = buildFolderItem({ parentItem: third });
-    third.extra.folder.childrenOrder = [thirdFirst.id, thirdSecond.id, thirdThird.id];
+    const thirdFirst = buildFolderItem({ parentItem: third, order: 1 });
+    const thirdSecond = buildFolderItem({ parentItem: third, order: 2 });
+    const thirdThird = buildFolderItem({ parentItem: third, order: 3 });
     const thirdDescendants = [thirdThird, thirdFirst, thirdSecond];
 
     // unordred descendants
