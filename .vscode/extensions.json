@@ -1,5 +1,8 @@
 {
   "recommendations": [
-    "dbaeumer.vscode-eslint"
+    "dbaeumer.vscode-eslint",
+    "mhutchie.git-graph",
+    "mtxr.sqltools",
+    "mtxr.sqltools-driver-pg"
   ]
 }
