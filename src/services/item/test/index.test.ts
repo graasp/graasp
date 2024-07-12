@@ -2079,7 +2079,7 @@ describe('Item routes tests', () => {
           ...payload,
           // BUG: folder extra should not contain extra
           extra: {
-            folder: {
+            document: {
               ...item.extra[item.type],
               ...payload.extra[item.type],
             },
