@@ -114,7 +114,7 @@ export class ImportExportService {
           description,
           name: filename,
           type: ItemType.FOLDER,
-          extra: { [ItemType.FOLDER]: { childrenOrder: [] } },
+          extra: { [ItemType.FOLDER]: {} },
         },
         parentId: parent?.id,
       });

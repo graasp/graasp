@@ -2046,9 +2046,10 @@ describe('Item routes tests', () => {
       it('Update successfully', async () => {
         const { item } = await testUtils.saveItemAndMembership({
           item: {
+            type: ItemType.DOCUMENT,
             extra: {
-              [ItemType.FOLDER]: {
-                childrenOrder: ['value'],
+              [ItemType.DOCUMENT]: {
+                content: 'content',
               },
             },
           },
@@ -2057,8 +2058,8 @@ describe('Item routes tests', () => {
         const payload = {
           name: 'new name',
           extra: {
-            [ItemType.FOLDER]: {
-              childrenOrder: [uuidv4(), uuidv4()],
+            [ItemType.DOCUMENT]: {
+              content: 'new content',
             },
           },
           settings: {
@@ -2080,7 +2081,7 @@ describe('Item routes tests', () => {
           extra: {
             folder: {
               ...item.extra[item.type],
-              ...payload.extra.folder,
+              ...payload.extra[item.type],
             },
           },
         });

@@ -137,9 +137,8 @@ export const folderExtra = S.object()
   // .additionalProperties(false)
   .prop(
     ItemType.FOLDER,
-    S.object()
-      // .additionalProperties(false)
-      .prop('childrenOrder', S.array().items(uuid)),
+    S.object(),
+    // .additionalProperties(false)
   )
   .required([ItemType.FOLDER]);
 

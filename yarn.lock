@@ -2052,18 +2052,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@npm:4.16.0":
-  version: 4.16.0
-  resolution: "@graasp/sdk@npm:4.16.0"
+"@graasp/sdk@npm:4.17.0":
+  version: 4.17.0
+  resolution: "@graasp/sdk@npm:4.17.0"
   dependencies:
     "@faker-js/faker": "npm:8.4.1"
-    filesize: "npm:10.1.2"
+    filesize: "npm:10.1.4"
     js-cookie: "npm:3.0.5"
     validator: "npm:13.12.0"
   peerDependencies:
     date-fns: ^3
     uuid: ^9 || ^10.0.0
-  checksum: 10/c781abbef97b6d8aee02cb561e8bee3ccffb183c1e4e4fc45427d678448455394721cca3b01ad8ea1bda0215c53549a5c3ddb023f327a79b1571325d9f218340
+  checksum: 10/5fa444fceb20494898956f921ee8a029b9cca2184c4ebf8a2a65fb581b0252ff76e59f0ee2d5646c53dab29240bc9862d2ed9ac7c3e7568fd2f44cda953f2a61
   languageName: node
   linkType: hard
 
@@ -6917,10 +6917,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"filesize@npm:10.1.2":
-  version: 10.1.2
-  resolution: "filesize@npm:10.1.2"
-  checksum: 10/47830a299cc8cfe7b90089a6c37790d2334f3057b98efd891e1e2e1683c8076962d9bd1d600eb77bb9bc33f5e7c4682e07ccb62281b8833b923d39c5c322e983
+"filesize@npm:10.1.4":
+  version: 10.1.4
+  resolution: "filesize@npm:10.1.4"
+  checksum: 10/ac2b95f4ee8d42ad4b12f8f918baeb1127065dcb319abca30c0d9ef115b602e31a06c8150953b13dc52e52ebb1238e18e6001ab5fca14a10957e788bd6012f1c
   languageName: node
   linkType: hard
 
@@ -7508,7 +7508,7 @@ __metadata:
     "@fastify/static": "npm:6.12.0"
     "@fastify/websocket": "npm:7.2.0"
     "@graasp/etherpad-api": "npm:2.1.1"
-    "@graasp/sdk": "npm:4.16.0"
+    "@graasp/sdk": "npm:4.17.0"
     "@graasp/translations": "npm:1.32.0"
     "@jest/globals": "npm:29.7.0"
     "@rapideditor/country-coder": "npm:5.2.2"

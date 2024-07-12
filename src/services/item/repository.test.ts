@@ -105,7 +105,7 @@ describe('ItemRepository', () => {
       expect(item.description).toEqual(null);
       expect(item.type).toEqual(ItemType.FOLDER);
       expect(item.creator!.id).toEqual(creator.id);
-      expect(item.extra).toEqual({ folder: { childrenOrder: [] } });
+      expect(item.extra).toEqual({ folder: {} });
     });
     it('create default document item', async () => {
       const creator = await saveMember();
@@ -535,7 +535,7 @@ describe('ItemRepository', () => {
     it('patch successfully', async () => {
       const item = await testUtils.saveItem({
         actor,
-        item: { lang: 'fr', extra: { folder: { childrenOrder: [v4()] } } },
+        item: { lang: 'fr', extra: { folder: {} } },
       });
 
       // noise
@@ -575,9 +575,7 @@ describe('ItemRepository', () => {
           content: 'hello',
         },
         // incorrect data
-        folder: {
-          childrenOrder: [v4()],
-        },
+        document: { content: 'some content' },
       };
       const newItem = await itemRepository.patch(item.id, { extra: newData });
       expectItem(newItem, {

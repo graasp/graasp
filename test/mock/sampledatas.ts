@@ -112,7 +112,7 @@ const datas: {
         description: faker.lorem.text(),
         path: buildPathFromIds(sharedIds.publicRootFolder),
         creator: sharedIds.bobMember,
-        extra: { folder: { childrenOrder: [sharedIds.publicChildGeolocDocument] } },
+        extra: { folder: {} },
         settings: { hasThumbnail: false, ccLicenseAdaption: 'CC BY' },
         lang: 'en',
         deletedAt: undefined,

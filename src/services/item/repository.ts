@@ -111,9 +111,9 @@ export class ItemRepository {
     let parsedExtra: ItemExtraUnion = extra ? JSON.parse(JSON.stringify(extra)) : {};
     const id = v4();
 
-    // if item is a folder and the extra is empty, seed the childrenOrder
+    // if item is a folder and the extra is empty
     if (type === ItemType.FOLDER && !(ItemType.FOLDER in parsedExtra)) {
-      parsedExtra = { folder: { childrenOrder: [] } };
+      parsedExtra = { folder: {} };
     }
 
     const item = this.repository.create({
