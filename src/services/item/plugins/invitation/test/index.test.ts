@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { StatusCodes } from 'http-status-codes';
 import { In } from 'typeorm';
+import waitForExpect from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
 
@@ -499,17 +500,14 @@ describe('Invitation Plugin', () => {
       });
 
       // invitations should be removed and memberships created
-      await new Promise((done) => {
-        setTimeout(async () => {
-          const savedInvitation = await InvitationRepository.findOneBy({ id });
-          expect(savedInvitation).toBeFalsy();
-          const membership = await ItemMembershipRepository.findOne({
-            where: { permission, member: { email }, item: { id: item.id } },
-            relations: { member: true, item: true },
-          });
-          expect(membership).toBeTruthy();
-          done(true);
-        }, 1000);
+      waitForExpect(async () => {
+        const savedInvitation = await InvitationRepository.findOneBy({ id });
+        expect(savedInvitation).toBeFalsy();
+        const membership = await ItemMembershipRepository.findOne({
+          where: { permission, member: { email }, item: { id: item.id } },
+          relations: { member: true, item: true },
+        });
+        expect(membership).toBeTruthy();
       });
     });
 
@@ -525,14 +523,10 @@ describe('Invitation Plugin', () => {
         payload: { email, name: 'some-name', captcha: MOCK_CAPTCHA },
       });
 
-      await new Promise((done) => {
-        setTimeout(async () => {
-          // all invitations and memberships should exist
-          expect(await InvitationRepository.count()).toEqual(allInvitationsCount);
-          expect(await ItemMembershipRepository.count()).toEqual(allMembershipsCount);
-
-          done(true);
-        }, 1000);
+      waitForExpect(async () => {
+        // all invitations and memberships should exist
+        expect(await InvitationRepository.count()).toEqual(allInvitationsCount);
+        expect(await ItemMembershipRepository.count()).toEqual(allMembershipsCount);
       });
     });
   });
