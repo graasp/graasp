@@ -1,5 +1,4 @@
 import { StatusCodes } from 'http-status-codes';
-import { stringify } from 'qs';
 import { In } from 'typeorm';
 import { v4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
@@ -18,6 +17,7 @@ import build, { clearDatabase } from '../../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { saveMember } from '../../../../member/test/fixtures/members';
+import { Item } from '../../../entities/Item';
 import { ItemTestUtils, expectItem, expectManyItems } from '../../../test/fixtures/items';
 import { RecycledItemDataRepository } from '../repository';
 import { expectManyPackedRecycledItems, expectManyRecycledItems } from './fixtures';
@@ -150,7 +150,8 @@ describe('Recycle Bin Tests', () => {
         it('Successfully recycle many items', async () => {
           const res = await app.inject({
             method: HttpMethod.Post,
-            url: `/items/recycle?${stringify({ id: itemIds }, { arrayFormat: 'repeat' })}`,
+            url: '/items/recycle',
+            query: { id: itemIds },
           });
           expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
 
@@ -182,10 +183,8 @@ describe('Recycle Bin Tests', () => {
           const { item: errorItem } = await testUtils.saveRecycledItem(member);
           const res = await app.inject({
             method: HttpMethod.Post,
-            url: `/items/recycle?${stringify(
-              { id: [items.map(({ id }) => id), errorItem.id] },
-              { arrayFormat: 'repeat' },
-            )}`,
+            url: '/items/recycle',
+            query: { id: [...items.map(({ id }) => id), errorItem.id] },
           });
 
           expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -216,10 +215,8 @@ describe('Recycle Bin Tests', () => {
 
           const res = await app.inject({
             method: HttpMethod.Post,
-            url: `/items/recycle?${stringify(
-              { id: items.map(({ id }) => id) },
-              { arrayFormat: 'repeat' },
-            )}`,
+            url: '/items/recycle',
+            query: { id: items.map(({ id }) => id) },
           });
           expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
         });
@@ -227,10 +224,8 @@ describe('Recycle Bin Tests', () => {
         it('Bad request for invalid id', async () => {
           const res = await app.inject({
             method: HttpMethod.Post,
-            url: `/items/recycle?${stringify(
-              { id: ['invalid-id', v4()] },
-              { arrayFormat: 'repeat' },
-            )}`,
+            url: '/items/recycle',
+            query: { id: ['invalid-id', v4()] },
           });
 
           expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -251,7 +246,8 @@ describe('Recycle Bin Tests', () => {
       });
 
       describe('Signed In', () => {
-        let items, itemIds;
+        let items: Item[];
+        let itemIds: string[];
         beforeEach(async () => {
           ({ app, actor } = await build());
           const { item: item1 } = await testUtils.saveRecycledItem(actor);
@@ -265,10 +261,8 @@ describe('Recycle Bin Tests', () => {
           const nonRecycledItemsCount = await testUtils.rawItemRepository.count();
           const response = await app.inject({
             method: HttpMethod.Post,
-            url: `${ITEMS_ROUTE_PREFIX}/restore?${stringify(
-              { id: itemIds },
-              { arrayFormat: 'repeat' },
-            )}`,
+            url: `${ITEMS_ROUTE_PREFIX}/restore`,
+            query: { id: itemIds },
           });
 
           expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -284,10 +278,8 @@ describe('Recycle Bin Tests', () => {
         it('Bad request for invalid id', async () => {
           const res = await app.inject({
             method: HttpMethod.Post,
-            url: `${ITEMS_ROUTE_PREFIX}/restore?${stringify(
-              { id: ['invalid-id', v4()] },
-              { arrayFormat: 'repeat' },
-            )}`,
+            url: `${ITEMS_ROUTE_PREFIX}/restore`,
+            query: { id: ['invalid-id', v4()] },
           });
 
           expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -297,10 +289,8 @@ describe('Recycle Bin Tests', () => {
           const sameId = v4();
           const res = await app.inject({
             method: HttpMethod.Post,
-            url: `${ITEMS_ROUTE_PREFIX}/restore?${stringify(
-              { id: [sameId, sameId] },
-              { arrayFormat: 'repeat' },
-            )}`,
+            url: `${ITEMS_ROUTE_PREFIX}/restore`,
+            query: { id: [sameId, sameId] },
           });
 
           expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -309,10 +299,8 @@ describe('Recycle Bin Tests', () => {
         it('Bad request if submit too many ids', async () => {
           const res = await app.inject({
             method: HttpMethod.Post,
-            url: `${ITEMS_ROUTE_PREFIX}/restore?${stringify(
-              { id: Array.from({ length: MAX_TARGETS_FOR_MODIFY_REQUEST }, () => v4()) },
-              { arrayFormat: 'repeat' },
-            )}`,
+            url: `${ITEMS_ROUTE_PREFIX}/restore`,
+            query: { id: Array.from({ length: MAX_TARGETS_FOR_MODIFY_REQUEST }, () => v4()) },
           });
 
           expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -330,10 +318,8 @@ describe('Recycle Bin Tests', () => {
 
           const res = await app.inject({
             method: HttpMethod.Post,
-            url: `${ITEMS_ROUTE_PREFIX}/restore?${stringify(
-              { id: [itemIds, item.id] },
-              { arrayFormat: 'repeat' },
-            )}`,
+            url: `${ITEMS_ROUTE_PREFIX}/restore`,
+            query: { id: [...itemIds, item.id] },
           });
           expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
 
@@ -354,10 +340,8 @@ describe('Recycle Bin Tests', () => {
 
           const res = await app.inject({
             method: HttpMethod.Post,
-            url: `${ITEMS_ROUTE_PREFIX}/restore?${stringify(
-              { id: [itemIds, v4()] },
-              { arrayFormat: 'repeat' },
-            )}`,
+            url: `${ITEMS_ROUTE_PREFIX}/restore`,
+            query: { id: [...itemIds, v4()] },
           });
           expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
 

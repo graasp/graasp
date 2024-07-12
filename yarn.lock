@@ -3954,7 +3954,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/qs@npm:*, @types/qs@npm:6.9.15":
+"@types/qs@npm:*":
   version: 6.9.15
   resolution: "@types/qs@npm:6.9.15"
   checksum: 10/97d8208c2b82013b618e7a9fc14df6bd40a73e1385ac479b6896bafc7949a46201c15f42afd06e86a05e914f146f495f606b6fb65610cc60cf2e0ff743ec38a2
@@ -7535,7 +7535,6 @@ __metadata:
     "@types/papaparse": "npm:5.3.14"
     "@types/passport-jwt": "npm:4.0.1"
     "@types/passport-local": "npm:^1"
-    "@types/qs": "npm:6.9.15"
     "@types/sanitize-html": "npm:2.11.0"
     "@types/sharp": "npm:0.31.1"
     "@types/striptags": "npm:3.1.1"
@@ -7598,7 +7597,6 @@ __metadata:
     pg: "npm:8.12.0"
     pino-pretty: "npm:11.0.0"
     prettier: "npm:3.3.2"
-    qs: "npm:6.12.1"
     reflect-metadata: "npm:0.2.2"
     sanitize-html: "npm:2.13.0"
     secure-json-parse: "npm:2.7.0"
@@ -11077,15 +11075,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"qs@npm:6.12.1":
-  version: 6.12.1
-  resolution: "qs@npm:6.12.1"
-  dependencies:
-    side-channel: "npm:^1.0.6"
-  checksum: 10/035bcad2a1ab0175bac7a74c904c15913bdac252834149ccff988c93a51de02642fe7be10e43058ba4dc4094bb28ce9b59d12b9e91d40997f445cfde3ecc1c29
-  languageName: node
-  linkType: hard
-
 "queue-microtask@npm:^1.2.2":
   version: 1.2.3
   resolution: "queue-microtask@npm:1.2.3"
@@ -11746,7 +11735,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"side-channel@npm:^1.0.4, side-channel@npm:^1.0.6":
+"side-channel@npm:^1.0.4":
   version: 1.0.6
   resolution: "side-channel@npm:1.0.6"
   dependencies:

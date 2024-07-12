@@ -1,6 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
 import { MultiSearchParams } from 'meilisearch';
-import { stringify } from 'qs';
 import { v4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
 
@@ -95,10 +94,8 @@ describe('Item Published', () => {
 
         const res = await app.inject({
           method: HttpMethod.Get,
-          url: `${ITEMS_ROUTE_PREFIX}/collections/informations${stringify(
-            { itemId: [item.id, otherParentItem.id] },
-            { addQueryPrefix: true, arrayFormat: 'repeat' },
-          )}`,
+          url: `${ITEMS_ROUTE_PREFIX}/collections/informations`,
+          query: { itemId: [item.id, otherParentItem.id] },
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
         const result = (await res.json().data) as { [key: string]: ItemPublished };
@@ -129,10 +126,8 @@ describe('Item Published', () => {
       it('Throw if category id is invalid', async () => {
         const res = await app.inject({
           method: HttpMethod.Get,
-          url: `${ITEMS_ROUTE_PREFIX}/collections${stringify(
-            { categoryId: 'invalid-id' },
-            { addQueryPrefix: true, arrayFormat: 'repeat' },
-          )}`,
+          url: `${ITEMS_ROUTE_PREFIX}/collections`,
+          query: { categoryId: 'invalid-id' },
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
@@ -738,7 +733,8 @@ describe('Item Published', () => {
 
         const move1 = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/move?${stringify({ id: item.id }, { arrayFormat: 'repeat' })}`,
+          url: '/items/move',
+          query: { id: item.id },
           payload: {
             parentId: unpublishedFolder.id,
           },
@@ -754,7 +750,8 @@ describe('Item Published', () => {
         // Move published into published folder should be indexed
         const move2 = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/move?${stringify({ id: item.id }, { arrayFormat: 'repeat' })}`,
+          url: '/items/move',
+          query: { id: item.id },
           payload: {
             parentId: publishedFolder.id,
           },
@@ -774,7 +771,8 @@ describe('Item Published', () => {
         });
         const move3 = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/move?${stringify({ id: unpublishedItem.id }, { arrayFormat: 'repeat' })}`,
+          url: '/items/move',
+          query: { id: unpublishedItem.id },
           payload: {
             parentId: publishedFolder.id,
           },
@@ -788,7 +786,8 @@ describe('Item Published', () => {
         // Move unpublished nested inside published into unpublished should be deleted from index
         const move4 = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/move?${stringify({ id: unpublishedItem.id }, { arrayFormat: 'repeat' })}`,
+          url: '/items/move',
+          query: { id: unpublishedItem.id },
           payload: {
             parentId: unpublishedFolder.id,
           },
@@ -804,7 +803,8 @@ describe('Item Published', () => {
         const initialCount = await testUtils.rawItemRepository.count();
         const copy = await app.inject({
           method: HttpMethod.Post,
-          url: `/items/copy?${stringify({ id: unpublishedItem.id }, { arrayFormat: 'repeat' })}`,
+          url: '/items/copy',
+          query: { id: unpublishedItem.id },
           payload: {
             parentId: publishedFolder.id,
           },
