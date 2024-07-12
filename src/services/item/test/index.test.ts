@@ -2337,7 +2337,9 @@ describe('Item routes tests', () => {
       });
 
       it('Update successfully', async () => {
-        const items = await saveNbOfItems({ nb: 2, actor });
+        const { item: item1 } = await testUtils.saveItemAndMembership({ member: actor });
+        const { item: item2 } = await testUtils.saveItemAndMembership({ member: actor });
+        const items = [item1, item2];
 
         const response = await app.inject({
           method: HttpMethod.Patch,
