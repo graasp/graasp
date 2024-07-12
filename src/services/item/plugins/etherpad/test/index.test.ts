@@ -297,7 +297,7 @@ describe('Etherpad service API', () => {
       });
     });
 
-    it.only('concatenates existing sessions in cookie', async () => {
+    it('concatenates existing sessions in cookie', async () => {
       const reqParams = setUpApi({
         getReadOnlyID: [
           StatusCodes.OK,
