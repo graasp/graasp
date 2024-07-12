@@ -15,7 +15,7 @@ import {
 import { CannotModifyOtherMembers, MemberAlreadySignedUp } from '../../utils/errors';
 import HookManager from '../../utils/hook';
 import { Repositories } from '../../utils/repositories';
-import { SHORT_TOKEN_PARAM } from '../auth/plugins/passport';
+import { NEW_EMAIL_PARAM, SHORT_TOKEN_PARAM } from '../auth/plugins/passport';
 import { Actor, Member } from './entities/member';
 
 @singleton()
@@ -127,6 +127,7 @@ export class MemberService {
     const subject = translated(MAIL.CHANGE_EMAIL_TITLE);
     const destination = new URL('/email/change', ACCOUNT_HOST.url);
     destination.searchParams.set(SHORT_TOKEN_PARAM, token);
+    destination.searchParams.set(NEW_EMAIL_PARAM, newEmail);
     const link = destination.toString();
 
     const html = `

@@ -242,14 +242,15 @@ export const postChangeEmail: FastifySchema = {
   },
   response: {
     [StatusCodes.NO_CONTENT]: {},
-    [StatusCodes.UNAUTHORIZED]: {},
+    [StatusCodes.CONFLICT]: error,
+    [StatusCodes.UNAUTHORIZED]: error,
   },
 };
 
 export const patchChangeEmail: FastifySchema = {
   response: {
     [StatusCodes.NO_CONTENT]: {},
-    [StatusCodes.CONFLICT]: {},
-    [StatusCodes.UNAUTHORIZED]: {},
+    [StatusCodes.CONFLICT]: error,
+    [StatusCodes.UNAUTHORIZED]: error,
   },
 };
