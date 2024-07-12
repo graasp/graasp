@@ -686,11 +686,11 @@ export class ItemRepository {
       // might not exist
       const previousItem = await this.repository
         .createQueryBuilder()
-        .select('"order"')
+        .select(['id', '"order"'])
         .where('id = :previousItemId', { previousItemId })
-        // ensure it is a child in parent
-        .andWhere('path ~ :ltree', { ltree: `${parentPath}.*{1}` })
-        .getOne();
+        // ensure it is a child of parent
+        .andWhere('path ~ :path', { path: `${parentPath}.*{1}` })
+        .getRawOne();
 
       // if needs to add in between, remove previous elements and order by next value to get the first one
       if (previousItem) {

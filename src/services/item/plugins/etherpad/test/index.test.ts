@@ -352,7 +352,6 @@ describe('Etherpad service API', () => {
       };
       expect(name).toEqual('sessionID');
       const sessions = value.split(',');
-      console.log(sessions);
       expect(sessions.length).toEqual(2);
       expect(sessions.includes(MOCK_SESSION_ID)).toBeTruthy();
       expect(sessions.includes('s.0000000000000000')).toBeTruthy();

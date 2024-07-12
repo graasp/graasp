@@ -369,10 +369,18 @@ describe('Item routes tests', () => {
         const payload = FolderItemFactory();
         const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
         const child = await testUtils.saveItem({ parentItem, item: { order: 30 } });
+
+        // noise, child in another parent
+        const { item: otherParent } = await testUtils.saveItemAndMembership({ member: actor });
+        const anotherChild = await testUtils.saveItem({
+          parentItem: otherParent,
+          item: { order: 100 },
+        });
+
         const response = await app.inject({
           method: HttpMethod.Post,
           url: `/items`,
-          query: { parentId: parentItem.id, previousItemId: uuidv4() },
+          query: { parentId: parentItem.id, previousItemId: anotherChild.id },
           payload,
         });
 
@@ -380,7 +388,8 @@ describe('Item routes tests', () => {
         expectItem(newItem, payload, actor);
         expect(response.statusCode).toBe(StatusCodes.OK);
 
-        await testUtils.expectOrder(newItem.id, child.id);
+        // should be after child, since another child is not valid
+        await testUtils.expectOrder(newItem.id, child.id, anotherChild.id);
       });
 
       it('Throw if geolocation is partial', async () => {
