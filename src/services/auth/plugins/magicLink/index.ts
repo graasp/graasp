@@ -116,7 +116,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             // Authentication failed
             const target = new URL('/', AUTH_CLIENT_HOST);
             target.searchParams.set(ERROR_SEARCH_PARAM, ERROR_SEARCH_PARAM_HAS_ERROR);
-            reply.redirect(StatusCodes.SEE_OTHER, target.toString());
+            reply.redirect(target.toString(), StatusCodes.SEE_OTHER);
           } else {
             request.logIn(user, { session: true });
           }
@@ -129,7 +129,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         log,
       } = request;
       const redirectionUrl = getRedirectionUrl(log, url ? decodeURIComponent(url) : undefined);
-      reply.redirect(StatusCodes.SEE_OTHER, redirectionUrl);
+      reply.redirect(redirectionUrl, StatusCodes.SEE_OTHER);
     },
   );
 

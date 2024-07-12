@@ -205,7 +205,7 @@ class FileService {
       // when the fastify-cors plugin try to add the header it's already sent and can't add it.
       // So we add it because otherwise the browser won't send the cookie
       reply.header('Access-Control-Allow-Credentials', 'true');
-      reply.redirect(StatusCodes.MOVED_TEMPORARILY, url);
+      reply.redirect(url, StatusCodes.MOVED_TEMPORARILY);
     }
   }
 }

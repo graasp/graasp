@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker';
 import crypto from 'crypto';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import { sign } from 'jsonwebtoken';
-import fetch, { type Response } from 'node-fetch';
+import nock from 'nock';
 import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
@@ -10,7 +10,10 @@ import { FastifyInstance } from 'fastify';
 import { HttpMethod, MemberFactory, RecaptchaAction } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
-import { mockCaptchaValidationOnce } from '../../../../../test/utils';
+import {
+  mockCaptchaValidationOnce,
+  mockCaptchaValidationWithScore,
+} from '../../../../../test/utils';
 import { resolveDependency } from '../../../../di/utils';
 import { AppDataSource } from '../../../../plugins/datasource';
 import { MailerService } from '../../../../plugins/mailer/service';
@@ -29,7 +32,7 @@ import { MOCK_PASSWORD, saveMemberAndPassword } from '../password/test/fixtures/
 
 // mock database and decorator plugins
 jest.mock('../../../../plugins/datasource');
-jest.mock('node-fetch');
+
 const memberRawRepository = AppDataSource.getRepository(Member);
 
 const challenge = 'challenge';
@@ -45,6 +48,8 @@ describe('Mobile Endpoints', () => {
   afterEach(async () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
+    // eslint-disable-next-line import/no-named-as-default-member
+    nock.cleanAll();
     app.close();
   });
 
@@ -253,11 +258,8 @@ describe('Mobile Endpoints', () => {
   });
 
   describe('POST /m/login-password', () => {
-    beforeEach(() => {
-      // mock captcha validation
-      mockCaptchaValidationOnce(RecaptchaAction.SignInWithPasswordMobile);
-    });
     it('Sign In successfully', async () => {
+      mockCaptchaValidationOnce(RecaptchaAction.SignInWithPasswordMobile);
       const member = MemberFactory();
       await saveMemberAndPassword(member, MOCK_PASSWORD);
 
@@ -280,15 +282,7 @@ describe('Mobile Endpoints', () => {
     });
 
     it('Sign In successfully with captcha score = 0', async () => {
-      (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
-        return {
-          json: async () => ({
-            success: true,
-            action: RecaptchaAction.SignInWithPasswordMobile,
-            score: 0,
-          }),
-        } as Response;
-      });
+      mockCaptchaValidationWithScore(RecaptchaAction.SignInWithPasswordMobile, 0);
       const member = MemberFactory();
       await saveMemberAndPassword(member, MOCK_PASSWORD);
 
@@ -311,15 +305,7 @@ describe('Mobile Endpoints', () => {
     });
 
     it('Sign In successfully with captcha score < 0.5', async () => {
-      (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
-        return {
-          json: async () => ({
-            success: true,
-            action: RecaptchaAction.SignInWithPasswordMobile,
-            score: 0.3,
-          }),
-        } as Response;
-      });
+      mockCaptchaValidationWithScore(RecaptchaAction.SignInWithPasswordMobile, 0.3);
       const member = MemberFactory();
       await saveMemberAndPassword(member, MOCK_PASSWORD);
 
@@ -342,6 +328,7 @@ describe('Mobile Endpoints', () => {
     });
 
     it('Sign In does send unauthorized error for wrong password', async () => {
+      mockCaptchaValidationOnce(RecaptchaAction.SignInWithPasswordMobile);
       const member = MemberFactory();
       const wrongPassword = '1234';
       await saveMemberAndPassword(member, MOCK_PASSWORD);
@@ -356,6 +343,8 @@ describe('Mobile Endpoints', () => {
     });
 
     it('Sign In send not acceptable error when member does not have password', async () => {
+      mockCaptchaValidationOnce(RecaptchaAction.SignInWithPasswordMobile);
+
       const clearPassword = 'asd';
       const member = await saveMember();
 
@@ -369,6 +358,7 @@ describe('Mobile Endpoints', () => {
     });
 
     it('Sign In send not found error for non-existing email', async () => {
+      mockCaptchaValidationOnce(RecaptchaAction.SignInWithPasswordMobile);
       const email = 'some@email.com';
       const password = '1234';
 
@@ -383,6 +373,7 @@ describe('Mobile Endpoints', () => {
     });
 
     it('Bad request for invalid email', async () => {
+      mockCaptchaValidationOnce(RecaptchaAction.SignInWithPasswordMobile);
       const email = 'wrongemail';
       const password = '1234';
 

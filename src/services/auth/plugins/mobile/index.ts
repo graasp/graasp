@@ -153,7 +153,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         log,
         query.url ? decodeURIComponent(query.url) : undefined,
       );
-      reply.redirect(StatusCodes.SEE_OTHER, redirectionUrl);
+      reply.redirect(redirectionUrl, StatusCodes.SEE_OTHER);
     },
   );
 };

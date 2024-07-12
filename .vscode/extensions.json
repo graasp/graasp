@@ -3,6 +3,8 @@
     "dbaeumer.vscode-eslint",
     "mhutchie.git-graph",
     "mtxr.sqltools",
-    "mtxr.sqltools-driver-pg"
+    "mtxr.sqltools-driver-pg",
+    "orta.vscode-jest",
+    "esbenp.prettier-vscode"
   ]
 }

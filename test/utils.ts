@@ -9,3 +9,10 @@ export function mockCaptchaValidationOnce(action: RecaptchaActionType) {
     score: 1,
   });
 }
+export function mockCaptchaValidationWithScore(action: RecaptchaActionType, score: number) {
+  nock('https://www.google.com').get('/recaptcha/api/siteverify').query(true).reply(200, {
+    success: true,
+    action,
+    score,
+  });
+}
