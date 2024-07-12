@@ -21,6 +21,7 @@ import {
   passwordLogin,
   patchResetPasswordRequest,
   postResetPasswordRequest,
+  setPassword,
   updatePassword,
 } from './schemas';
 import { MemberPasswordService } from './service';
@@ -67,19 +68,44 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  // update member password
-  fastify.patch<{ Body: { currentPassword: string; password: string } }>(
-    '/members/update-password',
-    { schema: updatePassword, preHandler: isAuthenticated },
-    async ({ user, body: { currentPassword, password } }) => {
+  /**
+   * Set a password for the authenticated member.
+   * If a password alread exists it will return a 409 (Conflict) error.
+   * @param password - The new password.
+   * @returns 204 No Content if the request was successful.
+   */
+  fastify.post<{ Body: { password: string } }>(
+    '/password',
+    { schema: setPassword, preHandler: isAuthenticated },
+    async ({ user, body: { password } }, reply) => {
       const member = notUndefined(user?.member);
       return db.transaction(async (manager) => {
-        return memberPasswordService.patch(
+        await memberPasswordService.post(member, buildRepositories(manager), password);
+        reply.status(StatusCodes.NO_CONTENT);
+      });
+    },
+  );
+
+  /**
+   * Update the password of the authenticated member.
+   * If the currentPassword does not match what is stored an error will be returned.
+   * @param currentPassword - The current password of the user.
+   * @param password - The new password.
+   * @returns 204 No Content if the request was successful.
+   */
+  fastify.patch<{ Body: { currentPassword: string; password: string } }>(
+    '/password',
+    { schema: updatePassword, preHandler: isAuthenticated },
+    async ({ user, body: { currentPassword, password } }, reply) => {
+      const member = notUndefined(user?.member);
+      return db.transaction(async (manager) => {
+        await memberPasswordService.patch(
           member,
           buildRepositories(manager),
           password,
           currentPassword,
         );
+        reply.status(StatusCodes.NO_CONTENT);
       });
     },
   );

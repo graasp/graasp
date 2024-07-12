@@ -7,9 +7,10 @@ import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, MemberFactory, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
+import { HttpMethod, MemberFactory, RecaptchaAction } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
+import { mockCaptchaValidationOnce } from '../../../../../test/utils';
 import { resolveDependency } from '../../../../di/utils';
 import { AppDataSource } from '../../../../plugins/datasource';
 import { MailerService } from '../../../../plugins/mailer/service';
@@ -31,15 +32,6 @@ jest.mock('../../../../plugins/datasource');
 jest.mock('node-fetch');
 const memberRawRepository = AppDataSource.getRepository(Member);
 
-// mock captcha
-// bug: cannot use exported mockCaptchaValidation
-const mockCaptchaValidation = (action: RecaptchaActionType) => {
-  (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return { json: async () => ({ success: true, action, score: 1 }) } as Response;
-  });
-};
-
 const challenge = 'challenge';
 describe('Mobile Endpoints', () => {
   let app: FastifyInstance;
@@ -59,7 +51,7 @@ describe('Mobile Endpoints', () => {
   describe('POST /m/register', () => {
     beforeEach(() => {
       // mock captcha validation
-      mockCaptchaValidation(RecaptchaAction.SignUpMobile);
+      mockCaptchaValidationOnce(RecaptchaAction.SignUpMobile);
     });
 
     it('Sign Up successfully', async () => {
@@ -191,7 +183,7 @@ describe('Mobile Endpoints', () => {
   describe('POST /m/login', () => {
     beforeEach(() => {
       // mock captcha validation
-      mockCaptchaValidation(RecaptchaAction.SignInMobile);
+      mockCaptchaValidationOnce(RecaptchaAction.SignInMobile);
     });
     it('Sign In successfully', async () => {
       const member = await saveMember();
@@ -263,7 +255,7 @@ describe('Mobile Endpoints', () => {
   describe('POST /m/login-password', () => {
     beforeEach(() => {
       // mock captcha validation
-      mockCaptchaValidation(RecaptchaAction.SignInWithPasswordMobile);
+      mockCaptchaValidationOnce(RecaptchaAction.SignInWithPasswordMobile);
     });
     it('Sign In successfully', async () => {
       const member = MemberFactory();
@@ -570,7 +562,7 @@ describe('Mobile Endpoints', () => {
       challenge = crypto.createHash('sha256').update(verifier).digest('hex');
     });
     it('MagicLink', async () => {
-      mockCaptchaValidation(RecaptchaAction.SignUpMobile);
+      mockCaptchaValidationOnce(RecaptchaAction.SignUpMobile);
       const mockSendEmail = jest.spyOn(resolveDependency(MailerService), 'sendEmail');
 
       const username = faker.internet.userName().toLowerCase();
@@ -620,7 +612,7 @@ describe('Mobile Endpoints', () => {
       expect(responseCheckBody.name).toBe(username);
     });
     it('Password', async () => {
-      mockCaptchaValidation(RecaptchaAction.SignInWithPasswordMobile);
+      mockCaptchaValidationOnce(RecaptchaAction.SignInWithPasswordMobile);
 
       const member = await saveMemberAndPassword(undefined, MOCK_PASSWORD);
 

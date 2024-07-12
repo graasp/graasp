@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { StatusCodes } from 'http-status-codes';
-import fetch from 'node-fetch';
 import { In } from 'typeorm';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, PermissionLevel, RecaptchaAction } from '@graasp/sdk';
+import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { resolveDependency } from '../../../../../di/utils';
@@ -25,14 +24,6 @@ import { InvitationRepository } from '../repository';
 jest.mock('../../../../../plugins/datasource');
 
 const testUtils = new ItemTestUtils();
-
-// mock captcha
-// bug: cannot reuse mockCaptchaValidation
-jest.mock('node-fetch');
-(fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return { json: async () => ({ success: true, action: RecaptchaAction.SignUp, score: 1 }) } as any;
-});
 
 const mockEmail = () => {
   const mailerService = resolveDependency(MailerService);

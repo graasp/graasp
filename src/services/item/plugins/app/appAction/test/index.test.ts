@@ -5,7 +5,7 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../../test/app';
+import build, { clearDatabase, unmockAuthenticate } from '../../../../../../../test/app';
 import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
 import { Member } from '../../../../../member/entities/member';
 import { saveMember } from '../../../../../member/test/fixtures/members';
@@ -63,11 +63,7 @@ describe('App Actions Tests', () => {
         ({ app, actor } = await build());
 
         ({ item, token, appActions } = await setUpForAppActions(app, actor, actor));
-        // logout after getting token and setting up
-        await app.inject({
-          method: HttpMethod.Get,
-          url: '/logout',
-        });
+        unmockAuthenticate();
       });
 
       it('Get app actions without member and token throws', async () => {

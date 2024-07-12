@@ -2,6 +2,8 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifySchema } from 'fastify';
 
+import { error } from '../../../../schemas/fluent-schema';
+
 export const passwordLogin = {
   body: {
     type: 'object',
@@ -26,42 +28,57 @@ export const passwordLogin = {
   },
 };
 
-export const updatePassword = {
+export const setPassword: FastifySchema = {
   body: {
     type: 'object',
+    additionalProperties: false,
+    properties: {
+      password: {
+        type: 'string',
+        format: 'strongPassword',
+      },
+    },
+  },
+  response: {
+    [StatusCodes.NO_CONTENT]: { type: 'null' },
+    // returns conflict when there is already a password set
+    [StatusCodes.CONFLICT]: error,
+  },
+};
+
+export const updatePassword: FastifySchema = {
+  body: {
+    type: 'object',
+    additionalProperties: false,
     properties: {
       password: { type: 'string', format: 'strongPassword' },
       currentPassword: { type: 'string', format: 'strongPassword' },
     },
-    additionalProperties: false,
   },
   response: {
-    [StatusCodes.OK]: {
-      type: 'object',
-      properties: {
-        id: { type: 'string' },
-        name: { type: 'string' },
-        email: { type: 'string', format: 'email' },
-      },
-      additionalProperties: false,
-    },
+    [StatusCodes.NO_CONTENT]: { type: 'null' },
+    // there was an issue with matching the current password with what is stored or the password was empty
+    [StatusCodes.BAD_REQUEST]: error,
+    // the user needs to be authenticated and the current password needs to match
+    [StatusCodes.UNAUTHORIZED]: error,
   },
 };
 
 export const postResetPasswordRequest: FastifySchema = {
   body: {
     type: 'object',
+    additionalProperties: false,
     properties: {
       email: { type: 'string', format: 'email' },
       captcha: { type: 'string' },
     },
-    additionalProperties: false,
   },
   response: {
-    [StatusCodes.NO_CONTENT]: {},
+    [StatusCodes.NO_CONTENT]: { type: 'null' },
     [StatusCodes.BAD_REQUEST]: {},
   },
 };
+
 export const patchResetPasswordRequest: FastifySchema = {
   body: {
     type: 'object',
@@ -77,7 +94,7 @@ export const patchResetPasswordRequest: FastifySchema = {
     },
   },
   response: {
-    [StatusCodes.NO_CONTENT]: {},
-    [StatusCodes.BAD_REQUEST]: {},
+    [StatusCodes.NO_CONTENT]: { type: 'null' },
+    [StatusCodes.BAD_REQUEST]: error,
   },
 };

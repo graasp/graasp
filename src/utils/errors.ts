@@ -338,7 +338,7 @@ export class EmptyCurrentPassword extends CoreError {
     super(
       {
         code: 'GERR026',
-        statusCode: StatusCodes.UNAUTHORIZED,
+        statusCode: StatusCodes.BAD_REQUEST,
         message: FAILURE_MESSAGES.EMPTY_CURRENT_PASSWORD,
       },
       data,

@@ -29,3 +29,16 @@ export class PasswordNotStrong extends GraaspPasswordError {
     );
   }
 }
+
+export class PasswordConflict extends GraaspPasswordError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GPPWDERR003',
+        statusCode: StatusCodes.CONFLICT,
+        message: "can't set a password when one already exists",
+      },
+      data,
+    );
+  }
+}
