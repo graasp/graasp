@@ -25,7 +25,7 @@ The following properties exist in the database but are not returned to the clien
 
 - `id`: optional. The new item will be created inside the provided item. If this parameter is not defined, the new item is created at the root
 - `previousItemId`: optional. The new item will be created after the provided item.
-  - If this parameter is not defined or does not exist in the provided parent, the new item is created at the beginning of the children array.
+  - If this parameter is not defined or does not exist in the provided parent, the new item is created at the end of the children array.
 
 Rescaling the ordering should happen asynchronously after this call to prevent imprecision.
 

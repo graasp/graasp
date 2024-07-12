@@ -683,10 +683,15 @@ export class ItemRepository {
     let orderDirection: 'DESC' | 'ASC' = 'DESC';
 
     if (previousItemId) {
-      const previousItem = await this.repository.findOne({
-        where: { id: previousItemId },
-        select: { order: true },
-      });
+      // might not exist
+      const previousItem = await this.repository
+        .createQueryBuilder()
+        .select('"order"')
+        .where('id = :previousItemId', { previousItemId })
+        // ensure it is a child in parent
+        .andWhere('path ~ :ltree', { ltree: `${parentPath}.*{1}` })
+        .getOne();
+
       // if needs to add in between, remove previous elements and order by next value to get the first one
       if (previousItem) {
         q.andWhere('item.order >= :previousOrder', { previousOrder: previousItem.order });

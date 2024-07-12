@@ -350,11 +350,11 @@ describe('Item routes tests', () => {
         const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
         // first item noise
         await testUtils.saveItem({ parentItem, item: { order: 1 } });
-        const afterItem = await testUtils.saveItem({ parentItem, item: { order: 2 } });
+        const previousItem = await testUtils.saveItem({ parentItem, item: { order: 40 } });
         const response = await app.inject({
           method: HttpMethod.Post,
           url: `/items`,
-          query: { parentId: parentItem.id, previousItemId: afterItem.id },
+          query: { parentId: parentItem.id, previousItemId: previousItem.id },
           payload,
         });
 
@@ -362,14 +362,13 @@ describe('Item routes tests', () => {
         expectItem(newItem, payload, actor);
         expect(response.statusCode).toBe(StatusCodes.OK);
 
-        await testUtils.expectOrder(newItem.id, undefined, afterItem.id);
+        await testUtils.expectOrder(newItem.id, previousItem.id);
       });
 
-      it('Create successfully after invalid child adds at beginning', async () => {
+      it('Create successfully after invalid child adds at end', async () => {
         const payload = FolderItemFactory();
         const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
-        // first item noise
-        const child = await testUtils.saveItem({ parentItem, item: { order: 1 } });
+        const child = await testUtils.saveItem({ parentItem, item: { order: 30 } });
         const response = await app.inject({
           method: HttpMethod.Post,
           url: `/items`,
@@ -381,7 +380,7 @@ describe('Item routes tests', () => {
         expectItem(newItem, payload, actor);
         expect(response.statusCode).toBe(StatusCodes.OK);
 
-        await testUtils.expectOrder(newItem.id, undefined, child.id);
+        await testUtils.expectOrder(newItem.id, child.id);
       });
 
       it('Throw if geolocation is partial', async () => {
