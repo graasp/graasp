@@ -22,10 +22,11 @@ const ERROR_SEARCH_PARAM = 'error';
 const ERROR_SEARCH_PARAM_HAS_ERROR = 'true';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { log, db } = fastify;
+  const { db } = fastify;
 
   const memberService = resolveDependency(MemberService);
-  const magicLinkService = new MagicLinkService(fastify, log);
+  const magicLinkService = resolveDependency(MagicLinkService);
+
   // register
   fastify.post<{
     Body: {
