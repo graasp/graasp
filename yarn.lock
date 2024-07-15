@@ -4030,15 +4030,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/sharp@npm:0.32.0":
-  version: 0.32.0
-  resolution: "@types/sharp@npm:0.32.0"
-  dependencies:
-    sharp: "npm:*"
-  checksum: 10/9d0ca925ebb18e870740db0e0abcaaa2458645673068166b9f26e042640fa430644fe39aada320e03834f7ba3600e678de822201ffc312f9df1f515ba107ebd5
-  languageName: node
-  linkType: hard
-
 "@types/stack-utils@npm:^2.0.0":
   version: 2.0.3
   resolution: "@types/stack-utils@npm:2.0.3"
@@ -7586,7 +7577,6 @@ __metadata:
     "@types/passport-jwt": "npm:4.0.1"
     "@types/passport-local": "npm:^1"
     "@types/sanitize-html": "npm:2.11.0"
-    "@types/sharp": "npm:0.32.0"
     "@types/striptags": "npm:3.1.1"
     "@types/uuid": "npm:9.0.8"
     "@types/ws": "npm:8.5.10"
@@ -11727,7 +11717,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sharp@npm:*, sharp@npm:0.33.4":
+"sharp@npm:0.33.4":
   version: 0.33.4
   resolution: "sharp@npm:0.33.4"
   dependencies:
