@@ -1,23 +1,26 @@
-import { FastifyBaseLogger, FastifyInstance } from 'fastify';
+import { singleton } from 'tsyringe';
 
 import { ActionTriggers, Context } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
+import { BaseLogger } from '../../../../logger';
 import { MemberNotSignedUp } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
 import { Actor, Member } from '../../../member/entities/member';
+import { AuthService } from '../../service';
 
+@singleton()
 export class MagicLinkService {
-  log: FastifyBaseLogger;
-  fastify: FastifyInstance;
+  private readonly log: BaseLogger;
+  private readonly authService: AuthService;
 
-  constructor(fastify, log) {
-    this.fastify = fastify;
+  constructor(authService: AuthService, log: BaseLogger) {
+    this.authService = authService;
     this.log = log;
   }
 
   async sendRegisterMail(actor: Actor, repositories: Repositories, member: Member, url?: string) {
-    await this.fastify.generateRegisterLinkAndEmailIt(member, { url });
+    await this.authService.generateRegisterLinkAndEmailIt(member, { url });
   }
 
   async login(actor: Actor, repositories: Repositories, body, lang = DEFAULT_LANG, url?: string) {
@@ -26,7 +29,7 @@ export class MagicLinkService {
     const member = await memberRepository.getByEmail(email);
 
     if (member) {
-      await this.fastify.generateLoginLinkAndEmailIt(member, { lang, url });
+      await this.authService.generateLoginLinkAndEmailIt(member, { lang, url });
       const actions = [
         {
           member,

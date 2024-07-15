@@ -24,21 +24,6 @@ declare module 'fastify' {
     websockets: WebsocketService;
     etherpad: EtherpadItemService;
     corsPluginOptions: any;
-    generateRegisterLinkAndEmailIt: (
-      member: Partial<Member>, // todo: force some content
-      options: {
-        challenge?: string;
-        url?: string;
-      },
-    ) => Promise<void>;
-    generateLoginLinkAndEmailIt: (
-      member: Member,
-      options: {
-        challenge?: string;
-        lang?: string;
-        url?: string;
-      },
-    ) => Promise<void>;
   }
 
   interface PassportUser {
