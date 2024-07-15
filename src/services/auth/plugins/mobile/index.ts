@@ -30,7 +30,7 @@ import { MobileService } from './service';
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { log, db } = fastify;
 
-  const mobileService = new MobileService(fastify, log);
+  const mobileService = resolveDependency(MobileService);
   const memberPasswordService = resolveDependency(MemberPasswordService);
 
   // no need to add CORS support here - only used by mobile app

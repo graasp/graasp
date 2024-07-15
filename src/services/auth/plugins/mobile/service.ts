@@ -1,18 +1,21 @@
-import { FastifyBaseLogger, FastifyInstance } from 'fastify';
+import { singleton } from 'tsyringe';
 
 import { DEFAULT_LANG } from '@graasp/translations';
 
+import { BaseLogger } from '../../../../logger';
 import { MemberAlreadySignedUp, MemberNotSignedUp } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
 import { Actor } from '../../../member/entities/member';
+import { AuthService } from '../../service';
 
+@singleton()
 export class MobileService {
-  private readonly log: FastifyBaseLogger;
-  private readonly fastify: FastifyInstance;
+  private readonly log: BaseLogger;
+  private readonly authService: AuthService;
 
-  constructor(fastify: FastifyInstance, log: FastifyBaseLogger) {
+  constructor(authService: AuthService, log: BaseLogger) {
     this.log = log;
-    this.fastify = fastify;
+    this.authService = authService;
   }
 
   async register(
@@ -41,10 +44,10 @@ export class MobileService {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       const newMember = await memberRepository.post(data);
-      await this.fastify.generateRegisterLinkAndEmailIt(newMember, { challenge });
+      await this.authService.generateRegisterLinkAndEmailIt(newMember, { challenge });
     } else {
       this.log.warn(`Member re-registration attempt for email '${email}'`);
-      await this.fastify.generateLoginLinkAndEmailIt(member, { challenge, lang });
+      await this.authService.generateLoginLinkAndEmailIt(member, { challenge, lang });
       throw new MemberAlreadySignedUp({ email });
     }
   }
@@ -60,7 +63,7 @@ export class MobileService {
     const member = await memberRepository.getByEmail(email);
 
     if (member) {
-      await this.fastify.generateLoginLinkAndEmailIt(member, { challenge, lang });
+      await this.authService.generateLoginLinkAndEmailIt(member, { challenge, lang });
     } else {
       this.log.warn(`Login attempt with non-existent email '${email}'`);
       throw new MemberNotSignedUp({ email });
