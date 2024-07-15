@@ -2,6 +2,37 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.44.0](https://github.com/graasp/graasp/compare/v1.43.1...v1.44.0) (2024-07-12)
+
+
+### Features
+
+* improve reordering mechanism and allow to create items with order  ([#1119](https://github.com/graasp/graasp/issues/1119)) ([38c6fe0](https://github.com/graasp/graasp/commit/38c6fe02ecc2c568d71b6ecb470c1401c0242fe4))
+* use DI to inject services ([#1095](https://github.com/graasp/graasp/issues/1095)) ([2132dc2](https://github.com/graasp/graasp/commit/2132dc2027d0dc95c2f5d4c5367a19039570c70c))
+
+
+### Bug Fixes
+
+* add email in link for email update ([#1186](https://github.com/graasp/graasp/issues/1186)) ([e668337](https://github.com/graasp/graasp/commit/e6683376ea36a76f49d67ac1e2757e3a3499e195))
+* **deps:** remove dependency qs ([#1166](https://github.com/graasp/graasp/issues/1166)) ([d9c6e18](https://github.com/graasp/graasp/commit/d9c6e180eb989af4b00a1e3717ad6ea2fc3c5a90))
+* **deps:** update aws-sdk-js-v3 monorepo to v3.609.0 ([#1167](https://github.com/graasp/graasp/issues/1167)) ([5fc9488](https://github.com/graasp/graasp/commit/5fc9488eb1e492e0430a0d50d63cbaf8a0f8b824))
+* **deps:** update aws-sdk-js-v3 monorepo to v3.614.0 ([#1190](https://github.com/graasp/graasp/issues/1190)) ([1e71146](https://github.com/graasp/graasp/commit/1e7114652ee1d0bc288a882813f8a741ba47a735))
+* **deps:** update dependency @fastify/passport to v2.5.0 ([#1155](https://github.com/graasp/graasp/issues/1155)) ([067216e](https://github.com/graasp/graasp/commit/067216e44bf11912f1e587f59241af32846feaf2))
+* **deps:** update dependency @graasp/sdk to v4.15.1 ([#1136](https://github.com/graasp/graasp/issues/1136)) ([3de759c](https://github.com/graasp/graasp/commit/3de759c5c0b5222ec74f718742a0ff92a72a6fce))
+* **deps:** update dependency @graasp/translations to v1.31.3 ([#1185](https://github.com/graasp/graasp/issues/1185)) ([5b6ec23](https://github.com/graasp/graasp/commit/5b6ec235d55976a79e768224a610091103306e6c))
+* **deps:** update dependency @graasp/translations to v1.32.0 ([#1156](https://github.com/graasp/graasp/issues/1156)) ([51bbfc7](https://github.com/graasp/graasp/commit/51bbfc79d5d2f1f5eeb8c2e611b4b869a486f7b3))
+* **deps:** update dependency @sentry/node to v7.118.0 ([#1168](https://github.com/graasp/graasp/issues/1168)) ([96967f9](https://github.com/graasp/graasp/commit/96967f9a5225dab987effefa254f0d7d5bcc3252))
+* **deps:** update dependency fast-json-stringify to v5.16.1 ([#1139](https://github.com/graasp/graasp/issues/1139)) ([5fc5666](https://github.com/graasp/graasp/commit/5fc5666734c3b38c23e2e2917630598bcbd58f22))
+* **deps:** update dependency fastify to v4.28.1 ([#1169](https://github.com/graasp/graasp/issues/1169)) ([0b5c441](https://github.com/graasp/graasp/commit/0b5c441a3130f49dafe86df9357f08f43fa7db77))
+* **deps:** update dependency meilisearch to v0.41.0 ([#1171](https://github.com/graasp/graasp/issues/1171)) ([8f420f1](https://github.com/graasp/graasp/commit/8f420f1ee37ebf72e558cb11a8197537c1abe9c2))
+* **deps:** update dependency nodemailer to v6.9.14 ([#1187](https://github.com/graasp/graasp/issues/1187)) ([f962e11](https://github.com/graasp/graasp/commit/f962e11ddf0c4697a557245953ba549c79e07774))
+* **deps:** update dependency openai to v4.52.3 ([#1172](https://github.com/graasp/graasp/issues/1172)) ([ccc0751](https://github.com/graasp/graasp/commit/ccc075148b39e6baac350145d98cb148ba4f16f1))
+* **deps:** update dependency openai to v4.52.7 ([#1188](https://github.com/graasp/graasp/issues/1188)) ([c4fe9fd](https://github.com/graasp/graasp/commit/c4fe9fda80c66daad04e085f2fd2ed6b939905c3))
+* **deps:** update dependency ws to v8.18.0 ([#1173](https://github.com/graasp/graasp/issues/1173)) ([2756224](https://github.com/graasp/graasp/commit/2756224bcaa3f2f46884480330f9d566a2ed0ca4))
+* filter out smartly given descendants ([#1162](https://github.com/graasp/graasp/issues/1162)) ([e354f2b](https://github.com/graasp/graasp/commit/e354f2ba0a6e07131e47edfc1b3af2a66de3044c))
+* logout member on delete ([#1158](https://github.com/graasp/graasp/issues/1158)) ([2ca19c9](https://github.com/graasp/graasp/commit/2ca19c9af2007d170a056ab55488b1b09f9cef42))
+* replace luxon by date-fns ([#967](https://github.com/graasp/graasp/issues/967)) ([5923b29](https://github.com/graasp/graasp/commit/5923b291cbf01729952ed3e7f19392c3cb55ceef))
+
 ## [1.43.1](https://github.com/graasp/graasp/compare/v1.43.0...v1.43.1) (2024-07-01)
 
 
