@@ -1915,10 +1915,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/forwarded@npm:2.2.0":
-  version: 2.2.0
-  resolution: "@fastify/forwarded@npm:2.2.0"
-  checksum: 10/a8c1f85dcf1397b4abe5ce4bafeabc3f9baeb98855e7f1f7ef66951a08a24931b25a74ac55f72523c876a9c5b61cf078632cdfacbb8dd070b9a77ef61fd1782d
+"@fastify/forwarded@npm:3.0.0":
+  version: 3.0.0
+  resolution: "@fastify/forwarded@npm:3.0.0"
+  checksum: 10/5da4417fa6a4c39f40cb10aa6f6fe0c970d24974ad9e729512ba381c7b1b768c924a3deadc60eb3a02d756086746aa9b12a5afb4032c16ca7a7ca5e3c2830155
   languageName: node
   linkType: hard
 
@@ -7510,7 +7510,7 @@ __metadata:
     "@faker-js/faker": "npm:8.4.1"
     "@fastify/busboy": "npm:3.0.0"
     "@fastify/cors": "npm:9.0.1"
-    "@fastify/forwarded": "npm:2.2.0"
+    "@fastify/forwarded": "npm:3.0.0"
     "@fastify/helmet": "npm:11.1.1"
     "@fastify/multipart": "npm:8.3.0"
     "@fastify/passport": "npm:2.5.0"
