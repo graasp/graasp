@@ -38,7 +38,9 @@ export const ShortLinkRepository = AppDataSource.getRepository(ShortLink).extend
   },
 
   async getItem(itemId: string): Promise<ShortLink[]> {
-    if (!itemId) throw new ItemNotFound();
+    if (!itemId) {
+      throw new ItemNotFound(itemId);
+    }
 
     const shortLinks = await this.find({
       where: {

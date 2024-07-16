@@ -16,7 +16,7 @@ import {
   ItemNotFound,
   MemberCannotAccess,
   MemberCannotAdminItem,
-  ModifyExisting,
+  ModifyExistingMembership,
 } from '../../../utils/errors';
 import { setItemPublic } from '../../item/plugins/itemTag/test/fixtures';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
@@ -367,7 +367,7 @@ describe('Membership routes tests', () => {
         });
 
         // check item membership repository contains one membership
-        expect(response.json()).toEqual(new ModifyExisting(membership.id));
+        expect(response.json()).toEqual(new ModifyExistingMembership({ id: membership.id }));
         const newCount = await ItemMembershipRepository.count();
         expect(newCount).toEqual(initialCount);
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -694,7 +694,7 @@ describe('Membership routes tests', () => {
         // membership below does not exist
         expect(await ItemMembershipRepository.count()).toEqual(initialCount - 1);
         ItemMembershipRepository.get(membership.id).catch((e) =>
-          expect(e).toEqual(new ItemMembershipNotFound(membership.id)),
+          expect(e).toEqual(new ItemMembershipNotFound({ id: membership.id })),
         );
       });
       it('Bad request if payload is invalid', async () => {
@@ -844,7 +844,7 @@ describe('Membership routes tests', () => {
         });
 
         expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
-        expect(response.json()).toEqual(new ItemMembershipNotFound(id));
+        expect(response.json()).toEqual(new ItemMembershipNotFound({ id }));
         expect(await ItemMembershipRepository.count()).toEqual(initialCount);
       });
 

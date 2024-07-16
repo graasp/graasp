@@ -20,11 +20,11 @@ export class MemberRepository extends AbstractRepository<Member> {
     // additional check that id is not null
     // o/w empty parameter to findOneBy return the first entry
     if (!id) {
-      throw new MemberNotFound(id);
+      throw new MemberNotFound({ id });
     }
     const m = await this.repository.findOneBy({ id });
     if (!m) {
-      throw new MemberNotFound(id);
+      throw new MemberNotFound({ id });
     }
     return m;
   }
@@ -34,7 +34,7 @@ export class MemberRepository extends AbstractRepository<Member> {
     return mapById({
       keys: ids,
       findElement: (id) => members.find(({ id: thisId }) => thisId === id),
-      buildError: (id) => new MemberNotFound(id),
+      buildError: (id) => new MemberNotFound({ id }),
     });
   }
 
@@ -55,7 +55,7 @@ export class MemberRepository extends AbstractRepository<Member> {
     return mapById({
       keys: emails,
       findElement: (email) => members.find(({ email: thisEmail }) => thisEmail === email),
-      buildError: (email) => new MemberNotFound(email),
+      buildError: (email) => new MemberNotFound({ email }),
     });
   }
 

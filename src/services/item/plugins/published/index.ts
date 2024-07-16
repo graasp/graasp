@@ -98,8 +98,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       schema: unpublishItem,
     },
     async ({ params, user }) => {
+      const member = notUndefined(user?.member);
       return db.transaction(async (manager) => {
-        return itemPublishedService.delete(user?.member, buildRepositories(manager), params.itemId);
+        return itemPublishedService.delete(member, buildRepositories(manager), params.itemId);
       });
     },
   );

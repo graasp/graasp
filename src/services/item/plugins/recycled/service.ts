@@ -1,10 +1,9 @@
 import { PermissionLevel } from '@graasp/sdk';
 
-import { UnauthorizedMember } from '../../../../utils/errors';
 import HookManager from '../../../../utils/hook';
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
-import { Actor } from '../../../member/entities/member';
+import { Member } from '../../../member/entities/member';
 import { ItemWrapper } from '../../ItemWrapper';
 import { Item } from '../../entities/Item';
 
@@ -20,12 +19,8 @@ export class RecycledBinService {
     };
   }>();
 
-  async getAll(actor: Actor, repositories: Repositories) {
+  async getAll(actor: Member, repositories: Repositories) {
     const { recycledItemRepository } = repositories;
-    // check member is connected
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
 
     const recycled = await recycledItemRepository.getOwnRecycledItemDatas(actor);
     const packedItems = await ItemWrapper.createPackedItems(
@@ -47,10 +42,7 @@ export class RecycledBinService {
     });
   }
 
-  async recycleMany(actor: Actor, repositories: Repositories, itemIds: string[]) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
+  async recycleMany(actor: Member, repositories: Repositories, itemIds: string[]) {
     const { itemRepository, recycledItemRepository } = repositories;
 
     const itemsResult = await itemRepository.getMany(itemIds, { throwOnError: true });
@@ -87,10 +79,7 @@ export class RecycledBinService {
     return itemsResult;
   }
 
-  async restoreMany(actor: Actor, repositories: Repositories, itemIds: string[]) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
+  async restoreMany(actor: Member, repositories: Repositories, itemIds: string[]) {
     const { itemRepository, recycledItemRepository } = repositories;
 
     const result = await itemRepository.getMany(itemIds, {

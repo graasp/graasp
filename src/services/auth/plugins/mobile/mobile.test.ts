@@ -548,7 +548,7 @@ describe('Mobile Endpoints', () => {
         query: { token },
       });
       expect(response.headers).not.toHaveProperty('set-cookie');
-      expect(response.json()).toMatchObject(new MemberNotFound(memberId));
+      expect(response.json()).toMatchObject(new MemberNotFound({ id: memberId }));
     });
     it('Fail if token is invalid', async () => {
       const member = await saveMember();

@@ -3,12 +3,12 @@ import { singleton } from 'tsyringe';
 
 import { ActionTriggers, PermissionLevel } from '@graasp/sdk';
 
-import { CannotModifyOtherMembers, UnauthorizedMember } from '../../../../utils/errors';
+import { CannotModifyOtherMembers } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
 import { ActionService } from '../../../action/services/action';
 import { validatePermissionMany } from '../../../authorization';
 import { Item, ItemExtraMap } from '../../../item/entities/Item';
-import { Actor } from '../../entities/member';
+import { Member } from '../../entities/member';
 
 export const getPreviousMonthFromNow = () => {
   const date = new Date(); // Today's date
@@ -35,14 +35,10 @@ export class ActionMemberService {
   }
 
   async getFilteredActions(
-    actor: Actor,
+    actor: Member,
     repositories: Repositories,
     filters: { startDate?: string; endDate?: string },
   ) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
-
     const { actionRepository } = repositories;
 
     const { startDate, endDate } = filters;
@@ -77,7 +73,7 @@ export class ActionMemberService {
   }
 
   async deleteAllForMember(
-    actor: Actor,
+    actor: Member,
     repositories: Repositories,
     memberId: string,
   ): Promise<void> {

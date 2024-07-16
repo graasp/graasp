@@ -57,9 +57,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: isAuthenticated,
     },
     async ({ user, body, params }) => {
+      const member = notUndefined(user?.member);
       return db.transaction(async (manager) => {
         const res = await invitationService.postManyForItem(
-          user?.member,
+          member,
           buildRepositories(manager),
           params.id,
           body.invitations,
@@ -122,9 +123,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.get<{ Params: IdParam }>(
     '/:id/invitations',
     { schema: getForItem, preHandler: isAuthenticated },
-    async ({ user, params }) => {
-      const { id: itemId } = params;
-      return invitationService.getForItem(user?.member, buildRepositories(), itemId);
+    async ({ user, params: { id: itemId } }) => {
+      const member = notUndefined(user?.member);
+      return invitationService.getForItem(member, buildRepositories(), itemId);
     },
   );
 
@@ -132,16 +133,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.patch<{ Params: { id: string; invitationId: string }; Body: Partial<Invitation> }>(
     '/:id/invitations/:invitationId',
     { schema: updateOne, preHandler: isAuthenticated },
-    async ({ user, params, body }) => {
-      const { invitationId } = params;
-
+    async ({ user, params: { invitationId }, body }) => {
+      const member = notUndefined(user?.member);
       return db.transaction(async (manager) => {
-        return invitationService.patch(
-          user?.member,
-          buildRepositories(manager),
-          invitationId,
-          body,
-        );
+        return invitationService.patch(member, buildRepositories(manager), invitationId, body);
       });
     },
   );
@@ -150,11 +145,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.delete<{ Params: { id: string; invitationId: string } }>(
     '/:id/invitations/:invitationId',
     { schema: deleteOne, preHandler: isAuthenticated },
-    async ({ user, params }) => {
-      const { invitationId } = params;
-
+    async ({ user, params: { invitationId } }) => {
+      const member = notUndefined(user?.member);
       return db.transaction(async (manager) => {
-        return invitationService.delete(user?.member, buildRepositories(manager), invitationId);
+        return invitationService.delete(member, buildRepositories(manager), invitationId);
       });
     },
   );
@@ -163,10 +157,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.post<{ Params: { id: string; invitationId: string } }>(
     '/:id/invitations/:invitationId/send',
     { schema: sendOne, preHandler: isAuthenticated },
-    async ({ user, params }, reply) => {
-      const { invitationId } = params;
-
-      await invitationService.resend(user?.member, buildRepositories(), invitationId);
+    async ({ user, params: { invitationId } }, reply) => {
+      const member = notUndefined(user?.member);
+      await invitationService.resend(member, buildRepositories(), invitationId);
       reply.status(StatusCodes.NO_CONTENT);
     },
   );

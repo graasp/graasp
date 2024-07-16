@@ -82,7 +82,7 @@ export class ItemService {
   }
 
   async post(
-    actor: Actor,
+    actor: Member,
     repositories: Repositories,
     args: {
       item: Partial<Item> & Pick<Item, 'name' | 'type'>;
@@ -92,10 +92,6 @@ export class ItemService {
       previousItemId?: Item['id'];
     },
   ): Promise<Item> {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
-
     const { itemRepository, itemMembershipRepository, itemGeolocationRepository } = repositories;
 
     const { item, parentId, geolocation, thumbnail } = args;
@@ -341,21 +337,15 @@ export class ItemService {
     return { data: packedItems, totalCount };
   }
 
-  async getOwn(actor: Actor, { itemRepository }: Repositories) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
-    return itemRepository.getOwn(actor.id);
+  async getOwn(member: Member, { itemRepository }: Repositories) {
+    return itemRepository.getOwn(member.id);
   }
 
-  async getShared(actor: Actor, repositories: Repositories, permission?: PermissionLevel) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
+  async getShared(member: Member, repositories: Repositories, permission?: PermissionLevel) {
     const { itemMembershipRepository } = repositories;
-    const items = await itemMembershipRepository.getSharedItems(actor.id, permission);
+    const items = await itemMembershipRepository.getSharedItems(member.id, permission);
     // TODO optimize?
-    return filterOutItems(actor, repositories, items);
+    return filterOutItems(member, repositories, items);
   }
 
   async _getChildren(
@@ -448,40 +438,32 @@ export class ItemService {
     return ItemWrapper.merge(items, itemMemberships, tags);
   }
 
-  async patch(actor: Actor, repositories: Repositories, itemId: UUID, body: Partial<Item>) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
-
+  async patch(member: Member, repositories: Repositories, itemId: UUID, body: Partial<Item>) {
     const { itemRepository } = repositories;
 
     // check memberships
     const item = await itemRepository.get(itemId);
-    await validatePermission(repositories, PermissionLevel.Write, actor, item);
+    await validatePermission(repositories, PermissionLevel.Write, member, item);
 
     // TODO: if updating a link item, fetch the new informations
 
-    await this.hooks.runPreHooks('update', actor, repositories, { item: item });
+    await this.hooks.runPreHooks('update', member, repositories, { item: item });
 
     const updated = await itemRepository.patch(itemId, body);
-    await this.hooks.runPostHooks('update', actor, repositories, { item: updated });
+    await this.hooks.runPostHooks('update', member, repositories, { item: updated });
 
     return updated;
   }
 
   async patchMany(
-    actor: Actor,
+    member: Member,
     repositories: Repositories,
     itemIds: UUID[],
     body: Partial<Item>,
   ): Promise<ResultOf<Item>> {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
-
     // TODO: extra + settings
     const ops = await Promise.all(
-      itemIds.map(async (id) => this.patch(actor, repositories, id, body)),
+      itemIds.map(async (id) => this.patch(member, repositories, id, body)),
     );
 
     return mapById({
@@ -527,7 +509,7 @@ export class ItemService {
   // QUESTION? DELETE BY PATH???
   async deleteMany(actor: Actor, repositories: Repositories, itemIds: string[]) {
     if (!actor) {
-      throw new UnauthorizedMember(actor);
+      throw new UnauthorizedMember();
     }
 
     const { itemRepository } = repositories;
@@ -577,7 +559,7 @@ export class ItemService {
   /////// -------- MOVE
   async move(actor: Actor, repositories: Repositories, itemId: UUID, parentItem?: FolderItem) {
     if (!actor) {
-      throw new UnauthorizedMember(actor);
+      throw new UnauthorizedMember();
     }
 
     const { itemRepository } = repositories;
@@ -616,7 +598,7 @@ export class ItemService {
   // TODO: optimize
   async moveMany(actor: Actor, repositories: Repositories, itemIds: string[], toItemId?: string) {
     if (!actor) {
-      throw new UnauthorizedMember(actor);
+      throw new UnauthorizedMember();
     }
 
     let parentItem;
@@ -673,7 +655,7 @@ export class ItemService {
   /////// -------- COPY
   async copy(actor: Actor, repositories: Repositories, itemId: UUID, parentItem?: FolderItem) {
     if (!actor) {
-      throw new UnauthorizedMember(actor);
+      throw new UnauthorizedMember();
     }
 
     const { itemRepository, itemMembershipRepository, itemGeolocationRepository } = repositories;

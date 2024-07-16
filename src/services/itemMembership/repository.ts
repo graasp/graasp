@@ -14,7 +14,7 @@ import {
   InvalidMembership,
   InvalidPermissionLevel,
   ItemMembershipNotFound,
-  ModifyExisting,
+  ModifyExistingMembership,
 } from '../../utils/errors';
 import { ITEMS_PAGE_SIZE, ITEMS_PAGE_SIZE_MAX } from '../item/constants';
 import { Item } from '../item/entities/Item';
@@ -75,7 +75,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     });
 
     if (!item) {
-      throw new ItemMembershipNotFound(id);
+      throw new ItemMembershipNotFound({ id });
     }
 
     return item;
@@ -257,7 +257,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     const mapByPath = mapById({
       keys: items.map(({ path }) => path),
       findElement: (path) => memberships.filter(({ item }) => path.includes(item.path)),
-      buildError: (path) => new ItemMembershipNotFound(path),
+      buildError: (path) => new ItemMembershipNotFound({ path }),
     });
 
     // use id as key
@@ -310,7 +310,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     const result = mapById({
       keys: ids,
       findElement: (id) => itemIdToMemberships.get(id),
-      buildError: (id) => new ItemMembershipNotFound(id),
+      buildError: (id) => new ItemMembershipNotFound({ id }),
     });
 
     return result;
@@ -367,7 +367,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     const result = mapById({
       keys: ids,
       findElement: (id) => itemMemberships.find(({ id: thisId }) => id === thisId),
-      buildError: (id) => new ItemMembershipNotFound(id),
+      buildError: (id) => new ItemMembershipNotFound({ id }),
     });
 
     if (args.throwOnError && result.errors.length) {
@@ -478,7 +478,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
       const { item: itemFromPermission, permission: inheritedPermission, id } = inheritedMembership;
       // fail if trying to add a new membership for the same member and item
       if (itemFromPermission.id === item.id) {
-        throw new ModifyExisting(id);
+        throw new ModifyExistingMembership({ id });
       }
 
       if (PermissionLevelCompare.lte(permission, inheritedPermission)) {

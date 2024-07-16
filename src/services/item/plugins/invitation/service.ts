@@ -9,7 +9,6 @@ import { BaseLogger } from '../../../../logger';
 import { MAIL } from '../../../../plugins/mailer/langs/constants';
 import { MailerService } from '../../../../plugins/mailer/service';
 import { GRAASP_LANDING_PAGE_ORIGIN } from '../../../../utils/constants';
-import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import { Item, isItemType } from '../../../item/entities/Item';
@@ -53,10 +52,7 @@ export class InvitationService {
     this.itemMembershipService = itemMembershipService;
   }
 
-  async sendInvitationEmail({ actor, invitation }: { actor: Actor; invitation: Invitation }) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
+  async sendInvitationEmail({ actor, invitation }: { actor: Member; invitation: Invitation }) {
     const { item, email } = invitation;
 
     // factor out
@@ -96,24 +92,18 @@ export class InvitationService {
     return repositories.invitationRepository.get(invitationId, actor);
   }
 
-  async getForItem(actor: Actor, repositories: Repositories, itemId: string) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
+  async getForItem(actor: Member, repositories: Repositories, itemId: string) {
     const { invitationRepository } = repositories;
     const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
     return invitationRepository.getForItem(item.path);
   }
 
   async postManyForItem(
-    actor: Actor,
+    actor: Member,
     repositories: Repositories,
     itemId: string,
     invitations: Partial<Invitation>[],
   ): Promise<Invitation[]> {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
     const { invitationRepository } = repositories;
     const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
 
@@ -129,14 +119,11 @@ export class InvitationService {
   }
 
   async patch(
-    actor: Actor,
+    actor: Member,
     repositories: Repositories,
     invitationId: string,
     body: Partial<Invitation>,
   ) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
     const { invitationRepository } = repositories;
     const invitation = await invitationRepository.get(invitationId);
     await validatePermission(repositories, PermissionLevel.Admin, actor, invitation.item);
@@ -144,10 +131,7 @@ export class InvitationService {
     return invitationRepository.patch(invitationId, body);
   }
 
-  async delete(actor: Actor, repositories: Repositories, invitationId: string) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
+  async delete(actor: Member, repositories: Repositories, invitationId: string) {
     const { invitationRepository } = repositories;
     const invitation = await invitationRepository.get(invitationId);
     await validatePermission(repositories, PermissionLevel.Admin, actor, invitation.item);
@@ -155,10 +139,7 @@ export class InvitationService {
     return invitationRepository.deleteOne(invitationId);
   }
 
-  async resend(actor: Actor, repositories: Repositories, invitationId: string) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
+  async resend(actor: Member, repositories: Repositories, invitationId: string) {
     const { invitationRepository } = repositories;
     const invitation = await invitationRepository.get(invitationId);
     await validatePermission(repositories, PermissionLevel.Admin, actor, invitation.item);

@@ -5,11 +5,7 @@ import { PermissionLevel, UUID } from '@graasp/sdk';
 import { MAIL } from '../../plugins/mailer/langs/constants';
 import { MailerService } from '../../plugins/mailer/service';
 import { PLAYER_HOST } from '../../utils/config';
-import {
-  CannotDeleteOnlyAdmin,
-  ItemMembershipNotFound,
-  UnauthorizedMember,
-} from '../../utils/errors';
+import { CannotDeleteOnlyAdmin, ItemMembershipNotFound } from '../../utils/errors';
 import HookManager from '../../utils/hook';
 import { Repositories } from '../../utils/repositories';
 import { validatePermission } from '../authorization';
@@ -133,13 +129,10 @@ export class ItemMembershipService {
   }
 
   async post(
-    actor: Actor,
+    actor: Member,
     repositories: Repositories,
     membership: { permission: PermissionLevel; itemId: UUID; memberId: UUID },
   ) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
     // check memberships
     const item = await this.itemService.get(
       actor,
@@ -152,14 +145,11 @@ export class ItemMembershipService {
   }
 
   async postMany(
-    actor: Actor,
+    actor: Member,
     repositories: Repositories,
     memberships: { permission: PermissionLevel; memberId: UUID }[],
     itemId: UUID,
   ) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
     // check memberships
     const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
 
@@ -171,14 +161,11 @@ export class ItemMembershipService {
   }
 
   async patch(
-    actor: Actor,
+    actor: Member,
     repositories: Repositories,
     itemMembershipId: string,
     data: { permission: PermissionLevel },
   ) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
     const { itemMembershipRepository } = repositories;
     // check memberships
     const membership = await itemMembershipRepository.get(itemMembershipId);
@@ -194,14 +181,11 @@ export class ItemMembershipService {
   }
 
   async deleteOne(
-    actor: Actor,
+    actor: Member,
     repositories: Repositories,
     itemMembershipId: string,
     args: { purgeBelow?: boolean } = { purgeBelow: false },
   ) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
     const { itemMembershipRepository } = repositories;
     // check memberships
     const membership = await itemMembershipRepository.get(itemMembershipId);
@@ -211,7 +195,7 @@ export class ItemMembershipService {
     // check if last admin, in which case prevent deletion
     const { data: itemIdToMemberships } = await itemMembershipRepository.getForManyItems([item]);
     if (!(item.id in itemIdToMemberships)) {
-      throw new ItemMembershipNotFound(itemMembershipId);
+      throw new ItemMembershipNotFound({ id: itemMembershipId });
     }
 
     const memberships = itemIdToMemberships[item.id];
@@ -219,7 +203,7 @@ export class ItemMembershipService {
       (m) => m.id !== itemMembershipId && m.permission === PermissionLevel.Admin,
     );
     if (otherAdminMemberships.length === 0) {
-      throw new CannotDeleteOnlyAdmin(item);
+      throw new CannotDeleteOnlyAdmin(item.id);
     }
 
     await this.hooks.runPreHooks('delete', actor, repositories, membership);

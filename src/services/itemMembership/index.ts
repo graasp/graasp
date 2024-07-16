@@ -7,6 +7,7 @@ import { PermissionLevel } from '@graasp/sdk';
 
 import { resolveDependency } from '../../di/utils';
 import { IdParam } from '../../types';
+import { notUndefined } from '../../utils/assertions';
 import { buildRepositories } from '../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
 import { PurgeBelowParam } from './interfaces/requests';
@@ -52,8 +53,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         '/',
         { schema: create, preHandler: isAuthenticated },
         async ({ user, query: { itemId }, body }) => {
+          const member = notUndefined(user?.member);
           return db.transaction((manager) => {
-            return itemMembershipService.post(user?.member, buildRepositories(manager), {
+            return itemMembershipService.post(member, buildRepositories(manager), {
               permission: body.permission,
               itemId,
               memberId: body.memberId,
@@ -70,12 +72,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         '/:itemId',
         { schema: createMany, preHandler: isAuthenticated },
         async ({ user, params: { itemId }, body }) => {
+          const member = notUndefined(user?.member);
           // BUG: because we use this call to save csv member
           // we have to return immediately
           // solution: it's probably simpler to upload a csv and handle it in the back
           return db.transaction((manager) => {
             return itemMembershipService.postMany(
-              user?.member,
+              member,
               buildRepositories(manager),
               body.memberships,
               itemId,
@@ -95,8 +98,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           preHandler: isAuthenticated,
         },
         async ({ user, params: { id }, body }) => {
+          const member = notUndefined(user?.member);
           return db.transaction((manager) => {
-            return itemMembershipService.patch(user?.member, buildRepositories(manager), id, body);
+            return itemMembershipService.patch(member, buildRepositories(manager), id, body);
           });
         },
       );
@@ -106,8 +110,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         '/:id',
         { schema: deleteOne, preHandler: isAuthenticated },
         async ({ user, params: { id }, query: { purgeBelow } }) => {
+          const member = notUndefined(user?.member);
           return db.transaction((manager) => {
-            return itemMembershipService.deleteOne(user?.member, buildRepositories(manager), id, {
+            return itemMembershipService.deleteOne(member, buildRepositories(manager), id, {
               purgeBelow,
             });
           });

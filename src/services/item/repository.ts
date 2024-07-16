@@ -103,7 +103,7 @@ export class ItemRepository {
     } = args;
 
     if (parent && !isItemType(parent, ItemType.FOLDER)) {
-      throw new ItemNotFolder(parent);
+      throw new ItemNotFolder(parent.id);
     }
 
     // TODO: extra
@@ -185,7 +185,7 @@ export class ItemRepository {
     options: { withOrder?: boolean } = {},
   ): Promise<Item[]> {
     if (!isItemType(parent, ItemType.FOLDER)) {
-      throw new ItemNotFolder(parent);
+      throw new ItemNotFolder(parent.id);
     }
 
     const query = this.repository

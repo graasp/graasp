@@ -15,55 +15,55 @@ export class ExpectedEnvVariable extends Error {
 export const CoreError = ErrorFactory('core');
 
 export class ItemNotFound extends CoreError {
-  constructor(data?: unknown) {
+  constructor(itemId: string) {
     super(
       {
         code: 'GERR001',
         statusCode: StatusCodes.NOT_FOUND,
         message: FAILURE_MESSAGES.ITEM_NOT_FOUND,
       },
-      data,
+      itemId,
     );
   }
 }
 export class MemberCannotReadItem extends CoreError {
-  constructor(data?: unknown) {
+  constructor(itemId: string) {
     super(
       {
         code: 'GERR002',
         statusCode: StatusCodes.FORBIDDEN,
         message: FAILURE_MESSAGES.USER_CANNOT_READ_ITEM,
       },
-      data,
+      itemId,
     );
   }
 }
 export class MemberCannotWriteItem extends CoreError {
-  constructor(data?: unknown) {
+  constructor(itemId: string) {
     super(
       {
         code: 'GERR003',
         statusCode: StatusCodes.FORBIDDEN,
         message: FAILURE_MESSAGES.USER_CANNOT_WRITE_ITEM,
       },
-      data,
+      itemId,
     );
   }
 }
 export class MemberCannotAdminItem extends CoreError {
-  constructor(data?: unknown) {
+  constructor(itemId: string) {
     super(
       {
         code: 'GERR004',
         statusCode: StatusCodes.FORBIDDEN,
         message: FAILURE_MESSAGES.USER_CANNOT_ADMIN_ITEM,
       },
-      data,
+      itemId,
     );
   }
 }
 export class InvalidMembership extends CoreError {
-  constructor(data?: unknown) {
+  constructor(data?: { itemId: string; memberId: string; permission: string }) {
     super(
       {
         code: 'GERR005',
@@ -75,7 +75,7 @@ export class InvalidMembership extends CoreError {
   }
 }
 export class ItemMembershipNotFound extends CoreError {
-  constructor(data?: unknown) {
+  constructor(data?: { id?: string; path?: string }) {
     super(
       {
         code: 'GERR006',
@@ -86,8 +86,8 @@ export class ItemMembershipNotFound extends CoreError {
     );
   }
 }
-export class ModifyExisting extends CoreError {
-  constructor(data?: unknown) {
+export class ModifyExistingMembership extends CoreError {
+  constructor(data?: { id: string }) {
     super(
       {
         code: 'GERR007',
@@ -99,7 +99,7 @@ export class ModifyExisting extends CoreError {
   }
 }
 export class InvalidPermissionLevel extends CoreError {
-  constructor(data?: unknown) {
+  constructor(data?: string) {
     super(
       {
         code: 'GERR008',
@@ -111,31 +111,25 @@ export class InvalidPermissionLevel extends CoreError {
   }
 }
 export class HierarchyTooDeep extends CoreError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GERR009',
-        statusCode: StatusCodes.FORBIDDEN,
-        message: FAILURE_MESSAGES.HIERARCHY_TOO_DEEP,
-      },
-      data,
-    );
+  constructor() {
+    super({
+      code: 'GERR009',
+      statusCode: StatusCodes.FORBIDDEN,
+      message: FAILURE_MESSAGES.HIERARCHY_TOO_DEEP,
+    });
   }
 }
 export class TooManyChildren extends CoreError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GERR010',
-        statusCode: StatusCodes.FORBIDDEN,
-        message: FAILURE_MESSAGES.TOO_MANY_CHILDREN,
-      },
-      data,
-    );
+  constructor() {
+    super({
+      code: 'GERR010',
+      statusCode: StatusCodes.FORBIDDEN,
+      message: FAILURE_MESSAGES.TOO_MANY_CHILDREN,
+    });
   }
 }
 export class TooManyDescendants extends CoreError {
-  constructor(data?: unknown) {
+  constructor(data?: string) {
     super(
       {
         code: 'GERR011',
@@ -147,7 +141,7 @@ export class TooManyDescendants extends CoreError {
   }
 }
 export class InvalidMoveTarget extends CoreError {
-  constructor(data?: unknown) {
+  constructor(data?: string) {
     super(
       {
         code: 'GERR012',
@@ -159,7 +153,7 @@ export class InvalidMoveTarget extends CoreError {
   }
 }
 export class MemberNotFound extends CoreError {
-  constructor(data?: unknown) {
+  constructor(data?: { email?: string; id?: string }) {
     super(
       {
         code: 'GERR013',
@@ -171,44 +165,33 @@ export class MemberNotFound extends CoreError {
   }
 }
 export class CannotModifyOtherMembers extends CoreError {
-  constructor(data?: unknown) {
+  constructor(memberId: string) {
     super(
       {
         code: 'GERR014',
         statusCode: StatusCodes.FORBIDDEN,
         message: FAILURE_MESSAGES.CANNOT_MODIFY_OTHER_MEMBERS,
       },
-      data,
+      memberId,
     );
   }
 }
-export class TooManyMemberships extends CoreError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GERR015',
-        statusCode: StatusCodes.FORBIDDEN,
-        message: FAILURE_MESSAGES.TOO_MANY_MEMBERSHIP,
-      },
-      data,
-    );
-  }
-}
+
 export class MemberCannotAccess extends CoreError {
-  constructor(data?: unknown) {
+  constructor(itemId: string) {
     super(
       {
         code: 'GERR016',
         statusCode: StatusCodes.FORBIDDEN,
         message: FAILURE_MESSAGES.MEMBER_CANNOT_ACCESS,
       },
-      data,
+      itemId,
     );
   }
 }
 
 export class MemberAlreadySignedUp extends CoreError {
-  constructor(data?: unknown) {
+  constructor(data: { email: string }) {
     super(
       {
         code: 'GERR017',
@@ -221,7 +204,7 @@ export class MemberAlreadySignedUp extends CoreError {
 }
 
 export class MemberNotSignedUp extends CoreError {
-  constructor(data?: unknown) {
+  constructor(data: { email: string }) {
     super(
       {
         code: 'GERR018',
@@ -234,35 +217,12 @@ export class MemberNotSignedUp extends CoreError {
 }
 
 export class MemberWithoutPassword extends CoreError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GERR019',
-        statusCode: StatusCodes.NOT_ACCEPTABLE,
-        message: FAILURE_MESSAGES.MEMBER_WITHOUT_PASSWORD,
-      },
-      data,
-    );
-  }
-}
-
-export class IncorrectPassword extends CoreError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GERR020',
-        statusCode: StatusCodes.UNAUTHORIZED,
-        message: FAILURE_MESSAGES.INCORRECT_PASSWORD,
-      },
-      data,
-    );
-  }
-}
-
-export class TokenExpired extends CoreError {
-  constructor(data?: unknown) {
-    // this status code is custom for the browser to know it needs to refresh its token
-    super({ code: 'GERR021', statusCode: 439, message: FAILURE_MESSAGES.TOKEN_EXPIRED }, data);
+  constructor() {
+    super({
+      code: 'GERR019',
+      statusCode: StatusCodes.NOT_ACCEPTABLE,
+      message: FAILURE_MESSAGES.MEMBER_WITHOUT_PASSWORD,
+    });
   }
 }
 
@@ -276,78 +236,30 @@ export class ChallengeFailed extends CoreError {
   }
 }
 
-export class InvalidToken extends CoreError {
-  constructor(data?: unknown) {
-    // this status code is custom for the browser to know it needs to refresh its token
-    super(
-      {
-        code: 'GERR022',
-        statusCode: StatusCodes.UNAUTHORIZED,
-        message: FAILURE_MESSAGES.INVALID_TOKEN,
-      },
-      data,
-    );
-  }
-}
-
-export class InvalidSession extends CoreError {
-  constructor(data?: unknown) {
-    // this status code is custom for the browser to know it needs to refresh its token
-    super(
-      {
-        code: 'GERR023',
-        statusCode: StatusCodes.UNAUTHORIZED,
-        message: FAILURE_MESSAGES.INVALID_SESSION,
-      },
-      data,
-    );
-  }
-}
-
-export class OrphanSession extends CoreError {
-  constructor(data?: unknown) {
-    // this status code is custom for the browser to know it needs to refresh its token
-    super(
-      {
-        code: 'GERR024',
-        statusCode: StatusCodes.UNAUTHORIZED,
-        message: FAILURE_MESSAGES.ORPHAN_SESSION,
-      },
-      data,
-    );
-  }
-}
-
 export class InvalidPassword extends CoreError {
-  constructor(data?: unknown) {
+  constructor() {
     // this status code is custom for the browser to know it needs to refresh its token
-    super(
-      {
-        code: 'GERR025',
-        statusCode: StatusCodes.UNAUTHORIZED,
-        message: FAILURE_MESSAGES.INVALID_PASSWORD,
-      },
-      data,
-    );
+    super({
+      code: 'GERR025',
+      statusCode: StatusCodes.UNAUTHORIZED,
+      message: FAILURE_MESSAGES.INVALID_PASSWORD,
+    });
   }
 }
 
 export class EmptyCurrentPassword extends CoreError {
-  constructor(data?: unknown) {
+  constructor() {
     // this status code is custom for the browser to know it needs to refresh its token
-    super(
-      {
-        code: 'GERR026',
-        statusCode: StatusCodes.UNAUTHORIZED,
-        message: FAILURE_MESSAGES.EMPTY_CURRENT_PASSWORD,
-      },
-      data,
-    );
+    super({
+      code: 'GERR026',
+      statusCode: StatusCodes.UNAUTHORIZED,
+      message: FAILURE_MESSAGES.EMPTY_CURRENT_PASSWORD,
+    });
   }
 }
 
 export class UnauthorizedMember extends CoreError {
-  constructor(_data?: unknown) {
+  constructor() {
     // this status code is custom for the browser to know it needs to refresh its token
     super({
       code: 'GERR027',
@@ -357,54 +269,38 @@ export class UnauthorizedMember extends CoreError {
   }
 }
 
-export class EmailNotAllowed extends CoreError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GERR027',
-        statusCode: StatusCodes.FORBIDDEN,
-        message: 'Your email is not allowed to sign up',
-      },
-      data,
-    );
-  }
-}
-
 export class AuthenticationError extends CoreError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GERR028',
-        statusCode: StatusCodes.UNAUTHORIZED,
-        message: 'The authentication failed',
-      },
-      data,
-    );
+  constructor() {
+    super({
+      code: 'GERR028',
+      statusCode: StatusCodes.UNAUTHORIZED,
+      message: 'The authentication failed',
+    });
   }
 }
 
 export class ItemNotFolder extends CoreError {
-  constructor(data?: unknown) {
+  constructor(parentId: string) {
     super(
       {
         code: 'GERR029',
         statusCode: StatusCodes.BAD_REQUEST,
         message: 'Item is not a folder',
       },
-      data,
+      parentId,
     );
   }
 }
 
 export class CannotDeleteOnlyAdmin extends CoreError {
-  constructor(data?: unknown) {
+  constructor(itemId: string) {
     super(
       {
         code: 'GERR030',
         statusCode: StatusCodes.FORBIDDEN,
         message: 'Cannot delete the only admin on item',
       },
-      data,
+      itemId,
     );
   }
 }
@@ -416,19 +312,6 @@ export class MissingNameOrTypeForItemError extends CoreError {
         code: 'GERR031',
         statusCode: StatusCodes.BAD_REQUEST,
         message: 'Name and type should be defined',
-      },
-      data,
-    );
-  }
-}
-
-export class InvalidItemError extends CoreError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GERR032',
-        statusCode: StatusCodes.BAD_REQUEST,
-        message: 'path should be defined',
       },
       data,
     );
@@ -449,27 +332,14 @@ export class NoFileProvided extends CoreError {
 }
 
 export class CannotReorderRootItem extends CoreError {
-  constructor(data?: unknown) {
+  constructor(itemId: string) {
     super(
       {
         code: 'GERR034',
         statusCode: StatusCodes.BAD_REQUEST,
         message: 'Cannot reorder items at root',
       },
-      data,
-    );
-  }
-}
-
-export class DatabaseError extends CoreError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GERR998',
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        message: FAILURE_MESSAGES.DATABASE_ERROR,
-      },
-      data,
+      itemId,
     );
   }
 }

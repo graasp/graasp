@@ -14,7 +14,6 @@ import { FileItemType } from '@graasp/sdk';
 
 import { BaseLogger } from '../../../../logger';
 import { TMP_FOLDER } from '../../../../utils/config';
-import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
 import FileService, { FileServiceConfig } from '../../../file/service';
 import { fileRepositoryFactory } from '../../../file/utils/factory';
@@ -112,15 +111,11 @@ export abstract class HtmlService {
    * await in parallel (note: await in a map fn does not block the map iteration).
    */
   async upload(
-    member: Actor,
+    member: Member,
     folder: string,
     uploadPath: string,
     log?: FastifyBaseLogger,
   ): Promise<Array<string>> {
-    if (!member) {
-      throw new UnauthorizedMember(member);
-    }
-
     const children = await readdir(folder);
 
     // we will flatMap with promises: first map
