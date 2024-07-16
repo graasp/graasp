@@ -1,4 +1,4 @@
-FROM etherpad/etherpad:1.8.18
+FROM etherpad/etherpad:2.1.1
 
 # pass the secret key with the correct format ([a-f\d]{64}) as argument
 ARG secret_key=<secret-api-key>
