@@ -324,7 +324,10 @@ describe('ItemRepository', () => {
         item: { name: 'child1', type: ItemType.DOCUMENT },
         member,
       });
-      await expect(itemRepository.getChildren(notAFolder)).rejects.toThrow(ItemNotFolder);
+
+      await expect(itemRepository.getChildren(notAFolder)).rejects.toMatchObject(
+        new ItemNotFolder(notAFolder.id),
+      );
     });
   });
   describe('getDescendants', () => {
