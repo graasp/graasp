@@ -78,7 +78,7 @@
     "fastify": "4.28.1",
     "fastify-nodemailer": "5.0.0",
     "fastify-plugin": "4.5.1",
-    "fluent-json-schema": "4.2.1",
+    "fluent-json-schema": "5.0.0",
     "form-data": "4.0.0",
     "french-badwords-list": "1.0.7",
     "fs-extra": "11.2.0",
