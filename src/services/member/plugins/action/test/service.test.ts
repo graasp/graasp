@@ -1,12 +1,13 @@
 import build, { clearDatabase } from '../../../../../../test/app';
 import { resolveDependency } from '../../../../../di/utils';
 import { AppDataSource } from '../../../../../plugins/datasource';
-import { UnauthorizedMember } from '../../../../../utils/errors';
+import { notUndefined } from '../../../../../utils/assertions';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { Action } from '../../../../action/entities/action';
 import { ActionService } from '../../../../action/services/action';
 import { getMemberActions } from '../../../../action/test/fixtures/actions';
 import { ItemService } from '../../../../item/service';
+import { Actor } from '../../../entities/member';
 import { MemberService } from '../../../service';
 import { ActionMemberService } from '../service';
 import { saveActionsWithItems } from './utils';
@@ -28,7 +29,7 @@ const getActionMemberService = () => {
 
 describe('Action member service', () => {
   let app;
-  let actor;
+  let actor: Actor;
 
   afterEach(async () => {
     jest.clearAllMocks();
@@ -37,19 +38,22 @@ describe('Action member service', () => {
   });
 
   describe('Test getFilteredActions', () => {
-    it('throw for signed out user', async () => {
-      ({ app } = await build({ member: null }));
+    // FIX this test is now obsolete, as the endpoint checks the member authentication
+    // the type should remove the need to check
+    // it('throw for signed out user', async () => {
+    //   ({ app } = await build({ member: null }));
 
-      await expect(
-        getActionMemberService().getFilteredActions(actor, buildRepositories(), {}),
-      ).rejects.toBeInstanceOf(UnauthorizedMember);
-    });
+    //   await expect(
+    //     getActionMemberService().getFilteredActions(actor, buildRepositories(), {}),
+    //   ).rejects.toBeInstanceOf(UnauthorizedMember);
+    // });
 
     it('get filtered actions by start and end date for auth member ', async () => {
       ({ app, actor } = await build());
+      const member = notUndefined(actor);
       await saveActionsWithItems(actor);
       const result = await getActionMemberService().getFilteredActions(
-        actor,
+        member,
         buildRepositories(),
         {},
       );
@@ -58,13 +62,14 @@ describe('Action member service', () => {
 
     it("get filtered actions by start and end date for auth member shouldn't contain actions for items with no permisson", async () => {
       ({ app, actor } = await build());
+      const member = notUndefined(actor);
       await saveActionsWithItems(actor, { saveActionForNotOwnedItem: true });
       const result = await getActionMemberService().getFilteredActions(
-        actor,
+        member,
         buildRepositories(),
         {},
       );
-      const allMemberActions = await getMemberActions(rawRepository, actor.id);
+      const allMemberActions = await getMemberActions(rawRepository, member.id);
       // as there's an action user don't have permission over the item so he will not get
       expect(allMemberActions.length).not.toEqual(result.length);
     });
