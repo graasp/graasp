@@ -898,8 +898,8 @@ describe('Membership routes tests', () => {
           url: `/item-memberships/${itemMembership.id}`,
         });
         expect(response.statusCode).toEqual(StatusCodes.FORBIDDEN);
-
-        expect(response.json()).toMatchObject(new CannotDeleteOnlyAdmin(expect.anything()));
+        const res = await response.json();
+        expect(res).toMatchObject(new CannotDeleteOnlyAdmin({ id: expect.anything() }));
       });
     });
   });
