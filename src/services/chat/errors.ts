@@ -50,14 +50,14 @@ export class MemberCannotDeleteMessage extends GraaspChatboxError {
 }
 
 export class MemberCannotAccessMention extends GraaspChatboxError {
-  constructor(data?: unknown) {
+  constructor(data: { id: string }) {
     super(
       {
         code: 'GICERR004',
         statusCode: StatusCodes.UNAUTHORIZED,
         message: 'Member can only view own mentions',
       },
-      data,
+      data.id,
     );
   }
 }
