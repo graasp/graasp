@@ -193,7 +193,7 @@ export class MemberPasswordService {
     // Fetch the member's password
     const memberPassword = await memberPasswordRepository.getForMemberId(member.id);
     if (!memberPassword) {
-      throw new MemberWithoutPassword({ email });
+      throw new MemberWithoutPassword();
     }
     // Validate credentials to build token
     if (await comparePasswords(password, memberPassword.password)) {

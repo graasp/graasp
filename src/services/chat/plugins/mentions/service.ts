@@ -91,7 +91,7 @@ export class MentionService {
     const mentionContent = await mentionRepository.get(mentionId);
 
     if (mentionContent.member.id !== actor.id) {
-      throw new MemberCannotAccessMention(mentionId);
+      throw new MemberCannotAccessMention({ id: mentionId });
     }
 
     return mentionContent;

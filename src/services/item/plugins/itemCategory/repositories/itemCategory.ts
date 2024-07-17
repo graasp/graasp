@@ -48,7 +48,7 @@ export const ItemCategoryRepository = AppDataSource.getRepository(ItemCategory).
    */
   async getForMemberExport(memberId: string): Promise<ItemCategory[]> {
     if (!memberId) {
-      throw new MemberNotFound();
+      throw new MemberNotFound({ id: memberId });
     }
 
     return this.find({

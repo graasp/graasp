@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifyPluginAsync } from 'fastify';
 
 import { resolveDependency } from '../../../../di/utils';
+import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import { exportMemberData } from './schemas/schemas';
@@ -20,11 +21,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: isAuthenticated,
     },
     async ({ user }, reply) => {
+      const member = notUndefined(user?.member);
       db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
 
         await exportMemberDataService.requestDataExport({
-          actor: user?.member,
+          actor: member,
           repositories,
         });
       });

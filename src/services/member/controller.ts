@@ -96,7 +96,7 @@ const controller: FastifyPluginAsync = async (fastify) => {
       // handle partial change
       // question: you can never remove a key?
       if (member.id !== id) {
-        throw new CannotModifyOtherMembers(id);
+        throw new CannotModifyOtherMembers({ id });
       }
 
       return db.transaction(async (manager) => {

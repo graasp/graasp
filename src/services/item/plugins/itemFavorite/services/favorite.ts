@@ -2,10 +2,9 @@ import { singleton } from 'tsyringe';
 
 import { PermissionLevel } from '@graasp/sdk';
 
-import { UnauthorizedMember } from '../../../../../utils/errors';
 import { Repositories } from '../../../../../utils/repositories';
 import { filterOutPackedItems } from '../../../../authorization';
-import { Actor } from '../../../../member/entities/member';
+import { Member } from '../../../../member/entities/member';
 import { ItemService } from '../../../service';
 import { PackedItemFavorite } from '../entities/ItemFavorite';
 
@@ -17,12 +16,8 @@ export class FavoriteService {
     this.itemService = itemService;
   }
 
-  async getOwn(actor: Actor, repositories: Repositories): Promise<PackedItemFavorite[]> {
+  async getOwn(actor: Member, repositories: Repositories): Promise<PackedItemFavorite[]> {
     const { itemFavoriteRepository } = repositories;
-
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
 
     const favorites = await itemFavoriteRepository.getFavoriteForMember(actor.id);
 
@@ -45,24 +40,16 @@ export class FavoriteService {
     });
   }
 
-  async post(actor: Actor, repositories: Repositories, itemId: string) {
+  async post(actor: Member, repositories: Repositories, itemId: string) {
     const { itemFavoriteRepository } = repositories;
-
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
 
     // get and check permissions
     const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Read);
     return itemFavoriteRepository.post(item.id, actor.id);
   }
 
-  async delete(actor: Actor, repositories: Repositories, itemId: string) {
+  async delete(actor: Member, repositories: Repositories, itemId: string) {
     const { itemFavoriteRepository } = repositories;
-
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
 
     return itemFavoriteRepository.deleteOne(itemId, actor.id);
   }

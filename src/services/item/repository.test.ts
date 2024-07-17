@@ -316,6 +316,19 @@ describe('ItemRepository', () => {
         expect(() => expectItem(data[idx], notAFolder)).toThrow(Error);
       });
     });
+
+    it('returns error without leaking information', async () => {
+      const member = await saveMember();
+
+      const { item: notAFolder } = await testUtils.saveItemAndMembership({
+        item: { name: 'child1', type: ItemType.DOCUMENT },
+        member,
+      });
+
+      await expect(itemRepository.getChildren(notAFolder)).rejects.toMatchObject(
+        new ItemNotFolder({ id: notAFolder.id }),
+      );
+    });
   });
   describe('getDescendants', () => {
     it('Returns successfully', async () => {

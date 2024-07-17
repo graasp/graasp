@@ -232,7 +232,7 @@ describe('Member routes tests', () => {
           url: `/members/${memberId}`,
         });
         expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
-        expect(response.json()).toEqual(new MemberNotFound(memberId));
+        expect(response.json()).toEqual(new MemberNotFound({ id: memberId }));
       });
     });
   });
@@ -350,7 +350,7 @@ describe('Member routes tests', () => {
         });
 
         // TODO: currently we do not return empty values
-        expect(response.json().errors[0]).toEqual(new MemberNotFound(memberId));
+        expect(response.json().errors[0]).toEqual(new MemberNotFound({ id: memberId }));
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
     });
@@ -423,7 +423,7 @@ describe('Member routes tests', () => {
         });
 
         expect(response.statusCode).toBe(StatusCodes.OK);
-        expect(response.json().errors[0]).toEqual(new MemberNotFound(email));
+        expect(response.json().errors[0]).toEqual(new MemberNotFound({ email }));
       });
 
       /**
@@ -585,7 +585,7 @@ describe('Member routes tests', () => {
         expect(m?.name).not.toEqual(newName);
 
         expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
-        expect(response.json()).toEqual(new CannotModifyOtherMembers(member.id));
+        expect(response.json()).toEqual(new CannotModifyOtherMembers({ id: member.id }));
       });
     });
   });
@@ -630,7 +630,7 @@ describe('Member routes tests', () => {
         expect(m).toBeTruthy();
 
         expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
-        expect(response.json()).toEqual(new CannotModifyOtherMembers(member.id));
+        expect(response.json()).toEqual(new CannotModifyOtherMembers({ id: member.id }));
       });
     });
   });

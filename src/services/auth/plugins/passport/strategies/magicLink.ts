@@ -31,7 +31,7 @@ export default (
           } else {
             // Authentication refused
             return done(
-              options?.propagateError ? new MemberNotFound(sub) : new UnauthorizedMember(),
+              options?.propagateError ? new MemberNotFound({ id: sub }) : new UnauthorizedMember(),
               false,
             );
           }

@@ -11,7 +11,7 @@ export const MemberPasswordRepository = AppDataSource.getRepository(MemberPasswo
     // additional check that id is not null
     // o/w empty parameter to findOneBy return the first entry
     if (!memberId) {
-      throw new MemberNotFound(memberId);
+      throw new MemberNotFound({ id: memberId });
     }
 
     const memberPassword = this.findOneBy({ member: { id: memberId } });

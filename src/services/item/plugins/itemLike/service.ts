@@ -1,8 +1,7 @@
-import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
 import { filterOutPackedItems } from '../../../authorization';
 import { ItemService } from '../../../item/service';
-import { Actor } from '../../../member/entities/member';
+import { Actor, Member } from '../../../member/entities/member';
 
 export class ItemLikeService {
   private itemService: ItemService;
@@ -11,10 +10,7 @@ export class ItemLikeService {
     this.itemService = itemService;
   }
 
-  async getForMember(actor: Actor, repositories: Repositories) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
+  async getForMember(actor: Member, repositories: Repositories) {
     const { itemLikeRepository } = repositories;
 
     // only own items
@@ -42,10 +38,7 @@ export class ItemLikeService {
     return itemLikeRepository.getForItem(itemId);
   }
 
-  async removeOne(actor: Actor, repositories: Repositories, itemId: string) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
+  async removeOne(actor: Member, repositories: Repositories, itemId: string) {
     const { itemLikeRepository } = repositories;
 
     // QUESTION: allow public to be liked?
@@ -54,10 +47,7 @@ export class ItemLikeService {
     return itemLikeRepository.deleteOne(actor, item);
   }
 
-  async post(actor: Actor, repositories: Repositories, itemId: string) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
+  async post(actor: Member, repositories: Repositories, itemId: string) {
     const { itemLikeRepository } = repositories;
 
     // QUESTION: allow public to be liked?

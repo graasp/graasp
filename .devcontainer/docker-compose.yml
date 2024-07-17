@@ -152,7 +152,7 @@ services:
     container_name: graasp-localstack
     image: localstack/localstack
     volumes:
-      - ${TMPDIR}/localstack:/tmp/graasp-localstack
+      - ../tmp:/tmp/graasp-localstack
       - './localstack/init.sh:/etc/localstack/init/ready.d/init-aws.sh'
       - /var/run/docker.sock:/var/run/docker.sock
     environment:

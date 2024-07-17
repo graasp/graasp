@@ -101,7 +101,7 @@ export class MemberService {
 
   async deleteOne(actor: Actor, { memberRepository }: Repositories, id: UUID) {
     if (!actor || actor.id !== id) {
-      throw new CannotModifyOtherMembers(id);
+      throw new CannotModifyOtherMembers({ id });
     }
 
     return memberRepository.deleteOne(id);

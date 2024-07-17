@@ -387,8 +387,8 @@ describe('Chat Message tests', () => {
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat/${chatMessage.id}`,
           payload,
         });
-
-        expect(response.json()).toMatchObject(new MemberCannotEditMessage(expect.anything()));
+        const res = await response.json();
+        expect(res).toMatchObject(new MemberCannotEditMessage(expect.anything()));
       });
     });
   });
@@ -492,8 +492,8 @@ describe('Chat Message tests', () => {
           method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat/${chatMessage.id}`,
         });
-
-        expect(response.json()).toMatchObject(new MemberCannotDeleteMessage(expect.anything()));
+        const res = await response.json();
+        expect(res).toMatchObject(new MemberCannotDeleteMessage({ id: expect.anything() }));
       });
     });
   });

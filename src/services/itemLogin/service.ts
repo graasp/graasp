@@ -2,7 +2,6 @@ import { FastifyInstance } from 'fastify';
 
 import { ItemLoginSchemaType, PermissionLevel, UUID } from '@graasp/sdk';
 
-import { UnauthorizedMember } from '../../utils/errors';
 import { Repositories } from '../../utils/repositories';
 import { ItemService } from '../item/service';
 import { Actor, Member } from '../member/entities/member';
@@ -119,10 +118,7 @@ export class ItemLoginService {
     return bondMember;
   }
 
-  async put(actor: Actor, repositories: Repositories, itemId: string, type?: ItemLoginSchemaType) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
+  async put(actor: Member, repositories: Repositories, itemId: string, type?: ItemLoginSchemaType) {
     const { itemLoginSchemaRepository } = repositories;
 
     const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
@@ -130,10 +126,7 @@ export class ItemLoginService {
     return itemLoginSchemaRepository.put(item, type);
   }
 
-  async delete(actor: Actor, repositories: Repositories, itemId: string) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
+  async delete(actor: Member, repositories: Repositories, itemId: string) {
     const { itemLoginSchemaRepository } = repositories;
 
     const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);

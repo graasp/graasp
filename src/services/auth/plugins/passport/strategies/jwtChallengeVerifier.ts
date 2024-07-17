@@ -47,7 +47,7 @@ export default (
           } else {
             // Authentication refused
             return done(
-              spreadException ? new MemberNotFound(sub) : new UnauthorizedMember(),
+              spreadException ? new MemberNotFound({ id: sub }) : new UnauthorizedMember(),
               false,
             );
           }

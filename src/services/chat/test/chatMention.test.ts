@@ -187,7 +187,7 @@ describe('Chat Mention tests', () => {
           payload,
         });
 
-        expect(response.json()).toMatchObject(new MemberCannotAccessMention(mention.id));
+        expect(response.json()).toMatchObject(new MemberCannotAccessMention(mention));
       });
     });
   });
@@ -255,7 +255,9 @@ describe('Chat Mention tests', () => {
           url: `${ITEMS_ROUTE_PREFIX}/mentions/${mention.id}`,
         });
 
-        expect(response.json()).toMatchObject(new MemberCannotAccessMention(expect.anything()));
+        expect(response.json()).toMatchObject(
+          new MemberCannotAccessMention({ id: expect.anything() }),
+        );
       });
     });
   });

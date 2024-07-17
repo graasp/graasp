@@ -11,7 +11,6 @@ import {
 
 import { MAIL } from '../../../../../plugins/mailer/langs/constants';
 import { MailerService } from '../../../../../plugins/mailer/service';
-import { UnauthorizedMember } from '../../../../../utils/errors';
 import { Repositories } from '../../../../../utils/repositories';
 import { EXPORT_FILE_EXPIRATION, ZIP_MIMETYPE } from '../../../../action/constants/constants';
 import {
@@ -21,7 +20,7 @@ import {
 } from '../../../../action/utils/export';
 import { validatePermission } from '../../../../authorization';
 import FileService from '../../../../file/service';
-import { Actor, Member } from '../../../../member/entities/member';
+import { Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 import { ItemService } from '../../../service';
 import { ActionItemService } from '../service';
@@ -47,15 +46,11 @@ export class ActionRequestExportService {
   }
 
   async request(
-    member: Actor,
+    member: Member,
     repositories: Repositories,
     itemId: UUID,
     format: ExportActionsFormatting,
   ) {
-    if (!member) {
-      throw new UnauthorizedMember(member);
-    }
-
     // check member has admin access to the item
     const item = await this.itemService.get(member, repositories, itemId);
     await validatePermission(repositories, PermissionLevel.Admin, member, item);

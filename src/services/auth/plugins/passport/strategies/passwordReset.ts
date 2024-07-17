@@ -27,7 +27,7 @@ export default (
         } else {
           // Authentication refused
           return done(
-            options?.propagateError ? new MemberNotFound(uuid) : new UnauthorizedMember(),
+            options?.propagateError ? new MemberNotFound({ id: uuid }) : new UnauthorizedMember(),
             false,
           );
         }

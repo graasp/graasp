@@ -7,7 +7,6 @@ import { FastifyReply } from 'fastify';
 
 import { FILE_REPOSITORY_DI_KEY } from '../../di/constants';
 import { BaseLogger } from '../../logger';
-import { UnauthorizedMember } from '../../utils/errors';
 import { Actor, Member } from '../member/entities/member';
 import { LocalFileConfiguration, S3FileConfiguration } from './interfaces/configuration';
 import { FileRepository } from './interfaces/fileRepository';
@@ -42,10 +41,6 @@ class FileService {
   }
 
   async upload(member: Member, data: { file: Readable; filepath: string; mimetype?: string }) {
-    if (!member) {
-      throw new UnauthorizedMember(member);
-    }
-
     const { file, filepath, mimetype } = data;
 
     if (!file || !filepath) {

@@ -43,7 +43,8 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
     '/recycled',
     { schema: getRecycledItemDatas, preHandler: isAuthenticated },
     async ({ user }) => {
-      const result = await recycleBinService.getAll(user?.member, buildRepositories());
+      const member = notUndefined(user?.member);
+      const result = await recycleBinService.getAll(member, buildRepositories());
       return result;
     },
   );

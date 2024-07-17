@@ -1,6 +1,7 @@
 import { FastifyPluginAsync } from 'fastify';
 
 import { resolveDependency } from '../../../../di/utils';
+import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import common, { create, deleteOne, getFavorite } from './schemas';
@@ -18,7 +19,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/favorite',
     { schema: getFavorite, preHandler: isAuthenticated },
     async ({ user }) => {
-      return favoriteService.getOwn(user?.member, buildRepositories());
+      const member = notUndefined(user?.member);
+      return favoriteService.getOwn(member, buildRepositories());
     },
   );
 
@@ -27,8 +29,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/favorite/:itemId',
     { schema: create, preHandler: isAuthenticated },
     async ({ user, params: { itemId } }) => {
+      const member = notUndefined(user?.member);
       return db.transaction(async (manager) => {
-        return favoriteService.post(user?.member, buildRepositories(manager), itemId);
+        return favoriteService.post(member, buildRepositories(manager), itemId);
       });
     },
   );
@@ -38,8 +41,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/favorite/:itemId',
     { schema: deleteOne, preHandler: isAuthenticated },
     async ({ user, params: { itemId } }) => {
+      const member = notUndefined(user?.member);
       return db.transaction(async (manager) => {
-        return favoriteService.delete(user?.member, buildRepositories(manager), itemId);
+        return favoriteService.delete(member, buildRepositories(manager), itemId);
       });
     },
   );

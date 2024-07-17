@@ -7,7 +7,6 @@ import { BaseLogger } from '../../../../logger';
 import { MAIL } from '../../../../plugins/mailer/langs/constants';
 import { MailerService } from '../../../../plugins/mailer/service';
 import { resultOfToList } from '../../../../services/utils';
-import { UnauthorizedMember } from '../../../../utils/errors';
 import HookManager from '../../../../utils/hook';
 import { Repositories } from '../../../../utils/repositories';
 import { filterOutHiddenItems } from '../../../authorization';
@@ -169,10 +168,7 @@ export class ItemPublishedService {
     return published;
   }
 
-  async delete(actor: Actor, repositories: Repositories, itemId: string) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
+  async delete(actor: Member, repositories: Repositories, itemId: string) {
     const { itemPublishedRepository } = repositories;
 
     const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);

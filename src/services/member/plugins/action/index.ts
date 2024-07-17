@@ -4,6 +4,7 @@ import { FileItemType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
 import { IdParam } from '../../../../types';
+import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import {
@@ -28,7 +29,8 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
     '/actions',
     { schema: getMemberFilteredActions, preHandler: isAuthenticated },
     async ({ user, query }) => {
-      return actionMemberService.getFilteredActions(user?.member, buildRepositories(), query);
+      const member = notUndefined(user?.member);
+      return actionMemberService.getFilteredActions(member, buildRepositories(), query);
     },
   );
   // todo: delete self data
@@ -37,8 +39,9 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
     '/members/:id/delete',
     { schema: deleteAllById, preHandler: isAuthenticated },
     async ({ user, params: { id } }) => {
+      const member = notUndefined(user?.member);
       return db.transaction(async (manager) => {
-        return actionMemberService.deleteAllForMember(user?.member, buildRepositories(manager), id);
+        return actionMemberService.deleteAllForMember(member, buildRepositories(manager), id);
       });
     },
   );

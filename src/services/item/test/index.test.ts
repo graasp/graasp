@@ -568,7 +568,7 @@ describe('Item routes tests', () => {
         });
 
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-        expect(response.json()).toMatchObject(new ItemNotFolder(parent.id));
+        expect(response.json()).toMatchObject(new ItemNotFolder({ id: parent.id }));
       });
     });
   });

@@ -37,27 +37,27 @@ export class MemberCannotEditMessage extends GraaspChatboxError {
 }
 
 export class MemberCannotDeleteMessage extends GraaspChatboxError {
-  constructor(data?: unknown) {
+  constructor(data: { id: string }) {
     super(
       {
         code: 'GICERR005',
         statusCode: StatusCodes.UNAUTHORIZED,
         message: 'Member can only delete own messages',
       },
-      data,
+      data.id,
     );
   }
 }
 
 export class MemberCannotAccessMention extends GraaspChatboxError {
-  constructor(data?: unknown) {
+  constructor(data: { id: string }) {
     super(
       {
         code: 'GICERR004',
         statusCode: StatusCodes.UNAUTHORIZED,
         message: 'Member can only view own mentions',
       },
-      data,
+      data.id,
     );
   }
 }

@@ -103,7 +103,7 @@ export class ItemRepository {
     } = args;
 
     if (parent && !isItemType(parent, ItemType.FOLDER)) {
-      throw new ItemNotFolder(parent);
+      throw new ItemNotFolder({ id: parent.id });
     }
 
     // TODO: extra
@@ -185,7 +185,7 @@ export class ItemRepository {
     options: { withOrder?: boolean } = {},
   ): Promise<Item[]> {
     if (!isItemType(parent, ItemType.FOLDER)) {
-      throw new ItemNotFolder(parent);
+      throw new ItemNotFolder({ id: parent.id });
     }
 
     const query = this.repository
@@ -358,7 +358,7 @@ export class ItemRepository {
 
       // cannot move inside non folder item
       if (!isItemType(parentItem, ItemType.FOLDER)) {
-        throw new ItemNotFolder(parentItemId);
+        throw new ItemNotFolder({ id: parentItemId });
       }
 
       // fail if
@@ -458,7 +458,7 @@ export class ItemRepository {
   ): Promise<{ copyRoot: Item; treeCopyMap: Map<string, { original: Item; copy: Item }> }> {
     // cannot copy inside non folder item
     if (parentItem && !isItemType(parentItem, ItemType.FOLDER)) {
-      throw new ItemNotFolder(parentItem.id);
+      throw new ItemNotFolder({ id: parentItem.id });
     }
 
     // copy (memberships from origin are not copied/kept)

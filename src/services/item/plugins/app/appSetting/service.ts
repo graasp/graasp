@@ -136,7 +136,7 @@ export class AppSettingService {
 
   async copyForItem(actor: Actor, repositories: Repositories, original: Item, copy: Item) {
     if (!actor) {
-      throw new UnauthorizedMember(actor);
+      throw new UnauthorizedMember();
     }
     try {
       const appSettings = await this.getForItem(actor, repositories, original.id);

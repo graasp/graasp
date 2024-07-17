@@ -113,6 +113,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           user,
           query: { parentId },
         } = request;
+        const member = notUndefined(user?.member);
 
         // get the formData from the request
         const formData = await request.file();
@@ -124,7 +125,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         return await db.transaction(async (manager) => {
           const repositories = buildRepositories(manager);
-          const item = await itemService.post(user?.member, repositories, {
+          const item = await itemService.post(member, repositories, {
             item: itemPayload,
             parentId,
             geolocation,
@@ -178,7 +179,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   // get own
   fastify.get('/own', { schema: getOwn, preHandler: isAuthenticated }, async ({ user }) => {
-    return itemService.getOwn(user?.member, buildRepositories());
+    const member = notUndefined(user?.member);
+    return itemService.getOwn(member, buildRepositories());
   });
 
   // get shared with
@@ -189,7 +191,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: isAuthenticated,
     },
     async ({ user, query }) => {
-      return itemService.getShared(user?.member, buildRepositories(), query.permission);
+      const member = notUndefined(user?.member);
+      return itemService.getShared(member, buildRepositories(), query.permission);
     },
   );
 
@@ -242,9 +245,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         params: { id },
         body,
       } = request;
+      const member = notUndefined(user?.member);
       return await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
-        const item = await itemService.patch(user?.member, repositories, id, body);
+        const item = await itemService.patch(member, repositories, id, body);
         await actionItemService.postPatchAction(request, repositories, item);
         return item;
       });

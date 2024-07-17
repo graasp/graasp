@@ -38,7 +38,7 @@ class MemberProfileRepository extends AbstractRepository<MemberProfile> {
     },
   ): Promise<MemberProfile | null> {
     if (!memberId) {
-      throw new MemberNotFound();
+      throw new MemberNotFound({ id: memberId });
     }
     const memberProfile = await this.repository.findOne({
       where: { member: { id: memberId }, visibility: filter?.visibility },
