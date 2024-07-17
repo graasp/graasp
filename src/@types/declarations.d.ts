@@ -7,7 +7,6 @@ import { RecaptchaActionType } from '@graasp/sdk';
 
 import { Item } from '../services/item/entities/Item';
 import { create, updateOne } from '../services/item/fluent-schema';
-import { EtherpadItemService } from '../services/item/plugins/etherpad/service';
 import { Actor, Member } from '../services/member/entities/member';
 import { WebsocketService } from '../services/websockets/ws-service';
 
@@ -22,7 +21,6 @@ declare module 'fastify' {
       extendExtrasUpdateSchema: ReturnType<typeof updateOne>;
     };
     websockets: WebsocketService;
-    etherpad: EtherpadItemService;
     corsPluginOptions: any;
   }
 
