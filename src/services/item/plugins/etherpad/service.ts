@@ -1,10 +1,12 @@
 import { add, isBefore } from 'date-fns';
-
-import { FastifyBaseLogger } from 'fastify';
+import { inject, singleton } from 'tsyringe';
+import { v4 } from 'uuid';
 
 import Etherpad, { AuthorSession } from '@graasp/etherpad-api';
 import { EtherpadItemExtra, ItemType, PermissionLevel } from '@graasp/sdk';
 
+import { ETHERPAD_NAME_FACTORY_DI_KEY } from '../../../../di/constants';
+import { BaseLogger } from '../../../../logger';
 import { MemberCannotWriteItem } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
@@ -13,31 +15,39 @@ import { Item, isItemType } from '../../entities/Item';
 import { ItemService } from '../../service';
 import { MAX_SESSIONS_IN_COOKIE, PLUGIN_NAME } from './constants';
 import { EtherpadServerError, ItemMissingExtraError } from './errors';
+import { EtherpadServiceConfig } from './serviceConfig';
+import { PadNameFactory } from './types';
+
+export class RandomPadNameFactory implements PadNameFactory {
+  public getName() {
+    return v4();
+  }
+}
 
 /**
  * Handles interactions between items and the remote Etherpad service
  * Exposes API to manage etherpad items inside Graasp
  */
+@singleton()
 export class EtherpadItemService {
   public readonly api: Etherpad;
-  private readonly padNameFactory: () => string;
+  private readonly padNameFactory: PadNameFactory;
   private readonly publicUrl: string;
   private readonly cookieDomain: string;
   private readonly itemService: ItemService;
-  private readonly log: FastifyBaseLogger;
+  private readonly log: BaseLogger;
 
   constructor(
     etherpad: Etherpad,
-    padNameFactory: () => string,
-    publicUrl: string,
-    cookieDomain: string,
+    @inject(ETHERPAD_NAME_FACTORY_DI_KEY) padNameFactory: PadNameFactory,
+    etherPadConfig: EtherpadServiceConfig,
     itemService: ItemService,
-    log: FastifyBaseLogger,
+    log: BaseLogger,
   ) {
     this.api = etherpad;
     this.padNameFactory = padNameFactory;
-    this.publicUrl = publicUrl;
-    this.cookieDomain = cookieDomain;
+    this.publicUrl = etherPadConfig.publicUrl;
+    this.cookieDomain = etherPadConfig.cookieDomain;
     this.itemService = itemService;
     this.log = log;
   }
@@ -49,7 +59,7 @@ export class EtherpadItemService {
     options: { action: 'create'; initHtml?: string } | { action: 'copy'; sourceID: string },
   ) {
     // new pad name
-    const padName = this.padNameFactory();
+    const padName = this.padNameFactory.getName();
 
     // map pad to a group containing only itself
     const { groupID } = await this.api.createGroupIfNotExistsFor({

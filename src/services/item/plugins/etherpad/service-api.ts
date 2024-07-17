@@ -1,47 +1,16 @@
-import { v4 } from 'uuid';
-
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
-
-import Etherpad from '@graasp/etherpad-api';
 
 import { resolveDependency } from '../../../../di/utils';
 import { notUndefined } from '../../../../utils/assertions';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import { ItemService } from '../../service';
-import { ETHERPAD_API_VERSION } from './constants';
-import { wrapErrors } from './etherpad';
 import { createEtherpad, getEtherpadFromItem } from './schemas';
 import { EtherpadItemService } from './service';
-import { EtherpadPluginOptions } from './types';
-import { validatePluginOptions } from './utils';
 
-const plugin: FastifyPluginAsync<EtherpadPluginOptions> = async (fastify, options) => {
-  // get services from server instance
-  const { log } = fastify;
-
+const plugin: FastifyPluginAsync = async (fastify) => {
   const itemService = resolveDependency(ItemService);
-
-  const { url: etherpadUrl, publicUrl, apiKey, cookieDomain } = validatePluginOptions(options);
-
-  // connect to etherpad server
-  const etherpad = wrapErrors(
-    new Etherpad({
-      url: etherpadUrl,
-      apiKey,
-      apiVersion: ETHERPAD_API_VERSION,
-    }),
-  );
-
-  const etherpadItemService = new EtherpadItemService(
-    etherpad,
-    () => v4(),
-    publicUrl,
-    cookieDomain,
-    itemService,
-    log,
-  );
-  fastify.decorate('etherpad', etherpadItemService);
+  const etherpadItemService = resolveDependency(EtherpadItemService);
 
   // create a route prefix for etherpad
   await fastify.register(

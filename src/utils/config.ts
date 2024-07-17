@@ -16,8 +16,11 @@ import {
   LocalFileConfiguration,
   S3FileConfiguration,
 } from '../services/file/interfaces/configuration';
+import { API_KEY_FORMAT } from '../services/item/plugins/etherpad/serviceConfig';
 import { notUndefined } from './assertions';
 import { ExpectedEnvVariable } from './errors';
+import { validateEnv } from './validators/utils';
+import { RegexValidator, UrlValidator } from './validators/validators';
 
 enum Environment {
   production = 'production',
@@ -324,9 +327,10 @@ export const H5P_LOCAL_CONFIG = {
 export const H5P_FILE_STORAGE_CONFIG =
   H5P_FILE_STORAGE_TYPE === ItemType.S3_FILE ? H5P_S3_CONFIG : H5P_LOCAL_CONFIG;
 
-export const ETHERPAD_URL = process.env.ETHERPAD_URL;
+export const ETHERPAD_URL = validateEnv('ETHERPAD_URL', new UrlValidator());
+
 export const ETHERPAD_PUBLIC_URL = process.env.ETHERPAD_PUBLIC_URL;
-export const ETHERPAD_API_KEY = process.env.ETHERPAD_API_KEY;
+export const ETHERPAD_API_KEY = validateEnv('ETHERPAD_API_KEY', new RegexValidator(API_KEY_FORMAT));
 export const ETHERPAD_COOKIE_DOMAIN = process.env.ETHERPAD_COOKIE_DOMAIN;
 
 export const FILE_ITEM_TYPE = S3_FILE_ITEM_PLUGIN ? ItemType.S3_FILE : ItemType.LOCAL_FILE;

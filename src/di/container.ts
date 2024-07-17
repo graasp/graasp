@@ -3,11 +3,16 @@ import { MeiliSearch } from 'meilisearch';
 
 import { FastifyInstance } from 'fastify';
 
+import Etherpad from '@graasp/etherpad-api';
+
 import { CRON_3AM_MONDAY, JobServiceBuilder } from '../jobs';
 import { BaseLogger } from '../logger';
 import { MailerService } from '../plugins/mailer/service';
 import FileService from '../services/file/service';
 import { fileRepositoryFactory } from '../services/file/utils/factory';
+import { wrapEtherpadErrors } from '../services/item/plugins/etherpad/etherpad';
+import { RandomPadNameFactory } from '../services/item/plugins/etherpad/service';
+import { EtherpadServiceConfig } from '../services/item/plugins/etherpad/serviceConfig';
 import FileItemService from '../services/item/plugins/file/service';
 import { H5PService } from '../services/item/plugins/html/h5p/service';
 import { ImportExportService } from '../services/item/plugins/importExport/service';
@@ -34,6 +39,7 @@ import {
   S3_FILE_ITEM_PLUGIN_OPTIONS,
 } from '../utils/config';
 import {
+  ETHERPAD_NAME_FACTORY_DI_KEY,
   FASTIFY_LOGGER_DI_KEY,
   FILE_ITEM_TYPE_DI_KEY,
   FILE_REPOSITORY_DI_KEY,
@@ -126,4 +132,21 @@ export const registerDependencies = (instance: FastifyInstance) => {
       pattern: CRON_3AM_MONDAY,
     })
     .build();
+
+  // Register EtherPad
+  const etherPadConfig = resolveDependency(EtherpadServiceConfig);
+
+  // connect to etherpad server
+  registerValue(
+    Etherpad,
+    wrapEtherpadErrors(
+      new Etherpad({
+        url: etherPadConfig.url,
+        apiKey: etherPadConfig.apiKey,
+        apiVersion: etherPadConfig.apiVersion,
+      }),
+    ),
+  );
+
+  registerValue(ETHERPAD_NAME_FACTORY_DI_KEY, new RandomPadNameFactory());
 };

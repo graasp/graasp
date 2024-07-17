@@ -7,10 +7,6 @@ import {
   APPS_PUBLISHER_ID,
   APP_ITEMS_PREFIX,
   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
-  ETHERPAD_API_KEY,
-  ETHERPAD_COOKIE_DOMAIN,
-  ETHERPAD_PUBLIC_URL,
-  ETHERPAD_URL,
   FILE_ITEM_PLUGIN_OPTIONS,
   ITEMS_ROUTE_PREFIX,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
@@ -109,12 +105,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         // H5P plugin must be registered before ZIP
         fastify.register(graaspH5PPlugin);
 
-        fastify.register(graaspEtherpadPlugin, {
-          url: ETHERPAD_URL,
-          apiKey: ETHERPAD_API_KEY,
-          publicUrl: ETHERPAD_PUBLIC_URL,
-          cookieDomain: ETHERPAD_COOKIE_DOMAIN,
-        });
+        fastify.register(graaspEtherpadPlugin);
 
         fastify.register(graaspZipPlugin);
 
