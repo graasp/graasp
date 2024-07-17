@@ -326,7 +326,7 @@ describe('ItemRepository', () => {
       });
 
       await expect(itemRepository.getChildren(notAFolder)).rejects.toMatchObject(
-        new ItemNotFolder(notAFolder.id),
+        new ItemNotFolder({ id: notAFolder.id }),
       );
     });
   });

@@ -165,14 +165,14 @@ export class MemberNotFound extends CoreError {
   }
 }
 export class CannotModifyOtherMembers extends CoreError {
-  constructor(memberId: string) {
+  constructor(member: { id: string }) {
     super(
       {
         code: 'GERR014',
         statusCode: StatusCodes.FORBIDDEN,
         message: FAILURE_MESSAGES.CANNOT_MODIFY_OTHER_MEMBERS,
       },
-      memberId,
+      member.id,
     );
   }
 }
@@ -280,27 +280,27 @@ export class AuthenticationError extends CoreError {
 }
 
 export class ItemNotFolder extends CoreError {
-  constructor(parentId: string) {
+  constructor(parent: { id: string }) {
     super(
       {
         code: 'GERR029',
         statusCode: StatusCodes.BAD_REQUEST,
         message: 'Item is not a folder',
       },
-      parentId,
+      parent.id,
     );
   }
 }
 
 export class CannotDeleteOnlyAdmin extends CoreError {
-  constructor(itemId: string) {
+  constructor(item: { id: string }) {
     super(
       {
         code: 'GERR030',
         statusCode: StatusCodes.FORBIDDEN,
         message: 'Cannot delete the only admin on item',
       },
-      itemId,
+      item.id,
     );
   }
 }

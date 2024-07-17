@@ -203,7 +203,7 @@ export class ItemMembershipService {
       (m) => m.id !== itemMembershipId && m.permission === PermissionLevel.Admin,
     );
     if (otherAdminMemberships.length === 0) {
-      throw new CannotDeleteOnlyAdmin(item.id);
+      throw new CannotDeleteOnlyAdmin({ id: item.id });
     }
 
     await this.hooks.runPreHooks('delete', actor, repositories, membership);

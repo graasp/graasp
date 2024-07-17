@@ -585,7 +585,7 @@ describe('Member routes tests', () => {
         expect(m?.name).not.toEqual(newName);
 
         expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
-        expect(response.json()).toEqual(new CannotModifyOtherMembers(member.id));
+        expect(response.json()).toEqual(new CannotModifyOtherMembers({ id: member.id }));
       });
     });
   });
@@ -630,7 +630,7 @@ describe('Member routes tests', () => {
         expect(m).toBeTruthy();
 
         expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
-        expect(response.json()).toEqual(new CannotModifyOtherMembers(member.id));
+        expect(response.json()).toEqual(new CannotModifyOtherMembers({ id: member.id }));
       });
     });
   });

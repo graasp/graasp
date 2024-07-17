@@ -121,7 +121,7 @@ export class ItemService {
 
       // quick check, necessary for ts
       if (!isItemType(parentItem, ItemType.FOLDER)) {
-        throw new ItemNotFolder(parentItem.id);
+        throw new ItemNotFolder(parentItem);
       }
 
       itemRepository.checkHierarchyDepth(parentItem);

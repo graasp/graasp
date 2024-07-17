@@ -80,7 +80,7 @@ export class ActionMemberService {
     const { actionRepository } = repositories;
 
     if (actor?.id !== memberId) {
-      throw new CannotModifyOtherMembers(memberId);
+      throw new CannotModifyOtherMembers({ id: memberId });
     }
 
     await actionRepository.deleteAllForMember(memberId);

@@ -38,16 +38,6 @@ describe('Action member service', () => {
   });
 
   describe('Test getFilteredActions', () => {
-    // FIX this test is now obsolete, as the endpoint checks the member authentication
-    // the type should remove the need to check
-    // it('throw for signed out user', async () => {
-    //   ({ app } = await build({ member: null }));
-
-    //   await expect(
-    //     getActionMemberService().getFilteredActions(actor, buildRepositories(), {}),
-    //   ).rejects.toBeInstanceOf(UnauthorizedMember);
-    // });
-
     it('get filtered actions by start and end date for auth member ', async () => {
       ({ app, actor } = await build());
       const member = notUndefined(actor);

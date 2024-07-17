@@ -96,7 +96,7 @@ export class ChatMessageService {
 
     const messageContent = await chatMessageRepository.get(messageId, { shouldExist: true });
     if (messageContent.creator?.id !== actor.id) {
-      throw new MemberCannotDeleteMessage(messageId);
+      throw new MemberCannotDeleteMessage({ id: messageId });
     }
 
     // TODO: get associated mentions to push the update in the websockets
