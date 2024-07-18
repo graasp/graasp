@@ -12,7 +12,7 @@ import build, {
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { ShortLinkDuplication, ShortLinkLimitExceed } from '../../../../../utils/errors';
 import { saveMember } from '../../../../member/test/fixtures/members';
-import { ItemPublishedNotFound } from '../../published/errors';
+import { ItemPublishedNotFound } from '../../publication/published/errors';
 import {
   MOCK_ALIAS,
   MOCK_ITEM_ID,

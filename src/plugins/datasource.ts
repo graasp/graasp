@@ -19,12 +19,12 @@ import { ItemFavorite } from '../services/item/plugins/itemFavorite/entities/Ite
 import { ItemFlag } from '../services/item/plugins/itemFlag/itemFlag';
 import { ItemLike } from '../services/item/plugins/itemLike/itemLike';
 import { ItemTag } from '../services/item/plugins/itemTag/ItemTag';
-import { ItemPublished } from '../services/item/plugins/published/entities/itemPublished';
+import { ItemPublished } from '../services/item/plugins/publication/published/entities/itemPublished';
+import { ItemValidation } from '../services/item/plugins/publication/validation/entities/ItemValidation';
+import { ItemValidationGroup } from '../services/item/plugins/publication/validation/entities/ItemValidationGroup';
+import { ItemValidationReview } from '../services/item/plugins/publication/validation/entities/itemValidationReview';
 import { RecycledItemData } from '../services/item/plugins/recycled/RecycledItemData';
 import { ShortLink } from '../services/item/plugins/shortLink/entities/ShortLink';
-import { ItemValidation } from '../services/item/plugins/validation/entities/ItemValidation';
-import { ItemValidationGroup } from '../services/item/plugins/validation/entities/ItemValidationGroup';
-import { ItemValidationReview } from '../services/item/plugins/validation/entities/itemValidationReview';
 import { ItemLogin } from '../services/itemLogin/entities/itemLogin';
 import { ItemLoginSchema } from '../services/itemLogin/entities/itemLoginSchema';
 import { ItemMembership } from '../services/itemMembership/entities/ItemMembership';

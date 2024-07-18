@@ -1,3 +1,5 @@
+import { singleton } from 'tsyringe';
+
 import {
   ClientHostManager,
   Context,
@@ -12,13 +14,14 @@ import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
 import { ItemService } from '../../../item/service';
 import { Member } from '../../../member/entities/member';
-import { ItemPublishedNotFound } from '../published/errors';
-import { ItemPublishedService } from '../published/service';
+import { ItemPublishedNotFound } from '../publication/published/errors';
+import { ItemPublishedService } from '../publication/published/service';
 
 export const SHORT_LINKS_ROUTE_PREFIX = '/short-links';
 export const SHORT_LINKS_LIST_ROUTE = '/list';
 export const SHORT_LINKS_FULL_PREFIX = `${ITEMS_ROUTE_PREFIX}${SHORT_LINKS_ROUTE_PREFIX}`;
 
+@singleton()
 export class ShortLinkService {
   private itemService: ItemService;
   private itemPublishedService: ItemPublishedService;

@@ -19,9 +19,9 @@ import { App } from '../../src/services/item/plugins/app/entities/app';
 import { Publisher } from '../../src/services/item/plugins/app/entities/publisher';
 import { ItemGeolocation } from '../../src/services/item/plugins/geolocation/ItemGeolocation';
 import { ItemTag } from '../../src/services/item/plugins/itemTag/ItemTag';
-import { ItemPublished } from '../../src/services/item/plugins/published/entities/itemPublished';
-import { ItemValidation } from '../../src/services/item/plugins/validation/entities/ItemValidation';
-import { ItemValidationGroup } from '../../src/services/item/plugins/validation/entities/ItemValidationGroup';
+import { ItemPublished } from '../../src/services/item/plugins/publication/published/entities/itemPublished';
+import { ItemValidation } from '../../src/services/item/plugins/publication/validation/entities/ItemValidation';
+import { ItemValidationGroup } from '../../src/services/item/plugins/publication/validation/entities/ItemValidationGroup';
 import { ItemMembership } from '../../src/services/itemMembership/entities/ItemMembership';
 import { Member } from '../../src/services/member/entities/member';
 

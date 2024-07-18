@@ -18,12 +18,12 @@ import { FavoriteRepository } from '../services/item/plugins/itemFavorite/reposi
 import { ItemFlagRepository } from '../services/item/plugins/itemFlag/repository';
 import { ItemLikeRepository } from '../services/item/plugins/itemLike/repository';
 import { ItemTagRepository } from '../services/item/plugins/itemTag/repository';
-import { ItemPublishedRepository } from '../services/item/plugins/published/repositories/itemPublished';
+import { ItemPublishedRepository } from '../services/item/plugins/publication/published/repositories/itemPublished';
+import { ItemValidationGroupRepository } from '../services/item/plugins/publication/validation/repositories/ItemValidationGroup';
+import { ItemValidationRepository } from '../services/item/plugins/publication/validation/repositories/itemValidation';
+import { ItemValidationReviewRepository } from '../services/item/plugins/publication/validation/repositories/itemValidationReview';
 import { RecycledItemDataRepository } from '../services/item/plugins/recycled/repository';
 import { ShortLinkRepository } from '../services/item/plugins/shortLink/repository';
-import { ItemValidationGroupRepository } from '../services/item/plugins/validation/repositories/ItemValidationGroup';
-import { ItemValidationRepository } from '../services/item/plugins/validation/repositories/itemValidation';
-import { ItemValidationReviewRepository } from '../services/item/plugins/validation/repositories/itemValidationReview';
 import { ItemRepository } from '../services/item/repository';
 import { ItemLoginRepository } from '../services/itemLogin/repositories/itemLogin';
 import { ItemLoginSchemaRepository } from '../services/itemLogin/repositories/itemLoginSchema';

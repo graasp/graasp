@@ -8,17 +8,13 @@ import { resolveDependency } from '../../../../di/utils';
 import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
-import { ItemService } from '../../service';
-import { ItemPublishedService } from '../published/service';
 import { create, restricted_get, update } from './schemas';
 import { SHORT_LINKS_LIST_ROUTE, ShortLinkService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db } = fastify;
+  const shortLinkService = resolveDependency(ShortLinkService);
 
-  const itemService = resolveDependency(ItemService);
-  const itemPublishedService = resolveDependency(ItemPublishedService);
-  const shortLinkService = new ShortLinkService(itemService, itemPublishedService);
   fastify.register(async function (fastify) {
     // No need to be logged for the redirection
     fastify.get<{ Params: { alias: string } }>('/:alias', async ({ params: { alias } }, reply) => {
