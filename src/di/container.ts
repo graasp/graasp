@@ -16,8 +16,8 @@ import { EtherpadServiceConfig } from '../services/item/plugins/etherpad/service
 import FileItemService from '../services/item/plugins/file/service';
 import { H5PService } from '../services/item/plugins/html/h5p/service';
 import { ImportExportService } from '../services/item/plugins/importExport/service';
-import { MeiliSearchWrapper } from '../services/item/plugins/published/plugins/search/meilisearch';
-import { SearchService } from '../services/item/plugins/published/plugins/search/service';
+import { MeiliSearchWrapper } from '../services/item/plugins/publication/published/plugins/search/meilisearch';
+import { SearchService } from '../services/item/plugins/publication/published/plugins/search/service';
 import { ItemService } from '../services/item/service';
 import {
   FILE_ITEM_PLUGIN_OPTIONS,

@@ -3124,6 +3124,8 @@ describe('Item routes tests', () => {
           item: { type: ItemType.DOCUMENT },
         });
 
+        const count = await testUtils.rawItemRepository.count();
+
         const response = await app.inject({
           method: HttpMethod.Post,
           url: '/items/copy',
@@ -3139,7 +3141,7 @@ describe('Item routes tests', () => {
         await waitForExpect(async () => {
           // contains twice the items (and the target item)
           const newCount = await testUtils.rawItemRepository.count();
-          expect(newCount).toEqual(2);
+          expect(newCount).toEqual(count);
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
       it('Copy lots of items', async () => {

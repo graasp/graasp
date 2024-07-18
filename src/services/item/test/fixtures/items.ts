@@ -25,7 +25,7 @@ import { DEFAULT_ORDER, Item, ItemExtraMap } from '../../entities/Item';
 import { ItemTag } from '../../plugins/itemTag/ItemTag';
 import { ItemTagRepository } from '../../plugins/itemTag/repository';
 import { setItemPublic } from '../../plugins/itemTag/test/fixtures';
-import { ItemPublished } from '../../plugins/published/entities/itemPublished';
+import { ItemPublished } from '../../plugins/publication/published/entities/itemPublished';
 import { RecycledItemDataRepository } from '../../plugins/recycled/repository';
 import { ItemRepository } from '../../repository';
 
