@@ -6,6 +6,8 @@ import { resolveDependency } from '../../../../di/utils';
 import { IdParam, IdsParams } from '../../../../types';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import { matchOne } from '../../../authorization';
+import { validatedMember } from '../../../member/strategies/validatedMember';
 import { Item } from '../../entities/Item';
 import { ItemService } from '../../service';
 import common, { create, deleteOne, getItemTags, getMany } from './schemas';
@@ -59,7 +61,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.post<{ Params: { itemId: string; type: ItemTagType } }>(
     '/:itemId/tags/:type',
-    { schema: create, preHandler: isAuthenticated },
+    { schema: create, preHandler: [isAuthenticated, matchOne(validatedMember)] },
     async ({ user, params: { itemId, type } }) => {
       return db.transaction(async (manager) => {
         return itemTagService.post(user?.member, buildRepositories(manager), itemId, type);
@@ -70,7 +72,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // delete item tag
   fastify.delete<{ Params: { itemId: string; type: ItemTagType } & IdParam }>(
     '/:itemId/tags/:type',
-    { schema: deleteOne, preHandler: isAuthenticated },
+    { schema: deleteOne, preHandler: [isAuthenticated, matchOne(validatedMember)] },
     async ({ user, params: { itemId, type } }) => {
       return db.transaction(async (manager) => {
         return itemTagService.deleteOne(user?.member, buildRepositories(manager), itemId, type);

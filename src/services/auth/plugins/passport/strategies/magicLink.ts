@@ -22,12 +22,12 @@ export default (
         jwtFromRequest: ExtractJwt.fromUrlQueryParameter(tokenQueryParameter),
         secretOrKey: jwtSecret,
       },
-      async ({ sub }, done: StrictVerifiedCallback) => {
+      async ({ sub, emailValidation }, done: StrictVerifiedCallback) => {
         try {
           const member = await memberRepository.get(sub);
           if (member) {
             // Token has been validated
-            return done(null, { member });
+            return done(null, { member }, { emailValidation });
           } else {
             // Authentication refused
             return done(

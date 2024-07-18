@@ -1,3 +1,7 @@
+import { StatusCodes } from 'http-status-codes';
+
+import { FastifyInstance } from 'fastify';
+
 import {
   FolderItemFactory,
   ItemTagType,
@@ -5,10 +9,14 @@ import {
   PermissionLevel,
 } from '@graasp/sdk';
 
+import build, { clearDatabase, mockAuthenticate } from '../../test/app';
 import { ItemMembershipRepository } from '../services/itemMembership/repository';
+import { notUndefined } from '../utils/assertions';
 import { MemberCannotAccess, MemberCannotAdminItem, MemberCannotWriteItem } from '../utils/errors';
+import { isAuthenticated } from './auth/plugins/passport';
 import {
   filterOutPackedDescendants,
+  matchOne,
   validatePermission,
   validatePermissionMany,
 } from './authorization';
@@ -18,7 +26,8 @@ import { ItemTag } from './item/plugins/itemTag/ItemTag';
 import { ItemTagRepository } from './item/plugins/itemTag/repository';
 import { expectPackedItem } from './item/test/fixtures/items';
 import { ItemMembership } from './itemMembership/entities/ItemMembership';
-import { Member } from './member/entities/member';
+import { Actor, Member } from './member/entities/member';
+import { validatedMember } from './member/strategies/validatedMember';
 
 const OWNER = { id: 'owner', name: 'owner' } as Member;
 const SHARED_MEMBER = { id: 'shared', name: 'shared' } as Member;
@@ -3320,6 +3329,66 @@ describe('filterOutPackedDescendants', () => {
     result.forEach((r) => {
       const d = packedDescendants.find((i) => i.id === r.id);
       expectPackedItem(d, r);
+    });
+  });
+
+  describe('Passport Plugin', () => {
+    let app: FastifyInstance;
+    let member: Member;
+    let handler: jest.Mock;
+    let preHandler: jest.Mock;
+    const MOCKED_ROUTE = '/mock-route';
+
+    function shouldNotBeCalled() {
+      return () => fail('Should not be called');
+    }
+    function shouldBeActor(actor: Member) {
+      return ({ user }) => expect(user.member).toEqual(actor);
+    }
+    beforeEach(async () => {
+      let actor: Actor;
+      ({ app, actor } = await build({}));
+      member = notUndefined(actor);
+      handler = jest.fn();
+      preHandler = jest.fn(async () => {});
+      app.get(MOCKED_ROUTE, { preHandler: [isAuthenticated, preHandler] }, async (...args) =>
+        handler(...args),
+      );
+    });
+
+    afterEach(async () => {
+      handler.mockClear();
+      await clearDatabase(app.db);
+      app.close();
+    });
+
+    it('No Whitelist', async () => {
+      handler.mockImplementation(shouldBeActor(member));
+      const response = await app.inject({ path: MOCKED_ROUTE });
+      expect(handler).toHaveBeenCalledTimes(1);
+      expect(response.statusCode).toBe(StatusCodes.OK);
+    });
+
+    describe('Whitelist ValidatedMember Role', () => {
+      beforeEach(async () => {
+        preHandler.mockImplementation(matchOne(validatedMember));
+      });
+
+      it('Validated Member', async () => {
+        handler.mockImplementation(shouldBeActor(member));
+        const response = await app.inject({ path: MOCKED_ROUTE });
+        expect(handler).toHaveBeenCalledTimes(1);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+      });
+
+      it('Unvalidated Member', async () => {
+        member.isValidated = false;
+        mockAuthenticate(member);
+        handler.mockImplementation(shouldNotBeCalled);
+        const response = await app.inject({ path: MOCKED_ROUTE });
+        expect(handler).toHaveBeenCalledTimes(0);
+        expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
+      });
     });
   });
 });

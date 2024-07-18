@@ -4,6 +4,8 @@ import fp from 'fastify-plugin';
 import { resolveDependency } from '../../../../di/utils';
 import { notUndefined } from '../../../../utils/assertions';
 import { isAuthenticated } from '../../../auth/plugins/passport';
+import { matchOne } from '../../../authorization';
+import { validatedMember } from '../../../member/strategies/validatedMember';
 import { ItemService } from '../../service';
 import { createEtherpad, getEtherpadFromItem } from './schemas';
 import { EtherpadItemService } from './service';
@@ -20,7 +22,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
        */
       fastify.post<{ Querystring: { parentId?: string }; Body: { name: string } }>(
         '/create',
-        { schema: createEtherpad, preHandler: isAuthenticated },
+        { schema: createEtherpad, preHandler: [isAuthenticated, matchOne(validatedMember)] },
         async (request) => {
           const {
             user,

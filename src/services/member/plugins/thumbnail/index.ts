@@ -10,9 +10,11 @@ import { IdParam } from '../../../../types';
 import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import { matchOne } from '../../../authorization';
 import FileService from '../../../file/service';
 import { DEFAULT_MAX_FILE_SIZE } from '../../../file/utils/constants';
 import { UploadEmptyFileError, UploadFileUnexpectedError } from '../../../file/utils/errors';
+import { validatedMember } from '../../strategies/validatedMember';
 import { download, upload } from './schemas';
 import { MemberThumbnailService } from './service';
 import { UploadFileNotImageError } from './utils/errors';
@@ -44,7 +46,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
     '/avatar',
     {
       schema: upload,
-      preHandler: isAuthenticated,
+      preHandler: [isAuthenticated, matchOne(validatedMember)],
     },
     async (request, reply) => {
       const member = notUndefined(request.user?.member);

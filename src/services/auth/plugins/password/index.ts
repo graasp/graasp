@@ -51,7 +51,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       const { body, log, user } = request;
       const { url } = body;
       const member = notUndefined(user?.member);
-      const token = await memberPasswordService.generateToken(
+      const token = memberPasswordService.generateToken(
         { sub: member.id },
         `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
       );
