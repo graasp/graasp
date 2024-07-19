@@ -3,7 +3,6 @@ import { singleton } from 'tsyringe';
 
 import { ActionTriggers, PermissionLevel } from '@graasp/sdk';
 
-import { CannotModifyOtherMembers } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
 import { ActionService } from '../../../action/services/action';
 import { validatePermissionMany } from '../../../authorization';
@@ -72,17 +71,9 @@ export class ActionMemberService {
     return [...actionsWithoutPermission, ...filteredActionsWithAccessPermission];
   }
 
-  async deleteAllForMember(
-    actor: Member,
-    repositories: Repositories,
-    memberId: string,
-  ): Promise<void> {
+  async deleteAllForMember(member: Member, repositories: Repositories): Promise<void> {
     const { actionRepository } = repositories;
 
-    if (actor?.id !== memberId) {
-      throw new CannotModifyOtherMembers({ id: memberId });
-    }
-
-    await actionRepository.deleteAllForMember(memberId);
+    await actionRepository.deleteAllForMember(member.id);
   }
 }

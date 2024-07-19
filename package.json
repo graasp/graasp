@@ -76,6 +76,7 @@
     "extract-zip": "2.0.1",
     "fast-json-stringify": "5.16.1",
     "fastify": "4.28.1",
+    "fastify-list-routes": "1.0.0",
     "fastify-nodemailer": "5.0.0",
     "fastify-plugin": "4.5.1",
     "fluent-json-schema": "5.0.0",

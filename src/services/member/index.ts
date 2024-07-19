@@ -21,7 +21,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         await fastify.register(fastifyCors, fastify.corsPluginOptions);
       }
 
-      fastify.register(actionMemberPlugin);
+      fastify.register(actionMemberPlugin, { prefix: 'actions' });
 
       // routes
       fastify.register(memberController);

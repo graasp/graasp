@@ -1,5 +1,6 @@
 import { fastifyHelmet } from '@fastify/helmet';
 import { fastify } from 'fastify';
+import fastifyPrintRoutes from 'fastify-list-routes';
 
 import registerAppPlugins from './app';
 import ajvFormats from './schemas/ajvFormats';
@@ -42,6 +43,7 @@ const start = async () => {
 
   const { Sentry } = initSentry(instance);
 
+  await instance.register(fastifyPrintRoutes, { colors: true });
   instance.register(fastifyHelmet);
   // fastifyApp.register(fastifyCompress);
 

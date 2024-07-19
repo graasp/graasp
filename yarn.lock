@@ -6798,6 +6798,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fastify-list-routes@npm:1.0.0":
+  version: 1.0.0
+  resolution: "fastify-list-routes@npm:1.0.0"
+  dependencies:
+    fastify-plugin: "npm:^4.3.0"
+  checksum: 10/91ea91e143747042874747c98378ee0defe25147b330c6c9ee4e5e76315530ed3e41bcb7133a33c254a4c99336f19153bd3c791075a059f06276bf510149e69b
+  languageName: node
+  linkType: hard
+
 "fastify-nodemailer@npm:5.0.0":
   version: 5.0.0
   resolution: "fastify-nodemailer@npm:5.0.0"
@@ -6808,7 +6817,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fastify-plugin@npm:4.5.1, fastify-plugin@npm:^4.0.0, fastify-plugin@npm:^4.2.1":
+"fastify-plugin@npm:4.5.1, fastify-plugin@npm:^4.0.0, fastify-plugin@npm:^4.2.1, fastify-plugin@npm:^4.3.0":
   version: 4.5.1
   resolution: "fastify-plugin@npm:4.5.1"
   checksum: 10/7c6d777ada0f01c8a1166a2a669cccfd6074c7764121f07cce997745f198227a271c7a317aaf0da273b329f24307f0eba3f093d872d29b839b33deb525bbafe2
@@ -7570,6 +7579,7 @@ __metadata:
     extract-zip: "npm:2.0.1"
     fast-json-stringify: "npm:5.16.1"
     fastify: "npm:4.28.1"
+    fastify-list-routes: "npm:1.0.0"
     fastify-nodemailer: "npm:5.0.0"
     fastify-plugin: "npm:4.5.1"
     fluent-json-schema: "npm:5.0.0"

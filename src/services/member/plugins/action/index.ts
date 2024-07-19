@@ -11,7 +11,7 @@ import {
   LocalFileConfiguration,
   S3FileConfiguration,
 } from '../../../file/interfaces/configuration';
-import { deleteAllById, getMemberFilteredActions } from './schemas';
+import { deleteAll, getMemberFilteredActions } from './schemas';
 import { ActionMemberService } from './service';
 
 export interface GraaspActionsOptions {
@@ -26,22 +26,22 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
   const actionMemberService = resolveDependency(ActionMemberService);
 
   fastify.get<{ Querystring: { startDate?: string; endDate?: string } }>(
-    '/actions',
+    '/',
     { schema: getMemberFilteredActions, preHandler: isAuthenticated },
     async ({ user, query }) => {
       const member = notUndefined(user?.member);
       return actionMemberService.getFilteredActions(member, buildRepositories(), query);
     },
   );
-  // todo: delete self data
+
   // delete all the actions matching the given `memberId`
   fastify.delete<{ Params: IdParam }>(
-    '/members/:id/delete',
-    { schema: deleteAllById, preHandler: isAuthenticated },
-    async ({ user, params: { id } }) => {
+    '/delete',
+    { schema: deleteAll, preHandler: isAuthenticated },
+    async ({ user }) => {
       const member = notUndefined(user?.member);
       return db.transaction(async (manager) => {
-        return actionMemberService.deleteAllForMember(member, buildRepositories(manager), id);
+        return actionMemberService.deleteAllForMember(member, buildRepositories(manager));
       });
     },
   );

@@ -1,8 +1,12 @@
-import { idParam } from '../../../../schemas/fluent-schema';
+import { StatusCodes } from 'http-status-codes';
+
+import { FastifySchema } from 'fastify';
 
 // schema for removing all actions of a member
-export const deleteAllById = {
-  params: idParam,
+export const deleteAll: FastifySchema = {
+  response: {
+    [StatusCodes.NO_CONTENT]: { type: 'null' },
+  },
 };
 
 export const getMemberFilteredActions = {
