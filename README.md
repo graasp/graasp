@@ -131,6 +131,9 @@ REFRESH_TOKEN_EXPIRATION_IN_MINUTES=86400
 # Password reset JWT secret (can use the same command as for SECURE_SESSION_SECRET_KEY)
 PASSWORD_RESET_JWT_SECRET=<secret-key>
 PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES=1440
+# Email change JWT secret (can use the same command as for SECURE_SESSION_SECRET_KEY)
+EMAIL_CHANGE_JWT_SECRET=<secret-key>
+EMAIL_CHANGE_JWT_EXPIRATION_IN_MINUTES=1440
 
 
 ### Mail server configuration
@@ -164,6 +167,7 @@ S3_FILE_ITEM_SECRET_ACCESS_KEY=graasp-pwd
 H5P_FILE_STORAGE_TYPE=file
 H5P_STORAGE_ROOT_PATH=/tmp/graasp-h5p/
 H5P_PATH_PREFIX=h5p-content/
+H5P_FILE_STORAGE_HOST=http://localhost:1081
 
 
 ### External services configuration
