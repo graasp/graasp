@@ -10,7 +10,9 @@ import { NoFileProvided } from '../../utils/errors';
 import { FolderItem, Item, isItemType } from './entities/Item';
 import { validateGeolocation, validateSettings } from './validation';
 
-const itemOrderFn = (a, b) => (a.order > b.order ? 1 : -1);
+const itemOrderFn = (a: Item, b: Item) => {
+  return (a.order ?? 0) - (b.order ?? 0);
+};
 // cannot use sdk sort because of createdAt type
 export const sortChildrenForTreeWith = (descendants: Item[], parentItem: FolderItem): Item[] => {
   const directChildren = descendants.filter((child) => isChildOf(child.path, parentItem.path));
