@@ -61,6 +61,7 @@ describe('Publication Controller', () => {
 
       it('Get publication status of item with permission returns status', async () => {
         const { item } = await testUtils.saveItemAndMembership({ member: notUndefined(actor) });
+
         const res = await app.inject({
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/publication/${item.id}/status`,

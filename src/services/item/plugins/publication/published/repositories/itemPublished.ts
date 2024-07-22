@@ -1,24 +1,18 @@
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 
 import { PermissionLevel } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../../../../plugins/datasource';
+import { AbstractRepository } from '../../../../../../repository';
 import { Actor, Member } from '../../../../../member/entities/member';
 import { mapById } from '../../../../../utils';
 import { Item } from '../../../../entities/Item';
 import { ItemPublished } from '../entities/itemPublished';
 import { ItemPublishedNotFound } from '../errors';
 
-export class ItemPublishedRepository {
-  private repository: Repository<ItemPublished>;
-
+export class ItemPublishedRepository extends AbstractRepository<ItemPublished> {
   constructor(manager?: EntityManager) {
-    if (manager) {
-      this.repository = manager.getRepository(ItemPublished);
-    } else {
-      this.repository = AppDataSource.getRepository(ItemPublished);
-    }
+    super(ItemPublished, manager);
   }
 
   async getForItem(item: Item): Promise<ItemPublished | null> {

@@ -1,17 +1,19 @@
 import { ItemValidationProcess, ItemValidationStatus } from '@graasp/sdk';
 
 import { registerValue } from '../../../../../../di/utils';
+import { AppDataSource } from '../../../../../../plugins/datasource';
 import { Repositories } from '../../../../../../utils/repositories';
 import { Item } from '../../../../entities/Item';
+import { ItemValidation } from '../entities/ItemValidation';
 import { ItemValidationGroup } from '../entities/ItemValidationGroup';
 import { ItemValidationModerator } from '../moderators/itemValidationModerator';
 import { StrategyExecutorFactory } from '../moderators/strategyExecutorFactory';
-import { ItemValidationGroupRepository } from '../repositories/ItemValidationGroup';
-import { ItemValidationRepository } from '../repositories/itemValidation';
 
 export const saveItemValidation = async ({ item }) => {
-  const group = await ItemValidationGroupRepository.save({ item });
-  const itemValidation = await ItemValidationRepository.save({
+  const itemValidationGroupRawRepository = AppDataSource.getRepository(ItemValidationGroup);
+  const itemValidationRawRepository = AppDataSource.getRepository(ItemValidation);
+  const group = await itemValidationGroupRawRepository.save({ item });
+  const itemValidation = await itemValidationRawRepository.save({
     item,
     process: ItemValidationProcess.BadWordsDetection,
     status: ItemValidationStatus.Success,
@@ -20,7 +22,7 @@ export const saveItemValidation = async ({ item }) => {
   });
 
   // get full item validation group, since save does not include itemvalidation
-  const fullItemValidationGroup = await ItemValidationGroupRepository.findOne({
+  const fullItemValidationGroup = await itemValidationGroupRawRepository.findOne({
     where: { id: group.id },
     relations: { itemValidations: true, item: true },
   });

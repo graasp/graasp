@@ -1,4 +1,4 @@
-import { Brackets, EntityManager, FindManyOptions, In, Repository } from 'typeorm';
+import { Brackets, EntityManager, FindManyOptions, In } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { v4 } from 'uuid';
 
@@ -16,7 +16,7 @@ import {
   getParentFromPath,
 } from '@graasp/sdk';
 
-import { AppDataSource } from '../../plugins/datasource';
+import { AbstractRepository } from '../../repository';
 import { ALLOWED_SEARCH_LANGS } from '../../utils/config';
 import {
   HierarchyTooDeep,
@@ -48,15 +48,9 @@ const DEFAULT_THUMBNAIL_SETTING: ItemSettings = {
   hasThumbnail: false,
 };
 
-export class ItemRepository {
-  private repository: Repository<Item>;
-
+export class ItemRepository extends AbstractRepository<Item> {
   constructor(manager?: EntityManager) {
-    if (manager) {
-      this.repository = manager.getRepository(Item);
-    } else {
-      this.repository = AppDataSource.getRepository(Item);
-    }
+    super(Item, manager);
   }
 
   checkHierarchyDepth(item: Item, additionalNbLevel = 1) {
