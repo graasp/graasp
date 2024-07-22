@@ -130,10 +130,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       const member = notUndefined(user?.member);
       await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
-        memberService.refreshLastAuthenticatedAt(member.id, repositories);
+        await memberService.refreshLastAuthenticatedAt(member.id, repositories);
         // on auth, if the user used the email sign in, its account gets validated
         if (authInfo?.emailValidation && !member.isValidated) {
-          memberService.validate(member.id, repositories);
+          await memberService.validate(member.id, repositories);
         }
       });
       return generateAuthTokensPair(member.id);
