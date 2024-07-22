@@ -13,8 +13,9 @@ import { notUndefined } from '../../../../../utils/assertions';
 import { CLIENT_HOSTS } from '../../../../../utils/config';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { isAuthenticated } from '../../../../auth/plugins/passport';
-import { validatePermission } from '../../../../authorization';
+import { matchOne, validatePermission } from '../../../../authorization';
 import { Member } from '../../../../member/entities/member';
+import { validatedMember } from '../../../../member/strategies/validatedMember';
 import { Item, isItemType } from '../../../entities/Item';
 import { ItemService } from '../../../service';
 import { FastifyStaticReply } from '../types';
@@ -127,7 +128,7 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify) => {
 
     fastify.post<{ Querystring: { parentId?: string; previousItemId?: string } }>(
       '/h5p-import',
-      { schema: h5pImport, preHandler: isAuthenticated },
+      { schema: h5pImport, preHandler: [isAuthenticated, matchOne(validatedMember)] },
       async (request) => {
         const {
           user,

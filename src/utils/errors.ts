@@ -461,3 +461,16 @@ export class ShortLinkLimitExceed extends CoreError {
     this.origin = 'shortLink';
   }
 }
+
+export class InsufficientPermission extends CoreError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GERR1012',
+        statusCode: StatusCodes.FORBIDDEN,
+        message: FAILURE_MESSAGES.INSUFFICIENT_PERMISSION,
+      },
+      data,
+    );
+  }
+}

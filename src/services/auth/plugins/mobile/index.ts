@@ -12,6 +12,7 @@ import {
   MOBILE_DEEP_LINK_PROTOCOL,
 } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
+import { MemberService } from '../../../member/service';
 import { generateAuthTokensPair, getRedirectionUrl } from '../../utils';
 import captchaPreHandler from '../captcha';
 import {
@@ -32,6 +33,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   const mobileService = resolveDependency(MobileService);
   const memberPasswordService = resolveDependency(MemberPasswordService);
+  const memberService = resolveDependency(MemberService);
 
   // no need to add CORS support here - only used by mobile app
 
@@ -124,8 +126,16 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       schema: mauth,
       preHandler: authenticateJWTChallengeVerifier,
     },
-    async ({ user }) => {
+    async ({ user, authInfo }) => {
       const member = notUndefined(user?.member);
+      await db.transaction(async (manager) => {
+        const repositories = buildRepositories(manager);
+        await memberService.refreshLastAuthenticatedAt(member.id, repositories);
+        // on auth, if the user used the email sign in, its account gets validated
+        if (authInfo?.emailValidation && !member.isValidated) {
+          await memberService.validate(member.id, repositories);
+        }
+      });
       return generateAuthTokensPair(member.id);
     },
   );

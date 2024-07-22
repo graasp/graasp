@@ -6,6 +6,8 @@ import { resolveDependency } from '../../../../../di/utils';
 import { notUndefined } from '../../../../../utils/assertions';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../../auth/plugins/passport';
+import { matchOne } from '../../../../authorization';
+import { validatedMember } from '../../../../member/strategies/validatedMember';
 import { ItemService } from '../../../service';
 import graaspSearchPlugin from './plugins/search';
 import {
@@ -73,7 +75,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.post<{ Params: { itemId: string } }>(
     '/collections/:itemId/publish',
     {
-      preHandler: isAuthenticated,
+      preHandler: [isAuthenticated, matchOne(validatedMember)],
       schema: publishItem,
     },
     async ({ params, user }) => {
@@ -94,7 +96,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.delete<{ Params: { itemId: string } }>(
     '/collections/:itemId/unpublish',
     {
-      preHandler: isAuthenticated,
+      preHandler: [isAuthenticated, matchOne(validatedMember)],
       schema: unpublishItem,
     },
     async ({ params, user }) => {

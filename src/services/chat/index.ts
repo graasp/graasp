@@ -13,7 +13,9 @@ import { resolveDependency } from '../../di/utils';
 import { notUndefined } from '../../utils/assertions';
 import { buildRepositories } from '../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
+import { matchOne } from '../authorization';
 import { ItemService } from '../item/service';
+import { validatedMember } from '../member/strategies/validatedMember';
 import { ActionChatService } from './plugins/action/service';
 import mentionPlugin from './plugins/mentions';
 import commonChat, {
@@ -67,7 +69,7 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify) => {
       '/:itemId/chat',
       {
         schema: publishMessage,
-        preHandler: isAuthenticated,
+        preHandler: [isAuthenticated, matchOne(validatedMember)],
       },
       async (request) => {
         const {
@@ -96,7 +98,7 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify) => {
       '/:itemId/chat/:messageId',
       {
         schema: patchMessage,
-        preHandler: isAuthenticated,
+        preHandler: [isAuthenticated, matchOne(validatedMember)],
       },
       async (request) => {
         const {
@@ -119,7 +121,7 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify) => {
       '/:itemId/chat/:messageId',
       {
         schema: deleteMessage,
-        preHandler: isAuthenticated,
+        preHandler: [isAuthenticated, matchOne(validatedMember)],
       },
       async (request) => {
         const {
@@ -141,7 +143,7 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify) => {
       '/:itemId/chat',
       {
         schema: clearChat,
-        preHandler: isAuthenticated,
+        preHandler: [isAuthenticated, matchOne(validatedMember)],
       },
       async (request) => {
         const {

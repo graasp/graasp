@@ -8,9 +8,10 @@ import { IdParam } from '../../../../types';
 import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
-import { validatePermission } from '../../../authorization';
+import { matchOne, validatePermission } from '../../../authorization';
 import FileService from '../../../file/service';
 import { StorageService } from '../../../member/plugins/storage/service';
+import { validatedMember } from '../../../member/strategies/validatedMember';
 import { Item } from '../../entities/Item';
 import { ItemService } from '../../service';
 import { download, updateSchema, upload } from './schema';
@@ -104,7 +105,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     method: HttpMethod.Post,
     url: '/upload',
     schema: upload,
-    preHandler: isAuthenticated,
+    preHandler: [isAuthenticated, matchOne(validatedMember)],
     handler: async (request) => {
       const {
         user,

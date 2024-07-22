@@ -6,6 +6,8 @@ import { resolveDependency } from '../../../../../di/utils';
 import { notUndefined } from '../../../../../utils/assertions';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { isAuthenticated } from '../../../../auth/plugins/passport';
+import { matchOne } from '../../../../authorization';
+import { validatedMember } from '../../../../member/strategies/validatedMember';
 import {
   ItemOpFeedbackErrorEvent,
   ItemOpFeedbackEvent,
@@ -61,7 +63,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:itemId/validate',
     {
       schema: itemValidation,
-      preHandler: isAuthenticated,
+      preHandler: [isAuthenticated, matchOne(validatedMember)],
     },
     async (request, reply) => {
       const {

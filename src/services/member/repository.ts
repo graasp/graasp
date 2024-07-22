@@ -61,7 +61,12 @@ export class MemberRepository extends AbstractRepository<Member> {
 
   async patch(
     id: UUID,
-    body: Partial<Pick<Member, 'extra' | 'email' | 'name' | 'enableSaveActions'>>,
+    body: Partial<
+      Pick<
+        Member,
+        'extra' | 'email' | 'name' | 'enableSaveActions' | 'lastAuthenticatedAt' | 'isValidated'
+      >
+    >,
   ) {
     const newData: Partial<Member> = {};
 
@@ -80,6 +85,14 @@ export class MemberRepository extends AbstractRepository<Member> {
 
     if (typeof body.enableSaveActions === 'boolean') {
       newData.enableSaveActions = body.enableSaveActions;
+    }
+
+    if (body.lastAuthenticatedAt) {
+      newData.lastAuthenticatedAt = body.lastAuthenticatedAt;
+    }
+
+    if (typeof body.isValidated === 'boolean') {
+      newData.isValidated = body.isValidated;
     }
 
     // update if newData is not empty

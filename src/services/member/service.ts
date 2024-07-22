@@ -107,6 +107,13 @@ export class MemberService {
     return memberRepository.deleteOne(id);
   }
 
+  async refreshLastAuthenticatedAt(id: UUID, { memberRepository }: Repositories) {
+    return await memberRepository.patch(id, { lastAuthenticatedAt: new Date() });
+  }
+  async validate(id: UUID, { memberRepository }: Repositories) {
+    return await memberRepository.patch(id, { isValidated: true });
+  }
+
   createEmailChangeRequest(member: Member, newEmail: string) {
     const payload = { uuid: member.id, oldEmail: member.email, newEmail };
     return jwtSign(payload, EMAIL_CHANGE_JWT_SECRET, {

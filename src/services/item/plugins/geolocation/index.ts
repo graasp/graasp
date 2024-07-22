@@ -6,6 +6,8 @@ import { resolveDependency } from '../../../../di/utils';
 import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import { matchOne } from '../../../authorization';
+import { validatedMember } from '../../../member/strategies/validatedMember';
 import { Item } from '../../entities/Item';
 import { ItemGeolocation } from './ItemGeolocation';
 import {
@@ -65,7 +67,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/:id/geolocation',
       {
         schema: putGeolocation,
-        preHandler: isAuthenticated,
+        preHandler: [isAuthenticated, matchOne(validatedMember)],
       },
       async ({ user, body, params }, reply) => {
         return db.transaction(async (manager) => {
@@ -84,7 +86,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/:id/geolocation',
       {
         schema: deleteGeolocation,
-        preHandler: isAuthenticated,
+        preHandler: [isAuthenticated, matchOne(validatedMember)],
       },
       async ({ user, params }, reply) => {
         return db.transaction(async (manager) => {

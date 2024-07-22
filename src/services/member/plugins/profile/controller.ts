@@ -5,6 +5,8 @@ import { FastifyPluginAsync } from 'fastify';
 import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import { matchOne } from '../../../authorization';
+import { validatedMember } from '../../strategies/validatedMember';
 import { MemberProfile } from './entities/profile';
 import { MemberProfileNotFound } from './errors';
 import { createProfile, getOwnProfile, getProfileForMember, updateMemberProfile } from './schemas';
@@ -47,7 +49,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/',
     {
       schema: createProfile,
-      preHandler: isAuthenticated,
+      preHandler: [isAuthenticated, matchOne(validatedMember)],
     },
     async (request, reply) => {
       const { user, body: data } = request;
@@ -64,7 +66,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.patch<{ Body: Partial<IMemberProfile> }>(
     '/',
-    { schema: updateMemberProfile, preHandler: isAuthenticated },
+    { schema: updateMemberProfile, preHandler: [isAuthenticated, matchOne(validatedMember)] },
     async ({ user, body }): Promise<MemberProfile> => {
       return db.transaction(async (manager) => {
         const member = notUndefined(user?.member);

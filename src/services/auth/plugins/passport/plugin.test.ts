@@ -10,6 +10,7 @@ import { HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
 import { resolveDependency } from '../../../../di/utils';
+import { AppDataSource } from '../../../../plugins/datasource';
 import {
   APPS_JWT_SECRET,
   AUTH_TOKEN_JWT_SECRET,
@@ -42,6 +43,7 @@ import {
 // mock datasource
 jest.mock('../../../../plugins/datasource');
 const MOCKED_ROUTE = '/mock-route';
+const memberRawRepository = AppDataSource.getRepository(Member);
 
 const expectUserApp = (
   user: PassportUser,
@@ -144,7 +146,10 @@ describe('Passport Plugin', () => {
     });
     it('Valid Session Member', async () => {
       const cookie = await logIn(app, member);
-      handler.mockImplementation(({ user }) => expectMember(user.member, member));
+      handler.mockImplementation(async ({ user }) => {
+        const rawMember = await memberRawRepository.findOneBy({ id: member.id });
+        expectMember(rawMember, user.member);
+      });
       const response = await app.inject({
         path: MOCKED_ROUTE,
         headers: { cookie },
@@ -206,7 +211,10 @@ describe('Passport Plugin', () => {
     });
     it('Valid Session Member', async () => {
       const cookie = await logIn(app, member);
-      handler.mockImplementation(({ user }) => expectMember(user.member, member));
+      handler.mockImplementation(async ({ user }) => {
+        const rawMember = await memberRawRepository.findOneBy({ id: member.id });
+        expectMember(rawMember, user.member);
+      });
       const response = await app.inject({
         path: MOCKED_ROUTE,
         headers: { cookie },

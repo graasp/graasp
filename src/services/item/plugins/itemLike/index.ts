@@ -7,6 +7,8 @@ import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { ActionService } from '../../../action/services/action';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import { matchOne } from '../../../authorization';
+import { validatedMember } from '../../../member/strategies/validatedMember';
 import { ItemService } from '../../service';
 import common, { create, deleteOne, getLikesForItem, getLikesForMember } from './schemas';
 import { ItemLikeService } from './service';
@@ -43,7 +45,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // create item like entry
   fastify.post<{ Params: { itemId: string } }>(
     '/:itemId/like',
-    { schema: create, preHandler: isAuthenticated },
+    { schema: create, preHandler: [isAuthenticated, matchOne(validatedMember)] },
     async (request) => {
       const {
         user,
@@ -70,7 +72,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // delete item like entry
   fastify.delete<{ Params: { itemId: string } }>(
     '/:itemId/like',
-    { schema: deleteOne, preHandler: isAuthenticated },
+    { schema: deleteOne, preHandler: [isAuthenticated, matchOne(validatedMember)] },
     async (request) => {
       const {
         user,

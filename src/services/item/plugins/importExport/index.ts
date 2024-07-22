@@ -11,6 +11,8 @@ import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { ActionService } from '../../../action/services/action';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import { matchOne } from '../../../authorization';
+import { validatedMember } from '../../../member/strategies/validatedMember';
 import { ItemService } from '../../service';
 import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
 import { ZIP_FILE_MIME_TYPES } from './constants';
@@ -38,7 +40,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.post<{ Querystring: { parentId?: string } }>(
     '/zip-import',
-    { schema: zipImport, preHandler: isAuthenticated },
+    { schema: zipImport, preHandler: [isAuthenticated, matchOne(validatedMember)] },
     async (request, reply) => {
       const {
         user,
