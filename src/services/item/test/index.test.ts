@@ -48,7 +48,7 @@ import {
 } from './fixtures/items';
 
 // mock datasource
-jest.mock('../../../plugins/datasource');
+// jest.mock('../../../plugins/datasource');
 
 const rawRepository = AppDataSource.getRepository(ItemTag);
 

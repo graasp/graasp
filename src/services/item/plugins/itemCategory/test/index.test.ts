@@ -19,7 +19,7 @@ import { ItemCategoryRepository } from '../repositories/itemCategory';
 import { saveCategories, saveItemCategories } from './fixtures';
 
 // mock datasource
-jest.mock('../../../../../plugins/datasource');
+// jest.mock('../../../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 
 export const expectItemCategory = (newItemCategory, correctItemCategory) => {

@@ -10,7 +10,7 @@ import { MemberRepository } from './repository';
 import { expectMember, saveMember, saveMembers } from './test/fixtures/members';
 
 // mock datasource
-jest.mock('../../plugins/datasource');
+// jest.mock('../../plugins/datasource');
 const memberRepository = new MemberRepository();
 
 const expectMembersById = (members, expectedMembers) => {

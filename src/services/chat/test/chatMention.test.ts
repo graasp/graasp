@@ -14,7 +14,7 @@ import { ChatMention } from '../plugins/mentions/chatMention';
 import { saveItemWithChatMessages } from './chatMessage.test';
 
 // mock datasource
-jest.mock('../../../plugins/datasource');
+// jest.mock('../../../plugins/datasource');
 
 const adminRepository = AppDataSource.getRepository(ChatMention);
 

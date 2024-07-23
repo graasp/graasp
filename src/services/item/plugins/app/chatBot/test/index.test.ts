@@ -17,7 +17,7 @@ import { FinishReason } from '../interfaces/finishReason';
 import { DOCKER_MOCKED_BODY, DOCKER_MOCKED_RESPONSE, copyArray, mockResponse } from './fixtures';
 
 // mock datasource
-jest.mock('../../../../../../plugins/datasource');
+// jest.mock('../../../../../../plugins/datasource');
 const testUtils = new AppTestUtils();
 
 // Indicate that the module openAICompletion will be mocked.

@@ -36,7 +36,7 @@ const expectMinimalMemberOrUndefined = (member?: Partial<Member> | null) => {
 };
 
 // mock database and decorator plugins
-jest.mock('../../../../plugins/datasource');
+// jest.mock('../../../../plugins/datasource');
 
 describe('Base Analytics', () => {
   let app: FastifyInstance;

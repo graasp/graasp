@@ -15,7 +15,7 @@ import { ItemTestUtils } from '../../../../test/fixtures/items';
 const testUtils = new ItemTestUtils();
 
 // mock datasource
-jest.mock('../../../../../../plugins/datasource');
+// jest.mock('../../../../../../plugins/datasource');
 
 describe('Publication Controller', () => {
   let app: FastifyInstance;

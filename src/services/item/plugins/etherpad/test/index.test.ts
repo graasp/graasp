@@ -24,7 +24,7 @@ import { EtherpadItemService } from '../service';
 import { setUpApi } from './api';
 
 // mock datasource
-jest.mock('../../../../../plugins/datasource');
+// jest.mock('../../../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 
 const MOCK_GROUP_ID = 'g.s8oes9dhwrvt0zif';

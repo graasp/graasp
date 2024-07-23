@@ -12,7 +12,7 @@ import { ItemGeolocationRepository } from './repository';
 import { expectItemGeolocations } from './test/utils';
 
 // mock datasource
-jest.mock('../../../../plugins/datasource');
+// jest.mock('../../../../plugins/datasource');
 
 const rawRepository = AppDataSource.getRepository(ItemGeolocation);
 const repository = new ItemGeolocationRepository();

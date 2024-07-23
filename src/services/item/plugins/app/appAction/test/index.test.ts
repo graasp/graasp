@@ -14,7 +14,7 @@ import { AppActionRepository } from '../repository';
 import { saveAppActions } from './fixtures';
 
 // mock datasource
-jest.mock('../../../../../../plugins/datasource');
+// jest.mock('../../../../../../plugins/datasource');
 const testUtils = new AppTestUtils();
 
 const expectAppAction = (values, expected) => {

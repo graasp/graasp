@@ -25,7 +25,7 @@ import { ItemMembershipRepository } from '../repository';
 import { expectMembership } from './fixtures/memberships';
 
 // mock datasource
-jest.mock('../../../plugins/datasource');
+// jest.mock('../../../plugins/datasource');
 
 const testUtils = new ItemTestUtils();
 

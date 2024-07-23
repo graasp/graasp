@@ -15,7 +15,7 @@ import { AppDataRepository } from '../repository';
 import { saveAppData } from './fixtures';
 
 // mock datasource
-jest.mock('../../../../../../plugins/datasource');
+// jest.mock('../../../../../../plugins/datasource');
 const testUtils = new AppTestUtils();
 
 const expectAppData = (values, expected) => {

@@ -13,7 +13,7 @@ import { ItemTestUtils } from '../../../test/fixtures/items';
 import { ItemFlagRepository } from '../repository';
 
 // mock datasource
-jest.mock('../../../../../plugins/datasource');
+// jest.mock('../../../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 
 const expectItemFlag = (flag, correctFlag) => {

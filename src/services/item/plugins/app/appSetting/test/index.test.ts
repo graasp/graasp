@@ -30,7 +30,7 @@ const expectAppSettings = (values, expected) => {
 };
 
 // mock datasource
-jest.mock('../../../../../../plugins/datasource');
+// jest.mock('../../../../../../plugins/datasource');
 const testUtils = new AppTestUtils();
 
 const setUpForAppSettings = async (

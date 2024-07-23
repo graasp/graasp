@@ -15,7 +15,7 @@ import { Actor, Member } from './entities/member';
 import { saveMember } from './test/fixtures/members';
 
 jest.mock('node-fetch');
-jest.mock('../../plugins/datasource');
+// jest.mock('../../plugins/datasource');
 const memberRawRepository = AppDataSource.getRepository(Member);
 
 describe('Member Controller', () => {

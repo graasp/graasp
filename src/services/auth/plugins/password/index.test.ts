@@ -26,7 +26,7 @@ import { MemberPassword } from './entities/password';
 import { encryptPassword } from './utils';
 
 jest.mock('node-fetch');
-jest.mock('../../../../plugins/datasource');
+// jest.mock('../../../../plugins/datasource');
 
 async function login(
   app: FastifyInstance,

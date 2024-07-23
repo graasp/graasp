@@ -14,7 +14,7 @@ import { ChatMention } from './chatMention';
 import { ChatMentionRepository } from './repository';
 
 // mock datasource
-jest.mock('../../../../plugins/datasource');
+// jest.mock('../../../../plugins/datasource');
 
 const rawRepository = AppDataSource.getRepository(ChatMention);
 const repository = new ChatMentionRepository();

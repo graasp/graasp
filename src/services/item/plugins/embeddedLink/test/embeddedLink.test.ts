@@ -15,7 +15,7 @@ import { ItemTestUtils, expectItem } from '../../../test/fixtures/items';
 jest.mock('node-fetch');
 
 // mock datasource
-jest.mock('../../../../../plugins/datasource');
+// jest.mock('../../../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 
 const itemRepository = new ItemRepository();

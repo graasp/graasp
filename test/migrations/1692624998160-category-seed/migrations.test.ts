@@ -10,7 +10,7 @@ import build from '../../app';
 import { checkDatabaseIsEmpty } from '../utils';
 
 // mock datasource
-jest.mock('../../../src/plugins/datasource');
+// jest.mock('../../../src/plugins/datasource');
 
 describe('Migrations1692624998160', () => {
   let app: FastifyInstance;

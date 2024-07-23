@@ -17,7 +17,7 @@ import { saveItemValidation } from './utils';
 const VALIDATION_LOADING_TIME = 2000;
 
 // mock datasource
-jest.mock('../../../../../../plugins/datasource');
+// jest.mock('../../../../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 
 const expectItemValidation = (iv, correctIV) => {

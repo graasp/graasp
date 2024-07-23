@@ -14,7 +14,7 @@ import { Member } from '../entities/member';
 import { saveMember, saveMembers } from './fixtures/members';
 
 // mock datasource
-jest.mock('../../../plugins/datasource');
+// jest.mock('../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 
 const rawRepository = AppDataSource.getRepository(Member);

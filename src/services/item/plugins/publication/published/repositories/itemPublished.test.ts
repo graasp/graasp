@@ -6,7 +6,7 @@ import { ItemTestUtils, expectManyItems } from '../../../../test/fixtures/items'
 import { ItemPublishedRepository } from './itemPublished';
 
 // mock datasource
-jest.mock('../../../../../../plugins/datasource');
+// jest.mock('../../../../../../plugins/datasource');
 const itemPublishedRepository = new ItemPublishedRepository();
 const testUtils = new ItemTestUtils();
 

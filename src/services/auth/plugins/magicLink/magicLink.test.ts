@@ -24,7 +24,7 @@ import { expectMember, saveMember } from '../../../member/test/fixtures/members'
 import { MOCK_CAPTCHA } from '../captcha/test/utils';
 
 // mock database and decorator plugins
-jest.mock('../../../../plugins/datasource');
+// jest.mock('../../../../plugins/datasource');
 jest.mock('node-fetch');
 const memberRawRepository = AppDataSource.getRepository(Member);
 

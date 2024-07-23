@@ -14,7 +14,7 @@ import { Action } from '../entities/action';
 import { ActionService } from './action';
 
 // mock datasource
-jest.mock('../../../plugins/datasource');
+// jest.mock('../../../plugins/datasource');
 
 const service = new ActionService(
   new ItemService({} as unknown as ThumbnailService, {} as unknown as BaseLogger),

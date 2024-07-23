@@ -13,7 +13,7 @@ import { ActionMemberService } from '../service';
 import { saveActionsWithItems } from './utils';
 
 // mock datasource
-jest.mock('../../../../../plugins/datasource');
+// jest.mock('../../../../../plugins/datasource');
 
 const rawRepository = AppDataSource.getRepository(Action);
 

@@ -27,7 +27,7 @@ import { SHORT_TOKEN_PARAM } from '../passport';
 import { MOCK_PASSWORD, saveMemberAndPassword } from '../password/test/fixtures/password';
 
 // mock database and decorator plugins
-jest.mock('../../../../plugins/datasource');
+// jest.mock('../../../../plugins/datasource');
 jest.mock('node-fetch');
 const memberRawRepository = AppDataSource.getRepository(Member);
 

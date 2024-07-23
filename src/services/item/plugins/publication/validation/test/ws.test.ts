@@ -19,7 +19,7 @@ import { ItemValidationGroupRepository } from '../repositories/ItemValidationGro
 import { saveItemValidation } from './utils';
 
 // mock datasource
-jest.mock('../../../../../../plugins/datasource');
+// jest.mock('../../../../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 
 describe('asynchronous feedback', () => {

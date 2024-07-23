@@ -22,7 +22,7 @@ import { Invitation } from '../entity';
 import { InvitationRepository } from '../repository';
 
 // mock datasource
-jest.mock('../../../../../plugins/datasource');
+// jest.mock('../../../../../plugins/datasource');
 
 const testUtils = new ItemTestUtils();
 

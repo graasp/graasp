@@ -10,7 +10,7 @@ import { buildInsertIntoQuery, buildSelectQuery, checkDatabaseIsEmpty } from '..
 import { up } from './fixture';
 
 // mock datasource
-jest.mock('../../../src/plugins/datasource');
+// jest.mock('../../../src/plugins/datasource');
 
 describe('Migrations1689777747530', () => {
   let app: FastifyInstance;

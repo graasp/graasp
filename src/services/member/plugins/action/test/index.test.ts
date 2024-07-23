@@ -6,7 +6,7 @@ import build, { clearDatabase } from '../../../../../../test/app';
 import { getDateBeforeOrAfterNow, saveActionsWithItems } from './utils';
 
 // mock datasource
-jest.mock('../../../../../plugins/datasource');
+// jest.mock('../../../../../plugins/datasource');
 const GET_URL = '/members/actions';
 
 describe('Get member actions', () => {

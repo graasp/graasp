@@ -15,7 +15,7 @@ import { ItemTag } from '../ItemTag';
 import { CannotModifyParentTag, ConflictingTagsInTheHierarchy, ItemTagNotFound } from '../errors';
 
 // mock datasource
-jest.mock('../../../../../plugins/datasource');
+// jest.mock('../../../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 const rawItemTagRepository = AppDataSource.getRepository(ItemTag);
 

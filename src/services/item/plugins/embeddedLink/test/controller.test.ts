@@ -11,7 +11,7 @@ import { FETCH_RESULT } from './fixtures';
 jest.mock('node-fetch');
 
 // mock datasource
-jest.mock('../../../../../plugins/datasource');
+// jest.mock('../../../../../plugins/datasource');
 
 const URL = '/items/embedded-links/metadata';
 const QUERY_PARAM = 'link';

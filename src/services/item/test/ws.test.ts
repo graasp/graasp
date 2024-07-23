@@ -18,7 +18,7 @@ import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from 
 import { ItemTestUtils, expectItem } from './fixtures/items';
 
 // mock datasource
-jest.mock('../../../plugins/datasource');
+// jest.mock('../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 
 describe('Item websocket hooks', () => {

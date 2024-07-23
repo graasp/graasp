@@ -81,6 +81,10 @@ export default async function (instance: FastifyInstance): Promise<void> {
     //   { prefix: '/analytics' },
     // );
   });
+
+  instance.addHook('onClose', async (instance) => {
+    await instance.db.destroy();
+  });
 }
 
 // TODO: set fastify 'on close' handler, and disconnect from services there: db, ...

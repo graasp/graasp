@@ -22,7 +22,7 @@ const mockCaptchaValidation = (action: RecaptchaActionType) => {
   });
 };
 // mock database and decorator plugins
-jest.mock('../../../../../plugins/datasource');
+// jest.mock('../../../../../plugins/datasource');
 
 describe('Password routes tests', () => {
   let app: FastifyInstance;

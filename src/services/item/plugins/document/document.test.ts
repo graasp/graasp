@@ -12,7 +12,7 @@ import { saveMember } from '../../../member/test/fixtures/members';
 import { ItemTestUtils, expectItem } from '../../test/fixtures/items';
 
 // mock datasource
-jest.mock('../../../../plugins/datasource');
+// jest.mock('../../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 
 const extra = {

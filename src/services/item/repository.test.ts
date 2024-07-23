@@ -29,7 +29,7 @@ import { ItemRepository } from './repository';
 import { ItemTestUtils, expectItem, expectManyItems } from './test/fixtures/items';
 
 // mock datasource
-jest.mock('../../plugins/datasource');
+// jest.mock('../../plugins/datasource');
 const itemRepository = new ItemRepository();
 const testUtils = new ItemTestUtils();
 

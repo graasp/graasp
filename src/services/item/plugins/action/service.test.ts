@@ -29,7 +29,7 @@ import { ActionItemService } from './service';
 import { ItemActionType } from './utils';
 
 // mock datasource
-jest.mock('../../../../plugins/datasource');
+// jest.mock('../../../../plugins/datasource');
 const itemService = new ItemService({} as unknown as ThumbnailService, {} as unknown as BaseLogger);
 const memberService = new MemberService(
   {} as unknown as MailerService,

@@ -27,7 +27,7 @@ import { ItemPublishedRepository } from '../repositories/itemPublished';
 jest.unmock('../plugins/search/meilisearch');
 
 // mock datasource
-jest.mock('../../../../../../plugins/datasource');
+// jest.mock('../../../../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 
 describe('MeilisearchWrapper', () => {

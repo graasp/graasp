@@ -20,7 +20,7 @@ import { Actor } from '../member/entities/member';
 import { Item } from './entities/Item';
 import { ItemTag } from './plugins/itemTag/ItemTag';
 
-jest.mock('../../plugins/datasource');
+// jest.mock('../../plugins/datasource');
 
 describe('Item controller', () => {
   let app: FastifyInstance;

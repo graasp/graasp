@@ -23,7 +23,7 @@ import { RecycledItemDataRepository } from '../repository';
 import { expectManyPackedRecycledItems, expectManyRecycledItems } from './fixtures';
 
 // mock datasource
-jest.mock('../../../../../plugins/datasource');
+// jest.mock('../../../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 
 describe('Recycle Bin Tests', () => {

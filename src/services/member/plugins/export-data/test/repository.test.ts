@@ -53,7 +53,7 @@ import { expectNoLeaksAndEquality } from './fixtures';
 
 const itemTestUtils = new ItemTestUtils();
 
-jest.mock('../../../../../plugins/datasource');
+// jest.mock('../../../../../plugins/datasource');
 
 describe('DataMember Export', () => {
   let app: FastifyInstance;

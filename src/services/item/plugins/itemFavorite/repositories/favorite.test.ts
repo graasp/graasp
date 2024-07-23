@@ -11,7 +11,7 @@ import { DuplicateFavoriteError, ItemFavoriteNotFound } from '../errors';
 import { FavoriteRepository } from './favorite';
 
 // mock datasource
-jest.mock('../../../../../plugins/datasource');
+// jest.mock('../../../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 
 describe('FavoriteRepository', () => {
