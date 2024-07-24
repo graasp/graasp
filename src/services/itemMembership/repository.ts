@@ -1,6 +1,8 @@
 import { In, Not } from 'typeorm';
 
 import {
+  Paginated,
+  Pagination,
   PermissionLevel,
   PermissionLevelCompare,
   ResultOf,
@@ -9,14 +11,13 @@ import {
 } from '@graasp/sdk';
 
 import { AppDataSource } from '../../plugins/datasource';
-import { Paginated, PaginationParams } from '../../types';
 import {
   InvalidMembership,
   InvalidPermissionLevel,
   ItemMembershipNotFound,
   ModifyExistingMembership,
 } from '../../utils/errors';
-import { ITEMS_PAGE_SIZE, ITEMS_PAGE_SIZE_MAX } from '../item/constants';
+import { ITEMS_PAGE_SIZE_MAX } from '../item/constants';
 import { Item } from '../item/entities/Item';
 import { ItemSearchParams, Ordering, SortBy } from '../item/types';
 import { MemberIdentifierNotFound } from '../itemLogin/errors';
@@ -133,8 +134,9 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
       permissions,
       types,
     }: ItemSearchParams,
-    { page = 1, pageSize = ITEMS_PAGE_SIZE }: PaginationParams,
+    pagination: Pagination,
   ): Promise<Paginated<ItemMembership>> {
+    const { page, pageSize } = pagination;
     const limit = Math.min(pageSize, ITEMS_PAGE_SIZE_MAX);
     const skip = (page - 1) * limit;
 
@@ -203,7 +205,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     }
 
     const [im, totalCount] = await query.offset(skip).limit(limit).getManyAndCount();
-    return { data: im, totalCount };
+    return { data: im, totalCount, pagination };
   },
 
   /**

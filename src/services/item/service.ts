@@ -7,6 +7,8 @@ import {
   MAX_DESCENDANTS_FOR_DELETE,
   MAX_DESCENDANTS_FOR_MOVE,
   MAX_NUMBER_OF_CHILDREN,
+  Paginated,
+  Pagination,
   PermissionLevel,
   PermissionLevelCompare,
   ResultOf,
@@ -17,7 +19,6 @@ import {
 } from '@graasp/sdk';
 
 import { BaseLogger } from '../../logger';
-import { Paginated, PaginationParams } from '../../types';
 import {
   CannotReorderRootItem,
   InvalidMembership,
@@ -314,7 +315,7 @@ export class ItemService {
     actor: Member,
     repositories: Repositories,
     params: ItemSearchParams,
-    pagination: PaginationParams,
+    pagination: Pagination,
   ): Promise<Paginated<PackedItem>> {
     const { data: memberships, totalCount } =
       await repositories.itemMembershipRepository.getAccessibleItems(actor, params, pagination);
@@ -334,7 +335,7 @@ export class ItemService {
       memberships.map(({ item }) => item),
       resultOfMembership,
     );
-    return { data: packedItems, totalCount };
+    return { data: packedItems, totalCount, pagination };
   }
 
   async getOwn(member: Member, { itemRepository }: Repositories) {
