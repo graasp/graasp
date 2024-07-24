@@ -16,8 +16,9 @@ import { MemberNotSignedUp, MemberWithoutPassword } from '../../../../utils/erro
 import { Repositories } from '../../../../utils/repositories';
 import { Member } from '../../../member/entities/member';
 import { SHORT_TOKEN_PARAM } from '../passport';
+import { PasswordConflict } from './errors';
 import { MemberPasswordRepository } from './repository';
-import { comparePasswords } from './utils';
+import { comparePasswords, encryptPassword } from './utils';
 
 const REDIS_PREFIX = 'reset-password:';
 
@@ -43,6 +44,19 @@ export class MemberPasswordService {
     return sign(data, JWT_SECRET, {
       expiresIn: expiration,
     });
+  }
+
+  async post(actor: Member, repositories: Repositories, newPassword: string) {
+    const { memberPasswordRepository } = repositories;
+    // verify that input current password is the same as the stored one
+    const currentPassword = await memberPasswordRepository.getForMemberId(actor.id);
+    if (currentPassword) {
+      throw new PasswordConflict();
+    }
+    // auto-generate a salt and a hash
+    const newEncryptedPassword = await encryptPassword(newPassword);
+
+    await memberPasswordRepository.post(actor.id, newEncryptedPassword);
   }
 
   async patch(
@@ -91,13 +105,13 @@ export class MemberPasswordService {
     repositories: Repositories,
     email: string,
   ): Promise<{ token: string; member: Member } | undefined> {
-    const { memberRepository } = repositories;
+    const { memberRepository, memberPasswordRepository } = repositories;
     const member = await memberRepository.getByEmail(email);
 
     if (!member) {
       return;
     }
-    if (!(await MemberPasswordRepository.getForMemberId(member.id))) {
+    if (!(await memberPasswordRepository.getForMemberId(member.id))) {
       return;
     }
     const payload = { uuid: uuid() };

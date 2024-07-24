@@ -252,7 +252,7 @@ export class EmptyCurrentPassword extends CoreError {
     // this status code is custom for the browser to know it needs to refresh its token
     super({
       code: 'GERR026',
-      statusCode: StatusCodes.UNAUTHORIZED,
+      statusCode: StatusCodes.BAD_REQUEST,
       message: FAILURE_MESSAGES.EMPTY_CURRENT_PASSWORD,
     });
   }

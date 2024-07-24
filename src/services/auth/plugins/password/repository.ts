@@ -13,20 +13,23 @@ export class MemberPasswordRepository extends AbstractRepository<MemberPassword>
     super(MemberPassword, manager);
   }
 
-  async getForMemberId(memberId: string, args: { shouldExist: boolean } = { shouldExist: true }) {
+  async getForMemberId(memberId: string) {
     // additional check that id is not null
-    // o/w empty parameter to findOneBy return the first entry
+    // o/w empty parameter to findOneBy returns the first entry
     if (!memberId) {
       throw new MemberNotFound({ id: memberId });
     }
 
-    const memberPassword = this.repository.findOneBy({ member: { id: memberId } });
-
-    if (!memberPassword && args.shouldExist) {
-      throw new Error('password does not exist');
-    }
+    const memberPassword = await this.repository.findOneBy({ member: { id: memberId } });
 
     return memberPassword;
+  }
+
+  async post(memberId: UUID, newEncryptedPassword: string) {
+    await this.repository.insert({
+      member: { id: memberId },
+      password: newEncryptedPassword,
+    });
   }
 
   async patch(memberId: UUID, newPassword: string) {
@@ -37,7 +40,7 @@ export class MemberPasswordRepository extends AbstractRepository<MemberPassword>
     // auto-generate a salt and a hash
     const hash = await encryptPassword(newPassword);
 
-    const previousPassword = await this.getForMemberId(memberId, { shouldExist: false });
+    const previousPassword = await this.getForMemberId(memberId);
 
     if (previousPassword) {
       await this.repository.update(previousPassword.id, {
@@ -57,6 +60,7 @@ export class MemberPasswordRepository extends AbstractRepository<MemberPassword>
     const verified = await verifyCurrentPassword(memberPassword, currentPassword);
     // throw error if password verification fails
     if (!verified) {
+      // this should be validated by the schema, but we do it again here.
       if (currentPassword === '') {
         throw new EmptyCurrentPassword();
       }
