@@ -95,6 +95,8 @@ export class ActionItemService {
         aggregateMetric: AggregateMetric;
         aggregateBy?: AggregateBy[];
       };
+      startDate?: string;
+      endDate?: string;
     },
   ): Promise<unknown[]> {
     // check rights
@@ -112,6 +114,8 @@ export class ActionItemService {
         sampleSize: payload.sampleSize,
         view: payload.view,
         types: payload.type,
+        startDate: payload.startDate,
+        endDate: payload.endDate,
       },
       payload.countGroupBy,
       payload.aggregationParams,
@@ -123,7 +127,13 @@ export class ActionItemService {
   async getBaseAnalyticsForItem(
     actor: Actor,
     repositories: Repositories,
-    payload: { itemId: string; sampleSize?: number; view?: string },
+    payload: {
+      itemId: string;
+      sampleSize?: number;
+      view?: string;
+      startDate?: string;
+      endDate?: string;
+    },
   ): Promise<BaseAnalytics> {
     // prevent access from unautorized members
     if (!actor) {
@@ -148,6 +158,8 @@ export class ActionItemService {
       sampleSize: payload.sampleSize,
       view: payload.view,
       memberId: permission === PermissionLevel.Admin ? undefined : actor.id,
+      startDate: payload.startDate,
+      endDate: payload.endDate,
     });
 
     // get memberships

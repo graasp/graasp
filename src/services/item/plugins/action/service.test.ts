@@ -237,6 +237,43 @@ describe('ActionItemService', () => {
       });
       expect(result).toMatchObject([{ actionCount: '3', user: actor.id }]);
     });
+
+    it('get aggregated actions within specific period', async () => {
+      await saveActions(rawRepository, [
+        {
+          item,
+          member: actor,
+          view: Context.Player,
+          createdAt: new Date('2024-06-08').toISOString(),
+        },
+        {
+          item,
+          member: actor,
+          view: Context.Player,
+          createdAt: new Date('2024-07-08').toISOString(),
+        },
+        {
+          item,
+          member: actor,
+          view: Context.Player,
+          createdAt: new Date('2024-06-18').toISOString(),
+        },
+      ]);
+      // noise
+      await saveActions(rawRepository, [
+        { item, member: actor, view: Context.Builder },
+        { item, member: actor, view: Context.Library },
+        { item, member: actor, view: Context.Builder },
+      ]);
+      const result = await service.getAnalyticsAggregation(actor, buildRepositories(), {
+        itemId: item.id,
+        view: Context.Player,
+        countGroupBy: [CountGroupBy.User],
+        startDate: new Date('2024-07-01').toISOString(),
+        endDate: new Date('2024-07-10').toISOString(),
+      });
+      expect(result).toMatchObject([{ actionCount: '1', user: actor.id }]);
+    });
   });
 
   describe('getBaseAnalyticsForItem', () => {
@@ -309,6 +346,41 @@ describe('ActionItemService', () => {
         requestedSampleSize: sampleSize,
       });
       expect(baseAnalytics.itemMemberships).toHaveLength(2);
+    });
+
+    it('get analytics within specific period', async () => {
+      const sampleSize = 5;
+
+      // actions
+      await saveActions(rawRepository, [
+        {
+          item,
+          member: actor,
+          view: Context.Player,
+          createdAt: new Date('2024-06-01').toISOString(),
+        },
+        {
+          item,
+          member: actor,
+          view: Context.Player,
+          createdAt: new Date('2024-07-02').toISOString(),
+        },
+        {
+          item,
+          member: actor,
+          view: Context.Player,
+          createdAt: new Date('2024-07-11').toISOString(),
+        },
+      ]);
+
+      const baseAnalytics = await service.getBaseAnalyticsForItem(actor, buildRepositories(), {
+        itemId: item.id,
+        sampleSize,
+        startDate: new Date('2024-07-01').toISOString(),
+        endDate: new Date('2024-07-10').toISOString(),
+      });
+      expect(baseAnalytics.actions).toHaveLength(1);
+      expect(baseAnalytics.item.id).toEqual(item.id);
     });
   });
 

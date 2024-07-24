@@ -459,6 +459,33 @@ describe('Action Plugin Tests', () => {
       expect(parseFloat(response.json()[1]['aggregateResult'])).toBeCloseTo(4);
     });
 
+    it('Successfully get the total action count within specific period', async () => {
+      const members = await saveMembers();
+      const { item } = await testUtils.saveItemAndMembership({ member: actor });
+      await saveActions(item, members);
+
+      const parameters = {
+        requestedSampleSize: '5000',
+        view: Context.Builder,
+        countGroupBy: ['actionType'],
+        aggregateFunction: 'sum',
+        aggregateMetric: 'actionCount',
+        aggregateBy: ['actionType'],
+        startDate: new Date('2023-05-21').toISOString(),
+        endDate: new Date('2023-05-25').toISOString(),
+      };
+
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: `items/${item.id}/actions/aggregation`,
+        query: parameters,
+      });
+
+      expect(response.json()).toHaveProperty([0, 'actionType'], ItemActionType.Update);
+      expect(response.json()).toHaveProperty([0, 'aggregateResult']);
+      expect(parseFloat(response.json()[0]['aggregateResult'])).toBeCloseTo(4);
+    });
+
     it('Successfully get the total action count aggregated by time of day', async () => {
       const members = await saveMembers();
       const { item } = await testUtils.saveItemAndMembership({ member: actor });

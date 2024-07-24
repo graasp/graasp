@@ -99,7 +99,13 @@ export class ActionRepository {
    */
   async getForItem(
     itemPath: UUID,
-    filters?: { sampleSize?: number; view?: string; memberId?: UUID },
+    filters?: {
+      sampleSize?: number;
+      view?: string;
+      memberId?: UUID;
+      startDate?: string;
+      endDate?: string;
+    },
   ): Promise<Action[]> {
     const size = filters?.sampleSize ?? DEFAULT_ACTIONS_SAMPLE_SIZE;
 
@@ -119,6 +125,18 @@ export class ActionRepository {
       query.andWhere('member_id = :memberId', { memberId: filters.memberId });
     }
 
+    if (filters?.startDate) {
+      query.andWhere('action.created_at >= :startDate', {
+        startDate: filters.startDate,
+      });
+    }
+
+    if (filters?.endDate) {
+      query.andWhere('action.created_at <= :endDate', {
+        endDate: filters.endDate,
+      });
+    }
+
     return query.getMany();
   }
 
@@ -132,7 +150,13 @@ export class ActionRepository {
    */
   async getAggregationForItem(
     itemPath: UUID,
-    filters?: { sampleSize?: number; view?: string; types?: string[] },
+    filters?: {
+      sampleSize?: number;
+      view?: string;
+      types?: string[];
+      startDate?: string;
+      endDate?: string;
+    },
     countGroupBy?: CountGroupBy[],
     aggregationParams?: {
       aggregateFunction: AggregateFunction;
@@ -167,12 +191,25 @@ export class ActionRepository {
       subquery.andWhere('action.type IN (:...types)');
     }
 
+    if (filters?.startDate) {
+      subquery.andWhere('action.created_at >= :startDate', {
+        startDate: filters.startDate,
+      });
+    }
+
+    if (filters?.endDate) {
+      subquery.andWhere('action.created_at <= :endDate', {
+        endDate: filters.endDate,
+      });
+    }
     // Second stage aggregation.
     const query = AppDataSource.createQueryBuilder()
       .from(`(${subquery.getQuery()})`, 'subquery')
       .setParameter('path', itemPath)
       .setParameter('view', view)
-      .setParameter('types', types);
+      .setParameter('types', types)
+      .setParameter('startDate', filters?.startDate)
+      .setParameter('endDate', filters?.endDate);
 
     if (aggregateFunction && aggregateMetric) {
       query.addSelect(

@@ -49,7 +49,15 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
   const allowedOrigins = Object.values(CLIENT_HOSTS).map(({ url }) => url.origin);
 
   // get actions and more data matching the given `id`
-  fastify.get<{ Params: IdParam; Querystring: { requestedSampleSize?: number; view?: Context } }>(
+  fastify.get<{
+    Params: IdParam;
+    Querystring: {
+      requestedSampleSize?: number;
+      view?: Context;
+      startDate?: string;
+      endDate?: string;
+    };
+  }>(
     '/:id/actions',
     {
       schema: getItemActions,
@@ -60,6 +68,8 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
         sampleSize: query.requestedSampleSize,
         itemId: id,
         view: query.view?.toLowerCase(),
+        startDate: query.startDate,
+        endDate: query.endDate,
       });
     },
   );
@@ -75,6 +85,8 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
       aggregateFunction: AggregateFunction;
       aggregateMetric: AggregateMetric;
       aggregateBy?: AggregateBy[];
+      startDate?: string;
+      endDate?: string;
     };
   }>(
     '/:id/actions/aggregation',
@@ -94,6 +106,8 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
           aggregateMetric: query.aggregateMetric,
           aggregateBy: query.aggregateBy,
         },
+        startDate: query.startDate,
+        endDate: query.endDate,
       });
     },
   );
