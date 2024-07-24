@@ -18,8 +18,6 @@ import { expectValidateFeedbackOp } from '../../../action/test/utils';
 import { ItemValidationGroupRepository } from '../repositories/ItemValidationGroup';
 import { saveItemValidation } from './utils';
 
-// mock datasource
-// jest.mock('../../../../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 
 describe('asynchronous feedback', () => {

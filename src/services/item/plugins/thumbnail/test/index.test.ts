@@ -19,8 +19,6 @@ import { UploadFileNotImageError } from '../utils/errors';
 const filepath = path.resolve(__dirname, './fixtures/image.png');
 const textPath = path.resolve(__dirname, './fixtures/emptyFile');
 
-// mock datasource
-// jest.mock('../../../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 
 const deleteObjectMock = jest.fn(async () => console.debug('deleteObjectMock'));

@@ -40,8 +40,6 @@ import {
   optionalIsAuthenticated,
 } from './preHandlers';
 
-// mock datasource
-// jest.mock('../../../../plugins/datasource');
 const MOCKED_ROUTE = '/mock-route';
 const memberRawRepository = AppDataSource.getRepository(Member);
 

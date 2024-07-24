@@ -15,8 +15,6 @@ import {
 } from '../../../ws/events';
 import { RecycledItemDataRepository } from '../repository';
 
-// mock datasource
-// jest.mock('../../../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 
 describe('Recycle websocket hooks', () => {

@@ -22,8 +22,6 @@ const createFormData = (filename) => {
 
 jest.mock('node-fetch');
 
-// mock datasource
-// jest.mock('../../../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 
 const uploadDoneMock = jest.fn(async () => console.debug('aws s3 storage upload'));

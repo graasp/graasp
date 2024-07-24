@@ -31,8 +31,6 @@ import { StorageExceeded } from '../utils/errors';
 
 // TODO: LOCAL FILE TESTS
 
-// mock datasource
-// jest.mock('../../../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 
 const deleteObjectMock = jest.fn(async () => console.debug('deleteObjectMock'));

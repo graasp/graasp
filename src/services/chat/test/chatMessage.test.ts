@@ -20,8 +20,6 @@ import { ChatMessageNotFound, MemberCannotDeleteMessage, MemberCannotEditMessage
 import { ChatMention } from '../plugins/mentions/chatMention';
 import { ChatMessageRepository } from '../repository';
 
-// mock datasource
-// jest.mock('../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 const memberRawRepository = AppDataSource.getRepository(Member);
 

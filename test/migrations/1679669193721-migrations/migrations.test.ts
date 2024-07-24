@@ -6,9 +6,6 @@ import build from '../../app';
 import { buildInsertIntoQuery, buildSelectQuery, checkDatabaseIsEmpty } from '../utils';
 import { down, up } from './migrations1679669193721.fixtures';
 
-// mock datasource
-// jest.mock('../../../src/plugins/datasource');
-
 describe('migrations1679669193721', () => {
   let app: FastifyInstance;
   const migration = new Migrations1679669193721();

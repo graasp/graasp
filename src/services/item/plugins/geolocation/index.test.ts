@@ -16,8 +16,6 @@ import { ItemTestUtils, expectPackedItem } from '../../test/fixtures/items';
 import { ItemGeolocation, PackedItemGeolocation } from './ItemGeolocation';
 import { expectPackedItemGeolocations } from './test/utils';
 
-// mock datasource
-// jest.mock('../../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 
 const repository = AppDataSource.getRepository(ItemGeolocation);

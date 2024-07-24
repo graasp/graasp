@@ -31,8 +31,6 @@ import { expectNoLeakMemberId } from './fixtures';
 
 const itemTestUtils = new ItemTestUtils();
 
-// jest.mock('../../../../../plugins/datasource');
-
 const service = new ExportMemberDataService({} as RequestDataExportService);
 
 const checkNoMemberIdLeaks = <T>({

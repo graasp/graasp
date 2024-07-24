@@ -8,9 +8,6 @@ import { ItemTestUtils, expectItem } from '../../test/fixtures/items';
 import { ItemTag } from './ItemTag';
 import { ItemTagRepository } from './repository';
 
-// mock datasource
-// jest.mock('../../../../plugins/datasource');
-
 const rawRepository = AppDataSource.getRepository(ItemTag);
 const repository = new ItemTagRepository();
 const testUtils = new ItemTestUtils();
