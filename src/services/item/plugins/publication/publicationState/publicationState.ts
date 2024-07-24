@@ -70,8 +70,6 @@ export class PublicationState {
         return PublicationStatus.Invalid;
       case this.containValidationStatus(ItemValidationStatus.Pending):
         return PublicationStatus.Pending;
-      case this.isNotPublic():
-        return PublicationStatus.NotPublic;
       case this.containValidationStatus(ItemValidationStatus.Success):
         return this.computeValidationSuccess();
       default:
