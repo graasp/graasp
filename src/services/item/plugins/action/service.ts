@@ -1,3 +1,4 @@
+import { isBefore } from 'date-fns';
 import { singleton } from 'tsyringe';
 
 import { FastifyRequest } from 'fastify';
@@ -22,6 +23,7 @@ import {
 } from '../../../action/constants/constants';
 import { Action } from '../../../action/entities/action';
 import { ActionService } from '../../../action/services/action';
+import { InvalidAggregationError } from '../../../action/utils/errors';
 import { Actor } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import { ItemService } from '../../service';
@@ -107,6 +109,9 @@ export class ActionItemService {
       PermissionLevel.Read,
     );
 
+    if (payload.startDate && payload.endDate && isBefore(payload.endDate, payload.startDate)) {
+      throw new InvalidAggregationError('start date should be before end date');
+    }
     // get actions aggregation
     const aggregateActions = await repositories.actionRepository.getAggregationForItem(
       item.path,
@@ -153,6 +158,9 @@ export class ActionItemService {
       ? (await repositories.itemMembershipRepository.getInherited(item, actor, true))?.permission
       : null;
 
+    if (payload.startDate && payload.endDate && isBefore(payload.endDate, payload.startDate)) {
+      throw new InvalidAggregationError('start date should be before end date');
+    }
     // check membership and get actions
     const actions = await repositories.actionRepository.getForItem(item.path, {
       sampleSize: payload.sampleSize,

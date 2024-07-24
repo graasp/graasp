@@ -1,3 +1,4 @@
+import { addMonths, formatISO } from 'date-fns';
 import { Between, EntityManager, Repository } from 'typeorm';
 
 import { AggregateBy, AggregateFunction, AggregateMetric, CountGroupBy, UUID } from '@graasp/sdk';
@@ -108,12 +109,18 @@ export class ActionRepository {
     },
   ): Promise<Action[]> {
     const size = filters?.sampleSize ?? DEFAULT_ACTIONS_SAMPLE_SIZE;
+    const endDate = filters?.endDate ?? formatISO(new Date());
+    const startDate = filters?.startDate ?? formatISO(addMonths(endDate, -1));
 
     const query = this.repository
       .createQueryBuilder('action')
       .leftJoinAndSelect('action.item', 'item')
       .leftJoinAndSelect('action.member', 'member')
       .where('item.path <@ :path', { path: itemPath })
+      .andWhere('action.created_at BETWEEN :startDate AND :endDate', {
+        startDate,
+        endDate,
+      })
       .orderBy('action.created_at', 'DESC')
       .limit(size);
 
@@ -123,18 +130,6 @@ export class ActionRepository {
 
     if (filters?.memberId) {
       query.andWhere('member_id = :memberId', { memberId: filters.memberId });
-    }
-
-    if (filters?.startDate) {
-      query.andWhere('action.created_at >= :startDate', {
-        startDate: filters.startDate,
-      });
-    }
-
-    if (filters?.endDate) {
-      query.andWhere('action.created_at <= :endDate', {
-        endDate: filters.endDate,
-      });
     }
 
     return query.getMany();
@@ -172,6 +167,8 @@ export class ActionRepository {
     const size = filters?.sampleSize ?? DEFAULT_ACTIONS_SAMPLE_SIZE;
     const view = filters?.view ?? 'Unknown';
     const types = filters?.types;
+    const endDate = filters?.endDate ?? formatISO(new Date());
+    const startDate = filters?.startDate ?? formatISO(addMonths(endDate, -1));
 
     // Get the actionCount from the first stage aggregation.
     const subquery = this.repository.createQueryBuilder('action').select('COUNT(*)', 'actionCount');
@@ -185,31 +182,21 @@ export class ActionRepository {
       .innerJoin('action.item', 'item')
       .where('item.path <@ :path')
       .andWhere('action.view = :view')
+      .andWhere('action.created_at BETWEEN :startDate AND :endDate')
       .limit(size);
 
     if (types) {
       subquery.andWhere('action.type IN (:...types)');
     }
 
-    if (filters?.startDate) {
-      subquery.andWhere('action.created_at >= :startDate', {
-        startDate: filters.startDate,
-      });
-    }
-
-    if (filters?.endDate) {
-      subquery.andWhere('action.created_at <= :endDate', {
-        endDate: filters.endDate,
-      });
-    }
     // Second stage aggregation.
     const query = AppDataSource.createQueryBuilder()
       .from(`(${subquery.getQuery()})`, 'subquery')
       .setParameter('path', itemPath)
       .setParameter('view', view)
       .setParameter('types', types)
-      .setParameter('startDate', filters?.startDate)
-      .setParameter('endDate', filters?.endDate);
+      .setParameter('startDate', startDate)
+      .setParameter('endDate', endDate);
 
     if (aggregateFunction && aggregateMetric) {
       query.addSelect(

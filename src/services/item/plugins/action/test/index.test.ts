@@ -385,6 +385,8 @@ describe('Action Plugin Tests', () => {
         aggregateFunction: 'avg',
         aggregateMetric: 'actionCount',
         aggregateBy: ['createdDay', 'actionType'],
+        startDate: new Date('2023-05-19').toISOString(),
+        endDate: new Date('2023-05-25').toISOString(),
       };
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -415,6 +417,8 @@ describe('Action Plugin Tests', () => {
         aggregateFunction: 'count',
         aggregateMetric: 'actionCount',
         aggregateBy: ['createdDay'],
+        startDate: new Date('2023-05-19').toISOString(),
+        endDate: new Date('2023-05-25').toISOString(),
       };
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -443,6 +447,8 @@ describe('Action Plugin Tests', () => {
         aggregateFunction: 'sum',
         aggregateMetric: 'actionCount',
         aggregateBy: ['actionType'],
+        startDate: new Date('2023-05-19').toISOString(),
+        endDate: new Date('2023-05-25').toISOString(),
       };
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -498,6 +504,8 @@ describe('Action Plugin Tests', () => {
         aggregateFunction: 'sum',
         aggregateMetric: 'actionCount',
         aggregateBy: ['createdTimeOfDay'],
+        startDate: '2023-05-19T03:46:52.939Z',
+        endDate: '2023-05-22T03:46:52.939Z',
       };
       const response = await app.inject({
         method: HttpMethod.Get,
