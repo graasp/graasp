@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 
 import { ErrorFactory } from '@graasp/sdk';
+import { FAILURE_MESSAGES } from '@graasp/translations';
 
 export const GraaspPasswordError = ErrorFactory('graasp-plugin-password');
 
@@ -10,7 +11,7 @@ export class PasswordNotDefined extends GraaspPasswordError {
       {
         code: 'GPPWDERR001',
         statusCode: StatusCodes.BAD_REQUEST,
-        message: 'password is not defined',
+        message: FAILURE_MESSAGES.PASSWORD_NOT_DEFINED_ERROR,
       },
       data,
     );
@@ -23,7 +24,7 @@ export class PasswordNotStrong extends GraaspPasswordError {
       {
         code: 'GPPWDERR002',
         statusCode: StatusCodes.BAD_REQUEST,
-        message: 'password is not strong enough',
+        message: FAILURE_MESSAGES.PASSWORD_WEAK_ERROR,
       },
       data,
     );
@@ -36,7 +37,7 @@ export class PasswordConflict extends GraaspPasswordError {
       {
         code: 'GPPWDERR003',
         statusCode: StatusCodes.CONFLICT,
-        message: "can't set a password when one already exists",
+        message: FAILURE_MESSAGES.PASSWORD_CONFLICT_ERROR,
       },
       data,
     );

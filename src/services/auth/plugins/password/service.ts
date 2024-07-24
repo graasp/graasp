@@ -62,7 +62,7 @@ export class MemberPasswordService {
     actor: Member,
     repositories: Repositories,
     newPassword: string,
-    currentPassword?: string,
+    currentPassword: string,
   ) {
     const { memberPasswordRepository } = repositories;
     // verify that input current password is the same as the stored one

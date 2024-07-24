@@ -55,7 +55,7 @@ export class MemberPasswordRepository extends AbstractRepository<MemberPassword>
     }
   }
 
-  async validatePassword(memberId: UUID, currentPassword?: string) {
+  async validatePassword(memberId: UUID, currentPassword: string) {
     const memberPassword = await this.getForMemberId(memberId);
     const verified = await verifyCurrentPassword(memberPassword, currentPassword);
     // throw error if password verification fails
