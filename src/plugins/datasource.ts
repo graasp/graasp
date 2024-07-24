@@ -31,20 +31,19 @@ import { ItemMembership } from '../services/itemMembership/entities/ItemMembersh
 import { Member } from '../services/member/entities/member';
 import { MemberProfile } from '../services/member/plugins/profile/entities/profile';
 import {
-  CI,
   DB_CONNECTION_POOL_SIZE,
   DB_HOST,
   DB_NAME,
   DB_PASSWORD,
-  DB_PORT,
   DB_READ_REPLICA_HOSTS,
   DB_USERNAME,
-  JEST_WORKER_ID,
+  DEFAULT_DB_PORT,
+  MASTER_DB_PORT,
 } from '../utils/config';
 
 const slaves = DB_READ_REPLICA_HOSTS.map((host) => ({
   host,
-  port: 5432,
+  port: DEFAULT_DB_PORT,
   username: DB_USERNAME,
   password: DB_PASSWORD,
   database: DB_NAME,
@@ -56,7 +55,7 @@ export const AppDataSource = new DataSource({
     master: {
       host: DB_HOST,
       // in CI there will be a database per JEST worker
-      port: CI ? 5432 + JEST_WORKER_ID - 1 : DB_PORT,
+      port: MASTER_DB_PORT,
       username: DB_USERNAME,
       password: DB_PASSWORD,
       database: DB_NAME,
@@ -66,9 +65,8 @@ export const AppDataSource = new DataSource({
   poolSize: DB_CONNECTION_POOL_SIZE, // *2 because of the number of tasks
   // log queries that take more than 2s to execute
   maxQueryExecutionTime: 2000,
-  // needs to change based on where it runs
   logging: ['migration', 'error'],
-  // migrationsRun: true,
+  migrationsRun: true,
 
   entities: [
     Member,
