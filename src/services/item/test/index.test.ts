@@ -47,9 +47,6 @@ import {
   expectPackedItem,
 } from './fixtures/items';
 
-// mock datasource
-jest.mock('../../../plugins/datasource');
-
 const rawRepository = AppDataSource.getRepository(ItemTag);
 
 const testUtils = new ItemTestUtils();

@@ -24,8 +24,6 @@ import { expectH5PFiles, injectH5PImport } from './helpers';
 
 const H5P_ACCORDION_FILENAME = path.basename(H5P_PACKAGES.ACCORDION.path);
 
-// mock datasource
-jest.mock('../../../../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 
 const H5P_TMP_FOLDER = path.join(TMP_FOLDER, 'html-packages', H5P_PATH_PREFIX || '');

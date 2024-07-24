@@ -7,8 +7,6 @@ import { ThumbnailService } from '../thumbnail/service';
 import { ItemService } from './service';
 import { ItemTestUtils } from './test/fixtures/items';
 
-// mock datasource
-jest.mock('../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 const mockedThumbnailService = {
   copyFolder: jest.fn(),
