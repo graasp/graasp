@@ -110,7 +110,8 @@ export class MemberPasswordService {
     if (!member) {
       return;
     }
-    if (!(await memberPasswordRepository.getForMemberId(member.id))) {
+    const password = await memberPasswordRepository.getForMemberId(member.id);
+    if (!password) {
       return;
     }
     const payload = { uuid: uuid() };
