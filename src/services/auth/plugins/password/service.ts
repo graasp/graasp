@@ -17,7 +17,6 @@ import { Repositories } from '../../../../utils/repositories';
 import { Member } from '../../../member/entities/member';
 import { SHORT_TOKEN_PARAM } from '../passport';
 import { PasswordConflict } from './errors';
-import { MemberPasswordRepository } from './repository';
 import { comparePasswords, encryptPassword } from './utils';
 
 const REDIS_PREFIX = 'reset-password:';
