@@ -1,12 +1,18 @@
+import { EntityManager } from 'typeorm';
+
 import { UUID, isPasswordStrong } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../../plugins/datasource';
+import { AbstractRepository } from '../../../../repository';
 import { EmptyCurrentPassword, InvalidPassword, MemberNotFound } from '../../../../utils/errors';
 import { MemberPassword } from './entities/password';
 import { PasswordNotStrong } from './errors';
 import { encryptPassword, verifyCurrentPassword } from './utils';
 
-export const MemberPasswordRepository = AppDataSource.getRepository(MemberPassword).extend({
+export class MemberPasswordRepository extends AbstractRepository<MemberPassword> {
+  constructor(manager?: EntityManager) {
+    super(MemberPassword, manager);
+  }
+
   async getForMemberId(memberId: string, args: { shouldExist: boolean } = { shouldExist: true }) {
     // additional check that id is not null
     // o/w empty parameter to findOneBy return the first entry
@@ -14,14 +20,14 @@ export const MemberPasswordRepository = AppDataSource.getRepository(MemberPasswo
       throw new MemberNotFound({ id: memberId });
     }
 
-    const memberPassword = this.findOneBy({ member: { id: memberId } });
+    const memberPassword = this.repository.findOneBy({ member: { id: memberId } });
 
     if (!memberPassword && args.shouldExist) {
       throw new Error('password does not exist');
     }
 
     return memberPassword;
-  },
+  }
 
   async patch(memberId: UUID, newPassword: string) {
     if (!isPasswordStrong(newPassword)) {
@@ -34,17 +40,17 @@ export const MemberPasswordRepository = AppDataSource.getRepository(MemberPasswo
     const previousPassword = await this.getForMemberId(memberId, { shouldExist: false });
 
     if (previousPassword) {
-      await this.update(previousPassword.id, {
+      await this.repository.update(previousPassword.id, {
         member: { id: memberId },
         password: hash,
       });
     } else {
-      await this.insert({
+      await this.repository.insert({
         member: { id: memberId },
         password: hash,
       });
     }
-  },
+  }
 
   async validatePassword(memberId: UUID, currentPassword?: string) {
     const memberPassword = await this.getForMemberId(memberId);
@@ -56,5 +62,5 @@ export const MemberPasswordRepository = AppDataSource.getRepository(MemberPasswo
       }
       throw new InvalidPassword();
     }
-  },
-});
+  }
+}
