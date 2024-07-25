@@ -26,12 +26,7 @@ import {
 import { expectMember, saveMember } from '../member/test/fixtures/members';
 import { DEFAULT_ORDER, FolderItem, Item } from './entities/Item';
 import { ItemRepository } from './repository';
-import {
-  ItemTestUtils,
-  expectItem,
-  expectManyItems,
-  expectManyPackedItems,
-} from './test/fixtures/items';
+import { ItemTestUtils, expectItem, expectManyItems } from './test/fixtures/items';
 
 const itemRepository = new ItemRepository();
 const testUtils = new ItemTestUtils();
