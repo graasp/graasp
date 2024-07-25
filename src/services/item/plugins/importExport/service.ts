@@ -1,6 +1,5 @@
 import fs, { existsSync } from 'fs';
 import { readFile } from 'fs/promises';
-import mime from 'mime-types';
 import { MAGIC_MIME_TYPE, Magic } from 'mmmagic';
 import fetch from 'node-fetch';
 import path from 'path';
@@ -11,7 +10,7 @@ import { ZipFile } from 'yazl';
 
 import { FastifyReply } from 'fastify';
 
-import { ItemType } from '@graasp/sdk';
+import { ItemType, getMimetype } from '@graasp/sdk';
 
 import { BaseLogger } from '../../../../logger';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
@@ -30,7 +29,7 @@ import {
   URL_PREFIX,
 } from './constants';
 import { UnexpectedExportError } from './errors';
-import { buildTextContent } from './utils';
+import { buildTextContent, getFilenameFromItem } from './utils';
 
 const magic = new Magic(MAGIC_MIME_TYPE);
 const asyncDetectFile = util.promisify(magic.detectFile.bind(magic));
@@ -207,6 +206,68 @@ export class ImportExportService {
     }
   }
 
+  async fetchItemData(
+    actor,
+    repositories,
+    item,
+  ): Promise<{ name: string; stream?: NodeJS.ReadableStream; buffer?: Buffer; mimetype: string }> {
+    switch (true) {
+      case isItemType(item, ItemType.LOCAL_FILE) || isItemType(item, ItemType.S3_FILE): {
+        const mimetype = getMimetype(item.extra) || 'application/octet-stream';
+        const url = await this.fileItemService.getUrl(actor, repositories, {
+          itemId: item.id,
+        });
+
+        const res = await fetch(url);
+
+        const filename = getFilenameFromItem({ ...item, mimetype });
+        return {
+          name: filename,
+          mimetype,
+          stream: res.body,
+        };
+      }
+      case isItemType(item, ItemType.H5P): {
+        const h5pUrl = await this.h5pService.getUrl(item, actor);
+        const res = await fetch(h5pUrl);
+
+        const filename = getFilenameFromItem(item);
+        return { mimetype: 'application/octet-stream', name: filename, stream: res.body };
+      }
+      case isItemType(item, ItemType.DOCUMENT): {
+        // html
+        if (item.extra.document.isRaw) {
+          return {
+            buffer: Buffer.from(item.extra.document?.content, 'utf-8'),
+            name: getFilenameFromItem({ ...item, mimetype: 'text/html' }),
+            mimetype: 'text/html',
+          };
+        }
+        // regular text
+        return {
+          buffer: Buffer.from(item.extra.document?.content, 'utf-8'),
+          name: getFilenameFromItem(item),
+          mimetype: 'text/plain',
+        };
+      }
+      case isItemType(item, ItemType.LINK): {
+        return {
+          buffer: Buffer.from(buildTextContent(item.extra.embeddedLink?.url, ItemType.LINK)),
+          name: getFilenameFromItem(item),
+          mimetype: 'text/plain',
+        };
+      }
+      case isItemType(item, ItemType.APP): {
+        return {
+          buffer: Buffer.from(buildTextContent(item.extra.app?.url, ItemType.APP)),
+          name: getFilenameFromItem(item),
+          mimetype: 'text/plain',
+        };
+      }
+    }
+    throw new Error(`cannot fetch data for item ${item.id}`);
+  }
+
   /**
    * Add item in archive, recursively add children in folder
    * @param actor
@@ -233,52 +294,6 @@ export class ImportExportService {
       );
     }
 
-    if (isItemType(item, ItemType.LOCAL_FILE) || isItemType(item, ItemType.S3_FILE)) {
-      // TODO: refactor
-      const s3Extra = isItemType(item, ItemType.S3_FILE) ? item.extra.s3File : undefined;
-      const localFileExtra = isItemType(item, ItemType.LOCAL_FILE) ? item.extra.file : undefined;
-      const { mimetype } = { ...s3Extra, ...localFileExtra };
-      const url = await this.fileItemService.getUrl(actor, repositories, {
-        itemId: item.id,
-      });
-
-      // build filename with extension if does not exist
-      let ext = path.extname(item.name);
-      if (!ext) {
-        // only add a dot in case of building file name with mimetype, otherwise there will be two dots in file name
-        ext = `.${mime.extension(mimetype)}`;
-      }
-      const filename = `${path.basename(item.name, ext)}${ext}`;
-
-      // add file in archive
-      const res = await fetch(url);
-      archive.addReadStream(res.body, path.join(archiveRootPath, filename));
-    }
-    if (isItemType(item, ItemType.H5P)) {
-      const h5pUrl = await this.h5pService.getUrl(item, actor);
-      const res = await fetch(h5pUrl);
-
-      archive.addReadStream(res.body, path.join(archiveRootPath, item.name));
-    }
-
-    if (isItemType(item, ItemType.DOCUMENT)) {
-      archive.addBuffer(
-        Buffer.from(item.extra.document?.content, 'utf-8'),
-        path.join(archiveRootPath, `${item.name}${GRAASP_DOCUMENT_EXTENSION}`),
-      );
-    }
-    if (isItemType(item, ItemType.LINK)) {
-      archive.addBuffer(
-        Buffer.from(buildTextContent(item.extra.embeddedLink?.url, ItemType.LINK)),
-        path.join(archiveRootPath, `${item.name}${LINK_EXTENSION}`),
-      );
-    }
-    if (isItemType(item, ItemType.APP)) {
-      archive.addBuffer(
-        Buffer.from(buildTextContent(item.extra.app?.url, ItemType.APP)),
-        path.join(archiveRootPath, `${item.name}${LINK_EXTENSION}`),
-      );
-    }
     if (isItemType(item, ItemType.FOLDER)) {
       // append description
       const folderPath = path.join(archiveRootPath, item.name);
@@ -295,8 +310,19 @@ export class ImportExportService {
       );
       // add empty folder
       if (!result.length) {
-        archive.addEmptyDirectory(folderPath);
+        return archive.addEmptyDirectory(folderPath);
       }
+      return;
+    }
+
+    // save single item
+    const { stream, buffer, name } = await this.fetchItemData(actor, repositories, item);
+    if (stream) {
+      return archive.addReadStream(stream, path.join(archiveRootPath, name));
+    } else if (buffer) {
+      return archive.addBuffer(buffer, path.join(archiveRootPath, name));
+    } else {
+      return console.error('cannot fetch data for item', item.id, item.type);
     }
   }
 

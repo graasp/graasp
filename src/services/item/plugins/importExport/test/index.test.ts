@@ -237,7 +237,7 @@ describe('ZIP routes tests', () => {
       expect(response.headers['content-disposition']).toContain(item.name);
     });
 
-    it('Export successfully h5p file', async () => {
+    it.only('Export successfully h5p file', async () => {
       ({ app, actor } = await build());
 
       // mocks - fetching some h5p content
@@ -272,6 +272,8 @@ describe('ZIP routes tests', () => {
       expect(response.statusCode).toBe(StatusCodes.OK);
       expect(response.payload.length).toBeGreaterThan(100);
       expect(response.headers['content-disposition']).toContain(h5pName);
+      expect(response.headers['content-disposition']).toContain('.h5p');
+      expect(response.headers['content-disposition']).not.toContain('.zip');
     });
   });
 });
