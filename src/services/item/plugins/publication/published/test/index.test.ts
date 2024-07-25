@@ -27,6 +27,7 @@ import { ItemLike } from '../../../itemLike/itemLike';
 import { saveItemLikes } from '../../../itemLike/test/utils';
 import { ItemTag } from '../../../itemTag/ItemTag';
 import { ItemTagNotFound } from '../../../itemTag/errors';
+import { saveItemValidation } from '../../validation/test/utils';
 import { ItemPublished } from '../entities/itemPublished';
 import { ItemPublishedNotFound } from '../errors';
 import { MeiliSearchWrapper } from '../plugins/search/meilisearch';
@@ -292,11 +293,18 @@ describe('Item Published', () => {
       it('Publish item with admin rights', async () => {
         const member = await saveMember();
         const { item } = await testUtils.saveItemAndMembership({
+          // We have to define dates, otherwise it will be random dates.
+          item: {
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
           creator: member,
           member: actor,
           permission: PermissionLevel.Admin,
         });
         await rawRepository.save({ item, type: ItemTagType.Public, creator: member });
+        // should validate before publishing
+        await saveItemValidation({ item });
 
         const indexSpy = jest.spyOn(MeiliSearchWrapper.prototype, 'indexOne');
 
@@ -318,6 +326,11 @@ describe('Item Published', () => {
 
         const member = await saveMember();
         const { item } = await testUtils.saveItemAndMembership({
+          // We have to define dates, otherwise it will be random dates.
+          item: {
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
           creator: member,
           member: actor,
           permission: PermissionLevel.Admin,
@@ -335,6 +348,8 @@ describe('Item Published', () => {
           permission: PermissionLevel.Admin,
         });
         await rawRepository.save({ item, type: ItemTagType.Public, creator: member });
+        // should validate before publishing
+        await saveItemValidation({ item });
 
         const res = await app.inject({
           method: HttpMethod.Post,
@@ -365,10 +380,17 @@ describe('Item Published', () => {
       it('Cannot publish private item', async () => {
         const member = await saveMember();
         const { item } = await testUtils.saveItemAndMembership({
+          // We have to define dates, otherwise it will be random dates.
+          item: {
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
           creator: member,
           member: actor,
           permission: PermissionLevel.Admin,
         });
+        // should validate before publishing
+        await saveItemValidation({ item });
 
         const res = await app.inject({
           method: HttpMethod.Post,
@@ -415,6 +437,25 @@ describe('Item Published', () => {
         const { item } = await testUtils.saveItemAndMembership({
           item: {
             type: ItemType.APP,
+          },
+          creator: member,
+          member: actor,
+          permission: PermissionLevel.Admin,
+        });
+        await rawRepository.save({ item, type: ItemTagType.Public, creator: member });
+
+        const res = await app.inject({
+          method: HttpMethod.Post,
+          url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/publish`,
+        });
+        expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      });
+
+      it('Cannot publish item without validating it first', async () => {
+        const member = await saveMember();
+        const { item } = await testUtils.saveItemAndMembership({
+          item: {
+            type: ItemType.FOLDER,
           },
           creator: member,
           member: actor,
