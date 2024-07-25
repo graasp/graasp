@@ -177,9 +177,9 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
         });
 
         // raw words search
-        allKeywords.forEach((k) => {
-          q.orWhere('item.name ILIKE :keywords', {
-            keywords: `%${k}%`,
+        allKeywords.forEach((k,idx) => {
+          q.orWhere(`item.name ILIKE :k_${idx}`, {
+            [`k_${idx}`]: `%${k}%`,
           });
         });
 

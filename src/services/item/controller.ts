@@ -212,10 +212,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.get<{ Params: IdParam; Querystring: ItemChildrenParams }>(
     '/:id/children',
     { schema: getChildren, preHandler: optionalIsAuthenticated },
-    async ({ user, params: { id }, query: { ordered, types } }) => {
+    async ({ user, params: { id }, query: { ordered, types, keywords } }) => {
       return itemService.getPackedChildren(user?.member, buildRepositories(), id, {
         ordered,
         types,
+        keywords,
       });
     },
   );
