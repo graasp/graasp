@@ -33,3 +33,33 @@ export class ItemTypeNotAllowedToPublish extends GraaspPublishedError {
     );
   }
 }
+
+export class ItemPublicationAlreadyExists extends GraaspPublishedError {
+  constructor(itemId: string) {
+    super(
+      {
+        code: 'GPPIERR003',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: `The item "${itemId}" is already published.`,
+      },
+      {
+        itemId,
+      },
+    );
+  }
+}
+
+export class ItemIsNotValidated extends GraaspPublishedError {
+  constructor(itemId: string) {
+    super(
+      {
+        code: 'GPPIERR004',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: `The item "${itemId}" must be validated before publishing it in the Libary.`,
+      },
+      {
+        itemId,
+      },
+    );
+  }
+}

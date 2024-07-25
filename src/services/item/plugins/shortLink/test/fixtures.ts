@@ -1,6 +1,7 @@
 import { ClientHostManager, Context, HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import { Member } from '../../../../member/entities/member';
+import { Item } from '../../../entities/Item';
 import { ItemTestUtils } from '../../../test/fixtures/items';
 import { setItemPublic } from '../../itemTag/test/fixtures';
 import { SHORT_LINKS_FULL_PREFIX, SHORT_LINKS_LIST_ROUTE } from '../service';
@@ -18,6 +19,7 @@ export class ShortLinkTestUtils extends ItemTestUtils {
   /**
    * Insert a new mocked item and optionaly give permissions to a given member.
    *
+   * @param item partial item to create.
    * @param itemCreator the Member who creates the item.
    * @param memberWithPermission optional Member and permission to give access to item.
    * @param permission the permission to give to the member if not null.
@@ -25,28 +27,31 @@ export class ShortLinkTestUtils extends ItemTestUtils {
    * @returns
    */
   mockItemAndMemberships = async ({
+    item,
     itemCreator,
     memberWithPermission,
     setPublic = false,
   }: {
+    item?: Partial<Item>;
     itemCreator: Member;
     memberWithPermission?: MemberWithPermission;
     setPublic?: boolean;
   }) => {
-    const { item } = await this.saveItemAndMembership({
+    const { item: createdItem } = await this.saveItemAndMembership({
+      item,
       member: itemCreator,
     });
 
     if (memberWithPermission) {
       const { member, permission } = memberWithPermission;
-      await this.saveMembership({ item, member, permission });
+      await this.saveMembership({ item: createdItem, member, permission });
     }
 
     if (setPublic) {
-      await setItemPublic(item, itemCreator);
+      await setItemPublic(createdItem, itemCreator);
     }
 
-    return { item };
+    return { item: createdItem };
   };
 }
 

@@ -16,6 +16,7 @@ import { EtherpadServiceConfig } from '../services/item/plugins/etherpad/service
 import FileItemService from '../services/item/plugins/file/service';
 import { H5PService } from '../services/item/plugins/html/h5p/service';
 import { ImportExportService } from '../services/item/plugins/importExport/service';
+import { PublicationService } from '../services/item/plugins/publication/publicationState/service';
 import { MeiliSearchWrapper } from '../services/item/plugins/publication/published/plugins/search/meilisearch';
 import { SearchService } from '../services/item/plugins/publication/published/plugins/search/service';
 import { ItemService } from '../services/item/service';
@@ -38,6 +39,7 @@ import {
   REDIS_USERNAME,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
 } from '../utils/config';
+import { buildRepositories } from '../utils/repositories';
 import {
   ETHERPAD_NAME_FACTORY_DI_KEY,
   FASTIFY_LOGGER_DI_KEY,
@@ -149,4 +151,17 @@ export const registerDependencies = (instance: FastifyInstance) => {
   );
 
   registerValue(ETHERPAD_NAME_FACTORY_DI_KEY, new RandomPadNameFactory());
+
+  // This code will be improved when we will be able to inject the repositories.
+  const { itemTagRepository, itemValidationGroupRepository, itemPublishedRepository } =
+    buildRepositories();
+  registerValue(
+    PublicationService,
+    new PublicationService(
+      resolveDependency(ItemService),
+      itemTagRepository,
+      itemValidationGroupRepository,
+      itemPublishedRepository,
+    ),
+  );
 };
