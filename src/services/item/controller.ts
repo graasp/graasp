@@ -3,16 +3,17 @@ import { StatusCodes } from 'http-status-codes';
 import { fastifyMultipart } from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 
-import { ItemTagType, PermissionLevel } from '@graasp/sdk';
+import { ItemTagType, Pagination, PermissionLevel } from '@graasp/sdk';
 
 import { resolveDependency } from '../../di/utils';
-import { IdParam, IdsParams, PaginationParams } from '../../types';
+import { IdParam, IdsParams } from '../../types';
 import { notUndefined } from '../../utils/assertions';
 import { buildRepositories } from '../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
 import { matchOne } from '../authorization';
 import { validatedMember } from '../member/strategies/validatedMember';
 import { resultOfToList } from '../utils';
+import { ITEMS_PAGE_SIZE } from './constants';
 import { Item } from './entities/Item';
 import {
   SHOW_HIDDEN_PARRAM,
@@ -163,12 +164,21 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   // returns items you have access to given the parameters
   fastify.get<{
-    Querystring: ItemSearchParams & PaginationParams;
+    Querystring: ItemSearchParams & Partial<Pagination>;
   }>(
     '/accessible',
     { schema: getAccessible, preHandler: isAuthenticated },
     async ({ user, query }) => {
-      const { page, pageSize, creatorId, name, sortBy, ordering, permissions, types } = query;
+      const {
+        page = 1,
+        pageSize = ITEMS_PAGE_SIZE,
+        creatorId,
+        name,
+        sortBy,
+        ordering,
+        permissions,
+        types,
+      } = query;
       const member = notUndefined(user?.member);
       return itemService.getAccessible(
         member,
