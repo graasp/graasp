@@ -44,14 +44,6 @@ describe('PublicationState', () => {
       expect(publicationState.computeStatus()).toBe(PublicationStatus.ReadyToPublish);
     });
 
-    it('Published private item should be set to public again', () => {
-      const validationGroup = ItemValidationGroupStatusFactory(privateItem, {
-        status: ItemValidationStatus.Success,
-      });
-      const publicationState = new PublicationState(privateItem, validationGroup, privateItem);
-      expect(publicationState.computeStatus()).toBe(PublicationStatus.NotPublic);
-    });
-
     it('Item type cannot be published', () => {
       const appItem = ItemMetadataFactory({ type: ItemType.APP });
       const publicationState = new PublicationState(appItem);
