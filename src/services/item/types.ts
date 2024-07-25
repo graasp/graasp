@@ -19,7 +19,7 @@ export enum Ordering {
 
 export type ItemSearchParams = {
   creatorId?: Member['id'];
-  name?: string;
+  keywords?: string[];
   sortBy?: SortBy;
   ordering?: Ordering;
   permissions?: PermissionLevel[];
@@ -29,4 +29,5 @@ export type ItemSearchParams = {
 export type ItemChildrenParams = {
   ordered?: boolean;
   types?: UnionOfConst<typeof ItemType>[];
+  keywords?: string[];
 };

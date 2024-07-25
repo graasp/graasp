@@ -124,6 +124,11 @@ export class ItemGeolocationRepository {
           keywords: keywordsString,
         });
 
+        // no dictionary
+        q.orWhere("item.search_document @@ plainto_tsquery('simple', :keywords)", {
+          keywords: keywordsString,
+        });
+
         // search by member lang
         if (memberLang && memberLang != 'en' && ALLOWED_SEARCH_LANGS[memberLang]) {
           q.orWhere('item.search_document @@ plainto_tsquery(:lang, :keywords)', {

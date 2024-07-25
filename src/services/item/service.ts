@@ -128,7 +128,7 @@ export class ItemService {
       itemRepository.checkHierarchyDepth(parentItem);
 
       // check if there's too many children under the same parent
-      const descendants = await itemRepository.getChildren(parentItem);
+      const descendants = await itemRepository.getChildren(actor, parentItem);
       if (descendants.length + 1 > MAX_NUMBER_OF_CHILDREN) {
         throw new TooManyChildren();
       }
@@ -358,7 +358,7 @@ export class ItemService {
     const { itemRepository } = repositories;
     const item = await this.get(actor, repositories, itemId);
 
-    return itemRepository.getChildren(item, params);
+    return itemRepository.getChildren(actor, item, params);
   }
 
   async getChildren(
@@ -613,7 +613,7 @@ export class ItemService {
 
     // newly moved items needs rescaling since they are added in parallel
     if (parentItem) {
-      await repositories.itemRepository.rescaleOrder(parentItem);
+      await repositories.itemRepository.rescaleOrder(actor, parentItem);
     }
 
     return { items: results.map(({ item }) => item), moved: results.map(({ moved }) => moved) };
@@ -744,7 +744,7 @@ export class ItemService {
 
     // rescale order because copies happen in parallel
     if (parentItem) {
-      await itemRepository.rescaleOrder(parentItem);
+      await itemRepository.rescaleOrder(actor, parentItem);
     }
 
     return { items: results.map(({ item }) => item), copies: results.map(({ copy }) => copy) };
@@ -780,7 +780,7 @@ export class ItemService {
     const parentId = getParentFromPath(item.path);
     if (parentId) {
       const parentItem = await this.get(member, repositories, parentId);
-      await repositories.itemRepository.rescaleOrder(parentItem);
+      await repositories.itemRepository.rescaleOrder(member, parentItem);
     }
   }
 }

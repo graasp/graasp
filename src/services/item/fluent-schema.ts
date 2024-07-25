@@ -186,11 +186,11 @@ export const getOne: FastifySchema = {
 export const getAccessible: FastifySchema = {
   querystring: S.object()
     .prop('page', S.number().default(1))
-    .prop('name', S.string())
     .prop('permissions', S.array().items(S.enum(Object.values(PermissionLevel))))
     .prop('sortBy', S.enum(Object.values(SortBy)))
     .prop('ordering', S.enum(Object.values(Ordering)))
     .prop('creatorId', S.string())
+    .prop('keywords', S.array().items(S.string()))
     .prop('pageSize', S.number().default(ITEMS_PAGE_SIZE))
     .prop('types', S.array().items(S.enum(Object.values(ItemType)))),
   response: {
@@ -220,6 +220,7 @@ export const getChildren = {
   querystring: S.object()
     .additionalProperties(false)
     .prop('ordered', S.boolean().default(true))
+    .prop('keywords', S.array().items(S.string()))
     .prop('types', S.array().items(S.enum(Object.values(ItemType)))),
   response: {
     200: S.array().items(packedItem),

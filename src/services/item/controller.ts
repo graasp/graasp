@@ -173,7 +173,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         page = 1,
         pageSize = ITEMS_PAGE_SIZE,
         creatorId,
-        name,
+        keywords,
         sortBy,
         ordering,
         permissions,
@@ -183,7 +183,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       return itemService.getAccessible(
         member,
         buildRepositories(),
-        { creatorId, name, sortBy, ordering, permissions, types },
+        { creatorId, keywords, sortBy, ordering, permissions, types },
         { page, pageSize },
       );
     },
