@@ -440,12 +440,19 @@ export const SENTRY_ENABLE_PROFILING: boolean =
 export const SENTRY_PROFILES_SAMPLE_RATE: number = +process.env.SENTRY_PROFILES_SAMPLE_RATE! || 1.0;
 export const SENTRY_TRACES_SAMPLE_RATE: number = +process.env.SENTRY_TRACES_SAMPLE_RATE! || 1.0;
 
+/////////////////
+// CI and Test //
+/////////////////
+export const JEST_WORKER_ID: number = +process.env.JEST_WORKER_ID! || 1;
+export const CI: boolean = process.env.CI === 'true';
+
 //////////////////////////////////////
 // Database Environements Variables //
 //////////////////////////////////////
+export const DEFAULT_DB_PORT = 5432;
 // Can be undefined, so tests can run without setting it. In production, TypeORM will throw an exception if not defined.
 export const DB_HOST: string | undefined = process.env.DB_HOST;
-export const DB_PORT = +process.env.DB_PORT! || 5432;
+export const DB_PORT = +process.env.DB_PORT! || DEFAULT_DB_PORT;
 export const DB_USERNAME: string | undefined = process.env.DB_USERNAME;
 export const DB_PASSWORD: string | undefined = process.env.DB_PASSWORD;
 export const DB_NAME: string | undefined = process.env.DB_NAME;
@@ -454,8 +461,4 @@ export const DB_READ_REPLICA_HOSTS: string[] = process.env.DB_READ_REPLICA_HOSTS
   ? process.env.DB_READ_REPLICA_HOSTS?.split(',')
   : [];
 
-/////////////////
-// CI and Test //
-/////////////////
-export const JEST_WORKER_ID: number = +process.env.JEST_WORKER_ID! || 1;
-export const CI: boolean = process.env.CI === 'true';
+export const MASTER_DB_PORT = CI ? DEFAULT_DB_PORT + JEST_WORKER_ID - 1 : DB_PORT;

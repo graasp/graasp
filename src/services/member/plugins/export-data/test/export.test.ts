@@ -12,8 +12,6 @@ import { saveMember } from '../../../test/fixtures/members';
 import { ExportMemberDataService } from '../service';
 import { DataArchiver, RequestDataExportService } from '../utils/export.utils';
 
-// mock datasource
-jest.mock('../../../../../plugins/datasource');
 const itemTestUtils = new ItemTestUtils();
 const exportMemberDataService = new ExportMemberDataService({} as RequestDataExportService);
 

@@ -16,8 +16,6 @@ import { ItemLike } from '../itemLike';
 import { ItemLikeRepository } from '../repository';
 import { saveItemLikes } from './utils';
 
-// mock datasource
-jest.mock('../../../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 
 export const expectItemLike = (newLike: ItemLike, correctLike: ItemLike, creator?: Member) => {

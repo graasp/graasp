@@ -14,9 +14,6 @@ import { expectItem } from '../../../test/fixtures/items';
 import { setItemPublic } from '../../itemTag/test/fixtures';
 import { AppTestUtils, MOCK_APP_ORIGIN } from './fixtures';
 
-// mock datasource
-jest.mock('../../../../../plugins/datasource');
-
 const testUtils = new AppTestUtils();
 
 const setUpForAppContext = async (

@@ -6,9 +6,6 @@ import build, { clearDatabase } from '../../../../test/app';
 import { resolveDependency } from '../../../di/utils';
 import { MailerService } from '../service';
 
-// mock datasource
-jest.mock('../../../plugins/datasource');
-
 describe('Mailer', () => {
   let app: FastifyInstance;
   let mailerService: MailerService;

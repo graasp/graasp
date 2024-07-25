@@ -12,9 +12,6 @@ import { MemberService } from '../../../service';
 import { ActionMemberService } from '../service';
 import { saveActionsWithItems } from './utils';
 
-// mock datasource
-jest.mock('../../../../../plugins/datasource');
-
 const rawRepository = AppDataSource.getRepository(Action);
 
 const getActionMemberService = () => {

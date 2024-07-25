@@ -18,8 +18,6 @@ import { ItemLoginRepository } from '../repositories/itemLogin';
 import { encryptPassword, generateRandomEmail } from '../utils';
 import { USERNAME_LOGIN } from './fixtures';
 
-// mock datasource
-jest.mock('../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 
 const saveItemLogin = async ({

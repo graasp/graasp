@@ -22,9 +22,6 @@ import { ActionRequestExportRepository } from '../requestExport/repository';
 import { ItemActionType } from '../utils';
 import { saveActions } from './fixtures/actions';
 
-// mock datasource
-jest.mock('../../../../../plugins/datasource');
-
 const rawActionRepository = AppDataSource.getRepository(Action);
 const testUtils = new ItemTestUtils();
 

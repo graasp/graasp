@@ -18,8 +18,6 @@ import { saveMember } from '../../member/test/fixtures/members';
 import { Action } from '../entities/action';
 import { exportActionsInArchive } from './export';
 
-// mock datasource
-jest.mock('../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 
 const rawActionRepository = AppDataSource.getRepository(Action);

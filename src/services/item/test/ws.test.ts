@@ -17,8 +17,6 @@ import { ItemRepository } from '../repository';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../ws/events';
 import { ItemTestUtils, expectItem } from './fixtures/items';
 
-// mock datasource
-jest.mock('../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 
 describe('Item websocket hooks', () => {

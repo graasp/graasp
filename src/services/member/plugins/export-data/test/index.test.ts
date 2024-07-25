@@ -12,9 +12,6 @@ import { MailerService } from '../../../../../plugins/mailer/service';
 import { MEMBER_EXPORT_DATA_ROUTE_PREFIX } from '../../../../../utils/config';
 import { ItemTestUtils } from '../../../../item/test/fixtures/items';
 
-// mock datasource
-jest.mock('../../../../../plugins/datasource');
-
 const testUtils = new ItemTestUtils();
 
 const POST_URL = `/members${MEMBER_EXPORT_DATA_ROUTE_PREFIX}`;

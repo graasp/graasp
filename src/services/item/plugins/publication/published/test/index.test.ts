@@ -34,9 +34,6 @@ import { ItemPublishedRepository } from '../repositories/itemPublished';
 
 const testUtils = new ItemTestUtils();
 
-// mock datasource
-jest.mock('../../../../../../plugins/datasource');
-
 jest.mock('../plugins/search/meilisearch');
 
 const rawRepository = AppDataSource.getRepository(ItemTag);

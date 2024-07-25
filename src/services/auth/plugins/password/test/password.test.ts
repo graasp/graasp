@@ -21,8 +21,6 @@ const mockCaptchaValidation = (action: RecaptchaActionType) => {
     return { json: async () => ({ success: true, action, score: 1 }) } as Response;
   });
 };
-// mock database and decorator plugins
-jest.mock('../../../../../plugins/datasource');
 
 describe('Password routes tests', () => {
   let app: FastifyInstance;

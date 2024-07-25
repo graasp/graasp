@@ -9,9 +9,6 @@ import { Migrations1692624998160 } from '../../../src/migrations/1692624998160-c
 import build from '../../app';
 import { checkDatabaseIsEmpty } from '../utils';
 
-// mock datasource
-jest.mock('../../../src/plugins/datasource');
-
 describe('Migrations1692624998160', () => {
   let app: FastifyInstance;
 
