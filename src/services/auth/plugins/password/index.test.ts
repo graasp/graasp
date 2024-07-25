@@ -9,7 +9,7 @@ import { FastifyInstance, LightMyRequestResponse } from 'fastify';
 import { MemberFactory, RecaptchaAction } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
-import seed from '../../../../../test/mock';
+import seed from '../../../../../test/mocks';
 import { mockCaptchaValidation } from '../../../../../test/utils';
 import { resolveDependency } from '../../../../di/utils';
 import { MailerService } from '../../../../plugins/mailer/service';
@@ -26,7 +26,6 @@ import { MemberPassword } from './entities/password';
 import { encryptPassword } from './utils';
 
 jest.mock('node-fetch');
-jest.mock('../../../../plugins/datasource');
 
 async function login(
   app: FastifyInstance,

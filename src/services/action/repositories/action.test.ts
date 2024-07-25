@@ -23,9 +23,6 @@ import { Action } from '../entities/action';
 import { expectActions, saveActions } from '../test/fixtures/actions';
 import { ActionRepository } from './action';
 
-// mock datasource
-jest.mock('../../../plugins/datasource');
-
 const rawRepository = AppDataSource.getRepository(Action);
 const testUtils = new ItemTestUtils();
 const createdAt = formatISO(addDays(new Date(), -1));

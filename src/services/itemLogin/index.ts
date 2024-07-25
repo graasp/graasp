@@ -6,7 +6,9 @@ import { resolveDependency } from '../../di/utils';
 import { notUndefined } from '../../utils/assertions';
 import { buildRepositories } from '../../utils/repositories';
 import { SESSION_KEY, isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
+import { matchOne } from '../authorization';
 import { ItemService } from '../item/service';
+import { validatedMember } from '../member/strategies/validatedMember';
 import { ItemLoginMemberCredentials } from './interfaces/item-login';
 import {
   deleteLoginSchema,
@@ -83,7 +85,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       schema: updateLoginSchema,
 
       // set member in request - throws if does not exist
-      preHandler: isAuthenticated,
+      preHandler: [isAuthenticated, matchOne(validatedMember)],
     },
     async ({ user, params: { id: itemId }, body: { type } }) => {
       const member = notUndefined(user?.member);
@@ -99,7 +101,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       schema: deleteLoginSchema,
 
       // set member in request - throws if does not exist
-      preHandler: isAuthenticated,
+      preHandler: [isAuthenticated, matchOne(validatedMember)],
     },
     async ({ user, params: { id: itemId } }) => {
       return db.transaction(async (manager) => {

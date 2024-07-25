@@ -11,8 +11,10 @@ import { notUndefined } from '../../../../utils/assertions';
 import { THUMBNAILS_ROUTE_PREFIX } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import { matchOne } from '../../../authorization';
 import FileService from '../../../file/service';
 import { UploadFileUnexpectedError } from '../../../file/utils/errors';
+import { validatedMember } from '../../../member/strategies/validatedMember';
 import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
 import { deleteSchema, download, upload } from './schemas';
 import { ItemThumbnailService } from './service';
@@ -46,7 +48,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
     `/:id${THUMBNAILS_ROUTE_PREFIX}`,
     {
       schema: upload,
-      preHandler: isAuthenticated,
+      preHandler: [isAuthenticated, matchOne(validatedMember)],
     },
     async (request, reply) => {
       const {
@@ -103,7 +105,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
 
   fastify.delete<{ Params: IdParam }>(
     `/:id${THUMBNAILS_ROUTE_PREFIX}`,
-    { schema: deleteSchema, preHandler: isAuthenticated },
+    { schema: deleteSchema, preHandler: [isAuthenticated, matchOne(validatedMember)] },
     async (request, reply) => {
       const {
         user,

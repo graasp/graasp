@@ -15,8 +15,6 @@ import type { H5PService } from '../html/h5p/service';
 import { ItemTagRepository } from '../itemTag/repository';
 import { ImportExportService } from './service';
 
-// mock datasource
-jest.mock('../../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 
 describe('ZIP routes tests', () => {

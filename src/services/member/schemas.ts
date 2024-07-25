@@ -54,6 +54,8 @@ export default {
         type: { type: 'string' },
         createdAt: { type: 'string' },
         updatedAt: { type: 'string' },
+        lastAuthenticatedAt: { type: 'string' },
+        isValidated: { type: 'boolean' },
         userAgreementsDate: { type: 'string' },
         enableSaveActions: { type: 'boolean' },
         extra: { type: 'object', additionalProperties: true },

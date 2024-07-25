@@ -12,6 +12,14 @@ describe('PublicationState', () => {
       expect(publicationState.computeStatus()).toBe(PublicationStatus.Unpublished);
     });
 
+    it('Item is not published if it is private and outdated', () => {
+      const validationGroup = ItemValidationGroupStatusFactory(privateItem, {
+        isOutDated: true,
+      });
+      const publicationState = new PublicationState(privateItem, validationGroup);
+      expect(publicationState.computeStatus()).toBe(PublicationStatus.Unpublished);
+    });
+
     it('Validation is pending', () => {
       const validationGroup = ItemValidationGroupStatusFactory(privateItem, {
         status: ItemValidationStatus.Pending,
@@ -28,28 +36,12 @@ describe('PublicationState', () => {
       expect(publicationState.computeStatus()).toBe(PublicationStatus.Invalid);
     });
 
-    it('Validation is outdated', () => {
-      const validationGroup = ItemValidationGroupStatusFactory(privateItem, {
-        isOutDated: true,
-      });
-      const publicationState = new PublicationState(privateItem, validationGroup);
-      expect(publicationState.computeStatus()).toBe(PublicationStatus.Outdated);
-    });
-
     it('Item is ready to be published', () => {
       const validationGroup = ItemValidationGroupStatusFactory(privateItem, {
         status: ItemValidationStatus.Success,
       });
       const publicationState = new PublicationState(privateItem, validationGroup);
       expect(publicationState.computeStatus()).toBe(PublicationStatus.ReadyToPublish);
-    });
-
-    it('Published private item should be set to public again', () => {
-      const validationGroup = ItemValidationGroupStatusFactory(privateItem, {
-        status: ItemValidationStatus.Success,
-      });
-      const publicationState = new PublicationState(privateItem, validationGroup, privateItem);
-      expect(publicationState.computeStatus()).toBe(PublicationStatus.NotPublic);
     });
 
     it('Item type cannot be published', () => {
@@ -91,6 +83,14 @@ describe('PublicationState', () => {
       });
       const publicationState = new PublicationState(publicItem, validationGroup, publicItem);
       expect(publicationState.computeStatus()).toBe(PublicationStatus.Published);
+    });
+
+    it('Item is outdated', () => {
+      const validationGroup = ItemValidationGroupStatusFactory(publicItem, {
+        isOutDated: true,
+      });
+      const publicationState = new PublicationState(publicItem, validationGroup, publicItem);
+      expect(publicationState.computeStatus()).toBe(PublicationStatus.Outdated);
     });
   });
 });

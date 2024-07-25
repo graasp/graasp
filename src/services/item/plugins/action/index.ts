@@ -21,10 +21,12 @@ import { CLIENT_HOSTS } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
 import { ActionService } from '../../../action/services/action';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import { matchOne } from '../../../authorization';
 import {
   LocalFileConfiguration,
   S3FileConfiguration,
 } from '../../../file/interfaces/configuration';
+import { validatedMember } from '../../../member/strategies/validatedMember';
 import { ItemService } from '../../service';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
 import { CannotPostAction } from './errors';
@@ -152,7 +154,7 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
     method: 'POST',
     url: '/:id/actions/export',
     schema: exportAction,
-    preHandler: isAuthenticated,
+    preHandler: [isAuthenticated, matchOne(validatedMember)],
     handler: async (request, reply) => {
       const {
         user,

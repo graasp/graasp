@@ -18,3 +18,16 @@ export class EmailAlreadyTaken extends GraaspMemberError {
     );
   }
 }
+
+export class NotValidatedMember extends GraaspMemberError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GMERR002',
+        statusCode: StatusCodes.FORBIDDEN,
+        message: FAILURE_MESSAGES.NOT_VALIDATED_MEMBER,
+      },
+      data,
+    );
+  }
+}

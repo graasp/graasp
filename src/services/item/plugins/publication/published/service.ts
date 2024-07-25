@@ -1,7 +1,7 @@
 import { formatISO } from 'date-fns';
 import { singleton } from 'tsyringe';
 
-import { ItemTagType, PermissionLevel, PublishableItemTypeChecker, UUID } from '@graasp/sdk';
+import { ItemTagType, PermissionLevel, PublicationStatus, UUID } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
 import { BaseLogger } from '../../../../../logger';
@@ -16,7 +16,11 @@ import { ItemWrapper } from '../../../ItemWrapper';
 import { Item } from '../../../entities/Item';
 import { ItemService } from '../../../service';
 import { buildPublishedItemLink } from './constants';
-import { ItemTypeNotAllowedToPublish } from './errors';
+import {
+  ItemIsNotValidated,
+  ItemPublicationAlreadyExists,
+  ItemTypeNotAllowedToPublish,
+} from './errors';
 
 interface ActionCount {
   actionCount: number;
@@ -114,7 +118,12 @@ export class ItemPublishedService {
     };
   }
 
-  async publishIfNotExist(member: Member, repositories: Repositories, itemId: string) {
+  async publishIfNotExist(
+    member: Member,
+    repositories: Repositories,
+    itemId: string,
+    publicationStatus: PublicationStatus,
+  ) {
     const { itemPublishedRepository } = repositories;
 
     const item = await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
@@ -125,20 +134,38 @@ export class ItemPublishedService {
       return itemPublished;
     }
 
-    return await this.post(member, repositories, item, { canBePrivate: true });
+    return await this.post(member, repositories, item, publicationStatus, { canBePrivate: true });
+  }
+
+  private checkPublicationStatus({ id, type }: Item, publicationStatus: PublicationStatus) {
+    switch (publicationStatus) {
+      case PublicationStatus.ReadyToPublish:
+        return true;
+      case PublicationStatus.ItemTypeNotAllowed:
+        throw new ItemTypeNotAllowedToPublish(id, type);
+      case PublicationStatus.Published:
+      case PublicationStatus.PublishedChildren:
+        throw new ItemPublicationAlreadyExists(id);
+      case PublicationStatus.Unpublished:
+      case PublicationStatus.Pending:
+      case PublicationStatus.Invalid:
+      case PublicationStatus.Outdated:
+      default:
+        throw new ItemIsNotValidated(id);
+    }
   }
 
   async post(
     member: Member,
     repositories: Repositories,
     item: Item,
+    publicationStatus: PublicationStatus,
     { canBePrivate }: { canBePrivate?: boolean } = {},
   ) {
     const { itemPublishedRepository, itemTagRepository } = repositories;
 
-    if (!PublishableItemTypeChecker.isItemTypeAllowedToBePublished(item.type)) {
-      throw new ItemTypeNotAllowedToPublish(item.id, item.type);
-    }
+    // ensure that the item can be published
+    this.checkPublicationStatus(item, publicationStatus);
 
     // item should be public first
     const tag = await itemTagRepository.getType(item, ItemTagType.Public, {

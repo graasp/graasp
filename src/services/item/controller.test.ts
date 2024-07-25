@@ -13,14 +13,12 @@ import {
 } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../test/app';
-import seed from '../../../test/mock';
+import seed from '../../../test/mocks';
 import '../../plugins/datasource';
 import { ItemMembership } from '../itemMembership/entities/ItemMembership';
 import { Actor } from '../member/entities/member';
 import { Item } from './entities/Item';
 import { ItemTag } from './plugins/itemTag/ItemTag';
-
-jest.mock('../../plugins/datasource');
 
 describe('Item controller', () => {
   let app: FastifyInstance;

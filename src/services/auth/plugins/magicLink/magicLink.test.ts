@@ -23,8 +23,6 @@ import { Member } from '../../../member/entities/member';
 import { expectMember, saveMember } from '../../../member/test/fixtures/members';
 import { MOCK_CAPTCHA } from '../captcha/test/utils';
 
-// mock database and decorator plugins
-jest.mock('../../../../plugins/datasource');
 jest.mock('node-fetch');
 const memberRawRepository = AppDataSource.getRepository(Member);
 
@@ -70,6 +68,8 @@ describe('Auth routes tests', () => {
       const m = await memberRawRepository.findOneBy({ email, name });
 
       expectMember(m, { name, email });
+      expect(m?.lastAuthenticatedAt).toBeNull();
+      expect(m?.isValidated).toBeFalsy();
 
       // ensure that the user agreements are set for new registration
       expect(m?.userAgreementsDate).toBeDefined();
@@ -106,6 +106,9 @@ describe('Auth routes tests', () => {
       );
       const m = await memberRawRepository.findOneBy({ email, name });
       expectMember(m, { name, email, extra: { lang } });
+      expect(m?.lastAuthenticatedAt).toBeNull();
+      expect(m?.isValidated).toBeFalsy();
+
       // ensure that the user agreements are set for new registration
       expect(m?.userAgreementsDate).toBeDefined();
       expect(m?.userAgreementsDate).toBeInstanceOf(Date);
@@ -152,6 +155,9 @@ describe('Auth routes tests', () => {
       // ensure that the user agreements are set for new registration
       expect(m?.userAgreementsDate).toBeDefined();
       expect(m?.userAgreementsDate).toBeInstanceOf(Date);
+      expect(m?.lastAuthenticatedAt).toBeNull();
+      expect(m?.isValidated).toBeFalsy();
+
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
     });
 
@@ -180,12 +186,15 @@ describe('Auth routes tests', () => {
       // ensure that the user agreements are set for new registration
       expect(m?.userAgreementsDate).toBeDefined();
       expect(m?.userAgreementsDate).toBeInstanceOf(Date);
+      expect(m?.lastAuthenticatedAt).toBeNull();
+      expect(m?.isValidated).toBeFalsy();
+
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
     });
 
     it('Sign Up fallback to login for already register member', async () => {
       // register already existing member
-      const member = await saveMember();
+      const member = await saveMember(MemberFactory({ isValidated: false }));
       const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
 
       const response = await app.inject({
@@ -205,7 +214,8 @@ describe('Auth routes tests', () => {
       const members = await memberRawRepository.findBy({ email: member.email });
       expect(members).toHaveLength(1);
       expectMember(member, members[0]);
-
+      expect(members[0]?.lastAuthenticatedAt).toBeNull();
+      expect(members[0]?.isValidated).toBeFalsy();
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
     });
 
@@ -314,7 +324,7 @@ describe('Auth routes tests', () => {
 
   describe('GET /auth', () => {
     it('Authenticate successfully', async () => {
-      const member = await saveMember();
+      const member = await saveMember(MemberFactory({ isValidated: false }));
       const t = sign({ sub: member.id }, JWT_SECRET);
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -322,6 +332,25 @@ describe('Auth routes tests', () => {
       });
       expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
       expect(response.headers.location).not.toContain('error');
+
+      const m = await memberRawRepository.findOneBy({ email: member.email });
+      expect(m?.lastAuthenticatedAt).toBeDefined();
+      expect(m?.isValidated).toBeFalsy();
+    });
+
+    it('Authenticate successfully with email validation', async () => {
+      const member = await saveMember(MemberFactory({ isValidated: false }));
+      const t = sign({ sub: member.id, emailValidation: true }, JWT_SECRET);
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: `/auth?t=${t}`,
+      });
+      expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
+      expect(response.headers.location).not.toContain('error');
+
+      const m = await memberRawRepository.findOneBy({ email: member.email });
+      expect(m?.lastAuthenticatedAt).toBeDefined();
+      expect(m?.isValidated).toBeTruthy();
     });
 
     it('Fail if token contains undefined memberId', async () => {

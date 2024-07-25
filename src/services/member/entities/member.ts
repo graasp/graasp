@@ -67,6 +67,19 @@ export class Member extends BaseEntity {
   })
   updatedAt: Date;
 
+  @Column({
+    nullable: true,
+    name: 'last_authenticated_at',
+  })
+  lastAuthenticatedAt: Date;
+
+  @Column({
+    default: false,
+    name: 'is_validated',
+    nullable: false,
+  })
+  isValidated: boolean;
+
   get lang(): string {
     return (this.extra.lang as string) ?? DEFAULT_LANG;
   }

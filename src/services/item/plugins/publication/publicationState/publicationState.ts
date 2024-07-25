@@ -40,12 +40,16 @@ export class PublicationState {
     return PublicationStatus.ReadyToPublish;
   }
 
-  private isUnpublished() {
-    return !this.validationGroup;
+  private isUnpublishedAndOutdated() {
+    return (
+      !this.publishedItem &&
+      this.validationGroup &&
+      new Date(this.validationGroup.createdAt) <= new Date(this.item.updatedAt)
+    );
   }
 
-  private isNotPublic() {
-    return !this.item.public && Boolean(this.publishedItem);
+  private isUnpublished() {
+    return !this.validationGroup || this.isUnpublishedAndOutdated();
   }
 
   private isPublishedChildren() {
@@ -70,8 +74,6 @@ export class PublicationState {
         return PublicationStatus.Invalid;
       case this.containValidationStatus(ItemValidationStatus.Pending):
         return PublicationStatus.Pending;
-      case this.isNotPublic():
-        return PublicationStatus.NotPublic;
       case this.containValidationStatus(ItemValidationStatus.Success):
         return this.computeValidationSuccess();
       default:

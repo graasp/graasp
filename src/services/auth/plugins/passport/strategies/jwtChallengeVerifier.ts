@@ -23,7 +23,11 @@ export default (
         secretOrKey: JWT_SECRET,
         passReqToCallback: true,
       },
-      async ({ body: { verifier } }, { sub, challenge }, done: StrictVerifiedCallback) => {
+      async (
+        { body: { verifier } },
+        { sub, challenge, emailValidation },
+        done: StrictVerifiedCallback,
+      ) => {
         const spreadException: boolean = options?.propagateError ?? false;
         //-- Verify Challenge --//
         try {
@@ -43,7 +47,7 @@ export default (
           const member = await memberRepository.get(sub);
           if (member) {
             // Token has been validated
-            return done(null, { member });
+            return done(null, { member }, { emailValidation });
           } else {
             // Authentication refused
             return done(

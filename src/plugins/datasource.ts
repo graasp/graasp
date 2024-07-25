@@ -35,14 +35,15 @@ import {
   DB_HOST,
   DB_NAME,
   DB_PASSWORD,
-  DB_PORT,
   DB_READ_REPLICA_HOSTS,
   DB_USERNAME,
+  DEFAULT_DB_PORT,
+  MASTER_DB_PORT,
 } from '../utils/config';
 
 const slaves = DB_READ_REPLICA_HOSTS.map((host) => ({
   host,
-  port: 5432,
+  port: DEFAULT_DB_PORT,
   username: DB_USERNAME,
   password: DB_PASSWORD,
   database: DB_NAME,
@@ -53,7 +54,8 @@ export const AppDataSource = new DataSource({
   replication: {
     master: {
       host: DB_HOST,
-      port: DB_PORT,
+      // in CI there will be a database per JEST worker
+      port: MASTER_DB_PORT,
       username: DB_USERNAME,
       password: DB_PASSWORD,
       database: DB_NAME,

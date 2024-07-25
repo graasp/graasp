@@ -4,6 +4,8 @@ import { resolveDependency } from '../../../../di/utils';
 import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
+import { matchOne } from '../../../authorization';
+import { validatedMember } from '../../../member/strategies/validatedMember';
 import common, { create, deleteOne, getFavorite } from './schemas';
 import { FavoriteService } from './services/favorite';
 
@@ -27,7 +29,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // insert favorite
   fastify.post<{ Params: { itemId: string } }>(
     '/favorite/:itemId',
-    { schema: create, preHandler: isAuthenticated },
+    { schema: create, preHandler: [isAuthenticated, matchOne(validatedMember)] },
     async ({ user, params: { itemId } }) => {
       const member = notUndefined(user?.member);
       return db.transaction(async (manager) => {
@@ -39,7 +41,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // delete favorite
   fastify.delete<{ Params: { itemId: string } }>(
     '/favorite/:itemId',
-    { schema: deleteOne, preHandler: isAuthenticated },
+    { schema: deleteOne, preHandler: [isAuthenticated, matchOne(validatedMember)] },
     async ({ user, params: { itemId } }) => {
       const member = notUndefined(user?.member);
       return db.transaction(async (manager) => {

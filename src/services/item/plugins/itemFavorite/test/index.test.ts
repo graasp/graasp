@@ -13,9 +13,6 @@ import { ItemFavorite } from '../entities/ItemFavorite';
 import { DuplicateFavoriteError } from '../errors';
 import { FavoriteRepository } from '../repositories/favorite';
 
-// mock datasource
-jest.mock('../../../../../plugins/datasource');
-
 const rawRepository = AppDataSource.getRepository(ItemFavorite);
 const testUtils = new ItemTestUtils();
 

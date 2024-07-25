@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.45.0](https://github.com/graasp/graasp/compare/v1.44.0...v1.45.0) (2024-07-24)
+
+
+### Features
+
+* change last migration to set legacy data validation to true ([#1232](https://github.com/graasp/graasp/issues/1232)) ([edbb727](https://github.com/graasp/graasp/commit/edbb7276948d5b556b92909faa0d9edbc18e0612))
+* compute the publication state in the backend ([#1180](https://github.com/graasp/graasp/issues/1180)) ([f4996cd](https://github.com/graasp/graasp/commit/f4996cd205ec3f30f982fc7a80bee00d4465b196))
+* **refactor:** update MagicLinkService to allow injection using DI ([#1198](https://github.com/graasp/graasp/issues/1198)) ([c70d93c](https://github.com/graasp/graasp/commit/c70d93cca07eea65679fe0a45b696ea79cda6063))
+* **refactor:** update MobileService to allow injection using DI ([#1196](https://github.com/graasp/graasp/issues/1196)) ([b6d43c5](https://github.com/graasp/graasp/commit/b6d43c50454dda89123bfab79924246a6f06b8c4))
+* restrict members that didn't validate their email ([#1113](https://github.com/graasp/graasp/issues/1113)) ([62915ac](https://github.com/graasp/graasp/commit/62915ac102c363f9d8d719cddbe02caee9fbb3ee))
+
+
+### Bug Fixes
+
+* **deps:** update dependency @fastify/busboy to v3 ([#1191](https://github.com/graasp/graasp/issues/1191)) ([5122592](https://github.com/graasp/graasp/commit/5122592babf4efa4b03f39ad0744530ba2dd621d))
+* **deps:** update dependency @fastify/cors to v9 ([#1183](https://github.com/graasp/graasp/issues/1183)) ([6db4212](https://github.com/graasp/graasp/commit/6db4212d7f6ff03fc80def4a43928b2dde18cf0e))
+* **deps:** update dependency @fastify/forwarded to v3 ([#1208](https://github.com/graasp/graasp/issues/1208)) ([fc71c98](https://github.com/graasp/graasp/commit/fc71c9830b112d431ebd82e7f04ea24e9690c3e9))
+* **deps:** update dependency @fastify/multipart to v8 ([#1192](https://github.com/graasp/graasp/issues/1192)) ([c055cf8](https://github.com/graasp/graasp/commit/c055cf8704c86020330d0011ab604f1c084e8466))
+* **deps:** update dependency @fastify/static to v7 ([#1193](https://github.com/graasp/graasp/issues/1193)) ([fd8ce4b](https://github.com/graasp/graasp/commit/fd8ce4b1c4e8c1d872715a2afe50d2d4a338b9a4))
+* **deps:** update dependency ajv to v8.17.1 ([#1201](https://github.com/graasp/graasp/issues/1201)) ([82a72af](https://github.com/graasp/graasp/commit/82a72af71635ca94ffa351448c148c9874a27181))
+* **deps:** update dependency fluent-json-schema to v5 ([#1214](https://github.com/graasp/graasp/issues/1214)) ([23a2f1b](https://github.com/graasp/graasp/commit/23a2f1b284a7135df7409277aa86f3b60523afc2))
+* **deps:** update dependency i18next to v23.12.1 ([#1206](https://github.com/graasp/graasp/issues/1206)) ([02285f6](https://github.com/graasp/graasp/commit/02285f65f8d11ff46cc16e6429cd8c97c8ea98f1))
+* remove leaked information and remove unused errors ([#1204](https://github.com/graasp/graasp/issues/1204)) ([312f6d6](https://github.com/graasp/graasp/commit/312f6d651662550e2118b0e157f75249da41ee2f))
+* sort descendants as number ([#1221](https://github.com/graasp/graasp/issues/1221)) ([2f1f7b4](https://github.com/graasp/graasp/commit/2f1f7b440a192fc6aee14c213938899a7d212886))
+
 ## [1.44.0](https://github.com/graasp/graasp/compare/v1.43.1...v1.44.0) (2024-07-12)
 
 

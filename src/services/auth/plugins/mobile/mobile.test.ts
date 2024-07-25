@@ -26,8 +26,6 @@ import { MOCK_CAPTCHA } from '../captcha/test/utils';
 import { SHORT_TOKEN_PARAM } from '../passport';
 import { MOCK_PASSWORD, saveMemberAndPassword } from '../password/test/fixtures/password';
 
-// mock database and decorator plugins
-jest.mock('../../../../plugins/datasource');
 jest.mock('node-fetch');
 const memberRawRepository = AppDataSource.getRepository(Member);
 
@@ -581,11 +579,14 @@ describe('Mobile Endpoints', () => {
         url: '/m/register',
         payload: {
           name: username,
-          email: email,
+          email,
           challenge,
           captcha: MOCK_CAPTCHA,
         },
       });
+      let m = await memberRawRepository.findOneBy({ email });
+      expect(m?.lastAuthenticatedAt).toBeNull();
+      expect(m?.isValidated).toBeFalsy();
 
       expect(responseRegister.statusCode).toBe(StatusCodes.NO_CONTENT);
       expect(mockSendEmail).toHaveBeenCalledTimes(1);
@@ -599,8 +600,12 @@ describe('Mobile Endpoints', () => {
           verifier,
         },
       });
-
       expect(responseAuth.statusCode).toBe(StatusCodes.OK);
+
+      m = await memberRawRepository.findOneBy({ email });
+      expect(m?.lastAuthenticatedAt).toBeDefined();
+      expect(m?.isValidated).toBeTruthy();
+
       const responseAuthBody = responseAuth.json();
       expect(responseAuthBody).toHaveProperty('refreshToken');
       expect(responseAuthBody).toHaveProperty('authToken');
@@ -622,7 +627,10 @@ describe('Mobile Endpoints', () => {
     it('Password', async () => {
       mockCaptchaValidation(RecaptchaAction.SignInWithPasswordMobile);
 
-      const member = await saveMemberAndPassword(undefined, MOCK_PASSWORD);
+      const member = await saveMemberAndPassword(
+        MemberFactory({ isValidated: false }),
+        MOCK_PASSWORD,
+      );
 
       const responseLogin = await app.inject({
         method: HttpMethod.Post,
@@ -638,6 +646,9 @@ describe('Mobile Endpoints', () => {
       const responseLoginBody = responseLogin.json();
       const authUrl = new URL(responseLoginBody.resource);
 
+      let m = await memberRawRepository.findOneBy({ email: member.email });
+      expect(m?.lastAuthenticatedAt).toBeNull();
+      expect(m?.isValidated).toBeFalsy();
       const responseAuth = await app.inject({
         method: HttpMethod.Post,
         url: `/m/auth`,
@@ -648,6 +659,11 @@ describe('Mobile Endpoints', () => {
       });
 
       expect(responseAuth.statusCode).toBe(StatusCodes.OK);
+
+      m = await memberRawRepository.findOneBy({ email: member.email });
+      expect(m?.lastAuthenticatedAt).toBeDefined();
+      expect(m?.isValidated).toBeFalsy();
+
       const responseAuthBody = responseAuth.json();
       expect(responseAuthBody).toHaveProperty('refreshToken');
       expect(responseAuthBody).toHaveProperty('authToken');

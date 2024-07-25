@@ -13,8 +13,6 @@ import { setupWsApp } from '../../websockets/test/ws-app';
 import { ItemMembership } from '../entities/ItemMembership';
 import { ItemMembershipEvent, MembershipEvent, itemMembershipsTopic } from '../ws/events';
 
-// mock datasource
-jest.mock('../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 
 describe('Item websocket hooks', () => {

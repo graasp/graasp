@@ -65,6 +65,9 @@ const build = async ({ member }: { member?: CompleteMember | null } = {}) => {
 
   await registerAppPlugins(app);
 
+  // drop all the database and synchronize schemas
+  await app.db.synchronize(true);
+
   const actor: Actor = member !== null ? await saveMember(member) : undefined;
   if (actor) {
     mockAuthenticate(actor);

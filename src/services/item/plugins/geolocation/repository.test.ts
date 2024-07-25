@@ -11,9 +11,6 @@ import { MissingGeolocationSearchParams } from './errors';
 import { ItemGeolocationRepository } from './repository';
 import { expectItemGeolocations } from './test/utils';
 
-// mock datasource
-jest.mock('../../../../plugins/datasource');
-
 const rawRepository = AppDataSource.getRepository(ItemGeolocation);
 const repository = new ItemGeolocationRepository();
 const testUtils = new ItemTestUtils();

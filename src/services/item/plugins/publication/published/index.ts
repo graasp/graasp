@@ -6,7 +6,10 @@ import { resolveDependency } from '../../../../../di/utils';
 import { notUndefined } from '../../../../../utils/assertions';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../../auth/plugins/passport';
+import { matchOne } from '../../../../authorization';
+import { validatedMember } from '../../../../member/strategies/validatedMember';
 import { ItemService } from '../../../service';
+import { PublicationService } from '../publicationState/service';
 import graaspSearchPlugin from './plugins/search';
 import {
   getCollectionsForMember,
@@ -22,6 +25,7 @@ import { ItemPublishedService } from './service';
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db } = fastify;
   const itemPublishedService = resolveDependency(ItemPublishedService);
+  const publicationService = resolveDependency(PublicationService);
   const itemService = resolveDependency(ItemService);
 
   fastify.register(graaspSearchPlugin);
@@ -73,7 +77,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.post<{ Params: { itemId: string } }>(
     '/collections/:itemId/publish',
     {
-      preHandler: isAuthenticated,
+      preHandler: [isAuthenticated, matchOne(validatedMember)],
       schema: publishItem,
     },
     async ({ params, user }) => {
@@ -86,7 +90,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           params.itemId,
           PermissionLevel.Admin,
         );
-        return itemPublishedService.post(member, repositories, item);
+
+        const status = await publicationService.computeStateForItem(member, repositories, item.id);
+
+        return itemPublishedService.post(member, repositories, item, status);
       });
     },
   );
@@ -94,7 +101,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.delete<{ Params: { itemId: string } }>(
     '/collections/:itemId/unpublish',
     {
-      preHandler: isAuthenticated,
+      preHandler: [isAuthenticated, matchOne(validatedMember)],
       schema: unpublishItem,
     },
     async ({ params, user }) => {

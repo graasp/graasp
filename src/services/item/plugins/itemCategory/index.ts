@@ -3,6 +3,8 @@ import { FastifyPluginAsync } from 'fastify';
 import { resolveDependency } from '../../../../di/utils';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import { matchOne } from '../../../authorization';
+import { validatedMember } from '../../../member/strategies/validatedMember';
 import common, { create, deleteOne, getCategories, getItemCategories } from './schemas';
 import { CategoryService } from './services/category';
 import { ItemCategoryService } from './services/itemCategory';
@@ -40,7 +42,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // insert item category
   fastify.post<{ Params: { itemId: string }; Body: { categoryId: string } }>(
     '/:itemId/categories',
-    { schema: create, preHandler: isAuthenticated },
+    { schema: create, preHandler: [isAuthenticated, matchOne(validatedMember)] },
     async ({ user, params: { itemId }, body: { categoryId } }) => {
       return db.transaction(async (manager) => {
         return itemCategoryService.post(
@@ -56,7 +58,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // delete item category entry
   fastify.delete<{ Params: { itemCategoryId: string; itemId: string } }>(
     '/:itemId/categories/:itemCategoryId',
-    { schema: deleteOne, preHandler: isAuthenticated },
+    { schema: deleteOne, preHandler: [isAuthenticated, matchOne(validatedMember)] },
     async ({ user, params: { itemCategoryId, itemId } }) => {
       return db.transaction(async (manager) => {
         return itemCategoryService.delete(

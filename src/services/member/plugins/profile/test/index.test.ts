@@ -15,9 +15,6 @@ import {
   saveMemberProfile,
 } from './fixtures/profile';
 
-// mock datasource
-jest.mock('../../../../../plugins/datasource');
-
 describe('Profile Member routes tests', () => {
   let app: FastifyInstance;
   let actor;

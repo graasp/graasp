@@ -3,14 +3,17 @@ import { StatusCodes } from 'http-status-codes';
 import { fastifyMultipart } from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 
-import { ItemTagType, PermissionLevel } from '@graasp/sdk';
+import { ItemTagType, Pagination, PermissionLevel } from '@graasp/sdk';
 
 import { resolveDependency } from '../../di/utils';
-import { IdParam, IdsParams, PaginationParams } from '../../types';
+import { IdParam, IdsParams } from '../../types';
 import { notUndefined } from '../../utils/assertions';
 import { buildRepositories } from '../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
+import { matchOne } from '../authorization';
+import { validatedMember } from '../member/strategies/validatedMember';
 import { resultOfToList } from '../utils';
+import { ITEMS_PAGE_SIZE } from './constants';
 import { Item } from './entities/Item';
 import {
   SHOW_HIDDEN_PARRAM,
@@ -53,7 +56,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/',
     {
       schema: items.extendCreateSchema(),
-      preHandler: isAuthenticated,
+      preHandler: [isAuthenticated, matchOne(validatedMember)],
     },
     async (request, reply) => {
       const {
@@ -106,7 +109,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     }>(
       '/with-thumbnail',
       {
-        preHandler: isAuthenticated,
+        preHandler: [isAuthenticated, matchOne(validatedMember)],
       },
       async (request) => {
         const {
@@ -161,12 +164,21 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   // returns items you have access to given the parameters
   fastify.get<{
-    Querystring: ItemSearchParams & PaginationParams;
+    Querystring: ItemSearchParams & Partial<Pagination>;
   }>(
     '/accessible',
     { schema: getAccessible, preHandler: isAuthenticated },
     async ({ user, query }) => {
-      const { page, pageSize, creatorId, name, sortBy, ordering, permissions, types } = query;
+      const {
+        page = 1,
+        pageSize = ITEMS_PAGE_SIZE,
+        creatorId,
+        name,
+        sortBy,
+        ordering,
+        permissions,
+        types,
+      } = query;
       const member = notUndefined(user?.member);
       return itemService.getAccessible(
         member,
@@ -237,7 +249,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:id',
     {
       schema: items.extendExtrasUpdateSchema(),
-      preHandler: isAuthenticated,
+      preHandler: [isAuthenticated, matchOne(validatedMember)],
     },
     async (request) => {
       const {
@@ -259,7 +271,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/',
     {
       schema: updateMany(items.extendExtrasUpdateSchema()),
-      preHandler: isAuthenticated,
+      preHandler: [isAuthenticated, matchOne(validatedMember)],
     },
     async (request, reply) => {
       const {
@@ -333,7 +345,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/',
     {
       schema: deleteMany,
-      preHandler: isAuthenticated,
+      preHandler: [isAuthenticated, matchOne(validatedMember)],
     },
     async (request, reply) => {
       const {
@@ -373,66 +385,80 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     Body: {
       parentId?: string;
     };
-  }>('/move', { schema: moveMany, preHandler: isAuthenticated }, async (request, reply) => {
-    const {
-      user,
-      query: { id: ids },
-      body: { parentId },
-      log,
-    } = request;
-    const member = notUndefined(user?.member);
-    db.transaction(async (manager) => {
-      const repositories = buildRepositories(manager);
-      const results = await itemService.moveMany(member, repositories, ids, parentId);
-      await actionItemService.postManyMoveAction(request, repositories, results.items);
-      return results;
-    })
-      .then(({ items, moved }) => {
-        websockets.publish(
-          memberItemsTopic,
-          member.id,
-          ItemOpFeedbackEvent('move', ids, { items, moved }),
-        );
+  }>(
+    '/move',
+    {
+      schema: moveMany,
+      preHandler: [isAuthenticated, matchOne(validatedMember)],
+    },
+    async (request, reply) => {
+      const {
+        user,
+        query: { id: ids },
+        body: { parentId },
+        log,
+      } = request;
+      const member = notUndefined(user?.member);
+      db.transaction(async (manager) => {
+        const repositories = buildRepositories(manager);
+        const results = await itemService.moveMany(member, repositories, ids, parentId);
+        await actionItemService.postManyMoveAction(request, repositories, results.items);
+        return results;
       })
-      .catch((e) => {
-        log.error(e);
-        websockets.publish(memberItemsTopic, member.id, ItemOpFeedbackErrorEvent('move', ids, e));
-      });
-    reply.status(StatusCodes.ACCEPTED);
-    return ids;
-  });
+        .then(({ items, moved }) => {
+          websockets.publish(
+            memberItemsTopic,
+            member.id,
+            ItemOpFeedbackEvent('move', ids, { items, moved }),
+          );
+        })
+        .catch((e) => {
+          log.error(e);
+          websockets.publish(memberItemsTopic, member.id, ItemOpFeedbackErrorEvent('move', ids, e));
+        });
+      reply.status(StatusCodes.ACCEPTED);
+      return ids;
+    },
+  );
 
   fastify.post<{
     Querystring: IdsParams;
     Body: { parentId: string };
-  }>('/copy', { schema: copyMany, preHandler: isAuthenticated }, async (request, reply) => {
-    const {
-      user,
-      query: { id: ids },
-      body: { parentId },
-      log,
-    } = request;
-    const member = notUndefined(user?.member);
-    db.transaction(async (manager) => {
-      const repositories = buildRepositories(manager);
-      return await itemService.copyMany(member, repositories, ids, {
-        parentId,
-      });
-    })
-      .then(({ items, copies }) => {
-        websockets.publish(
-          memberItemsTopic,
-          member.id,
-          ItemOpFeedbackEvent('copy', ids, { items, copies }),
-        );
+  }>(
+    '/copy',
+    {
+      schema: copyMany,
+      preHandler: [isAuthenticated, matchOne(validatedMember)],
+    },
+    async (request, reply) => {
+      const {
+        user,
+        query: { id: ids },
+        body: { parentId },
+        log,
+      } = request;
+      const member = notUndefined(user?.member);
+      db.transaction(async (manager) => {
+        const repositories = buildRepositories(manager);
+        return await itemService.copyMany(member, repositories, ids, {
+          parentId,
+        });
       })
-      .catch((e) => {
-        log.error(e);
-        websockets.publish(memberItemsTopic, member.id, ItemOpFeedbackErrorEvent('copy', ids, e));
-      });
-    reply.status(StatusCodes.ACCEPTED);
-    return ids;
-  });
+        .then(({ items, copies }) => {
+          websockets.publish(
+            memberItemsTopic,
+            member.id,
+            ItemOpFeedbackEvent('copy', ids, { items, copies }),
+          );
+        })
+        .catch((e) => {
+          log.error(e);
+          websockets.publish(memberItemsTopic, member.id, ItemOpFeedbackErrorEvent('copy', ids, e));
+        });
+      reply.status(StatusCodes.ACCEPTED);
+      return ids;
+    },
+  );
 };
 
 export default plugin;

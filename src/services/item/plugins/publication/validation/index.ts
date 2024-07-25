@@ -2,10 +2,14 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
+import { PublicationStatus } from '@graasp/sdk';
+
 import { resolveDependency } from '../../../../../di/utils';
 import { notUndefined } from '../../../../../utils/assertions';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { isAuthenticated } from '../../../../auth/plugins/passport';
+import { matchOne } from '../../../../authorization';
+import { validatedMember } from '../../../../member/strategies/validatedMember';
 import {
   ItemOpFeedbackErrorEvent,
   ItemOpFeedbackEvent,
@@ -61,7 +65,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:itemId/validate',
     {
       schema: itemValidation,
-      preHandler: isAuthenticated,
+      preHandler: [isAuthenticated, matchOne(validatedMember)],
     },
     async (request, reply) => {
       const {
@@ -82,7 +86,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         if (hasValidationSucceeded) {
           // publish automatically the item if it is valid.
           // private item will be set to public automatically (should ask the user on the frontend).
-          await publishService.publishIfNotExist(member, repositories, itemId);
+          await publishService.publishIfNotExist(
+            member,
+            repositories,
+            itemId,
+            PublicationStatus.ReadyToPublish,
+          );
         }
 
         // the process could take long time, so let the process run in the background and return the itemId instead
