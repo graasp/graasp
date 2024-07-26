@@ -1,3 +1,4 @@
+import { addMonths, formatISO } from 'date-fns';
 import { Between, EntityManager, Repository } from 'typeorm';
 
 import { AggregateBy, AggregateFunction, AggregateMetric, CountGroupBy, UUID } from '@graasp/sdk';
@@ -99,15 +100,27 @@ export class ActionRepository {
    */
   async getForItem(
     itemPath: UUID,
-    filters?: { sampleSize?: number; view?: string; memberId?: UUID },
+    filters?: {
+      sampleSize?: number;
+      view?: string;
+      memberId?: UUID;
+      startDate?: string;
+      endDate?: string;
+    },
   ): Promise<Action[]> {
     const size = filters?.sampleSize ?? DEFAULT_ACTIONS_SAMPLE_SIZE;
+    const endDate = filters?.endDate ?? formatISO(new Date());
+    const startDate = filters?.startDate ?? formatISO(addMonths(endDate, -1));
 
     const query = this.repository
       .createQueryBuilder('action')
       .leftJoinAndSelect('action.item', 'item')
       .leftJoinAndSelect('action.member', 'member')
       .where('item.path <@ :path', { path: itemPath })
+      .andWhere('action.created_at BETWEEN :startDate AND :endDate', {
+        startDate,
+        endDate,
+      })
       .orderBy('action.created_at', 'DESC')
       .limit(size);
 
@@ -132,7 +145,13 @@ export class ActionRepository {
    */
   async getAggregationForItem(
     itemPath: UUID,
-    filters?: { sampleSize?: number; view?: string; types?: string[] },
+    filters?: {
+      sampleSize?: number;
+      view?: string;
+      types?: string[];
+      startDate?: string;
+      endDate?: string;
+    },
     countGroupBy?: CountGroupBy[],
     aggregationParams?: {
       aggregateFunction: AggregateFunction;
@@ -148,6 +167,8 @@ export class ActionRepository {
     const size = filters?.sampleSize ?? DEFAULT_ACTIONS_SAMPLE_SIZE;
     const view = filters?.view ?? 'Unknown';
     const types = filters?.types;
+    const endDate = filters?.endDate ?? formatISO(new Date());
+    const startDate = filters?.startDate ?? formatISO(addMonths(endDate, -1));
 
     // Get the actionCount from the first stage aggregation.
     const subquery = this.repository.createQueryBuilder('action').select('COUNT(*)', 'actionCount');
@@ -161,6 +182,7 @@ export class ActionRepository {
       .innerJoin('action.item', 'item')
       .where('item.path <@ :path')
       .andWhere('action.view = :view')
+      .andWhere('action.created_at BETWEEN :startDate AND :endDate')
       .limit(size);
 
     if (types) {
@@ -172,7 +194,9 @@ export class ActionRepository {
       .from(`(${subquery.getQuery()})`, 'subquery')
       .setParameter('path', itemPath)
       .setParameter('view', view)
-      .setParameter('types', types);
+      .setParameter('types', types)
+      .setParameter('startDate', startDate)
+      .setParameter('endDate', endDate);
 
     if (aggregateFunction && aggregateMetric) {
       query.addSelect(

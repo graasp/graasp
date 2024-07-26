@@ -1,3 +1,5 @@
+import { addDays, formatISO } from 'date-fns';
+
 import { FastifyInstance } from 'fastify';
 
 import {
@@ -23,6 +25,7 @@ import { ActionRepository } from './action';
 
 const rawRepository = AppDataSource.getRepository(Action);
 const testUtils = new ItemTestUtils();
+const createdAt = formatISO(addDays(new Date(), -1));
 
 describe('Action Repository', () => {
   let app: FastifyInstance;
@@ -113,8 +116,8 @@ describe('Action Repository', () => {
   describe('getForItem', () => {
     it('get all actions for item', async () => {
       const actions = await saveActions(rawRepository, [
-        { item, member },
-        { item, member },
+        { item, member, createdAt },
+        { item, member, createdAt },
       ]);
 
       // noise
@@ -131,7 +134,7 @@ describe('Action Repository', () => {
       const sampleSize = 3;
       const actions = await saveActions(
         rawRepository,
-        Array.from({ length: sampleSize }, () => ({ item, member })),
+        Array.from({ length: sampleSize }, () => ({ item, member, createdAt })),
       );
 
       // noise
@@ -152,7 +155,7 @@ describe('Action Repository', () => {
     it('get all actions for item for default sampleSize', async () => {
       const actions = await saveActions(
         rawRepository,
-        Array.from({ length: DEFAULT_ACTIONS_SAMPLE_SIZE }, () => ({ item, member })),
+        Array.from({ length: DEFAULT_ACTIONS_SAMPLE_SIZE }, () => ({ item, member, createdAt })),
       );
 
       // noise
@@ -176,7 +179,7 @@ describe('Action Repository', () => {
       const view = Context.Builder;
       const actions = await saveActions(
         rawRepository,
-        Array.from({ length: sampleSize }, () => ({ item, member, view })),
+        Array.from({ length: sampleSize }, () => ({ item, member, view, createdAt })),
       );
 
       // noise
@@ -214,7 +217,7 @@ describe('Action Repository', () => {
       const sampleSize = 5;
       const actions = await saveActions(
         rawRepository,
-        Array.from({ length: sampleSize }, () => ({ item, member })),
+        Array.from({ length: sampleSize }, () => ({ item, member, createdAt })),
       );
 
       // noise
@@ -230,11 +233,11 @@ describe('Action Repository', () => {
       const child = await testUtils.saveItem({ actor: member, parentItem: item });
 
       const actions = await saveActions(rawRepository, [
-        { item, member },
-        { item, member },
-        { item: child, member },
-        { item: child, member },
-        { item: child, member },
+        { item, member, createdAt },
+        { item, member, createdAt },
+        { item: child, member, createdAt },
+        { item: child, member, createdAt },
+        { item: child, member, createdAt },
       ]);
 
       // noise
@@ -250,10 +253,10 @@ describe('Action Repository', () => {
   describe('getAggregationForItem', () => {
     it('returns nothing for no parameter', async () => {
       await saveActions(rawRepository, [
-        { item, member },
-        { item, member },
-        { item, member },
-        { item, member },
+        { item, member, createdAt },
+        { item, member, createdAt },
+        { item, member, createdAt },
+        { item, member, createdAt },
       ]);
 
       const r = new ActionRepository();
@@ -264,8 +267,8 @@ describe('Action Repository', () => {
     it('returns count for view only', async () => {
       const view = Context.Library;
       const actions = await saveActions(rawRepository, [
-        { item, member, view },
-        { item, member, view },
+        { item, member, view, createdAt },
+        { item, member, view, createdAt },
       ]);
 
       // noise
@@ -283,8 +286,8 @@ describe('Action Repository', () => {
     it('returns nothing for type only', async () => {
       const type = 'type';
       await saveActions(rawRepository, [
-        { item, member, type },
-        { item, member, type },
+        { item, member, type, createdAt },
+        { item, member, type, createdAt },
       ]);
 
       // noise
@@ -303,8 +306,8 @@ describe('Action Repository', () => {
       const view = Context.Library;
       const type = 'type';
       const actions = await saveActions(rawRepository, [
-        { item, member, type, view },
-        { item, member, type, view },
+        { item, member, type, view, createdAt },
+        { item, member, type, view, createdAt },
       ]);
 
       // noise
@@ -324,13 +327,13 @@ describe('Action Repository', () => {
       const sampleSize = 5;
       await saveActions(
         rawRepository,
-        Array.from({ length: sampleSize }, () => ({ item, member, view })),
+        Array.from({ length: sampleSize }, () => ({ item, member, view, createdAt })),
       );
 
       // noise
       await saveActions(rawRepository, [
-        { item, member, view },
-        { item, member, view },
+        { item, member, view, createdAt },
+        { item, member, view, createdAt },
       ]);
 
       const r = new ActionRepository();
@@ -347,9 +350,9 @@ describe('Action Repository', () => {
         const bob = await saveMember();
         const countGroupBy = [CountGroupBy.ActionType, CountGroupBy.User];
         await saveActions(rawRepository, [
-          ...Array.from({ length: sampleSize }, () => ({ item, member, view, type })),
-          { item, member: bob, view, type: 'type1' },
-          { item, member: bob, view, type: 'type2' },
+          ...Array.from({ length: sampleSize }, () => ({ item, member, view, type, createdAt })),
+          { item, member: bob, view, type: 'type1', createdAt },
+          { item, member: bob, view, type: 'type2', createdAt },
         ]);
 
         const r = new ActionRepository();
@@ -372,18 +375,21 @@ describe('Action Repository', () => {
             view,
             member,
             geolocation: { country: 'switzerland' },
+            createdAt,
           })),
           {
             item,
             view,
             member,
             geolocation: { country: 'france' },
+            createdAt,
           },
           {
             item,
             view,
             member,
             geolocation: { country: 'france' },
+            createdAt,
           },
         ]);
 
@@ -427,7 +433,11 @@ describe('Action Repository', () => {
 
         const r = new ActionRepository();
 
-        const result = await r.getAggregationForItem(item.path, { view }, countGroupBy);
+        const result = await r.getAggregationForItem(
+          item.path,
+          { view, startDate: '2000-12-16T03:24:00', endDate: '2000-12-20T03:24:00' },
+          countGroupBy,
+        );
         expect(result).toMatchObject([
           {
             actionCount: sampleSize.toString(),
@@ -465,7 +475,11 @@ describe('Action Repository', () => {
 
         const r = new ActionRepository();
 
-        const result = await r.getAggregationForItem(item.path, { view }, countGroupBy);
+        const result = await r.getAggregationForItem(
+          item.path,
+          { view, startDate: '2000-12-16T03:24:00', endDate: '2000-12-20T03:24:00' },
+          countGroupBy,
+        );
         expect(result).toMatchObject([
           {
             actionCount: sampleSize.toString(),
@@ -503,7 +517,11 @@ describe('Action Repository', () => {
 
         const r = new ActionRepository();
 
-        const result = await r.getAggregationForItem(item.path, { view }, countGroupBy);
+        const result = await r.getAggregationForItem(
+          item.path,
+          { view, startDate: '2000-12-16T03:24:00', endDate: '2000-12-20T03:24:00' },
+          countGroupBy,
+        );
         expect(result).toMatchObject([
           {
             actionCount: sampleSize.toString(),
@@ -525,16 +543,19 @@ describe('Action Repository', () => {
             item,
             view,
             member,
+            createdAt,
           })),
           {
             item: child1 as unknown as DiscriminatedItem,
             view,
             member,
+            createdAt,
           },
           {
             item: child2 as unknown as DiscriminatedItem,
             view,
             member,
+            createdAt,
           },
         ]);
 
@@ -556,9 +577,9 @@ describe('Action Repository', () => {
         const bob = await saveMember();
         const countGroupBy = [CountGroupBy.User];
         await saveActions(rawRepository, [
-          ...Array.from({ length: sampleSize }, () => ({ item, member, view, type })),
-          { item, member: bob, view, type: 'type1' },
-          { item, member: bob, view, type: 'type2' },
+          ...Array.from({ length: sampleSize }, () => ({ item, member, view, type, createdAt })),
+          { item, member: bob, view, type: 'type1', createdAt },
+          { item, member: bob, view, type: 'type2', createdAt },
         ]);
 
         const r = new ActionRepository();
@@ -576,17 +597,30 @@ describe('Action Repository', () => {
         const aggregateFunction = AggregateFunction.Count;
         const aggregateMetric = AggregateMetric.ActionType;
         await saveActions(rawRepository, [
-          ...Array.from({ length: sampleSize }, () => ({ item, member, view, type: 'type' })),
-          { item, member, view, type: 'type1' },
-          { item, member, view, type: 'type2' },
+          ...Array.from({ length: sampleSize }, () => ({
+            item,
+            member,
+            view,
+            type: 'type',
+            createdAt,
+          })),
+          { item, member, view, type: 'type1', createdAt },
+          { item, member, view, type: 'type2', createdAt },
         ]);
 
         const r = new ActionRepository();
 
-        const result = await r.getAggregationForItem(item.path, { view }, countGroupBy, {
-          aggregateFunction,
-          aggregateMetric,
-        });
+        const result = await r.getAggregationForItem(
+          item.path,
+          {
+            view,
+          },
+          countGroupBy,
+          {
+            aggregateFunction,
+            aggregateMetric,
+          },
+        );
         expect(result).toContainEqual({ aggregateResult: '3' });
       });
 
@@ -602,10 +636,10 @@ describe('Action Repository', () => {
             member,
             view,
             type: 'type',
-            createdAt: '2000-12-17T03:24:00',
+            createdAt,
           })),
-          { item, member, view, type: 'type1', createdAt: '2000-12-16T03:24:00' },
-          { item, member, view, type: 'type2', createdAt: '2000-12-18T03:24:00' },
+          { item, member, view, type: 'type1', createdAt: formatISO(addDays(new Date(), -2)) },
+          { item, member, view, type: 'type2', createdAt: formatISO(addDays(new Date(), -3)) },
         ]);
 
         const r = new ActionRepository();
@@ -624,9 +658,15 @@ describe('Action Repository', () => {
         const aggregateFunction = AggregateFunction.Avg;
         const aggregateMetric = AggregateMetric.ActionCount;
         await saveActions(rawRepository, [
-          ...Array.from({ length: sampleSize }, () => ({ item, member, view, type: 'type' })),
-          { item, member: bob, view, type: 'type1' },
-          { item, member: bob, view, type: 'type2' },
+          ...Array.from({ length: sampleSize }, () => ({
+            item,
+            member,
+            view,
+            type: 'type',
+            createdAt,
+          })),
+          { item, member: bob, view, type: 'type1', createdAt },
+          { item, member: bob, view, type: 'type2', createdAt },
         ]);
 
         const r = new ActionRepository();
@@ -646,11 +686,17 @@ describe('Action Repository', () => {
         const sampleSize = 5;
         const bob = await saveMember();
         await saveActions(rawRepository, [
-          ...Array.from({ length: sampleSize }, () => ({ item, member, view, type: 'type' })),
-          { item, member, view, type: 'type1' },
-          { item, member: bob, view, type: 'type1' },
-          { item, member: bob, view, type: 'type1' },
-          { item, member: bob, view, type: 'type2' },
+          ...Array.from({ length: sampleSize }, () => ({
+            item,
+            member,
+            view,
+            type: 'type',
+            createdAt,
+          })),
+          { item, member, view, type: 'type1', createdAt },
+          { item, member: bob, view, type: 'type1', createdAt },
+          { item, member: bob, view, type: 'type1', createdAt },
+          { item, member: bob, view, type: 'type2', createdAt },
         ]);
 
         const r = new ActionRepository();
@@ -710,7 +756,7 @@ describe('Action Repository', () => {
 
         const result = await r.getAggregationForItem(
           item.path,
-          { view },
+          { view, startDate: '2000-12-14T03:24:00', endDate: '2000-12-20T03:24:00' },
           [CountGroupBy.User, CountGroupBy.CreatedDay],
           {
             aggregateFunction: AggregateFunction.Avg,

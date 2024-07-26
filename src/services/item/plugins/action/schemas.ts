@@ -48,6 +48,14 @@ export const getItemActions = {
       view: {
         type: 'string',
       },
+      startDate: {
+        type: 'string',
+        format: 'date-time',
+      },
+      endDate: {
+        type: 'string',
+        format: 'date-time',
+      },
     },
     required: ['view', 'requestedSampleSize'],
   },
@@ -93,6 +101,8 @@ export const getAggregateActions = {
           enum: Object.values(AggregateBy),
         },
       },
+      startDate: { type: 'string', format: 'date-time' },
+      endDate: { type: 'string', format: 'date-time' },
     },
     required: [
       'view',

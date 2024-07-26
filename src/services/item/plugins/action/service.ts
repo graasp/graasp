@@ -1,3 +1,4 @@
+import { isBefore } from 'date-fns';
 import { singleton } from 'tsyringe';
 
 import { FastifyRequest } from 'fastify';
@@ -22,6 +23,7 @@ import {
 } from '../../../action/constants/constants';
 import { Action } from '../../../action/entities/action';
 import { ActionService } from '../../../action/services/action';
+import { InvalidAggregationError } from '../../../action/utils/errors';
 import { Actor } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import { ItemService } from '../../service';
@@ -95,6 +97,8 @@ export class ActionItemService {
         aggregateMetric: AggregateMetric;
         aggregateBy?: AggregateBy[];
       };
+      startDate?: string;
+      endDate?: string;
     },
   ): Promise<unknown[]> {
     // check rights
@@ -105,6 +109,9 @@ export class ActionItemService {
       PermissionLevel.Read,
     );
 
+    if (payload.startDate && payload.endDate && isBefore(payload.endDate, payload.startDate)) {
+      throw new InvalidAggregationError('start date should be before end date');
+    }
     // get actions aggregation
     const aggregateActions = await repositories.actionRepository.getAggregationForItem(
       item.path,
@@ -112,6 +119,8 @@ export class ActionItemService {
         sampleSize: payload.sampleSize,
         view: payload.view,
         types: payload.type,
+        startDate: payload.startDate,
+        endDate: payload.endDate,
       },
       payload.countGroupBy,
       payload.aggregationParams,
@@ -123,7 +132,13 @@ export class ActionItemService {
   async getBaseAnalyticsForItem(
     actor: Actor,
     repositories: Repositories,
-    payload: { itemId: string; sampleSize?: number; view?: string },
+    payload: {
+      itemId: string;
+      sampleSize?: number;
+      view?: string;
+      startDate?: string;
+      endDate?: string;
+    },
   ): Promise<BaseAnalytics> {
     // prevent access from unautorized members
     if (!actor) {
@@ -143,11 +158,16 @@ export class ActionItemService {
       ? (await repositories.itemMembershipRepository.getInherited(item, actor, true))?.permission
       : null;
 
+    if (payload.startDate && payload.endDate && isBefore(payload.endDate, payload.startDate)) {
+      throw new InvalidAggregationError('start date should be before end date');
+    }
     // check membership and get actions
     const actions = await repositories.actionRepository.getForItem(item.path, {
       sampleSize: payload.sampleSize,
       view: payload.view,
       memberId: permission === PermissionLevel.Admin ? undefined : actor.id,
+      startDate: payload.startDate,
+      endDate: payload.endDate,
     });
 
     // get memberships
