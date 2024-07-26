@@ -3,7 +3,7 @@
 // @ts-expect-error
 import { iso1A2Code } from '@rapideditor/country-coder';
 import fetch from 'node-fetch';
-import { EntityManager, Repository } from 'typeorm';
+import { Brackets, EntityManager, Repository } from 'typeorm';
 
 import { DEFAULT_LANG } from '@graasp/translations';
 
@@ -115,28 +115,38 @@ export class ItemGeolocationRepository {
       query.andWhere('item.path <@ :path', { path: parentItem.path });
     }
 
-    if (keywords?.filter((s) => s.length)?.length) {
-      const keywordsString = keywords.join(' ');
+    const allKeywords = keywords?.filter((s) => s && s.length);
+    if (allKeywords?.length) {
+      const keywordsString = allKeywords.join(' ');
       const memberLang = actor?.lang;
-      query.andWhere((q) => {
-        // search in english by default
-        q.where("item.search_document @@ plainto_tsquery('english', :keywords)", {
-          keywords: keywordsString,
-        });
-
-        // no dictionary
-        q.orWhere("item.search_document @@ plainto_tsquery('simple', :keywords)", {
-          keywords: keywordsString,
-        });
-
-        // search by member lang
-        if (memberLang && memberLang != 'en' && ALLOWED_SEARCH_LANGS[memberLang]) {
-          q.orWhere('item.search_document @@ plainto_tsquery(:lang, :keywords)', {
+      query.andWhere(
+        new Brackets((q) => {
+          // search in english by default
+          q.where("item.search_document @@ plainto_tsquery('english', :keywords)", {
             keywords: keywordsString,
-            lang: ALLOWED_SEARCH_LANGS[memberLang],
           });
-        }
-      });
+
+          // no dictionary
+          q.orWhere("item.search_document @@ plainto_tsquery('simple', :keywords)", {
+            keywords: keywordsString,
+          });
+
+          // raw words search
+          allKeywords.forEach((k, idx) => {
+            q.orWhere(`item.name ILIKE :k_${idx}`, {
+              [`k_${idx}`]: `%${k}%`,
+            });
+          });
+
+          // search by member lang
+          if (memberLang && memberLang != 'en' && ALLOWED_SEARCH_LANGS[memberLang]) {
+            q.orWhere('item.search_document @@ plainto_tsquery(:lang, :keywords)', {
+              keywords: keywordsString,
+              lang: ALLOWED_SEARCH_LANGS[memberLang],
+            });
+          }
+        }),
+      );
     }
 
     return query.getMany();
