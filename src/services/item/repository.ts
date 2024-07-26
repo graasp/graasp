@@ -15,6 +15,7 @@ import {
 } from '@graasp/sdk';
 
 import { AppDataSource } from '../../plugins/datasource';
+import { ALLOWED_SEARCH_LANGS } from '../../utils/config';
 import {
   HierarchyTooDeep,
   InvalidMoveTarget,
@@ -24,7 +25,7 @@ import {
   UnexpectedError,
 } from '../../utils/errors';
 import { MemberIdentifierNotFound } from '../itemLogin/errors';
-import { Member } from '../member/entities/member';
+import { Actor, Member } from '../member/entities/member';
 import { itemSchema } from '../member/plugins/export-data/schemas/schemas';
 import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils';
 import { mapById } from '../utils';
@@ -180,6 +181,7 @@ export class ItemRepository {
   }
 
   async getChildren(
+    actor: Actor,
     parent: Item,
     params?: ItemChildrenParams,
     options: { withOrder?: boolean } = {},
@@ -196,6 +198,38 @@ export class ItemRepository {
     if (params?.types) {
       const types = params.types;
       query.andWhere('item.type IN (:...types)', { types });
+    }
+
+    const allKeywords = params?.keywords?.filter((s) => s && s.length);
+    if (allKeywords?.length) {
+      const keywordsString = allKeywords.join(' ');
+      query.andWhere((q) => {
+        // search in english by default
+        q.where("item.search_document @@ plainto_tsquery('english', :keywords)", {
+          keywords: keywordsString,
+        });
+
+        // no dictionary
+        q.orWhere("item.search_document @@ plainto_tsquery('simple', :keywords)", {
+          keywords: keywordsString,
+        });
+
+        // raw words search
+        allKeywords.forEach((k, idx) => {
+          q.orWhere(`item.name ILIKE :k_${idx}`, {
+            [`k_${idx}`]: `%${k}%`,
+          });
+        });
+
+        // search by member lang
+        const memberLang = actor?.lang;
+        if (memberLang && memberLang != 'en' && ALLOWED_SEARCH_LANGS[memberLang]) {
+          q.orWhere('item.search_document @@ plainto_tsquery(:lang, :keywords)', {
+            keywords: keywordsString,
+            lang: ALLOWED_SEARCH_LANGS[memberLang],
+          });
+        }
+      });
     }
 
     if (params?.ordered) {
@@ -748,8 +782,13 @@ export class ItemRepository {
     return this.get(item.id);
   }
 
-  async rescaleOrder(parentItem: Item) {
-    const children = await this.getChildren(parentItem, { ordered: true }, { withOrder: true });
+  async rescaleOrder(actor: Actor, parentItem: Item) {
+    const children = await this.getChildren(
+      actor,
+      parentItem,
+      { ordered: true },
+      { withOrder: true },
+    );
 
     // no need to rescale for less than 2 items
     if (children.length < 2) {

@@ -1258,6 +1258,36 @@ describe('Item routes tests', () => {
         expectManyPackedItems(data, items);
       });
 
+      it('Returns successfully items for search', async () => {
+        const { packedItem: item1 } = await testUtils.saveItemAndMembership({
+          member: actor,
+          item: { name: 'dog' },
+        });
+        const { packedItem: item2 } = await testUtils.saveItemAndMembership({
+          member: actor,
+          item: { name: 'dog' },
+        });
+        await testUtils.saveItemAndMembership({
+          member: actor,
+          item: { name: 'cat' },
+        });
+
+        const items = [item1, item2];
+
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: `/items/accessible`,
+          query: { keywords: ['dogs'] },
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        const { data, totalCount } = response.json();
+        expect(totalCount).toEqual(items.length);
+        expect(data).toHaveLength(items.length);
+        expectManyPackedItems(data, items);
+      });
+
       it('Returns successfully items by read', async () => {
         const bob = await saveMember();
         const { packedItem: item1 } = await testUtils.saveItemAndMembership({

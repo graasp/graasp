@@ -19,6 +19,13 @@ The following properties exist in the database but are not returned to the clien
 
 - `search_document`: word vector to perform full text search on. It is a combination of english, french and `lang` vectors.
 
+  Below are the explanations when using `plainto_tsquery('english', :keywords)`:
+
+  - `english`: when searching for "dogs", it will stem to "dog" and can search "dog" in items. Search for "chiens" will look for "chiens" as is.
+  - `member lang`: (let's say fr) when searching for "chiens", it will stem to "chien" and search for "chien" in items. Looking for "dogs" will look for "dogs" as is
+  - `simple`: when searching for "i am" it will look for "i am". However looking for "i am" in english will remove everything because they are stop words.
+  - `raw ILIKE` (over some field): when searching for "www" it will look for "www". However looking for "www" in simple will not find "wwwffff" because vectors match on full words only.
+
 ## Endpoints
 
 ### POST /items?id=\<parentId\>&previousItemId=\<previousItemId\>

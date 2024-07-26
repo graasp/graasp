@@ -245,14 +245,14 @@ describe('ItemRepository', () => {
       // create child of child
       await testUtils.saveItemAndMembership({ member: actor, parentItem: parentItem1 });
 
-      const data = await itemRepository.getChildren(parentItem);
+      const data = await itemRepository.getChildren(actor, parentItem);
       expect(data).toHaveLength(children.length);
       expectManyItems(data, children);
     });
     it('Returns successfully empty children', async () => {
       const { item: parent } = await testUtils.saveItemAndMembership({ member: actor });
 
-      const response = await itemRepository.getChildren(parent);
+      const response = await itemRepository.getChildren(actor, parent);
 
       expect(response).toEqual([]);
     });
@@ -275,7 +275,7 @@ describe('ItemRepository', () => {
 
       // create child of child
       await testUtils.saveItemAndMembership({ member: actor, parentItem: parentItem1 });
-      const data = await itemRepository.getChildren(parent, { ordered: true });
+      const data = await itemRepository.getChildren(actor, parent, { ordered: true });
       expect(data).toHaveLength(children.length);
       // verify order and content
       childrenInOrder.forEach((child, idx) => {
@@ -303,7 +303,7 @@ describe('ItemRepository', () => {
       });
       const children = [child2];
 
-      const data = await itemRepository.getChildren(parent, { types: [ItemType.FOLDER] });
+      const data = await itemRepository.getChildren(actor, parent, { types: [ItemType.FOLDER] });
       expect(data).toHaveLength(children.length);
       children.forEach(({ id }, idx) => {
         expectItem(
@@ -315,6 +315,38 @@ describe('ItemRepository', () => {
       });
     });
 
+    it('Filter children by keyword', async () => {
+      const member = await saveMember();
+      const { item: parent } = await testUtils.saveItemAndMembership({
+        member: actor,
+        creator: member,
+        permission: PermissionLevel.Read,
+      });
+      const { packedItem: notAFolder } = await testUtils.saveItemAndMembership({
+        item: { name: 'child1', type: ItemType.DOCUMENT },
+        member,
+        parentItem: parent,
+      });
+      const { item: child2 } = await testUtils.saveItemAndMembership({
+        item: { name: 'child2', type: ItemType.FOLDER },
+        member,
+        parentItem: parent,
+      });
+      // noise
+      await testUtils.saveItemAndMembership({
+        item: { name: 'name', type: ItemType.FOLDER },
+        member,
+        parentItem: parent,
+      });
+      const children = [child2, notAFolder];
+
+      const data = await itemRepository.getChildren(actor, parent, {
+        keywords: ['child'],
+      });
+      expect(data).toHaveLength(children.length);
+      expectManyItems(data, children);
+    });
+
     it('returns error without leaking information', async () => {
       const member = await saveMember();
 
@@ -323,7 +355,7 @@ describe('ItemRepository', () => {
         member,
       });
 
-      await expect(itemRepository.getChildren(notAFolder)).rejects.toMatchObject(
+      await expect(itemRepository.getChildren(actor, notAFolder)).rejects.toMatchObject(
         new ItemNotFolder({ id: notAFolder.id }),
       );
     });
@@ -905,7 +937,7 @@ describe('ItemRepository', () => {
     it('rescale no children does no update', async () => {
       const parentItem = await testUtils.saveItem({ actor });
       const updateFn = jest.spyOn(testUtils.rawItemRepository, 'update');
-      await itemRepository.rescaleOrder(parentItem);
+      await itemRepository.rescaleOrder(actor, parentItem);
       expect(updateFn).not.toHaveBeenCalled();
     });
     it('rescale children', async () => {
@@ -916,7 +948,7 @@ describe('ItemRepository', () => {
       const item3 = await testUtils.saveItem({ actor, parentItem, item: { order: 10.14 } });
       const item4 = await testUtils.saveItem({ actor, parentItem, item: { order: 10.13 } });
 
-      await itemRepository.rescaleOrder(parentItem);
+      await itemRepository.rescaleOrder(actor, parentItem);
 
       expect(await testUtils.getOrderForItemId(item1.id)).toEqual(20);
       expect(await testUtils.getOrderForItemId(item2.id)).toEqual(40);
@@ -940,7 +972,7 @@ describe('ItemRepository', () => {
         item: { createdAt: new Date(Date.now()), order: null },
       });
 
-      await itemRepository.rescaleOrder(parentItem);
+      await itemRepository.rescaleOrder(actor, parentItem);
 
       expect(await testUtils.getOrderForItemId(item1.id)).toEqual(20);
       // null value is at the end but before item5 because it is the least recent
@@ -967,7 +999,7 @@ describe('ItemRepository', () => {
         item: { createdAt: new Date(Date.now()), order: 3 },
       });
 
-      await itemRepository.rescaleOrder(parentItem);
+      await itemRepository.rescaleOrder(actor, parentItem);
 
       expect(await testUtils.getOrderForItemId(item1.id)).toEqual(60);
       // first among duplicata because is more recent
@@ -985,7 +1017,7 @@ describe('ItemRepository', () => {
       const item3 = await testUtils.saveItem({ actor, parentItem, item: { order: 14 } });
       const item4 = await testUtils.saveItem({ actor, parentItem, item: { order: 13 } });
 
-      await itemRepository.rescaleOrder(parentItem);
+      await itemRepository.rescaleOrder(actor, parentItem);
 
       expect(await testUtils.getOrderForItemId(item1.id)).toEqual(11);
       expect(await testUtils.getOrderForItemId(item2.id)).toEqual(12);

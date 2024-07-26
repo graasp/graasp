@@ -11,6 +11,7 @@ import {
 } from '@graasp/sdk';
 
 import { AppDataSource } from '../../plugins/datasource';
+import { ALLOWED_SEARCH_LANGS } from '../../utils/config';
 import {
   InvalidMembership,
   InvalidPermissionLevel,
@@ -128,7 +129,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     actor: Member,
     {
       creatorId,
-      name,
+      keywords,
       sortBy = SortBy.ItemUpdatedAt,
       ordering = Ordering.desc,
       permissions,
@@ -161,9 +162,35 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
         return 'item.path =' + subQuery.getQuery();
       });
 
-    if (name) {
-      query.andWhere("LOWER(item.name) LIKE '%' || :name || '%'", {
-        name: name.toLowerCase().trim(),
+    const allKeywords = keywords?.filter((s) => s && s.length);
+    if (allKeywords?.length) {
+      const keywordsString = allKeywords.join(' ');
+      query.andWhere((q) => {
+        // search in english by default
+        q.where("item.search_document @@ plainto_tsquery('english', :keywords)", {
+          keywords: keywordsString,
+        });
+
+        // no dictionary
+        q.orWhere("item.search_document @@ plainto_tsquery('simple', :keywords)", {
+          keywords: keywordsString,
+        });
+
+        // raw words search
+        allKeywords.forEach((k, idx) => {
+          q.orWhere(`item.name ILIKE :k_${idx}`, {
+            [`k_${idx}`]: `%${k}%`,
+          });
+        });
+
+        // search by member lang
+        const memberLang = actor.lang;
+        if (memberLang != 'en' && ALLOWED_SEARCH_LANGS[memberLang]) {
+          q.orWhere('item.search_document @@ plainto_tsquery(:lang, :keywords)', {
+            keywords: keywordsString,
+            lang: ALLOWED_SEARCH_LANGS[memberLang],
+          });
+        }
       });
     }
 
