@@ -203,33 +203,35 @@ export class ItemRepository {
     const allKeywords = params?.keywords?.filter((s) => s && s.length);
     if (allKeywords?.length) {
       const keywordsString = allKeywords.join(' ');
-      query.andWhere((q) => {
-        // search in english by default
-        q.where("item.search_document @@ plainto_tsquery('english', :keywords)", {
-          keywords: keywordsString,
-        });
-
-        // no dictionary
-        q.orWhere("item.search_document @@ plainto_tsquery('simple', :keywords)", {
-          keywords: keywordsString,
-        });
-
-        // raw words search
-        allKeywords.forEach((k, idx) => {
-          q.orWhere(`item.name ILIKE :k_${idx}`, {
-            [`k_${idx}`]: `%${k}%`,
-          });
-        });
-
-        // search by member lang
-        const memberLang = actor?.lang;
-        if (memberLang && memberLang != 'en' && ALLOWED_SEARCH_LANGS[memberLang]) {
-          q.orWhere('item.search_document @@ plainto_tsquery(:lang, :keywords)', {
+      query.andWhere(
+        new Brackets((q) => {
+          // search in english by default
+          q.where("item.search_document @@ plainto_tsquery('english', :keywords)", {
             keywords: keywordsString,
-            lang: ALLOWED_SEARCH_LANGS[memberLang],
           });
-        }
-      });
+
+          // no dictionary
+          q.orWhere("item.search_document @@ plainto_tsquery('simple', :keywords)", {
+            keywords: keywordsString,
+          });
+
+          // raw words search
+          allKeywords.forEach((k, idx) => {
+            q.orWhere(`item.name ILIKE :k_${idx}`, {
+              [`k_${idx}`]: `%${k}%`,
+            });
+          });
+
+          // search by member lang
+          const memberLang = actor?.lang;
+          if (memberLang && memberLang != 'en' && ALLOWED_SEARCH_LANGS[memberLang]) {
+            q.orWhere('item.search_document @@ plainto_tsquery(:lang, :keywords)', {
+              keywords: keywordsString,
+              lang: ALLOWED_SEARCH_LANGS[memberLang],
+            });
+          }
+        }),
+      );
     }
 
     if (params?.ordered) {

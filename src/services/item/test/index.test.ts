@@ -1271,6 +1271,12 @@ describe('Item routes tests', () => {
           member: actor,
           item: { name: 'cat' },
         });
+        // noise
+        const member = await saveMember();
+        await testUtils.saveItemAndMembership({
+          member,
+          item: { name: 'dog' },
+        });
 
         const items = [item1, item2];
 
@@ -1644,6 +1650,50 @@ describe('Item routes tests', () => {
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
+
+      it('Returns successfully children with search', async () => {
+        const member = await saveMember();
+        const { item: parent } = await testUtils.saveItemAndMembership({
+          member: actor,
+          creator: member,
+          permission: PermissionLevel.Read,
+        });
+        const { packedItem: item1 } = await testUtils.saveItemAndMembership({
+          member: actor,
+          item: { name: 'dog' },
+          parentItem: parent,
+        });
+        const { packedItem: item2 } = await testUtils.saveItemAndMembership({
+          member: actor,
+          item: { name: 'dog' },
+          parentItem: parent,
+        });
+        await testUtils.saveItemAndMembership({
+          member: actor,
+          item: { name: 'cat' },
+          parentItem: parent,
+        });
+        // noise
+        await testUtils.saveItemAndMembership({
+          member,
+          item: { name: 'dog' },
+        });
+
+        const items = [item1, item2];
+
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: `/items/${parent.id}/children`,
+          query: { keywords: ['dogs'] },
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        const data = response.json();
+        expect(data).toHaveLength(items.length);
+        expectManyPackedItems(data, items);
+      });
+
       it('Bad Request for invalid id', async () => {
         const response = await app.inject({
           method: HttpMethod.Get,
