@@ -13,6 +13,7 @@ import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { ShortLinkDuplication, ShortLinkLimitExceed } from '../../../../../utils/errors';
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemPublishedNotFound } from '../../publication/published/errors';
+import { saveItemValidation } from '../../publication/validation/test/utils';
 import {
   MOCK_ALIAS,
   MOCK_ITEM_ID,
@@ -266,9 +267,16 @@ describe('Short links routes tests', () => {
 
         it('Succeed if post short links with library platform on published item with admin permission', async () => {
           const { item } = await testUtils.mockItemAndMemberships({
+            // We have to define dates, otherwise it will be random dates.
+            item: {
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
             itemCreator: actor,
             setPublic: true,
           });
+          // should validate before publishing
+          await saveItemValidation({ item });
           const publishRes = await app.inject({
             method: HttpMethod.Post,
             url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/publish`,
