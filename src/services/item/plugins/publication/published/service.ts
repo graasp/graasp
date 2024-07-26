@@ -1,3 +1,4 @@
+import { formatISO } from 'date-fns';
 import { singleton } from 'tsyringe';
 
 import { ItemTagType, PermissionLevel, PublicationStatus, UUID } from '@graasp/sdk';
@@ -90,6 +91,8 @@ export class ItemPublishedService {
     const totalViews = await actionRepository.getAggregationForItem(item.path, {
       view: 'library',
       types: ['collection-view'],
+      startDate: formatISO(publishedItem.createdAt),
+      endDate: formatISO(new Date()),
     });
     return { totalViews: (totalViews?.[0] as ActionCount)?.actionCount, ...publishedItem };
   }

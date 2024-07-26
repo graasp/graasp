@@ -1,3 +1,4 @@
+import { addDays, formatISO } from 'date-fns';
 import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
@@ -78,9 +79,24 @@ describe('ActionItemService', () => {
 
       it('get actions for item for default view', async () => {
         const actions = await saveActions(rawRepository, [
-          { item, member: actor, view: Context.Builder },
-          { item, member: actor, view: Context.Builder },
-          { item, member: actor, view: Context.Builder },
+          {
+            item,
+            member: actor,
+            view: Context.Builder,
+            createdAt: formatISO(addDays(new Date(), -1)),
+          },
+          {
+            item,
+            member: actor,
+            view: Context.Builder,
+            createdAt: formatISO(addDays(new Date(), -1)),
+          },
+          {
+            item,
+            member: actor,
+            view: Context.Builder,
+            createdAt: formatISO(addDays(new Date(), -1)),
+          },
         ]);
         // noise
         await saveActions(rawRepository, [
@@ -96,11 +112,36 @@ describe('ActionItemService', () => {
       it('get actions for all members when admin', async () => {
         const bob = await saveMember();
         const actions = await saveActions(rawRepository, [
-          { item, member: actor, view: Context.Builder },
-          { item, member: actor, view: Context.Builder },
-          { item, member: actor, view: Context.Builder },
-          { item, member: bob, view: Context.Builder },
-          { item, member: bob, view: Context.Builder },
+          {
+            item,
+            member: actor,
+            view: Context.Builder,
+            createdAt: formatISO(addDays(new Date(), -1)),
+          },
+          {
+            item,
+            member: actor,
+            view: Context.Builder,
+            createdAt: formatISO(addDays(new Date(), -1)),
+          },
+          {
+            item,
+            member: actor,
+            view: Context.Builder,
+            createdAt: formatISO(addDays(new Date(), -1)),
+          },
+          {
+            item,
+            member: bob,
+            view: Context.Builder,
+            createdAt: formatISO(addDays(new Date(), -1)),
+          },
+          {
+            item,
+            member: bob,
+            view: Context.Builder,
+            createdAt: formatISO(addDays(new Date(), -1)),
+          },
         ]);
         // noise
         const { item: i } = await testUtils.saveItemAndMembership({ member: actor });
@@ -120,8 +161,18 @@ describe('ActionItemService', () => {
         const bob = await saveMember();
         await testUtils.saveMembership({ item, member: bob, permission: PermissionLevel.Write });
         const actions = await saveActions(rawRepository, [
-          { item, member: bob, view: Context.Builder },
-          { item, member: bob, view: Context.Builder },
+          {
+            item,
+            member: bob,
+            view: Context.Builder,
+            createdAt: formatISO(addDays(new Date(), -1)),
+          },
+          {
+            item,
+            member: bob,
+            view: Context.Builder,
+            createdAt: formatISO(addDays(new Date(), -1)),
+          },
         ]);
         // noise
         const { item: i } = await testUtils.saveItemAndMembership({ member: actor });
@@ -141,11 +192,36 @@ describe('ActionItemService', () => {
       it('get actions for given sample size', async () => {
         const bob = await saveMember();
         await saveActions(rawRepository, [
-          { item, member: actor, view: Context.Builder },
-          { item, member: actor, view: Context.Builder },
-          { item, member: actor, view: Context.Builder },
-          { item, member: bob, view: Context.Builder },
-          { item, member: bob, view: Context.Builder },
+          {
+            item,
+            member: actor,
+            view: Context.Builder,
+            createdAt: formatISO(addDays(new Date(), -1)),
+          },
+          {
+            item,
+            member: actor,
+            view: Context.Builder,
+            createdAt: formatISO(addDays(new Date(), -1)),
+          },
+          {
+            item,
+            member: actor,
+            view: Context.Builder,
+            createdAt: formatISO(addDays(new Date(), -1)),
+          },
+          {
+            item,
+            member: bob,
+            view: Context.Builder,
+            createdAt: formatISO(addDays(new Date(), -1)),
+          },
+          {
+            item,
+            member: bob,
+            view: Context.Builder,
+            createdAt: formatISO(addDays(new Date(), -1)),
+          },
         ]);
         // noise
         await saveActions(rawRepository, [
@@ -163,11 +239,36 @@ describe('ActionItemService', () => {
       it('get actions for given view', async () => {
         const bob = await saveMember();
         const actions = await saveActions(rawRepository, [
-          { item, member: actor, view: Context.Player },
-          { item, member: actor, view: Context.Player },
-          { item, member: actor, view: Context.Player },
-          { item, member: bob, view: Context.Player },
-          { item, member: bob, view: Context.Player },
+          {
+            item,
+            member: actor,
+            view: Context.Player,
+            createdAt: formatISO(addDays(new Date(), -1)),
+          },
+          {
+            item,
+            member: actor,
+            view: Context.Player,
+            createdAt: formatISO(addDays(new Date(), -1)),
+          },
+          {
+            item,
+            member: actor,
+            view: Context.Player,
+            createdAt: formatISO(addDays(new Date(), -1)),
+          },
+          {
+            item,
+            member: bob,
+            view: Context.Player,
+            createdAt: formatISO(addDays(new Date(), -1)),
+          },
+          {
+            item,
+            member: bob,
+            view: Context.Player,
+            createdAt: formatISO(addDays(new Date(), -1)),
+          },
         ]);
         // noise
         await saveActions(rawRepository, [
@@ -218,9 +319,24 @@ describe('ActionItemService', () => {
     });
     it('get aggregated actions', async () => {
       await saveActions(rawRepository, [
-        { item, member: actor, view: Context.Player },
-        { item, member: actor, view: Context.Player },
-        { item, member: actor, view: Context.Player },
+        {
+          item,
+          member: actor,
+          view: Context.Player,
+          createdAt: formatISO(addDays(new Date(), -1)),
+        },
+        {
+          item,
+          member: actor,
+          view: Context.Player,
+          createdAt: formatISO(addDays(new Date(), -1)),
+        },
+        {
+          item,
+          member: actor,
+          view: Context.Player,
+          createdAt: formatISO(addDays(new Date(), -1)),
+        },
       ]);
       // noise
       await saveActions(rawRepository, [
@@ -234,6 +350,43 @@ describe('ActionItemService', () => {
         countGroupBy: [CountGroupBy.User],
       });
       expect(result).toMatchObject([{ actionCount: '3', user: actor.id }]);
+    });
+
+    it('get aggregated actions within specific period', async () => {
+      await saveActions(rawRepository, [
+        {
+          item,
+          member: actor,
+          view: Context.Player,
+          createdAt: new Date('2024-06-08').toISOString(),
+        },
+        {
+          item,
+          member: actor,
+          view: Context.Player,
+          createdAt: new Date('2024-07-08').toISOString(),
+        },
+        {
+          item,
+          member: actor,
+          view: Context.Player,
+          createdAt: new Date('2024-06-18').toISOString(),
+        },
+      ]);
+      // noise
+      await saveActions(rawRepository, [
+        { item, member: actor, view: Context.Builder },
+        { item, member: actor, view: Context.Library },
+        { item, member: actor, view: Context.Builder },
+      ]);
+      const result = await service.getAnalyticsAggregation(actor, buildRepositories(), {
+        itemId: item.id,
+        view: Context.Player,
+        countGroupBy: [CountGroupBy.User],
+        startDate: new Date('2024-07-01').toISOString(),
+        endDate: new Date('2024-07-10').toISOString(),
+      });
+      expect(result).toMatchObject([{ actionCount: '1', user: actor.id }]);
     });
   });
 
@@ -279,10 +432,12 @@ describe('ActionItemService', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const itemAny = itemNoMembership as any;
       const actions = await saveActions(rawRepository, [
-        { item, member: bob, view: Context.Player },
-        { item, member: bob, view: Context.Player },
-        { item, member: bob, view: Context.Player },
+        { item, member: bob, view: Context.Player, createdAt: formatISO(addDays(new Date(), -1)) },
+        { item, member: bob, view: Context.Player, createdAt: formatISO(addDays(new Date(), -10)) },
+        { item, member: bob, view: Context.Player, createdAt: formatISO(addDays(new Date(), -5)) },
       ]);
+
+      console.log(actions, 'actions');
       // noise
       await saveActions(rawRepository, [
         { item: itemAny, member: actor, view: Context.Builder },
@@ -307,6 +462,41 @@ describe('ActionItemService', () => {
         requestedSampleSize: sampleSize,
       });
       expect(baseAnalytics.itemMemberships).toHaveLength(2);
+    });
+
+    it('get analytics within specific period', async () => {
+      const sampleSize = 5;
+
+      // actions
+      await saveActions(rawRepository, [
+        {
+          item,
+          member: actor,
+          view: Context.Player,
+          createdAt: new Date('2024-06-01').toISOString(),
+        },
+        {
+          item,
+          member: actor,
+          view: Context.Player,
+          createdAt: new Date('2024-07-02').toISOString(),
+        },
+        {
+          item,
+          member: actor,
+          view: Context.Player,
+          createdAt: new Date('2024-07-11').toISOString(),
+        },
+      ]);
+
+      const baseAnalytics = await service.getBaseAnalyticsForItem(actor, buildRepositories(), {
+        itemId: item.id,
+        sampleSize,
+        startDate: new Date('2024-07-01').toISOString(),
+        endDate: new Date('2024-07-10').toISOString(),
+      });
+      expect(baseAnalytics.actions).toHaveLength(1);
+      expect(baseAnalytics.item.id).toEqual(item.id);
     });
   });
 
