@@ -34,8 +34,6 @@ import { MemberPassword } from './entities/password';
 import { MOCK_PASSWORD, saveMemberAndPassword } from './test/fixtures/password';
 import { encryptPassword } from './utils';
 
-jest.mock('node-fetch');
-
 async function login(
   app: FastifyInstance,
   email: string,
@@ -76,6 +74,7 @@ describe('Login with password', () => {
       url: '/login-password',
       payload: { email: member.email, password: pwd.password, captcha: MOCK_CAPTCHA },
     });
+    console.log(await response.json());
     expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
     expect(response.json()).toHaveProperty('resource');
   });

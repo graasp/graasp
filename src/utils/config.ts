@@ -445,6 +445,7 @@ export const SENTRY_TRACES_SAMPLE_RATE: number = +process.env.SENTRY_TRACES_SAMP
 /////////////////
 export const JEST_WORKER_ID: number = +process.env.JEST_WORKER_ID! || 1;
 export const CI: boolean = process.env.CI === 'true';
+export const AUTO_RUN_MIGRATIONS: boolean = (process.env.AUTO_RUN_MIGRATIONS ?? 'true') === 'true';
 
 //////////////////////////////////////
 // Database Environements Variables //
