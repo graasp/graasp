@@ -220,7 +220,7 @@ describe('ZIP routes tests', () => {
     });
   });
 
-  describe('POST /download', () => {
+  describe('POST /export', () => {
     it('Export successfully if signed in', async () => {
       ({ app, actor } = await build());
       const { item } = await testUtils.saveItemAndMembership({
@@ -230,7 +230,7 @@ describe('ZIP routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/items/${item.id}/download`,
+        url: `/items/${item.id}/export`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.OK);
@@ -266,7 +266,7 @@ describe('ZIP routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/items/${h5pId}/download`,
+        url: `/items/${h5pId}/export`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.OK);
