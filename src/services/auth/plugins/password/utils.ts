@@ -5,8 +5,8 @@ import { MemberPassword } from './entities/password';
 import { PasswordNotDefined } from './errors';
 
 export async function verifyCurrentPassword(
-  memberPassword?: MemberPassword | null,
-  password?: string,
+  memberPassword: MemberPassword | null,
+  password: string,
 ) {
   /* verified: stores the output of bcrypt.compare().
   bcrypt.compare() allows to compare the provided password with a stored hash.
