@@ -3782,10 +3782,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/mime@npm:3.0.4":
-  version: 3.0.4
-  resolution: "@types/mime@npm:3.0.4"
-  checksum: 10/a6139c8e1f705ef2b064d072f6edc01f3c099023ad7c4fce2afc6c2bf0231888202adadbdb48643e8e20da0ce409481a49922e737eca52871b3dc08017455843
+"@types/mime@npm:4.0.0":
+  version: 4.0.0
+  resolution: "@types/mime@npm:4.0.0"
+  dependencies:
+    mime: "npm:*"
+  checksum: 10/e19258adf39badcfa1ed1deecc081f5d4fbbbd655bb6ae23fc6f0101309c61e95feb66f6a839dfe908d4c7b82e9ef39717d2de0212eebffa5cdabdc3f5cefcc1
   languageName: node
   linkType: hard
 
@@ -7538,7 +7540,7 @@ __metadata:
     "@types/jsonwebtoken": "npm:9.0.6"
     "@types/lodash.groupby": "npm:4.6.9"
     "@types/lodash.partition": "npm:^4"
-    "@types/mime": "npm:3.0.4"
+    "@types/mime": "npm:4.0.0"
     "@types/mmmagic": "npm:0.4.33"
     "@types/node": "npm:20.14.10"
     "@types/node-fetch": "npm:2"
@@ -7590,7 +7592,7 @@ __metadata:
     lodash.partition: "npm:4.6.0"
     lodash.uniqby: "npm:4.7.0"
     meilisearch: "npm:0.41.0"
-    mime: "npm:3.0.0"
+    mime: "npm:4.0.4"
     mime-types: "npm:2.1.35"
     mmmagic: "npm:0.5.3"
     nock: "npm:13.5.4"
@@ -9674,7 +9676,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mime@npm:3.0.0, mime@npm:^3.0.0":
+"mime@npm:*, mime@npm:4.0.4":
+  version: 4.0.4
+  resolution: "mime@npm:4.0.4"
+  bin:
+    mime: bin/cli.js
+  checksum: 10/28e41053ae09cbf4186c551d7cc3cdda10c04fdf447cfdb66db096d83279889a0e0589805b15e36c37ca8b0eedfa6317f25d0514462525271f0cffa5cb0514b4
+  languageName: node
+  linkType: hard
+
+"mime@npm:^3.0.0":
   version: 3.0.0
   resolution: "mime@npm:3.0.0"
   bin:
