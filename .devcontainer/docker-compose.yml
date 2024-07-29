@@ -190,7 +190,7 @@ services:
   nudenet:
     container_name: graasp-nudenet
     image: notaitech/nudenet:classifier
-    # sxposing these ports is not necessary
+    # exposing these ports is not necessary
     # ports:
     #   - 8080:8080
 
