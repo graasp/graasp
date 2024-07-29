@@ -45,3 +45,16 @@ export class UnexpectedExportError extends GraaspItemZipError {
     );
   }
 }
+
+export class InvalidItemTypeForDownloadError extends GraaspItemZipError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GPIZERR004',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: FAILURE_MESSAGES.INVALID_ITEM_TYPE_FOR_DOWNLOAD,
+      },
+      data,
+    );
+  }
+}

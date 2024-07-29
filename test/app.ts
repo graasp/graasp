@@ -7,6 +7,7 @@ import { CompleteMember } from '@graasp/sdk';
 
 import registerAppPlugins from '../src/app';
 import { resetDependencies } from '../src/di/utils';
+import { BaseLogger } from '../src/logger';
 import ajvFormats from '../src/schemas/ajvFormats';
 import { PassportStrategy } from '../src/services/auth/plugins/passport';
 import { Actor } from '../src/services/member/entities/member';
@@ -90,3 +91,7 @@ export const clearDatabase = async (db) => {
 };
 
 export default build;
+
+export const MOCK_LOGGER = {
+  error: jest.fn(),
+} as unknown as BaseLogger;

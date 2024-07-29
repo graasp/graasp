@@ -84,7 +84,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // download item
   fastify.route<{ Params: { itemId: string } }>({
     method: 'GET',
-    url: '/zip-export/:itemId',
+    url: '/:itemId/export',
     schema: zipExport,
     preHandler: optionalIsAuthenticated,
     handler: async (request, reply) => {
@@ -109,7 +109,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       // return single file
       if (item.type !== ItemType.FOLDER) {
-        const { buffer, stream, mimetype, name } = await importExportService.fetchItemData(
+        const { stream, mimetype, name } = await importExportService.fetchItemData(
           member,
           repositories,
           item,
@@ -121,15 +121,19 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         );
         reply.type(mimetype);
 
-        return stream || buffer;
+        return stream;
       }
 
       // generate archive stream
-      const archiveStream = await importExportService.export(member, repositories, {
-        item,
-        reply,
-      });
-      console.log('gwrfsd');
+      const archiveStream = await importExportService.export(
+        member,
+        repositories,
+        {
+          item,
+          reply,
+        },
+        log,
+      );
 
       try {
         reply.raw.setHeader(

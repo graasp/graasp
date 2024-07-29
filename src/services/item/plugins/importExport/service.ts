@@ -4,6 +4,7 @@ import { MAGIC_MIME_TYPE, Magic } from 'mmmagic';
 import fetch from 'node-fetch';
 import path from 'path';
 import sanitize from 'sanitize-html';
+import { Readable } from 'stream';
 import { DataSource } from 'typeorm';
 import util from 'util';
 import { ZipFile } from 'yazl';
@@ -210,7 +211,7 @@ export class ImportExportService {
     actor,
     repositories,
     item,
-  ): Promise<{ name: string; stream?: NodeJS.ReadableStream; buffer?: Buffer; mimetype: string }> {
+  ): Promise<{ name: string; stream: NodeJS.ReadableStream; mimetype: string }> {
     switch (true) {
       case isItemType(item, ItemType.LOCAL_FILE) || isItemType(item, ItemType.S3_FILE): {
         const mimetype = getMimetype(item.extra) || 'application/octet-stream';
@@ -220,7 +221,7 @@ export class ImportExportService {
 
         const res = await fetch(url);
 
-        const filename = getFilenameFromItem({ ...item, mimetype });
+        const filename = getFilenameFromItem(item);
         return {
           name: filename,
           mimetype,
@@ -235,31 +236,22 @@ export class ImportExportService {
         return { mimetype: 'application/octet-stream', name: filename, stream: res.body };
       }
       case isItemType(item, ItemType.DOCUMENT): {
-        // html
-        if (item.extra.document.isRaw) {
-          return {
-            buffer: Buffer.from(item.extra.document?.content, 'utf-8'),
-            name: getFilenameFromItem({ ...item, mimetype: 'text/html' }),
-            mimetype: 'text/html',
-          };
-        }
-        // regular text
         return {
-          buffer: Buffer.from(item.extra.document?.content, 'utf-8'),
+          stream: Readable.from([item.extra.document?.content]),
           name: getFilenameFromItem(item),
-          mimetype: 'text/plain',
+          mimetype: item.extra.document.isRaw ? 'text/html' : 'text/plain',
         };
       }
       case isItemType(item, ItemType.LINK): {
         return {
-          buffer: Buffer.from(buildTextContent(item.extra.embeddedLink?.url, ItemType.LINK)),
+          stream: Readable.from(buildTextContent(item.extra.embeddedLink?.url, ItemType.LINK)),
           name: getFilenameFromItem(item),
           mimetype: 'text/plain',
         };
       }
       case isItemType(item, ItemType.APP): {
         return {
-          buffer: Buffer.from(buildTextContent(item.extra.app?.url, ItemType.APP)),
+          stream: Readable.from(buildTextContent(item.extra.app?.url, ItemType.APP)),
           name: getFilenameFromItem(item),
           mimetype: 'text/plain',
         };
@@ -283,6 +275,7 @@ export class ImportExportService {
       archiveRootPath: string;
       archive: ZipFile;
     },
+    logger: BaseLogger,
   ) {
     const { item, archiveRootPath, archive, reply } = args;
 
@@ -300,12 +293,17 @@ export class ImportExportService {
       const children = await this.itemService.getChildren(actor, repositories, item.id);
       const result = await Promise.all(
         children.map((child) =>
-          this._addItemToZip(actor, repositories, {
-            item: child,
-            archiveRootPath: folderPath,
-            archive,
-            reply,
-          }),
+          this._addItemToZip(
+            actor,
+            repositories,
+            {
+              item: child,
+              archiveRootPath: folderPath,
+              archive,
+              reply,
+            },
+            logger,
+          ),
         ),
       );
       // add empty folder
@@ -316,20 +314,15 @@ export class ImportExportService {
     }
 
     // save single item
-    const { stream, buffer, name } = await this.fetchItemData(actor, repositories, item);
-    if (stream) {
-      return archive.addReadStream(stream, path.join(archiveRootPath, name));
-    } else if (buffer) {
-      return archive.addBuffer(buffer, path.join(archiveRootPath, name));
-    } else {
-      return console.error('cannot fetch data for item', item.id, item.type);
-    }
+    const { stream, name } = await this.fetchItemData(actor, repositories, item);
+    return archive.addReadStream(stream, path.join(archiveRootPath, name));
   }
 
   async export(
     actor: Actor,
     repositories: Repositories,
     { item, reply }: { item: Item; reply: FastifyReply },
+    logger: BaseLogger,
   ) {
     // init archive
     const archive = new ZipFile();
@@ -341,12 +334,17 @@ export class ImportExportService {
     const rootPath = path.dirname('./');
 
     // import items in zip recursively
-    await this._addItemToZip(actor, repositories, {
-      item,
-      reply,
-      archiveRootPath: rootPath,
-      archive,
-    }).catch((error) => {
+    await this._addItemToZip(
+      actor,
+      repositories,
+      {
+        item,
+        reply,
+        archiveRootPath: rootPath,
+        archive,
+      },
+      logger,
+    ).catch((error) => {
       throw new UnexpectedExportError(error);
     });
 

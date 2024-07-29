@@ -2044,12 +2044,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/translations@npm:1.32.0":
-  version: 1.32.0
-  resolution: "@graasp/translations@npm:1.32.0"
+"@graasp/translations@github:graasp/graasp-translations#item-export":
+  version: 1.32.1
+  resolution: "@graasp/translations@https://github.com/graasp/graasp-translations.git#commit=f172c13feefc57d1385580f3cabfbaaf8e990304"
   peerDependencies:
     i18next: ^23.8.1
-  checksum: 10/ba1c1300435902ae440dfd427aa9f9dd14a3f60d7e6c3f79984464af320f959b557b7cef6abd69b4ff16bca1c3e9c9a41401d96d807277eeb8474d56c0d9d5c7
+  checksum: 10/4498d7f3c0407c4d218d071ab9950fd619a541a4ae9b423ff4ae485a1d1bcf52ba756f816548a1ecce3e9e31da5584307afc9df3e1a12bca1fb6c75b2bcbd345
   languageName: node
   linkType: hard
 
@@ -7520,7 +7520,7 @@ __metadata:
     "@fastify/websocket": "npm:7.2.0"
     "@graasp/etherpad-api": "npm:2.1.1"
     "@graasp/sdk": "npm:4.22.0"
-    "@graasp/translations": "npm:1.32.0"
+    "@graasp/translations": "github:graasp/graasp-translations#item-export"
     "@jest/globals": "npm:29.7.0"
     "@rapideditor/country-coder": "npm:5.2.2"
     "@sentry/node": "npm:7.118.0"

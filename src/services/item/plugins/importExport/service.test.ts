@@ -5,7 +5,7 @@ import { FastifyInstance, FastifyReply } from 'fastify';
 
 import { ItemTagType, ItemType } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../test/app';
+import build, { MOCK_LOGGER, clearDatabase } from '../../../../../test/app';
 import { resolveDependency } from '../../../../di/utils';
 import { BaseLogger } from '../../../../logger';
 import { buildRepositories } from '../../../../utils/repositories';
@@ -54,7 +54,7 @@ describe('ZIP routes tests', () => {
       );
       const repositories = buildRepositories();
       const reply = {} as unknown as FastifyReply;
-      await importExportService.export(actor, repositories, { item, reply });
+      await importExportService.export(actor, repositories, { item, reply }, MOCK_LOGGER);
 
       // called for parent and one child
       expect(mock).toHaveBeenCalledTimes(2);
@@ -121,7 +121,7 @@ describe('ZIP routes tests', () => {
       const res = await importExportService.fetchItemData(actor, repositories, item);
 
       expect(res.name).toEqual(item.name + '.app');
-      expect(res.buffer).toBeDefined();
+      expect(res.stream).toBeDefined();
       expect(res.mimetype).toEqual('text/plain');
     });
     it('fetch link data', async () => {
@@ -143,7 +143,7 @@ describe('ZIP routes tests', () => {
       const res = await importExportService.fetchItemData(actor, repositories, item);
 
       expect(res.name).toEqual(item.name + '.url');
-      expect(res.buffer).toBeDefined();
+      expect(res.stream).toBeDefined();
       expect(res.mimetype).toEqual('text/plain');
     });
     it('fetch document data', async () => {
@@ -165,7 +165,7 @@ describe('ZIP routes tests', () => {
       const res = await importExportService.fetchItemData(actor, repositories, item);
 
       expect(res.name).toEqual(item.name + '.graasp');
-      expect(res.buffer).toBeDefined();
+      expect(res.stream).toBeDefined();
       expect(res.mimetype).toEqual('text/plain');
     });
     it('fetch document-html data', async () => {
@@ -193,7 +193,7 @@ describe('ZIP routes tests', () => {
       const res = await importExportService.fetchItemData(actor, repositories, item);
 
       expect(res.name).toEqual(item.name + '.html');
-      expect(res.buffer).toBeDefined();
+      expect(res.stream).toBeDefined();
       expect(res.mimetype).toEqual('text/html');
     });
     it('fetch h5p data', async () => {

@@ -220,7 +220,7 @@ describe('ZIP routes tests', () => {
     });
   });
 
-  describe('POST /zip-export', () => {
+  describe('POST /download', () => {
     it('Export successfully if signed in', async () => {
       ({ app, actor } = await build());
       const { item } = await testUtils.saveItemAndMembership({
@@ -230,14 +230,14 @@ describe('ZIP routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/items/zip-export/${item.id}`,
+        url: `/items/${item.id}/download`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.OK);
       expect(response.headers['content-disposition']).toContain(item.name);
     });
 
-    it.only('Export successfully h5p file', async () => {
+    it('Export successfully h5p file', async () => {
       ({ app, actor } = await build());
 
       // mocks - fetching some h5p content
@@ -266,7 +266,7 @@ describe('ZIP routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/items/zip-export/${h5pId}`,
+        url: `/items/${h5pId}/download`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.OK);

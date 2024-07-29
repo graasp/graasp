@@ -10,8 +10,9 @@ import { v4 } from 'uuid';
 import { BusboyFileStream } from '@fastify/busboy';
 import { FastifyBaseLogger } from 'fastify';
 
-import { ItemType, ItemTypeUnion, UnionOfConst } from '@graasp/sdk';
+import { ItemType, UnionOfConst, getMimetype } from '@graasp/sdk';
 
+import { Item, isItemType } from '../../entities/Item';
 import { APP_URL_PREFIX, TMP_IMPORT_ZIP_FOLDER_PATH, URL_PREFIX } from './constants';
 
 export const prepareZip = async (file: BusboyFileStream, log?: FastifyBaseLogger) => {
@@ -67,36 +68,29 @@ const extractExtension = ({ name, mimetype }: { name: string; mimetype?: string 
   return ext;
 };
 
-// use partial of item to be usable in backend
-export const getFilenameFromItem = (item: {
-  name: string;
-  type: ItemTypeUnion;
-  mimetype?: string;
-}): string => {
-  switch (item.type) {
-    case ItemType.APP: {
+export const getFilenameFromItem = (item: Item): string => {
+  switch (true) {
+    case isItemType(item, ItemType.APP): {
       return extractFileName(item.name, 'app');
     }
-    case ItemType.DOCUMENT: {
-      if (item.mimetype === 'text/html') {
+    case isItemType(item, ItemType.DOCUMENT): {
+      if (item.extra.document.isRaw) {
         return extractFileName(item.name, 'html');
       }
       return extractFileName(item.name, 'graasp');
     }
-    case ItemType.S3_FILE:
-    case ItemType.LOCAL_FILE: {
-      return extractFileName(
-        item.name,
-        extractExtension({ name: item.name, mimetype: item.mimetype }),
-      );
+    case isItemType(item, ItemType.S3_FILE):
+    case isItemType(item, ItemType.LOCAL_FILE): {
+      const mimetype = getMimetype(item.extra);
+      return extractFileName(item.name, extractExtension({ name: item.name, mimetype }));
     }
-    case ItemType.FOLDER: {
+    case isItemType(item, ItemType.FOLDER): {
       return extractFileName(item.name, 'zip');
     }
-    case ItemType.H5P: {
+    case isItemType(item, ItemType.H5P): {
       return extractFileName(item.name, 'h5p');
     }
-    case ItemType.LINK: {
+    case isItemType(item, ItemType.LINK): {
       return extractFileName(item.name, 'url');
     }
     default:
