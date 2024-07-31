@@ -1,5 +1,5 @@
 import { saveMember } from '../../../../../member/test/fixtures/members';
-import { MemberPasswordRepository } from '../../repository';
+import { MemberPassword } from '../../entities/password';
 
 export const MOCK_PASSWORD = {
   password: 'Passw0rd!',
@@ -8,6 +8,6 @@ export const MOCK_PASSWORD = {
 
 export const saveMemberAndPassword = async (member, { hashed }) => {
   const m = await saveMember(member);
-  await MemberPasswordRepository.save({ member: m, password: hashed });
+  await MemberPassword.save({ member: m, password: hashed });
   return m;
 };

@@ -31,6 +31,7 @@ import { ItemMembership } from '../services/itemMembership/entities/ItemMembersh
 import { Member } from '../services/member/entities/member';
 import { MemberProfile } from '../services/member/plugins/profile/entities/profile';
 import {
+  AUTO_RUN_MIGRATIONS,
   DB_CONNECTION_POOL_SIZE,
   DB_HOST,
   DB_NAME,
@@ -66,7 +67,7 @@ export const AppDataSource = new DataSource({
   // log queries that take more than 2s to execute
   maxQueryExecutionTime: 2000,
   logging: ['migration', 'error'],
-  migrationsRun: true,
+  migrationsRun: AUTO_RUN_MIGRATIONS,
 
   entities: [
     Member,
