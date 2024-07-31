@@ -92,7 +92,7 @@ export class ItemTestUtils {
       updatedAt: new Date(item.updatedAt),
       deletedAt: null,
       // allows null order for root items
-      order: args?.parentItem ? args.order ?? DEFAULT_ORDER : null,
+      order: args?.parentItem ? (args.order ?? DEFAULT_ORDER) : null,
     };
   }
 
