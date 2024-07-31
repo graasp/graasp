@@ -2707,12 +2707,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rapideditor/country-coder@npm:5.2.2":
-  version: 5.2.2
-  resolution: "@rapideditor/country-coder@npm:5.2.2"
+"@rapideditor/country-coder@npm:5.3.0":
+  version: 5.3.0
+  resolution: "@rapideditor/country-coder@npm:5.3.0"
   dependencies:
     which-polygon: "npm:^2.2.1"
-  checksum: 10/4b3823f65a95b5d115fe0244bf414a388865f3b7ee2c578a23434f283950e341a80fb99f90d8419d009a6572b6b9ca8f9e4b751a869e833e13a7328157317fdd
+  checksum: 10/3fbf8f466290ddb826c664e34ae2f5a3e038b5966484225ce0681211352ab8a69091fe7210d71f90a7cdf01c730bd13a1716a9a240a50fdcc2d059bb610f915f
   languageName: node
   linkType: hard
 
@@ -7494,7 +7494,7 @@ __metadata:
     "@graasp/sdk": "npm:4.22.0"
     "@graasp/translations": "npm:1.32.1"
     "@jest/globals": "npm:29.7.0"
-    "@rapideditor/country-coder": "npm:5.2.2"
+    "@rapideditor/country-coder": "npm:5.3.0"
     "@sentry/node": "npm:7.118.0"
     "@sentry/tracing": "npm:7.114.0"
     "@trivago/prettier-plugin-sort-imports": "npm:4.3.0"
