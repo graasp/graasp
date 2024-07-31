@@ -128,7 +128,7 @@
     "@types/bcrypt": "5.0.2",
     "@types/concurrently": "7.0.0",
     "@types/content-disposition": "0.5.8",
-    "@types/eslint": "8.56.10",
+    "@types/eslint": "8.56.11",
     "@types/fs-extra": "^11",
     "@types/geoip-lite": "1.4.4",
     "@types/jest": "29.5.12",
