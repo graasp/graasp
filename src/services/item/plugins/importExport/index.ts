@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { fastifyMultipart } from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 
-import { ActionTriggers } from '@graasp/sdk';
+import { ActionTriggers, ItemType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
 import { BaseLogger } from '../../../../logger';
@@ -81,10 +81,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  // download item as zip
+  // download item
   fastify.route<{ Params: { itemId: string } }>({
     method: 'GET',
-    url: '/zip-export/:itemId',
+    url: '/:itemId/export',
     schema: zipExport,
     preHandler: optionalIsAuthenticated,
     handler: async (request, reply) => {
@@ -96,12 +96,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       const repositories = buildRepositories();
       const item = await itemService.get(member, repositories, itemId);
 
-      // generate archive stream
-      const archiveStream = await importExportService.export(member, repositories, {
-        item,
-        reply,
-      });
-
       // trigger download action for a collection
       const action = {
         item,
@@ -109,6 +103,37 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         extra: { itemId: item?.id },
       };
       await actionService.postMany(member, repositories, request, [action]);
+
+      // allow browser to access content disposition
+      reply.header('Access-Control-Expose-Headers', 'Content-Disposition');
+
+      // return single file
+      if (item.type !== ItemType.FOLDER) {
+        const { stream, mimetype, name } = await importExportService.fetchItemData(
+          member,
+          repositories,
+          item,
+        );
+
+        reply.raw.setHeader(
+          'Content-Disposition',
+          `attachment; filename="${encodeURIComponent(name)}"`,
+        );
+        reply.type(mimetype);
+
+        return stream;
+      }
+
+      // generate archive stream
+      const archiveStream = await importExportService.export(
+        member,
+        repositories,
+        {
+          item,
+          reply,
+        },
+        log,
+      );
 
       try {
         reply.raw.setHeader(

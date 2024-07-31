@@ -437,7 +437,6 @@ describe('ActionItemService', () => {
         { item, member: bob, view: Context.Player, createdAt: formatISO(addDays(new Date(), -5)) },
       ]);
 
-      console.log(actions, 'actions');
       // noise
       await saveActions(rawRepository, [
         { item: itemAny, member: actor, view: Context.Builder },

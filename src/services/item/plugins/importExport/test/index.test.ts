@@ -220,7 +220,7 @@ describe('ZIP routes tests', () => {
     });
   });
 
-  describe('POST /zip-export', () => {
+  describe('POST /export', () => {
     it('Export successfully if signed in', async () => {
       ({ app, actor } = await build());
       const { item } = await testUtils.saveItemAndMembership({
@@ -230,7 +230,7 @@ describe('ZIP routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/items/zip-export/${item.id}`,
+        url: `/items/${item.id}/export`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.OK);
@@ -266,12 +266,14 @@ describe('ZIP routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/items/zip-export/${h5pId}`,
+        url: `/items/${h5pId}/export`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.OK);
       expect(response.payload.length).toBeGreaterThan(100);
       expect(response.headers['content-disposition']).toContain(h5pName);
+      expect(response.headers['content-disposition']).toContain('.h5p');
+      expect(response.headers['content-disposition']).not.toContain('.zip');
     });
   });
 });

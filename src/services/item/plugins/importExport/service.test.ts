@@ -1,10 +1,11 @@
+import * as nodeFetch from 'node-fetch';
 import { ZipFile } from 'yazl';
 
 import { FastifyInstance, FastifyReply } from 'fastify';
 
-import { ItemTagType } from '@graasp/sdk';
+import { ItemTagType, ItemType } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../test/app';
+import build, { MOCK_LOGGER, clearDatabase } from '../../../../../test/app';
 import { resolveDependency } from '../../../../di/utils';
 import { BaseLogger } from '../../../../logger';
 import { buildRepositories } from '../../../../utils/repositories';
@@ -53,10 +54,198 @@ describe('ZIP routes tests', () => {
       );
       const repositories = buildRepositories();
       const reply = {} as unknown as FastifyReply;
-      await importExportService.export(actor, repositories, { item, reply });
+      await importExportService.export(actor, repositories, { item, reply }, MOCK_LOGGER);
 
       // called for parent and one child
       expect(mock).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('fetchItemData', () => {
+    it('fetch file data', async () => {
+      jest.spyOn(nodeFetch, 'default').mockImplementation(
+        async () =>
+          ({
+            body: new Blob([]),
+          }) as unknown as nodeFetch.Response,
+      );
+
+      ({ app, actor } = await build());
+      const { item } = await testUtils.saveItemAndMembership({
+        member: actor,
+        item: {
+          type: ItemType.LOCAL_FILE,
+          extra: {
+            [ItemType.LOCAL_FILE]: {
+              mimetype: 'image/png',
+              name: 'name',
+              path: 'path',
+              size: 111,
+              content: 'content',
+            },
+          },
+        },
+      });
+      const importExportService = new ImportExportService(
+        app.db,
+        {
+          getUrl: jest.fn(),
+        } as unknown as FileItemService,
+        resolveDependency(ItemService),
+        {} as unknown as H5PService,
+        resolveDependency(BaseLogger),
+      );
+      const repositories = buildRepositories();
+      const res = await importExportService.fetchItemData(actor, repositories, item);
+
+      expect(res.name).toEqual(item.name + '.png');
+      expect(res.stream).toBeDefined();
+      expect(res.mimetype).toEqual('image/png');
+    });
+    it('fetch app data', async () => {
+      ({ app, actor } = await build());
+      const { item } = await testUtils.saveItemAndMembership({
+        member: actor,
+        item: {
+          type: ItemType.APP,
+        },
+      });
+      const importExportService = new ImportExportService(
+        app.db,
+        {} as unknown as FileItemService,
+        resolveDependency(ItemService),
+        {} as unknown as H5PService,
+        resolveDependency(BaseLogger),
+      );
+      const repositories = buildRepositories();
+      const res = await importExportService.fetchItemData(actor, repositories, item);
+
+      expect(res.name).toEqual(item.name + '.app');
+      expect(res.stream).toBeDefined();
+      expect(res.mimetype).toEqual('text/plain');
+    });
+    it('fetch link data', async () => {
+      ({ app, actor } = await build());
+      const { item } = await testUtils.saveItemAndMembership({
+        member: actor,
+        item: {
+          type: ItemType.LINK,
+        },
+      });
+      const importExportService = new ImportExportService(
+        app.db,
+        {} as unknown as FileItemService,
+        resolveDependency(ItemService),
+        {} as unknown as H5PService,
+        resolveDependency(BaseLogger),
+      );
+      const repositories = buildRepositories();
+      const res = await importExportService.fetchItemData(actor, repositories, item);
+
+      expect(res.name).toEqual(item.name + '.url');
+      expect(res.stream).toBeDefined();
+      expect(res.mimetype).toEqual('text/plain');
+    });
+    it('fetch document data', async () => {
+      ({ app, actor } = await build());
+      const { item } = await testUtils.saveItemAndMembership({
+        member: actor,
+        item: {
+          type: ItemType.DOCUMENT,
+        },
+      });
+      const importExportService = new ImportExportService(
+        app.db,
+        {} as unknown as FileItemService,
+        resolveDependency(ItemService),
+        {} as unknown as H5PService,
+        resolveDependency(BaseLogger),
+      );
+      const repositories = buildRepositories();
+      const res = await importExportService.fetchItemData(actor, repositories, item);
+
+      expect(res.name).toEqual(item.name + '.graasp');
+      expect(res.stream).toBeDefined();
+      expect(res.mimetype).toEqual('text/plain');
+    });
+    it('fetch document-html data', async () => {
+      ({ app, actor } = await build());
+      const { item } = await testUtils.saveItemAndMembership({
+        member: actor,
+        item: {
+          type: ItemType.DOCUMENT,
+          extra: {
+            document: {
+              content: 'hello',
+              isRaw: true,
+            },
+          },
+        },
+      });
+      const importExportService = new ImportExportService(
+        app.db,
+        {} as unknown as FileItemService,
+        resolveDependency(ItemService),
+        {} as unknown as H5PService,
+        resolveDependency(BaseLogger),
+      );
+      const repositories = buildRepositories();
+      const res = await importExportService.fetchItemData(actor, repositories, item);
+
+      expect(res.name).toEqual(item.name + '.html');
+      expect(res.stream).toBeDefined();
+      expect(res.mimetype).toEqual('text/html');
+    });
+    it('fetch h5p data', async () => {
+      jest.spyOn(nodeFetch, 'default').mockImplementation(
+        async () =>
+          ({
+            body: new Blob([]),
+          }) as unknown as nodeFetch.Response,
+      );
+
+      ({ app, actor } = await build());
+      const { item } = await testUtils.saveItemAndMembership({
+        member: actor,
+        item: {
+          type: ItemType.H5P,
+        },
+      });
+      const importExportService = new ImportExportService(
+        app.db,
+        {} as unknown as FileItemService,
+        resolveDependency(ItemService),
+        {
+          getUrl: jest.fn(),
+        } as unknown as H5PService,
+        resolveDependency(BaseLogger),
+      );
+      const repositories = buildRepositories();
+      const res = await importExportService.fetchItemData(actor, repositories, item);
+
+      expect(res.name).toEqual(item.name + '.h5p');
+      expect(res.stream).toBeDefined();
+      expect(res.mimetype).toEqual('application/octet-stream');
+    });
+    it('throw for folder', async () => {
+      ({ app, actor } = await build());
+      const { item } = await testUtils.saveItemAndMembership({
+        member: actor,
+      });
+      const importExportService = new ImportExportService(
+        app.db,
+        {} as unknown as FileItemService,
+        resolveDependency(ItemService),
+        {
+          getUrl: jest.fn(),
+        } as unknown as H5PService,
+        resolveDependency(BaseLogger),
+      );
+      const repositories = buildRepositories();
+
+      await expect(() =>
+        importExportService.fetchItemData(actor, repositories, item),
+      ).rejects.toThrow();
     });
   });
 });

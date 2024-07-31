@@ -1,7 +1,5 @@
 import { v4 } from 'uuid';
 
-import { FastifyLoggerInstance } from 'fastify';
-
 import { AppDataVisibility } from '@graasp/sdk';
 
 import { Member } from '../../../../../member/entities/member';
@@ -64,10 +62,6 @@ export const MOCK_APPS = [
 //   type,
 //   visibility,
 // });
-
-export const MOCK_LOGGER = {
-  error: jest.fn(),
-} as unknown as FastifyLoggerInstance;
 
 export const saveAppData = async ({
   item,
