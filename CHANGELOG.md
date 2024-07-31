@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.46.0](https://github.com/graasp/graasp/compare/v1.45.0...v1.46.0) (2024-07-31)
+
+
+### Features
+
+* add member password routes (POST and update PATCH) ([#1236](https://github.com/graasp/graasp/issues/1236)) ([510cb8b](https://github.com/graasp/graasp/commit/510cb8b9d5603d4e3d9cdabe80c2c116e7d40cea))
+* allow publishing only for validated items ([#1230](https://github.com/graasp/graasp/issues/1230)) ([ccfe668](https://github.com/graasp/graasp/commit/ccfe6687e9e7c2303efa42d50a4d5525b88c1660))
+* improve search for accessible and children ([#1244](https://github.com/graasp/graasp/issues/1244)) ([fe76981](https://github.com/graasp/graasp/commit/fe7698109f9cb7f129ef66ae9d0681728aab09d2))
+* modify get actions and get actions aggregate to have a start and end date ([#1239](https://github.com/graasp/graasp/issues/1239)) ([3c5ad2c](https://github.com/graasp/graasp/commit/3c5ad2c8c65751c777a07aeb148cb8ef54efd037))
+* update the unpublsihed state ([#1226](https://github.com/graasp/graasp/issues/1226)) ([d976dea](https://github.com/graasp/graasp/commit/d976dea6329baa6a3d405f6af01c2435038d5217))
+
+
+### Bug Fixes
+
+* allow to download raw file ([#1246](https://github.com/graasp/graasp/issues/1246)) ([f2c592f](https://github.com/graasp/graasp/commit/f2c592f8414f67571d4115e5238342d79109edc0))
+* **deps:** update dependency @graasp/translations to v1.33.0 ([#1257](https://github.com/graasp/graasp/issues/1257)) ([43206c2](https://github.com/graasp/graasp/commit/43206c2bbf06709497ca26b7525da38165eaf8be))
+* **deps:** update dependency archiver to v7 ([#1211](https://github.com/graasp/graasp/issues/1211)) ([d8c5741](https://github.com/graasp/graasp/commit/d8c57415be18577c1a1f55aefb20520044fbe889))
+* **deps:** update dependency bullmq to v5 ([#1212](https://github.com/graasp/graasp/issues/1212)) ([c55976c](https://github.com/graasp/graasp/commit/c55976c06c69c9f4ced04f1abbd723ff66ad5a95))
+* **deps:** update dependency fast-json-stringify to v6 ([#1213](https://github.com/graasp/graasp/issues/1213)) ([9efd55a](https://github.com/graasp/graasp/commit/9efd55a51791312290c8f9ce634bad35016d1188))
+* **deps:** update dependency i18next to v23.12.2 ([#1253](https://github.com/graasp/graasp/issues/1253)) ([0b5c8b2](https://github.com/graasp/graasp/commit/0b5c8b2ed5ec9be0665204d78f7ed3ae3b138e98))
+* fix where scope on search ([#1245](https://github.com/graasp/graasp/issues/1245)) ([6d6c2b9](https://github.com/graasp/graasp/commit/6d6c2b9d5d1b1408c0c0a525c89daf6295b3776a))
+* lift up Pagination types and use ones defined in sdk ([#1238](https://github.com/graasp/graasp/issues/1238)) ([b76f640](https://github.com/graasp/graasp/commit/b76f640b939008bc5235d020edc3a458f8145d86))
+* log group in dev should be `ecs/graasp` ([#1250](https://github.com/graasp/graasp/issues/1250)) ([b21c4d8](https://github.com/graasp/graasp/commit/b21c4d80ab2196c27fc70b072fdf14362dc9c8db))
+* release please workflow to use PAT ([#1240](https://github.com/graasp/graasp/issues/1240)) ([7446772](https://github.com/graasp/graasp/commit/7446772b219501e08e26ad469e21e9d6a8b46b46))
+* remove mock for datasource ([#1234](https://github.com/graasp/graasp/issues/1234)) ([cd0b079](https://github.com/graasp/graasp/commit/cd0b07997a6976f77b27f37c0cf7ac4f40b49723))
+
 ## [1.45.0](https://github.com/graasp/graasp/compare/v1.44.0...v1.45.0) (2024-07-24)
 
 
