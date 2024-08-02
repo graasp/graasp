@@ -255,6 +255,8 @@ DB_HOST=graasp-postgres-test
 
 This will ensure your tests run on the second database container. As they will clean the database between test runs you will not loose your development data.
 
+It's also important to add `AUTO_RUN_MIGRATIONS=false` in your `.env.test` file to not run the migrations on every application launch.
+
 ## Database and Migrations
 
 The application will run migrations on start.
