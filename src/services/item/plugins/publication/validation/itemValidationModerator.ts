@@ -5,6 +5,7 @@ import {
   ItemValidationProcess,
   ItemValidationReviewStatus,
   ItemValidationStatus,
+  getMimetype,
 } from '@graasp/sdk';
 
 import { IMAGE_CLASSIFIER_API_DI_KEY } from '../../../../../di/constants';
@@ -77,7 +78,8 @@ export class ItemValidationModerator {
       path: filepath,
     });
 
-    const isSafe = await classifyImage(this.imageClassifierApi, url);
+    const mimetype = getMimetype(item.extra);
+    const isSafe = await classifyImage(this.imageClassifierApi, url, mimetype);
     const status = isSafe ? ItemValidationStatus.Success : ItemValidationStatus.Failure;
     return { status };
   }
