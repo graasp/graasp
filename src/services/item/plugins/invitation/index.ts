@@ -52,7 +52,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  fastify.post<{ Params: IdParam; Body: { invitations: Partial<Invitation>[] } }>(
+  /**
+   * Post invitations, that can be memberships if the members exist or invitations
+   */
+  fastify.post<{
+    Params: IdParam;
+    Body: { invitations: Pick<Invitation, 'email' | 'permission'>[] };
+  }>(
     '/:id/invite',
     {
       schema: invite,
@@ -60,17 +66,15 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
     async ({ user, body, params }) => {
       const member = notUndefined(user?.member);
+
       return db.transaction(async (manager) => {
-        const res = await invitationService.postManyForItem(
-          member,
-          buildRepositories(manager),
-          params.id,
-          body.invitations,
-        );
-        return res;
+        const repositories = buildRepositories(manager);
+
+        return invitationService.shareItem(member, repositories, params.id, body.invitations);
       });
     },
   );
+
   fastify.register(async (fastify) => {
     fastify.register(fastifyMultipart);
 

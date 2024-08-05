@@ -176,3 +176,13 @@ export class TemplateItemDoesNotExist extends GraaspInvitationsError {
     );
   }
 }
+
+export class NoInvitationReceivedFound extends GraaspInvitationsError {
+  constructor() {
+    super({
+      code: 'GPINVERR015',
+      statusCode: StatusCodes.BAD_REQUEST,
+      message: 'No invitations received',
+    });
+  }
+}

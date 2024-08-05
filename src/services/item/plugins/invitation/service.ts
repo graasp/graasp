@@ -26,6 +26,7 @@ import {
   MissingGroupColumnInCSVError,
   MissingGroupInRowError,
   NoDataInFile,
+  NoInvitationReceivedFound,
   TemplateItemDoesNotExist,
 } from './errors';
 import { CSVInvite, parseCSV, verifyCSVFileFormat } from './utils';
@@ -221,6 +222,34 @@ export class InvitationService {
     );
 
     return { memberships, invitations };
+  }
+
+  /**
+   * Create memberships and invitations given invitation list
+   * @param actor
+   * @param repositories
+   * @param itemId
+   * @param invitations
+   * @returns
+   */
+  async shareItem(
+    actor: Member,
+    repositories: Repositories,
+    itemId: Item['id'],
+    invitations: Pick<Invitation, 'email' | 'permission'>[],
+  ): Promise<{ memberships: ItemMembership[]; invitations: Invitation[] }> {
+    await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
+
+    if (invitations.length === 0) {
+      throw new NoInvitationReceivedFound();
+    }
+
+    return this._createMembershipsAndInvitationsForUserList(
+      actor,
+      repositories,
+      invitations,
+      itemId,
+    );
   }
 
   async importUsersWithCSV(

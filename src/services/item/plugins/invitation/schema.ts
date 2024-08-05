@@ -62,17 +62,41 @@ export const invite = {
     properties: {
       invitations: {
         type: 'array',
-        items: { $ref: 'https://graasp.org/invitations/#/definitions/partialInvitation' },
+        items: {
+          type: 'object',
+          required: ['email', 'permission'],
+          properties: {
+            email: { type: 'string', format: 'email' },
+            permission: { type: 'string' },
+          },
+        },
       },
     },
     additionalProperties: false,
   },
   response: {
     200: {
-      type: 'array',
-      items: {
-        $ref: 'https://graasp.org/invitations/#/definitions/invitation',
+      type: 'object',
+      properties: {
+        memberships: {
+          type: 'array',
+          items: {
+            $ref: 'https://graasp.org/item-memberships/#/definitions/itemMembership',
+          },
+        },
+        invitations: {
+          type: 'array',
+          items: {
+            $ref: 'https://graasp.org/invitations/#/definitions/invitation',
+          },
+        },
       },
+    },
+    '4xx': {
+      $ref: 'https://graasp.org/#/definitions/error',
+    },
+    500: {
+      $ref: 'https://graasp.org/#/definitions/error',
     },
   },
 };
