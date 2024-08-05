@@ -7,6 +7,7 @@ import { ItemService } from '../../../service';
 import { ItemTagRepository } from '../../itemTag/repository';
 import { ItemPublishedRepository } from '../published/repositories/itemPublished';
 import { ItemValidationGroupRepository } from '../validation/repositories/ItemValidationGroup';
+import { ValidationQueue } from '../validation/validationQueue';
 import { PublicationState } from './publicationState';
 
 export class PublicationService {
@@ -14,17 +15,20 @@ export class PublicationService {
   private readonly itemTagRepository: ItemTagRepository;
   private readonly validationRepository: typeof ItemValidationGroupRepository;
   private readonly publishedRepository: ItemPublishedRepository;
+  private readonly validationQueue: ValidationQueue;
 
   constructor(
     itemService: ItemService,
     itemTagRepository: ItemTagRepository,
     validationRepository: typeof ItemValidationGroupRepository,
     publishedRepository: ItemPublishedRepository,
+    validationQueue: ValidationQueue,
   ) {
     this.itemService = itemService;
     this.itemTagRepository = itemTagRepository;
     this.validationRepository = validationRepository;
     this.publishedRepository = publishedRepository;
+    this.validationQueue = validationQueue;
   }
 
   public async computeStateForItem(member: Member, repositores: Repositories, itemId: string) {
@@ -35,7 +39,12 @@ export class PublicationService {
     const packedItem = new ItemWrapper(item, undefined, publicTag ? [publicTag] : []).packed();
     const validationGroup = await this.validationRepository.getLastForItem(itemId);
     const publishedEntry = (await this.publishedRepository.getForItem(item)) ?? undefined;
+    const isValidationInProgress = await this.validationQueue.isInProgress(item.path);
 
-    return new PublicationState(packedItem, validationGroup, publishedEntry?.item).computeStatus();
+    return new PublicationState(packedItem, {
+      isValidationInProgress,
+      validationGroup,
+      publishedItem: publishedEntry?.item,
+    }).computeStatus();
   }
 }

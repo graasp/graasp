@@ -16,15 +16,12 @@ describe('PublicationState', () => {
       const validationGroup = ItemValidationGroupStatusFactory(privateItem, {
         isOutDated: true,
       });
-      const publicationState = new PublicationState(privateItem, validationGroup);
+      const publicationState = new PublicationState(privateItem, { validationGroup });
       expect(publicationState.computeStatus()).toBe(PublicationStatus.Unpublished);
     });
 
     it('Validation is pending', () => {
-      const validationGroup = ItemValidationGroupStatusFactory(privateItem, {
-        status: ItemValidationStatus.Pending,
-      });
-      const publicationState = new PublicationState(privateItem, validationGroup);
+      const publicationState = new PublicationState(privateItem, { isValidationInProgress: true });
       expect(publicationState.computeStatus()).toBe(PublicationStatus.Pending);
     });
 
@@ -32,7 +29,7 @@ describe('PublicationState', () => {
       const validationGroup = ItemValidationGroupStatusFactory(privateItem, {
         status: ItemValidationStatus.Failure,
       });
-      const publicationState = new PublicationState(privateItem, validationGroup);
+      const publicationState = new PublicationState(privateItem, { validationGroup });
       expect(publicationState.computeStatus()).toBe(PublicationStatus.Invalid);
     });
 
@@ -40,7 +37,7 @@ describe('PublicationState', () => {
       const validationGroup = ItemValidationGroupStatusFactory(privateItem, {
         status: ItemValidationStatus.Success,
       });
-      const publicationState = new PublicationState(privateItem, validationGroup);
+      const publicationState = new PublicationState(privateItem, { validationGroup });
       expect(publicationState.computeStatus()).toBe(PublicationStatus.ReadyToPublish);
     });
 
@@ -62,7 +59,9 @@ describe('PublicationState', () => {
         },
         itemIsPublic,
       );
-      const publicationState = new PublicationState(publicChildrenItem, undefined, publicItem);
+      const publicationState = new PublicationState(publicChildrenItem, {
+        publishedItem: publicItem,
+      });
       expect(publicationState.computeStatus()).toBe(PublicationStatus.PublishedChildren);
     });
 
@@ -73,7 +72,9 @@ describe('PublicationState', () => {
         },
         itemIsPublic,
       );
-      const publicationState = new PublicationState(publicAppChildrenItem, undefined, publicItem);
+      const publicationState = new PublicationState(publicAppChildrenItem, {
+        publishedItem: publicItem,
+      });
       expect(publicationState.computeStatus()).toBe(PublicationStatus.PublishedChildren);
     });
 
@@ -81,7 +82,10 @@ describe('PublicationState', () => {
       const validationGroup = ItemValidationGroupStatusFactory(publicItem, {
         status: ItemValidationStatus.Success,
       });
-      const publicationState = new PublicationState(publicItem, validationGroup, publicItem);
+      const publicationState = new PublicationState(publicItem, {
+        validationGroup,
+        publishedItem: publicItem,
+      });
       expect(publicationState.computeStatus()).toBe(PublicationStatus.Published);
     });
 
@@ -89,7 +93,10 @@ describe('PublicationState', () => {
       const validationGroup = ItemValidationGroupStatusFactory(publicItem, {
         isOutDated: true,
       });
-      const publicationState = new PublicationState(publicItem, validationGroup, publicItem);
+      const publicationState = new PublicationState(publicItem, {
+        validationGroup,
+        publishedItem: publicItem,
+      });
       expect(publicationState.computeStatus()).toBe(PublicationStatus.Outdated);
     });
   });
