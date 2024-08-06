@@ -8,6 +8,7 @@ import { ItemType, PermissionLevel } from '@graasp/sdk';
 import { BaseLogger } from '../../../../logger';
 import { MAIL } from '../../../../plugins/mailer/langs/constants';
 import { MailerService } from '../../../../plugins/mailer/service';
+import { NonEmptyArray } from '../../../../types';
 import { GRAASP_LANDING_PAGE_ORIGIN } from '../../../../utils/constants';
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
@@ -26,7 +27,6 @@ import {
   MissingGroupColumnInCSVError,
   MissingGroupInRowError,
   NoDataInFile,
-  NoInvitationReceivedFound,
   TemplateItemDoesNotExist,
 } from './errors';
 import { CSVInvite, parseCSV, verifyCSVFileFormat } from './utils';
@@ -226,23 +226,19 @@ export class InvitationService {
 
   /**
    * Create memberships and invitations given invitation list
-   * @param actor
-   * @param repositories
-   * @param itemId
-   * @param invitations
-   * @returns
+   * @param actor user creating the access rights
+   * @param repositories Object with the repositories needed to interact with the database.
+   * @param itemId item the user wants to give access to
+   * @param invitations emails and permissions defining the access rights
+   * @returns array of created memberships and invitations
    */
   async shareItem(
     actor: Member,
     repositories: Repositories,
     itemId: Item['id'],
-    invitations: Pick<Invitation, 'email' | 'permission'>[],
+    invitations: NonEmptyArray<Pick<Invitation, 'email' | 'permission'>>,
   ): Promise<{ memberships: ItemMembership[]; invitations: Invitation[] }> {
     await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
-
-    if (!invitations.length) {
-      throw new NoInvitationReceivedFound();
-    }
 
     return this._createMembershipsAndInvitationsForUserList(
       actor,

@@ -1,3 +1,5 @@
+import { StatusCodes } from 'http-status-codes';
+
 export default {
   $id: 'https://graasp.org/invitations/',
   definitions: {
@@ -95,7 +97,7 @@ export const invite = {
     '4xx': {
       $ref: 'https://graasp.org/#/definitions/error',
     },
-    500: {
+    [StatusCodes.INTERNAL_SERVER_ERROR]: {
       $ref: 'https://graasp.org/#/definitions/error',
     },
   },
