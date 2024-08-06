@@ -240,7 +240,7 @@ export class InvitationService {
   ): Promise<{ memberships: ItemMembership[]; invitations: Invitation[] }> {
     await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
 
-    if (invitations.length === 0) {
+    if (!invitations.length) {
       throw new NoInvitationReceivedFound();
     }
 

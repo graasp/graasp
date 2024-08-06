@@ -70,7 +70,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       return db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
 
-        return invitationService.shareItem(member, repositories, params.id, body.invitations);
+        return await invitationService.shareItem(member, repositories, params.id, body.invitations);
       });
     },
   );

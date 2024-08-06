@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { StatusCodes } from 'http-status-codes';
 import fetch from 'node-fetch';
 import { In } from 'typeorm';
@@ -117,7 +116,8 @@ describe('Invitation Plugin', () => {
           where: { email: In(invitations.map(({ email }) => email)) },
         });
         const result = await response.json();
-        expectInvitations(result, completeInvitations);
+        expect(result.memberships).toHaveLength(0);
+        expectInvitations(result.invitations, completeInvitations);
 
         // check email got sent
         await new Promise((done) => {
@@ -126,6 +126,45 @@ describe('Invitation Plugin', () => {
             done(true);
           }, 2000);
         });
+      });
+
+      it('create memberships if member already exists', async () => {
+        const { item } = await testUtils.saveItemAndMembership({ member: actor });
+        const toMember = await saveMember();
+        const invitations = [
+          InvitationRepository.create({
+            item,
+            creator: actor,
+            permission: PermissionLevel.Read,
+            email: toMember.email,
+          }),
+        ];
+
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invite`,
+          payload: { invitations },
+        });
+
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+
+        const result = await response.json();
+        expect(result.memberships).toHaveLength(1);
+        expect(result.memberships[0].member.id).toEqual(toMember.id);
+        expect(result.memberships[0].item.id).toEqual(item.id);
+        expect(result.memberships[0].permission).toEqual(PermissionLevel.Read);
+        expect(result.invitations).toHaveLength(0);
+      });
+
+      it('Throw for no invitation', async () => {
+        const { item } = await testUtils.saveItemAndMembership({ member: actor });
+
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invite`,
+          payload: { invitations: [] },
+        });
+        expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
       });
 
       it('normalise emails before saving', async () => {
@@ -146,7 +185,7 @@ describe('Invitation Plugin', () => {
           where: { email: invitation.email.toLowerCase() },
         });
         const result = await response.json();
-        expectInvitations(result, completeInvitations);
+        expectInvitations(result.invitations, completeInvitations);
       });
 
       it('throws if one invitation is malformed', async () => {
