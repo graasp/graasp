@@ -335,8 +335,8 @@ describe('Member Controller', () => {
         expect(resultPage2.pagination.page).toBe(page);
         expect(resultPage2.pagination.pageSize).toBe(pageSize);
         expect(resultPage2.data.length).toBe(pageSize);
-        for (let i = 0; i < resultPage2.data.length; i++) {
-          expect(resultPage1.data).not.toContainEqual(resultPage2.data[i]);
+        for (const data of resultPage2.data) {
+          expect(resultPage1.data).not.toContainEqual(data);
         }
 
         page = 3;
@@ -351,9 +351,9 @@ describe('Member Controller', () => {
         expect(resultPage3.pagination.page).toBe(page);
         expect(resultPage3.pagination.pageSize).toBe(pageSize);
         expect(resultPage3.data.length).toBe(3);
-        for (let i = 0; i < resultPage3.data.length; i++) {
-          expect(resultPage1.data).not.toContainEqual(resultPage3.data[i]);
-          expect(resultPage2.data).not.toContainEqual(resultPage3.data[i]);
+        for (const data of resultPage3.data) {
+          expect(resultPage1.data).not.toContainEqual(data);
+          expect(resultPage2.data).not.toContainEqual(data);
         }
 
         page = 4;
@@ -399,8 +399,8 @@ describe('Member Controller', () => {
         expect(resultPage2.pagination.page).toBe(page);
         expect(resultPage2.pagination.pageSize).toBe(pageSize);
         expect(resultPage2.data.length).toBe(pageSize);
-        for (let i = 0; i < resultPage2.data.length; i++) {
-          expect(resultPage1.data).not.toContainEqual(resultPage2.data[i]);
+        for (const data of resultPage2.data) {
+          expect(resultPage1.data).not.toContainEqual(data);
         }
 
         page = 3;
@@ -415,9 +415,9 @@ describe('Member Controller', () => {
         expect(resultPage3.pagination.page).toBe(page);
         expect(resultPage3.pagination.pageSize).toBe(pageSize);
         expect(resultPage3.data.length).toBe(1);
-        for (let i = 0; i < resultPage3.data.length; i++) {
-          expect(resultPage1.data).not.toContainEqual(resultPage3.data[i]);
-          expect(resultPage2.data).not.toContainEqual(resultPage3.data[i]);
+        for (const data of resultPage3.data) {
+          expect(resultPage1.data).not.toContainEqual(data);
+          expect(resultPage2.data).not.toContainEqual(data);
         }
 
         page = 4;
