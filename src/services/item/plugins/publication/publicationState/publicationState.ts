@@ -6,16 +6,25 @@ import { ItemMetadata, ItemValidationGroupStatus, MapByStatus } from './types';
 
 export class PublicationState {
   private readonly item: ItemMetadata;
+  private readonly isValidationInProgress?: boolean;
   private readonly validationGroup?: ItemValidationGroupStatus;
   private readonly publishedItem?: ItemMetadata;
   private readonly mapByStatus: MapByStatus;
 
   constructor(
     item: ItemMetadata,
-    validationGroup?: ItemValidationGroupStatus,
-    publishedItem?: ItemMetadata,
+    {
+      isValidationInProgress,
+      validationGroup,
+      publishedItem,
+    }: {
+      isValidationInProgress?: boolean;
+      validationGroup?: ItemValidationGroupStatus;
+      publishedItem?: ItemMetadata;
+    } = {},
   ) {
     this.item = item;
+    this.isValidationInProgress = isValidationInProgress;
     this.validationGroup = validationGroup;
     this.publishedItem = publishedItem;
     this.mapByStatus = groupBy(validationGroup?.itemValidations, ({ status }) => status);
@@ -62,6 +71,8 @@ export class PublicationState {
 
   public computeStatus(): PublicationStatus {
     switch (true) {
+      case this.isValidationInProgress:
+        return PublicationStatus.Pending;
       case this.isPublishedChildren():
         return PublicationStatus.PublishedChildren;
       case this.isTypeNotAllowedToBePublished():
@@ -72,8 +83,6 @@ export class PublicationState {
         return PublicationStatus.Outdated;
       case this.containValidationStatus(ItemValidationStatus.Failure):
         return PublicationStatus.Invalid;
-      case this.containValidationStatus(ItemValidationStatus.Pending):
-        return PublicationStatus.Pending;
       case this.containValidationStatus(ItemValidationStatus.Success):
         return this.computeValidationSuccess();
       default:

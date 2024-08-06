@@ -11,7 +11,7 @@ import { FailedImageClassificationRequestError } from '../errors';
  * @param encodedImage image in base64 read stream
  * @returns classifier response
  */
-export const sendRequestToClassifier = async (
+const sendRequestToClassifier = async (
   classifierApi: string,
   url: string,
 ): Promise<{

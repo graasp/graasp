@@ -19,6 +19,7 @@ import { ImportExportService } from '../services/item/plugins/importExport/servi
 import { PublicationService } from '../services/item/plugins/publication/publicationState/service';
 import { MeiliSearchWrapper } from '../services/item/plugins/publication/published/plugins/search/meilisearch';
 import { SearchService } from '../services/item/plugins/publication/published/plugins/search/service';
+import { ValidationQueue } from '../services/item/plugins/publication/validation/validationQueue';
 import { ItemService } from '../services/item/service';
 import {
   FILE_ITEM_PLUGIN_OPTIONS,
@@ -162,6 +163,7 @@ export const registerDependencies = (instance: FastifyInstance) => {
       itemTagRepository,
       itemValidationGroupRepository,
       itemPublishedRepository,
+      resolveDependency(ValidationQueue),
     ),
   );
 };

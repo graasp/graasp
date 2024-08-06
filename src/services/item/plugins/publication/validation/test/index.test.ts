@@ -3,16 +3,17 @@ import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, ItemValidationStatus, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../../test/app';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../../utils/config';
 import { ItemNotFound, MemberCannotAdminItem } from '../../../../../../utils/errors';
 import { saveMember } from '../../../../../member/test/fixtures/members';
+import { Item } from '../../../../entities/Item';
 import { ItemTestUtils } from '../../../../test/fixtures/items';
 import { ItemValidationGroupNotFound } from '../errors';
 import { ItemValidationGroupRepository } from '../repositories/ItemValidationGroup';
-import { saveItemValidation } from './utils';
+import { ItemModeratorValidate, saveItemValidation, stubItemModerator } from './utils';
 
 const VALIDATION_LOADING_TIME = 2000;
 
@@ -260,6 +261,50 @@ describe('Item Validation Tests', () => {
         });
         expect(publishedRes.statusCode).toBe(StatusCodes.OK);
         expect(publishedRes.json()?.item.id).toBe(item.id);
+      });
+
+      it('Status is pending for item and children when validation is not done', async () => {
+        const { item } = await testUtils.saveItemAndMembership({
+          member: actor,
+        });
+        const { item: child } = await testUtils.saveItemAndMembership({
+          member: actor,
+          parentItem: item,
+        });
+
+        // stub the item moderator
+        const stubValidate: ItemModeratorValidate = async (
+          _actor,
+          _repositories,
+          itemToValidate: Item,
+          _itemValidationGroup,
+        ) => {
+          const isChildItem = itemToValidate.id === child.id;
+          const timeout = isChildItem ? 500 : 0;
+          // sleep to let the time to check pending status in the test
+          await new Promise((resolve) => setTimeout(resolve, timeout));
+          return [ItemValidationStatus.Success];
+        };
+        stubItemModerator(stubValidate);
+
+        const fetchStatus = async (itemId: string) =>
+          await app.inject({
+            method: HttpMethod.Get,
+            url: `${ITEMS_ROUTE_PREFIX}/publication/${itemId}/status`,
+          });
+
+        const res = await app.inject({
+          method: HttpMethod.Post,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validate`,
+        });
+        expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
+
+        const resStatus = [await fetchStatus(item.id), await fetchStatus(child.id)];
+
+        expect(resStatus.map((r) => r.body)).toEqual([
+          ItemValidationStatus.Pending,
+          ItemValidationStatus.Pending,
+        ]);
       });
 
       it('Throws if has read permission', async () => {

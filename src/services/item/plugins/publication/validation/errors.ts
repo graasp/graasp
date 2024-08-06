@@ -96,3 +96,16 @@ export class ItemValidationNotFound extends GraaspValidationError {
     );
   }
 }
+
+export class ItemValidationAlreadyExist extends GraaspValidationError {
+  constructor(itemId: string) {
+    super(
+      {
+        code: 'GPVERR008',
+        statusCode: StatusCodes.CONFLICT,
+        message: `Item validation already exists for item ${itemId}`,
+      },
+      itemId,
+    );
+  }
+}

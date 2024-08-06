@@ -1,9 +1,34 @@
 import path from 'path';
 import striptags from 'striptags';
 
+import { ItemType, MimeTypes } from '@graasp/sdk';
+
 import { TMP_FOLDER } from '../../../../../utils/config';
+import { FolderItem, Item, isItemType } from '../../../entities/Item';
 
 export const stripHtml = (str?: string | null): string => (str ? striptags(str) : '');
 
 export const buildStoragePath = (itemId: string): string =>
   path.join(TMP_FOLDER, 'validations', itemId);
+
+export const assertItemIsFolder = (item: Item): FolderItem => {
+  if (item.type !== ItemType.FOLDER) {
+    throw new Error();
+  }
+
+  return item as FolderItem;
+};
+
+export const isFileType = (item: Item) => {
+  return isItemType(item, ItemType.S3_FILE) || isItemType(item, ItemType.LOCAL_FILE);
+};
+
+export const isImage = (item: Item): item is Item<'s3File'> | Item<'file'> => {
+  if (!isFileType(item)) {
+    return false;
+  }
+
+  const { mimetype } = item.type === ItemType.S3_FILE ? item.extra.s3File : item.extra.file;
+
+  return MimeTypes.isImage(mimetype);
+};
