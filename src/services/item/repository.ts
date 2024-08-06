@@ -3,11 +3,13 @@ import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity
 import { v4 } from 'uuid';
 
 import {
+  FileItemMetadata,
   FileItemType,
   ItemSettings,
   ItemType,
   MAX_ITEM_NAME_LENGTH,
   MAX_TREE_LEVELS,
+  Pagination,
   PermissionLevel,
   buildPathFromIds,
   getChildFromPath,
@@ -25,6 +27,11 @@ import {
   UnexpectedError,
 } from '../../utils/errors';
 import { MemberIdentifierNotFound } from '../itemLogin/errors';
+import {
+  FILE_METADATA_DEFAULT_PAGE_SIZE,
+  FILE_METADATA_MAX_PAGE_SIZE,
+  FILE_METADATA_MIN_PAGE,
+} from '../member/constants';
 import { Actor, Member } from '../member/entities/member';
 import { itemSchema } from '../member/plugins/export-data/schemas/schemas';
 import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils';
@@ -642,6 +649,43 @@ export class ItemRepository {
           .getRawOne()
       ).total ?? 0,
     );
+  }
+
+  async getFilesMetadata(
+    memberId: string,
+    itemType: FileItemType,
+    { page = FILE_METADATA_MIN_PAGE, pageSize = FILE_METADATA_DEFAULT_PAGE_SIZE }: Pagination,
+  ) {
+    const limit = Math.min(pageSize, FILE_METADATA_MAX_PAGE_SIZE);
+    const skip = (page - 1) * limit;
+    const query = this.repository
+      .createQueryBuilder('item')
+      .leftJoinAndSelect(
+        'item',
+        'parent',
+        'parent.path = subpath(item.path, 0, nlevel(item.path) - 1)',
+      )
+      .where('item.creator_id = :memberId', { memberId })
+      .andWhere('item.type = :type', { type: itemType })
+      .offset(skip)
+      .limit(limit);
+
+    const rawEntities = await query.getRawMany();
+    const entities: FileItemMetadata[] = rawEntities.map((item) => ({
+      id: item.item_id,
+      name: item.item_name,
+      updatedAt: item.item_updated_at,
+      size: JSON.parse(item.item_extra)[itemType].size,
+      path: JSON.parse(item.item_extra)[itemType].path,
+      parent: item.parent_id
+        ? {
+            id: item.parent_id,
+            name: item.parent_name,
+          }
+        : undefined,
+    }));
+
+    return { data: entities, totalCount: await query.getCount() };
   }
 
   // to remove: unused
