@@ -10,6 +10,7 @@ import {
 
 import { error } from '../../schemas/fluent-schema';
 import { NAME_REGEX, UUID_REGEX } from '../../schemas/global';
+import { FILE_METADATA_DEFAULT_PAGE_SIZE, FILE_METADATA_MIN_PAGE } from './constants';
 
 /**
  * This allows email adresses that are structured as follows:
@@ -118,6 +119,54 @@ export const getStorage: FastifySchema = {
       additionalProperties: false,
       require: ['current', 'maximum'],
     },
+  },
+};
+
+export const getStorageFiles: FastifySchema = {
+  querystring: {
+    type: 'object',
+    properties: {
+      page: { type: 'number', default: FILE_METADATA_MIN_PAGE },
+      pageSize: { type: 'number', default: FILE_METADATA_DEFAULT_PAGE_SIZE },
+    },
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        data: {
+          type: 'array',
+          items: {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+              id: { type: 'string' },
+              name: { type: 'string' },
+              size: { type: 'number' },
+              updatedAt: { type: 'string' },
+              path: { type: 'string' },
+              parent: {
+                type: 'object',
+                additionalProperties: false,
+                properties: {
+                  id: { type: 'string' },
+                  name: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+        totalCount: { type: 'number' },
+        pagination: {
+          type: 'object',
+          properties: {
+            page: { type: 'number' },
+            pageSize: { type: 'number' },
+          },
+        },
+      },
+    },
+    '4xx': error,
   },
 };
 

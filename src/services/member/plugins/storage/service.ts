@@ -1,6 +1,6 @@
 import { inject, singleton } from 'tsyringe';
 
-import { FileItemType, MemberStorage } from '@graasp/sdk';
+import { FileItemType, MemberStorage, Pagination } from '@graasp/sdk';
 
 import { FILE_ITEM_TYPE_DI_KEY } from '../../../../di/constants';
 import { Repositories } from '../../../../utils/repositories';
@@ -30,6 +30,16 @@ export class StorageService {
       current: await itemRepository.getItemSumSize(actor?.id, type),
       maximum: await this.getMaximumStorageSize(actor),
     };
+  }
+
+  async getStorageFilesMetadata(
+    actor: Member,
+    { itemRepository }: Repositories,
+    type: FileItemType,
+    pagination: Pagination,
+  ) {
+    const { data, totalCount } = await itemRepository.getFilesMetadata(actor?.id, type, pagination);
+    return { data, totalCount };
   }
 
   // check the user has enough storage to create a new item given its size

@@ -2,6 +2,8 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
+import { Pagination } from '@graasp/sdk';
+
 import { resolveDependency } from '../../di/utils';
 import { IdParam, IdsParams } from '../../types';
 import { notUndefined } from '../../utils/assertions';
@@ -13,6 +15,11 @@ import {
   optionalIsAuthenticated,
 } from '../auth/plugins/passport';
 import FileService from '../file/service';
+import {
+  FILE_METADATA_MAX_PAGE_SIZE,
+  FILE_METADATA_MIN_PAGE,
+  FILE_METADATA_MIN_PAGE_SIZE,
+} from './constants';
 import { Member } from './entities/member';
 import { EmailAlreadyTaken } from './error';
 import { StorageService } from './plugins/storage/service';
@@ -24,6 +31,7 @@ import {
   getManyBy,
   getOne,
   getStorage,
+  getStorageFiles,
   patchChangeEmail,
   postChangeEmail,
   updateOne,
@@ -48,6 +56,33 @@ const controller: FastifyPluginAsync = async (fastify) => {
     async ({ user }) => {
       const member = notUndefined(user?.member);
       return storageService.getStorageLimits(member, fileService.fileType, buildRepositories());
+    },
+  );
+
+  // get current member storage files metadata
+  fastify.get<{ Querystring: Pagination }>(
+    '/current/storage/files',
+    { schema: getStorageFiles, preHandler: isAuthenticated },
+    async ({ user, query: { page, pageSize } }, reply) => {
+      if (
+        page < FILE_METADATA_MIN_PAGE ||
+        pageSize < FILE_METADATA_MIN_PAGE_SIZE ||
+        pageSize > FILE_METADATA_MAX_PAGE_SIZE
+      ) {
+        reply.status(StatusCodes.BAD_REQUEST).send();
+        return;
+      }
+      const member = notUndefined(user?.member);
+      const storageFilesMetadata = await storageService.getStorageFilesMetadata(
+        member,
+        buildRepositories(),
+        fileService.fileType,
+        { page, pageSize },
+      );
+      return {
+        ...storageFilesMetadata,
+        pagination: { page, pageSize },
+      };
     },
   );
 
