@@ -6,7 +6,7 @@ import fp from 'fastify-plugin';
 
 import { resolveDependency } from '../../../../di/utils';
 import { MailerService } from '../../../../plugins/mailer/service';
-import { IdParam } from '../../../../types';
+import { IdParam, isNonEmptyArray } from '../../../../types';
 import { notUndefined } from '../../../../utils/assertions';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
@@ -16,7 +16,7 @@ import { MemberService } from '../../../member/service';
 import { validatedMember } from '../../../member/strategies/validatedMember';
 import { MAX_FILE_SIZE } from './constants';
 import { Invitation } from './entity';
-import { NoFileProvidedForInvitations } from './errors';
+import { NoFileProvidedForInvitations, NoInvitationReceivedFound } from './errors';
 import definitions, { deleteOne, getById, getForItem, invite, sendOne, updateOne } from './schema';
 import { InvitationService } from './service';
 
@@ -52,25 +52,36 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  fastify.post<{ Params: IdParam; Body: { invitations: Partial<Invitation>[] } }>(
+  /**
+   * Create access rights given received invitations info
+   * If the email already exists in the database (a member exists) then a membership is created
+   * If the email is not in the database, then we save and send an invitation to this email
+   */
+  fastify.post<{
+    Params: IdParam;
+    Body: { invitations: Pick<Invitation, 'email' | 'permission'>[] };
+  }>(
     '/:id/invite',
     {
       schema: invite,
       preHandler: [isAuthenticated, matchOne(validatedMember)],
     },
     async ({ user, body, params }) => {
+      const { invitations } = body;
       const member = notUndefined(user?.member);
+
+      if (!isNonEmptyArray(invitations)) {
+        throw new NoInvitationReceivedFound();
+      }
+
       return db.transaction(async (manager) => {
-        const res = await invitationService.postManyForItem(
-          member,
-          buildRepositories(manager),
-          params.id,
-          body.invitations,
-        );
-        return res;
+        const repositories = buildRepositories(manager);
+
+        return await invitationService.shareItem(member, repositories, params.id, invitations);
       });
     },
   );
+
   fastify.register(async (fastify) => {
     fastify.register(fastifyMultipart);
 

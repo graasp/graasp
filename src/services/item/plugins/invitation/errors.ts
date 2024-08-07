@@ -1,36 +1,11 @@
 import { StatusCodes } from 'http-status-codes';
 
 import { ErrorFactory } from '@graasp/sdk';
+import { FAILURE_MESSAGES } from '@graasp/translations';
 
-import { EMAIL_COLUMN_NAME, GROUP_COL_NAME, PLUGIN_NAME } from './constants';
+import { PLUGIN_NAME } from './constants';
 
 export const GraaspInvitationsError = ErrorFactory(PLUGIN_NAME);
-
-export class DuplicateInvitationError extends GraaspInvitationsError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GPINVERR001',
-        statusCode: StatusCodes.CONFLICT,
-        message: 'An invitation already exists for this item and email pair',
-      },
-      data,
-    );
-  }
-}
-
-export class MemberAlreadyExistForEmailError extends GraaspInvitationsError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GPINVERR002',
-        statusCode: StatusCodes.CONFLICT,
-        message: 'This email is already associated with a member',
-      },
-      data,
-    );
-  }
-}
 
 export class InvitationNotFound extends GraaspInvitationsError {
   constructor(data?: unknown) {
@@ -38,20 +13,10 @@ export class InvitationNotFound extends GraaspInvitationsError {
       {
         code: 'GPINVERR003',
         statusCode: StatusCodes.NOT_FOUND,
-        message: 'Invitation not found',
+        message: FAILURE_MESSAGES.INVITATION_NOT_FOUND,
       },
       data,
     );
-  }
-}
-
-export class NoDataFoundForInvitations extends GraaspInvitationsError {
-  constructor() {
-    super({
-      code: 'GPINVERR004',
-      statusCode: StatusCodes.BAD_REQUEST,
-      message: 'No data or no column email detected',
-    });
   }
 }
 
@@ -60,7 +25,7 @@ export class MissingEmailColumnInCSVError extends GraaspInvitationsError {
     super({
       code: 'GPINVERR005',
       statusCode: StatusCodes.BAD_REQUEST,
-      message: `The required "${EMAIL_COLUMN_NAME}" column was not provided`,
+      message: FAILURE_MESSAGES.INVITATION_CSV_MISSING_EMAIL_COLUMN,
     });
   }
 }
@@ -70,7 +35,7 @@ export class MissingGroupColumnInCSVError extends GraaspInvitationsError {
     super({
       code: 'GPINVERR006',
       statusCode: StatusCodes.BAD_REQUEST,
-      message: `The required "${GROUP_COL_NAME}" column was not provided.`,
+      message: FAILURE_MESSAGES.INVITATION_CSV_MISSING_GROUP_COLUMN,
     });
   }
 }
@@ -81,7 +46,7 @@ export class MissingEmailInRowError extends GraaspInvitationsError {
       {
         code: 'GPINVERR007',
         statusCode: StatusCodes.BAD_REQUEST,
-        message: `A row is missing the required "${EMAIL_COLUMN_NAME}" value`,
+        message: FAILURE_MESSAGES.INVITATION_CSV_MISSING_EMAIL_IN_ROW,
       },
       data,
     );
@@ -94,30 +59,7 @@ export class MissingGroupInRowError extends GraaspInvitationsError {
       {
         code: 'GPINVERR008',
         statusCode: StatusCodes.BAD_REQUEST,
-        message: `A row is missing the required "${GROUP_COL_NAME}" value`,
-      },
-      data,
-    );
-  }
-}
-
-export class NoGroupNamesFoundForInvitations extends GraaspInvitationsError {
-  constructor() {
-    super({
-      code: 'GPINVERR009',
-      statusCode: StatusCodes.BAD_REQUEST,
-      message: 'Group column has been defined in CSV, but no group names were detected',
-    });
-  }
-}
-
-export class NoGroupFoundForInvitations extends GraaspInvitationsError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GPINVERR010',
-        statusCode: StatusCodes.BAD_REQUEST,
-        message: 'Group column has been defined in CSV, but rows with missing groups exist',
+        message: FAILURE_MESSAGES.INVITATION_CSV_MISSING_GROUP_IN_ROW,
       },
       data,
     );
@@ -130,7 +72,7 @@ export class NoFileProvidedForInvitations extends GraaspInvitationsError {
       {
         code: 'GPINVERR011',
         statusCode: StatusCodes.BAD_REQUEST,
-        message: 'No file was provided. Please provide a file for creating bulk invitations',
+        message: FAILURE_MESSAGES.INVITATION_CSV_NO_FILE_PROVIDED,
       },
       data,
     );
@@ -143,7 +85,7 @@ export class NoDataInFile extends GraaspInvitationsError {
       {
         code: 'GPINVERR012',
         statusCode: StatusCodes.BAD_REQUEST,
-        message: 'No data was found in the file. Please send a file with valid data.',
+        message: FAILURE_MESSAGES.INVITATION_CSV_NO_DATA_IN_FILE,
       },
       data,
     );
@@ -156,8 +98,7 @@ export class CantCreateStructureInNoFolderItem extends GraaspInvitationsError {
       {
         code: 'GPINVERR013',
         statusCode: StatusCodes.BAD_REQUEST,
-        message:
-          'Provided item is not a folder. A structure cannot be created inside an item that is not a folder.',
+        message: FAILURE_MESSAGES.INVITATION_CANNOT_CREATE_STRUCTURE_IN_NON_FOLDER_ITEM,
       },
       data,
     );
@@ -170,9 +111,19 @@ export class TemplateItemDoesNotExist extends GraaspInvitationsError {
       {
         code: 'GPINVERR014',
         statusCode: StatusCodes.BAD_REQUEST,
-        message: 'The template item does not exist.',
+        message: FAILURE_MESSAGES.INVITATION_CSV_TEMPLATE_ITEM_DOES_NOT_EXIST,
       },
       data,
     );
+  }
+}
+
+export class NoInvitationReceivedFound extends GraaspInvitationsError {
+  constructor() {
+    super({
+      code: 'GPINVERR015',
+      statusCode: StatusCodes.BAD_REQUEST,
+      message: FAILURE_MESSAGES.NO_INVITATION_RECEIVED,
+    });
   }
 }
