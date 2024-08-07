@@ -8,6 +8,7 @@ import fp from 'fastify-plugin';
 import { registerDependencies } from './di/container';
 import databasePlugin from './plugins/database';
 import metaPlugin from './plugins/meta';
+import swaggerPlugin from './plugins/swagger';
 import shared from './schemas/fluent-schema';
 import authPlugin from './services/auth';
 import { plugin as passportPlugin } from './services/auth/plugins/passport';
@@ -24,6 +25,8 @@ import {
 } from './utils/config';
 
 export default async function (instance: FastifyInstance): Promise<void> {
+  await instance.register(fp(swaggerPlugin));
+
   // load some shared schema definitions
   instance.addSchema(shared);
 
