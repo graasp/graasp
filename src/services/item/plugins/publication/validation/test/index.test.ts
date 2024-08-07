@@ -274,7 +274,6 @@ describe('Item Validation Tests', () => {
 
         // stub the item moderator
         const stubValidate: ItemModeratorValidate = async (
-          _actor,
           _repositories,
           itemToValidate: Item,
           _itemValidationGroup,

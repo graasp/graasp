@@ -184,7 +184,7 @@ class FileItemService {
     const item = await repositories.itemRepository.get(itemId);
     await validatePermission(repositories, PermissionLevel.Read, actor, item);
     const extraData = item.extra[this.fileService.fileType] as FileItemProperties;
-    const result = await this.fileService.getUrl(actor, {
+    const result = await this.fileService.getUrl({
       id: itemId,
       ...extraData,
     });

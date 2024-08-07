@@ -85,14 +85,7 @@ class FileService {
     );
   }
 
-  async getUrl(
-    member: Actor,
-    data: {
-      expiration?: number;
-      id?: string;
-      path?: string;
-    },
-  ): Promise<string> {
+  async getUrl(data: { expiration?: number; id?: string; path?: string }): Promise<string> {
     const { expiration, id, path: filepath } = data;
     if (!filepath || !id) {
       throw new DownloadFileInvalidParameterError({

@@ -11,7 +11,7 @@ import {
   H5P_PATH_PREFIX,
 } from '../../../../../utils/config';
 import { Repositories } from '../../../../../utils/repositories';
-import { Actor, Member } from '../../../../member/entities/member';
+import { Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 import { HtmlService } from '../service';
 import { H5P_FILE_DOT_EXTENSION, H5P_FILE_MIME_TYPE } from './constants';
@@ -58,9 +58,9 @@ export class H5PService extends HtmlService {
   /**
    * Get the H5P file url referenced by a given Item
    */
-  getUrl(item: Item<typeof ItemType.H5P>, member: Actor) {
+  getUrl(item: Item<typeof ItemType.H5P>) {
     const h5pPath = item.extra.h5p.h5pFilePath;
-    return super._getUrl(member, item.id, h5pPath);
+    return super._getUrl(item.id, h5pPath);
   }
 
   async copy(

@@ -58,7 +58,7 @@ export class ItemThumbnailService {
     const item = await repositories.itemRepository.get(itemId);
     await validatePermission(repositories, PermissionLevel.Read, actor, item);
 
-    const result = await this.thumbnailService.getUrl(actor, {
+    const result = await this.thumbnailService.getUrl({
       size,
       id: itemId,
     });

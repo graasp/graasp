@@ -17,7 +17,7 @@ import { TMP_FOLDER } from '../../../../utils/config';
 import { Repositories } from '../../../../utils/repositories';
 import FileService, { FileServiceConfig } from '../../../file/service';
 import { fileRepositoryFactory } from '../../../file/utils/factory';
-import { Actor, Member } from '../../../member/entities/member';
+import { Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import { GraaspHtmlError, HtmlImportError } from './errors';
 import { DEFAULT_MIME_TYPE } from './h5p/constants';
@@ -96,8 +96,8 @@ export abstract class HtmlService {
    * Util function to get url of the package file given an item
    * This function should not be used outside html services
    */
-  protected async _getUrl(member: Actor, id: Item['id'], packagePath: string) {
-    return this.fileService.getUrl(member, {
+  protected async _getUrl(id: Item['id'], packagePath: string) {
+    return this.fileService.getUrl({
       id,
       path: path.join(this.pathPrefix, packagePath),
     });
