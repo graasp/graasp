@@ -368,6 +368,19 @@ describe('Member Controller', () => {
         expect(resultPage4.pagination.page).toBe(page);
         expect(resultPage4.pagination.pageSize).toBe(pageSize);
         expect(resultPage4.data.length).toBe(0);
+
+        const completeData = [
+          ...resultPage1.data,
+          ...resultPage2.data,
+          ...resultPage3.data,
+          ...resultPage4.data,
+        ];
+        // Check order Desceding
+        let lastSize = completeData[0].size;
+        for (const data of completeData) {
+          expect(data.size).toBeLessThanOrEqual(lastSize);
+          lastSize = data.size;
+        }
       });
 
       it('paginate 11 by 11', async () => {
@@ -432,6 +445,19 @@ describe('Member Controller', () => {
         expect(resultPage4.pagination.page).toBe(page);
         expect(resultPage4.pagination.pageSize).toBe(pageSize);
         expect(resultPage4.data.length).toBe(0);
+
+        const completeData = [
+          ...resultPage1.data,
+          ...resultPage2.data,
+          ...resultPage3.data,
+          ...resultPage4.data,
+        ];
+        // Check order Desceding
+        let lastSize = completeData[0].size;
+        for (const data of completeData) {
+          expect(data.size).toBeLessThanOrEqual(lastSize);
+          lastSize = data.size;
+        }
       });
     });
   });
