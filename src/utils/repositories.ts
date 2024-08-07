@@ -34,7 +34,7 @@ import { MemberRepository } from '../services/member/repository';
 
 export type Repositories = {
   actionRepository: ActionRepository;
-  actionRequestExportRepository: typeof ActionRequestExportRepository;
+  actionRequestExportRepository: ActionRequestExportRepository;
   appActionRepository: AppActionRepository;
   appDataRepository: typeof AppDataRepository;
   appRepository: typeof AppRepository;
@@ -111,9 +111,7 @@ export const buildRepositories = (manager?: EntityManager): Repositories => ({
   itemValidationGroupRepository: new ItemValidationGroupRepository(manager),
 
   actionRepository: new ActionRepository(manager),
-  actionRequestExportRepository: manager
-    ? manager.withRepository(ActionRequestExportRepository)
-    : ActionRequestExportRepository,
+  actionRequestExportRepository: new ActionRequestExportRepository(manager),
   memberProfileRepository: new MemberProfileRepository(manager),
   shortLinkRepository: manager ? manager.withRepository(ShortLinkRepository) : ShortLinkRepository,
   itemGeolocationRepository: new ItemGeolocationRepository(manager),

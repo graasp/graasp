@@ -22,6 +22,7 @@ import { ActionRequestExportRepository } from '../requestExport/repository';
 import { ItemActionType } from '../utils';
 import { saveActions } from './fixtures/actions';
 
+const actionRequestExportRepository = new ActionRequestExportRepository();
 const rawActionRepository = AppDataSource.getRepository(Action);
 const testUtils = new ItemTestUtils();
 
@@ -262,7 +263,7 @@ describe('Action Plugin Tests', () => {
         member: actor,
       });
 
-      await ActionRequestExportRepository.save({
+      await actionRequestExportRepository.addOne({
         item,
         member: actor,
         createdAt: new Date('2021'),
@@ -272,7 +273,7 @@ describe('Action Plugin Tests', () => {
       const { item: otherItem } = await testUtils.saveItemAndMembership({
         member: actor,
       });
-      await ActionRequestExportRepository.save({
+      await actionRequestExportRepository.addOne({
         item: otherItem,
         member: actor,
         createdAt: new Date(),
@@ -299,7 +300,7 @@ describe('Action Plugin Tests', () => {
         member: actor,
       });
 
-      await ActionRequestExportRepository.save({
+      await actionRequestExportRepository.addOne({
         item,
         member: actor,
         createdAt: new Date(),
