@@ -1,7 +1,7 @@
 import path from 'path';
 import striptags from 'striptags';
 
-import { ItemType, MimeTypes } from '@graasp/sdk';
+import { ItemType, MimeTypes, getMimetype } from '@graasp/sdk';
 
 import { TMP_FOLDER } from '../../../../../utils/config';
 import { FolderItem, Item, isItemType } from '../../../entities/Item';
@@ -28,7 +28,11 @@ export const isImage = (item: Item): item is Item<'s3File'> | Item<'file'> => {
     return false;
   }
 
-  const { mimetype } = item.type === ItemType.S3_FILE ? item.extra.s3File : item.extra.file;
+  const mimetype = getMimetype(item.extra);
+
+  if (!mimetype) {
+    return false;
+  }
 
   return MimeTypes.isImage(mimetype);
 };
