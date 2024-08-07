@@ -92,7 +92,7 @@ class AppDataFileService {
 
     // always return the url because redirection uses bearer token automatically
     // and s3 prevent multiple auth methods
-    const result = await this.fileService.getUrl(member, {
+    const result = await this.fileService.getUrl({
       id: appData.id,
       ...fileProp,
     });

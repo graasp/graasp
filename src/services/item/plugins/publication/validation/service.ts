@@ -10,7 +10,7 @@ import { Repositories } from '../../../../../utils/repositories';
 import { validatePermission } from '../../../../authorization';
 import { Member } from '../../../../member/entities/member';
 import { FolderItem, Item } from '../../../entities/Item';
-import { ItemValidationModerator } from './itemValidationModerator';
+import { ItemValidationModerator } from './moderators/itemValidationModerator';
 import { ValidationQueue } from './validationQueue';
 
 @singleton()
@@ -60,12 +60,7 @@ export class ItemValidationService {
     return group;
   }
 
-  async post(
-    member: Member,
-    repositories: Repositories,
-    item: FolderItem,
-    onValidationStarted?: () => void,
-  ) {
+  async post(repositories: Repositories, item: FolderItem, onValidationStarted?: () => void) {
     const { itemValidationGroupRepository, itemRepository } = repositories;
 
     const descendants = await itemRepository.getDescendants(item);
@@ -85,7 +80,6 @@ export class ItemValidationService {
       items.map(async (currItem) => {
         try {
           const validationResults = await this.contentModerator.validate(
-            member,
             repositories,
             currItem,
             iVG,

@@ -229,7 +229,7 @@ export class ImportExportService {
         };
       }
       case isItemType(item, ItemType.H5P): {
-        const h5pUrl = await this.h5pService.getUrl(item, actor);
+        const h5pUrl = await this.h5pService.getUrl(item);
         const res = await fetch(h5pUrl);
 
         const filename = getFilenameFromItem(item);

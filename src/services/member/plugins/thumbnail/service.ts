@@ -53,7 +53,7 @@ export class MemberThumbnailService {
     repositories: Repositories,
     { size, memberId }: { memberId: string; size: string },
   ) {
-    const result = await this.thumbnailService.getUrl(actor, {
+    const result = await this.thumbnailService.getUrl({
       size,
       id: memberId,
     });

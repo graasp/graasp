@@ -9,7 +9,7 @@ import { FailedImageClassificationRequestError } from '../errors';
 const imageToBase64 = async (buffer: ArrayBuffer, mimetype?: string) => {
   let imageBuffer = buffer;
 
-  // if image is SVG, convert it to PNG to solve nudenet issues
+  // if image is SVG or unkown, convert it to PNG to solve nudenet issues
   if (!mimetype || mimetype === MimeTypes.Image.SVG) {
     imageBuffer = await sharp(buffer).png().toBuffer();
   }

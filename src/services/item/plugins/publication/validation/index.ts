@@ -89,7 +89,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         };
 
         const hasValidationSucceeded = await validationService.post(
-          member,
           repositories,
           assertItemIsFolder(item),
           notifyOnValidationChanges,

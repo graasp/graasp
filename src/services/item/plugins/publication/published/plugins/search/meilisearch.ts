@@ -320,7 +320,7 @@ export class MeiliSearchWrapper {
         //   return '';
         // }
         try {
-          const url = await this.fileService.getUrl(undefined, {
+          const url = await this.fileService.getUrl({
             id: item.id,
             path: s3extra.path,
           });
