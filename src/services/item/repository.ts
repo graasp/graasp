@@ -670,7 +670,10 @@ export class ItemRepository {
       .offset(skip)
       .limit(limit);
 
-    const rawEntities = await query.getRawMany();
+    // order by size
+    const rawEntities = await query
+      .orderBy("(item.extra::json -> :type ->> 'size')::decimal", 'DESC')
+      .getRawMany();
     const entities: FileItemMetadata[] = rawEntities.map((item) => ({
       id: item.item_id,
       name: item.item_name,
