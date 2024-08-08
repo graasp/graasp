@@ -31,6 +31,9 @@ export class ItemValidationGroupRepository extends AbstractRepository<ItemValida
    * @param {string} itemId id of the item being checked
    */
   async getLastForItem(itemId: string): Promise<ItemValidationGroup | null> {
+    if (!itemId) {
+      throw new ItemValidationGroupNotFound(itemId);
+    }
     // return this.createQueryBuilder('iVG')
     // .leftJoinAndSelect('iVG.item', 'item')
     // .leftJoinAndSelect('iVG.itemValidations', 'itemValidation')

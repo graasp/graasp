@@ -4,7 +4,7 @@ import { ItemValidationProcess, ItemValidationStatus } from '@graasp/sdk';
 
 import { AbstractRepository } from '../../../../../../repository';
 import { ItemValidation } from '../entities/ItemValidation';
-import { ItemValidationNotFound } from '../errors';
+import { ItemValidationGroupNotFound, ItemValidationNotFound } from '../errors';
 
 export class ItemValidationRepository extends AbstractRepository<ItemValidation> {
   constructor(manager?: EntityManager) {
@@ -25,6 +25,9 @@ export class ItemValidationRepository extends AbstractRepository<ItemValidation>
   }
 
   async getForGroup(groupId: string): Promise<ItemValidation[]> {
+    if (!groupId) {
+      throw new ItemValidationGroupNotFound(groupId);
+    }
     return this.repository.findBy({ itemValidationGroup: { id: groupId } });
   }
 
