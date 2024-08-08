@@ -3,26 +3,20 @@
 // @ts-expect-error
 import { iso1A2Code } from '@rapideditor/country-coder';
 import fetch from 'node-fetch';
-import { Brackets, EntityManager, Repository } from 'typeorm';
+import { Brackets, EntityManager } from 'typeorm';
 
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import { AppDataSource } from '../../../../plugins/datasource';
+import { AbstractRepository } from '../../../../repository';
 import { ALLOWED_SEARCH_LANGS, GEOLOCATION_API_HOST } from '../../../../utils/config';
 import { Actor } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import { ItemGeolocation } from './ItemGeolocation';
 import { MissingGeolocationSearchParams } from './errors';
 
-export class ItemGeolocationRepository {
-  private repository: Repository<ItemGeolocation>;
-
+export class ItemGeolocationRepository extends AbstractRepository<ItemGeolocation> {
   constructor(manager?: EntityManager) {
-    if (manager) {
-      this.repository = manager.getRepository(ItemGeolocation);
-    } else {
-      this.repository = AppDataSource.getRepository(ItemGeolocation);
-    }
+    super(ItemGeolocation, manager);
   }
 
   /**

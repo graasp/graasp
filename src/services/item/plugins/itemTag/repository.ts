@@ -1,8 +1,8 @@
-import { Brackets, EntityManager, Repository } from 'typeorm';
+import { Brackets, EntityManager } from 'typeorm';
 
 import { ItemTagType, ResultOf, getChildFromPath } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../../plugins/datasource';
+import { AbstractRepository } from '../../../../repository';
 import { Member } from '../../../member/entities/member';
 import { mapById } from '../../../utils';
 import { Item } from '../../entities/Item';
@@ -17,15 +17,9 @@ import {
 /**
  * Database's first layer of abstraction for Item Tags and (exceptionally) for Tags (at the bottom)
  */
-export class ItemTagRepository {
-  private repository: Repository<ItemTag>;
-
+export class ItemTagRepository extends AbstractRepository<ItemTag> {
   constructor(manager?: EntityManager) {
-    if (manager) {
-      this.repository = manager.getRepository(ItemTag);
-    } else {
-      this.repository = AppDataSource.getRepository(ItemTag);
-    }
+    super(ItemTag, manager);
   }
 
   async getType(item: Item, tagType: ItemTagType, { shouldThrow = false } = {}) {

@@ -1,6 +1,6 @@
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager } from 'typeorm';
 
-import { AppDataSource } from '../../../../../plugins/datasource';
+import { AbstractRepository } from '../../../../../repository';
 import { DUPLICATE_ENTRY_ERROR_CODE } from '../../../../../utils/typeormError';
 import { MemberIdentifierNotFound } from '../../../../itemLogin/errors';
 import { itemFavoriteSchema } from '../../../../member/plugins/export-data/schemas/schemas';
@@ -9,15 +9,9 @@ import { Item } from '../../../entities/Item';
 import { ItemFavorite } from '../entities/ItemFavorite';
 import { DuplicateFavoriteError, ItemFavoriteNotFound } from '../errors';
 
-export class FavoriteRepository {
-  private repository: Repository<ItemFavorite>;
-
+export class FavoriteRepository extends AbstractRepository<ItemFavorite> {
   constructor(manager?: EntityManager) {
-    if (manager) {
-      this.repository = manager.getRepository(ItemFavorite);
-    } else {
-      this.repository = AppDataSource.getRepository(ItemFavorite);
-    }
+    super(ItemFavorite, manager);
   }
 
   async get(favoriteId: string): Promise<ItemFavorite> {

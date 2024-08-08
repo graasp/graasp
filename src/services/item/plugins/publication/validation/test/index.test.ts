@@ -6,18 +6,20 @@ import { FastifyInstance } from 'fastify';
 import { HttpMethod, ItemValidationStatus, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../../test/app';
+import { AppDataSource } from '../../../../../../plugins/datasource';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../../utils/config';
 import { ItemNotFound, MemberCannotAdminItem } from '../../../../../../utils/errors';
 import { saveMember } from '../../../../../member/test/fixtures/members';
 import { Item } from '../../../../entities/Item';
 import { ItemTestUtils } from '../../../../test/fixtures/items';
+import { ItemValidationGroup } from '../entities/ItemValidationGroup';
 import { ItemValidationGroupNotFound } from '../errors';
-import { ItemValidationGroupRepository } from '../repositories/ItemValidationGroup';
 import { ItemModeratorValidate, saveItemValidation, stubItemModerator } from './utils';
 
 const VALIDATION_LOADING_TIME = 2000;
 
 const testUtils = new ItemTestUtils();
+const itemValidationGroupRawRepository = AppDataSource.getRepository(ItemValidationGroup);
 
 const expectItemValidation = (iv, correctIV) => {
   expect(iv.id).toEqual(correctIV.id);
@@ -78,8 +80,6 @@ describe('Item Validation Tests', () => {
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validations/latest`,
         });
         expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
-
-        // check no created entries
       });
 
       it('Throws if has write permission', async () => {
@@ -237,7 +237,7 @@ describe('Item Validation Tests', () => {
       it('create validation', async () => {
         const { item } = await testUtils.saveItemAndMembership({ member: actor });
         await saveItemValidation({ item });
-        const count = await ItemValidationGroupRepository.count();
+        const count = await itemValidationGroupRawRepository.count();
 
         const res = await app.inject({
           method: HttpMethod.Post,
@@ -249,7 +249,7 @@ describe('Item Validation Tests', () => {
         await new Promise((res) => {
           setTimeout(async () => {
             // check no created entries
-            expect(count).toEqual((await ItemValidationGroupRepository.count()) - 1);
+            expect(count).toEqual((await itemValidationGroupRawRepository.count()) - 1);
             res(true);
           }, VALIDATION_LOADING_TIME);
         });
@@ -314,7 +314,7 @@ describe('Item Validation Tests', () => {
           permission: PermissionLevel.Read,
         });
         await saveItemValidation({ item });
-        const count = await ItemValidationGroupRepository.count();
+        const count = await itemValidationGroupRawRepository.count();
 
         const res = await app.inject({
           method: HttpMethod.Post,
@@ -325,7 +325,7 @@ describe('Item Validation Tests', () => {
         await new Promise((res) => {
           setTimeout(async () => {
             // check no created entries
-            expect(count).toEqual(await ItemValidationGroupRepository.count());
+            expect(count).toEqual(await itemValidationGroupRawRepository.count());
             res(true);
           }, VALIDATION_LOADING_TIME);
         });
@@ -339,7 +339,7 @@ describe('Item Validation Tests', () => {
           permission: PermissionLevel.Write,
         });
         await saveItemValidation({ item });
-        const count = await ItemValidationGroupRepository.count();
+        const count = await itemValidationGroupRawRepository.count();
 
         const res = await app.inject({
           method: HttpMethod.Post,
@@ -350,7 +350,7 @@ describe('Item Validation Tests', () => {
         await new Promise((res) => {
           setTimeout(async () => {
             // check no created entries
-            expect(count).toEqual(await ItemValidationGroupRepository.count());
+            expect(count).toEqual(await itemValidationGroupRawRepository.count());
             res(true);
           }, VALIDATION_LOADING_TIME);
         });
@@ -369,7 +369,7 @@ describe('Item Validation Tests', () => {
           member: actor,
         });
         await saveItemValidation({ item });
-        const count = await ItemValidationGroupRepository.count();
+        const count = await itemValidationGroupRawRepository.count();
 
         const res = await app.inject({
           method: HttpMethod.Post,
@@ -380,7 +380,7 @@ describe('Item Validation Tests', () => {
         await new Promise((res) => {
           setTimeout(async () => {
             // check no created entries
-            expect(count).toEqual(await ItemValidationGroupRepository.count());
+            expect(count).toEqual(await itemValidationGroupRawRepository.count());
             res(true);
           }, VALIDATION_LOADING_TIME);
         });

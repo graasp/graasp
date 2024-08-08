@@ -71,7 +71,7 @@ describe('asynchronous feedback', () => {
       channel: actor.id,
     });
 
-    jest.spyOn(ItemValidationGroupRepository, 'post').mockImplementation(async () => {
+    jest.spyOn(ItemValidationGroupRepository.prototype, 'post').mockImplementation(async () => {
       throw new Error('mock error');
     });
 

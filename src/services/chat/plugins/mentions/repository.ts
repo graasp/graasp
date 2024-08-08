@@ -1,8 +1,8 @@
-import { EntityManager, In, Repository } from 'typeorm';
+import { EntityManager, In } from 'typeorm';
 
 import { MentionStatus } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../../plugins/datasource';
+import { AbstractRepository } from '../../../../repository';
 import { Member } from '../../../member/entities/member';
 import { messageMentionSchema } from '../../../member/plugins/export-data/schemas/schemas';
 import { schemaToSelectMapper } from '../../../member/plugins/export-data/utils/selection.utils';
@@ -10,15 +10,9 @@ import { ChatMessage } from '../../chatMessage';
 import { ChatMentionNotFound, NoChatMentionForMember } from '../../errors';
 import { ChatMention } from './chatMention';
 
-export class ChatMentionRepository {
-  repository: Repository<ChatMention>;
-
+export class ChatMentionRepository extends AbstractRepository<ChatMention> {
   constructor(manager?: EntityManager) {
-    if (manager) {
-      this.repository = manager.getRepository(ChatMention);
-    } else {
-      this.repository = AppDataSource.getRepository(ChatMention);
-    }
+    super(ChatMention, manager);
   }
 
   /**

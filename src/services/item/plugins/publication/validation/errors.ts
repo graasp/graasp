@@ -109,3 +109,16 @@ export class ItemValidationAlreadyExist extends GraaspValidationError {
     );
   }
 }
+
+export class ItemValidationReviewNotFound extends GraaspValidationError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GPVERR009',
+        statusCode: StatusCodes.NOT_FOUND,
+        message: 'Item validation review not found',
+      },
+      data,
+    );
+  }
+}

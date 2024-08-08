@@ -51,9 +51,9 @@ export type Repositories = {
   itemPublishedRepository: ItemPublishedRepository;
   itemRepository: ItemRepository;
   itemTagRepository: ItemTagRepository;
-  itemValidationGroupRepository: typeof ItemValidationGroupRepository;
-  itemValidationRepository: typeof ItemValidationRepository;
-  itemValidationReviewRepository: typeof ItemValidationReviewRepository;
+  itemValidationGroupRepository: ItemValidationGroupRepository;
+  itemValidationRepository: ItemValidationRepository;
+  itemValidationReviewRepository: ItemValidationReviewRepository;
   memberPasswordRepository: MemberPasswordRepository;
   memberRepository: MemberRepository;
   mentionRepository: ChatMentionRepository;
@@ -103,15 +103,9 @@ export const buildRepositories = (manager?: EntityManager): Repositories => ({
   itemFavoriteRepository: new FavoriteRepository(manager),
   categoryRepository: manager ? manager.withRepository(CategoryRepository) : CategoryRepository,
   itemTagRepository: new ItemTagRepository(manager),
-  itemValidationRepository: manager
-    ? manager.withRepository(ItemValidationRepository)
-    : ItemValidationRepository,
-  itemValidationReviewRepository: manager
-    ? manager.withRepository(ItemValidationReviewRepository)
-    : ItemValidationReviewRepository,
-  itemValidationGroupRepository: manager
-    ? manager.withRepository(ItemValidationGroupRepository)
-    : ItemValidationGroupRepository,
+  itemValidationRepository: new ItemValidationRepository(manager),
+  itemValidationReviewRepository: new ItemValidationReviewRepository(manager),
+  itemValidationGroupRepository: new ItemValidationGroupRepository(manager),
 
   actionRepository: new ActionRepository(manager),
   actionRequestExportRepository: manager

@@ -1,9 +1,10 @@
 import { addMonths, formatISO } from 'date-fns';
-import { Between, EntityManager, Repository } from 'typeorm';
+import { Between, EntityManager } from 'typeorm';
 
 import { AggregateBy, AggregateFunction, AggregateMetric, CountGroupBy, UUID } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../plugins/datasource';
+import { AbstractRepository } from '../../../repository';
 import { MemberIdentifierNotFound } from '../../itemLogin/errors';
 import { actionSchema } from '../../member/plugins/export-data/schemas/schemas';
 import { schemaToSelectMapper } from '../../member/plugins/export-data/utils/selection.utils';
@@ -12,16 +13,11 @@ import { Action } from '../entities/action';
 import { aggregateExpressionNames, buildAggregateExpression } from '../utils/actions';
 import { validateAggregationParameters } from '../utils/utils';
 
-export class ActionRepository {
-  private repository: Repository<Action>;
-
+export class ActionRepository extends AbstractRepository<Action> {
   constructor(manager?: EntityManager) {
-    if (manager) {
-      this.repository = manager.getRepository(Action);
-    } else {
-      this.repository = AppDataSource.getRepository(Action);
-    }
+    super(Action, manager);
   }
+
   /**
    * Create given action and return it.
    * @param action Action to create

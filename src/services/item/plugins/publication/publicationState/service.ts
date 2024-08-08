@@ -13,14 +13,14 @@ import { PublicationState } from './publicationState';
 export class PublicationService {
   private readonly itemService: ItemService;
   private readonly itemTagRepository: ItemTagRepository;
-  private readonly validationRepository: typeof ItemValidationGroupRepository;
+  private readonly validationRepository: ItemValidationGroupRepository;
   private readonly publishedRepository: ItemPublishedRepository;
   private readonly validationQueue: ValidationQueue;
 
   constructor(
     itemService: ItemService,
     itemTagRepository: ItemTagRepository,
-    validationRepository: typeof ItemValidationGroupRepository,
+    validationRepository: ItemValidationGroupRepository,
     publishedRepository: ItemPublishedRepository,
     validationQueue: ValidationQueue,
   ) {
@@ -43,7 +43,7 @@ export class PublicationService {
 
     return new PublicationState(packedItem, {
       isValidationInProgress,
-      validationGroup,
+      validationGroup: validationGroup ?? undefined,
       publishedItem: publishedEntry?.item,
     }).computeStatus();
   }

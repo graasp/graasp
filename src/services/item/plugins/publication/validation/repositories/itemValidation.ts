@@ -1,22 +1,35 @@
+import { EntityManager } from 'typeorm';
+
 import { ItemValidationProcess, ItemValidationStatus } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../../../../plugins/datasource';
+import { AbstractRepository } from '../../../../../../repository';
 import { ItemValidation } from '../entities/ItemValidation';
-import { ItemValidationNotFound } from '../errors';
+import { ItemValidationGroupNotFound, ItemValidationNotFound } from '../errors';
 
-export const ItemValidationRepository = AppDataSource.getRepository(ItemValidation).extend({
-  async get(id: string): Promise<ItemValidation | null> {
+export class ItemValidationRepository extends AbstractRepository<ItemValidation> {
+  constructor(manager?: EntityManager) {
+    super(ItemValidation, manager);
+  }
+
+  async get(id: string): Promise<ItemValidation> {
     // additional check that id is not null
     // o/w empty parameter to findOneBy return the first entry
     if (!id) {
       throw new ItemValidationNotFound(id);
     }
-    return this.findOneBy({ id });
-  },
+    const result = await this.repository.findOneBy({ id });
+    if (!result) {
+      throw new ItemValidationNotFound(id);
+    }
+    return result;
+  }
 
   async getForGroup(groupId: string): Promise<ItemValidation[]> {
-    return this.findBy({ group: { id: groupId } });
-  },
+    if (!groupId) {
+      throw new ItemValidationGroupNotFound(groupId);
+    }
+    return this.repository.findBy({ itemValidationGroup: { id: groupId } });
+  }
 
   /**
    * Create an entry for the validation attempt in item-validation
@@ -28,22 +41,21 @@ export const ItemValidationRepository = AppDataSource.getRepository(ItemValidati
     process: ItemValidationProcess,
     status = ItemValidationStatus.Pending,
   ): Promise<ItemValidation> {
-    const entry = this.create({
+    const created = await this.repository.insert({
       item: { id: itemId },
       itemValidationGroup: { id: itemValidationGroupId },
       process,
       status,
     });
-    await this.insert(entry);
-    return entry;
-  },
+    return this.get(created.identifiers[0].id);
+  }
 
   async patch(
     itemValidationId: string,
     args: { result?: string; status: ItemValidationStatus },
   ): Promise<ItemValidation> {
-    await this.update(itemValidationId, args);
+    await this.repository.update(itemValidationId, args);
     // TODO: optimize
     return this.get(itemValidationId);
-  },
-});
+  }
+}
