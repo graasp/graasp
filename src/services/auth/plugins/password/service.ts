@@ -215,4 +215,10 @@ export class MemberPasswordService {
     }
     return undefined;
   }
+
+  async hasPassword(repositories: Repositories, memberId: string): Promise<boolean> {
+    const { memberPasswordRepository } = repositories;
+    const password = await memberPasswordRepository.getForMemberId(memberId);
+    return Boolean(password);
+  }
 }
