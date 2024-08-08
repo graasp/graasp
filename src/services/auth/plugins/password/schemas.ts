@@ -5,6 +5,10 @@ import { FastifySchema } from 'fastify';
 import { error } from '../../../../schemas/fluent-schema';
 
 export const passwordLogin: FastifySchema = {
+  tags: ['password'],
+  summary: 'Log in with email and password',
+  description:
+    'Log in with email and password. The user must provide a valid email, password, and captcha. The captcha is used to prevent brute force attacks.',
   body: {
     type: 'object',
     required: ['email', 'password', 'captcha'],
@@ -29,6 +33,10 @@ export const passwordLogin: FastifySchema = {
 };
 
 export const setPassword: FastifySchema = {
+  tags: ['password'],
+  summary: 'Set a password for the authenticated member',
+  description:
+    'Set a password for the authenticated member. This is only possible if the member does not have a password set already.',
   body: {
     type: 'object',
     additionalProperties: false,
@@ -47,6 +55,10 @@ export const setPassword: FastifySchema = {
 };
 
 export const updatePassword: FastifySchema = {
+  tags: ['password'],
+  summary: 'Update the password of the authenticated member',
+  description:
+    'Update the password of the authenticated member. The user must provide the current password and the new password.',
   body: {
     type: 'object',
     additionalProperties: false,
@@ -65,6 +77,10 @@ export const updatePassword: FastifySchema = {
 };
 
 export const postResetPasswordRequest: FastifySchema = {
+  tags: ['password'],
+  summary: 'Create a reset password request',
+  description:
+    'Create a reset password request. This will send an email to the member in his language with a link to reset the password. The link will be valid for a limited time.',
   body: {
     type: 'object',
     properties: {
@@ -80,6 +96,10 @@ export const postResetPasswordRequest: FastifySchema = {
 };
 
 export const patchResetPasswordRequest: FastifySchema = {
+  tags: ['password'],
+  summary: 'Confirm the reset password request',
+  description:
+    'Confirm the reset password request. This will change the password of the member associated with the reset password request.',
   body: {
     type: 'object',
     properties: {
@@ -96,5 +116,19 @@ export const patchResetPasswordRequest: FastifySchema = {
   response: {
     [StatusCodes.NO_CONTENT]: {},
     [StatusCodes.BAD_REQUEST]: {},
+  },
+};
+
+export const getMembersCurrentPasswordStatus: FastifySchema = {
+  tags: ['password', 'current'],
+  summary: 'Get the current password status of the authenticated member',
+  description: 'Return whether the authenticated member has a password defined.',
+  response: {
+    [StatusCodes.OK]: {
+      type: 'object',
+      properties: {
+        hasPassword: { type: 'boolean' },
+      },
+    },
   },
 };

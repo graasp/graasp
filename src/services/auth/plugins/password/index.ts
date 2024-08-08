@@ -18,6 +18,7 @@ import {
   isAuthenticated,
 } from '../passport';
 import {
+  getMembersCurrentPasswordStatus,
   passwordLogin,
   patchResetPasswordRequest,
   postResetPasswordRequest,
@@ -189,6 +190,23 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       };
       // Do not await the action to be saved. It is not critical.
       actionService.postMany(member, repositories, request, [action]);
+    },
+  );
+
+  /**
+   * Get a boolean indicating if the authenticated member has a password.
+   */
+  fastify.get(
+    '/members/current/password/status',
+    {
+      schema: getMembersCurrentPasswordStatus,
+      preHandler: [isAuthenticated],
+    },
+    async ({ user }) => {
+      const member = notUndefined(user?.member);
+      const repositories = buildRepositories();
+      const hasPassword = await memberPasswordService.hasPassword(repositories, member.id);
+      return { hasPassword };
     },
   );
 };

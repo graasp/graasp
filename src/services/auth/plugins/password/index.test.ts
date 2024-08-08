@@ -698,3 +698,50 @@ describe('Update Password', () => {
     console.log(await response.json());
   });
 });
+
+describe('GET members current password status', () => {
+  let app: FastifyInstance;
+
+  beforeAll(async () => {
+    ({ app } = await build({ member: null }));
+  });
+
+  afterEach(async () => {
+    await clearDatabase(app.db);
+  });
+
+  afterAll(async () => {
+    app.close();
+  });
+
+  it('Throws when signed out', async () => {
+    unmockAuthenticate();
+    const response = await app.inject({
+      method: HttpMethod.Get,
+      url: '/members/current/password/status',
+    });
+    expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
+  });
+
+  it('Get password status for member without password', async () => {
+    const currentMember = await saveMember();
+    mockAuthenticate(currentMember);
+    const response = await app.inject({
+      method: HttpMethod.Get,
+      url: '/members/current/password/status',
+    });
+    expect(response.statusCode).toBe(StatusCodes.OK);
+    expect(response.json()).toEqual({ hasPassword: false });
+  });
+
+  it('Get password status for member with password', async () => {
+    const currentMember = await saveMemberAndPassword(MemberFactory(), MOCK_PASSWORD);
+    mockAuthenticate(currentMember);
+    const response = await app.inject({
+      method: HttpMethod.Get,
+      url: '/members/current/password/status',
+    });
+    expect(response.statusCode).toBe(StatusCodes.OK);
+    expect(response.json()).toEqual({ hasPassword: true });
+  });
+});
