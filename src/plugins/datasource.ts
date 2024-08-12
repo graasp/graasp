@@ -28,6 +28,7 @@ import { ShortLink } from '../services/item/plugins/shortLink/entities/ShortLink
 import { ItemLogin } from '../services/itemLogin/entities/itemLogin';
 import { ItemLoginSchema } from '../services/itemLogin/entities/itemLoginSchema';
 import { ItemMembership } from '../services/itemMembership/entities/ItemMembership';
+import { MembershipRequest } from '../services/itemMembership/plugins/MembershipRequest/entities/MembershipRequest';
 import { Member } from '../services/member/entities/member';
 import { MemberProfile } from '../services/member/plugins/profile/entities/profile';
 import {
@@ -73,6 +74,7 @@ export const AppDataSource = new DataSource({
     Member,
     Item,
     ItemMembership,
+    MembershipRequest,
     MemberPassword,
     ItemLogin,
     ItemLoginSchema,
