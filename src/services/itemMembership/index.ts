@@ -13,6 +13,7 @@ import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passpo
 import { matchOne } from '../authorization';
 import { validatedMember } from '../member/strategies/validatedMember';
 import { PurgeBelowParam } from './interfaces/requests';
+import MembershipRequestAPI from './plugins/MembershipRequest';
 import common, { create, createMany, deleteOne, getItems, updateOne } from './schemas';
 import { ItemMembershipService } from './service';
 import { membershipWsHooks } from './ws/hooks';
@@ -26,6 +27,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   // schemas
   fastify.addSchema(common);
+
+  fastify.register(MembershipRequestAPI);
 
   // routes
   fastify.register(

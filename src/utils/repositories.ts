@@ -27,6 +27,7 @@ import { ShortLinkRepository } from '../services/item/plugins/shortLink/reposito
 import { ItemRepository } from '../services/item/repository';
 import { ItemLoginRepository } from '../services/itemLogin/repositories/itemLogin';
 import { ItemLoginSchemaRepository } from '../services/itemLogin/repositories/itemLoginSchema';
+import { MembershipRequestRepository } from '../services/itemMembership/plugins/MembershipRequest/repository';
 import { ItemMembershipRepository } from '../services/itemMembership/repository';
 import MemberProfileRepository from '../services/member/plugins/profile/repository';
 import { MemberRepository } from '../services/member/repository';
@@ -48,6 +49,7 @@ export type Repositories = {
   itemLoginRepository: typeof ItemLoginRepository;
   itemLoginSchemaRepository: typeof ItemLoginSchemaRepository;
   itemMembershipRepository: typeof ItemMembershipRepository;
+  membershipRequestRepository: MembershipRequestRepository;
   itemPublishedRepository: ItemPublishedRepository;
   itemRepository: ItemRepository;
   itemTagRepository: ItemTagRepository;
@@ -70,6 +72,7 @@ export const buildRepositories = (manager?: EntityManager): Repositories => ({
   itemMembershipRepository: manager
     ? manager.withRepository(ItemMembershipRepository)
     : ItemMembershipRepository,
+  membershipRequestRepository: new MembershipRequestRepository(manager),
   memberRepository: new MemberRepository(manager),
 
   itemPublishedRepository: new ItemPublishedRepository(manager),
