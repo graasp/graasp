@@ -4,7 +4,7 @@ import { Between, EntityManager } from 'typeorm';
 import { AggregateBy, AggregateFunction, AggregateMetric, CountGroupBy, UUID } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../plugins/datasource';
-import { AbstractRepository } from '../../../repository';
+import { AbstractRepository } from '../../../repositories/AbstractRepository';
 import { MemberIdentifierNotFound } from '../../itemLogin/errors';
 import { actionSchema } from '../../member/plugins/export-data/schemas/schemas';
 import { schemaToSelectMapper } from '../../member/plugins/export-data/utils/selection.utils';

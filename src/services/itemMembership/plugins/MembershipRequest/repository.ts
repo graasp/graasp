@@ -1,6 +1,6 @@
 import { EntityManager } from 'typeorm';
 
-import { AbstractRepository } from '../../../../repository';
+import { AbstractRepository } from '../../../../repositories/AbstractRepository';
 import { ItemNotFound, MemberNotFound } from '../../../../utils/errors';
 import { MembershipRequest } from './entities/MembershipRequest';
 

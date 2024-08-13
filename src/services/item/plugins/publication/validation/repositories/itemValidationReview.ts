@@ -2,7 +2,7 @@ import { EntityManager } from 'typeorm';
 
 import { ItemValidationReviewStatus } from '@graasp/sdk';
 
-import { AbstractRepository } from '../../../../../../repository';
+import { AbstractRepository } from '../../../../../../repositories/AbstractRepository';
 import { ItemValidationReview } from '../entities/itemValidationReview';
 import { ItemValidationReviewNotFound } from '../errors';
 

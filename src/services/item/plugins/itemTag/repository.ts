@@ -2,7 +2,7 @@ import { Brackets, EntityManager } from 'typeorm';
 
 import { ItemTagType, ResultOf, getChildFromPath } from '@graasp/sdk';
 
-import { AbstractRepository } from '../../../../repository';
+import { AbstractRepository } from '../../../../repositories/AbstractRepository';
 import { Member } from '../../../member/entities/member';
 import { mapById } from '../../../utils';
 import { Item } from '../../entities/Item';

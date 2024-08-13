@@ -3,7 +3,7 @@ import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity
 
 import { PermissionLevel } from '@graasp/sdk';
 
-import { AbstractRepository } from '../../../../../../repository';
+import { AbstractRepository } from '../../../../../../repositories/AbstractRepository';
 import { Actor, Member } from '../../../../../member/entities/member';
 import { mapById } from '../../../../../utils';
 import { Item } from '../../../../entities/Item';

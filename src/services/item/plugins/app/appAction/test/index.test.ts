@@ -297,7 +297,7 @@ describe('App Actions Tests', () => {
         expect(newAppAction.type).toEqual(payload.type);
         expect(newAppAction.data).toEqual(payload.data);
 
-        const savedAppAction = await AppActionRepository.get(newAppAction.id);
+        const savedAppAction = await new AppActionRepository().getOne(newAppAction.id);
         expectAppAction([newAppAction], [savedAppAction]);
       });
 

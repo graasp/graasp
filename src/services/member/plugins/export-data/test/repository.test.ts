@@ -114,7 +114,7 @@ describe('DataMember Export', () => {
       await saveAppActions({ item, member: randomUser });
       await saveAppActions({ item: itemOfRandomUser, member: randomUser });
 
-      const results = await AppActionRepository.getForMemberExport(exportingActor.id);
+      const results = await new AppActionRepository().getForMemberExport(exportingActor.id);
       expectNoLeaksAndEquality(results, [...appActions, ...otherActions], appActionSchema);
     });
   });

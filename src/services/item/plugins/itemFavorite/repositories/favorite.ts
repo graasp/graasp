@@ -1,6 +1,6 @@
 import { EntityManager } from 'typeorm';
 
-import { AbstractRepository } from '../../../../../repository';
+import { AbstractRepository } from '../../../../../repositories/AbstractRepository';
 import { DUPLICATE_ENTRY_ERROR_CODE } from '../../../../../utils/typeormError';
 import { MemberIdentifierNotFound } from '../../../../itemLogin/errors';
 import { itemFavoriteSchema } from '../../../../member/plugins/export-data/schemas/schemas';

@@ -2,7 +2,7 @@ import { EntityManager } from 'typeorm';
 
 import { UUID, isPasswordStrong } from '@graasp/sdk';
 
-import { AbstractRepository } from '../../../../repository';
+import { AbstractRepository } from '../../../../repositories/AbstractRepository';
 import { EmptyCurrentPassword, InvalidPassword, MemberNotFound } from '../../../../utils/errors';
 import { MemberPassword } from './entities/password';
 import { PasswordNotStrong } from './errors';
