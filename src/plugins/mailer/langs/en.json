@@ -39,5 +39,9 @@
   "CHANGE_EMAIL_NOT_REQUESTED": "If you didn't request this change, please ignore this email.",
 
   "CONFIRM_CHANGE_EMAIL_TITLE": "Your email has been changed",
-  "CONFIRM_CHANGE_EMAIL_TEXT": "You requested to change your email to {{newEmail}}. Your email has been successfully updated."
+  "CONFIRM_CHANGE_EMAIL_TEXT": "You requested to change your email to {{newEmail}}. Your email has been successfully updated.",
+
+  "MEMBERSHIP_REQUEST_TITLE": "{{memberName}} requested you an access to {{itemName}}",
+  "MEMBERSHIP_REQUEST_TEXT": "You've been requested to grant access to {{itemName}} to {{memberName}}. Click on the following button to accept or reject the request.",
+  "MEMBERSHIP_REQUEST_BUTTON_TEXT": "View Memberships of {{itemName}}"
 }
