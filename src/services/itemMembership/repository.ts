@@ -18,6 +18,7 @@ import {
   ItemMembershipNotFound,
   ModifyExistingMembership,
 } from '../../utils/errors';
+import { AncestorOf } from '../../utils/typeorm/treeOperators';
 import { ITEMS_PAGE_SIZE_MAX } from '../item/constants';
 import { Item } from '../item/entities/Item';
 import { ItemSearchParams, Ordering, SortBy } from '../item/types';
@@ -439,6 +440,16 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     return items.filter(({ path }) => {
       const hasParent = items.find((i) => path.includes(i.path + '.'));
       return !hasParent;
+    });
+  },
+
+  async getByItemPathAndPermission(
+    itemPath: string,
+    permission: PermissionLevel,
+  ): Promise<ItemMembership[]> {
+    return this.find({
+      where: { item: AncestorOf(itemPath), permission },
+      relations: ['member'],
     });
   },
 
