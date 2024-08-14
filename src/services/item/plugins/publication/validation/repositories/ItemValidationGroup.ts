@@ -1,6 +1,6 @@
 import { EntityManager } from 'typeorm';
 
-import { AbstractRepository } from '../../../../../../repository';
+import { AbstractRepository } from '../../../../../../repositories/AbstractRepository';
 import { ItemValidationGroup } from '../entities/ItemValidationGroup';
 import { ItemValidationGroupNotFound } from '../errors';
 

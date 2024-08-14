@@ -32,7 +32,7 @@ export class AppActionService {
 
     await this.hooks.runPreHooks('post', member, repositories, { appAction: body, itemId });
 
-    const appAction = await appActionRepository.post(itemId, member.id, body);
+    const appAction = await appActionRepository.addOne({ itemId, memberId: member.id, ...body });
     await this.hooks.runPostHooks('post', member, repositories, {
       appAction,
       itemId,

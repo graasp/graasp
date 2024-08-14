@@ -7,7 +7,7 @@ import { Brackets, EntityManager } from 'typeorm';
 
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import { AbstractRepository } from '../../../../repository';
+import { AbstractRepository } from '../../../../repositories/AbstractRepository';
 import { ALLOWED_SEARCH_LANGS, GEOLOCATION_API_HOST } from '../../../../utils/config';
 import { Actor } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';

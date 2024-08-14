@@ -2,7 +2,7 @@ import { EntityManager, In } from 'typeorm';
 
 import { MentionStatus } from '@graasp/sdk';
 
-import { AbstractRepository } from '../../../../repository';
+import { AbstractRepository } from '../../../../repositories/AbstractRepository';
 import { Member } from '../../../member/entities/member';
 import { messageMentionSchema } from '../../../member/plugins/export-data/schemas/schemas';
 import { schemaToSelectMapper } from '../../../member/plugins/export-data/utils/selection.utils';

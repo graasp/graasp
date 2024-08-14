@@ -2,7 +2,7 @@ import { EntityManager, In } from 'typeorm';
 
 import { UUID } from '@graasp/sdk';
 
-import { AbstractRepository } from '../../repository';
+import { AbstractRepository } from '../../repositories/AbstractRepository';
 import { MemberNotFound } from '../../utils/errors';
 import { mapById } from '../utils';
 import { Member } from './entities/member';

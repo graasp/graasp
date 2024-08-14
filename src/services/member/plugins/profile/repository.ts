@@ -3,7 +3,7 @@ import { v4 } from 'uuid';
 
 import { Member } from '@graasp/sdk';
 
-import { AbstractRepository } from '../../../../repository';
+import { AbstractRepository } from '../../../../repositories/AbstractRepository';
 import { MemberNotFound } from '../../../../utils/errors';
 import { MemberProfile } from './entities/profile';
 import { IMemberProfile } from './types';

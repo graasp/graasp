@@ -16,7 +16,7 @@ import {
   getParentFromPath,
 } from '@graasp/sdk';
 
-import { AbstractRepository } from '../../repository';
+import { AbstractRepository } from '../../repositories/AbstractRepository';
 import { ALLOWED_SEARCH_LANGS } from '../../utils/config';
 import {
   HierarchyTooDeep,
