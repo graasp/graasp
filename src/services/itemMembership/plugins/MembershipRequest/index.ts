@@ -12,8 +12,12 @@ import { isAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne, validatePermission } from '../../../authorization';
 import { ItemService } from '../../../item/service';
 import { validatedMember } from '../../../member/strategies/validatedMember';
-import { ItemMembershipAlreadyExists, MembershipRequestAlreadyExists } from './error';
-import common, { createOne, getAllByItem } from './schemas';
+import {
+  ItemMembershipAlreadyExists,
+  MembershipRequestAlreadyExists,
+  MembershipRequestNotFound,
+} from './error';
+import common, { createOne, deleteOne, getAllByItem } from './schemas';
 import { MembershipRequestService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
@@ -94,6 +98,31 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         const result = await membershipRequestService.post(repositories, member.id, itemId);
         await membershipRequestService.notifyAdmins(member, repositories, item);
         reply.send(result);
+      });
+    },
+  );
+
+  fastify.delete<{ Params: { itemId: string; memberId: string } }>(
+    '/items/:itemId/memberships/requests/:memberId',
+    {
+      schema: deleteOne,
+      preHandler: [isAuthenticated, matchOne(validatedMember)],
+    },
+    async ({ user, params }, reply) => {
+      const member = notUndefined(user?.member);
+      const { itemId, memberId } = params;
+
+      await db.transaction(async (manager) => {
+        const repositories = buildRepositories(manager);
+
+        // Check if the Item exists and the member has the required permission
+        await itemService.get(member, repositories, itemId, PermissionLevel.Admin);
+
+        const requests = await membershipRequestService.deleteOne(repositories, memberId, itemId);
+        if (!requests) {
+          throw new MembershipRequestNotFound();
+        }
+        reply.send(requests);
       });
     },
   );

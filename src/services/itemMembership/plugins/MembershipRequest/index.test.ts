@@ -149,7 +149,7 @@ describe('MembershipRequest', () => {
 
       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
     });
-    it('rejects unauthorized if unhautenticated', async () => {
+    it('rejects unauthorized if unauthenticated', async () => {
       unmockAuthenticate();
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -261,7 +261,16 @@ describe('MembershipRequest', () => {
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
       expect(mockSendEmail).toHaveBeenCalledTimes(0);
     });
+    it('rejects when unauthenticated with non-existing item id', async () => {
+      unmockAuthenticate();
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: `/items/${uuid()}/memberships/requests`,
+      });
 
+      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+      expect(mockSendEmail).toHaveBeenCalledTimes(0);
+    });
     it('rejects when item does not exist', async () => {
       mockAuthenticate(member);
 
@@ -331,6 +340,82 @@ describe('MembershipRequest', () => {
 
       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       expect(mockSendEmail).toHaveBeenCalledTimes(0);
+    });
+  });
+
+  describe('Delete One', () => {
+    beforeEach(async () => {
+      mockAuthenticate(creator);
+      await membershipRequestRepository.post(member.id, item.id);
+    });
+
+    it('returns ok with the concerned membership request', async () => {
+      const response = await app.inject({
+        method: HttpMethod.Delete,
+        url: `/items/${item.id}/memberships/requests/${member.id}`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      const membershipRequest = await response.json();
+      expectMemberRequestToBe(membershipRequest, member, item);
+    });
+
+    it('rejects not found if item id does not exist', async () => {
+      const response = await app.inject({
+        method: HttpMethod.Delete,
+        url: `/items/${uuid()}/memberships/requests/${member.id}`,
+      });
+      expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+    });
+
+    it('rejects not found if item id is not associated with member id', async () => {
+      const anotherMember = await saveMember();
+      const response = await app.inject({
+        method: HttpMethod.Delete,
+        url: `/items/${item.id}/memberships/requests/${anotherMember.id}`,
+      });
+      expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+    });
+    it('rejects not found if member id does not exists', async () => {
+      const response = await app.inject({
+        method: HttpMethod.Delete,
+        url: `/items/${item.id}/memberships/requests/${uuid()}`,
+      });
+      expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+    });
+    it('rejects forbidden if authenticated member has no permissions on the item', async () => {
+      mockAuthenticate(await saveMember());
+      const response = await app.inject({
+        method: HttpMethod.Delete,
+        url: `/items/${item.id}/memberships/requests/${member.id}`,
+      });
+      expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
+    });
+    it('rejects forbidden if authenticated member is a writer of the item', async () => {
+      const writer = await saveMember();
+      await testUtils.saveMembership({ item, member: writer, permission: PermissionLevel.Write });
+      mockAuthenticate(writer);
+      const response = await app.inject({
+        method: HttpMethod.Delete,
+        url: `/items/${item.id}/memberships/requests/${member.id}`,
+      });
+      expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
+    });
+    it('rejects unauthorized if unauthenticated', async () => {
+      unmockAuthenticate();
+      const response = await app.inject({
+        method: HttpMethod.Delete,
+        url: `/items/${item.id}/memberships/requests/${member.id}`,
+      });
+      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    });
+    it('rejects unauthorized if unauthenticated with non-existing ids', async () => {
+      unmockAuthenticate();
+      const response = await app.inject({
+        method: HttpMethod.Delete,
+        url: `/items/${uuid()}/memberships/requests/${uuid()}`,
+      });
+      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
     });
   });
 });
