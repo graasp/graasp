@@ -92,7 +92,7 @@ describe('asynchronous feedback', () => {
     const { item } = await testUtils.saveItemAndMembership({ member: actor });
     const memberUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
 
-    jest.spyOn(ActionRequestExportRepository, 'getLast').mockImplementation(async () => {
+    jest.spyOn(ActionRequestExportRepository.prototype, 'getLast').mockImplementation(async () => {
       throw new Error('mock error');
     });
 

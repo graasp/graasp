@@ -168,7 +168,7 @@ export class ActionRequestExportService {
     });
 
     // create request row
-    const requestExport = await repositories.actionRequestExportRepository.post({
+    const requestExport = await repositories.actionRequestExportRepository.addOne({
       item: baseAnalytics.item,
       member: actor,
       createdAt: new Date(archive.timestamp.getTime()),
