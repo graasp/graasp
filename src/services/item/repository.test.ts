@@ -719,7 +719,7 @@ describe('ItemRepository', () => {
   describe('copy', () => {
     it('copy successfully', async () => {
       const item = await testUtils.saveItem({ actor });
-      const result = await itemRepository.copy(item, actor);
+      const result = await itemRepository.copy(item, actor, [item.name]);
       const copy = result.copyRoot;
       expect(copy.name).toEqual(`${item.name} (2)`);
       expect(copy.id).not.toEqual(item.id);
@@ -730,7 +730,7 @@ describe('ItemRepository', () => {
       const originalParentItem = await testUtils.saveItem({ actor });
       const parentItem = await testUtils.saveItem({ actor });
       const item = await testUtils.saveItem({ actor, parentItem: originalParentItem });
-      const result = await itemRepository.copy(item, actor, parentItem);
+      const result = await itemRepository.copy(item, actor, [item.name], parentItem);
       const copy = result.copyRoot;
       expect(copy.name).toEqual(`${item.name} (2)`);
       expect(copy.id).not.toEqual(item.id);
@@ -742,33 +742,37 @@ describe('ItemRepository', () => {
     it('copy multiple times', async () => {
       // regession test for issue with statefull regular expression
       const item = await testUtils.saveItem({ actor });
-      const result = await itemRepository.copy(item, actor);
+      const result = await itemRepository.copy(item, actor, [item.name]);
       const copy = result.copyRoot;
       expect(copy.name).toEqual(`${item.name} (2)`);
       expect(copy.id).not.toEqual(item.id);
       expect(result.treeCopyMap.get(item.id)!.copy.id).toEqual(copy.id);
       expect(result.treeCopyMap.get(item.id)!.original.id).toEqual(item.id);
-      const secondResult = await itemRepository.copy(copy, actor);
+      const secondResult = await itemRepository.copy(copy, actor, [item.name, copy.name]);
       const secondCopy = secondResult.copyRoot;
       expect(secondCopy.name).toEqual(`${item.name} (3)`);
-      const thirdResult = await itemRepository.copy(secondCopy, actor);
+      const thirdResult = await itemRepository.copy(secondCopy, actor, [
+        item.name,
+        copy.name,
+        secondCopy.name,
+      ]);
       const thirdCopy = thirdResult.copyRoot;
       expect(thirdCopy.name).toEqual(`${item.name} (4)`);
     });
     it('cannot copy in non-folder', async () => {
       const parentItem = await testUtils.saveItem({ actor, item: { type: 'app' } });
       const item = await testUtils.saveItem({ actor });
-      await expect(itemRepository.copy(item, actor, parentItem)).rejects.toBeInstanceOf(
+      await expect(itemRepository.copy(item, actor, [], parentItem)).rejects.toBeInstanceOf(
         ItemNotFolder,
       );
     });
     it('copy suffix is updated', async () => {
       const item = await testUtils.saveItem({ actor });
-      const result = await itemRepository.copy(item, actor);
+      const result = await itemRepository.copy(item, actor, [item.name]);
       const copy = result.copyRoot;
       expect(copy.name).toEqual(`${item.name} (2)`);
 
-      const result2 = await itemRepository.copy(copy, actor);
+      const result2 = await itemRepository.copy(copy, actor, [item.name, copy.name]);
       const copy2 = result2.copyRoot;
       expect(copy2.name).toEqual(`${item.name} (3)`);
     });
@@ -777,11 +781,11 @@ describe('ItemRepository', () => {
       const item = await testUtils.saveItem({ actor });
       item.name = '()(/\\)(..)() (a) (3) ';
       await itemRepository.patch(item.id, item);
-      const result = await itemRepository.copy(item, actor);
+      const result = await itemRepository.copy(item, actor, [item.name]);
       const copy = result.copyRoot;
       expect(copy.name).toEqual(`${item.name} (2)`);
 
-      const result2 = await itemRepository.copy(copy, actor);
+      const result2 = await itemRepository.copy(copy, actor, [item.name, copy.name]);
       const copy2 = result2.copyRoot;
       expect(copy2.name).toEqual(`${item.name} (3)`);
     });
@@ -790,13 +794,13 @@ describe('ItemRepository', () => {
       const item = await testUtils.saveItem({ actor });
       item.name = faker.string.sample(MAX_ITEM_NAME_LENGTH);
       await itemRepository.patch(item.id, item);
-      const result = await itemRepository.copy(item, actor);
+      const result = await itemRepository.copy(item, actor, [item.name]);
       const copy = result.copyRoot;
       expect(copy.name).toEqual(`${item.name.substring(0, MAX_ITEM_NAME_LENGTH - 4)} (2)`);
 
       copy.name = `${item.name.substring(0, MAX_ITEM_NAME_LENGTH - 4)} (9)`;
       await itemRepository.patch(copy.id, copy);
-      const result2 = await itemRepository.copy(copy, actor);
+      const result2 = await itemRepository.copy(copy, actor, [item.name, copy.name]);
       const copy2 = result2.copyRoot;
       expect(copy2.name).toEqual(`${item.name.substring(0, MAX_ITEM_NAME_LENGTH - 5)} (10)`);
     });

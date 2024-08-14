@@ -6,6 +6,7 @@ import {
   MAX_DESCENDANTS_FOR_COPY,
   MAX_DESCENDANTS_FOR_DELETE,
   MAX_DESCENDANTS_FOR_MOVE,
+  MAX_ITEM_NAME_LENGTH,
   MAX_NUMBER_OF_CHILDREN,
   Paginated,
   Pagination,
@@ -43,6 +44,7 @@ import { Actor, Member } from '../member/entities/member';
 import { ThumbnailService } from '../thumbnail/service';
 import { mapById } from '../utils';
 import { ItemWrapper, PackedItem } from './ItemWrapper';
+import { IS_COPY_REGEX, MAX_COPY_SUFFIX_LENGTH } from './constants';
 import { FolderItem, Item, isItemType } from './entities/Item';
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
 import { PartialItemGeolocation } from './plugins/geolocation/errors';
@@ -694,8 +696,22 @@ export class ItemService {
       await this.hooks.runPreHooks('copy', actor, repositories, { original });
     }
 
-    // TODO: args?
-    const { copyRoot, treeCopyMap } = await itemRepository.copy(item, actor, parentItem);
+    let siblings: string[] = [];
+    let startWith: string = item.name;
+    if (IS_COPY_REGEX.test(startWith)) {
+      const suffixStart = startWith.lastIndexOf('(');
+      startWith = startWith.substring(0, suffixStart);
+    }
+
+    startWith = startWith.substring(0, MAX_ITEM_NAME_LENGTH - MAX_COPY_SUFFIX_LENGTH);
+
+    if (parentItem) {
+      siblings = await itemRepository.getChildrenNames(parentItem, { startWith });
+    } else {
+      siblings = await itemMembershipRepository.getAccessibleItemNames(actor, { startWith });
+    }
+
+    const { copyRoot, treeCopyMap } = await itemRepository.copy(item, actor, siblings, parentItem);
 
     // create a membership if needed
     await itemMembershipRepository

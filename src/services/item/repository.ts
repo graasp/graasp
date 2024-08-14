@@ -36,12 +36,12 @@ import { Actor, Member } from '../member/entities/member';
 import { itemSchema } from '../member/plugins/export-data/schemas/schemas';
 import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils';
 import { mapById } from '../utils';
+import { IS_COPY_REGEX } from './constants';
 import { DEFAULT_ORDER, FolderItem, Item, ItemExtraUnion, isItemType } from './entities/Item';
 import { ItemChildrenParams } from './types';
 import { sortChildrenForTreeWith } from './utils';
 
 const DEFAULT_COPY_SUFFIX = ' (2)';
-const IS_COPY_REGEX = /\s\(\d+\)$/;
 const RESCALE_ORDER_THRESHOLD = 0.1;
 
 const DEFAULT_THUMBNAIL_SETTING: ItemSettings = {
@@ -249,6 +249,19 @@ export class ItemRepository extends AbstractRepository<Item> {
     }
 
     return query.getMany();
+  }
+
+  async getChildrenNames(parent: Item, { startWith }: { startWith?: string }): Promise<string[]> {
+    let query = this.repository
+      .createQueryBuilder('item')
+      .where('path ~ :path', { path: `${parent.path}.*{1}` });
+
+    if (startWith) {
+      query = query.andWhere('item.name ILIKE :startWith', { startWith: `${startWith}%` });
+    }
+
+    const raw = await query.getRawMany();
+    return raw.map(({ item_name }) => item_name);
   }
 
   /**
@@ -491,6 +504,7 @@ export class ItemRepository extends AbstractRepository<Item> {
   async copy(
     item: Item,
     creator: Member,
+    siblingsName: string[],
     parentItem?: Item,
   ): Promise<{ copyRoot: Item; treeCopyMap: Map<string, { original: Item; copy: Item }> }> {
     // cannot copy inside non folder item
@@ -499,7 +513,7 @@ export class ItemRepository extends AbstractRepository<Item> {
     }
 
     // copy (memberships from origin are not copied/kept)
-    const treeItemsCopy = await this._copy(item, creator, parentItem);
+    const treeItemsCopy = await this._copy(item, creator, siblingsName, parentItem);
 
     // return copy item + all descendants
     const newItems = [...treeItemsCopy.values()].map(({ copy }) => copy);
@@ -519,20 +533,21 @@ export class ItemRepository extends AbstractRepository<Item> {
   /**
    * Copy whole tree with new paths and same member as creator
    * @param original original item to be copied
+   * @param creator Member who will be the creator of the copied items
+   * @param siblings Siblings that the copied item will have
    * @param parentItem Parent item whose path will 'prefix' all paths
    */
-  private async _copy(original: Item, creator: Member, parentItem?: Item) {
+  private async _copy(original: Item, creator: Member, siblingsName: string[], parentItem?: Item) {
     const old2New = new Map<string, { copy: Item; original: Item }>();
 
     // get next order value
     const order = await this.getNextOrderCount(parentItem?.path);
-
     // copy target parent
     const copiedItem = this.createOne({
       ...original,
       creator,
       parent: parentItem,
-      name: this._addCopySuffix(original.name),
+      name: this.addCopySuffix(original.name, siblingsName),
       order,
     });
     old2New.set(original.id, { copy: copiedItem, original: original });
@@ -593,6 +608,33 @@ export class ItemRepository extends AbstractRepository<Item> {
   }
 
   /**
+   * Return a copy with a suffix of the string given in parameter. The suffix is determined by the siblings of the item.
+   * If there is no sibling with the same name, the copied name will be the same as the original name.
+   * The suffix respects the format " (0)". "0" is a succinct positive number starting at 2.
+   * If the string given in parameter already has a valid suffix, increment the number.
+   * If the copied name exceeds the maximum characters allowed, the original name will be shorten from the end,
+   * the copied name will have the maximum allowed length.
+   * @param name string to copy.
+   * @param siblings list of siblings to be used to check if the copied name already exist.
+   * @returns a copy of the string given in parameter, with a suffix.
+   */
+  private addCopySuffix(name: string, siblingsName: string[]): string {
+    const maxIterations = siblingsName.length;
+    let result = name;
+    for (let i = 0; i < maxIterations; i++) {
+      const twinIndex = siblingsName.findIndex((name) => name === result);
+      if (twinIndex >= 0) {
+        result = this.incrementCopySuffix(result);
+        // By definition, the result string will never be the same as the current twin, so we can remove it from the list.
+        siblingsName.splice(twinIndex, 1);
+      } else {
+        return result;
+      }
+    }
+    return result;
+  }
+
+  /**
    * Return a copy with a suffix of the string given in parameter.
    * The suffix respect the format " (0)". "0" is a succint positive number starting at 2.
    * If the string given in parameter already have a valid suffix, increase the number by 1.
@@ -601,10 +643,9 @@ export class ItemRepository extends AbstractRepository<Item> {
    * @param name string to copy.
    * @returns a copy of the string given in parameter, with a suffix.
    */
-  _addCopySuffix(name: string): string {
-    let result = name;
-
+  private incrementCopySuffix(name: string): string {
     // If the name already have a copy suffix
+    let result = name;
     if (IS_COPY_REGEX.test(name)) {
       // Then fetch the number, and increase it.
       const suffixStart = name.lastIndexOf('(') + 1;
@@ -613,7 +654,6 @@ export class ItemRepository extends AbstractRepository<Item> {
     } else {
       result += DEFAULT_COPY_SUFFIX;
     }
-
     // If the copied name exceed the maximum item name length.
     if (result.length > MAX_ITEM_NAME_LENGTH) {
       // Then shorten the original name to match the maximum length.
@@ -623,7 +663,6 @@ export class ItemRepository extends AbstractRepository<Item> {
         result.substring(0, MAX_ITEM_NAME_LENGTH - suffixLength) +
         result.substring(suffixStart - 1, result.length);
     }
-
     return result;
   }
 

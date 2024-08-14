@@ -239,6 +239,38 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
   },
 
   /**
+   *  get accessible items name for actor and given params
+   *  */
+  async getAccessibleItemNames(
+    actor: Member,
+    { startWith }: { startWith?: string },
+  ): Promise<string[]> {
+    let query = this.createQueryBuilder('im')
+      .select('item.name')
+      .leftJoin('im.item', 'item')
+      .leftJoin('item.creator', 'creator')
+      .where('im.member_id = :actorId', { actorId: actor.id })
+      // returns only top most item
+      .andWhere((qb) => {
+        const subQuery = qb
+          .subQuery()
+          .from(ItemMembership, 'im1')
+          .select('im1.item.path')
+          .where('im.item_path <@ im1.item_path')
+          .andWhere('im1.member_id = :actorId', { actorId: actor.id })
+          .orderBy('im1.item_path', 'ASC')
+          .limit(1);
+        return 'item.path =' + subQuery.getQuery();
+      });
+
+    if (startWith) {
+      query = query.andWhere('item.name ILIKE :startWith', { startWith: `${startWith}%` });
+    }
+    const raw = await query.getRawMany();
+    return raw.map(({ item_name }) => item_name);
+  },
+
+  /**
    * Return all the memberships related to the given member.
    * @param memberId ID of the member to retrieve the data.
    * @returns an array of memberships.
