@@ -17,6 +17,7 @@ import { Item } from '../../../item/entities/Item';
 import { ItemTestUtils } from '../../../item/test/fixtures/items';
 import { Member } from '../../../member/entities/member';
 import { saveMember } from '../../../member/test/fixtures/members';
+import { MembershipRequestRepository } from './repository';
 
 const testUtils = new ItemTestUtils();
 
@@ -36,8 +37,7 @@ describe('MembershipRequest', () => {
   let member: Member;
   let creator: Member;
   let item: Item;
-  let mailerService: MailerService;
-  let mockSendEmail: jest.SpyInstance;
+  let membershipRequestRepository: MembershipRequestRepository;
 
   beforeAll(async () => {
     ({ app } = await build({ member: null }));
@@ -47,9 +47,7 @@ describe('MembershipRequest', () => {
     member = await saveMember();
     creator = await saveMember();
     ({ item } = await testUtils.saveItemAndMembership({ member: creator }));
-
-    mailerService = resolveDependency(MailerService);
-    mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+    ({ membershipRequestRepository } = buildRepositories());
   });
 
   afterEach(async () => {
@@ -61,7 +59,116 @@ describe('MembershipRequest', () => {
     app.close();
   });
 
+  describe('Get All', () => {
+    beforeEach(() => {
+      mockAuthenticate(creator);
+    });
+    it('returns empty array if no requests', async () => {
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: `/items/${item.id}/memberships/requests`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      const membershipRequests = await response.json();
+      expect(membershipRequests).toEqual([]);
+    });
+    it('returns array with one request', async () => {
+      const member = await saveMember();
+      membershipRequestRepository.post(member.id, item.id);
+
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: `/items/${item.id}/memberships/requests`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      const membershipRequests = await response.json();
+      expect(membershipRequests.length).toBe(1);
+      expectMemberRequestToBe(membershipRequests[0], member);
+    });
+    it('returns array with all requests', async () => {
+      const numberOfRequests = 3;
+      for (let i = 0; i < numberOfRequests; i++) {
+        membershipRequestRepository.post((await saveMember()).id, item.id);
+      }
+
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: `/items/${item.id}/memberships/requests`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      const membershipRequests = await response.json();
+      expect(membershipRequests.length).toBe(numberOfRequests);
+    });
+
+    it('does not returns requests of other items', async () => {
+      const numberOfRequests = 3;
+      for (let i = 0; i < numberOfRequests; i++) {
+        membershipRequestRepository.post((await saveMember()).id, item.id);
+      }
+      const { item: anotherItem } = await testUtils.saveItemAndMembership({ member: creator });
+
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: `/items/${anotherItem.id}/memberships/requests`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      const membershipRequests = await response.json();
+      expect(membershipRequests).toEqual([]);
+    });
+    it('rejects not found if item id does not exist', async () => {
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: `/items/${uuid()}/memberships/requests`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+    });
+    it('rejects forbidden if authenticated member has no permissions on the item', async () => {
+      mockAuthenticate(await saveMember());
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: `/items/${item.id}/memberships/requests`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
+    });
+    it('rejects forbidden if authenticated member is a writer of the item', async () => {
+      const { item: anotherItem } = await testUtils.saveItemAndMembership({
+        member: creator,
+        permission: PermissionLevel.Write,
+      });
+
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: `/items/${anotherItem.id}/memberships/requests`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
+    });
+    it('rejects unauthorized if unhautenticated', async () => {
+      unmockAuthenticate();
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: `/items/${item.id}/memberships/requests`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    });
+  });
+
   describe('Create', () => {
+    let mailerService: MailerService;
+    let mockSendEmail: jest.SpyInstance;
+
+    beforeEach(async () => {
+      mailerService = resolveDependency(MailerService);
+      mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+    });
+
     it('returns valid object when successful', async () => {
       mockAuthenticate(member);
 

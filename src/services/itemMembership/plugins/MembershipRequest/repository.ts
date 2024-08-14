@@ -26,10 +26,26 @@ export class MembershipRequestRepository extends AbstractRepository<MembershipRe
   }
 
   async post(memberId: string, itemId: string) {
+    if (!memberId) {
+      throw new MemberNotFound();
+    } else if (!itemId) {
+      throw new ItemNotFound(itemId);
+    }
+
     await this.repository.insert({
       member: { id: memberId },
       item: { id: itemId },
     });
     return await this.get(memberId, itemId);
+  }
+
+  async getAllByItem(itemId: string) {
+    if (!itemId) {
+      throw new ItemNotFound(itemId);
+    }
+    return await this.repository.find({
+      where: { item: { id: itemId } },
+      relations: ['member'],
+    });
   }
 }

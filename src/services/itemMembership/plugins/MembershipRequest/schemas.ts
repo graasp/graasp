@@ -13,6 +13,26 @@ export default {
   additionalProperties: false,
 };
 
+export const getAllByItem: FastifySchema = {
+  tags: ['membershipRequest'],
+  summary: 'Get all membership requests for an item',
+  description: 'Get all membership requests with member information for an item by its ID',
+  params: {
+    type: 'object',
+    properties: {
+      itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+    },
+    required: ['itemId'],
+  },
+  response: {
+    200: {
+      type: 'array',
+      items: { $ref: 'membershipRequest' },
+      uniqueItems: true,
+    },
+  },
+};
+
 export const createOne: FastifySchema = {
   tags: ['membershipRequest'],
   summary: 'Create a membership request',
