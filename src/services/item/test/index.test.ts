@@ -2998,13 +2998,8 @@ describe('Item routes tests', () => {
           const orders: (number | null)[] = [];
           for (const { name } of items) {
             const itemsInDb = await testUtils.rawItemRepository.findBy({ name });
-            expect(itemsInDb).toHaveLength(1);
-
-            const itemsInDbCopied = await testUtils.rawItemRepository.findBy({
-              name: `${name} (2)`,
-            });
-            expect(itemsInDbCopied).toHaveLength(1);
-            orders.push(await testUtils.getOrderForItemId(itemsInDbCopied[0].id));
+            expect(itemsInDb).toHaveLength(2);
+            orders.push(await testUtils.getOrderForItemId(itemsInDb[1].id));
           }
 
           // check it did not create a new membership because user is admin of parent
@@ -3047,10 +3042,7 @@ describe('Item routes tests', () => {
           expect(newCount).toEqual(initialCount + items.length);
           for (const { name } of items) {
             const itemsInDb = await testUtils.rawItemRepository.findBy({ name });
-            expect(itemsInDb).toHaveLength(1);
-
-            const itemsInDb2 = await testUtils.rawItemRepository.findBy({ name: `${name} (2)` });
-            expect(itemsInDb2).toHaveLength(1);
+            expect(itemsInDb).toHaveLength(2);
           }
 
           // check it created a new membership because user is writer of parent
@@ -3141,12 +3133,19 @@ describe('Item routes tests', () => {
           const newCount = await testUtils.rawItemRepository.count();
           expect(newCount).toEqual(initialCount + items.length);
           for (const { name } of items) {
-            const itemsInDb1 = await testUtils.rawItemRepository.findBy({ name });
-            expect(itemsInDb1).toHaveLength(1);
-            const itemsInDb2 = await testUtils.rawItemRepository.findBy({ name: `${name} (2)` });
-            expect(itemsInDb2).toHaveLength(1);
-
-            expect(await testUtils.getOrderForItemId(itemsInDb2[0].id)).toBeNull();
+            let copiedItemId: string;
+            if (name === parentItem.name) {
+              const itemsInDb1 = await testUtils.rawItemRepository.findBy({ name });
+              expect(itemsInDb1).toHaveLength(1);
+              const itemsInDb2 = await testUtils.rawItemRepository.findBy({ name: `${name} (2)` });
+              expect(itemsInDb2).toHaveLength(1);
+              copiedItemId = itemsInDb2[0].id;
+            } else {
+              const itemsInDb = await testUtils.rawItemRepository.findBy({ name });
+              expect(itemsInDb).toHaveLength(2);
+              copiedItemId = itemsInDb[1].id;
+            }
+            expect(await testUtils.getOrderForItemId(copiedItemId)).toBeNull();
           }
 
           // check it did not create a new membership because user is admin of parent
@@ -3239,13 +3238,11 @@ describe('Item routes tests', () => {
         await waitForExpect(async () => {
           for (const item of items) {
             const results = await testUtils.rawItemRepository.findBy({ name: item.name });
-            const copy = await testUtils.rawItemRepository.findBy({ name: `${item.name} (2)` });
-            if (!results.length && !copy.length) {
-              throw new Error('item does not exist!');
+            if (!results.length) {
+              fail('item does not exist!');
             }
-            expect(results).toHaveLength(1);
-            expect(copy).toHaveLength(1);
-            expect(copy[0].path.startsWith(parentItem.path)).toBeTruthy();
+            expect(results).toHaveLength(2);
+            expect(results[1].path.startsWith(parentItem.path)).toBeTruthy();
           }
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });

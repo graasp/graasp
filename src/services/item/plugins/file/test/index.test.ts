@@ -598,16 +598,11 @@ describe('File Item routes tests', () => {
           setTimeout(async () => {
             await expect(copyObjectMock).toHaveBeenCalled();
 
-            const items1 = await testUtils.rawItemRepository.find({ where: { name: item.name } });
-            expect(items1).toHaveLength(1);
+            const items = await testUtils.rawItemRepository.find({ where: { name: item.name } });
+            expect(items).toHaveLength(2);
 
-            const items2 = await testUtils.rawItemRepository.find({
-              where: { name: `${item.name} (2)` },
-            });
-            expect(items2).toHaveLength(1);
-
-            expect((items1[0].extra as S3FileItemExtra).s3File.path).not.toEqual(
-              (items2[0].extra as S3FileItemExtra).s3File.path,
+            expect((items[0].extra as S3FileItemExtra).s3File.path).not.toEqual(
+              (items[1].extra as S3FileItemExtra).s3File.path,
             );
 
             done(true);
