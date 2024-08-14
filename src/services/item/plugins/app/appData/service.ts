@@ -74,7 +74,7 @@ export class AppDataService {
     const { appDataRepository, itemRepository } = repositories;
 
     // check item exists? let post fail?
-    const item = await itemRepository.get(itemId);
+    const item = await itemRepository.getOneOrThrow(itemId);
 
     // posting an app data is allowed to readers
     await validatePermission(repositories, PermissionLevel.Read, member, item);
@@ -113,7 +113,7 @@ export class AppDataService {
     const { appDataRepository, itemRepository } = repositories;
 
     // check item exists? let post fail?
-    const item = await itemRepository.get(itemId);
+    const item = await itemRepository.getOneOrThrow(itemId);
 
     // patching requires at least read
     const { itemMembership: inheritedMembership } = await validatePermission(
@@ -158,7 +158,7 @@ export class AppDataService {
     const { appDataRepository, itemRepository } = repositories;
 
     // check item exists? let post fail?
-    const item = await itemRepository.get(itemId);
+    const item = await itemRepository.getOneOrThrow(itemId);
 
     // delete an app data is allowed to readers
     const { itemMembership: inheritedMembership } = await validatePermission(
@@ -227,7 +227,7 @@ export class AppDataService {
     const { appDataRepository, itemRepository } = repositories;
 
     // check item exists? let post fail?
-    const item = await itemRepository.get(itemId);
+    const item = await itemRepository.getOneOrThrow(itemId);
 
     // posting an app data is allowed to readers
     const { itemMembership } = await validatePermission(

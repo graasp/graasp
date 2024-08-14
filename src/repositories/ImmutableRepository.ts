@@ -11,6 +11,7 @@ import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity
 import { KeysOfString } from '../types';
 import { AbstractRepository, Entity } from './AbstractRepository';
 import {
+  EntityNotFound,
   EntryNotFoundAfterInsertException,
   IllegalArgumentException,
   InsertionException,
@@ -53,10 +54,38 @@ export abstract class ImmutableRepository<T extends BaseEntity> extends Abstract
    * Retrieves an entity with the specified primary key.
    *
    * @param pkValue The value of the entity's primary key to retrieve.
+   * @param options Allows to includes the deleted entities if needed.
    * @returns A promise that resolves to the entity if found, or null if not found.
    */
-  public async getOne(pkValue: string): Promise<T | null> {
-    return await this.findOne(pkValue);
+  public async getOne(
+    pkValue: string,
+    options: Pick<FindOneOptions<T>, 'withDeleted'> = { withDeleted: false },
+  ): Promise<T | null> {
+    return await this.findOne(pkValue, options);
+  }
+
+  /**
+   * Retrieves an entity with the specified primary key or throws if not found.
+   *
+   * @param pkValue The value of the entity's primary key to retrieve.
+   * @param options Allows to includes the deleted entities if needed.
+   * @param errorToThrow The error to throw. If undefined, throws EntityNotFound.
+   * @returns A promise that resolves to the entity.
+   * @throws errorToThrow or EntityNotFound if the entity was not found.
+   */
+  public async getOneOrThrow(
+    pkValue: string,
+    options: Pick<FindOneOptions<T>, 'withDeleted'> = { withDeleted: false },
+    errorToThrow?: Error,
+  ): Promise<T> {
+    const entity = await this.getOne(pkValue, options);
+
+    if (!entity) {
+      const error = errorToThrow ?? new EntityNotFound(this.entity, pkValue);
+      throw error;
+    }
+
+    return entity;
   }
 
   /********************************** Subclass Methods **********************************/

@@ -80,7 +80,7 @@ describe('Item websocket hooks', () => {
         channel: actor.id,
       });
 
-      jest.spyOn(ItemRepository.prototype, 'patch').mockImplementation(() => {
+      jest.spyOn(ItemRepository.prototype, 'updateOne').mockImplementation(() => {
         throw new Error('mock error');
       });
 
@@ -127,14 +127,14 @@ describe('Item websocket hooks', () => {
       });
     });
 
-    it('member that initiated the deleteMany operation receives failure feedback', async () => {
+    it('member that initiated the delete many operation receives failure feedback', async () => {
       const { item } = await testUtils.saveItemAndMembership({ member: actor });
       const memberUpdates = await ws.subscribe<ItemOpFeedbackEventType<Item, 'delete'>>({
         topic: memberItemsTopic,
         channel: actor.id,
       });
 
-      jest.spyOn(ItemRepository.prototype, 'deleteMany').mockImplementation(() => {
+      jest.spyOn(ItemRepository.prototype, 'delete').mockImplementation(() => {
         throw new Error('mock error');
       });
 

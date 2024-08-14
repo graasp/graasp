@@ -28,7 +28,7 @@ export class ItemLoginService {
   }
 
   async getSchemaType(actor: Actor, repositories: Repositories, itemId: string) {
-    const item = await repositories.itemRepository.get(itemId);
+    const item = await repositories.itemRepository.getOneOrThrow(itemId);
     // do not need permission to get item login schema
     // we need to know the schema to display the correct form
     const itemLoginSchema = await repositories.itemLoginSchemaRepository.getForItemPath(item.path);
@@ -80,7 +80,7 @@ export class ItemLoginService {
     const { memberRepository, itemLoginRepository, itemRepository, itemLoginSchemaRepository } =
       repositories;
 
-    const item = await itemRepository.get(itemId);
+    const item = await itemRepository.getOneOrThrow(itemId);
 
     // initial validation
     // this throws if does not exist

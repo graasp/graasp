@@ -20,7 +20,7 @@ export class ItemThumbnailService {
   }
 
   async upload(actor: Member, repositories: Repositories, itemId: string, file: Readable) {
-    const item = await repositories.itemRepository.get(itemId);
+    const item = await repositories.itemRepository.getOneOrThrow(itemId);
     await validatePermission(repositories, PermissionLevel.Write, actor, item);
     await this.thumbnailService.upload(actor, itemId, file);
 
@@ -38,7 +38,7 @@ export class ItemThumbnailService {
   ) {
     // prehook: get item and input in download call ?
     // check rights
-    const item = await repositories.itemRepository.get(itemId);
+    const item = await repositories.itemRepository.getOneOrThrow(itemId);
     await validatePermission(repositories, PermissionLevel.Read, actor, item);
 
     const result = await this.thumbnailService.getFile(actor, {
@@ -55,7 +55,7 @@ export class ItemThumbnailService {
   ) {
     // prehook: get item and input in download call ?
     // check rights
-    const item = await repositories.itemRepository.get(itemId);
+    const item = await repositories.itemRepository.getOneOrThrow(itemId);
     await validatePermission(repositories, PermissionLevel.Read, actor, item);
 
     const result = await this.thumbnailService.getUrl({

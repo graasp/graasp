@@ -70,7 +70,7 @@ export class MentionService {
     const { mentionRepository, itemRepository } = repositories;
 
     // check actor has access to item
-    const item = await itemRepository.get(message.item.id);
+    const item = await itemRepository.getOneOrThrow(message.item.id);
     await validatePermission(repositories, PermissionLevel.Read, actor, item);
 
     // TODO: optimize ? suppose same item - validate multiple times

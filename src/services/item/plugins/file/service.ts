@@ -53,7 +53,7 @@ class FileItemService {
 
   async upload(
     actor: Member,
-    repositories,
+    repositories: Repositories,
     {
       description,
       parentId,
@@ -64,7 +64,7 @@ class FileItemService {
     }: {
       description?: string;
       parentId?: string;
-      filename;
+      filename: string;
       mimetype: string;
       stream: Readable;
       previousItemId?: Item['id'];
@@ -144,7 +144,7 @@ class FileItemService {
       }
 
       // retrieve item again since hasThumbnail might have changed
-      return repositories.itemRepository.get(newItem.id);
+      return await repositories.itemRepository.getOneOrThrow(newItem.id);
     });
   }
 
@@ -159,7 +159,7 @@ class FileItemService {
   ) {
     // prehook: get item and input in download call ?
     // check rights
-    const item = await repositories.itemRepository.get(itemId);
+    const item = await repositories.itemRepository.getOneOrThrow(itemId);
     await validatePermission(repositories, PermissionLevel.Read, actor, item);
     const extraData = item.extra[this.fileService.fileType] as FileItemProperties;
     const result = await this.fileService.getFile(actor, {
@@ -181,7 +181,7 @@ class FileItemService {
   ) {
     // prehook: get item and input in download call ?
     // check rights
-    const item = await repositories.itemRepository.get(itemId);
+    const item = await repositories.itemRepository.getOneOrThrow(itemId);
     await validatePermission(repositories, PermissionLevel.Read, actor, item);
     const extraData = item.extra[this.fileService.fileType] as FileItemProperties;
     const result = await this.fileService.getUrl({
@@ -214,11 +214,11 @@ class FileItemService {
 
     // update item copy's 'extra'
     if (this.fileService.fileType === ItemType.S3_FILE) {
-      await repositories.itemRepository.patch(copy.id, {
+      await repositories.itemRepository.updateOne(copy.id, {
         extra: { s3File: { ...extra.s3File, path: filepath } },
       });
     } else {
-      await repositories.itemRepository.patch(copy.id, {
+      await repositories.itemRepository.updateOne(copy.id, {
         extra: { file: { ...extra.s3File, path: filepath } },
       });
     }

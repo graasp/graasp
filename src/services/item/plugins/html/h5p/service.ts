@@ -91,7 +91,7 @@ export class H5PService extends HtmlService {
       newFolderPath: this.buildContentPath(remoteRootPath),
     });
 
-    await repositories.itemRepository.patch(copy.id, {
+    await repositories.itemRepository.updateOne(copy.id, {
       name: this.buildH5PPath('', newName),
       extra: { h5p: this.buildH5PExtra(newContentId, newName).h5p },
     });

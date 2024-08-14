@@ -25,7 +25,7 @@ export class AppActionService {
     const { appActionRepository, itemRepository } = repositories;
 
     // check item exists? let post fail?
-    const item = await itemRepository.get(itemId);
+    const item = await itemRepository.getOneOrThrow(itemId);
 
     // posting an app action is allowed to readers
     await validatePermission(repositories, PermissionLevel.Read, member, item);
@@ -53,7 +53,7 @@ export class AppActionService {
     const { appActionRepository, itemRepository } = repositories;
 
     // check item exists
-    const item = await itemRepository.get(itemId);
+    const item = await itemRepository.getOneOrThrow(itemId);
 
     // posting an app action is allowed to readers
     const { itemMembership } = await validatePermission(
@@ -86,7 +86,7 @@ export class AppActionService {
     const { appActionRepository, itemRepository } = repositories;
 
     // check item exists
-    const item = await itemRepository.get(itemIds[0]);
+    const item = await itemRepository.getOneOrThrow(itemIds[0]);
 
     // posting an app action is allowed to readers
     const { itemMembership } = await validatePermission(

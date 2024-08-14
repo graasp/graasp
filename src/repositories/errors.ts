@@ -82,3 +82,12 @@ export class EntryNotFoundBeforeDeleteException<T extends BaseEntity> extends Re
     );
   }
 }
+
+/**
+ * Thrown to indicate that the entity was not found.
+ */
+export class EntityNotFound<T extends BaseEntity> extends RepositoryException {
+  constructor(classEntity: Entity<T>, primaryKeyValue: string) {
+    super(`The ${classEntity.name} ${primaryKeyValue} was not found!`, 'EntityNotFound');
+  }
+}

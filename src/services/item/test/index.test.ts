@@ -171,7 +171,7 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
 
         // check item exists in db
-        const item = await testUtils.itemRepository.get(newItem.id);
+        const item = await testUtils.itemRepository.getOne(newItem.id);
         expect(item?.id).toEqual(newItem.id);
 
         // a membership is created for this item
@@ -2000,7 +2000,7 @@ describe('Item routes tests', () => {
         const parents = [parent, child1];
 
         // patch item to force reorder
-        await testUtils.itemRepository.patch(parent.id, { name: 'newname' });
+        await testUtils.itemRepository.updateOne(parent.id, { name: 'newname' });
         parent.name = 'newname';
 
         const response = await app.inject({
