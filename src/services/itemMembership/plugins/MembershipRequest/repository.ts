@@ -48,4 +48,13 @@ export class MembershipRequestRepository extends AbstractRepository<MembershipRe
       relations: ['member'],
     });
   }
+
+  async deleteOne(memberId: string, itemId: string) {
+    const membershipRequest = await this.get(memberId, itemId);
+    if (!membershipRequest) {
+      return null;
+    }
+    await this.repository.delete(membershipRequest.id);
+    return membershipRequest;
+  }
 }

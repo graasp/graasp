@@ -31,3 +31,16 @@ export class MembershipRequestAlreadyExists extends GraaspMembershipRequestError
     );
   }
 }
+
+export class MembershipRequestNotFound extends GraaspMembershipRequestError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GMRERR003',
+        statusCode: StatusCodes.NOT_FOUND,
+        message: FAILURE_MESSAGES.MEMBERSHIP_REQUEST_NOT_FOUND,
+      },
+      data,
+    );
+  }
+}

@@ -48,3 +48,20 @@ export const createOne: FastifySchema = {
     200: { $ref: 'membershipRequest' },
   },
 };
+
+export const deleteOne: FastifySchema = {
+  tags: ['membershipRequest'],
+  summary: 'Delete a membership request',
+  description: 'Delete a membership request from a member id and an item id.',
+  params: {
+    type: 'object',
+    properties: {
+      itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      memberId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+    },
+    required: ['itemId', 'memberId'],
+  },
+  response: {
+    200: { $ref: 'membershipRequest' },
+  },
+};

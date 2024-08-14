@@ -20,7 +20,7 @@ export class MembershipRequestService {
   }
 
   async getAllByItem({ membershipRequestRepository }: Repositories, itemId: string) {
-    return membershipRequestRepository.getAllByItem(itemId);
+    return await membershipRequestRepository.getAllByItem(itemId);
   }
 
   async get({ membershipRequestRepository }: Repositories, memberId: string, itemId: string) {
@@ -60,5 +60,9 @@ export class MembershipRequestService {
           this.log.error(err, `mailerService failed. shared link: ${link}`);
         });
     }
+  }
+
+  async deleteOne({ membershipRequestRepository }: Repositories, memberId: string, itemId: string) {
+    return await membershipRequestRepository.deleteOne(memberId, itemId);
   }
 }
