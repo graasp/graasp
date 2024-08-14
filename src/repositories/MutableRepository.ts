@@ -1,9 +1,15 @@
-import { BaseEntity, DeepPartial, EntityManager, EntityTarget, FindOptionsWhere } from 'typeorm';
+import { BaseEntity, DeepPartial, EntityManager, FindOptionsWhere } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
 
 import { KeysOfString } from '../types';
+import { Entity } from './AbstractRepository';
 import { ImmutableRepository } from './ImmutableRepository';
-import { DeleteException, EntryNotFoundAfterUpdateException, UpdateException } from './errors';
+import {
+  DeleteException,
+  EntryNotFoundAfterUpdateException,
+  EntryNotFoundBeforeDeleteException,
+  UpdateException,
+} from './errors';
 
 /**
  * Abstract class representing a repository for mutable entities.
@@ -14,14 +20,15 @@ import { DeleteException, EntryNotFoundAfterUpdateException, UpdateException } f
  */
 export abstract class MutableRepository<
   T extends BaseEntity,
-  UpdateBody extends DeepPartial<T>,
+  // We use Generics in UpdateBody to ensure subclasses provide a specific body for default implementations.
+  UpdateBody extends DeepPartial<T> | { [key: string]: unknown },
 > extends ImmutableRepository<T> {
   /**
    * @param primaryKeyName The name of the entity's primary key, used during the findOne.
    * @param entity The concrete entity the repository will manage.
    * @param manager The entity manager used to handle transactions.
    */
-  constructor(primaryKeyName: KeysOfString<T>, entity: EntityTarget<T>, manager?: EntityManager) {
+  constructor(primaryKeyName: KeysOfString<T>, entity: Entity<T>, manager?: EntityManager) {
     super(primaryKeyName, entity, manager);
   }
 
@@ -70,6 +77,30 @@ export abstract class MutableRepository<
 
     try {
       await this.repository.delete(pkValue);
+    } catch (e) {
+      throw new DeleteException(e);
+    }
+  }
+
+  /**
+   * Deletes one entity with the specified primary key and return it.
+   *
+   * @param pkValue The value of the entity's primary key to delete.
+   * @returns The removed entity.
+   * @throws IllegalArgumentException if the given PK is undefined or empty.
+   */
+  public async deleteOne(pkValue: string): Promise<T> {
+    this.throwsIfPKIsInvalid(pkValue);
+
+    const entity = await this.getOne(pkValue);
+
+    if (!entity) {
+      throw new EntryNotFoundBeforeDeleteException(this.entity);
+    }
+
+    try {
+      await this.repository.delete(pkValue);
+      return entity;
     } catch (e) {
       throw new DeleteException(e);
     }

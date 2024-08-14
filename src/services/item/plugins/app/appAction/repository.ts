@@ -12,7 +12,7 @@ import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request';
 import { AppAction } from './appAction';
 import { InputAppAction } from './interfaces/app-action';
 
-type CreateAppActionBody = Partial<InputAppAction> & { itemId: string; memberId: string };
+type CreateAppActionBody = { appAction: Partial<InputAppAction>; itemId: string; memberId: string };
 type UpdateAppActionBody = Partial<Omit<AppAction, 'item'>>;
 
 export class AppActionRepository extends MutableRepository<AppAction, UpdateAppActionBody> {
@@ -20,9 +20,9 @@ export class AppActionRepository extends MutableRepository<AppAction, UpdateAppA
     super(DEFAULT_PRIMARY_KEY, AppAction, manager);
   }
 
-  async addOne({ itemId, memberId, ...body }: CreateAppActionBody) {
+  async addOne({ itemId, memberId, appAction }: CreateAppActionBody) {
     return await super.insert({
-      ...body,
+      ...appAction,
       item: { id: itemId },
       member: { id: memberId },
     });

@@ -1,4 +1,7 @@
-import { BaseEntity, EntityTarget } from 'typeorm';
+import { BaseEntity } from 'typeorm';
+
+import { Entity } from './AbstractRepository';
+import { EntryNotFoundFactory, OpEntryNotFound } from './utils';
 
 abstract class RepositoryException extends Error {
   constructor(message: string, name: string) {
@@ -30,10 +33,10 @@ export class InsertionException extends RepositoryException {
  * Thrown to indicate that the database insertion has failed because the returned id was not found.
  */
 export class EntryNotFoundAfterInsertException<T extends BaseEntity> extends RepositoryException {
-  constructor(entity: EntityTarget<T>) {
+  constructor(classEntity: Entity<T>) {
     super(
-      `The insertion of a new ${entity} failed, the created id was not found.`,
-      'InsertionException',
+      EntryNotFoundFactory(classEntity.name, OpEntryNotFound.CREATE),
+      'EntryNotFoundAfterInsertException',
     );
   }
 }
@@ -51,8 +54,11 @@ export class UpdateException extends RepositoryException {
  * Thrown to indicate that the database update has failed because the entity was not found.
  */
 export class EntryNotFoundAfterUpdateException<T extends BaseEntity> extends RepositoryException {
-  constructor(entity: EntityTarget<T>) {
-    super(`The update of ${entity} failed, the id was not found.`, 'InsertionException');
+  constructor(classEntity: Entity<T>) {
+    super(
+      EntryNotFoundFactory(classEntity.name, OpEntryNotFound.UPDATE),
+      'EntryNotFoundAfterUpdateException',
+    );
   }
 }
 
@@ -62,5 +68,17 @@ export class EntryNotFoundAfterUpdateException<T extends BaseEntity> extends Rep
 export class DeleteException extends RepositoryException {
   constructor(message: string) {
     super(message, 'DeleteException');
+  }
+}
+
+/**
+ * Thrown to indicate that the database delete has failed because the entity was not found.
+ */
+export class EntryNotFoundBeforeDeleteException<T extends BaseEntity> extends RepositoryException {
+  constructor(classEntity: Entity<T>) {
+    super(
+      EntryNotFoundFactory(classEntity.name, OpEntryNotFound.DELETE),
+      'EntryNotFoundBeforeDeleteException',
+    );
   }
 }

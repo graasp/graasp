@@ -2,9 +2,10 @@ import { v4 } from 'uuid';
 
 import { AppDataVisibility } from '@graasp/sdk';
 
+import { AppDataSource } from '../../../../../../plugins/datasource';
 import { Member } from '../../../../../member/entities/member';
 import { Item } from '../../../../entities/Item';
-import { AppDataRepository } from '../repository';
+import { AppData } from '../appData';
 
 export const GRAASP_PUBLISHER_ID = 'publisher-id';
 
@@ -75,28 +76,29 @@ export const saveAppData = async ({
   visibility?: AppDataVisibility;
 }) => {
   const defaultData = { type: 'some-type', data: { some: 'data' } };
-  const s1 = await AppDataRepository.save({
+  const appDataRawRepository = AppDataSource.getRepository(AppData);
+  const s1 = await appDataRawRepository.save({
     item,
     creator,
     member: member ?? creator,
     ...defaultData,
     visibility: visibility ?? AppDataVisibility.Item,
   });
-  const s2 = await AppDataRepository.save({
+  const s2 = await appDataRawRepository.save({
     item,
     creator,
     member: member ?? creator,
     ...defaultData,
     visibility: visibility ?? AppDataVisibility.Item,
   });
-  const s3 = await AppDataRepository.save({
+  const s3 = await appDataRawRepository.save({
     item,
     creator,
     member: member ?? creator,
     ...defaultData,
     visibility: visibility ?? AppDataVisibility.Member,
   });
-  const s4 = await AppDataRepository.save({
+  const s4 = await appDataRawRepository.save({
     item,
     creator,
     member: member ?? creator,

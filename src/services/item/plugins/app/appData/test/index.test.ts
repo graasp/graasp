@@ -6,10 +6,12 @@ import { FastifyInstance } from 'fastify';
 import { AppDataVisibility, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../../test/app';
+import { AppDataSource } from '../../../../../../plugins/datasource';
 import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
 import { Actor, Member } from '../../../../../member/entities/member';
 import { expectMinimalMember, saveMember } from '../../../../../member/test/fixtures/members';
 import { AppTestUtils } from '../../test/fixtures';
+import { AppData } from '../appData';
 import { PreventUpdateAppDataFile } from '../errors';
 import { AppDataRepository } from '../repository';
 import { saveAppData } from './fixtures';
@@ -370,7 +372,7 @@ describe('App Data Tests', () => {
         expect(newAppData.type).toEqual(payload.type);
         expect(newAppData.data).toEqual(payload.data);
 
-        const savedAppData = await AppDataRepository.get(newAppData.id);
+        const savedAppData = await new AppDataRepository().getOne(newAppData.id);
         expectAppData([newAppData], [savedAppData]);
       });
 
@@ -393,7 +395,7 @@ describe('App Data Tests', () => {
         expectMinimalMember(newAppData.member, bob);
         expectMinimalMember(newAppData.creator, actor);
 
-        const savedAppData = await AppDataRepository.get(newAppData.id);
+        const savedAppData = await new AppDataRepository().getOne(newAppData.id);
         expectAppData([newAppData], [savedAppData]);
       });
 
@@ -435,7 +437,7 @@ describe('App Data Tests', () => {
         expectMinimalMember(newAppData.member, bob);
         expectMinimalMember(newAppData.creator, actor);
 
-        const savedAppData = await AppDataRepository.get(newAppData.id);
+        const savedAppData = await new AppDataRepository().getOne(newAppData.id);
         expectAppData([newAppData], [savedAppData]);
       });
     });
@@ -513,7 +515,7 @@ describe('App Data Tests', () => {
       });
 
       it('Throw if app data is a file', async () => {
-        const fileAppData = await AppDataRepository.save({
+        const fileAppData = await AppDataSource.getRepository(AppData).save({
           type: 'type',
           member: actor,
           data: {
@@ -630,7 +632,9 @@ describe('App Data Tests', () => {
         expect(response.statusCode).toEqual(StatusCodes.OK);
         expect(response.body).toEqual(chosenAppData.id);
 
-        const appSetting = await AppDataRepository.findOneBy({ id: chosenAppData.id });
+        const appSetting = await AppDataSource.getRepository(AppData).findOneBy({
+          id: chosenAppData.id,
+        });
         expect(appSetting).toBeFalsy();
       });
 
