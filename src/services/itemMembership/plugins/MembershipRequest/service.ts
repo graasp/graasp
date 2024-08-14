@@ -19,6 +19,10 @@ export class MembershipRequestService {
     this.log = log;
   }
 
+  async getAllByItem({ membershipRequestRepository }: Repositories, itemId: string) {
+    return membershipRequestRepository.getAllByItem(itemId);
+  }
+
   async get({ membershipRequestRepository }: Repositories, memberId: string, itemId: string) {
     return await membershipRequestRepository.get(memberId, itemId);
   }

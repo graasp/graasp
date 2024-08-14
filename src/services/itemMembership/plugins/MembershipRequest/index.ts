@@ -13,7 +13,7 @@ import { matchOne, validatePermission } from '../../../authorization';
 import { ItemService } from '../../../item/service';
 import { validatedMember } from '../../../member/strategies/validatedMember';
 import { ItemMembershipAlreadyExists, MembershipRequestAlreadyExists } from './error';
-import common, { createOne } from './schemas';
+import common, { createOne, getAllByItem } from './schemas';
 import { MembershipRequestService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
@@ -24,6 +24,28 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   // schemas
   fastify.addSchema(common);
+
+  fastify.get<{ Params: { itemId: string } }>(
+    '/items/:itemId/memberships/requests',
+    {
+      schema: getAllByItem,
+      preHandler: [isAuthenticated, matchOne(validatedMember)],
+    },
+    async ({ user, params }, reply) => {
+      const member = notUndefined(user?.member);
+      const { itemId } = params;
+
+      await db.transaction(async (manager) => {
+        const repositories = buildRepositories(manager);
+
+        // Check if the Item exists and the member has the required permission
+        await itemService.get(member, repositories, itemId, PermissionLevel.Admin);
+
+        const requests = await membershipRequestService.getAllByItem(repositories, itemId);
+        reply.send(requests);
+      });
+    },
+  );
 
   fastify.post<{ Params: { itemId: string } }>(
     '/items/:itemId/memberships/requests',
