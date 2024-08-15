@@ -65,11 +65,15 @@ class AppSettingFileService {
         throw e;
       });
 
-    const appSetting = await repositories.appSettingRepository.post(item.id, member.id, {
-      id: appSettingId,
-      name,
-      data: {
-        [this.fileService.fileType]: fileProperties,
+    const appSetting = await repositories.appSettingRepository.addOne({
+      itemId: item.id,
+      memberId: member.id,
+      appSetting: {
+        id: appSettingId,
+        name,
+        data: {
+          [this.fileService.fileType]: fileProperties,
+        },
       },
     });
 
@@ -105,15 +109,15 @@ class AppSettingFileService {
 
   async copyMany(actor: Member, repositories: Repositories, toCopy: AppSetting[]) {
     const fileItemType = this.fileService.fileType;
-    for (const appS of toCopy) {
-      if (!appS.data) {
+    for (const appSetting of toCopy) {
+      if (!appSetting.data) {
         throw new Error('App setting file is not correctly defined');
       }
 
       // create file data object
-      const itemId = appS.item.id;
-      const newFilePath = this.buildFilePath(itemId, appS.id);
-      const originalFileExtra = appS.data[fileItemType] as FileItemProperties;
+      const itemId = appSetting.item.id;
+      const newFilePath = this.buildFilePath(itemId, appSetting.id);
+      const originalFileExtra = appSetting.data[fileItemType] as FileItemProperties;
       const newFileData = {
         [fileItemType]: {
           filepath: newFilePath,
@@ -125,14 +129,14 @@ class AppSettingFileService {
 
       // run copy task
       await this.fileService.copy(actor, {
-        newId: appS.id,
+        newId: appSetting.id,
         newFilePath,
         originalPath: originalFileExtra.path,
         mimetype: originalFileExtra.mimetype,
       });
 
       // update new setting with file data
-      await repositories.appSettingRepository.patch(itemId, appS.id, { data: newFileData });
+      await repositories.appSettingRepository.updateOne(appSetting.id, { data: newFileData });
     }
   }
 

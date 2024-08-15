@@ -38,7 +38,7 @@ export type Repositories = {
   appActionRepository: AppActionRepository;
   appDataRepository: AppDataRepository;
   appRepository: AppRepository;
-  appSettingRepository: typeof AppSettingRepository;
+  appSettingRepository: AppSettingRepository;
   categoryRepository: typeof CategoryRepository;
   chatMessageRepository: typeof ChatMessageRepository;
   invitationRepository: typeof InvitationRepository;
@@ -84,9 +84,7 @@ export const buildRepositories = (manager?: EntityManager): Repositories => ({
   appRepository: new AppRepository(manager),
   appDataRepository: new AppDataRepository(manager),
   appActionRepository: new AppActionRepository(manager),
-  appSettingRepository: manager
-    ? manager.withRepository(AppSettingRepository)
-    : AppSettingRepository,
+  appSettingRepository: new AppSettingRepository(manager),
   publisherRepository: manager ? manager.withRepository(PublisherRepository) : PublisherRepository,
   recycledItemRepository: manager
     ? manager.withRepository(RecycledItemDataRepository)

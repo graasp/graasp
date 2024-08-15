@@ -210,7 +210,7 @@ describe('Apps Settings Tests', () => {
         expect(newAppSetting.name).toEqual(appSetting.name);
         expect(newAppSetting.data).toEqual(appSetting.data);
 
-        const savedAppSetting = await AppSettingRepository.get(newAppSetting.id);
+        const savedAppSetting = await new AppSettingRepository().getOne(newAppSetting.id);
         expectAppSettings([newAppSetting], [savedAppSetting]);
       });
 
@@ -441,7 +441,7 @@ describe('Apps Settings Tests', () => {
         expect(response.statusCode).toEqual(StatusCodes.OK);
         expect(response.body).toEqual(chosenAppSetting.id);
 
-        const appSetting = await AppSettingRepository.get(chosenAppSetting.id);
+        const appSetting = await new AppSettingRepository().getOne(chosenAppSetting.id);
         expect(appSetting).toBeFalsy();
       });
 

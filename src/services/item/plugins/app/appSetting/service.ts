@@ -50,7 +50,11 @@ export class AppSettingService {
 
     await this.hooks.runPreHooks('post', member, repositories, { appSetting: body, itemId });
 
-    const appSetting = await appSettingRepository.post(itemId, member.id, body);
+    const appSetting = await appSettingRepository.addOne({
+      itemId,
+      memberId: member.id,
+      appSetting: body,
+    });
     await this.hooks.runPostHooks('post', member, repositories, {
       appSetting,
       itemId,
@@ -75,7 +79,7 @@ export class AppSettingService {
       itemId,
     });
 
-    const appSetting = await appSettingRepository.patch(itemId, appSettingId, body);
+    const appSetting = await appSettingRepository.updateOne(appSettingId, body);
     await this.hooks.runPostHooks('patch', member, repositories, {
       appSetting,
       itemId,
@@ -94,11 +98,11 @@ export class AppSettingService {
     // delete an app data is allowed to admins
     await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
 
-    const appSetting = await appSettingRepository.get(appSettingId);
+    const appSetting = await appSettingRepository.getOneOrThrow(appSettingId);
 
     await this.hooks.runPreHooks('delete', member, repositories, { appSettingId, itemId });
 
-    const result = await appSettingRepository.deleteOne(itemId, appSettingId);
+    const { id: result } = await appSettingRepository.deleteOne(appSettingId);
 
     await this.hooks.runPostHooks('delete', member, repositories, { appSetting, itemId });
 
@@ -116,7 +120,7 @@ export class AppSettingService {
     // get app setting is allowed to readers
     await this.itemService.get(member, repositories, itemId);
 
-    return appSettingRepository.get(appSettingId);
+    return await appSettingRepository.getOneOrThrow(appSettingId);
   }
 
   async getForItem(
@@ -141,10 +145,10 @@ export class AppSettingService {
     try {
       const appSettings = await this.getForItem(actor, repositories, original.id);
       const newAppSettings: AppSetting[] = [];
-      for (const appS of appSettings) {
+      for (const appSetting of appSettings) {
         const copyData = {
-          name: appS.name,
-          data: appS.data,
+          name: appSetting.name,
+          data: appSetting.data,
           itemId: copy.id,
           creator: { id: actor.id },
         };
@@ -153,11 +157,11 @@ export class AppSettingService {
           originalItemId: original.id,
           copyItemId: copy.id,
         });
-        const newSetting = await repositories.appSettingRepository.post(
-          copy.id,
-          appS.creator?.id,
-          copyData,
-        );
+        const newSetting = await repositories.appSettingRepository.addOne({
+          itemId: copy.id,
+          memberId: appSetting.creator?.id,
+          appSetting: copyData,
+        });
         newAppSettings.push(newSetting);
       }
       await this.hooks.runPostHooks('copyMany', actor, repositories, {

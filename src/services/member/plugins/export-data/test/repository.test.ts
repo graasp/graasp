@@ -154,7 +154,7 @@ describe('DataMember Export', () => {
         creator: randomUser,
       });
 
-      const results = await AppSettingRepository.getForMemberExport(exportingActor.id);
+      const results = await new AppSettingRepository().getForMemberExport(exportingActor.id);
       expectNoLeaksAndEquality(results, appSettings, appSettingSchema);
     });
   });

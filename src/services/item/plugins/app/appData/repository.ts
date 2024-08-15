@@ -34,7 +34,7 @@ export class AppDataRepository extends MutableRepository<AppData, UpdateAppDataB
 
   async updateOne(appDataId: string, body: UpdateAppDataBody): Promise<AppData> {
     // we shouldn't update file data
-    const originalData = await this.findOne(appDataId);
+    const originalData = await super.findOne(appDataId);
 
     if (!originalData) {
       throw new AppDataNotFound(appDataId);
