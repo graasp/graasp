@@ -1,4 +1,4 @@
-import { Brackets, EntityManager, FindManyOptions, In } from 'typeorm';
+import { Brackets, DeepPartial, EntityManager, FindManyOptions, FindOneOptions, In } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { v4 } from 'uuid';
 
@@ -16,7 +16,9 @@ import {
   getParentFromPath,
 } from '@graasp/sdk';
 
-import { AbstractRepository } from '../../repositories/AbstractRepository';
+import { MutableRepository } from '../../repositories/MutableRepository';
+import { DEFAULT_PRIMARY_KEY } from '../../repositories/const';
+import { IllegalArgumentException } from '../../repositories/errors';
 import { ALLOWED_SEARCH_LANGS } from '../../utils/config';
 import {
   HierarchyTooDeep,
@@ -48,9 +50,17 @@ const DEFAULT_THUMBNAIL_SETTING: ItemSettings = {
   hasThumbnail: false,
 };
 
-export class ItemRepository extends AbstractRepository<Item> {
+type CreateItemBody = {
+  item: Partial<Item> & Pick<Item, 'name' | 'type'>;
+  creator: Member;
+  parentItem?: Item;
+};
+
+type UpdateItemBody = DeepPartial<Item>;
+
+export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
   constructor(manager?: EntityManager) {
-    super(Item, manager);
+    super(DEFAULT_PRIMARY_KEY, Item, manager);
   }
 
   checkHierarchyDepth(item: Item, additionalNbLevel = 1) {
@@ -139,28 +149,20 @@ export class ItemRepository extends AbstractRepository<Item> {
     return item;
   }
 
-  async deleteMany(ids: string[]): Promise<void> {
-    await this.repository.delete(ids);
-  }
-
-  async get(id: string, options = { withDeleted: false }): Promise<Item> {
-    // additional check that id is not null
-    // o/w empty parameter to findOneBy return the first entry
-    // TODO: improve
-
-    const item = await this.repository.findOne({
-      where: { id },
+  async getOne(id: string, options = { withDeleted: false }) {
+    return await super.findOne(id, {
       relations: {
         creator: true,
       },
       ...options,
     });
+  }
 
-    if (!item) {
-      throw new ItemNotFound(id);
-    }
-
-    return item;
+  async getOneOrThrow(
+    pkValue: string,
+    options: Pick<FindOneOptions<Item>, 'withDeleted'> = { withDeleted: false },
+  ) {
+    return await super.getOneOrThrow(pkValue, options, new ItemNotFound(pkValue));
   }
 
   /**
@@ -446,12 +448,17 @@ export class ItemRepository extends AbstractRepository<Item> {
       .execute();
 
     // TODO: is there a better way?
-    return this.get(item.id);
+    return await this.getOneOrThrow(item.id);
   }
 
-  async patch(id: string, data: Partial<Item>): Promise<Item> {
+  async updateOne(id: string, data: UpdateItemBody) {
+    // update only if data is not empty
+    if (!Object.keys(data).length) {
+      throw new IllegalArgumentException("The item's body cannot be empty!");
+    }
+
     // TODO: extra + settings
-    const item = await this.get(id);
+    const item = await this.getOneOrThrow(id);
 
     // only allow for item type specific changes in extra
     const newData = data;
@@ -473,31 +480,17 @@ export class ItemRepository extends AbstractRepository<Item> {
 
     // TODO: check schema
 
-    // update only if data is not empty
-    if (Object.keys(data).length) {
-      await this.repository.update(id, newData as QueryDeepPartialEntity<Item>);
-    }
-
-    // TODO: optimize
-    return this.get(id);
+    return await super.updateOne(id, newData);
   }
 
-  async post(
-    item: Partial<Item> & Pick<Item, 'name' | 'type'>,
-    creator: Member,
-    parentItem?: Item,
-  ): Promise<Item> {
+  public async addOne({ item, creator, parentItem }: CreateItemBody) {
     const newItem = this.createOne({
       ...item,
       creator,
       parent: parentItem,
     });
 
-    const createdItem = await this.repository.insert(newItem as QueryDeepPartialEntity<Item>);
-
-    // TODO: better solution?
-    // query builder returns creator as id and extra as string
-    return this.get(createdItem.identifiers[0].id);
+    return await super.insert(newItem, { creator: true });
   }
 
   /////// -------- COPY
@@ -525,7 +518,7 @@ export class ItemRepository extends AbstractRepository<Item> {
     }
 
     return {
-      copyRoot: await this.get(newItemRef.id),
+      copyRoot: await this.getOneOrThrow(newItemRef.id),
       treeCopyMap: treeItemsCopy,
     };
   }
@@ -861,7 +854,7 @@ export class ItemRepository extends AbstractRepository<Item> {
     await this.repository.update(item.id, { order });
 
     // TODO: optimize
-    return this.get(item.id);
+    return await this.getOneOrThrow(item.id);
   }
 
   async rescaleOrder(actor: Actor, parentItem: Item) {

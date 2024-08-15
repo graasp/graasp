@@ -102,7 +102,7 @@ describe('Link Item tests', () => {
         expectItem(newItem, expectedItem);
 
         // check item exists in db
-        const item = await itemRepository.get(newItem.id);
+        const item = await itemRepository.getOne(newItem.id);
         expectItem(item, expectedItem);
 
         // a membership is created for this item

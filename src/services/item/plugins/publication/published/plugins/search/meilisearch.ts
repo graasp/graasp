@@ -325,7 +325,7 @@ export class MeiliSearchWrapper {
             path: s3extra.path,
           });
           const content = await readPdfContent(url);
-          await repositories.itemRepository.patch(item.id, {
+          await repositories.itemRepository.updateOne(item.id, {
             extra: { [ItemType.S3_FILE]: { content } } as S3FileItemExtra,
           });
         } catch (e) {

@@ -41,7 +41,7 @@ export class AppService {
     const { itemRepository, appRepository } = repositories;
 
     // check item is app
-    const item = await itemRepository.get(itemId);
+    const item = await itemRepository.getOneOrThrow(itemId);
     if (item.type !== ItemType.APP) {
       throw new Error('item is not app'); // TODO
     }
@@ -71,7 +71,7 @@ export class AppService {
   ) {
     const { itemRepository, memberRepository } = repositories;
 
-    const item = await itemRepository.get(itemId);
+    const item = await itemRepository.getOneOrThrow(itemId);
     if (!isItemType(item, ItemType.APP)) {
       throw new Error('Item is not an app');
     }

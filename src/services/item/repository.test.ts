@@ -143,14 +143,14 @@ describe('ItemRepository', () => {
       const item = await testUtils.saveItem({ actor });
       expect(await testUtils.rawItemRepository.count()).toEqual(1);
 
-      await itemRepository.deleteMany([item.id]);
+      await itemRepository.delete([item.id]);
       expect(await testUtils.rawItemRepository.count()).toEqual(0);
     });
     it('delete non existant ids does not throw', async () => {
       await testUtils.saveItem({ actor });
       expect(await testUtils.rawItemRepository.count()).toEqual(1);
 
-      await itemRepository.deleteMany([v4()]);
+      await itemRepository.delete([v4()]);
       expect(await testUtils.rawItemRepository.count()).toEqual(1);
     });
     it('delete many ids', async () => {
@@ -162,21 +162,34 @@ describe('ItemRepository', () => {
 
       expect(await testUtils.rawItemRepository.count()).toEqual(3);
 
-      await itemRepository.deleteMany([item1.id, item2.id]);
+      await itemRepository.delete([item1.id, item2.id]);
       expect(await testUtils.rawItemRepository.count()).toEqual(1);
     });
   });
   describe('get', () => {
-    it('get item successfully', async () => {
+    it('getOne item successfully', async () => {
       const item = await testUtils.saveItem({ actor });
-      const result = await itemRepository.get(item.id);
+      const result = await itemRepository.getOne(item.id);
+      expectItem(result, item);
+      // contains creator
+      expectMember(result?.creator, actor);
+    });
+    it('getOrThrow item successfully', async () => {
+      const item = await testUtils.saveItem({ actor });
+      const result = await itemRepository.getOneOrThrow(item.id);
       expectItem(result, item);
       // contains creator
       expectMember(result.creator, actor);
     });
-    it('Not found for missing item given id', async () => {
+    it('getOne returns null for a non-existent id', async () => {
       const id = v4();
-      await expect(itemRepository.get(id)).rejects.toMatchObject(new ItemNotFound(id));
+      expect(await itemRepository.getOne(id)).toBeNull();
+    });
+    it('getOneOrThrow throws ItemNotFound for a non-existent id', async () => {
+      const id = v4();
+      expect(async () => await itemRepository.getOneOrThrow(id)).rejects.toMatchObject(
+        new ItemNotFound(id),
+      );
     });
   });
   describe('getAncestors', () => {
@@ -203,7 +216,7 @@ describe('ItemRepository', () => {
       const parents = [parent, child1];
 
       // patch item to force reorder
-      await itemRepository.patch(parent.id, { name: 'newname' });
+      await itemRepository.updateOne(parent.id, { name: 'newname' });
       parent.name = 'newname';
 
       const data = await itemRepository.getAncestors(childOfChild);
@@ -585,7 +598,7 @@ describe('ItemRepository', () => {
       const untouchedItem = await testUtils.saveItem({ actor });
 
       const newData = { lang: 'de', name: 'newname' };
-      const newItem = await itemRepository.patch(item.id, newData);
+      const newItem = await itemRepository.updateOne(item.id, newData);
       expectItem(newItem, { ...item, ...newData });
       expectItem(await testUtils.rawItemRepository.findOneBy({ id: item.id }), {
         ...item,
@@ -620,7 +633,7 @@ describe('ItemRepository', () => {
         // incorrect data
         document: { content: 'some content' },
       };
-      const newItem = await itemRepository.patch(item.id, { extra: newData });
+      const newItem = await itemRepository.updateOne(item.id, { extra: newData });
       expectItem(newItem, {
         ...item,
         extra: {
@@ -653,7 +666,7 @@ describe('ItemRepository', () => {
           hasThumbnail: true,
         },
       };
-      const newItem = await itemRepository.patch(item.id, newData);
+      const newItem = await itemRepository.updateOne(item.id, newData);
       expectItem(newItem, { ...item, settings: { hasThumbnail: true, isCollapsible: true } });
       expectItem(await testUtils.rawItemRepository.findOneBy({ id: item.id }), {
         ...item,
@@ -666,7 +679,7 @@ describe('ItemRepository', () => {
     it('post successfully', async () => {
       const data = { name: 'name', type: ItemType.FOLDER };
 
-      await itemRepository.post(data, actor);
+      await itemRepository.addOne({ item: data, creator: actor });
       const newItem = await testUtils.rawItemRepository.findOne({
         where: { name: data.name },
         relations: { creator: true },
@@ -679,7 +692,7 @@ describe('ItemRepository', () => {
       const parentItem = await testUtils.saveItem({ actor });
       const data = { name: 'name-1', type: ItemType.S3_FILE };
 
-      await itemRepository.post(data, actor, parentItem);
+      await itemRepository.addOne({ item: data, creator: actor, parentItem });
       const newItem = await testUtils.rawItemRepository.findOne({
         where: { name: data.name },
         relations: { creator: true },
@@ -780,7 +793,7 @@ describe('ItemRepository', () => {
     it('copy name is not altered', async () => {
       const item = await testUtils.saveItem({ actor });
       item.name = '()(/\\)(..)() (a) (3) ';
-      await itemRepository.patch(item.id, item);
+      await itemRepository.updateOne(item.id, item);
       const result = await itemRepository.copy(item, actor, [item.name]);
       const copy = result.copyRoot;
       expect(copy.name).toEqual(`${item.name} (2)`);
@@ -793,13 +806,13 @@ describe('ItemRepository', () => {
     it('copy name do not exceed maximum length allowed.', async () => {
       const item = await testUtils.saveItem({ actor });
       item.name = faker.string.sample(MAX_ITEM_NAME_LENGTH);
-      await itemRepository.patch(item.id, item);
+      await itemRepository.updateOne(item.id, item);
       const result = await itemRepository.copy(item, actor, [item.name]);
       const copy = result.copyRoot;
       expect(copy.name).toEqual(`${item.name.substring(0, MAX_ITEM_NAME_LENGTH - 4)} (2)`);
 
       copy.name = `${item.name.substring(0, MAX_ITEM_NAME_LENGTH - 4)} (9)`;
-      await itemRepository.patch(copy.id, copy);
+      await itemRepository.updateOne(copy.id, copy);
       const result2 = await itemRepository.copy(copy, actor, [item.name, copy.name]);
       const copy2 = result2.copyRoot;
       expect(copy2.name).toEqual(`${item.name.substring(0, MAX_ITEM_NAME_LENGTH - 5)} (10)`);

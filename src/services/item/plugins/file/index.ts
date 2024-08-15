@@ -116,7 +116,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
       // check rights
       if (parentId) {
         const repositories = buildRepositories();
-        const item = await repositories.itemRepository.get(parentId);
+        const item = await repositories.itemRepository.getOneOrThrow(parentId);
         await validatePermission(repositories, PermissionLevel.Write, member, item);
       }
 

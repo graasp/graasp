@@ -47,7 +47,7 @@ export default (
 
         // Fetch Item datas
         try {
-          const item = await itemRepository.get(itemId);
+          const item = await itemRepository.getOneOrThrow(itemId);
           return done(null, {
             member,
             app: {
@@ -58,7 +58,7 @@ export default (
           });
         } catch (err) {
           // Exception occurred while fetching item
-          // itemRepository.get() can fail for many reasons like the item was not found, database error, etc.
+          // itemRepository.getOneOrThrow() can fail for many reasons like the item was not found, database error, etc.
           // To avoid leaking information, we prefer to return UnauthorizedMember error.
           return done(options?.propagateError ? err : new UnauthorizedMember(), false);
         }

@@ -14,7 +14,7 @@ export class ChatBotService {
     gptVersion: GPTVersion,
   ) {
     const { itemRepository } = repositories;
-    const item = await itemRepository.get(itemId);
+    const item = await itemRepository.getOneOrThrow(itemId);
 
     // check that the member can read the item to be allowed to interact with the chat
     await validatePermission(repositories, PermissionLevel.Read, member, item);

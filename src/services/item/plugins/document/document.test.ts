@@ -65,7 +65,7 @@ describe('Document Item tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
 
         // check item exists in db
-        const item = await testUtils.itemRepository.get(newItem.id);
+        const item = await testUtils.itemRepository.getOne(newItem.id);
         expectItem(item, payload);
 
         // a membership is created for this item
@@ -279,7 +279,7 @@ describe('Document Item tests', () => {
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
         await new Promise((res) => {
           setTimeout(async () => {
-            const savedItem = await testUtils.itemRepository.get(item.id);
+            const savedItem = await testUtils.itemRepository.getOne(item.id);
             // this test a bit how we deal with extra: it replaces existing keys
             expectItem(savedItem, {
               ...item,
