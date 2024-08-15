@@ -1,19 +1,23 @@
-import { ArrayContains } from 'typeorm';
+import { ArrayContains, EntityManager } from 'typeorm';
 
 import { AuthTokenSubject } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../../plugins/datasource';
+import { AbstractRepository } from '../../../../repositories/AbstractRepository';
 import { App } from './entities/app';
 import { InvalidApplicationOrigin } from './errors';
 
-export const AppRepository = AppDataSource.getRepository(App).extend({
+export class AppRepository extends AbstractRepository<App> {
+  constructor(manager?: EntityManager) {
+    super(App, manager);
+  }
   async getAll(publisherId?: string) {
-    // TODO: undefined should get all
-    return this.findBy({ publisher: { id: publisherId } });
-  },
+    // undefined should get all
+    return await this.repository.findBy({ publisher: { id: publisherId } });
+  }
 
   async getMostUsedApps(memberId: string): Promise<{ url: string; name: string; count: number }[]> {
-    const data = await this.createQueryBuilder('app')
+    const data = await this.repository
+      .createQueryBuilder('app')
       .innerJoin(
         'item',
         'item',
@@ -27,17 +31,17 @@ export const AppRepository = AppDataSource.getRepository(App).extend({
       .orderBy('count', 'DESC')
       .getRawMany();
     return data;
-  },
+  }
 
   async isValidAppOrigin(appDetails: { key: string; origin: string }) {
-    const valid = await this.findOneBy({
+    const valid = await this.repository.findOneBy({
       key: appDetails.key,
       publisher: { origins: ArrayContains([appDetails.origin]) },
     });
     if (!valid) {
       throw new InvalidApplicationOrigin();
     }
-  },
+  }
 
   generateApiAccessTokenSubject(
     memberId: string | undefined,
@@ -50,5 +54,5 @@ export const AppRepository = AppDataSource.getRepository(App).extend({
       key: appDetails.key, // useful??
       origin: appDetails.origin,
     };
-  },
-});
+  }
+}
