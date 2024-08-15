@@ -15,7 +15,7 @@ export class AppService {
   itemService: ItemService;
   jwtExpiration: number;
 
-  constructor(itemService, jwtExpiration) {
+  constructor(itemService: ItemService, jwtExpiration: number) {
     this.itemService = itemService;
     this.jwtExpiration = jwtExpiration;
   }

@@ -3,13 +3,14 @@ import { v4 } from 'uuid';
 import { HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { mockAuthenticate } from '../../../../../../test/app';
+import { AppDataSource } from '../../../../../plugins/datasource';
 import { APPS_PUBLISHER_ID, APP_ITEMS_PREFIX } from '../../../../../utils/config';
 import { Actor, Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 import { ItemTestUtils } from '../../../test/fixtures/items';
 import { setItemPublic } from '../../itemTag/test/fixtures';
+import { App } from '../entities/app';
 import { PublisherRepository } from '../publisherRepository';
-import { AppRepository } from '../repository';
 
 export const GRAASP_PUBLISHER = {
   id: APPS_PUBLISHER_ID,
@@ -84,7 +85,7 @@ export class AppTestUtils extends ItemTestUtils {
     return Promise.all(
       MOCK_APPS.map(async (app) => {
         await PublisherRepository.save(app.publisher);
-        return AppRepository.save(app);
+        return await AppDataSource.getRepository(App).save(app);
       }),
     );
   };
