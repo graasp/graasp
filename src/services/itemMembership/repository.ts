@@ -16,6 +16,8 @@ import {
   InvalidMembership,
   InvalidPermissionLevel,
   ItemMembershipNotFound,
+  ItemNotFound,
+  MemberNotFound,
   ModifyExistingMembership,
 } from '../../utils/errors';
 import { AncestorOf } from '../../utils/typeorm/treeOperators';
@@ -82,6 +84,22 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     }
 
     return item;
+  },
+
+  async getByMemberAndItem(memberId: string, itemId: string): Promise<ItemMembership | null> {
+    if (!memberId) {
+      throw new MemberNotFound();
+    } else if (!itemId) {
+      throw new ItemNotFound(itemId);
+    }
+
+    return await this.findOne({
+      where: {
+        member: { id: memberId },
+        item: { id: itemId },
+      },
+      relations: ['member', 'item'],
+    });
   },
 
   /**

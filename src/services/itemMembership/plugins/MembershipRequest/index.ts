@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import { ItemType, PermissionLevel } from '@graasp/sdk';
+import { ItemType, MembershipRequestStatus, PermissionLevel } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
 import { notUndefined } from '../../../../utils/assertions';
@@ -12,22 +12,32 @@ import { isAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne, validatePermission } from '../../../authorization';
 import { ItemService } from '../../../item/service';
 import { validatedMember } from '../../../member/strategies/validatedMember';
+import { ItemMembershipService } from '../../service';
 import {
   ItemMembershipAlreadyExists,
   MembershipRequestAlreadyExists,
   MembershipRequestNotFound,
 } from './error';
-import common, { createOne, deleteOne, getAllByItem } from './schemas';
+import {
+  completeMembershipRequest,
+  createOne,
+  deleteOne,
+  getAllByItem,
+  getOwn,
+  simpleMembershipRequest,
+} from './schemas';
 import { MembershipRequestService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db } = fastify;
 
   const membershipRequestService = resolveDependency(MembershipRequestService);
+  const itemMembershipService = resolveDependency(ItemMembershipService);
   const itemService = resolveDependency(ItemService);
 
   // schemas
-  fastify.addSchema(common);
+  fastify.addSchema(simpleMembershipRequest);
+  fastify.addSchema(completeMembershipRequest);
 
   fastify.get<{ Params: { itemId: string } }>(
     '/items/:itemId/memberships/requests',
@@ -42,11 +52,51 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
 
-        // Check if the Item exists and the member has the required permission
-        await itemService.get(member, repositories, itemId, PermissionLevel.Admin);
+        // Check if the Item exists and the member has the required permission. Also, check if the item is a folder
+        const item = await itemService.get(member, repositories, itemId, PermissionLevel.Admin);
+        if (item.type !== ItemType.FOLDER) {
+          throw new ItemNotFolder({ id: itemId });
+        }
 
         const requests = await membershipRequestService.getAllByItem(repositories, itemId);
         reply.send(requests);
+      });
+    },
+  );
+
+  fastify.get<{ Params: { itemId: string } }>(
+    '/items/:itemId/memberships/requests/own',
+    {
+      schema: getOwn,
+      preHandler: [isAuthenticated, matchOne(validatedMember)],
+    },
+    async ({ user, params }, reply) => {
+      const member = notUndefined(user?.member);
+      const { itemId } = params;
+
+      await db.transaction(async (manager) => {
+        const repositories = buildRepositories(manager);
+
+        const item = await itemService.get(
+          member,
+          repositories,
+          itemId,
+          PermissionLevel.Read,
+          false,
+        );
+        if (item.type !== ItemType.FOLDER) {
+          throw new ItemNotFolder({ id: itemId });
+        }
+
+        if (await membershipRequestService.get(repositories, member.id, itemId)) {
+          return reply.send({ status: MembershipRequestStatus.Pending });
+        }
+
+        if (await itemMembershipService.getByMemberAndItem(repositories, member.id, itemId)) {
+          return reply.send({ status: MembershipRequestStatus.Approved });
+        }
+
+        return reply.send({ status: MembershipRequestStatus.NotSubmittedOrDeleted });
       });
     },
   );

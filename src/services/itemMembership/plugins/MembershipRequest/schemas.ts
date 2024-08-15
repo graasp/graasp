@@ -1,14 +1,24 @@
 import { FastifySchema } from 'fastify';
 
-export default {
-  $id: 'membershipRequest',
+import { MembershipRequestStatus } from '@graasp/sdk';
+
+export const completeMembershipRequest = {
+  $id: 'completeMembershipRequest',
   type: 'object',
   properties: {
-    id: { $ref: 'https://graasp.org/#/definitions/uuid' },
     member: { $ref: 'https://graasp.org/members/#/definitions/member' },
     item: { $ref: 'https://graasp.org/items/#/definitions/item' },
     createdAt: { type: 'string' },
-    updatedAt: { type: 'string' },
+  },
+  additionalProperties: false,
+};
+
+export const simpleMembershipRequest = {
+  $id: 'simpleMembershipRequest',
+  type: 'object',
+  properties: {
+    member: { $ref: 'https://graasp.org/members/#/definitions/member' },
+    createdAt: { type: 'string' },
   },
   additionalProperties: false,
 };
@@ -27,7 +37,7 @@ export const getAllByItem: FastifySchema = {
   response: {
     200: {
       type: 'array',
-      items: { $ref: 'membershipRequest' },
+      items: { $ref: 'simpleMembershipRequest' },
       uniqueItems: true,
     },
   },
@@ -45,7 +55,29 @@ export const createOne: FastifySchema = {
     required: ['itemId'],
   },
   response: {
-    200: { $ref: 'membershipRequest' },
+    200: { $ref: 'completeMembershipRequest' },
+  },
+};
+
+export const getOwn: FastifySchema = {
+  tags: ['membershipRequest'],
+  summary: 'Get the status of the membership request for the authenticated member',
+  description:
+    'Get the status of the membership request for the authenticated member for an item by its ID',
+  params: {
+    type: 'object',
+    properties: {
+      itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+    },
+    required: ['itemId'],
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        status: { type: 'string', enum: Object.values(MembershipRequestStatus) },
+      },
+    },
   },
 };
 
@@ -62,6 +94,6 @@ export const deleteOne: FastifySchema = {
     required: ['itemId', 'memberId'],
   },
   response: {
-    200: { $ref: 'membershipRequest' },
+    200: { $ref: 'completeMembershipRequest' },
   },
 };
