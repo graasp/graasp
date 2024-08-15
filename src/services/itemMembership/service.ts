@@ -60,34 +60,12 @@ export class ItemMembershipService {
       });
   }
 
-  async get(actor: Actor, repositories: Repositories, id: string) {
-    const { itemMembershipRepository } = repositories;
-
-    const membership = await itemMembershipRepository.get(id);
-
-    // check rights
-    await validatePermission(repositories, PermissionLevel.Read, actor, membership.item);
-    return membership;
-  }
-
-  async getMany(actor: Actor, repositories: Repositories, ids: string[]) {
-    const { itemMembershipRepository } = repositories;
-    // TODO: optimize? groupby item?
-    // check memberships for all diff items
-    const { data, errors } = await itemMembershipRepository.getMany(ids);
-    await Promise.all(
-      Object.values(data).map(async ({ id, item }) => {
-        try {
-          await validatePermission(repositories, PermissionLevel.Read, actor, item);
-        } catch (e) {
-          // if does not have permission, remove data and add error
-          delete data[id];
-          errors.push(e as Error);
-        }
-      }),
-    );
-
-    return { data, errors };
+  async getByMemberAndItem(
+    { itemMembershipRepository }: Repositories,
+    memberId: UUID,
+    itemId: UUID,
+  ) {
+    return await itemMembershipRepository.getByMemberAndItem(memberId, itemId);
   }
 
   async getForManyItems(actor: Actor, repositories: Repositories, itemIds: string[]) {
@@ -101,7 +79,7 @@ export class ItemMembershipService {
     return { data: result.data, errors: [...items.errors, ...result.errors] };
   }
 
-  async _post(
+  private async _post(
     actor: Member,
     repositories: Repositories,
     item: Item,
@@ -109,7 +87,8 @@ export class ItemMembershipService {
     permission: PermissionLevel,
     // membership: { permission: PermissionLevel; itemId: UUID; memberId: UUID },
   ) {
-    const { memberRepository, itemMembershipRepository } = repositories;
+    const { memberRepository, itemMembershipRepository, membershipRequestRepository } =
+      repositories;
     const member = await memberRepository.get(memberId);
 
     await this.hooks.runPreHooks('create', actor, repositories, { item, member });
@@ -120,6 +99,9 @@ export class ItemMembershipService {
       creator: actor,
       permission,
     });
+
+    // Delete corresponding membership request if it exists. If there is not a membership request, it will do nothing.
+    await membershipRequestRepository.deleteOne(memberId, item.id);
 
     await this.hooks.runPostHooks('create', actor, repositories, result);
 

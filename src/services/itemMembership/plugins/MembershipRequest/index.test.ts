@@ -3,7 +3,7 @@ import { v4 as uuid } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, ItemType, MembershipRequestStatus, PermissionLevel } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -22,13 +22,20 @@ import { MembershipRequestRepository } from './repository';
 const testUtils = new ItemTestUtils();
 
 function expectMemberRequestToBe(membershipRequest, member?: Member, item?: Item) {
+  // There is no use to this Id since we should use the Item Id and the Member Id. This assertion check that AJV is doing his job by removing it.
+  expect(membershipRequest.id).toBeUndefined();
+  expect(membershipRequest.createdAt).toBeDefined();
   if (member) {
     expect(membershipRequest.member.id).toBe(member.id);
     expect(membershipRequest.member.email).toBe(member.email);
+  } else {
+    expect(membershipRequest.member).toBeUndefined();
   }
   if (item) {
     expect(membershipRequest.item.id).toBe(item.id);
     expect(membershipRequest.item.path).toBe(item.path);
+  } else {
+    expect(membershipRequest.item).toBeUndefined();
   }
 }
 
@@ -127,6 +134,18 @@ describe('MembershipRequest', () => {
 
       expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
     });
+    it('rejects if item is not a folder', async () => {
+      const { item: anotherItem } = await testUtils.saveItemAndMembership({
+        member: creator,
+        item: { type: ItemType.DOCUMENT },
+      });
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: `/items/${anotherItem.id}/memberships/requests`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+    });
     it('rejects forbidden if authenticated member has no permissions on the item', async () => {
       mockAuthenticate(await saveMember());
       const response = await app.inject({
@@ -154,6 +173,99 @@ describe('MembershipRequest', () => {
       const response = await app.inject({
         method: HttpMethod.Get,
         url: `/items/${item.id}/memberships/requests`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    });
+  });
+
+  describe('Get Own', () => {
+    beforeEach(() => {
+      mockAuthenticate(member);
+    });
+    it('returns notSubmittedOrDeleted if there is no request and no item membership', async () => {
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: `/items/${item.id}/memberships/requests/own`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      const data = await response.json();
+      expect(data.status).toEqual(MembershipRequestStatus.NotSubmittedOrDeleted);
+    });
+    it('returns notSubmittedOrDeleted if there is no request and an item membership in parent item', async () => {
+      const childItem = await testUtils.saveItem({ actor: creator, parentItem: item });
+      await testUtils.saveMembership({ item, member });
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: `/items/${childItem.id}/memberships/requests/own`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      const data = await response.json();
+      expect(data.status).toEqual(MembershipRequestStatus.NotSubmittedOrDeleted);
+    });
+    it('returns pending if there is a request', async () => {
+      await membershipRequestRepository.post(member.id, item.id);
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: `/items/${item.id}/memberships/requests/own`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      const data = await response.json();
+      expect(data.status).toEqual(MembershipRequestStatus.Pending);
+    });
+    it('returns approved if there is an item membership', async () => {
+      await testUtils.saveMembership({ item, member });
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: `/items/${item.id}/memberships/requests/own`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      const data = await response.json();
+      expect(data.status).toEqual(MembershipRequestStatus.Approved);
+    });
+    it('returns pending if there is a request and an item membership', async () => {
+      // This case should not happen because no request should be made if the member already has a membership, and
+      // the request should be deleted if the member gets a membership.
+      await membershipRequestRepository.post(member.id, item.id);
+      await testUtils.saveMembership({ item, member });
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: `/items/${item.id}/memberships/requests/own`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      const data = await response.json();
+      expect(data.status).toEqual(MembershipRequestStatus.Pending);
+    });
+    it('rejects if item id does not exist', async () => {
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: `/items/${uuid()}/memberships/requests/own`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+    });
+    it('rejects if item is not a folder', async () => {
+      const anotherItem = await testUtils.saveItem({
+        actor: creator,
+        item: { type: ItemType.DOCUMENT },
+      });
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: `/items/${anotherItem.id}/memberships/requests/own`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+    });
+    it('rejects unauthorized if unauthenticated', async () => {
+      unmockAuthenticate();
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: `/items/${item.id}/memberships/requests/own`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);

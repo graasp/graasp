@@ -1,3 +1,5 @@
+import { StatusCodes } from 'http-status-codes';
+
 import { PermissionLevel } from '@graasp/sdk';
 
 import { UUID_REGEX } from '../../schemas/global';
@@ -70,7 +72,7 @@ const create = {
   },
   body: { $ref: 'https://graasp.org/item-memberships/#/definitions/createPartialItemMembership' },
   response: {
-    201: { $ref: 'https://graasp.org/item-memberships/#/definitions/itemMembership' },
+    [StatusCodes.OK]: { $ref: 'https://graasp.org/item-memberships/#/definitions/itemMembership' },
   },
 };
 

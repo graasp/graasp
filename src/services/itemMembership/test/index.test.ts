@@ -18,6 +18,7 @@ import {
   MemberCannotAdminItem,
   ModifyExistingMembership,
 } from '../../../utils/errors';
+import { buildRepositories } from '../../../utils/repositories';
 import { setItemPublic } from '../../item/plugins/itemTag/test/fixtures';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
 import { saveMember } from '../../member/test/fixtures/members';
@@ -277,7 +278,6 @@ describe('Membership routes tests', () => {
 
         const payload = {
           memberId: member.id,
-          itemId: item.id,
           permission: PermissionLevel.Write,
         };
 
@@ -315,7 +315,6 @@ describe('Membership routes tests', () => {
 
         const newMembership = {
           permission: PermissionLevel.Write,
-          itemId: parent.id,
           memberId: member.id,
         };
 
@@ -339,6 +338,33 @@ describe('Membership routes tests', () => {
         expect(await ItemMembershipRepository.findOneBy({ id: anotherMembership.id })).toBeTruthy();
       });
 
+      it('Delete successfully Membership Request for the corresponding item and member', async () => {
+        const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
+        const targetItem = await testUtils.saveItem({ parentItem, actor });
+        const childItem = await testUtils.saveItem({ parentItem: targetItem, actor });
+        const member = await saveMember();
+
+        const { membershipRequestRepository } = buildRepositories();
+        membershipRequestRepository.post(member.id, parentItem.id);
+        membershipRequestRepository.post(member.id, targetItem.id);
+        membershipRequestRepository.post(member.id, childItem.id);
+
+        const payload = {
+          memberId: member.id,
+          permission: PermissionLevel.Write,
+        };
+
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `/item-memberships?itemId=${targetItem.id}`,
+          payload,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        expect(await membershipRequestRepository.get(member.id, parentItem.id)).toBeDefined();
+        expect(await membershipRequestRepository.get(member.id, targetItem.id)).toBeNull();
+        expect(await membershipRequestRepository.get(member.id, childItem.id)).toBeDefined();
+      });
       it('Cannot add new membership at same item for same member', async () => {
         const member = await saveMember();
         const { item: parent } = await testUtils.saveItemAndMembership({ member: actor });
