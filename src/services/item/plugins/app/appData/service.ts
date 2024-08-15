@@ -9,7 +9,7 @@ import { ItemMembership } from '../../../../itemMembership/entities/ItemMembersh
 import { Actor, Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 import { AppData } from './appData';
-import { AppDataNotAccessible, PreventUpdateOtherAppData } from './errors';
+import { AppDataNotAccessible, AppDataNotFound, PreventUpdateOtherAppData } from './errors';
 import { InputAppData } from './interfaces/app-data';
 
 const ownAppDataAbility = (appData: AppData, member: Actor) => {
@@ -94,7 +94,11 @@ export class AppDataService {
 
     await this.hooks.runPreHooks('post', member, repositories, { appData: body, itemId });
 
-    const appData = await appDataRepository.post(itemId, member.id, completeData);
+    const appData = await appDataRepository.addOne({
+      appData: completeData,
+      itemId,
+      actorId: member.id,
+    });
     await this.hooks.runPostHooks('post', member, repositories, { appData, itemId });
     return appData;
   }
@@ -119,7 +123,11 @@ export class AppDataService {
       item,
     );
 
-    const currentAppData = await appDataRepository.get(appDataId);
+    const currentAppData = await appDataRepository.getOne(appDataId);
+
+    if (!currentAppData) {
+      throw new AppDataNotFound(appDataId);
+    }
 
     // patch own or is admin
     const isValid = await this.validateAppDataPermission(
@@ -138,7 +146,7 @@ export class AppDataService {
       itemId,
     });
 
-    const appData = await appDataRepository.patch(itemId, appDataId, body);
+    const appData = await appDataRepository.updateOne(appDataId, body);
     await this.hooks.runPostHooks('patch', member, repositories, {
       appData,
       itemId,
@@ -160,7 +168,11 @@ export class AppDataService {
       item,
     );
 
-    const appData = await appDataRepository.get(appDataId);
+    const appData = await appDataRepository.getOne(appDataId);
+
+    if (!appData) {
+      throw new AppDataNotFound(appDataId);
+    }
 
     // patch own or is admin
     await this.validateAppDataPermission(
@@ -173,7 +185,7 @@ export class AppDataService {
 
     await this.hooks.runPreHooks('delete', member, repositories, { appDataId, itemId });
 
-    const result = await appDataRepository.deleteOne(itemId, appDataId);
+    const result = await appDataRepository.deleteOne(appDataId);
 
     await this.hooks.runPostHooks('delete', member, repositories, { appData, itemId });
 
@@ -190,7 +202,11 @@ export class AppDataService {
       item,
     );
 
-    const appData = await appDataRepository.get(appDataId);
+    const appData = await appDataRepository.getOne(appDataId);
+
+    if (!appData) {
+      throw new AppDataNotFound(appDataId);
+    }
 
     if (
       !this.validateAppDataPermission(

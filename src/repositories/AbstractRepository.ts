@@ -1,13 +1,13 @@
-import { BaseEntity, EntityManager, EntityTarget, Repository } from 'typeorm';
+import { BaseEntity, EntityManager, Repository } from 'typeorm';
 
 import { AppDataSource } from '../plugins/datasource';
 
-export abstract class AbstractRepository<T extends BaseEntity> {
-  protected repository: Repository<T>;
-  protected entity: EntityTarget<T>;
+export type Entity<T extends BaseEntity> = { new (): T };
 
-  constructor(entity: EntityTarget<T>, manager?: EntityManager) {
-    this.entity = entity;
+export abstract class AbstractRepository<T extends BaseEntity> {
+  protected readonly repository: Repository<T>;
+
+  constructor(entity: Entity<T>, manager?: EntityManager) {
     if (manager) {
       this.repository = manager.getRepository(entity);
     } else {

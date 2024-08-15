@@ -2,7 +2,6 @@ import {
   BaseEntity,
   DeepPartial,
   EntityManager,
-  EntityTarget,
   FindOneOptions,
   FindOptionsRelations,
   FindOptionsWhere,
@@ -10,14 +9,14 @@ import {
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
 
 import { KeysOfString } from '../types';
-import { AbstractRepository } from './AbstractRepository';
+import { AbstractRepository, Entity } from './AbstractRepository';
 import {
   EntryNotFoundAfterInsertException,
   IllegalArgumentException,
   InsertionException,
 } from './errors';
 
-type CreateBody<T extends BaseEntity> = DeepPartial<T>;
+type CreateBody<T extends BaseEntity> = DeepPartial<T> | { [key: string]: unknown };
 
 /**
  * Abstract class representing a repository for immutable entities.
@@ -28,14 +27,16 @@ type CreateBody<T extends BaseEntity> = DeepPartial<T>;
 export abstract class ImmutableRepository<T extends BaseEntity> extends AbstractRepository<T> {
   /** The primary key of the entity used during the find. */
   protected readonly primaryKeyName: KeysOfString<T>;
+  protected readonly entity: Entity<T>;
 
   /**
    * @param primaryKeyName The name of the entity's primary key, used during the findOne.
    * @param entity The concrete entity the repository will manage.
    * @param manager The entity manager used to handle transactions.
    */
-  constructor(primaryKeyName: KeysOfString<T>, entity: EntityTarget<T>, manager?: EntityManager) {
+  constructor(primaryKeyName: KeysOfString<T>, entity: Entity<T>, manager?: EntityManager) {
     super(entity, manager);
+    this.entity = entity;
     this.primaryKeyName = primaryKeyName;
   }
 
@@ -63,16 +64,26 @@ export abstract class ImmutableRepository<T extends BaseEntity> extends Abstract
    * Throws an IllegalArgumentException if the given primary key is undefined or an empty array.
    *
    * @param pkValue The primary key to check.
+   * @throws IllegalArgumentException if the primary key is invalid.
    */
   protected throwsIfPKIsInvalid(pkValue: string | string[]) {
-    if (!pkValue) {
-      throw new IllegalArgumentException(`The given ${String(this.primaryKeyName)} is undefined!`);
+    this.throwsIfParamIsInvalid(String(this.primaryKeyName), pkValue);
+  }
+
+  /**
+   * Throws an IllegalArgumentException if the given parameter is undefined or an empty array.
+   *
+   * @param name The name of the parameter to check.
+   * @param value The value of the parameter.
+   * @throws IllegalArgumentException if the parameter is invalid.
+   */
+  protected throwsIfParamIsInvalid(name: string, value: string | string[]) {
+    if (!value) {
+      throw new IllegalArgumentException(`The given ${name} is undefined!`);
     }
 
-    if (Array.isArray(pkValue) && pkValue.length === 0) {
-      throw new IllegalArgumentException(
-        `The given array of ${String(this.primaryKeyName)} is empty!`,
-      );
+    if (Array.isArray(value) && value.length === 0) {
+      throw new IllegalArgumentException(`The given array of ${name} is empty!`);
     }
   }
 

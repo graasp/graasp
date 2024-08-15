@@ -63,7 +63,13 @@ const appDataPlugin: FastifyPluginAsync = async (fastify) => {
       async ({ user, params: { itemId, id: appDataId } }) => {
         const member = notUndefined(user?.member);
         return db.transaction(async (manager) => {
-          return appDataService.deleteOne(member, buildRepositories(manager), itemId, appDataId);
+          const { id } = await appDataService.deleteOne(
+            member,
+            buildRepositories(manager),
+            itemId,
+            appDataId,
+          );
+          return id;
         });
       },
     );

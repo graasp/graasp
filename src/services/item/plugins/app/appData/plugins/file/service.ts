@@ -10,7 +10,6 @@ import { Repositories } from '../../../../../../../utils/repositories';
 import FileService from '../../../../../../file/service';
 import { Member } from '../../../../../../member/entities/member';
 import { Item } from '../../../../../entities/Item';
-import { ItemService } from '../../../../../service';
 import { APP_DATA_TYPE_FILE } from '../../../constants';
 import { AppData } from '../../appData';
 import { NotAppDataFile } from '../../errors';
@@ -20,16 +19,14 @@ import { AppDataService } from '../../service';
 class AppDataFileService {
   private readonly appDataService: AppDataService;
   private readonly fileService: FileService;
-  private readonly itemService: ItemService;
 
   buildFilePath(itemId: UUID, appDataId: UUID) {
     return path.join('apps', 'app-data', itemId, appDataId);
   }
 
-  constructor(appDataService: AppDataService, fileService: FileService, itemService: ItemService) {
+  constructor(appDataService: AppDataService, fileService: FileService) {
     this.appDataService = appDataService;
     this.fileService = fileService;
-    this.itemService = itemService;
   }
 
   async upload(member: Member, repositories: Repositories, file: MultipartFile, item: Item) {
@@ -66,12 +63,16 @@ class AppDataFileService {
 
     // const name = filename.substring(0, ORIGINAL_FILENAME_TRUNCATE_LIMIT);
 
-    const appData = await repositories.appDataRepository.post(item.id, member.id, {
-      id: appDataId,
-      type: APP_DATA_TYPE_FILE,
-      visibility: AppDataVisibility.Member,
-      data: {
-        [this.fileService.fileType]: fileProperties,
+    const appData = await repositories.appDataRepository.addOne({
+      itemId: item.id,
+      actorId: member.id,
+      appData: {
+        id: appDataId,
+        type: APP_DATA_TYPE_FILE,
+        visibility: AppDataVisibility.Member,
+        data: {
+          [this.fileService.fileType]: fileProperties,
+        },
       },
     });
 

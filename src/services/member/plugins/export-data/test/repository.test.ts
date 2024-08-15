@@ -136,7 +136,7 @@ describe('DataMember Export', () => {
       // noise: for a random member
       await saveAppData({ item: itemOfRandomUser, creator: randomUser });
 
-      const results = await AppDataRepository.getForMemberExport(exportingActor.id);
+      const results = await new AppDataRepository().getForMemberExport(exportingActor.id);
       expectNoLeaksAndEquality(
         results,
         [...appData, ...appDataWithActorAsMember, ...appDataWithOtherMember],
