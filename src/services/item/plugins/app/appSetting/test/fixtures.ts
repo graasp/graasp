@@ -1,11 +1,13 @@
-import { AppSettingRepository } from '../repository';
+import { AppDataSource } from '../../../../../../plugins/datasource';
+import { AppSetting } from '../appSettings';
 
 export const saveAppSettings = async ({ item, creator }) => {
   const defaultData = { name: 'setting-name', data: { setting: 'value' } };
-  const s1 = await AppSettingRepository.save({ item, creator, ...defaultData });
-  const s2 = await AppSettingRepository.save({ item, creator, ...defaultData });
-  const s3 = await AppSettingRepository.save({ item, creator, ...defaultData });
-  const s4 = await AppSettingRepository.save({
+  const rawAppSettingRepository = AppDataSource.getRepository(AppSetting);
+  const s1 = await rawAppSettingRepository.save({ item, creator, ...defaultData });
+  const s2 = await rawAppSettingRepository.save({ item, creator, ...defaultData });
+  const s3 = await rawAppSettingRepository.save({ item, creator, ...defaultData });
+  const s4 = await rawAppSettingRepository.save({
     item,
     creator,
     ...defaultData,
