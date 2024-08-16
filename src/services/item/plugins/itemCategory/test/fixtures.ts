@@ -1,22 +1,23 @@
 import { CategoryType } from '@graasp/sdk';
 
+import { AppDataSource } from '../../../../../plugins/datasource';
 import { Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 import { Category } from '../entities/Category';
 import { ItemCategory } from '../entities/ItemCategory';
-import { CategoryRepository } from '../repositories/category';
 import { ItemCategoryRepository } from '../repositories/itemCategory';
 
 export const saveCategories = async () => {
   const categories: Category[] = [];
-  categories.push(await CategoryRepository.save({ name: 'level-1', type: CategoryType.Level }));
-  categories.push(await CategoryRepository.save({ name: 'level-2', type: CategoryType.Level }));
-  categories.push(await CategoryRepository.save({ name: 'level-3', type: CategoryType.Level }));
+  const rawRepository = AppDataSource.getRepository(Category);
+  categories.push(await rawRepository.save({ name: 'level-1', type: CategoryType.Level }));
+  categories.push(await rawRepository.save({ name: 'level-2', type: CategoryType.Level }));
+  categories.push(await rawRepository.save({ name: 'level-3', type: CategoryType.Level }));
   categories.push(
-    await CategoryRepository.save({ name: 'discipline-1', type: CategoryType.Discipline }),
+    await rawRepository.save({ name: 'discipline-1', type: CategoryType.Discipline }),
   );
   categories.push(
-    await CategoryRepository.save({ name: 'discipline-2', type: CategoryType.Discipline }),
+    await rawRepository.save({ name: 'discipline-2', type: CategoryType.Discipline }),
   );
   return categories;
 };

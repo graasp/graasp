@@ -1,22 +1,15 @@
-import { AppDataSource } from '../../../../../plugins/datasource';
+import { EntityManager } from 'typeorm';
+
+import { AbstractRepository } from '../../../../../repositories/AbstractRepository';
+import { GetAll } from '../../../../../repositories/interfaces';
 import { Category } from '../entities/Category';
-import { CategoryNotFound } from '../errors';
 
-export const CategoryRepository = AppDataSource.getRepository(Category).extend({
+export class CategoryRepository extends AbstractRepository<Category> implements GetAll<Category> {
+  constructor(manager?: EntityManager) {
+    super(Category, manager);
+  }
+
   async getAll(): Promise<Category[]> {
-    return this.find();
-  },
-
-  /**
-   * Get Category matching the given `id` or `null`, if not found.
-   * @param id Category's id
-   */
-  async get(id: string): Promise<Category | null> {
-    // additional check that id is not null
-    // o/w empty parameter to findOneBy return the first entry
-    if (!id) {
-      throw new CategoryNotFound(id);
-    }
-    return this.findOneBy({ id });
-  },
-});
+    return await this.repository.find();
+  }
+}

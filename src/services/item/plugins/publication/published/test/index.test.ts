@@ -21,7 +21,7 @@ import {
   expectManyItems,
   expectManyPackedItems,
 } from '../../../../test/fixtures/items';
-import { CategoryRepository } from '../../../itemCategory/repositories/category';
+import { Category } from '../../../itemCategory/entities/Category';
 import { saveCategories } from '../../../itemCategory/test/fixtures';
 import { ItemLike } from '../../../itemLike/itemLike';
 import { saveItemLikes } from '../../../itemLike/test/utils';
@@ -867,7 +867,7 @@ describe('Item Published', () => {
         });
 
         // adding category to unpublished item inside published folder will update index
-        const category = await CategoryRepository.save({
+        const category = await AppDataSource.getRepository(Category).save({
           name: 'level-1',
           type: CategoryType.Level,
         });
