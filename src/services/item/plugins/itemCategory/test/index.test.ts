@@ -83,66 +83,8 @@ describe('Categories', () => {
         expect(res.statusCode).toBe(StatusCodes.OK);
         expect(res.json()).toEqual(categories);
       });
-      // it('Get categories by type', async () => {
-
-      //   const typeId = CATEGORY_TYPES[0];
-
-      //   const res = await app.inject({
-      //     method: 'GET',
-      //     url: `/categories${qs.stringify(
-      //       { typeId },
-      //       { addQueryPrefix: true, arrayFormat: 'repeat' },
-      //     )}`,
-      //   });
-      //   expect(res.statusCode).toBe(StatusCodes.OK);
-      //   expect(res.json()).toEqual([CATEGORIES[0]]);
-      // });
-      // it('Throw if type id is invalid', async () => {
-
-      //   const res = await app.inject({
-      //     method: 'GET',
-      //     url: `/categories${qs.stringify(
-      //       { typeId: 'invalid-id' },
-      //       { addQueryPrefix: true, arrayFormat: 'repeat' },
-      //     )}`,
-      //   });
-      //   expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
-      // });
     });
   });
-
-  // describe('GET /category-types', () => {
-  //   it('Get category types', async () => {
-
-  //     const res = await app.inject({
-  //       method: 'GET',
-  //       url: '/category-types',
-  //     });
-  //     expect(res.statusCode).toBe(StatusCodes.OK);
-  //     expect(res.json()).toEqual(CATEGORY_TYPES);
-  //   });
-  // });
-
-  // describe('GET /categories/:categoryId', () => {
-  //   it('Get category', async () => {
-  //     const result = CATEGORIES[0];
-
-  //     const res = await app.inject({
-  //       method: 'GET',
-  //       url: `/categories/${v4()}`,
-  //     });
-  //     expect(res.statusCode).toBe(StatusCodes.OK);
-  //     expect(res.json()).toEqual(result);
-  //   });
-  //   it('Throw if category id is invalid', async () => {
-
-  //     const res = await app.inject({
-  //       method: 'GET',
-  //       url: '/categories/invalid-id',
-  //     });
-  //     expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
-  //   });
-  // });
 
   describe('GET /:itemId/categories', () => {
     describe('Signed out', () => {
