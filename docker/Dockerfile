@@ -48,6 +48,9 @@ RUN apk update \
         py3-pip \
         make \
         build-base \
+    # Ghostscript and GraphicsMagick are necessary for pdf2pic library
+        ghostscript \
+        graphicsmagick \
     && apk cache clean
 
 COPY ./package.json ./

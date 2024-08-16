@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import path from 'path';
+import { fromPath as convertPDFtoImageFromPath } from 'pdf2pic';
 import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
 import { withFile as withTmpFile } from 'tmp-promise';
@@ -14,6 +15,7 @@ import {
   getFileExtension,
 } from '@graasp/sdk';
 
+import { notUndefined } from '../../../../utils/assertions';
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import FileService from '../../../file/service';
@@ -128,19 +130,29 @@ class FileItemService {
         previousItemId,
       });
 
-      // add thumbnails if image
+      // add thumbnails if image or pdf
       // allow failures
-      if (MimeTypes.isImage(mimetype)) {
-        try {
+      try {
+        if (MimeTypes.isImage(mimetype)) {
           await this.itemThumbnailService.upload(
             actor,
             repositories,
             newItem.id,
             fs.createReadStream(path),
           );
-        } catch (e) {
-          console.error(e);
+        } else if (MimeTypes.isPdf(mimetype)) {
+          // Convert first page of PDF to image buffer and upload as thumbnail
+          const outputImg = await convertPDFtoImageFromPath(path)(1, { responseType: 'buffer' });
+          const buffer = notUndefined(outputImg.buffer);
+          await this.itemThumbnailService.upload(
+            actor,
+            repositories,
+            newItem.id,
+            Readable.from(buffer),
+          );
         }
+      } catch (e) {
+        console.error(e);
       }
 
       // retrieve item again since hasThumbnail might have changed

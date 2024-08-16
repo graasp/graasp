@@ -69,8 +69,8 @@ jest.mock('@aws-sdk/lib-storage', () => {
 });
 
 // we need a different form data for each test
-const createFormData = (form = new FormData()) => {
-  form.append('myfile', fs.createReadStream(path.resolve(__dirname, './fixtures/image.png')));
+const createFormData = (form = new FormData(), filepath: string = './fixtures/image.png') => {
+  form.append('myfile', fs.createReadStream(path.resolve(__dirname, filepath)));
 
   return form;
 };
@@ -136,6 +136,30 @@ describe('File Item routes tests', () => {
           // a membership is created for this item
           const membership = await ItemMembershipRepository.findOneBy({ item: { id: newItem.id } });
           expect(membership?.permission).toEqual(PermissionLevel.Admin);
+        });
+
+        it('Upload successfully one pdf file with thumbnail', async () => {
+          const form = createFormData(new FormData(), './fixtures/blank.pdf');
+
+          const response = await app.inject({
+            method: HttpMethod.Post,
+            url: `${ITEMS_ROUTE_PREFIX}/upload`,
+            payload: form,
+            headers: form.getHeaders(),
+          });
+          // check response value
+          const [newItem] = Object.values(response.json().data) as Item[];
+          expect(response.statusCode).toBe(StatusCodes.OK);
+
+          // check item exists in db
+          const item = await testUtils.rawItemRepository.findOneBy({ type: FILE_ITEM_TYPE });
+          expectItem(item, newItem);
+
+          // s3 upload function: We expect on pdf and the thumbnails
+          expect(uploadDoneMock).toHaveBeenCalledTimes(
+            Object.entries(ThumbnailSizeFormat).length + 1,
+          );
+          expect(item?.extra[FILE_ITEM_TYPE]).toBeTruthy();
         });
 
         it('Upload successfully many files', async () => {
