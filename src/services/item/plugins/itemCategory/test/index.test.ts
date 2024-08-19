@@ -6,6 +6,7 @@ import { FastifyInstance } from 'fastify';
 import { HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
+import { AppDataSource } from '../../../../../plugins/datasource';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { MemberCannotAccess } from '../../../../../utils/errors';
 import { Item } from '../../../../item/entities/Item';
@@ -19,6 +20,8 @@ import { ItemCategoryRepository } from '../repositories/itemCategory';
 import { saveCategories, saveItemCategories } from './fixtures';
 
 const testUtils = new ItemTestUtils();
+const itemCategoryRepository = new ItemCategoryRepository();
+const rawItemCategoryRepository = AppDataSource.getRepository(ItemCategory);
 
 export const expectItemCategory = (newItemCategory, correctItemCategory) => {
   expect(newItemCategory.category).toEqual(correctItemCategory.category);
@@ -51,9 +54,9 @@ describe('Categories', () => {
   let app: FastifyInstance;
   let actor;
   let member;
-  let categories;
-  let itemCategories;
-  let item;
+  let categories: Category[] | null;
+  let itemCategories: ItemCategory[] | null | undefined;
+  let item: Item | null;
 
   afterEach(async () => {
     jest.clearAllMocks();
@@ -98,7 +101,7 @@ describe('Categories', () => {
       it('Throws for private item', async () => {
         const res = await app.inject({
           method: HttpMethod.Get,
-          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/categories`,
+          url: `${ITEMS_ROUTE_PREFIX}/${item!.id}/categories`,
         });
         expect(res.json()).toMatchObject(new MemberCannotAccess(expect.anything()));
       });
@@ -118,7 +121,7 @@ describe('Categories', () => {
 
         const res = await app.inject({
           method: HttpMethod.Get,
-          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/categories`,
+          url: `${ITEMS_ROUTE_PREFIX}/${item!.id}/categories`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
         expectItemCategories(res.json(), result);
@@ -137,7 +140,7 @@ describe('Categories', () => {
 
         const res = await app.inject({
           method: HttpMethod.Get,
-          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/categories`,
+          url: `${ITEMS_ROUTE_PREFIX}/${item!.id}/categories`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
         expectItemCategories(res.json(), result);
@@ -166,7 +169,7 @@ describe('Categories', () => {
           method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/categories`,
           payload: {
-            categoryId: categories[0].id,
+            categoryId: categories![0].id,
           },
         });
         expect(res.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
@@ -181,27 +184,35 @@ describe('Categories', () => {
 
       it('Post category for an item', async () => {
         ({ item } = await testUtils.saveItemAndMembership({ member: actor }));
-        const itemCategory = ItemCategoryRepository.create({ item, category: categories[0] });
+
+        const itemCategory = rawItemCategoryRepository.create({
+          item,
+          category: categories![0],
+        });
 
         const res = await app.inject({
           method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/categories`,
           payload: {
-            categoryId: itemCategory.category.id,
+            categoryId: itemCategory!.category.id,
           },
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
         expectItemCategory(res.json(), itemCategory);
 
-        const [savedValues] = await ItemCategoryRepository.find({ relations: { category: true } });
+        const [savedValues] = await rawItemCategoryRepository.find({
+          relations: ['category'],
+        });
+
         expectItemCategory(savedValues, itemCategory);
       });
 
       it('Post same category for an item throws', async () => {
         ({ item } = await testUtils.saveItemAndMembership({ member: actor }));
-        const itemCategory = ItemCategoryRepository.create({ item, category: categories[0] });
-        // pre save item category
-        await ItemCategoryRepository.save(itemCategory);
+        const itemCategory = await itemCategoryRepository.addOne({
+          itemPath: item.path,
+          categoryId: categories![0].id,
+        });
 
         const res = await app.inject({
           method: HttpMethod.Post,
@@ -212,7 +223,7 @@ describe('Categories', () => {
         });
         expect(res.json()).toMatchObject(new DuplicateItemCategoryError(expect.anything()));
 
-        const savedValues = await ItemCategoryRepository.find({ relations: { category: true } });
+        const savedValues = await rawItemCategoryRepository.find({ relations: ['category'] });
         expect(savedValues).toHaveLength(1);
       });
       it('Bad request if id is invalid', async () => {
@@ -220,7 +231,7 @@ describe('Categories', () => {
           method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/invalid-id/categories`,
           payload: {
-            categoryId: categories[0].id,
+            categoryId: categories![0].id,
           },
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -249,7 +260,7 @@ describe('Categories', () => {
       it('Throws if does not have membership', async () => {
         const res = await app.inject({
           method: HttpMethod.Delete,
-          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/categories/${itemCategories[0].id}`,
+          url: `${ITEMS_ROUTE_PREFIX}/${item!.id}/categories/${itemCategories![0].id}`,
         });
 
         expect(res.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
@@ -264,17 +275,17 @@ describe('Categories', () => {
       });
 
       it('Delete item category', async () => {
-        const iC = itemCategories[0];
-        expect(await ItemCategoryRepository.findOneBy({ id: iC.id })).toBeTruthy();
+        const itemCategory = itemCategories![0];
+        expect(await itemCategoryRepository.getOne(itemCategory.id)).toBeTruthy();
 
         const res = await app.inject({
           method: HttpMethod.Delete,
-          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/categories/${iC.id}`,
+          url: `${ITEMS_ROUTE_PREFIX}/${item!.id}/categories/${itemCategory.id}`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
-        expect(res.body).toEqual(iC.id);
+        expect(res.body).toEqual(itemCategory.id);
 
-        expect(await ItemCategoryRepository.findOneBy({ id: iC.id })).toBeFalsy();
+        expect(await itemCategoryRepository.getOne(itemCategory.id)).toBeFalsy();
       });
       it('Bad request if item id is invalid', async () => {
         const res = await app.inject({
@@ -286,14 +297,14 @@ describe('Categories', () => {
       it('Bad request if item category id is invalid', async () => {
         const res = await app.inject({
           method: HttpMethod.Delete,
-          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/categories/invalid-id`,
+          url: `${ITEMS_ROUTE_PREFIX}/${item!.id}/categories/invalid-id`,
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
       it('Throw if item category id does not exist', async () => {
         const res = await app.inject({
           method: HttpMethod.Delete,
-          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/categories/${v4()}`,
+          url: `${ITEMS_ROUTE_PREFIX}/${item!.id}/categories/${v4()}`,
         });
         expect(res.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
       });

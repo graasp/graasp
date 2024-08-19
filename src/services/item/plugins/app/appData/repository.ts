@@ -21,15 +21,12 @@ export class AppDataRepository extends MutableRepository<AppData, UpdateAppDataB
   }
 
   async addOne({ itemId, actorId, appData }: CreateAppDataBody): Promise<AppData> {
-    return await super.insert(
-      {
-        ...appData,
-        item: { id: itemId },
-        creator: { id: actorId },
-        member: { id: appData.memberId ?? actorId },
-      },
-      RELATIONS,
-    );
+    return await super.insert({
+      ...appData,
+      item: { id: itemId },
+      creator: { id: actorId },
+      member: { id: appData.memberId ?? actorId },
+    });
   }
 
   async updateOne(appDataId: string, body: UpdateAppDataBody): Promise<AppData> {

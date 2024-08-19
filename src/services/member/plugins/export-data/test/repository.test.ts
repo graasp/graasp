@@ -222,7 +222,7 @@ describe('DataMember Export', () => {
       // noise
       await saveItemCategories({ item: itemOfRandomUser, categories, creator: randomUser });
 
-      const results = await ItemCategoryRepository.getForMemberExport(exportingActor.id);
+      const results = await new ItemCategoryRepository().getForMemberExport(exportingActor.id);
       expectNoLeaksAndEquality(results, itemCategories, itemCategorySchema);
     });
 

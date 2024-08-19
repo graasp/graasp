@@ -5,7 +5,6 @@ import { Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 import { Category } from '../entities/Category';
 import { ItemCategory } from '../entities/ItemCategory';
-import { ItemCategoryRepository } from '../repositories/itemCategory';
 
 export const saveCategories = async () => {
   const categories: Category[] = [];
@@ -32,8 +31,9 @@ export const saveItemCategories = async ({
   creator?: Member;
 }) => {
   const itemCategories: ItemCategory[] = [];
+  const rawRepository = AppDataSource.getRepository(ItemCategory);
   for (const category of categories) {
-    itemCategories.push(await ItemCategoryRepository.save({ item, category, creator }));
+    itemCategories.push(await rawRepository.save({ item, category, creator }));
   }
   return itemCategories;
 };

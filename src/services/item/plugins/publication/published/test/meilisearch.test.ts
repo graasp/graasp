@@ -101,7 +101,7 @@ describe('MeilisearchWrapper', () => {
 
   const itemCategoryRepositoryMock = {
     getForItemOrParent: jest.fn(),
-  } as unknown as jest.Mocked<typeof ItemCategoryRepository>;
+  } as unknown as jest.Mocked<ItemCategoryRepository>;
 
   const repositories = {
     itemMembershipRepository: {

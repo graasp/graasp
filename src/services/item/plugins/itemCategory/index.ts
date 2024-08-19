@@ -61,12 +61,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     { schema: deleteOne, preHandler: [isAuthenticated, matchOne(validatedMember)] },
     async ({ user, params: { itemCategoryId, itemId } }) => {
       return db.transaction(async (manager) => {
-        return itemCategoryService.delete(
+        const { id: deletedId } = await itemCategoryService.delete(
           user?.member,
           buildRepositories(manager),
           itemId,
           itemCategoryId,
         );
+
+        return deletedId;
       });
     },
   );

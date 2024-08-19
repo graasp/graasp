@@ -1,11 +1,4 @@
-import {
-  BaseEntity,
-  DeepPartial,
-  EntityManager,
-  FindOneOptions,
-  FindOptionsRelations,
-  FindOptionsWhere,
-} from 'typeorm';
+import { BaseEntity, DeepPartial, EntityManager, FindOneOptions, FindOptionsWhere } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
 
 import { KeysOfString } from '../types';
@@ -145,14 +138,13 @@ export abstract class ImmutableRepository<T extends BaseEntity> extends Abstract
    * Inserts a new entity into the repository.
    *
    * @param entity The entity data to insert.
-   * @param relations Optional relations to load with the inserted entity.
    * @throws EntryNotFoundAfterInsertException if the inserted entity is not found.
    * @returns A promise that resolves to the inserted entity.
    */
-  protected async insert(entity: DeepPartial<T>, relations?: FindOptionsRelations<T>): Promise<T> {
+  protected async insert(entity: DeepPartial<T>): Promise<T> {
     try {
       const insertResult = await this.repository.insert(entity as QueryDeepPartialEntity<T>);
-      const insertedEntity = await this.findOne(insertResult.identifiers[0].id, { relations });
+      const insertedEntity = await this.getOne(insertResult.identifiers[0].id);
 
       // Should never happen, if an error occurs, it should throw during the insert.
       if (!insertedEntity) {
