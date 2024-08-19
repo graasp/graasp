@@ -59,7 +59,7 @@ export type Repositories = {
   memberPasswordRepository: MemberPasswordRepository;
   memberRepository: MemberRepository;
   mentionRepository: ChatMentionRepository;
-  publisherRepository: typeof PublisherRepository;
+  publisherRepository: PublisherRepository;
   recycledItemRepository: typeof RecycledItemDataRepository;
   memberProfileRepository: MemberProfileRepository;
   shortLinkRepository: typeof ShortLinkRepository;
@@ -85,7 +85,7 @@ export const buildRepositories = (manager?: EntityManager): Repositories => ({
   appDataRepository: new AppDataRepository(manager),
   appActionRepository: new AppActionRepository(manager),
   appSettingRepository: new AppSettingRepository(manager),
-  publisherRepository: manager ? manager.withRepository(PublisherRepository) : PublisherRepository,
+  publisherRepository: new PublisherRepository(manager),
   recycledItemRepository: manager
     ? manager.withRepository(RecycledItemDataRepository)
     : RecycledItemDataRepository,
