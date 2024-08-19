@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.47.0](https://github.com/graasp/graasp/compare/v1.46.0...v1.47.0) (2024-08-19)
+
+
+### Features
+
+* api route to check if password is defined ([#1284](https://github.com/graasp/graasp/issues/1284)) ([46ac230](https://github.com/graasp/graasp/commit/46ac2304976b4c9a9b39da86cf8ecf88412f0fde))
+* convert SVG to PNG and send it to nudenet ([#1272](https://github.com/graasp/graasp/issues/1272)) ([c0533cc](https://github.com/graasp/graasp/commit/c0533cc542b6854c5d60c555c72804f77509a4e0))
+* copy suffix is determined by siblings ([#1222](https://github.com/graasp/graasp/issues/1222)) ([90c6501](https://github.com/graasp/graasp/commit/90c6501752f1975682b53f92ace5761950929487))
+* implement fastify swagger ([#1225](https://github.com/graasp/graasp/issues/1225)) ([3f54c96](https://github.com/graasp/graasp/commit/3f54c9680f867917c608e14e2099dec1f356d6ed))
+* **membership request:** create entity and base structure ([#1281](https://github.com/graasp/graasp/issues/1281)) ([aed2b5a](https://github.com/graasp/graasp/commit/aed2b5aafe3533f37e9537ba79e498f7f670988e))
+* **membership request:** delete request route ([#1299](https://github.com/graasp/graasp/issues/1299)) ([66149fd](https://github.com/graasp/graasp/commit/66149fd95818e9530e2cc40836d5680a310821cf))
+* **membership request:** get all requests from an item ([#1293](https://github.com/graasp/graasp/issues/1293)) ([904e647](https://github.com/graasp/graasp/commit/904e647cb5e242e52c993a1fcedb219af13bb885))
+* **membership request:** get status of you own request ([#1300](https://github.com/graasp/graasp/issues/1300)) ([27333ea](https://github.com/graasp/graasp/commit/27333eaca86ec59ee6efe833db642145bf972f0e))
+* **membership request:** request creation api route ([#1290](https://github.com/graasp/graasp/issues/1290)) ([2968a67](https://github.com/graasp/graasp/commit/2968a67f43eb1378a8c49149e298d7cf49ce4aa1))
+* pdf thumbnail ([#1307](https://github.com/graasp/graasp/issues/1307)) ([8ae0c23](https://github.com/graasp/graasp/commit/8ae0c23884976e961cce5bc05cc3f9169a7ec9ef))
+* save publication progress in Redis ([#1247](https://github.com/graasp/graasp/issues/1247)) ([deb892d](https://github.com/graasp/graasp/commit/deb892d3107e1d5dfe33aafc8868b842a91c6780))
+* storage details route ([#1271](https://github.com/graasp/graasp/issues/1271)) ([792b347](https://github.com/graasp/graasp/commit/792b3476d81a92ef0b10389081983fbf6356a133))
+* **storage files metadata:** default ordering by size ([#1279](https://github.com/graasp/graasp/issues/1279)) ([8e75760](https://github.com/graasp/graasp/commit/8e75760415ec2cd867e18fb33d18cb44be6aade5))
+* update invite invitation to include membership creation ([#1274](https://github.com/graasp/graasp/issues/1274)) ([117a409](https://github.com/graasp/graasp/commit/117a409000137c46ec56f615a51684349ee2afbe))
+* validate the thumbnail of items ([#1277](https://github.com/graasp/graasp/issues/1277)) ([4a276ba](https://github.com/graasp/graasp/commit/4a276ba0e4a9200a9aa5dd864ce4c0b5bb26f6c6))
+
 ## [1.46.0](https://github.com/graasp/graasp/compare/v1.45.0...v1.46.0) (2024-07-31)
 
 
