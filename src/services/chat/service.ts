@@ -32,7 +32,7 @@ export class ChatMessageService {
     // check permission
     await this.itemService.get(actor, repositories, itemId);
 
-    const messages = await chatMessageRepository.getForItem(itemId);
+    const messages = await chatMessageRepository.getByItem(itemId);
     return messages;
   }
 
@@ -47,7 +47,7 @@ export class ChatMessageService {
     // check permission
     await this.itemService.get(actor, repositories, itemId);
 
-    const message = await chatMessageRepository.postOne({
+    const message = await chatMessageRepository.addOne({
       itemId,
       creator: actor,
       body: data.body,
@@ -76,13 +76,13 @@ export class ChatMessageService {
     await this.itemService.get(actor, repositories, itemId);
 
     // check right to make sure that the user is editing his own message
-    const messageContent = await chatMessageRepository.get(messageId, { shouldExist: true });
+    const messageContent = await chatMessageRepository.getOneOrThrow(messageId);
 
     if (messageContent.creator?.id !== actor.id) {
       throw new MemberCannotEditMessage(messageId);
     }
 
-    const updatedMessage = await chatMessageRepository.patchOne(messageId, message);
+    const updatedMessage = await chatMessageRepository.updateOne(messageId, message);
 
     await this.hooks.runPostHooks('update', actor, repositories, { message: updatedMessage });
 
@@ -95,7 +95,8 @@ export class ChatMessageService {
     // check permission
     await this.itemService.get(actor, repositories, itemId);
 
-    const messageContent = await chatMessageRepository.get(messageId, { shouldExist: true });
+    const messageContent = await chatMessageRepository.getOneOrThrow(messageId);
+
     if (messageContent.creator?.id !== actor.id) {
       throw new MemberCannotDeleteMessage({ id: messageId });
     }
@@ -119,6 +120,6 @@ export class ChatMessageService {
 
     await this.hooks.runPostHooks('clear', actor, repositories, { itemId });
 
-    await chatMessageRepository.clearChat(itemId);
+    await chatMessageRepository.deleteByItem(itemId);
   }
 }

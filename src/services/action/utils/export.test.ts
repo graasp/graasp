@@ -10,7 +10,6 @@ import build, { clearDatabase } from '../../../../test/app';
 import { AppDataSource } from '../../../plugins/datasource';
 import { TMP_FOLDER } from '../../../utils/config';
 import { ChatMessage } from '../../chat/chatMessage';
-import { ChatMessageRepository } from '../../chat/repository';
 import { BaseAnalytics } from '../../item/plugins/action/base-analytics';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
 import { Member } from '../../member/entities/member';
@@ -21,6 +20,7 @@ import { exportActionsInArchive } from './export';
 const testUtils = new ItemTestUtils();
 
 const rawActionRepository = AppDataSource.getRepository(Action);
+const rawChatMessageRepository = AppDataSource.getRepository(ChatMessage);
 
 const createDummyAction = async ({ item, member, view }): Promise<Action> => {
   return rawActionRepository.save({
@@ -46,12 +46,14 @@ const setUpActions = async (app, member: Member) => {
     await createDummyAction({ item, member, view: views[0] }),
   ];
   const chatMessages: ChatMessage[] = [];
-  chatMessages.push(await ChatMessageRepository.save({ item, creator: member, body: 'some-text' }));
   chatMessages.push(
-    await ChatMessageRepository.save({ item, creator: member, body: 'some-text-1' }),
+    await rawChatMessageRepository.save({ item, creator: member, body: 'some-text' }),
   );
   chatMessages.push(
-    await ChatMessageRepository.save({ item, creator: member, body: 'some-text-2' }),
+    await rawChatMessageRepository.save({ item, creator: member, body: 'some-text-1' }),
+  );
+  chatMessages.push(
+    await rawChatMessageRepository.save({ item, creator: member, body: 'some-text-2' }),
   );
   const baseAnalytics = new BaseAnalytics({
     actions,
