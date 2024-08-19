@@ -10,7 +10,7 @@ import { Item } from '../../../entities/Item';
 import { ItemTestUtils } from '../../../test/fixtures/items';
 import { setItemPublic } from '../../itemTag/test/fixtures';
 import { App } from '../entities/app';
-import { PublisherRepository } from '../publisherRepository';
+import { Publisher } from '../entities/publisher';
 
 export const GRAASP_PUBLISHER = {
   id: APPS_PUBLISHER_ID,
@@ -84,7 +84,7 @@ export class AppTestUtils extends ItemTestUtils {
   saveAppList = () => {
     return Promise.all(
       MOCK_APPS.map(async (app) => {
-        await PublisherRepository.save(app.publisher);
+        await AppDataSource.getRepository(Publisher).save(app.publisher);
         return await AppDataSource.getRepository(App).save(app);
       }),
     );
