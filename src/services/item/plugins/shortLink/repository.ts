@@ -1,8 +1,15 @@
-import { ShortLinkPatchPayload, ShortLinkPostPayload } from '@graasp/sdk';
+import { EntityManager } from 'typeorm';
+
+import {
+  ShortLinkPatchPayload,
+  ShortLinkPlatform,
+  ShortLinkPostPayload,
+  UnionOfConst,
+} from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../plugins/datasource';
+import { MutableRepository } from '../../../../repositories/MutableRepository';
 import {
-  ItemNotFound,
   ShortLinkDuplication,
   ShortLinkLimitExceed,
   ShortLinkNotFound,
@@ -10,39 +17,52 @@ import {
 import { isDuplicateEntryError } from '../../../../utils/typeormError';
 import { ShortLink } from './entities/ShortLink';
 
-export const ShortLinkRepository = AppDataSource.getRepository(ShortLink).extend({
-  async createOne(postLink: ShortLinkPostPayload): Promise<ShortLink> {
-    const { alias, platform, itemId } = postLink;
-    const shortLink = this.create({
-      alias,
-      platform,
-      item: { id: itemId },
-    });
+type CreateShortLinkBody = ShortLinkPostPayload;
+type UpdateShortLinkBody = ShortLinkPatchPayload;
+const PRIMARY_KEY = 'alias';
+
+export class ShortLinkRepository extends MutableRepository<ShortLink, UpdateShortLinkBody> {
+  constructor(manager?: EntityManager) {
+    super(PRIMARY_KEY, ShortLink, manager);
+  }
+
+  async addOne({ alias, platform, itemId }: CreateShortLinkBody): Promise<ShortLink> {
+    super.throwsIfPKIsInvalid(alias);
+    if ((await this.countByItemAndPlateform(itemId, platform)) > 0) {
+      throw new ShortLinkLimitExceed(itemId, platform);
+    }
 
     try {
-      const shortLinks = await this.getItem(itemId);
-      const platformLinks = shortLinks.filter((link: ShortLink) => link.platform === platform);
-
-      if (platformLinks.length > 0) {
-        throw new ShortLinkLimitExceed(itemId, platform);
-      }
-      await this.insert(shortLink);
-
-      return shortLink;
+      return await super.insert({ alias, platform, item: { id: itemId } });
     } catch (e) {
-      if (isDuplicateEntryError(e)) {
+      if (isDuplicateEntryError(e.message)) {
         throw new ShortLinkDuplication(alias);
       }
       throw e;
     }
-  },
+  }
 
-  async getItem(itemId: string): Promise<ShortLink[]> {
-    if (!itemId) {
-      throw new ItemNotFound(itemId);
-    }
+  private async countByItemAndPlateform(
+    itemId: string,
+    platform: UnionOfConst<typeof ShortLinkPlatform>,
+  ): Promise<number> {
+    super.throwsIfParamIsInvalid('itemId', itemId);
+    super.throwsIfParamIsInvalid('platform', platform);
 
-    const shortLinks = await this.find({
+    return await this.repository.count({
+      where: {
+        item: {
+          id: itemId,
+        },
+        platform,
+      },
+    });
+  }
+
+  async getByItem(itemId: string): Promise<ShortLink[]> {
+    super.throwsIfParamIsInvalid('itemId', itemId);
+
+    return await this.repository.find({
       where: {
         item: {
           id: itemId,
@@ -52,57 +72,42 @@ export const ShortLinkRepository = AppDataSource.getRepository(ShortLink).extend
         createdAt: 'ASC',
       },
     });
+  }
 
-    return shortLinks;
-  },
-
-  async get(alias: string): Promise<ShortLink> {
-    if (!alias) throw new ShortLinkNotFound(alias);
-
-    const shortLink = await this.findOne({
-      where: { alias },
+  async getOne(alias: string): Promise<ShortLink> {
+    const shortLink = await super.findOne(alias, {
       relations: {
         item: true,
       },
     });
 
-    if (!shortLink) throw new ShortLinkNotFound(alias);
+    if (!shortLink) {
+      throw new ShortLinkNotFound(alias);
+    }
 
     return shortLink;
-  },
+  }
 
-  async getWithoutJoin(alias: string): Promise<ShortLink> {
-    if (!alias) throw new ShortLinkNotFound(alias);
-
-    const shortLink = await this.findOne({
-      where: { alias },
+  async getOneFlat(alias: string): Promise<ShortLink> {
+    const shortLink = await super.findOne(alias, {
       select: ShortLink.getAllColumns(AppDataSource.manager),
     });
 
-    if (!shortLink) throw new ShortLinkNotFound(alias);
+    if (!shortLink) {
+      throw new ShortLinkNotFound(alias);
+    }
 
     return shortLink;
-  },
+  }
 
-  async deleteOne(alias: string): Promise<ShortLink> {
-    const shortLink = await this.get(alias);
-    await this.delete(alias);
-    return shortLink;
-  },
-
-  async updateOne(alias: string, postLink: ShortLinkPatchPayload): Promise<ShortLink> {
+  async updateOne(alias: string, entity: UpdateShortLinkBody): Promise<ShortLink> {
     try {
-      if (!alias) throw new ShortLinkNotFound(alias);
-
-      await this.update(alias, postLink);
-      const aliasId = postLink['alias'] ?? alias;
-      return await this.get(aliasId); // return the updated short link
+      return await super.updateOne(alias, entity);
     } catch (e) {
-      // if a duplication entry error throw, the postlink must contain the alias
-      if (isDuplicateEntryError(e)) {
-        throw new ShortLinkDuplication(postLink['alias']);
+      if (isDuplicateEntryError(e.message)) {
+        throw new ShortLinkDuplication(alias);
       }
       throw e;
     }
-  },
-});
+  }
+}

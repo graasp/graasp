@@ -49,17 +49,17 @@ export class ShortLinkService {
     // check that the member can admin the item to be allowed to create short link
     await this.itemService.get(member, repositories, shortLink.itemId, PermissionLevel.Admin);
 
-    return shortLinkRepository.createOne(shortLink);
+    return shortLinkRepository.addOne(shortLink);
   }
 
   async getOne(repositories: Repositories, alias: string) {
     const { shortLinkRepository } = repositories;
-    return shortLinkRepository.get(alias);
+    return shortLinkRepository.getOne(alias);
   }
 
   async getOneWithoutJoin(repositories: Repositories, alias: string) {
     const { shortLinkRepository } = repositories;
-    return shortLinkRepository.getWithoutJoin(alias);
+    return shortLinkRepository.getOneFlat(alias);
   }
 
   async getAllForItem(member: Member, repositories: Repositories, itemId: string) {
@@ -69,7 +69,7 @@ export class ShortLinkService {
     // check that the member can read the item to be allowed to read all short links
     await this.itemService.get(member, repositories, itemId, PermissionLevel.Read);
 
-    return shortLinkRepository.getItem(itemId);
+    return shortLinkRepository.getByItem(itemId);
   }
 
   async getRedirection(repositories: Repositories, alias: string) {
@@ -83,7 +83,7 @@ export class ShortLinkService {
     const { shortLinkRepository } = repositories;
 
     if (!member) throw new UnauthorizedMember();
-    const shortLink = await shortLinkRepository.get(alias);
+    const shortLink = await shortLinkRepository.getOne(alias);
 
     // check that the member can admin the item to be allowed to create short link
     await this.itemService.get(member, repositories, shortLink.item.id, PermissionLevel.Admin);
@@ -101,7 +101,7 @@ export class ShortLinkService {
     const { shortLinkRepository } = repositories;
 
     if (!member) throw new UnauthorizedMember();
-    const shortLink = await shortLinkRepository.get(alias);
+    const shortLink = await shortLinkRepository.getOne(alias);
 
     // check that the member can admin the item to be allowed to create short link
     await this.itemService.get(member, repositories, shortLink.item.id, PermissionLevel.Admin);
