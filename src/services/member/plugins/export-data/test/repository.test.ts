@@ -187,7 +187,7 @@ describe('DataMember Export', () => {
 
     describe('ChatMessages', () => {
       it('get all Messages for the member', async () => {
-        const results = await ChatMessageRepository.getForMemberExport(exportingActor.id);
+        const results = await new ChatMessageRepository().getForMemberExport(exportingActor.id);
         expectNoLeaksAndEquality(results, chatMessages, messageSchema);
       });
     });
