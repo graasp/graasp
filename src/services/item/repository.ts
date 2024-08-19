@@ -490,7 +490,7 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
       parent: parentItem,
     });
 
-    return await super.insert(newItem, { creator: true });
+    return await super.insert(newItem);
   }
 
   /////// -------- COPY

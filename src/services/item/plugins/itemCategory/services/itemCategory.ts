@@ -40,7 +40,10 @@ export class ItemCategoryService {
       category: categoryId,
     });
 
-    const result = await itemCategoryRepository.post(item.path, categoryId);
+    const result = await itemCategoryRepository.addOne({
+      itemPath: item.path,
+      categoryId: categoryId,
+    });
 
     await this.hooks.runPostHooks('create', actor, repositories, { itemCategory: result });
 
@@ -53,7 +56,7 @@ export class ItemCategoryService {
     // get and check permissions
     await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
 
-    const itemCategory = await itemCategoryRepository.get(itemCategoryId);
+    const itemCategory = await itemCategoryRepository.getOneOrThrow(itemCategoryId);
 
     await this.hooks.runPreHooks('delete', actor, repositories, { itemCategory });
 

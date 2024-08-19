@@ -1,45 +1,56 @@
-import { QueryFailedError } from 'typeorm';
+import { EntityManager } from 'typeorm';
 
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { MemberNotFound } from '../../../../../utils/errors';
-import { DUPLICATE_ENTRY_ERROR_CODE } from '../../../../../utils/typeormError';
+import { MutableRepository } from '../../../../../repositories/MutableRepository';
+import { DEFAULT_PRIMARY_KEY } from '../../../../../repositories/const';
+import { InsertionException } from '../../../../../repositories/errors';
 import { itemCategorySchema } from '../../../../member/plugins/export-data/schemas/schemas';
 import { schemaToSelectMapper } from '../../../../member/plugins/export-data/utils/selection.utils';
 import { Item } from '../../../entities/Item';
 import { ItemCategory } from '../entities/ItemCategory';
 import { DuplicateItemCategoryError } from '../errors';
 
+type CreateItemCategoryBody = { itemPath: string; categoryId: string };
+const RELATIONS = { category: true, item: true };
+
 /**
  * Database's first layer of abstraction for Categorys
  */
+export class ItemCategoryRepository extends MutableRepository<ItemCategory, never> {
+  constructor(manager?: EntityManager) {
+    super(DEFAULT_PRIMARY_KEY, ItemCategory, manager);
+  }
 
-export const ItemCategoryRepository = AppDataSource.getRepository(ItemCategory).extend({
-  async get(id: string): Promise<ItemCategory> {
-    return this.findOneOrFail({ where: { id }, relations: { category: true, item: true } });
-  },
+  async getOne(id: string) {
+    return await super.findOne(id, { relations: RELATIONS });
+  }
 
   /**
-   * Get itemCategory matching the given `itemid` or `null`, if not found.
+   * Get itemCategory matching the given `itemId` or `null`, if not found.
    * @param id item's id
    */
   async getForItem(itemId: string): Promise<ItemCategory[]> {
-    return this.find({
+    super.throwsIfParamIsInvalid('itemId', itemId);
+
+    return await this.repository.find({
       where: { item: { id: itemId } },
-      relations: { category: true, item: true },
+      relations: RELATIONS,
     });
-  },
+  }
 
   /**
-   * Get itemCategory list that matches the parents of `itemid` or `null`, if not found.
-   * @param id item's id
+   * Get itemCategory list that matches the parents of `itemId` or `null`, if not found.
+   * @param item The item used to retrieve its item categories
    */
   async getForItemOrParent(item: Item): Promise<ItemCategory[]> {
-    return await this.createQueryBuilder('ic')
+    super.throwsIfParamIsInvalid('itemPath', item?.path);
+
+    return await this.repository
+      .createQueryBuilder('ic')
       .innerJoinAndSelect('ic.category', 'category', 'ic.item_path @> :itemPath', {
         itemPath: item.path,
       })
       .getMany();
-  },
+  }
 
   /**
    * Get itemCategory for a given member.
@@ -47,34 +58,23 @@ export const ItemCategoryRepository = AppDataSource.getRepository(ItemCategory).
    * @returns an array of the item categories.
    */
   async getForMemberExport(memberId: string): Promise<ItemCategory[]> {
-    if (!memberId) {
-      throw new MemberNotFound({ id: memberId });
-    }
+    super.throwsIfParamIsInvalid('memberId', memberId);
 
-    return this.find({
+    return await this.repository.find({
       select: schemaToSelectMapper(itemCategorySchema),
       where: { creator: { id: memberId } },
-      relations: { category: true, item: true },
+      relations: RELATIONS,
     });
-  },
+  }
 
-  async post(itemPath: string, categoryId: string): Promise<ItemCategory> {
+  async addOne({ itemPath, categoryId }: CreateItemCategoryBody) {
     try {
-      const created = await this.insert({ item: { path: itemPath }, category: { id: categoryId } });
-      return this.get(created.identifiers[0].id);
+      return await super.insert({ item: { path: itemPath }, category: { id: categoryId } });
     } catch (e) {
-      // TODO: e instanceof QueryFailedError
-      if (e instanceof QueryFailedError && e.driverError.code === DUPLICATE_ENTRY_ERROR_CODE) {
+      if (e instanceof InsertionException) {
         throw new DuplicateItemCategoryError({ itemPath, categoryId });
       }
       throw e;
     }
-    // TODO: better solution?
-    // query builder returns creator as id and extra as string
-  },
-
-  async deleteOne(id: string): Promise<string> {
-    await this.delete(id);
-    return id;
-  },
-});
+  }
+}
