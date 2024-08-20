@@ -4,19 +4,20 @@ import { AppDataVisibility, PermissionLevel, UUID } from '@graasp/sdk';
 
 import HookManager from '../../../../../utils/hook';
 import { Repositories } from '../../../../../utils/repositories';
+import { Account } from '../../../../account/entities/account';
 import { validatePermission } from '../../../../authorization';
 import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
-import { Actor, Member } from '../../../../member/entities/member';
+import { Actor } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 import { AppData } from './appData';
 import { AppDataNotAccessible, AppDataNotFound, PreventUpdateOtherAppData } from './errors';
 import { InputAppData } from './interfaces/app-data';
 
-const ownAppDataAbility = (appData: AppData, member: Actor) => {
-  if (!appData.creator || !member) {
+const ownAppDataAbility = (appData: AppData, actor: Actor) => {
+  if (!appData.creator || !actor) {
     return false;
   }
-  return appData.creator.id === member.id;
+  return appData.creator.id === actor.id;
 };
 
 const itemVisibilityAppDataAbility = (
@@ -66,7 +67,7 @@ export class AppDataService {
   }>();
 
   async post(
-    member: Member,
+    account: Account,
     repositories: Repositories,
     itemId: string,
     body: Partial<InputAppData>,
@@ -77,10 +78,10 @@ export class AppDataService {
     const item = await itemRepository.getOneOrThrow(itemId);
 
     // posting an app data is allowed to readers
-    await validatePermission(repositories, PermissionLevel.Read, member, item);
+    await validatePermission(repositories, PermissionLevel.Read, account, item);
 
     // any user can write app data for others
-    const attachedToMemberId = body.memberId ?? member.id;
+    const attachedToMemberId = body.accountId ?? account.id;
 
     const completeData = Object.assign(
       {
@@ -88,23 +89,23 @@ export class AppDataService {
       },
       body,
       {
-        memberId: attachedToMemberId,
+        accountId: attachedToMemberId,
       },
     );
 
-    await this.hooks.runPreHooks('post', member, repositories, { appData: body, itemId });
+    await this.hooks.runPreHooks('post', account, repositories, { appData: body, itemId });
 
     const appData = await appDataRepository.addOne({
       appData: completeData,
       itemId,
-      actorId: member.id,
+      actorId: account.id,
     });
-    await this.hooks.runPostHooks('post', member, repositories, { appData, itemId });
+    await this.hooks.runPostHooks('post', account, repositories, { appData, itemId });
     return appData;
   }
 
   async patch(
-    member: Member,
+    account: Account,
     repositories: Repositories,
     itemId: string,
     appDataId: string,
@@ -119,7 +120,7 @@ export class AppDataService {
     const { itemMembership: inheritedMembership } = await validatePermission(
       repositories,
       PermissionLevel.Read,
-      member,
+      account,
       item,
     );
 
@@ -132,7 +133,7 @@ export class AppDataService {
     // patch own or is admin
     const isValid = await this.validateAppDataPermission(
       repositories,
-      member,
+      account,
       currentAppData,
       PermissionLevel.Write,
       inheritedMembership,
@@ -141,20 +142,20 @@ export class AppDataService {
       throw new PreventUpdateOtherAppData(appDataId);
     }
 
-    await this.hooks.runPreHooks('patch', member, repositories, {
+    await this.hooks.runPreHooks('patch', account, repositories, {
       appData: { ...body, id: appDataId },
       itemId,
     });
 
     const appData = await appDataRepository.updateOne(appDataId, body);
-    await this.hooks.runPostHooks('patch', member, repositories, {
+    await this.hooks.runPostHooks('patch', account, repositories, {
       appData,
       itemId,
     });
     return appData;
   }
 
-  async deleteOne(member: Member, repositories: Repositories, itemId: string, appDataId: string) {
+  async deleteOne(account: Account, repositories: Repositories, itemId: string, appDataId: string) {
     const { appDataRepository, itemRepository } = repositories;
 
     // check item exists? let post fail?
@@ -164,7 +165,7 @@ export class AppDataService {
     const { itemMembership: inheritedMembership } = await validatePermission(
       repositories,
       PermissionLevel.Read,
-      member,
+      account,
       item,
     );
 
@@ -177,28 +178,28 @@ export class AppDataService {
     // patch own or is admin
     await this.validateAppDataPermission(
       repositories,
-      member,
+      account,
       appData,
       PermissionLevel.Admin,
       inheritedMembership,
     );
 
-    await this.hooks.runPreHooks('delete', member, repositories, { appDataId, itemId });
+    await this.hooks.runPreHooks('delete', account, repositories, { appDataId, itemId });
 
     const result = await appDataRepository.deleteOne(appDataId);
 
-    await this.hooks.runPostHooks('delete', member, repositories, { appData, itemId });
+    await this.hooks.runPostHooks('delete', account, repositories, { appData, itemId });
 
     return result;
   }
 
-  async get(member: Member, repositories: Repositories, item: Item, appDataId: UUID) {
+  async get(account: Account, repositories: Repositories, item: Item, appDataId: UUID) {
     const { appDataRepository } = repositories;
 
     const { itemMembership } = await validatePermission(
       repositories,
       PermissionLevel.Read,
-      member,
+      account,
       item,
     );
 
@@ -211,19 +212,19 @@ export class AppDataService {
     if (
       !this.validateAppDataPermission(
         repositories,
-        member,
+        account,
         appData,
         PermissionLevel.Read,
         itemMembership,
       )
     ) {
-      throw new AppDataNotAccessible({ appDataId, memberId: member.id });
+      throw new AppDataNotAccessible({ appDataId, accountId: account.id });
     }
 
     return appData;
   }
 
-  async getForItem(member: Member, repositories: Repositories, itemId: string, type?: string) {
+  async getForItem(account: Account, repositories: Repositories, itemId: string, type?: string) {
     const { appDataRepository, itemRepository } = repositories;
 
     // check item exists? let post fail?
@@ -233,19 +234,19 @@ export class AppDataService {
     const { itemMembership } = await validatePermission(
       repositories,
       PermissionLevel.Read,
-      member,
+      account,
       item,
     );
 
     return appDataRepository.getForItem(
       itemId,
-      { memberId: member.id, type },
+      { accountId: account.id, type },
       itemMembership?.permission,
     );
   }
 
   // TODO: check for many items
-  async getForManyItems(member: Member, repositories: Repositories, itemIds: string[]) {
+  async getForManyItems(account: Account, repositories: Repositories, itemIds: string[]) {
     const { appDataRepository, itemRepository } = repositories;
 
     // check item exists? let post fail?
@@ -263,12 +264,12 @@ export class AppDataService {
       const { itemMembership } = await validatePermission(
         repositories,
         PermissionLevel.Read,
-        member,
+        account,
         item,
       );
       const appData = await appDataRepository.getForItem(
         itemId,
-        { memberId: member.id },
+        { accountId: account.id },
         itemMembership?.permission,
       );
       result.data[itemId] = appData;
@@ -281,13 +282,13 @@ export class AppDataService {
   // TODO: check
   async validateAppDataPermission(
     repositories: Repositories,
-    member: Actor,
+    actor: Actor,
     appData: AppData,
     permission: PermissionLevel,
     inheritedMembership?: ItemMembership | null,
   ) {
     const isValid =
-      ownAppDataAbility(appData, member) ||
+      ownAppDataAbility(appData, actor) ||
       itemVisibilityAppDataAbility(appData, permission, inheritedMembership?.permission) ||
       (inheritedMembership &&
         permissionMapping[inheritedMembership.permission].includes(permission));

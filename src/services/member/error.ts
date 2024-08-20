@@ -31,3 +31,16 @@ export class NotValidatedMember extends GraaspMemberError {
     );
   }
 }
+
+export class NotMember extends GraaspMemberError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GMERR003',
+        statusCode: StatusCodes.FORBIDDEN,
+        message: FAILURE_MESSAGES.NOT_A_MEMBER,
+      },
+      data,
+    );
+  }
+}

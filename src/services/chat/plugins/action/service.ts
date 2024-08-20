@@ -34,7 +34,7 @@ export class ActionChatService {
       type: ChatActionType.Create,
       extra: { ...(request.body as { body: string; mentions: string[] }) },
     };
-    await this.actionService.postMany(user?.member, repositories, request, [action]);
+    await this.actionService.postMany(user?.account, repositories, request, [action]);
   }
 
   async postPatchMessageAction(
@@ -48,7 +48,7 @@ export class ActionChatService {
       type: ChatActionType.Update,
       extra: { ...(request.body as { body: string }), messageId: message.id },
     };
-    await this.actionService.postMany(user?.member, repositories, request, [action]);
+    await this.actionService.postMany(user?.account, repositories, request, [action]);
   }
 
   async postDeleteMessageAction(
@@ -62,7 +62,7 @@ export class ActionChatService {
       type: ChatActionType.Delete,
       extra: { messageId: message.id },
     };
-    await this.actionService.postMany(user?.member, repositories, request, [action]);
+    await this.actionService.postMany(user?.account, repositories, request, [action]);
   }
 
   async postClearMessageAction(request: FastifyRequest, repositories: Repositories, itemId: UUID) {
@@ -71,6 +71,6 @@ export class ActionChatService {
       type: ChatActionType.Clear,
       extra: { itemId },
     };
-    await this.actionService.postMany(user?.member, repositories, request, [action]);
+    await this.actionService.postMany(user?.account, repositories, request, [action]);
   }
 }

@@ -195,7 +195,7 @@ describe('MembershipRequest', () => {
     });
     it('returns notSubmittedOrDeleted if there is no request and an item membership in parent item', async () => {
       const childItem = await testUtils.saveItem({ actor: creator, parentItem: item });
-      await testUtils.saveMembership({ item, member });
+      await testUtils.saveMembership({ item, account: member });
       const response = await app.inject({
         method: HttpMethod.Get,
         url: `/items/${childItem.id}/memberships/requests/own`,
@@ -217,7 +217,7 @@ describe('MembershipRequest', () => {
       expect(data.status).toEqual(MembershipRequestStatus.Pending);
     });
     it('returns approved if there is an item membership', async () => {
-      await testUtils.saveMembership({ item, member });
+      await testUtils.saveMembership({ item, account: member });
       const response = await app.inject({
         method: HttpMethod.Get,
         url: `/items/${item.id}/memberships/requests/own`,
@@ -231,7 +231,7 @@ describe('MembershipRequest', () => {
       // This case should not happen because no request should be made if the member already has a membership, and
       // the request should be deleted if the member gets a membership.
       await membershipRequestRepository.post(member.id, item.id);
-      await testUtils.saveMembership({ item, member });
+      await testUtils.saveMembership({ item, account: member });
       const response = await app.inject({
         method: HttpMethod.Get,
         url: `/items/${item.id}/memberships/requests/own`,
@@ -319,7 +319,7 @@ describe('MembershipRequest', () => {
         for (let i = 0; i < preset[permission]; i++) {
           for (const item of items) {
             const temporaryMember = await saveMember();
-            await testUtils.saveMembership({ item, permission, member: temporaryMember });
+            await testUtils.saveMembership({ item, permission, account: temporaryMember });
           }
         }
       }
@@ -413,7 +413,7 @@ describe('MembershipRequest', () => {
 
     it('accepts when authenticated as the creator when there is no membership', async () => {
       const { itemMembershipRepository } = buildRepositories();
-      await itemMembershipRepository.delete({ item, member: creator });
+      await itemMembershipRepository.delete({ item, account: creator });
       mockAuthenticate(creator);
 
       const response = await app.inject({
@@ -441,7 +441,7 @@ describe('MembershipRequest', () => {
     it('rejects when already have a membership', async () => {
       await testUtils.saveMembership({
         item,
-        member,
+        account: member,
       });
       mockAuthenticate(member);
 
@@ -505,7 +505,7 @@ describe('MembershipRequest', () => {
     });
     it('rejects forbidden if authenticated member is a writer of the item', async () => {
       const writer = await saveMember();
-      await testUtils.saveMembership({ item, member: writer, permission: PermissionLevel.Write });
+      await testUtils.saveMembership({ item, account: writer, permission: PermissionLevel.Write });
       mockAuthenticate(writer);
       const response = await app.inject({
         method: HttpMethod.Delete,

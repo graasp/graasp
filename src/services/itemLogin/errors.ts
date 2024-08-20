@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 
 import { ErrorFactory } from '@graasp/sdk';
+import { FAILURE_MESSAGES } from '@graasp/translations';
 
 const PLUGIN_NAME = 'graasp-plugin-item-login';
 
@@ -131,6 +132,19 @@ export class CannotNestItemLoginSchema extends GraaspItemLoginError {
         code: 'GILERR010',
         statusCode: StatusCodes.FORBIDDEN,
         message: 'Item login schema already item exists in an ancestor',
+      },
+      data,
+    );
+  }
+}
+
+export class NotGuest extends GraaspItemLoginError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GILERR011',
+        statusCode: StatusCodes.FORBIDDEN,
+        message: FAILURE_MESSAGES.NOT_A_GUEST,
       },
       data,
     );

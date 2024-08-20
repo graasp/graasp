@@ -47,7 +47,7 @@ export class ItemTestUtils {
   createItem(
     args?: Partial<Item> & {
       parentItem?: Item;
-      creator?: Actor | null;
+      creator?: Member | null;
     },
   ): Item {
     let item;
@@ -103,7 +103,7 @@ export class ItemTestUtils {
     parentItem,
   }: {
     parentItem?: Item;
-    actor?: Actor | null;
+    actor?: Member | null;
     item?: Partial<Item>;
   }) {
     const value = this.createItem({ ...item, creator: actor, parentItem });
@@ -113,15 +113,15 @@ export class ItemTestUtils {
   savePublicItem = async ({
     item = {},
     parentItem,
-    actor,
+    member,
   }: {
     parentItem?: Item;
-    actor: Actor | null;
+    member?: Member | null;
     item?: Partial<Item>;
   }) => {
-    const value = this.createItem({ ...item, creator: actor, parentItem });
+    const value = this.createItem({ ...item, creator: member, parentItem });
     const newItem = await this.rawItemRepository.save(value);
-    const publicTag = await setItemPublic(newItem, actor);
+    const publicTag = await setItemPublic(newItem, member);
     return {
       item: newItem,
       packedItem: new ItemWrapper(newItem, undefined, [publicTag]).packed(),
@@ -132,31 +132,31 @@ export class ItemTestUtils {
   saveItems = async ({
     nb,
     parentItem,
-    actor = null,
+    member = null,
   }: {
     nb: number;
     parentItem: Item;
-    actor: Actor | null;
+    member?: Member | null;
   }) => {
     for (let i = 0; i < nb; i++) {
-      await this.saveItem({ actor, parentItem });
+      await this.saveItem({ actor: member, parentItem });
     }
   };
 
   saveMembership = ({
     item,
-    member,
+    account,
     permission = PermissionLevel.Admin,
   }: {
     item: Item;
-    member: Actor;
+    account: Actor;
     permission?: PermissionLevel;
   }) => {
-    return ItemMembershipRepository.save({ item, member, permission });
+    return ItemMembershipRepository.save({ item, account, permission });
   };
 
   saveItemAndMembership = async (options: {
-    member: Actor;
+    member?: Member;
     item?: Partial<Item>;
     permission?: PermissionLevel;
     creator?: Member;
@@ -172,7 +172,7 @@ export class ItemTestUtils {
       actor: creator ?? member,
       parentItem,
     });
-    const im = await this.saveMembership({ item: newItem, member, permission });
+    const im = await this.saveMembership({ item: newItem, account: member, permission });
     return {
       item: newItem,
       itemMembership: im,

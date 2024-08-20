@@ -13,12 +13,12 @@ import { v4 } from 'uuid';
 
 import { AppDataVisibility } from '@graasp/sdk';
 
-import { Member } from '../../../../member/entities/member';
+import { Account } from '../../../../account/entities/account';
 import { Item } from '../../../entities/Item';
 
 export type Filters = {
   visibility?: AppDataVisibility;
-  memberId?: Member['id'];
+  accountId?: Account['id'];
   type?: string;
 };
 
@@ -34,18 +34,18 @@ export class AppData extends BaseEntity {
   @JoinColumn({ name: 'item_id' })
   item: Item;
 
-  @ManyToOne(() => Member, (member) => member.id, {
+  @ManyToOne(() => Account, (account) => account.id, {
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'creator_id' })
-  creator: Member | null;
+  creator: Account | null;
 
-  @ManyToOne(() => Member, (member) => member.id, {
+  @ManyToOne(() => Account, (account) => account.id, {
     onDelete: 'CASCADE',
     nullable: false,
   })
-  @JoinColumn({ name: 'member_id' })
-  member: Member;
+  @JoinColumn({ name: 'account_id', foreignKeyConstraintName: 'FK_app_data_account_id' })
+  account: Account;
 
   @Index()
   @Column({

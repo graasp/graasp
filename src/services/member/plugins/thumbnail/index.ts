@@ -14,7 +14,8 @@ import { matchOne } from '../../../authorization';
 import FileService from '../../../file/service';
 import { DEFAULT_MAX_FILE_SIZE } from '../../../file/utils/constants';
 import { UploadEmptyFileError, UploadFileUnexpectedError } from '../../../file/utils/errors';
-import { validatedMember } from '../../strategies/validatedMember';
+import { assertIsMember } from '../../entities/member';
+import { validatedMemberAccountRole } from '../../strategies/validatedMemberAccountRole';
 import { download, upload } from './schemas';
 import { MemberThumbnailService } from './service';
 import { UploadFileNotImageError } from './utils/errors';
@@ -46,10 +47,11 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
     '/avatar',
     {
       schema: upload,
-      preHandler: [isAuthenticated, matchOne(validatedMember)],
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
     async (request, reply) => {
-      const member = notUndefined(request.user?.member);
+      const member = notUndefined(request.user?.account);
+      assertIsMember(member);
       return db
         .transaction(async (manager) => {
           // const files = request.files();
@@ -89,7 +91,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
       preHandler: optionalIsAuthenticated,
     },
     async ({ user, params: { size, id: memberId }, query: { replyUrl } }, reply) => {
-      const url = await thumbnailService.getUrl(user?.member, buildRepositories(), {
+      const url = await thumbnailService.getUrl(user?.account, buildRepositories(), {
         memberId,
         size,
       });

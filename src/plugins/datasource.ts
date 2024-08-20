@@ -1,5 +1,6 @@
 import { DataSource } from 'typeorm';
 
+import { Account } from '../services/account/entities/account';
 import { Action } from '../services/action/entities/action';
 import { MemberPassword } from '../services/auth/plugins/password/entities/password';
 import { ChatMessage } from '../services/chat/chatMessage';
@@ -25,7 +26,8 @@ import { ItemValidationGroup } from '../services/item/plugins/publication/valida
 import { ItemValidationReview } from '../services/item/plugins/publication/validation/entities/itemValidationReview';
 import { RecycledItemData } from '../services/item/plugins/recycled/RecycledItemData';
 import { ShortLink } from '../services/item/plugins/shortLink/entities/ShortLink';
-import { ItemLogin } from '../services/itemLogin/entities/itemLogin';
+import { Guest } from '../services/itemLogin/entities/guest';
+import { GuestPassword } from '../services/itemLogin/entities/guestPassword';
 import { ItemLoginSchema } from '../services/itemLogin/entities/itemLoginSchema';
 import { ItemMembership } from '../services/itemMembership/entities/ItemMembership';
 import { MembershipRequest } from '../services/itemMembership/plugins/MembershipRequest/entities/MembershipRequest';
@@ -72,11 +74,13 @@ export const AppDataSource = new DataSource({
 
   entities: [
     Member,
+    Account,
+    Guest,
     Item,
     ItemMembership,
     MembershipRequest,
     MemberPassword,
-    ItemLogin,
+    GuestPassword,
     ItemLoginSchema,
     Publisher,
     App,

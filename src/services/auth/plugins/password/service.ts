@@ -14,6 +14,7 @@ import {
 } from '../../../../utils/config';
 import { MemberNotSignedUp, MemberWithoutPassword } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
+import { Account } from '../../../account/entities/account';
 import { Member } from '../../../member/entities/member';
 import { SHORT_TOKEN_PARAM } from '../passport';
 import { PasswordConflict } from './errors';
@@ -45,7 +46,7 @@ export class MemberPasswordService {
     });
   }
 
-  async post(actor: Member, repositories: Repositories, newPassword: string) {
+  async post(actor: Account, repositories: Repositories, newPassword: string) {
     const { memberPasswordRepository } = repositories;
     // verify that input current password is the same as the stored one
     const currentPassword = await memberPasswordRepository.getForMemberId(actor.id);
@@ -59,15 +60,15 @@ export class MemberPasswordService {
   }
 
   async patch(
-    actor: Member,
+    account: Account,
     repositories: Repositories,
     newPassword: string,
     currentPassword: string,
   ) {
     const { memberPasswordRepository } = repositories;
     // verify that input current password is the same as the stored one
-    await memberPasswordRepository.validatePassword(actor.id, currentPassword);
-    await memberPasswordRepository.patch(actor.id, newPassword);
+    await memberPasswordRepository.validatePassword(account.id, currentPassword);
+    await memberPasswordRepository.patch(account.id, newPassword);
   }
 
   /**

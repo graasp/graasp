@@ -52,7 +52,7 @@ export const appActionArraySchema = buildArraySchema(appActionSchema);
 
 export const appDataSchema = buildObjectSchema({
   id: STRING_TYPE,
-  member: externalMemberSchema(),
+  account: externalMemberSchema(),
   data: OBJECT_TYPE,
   type: STRING_TYPE,
   visibility: STRING_TYPE,

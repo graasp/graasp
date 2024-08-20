@@ -1,7 +1,7 @@
 import { ItemTagType, PermissionLevel } from '@graasp/sdk';
 
 import { Repositories } from '../../../../../utils/repositories';
-import { Member } from '../../../../member/entities/member';
+import { Account } from '../../../../account/entities/account';
 import { ItemWrapper } from '../../../ItemWrapper';
 import { ItemService } from '../../../service';
 import { ItemTagRepository } from '../../itemTag/repository';
@@ -31,7 +31,7 @@ export class PublicationService {
     this.validationQueue = validationQueue;
   }
 
-  public async computeStateForItem(member: Member, repositores: Repositories, itemId: string) {
+  public async computeStateForItem(member: Account, repositores: Repositories, itemId: string) {
     const item = await this.itemService.get(member, repositores, itemId, PermissionLevel.Admin);
     const publicTag = await this.itemTagRepository.getType(item, ItemTagType.Public, {
       shouldThrow: false,

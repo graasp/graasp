@@ -7,7 +7,9 @@ import { IdParam } from '../../../../../types';
 import { notUndefined } from '../../../../../utils/assertions';
 import { Repositories, buildRepositories } from '../../../../../utils/repositories';
 import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
-import { Actor } from '../../../../member/entities/member';
+import { matchOne } from '../../../../authorization';
+import { Actor, assertIsMember } from '../../../../member/entities/member';
+import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
 import { Item } from '../../../entities/Item';
 import { ItemService } from '../../../service';
 import { appSettingsWsHooks } from '../ws/hooks';
@@ -49,10 +51,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/:itemId/app-settings',
       {
         schema: create,
-        preHandler: authenticateAppsJWT,
+        preHandler: [authenticateAppsJWT, matchOne(validatedMemberAccountRole)],
       },
       async ({ user, params: { itemId }, body }) => {
-        const member = notUndefined(user?.member);
+        const member = notUndefined(user?.account);
+        assertIsMember(member);
         return db.transaction(async (manager) => {
           return appSettingService.post(member, buildRepositories(manager), itemId, body);
         });
@@ -64,10 +67,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/:itemId/app-settings/:id',
       {
         schema: updateOne,
-        preHandler: authenticateAppsJWT,
+        preHandler: [authenticateAppsJWT, matchOne(validatedMemberAccountRole)],
       },
       async ({ user, params: { itemId, id: appSettingId }, body }) => {
-        const member = notUndefined(user?.member);
+        const member = notUndefined(user?.account);
+        assertIsMember(member);
         return db.transaction(async (manager) => {
           return appSettingService.patch(
             member,
@@ -83,9 +87,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     // delete app setting
     fastify.delete<{ Params: { itemId: string } & IdParam }>(
       '/:itemId/app-settings/:id',
-      { schema: deleteOne, preHandler: authenticateAppsJWT },
+      {
+        schema: deleteOne,
+        preHandler: [authenticateAppsJWT, matchOne(validatedMemberAccountRole)],
+      },
       async ({ user, params: { itemId, id: appSettingId } }) => {
-        const member = notUndefined(user?.member);
+        const member = notUndefined(user?.account);
+        assertIsMember(member);
         return db.transaction(async (manager) => {
           return appSettingService.deleteOne(
             member,
@@ -102,7 +110,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/:itemId/app-settings',
       { schema: getForOne, preHandler: authenticateAppsJWT },
       async ({ user, params: { itemId }, query: { name } }) => {
-        return appSettingService.getForItem(user?.member, buildRepositories(), itemId, name);
+        return appSettingService.getForItem(user?.account, buildRepositories(), itemId, name);
       },
     );
   });

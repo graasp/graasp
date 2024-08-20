@@ -1,4 +1,5 @@
 import { Strategy as CustomStrategy } from 'passport-custom';
+import { DataSource } from 'typeorm';
 
 import fastifyPassport from '@fastify/passport';
 import { fastify } from 'fastify';
@@ -9,8 +10,9 @@ import registerAppPlugins from '../src/app';
 import { resetDependencies } from '../src/di/utils';
 import { BaseLogger } from '../src/logger';
 import ajvFormats from '../src/schemas/ajvFormats';
+import { Account } from '../src/services/account/entities/account';
 import { PassportStrategy } from '../src/services/auth/plugins/passport';
-import { Actor } from '../src/services/member/entities/member';
+import { Member } from '../src/services/member/entities/member';
 import { saveMember } from '../src/services/member/test/fixtures/members';
 import { DB_TEST_SCHEMA } from './constants';
 
@@ -18,16 +20,16 @@ const originalSessionStrategy = fastifyPassport.strategy(PassportStrategy.Sessio
 let originalStrictSessionStrategy;
 
 /**
- * Override the session strategy to always validate the request. Set the given actor to request.user.member on authentications
- * @param actor Actor to set to request.user.member
+ * Override the session strategy to always validate the request. Set the given Account to request.user.member on authentications
+ * @param account Account to set to request.user.member
  */
-export function mockAuthenticate(actor: Actor) {
+export function mockAuthenticate(account: Account | undefined) {
   if (!originalStrictSessionStrategy) {
     originalStrictSessionStrategy = fastifyPassport.strategy(PassportStrategy.StrictSession);
   }
-  // If an actor is provided, use a custom strategy that always validate the request.
+  // If an account is provided, use a custom strategy that always validate the request.
   // This will override the original session strategy to a custom one
-  const strategy = new CustomStrategy((_req, done) => done(null, { member: actor }));
+  const strategy = new CustomStrategy((_req, done) => done(null, { account }));
   fastifyPassport.use(PassportStrategy.StrictSession, strategy);
   fastifyPassport.use(PassportStrategy.Session, strategy);
 }
@@ -69,21 +71,21 @@ const build = async ({ member }: { member?: CompleteMember | null } = {}) => {
   // drop all the database and synchronize schemas
   await app.db.synchronize(true);
 
-  const actor: Actor = member !== null ? await saveMember(member) : undefined;
-  if (actor) {
-    mockAuthenticate(actor);
+  const savedMember: Member | undefined = member !== null ? await saveMember(member) : undefined;
+  if (savedMember) {
+    mockAuthenticate(savedMember);
   } else {
     // Set the original session strategy back
     unmockAuthenticate();
   }
 
-  return { app, actor };
+  return { app, actor: savedMember };
 };
 
-export const clearDatabase = async (db) => {
+export const clearDatabase = async (db: DataSource) => {
   const entities = db.entityMetadatas;
   for (const entity of entities) {
-    const repository = await db.getRepository(entity.name);
+    const repository = db.getRepository(entity.name);
     await repository.query(
       `TRUNCATE ${DB_TEST_SCHEMA}.${entity.tableName} RESTART IDENTITY CASCADE;`,
     );

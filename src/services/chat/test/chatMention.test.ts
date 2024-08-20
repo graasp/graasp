@@ -22,31 +22,31 @@ const saveItemWithChatMessagesAndMentions = async (actor) => {
   const { item, chatMessages, members } = await saveItemWithChatMessages(otherActor);
   const chatMentions: ChatMention[] = [];
   for (const c of chatMessages) {
-    chatMentions.push(await adminRepository.save({ member: actor, message: c }));
+    chatMentions.push(await adminRepository.save({ account: actor, message: c }));
   }
   return { item, chatMessages, members, chatMentions };
 };
 
 export const expectChatMentions = (
-  mentions,
-  correctMentions,
-  relations: { member?: boolean; message?: { item?: boolean; creator?: boolean } } = {},
+  mentions: ChatMention[],
+  correctMentions: ChatMention[],
+  relations: { account?: boolean; message?: { item?: boolean; creator?: boolean } } = {},
 ) => {
   const relationsMessageCreator = relations?.message?.creator ?? true;
   const relationsMessageItem = relations?.message?.item ?? true;
   const relationsMessage = (relationsMessageCreator || relationsMessageItem) ?? true;
-  const relationsMember = relations?.member ?? true;
+  const relationsMember = relations?.account ?? true;
 
   expect(mentions).toHaveLength(correctMentions.length);
   for (const m of mentions) {
-    const correctMention = correctMentions.find(({ id }) => id === m.id);
+    const correctMention = correctMentions.find(({ id }) => id === m.id)!;
 
     // foreign keys
     if (relationsMessage) {
       expect(m.message.id).toEqual(correctMention.message.id);
 
       if (relationsMessageCreator) {
-        expect(m.message.creator.id).toEqual(correctMention.message.creator.id);
+        expect(m.message.creator!.id).toEqual(correctMention.message.creator!.id);
       } else {
         expect(m.message.creator).toBeUndefined();
       }
@@ -60,9 +60,9 @@ export const expectChatMentions = (
     }
 
     if (relationsMember) {
-      expect(m.member.id).toEqual(correctMention.member.id);
+      expect(m.account.id).toEqual(correctMention.account.id);
     } else {
-      expect(m.member).toBeUndefined();
+      expect(m.account).toBeUndefined();
     }
   }
 };
@@ -176,7 +176,7 @@ describe('Chat Mention tests', () => {
       it('Throws if member does not have access to mention', async () => {
         // create brand new user because fixtures are used for chatmessages and will already exists
         const member = await saveMember();
-        const mention = await adminRepository.save({ member, message: chatMessages[0] });
+        const mention = await adminRepository.save({ account: member, message: chatMessages[0] });
 
         const response = await app.inject({
           method: HttpMethod.Patch,
@@ -244,7 +244,7 @@ describe('Chat Mention tests', () => {
       it('Throws if member does not have access to chat message', async () => {
         const mention = await adminRepository.save({
           message: chatMessages[0],
-          member: members[0],
+          account: members[0],
         });
 
         const response = await app.inject({
@@ -283,9 +283,9 @@ describe('Chat Mention tests', () => {
         // more messages
         const otherMessages: ChatMention[] = [];
         const message = chatMessages[0];
-        otherMessages.push(await adminRepository.save({ message, member: members[0] }));
-        otherMessages.push(await adminRepository.save({ message, member: members[1] }));
-        otherMessages.push(await adminRepository.save({ message, member: members[2] }));
+        otherMessages.push(await adminRepository.save({ message, account: members[0] }));
+        otherMessages.push(await adminRepository.save({ message, account: members[1] }));
+        otherMessages.push(await adminRepository.save({ message, account: members[2] }));
 
         const response = await app.inject({
           method: HttpMethod.Delete,

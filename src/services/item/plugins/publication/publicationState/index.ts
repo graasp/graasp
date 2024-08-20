@@ -18,9 +18,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: isAuthenticated,
     },
     async ({ user, params: { itemId } }) => {
-      const member = notUndefined(user?.member, new UnauthorizedMember());
-
-      return await publicationService.computeStateForItem(member, buildRepositories(), itemId);
+      const account = notUndefined(user?.account, new UnauthorizedMember());
+      return await publicationService.computeStateForItem(account, buildRepositories(), itemId);
     },
   );
 };

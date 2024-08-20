@@ -24,7 +24,7 @@ export const saveChatMessages = async ({
     const body = `${mentionMessage} some-text-${i} <!@${creator.id}>[${creator.name}]`;
     const message = await ChatMessageRepository.save({ item, creator, body });
     chatMessages.push(message);
-    chatMentions.push(await chatMentionRepo.save({ member: mentionMember, message }));
+    chatMentions.push(await chatMentionRepo.save({ account: mentionMember, message }));
   }
   return { chatMessages, chatMentions, mentionedMember: mentionMember };
 };

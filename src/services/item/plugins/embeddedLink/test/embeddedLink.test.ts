@@ -7,7 +7,7 @@ import { HttpMethod, ItemType, LinkItemFactory, PermissionLevel } from '@graasp/
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { ItemMembershipRepository } from '../../../../itemMembership/repository';
-import { Actor } from '../../../../member/entities/member';
+import { Member } from '../../../../member/entities/member';
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemRepository } from '../../../repository';
 import { ItemTestUtils, expectItem } from '../../../test/fixtures/items';
@@ -34,7 +34,7 @@ const iframelyResult = {
 
 describe('Link Item tests', () => {
   let app: FastifyInstance;
-  let actor: Actor;
+  let actor: Member | undefined;
 
   beforeEach(() => {
     (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {

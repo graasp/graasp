@@ -33,7 +33,7 @@ export class ItemLoginSchema extends BaseEntity {
     nullable: false,
     length: 100,
   })
-  type: ItemLoginSchemaType;
+  type: `${ItemLoginSchemaType}` | ItemLoginSchemaType;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

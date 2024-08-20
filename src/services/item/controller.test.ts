@@ -72,7 +72,7 @@ describe('Item controller', () => {
           entities: [
             {
               item: buildPathFromIds(rootUUID),
-              member: actor?.id,
+              account: actor?.id,
               permission: PermissionLevel.Admin,
             },
           ],

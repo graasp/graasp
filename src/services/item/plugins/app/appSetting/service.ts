@@ -109,31 +109,21 @@ export class AppSettingService {
     return result;
   }
 
-  async get(
-    member: Member | undefined,
-    repositories: Repositories,
-    itemId: string,
-    appSettingId: UUID,
-  ) {
+  async get(actor: Actor, repositories: Repositories, itemId: string, appSettingId: UUID) {
     const { appSettingRepository } = repositories;
 
     // get app setting is allowed to readers
-    await this.itemService.get(member, repositories, itemId);
+    await this.itemService.get(actor, repositories, itemId);
 
     return await appSettingRepository.getOneOrThrow(appSettingId);
   }
 
-  async getForItem(
-    member: Member | undefined,
-    repositories: Repositories,
-    itemId: string,
-    name?: string,
-  ) {
+  async getForItem(actor: Actor, repositories: Repositories, itemId: string, name?: string) {
     const { appSettingRepository } = repositories;
 
     // item can be public
     // get app setting is allowed to readers
-    await this.itemService.get(member, repositories, itemId);
+    await this.itemService.get(actor, repositories, itemId);
 
     return appSettingRepository.getForItem(itemId, name);
   }

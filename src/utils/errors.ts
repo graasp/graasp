@@ -63,7 +63,7 @@ export class MemberCannotAdminItem extends CoreError {
   }
 }
 export class InvalidMembership extends CoreError {
-  constructor(data?: { itemId: string; memberId: string; permission: string }) {
+  constructor(data?: { itemId: string; accountId: string; permission: string }) {
     super(
       {
         code: 'GERR005',

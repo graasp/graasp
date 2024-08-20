@@ -34,8 +34,8 @@ export const saveAppActions = async ({ item, member }: { item: Item; member: Mem
   const defaultData = { type: 'some-type', data: { some: 'data' } };
   const rawAppActionRepository = AppDataSource.getRepository(AppAction);
 
-  const s1 = await rawAppActionRepository.save({ item, member, ...defaultData });
-  const s2 = await rawAppActionRepository.save({ item, member, ...defaultData });
-  const s3 = await rawAppActionRepository.save({ item, member, ...defaultData });
+  const s1 = await rawAppActionRepository.save({ item, account: member, ...defaultData });
+  const s2 = await rawAppActionRepository.save({ item, account: member, ...defaultData });
+  const s3 = await rawAppActionRepository.save({ item, account: member, ...defaultData });
   return [s1, s2, s3];
 };

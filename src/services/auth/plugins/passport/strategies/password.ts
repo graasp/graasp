@@ -25,7 +25,7 @@ export default (
           const member = await memberPasswordService.authenticate(repositories, email, password);
           if (member) {
             // Token has been validated
-            return done(null, { member });
+            return done(null, { account: member });
           } else {
             // Authentication refused
             return done(new UnauthorizedMember(), false);

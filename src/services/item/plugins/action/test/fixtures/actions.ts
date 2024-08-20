@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { Context } from '@graasp/sdk';
 
+import { Account } from '../../../../../account/entities/account';
 import { Action } from '../../../../../action/entities/action';
 import { ActionRepository } from '../../../../../action/repositories/action';
 import { Member } from '../../../../../member/entities/member';
@@ -12,7 +13,7 @@ const getDummyAction = (
   view: Context,
   type: ItemActionType,
   createdAt: Date,
-  member: Member,
+  account: Account,
   item: Item,
 ): Action => {
   const buildId = uuidv4();
@@ -22,7 +23,7 @@ const getDummyAction = (
     type: type,
     geolocation: {},
     createdAt: createdAt,
-    member: member,
+    account,
     item: item,
     extra: {},
   } as unknown as Action;

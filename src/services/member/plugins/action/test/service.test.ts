@@ -7,7 +7,7 @@ import { Action } from '../../../../action/entities/action';
 import { ActionService } from '../../../../action/services/action';
 import { getMemberActions } from '../../../../action/test/fixtures/actions';
 import { ItemService } from '../../../../item/service';
-import { Actor } from '../../../entities/member';
+import { Actor, assertIsMember } from '../../../entities/member';
 import { MemberService } from '../../../service';
 import { ActionMemberService } from '../service';
 import { saveActionsWithItems } from './utils';
@@ -38,6 +38,7 @@ describe('Action member service', () => {
     it('get filtered actions by start and end date for auth member ', async () => {
       ({ app, actor } = await build());
       const member = notUndefined(actor);
+      assertIsMember(member);
       await saveActionsWithItems(actor);
       const result = await getActionMemberService().getFilteredActions(
         member,
@@ -50,6 +51,7 @@ describe('Action member service', () => {
     it("get filtered actions by start and end date for auth member shouldn't contain actions for items with no permisson", async () => {
       ({ app, actor } = await build());
       const member = notUndefined(actor);
+      assertIsMember(member);
       await saveActionsWithItems(actor, { saveActionForNotOwnedItem: true });
       const result = await getActionMemberService().getFilteredActions(
         member,

@@ -12,7 +12,7 @@ export const saveActions = async (
 };
 
 export const getMemberActions = async (rawRepository, memberId): Promise<Action[]> => {
-  return rawRepository.findBy({ member: { id: memberId } });
+  return rawRepository.findBy({ account: { id: memberId } });
 };
 
 export const expectAction = (action, correctAction) => {

@@ -21,8 +21,8 @@ export const RecycledItemDataRepository = AppDataSource.getRepository(RecycledIt
         'im',
         `im.item_path @> item.path 
         AND im.permission = :permission 
-        AND im.member_id = :memberId`,
-        { permission: PermissionLevel.Admin, memberId: member.id },
+        AND im.account_id = :accountId`,
+        { permission: PermissionLevel.Admin, accountId: member.id },
       )
       .getMany();
 

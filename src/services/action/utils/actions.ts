@@ -10,7 +10,7 @@ export const getView = (headers: { origin?: string | string[] }): Context =>
   CLIENT_HOSTS.find(({ url }) => headers?.origin?.includes(url.hostname))?.name ?? Context.Unknown;
 
 export const aggregateExpressionNames = {
-  user: 'action.member_id',
+  user: 'action.account_id',
   actionType: 'action.type',
   actionLocation: 'action.geolocation',
   itemId: 'action.item_id',

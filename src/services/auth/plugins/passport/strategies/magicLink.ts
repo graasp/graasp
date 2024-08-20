@@ -27,7 +27,7 @@ export default (
           const member = await memberRepository.get(sub);
           if (member) {
             // Token has been validated
-            return done(null, { member }, { emailValidation });
+            return done(null, { account: member }, { emailValidation });
           } else {
             // Authentication refused
             return done(

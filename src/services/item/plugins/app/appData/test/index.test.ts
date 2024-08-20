@@ -38,7 +38,7 @@ const setUpForAppData = async (
   const appData = await saveAppData({
     item: values.item,
     creator: creator ?? actor,
-    member: actor ?? creator,
+    account: actor ?? creator,
   });
   return { ...values, appData };
 };
@@ -384,7 +384,7 @@ describe('App Data Tests', () => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-          payload: { ...payload, memberId: bob.id },
+          payload: { ...payload, accountId: bob.id },
         });
         expect(response.statusCode).toEqual(StatusCodes.OK);
         const newAppData = response.json();
@@ -392,7 +392,7 @@ describe('App Data Tests', () => {
         // we don't use the util function because it does not contain an id for iteration
         expect(newAppData.type).toEqual(payload.type);
         expect(newAppData.data).toEqual(payload.data);
-        expectMinimalMember(newAppData.member, bob);
+        expectMinimalMember(newAppData.account, bob);
         expectMinimalMember(newAppData.creator, actor);
 
         const savedAppData = await new AppDataRepository().getOne(newAppData.id);
@@ -426,7 +426,7 @@ describe('App Data Tests', () => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-          payload: { ...payload, memberId: bob.id },
+          payload: { ...payload, accountId: bob.id },
         });
         expect(response.statusCode).toEqual(StatusCodes.OK);
         const newAppData = response.json();
@@ -434,7 +434,7 @@ describe('App Data Tests', () => {
         // we don't use the util function because it does not contain an id for iteration
         expect(newAppData.type).toEqual(payload.type);
         expect(newAppData.data).toEqual(payload.data);
-        expectMinimalMember(newAppData.member, bob);
+        expectMinimalMember(newAppData.account, bob);
         expectMinimalMember(newAppData.creator, actor);
 
         const savedAppData = await new AppDataRepository().getOne(newAppData.id);
@@ -517,7 +517,7 @@ describe('App Data Tests', () => {
       it('Throw if app data is a file', async () => {
         const fileAppData = await AppDataSource.getRepository(AppData).save({
           type: 'type',
-          member: actor,
+          account: actor,
           data: {
             name: 'name',
             type: ItemType.S3_FILE,

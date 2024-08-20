@@ -1,22 +1,10 @@
-import { compare, hash } from 'bcrypt';
-
 import { ItemLoginSchemaType } from '@graasp/sdk';
 
-import { randomHexOf4 } from '../utils';
-
-const saltRounds = 10;
-
-// TODO: reuse from password plugin?
-export const encryptPassword = async (password: string): Promise<string> =>
-  hash(password, saltRounds);
-
-export const validatePassword = async (
-  plainTextPassword: string,
-  passwordHash: string,
-): Promise<boolean> => compare(plainTextPassword, passwordHash);
-
-export const loginSchemaRequiresPassword = (loginSchema: ItemLoginSchemaType): boolean =>
-  loginSchema === ItemLoginSchemaType.UsernameAndPassword ||
-  loginSchema === ItemLoginSchemaType.AnonymousAndPassword;
-
-export const generateRandomEmail = (): string => `${randomHexOf4()}-${Date.now()}@graasp.org`;
+export function loginSchemaRequiresPassword(
+  loginSchema: `${ItemLoginSchemaType}` | ItemLoginSchemaType,
+): boolean {
+  return (
+    loginSchema === ItemLoginSchemaType.UsernameAndPassword ||
+    loginSchema === ItemLoginSchemaType.AnonymousAndPassword
+  );
+}

@@ -96,7 +96,7 @@ describe('Action Plugin Tests', () => {
       it('Post action for public item', async () => {
         ({ app, actor } = await build({ member: null }));
         const member = await saveMember();
-        const { item } = await testUtils.savePublicItem({ actor: member });
+        const { item } = await testUtils.savePublicItem({ member });
         const response = await app.inject({
           method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions`,
@@ -110,11 +110,11 @@ describe('Action Plugin Tests', () => {
 
         expect(response.statusCode).toEqual(StatusCodes.OK);
         const [action] = await rawActionRepository.find({
-          relations: { item: true, member: true },
+          relations: { item: true, account: true },
         });
         expect(action.type).toEqual('view');
         expect(action.item!.id).toEqual(item.id);
-        expect(action.member).toBeNull();
+        expect(action.account).toBeNull();
       });
     });
     describe('Signed in', () => {
@@ -140,11 +140,11 @@ describe('Action Plugin Tests', () => {
         });
         expect(response.statusCode).toEqual(StatusCodes.OK);
         const [action] = await rawActionRepository.find({
-          relations: { item: true, member: true },
+          relations: { item: true, account: true },
         });
         expect(action.type).toEqual('view');
         expect(action.item!.id).toEqual(item.id);
-        expect(action.member!.id).toEqual(actor.id);
+        expect(action.account!.id).toEqual(actor.id);
       });
 
       it('Post action with extra', async () => {
@@ -162,11 +162,11 @@ describe('Action Plugin Tests', () => {
 
         expect(response.statusCode).toEqual(StatusCodes.OK);
         const [action] = await rawActionRepository.find({
-          relations: { item: true, member: true },
+          relations: { item: true, account: true },
         });
         expect(action.type).toEqual('view');
         expect(action.item!.id).toEqual(item.id);
-        expect(action.member!.id).toEqual(actor.id);
+        expect(action.account!.id).toEqual(actor.id);
         expect(action.extra.foo).toEqual('bar');
       });
 
@@ -350,7 +350,7 @@ describe('Action Plugin Tests', () => {
       const { item } = await testUtils.saveItemAndMembership({ member: members[0] });
       await testUtils.saveMembership({
         item,
-        member: actor,
+        account: actor,
         permission: PermissionLevel.Read,
       });
 

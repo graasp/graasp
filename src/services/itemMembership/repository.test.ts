@@ -6,21 +6,19 @@ import build, { clearDatabase } from '../../../test/app';
 import { buildRepositories } from '../../utils/repositories';
 import { Item } from '../item/entities/Item';
 import { ItemTestUtils } from '../item/test/fixtures/items';
-import { Member } from '../member/entities/member';
+import { Member, isMember } from '../member/entities/member';
 import { saveMember } from '../member/test/fixtures/members';
-import { MembershipRequest } from './plugins/MembershipRequest/entities/MembershipRequest';
+import { ItemMembership } from './entities/ItemMembership';
 import { ItemMembershipRepository } from './repository';
 
 const testUtils = new ItemTestUtils();
 
 function crossArrayCheck(
   itemArray: Item[],
-  membershipRequestArray: MembershipRequest[],
+  itemMembershipArray: ItemMembership[],
   crossIdMap: { [key in string]: string[] },
 ): boolean {
-  return membershipRequestArray.every((m) =>
-    itemArray.some((i) => crossIdMap[i.path].includes(m.id)),
-  );
+  return itemMembershipArray.every((m) => itemArray.some((i) => crossIdMap[i.path].includes(m.id)));
 }
 
 describe('ItemMembership Repository', () => {
@@ -66,7 +64,7 @@ describe('ItemMembership Repository', () => {
         const permission = entry as PermissionLevel;
         for (let i = 0; i < preset[permission]; i++) {
           const temporaryMember = await saveMember();
-          await testUtils.saveMembership({ item, permission, member: temporaryMember });
+          await testUtils.saveMembership({ item, permission, account: temporaryMember });
         }
       }
 
@@ -76,7 +74,15 @@ describe('ItemMembership Repository', () => {
       );
       expect(result).toHaveLength(preset[PermissionLevel.Admin]);
       expect(result.every((m) => m.permission === PermissionLevel.Admin)).toBe(true);
-      expect(result.every((m) => m.member.email)).toBe(true);
+      expect(
+        result.every((m) => {
+          const account = m.account;
+          if (isMember(account)) {
+            return Boolean(account.email);
+          }
+          return false;
+        }),
+      ).toBe(true);
     });
     it('should return all from all ancestors items', async () => {
       const parentItem = await testUtils.saveItem({ actor: creator, parentItem: item });
@@ -104,7 +110,7 @@ describe('ItemMembership Repository', () => {
             const membership = await testUtils.saveMembership({
               item,
               permission,
-              member: temporaryMember,
+              account: temporaryMember,
             });
             memberships[membership.item.path] = [
               ...memberships[membership.item.path],
@@ -123,7 +129,15 @@ describe('ItemMembership Repository', () => {
 
       expect(result).toHaveLength(preset[PermissionLevel.Read] * expectedItems.length);
       expect(result.every((m) => m.permission === PermissionLevel.Read)).toBe(true);
-      expect(result.every((m) => m.member.email)).toBe(true);
+      expect(
+        result.every((m) => {
+          const account = m.account;
+          if (isMember(account)) {
+            return Boolean(account.email);
+          }
+          return false;
+        }),
+      ).toBe(true);
       expect(crossArrayCheck(expectedItems, result, memberships)).toBe(true);
     });
   });

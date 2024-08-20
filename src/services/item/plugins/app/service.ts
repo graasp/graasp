@@ -5,6 +5,7 @@ import { AuthTokenSubject, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { APPS_JWT_SECRET } from '../../../../utils/config';
 import { Repositories } from '../../../../utils/repositories';
+import { Account } from '../../../account/entities/account';
 import { validatePermission } from '../../../authorization';
 import { Actor, Member } from '../../../member/entities/member';
 import { Item, isItemType } from '../../entities/Item';
@@ -28,8 +29,8 @@ export class AppService {
     return repositories.appRepository.getAll(publisherId);
   }
 
-  async getMostUsedApps(member: Member, repositories: Repositories) {
-    return repositories.appRepository.getMostUsedApps(member.id);
+  async getMostUsedApps(account: Account, repositories: Repositories) {
+    return repositories.appRepository.getMostUsedApps(account.id);
   }
 
   async getApiAccessToken(
@@ -96,7 +97,7 @@ export class AppService {
     const memberships = await repositories.itemMembershipRepository.getForManyItems([item]);
     // get members only without duplicate
     return uniqBy(
-      memberships.data[item.id].map(({ member }) => member),
+      memberships.data[item.id].map(({ account }) => account),
       ({ id }) => id,
     );
   }

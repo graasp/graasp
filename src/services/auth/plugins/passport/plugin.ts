@@ -3,6 +3,7 @@ import { fastifySecureSession } from '@fastify/secure-session';
 import { FastifyInstance, FastifyPluginAsync, PassportUser } from 'fastify';
 
 import { resolveDependency } from '../../../../di/utils';
+import { assertNonNull } from '../../../../utils/assertions';
 import {
   AUTH_TOKEN_JWT_SECRET,
   COOKIE_DOMAIN,
@@ -32,6 +33,7 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   const memberPasswordService = resolveDependency(MemberPasswordService);
   const repositories: Repositories = buildRepositories();
   const memberRepository = repositories.memberRepository;
+  const accountRepository = repositories.accountRepository;
   const itemRepository = repositories.itemRepository;
 
   // Mandatory registration for @fastify/passport
@@ -88,7 +90,7 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   });
   jwtStrategy(
     fastifyPassport,
-    memberRepository,
+    accountRepository,
     PassportStrategy.MobileJwt,
     AUTH_TOKEN_JWT_SECRET,
     {
@@ -97,31 +99,34 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   );
   jwtStrategy(
     fastifyPassport,
-    memberRepository,
+    accountRepository,
     PassportStrategy.RefreshToken,
     REFRESH_TOKEN_JWT_SECRET,
     { propagateError: false },
   );
   jwtAppsStrategy(
     fastifyPassport,
-    memberRepository,
+    accountRepository,
     itemRepository,
     PassportStrategy.AppsJwt,
     true,
   );
   jwtAppsStrategy(
     fastifyPassport,
-    memberRepository,
+    accountRepository,
     itemRepository,
     PassportStrategy.OptionalAppsJwt,
     false,
   );
 
   // Serialize and Deserialize user
-  fastifyPassport.registerUserSerializer(async (user: PassportUser, _req) => user.member!.id);
+  fastifyPassport.registerUserSerializer(async (user: PassportUser, _req) => {
+    assertNonNull(user.account);
+    return user.account.id;
+  });
   fastifyPassport.registerUserDeserializer(async (uuid: string, _req): Promise<PassportUser> => {
     return {
-      member: await memberRepository.get(uuid),
+      account: await accountRepository.get(uuid),
     };
   });
 };

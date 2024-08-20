@@ -31,7 +31,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     async (request) => {
       const { user, body } = request;
       const repositories = buildRepositories();
-      const member = user?.member;
+      const member = user?.account;
       const searchResults = await searchService.search(member, repositories, body);
       const action = {
         type: ActionTriggers.ItemSearch,

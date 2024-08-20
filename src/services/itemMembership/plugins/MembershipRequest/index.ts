@@ -11,7 +11,8 @@ import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne, validatePermission } from '../../../authorization';
 import { ItemService } from '../../../item/service';
-import { validatedMember } from '../../../member/strategies/validatedMember';
+import { assertIsMember } from '../../../member/entities/member';
+import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { ItemMembershipService } from '../../service';
 import {
   ItemMembershipAlreadyExists,
@@ -43,10 +44,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/items/:itemId/memberships/requests',
     {
       schema: getAllByItem,
-      preHandler: [isAuthenticated, matchOne(validatedMember)],
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
     async ({ user, params }, reply) => {
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
       const { itemId } = params;
 
       await db.transaction(async (manager) => {
@@ -68,10 +69,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/items/:itemId/memberships/requests/own',
     {
       schema: getOwn,
-      preHandler: [isAuthenticated, matchOne(validatedMember)],
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
     async ({ user, params }, reply) => {
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
       const { itemId } = params;
 
       await db.transaction(async (manager) => {
@@ -105,10 +106,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/items/:itemId/memberships/requests',
     {
       schema: createOne,
-      preHandler: [isAuthenticated, matchOne(validatedMember)],
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
     async ({ user, params }, reply) => {
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
+      assertIsMember(member);
       const { itemId } = params;
 
       await db.transaction(async (manager) => {
@@ -156,10 +158,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/items/:itemId/memberships/requests/:memberId',
     {
       schema: deleteOne,
-      preHandler: [isAuthenticated, matchOne(validatedMember)],
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
     async ({ user, params }, reply) => {
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
       const { itemId, memberId } = params;
 
       await db.transaction(async (manager) => {

@@ -32,7 +32,7 @@ const chatBotPlugin: FastifyPluginAsync = async (fastify) => {
         preHandler: authenticateAppsJWT,
       },
       async ({ user, params: { itemId }, body: prompt, query }, reply) => {
-        const member = notUndefined(user?.member);
+        const member = notUndefined(user?.account);
         const jwtItemId = notUndefined(user?.app).item.id;
         const repositories = buildRepositories();
         if (jwtItemId !== itemId) {

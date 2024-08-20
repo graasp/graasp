@@ -2054,9 +2054,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@npm:4.25.0":
+"@graasp/sdk@graasp/graasp-sdk#568-new-membertype":
   version: 4.25.0
-  resolution: "@graasp/sdk@npm:4.25.0"
+  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=dcdb20a65c65d1ff5bca2b3660d3e8f8c4d4bf6b"
   dependencies:
     "@faker-js/faker": "npm:8.4.1"
     filesize: "npm:10.1.4"
@@ -2065,16 +2065,16 @@ __metadata:
   peerDependencies:
     date-fns: ^3
     uuid: ^9 || ^10.0.0
-  checksum: 10/1ec2b05e95e46cada1531a44a03deb9bdb4796f15b80acd37e1bc1bf75c2791f686ab9b4701337c2ee26abc7c2055cf954ede0a8271618ff3647fad19b7c5488
+  checksum: 10/24730aa504d44e31460234f4cb45e299ec754129acee036ab0445cd56964d401d94979c7e304173ef4f066dded673f56d3ba4078b9c0409f831c1944f1b71599
   languageName: node
   linkType: hard
 
-"@graasp/translations@npm:1.35.0":
+"@graasp/translations@graasp/graasp-translations#470-need-more-failure-messages-for-item-login-refactoring":
   version: 1.35.0
-  resolution: "@graasp/translations@npm:1.35.0"
+  resolution: "@graasp/translations@https://github.com/graasp/graasp-translations.git#commit=5eb9a3c5d4426f937987f059a5a5306c023bb93d"
   peerDependencies:
     i18next: ^23.8.1
-  checksum: 10/d5227f2ced80faaa7a852a1b4760c47ac592b8cfc2f8fba63e4bd45e27139f17451a060714020a8eb0f2a988d7e726b164fc609af4a056339a4f634866d45797
+  checksum: 10/4e482aea1eff9e1b9d9b85a50c80008d3182a9009f5724cff9e81ed086a832b32a9d03e449f313a761568ea78f6289f3381028356eabdce3fd14cbf9bb0af12b
   languageName: node
   linkType: hard
 
@@ -7554,8 +7554,8 @@ __metadata:
     "@fastify/swagger-ui": "npm:4.0.0"
     "@fastify/websocket": "npm:7.2.0"
     "@graasp/etherpad-api": "npm:2.1.1"
-    "@graasp/sdk": "npm:4.25.0"
-    "@graasp/translations": "npm:1.35.0"
+    "@graasp/sdk": "graasp/graasp-sdk#568-new-membertype"
+    "@graasp/translations": "graasp/graasp-translations#470-need-more-failure-messages-for-item-login-refactoring"
     "@jest/globals": "npm:29.7.0"
     "@rapideditor/country-coder": "npm:5.2.2"
     "@sentry/node": "npm:7.118.0"

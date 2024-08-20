@@ -6,6 +6,9 @@ import { resolveDependency } from '../../../../di/utils';
 import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
+import { matchOne } from '../../../authorization';
+import { assertIsMember } from '../../entities/member';
+import { memberAccountRole } from '../../strategies/memberAccountRole';
 import { exportMemberData } from './schemas/schemas';
 import { ExportMemberDataService } from './service';
 
@@ -18,15 +21,15 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/',
     {
       schema: exportMemberData,
-      preHandler: isAuthenticated,
+      preHandler: [isAuthenticated, matchOne(memberAccountRole)],
     },
     async ({ user }, reply) => {
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
+      assertIsMember(member);
       db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
-
         await exportMemberDataService.requestDataExport({
-          actor: member,
+          member,
           repositories,
         });
       });

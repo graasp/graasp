@@ -2,10 +2,10 @@ import { Ajv } from 'ajv';
 
 import { UUID } from '@graasp/sdk';
 
+import { Account } from '../../../account/entities/account';
 import { Action } from '../../../action/entities/action';
 import { ChatMessage } from '../../../chat/chatMessage';
 import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
-import { Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import { AppAction } from '../app/appAction/appAction';
 import { AppData } from '../app/appData/appData';
@@ -14,7 +14,7 @@ import { memberSchema, memberSchemaForAnalytics } from './schemas';
 
 export class BaseAnalytics {
   readonly actions: Action[];
-  readonly members: Member[];
+  readonly members: Account[];
   readonly itemMemberships: ItemMembership[];
   readonly descendants: Item[];
   readonly item: Item;
@@ -35,7 +35,7 @@ export class BaseAnalytics {
     item: Item;
     descendants: Item[];
     actions: Action[];
-    members: Member[];
+    members: Account[];
     itemMemberships: ItemMembership[];
     chatMessages: ChatMessage[];
     apps: {
@@ -63,9 +63,9 @@ export class BaseAnalytics {
 
     args.descendants.forEach((i) => validateMember(i.creator));
 
-    args.itemMemberships.forEach((im) => validateMember(im.member));
+    args.itemMemberships.forEach((im) => validateMember(im.account));
 
-    args.actions.forEach((a) => validateMember(a.member));
+    args.actions.forEach((a) => validateMember(a.account));
 
     args.chatMessages.forEach((m) => validateMember(m.creator));
 
@@ -74,8 +74,10 @@ export class BaseAnalytics {
         validateMember(creator);
       });
 
-      data.forEach(({ member, creator }) => validateMember(member) && validateMember(creator));
-      actions.forEach(({ member }) => validateMember(member));
+      data.forEach(
+        ({ account: member, creator }) => validateMember(member) && validateMember(creator),
+      );
+      actions.forEach(({ account: member }) => validateMember(member));
     });
 
     this.actions = args.actions;

@@ -4,6 +4,7 @@ import { FolderItemFactory } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
 import { AppDataSource } from '../../../../plugins/datasource';
+import { Account } from '../../../account/entities/account';
 import { ChatMessageRepository } from '../../../chat/repository';
 import { Member } from '../../../member/entities/member';
 import { saveMembers } from '../../../member/test/fixtures/members';
@@ -23,16 +24,15 @@ const metadata = {
   requestedSampleSize: 0,
 };
 
-const expectMinimalMemberOrUndefined = (member?: Partial<Member> | null) => {
-  if (!member) {
+const expectMinimalAccountOrUndefined = (account?: Partial<Account> | null) => {
+  if (!account) {
     return;
   }
 
-  expect(member.createdAt).toBeUndefined();
-  expect(member.updatedAt).toBeUndefined();
-  expect(member.name).toBeTruthy();
-  expect(member.id).toBeTruthy();
-  expect(member.email).toBeTruthy();
+  expect(account.createdAt).toBeUndefined();
+  expect(account.updatedAt).toBeUndefined();
+  expect(account.name).toBeTruthy();
+  expect(account.id).toBeTruthy();
 };
 
 describe('Base Analytics', () => {
@@ -78,17 +78,16 @@ describe('Base Analytics', () => {
     });
 
     for (const m of members) {
-      const member = analytics.members.find((me) => me.name === m.name);
-
+      const member = analytics.members.find((me) => me.name === m.name) as Member | undefined;
       // lang exists
       if (m?.extra?.lang) {
         expect(member?.extra.lang).toBeTruthy();
       }
-      expectMinimalMemberOrUndefined(member);
+      expectMinimalAccountOrUndefined(member);
     }
 
     for (const cm of analytics.chatMessages) {
-      expectMinimalMemberOrUndefined(cm.creator);
+      expectMinimalAccountOrUndefined(cm.creator);
     }
 
     const {
@@ -97,14 +96,14 @@ describe('Base Analytics', () => {
       settings: appSettings,
     } = Object.values(analytics.apps)[0];
     for (const aa of appActions) {
-      expectMinimalMemberOrUndefined(aa.member);
+      expectMinimalAccountOrUndefined(aa.account);
     }
     for (const ad of appData) {
-      expectMinimalMemberOrUndefined(ad.member);
-      expectMinimalMemberOrUndefined(ad.creator);
+      expectMinimalAccountOrUndefined(ad.account);
+      expectMinimalAccountOrUndefined(ad.creator);
     }
     for (const as of appSettings) {
-      expectMinimalMemberOrUndefined(as.creator);
+      expectMinimalAccountOrUndefined(as.creator);
     }
   });
 });

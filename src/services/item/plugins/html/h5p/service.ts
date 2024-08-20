@@ -64,7 +64,7 @@ export class H5PService extends HtmlService {
   }
 
   async copy(
-    actor: Member,
+    member: Member,
     repositories: Repositories,
     {
       original: item,
@@ -81,12 +81,12 @@ export class H5PService extends HtmlService {
     const remoteRootPath = this.buildRootPath(this.pathPrefix, newContentId);
 
     // copy .h5p file
-    await this.fileService.copy(actor, {
+    await this.fileService.copy(member, {
       originalPath: path.join(this.pathPrefix, extra.h5p.h5pFilePath),
       newFilePath: this.buildH5PPath(remoteRootPath, newName),
     });
     // copy content folder
-    await this.fileService.copyFolder(actor, {
+    await this.fileService.copyFolder({
       originalFolderPath: path.join(this.pathPrefix, extra.h5p.contentFilePath),
       newFolderPath: this.buildContentPath(remoteRootPath),
     });

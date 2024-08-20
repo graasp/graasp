@@ -74,15 +74,15 @@ export class ThumbnailService {
     return result;
   }
 
-  async delete(actor: Member, { id, size }: { size: string; id: string }) {
+  async delete({ id, size }: { size: string; id: string }) {
     const filePath = this.buildFilePath(id, size);
-    await this._fileService.delete(actor, filePath);
+    await this._fileService.delete(filePath);
   }
 
   async copyFolder(actor: Member, { originalId, newId }: { originalId: string; newId: string }) {
     const originalFolderPath = this.buildFolderPath(originalId);
     const newFolderPath = this.buildFolderPath(newId);
-    await this._fileService.copyFolder(actor, { originalFolderPath, newFolderPath });
+    await this._fileService.copyFolder({ originalFolderPath, newFolderPath });
   }
 }
 

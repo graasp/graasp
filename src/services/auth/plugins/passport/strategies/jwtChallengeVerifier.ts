@@ -5,14 +5,14 @@ import { Authenticator } from '@fastify/passport';
 
 import { JWT_SECRET } from '../../../../../utils/config';
 import { ChallengeFailed, MemberNotFound, UnauthorizedMember } from '../../../../../utils/errors';
-import { MemberRepository } from '../../../../member/repository';
+import { AccountRepository } from '../../../../account/repository';
 import { SHORT_TOKEN_PARAM } from '../constants';
 import { PassportStrategy } from '../strategies';
 import { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
 
 export default (
   passport: Authenticator,
-  memberRepository: MemberRepository,
+  accountRepository: AccountRepository,
   options?: CustomStrategyOptions,
 ) => {
   passport.use(
@@ -44,10 +44,10 @@ export default (
 
         //-- Fetch Member Data --//
         try {
-          const member = await memberRepository.get(sub);
-          if (member) {
+          const account = await accountRepository.get(sub);
+          if (account) {
             // Token has been validated
-            return done(null, { member }, { emailValidation });
+            return done(null, { account }, { emailValidation });
           } else {
             // Authentication refused
             return done(

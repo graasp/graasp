@@ -8,8 +8,7 @@ import { resolveDependency } from '../../../../di/utils';
 import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
-import { matchOne } from '../../../authorization';
-import { validatedMember } from '../../../member/strategies/validatedMember';
+import { isMember } from '../../../member/entities/member';
 import { ChatMention } from './chatMention';
 import commonMentions, {
   clearAllMentions,
@@ -46,16 +45,15 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // send email on mention creation
   mentionService.hooks.setPostHook(
     'createMany',
-    async (creator, repositories, { mentions, item }) => {
+    async (creator, _repositories, { mentions, item }) => {
       if (!creator) {
         return;
       }
       mentions.forEach((mention) => {
-        mentionService.sendMentionNotificationEmail({
-          item,
-          member: (mention as ChatMention).member,
-          creator,
-        });
+        const member = (mention as ChatMention).account;
+        if (isMember(member)) {
+          mentionService.sendMentionNotificationEmail({ item, member, creator });
+        }
       });
     },
   );
@@ -65,8 +63,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/mentions',
     { schema: getMentions, preHandler: isAuthenticated },
     async ({ user }) => {
-      const member = notUndefined(user?.member);
-      return mentionService.getForMember(member, buildRepositories());
+      const member = notUndefined(user?.account);
+      return mentionService.getForAccount(member, buildRepositories());
     },
   );
 
@@ -75,10 +73,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     Body: { status: MentionStatus };
   }>(
     '/mentions/:mentionId',
-    { schema: patchMention, preHandler: [isAuthenticated, matchOne(validatedMember)] },
+    { schema: patchMention, preHandler: isAuthenticated },
     async ({ user, params: { mentionId }, body: { status } }) => {
       return db.transaction(async (manager) => {
-        const member = notUndefined(user?.member);
+        const member = notUndefined(user?.account);
         return mentionService.patch(member, buildRepositories(manager), mentionId, status);
       });
     },
@@ -87,10 +85,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // delete one mention by id
   fastify.delete<{ Params: { mentionId: string } }>(
     '/mentions/:mentionId',
-    { schema: deleteMention, preHandler: [isAuthenticated, matchOne(validatedMember)] },
+    { schema: deleteMention, preHandler: isAuthenticated },
     async ({ user, params: { mentionId } }) => {
       return db.transaction(async (manager) => {
-        const member = notUndefined(user?.member);
+        const member = notUndefined(user?.account);
         return mentionService.deleteOne(member, buildRepositories(manager), mentionId);
       });
     },
@@ -99,10 +97,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // delete all mentions for a user
   fastify.delete(
     '/mentions',
-    { schema: clearAllMentions, preHandler: [isAuthenticated, matchOne(validatedMember)] },
+    {
+      schema: clearAllMentions,
+      preHandler: isAuthenticated,
+    },
     async ({ user }, reply) => {
+      const member = notUndefined(user?.account);
       await db.transaction(async (manager) => {
-        const member = notUndefined(user?.member);
         await mentionService.deleteAll(member, buildRepositories(manager));
       });
       reply.status(StatusCodes.NO_CONTENT);

@@ -3,13 +3,13 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Authenticator } from '@fastify/passport';
 
 import { MemberNotFound, UnauthorizedMember } from '../../../../../utils/errors';
-import { MemberRepository } from '../../../../member/repository';
+import { AccountRepository } from '../../../../account/repository';
 import { PassportStrategy } from '../strategies';
 import { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
 
 export default (
   passport: Authenticator,
-  memberRepository: MemberRepository,
+  accountRepository: AccountRepository,
   strategy: PassportStrategy,
   secretOrKey: string,
   options?: CustomStrategyOptions,
@@ -23,10 +23,10 @@ export default (
       },
       async ({ sub }, done: StrictVerifiedCallback) => {
         try {
-          const member = await memberRepository.get(sub);
-          if (member) {
+          const account = await accountRepository.get(sub);
+          if (account) {
             // Token has been validated
-            return done(null, { member });
+            return done(null, { account });
           } else {
             // Authentication refused
             return done(

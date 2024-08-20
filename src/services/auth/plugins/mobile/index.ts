@@ -12,6 +12,7 @@ import {
   MOBILE_DEEP_LINK_PROTOCOL,
 } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
+import { isMember } from '../../../member/entities/member';
 import { MemberService } from '../../../member/service';
 import { generateAuthTokensPair, getRedirectionUrl } from '../../utils';
 import captchaPreHandler from '../captcha';
@@ -103,7 +104,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         user,
         body: { challenge },
       } = request;
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
 
       const token = memberPasswordService.generateToken(
         { sub: member.id, challenge: challenge },
@@ -127,12 +128,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: authenticateJWTChallengeVerifier,
     },
     async ({ user, authInfo }) => {
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
       await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
         await memberService.refreshLastAuthenticatedAt(member.id, repositories);
         // on auth, if the user used the email sign in, its account gets validated
-        if (authInfo?.emailValidation && !member.isValidated) {
+        if (authInfo?.emailValidation && isMember(member) && !member.isValidated) {
           await memberService.validate(member.id, repositories);
         }
       });
@@ -146,7 +147,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: authenticateRefreshToken,
     },
     async ({ user }) => {
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
       return generateAuthTokensPair(member.id);
     },
   );

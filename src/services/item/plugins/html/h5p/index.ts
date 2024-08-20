@@ -14,8 +14,8 @@ import { CLIENT_HOSTS } from '../../../../../utils/config';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { isAuthenticated } from '../../../../auth/plugins/passport';
 import { matchOne, validatePermission } from '../../../../authorization';
-import { Member } from '../../../../member/entities/member';
-import { validatedMember } from '../../../../member/strategies/validatedMember';
+import { Member, assertIsMember, isMember } from '../../../../member/entities/member';
+import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
 import { Item, isItemType } from '../../../entities/Item';
 import { ItemService } from '../../../service';
 import { FastifyStaticReply } from '../types';
@@ -128,14 +128,15 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify) => {
 
     fastify.post<{ Querystring: { parentId?: string; previousItemId?: string } }>(
       '/h5p-import',
-      { schema: h5pImport, preHandler: [isAuthenticated, matchOne(validatedMember)] },
+      { schema: h5pImport, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
       async (request) => {
         const {
           user,
           log,
           query: { parentId, previousItemId },
         } = request;
-        const member = notUndefined(user?.member);
+        const member = notUndefined(user?.account);
+        assertIsMember(member);
         return db.transaction(async (manager) => {
           const repositories = buildRepositories(manager);
 
@@ -180,7 +181,7 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify) => {
       return;
     }
     const { extra } = item;
-    await h5pService.deletePackage(actor, extra.h5p.contentId);
+    await h5pService.deletePackage(extra.h5p.contentId);
   });
 
   /**
@@ -191,7 +192,7 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify) => {
     if (!isItemType(item, ItemType.H5P) || !isItemType(copy, ItemType.H5P)) {
       return;
     }
-    if (!actor) {
+    if (!actor || !isMember(actor)) {
       return;
     }
 

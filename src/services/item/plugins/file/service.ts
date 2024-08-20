@@ -98,7 +98,7 @@ class FileItemService {
 
       // throw for empty files
       if (!size) {
-        await this.fileService.delete(actor, filepath);
+        await this.fileService.delete(filepath);
         throw new UploadEmptyFileError();
       }
 
@@ -204,7 +204,7 @@ class FileItemService {
     return result;
   }
 
-  async copy(actor: Member, repositories: Repositories, { copy }: { original; copy }) {
+  async copy(member: Member, repositories: Repositories, { copy }: { original; copy }) {
     const { id, extra } = copy; // full copy with new `id`
     const { path: originalPath, mimetype } = extra[this.fileService.fileType];
     // filenames are not used
@@ -222,7 +222,7 @@ class FileItemService {
     // DON'T use task runner for copy file task: this would generate a new transaction
     // which is useless since the file copy task should not touch the DB at all
     // TODO: replace when the file plugin has been refactored into a proper file service
-    const filepath = await this.fileService.copy(actor, data);
+    const filepath = await this.fileService.copy(member, data);
 
     // update item copy's 'extra'
     if (this.fileService.fileType === ItemType.S3_FILE) {

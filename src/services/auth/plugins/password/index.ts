@@ -9,6 +9,8 @@ import { notUndefined } from '../../../../utils/assertions';
 import { LOGIN_TOKEN_EXPIRATION_IN_MINUTES, PUBLIC_URL } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
 import { ActionService } from '../../../action/services/action';
+import { matchOne } from '../../../authorization';
+import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { getRedirectionUrl } from '../../utils';
 import captchaPreHandler from '../captcha';
 import {
@@ -52,8 +54,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     async (request, reply) => {
       const { body, log, user } = request;
       const { url } = body;
-      const member = notUndefined(user?.member);
-      const token = memberPasswordService.generateToken(
+      const member = notUndefined(user?.account);
+      const token = await memberPasswordService.generateToken(
         { sub: member.id },
         `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
       );
@@ -77,9 +79,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
    */
   fastify.post<{ Body: { password: string } }>(
     '/password',
-    { schema: setPassword, preHandler: isAuthenticated },
+    { schema: setPassword, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async ({ user, body: { password } }, reply) => {
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
       return db.transaction(async (manager) => {
         await memberPasswordService.post(member, buildRepositories(manager), password);
         reply.status(StatusCodes.NO_CONTENT);
@@ -96,9 +98,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
    */
   fastify.patch<{ Body: { currentPassword: string; password: string } }>(
     '/password',
-    { schema: updatePassword, preHandler: isAuthenticated },
+    { schema: updatePassword, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async ({ user, body: { currentPassword, password } }, reply) => {
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
       return db.transaction(async (manager) => {
         await memberPasswordService.patch(
           member,
@@ -203,9 +205,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: [isAuthenticated],
     },
     async ({ user }) => {
-      const member = notUndefined(user?.member);
+      const account = notUndefined(user?.account);
       const repositories = buildRepositories();
-      const hasPassword = await memberPasswordService.hasPassword(repositories, member.id);
+      const hasPassword = await memberPasswordService.hasPassword(repositories, account.id);
       return { hasPassword };
     },
   );

@@ -19,17 +19,21 @@ export const saveActionsWithItems = async (member, { saveActionForNotOwnedItem =
   const item = await testUtils.saveItem({ actor: member });
   const actions = [
     ActionFactory({
-      member,
+      account: member,
       item: item as unknown as DiscriminatedItem,
       createdAt: new Date().toISOString(),
     }),
     ActionFactory({
-      member,
+      account: member,
       type: ActionTriggers.CollectionView,
       createdAt: new Date().toISOString(),
     }),
-    ActionFactory({ member }),
-    ActionFactory({ member, createdAt: new Date().toISOString(), type: ActionTriggers.ItemLike }),
+    ActionFactory({ account: member }),
+    ActionFactory({
+      account: member,
+      createdAt: new Date().toISOString(),
+      type: ActionTriggers.ItemLike,
+    }),
   ];
 
   if (saveActionForNotOwnedItem) {
@@ -37,7 +41,7 @@ export const saveActionsWithItems = async (member, { saveActionForNotOwnedItem =
     const notOwnItem = await testUtils.saveItem({ actor: m });
     actions.push(
       ActionFactory({
-        member,
+        account: member,
         createdAt: new Date().toISOString(),
         item: notOwnItem as unknown as DiscriminatedItem,
       }),

@@ -4,7 +4,8 @@ import { FastifyBaseLogger } from 'fastify';
 
 import { Websocket as GraaspWS } from '@graasp/sdk';
 
-import { Actor, Member } from '../member/entities/member';
+import { Account } from '../account/entities/account';
+import { Actor } from '../member/entities/member';
 import {
   createServerErrorResponse,
   createServerSuccessResponse,
@@ -21,7 +22,7 @@ export interface SubscriptionRequest {
   /**
    * Member requesting a subscription
    */
-  member: Member;
+  member: Account;
 }
 
 type ValidationFn = (request: SubscriptionRequest) => Promise<void>;

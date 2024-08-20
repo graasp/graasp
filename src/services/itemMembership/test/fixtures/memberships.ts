@@ -1,12 +1,15 @@
-import { Member } from '../../../member/entities/member';
 import { ItemMembership } from '../../entities/ItemMembership';
 
 export const expectMembership = (
   newMembership:
     | undefined
-    | (Pick<ItemMembership, 'permission' | 'item' | 'member'> & { creator?: Member | null }),
-  correctMembership: undefined | Pick<ItemMembership, 'permission' | 'item' | 'member' | 'creator'>,
-  creator?: Member,
+    | (Pick<ItemMembership, 'permission' | 'item' | 'account'> & {
+        creator?: ItemMembership['creator'];
+      }),
+  correctMembership:
+    | undefined
+    | Pick<ItemMembership, 'permission' | 'item' | 'account' | 'creator'>,
+  creator?: ItemMembership['creator'],
 ) => {
   if (!newMembership || !correctMembership) {
     throw new Error(
@@ -20,5 +23,5 @@ export const expectMembership = (
     expect(newMembership.creator.id).toEqual(correctMembership!.creator!.id);
   }
 
-  expect(newMembership.member.id).toEqual(correctMembership.member.id);
+  expect(newMembership.account.id).toEqual(correctMembership.account.id);
 };

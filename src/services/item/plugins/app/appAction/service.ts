@@ -2,8 +2,8 @@ import { PermissionLevel } from '@graasp/sdk';
 
 import HookManager from '../../../../../utils/hook';
 import { Repositories } from '../../../../../utils/repositories';
+import { Account } from '../../../../account/entities/account';
 import { validatePermission } from '../../../../authorization';
-import { Member } from '../../../../member/entities/member';
 import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request';
 import { AppAction } from './appAction';
 import { AppActionNotAccessible } from './errors';
@@ -17,7 +17,7 @@ export class AppActionService {
     };
   }>();
   async post(
-    member: Member,
+    account: Account,
     repositories: Repositories,
     itemId: string,
     body: Partial<InputAppAction>,
@@ -28,16 +28,16 @@ export class AppActionService {
     const item = await itemRepository.getOneOrThrow(itemId);
 
     // posting an app action is allowed to readers
-    await validatePermission(repositories, PermissionLevel.Read, member, item);
+    await validatePermission(repositories, PermissionLevel.Read, account, item);
 
-    await this.hooks.runPreHooks('post', member, repositories, { appAction: body, itemId });
+    await this.hooks.runPreHooks('post', account, repositories, { appAction: body, itemId });
 
     const appAction = await appActionRepository.addOne({
       itemId,
-      memberId: member.id,
+      accountId: account.id,
       appAction: body,
     });
-    await this.hooks.runPostHooks('post', member, repositories, {
+    await this.hooks.runPostHooks('post', account, repositories, {
       appAction,
       itemId,
     });
@@ -45,7 +45,7 @@ export class AppActionService {
   }
 
   async getForItem(
-    member: Member,
+    account: Account,
     repositories: Repositories,
     itemId: string,
     filters: SingleItemGetFilter,
@@ -59,26 +59,26 @@ export class AppActionService {
     const { itemMembership } = await validatePermission(
       repositories,
       PermissionLevel.Read,
-      member,
+      account,
       item,
     );
     const permission = itemMembership?.permission;
-    let { memberId: fMemberId } = filters;
+    let { accountId: fMemberId } = filters;
 
     // can read only own app action if not admin
     if (permission !== PermissionLevel.Admin) {
       if (!fMemberId) {
-        fMemberId = member.id;
-      } else if (fMemberId !== member.id) {
+        fMemberId = account.id;
+      } else if (fMemberId !== account.id) {
         throw new AppActionNotAccessible();
       }
     }
 
-    return appActionRepository.getForItem(itemId, { memberId: fMemberId });
+    return appActionRepository.getForItem(itemId, { accountId: fMemberId });
   }
 
   async getForManyItems(
-    member: Member,
+    account: Account,
     repositories: Repositories,
     itemIds: string[],
     filters: ManyItemsGetFilter,
@@ -92,15 +92,15 @@ export class AppActionService {
     const { itemMembership } = await validatePermission(
       repositories,
       PermissionLevel.Read,
-      member,
+      account,
       item,
     );
     const permission = itemMembership?.permission;
-    const { memberId: fMemberId } = filters;
+    const { accountId: fMemberId } = filters;
 
     // can read only own app action if not admin
     if (permission !== PermissionLevel.Admin) {
-      if (fMemberId && fMemberId !== member.id) {
+      if (fMemberId && fMemberId !== account.id) {
         throw new AppActionNotAccessible();
       }
     }

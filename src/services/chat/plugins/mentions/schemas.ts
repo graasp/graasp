@@ -34,7 +34,7 @@ export default {
       properties: {
         id: { $ref: 'https://graasp.org/#/definitions/uuid' },
         message: { $ref: 'https://graasp.org/chat/#/definitions/chatMessage' },
-        member: { $ref: 'https://graasp.org/members/#/definitions/member' },
+        account: { $ref: 'https://graasp.org/accounts/#/definitions/account' },
         createdAt: { type: 'string' },
         updatedAt: { type: 'string' },
         status: {

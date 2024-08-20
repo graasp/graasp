@@ -44,12 +44,12 @@ export class AppRepository extends AbstractRepository<App> {
   }
 
   generateApiAccessTokenSubject(
-    memberId: string | undefined,
+    accountId: string | undefined,
     itemId: string,
     appDetails: { key: string; origin: string },
   ): AuthTokenSubject {
     return {
-      memberId,
+      accountId,
       itemId,
       key: appDetails.key, // useful??
       origin: appDetails.origin,

@@ -3,8 +3,8 @@ import { In } from 'typeorm';
 import { ResultOf } from '@graasp/sdk';
 
 import { AppDataSource } from '../../plugins/datasource';
+import { Account } from '../account/entities/account';
 import { MemberIdentifierNotFound } from '../itemLogin/errors';
-import { Member } from '../member/entities/member';
 import { messageSchema } from '../member/plugins/export-data/schemas/schemas';
 import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils';
 import { mapById } from '../utils';
@@ -81,7 +81,7 @@ export const ChatMessageRepository = AppDataSource.getRepository(ChatMessage).ex
    * Adds a message to the given chat
    * @param message Message
    */
-  async postOne(message: { itemId: string; creator: Member; body: string }): Promise<ChatMessage> {
+  async postOne(message: { itemId: string; creator: Account; body: string }): Promise<ChatMessage> {
     const entry = this.create({ ...message, item: message.itemId });
     const created = await this.insert(entry);
     // TODO: optimize

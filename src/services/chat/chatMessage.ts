@@ -10,8 +10,8 @@ import {
 } from 'typeorm';
 import { v4 } from 'uuid';
 
+import { Account } from '../account/entities/account';
 import { Item } from '../item/entities/Item';
-import { Member } from '../member/entities/member';
 
 @Entity()
 export class ChatMessage extends BaseEntity {
@@ -24,9 +24,9 @@ export class ChatMessage extends BaseEntity {
   @JoinColumn({ name: 'item_id' })
   item: Item;
 
-  @ManyToOne(() => Member, (member) => member.id, { onDelete: 'SET NULL', nullable: true })
+  @ManyToOne(() => Account, (account) => account.id, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'creator_id' })
-  creator: Member | null;
+  creator: Account | null;
 
   @CreateDateColumn({ name: 'created_at', nullable: false })
   createdAt: Date;

@@ -7,7 +7,7 @@ export default {
       type: 'object',
       properties: {
         id: { type: 'string' },
-        member: { $ref: 'https://graasp.org/members/#/definitions/member' },
+        account: { $ref: 'https://graasp.org/accounts/#/definitions/account' },
         item: { $ref: 'https://graasp.org/items/#/definitions/item' },
         data: {
           type: 'object',
@@ -32,7 +32,7 @@ const create = {
       data: { type: 'object', additionalProperties: true },
       type: { type: 'string', minLength: 3, maxLength: 25 },
       visibility: { type: 'string', enum: ['member', 'item'] },
-      memberId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      accountId: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
   },
   response: {

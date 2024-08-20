@@ -29,8 +29,8 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
     '/actions',
     { schema: getMemberFilteredActions, preHandler: isAuthenticated },
     async ({ user, query }) => {
-      const member = notUndefined(user?.member);
-      return actionMemberService.getFilteredActions(member, buildRepositories(), query);
+      const account = notUndefined(user?.account);
+      return actionMemberService.getFilteredActions(account, buildRepositories(), query);
     },
   );
   // todo: delete self data
@@ -39,9 +39,9 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
     '/members/:id/delete',
     { schema: deleteAllById, preHandler: isAuthenticated },
     async ({ user, params: { id } }) => {
-      const member = notUndefined(user?.member);
+      const account = notUndefined(user?.account);
       return db.transaction(async (manager) => {
-        return actionMemberService.deleteAllForMember(member, buildRepositories(manager), id);
+        return actionMemberService.deleteAllForMember(account, buildRepositories(manager), id);
       });
     },
   );

@@ -11,6 +11,7 @@ import { notUndefined } from '../../../../utils/assertions';
 import { AUTH_CLIENT_HOST } from '../../../../utils/config';
 import { MemberAlreadySignedUp } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
+import { isMember } from '../../../member/entities/member';
 import { MemberService } from '../../../member/service';
 import { getRedirectionUrl } from '../../utils';
 import captchaPreHandler from '../captcha';
@@ -129,13 +130,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         query: { url },
         log,
       } = request;
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
       const redirectionUrl = getRedirectionUrl(log, url ? decodeURIComponent(url) : undefined);
       await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
         await memberService.refreshLastAuthenticatedAt(member.id, repositories);
         // on auth, if the user used the email sign in, its account gets validated
-        if (authInfo?.emailValidation && !member.isValidated) {
+        if (authInfo?.emailValidation && isMember(member) && !member.isValidated) {
           await memberService.validate(member.id, repositories);
         }
       });

@@ -1,4 +1,4 @@
-import { CompleteMember, MemberFactory, MemberType } from '@graasp/sdk';
+import { AccountType, CompleteMember, MemberFactory } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
 import { AppDataSource } from '../../../../plugins/datasource';
@@ -26,7 +26,7 @@ export const expectMember = (
   }
   expect(m.name).toEqual(validation.name);
   expect(m.email).toEqual(validation.email);
-  expect(m.type).toEqual(validation.type ?? MemberType.Individual);
+  expect(m.type).toEqual(validation.type ?? AccountType.Individual);
   expect(m.extra).toEqual(validation.extra ?? { lang: DEFAULT_LANG });
 };
 
@@ -38,5 +38,5 @@ export const expectMinimalMember = (
     throw 'member does not exist';
   }
   expect(m.name).toEqual(validation.name);
-  expect(m.email).toEqual(validation.email);
+  expect(m.id).toEqual(validation.id);
 };

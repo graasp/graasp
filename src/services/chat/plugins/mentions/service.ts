@@ -1,12 +1,13 @@
 import { singleton } from 'tsyringe';
 
-import { PermissionLevel, buildItemLinkForBuilder } from '@graasp/sdk';
+import { MentionStatus, PermissionLevel, buildItemLinkForBuilder } from '@graasp/sdk';
 
 import { MAIL } from '../../../../plugins/mailer/langs/constants';
 import { MailerService } from '../../../../plugins/mailer/service';
 import { BUILDER_HOST } from '../../../../utils/config';
 import HookManager from '../../../../utils/hook';
 import { Repositories } from '../../../../utils/repositories';
+import { Account } from '../../../account/entities/account';
 import { validatePermission } from '../../../authorization';
 import { Item } from '../../../item/entities/Item';
 import { Member } from '../../../member/entities/member';
@@ -29,7 +30,7 @@ export class MentionService {
   }: {
     item: Item;
     member: Member;
-    creator: Member;
+    creator: Account;
   }) {
     const itemLink = buildItemLinkForBuilder({
       origin: BUILDER_HOST.url.origin,
@@ -62,7 +63,7 @@ export class MentionService {
   }
 
   async createManyForItem(
-    actor: Member,
+    account: Account,
     repositories: Repositories,
     message: ChatMessage,
     mentionedMembers: string[],
@@ -71,33 +72,38 @@ export class MentionService {
 
     // check actor has access to item
     const item = await itemRepository.getOneOrThrow(message.item.id);
-    await validatePermission(repositories, PermissionLevel.Read, actor, item);
+    await validatePermission(repositories, PermissionLevel.Read, account, item);
 
     // TODO: optimize ? suppose same item - validate multiple times
     const results = await mentionRepository.postMany(mentionedMembers, message.id);
 
-    this.hooks.runPostHooks('createMany', actor, repositories, { mentions: results, item });
+    this.hooks.runPostHooks('createMany', account, repositories, { mentions: results, item });
 
     return results;
   }
 
-  async getForMember(member: Member, repositories: Repositories) {
+  async getForAccount(account: Account, repositories: Repositories) {
     const { mentionRepository } = repositories;
-    return mentionRepository.getForMember(member.id);
+    return mentionRepository.getForAccount(account.id);
   }
 
-  async get(actor: Member, repositories: Repositories, mentionId: string) {
+  async get(actor: Account, repositories: Repositories, mentionId: string) {
     const { mentionRepository } = repositories;
     const mentionContent = await mentionRepository.get(mentionId);
 
-    if (mentionContent.member.id !== actor.id) {
+    if (mentionContent.account.id !== actor.id) {
       throw new MemberCannotAccessMention({ id: mentionId });
     }
 
     return mentionContent;
   }
 
-  async patch(actor: Member, repositories: Repositories, mentionId: string, status) {
+  async patch(
+    actor: Account,
+    repositories: Repositories,
+    mentionId: string,
+    status: MentionStatus,
+  ) {
     const { mentionRepository } = repositories;
 
     // check permission
@@ -106,7 +112,7 @@ export class MentionService {
     return mentionRepository.patch(mentionId, status);
   }
 
-  async deleteOne(actor: Member, repositories: Repositories, mentionId: string) {
+  async deleteOne(actor: Account, repositories: Repositories, mentionId: string) {
     const { mentionRepository } = repositories;
 
     // check permission
@@ -115,7 +121,7 @@ export class MentionService {
     return mentionRepository.deleteOne(mentionId);
   }
 
-  async deleteAll(actor: Member, repositories: Repositories) {
+  async deleteAll(actor: Account, repositories: Repositories) {
     const { mentionRepository } = repositories;
     await mentionRepository.deleteAll(actor.id);
     //     const clearedChat: Chat = { id: this.targetId, messages: [] };

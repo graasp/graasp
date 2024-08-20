@@ -5,10 +5,10 @@ import { ActionTriggers, PermissionLevel } from '@graasp/sdk';
 
 import { CannotModifyOtherMembers } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
+import { Account } from '../../../account/entities/account';
 import { ActionService } from '../../../action/services/action';
 import { validatePermissionMany } from '../../../authorization';
 import { Item, ItemExtraMap } from '../../../item/entities/Item';
-import { Member } from '../../entities/member';
 
 export const getPreviousMonthFromNow = () => {
   const date = new Date(); // Today's date
@@ -35,7 +35,7 @@ export class ActionMemberService {
   }
 
   async getFilteredActions(
-    actor: Member,
+    actor: Account,
     repositories: Repositories,
     filters: { startDate?: string; endDate?: string },
   ) {
@@ -45,7 +45,7 @@ export class ActionMemberService {
     const start = startDate ? new Date(startDate) : getPreviousMonthFromNow();
     const end = endDate ? new Date(endDate) : new Date();
 
-    const actions = await actionRepository.getMemberActions(actor.id, {
+    const actions = await actionRepository.getAccountActions(actor.id, {
       startDate: start,
       endDate: end,
     });
@@ -73,7 +73,7 @@ export class ActionMemberService {
   }
 
   async deleteAllForMember(
-    actor: Member,
+    actor: Account,
     repositories: Repositories,
     memberId: string,
   ): Promise<void> {
@@ -83,6 +83,6 @@ export class ActionMemberService {
       throw new CannotModifyOtherMembers({ id: memberId });
     }
 
-    await actionRepository.deleteAllForMember(memberId);
+    await actionRepository.deleteAllForAccount(memberId);
   }
 }

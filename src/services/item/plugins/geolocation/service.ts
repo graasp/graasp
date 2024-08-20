@@ -25,11 +25,11 @@ export class ItemGeolocationService {
     this.geolocationKey = geolocationKey;
   }
 
-  async delete(actor: Actor, repositories: Repositories, itemId: Item['id']) {
+  async delete(member: Member, repositories: Repositories, itemId: Item['id']) {
     const { itemGeolocationRepository } = repositories;
 
     // check item exists and actor has permission
-    const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Write);
+    const item = await this.itemService.get(member, repositories, itemId, PermissionLevel.Write);
 
     return itemGeolocationRepository.delete(item);
   }
@@ -116,7 +116,7 @@ export class ItemGeolocationService {
   }
 
   async put(
-    actor: Actor,
+    member: Member,
     repositories: Repositories,
     itemId: Item['id'],
     geolocation: Pick<ItemGeolocation, 'lat' | 'lng'> &
@@ -124,14 +124,13 @@ export class ItemGeolocationService {
   ) {
     const { itemGeolocationRepository } = repositories;
 
-    // check item exists and actor has permission
-    const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Write);
+    // check item exists and member has permission
+    const item = await this.itemService.get(member, repositories, itemId, PermissionLevel.Write);
 
     return itemGeolocationRepository.put(item.path, geolocation);
   }
 
   async getAddressFromCoordinates(
-    member: Member,
     repositories: Repositories,
     query: Pick<ItemGeolocation, 'lat' | 'lng'> & { lang?: string },
   ) {
@@ -144,7 +143,6 @@ export class ItemGeolocationService {
   }
 
   async getSuggestionsForQuery(
-    member: Member,
     repositories: Repositories,
     query: { query: string; lang?: string },
   ) {

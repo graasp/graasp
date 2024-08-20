@@ -32,6 +32,7 @@ import {
 } from '../../utils/errors';
 import HookManager from '../../utils/hook';
 import { Repositories } from '../../utils/repositories';
+import { Account } from '../account/entities/account';
 import {
   filterOutItems,
   filterOutPackedDescendants,
@@ -85,7 +86,7 @@ export class ItemService {
   }
 
   async post(
-    actor: Member,
+    member: Member,
     repositories: Repositories,
     args: {
       item: Partial<Item> & Pick<Item, 'name' | 'type'>;
@@ -111,7 +112,7 @@ export class ItemService {
     }
 
     this.log.debug(`run prehook for ${item.name}`);
-    await this.hooks.runPreHooks('create', actor, repositories, { item }, this.log);
+    await this.hooks.runPreHooks('create', member, repositories, { item }, this.log);
 
     let inheritedMembership;
     let parentItem: Item | undefined = undefined;
@@ -119,8 +120,8 @@ export class ItemService {
     // check permission over parent
     if (parentId) {
       this.log.debug(`verify parent ${parentId} exists and has permission over it`);
-      parentItem = await this.get(actor, repositories, parentId, PermissionLevel.Write);
-      inheritedMembership = await itemMembershipRepository.getInherited(parentItem, actor, true);
+      parentItem = await this.get(member, repositories, parentId, PermissionLevel.Write);
+      inheritedMembership = await itemMembershipRepository.getInherited(parentItem, member, true);
 
       // quick check, necessary for ts
       if (!isItemType(parentItem, ItemType.FOLDER)) {
@@ -130,7 +131,7 @@ export class ItemService {
       itemRepository.checkHierarchyDepth(parentItem);
 
       // check if there's too many children under the same parent
-      const descendants = await itemRepository.getChildren(actor, parentItem);
+      const descendants = await itemRepository.getChildren(member, parentItem);
       if (descendants.length + 1 > MAX_NUMBER_OF_CHILDREN) {
         throw new TooManyChildren();
       }
@@ -149,7 +150,7 @@ export class ItemService {
     }
 
     this.log.debug(`create item ${item.name}`);
-    const createdItem = await itemRepository.addOne({ item, creator: actor, parentItem });
+    const createdItem = await itemRepository.addOne({ item, creator: member, parentItem });
     this.log.debug(`item ${item.name} is created: ${createdItem}`);
 
     // create membership if inherited is less than admin
@@ -160,14 +161,14 @@ export class ItemService {
       this.log.debug(`create membership for ${createdItem.id}`);
       await itemMembershipRepository.post({
         item: createdItem,
-        member: actor,
-        creator: actor,
+        account: member,
+        creator: member,
         permission: PermissionLevel.Admin,
       });
     }
 
     this.log.debug(`run posthook for ${createdItem.id}`);
-    await this.hooks.runPostHooks('create', actor, repositories, { item: createdItem }, this.log);
+    await this.hooks.runPostHooks('create', member, repositories, { item: createdItem }, this.log);
 
     // geolocation
     if (geolocation) {
@@ -176,8 +177,8 @@ export class ItemService {
 
     // thumbnail
     if (thumbnail) {
-      await this.thumbnailService.upload(actor, createdItem.id, thumbnail);
-      await this.patch(actor, repositories, createdItem.id, {
+      await this.thumbnailService.upload(member, createdItem.id, thumbnail);
+      await this.patch(member, repositories, createdItem.id, {
         settings: { hasThumbnail: true },
       });
       // set in the item
@@ -325,13 +326,13 @@ export class ItemService {
   }
 
   async getAccessible(
-    actor: Member,
+    member: Member,
     repositories: Repositories,
     params: ItemSearchParams,
     pagination: Pagination,
   ): Promise<Paginated<PackedItem>> {
     const { data: memberships, totalCount } =
-      await repositories.itemMembershipRepository.getAccessibleItems(actor, params, pagination);
+      await repositories.itemMembershipRepository.getAccessibleItems(member, params, pagination);
 
     const items = memberships.map(({ item }) => item);
     const resultOfMembership = mapById<ItemMembership[]>({
@@ -343,7 +344,7 @@ export class ItemService {
     });
 
     const packedItems = await ItemWrapper.createPackedItems(
-      actor,
+      member,
       repositories,
       memberships.map(({ item }) => item),
       resultOfMembership,
@@ -413,13 +414,13 @@ export class ItemService {
     return { item, descendants: await itemRepository.getDescendants(item, options) };
   }
 
-  async getFilteredDescendants(actor: Actor, repositories: Repositories, itemId: UUID) {
-    const { descendants } = await this.getDescendants(actor, repositories, itemId);
+  async getFilteredDescendants(account: Account, repositories: Repositories, itemId: UUID) {
+    const { descendants } = await this.getDescendants(account, repositories, itemId);
     if (!descendants.length) {
       return [];
     }
     // TODO optimize?
-    return filterOutItems(actor, repositories, descendants);
+    return filterOutItems(account, repositories, descendants);
   }
 
   async getPackedDescendants(
@@ -522,7 +523,7 @@ export class ItemService {
   }
 
   // QUESTION? DELETE BY PATH???
-  async deleteMany(actor: Actor, repositories: Repositories, itemIds: string[]) {
+  async deleteMany(actor: Member, repositories: Repositories, itemIds: string[]) {
     if (!actor) {
       throw new UnauthorizedMember();
     }
@@ -572,16 +573,12 @@ export class ItemService {
   }
 
   /////// -------- MOVE
-  async move(actor: Actor, repositories: Repositories, itemId: UUID, parentItem?: FolderItem) {
-    if (!actor) {
-      throw new UnauthorizedMember();
-    }
-
+  async move(member: Member, repositories: Repositories, itemId: UUID, parentItem?: FolderItem) {
     const { itemRepository } = repositories;
 
     const item = await itemRepository.getOneOrThrow(itemId);
 
-    await validatePermission(repositories, PermissionLevel.Admin, actor, item);
+    await validatePermission(repositories, PermissionLevel.Admin, member, item);
 
     // check how "big the tree is" below the item
     await itemRepository.checkNumberOfDescendants(item, MAX_DESCENDANTS_FOR_MOVE);
@@ -594,14 +591,14 @@ export class ItemService {
 
     // post hook
     // question: invoque on all items?
-    await this.hooks.runPreHooks('move', actor, repositories, {
+    await this.hooks.runPreHooks('move', member, repositories, {
       source: item,
       destinationParent: parentItem,
     });
 
-    const result = await this._move(actor, repositories, item, parentItem);
+    const result = await this._move(member, repositories, item, parentItem);
 
-    await this.hooks.runPostHooks('move', actor, repositories, {
+    await this.hooks.runPostHooks('move', member, repositories, {
       source: item,
       sourceParentId: getParentFromPath(item.path),
       destination: result,
@@ -611,23 +608,19 @@ export class ItemService {
   }
 
   // TODO: optimize
-  async moveMany(actor: Actor, repositories: Repositories, itemIds: string[], toItemId?: string) {
-    if (!actor) {
-      throw new UnauthorizedMember();
-    }
-
+  async moveMany(member: Member, repositories: Repositories, itemIds: string[], toItemId?: string) {
     let parentItem;
     if (toItemId) {
-      parentItem = await this.get(actor, repositories, toItemId, PermissionLevel.Write);
+      parentItem = await this.get(member, repositories, toItemId, PermissionLevel.Write);
     }
 
     const results = await Promise.all(
-      itemIds.map((id) => this.move(actor, repositories, id, parentItem)),
+      itemIds.map((id) => this.move(member, repositories, id, parentItem)),
     );
 
     // newly moved items needs rescaling since they are added in parallel
     if (parentItem) {
-      await repositories.itemRepository.rescaleOrder(actor, parentItem);
+      await repositories.itemRepository.rescaleOrder(member, parentItem);
     }
 
     return { items: results.map(({ item }) => item), moved: results.map(({ moved }) => moved) };
@@ -668,14 +661,10 @@ export class ItemService {
   }
 
   /////// -------- COPY
-  async copy(actor: Actor, repositories: Repositories, itemId: UUID, parentItem?: FolderItem) {
-    if (!actor) {
-      throw new UnauthorizedMember();
-    }
-
+  async copy(member: Member, repositories: Repositories, itemId: UUID, parentItem?: FolderItem) {
     const { itemRepository, itemMembershipRepository, itemGeolocationRepository } = repositories;
 
-    const item = await this.get(actor, repositories, itemId);
+    const item = await this.get(member, repositories, itemId);
 
     if (parentItem) {
       // check how deep (number of levels) the resulting tree will be
@@ -694,7 +683,7 @@ export class ItemService {
 
     // pre hook
     for (const original of items) {
-      await this.hooks.runPreHooks('copy', actor, repositories, { original });
+      await this.hooks.runPreHooks('copy', member, repositories, { original });
     }
 
     let siblings: string[] = [];
@@ -709,17 +698,17 @@ export class ItemService {
     if (parentItem) {
       siblings = await itemRepository.getChildrenNames(parentItem, { startWith });
     } else {
-      siblings = await itemMembershipRepository.getAccessibleItemNames(actor, { startWith });
+      siblings = await itemMembershipRepository.getAccessibleItemNames(member, { startWith });
     }
 
-    const { copyRoot, treeCopyMap } = await itemRepository.copy(item, actor, siblings, parentItem);
+    const { copyRoot, treeCopyMap } = await itemRepository.copy(item, member, siblings, parentItem);
 
     // create a membership if needed
     await itemMembershipRepository
       .post({
         item: copyRoot,
-        member: actor,
-        creator: actor,
+        account: member,
+        creator: member,
         permission: PermissionLevel.Admin,
       })
       .catch((e) => {
@@ -732,14 +721,14 @@ export class ItemService {
 
     // post hook
     for (const { original, copy } of treeCopyMap.values()) {
-      await this.hooks.runPostHooks('copy', actor, repositories, { original, copy });
+      await this.hooks.runPostHooks('copy', member, repositories, { original, copy });
       // copy geolocation
       await itemGeolocationRepository.copy(original, copy);
       // copy thumbnails if original has setting to true
       if (original.settings.hasThumbnail) {
         try {
           // try to copy thumbnails, this might fail, so we wrap in a try-catch
-          await this.thumbnailService.copyFolder(actor, {
+          await this.thumbnailService.copyFolder(member, {
             originalId: original.id,
             newId: copy.id,
           });
@@ -754,7 +743,7 @@ export class ItemService {
 
   // TODO: optimize
   async copyMany(
-    actor: Actor,
+    member: Member,
     repositories: Repositories,
     itemIds: string[],
     args: { parentId?: UUID },
@@ -763,16 +752,16 @@ export class ItemService {
 
     let parentItem;
     if (args.parentId) {
-      parentItem = await this.get(actor, repositories, args.parentId, PermissionLevel.Write);
+      parentItem = await this.get(member, repositories, args.parentId, PermissionLevel.Write);
     }
 
     const results = await Promise.all(
-      itemIds.map((id) => this.copy(actor, repositories, id, parentItem)),
+      itemIds.map((id) => this.copy(member, repositories, id, parentItem)),
     );
 
     // rescale order because copies happen in parallel
     if (parentItem) {
-      await itemRepository.rescaleOrder(actor, parentItem);
+      await itemRepository.rescaleOrder(member, parentItem);
     }
 
     return { items: results.map(({ item }) => item), copies: results.map(({ copy }) => copy) };
