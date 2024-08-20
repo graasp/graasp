@@ -62,7 +62,7 @@ export type Repositories = {
   publisherRepository: PublisherRepository;
   recycledItemRepository: typeof RecycledItemDataRepository;
   memberProfileRepository: MemberProfileRepository;
-  shortLinkRepository: typeof ShortLinkRepository;
+  shortLinkRepository: ShortLinkRepository;
   itemGeolocationRepository: ItemGeolocationRepository;
 };
 // public: exists in item tag
@@ -109,6 +109,6 @@ export const buildRepositories = (manager?: EntityManager): Repositories => ({
   actionRepository: new ActionRepository(manager),
   actionRequestExportRepository: new ActionRequestExportRepository(manager),
   memberProfileRepository: new MemberProfileRepository(manager),
-  shortLinkRepository: manager ? manager.withRepository(ShortLinkRepository) : ShortLinkRepository,
+  shortLinkRepository: new ShortLinkRepository(manager),
   itemGeolocationRepository: new ItemGeolocationRepository(manager),
 });

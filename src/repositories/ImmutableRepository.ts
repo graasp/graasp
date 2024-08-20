@@ -144,7 +144,7 @@ export abstract class ImmutableRepository<T extends BaseEntity> extends Abstract
   protected async insert(entity: DeepPartial<T>): Promise<T> {
     try {
       const insertResult = await this.repository.insert(entity as QueryDeepPartialEntity<T>);
-      const insertedEntity = await this.getOne(insertResult.identifiers[0].id);
+      const insertedEntity = await this.getOne(insertResult.identifiers[0][this.primaryKeyName]);
 
       // Should never happen, if an error occurs, it should throw during the insert.
       if (!insertedEntity) {
