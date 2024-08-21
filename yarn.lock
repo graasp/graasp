@@ -2071,10 +2071,10 @@ __metadata:
 
 "@graasp/translations@graasp/graasp-translations#470-need-more-failure-messages-for-item-login-refactoring":
   version: 1.35.0
-  resolution: "@graasp/translations@https://github.com/graasp/graasp-translations.git#commit=5eb9a3c5d4426f937987f059a5a5306c023bb93d"
+  resolution: "@graasp/translations@https://github.com/graasp/graasp-translations.git#commit=73afc0a4bc6e0237a4d755b9a5dc6778f4f2588b"
   peerDependencies:
     i18next: ^23.8.1
-  checksum: 10/4e482aea1eff9e1b9d9b85a50c80008d3182a9009f5724cff9e81ed086a832b32a9d03e449f313a761568ea78f6289f3381028356eabdce3fd14cbf9bb0af12b
+  checksum: 10/7f71c2cde212bd0ea1a46acd10430365ac5ebef676e7e1ad1381f633fd36bbd323db62d9fa64e0d74009455c2631e26197ecf9b1e17ff366cd84cd94593b1886
   languageName: node
   linkType: hard
 

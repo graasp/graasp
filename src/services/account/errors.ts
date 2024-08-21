@@ -11,7 +11,7 @@ export class AccountNotFound extends GraaspAccountError {
       {
         code: 'GPAECCRR001',
         statusCode: StatusCodes.NOT_FOUND,
-        message: FAILURE_MESSAGES.MEMBER_NOT_FOUND,
+        message: FAILURE_MESSAGES.ACCOUNT_NOT_FOUND,
       },
       data,
     );

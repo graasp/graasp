@@ -151,7 +151,7 @@ describe('Invitation Plugin', () => {
 
         const result = await response.json();
         expect(result.memberships).toHaveLength(1);
-        expect(result.memberships[0].member.id).toEqual(toMember.id);
+        expect(result.memberships[0].account.id).toEqual(toMember.id);
         expect(result.memberships[0].item.id).toEqual(item.id);
         expect(result.memberships[0].permission).toEqual(PermissionLevel.Read);
         expect(result.invitations).toHaveLength(0);
