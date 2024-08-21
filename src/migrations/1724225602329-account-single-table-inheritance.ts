@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class Migrations1719557659517 implements MigrationInterface {
-  name = 'Migrations1719557659517';
+export class Migrations1724225602329 implements MigrationInterface {
+  name = 'account-single-table-inheritance-1724225602329';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     //--- Rename tables and columns ---//
