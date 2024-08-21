@@ -4,7 +4,7 @@ import { ResultOf } from '@graasp/sdk';
 
 import { MutableRepository } from '../../repositories/MutableRepository';
 import { DEFAULT_PRIMARY_KEY } from '../../repositories/const';
-import { DeleteException, EntryNotFoundBeforeDeleteException } from '../../repositories/errors';
+import { DeleteException } from '../../repositories/errors';
 import { GetForItem, GetForItems, GetForMemberExport } from '../../repositories/interfaces';
 import { Member } from '../member/entities/member';
 import { messageSchema } from '../member/plugins/export-data/schemas/schemas';
@@ -112,7 +112,7 @@ export class ChatMessageRepository
     const chats = await this.getForItem(itemId);
 
     if (chats.length === 0) {
-      throw new EntryNotFoundBeforeDeleteException(this.classEntity);
+      return [];
     }
 
     try {

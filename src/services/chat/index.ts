@@ -11,11 +11,14 @@ import fp from 'fastify-plugin';
 
 import { resolveDependency } from '../../di/utils';
 import { notUndefined } from '../../utils/assertions';
+import { ItemNotFound } from '../../utils/errors';
+import { httpErrorFactory } from '../../utils/httpErrorFactory';
 import { buildRepositories } from '../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
 import { matchOne } from '../authorization';
 import { ItemService } from '../item/service';
 import { validatedMember } from '../member/strategies/validatedMember';
+import { ChatMessageNotFound } from './errors';
 import { ActionChatService } from './plugins/action/service';
 import mentionPlugin from './plugins/mentions';
 import commonChat, {
@@ -58,7 +61,11 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify) => {
       '/:itemId/chat',
       { schema: getChat, preHandler: optionalIsAuthenticated },
       async ({ user, params: { itemId } }) => {
-        return chatService.getForItem(user?.member, buildRepositories(), itemId);
+        try {
+          return await chatService.getForItem(user?.member, buildRepositories(), itemId);
+        } catch (e) {
+          throw httpErrorFactory(e, { notFoundError: new ItemNotFound(itemId) });
+        }
       },
     );
 
@@ -106,13 +113,23 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify) => {
           params: { itemId, messageId },
           body,
         } = request;
-        return await db.transaction(async (manager) => {
-          const member = notUndefined(user?.member);
-          const repositories = buildRepositories(manager);
-          const message = await chatService.patchOne(member, repositories, itemId, messageId, body);
-          await actionChatService.postPatchMessageAction(request, repositories, message);
-          return message;
-        });
+        try {
+          return await db.transaction(async (manager) => {
+            const member = notUndefined(user?.member);
+            const repositories = buildRepositories(manager);
+            const message = await chatService.patchOne(
+              member,
+              repositories,
+              itemId,
+              messageId,
+              body,
+            );
+            await actionChatService.postPatchMessageAction(request, repositories, message);
+            return message;
+          });
+        } catch (e) {
+          throw httpErrorFactory(e, { notFoundError: new ChatMessageNotFound(messageId) });
+        }
       },
     );
 
@@ -129,12 +146,16 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify) => {
           params: { itemId, messageId },
         } = request;
         const member = notUndefined(user?.member);
-        return await db.transaction(async (manager) => {
-          const repositories = buildRepositories(manager);
-          const message = await chatService.deleteOne(member, repositories, itemId, messageId);
-          await actionChatService.postDeleteMessageAction(request, repositories, message);
-          return message;
-        });
+        try {
+          return await db.transaction(async (manager) => {
+            const repositories = buildRepositories(manager);
+            const message = await chatService.deleteOne(member, repositories, itemId, messageId);
+            await actionChatService.postDeleteMessageAction(request, repositories, message);
+            return message;
+          });
+        } catch (e) {
+          throw httpErrorFactory(e, { notFoundError: new ChatMessageNotFound(messageId) });
+        }
       },
     );
 
@@ -151,13 +172,17 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify) => {
           params: { itemId },
         } = request;
         const member = notUndefined(user?.member);
-        await db.transaction(async (manager) => {
-          const repositories = buildRepositories(manager);
-          await chatService.clear(member, repositories, itemId);
-          await actionChatService.postClearMessageAction(request, repositories, itemId);
-        });
+        try {
+          await db.transaction(async (manager) => {
+            const repositories = buildRepositories(manager);
+            await chatService.clear(member, repositories, itemId);
+            await actionChatService.postClearMessageAction(request, repositories, itemId);
+          });
 
-        return;
+          return;
+        } catch (e) {
+          throw httpErrorFactory(e, { notFoundError: new ItemNotFound(itemId) });
+        }
       },
     );
   });
