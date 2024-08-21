@@ -51,7 +51,7 @@ export abstract class MutableRepository<
         entity as QueryDeepPartialEntity<T>,
       );
 
-      const updatedEntity = await this.findOne(pkValue);
+      const updatedEntity = await this.getOne(pkValue);
 
       // This can happen if the given pk doesn't exist.
       if (!updatedEntity) {
