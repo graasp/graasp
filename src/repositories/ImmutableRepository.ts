@@ -1,8 +1,6 @@
 import { BaseEntity, DeepPartial, EntityManager, FindOneOptions, FindOptionsWhere } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
 
-import { resolveDependency } from '../di/utils';
-import { BaseLogger } from '../logger';
 import { KeysOfString } from '../types';
 import { AbstractRepository, Entity } from './AbstractRepository';
 import { errorFactory } from './errorFactory';
@@ -25,7 +23,6 @@ export abstract class ImmutableRepository<T extends BaseEntity> extends Abstract
   /** The primary key of the entity used during the find. */
   protected readonly primaryKeyName: KeysOfString<T>;
   protected readonly classEntity: Entity<T>;
-  protected readonly logger: BaseLogger;
 
   /**
    * @param primaryKeyName The name of the entity's primary key, used during the findOne.
@@ -36,8 +33,6 @@ export abstract class ImmutableRepository<T extends BaseEntity> extends Abstract
     super(classEntity, manager);
     this.classEntity = classEntity;
     this.primaryKeyName = primaryKeyName;
-    // When the repository is fully injectable, the baseLogger will be in parameter of the constructor.
-    this.logger = resolveDependency(BaseLogger);
   }
 
   /********************************** Public Interfaces **********************************/
@@ -160,10 +155,12 @@ export abstract class ImmutableRepository<T extends BaseEntity> extends Abstract
       return insertedEntity;
     } catch (e) {
       throw errorFactory<T>({
-        logger: this.logger,
         error: e,
         classEntity: this.classEntity,
-        fallBackError: new InsertionException(e.message),
+        fallBackError: new InsertionException({
+          message: e.message,
+          classEntity: this.classEntity,
+        }),
       });
     }
   }

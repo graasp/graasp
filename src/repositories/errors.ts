@@ -59,11 +59,11 @@ export class EntityConflictException<T extends BaseEntity> extends InsertionExce
 }
 
 /** Thrown to indicate that the entity was not inserted/updated in the database due to a constraint violation. */
-export class EntityConstrainstException<T extends BaseEntity> extends InsertionException<T> {
+export class EntityConstraintException<T extends BaseEntity> extends InsertionException<T> {
   constructor(classEntity: Entity<T>) {
     super({
       message: `This ${classEntity.name} was not saved in the database due to the violation of a constraint!`,
-      name: 'EntityConstrainstException',
+      name: 'EntityConstraintException',
       classEntity,
     });
   }

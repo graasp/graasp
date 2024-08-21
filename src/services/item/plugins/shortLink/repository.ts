@@ -9,12 +9,8 @@ import {
 
 import { AppDataSource } from '../../../../plugins/datasource';
 import { MutableRepository } from '../../../../repositories/MutableRepository';
-import {
-  ShortLinkDuplication,
-  ShortLinkLimitExceed,
-  ShortLinkNotFound,
-} from '../../../../utils/errors';
-import { isDuplicateEntryError } from '../../../../utils/typeormError';
+import { errorFactory } from '../../../../repositories/errorFactory';
+import { ShortLinkLimitExceed, ShortLinkNotFound } from '../../../../utils/errors';
 import { ShortLink } from './entities/ShortLink';
 
 type CreateShortLinkBody = ShortLinkPostPayload;
@@ -35,10 +31,10 @@ export class ShortLinkRepository extends MutableRepository<ShortLink, UpdateShor
     try {
       return await super.insert({ alias, platform, item: { id: itemId } });
     } catch (e) {
-      if (isDuplicateEntryError(e.message)) {
-        throw new ShortLinkDuplication(alias);
-      }
-      throw e;
+      throw errorFactory({
+        error: e,
+        classEntity: ShortLink,
+      });
     }
   }
 
@@ -104,10 +100,10 @@ export class ShortLinkRepository extends MutableRepository<ShortLink, UpdateShor
     try {
       return await super.updateOne(alias, entity);
     } catch (e) {
-      if (isDuplicateEntryError(e.message)) {
-        throw new ShortLinkDuplication(alias);
-      }
-      throw e;
+      throw errorFactory({
+        error: e,
+        classEntity: ShortLink,
+      });
     }
   }
 }

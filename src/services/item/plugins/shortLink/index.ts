@@ -5,7 +5,9 @@ import { FastifyPluginAsync } from 'fastify';
 import { ShortLinkAvailable, ShortLinkPatchPayload, ShortLinkPostPayload } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
+import { EntityConflictException } from '../../../../repositories/errors';
 import { notUndefined } from '../../../../utils/assertions';
+import { ShortLinkDuplication } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
@@ -41,9 +43,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       async ({ params: { alias } }) => {
         try {
           await shortLinkService.getOne(buildRepositories(), alias);
-          return { available: false } as ShortLinkAvailable;
+          return { available: false } satisfies ShortLinkAvailable;
         } catch (e) {
-          return { available: true } as ShortLinkAvailable;
+          return { available: true } satisfies ShortLinkAvailable;
         }
       },
     );
@@ -69,12 +71,19 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         async ({ user, body: shortLink }) => {
           const member = notUndefined(user?.member);
           return db.transaction(async (manager) => {
-            const newLink = await shortLinkService.post(
-              member,
-              buildRepositories(manager),
-              shortLink,
-            );
-            return newLink;
+            try {
+              const newLink = await shortLinkService.post(
+                member,
+                buildRepositories(manager),
+                shortLink,
+              );
+              return newLink;
+            } catch (e) {
+              if (e instanceof EntityConflictException) {
+                throw new ShortLinkDuplication(shortLink.alias);
+              }
+              throw e;
+            }
           });
         },
       );
@@ -104,13 +113,19 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         async ({ user, body: shortLink, params: { alias } }) => {
           const member = notUndefined(user?.member);
           return db.transaction(async (manager) => {
-            const updatedLink = await shortLinkService.update(
-              member,
-              buildRepositories(manager),
-              alias,
-              shortLink,
-            );
-            return updatedLink;
+            try {
+              return await shortLinkService.update(
+                member,
+                buildRepositories(manager),
+                alias,
+                shortLink,
+              );
+            } catch (e) {
+              if (e instanceof EntityConflictException) {
+                throw new ShortLinkDuplication(alias);
+              }
+              throw e;
+            }
           });
         },
       );

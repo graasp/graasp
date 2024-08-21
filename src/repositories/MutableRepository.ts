@@ -61,10 +61,9 @@ export abstract class MutableRepository<
       return updatedEntity;
     } catch (e) {
       throw errorFactory<T>({
-        logger: this.logger,
         error: e,
         classEntity: this.classEntity,
-        fallBackError: new UpdateException(e.message),
+        fallBackError: new UpdateException({ message: e.message, classEntity: this.classEntity }),
       });
     }
   }
@@ -82,10 +81,9 @@ export abstract class MutableRepository<
       await this.repository.delete(pkValue);
     } catch (e) {
       throw errorFactory<T>({
-        logger: this.logger,
         error: e,
         classEntity: this.classEntity,
-        fallBackError: new DeleteException(e.message),
+        fallBackError: new DeleteException({ message: e.message, classEntity: this.classEntity }),
       });
     }
   }
@@ -111,10 +109,9 @@ export abstract class MutableRepository<
       return entity;
     } catch (e) {
       throw errorFactory<T>({
-        logger: this.logger,
         error: e,
         classEntity: this.classEntity,
-        fallBackError: new DeleteException(e.message),
+        fallBackError: new DeleteException({ message: e.message, classEntity: this.classEntity }),
       });
     }
   }

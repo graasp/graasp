@@ -1,7 +1,7 @@
 import { EntityManager } from 'typeorm';
 
 import { AbstractRepository } from '../../../../../repositories/AbstractRepository';
-import { DUPLICATE_ENTRY_ERROR_CODE } from '../../../../../utils/typeormError';
+import { PostgresError } from '../../../../../repositories/postgresErrors';
 import { MemberIdentifierNotFound } from '../../../../itemLogin/errors';
 import { itemFavoriteSchema } from '../../../../member/plugins/export-data/schemas/schemas';
 import { schemaToSelectMapper } from '../../../../member/plugins/export-data/utils/selection.utils';
@@ -74,7 +74,8 @@ export class FavoriteRepository extends AbstractRepository<ItemFavorite> {
 
       return this.get(created.identifiers[0].id);
     } catch (e) {
-      if (e.code === DUPLICATE_ENTRY_ERROR_CODE) {
+      // TODO: use errorFactory when extending MutableRepository
+      if (e.code === PostgresError.UniqueViolation) {
         throw new DuplicateFavoriteError({ itemId, memberId });
       }
       throw e;
