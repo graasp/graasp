@@ -18,7 +18,7 @@ export default {
       type: 'object',
       properties: {
         id: { $ref: 'https://graasp.org/#/definitions/uuid' },
-        account: { $ref: 'https://graasp.org/members/#/definitions/member' },
+        account: { $ref: 'https://graasp.org/accounts/#/definitions/augmentedAccount' },
         /**
          * itemPath's 'pattern' not supported in serialization.
          * since 'itemMembership' schema is only used for serialization it's safe
