@@ -93,7 +93,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           return reply.send({ status: MembershipRequestStatus.Pending });
         }
 
-        if (await itemMembershipService.getByMemberAndItem(repositories, member.id, itemId)) {
+        if (await itemMembershipService.getByAccountAndItem(repositories, member.id, itemId)) {
           return reply.send({ status: MembershipRequestStatus.Approved });
         }
 

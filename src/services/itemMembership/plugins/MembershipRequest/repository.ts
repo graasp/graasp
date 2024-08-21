@@ -2,6 +2,7 @@ import { EntityManager } from 'typeorm';
 
 import { AbstractRepository } from '../../../../repositories/AbstractRepository';
 import { ItemNotFound, MemberNotFound } from '../../../../utils/errors';
+import { AccountNotFound } from '../../../account/errors';
 import { MembershipRequest } from './entities/MembershipRequest';
 
 export class MembershipRequestRepository extends AbstractRepository<MembershipRequest> {
@@ -11,7 +12,7 @@ export class MembershipRequestRepository extends AbstractRepository<MembershipRe
 
   async get(memberId: string, itemId: string) {
     if (!memberId) {
-      throw new MemberNotFound();
+      throw new AccountNotFound();
     } else if (!itemId) {
       throw new ItemNotFound(itemId);
     }
@@ -21,7 +22,10 @@ export class MembershipRequestRepository extends AbstractRepository<MembershipRe
         member: { id: memberId },
         item: { id: itemId },
       },
-      relations: ['member', 'item'],
+      relations: {
+        member: true,
+        item: true,
+      },
     });
   }
 

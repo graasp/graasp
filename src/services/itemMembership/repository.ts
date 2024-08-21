@@ -88,8 +88,8 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     return item;
   },
 
-  async getByMemberAndItem(memberId: string, itemId: string): Promise<ItemMembership | null> {
-    if (!memberId) {
+  async getByAccountAndItem(accountId: string, itemId: string): Promise<ItemMembership | null> {
+    if (!accountId) {
       throw new MemberNotFound();
     } else if (!itemId) {
       throw new ItemNotFound(itemId);
@@ -97,10 +97,13 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
 
     return await this.findOne({
       where: {
-        member: { id: memberId },
+        account: { id: accountId },
         item: { id: itemId },
       },
-      relations: ['member', 'item'],
+      relations: {
+        account: true,
+        item: true,
+      },
     });
   },
 

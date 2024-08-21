@@ -56,12 +56,12 @@ export class ItemMembershipService {
       });
   }
 
-  async getByMemberAndItem(
+  async getByAccountAndItem(
     { itemMembershipRepository }: Repositories,
-    memberId: UUID,
+    accountId: UUID,
     itemId: UUID,
   ) {
-    return await itemMembershipRepository.getByMemberAndItem(memberId, itemId);
+    return await itemMembershipRepository.getByAccountAndItem(accountId, itemId);
   }
 
   async getForManyItems(actor: Actor, repositories: Repositories, itemIds: string[]) {
