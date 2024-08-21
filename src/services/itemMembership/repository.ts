@@ -487,7 +487,11 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
         account: { id: actorId },
         item: { creator: Not(actorId) },
       },
-      relations: ['item', 'item.creator'],
+      relations: {
+        item: {
+          creator: true,
+        },
+      },
     });
     const items = sharedMemberships.map(({ item }) => item);
     // TODO: optimize
@@ -504,7 +508,9 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
   ): Promise<ItemMembership[]> {
     return this.find({
       where: { item: AncestorOf(itemPath), permission },
-      relations: ['member'],
+      relations: {
+        account: true,
+      },
     });
   },
 

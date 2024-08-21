@@ -348,12 +348,12 @@ describe('Membership routes tests', () => {
         const member = await saveMember();
 
         const { membershipRequestRepository } = buildRepositories();
-        membershipRequestRepository.post(member.id, parentItem.id);
-        membershipRequestRepository.post(member.id, targetItem.id);
-        membershipRequestRepository.post(member.id, childItem.id);
+        await membershipRequestRepository.post(member.id, parentItem.id);
+        await membershipRequestRepository.post(member.id, targetItem.id);
+        await membershipRequestRepository.post(member.id, childItem.id);
 
         const payload = {
-          memberId: member.id,
+          accountId: member.id,
           permission: PermissionLevel.Write,
         };
 
