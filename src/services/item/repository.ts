@@ -454,7 +454,7 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
   async updateOne(id: string, data: UpdateItemBody) {
     // update only if data is not empty
     if (!Object.keys(data).length) {
-      throw new IllegalArgumentException("The item's body cannot be empty!");
+      throw new IllegalArgumentException("The item's body cannot be empty!", this.classEntity);
     }
 
     // TODO: extra + settings

@@ -34,7 +34,7 @@ export class AppActionRepository extends MutableRepository<AppAction, UpdateAppA
 
   async getForItem(itemId: string, filters: SingleItemGetFilter) {
     if (!itemId) {
-      throw new IllegalArgumentException('The itemId must be defined');
+      throw new IllegalArgumentException('The itemId must be defined', this.classEntity);
     }
 
     const { memberId } = filters;
@@ -51,7 +51,7 @@ export class AppActionRepository extends MutableRepository<AppAction, UpdateAppA
    */
   async getForMemberExport(memberId: string) {
     if (!memberId) {
-      throw new IllegalArgumentException('The memberId must be defined');
+      throw new IllegalArgumentException('The memberId must be defined', this.classEntity);
     }
 
     return await this.repository.find({
@@ -71,7 +71,7 @@ export class AppActionRepository extends MutableRepository<AppAction, UpdateAppA
     const { memberId } = filters;
 
     if (itemIds.length === 0) {
-      throw new IllegalArgumentException('The itemIds must not be empty!');
+      throw new IllegalArgumentException('The itemIds must not be empty!', this.classEntity);
     }
 
     // here it is ok to have some app actions where the item or the member are null (because of missing or soft-deleted relations)

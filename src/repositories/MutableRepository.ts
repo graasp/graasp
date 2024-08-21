@@ -4,6 +4,7 @@ import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity
 import { KeysOfString } from '../types';
 import { Entity } from './AbstractRepository';
 import { ImmutableRepository } from './ImmutableRepository';
+import { errorFactory } from './errorFactory';
 import {
   DeleteException,
   EntryNotFoundAfterUpdateException,
@@ -52,17 +53,19 @@ export abstract class MutableRepository<
 
       const updatedEntity = await this.findOne(pkValue);
 
-      // Should never happen, if an error occurs, it should throw during the update.
+      // This can happen if the given pk doesn't exist.
       if (!updatedEntity) {
-        throw new EntryNotFoundAfterUpdateException(this.entity);
+        throw new EntryNotFoundAfterUpdateException(this.classEntity);
       }
 
       return updatedEntity;
     } catch (e) {
-      if (e instanceof EntryNotFoundAfterUpdateException) {
-        throw e;
-      }
-      throw new UpdateException(e);
+      throw errorFactory<T>({
+        logger: this.logger,
+        error: e,
+        classEntity: this.classEntity,
+        fallBackError: new UpdateException(e.message),
+      });
     }
   }
 
@@ -78,7 +81,12 @@ export abstract class MutableRepository<
     try {
       await this.repository.delete(pkValue);
     } catch (e) {
-      throw new DeleteException(e);
+      throw errorFactory<T>({
+        logger: this.logger,
+        error: e,
+        classEntity: this.classEntity,
+        fallBackError: new DeleteException(e.message),
+      });
     }
   }
 
@@ -95,14 +103,19 @@ export abstract class MutableRepository<
     const entity = await this.getOne(pkValue);
 
     if (!entity) {
-      throw new EntryNotFoundBeforeDeleteException(this.entity);
+      throw new EntryNotFoundBeforeDeleteException(this.classEntity);
     }
 
     try {
       await this.repository.delete(pkValue);
       return entity;
     } catch (e) {
-      throw new DeleteException(e);
+      throw errorFactory<T>({
+        logger: this.logger,
+        error: e,
+        classEntity: this.classEntity,
+        fallBackError: new DeleteException(e.message),
+      });
     }
   }
 }

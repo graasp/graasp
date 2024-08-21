@@ -112,7 +112,7 @@ export class ChatMessageRepository
     const chats = await this.getForItem(itemId);
 
     if (chats.length === 0) {
-      throw new EntryNotFoundBeforeDeleteException(this.entity);
+      throw new EntryNotFoundBeforeDeleteException(this.classEntity);
     }
 
     try {

@@ -1,8 +1,11 @@
 import { BaseEntity, DeepPartial, EntityManager, FindOneOptions, FindOptionsWhere } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
 
+import { resolveDependency } from '../di/utils';
+import { BaseLogger } from '../logger';
 import { KeysOfString } from '../types';
 import { AbstractRepository, Entity } from './AbstractRepository';
+import { errorFactory } from './errorFactory';
 import {
   EntityNotFound,
   EntryNotFoundAfterInsertException,
@@ -21,17 +24,20 @@ type CreateBody<T extends BaseEntity> = DeepPartial<T> | { [key: string]: unknow
 export abstract class ImmutableRepository<T extends BaseEntity> extends AbstractRepository<T> {
   /** The primary key of the entity used during the find. */
   protected readonly primaryKeyName: KeysOfString<T>;
-  protected readonly entity: Entity<T>;
+  protected readonly classEntity: Entity<T>;
+  protected readonly logger: BaseLogger;
 
   /**
    * @param primaryKeyName The name of the entity's primary key, used during the findOne.
    * @param entity The concrete entity the repository will manage.
    * @param manager The entity manager used to handle transactions.
    */
-  constructor(primaryKeyName: KeysOfString<T>, entity: Entity<T>, manager?: EntityManager) {
-    super(entity, manager);
-    this.entity = entity;
+  constructor(primaryKeyName: KeysOfString<T>, classEntity: Entity<T>, manager?: EntityManager) {
+    super(classEntity, manager);
+    this.classEntity = classEntity;
     this.primaryKeyName = primaryKeyName;
+    // When the repository is fully injectable, the baseLogger will be in parameter of the constructor.
+    this.logger = resolveDependency(BaseLogger);
   }
 
   /********************************** Public Interfaces **********************************/
@@ -74,7 +80,7 @@ export abstract class ImmutableRepository<T extends BaseEntity> extends Abstract
     const entity = await this.getOne(pkValue, options);
 
     if (!entity) {
-      const error = errorToThrow ?? new EntityNotFound(this.entity, pkValue);
+      const error = errorToThrow ?? new EntityNotFound(this.classEntity, pkValue);
       throw error;
     }
 
@@ -101,11 +107,11 @@ export abstract class ImmutableRepository<T extends BaseEntity> extends Abstract
    */
   protected throwsIfParamIsInvalid(name: string, value: string | string[]) {
     if (!value) {
-      throw new IllegalArgumentException(`The given ${name} is undefined!`);
+      throw new IllegalArgumentException(`The given ${name} is undefined!`, this.classEntity);
     }
 
     if (Array.isArray(value) && value.length === 0) {
-      throw new IllegalArgumentException(`The given array of ${name} is empty!`);
+      throw new IllegalArgumentException(`The given array of ${name} is empty!`, this.classEntity);
     }
   }
 
@@ -148,15 +154,17 @@ export abstract class ImmutableRepository<T extends BaseEntity> extends Abstract
 
       // Should never happen, if an error occurs, it should throw during the insert.
       if (!insertedEntity) {
-        throw new EntryNotFoundAfterInsertException(this.entity);
+        throw new EntryNotFoundAfterInsertException(this.classEntity);
       }
 
       return insertedEntity;
     } catch (e) {
-      if (e instanceof EntryNotFoundAfterInsertException) {
-        throw e;
-      }
-      throw new InsertionException(e);
+      throw errorFactory<T>({
+        logger: this.logger,
+        error: e,
+        classEntity: this.classEntity,
+        fallBackError: new InsertionException(e.message),
+      });
     }
   }
 }

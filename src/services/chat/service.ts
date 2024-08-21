@@ -7,7 +7,7 @@ import { Repositories } from '../../utils/repositories';
 import { ItemService } from '../item/service';
 import { Actor, Member } from '../member/entities/member';
 import { ChatMessage } from './chatMessage';
-import { MemberCannotDeleteMessage, MemberCannotEditMessage } from './errors';
+import { ChatMessageNotFound, MemberCannotDeleteMessage, MemberCannotEditMessage } from './errors';
 import { MentionService } from './plugins/mentions/service';
 
 @singleton()
@@ -75,7 +75,11 @@ export class ChatMessageService {
     await this.itemService.get(actor, repositories, itemId);
 
     // check right to make sure that the user is editing his own message
-    const messageContent = await chatMessageRepository.getOneOrThrow(messageId);
+    const messageContent = await chatMessageRepository.getOneOrThrow(
+      messageId,
+      undefined,
+      new ChatMessageNotFound(messageId),
+    );
 
     if (messageContent.creator?.id !== actor.id) {
       throw new MemberCannotEditMessage(messageId);

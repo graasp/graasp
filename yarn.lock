@@ -7640,6 +7640,7 @@ __metadata:
     pdf-text-reader: "npm:3.0.2"
     pdf2pic: "npm:3.1.1"
     pg: "npm:8.12.0"
+    pg-protocol: "npm:1.6.1"
     pino-pretty: "npm:11.2.2"
     prettier: "npm:3.3.3"
     reflect-metadata: "npm:0.2.2"
@@ -10780,7 +10781,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pg-protocol@npm:^1.6.1":
+"pg-protocol@npm:1.6.1, pg-protocol@npm:^1.6.1":
   version: 1.6.1
   resolution: "pg-protocol@npm:1.6.1"
   checksum: 10/9af672208adae8214f55f5b4597c4699ab9946205a99863d3e2bb8d024fdab16711457b539bc366cc29040218aa87508cf61294b76d288f48881b973d9117bd6
