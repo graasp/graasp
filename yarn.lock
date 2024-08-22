@@ -2054,9 +2054,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@graasp/graasp-sdk#568-new-membertype":
-  version: 4.25.0
-  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=dcdb20a65c65d1ff5bca2b3660d3e8f8c4d4bf6b"
+"@graasp/sdk@npm:4.26.0":
+  version: 4.26.0
+  resolution: "@graasp/sdk@npm:4.26.0"
   dependencies:
     "@faker-js/faker": "npm:8.4.1"
     filesize: "npm:10.1.4"
@@ -2064,17 +2064,17 @@ __metadata:
     validator: "npm:13.12.0"
   peerDependencies:
     date-fns: ^3
-    uuid: ^9 || ^10.0.0
-  checksum: 10/24730aa504d44e31460234f4cb45e299ec754129acee036ab0445cd56964d401d94979c7e304173ef4f066dded673f56d3ba4078b9c0409f831c1944f1b71599
+    uuid: ^9 || ^10
+  checksum: 10/ec6ce2780dfc25a11c90ebe90b95e34cb5026f4cab2a918960eaa465b362cb67918bbc0a7c46f5a9a3dd83c855350148ccf91e12583668ece81e7e1c1cb5b824
   languageName: node
   linkType: hard
 
-"@graasp/translations@graasp/graasp-translations#470-need-more-failure-messages-for-item-login-refactoring":
-  version: 1.35.0
-  resolution: "@graasp/translations@https://github.com/graasp/graasp-translations.git#commit=73afc0a4bc6e0237a4d755b9a5dc6778f4f2588b"
+"@graasp/translations@npm:1.35.1":
+  version: 1.35.1
+  resolution: "@graasp/translations@npm:1.35.1"
   peerDependencies:
     i18next: ^23.8.1
-  checksum: 10/7f71c2cde212bd0ea1a46acd10430365ac5ebef676e7e1ad1381f633fd36bbd323db62d9fa64e0d74009455c2631e26197ecf9b1e17ff366cd84cd94593b1886
+  checksum: 10/cb702acaa9998fc3468532eedb62e4af0b5dd4f5a452dee53b23b5c4290d52d479bde115952774aaa073fc7a35e5ffaf06872c62e28caf501b318fbb8d76c058
   languageName: node
   linkType: hard
 
@@ -7554,8 +7554,8 @@ __metadata:
     "@fastify/swagger-ui": "npm:4.0.0"
     "@fastify/websocket": "npm:7.2.0"
     "@graasp/etherpad-api": "npm:2.1.1"
-    "@graasp/sdk": "graasp/graasp-sdk#568-new-membertype"
-    "@graasp/translations": "graasp/graasp-translations#470-need-more-failure-messages-for-item-login-refactoring"
+    "@graasp/sdk": "npm:4.26.0"
+    "@graasp/translations": "npm:1.35.1"
     "@jest/globals": "npm:29.7.0"
     "@rapideditor/country-coder": "npm:5.2.2"
     "@sentry/node": "npm:7.118.0"
