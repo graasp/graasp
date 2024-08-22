@@ -10,29 +10,29 @@ export interface GetAll<T extends BaseEntity> {
   getAll(): Promise<T[]>;
 }
 
-export interface GetForItem<T extends BaseEntity> {
+export interface GetByItem<T extends BaseEntity> {
   /**
    * Retrieves all the entities related to the given item.
    * @param itemId Id of item to retrieve the entities.
    * @returns An array containing all the entities related to the given item.
    */
-  getForItem(itemId: string): Promise<T[]>;
+  getByItem(itemId: string): Promise<T[]>;
 }
 
-export interface GetForItems<T extends BaseEntity> {
+export interface GetByItems<T extends BaseEntity> {
   /**
    * Retrieves all the entities related to the given item ids.
    * @param itemIds Ids of items to retrieve the entities.
    * @returns An ResultOf containing all the entities related to the given items.
    */
-  getForItems(itemIds: string[]): Promise<ResultOf<T[]>>;
+  getByItems(itemIds: string[]): Promise<ResultOf<T[]>>;
 }
 
-export interface GetForMemberExport<T extends BaseEntity> {
+export interface GetExportByMember<T extends BaseEntity> {
   /**
    * Return all the entities related to the given member.
    * @param memberId ID of the member to retrieve the entities.
    * @returns an array of the entities related to the given member.
    */
-  getForMemberExport(memberId: string): Promise<T[]>;
+  getExportByMember(memberId: string): Promise<T[]>;
 }

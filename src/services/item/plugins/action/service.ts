@@ -189,7 +189,7 @@ export class ActionItemService {
     // chatbox for all items
     const chatMessages = Object.values(
       (
-        await repositories.chatMessageRepository.getForItems([
+        await repositories.chatMessageRepository.getByItems([
           payload.itemId,
           ...descendants.map(({ id }) => id),
         ])

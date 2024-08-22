@@ -94,7 +94,7 @@ export class ExportMemberDataService {
   }
 
   async getChatMessages(actor: Member, { chatMessageRepository }: Repositories) {
-    const results = await chatMessageRepository.getForMemberExport(actor.id);
+    const results = await chatMessageRepository.getExportByMember(actor.id);
     const anonymized = anonymizeMessages({ results, exportingActorId: actor.id });
     return getFilteredData(anonymized, messageArraySchema);
   }

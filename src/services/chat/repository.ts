@@ -5,7 +5,7 @@ import { ResultOf } from '@graasp/sdk';
 import { MutableRepository } from '../../repositories/MutableRepository';
 import { DEFAULT_PRIMARY_KEY } from '../../repositories/const';
 import { DeleteException } from '../../repositories/errors';
-import { GetForItem, GetForItems, GetForMemberExport } from '../../repositories/interfaces';
+import { GetByItem, GetByItems, GetExportByMember } from '../../repositories/interfaces';
 import { Member } from '../member/entities/member';
 import { messageSchema } from '../member/plugins/export-data/schemas/schemas';
 import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils';
@@ -13,9 +13,9 @@ import { mapById } from '../utils';
 import { ChatMessage } from './chatMessage';
 
 // This type simplify the readability of the Repository's implements.
-type IChatMessageRepository<T extends ChatMessage> = GetForItem<T> &
-  GetForItems<T> &
-  GetForMemberExport<T>;
+type IChatMessageRepository<T extends ChatMessage> = GetByItem<T> &
+  GetByItems<T> &
+  GetExportByMember<T>;
 
 type ChatMessageUpdateBody = Partial<ChatMessage>;
 type ChatMessageCreateBody = { itemId: string; creator: Member; body: string };
@@ -32,7 +32,7 @@ export class ChatMessageRepository
    * Retrieves all the messages related to the given item
    * @param itemId Id of item to retrieve messages for
    */
-  async getForItem(itemId: string): Promise<ChatMessage[]> {
+  async getByItem(itemId: string): Promise<ChatMessage[]> {
     this.throwsIfParamIsInvalid('itemId', itemId);
 
     return await this.repository.find({
@@ -46,7 +46,7 @@ export class ChatMessageRepository
    * Retrieves all the messages related to the given items
    * @param itemIds Id of items to retrieve messages for
    */
-  async getForItems(itemIds: string[]): Promise<ResultOf<ChatMessage[]>> {
+  async getByItems(itemIds: string[]): Promise<ResultOf<ChatMessage[]>> {
     this.throwsIfParamIsInvalid('itemIds', itemIds);
 
     const messages = await this.repository.find({
@@ -64,7 +64,7 @@ export class ChatMessageRepository
    * @param memberId ID of the member to retrieve the data.
    * @returns an array of the messages.
    */
-  async getForMemberExport(memberId: string): Promise<ChatMessage[]> {
+  async getExportByMember(memberId: string): Promise<ChatMessage[]> {
     this.throwsIfParamIsInvalid('memberId', memberId);
 
     return await this.repository.find({
@@ -103,13 +103,13 @@ export class ChatMessageRepository
   }
 
   /**
-   * Remove all messages for the given chat
-   * @param chatId Id of chat
+   * Remove all messages for the item
+   * @param itemId Id of item to clear the chat
    */
-  async clearChat(itemId: string): Promise<ChatMessage[]> {
+  async deleteByItem(itemId: string): Promise<ChatMessage[]> {
     this.throwsIfParamIsInvalid('itemId', itemId);
 
-    const chats = await this.getForItem(itemId);
+    const chats = await this.getByItem(itemId);
 
     if (chats.length === 0) {
       return [];

@@ -21,7 +21,7 @@ export class ChatMessageService {
     this.mentionService = mentionService;
   }
 
-  async getForItem(
+  async getByItem(
     actor: Actor,
     repositories: Repositories,
     itemId: string,
@@ -31,7 +31,7 @@ export class ChatMessageService {
     // check permission
     await this.itemService.get(actor, repositories, itemId);
 
-    const messages = await chatMessageRepository.getForItem(itemId);
+    const messages = await chatMessageRepository.getByItem(itemId);
     return messages;
   }
 
@@ -119,6 +119,6 @@ export class ChatMessageService {
 
     await this.hooks.runPostHooks('clear', actor, repositories, { itemId });
 
-    await chatMessageRepository.clearChat(itemId);
+    await chatMessageRepository.deleteByItem(itemId);
   }
 }

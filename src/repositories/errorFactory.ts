@@ -13,7 +13,7 @@ export const errorFactory = <T extends BaseEntity>({
   classEntity,
   fallBackError,
 }: {
-  error: unknown & { message?: string };
+  error: { message?: string };
   classEntity: Entity<T>;
   fallBackError?: unknown;
 }) => {

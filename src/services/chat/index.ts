@@ -62,7 +62,7 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify) => {
       { schema: getChat, preHandler: optionalIsAuthenticated },
       async ({ user, params: { itemId } }) => {
         try {
-          return await chatService.getForItem(user?.member, buildRepositories(), itemId);
+          return await chatService.getByItem(user?.member, buildRepositories(), itemId);
         } catch (e) {
           throw httpErrorFactory(e, { notFoundError: new ItemNotFound(itemId) });
         }
