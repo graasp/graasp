@@ -31,7 +31,7 @@ const setUpForAppContext = async (
 
 describe('Apps Plugin Tests', () => {
   let app: FastifyInstance;
-  let actor: Actor;
+  let actor: Member | undefined;
 
   afterEach(async () => {
     jest.clearAllMocks();
@@ -219,7 +219,7 @@ describe('Apps Plugin Tests', () => {
     describe('Signed In', () => {
       let token: string;
       let item: Item;
-      let actor: Actor;
+      let actor: Member | undefined;
 
       it('Get app context successfully for one item', async () => {
         ({ app, actor } = await build());

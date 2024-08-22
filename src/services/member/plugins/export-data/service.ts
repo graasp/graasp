@@ -31,10 +31,16 @@ export class ExportMemberDataService {
     this.requestDataExportService = requestDataExportService;
   }
 
-  async requestDataExport({ actor, repositories }: { actor: Member; repositories: Repositories }) {
+  async requestDataExport({
+    member,
+    repositories,
+  }: {
+    member: Member;
+    repositories: Repositories;
+  }) {
     // get the data to export
-    const dataRetriever = async () => await this.getAllData(actor, repositories);
-    await this.requestDataExportService.requestExport(actor, actor.id, dataRetriever);
+    const dataRetriever = async () => await this.getAllData(member, repositories);
+    await this.requestDataExportService.requestExport(member, member.id, dataRetriever);
   }
 
   async getAllData(actor: Member, repositories: Repositories) {
@@ -68,7 +74,7 @@ export class ExportMemberDataService {
   }
 
   async getActions(actor: Member, { actionRepository }: Repositories) {
-    const results = await actionRepository.getForMemberExport(actor.id);
+    const results = await actionRepository.getForAccountExport(actor.id);
     return getFilteredData(results, actionArraySchema);
   }
 

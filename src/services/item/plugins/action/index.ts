@@ -26,7 +26,8 @@ import {
   LocalFileConfiguration,
   S3FileConfiguration,
 } from '../../../file/interfaces/configuration';
-import { validatedMember } from '../../../member/strategies/validatedMember';
+import { assertIsMember } from '../../../member/entities/member';
+import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { ItemService } from '../../service';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
 import { CannotPostAction } from './errors';
@@ -66,7 +67,7 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
       preHandler: isAuthenticated,
     },
     async ({ user, params: { id }, query }) => {
-      return actionItemService.getBaseAnalyticsForItem(user?.member, buildRepositories(), {
+      return actionItemService.getBaseAnalyticsForItem(user?.account, buildRepositories(), {
         sampleSize: query.requestedSampleSize,
         itemId: id,
         view: query.view?.toLowerCase(),
@@ -97,7 +98,7 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
       preHandler: isAuthenticated,
     },
     async ({ user, params: { id }, query }) => {
-      return actionItemService.getAnalyticsAggregation(user?.member, buildRepositories(), {
+      return actionItemService.getAnalyticsAggregation(user?.account, buildRepositories(), {
         sampleSize: query.requestedSampleSize,
         itemId: id,
         view: query.view?.toLowerCase(),
@@ -125,7 +126,7 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
         params: { id: itemId },
         body: { type, extra = {} },
       } = request;
-      const member = user?.member;
+      const member = user?.account;
 
       // allow only from known hosts
       if (!request.headers.origin) {
@@ -154,7 +155,7 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
     method: 'POST',
     url: '/:id/actions/export',
     schema: exportAction,
-    preHandler: [isAuthenticated, matchOne(validatedMember)],
+    preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     handler: async (request, reply) => {
       const {
         user,
@@ -162,7 +163,8 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
         query: { format = ExportActionsFormatting.JSON },
         log,
       } = request;
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
+      assertIsMember(member);
       db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
         const item = await requestExportService.request(member, repositories, itemId, format);

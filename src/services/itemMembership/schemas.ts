@@ -18,7 +18,7 @@ export default {
       type: 'object',
       properties: {
         id: { $ref: 'https://graasp.org/#/definitions/uuid' },
-        member: { $ref: 'https://graasp.org/members/#/definitions/member' },
+        account: { $ref: 'https://graasp.org/accounts/#/definitions/augmentedAccount' },
         /**
          * itemPath's 'pattern' not supported in serialization.
          * since 'itemMembership' schema is only used for serialization it's safe
@@ -40,9 +40,9 @@ export default {
     // item membership properties required at creation
     createPartialItemMembership: {
       type: 'object',
-      required: ['memberId', 'permission'],
+      required: ['accountId', 'permission'],
       properties: {
-        memberId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+        accountId: { $ref: 'https://graasp.org/#/definitions/uuid' },
         permission: { $ref: '#/definitions/permission' },
       },
       additionalProperties: false,

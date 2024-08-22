@@ -3,7 +3,7 @@ import { EntityManager, In } from 'typeorm';
 import { MentionStatus } from '@graasp/sdk';
 
 import { AbstractRepository } from '../../../../repositories/AbstractRepository';
-import { Member } from '../../../member/entities/member';
+import { Account } from '../../../account/entities/account';
 import { messageMentionSchema } from '../../../member/plugins/export-data/schemas/schemas';
 import { schemaToSelectMapper } from '../../../member/plugins/export-data/utils/selection.utils';
 import { ChatMessage } from '../../chatMessage';
@@ -16,36 +16,36 @@ export class ChatMentionRepository extends AbstractRepository<ChatMention> {
   }
 
   /**
-   * Retrieves all the mentions for the given memberId
-   * @param memberId Id of the member to retrieve
+   * Retrieves all the mentions for the given accountId
+   * @param accountId Id of the account to retrieve
    */
-  async getForMember(memberId: string): Promise<ChatMention[]> {
-    if (!memberId) {
-      throw new NoChatMentionForMember({ memberId });
+  async getForAccount(accountId: string): Promise<ChatMention[]> {
+    if (!accountId) {
+      throw new NoChatMentionForMember({ accountId });
     }
 
     return this.repository.find({
-      where: { member: { id: memberId } },
+      where: { account: { id: accountId } },
       relations: {
         message: { item: true, creator: true },
-        member: true,
+        account: true,
       },
     });
   }
 
   /**
-   * Return all the chat mentions for the given member.
-   * @param memberId ID of the member to retrieve the data.
+   * Return all the chat mentions for the given account.
+   * @param accountId ID of the account to retrieve the data.
    * @returns an array of the chat mentions.
    */
-  async getForMemberExport(memberId: string): Promise<ChatMention[]> {
-    if (!memberId) {
-      throw new NoChatMentionForMember({ memberId });
+  async getForMemberExport(accountId: string): Promise<ChatMention[]> {
+    if (!accountId) {
+      throw new NoChatMentionForMember({ accountId });
     }
 
     return this.repository.find({
       select: schemaToSelectMapper(messageMentionSchema),
-      where: { member: { id: memberId } },
+      where: { account: { id: accountId } },
       order: { createdAt: 'DESC' },
       relations: {
         message: {
@@ -66,7 +66,7 @@ export class ChatMentionRepository extends AbstractRepository<ChatMention> {
 
     const mention = await this.repository.findOne({
       where: { id: mentionId },
-      relations: { member: true },
+      relations: { account: true },
     });
 
     if (!mention) {
@@ -83,24 +83,24 @@ export class ChatMentionRepository extends AbstractRepository<ChatMention> {
   async getMany(ids: ChatMessage['id'][]): Promise<ChatMention[]> {
     const items = await this.repository.find({
       where: { id: In(ids) },
-      relations: { member: true },
+      relations: { account: true },
     });
 
     return items;
   }
 
   /**
-   * Create many mentions for members
-   * @param mentionedMemberIds Id of the mention to retrieve
+   * Create many mentions for accounts
+   * @param mentionedAccountIds Id of the mention to retrieve
    * @param messageId message id with the mentions
    * @param item
    */
   async postMany(
-    mentionedMemberIds: Member['id'][],
-    messageId: ChatMessage['id'],
+    mentionedAccountIds: (typeof Account.prototype.id)[],
+    messageId: typeof ChatMessage.prototype.id,
   ): Promise<ChatMention[]> {
-    const entries = mentionedMemberIds.map((memberId) => ({
-      member: { id: memberId },
+    const entries = mentionedAccountIds.map((accountId) => ({
+      account: { id: accountId },
       message: { id: messageId },
       status: MentionStatus.Unread,
     }));
@@ -129,15 +129,15 @@ export class ChatMentionRepository extends AbstractRepository<ChatMention> {
   }
 
   /**
-   * Remove all mentions for the given memberId
-   * @param memberId Id of the member
+   * Remove all mentions for the given accountId
+   * @param accountId Id of the account
    */
-  async deleteAll(memberId: string): Promise<void> {
+  async deleteAll(accountId: string): Promise<void> {
     await this.repository
       .createQueryBuilder('mention')
-      .leftJoinAndSelect('mention.member', 'member')
+      .leftJoinAndSelect('mention.account', 'account')
       .delete()
-      .where('member.id = :memberId', { memberId })
+      .where('account.id = :accountId', { accountId })
       .execute();
   }
 }

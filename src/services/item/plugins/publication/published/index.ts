@@ -7,7 +7,8 @@ import { notUndefined } from '../../../../../utils/assertions';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../../auth/plugins/passport';
 import { matchOne } from '../../../../authorization';
-import { validatedMember } from '../../../../member/strategies/validatedMember';
+import { assertIsMember } from '../../../../member/entities/member';
+import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
 import { ItemService } from '../../../service';
 import { PublicationService } from '../publicationState/service';
 import graaspSearchPlugin from './plugins/search';
@@ -37,7 +38,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: optionalIsAuthenticated,
     },
     async ({ user, params: { memberId } }) => {
-      return itemPublishedService.getItemsForMember(user?.member, buildRepositories(), memberId);
+      return itemPublishedService.getItemsForMember(user?.account, buildRepositories(), memberId);
     },
   );
 
@@ -48,7 +49,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       schema: getInformations,
     },
     async ({ params, user }) => {
-      return itemPublishedService.get(user?.member, buildRepositories(), params.itemId);
+      return itemPublishedService.get(user?.account, buildRepositories(), params.itemId);
     },
   );
 
@@ -59,7 +60,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       schema: getManyInformations,
     },
     async ({ user, query: { itemId } }) => {
-      return itemPublishedService.getMany(user?.member, buildRepositories(), itemId);
+      return itemPublishedService.getMany(user?.account, buildRepositories(), itemId);
     },
   );
 
@@ -70,18 +71,19 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       schema: getMostLikedItems,
     },
     async ({ user, query: { limit } }) => {
-      return itemPublishedService.getLikedItems(user?.member, buildRepositories(), limit);
+      return itemPublishedService.getLikedItems(user?.account, buildRepositories(), limit);
     },
   );
 
   fastify.post<{ Params: { itemId: string } }>(
     '/collections/:itemId/publish',
     {
-      preHandler: [isAuthenticated, matchOne(validatedMember)],
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
       schema: publishItem,
     },
     async ({ params, user }) => {
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
+      assertIsMember(member);
       return db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
         const item = await itemService.get(
@@ -101,11 +103,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.delete<{ Params: { itemId: string } }>(
     '/collections/:itemId/unpublish',
     {
-      preHandler: [isAuthenticated, matchOne(validatedMember)],
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
       schema: unpublishItem,
     },
     async ({ params, user }) => {
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
+      assertIsMember(member);
       return db.transaction(async (manager) => {
         return itemPublishedService.delete(member, buildRepositories(manager), params.itemId);
       });
@@ -119,7 +122,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       schema: getRecentCollections,
     },
     async ({ user, query: { limit } }) => {
-      return itemPublishedService.getRecentItems(user?.member, buildRepositories(), limit);
+      return itemPublishedService.getRecentItems(user?.account, buildRepositories(), limit);
     },
   );
 };

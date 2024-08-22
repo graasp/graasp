@@ -19,7 +19,7 @@ export const createMockMember = (extra?) => ({
 
 // mock preHandler to be injected in test fastify instance to simulate authentication
 export const mockSessionPreHandler = async (request: FastifyRequest, _reply: FastifyReply) => {
-  request.user = { member: createMockMember() as unknown as Member };
+  request.user = { account: createMockMember() as unknown as Member };
 };
 
 // Signature of @types/graasp/plugins/auth/interfaces/auth.d.ts is wrong! Force return of Promise

@@ -74,7 +74,7 @@ export class ItemThumbnailService {
     await this.itemService.get(actor, repositories, itemId, PermissionLevel.Write);
     await Promise.all(
       Object.values(ThumbnailSize).map(async (size) => {
-        this.thumbnailService.delete(actor, { id: itemId, size });
+        this.thumbnailService.delete({ id: itemId, size });
       }),
     );
     await this.itemService.patch(actor, repositories, itemId, {

@@ -12,33 +12,32 @@ import {
 
 import { Context } from '@graasp/sdk';
 
+import { Account } from '../../account/entities/account';
 import { Item } from '../../item/entities/Item';
-import { Member } from '../../member/entities/member';
 
 @Entity()
 export class Action extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => Member, (member) => member.id, {
+  @Index('IDX_action_account_id')
+  @ManyToOne(() => Account, (account) => account.id, {
     onDelete: 'SET NULL',
     nullable: true,
   })
-  @JoinColumn({ name: 'member_id' })
-  @Index()
-  member?: Member | null;
+  @JoinColumn({ name: 'account_id', foreignKeyConstraintName: 'FK_action_account_id' })
+  account?: Account | null;
 
   /**
    * action can be related to a behavior not related to an item
    */
+  @Index()
   @ManyToOne(() => Item, (item) => item.path, {
     onDelete: 'SET NULL',
     nullable: true,
   })
-  @Index()
   @JoinColumn({ referencedColumnName: 'id', name: 'item_id' })
   item?: Item | null;
-
   @Column({
     nullable: false,
     enum: Object.values(Context),

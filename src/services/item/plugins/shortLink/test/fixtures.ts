@@ -44,7 +44,7 @@ export class ShortLinkTestUtils extends ItemTestUtils {
 
     if (memberWithPermission) {
       const { member, permission } = memberWithPermission;
-      await this.saveMembership({ item: createdItem, member, permission });
+      await this.saveMembership({ item: createdItem, account: member, permission });
     }
 
     if (setPublic) {

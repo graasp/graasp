@@ -9,6 +9,7 @@ import {
   UUID,
   getChildFromPath,
 } from '@graasp/sdk';
+import { DEFAULT_LANG } from '@graasp/translations';
 
 import { AppDataSource } from '../../plugins/datasource';
 import { ALLOWED_SEARCH_LANGS } from '../../utils/config';
@@ -21,11 +22,12 @@ import {
   ModifyExistingMembership,
 } from '../../utils/errors';
 import { AncestorOf } from '../../utils/typeorm/treeOperators';
+import { Account } from '../account/entities/account';
 import { ITEMS_PAGE_SIZE_MAX } from '../item/constants';
 import { Item } from '../item/entities/Item';
 import { ItemSearchParams, Ordering, SortBy } from '../item/types';
 import { MemberIdentifierNotFound } from '../itemLogin/errors';
-import { Member } from '../member/entities/member';
+import { isMember } from '../member/entities/member';
 import { itemMembershipSchema } from '../member/plugins/export-data/schemas/schemas';
 import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils';
 import { mapById } from '../utils';
@@ -48,8 +50,8 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     const itemMembership = await this.get(itemMembershipId);
 
     if (args.purgeBelow) {
-      const { item, member } = itemMembership;
-      const itemMembershipsBelow = await this.getAllBelow(item, member.id);
+      const { item, account } = itemMembership;
+      const itemMembershipsBelow = await this.getAllBelow(item, account.id);
 
       if (itemMembershipsBelow.length > 0) {
         // return list of subtasks for task manager to execute and
@@ -76,7 +78,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
   async get(id: string): Promise<ItemMembership> {
     const item = await this.findOne({
       where: { id },
-      relations: ['member', 'item', 'item.creator'],
+      relations: ['account', 'item', 'item.creator'],
     });
 
     if (!item) {
@@ -86,8 +88,8 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     return item;
   },
 
-  async getByMemberAndItem(memberId: string, itemId: string): Promise<ItemMembership | null> {
-    if (!memberId) {
+  async getByAccountAndItem(accountId: string, itemId: string): Promise<ItemMembership | null> {
+    if (!accountId) {
       throw new MemberNotFound();
     } else if (!itemId) {
       throw new ItemNotFound(itemId);
@@ -95,22 +97,25 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
 
     return await this.findOne({
       where: {
-        member: { id: memberId },
+        account: { id: accountId },
         item: { id: itemId },
       },
-      relations: ['member', 'item'],
+      relations: {
+        account: true,
+        item: true,
+      },
     });
   },
 
   /**
    * Return membership under given item (without self memberships)
    * @param item
-   * @param memberId
+   * @param accountId
    * @returns
    */
   async getAllBelow(
     item: Item,
-    memberId?: string,
+    accountId?: string,
     {
       considerLocal = false,
       selectItem = false,
@@ -126,12 +131,12 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     }
 
     // if member is specified, select only this user
-    if (memberId) {
-      query.andWhere('item_membership.member = :id', { id: memberId });
+    if (accountId) {
+      query.andWhere('item_membership.account = :id', { id: accountId });
     }
     // otherwise return members' info
     else {
-      query.leftJoinAndSelect('item_membership.member', 'member');
+      query.leftJoinAndSelect('item_membership.account', 'account');
     }
 
     if (selectItem) {
@@ -145,7 +150,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
    *  get accessible items for actor and given params
    *  */
   async getAccessibleItems(
-    actor: Member,
+    account: Account,
     {
       creatorId,
       keywords,
@@ -163,7 +168,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     const query = this.createQueryBuilder('im')
       .leftJoinAndSelect('im.item', 'item')
       .leftJoinAndSelect('item.creator', 'creator')
-      .where('im.member_id = :actorId', { actorId: actor.id })
+      .where('im.account_id = :actorId', { actorId: account.id })
       // returns only top most item
       .andWhere((qb) => {
         const subQuery = qb
@@ -171,7 +176,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
           .from(ItemMembership, 'im1')
           .select('im1.item.path')
           .where('im.item_path <@ im1.item_path')
-          .andWhere('im1.member_id = :actorId', { actorId: actor.id })
+          .andWhere('im1.account_id = :actorId', { actorId: account.id })
           .orderBy('im1.item_path', 'ASC')
           .limit(1);
 
@@ -204,8 +209,8 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
           });
 
           // search by member lang
-          const memberLang = actor.lang;
-          if (memberLang != 'en' && ALLOWED_SEARCH_LANGS[memberLang]) {
+          const memberLang = isMember(account) ? account.lang : DEFAULT_LANG;
+          if (memberLang != DEFAULT_LANG && ALLOWED_SEARCH_LANGS[memberLang]) {
             q.orWhere('item.search_document @@ plainto_tsquery(:lang, :keywords)', {
               keywords: keywordsString,
               lang: ALLOWED_SEARCH_LANGS[memberLang],
@@ -260,14 +265,14 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
    *  get accessible items name for actor and given params
    *  */
   async getAccessibleItemNames(
-    actor: Member,
+    actor: Account,
     { startWith }: { startWith?: string },
   ): Promise<string[]> {
     let query = this.createQueryBuilder('im')
       .select('item.name')
       .leftJoin('im.item', 'item')
       .leftJoin('item.creator', 'creator')
-      .where('im.member_id = :actorId', { actorId: actor.id })
+      .where('im.account_id = :actorId', { actorId: actor.id })
       // returns only top most item
       .andWhere((qb) => {
         const subQuery = qb
@@ -275,7 +280,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
           .from(ItemMembership, 'im1')
           .select('im1.item.path')
           .where('im.item_path <@ im1.item_path')
-          .andWhere('im1.member_id = :actorId', { actorId: actor.id })
+          .andWhere('im1.account_id = :actorId', { actorId: actor.id })
           .orderBy('im1.item_path', 'ASC')
           .limit(1);
         return 'item.path =' + subQuery.getQuery();
@@ -289,18 +294,18 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
   },
 
   /**
-   * Return all the memberships related to the given member.
-   * @param memberId ID of the member to retrieve the data.
+   * Return all the memberships related to the given account.
+   * @param accountId ID of the account to retrieve the data.
    * @returns an array of memberships.
    */
-  async getForMemberExport(memberId: string): Promise<ItemMembership[]> {
-    if (!memberId) {
+  async getForMemberExport(accountId: string): Promise<ItemMembership[]> {
+    if (!accountId) {
       throw new MemberIdentifierNotFound();
     }
 
     return this.find({
       select: schemaToSelectMapper(itemMembershipSchema),
-      where: { member: { id: memberId } },
+      where: { account: { id: accountId } },
       order: { updatedAt: 'DESC' },
       relations: {
         item: true,
@@ -310,7 +315,10 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
 
   async getForManyItems(
     items: Item[],
-    { memberId = undefined, withDeleted = false }: { memberId?: UUID; withDeleted?: boolean } = {},
+    {
+      accountId = undefined,
+      withDeleted = false,
+    }: { accountId?: UUID; withDeleted?: boolean } = {},
   ): Promise<ResultOf<ItemMembership[]>> {
     if (items.length === 0) {
       return { data: {}, errors: [] };
@@ -326,13 +334,13 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     query
       .innerJoin('item', 'descendant', 'item_membership.item_path @> descendant.path')
       .where('descendant.id in (:...ids)', { ids });
-    if (memberId) {
-      query.andWhere('member.id = :memberId', { memberId });
+    if (accountId) {
+      query.andWhere('account.id = :accountId', { accountId });
     }
 
     query
       .leftJoinAndSelect('item_membership.item', 'item')
-      .leftJoinAndSelect('item_membership.member', 'member');
+      .leftJoinAndSelect('item_membership.account', 'account');
 
     const memberships = await query.getMany();
 
@@ -352,7 +360,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
 
   async getInheritedMany(
     items: Item[],
-    member: Member,
+    account: Account,
     considerLocal = false,
   ): Promise<ResultOf<ItemMembership>> {
     if (items.length === 0) {
@@ -365,11 +373,11 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
       // Map each membership to the item it can affect
       .innerJoin('item', 'descendant', 'item_membership.item_path @> descendant.path')
       // Join for entity result
-      .leftJoinAndSelect('item_membership.member', 'member')
+      .leftJoinAndSelect('item_membership.account', 'account')
       .leftJoinAndSelect('item_membership.item', 'item')
       // Only from input
       .where('descendant.id in (:...ids)', { ids: ids })
-      .andWhere('item_membership.member = :id', { id: member.id });
+      .andWhere('item_membership.account = :id', { id: account.id });
     if (!considerLocal) {
       query.andWhere('item.id not in (:...ids)', { ids: ids });
     }
@@ -401,13 +409,13 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
   /** check member's membership "at" item */
   async getInherited(
     item: Item,
-    member: Member,
+    account: Account,
     considerLocal = false,
   ): Promise<ItemMembership | null> {
     const query = this.createQueryBuilder('item_membership')
       .leftJoinAndSelect('item_membership.item', 'item')
-      .leftJoinAndSelect('item_membership.member', 'member')
-      .where('item_membership.member = :id', { id: member.id })
+      .leftJoinAndSelect('item_membership.account', 'account')
+      .where('item_membership.account = :id', { id: account.id })
       .andWhere('item_membership.item_path @> :path', { path: item.path });
 
     if (!considerLocal) {
@@ -441,7 +449,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     const itemMemberships = await this.find({
       where: { id: In(ids) },
       relations: {
-        member: true,
+        account: true,
         item: true,
       },
     });
@@ -479,10 +487,14 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     const sharedMemberships = await this.find({
       where: {
         permission: In(permissions),
-        member: { id: actorId },
+        account: { id: actorId },
         item: { creator: Not(actorId) },
       },
-      relations: ['item', 'item.creator'],
+      relations: {
+        item: {
+          creator: true,
+        },
+      },
     });
     const items = sharedMemberships.map(({ item }) => item);
     // TODO: optimize
@@ -499,7 +511,9 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
   ): Promise<ItemMembership[]> {
     return this.find({
       where: { item: AncestorOf(itemPath), permission },
-      relations: ['member'],
+      relations: {
+        account: true,
+      },
     });
   },
 
@@ -509,7 +523,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
   ): Promise<ItemMembership> {
     const itemMembership = await this.get(itemMembershipId);
     // check member's inherited membership
-    const { item, member: memberOfMembership } = itemMembership;
+    const { item, account: memberOfMembership } = itemMembership;
 
     const inheritedMembership = await this.getInherited(item, memberOfMembership);
 
@@ -552,20 +566,20 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
 
   async post(args: {
     item: Item;
-    member: Member;
-    creator: Member;
+    account: Account;
+    creator: Account;
     permission: PermissionLevel;
   }): Promise<ItemMembership> {
-    const { item, member, creator, permission } = args;
+    const { item, account, creator, permission } = args;
     // prepare membership but do not save it
     const itemMembership = this.create({
       permission,
       item,
-      member,
+      account,
       creator,
     });
 
-    const inheritedMembership = await this.getInherited(item, member, true);
+    const inheritedMembership = await this.getInherited(item, account, true);
     if (inheritedMembership) {
       const { item: itemFromPermission, permission: inheritedPermission, id } = inheritedMembership;
       // fail if trying to add a new membership for the same member and item
@@ -576,12 +590,12 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
       if (PermissionLevelCompare.lte(permission, inheritedPermission)) {
         // trying to add a membership with the same or "worse" permission level than
         // the one inherited from the membership "above"
-        throw new InvalidMembership({ itemId: item.id, memberId: member.id, permission });
+        throw new InvalidMembership({ itemId: item.id, accountId: account.id, permission });
       }
     }
 
     // check existing memberships lower in the tree
-    const membershipsBelow = await this.getAllBelow(item, member.id);
+    const membershipsBelow = await this.getAllBelow(item, account.id);
     let tasks: Promise<void>[] = [];
     if (membershipsBelow.length > 0) {
       // check if any have the same or a worse permission level
@@ -612,20 +626,20 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
    *
    * Moving to *no-parent* is simpler so this method is used instead of `moveHousekeeping()`.
    * @param item Item that will be moved
-   * @param member Member used as `creator` for any new memberships
+   * @param account Member used as `creator` for any new memberships
    */
   // TODO: query type
-  async detachedMoveHousekeeping(item: Item, member: Member) {
+  async detachedMoveHousekeeping(item: Item, account: Account) {
     const index = item.path.lastIndexOf('.');
     const itemIdAsPath = item.path.slice(index + 1);
     const rows = await this.query(`
     SELECT
-      member_id AS "memberId",
+      account_id AS "accountId",
       max(item_path::text)::ltree AS "itemPath", -- get longest path
       max(permission) AS permission -- get best permission
     FROM item_membership
     WHERE item_path @> '${item.path}'
-    GROUP BY member_id
+    GROUP BY account_id
   `);
 
     const changes = {
@@ -634,13 +648,13 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     };
 
     rows?.reduce((chngs, row) => {
-      const { memberId, itemPath, permission } = row;
+      const { accountId, itemPath, permission } = row;
       if (itemPath !== item.path) {
         chngs.inserts.push({
-          member: { id: memberId },
+          account: { id: accountId },
           item: { path: itemIdAsPath } as Item,
           permission,
-          creator: member,
+          creator: account,
         } as Partial<ItemMembership>);
       }
 
@@ -655,23 +669,23 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
    * removed, after moving the item. These are adjustmnents necessary
    * to keep the constraints in the memberships:
    *
-   * * members inherit membership permissions from memberships in items 'above'
+   * * accounts inherit membership permissions from memberships in items 'above'
    * * memberships 'down the tree' can only improve on the permission level and cannot repeat: read > write > admin
    *
    * ** Needs to run before the actual item move **
    * @param item Item that will be moved
-   * @param member Member used as `creator` for any new memberships
+   * @param account Account used as `creator` for any new memberships
    * @param newParentItem Parent item to where `item` will be moved to
    */
   async moveHousekeeping(
     item: Item,
-    member: Member,
+    account: Account,
     newParentItem?: Item,
   ): Promise<{
     inserts: Partial<ItemMembership>[];
     deletes: Partial<ItemMembership>[];
   }> {
-    if (!newParentItem) return this.detachedMoveHousekeeping(item, member);
+    if (!newParentItem) return this.detachedMoveHousekeeping(item, account);
 
     const { path: newParentItemPath } = newParentItem;
     const index = item.path.lastIndexOf('.');
@@ -681,26 +695,26 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
 
     const rows = await this.query(`
       SELECT
-        member_id AS "memberId", item_path AS "itemPath", permission, action,
-        first_value(permission) OVER (PARTITION BY member_id ORDER BY action) AS inherited,
-        min(nlevel(item_path)) OVER (PARTITION BY member_id) > nlevel('${newParentItemPath}') AS "action2IgnoreInherited"
+        account_id AS "accountId", item_path AS "itemPath", permission, action,
+        first_value(permission) OVER (PARTITION BY account_id ORDER BY action) AS inherited,
+        min(nlevel(item_path)) OVER (PARTITION BY account_id) > nlevel('${newParentItemPath}') AS "action2IgnoreInherited"
       FROM (
         -- "last" inherited permission, for each member, at the destination item
         SELECT
-          member_id,
+          account_id,
           '${newParentItemPath}'::ltree AS item_path,
           max(permission) AS permission,
           0 AS action -- 0: inherited at destination (no action)
         FROM item_membership
         WHERE item_path @> '${newParentItemPath}'
-        GROUP BY member_id
+        GROUP BY account_id
 
         UNION ALL
 
         -- permissions to consider "at" the origin of the moving item
         ${getPermissionsAtItemSql(item.path, newParentItemPath, itemIdAsPath, parentItemPath)}
       ) AS t2
-      ORDER BY member_id, nlevel(item_path), permission;
+      ORDER BY account_id, nlevel(item_path), permission;
     `);
 
     const changes = {
@@ -710,7 +724,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
 
     rows?.reduce((chngs, row) => {
       const {
-        memberId,
+        accountId,
         itemPath,
         permission: p,
         action,
@@ -727,17 +741,17 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
       // permission (inherited) at the "origin" better than inherited one at "destination"
       if (action === 1 && PermissionLevelCompare.gt(permission, inherited)) {
         chngs.inserts.push({
-          member: { id: memberId },
+          account: { id: accountId },
           item: { path: itemPath },
           permission,
-          creator: member,
+          creator: account,
         } as Partial<ItemMembership>);
       }
 
       // permission worse or equal to inherited one at "destination"
       if (action === 2 && PermissionLevelCompare.lte(permission, inherited)) {
         chngs.deletes.push({
-          member: { id: memberId },
+          account: { id: accountId },
           item: { path: itemPath },
         } as Partial<ItemMembership>);
       }

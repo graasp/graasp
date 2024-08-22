@@ -1,7 +1,7 @@
 import { AppDataVisibility } from '@graasp/sdk';
 
 export interface SingleItemGetFilter {
-  memberId?: string;
+  accountId?: string;
   visibility?: AppDataVisibility;
 }
 

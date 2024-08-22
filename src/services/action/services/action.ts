@@ -5,7 +5,7 @@ import { FastifyRequest } from 'fastify';
 
 import { Repositories } from '../../../utils/repositories';
 import { ItemService } from '../../item/service';
-import { Actor } from '../../member/entities/member';
+import { Actor, isMember } from '../../member/entities/member';
 import { MemberService } from '../../member/service';
 import { Action } from '../entities/action';
 import { getGeolocationIp, getView } from '../utils/actions';
@@ -29,7 +29,7 @@ export class ActionService {
     const { headers } = request;
 
     // prevent saving if member is defined and has disabled saveActions
-    if (member?.enableSaveActions === false) {
+    if (member && isMember(member) && member.enableSaveActions === false) {
       return;
     }
 
@@ -46,7 +46,7 @@ export class ActionService {
 
     const geolocation = ip ? getGeolocationIp(ip) : null;
     const completeActions = actions.map((a) => ({
-      member,
+      account: member,
       geolocation: geolocation ?? undefined,
       view,
       extra: {},

@@ -19,12 +19,12 @@ export class RecycledBinService {
     };
   }>();
 
-  async getAll(actor: Member, repositories: Repositories) {
+  async getAll(member: Member, repositories: Repositories) {
     const { recycledItemRepository } = repositories;
 
-    const recycled = await recycledItemRepository.getOwnRecycledItemDatas(actor);
+    const recycled = await recycledItemRepository.getOwnRecycledItemDatas(member);
     const packedItems = await ItemWrapper.createPackedItems(
-      actor,
+      member,
       repositories,
       recycled.map((r) => r.item),
       undefined,
@@ -79,7 +79,7 @@ export class RecycledBinService {
     return itemsResult;
   }
 
-  async restoreMany(actor: Member, repositories: Repositories, itemIds: string[]) {
+  async restoreMany(member: Member, repositories: Repositories, itemIds: string[]) {
     const { itemRepository, recycledItemRepository } = repositories;
 
     const result = await itemRepository.getMany(itemIds, {
@@ -91,17 +91,17 @@ export class RecycledBinService {
     const items = Object.values(idsToItems);
 
     for (const item of items) {
-      await validatePermission(repositories, PermissionLevel.Admin, actor, item);
+      await validatePermission(repositories, PermissionLevel.Admin, member, item);
     }
 
     // since the subtree is currently soft-deleted before recovery, need withDeleted=true
     const descendants = await itemRepository.getManyDescendants(items, { withDeleted: true });
 
     for (const item of items) {
-      await this.hooks.runPreHooks('restore', actor, repositories, { item, isRestoredRoot: true });
+      await this.hooks.runPreHooks('restore', member, repositories, { item, isRestoredRoot: true });
     }
     for (const d of descendants) {
-      await this.hooks.runPreHooks('restore', actor, repositories, {
+      await this.hooks.runPreHooks('restore', member, repositories, {
         item: d,
         isRestoredRoot: false,
       });
@@ -111,10 +111,13 @@ export class RecycledBinService {
     await recycledItemRepository.restoreMany(items);
 
     for (const item of items) {
-      await this.hooks.runPostHooks('restore', actor, repositories, { item, isRestoredRoot: true });
+      await this.hooks.runPostHooks('restore', member, repositories, {
+        item,
+        isRestoredRoot: true,
+      });
     }
     for (const d of descendants) {
-      await this.hooks.runPostHooks('restore', actor, repositories, {
+      await this.hooks.runPostHooks('restore', member, repositories, {
         item: d,
         isRestoredRoot: false,
       });

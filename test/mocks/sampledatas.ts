@@ -8,7 +8,6 @@ import {
   ItemValidationProcess,
   ItemValidationStatus,
   MemberFactory,
-  MemberType,
   PermissionLevel,
   buildPathFromIds,
 } from '@graasp/sdk';
@@ -31,7 +30,6 @@ type defaultOmitedKeys = keyof BaseEntity | 'createdAt' | 'updatedAt';
 const sharedIds = {
   bobMember: '6eeede3d-08cb-4b69-ac10-d30168a09625',
   aliceMember: '3ad89fb3-d677-481e-bf00-aad74e5cef78',
-  epflMember: 'a0fd58a7-b702-4088-af46-08ea03797dcf',
 
   publicRootFolder: '2feed89d-cc94-4c77-98e4-3cc02270d371',
   publicChildGeolocDocument: 'bb2904e5-abac-4b01-b3eb-ac5a0c940e37',
@@ -91,13 +89,6 @@ const datas: {
         email: 'alice@gmail.com',
         id: sharedIds.aliceMember,
         extra: { lang: 'fr' },
-      },
-      {
-        name: 'epfl',
-        email: 'epfl@gmail.com',
-        id: sharedIds.epflMember,
-        type: MemberType.Group,
-        extra: { lang: 'en' },
       },
     ],
   },
@@ -169,7 +160,7 @@ const datas: {
         id: '53397352-f4b1-4bfa-9248-37021e446ee6',
         permission: PermissionLevel.Admin,
         creator: sharedIds.bobMember,
-        member: sharedIds.bobMember,
+        account: sharedIds.bobMember,
         item: buildPathFromIds(sharedIds.publicRootFolder),
       },
     ],

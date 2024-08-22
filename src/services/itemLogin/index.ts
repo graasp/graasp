@@ -8,7 +8,9 @@ import { buildRepositories } from '../../utils/repositories';
 import { SESSION_KEY, isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
 import { matchOne } from '../authorization';
 import { ItemService } from '../item/service';
-import { validatedMember } from '../member/strategies/validatedMember';
+import { assertIsMember } from '../member/entities/member';
+import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
+import { ValidMemberSession } from './errors';
 import { ItemLoginMemberCredentials } from './interfaces/item-login';
 import {
   deleteLoginSchema,
@@ -33,7 +35,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     { schema: getLoginSchemaType, preHandler: optionalIsAuthenticated },
     async ({ user, params: { id: itemId } }) => {
       const value =
-        (await itemLoginService.getSchemaType(user?.member, buildRepositories(), itemId)) ?? null;
+        (await itemLoginService.getSchemaType(user?.account, buildRepositories(), itemId)) ?? null;
       return value;
     },
   );
@@ -46,7 +48,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: isAuthenticated,
     },
     async ({ user, params: { id: itemId } }) => {
-      const value = (await itemLoginService.get(user?.member, buildRepositories(), itemId)) ?? {};
+      const value = (await itemLoginService.get(user?.account, buildRepositories(), itemId)) ?? {};
       return value;
     },
   );
@@ -65,9 +67,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: optionalIsAuthenticated,
     },
     async ({ body, user, session, params }) => {
+      // if there's already a valid session, fail immediately
+      if (user?.account) {
+        throw new ValidMemberSession(user?.account);
+      }
       return db.transaction(async (manager) => {
         const bondMember = await itemLoginService.login(
-          user?.member,
           buildRepositories(manager),
           params.id,
           body,
@@ -85,10 +90,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       schema: updateLoginSchema,
 
       // set member in request - throws if does not exist
-      preHandler: [isAuthenticated, matchOne(validatedMember)],
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
     async ({ user, params: { id: itemId }, body: { type } }) => {
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
+      assertIsMember(member);
       return db.transaction(async (manager) => {
         return itemLoginService.put(member, buildRepositories(manager), itemId, type);
       });
@@ -101,11 +107,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       schema: deleteLoginSchema,
 
       // set member in request - throws if does not exist
-      preHandler: [isAuthenticated, matchOne(validatedMember)],
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
     async ({ user, params: { id: itemId } }) => {
       return db.transaction(async (manager) => {
-        const member = notUndefined(user?.member);
+        const member = notUndefined(user?.account);
+        assertIsMember(member);
         return itemLoginService.delete(member, buildRepositories(manager), itemId);
       });
     },

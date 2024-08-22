@@ -4,7 +4,7 @@ import { PermissionLevel } from '@graasp/sdk';
 
 import HookManager from '../../../../../utils/hook';
 import { Repositories } from '../../../../../utils/repositories';
-import { Actor } from '../../../../member/entities/member';
+import { Actor, Member } from '../../../../member/entities/member';
 import { ItemService } from '../../../service';
 import { ItemCategory } from '../entities/ItemCategory';
 
@@ -29,13 +29,13 @@ export class ItemCategoryService {
     return itemCategoryRepository.getForItem(itemId);
   }
 
-  async post(actor: Actor, repositories: Repositories, itemId: string, categoryId: string) {
+  async post(member: Member, repositories: Repositories, itemId: string, categoryId: string) {
     const { itemCategoryRepository } = repositories;
 
     // get and check permissions
-    const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
+    const item = await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
 
-    await this.hooks.runPreHooks('create', actor, repositories, {
+    await this.hooks.runPreHooks('create', member, repositories, {
       item: itemId,
       category: categoryId,
     });
@@ -45,24 +45,24 @@ export class ItemCategoryService {
       categoryId: categoryId,
     });
 
-    await this.hooks.runPostHooks('create', actor, repositories, { itemCategory: result });
+    await this.hooks.runPostHooks('create', member, repositories, { itemCategory: result });
 
     return result;
   }
 
-  async delete(actor: Actor, repositories: Repositories, itemId: string, itemCategoryId: string) {
+  async delete(member: Member, repositories: Repositories, itemId: string, itemCategoryId: string) {
     const { itemCategoryRepository } = repositories;
 
     // get and check permissions
-    await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
+    await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
 
     const itemCategory = await itemCategoryRepository.getOneOrThrow(itemCategoryId);
 
-    await this.hooks.runPreHooks('delete', actor, repositories, { itemCategory });
+    await this.hooks.runPreHooks('delete', member, repositories, { itemCategory });
 
     const result = await itemCategoryRepository.deleteOne(itemCategoryId);
 
-    await this.hooks.runPostHooks('delete', actor, repositories, { itemCategory });
+    await this.hooks.runPostHooks('delete', member, repositories, { itemCategory });
 
     return result;
   }

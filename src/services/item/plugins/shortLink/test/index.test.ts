@@ -685,7 +685,7 @@ describe('Short links routes tests', () => {
           },
         }));
 
-        await testUtils.saveMembership({ item, member: anna, permission: PermissionLevel.Write });
+        await testUtils.saveMembership({ item, account: anna, permission: PermissionLevel.Write });
 
         for (let i = 0; i < platformLinks.length; i++) {
           const platform = platformLinks[i];

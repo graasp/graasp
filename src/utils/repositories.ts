@@ -1,5 +1,6 @@
 import { EntityManager } from 'typeorm';
 
+import { AccountRepository } from '../services/account/repository';
 import { ActionRepository } from '../services/action/repositories/action';
 import { MemberPasswordRepository } from '../services/auth/plugins/password/repository';
 import { ChatMentionRepository } from '../services/chat/plugins/mentions/repository';
@@ -25,7 +26,8 @@ import { ItemValidationReviewRepository } from '../services/item/plugins/publica
 import { RecycledItemDataRepository } from '../services/item/plugins/recycled/repository';
 import { ShortLinkRepository } from '../services/item/plugins/shortLink/repository';
 import { ItemRepository } from '../services/item/repository';
-import { ItemLoginRepository } from '../services/itemLogin/repositories/itemLogin';
+import { GuestRepository } from '../services/itemLogin/repositories/guest';
+import { GuestPasswordRepository } from '../services/itemLogin/repositories/guestPassword';
 import { ItemLoginSchemaRepository } from '../services/itemLogin/repositories/itemLoginSchema';
 import { MembershipRequestRepository } from '../services/itemMembership/plugins/MembershipRequest/repository';
 import { ItemMembershipRepository } from '../services/itemMembership/repository';
@@ -46,7 +48,7 @@ export type Repositories = {
   itemFavoriteRepository: FavoriteRepository;
   itemFlagRepository: typeof ItemFlagRepository;
   itemLikeRepository: typeof ItemLikeRepository;
-  itemLoginRepository: typeof ItemLoginRepository;
+  itemLoginRepository: GuestRepository;
   itemLoginSchemaRepository: typeof ItemLoginSchemaRepository;
   itemMembershipRepository: typeof ItemMembershipRepository;
   membershipRequestRepository: MembershipRequestRepository;
@@ -57,6 +59,7 @@ export type Repositories = {
   itemValidationRepository: ItemValidationRepository;
   itemValidationReviewRepository: ItemValidationReviewRepository;
   memberPasswordRepository: MemberPasswordRepository;
+  guestPasswordRepository: GuestPasswordRepository;
   memberRepository: MemberRepository;
   mentionRepository: ChatMentionRepository;
   publisherRepository: PublisherRepository;
@@ -64,6 +67,7 @@ export type Repositories = {
   memberProfileRepository: MemberProfileRepository;
   shortLinkRepository: ShortLinkRepository;
   itemGeolocationRepository: ItemGeolocationRepository;
+  accountRepository: AccountRepository;
 };
 // public: exists in item tag
 
@@ -76,11 +80,12 @@ export const buildRepositories = (manager?: EntityManager): Repositories => ({
   memberRepository: new MemberRepository(manager),
 
   itemPublishedRepository: new ItemPublishedRepository(manager),
-  itemLoginRepository: manager ? manager.withRepository(ItemLoginRepository) : ItemLoginRepository,
+  itemLoginRepository: new GuestRepository(manager),
   itemLoginSchemaRepository: manager
     ? manager.withRepository(ItemLoginSchemaRepository)
     : ItemLoginSchemaRepository,
   memberPasswordRepository: new MemberPasswordRepository(manager),
+  guestPasswordRepository: new GuestPasswordRepository(manager),
   appRepository: new AppRepository(manager),
   appDataRepository: new AppDataRepository(manager),
   appActionRepository: new AppActionRepository(manager),
@@ -111,4 +116,5 @@ export const buildRepositories = (manager?: EntityManager): Repositories => ({
   memberProfileRepository: new MemberProfileRepository(manager),
   shortLinkRepository: new ShortLinkRepository(manager),
   itemGeolocationRepository: new ItemGeolocationRepository(manager),
+  accountRepository: new AccountRepository(manager),
 });

@@ -6,7 +6,8 @@ import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
-import { validatedMember } from '../../strategies/validatedMember';
+import { assertIsMember } from '../../entities/member';
+import { validatedMemberAccountRole } from '../../strategies/validatedMemberAccountRole';
 import { MemberProfile } from './entities/profile';
 import { MemberProfileNotFound } from './errors';
 import { createProfile, getOwnProfile, getProfileForMember, updateMemberProfile } from './schemas';
@@ -22,7 +23,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/own',
     { schema: getOwnProfile, preHandler: isAuthenticated },
     async ({ user }, reply) => {
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
+      assertIsMember(member);
       const profile = await memberProfileService.getOwn(member, buildRepositories());
       if (!profile) {
         reply.status(StatusCodes.NO_CONTENT);
@@ -49,11 +51,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/',
     {
       schema: createProfile,
-      preHandler: [isAuthenticated, matchOne(validatedMember)],
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
     async (request, reply) => {
       const { user, body: data } = request;
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
+      assertIsMember(member);
       return db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
         const memberProfile = await memberProfileService.post(member, repositories, data);
@@ -66,10 +69,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.patch<{ Body: Partial<IMemberProfile> }>(
     '/',
-    { schema: updateMemberProfile, preHandler: [isAuthenticated, matchOne(validatedMember)] },
+    {
+      schema: updateMemberProfile,
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
+    },
     async ({ user, body }): Promise<MemberProfile> => {
       return db.transaction(async (manager) => {
-        const member = notUndefined(user?.member);
+        const member = notUndefined(user?.account);
+        assertIsMember(member);
         const profile = await memberProfileService.patch(member, buildRepositories(manager), body);
         if (!profile) {
           throw new MemberProfileNotFound();

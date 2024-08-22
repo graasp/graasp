@@ -3,7 +3,7 @@ import { singleton } from 'tsyringe';
 import { ItemTagType, PermissionLevel } from '@graasp/sdk';
 
 import { Repositories } from '../../../../utils/repositories';
-import { Actor } from '../../../member/entities/member';
+import { Actor, Member } from '../../../member/entities/member';
 import { ItemService } from '../../service';
 
 @singleton()
@@ -38,23 +38,15 @@ export class ItemTagService {
     return itemTagRepository.getType(item, tagType);
   }
 
-  async post(actor: Actor, repositories: Repositories, id: string, tagType: ItemTagType) {
-    if (!actor) {
-      throw new Error('actor does not exist');
-    }
-
+  async post(member: Member, repositories: Repositories, id: string, tagType: ItemTagType) {
     const { itemTagRepository } = repositories;
-    const item = await this.itemService.get(actor, repositories, id, PermissionLevel.Admin);
-    return { ...(await itemTagRepository.post(actor, item, tagType)), item: { path: item.path } };
+    const item = await this.itemService.get(member, repositories, id, PermissionLevel.Admin);
+    return { ...(await itemTagRepository.post(member, item, tagType)), item: { path: item.path } };
   }
 
-  async deleteOne(actor: Actor, repositories: Repositories, id: string, tagType: ItemTagType) {
-    if (!actor) {
-      throw new Error('actor does not exist');
-    }
-
+  async deleteOne(member: Member, repositories: Repositories, id: string, tagType: ItemTagType) {
     const { itemTagRepository } = repositories;
-    const item = await this.itemService.get(actor, repositories, id, PermissionLevel.Admin);
+    const item = await this.itemService.get(member, repositories, id, PermissionLevel.Admin);
 
     await itemTagRepository.deleteOne(item, tagType);
     return { item: { path: item.path } };

@@ -8,6 +8,7 @@ import { MailerService } from '../../../../plugins/mailer/service';
 import { BUILDER_HOST } from '../../../../utils/config';
 import { Repositories } from '../../../../utils/repositories';
 import { Item } from '../../../item/entities/Item';
+import { isMember } from '../../../member/entities/member';
 
 @singleton()
 export class MembershipRequestService {
@@ -40,7 +41,11 @@ export class MembershipRequestService {
     const link = new URL(`/items/${item.id}/share`, BUILDER_HOST.url).toString();
 
     for (const adminMembership of adminMemberships) {
-      const lang = adminMembership.member.lang;
+      const admin = adminMembership.account;
+      if (!isMember(admin)) {
+        continue;
+      }
+      const lang = admin.lang;
       const translated = this.mailerService.translate(lang);
       this.mailerService
         .sendEmail(
@@ -48,7 +53,7 @@ export class MembershipRequestService {
             memberName: member.name,
             itemName: item.name,
           }),
-          adminMembership.member.email,
+          admin.email,
           link,
           `
           ${this.mailerService.buildText(translated(MAIL.MEMBERSHIP_REQUEST_TEXT, { memberName: member.name, itemName: item.name }))}

@@ -128,12 +128,12 @@ describe('FileService', () => {
       const deleteMock = jest.spyOn(s3Repository, 'deleteFile').mockImplementation(async () => {
         // do nothing
       });
-      await s3FileService.delete(member, 'filepath');
+      await s3FileService.delete('filepath');
       expect(deleteMock).toHaveBeenCalled();
     });
 
     it('empty path throws', async () => {
-      await expect(s3FileService.delete(member, '')).rejects.toMatchObject(
+      await expect(s3FileService.delete('')).rejects.toMatchObject(
         new DeleteFileInvalidPathError(expect.anything()),
       );
     });
@@ -144,12 +144,12 @@ describe('FileService', () => {
       const deleteMock = jest.spyOn(s3Repository, 'deleteFolder').mockImplementation(async () => {
         // do nothing
       });
-      await s3FileService.deleteFolder(member, 'filepath');
+      await s3FileService.deleteFolder('filepath');
       expect(deleteMock).toHaveBeenCalled();
     });
 
     it('empty path throws', async () => {
-      await expect(s3FileService.deleteFolder(member, '')).rejects.toMatchObject(
+      await expect(s3FileService.deleteFolder('')).rejects.toMatchObject(
         new DeleteFolderInvalidPathError(expect.anything()),
       );
     });
@@ -192,19 +192,19 @@ describe('FileService', () => {
       const copyMock = jest
         .spyOn(s3Repository, 'copyFolder')
         .mockImplementation(async () => 'string');
-      await s3FileService.copyFolder(member, copyPayload);
+      await s3FileService.copyFolder(copyPayload);
       expect(copyMock).toHaveBeenCalled();
     });
 
     it('empty originalFolderPath throws', async () => {
       await expect(
-        s3FileService.copyFolder(member, { ...copyPayload, originalFolderPath: '' }),
+        s3FileService.copyFolder({ ...copyPayload, originalFolderPath: '' }),
       ).rejects.toMatchObject(new CopyFolderInvalidPathError(expect.anything()));
     });
 
     it('empty newFolderPath throws', async () => {
       await expect(
-        s3FileService.copyFolder(member, { ...copyPayload, newFolderPath: '' }),
+        s3FileService.copyFolder({ ...copyPayload, newFolderPath: '' }),
       ).rejects.toMatchObject(new CopyFolderInvalidPathError(expect.anything()));
     });
   });

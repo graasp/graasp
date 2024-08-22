@@ -12,6 +12,7 @@ import {
 import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
+import { Account } from '../../../account/entities/account';
 import { ItemService } from '../../../item/service';
 import { Member } from '../../../member/entities/member';
 import { ItemPublishedNotFound } from '../publication/published/errors';
@@ -62,12 +63,12 @@ export class ShortLinkService {
     return shortLinkRepository.getOneFlat(alias);
   }
 
-  async getAllForItem(member: Member, repositories: Repositories, itemId: string) {
+  async getAllForItem(account: Account, repositories: Repositories, itemId: string) {
     const { shortLinkRepository } = repositories;
 
-    if (!member) throw new UnauthorizedMember();
+    if (!account) throw new UnauthorizedMember();
     // check that the member can read the item to be allowed to read all short links
-    await this.itemService.get(member, repositories, itemId, PermissionLevel.Read);
+    await this.itemService.get(account, repositories, itemId, PermissionLevel.Read);
 
     return shortLinkRepository.getByItem(itemId);
   }

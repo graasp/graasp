@@ -1,7 +1,8 @@
 import { singleton } from 'tsyringe';
 
 import { Repositories } from '../../../../utils/repositories';
-import { Actor, Member } from '../../../member/entities/member';
+import { Account } from '../../../account/entities/account';
+import { Actor } from '../../../member/entities/member';
 import { ItemService } from '../../service';
 import { ItemFlag } from './itemFlag';
 
@@ -18,12 +19,17 @@ export class ItemFlagService {
     return itemFlagRepository.getAllFlags();
   }
 
-  async post(actor: Member, repositories: Repositories, itemId: string, body: Partial<ItemFlag>) {
+  async post(
+    account: Account,
+    repositories: Repositories,
+    itemId: string,
+    body: Partial<ItemFlag>,
+  ) {
     const { itemFlagRepository } = repositories;
 
     // only register member can report
-    await this.itemService.get(actor, repositories, itemId);
+    await this.itemService.get(account, repositories, itemId);
 
-    return itemFlagRepository.post(body, actor, itemId);
+    return itemFlagRepository.post(body, account, itemId);
   }
 }

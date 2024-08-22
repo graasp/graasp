@@ -80,7 +80,7 @@ describe('Item websocket hooks', () => {
       const { item } = await testUtils.saveItemAndMembership({ member: anna });
       await testUtils.saveMembership({
         item,
-        member: actor,
+        account: actor,
         permission: PermissionLevel.Read,
       });
 
@@ -95,7 +95,7 @@ describe('Item websocket hooks', () => {
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/item-memberships/${item.id}`,
-        payload: { memberships: [{ memberId: bob.id, permission: PermissionLevel.Read }] },
+        payload: { memberships: [{ accountId: bob.id, permission: PermissionLevel.Read }] },
       });
       expect(response.statusCode).toBe(StatusCodes.OK);
       const [membership] = response.json();
@@ -115,7 +115,7 @@ describe('Item websocket hooks', () => {
       const { item } = await testUtils.saveItemAndMembership({ member: anna });
       const membership = await testUtils.saveMembership({
         item,
-        member: actor,
+        account: actor,
         permission: PermissionLevel.Read,
       });
 
@@ -150,7 +150,7 @@ describe('Item websocket hooks', () => {
       const { item } = await testUtils.saveItemAndMembership({ member: anna });
       const membership = await testUtils.saveMembership({
         item,
-        member: actor,
+        account: actor,
         permission: PermissionLevel.Read,
       });
 

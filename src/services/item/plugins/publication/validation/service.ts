@@ -35,19 +35,19 @@ export class ItemValidationService {
     return p;
   }
 
-  async getLastItemValidationGroupForItem(actor: Member, repositories: Repositories, item: Item) {
+  async getLastItemValidationGroupForItem(member: Member, repositories: Repositories, item: Item) {
     const { itemValidationGroupRepository } = repositories;
 
     const group = await itemValidationGroupRepository.getLastForItem(item.id);
 
     // check permissions
-    await validatePermission(repositories, PermissionLevel.Admin, actor, item);
+    await validatePermission(repositories, PermissionLevel.Admin, member, item);
 
     return group;
   }
 
   async getItemValidationGroup(
-    actor: Member,
+    member: Member,
     repositories: Repositories,
     itemValidationGroupId: string,
   ) {
@@ -55,7 +55,7 @@ export class ItemValidationService {
 
     const group = await itemValidationGroupRepository.get(itemValidationGroupId);
 
-    await validatePermission(repositories, PermissionLevel.Admin, actor, group.item);
+    await validatePermission(repositories, PermissionLevel.Admin, member, group.item);
 
     return group;
   }

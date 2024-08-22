@@ -29,7 +29,7 @@ const permissionMapping = {
  * This function checks the member's memberships, if the item is public and if it is hidden.
  * @param repositories
  * @param permission minimum permission required
- * @param member member that tries to access the item
+ * @param actor member that tries to access the item
  * @param item
  * @throws if the user cannot access the item
  */
@@ -42,7 +42,7 @@ export const validatePermissionMany = async (
     itemTagRepository: ItemTagRepository;
   },
   permission: PermissionLevel,
-  member: Actor,
+  actor: Actor,
   items: Item[],
 ): Promise<{
   itemMemberships: ResultOf<ItemMembership | null>;
@@ -57,8 +57,8 @@ export const validatePermissionMany = async (
   }
 
   // batch request for all items
-  const inheritedMemberships = member
-    ? await itemMembershipRepository.getInheritedMany(items, member, true)
+  const inheritedMemberships = actor
+    ? await itemMembershipRepository.getInheritedMany(items, actor, true)
     : null;
   const tags = await itemTagRepository.getManyForMany(items, [
     ItemTagType.Public,
@@ -135,14 +135,14 @@ export const validatePermission = async (
     itemTagRepository: ItemTagRepository;
   },
   permission: PermissionLevel,
-  member: Actor,
+  actor: Actor,
   item: Item,
 ): Promise<{ itemMembership: ItemMembership | null; tags: ItemTag[] }> => {
   // get best permission for user
   // but do not fetch membership for signed out member
 
-  const inheritedMembership = member
-    ? await itemMembershipRepository.getInherited(item, member, true)
+  const inheritedMembership = actor
+    ? await itemMembershipRepository.getInherited(item, actor, true)
     : null;
   const highest = inheritedMembership?.permission;
   const isValid = highest && permissionMapping[highest].includes(permission);
@@ -207,7 +207,7 @@ const _filterOutItems = async (
   // TODO: optimize with on query
   const { data: memberships } = actor
     ? await itemMembershipRepository.getForManyItems(items, {
-        memberId: actor.id,
+        accountId: actor.id,
       })
     : { data: [] };
 

@@ -53,18 +53,18 @@ export class InvitationService {
     this.itemMembershipService = itemMembershipService;
   }
 
-  async sendInvitationEmail({ actor, invitation }: { actor: Member; invitation: Invitation }) {
+  async sendInvitationEmail({ member, invitation }: { member: Member; invitation: Invitation }) {
     const { item, email } = invitation;
 
     // factor out
-    const lang = actor.lang;
+    const lang = member.lang;
     const link = buildInvitationLink(invitation);
 
     const t = this.mailerService.translate(lang);
 
     const text = t(MAIL.INVITATION_TEXT, {
       itemName: item.name,
-      creatorName: actor.name,
+      creatorName: member.name,
     });
     const html = `
       ${this.mailerService.buildText(text)}
@@ -93,59 +93,59 @@ export class InvitationService {
     return repositories.invitationRepository.get(invitationId, actor);
   }
 
-  async getForItem(actor: Member, repositories: Repositories, itemId: string) {
+  async getForItem(member: Member, repositories: Repositories, itemId: string) {
     const { invitationRepository } = repositories;
-    const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
+    const item = await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
     return invitationRepository.getForItem(item.path);
   }
 
   async postManyForItem(
-    actor: Member,
+    member: Member,
     repositories: Repositories,
     itemId: string,
     invitations: Partial<Invitation>[],
   ): Promise<Invitation[]> {
     const { invitationRepository } = repositories;
-    const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
+    const item = await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
 
-    const completeInvitations = await invitationRepository.postMany(invitations, item.path, actor);
+    const completeInvitations = await invitationRepository.postMany(invitations, item.path, member);
 
     this.log.debug('send invitation mails');
     completeInvitations.forEach((invitation: Invitation) => {
       // send mail without awaiting
-      this.sendInvitationEmail({ actor, invitation });
+      this.sendInvitationEmail({ member, invitation });
     });
 
     return completeInvitations;
   }
 
   async patch(
-    actor: Member,
+    member: Member,
     repositories: Repositories,
     invitationId: string,
     body: Partial<Invitation>,
   ) {
     const { invitationRepository } = repositories;
     const invitation = await invitationRepository.get(invitationId);
-    await validatePermission(repositories, PermissionLevel.Admin, actor, invitation.item);
+    await validatePermission(repositories, PermissionLevel.Admin, member, invitation.item);
 
     return invitationRepository.patch(invitationId, body);
   }
 
-  async delete(actor: Member, repositories: Repositories, invitationId: string) {
+  async delete(member: Member, repositories: Repositories, invitationId: string) {
     const { invitationRepository } = repositories;
     const invitation = await invitationRepository.get(invitationId);
-    await validatePermission(repositories, PermissionLevel.Admin, actor, invitation.item);
+    await validatePermission(repositories, PermissionLevel.Admin, member, invitation.item);
 
     return invitationRepository.deleteOne(invitationId);
   }
 
-  async resend(actor: Member, repositories: Repositories, invitationId: string) {
+  async resend(member: Member, repositories: Repositories, invitationId: string) {
     const { invitationRepository } = repositories;
     const invitation = await invitationRepository.get(invitationId);
-    await validatePermission(repositories, PermissionLevel.Admin, actor, invitation.item);
+    await validatePermission(repositories, PermissionLevel.Admin, member, invitation.item);
 
-    this.sendInvitationEmail({ invitation, actor });
+    this.sendInvitationEmail({ invitation, member });
   }
 
   async createToMemberships(actor: Actor, repositories: Repositories, member: Member) {
@@ -155,7 +155,11 @@ export class InvitationService {
       where: { email: member.email.toLowerCase() },
       relations: { item: true },
     });
-    const memberships = invitations.map(({ permission, item }) => ({ item, member, permission }));
+    const memberships = invitations.map(({ permission, item }) => ({
+      item,
+      account: member,
+      permission,
+    }));
     await itemMembershipRepository.createMany(memberships);
   }
 
@@ -164,11 +168,7 @@ export class InvitationService {
     repositories: Repositories,
     emailList: string[],
   ): Promise<{ existingAccounts: Member[]; newAccounts: string[] }> {
-    const { data: accounts } = await this.memberService.getManyByEmail(
-      actor,
-      repositories,
-      emailList,
-    );
+    const { data: accounts } = await this.memberService.getManyByEmail(repositories, emailList);
     const existingAccounts = Object.values(accounts);
     const existingAccountsEmails = Object.keys(accounts);
     const newAccounts = emailList.filter((email) => !existingAccountsEmails.includes(email));
@@ -193,7 +193,7 @@ export class InvitationService {
       const permission =
         // get the permission from the data, if it is not found or if it is an empty string, default to read
         rows.find((r) => r.email === account.email)?.permission || PermissionLevel.Read;
-      return { permission, memberId: account.id };
+      return { permission, accountId: account.id };
     });
     this.log.debug(`${JSON.stringify(membershipsToCreate)} memberships to create`);
 

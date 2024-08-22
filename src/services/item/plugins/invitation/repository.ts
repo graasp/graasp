@@ -1,7 +1,7 @@
 import { ResultOf } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../plugins/datasource';
-import { Member } from '../../../member/entities/member';
+import { Actor, Member } from '../../../member/entities/member';
 import { mapById } from '../../../utils';
 import { Invitation } from './entity';
 import { InvitationNotFound } from './errors';
@@ -14,7 +14,7 @@ export const InvitationRepository = AppDataSource.getRepository(Invitation).exte
    * Get invitation by id or null if it is not found
    * @param id Invitation id
    */
-  async get(id: string, actor?: Member): Promise<Invitation> {
+  async get(id: string, actor?: Actor): Promise<Invitation> {
     const query = this.createQueryBuilder('invitation')
       .innerJoinAndSelect('invitation.item', 'item')
       .where('invitation.id = :id', { id });

@@ -47,7 +47,7 @@ describe('Item Geolocation', () => {
       it('Get geolocation for public item', async () => {
         ({ app } = await build({ member: null }));
         const member = await saveMember();
-        ({ packedItem } = await testUtils.savePublicItem({ actor: member }));
+        ({ packedItem } = await testUtils.savePublicItem({ member }));
         const geoloc = await repository.save({ item: packedItem, lat: 1, lng: 2, country: 'de' });
 
         const res = await app.inject({
@@ -134,21 +134,21 @@ describe('Item Geolocation', () => {
       it('Does not get public item geolocations on root', async () => {
         ({ app } = await build({ member: null }));
         const member = await saveMember();
-        const { packedItem } = await testUtils.savePublicItem({ actor: member });
+        const { packedItem } = await testUtils.savePublicItem({ member });
         await saveGeolocation({
           item: packedItem,
           lat: 1,
           lng: 2,
           country: 'de',
         });
-        const { packedItem: item2 } = await testUtils.savePublicItem({ actor: member });
+        const { packedItem: item2 } = await testUtils.savePublicItem({ member });
         await saveGeolocation({
           item: item2,
           lat: 1,
           lng: 2,
           country: 'de',
         });
-        const { packedItem: item3 } = await testUtils.savePublicItem({ actor: member });
+        const { packedItem: item3 } = await testUtils.savePublicItem({ member });
         await saveGeolocation({
           item: item3,
           lat: 1,
@@ -168,7 +168,7 @@ describe('Item Geolocation', () => {
       it('Get public item geolocations within public item', async () => {
         ({ app } = await build({ member: null }));
         const member = await saveMember();
-        const { item: parentItem, publicTag } = await testUtils.savePublicItem({ actor: member });
+        const { item: parentItem, publicTag } = await testUtils.savePublicItem({ member });
 
         const item1 = await testUtils.saveItem({ actor: member, parentItem });
         const { packed: geoloc1 } = await saveGeolocation({

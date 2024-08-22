@@ -196,7 +196,7 @@ export abstract class HtmlService {
         return item;
       } catch (error) {
         // delete storage folder of this html package if upload or creation fails
-        await this.fileService.deleteFolder(actor, remoteRootPath);
+        await this.fileService.deleteFolder(remoteRootPath);
         // rethrow above
         throw error;
       }
@@ -217,8 +217,8 @@ export abstract class HtmlService {
     // end of try-catch block for local storage cleanup
   }
 
-  deletePackage(actor: Member, contentId: string) {
+  deletePackage(contentId: string) {
     const folderPath = this.buildRootPath(this.pathPrefix, contentId);
-    return this.fileService.deleteFolder(actor, folderPath);
+    return this.fileService.deleteFolder(folderPath);
   }
 }

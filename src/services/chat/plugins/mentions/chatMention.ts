@@ -12,7 +12,7 @@ import { v4 } from 'uuid';
 
 import { MentionStatus } from '@graasp/sdk';
 
-import { Member } from '../../../member/entities/member';
+import { Account } from '../../../account/entities/account';
 import { ChatMessage } from '../../chatMessage';
 
 @Entity()
@@ -26,9 +26,9 @@ export class ChatMention extends BaseEntity {
   @JoinColumn({ name: 'message_id' })
   message: ChatMessage;
 
-  @ManyToOne(() => Member, (member) => member.id, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'member_id' })
-  member: Member;
+  @ManyToOne(() => Account, (account) => account.id, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'account_id', foreignKeyConstraintName: 'FK_chat_mention_account_id' })
+  account: Account;
 
   @CreateDateColumn({ name: 'created_at', nullable: false })
   createdAt: Date;

@@ -7,7 +7,8 @@ import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
-import { validatedMember } from '../../../member/strategies/validatedMember';
+import { assertIsMember } from '../../../member/entities/member';
+import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { Item } from '../../entities/Item';
 import { ItemGeolocation } from './ItemGeolocation';
 import {
@@ -33,7 +34,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         preHandler: optionalIsAuthenticated,
       },
       async ({ user, params }) => {
-        return itemGeolocationService.getByItem(user?.member, buildRepositories(), params.id);
+        return itemGeolocationService.getByItem(user?.account, buildRepositories(), params.id);
       },
     );
 
@@ -53,7 +54,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         preHandler: optionalIsAuthenticated,
       },
       async ({ user, query }) => {
-        return itemGeolocationService.getIn(user?.member, buildRepositories(), query);
+        return itemGeolocationService.getIn(user?.account, buildRepositories(), query);
       },
     );
 
@@ -67,12 +68,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/:id/geolocation',
       {
         schema: putGeolocation,
-        preHandler: [isAuthenticated, matchOne(validatedMember)],
+        preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
       },
       async ({ user, body, params }, reply) => {
+        const member = notUndefined(user?.account);
+        assertIsMember(member);
         return db.transaction(async (manager) => {
           await itemGeolocationService.put(
-            user?.member,
+            member,
             buildRepositories(manager),
             params.id,
             body.geolocation,
@@ -86,11 +89,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/:id/geolocation',
       {
         schema: deleteGeolocation,
-        preHandler: [isAuthenticated, matchOne(validatedMember)],
+        preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
       },
       async ({ user, params }, reply) => {
         return db.transaction(async (manager) => {
-          await itemGeolocationService.delete(user?.member, buildRepositories(manager), params.id);
+          const member = notUndefined(user?.account);
+          assertIsMember(member);
+          await itemGeolocationService.delete(member, buildRepositories(manager), params.id);
           reply.status(StatusCodes.NO_CONTENT);
         });
       },
@@ -102,9 +107,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         schema: geolocationReverse,
         preHandler: isAuthenticated,
       },
-      async ({ user, query }) => {
-        const member = notUndefined(user?.member);
-        return itemGeolocationService.getAddressFromCoordinates(member, buildRepositories(), query);
+      async ({ query }) => {
+        return itemGeolocationService.getAddressFromCoordinates(buildRepositories(), query);
       },
     );
 
@@ -114,9 +118,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         schema: geolocationSearch,
         preHandler: isAuthenticated,
       },
-      async ({ user, query }) => {
-        const member = notUndefined(user?.member);
-        return itemGeolocationService.getSuggestionsForQuery(member, buildRepositories(), query);
+      async ({ query }) => {
+        return itemGeolocationService.getSuggestionsForQuery(buildRepositories(), query);
       },
     );
   });

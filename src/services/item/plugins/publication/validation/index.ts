@@ -9,7 +9,9 @@ import { notUndefined } from '../../../../../utils/assertions';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { isAuthenticated } from '../../../../auth/plugins/passport';
 import { matchOne } from '../../../../authorization';
-import { validatedMember } from '../../../../member/strategies/validatedMember';
+import { assertIsMember } from '../../../../member/entities/member';
+import { memberAccountRole } from '../../../../member/strategies/memberAccountRole';
+import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
 import { ItemService } from '../../../service';
 import {
   ItemOpFeedbackErrorEvent,
@@ -34,10 +36,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     {
       schema: itemValidation,
 
-      preHandler: isAuthenticated,
+      preHandler: [isAuthenticated, matchOne(memberAccountRole)],
     },
     async ({ user, params: { itemId } }) => {
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
+      assertIsMember(member);
       const item = await itemService.get(member, buildRepositories(), itemId);
       return validationService.getLastItemValidationGroupForItem(member, buildRepositories(), item);
     },
@@ -48,10 +51,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:itemId/validations/:itemValidationGroupId',
     {
       schema: itemValidationGroup,
-      preHandler: isAuthenticated,
+      preHandler: [isAuthenticated, matchOne(memberAccountRole)],
     },
     async ({ user, params: { itemValidationGroupId } }) => {
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
+      assertIsMember(member);
       return validationService.getItemValidationGroup(
         member,
         buildRepositories(),
@@ -65,7 +69,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:itemId/validate',
     {
       schema: itemValidation,
-      preHandler: [isAuthenticated, matchOne(validatedMember)],
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
     async (request, reply) => {
       const {
@@ -73,7 +77,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         params: { itemId },
         log,
       } = request;
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
+      assertIsMember(member);
 
       db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);

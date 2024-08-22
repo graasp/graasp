@@ -11,7 +11,7 @@ import { resultOfToList } from '../../../../../services/utils';
 import HookManager from '../../../../../utils/hook';
 import { Repositories } from '../../../../../utils/repositories';
 import { filterOutHiddenItems } from '../../../../authorization';
-import { Actor, Member } from '../../../../member/entities/member';
+import { Actor, Member, isMember } from '../../../../member/entities/member';
 import { ItemWrapper } from '../../../ItemWrapper';
 import { Item } from '../../../entities/Item';
 import { ItemService } from '../../../service';
@@ -48,28 +48,31 @@ export class ItemPublishedService {
     const memberships = await repositories.itemMembershipRepository.getForManyItems([item]);
     const contributors = resultOfToList(memberships)[0]
       .filter(
-        ({ permission, member }) => permission === PermissionLevel.Admin && member.id !== actor.id,
+        ({ permission, account }) =>
+          permission === PermissionLevel.Admin && account.id !== actor.id,
       )
-      .map(({ member }) => member);
+      .map(({ account }) => account);
 
     const link = buildPublishedItemLink(item);
 
     for (const member of contributors) {
-      const lang = member.lang ?? DEFAULT_LANG;
-      const t = this.mailerService.translate(lang);
+      if (isMember(member)) {
+        const lang = member.lang ?? DEFAULT_LANG;
+        const t = this.mailerService.translate(lang);
 
-      const text = t(MAIL.PUBLISH_ITEM_TEXT, { itemName: item.name });
-      const html = `
+        const text = t(MAIL.PUBLISH_ITEM_TEXT, { itemName: item.name });
+        const html = `
         ${this.mailerService.buildText(text)}
         ${this.mailerService.buildButton(link, t(MAIL.PUBLISH_ITEM_BUTTON_TEXT))}
       `;
-      const title = t(MAIL.PUBLISH_ITEM_TITLE, { itemName: item.name });
+        const title = t(MAIL.PUBLISH_ITEM_TITLE, { itemName: item.name });
 
-      const footer = this.mailerService.buildFooter(lang);
+        const footer = this.mailerService.buildFooter(lang);
 
-      await this.mailerService.sendEmail(title, member.email, link, html, footer).catch((err) => {
-        this.log.warn(err, `mailerService failed. published link: ${link}`);
-      });
+        await this.mailerService.sendEmail(title, member.email, link, html, footer).catch((err) => {
+          this.log.warn(err, `mailerService failed. published link: ${link}`);
+        });
+      }
     }
   }
 
@@ -193,16 +196,16 @@ export class ItemPublishedService {
     return published;
   }
 
-  async delete(actor: Member, repositories: Repositories, itemId: string) {
+  async delete(member: Member, repositories: Repositories, itemId: string) {
     const { itemPublishedRepository } = repositories;
 
-    const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
+    const item = await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
 
-    await this.hooks.runPreHooks('delete', actor, repositories, { item });
+    await this.hooks.runPreHooks('delete', member, repositories, { item });
 
     const result = await itemPublishedRepository.deleteForItem(item);
 
-    await this.hooks.runPostHooks('delete', actor, repositories, { item });
+    await this.hooks.runPostHooks('delete', member, repositories, { item });
 
     return result;
   }

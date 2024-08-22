@@ -10,17 +10,17 @@ export class ItemLikeService {
     this.itemService = itemService;
   }
 
-  async getForMember(actor: Member, repositories: Repositories) {
+  async getForMember(member: Member, repositories: Repositories) {
     const { itemLikeRepository } = repositories;
 
     // only own items
     // TODO: allow to get other's like?
 
-    const likes = await itemLikeRepository.getForMember(actor.id);
+    const likes = await itemLikeRepository.getForMember(member.id);
     // filter out items user might not have access to
     // and packed item
     const filteredItems = await filterOutPackedItems(
-      actor,
+      member,
       repositories,
       likes.map(({ item }) => item),
     );
@@ -38,20 +38,20 @@ export class ItemLikeService {
     return itemLikeRepository.getForItem(itemId);
   }
 
-  async removeOne(actor: Member, repositories: Repositories, itemId: string) {
+  async removeOne(member: Member, repositories: Repositories, itemId: string) {
     const { itemLikeRepository } = repositories;
 
     // QUESTION: allow public to be liked?
-    const item = await this.itemService.get(actor, repositories, itemId);
+    const item = await this.itemService.get(member, repositories, itemId);
 
-    return itemLikeRepository.deleteOne(actor, item);
+    return itemLikeRepository.deleteOne(member, item);
   }
 
-  async post(actor: Member, repositories: Repositories, itemId: string) {
+  async post(member: Member, repositories: Repositories, itemId: string) {
     const { itemLikeRepository } = repositories;
 
     // QUESTION: allow public to be liked?
-    const item = await this.itemService.get(actor, repositories, itemId);
-    return itemLikeRepository.post(actor.id, item.id);
+    const item = await this.itemService.get(member, repositories, itemId);
+    return itemLikeRepository.post(member.id, item.id);
   }
 }

@@ -27,7 +27,7 @@ export default (
           // We check the email, so we invalidate the token if the email has changed in the meantime.
           if (member && member.email === oldEmail) {
             // Token has been validated
-            return done(null, { member, emailChange: { newEmail } });
+            return done(null, { account: member, emailChange: { newEmail } });
           } else {
             // Authentication refused
             return done(

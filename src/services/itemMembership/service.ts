@@ -8,6 +8,7 @@ import { PLAYER_HOST } from '../../utils/config';
 import { CannotDeleteOnlyAdmin, ItemMembershipNotFound } from '../../utils/errors';
 import HookManager from '../../utils/hook';
 import { Repositories } from '../../utils/repositories';
+import { Account } from '../account/entities/account';
 import { validatePermission } from '../authorization';
 import { Item } from '../item/entities/Item';
 import { ItemService } from '../item/service';
@@ -29,12 +30,7 @@ export class ItemMembershipService {
     this.mailerService = mailerService;
   }
 
-  async _notifyMember(
-    actor: Member,
-    repositories: Repositories,
-    member: Member,
-    item: Item,
-  ): Promise<void> {
+  async _notifyMember(account: Account, member: Member, item: Item): Promise<void> {
     const link = new URL(item.id, PLAYER_HOST.url).toString();
 
     const lang = member.lang;
@@ -46,7 +42,7 @@ export class ItemMembershipService {
         ${this.mailerService.buildButton(link, t(MAIL.SHARE_ITEM_BUTTON))}
       `;
 
-    const title = t(MAIL.SHARE_ITEM_TITLE, { creatorName: actor.name, itemName: item.name });
+    const title = t(MAIL.SHARE_ITEM_TITLE, { creatorName: account.name, itemName: item.name });
 
     const footer = this.mailerService.buildFooter(lang);
 
@@ -60,12 +56,12 @@ export class ItemMembershipService {
       });
   }
 
-  async getByMemberAndItem(
+  async getByAccountAndItem(
     { itemMembershipRepository }: Repositories,
-    memberId: UUID,
+    accountId: UUID,
     itemId: UUID,
   ) {
-    return await itemMembershipRepository.getByMemberAndItem(memberId, itemId);
+    return await itemMembershipRepository.getByAccountAndItem(accountId, itemId);
   }
 
   async getForManyItems(actor: Actor, repositories: Repositories, itemIds: string[]) {
@@ -80,7 +76,7 @@ export class ItemMembershipService {
   }
 
   private async _post(
-    actor: Member,
+    account: Account,
     repositories: Repositories,
     item: Item,
     memberId: Member['id'],
@@ -91,27 +87,27 @@ export class ItemMembershipService {
       repositories;
     const member = await memberRepository.get(memberId);
 
-    await this.hooks.runPreHooks('create', actor, repositories, { item, member });
+    await this.hooks.runPreHooks('create', account, repositories, { item, account: member });
 
     const result = await itemMembershipRepository.post({
       item,
-      member,
-      creator: actor,
+      account: member,
+      creator: account,
       permission,
     });
 
     // Delete corresponding membership request if it exists. If there is not a membership request, it will do nothing.
     await membershipRequestRepository.deleteOne(memberId, item.id);
 
-    await this.hooks.runPostHooks('create', actor, repositories, result);
+    await this.hooks.runPostHooks('create', account, repositories, result);
 
-    await this._notifyMember(actor, repositories, member, item);
+    await this._notifyMember(account, member, item);
 
     return result;
   }
 
   async post(
-    actor: Member,
+    actor: Account,
     repositories: Repositories,
     membership: { permission: PermissionLevel; itemId: UUID; memberId: UUID },
   ) {
@@ -127,23 +123,23 @@ export class ItemMembershipService {
   }
 
   async postMany(
-    actor: Member,
+    actor: Account,
     repositories: Repositories,
-    memberships: { permission: PermissionLevel; memberId: UUID }[],
+    memberships: { permission: PermissionLevel; accountId: UUID }[],
     itemId: UUID,
   ) {
     // check memberships
     const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
 
     return Promise.all(
-      memberships.map(async ({ memberId, permission }) => {
-        return this._post(actor, repositories, item, memberId, permission);
+      memberships.map(async ({ accountId, permission }) => {
+        return this._post(actor, repositories, item, accountId, permission);
       }),
     );
   }
 
   async patch(
-    actor: Member,
+    actor: Account,
     repositories: Repositories,
     itemMembershipId: string,
     data: { permission: PermissionLevel },
@@ -163,7 +159,7 @@ export class ItemMembershipService {
   }
 
   async deleteOne(
-    actor: Member,
+    actor: Account,
     repositories: Repositories,
     itemMembershipId: string,
     args: { purgeBelow?: boolean } = { purgeBelow: false },

@@ -1,10 +1,12 @@
 import { FastifyPluginAsync } from 'fastify';
 
 import { resolveDependency } from '../../../../di/utils';
+import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
-import { validatedMember } from '../../../member/strategies/validatedMember';
+import { assertIsMember } from '../../../member/entities/member';
+import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import common, { create, deleteOne, getCategories, getItemCategories } from './schemas';
 import { CategoryService } from './services/category';
 import { ItemCategoryService } from './services/itemCategory';
@@ -22,7 +24,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/categories',
     { schema: getCategories, preHandler: optionalIsAuthenticated },
     async ({ user }) => {
-      return categoryService.getAll(user?.member, buildRepositories());
+      return categoryService.getAll(user?.account, buildRepositories());
     },
   );
 
@@ -35,22 +37,19 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: optionalIsAuthenticated,
     },
     async ({ user, params: { itemId } }) => {
-      return itemCategoryService.getForItem(user?.member, buildRepositories(), itemId);
+      return itemCategoryService.getForItem(user?.account, buildRepositories(), itemId);
     },
   );
 
   // insert item category
   fastify.post<{ Params: { itemId: string }; Body: { categoryId: string } }>(
     '/:itemId/categories',
-    { schema: create, preHandler: [isAuthenticated, matchOne(validatedMember)] },
+    { schema: create, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async ({ user, params: { itemId }, body: { categoryId } }) => {
       return db.transaction(async (manager) => {
-        return itemCategoryService.post(
-          user?.member,
-          buildRepositories(manager),
-          itemId,
-          categoryId,
-        );
+        const member = notUndefined(user?.account);
+        assertIsMember(member);
+        return itemCategoryService.post(member, buildRepositories(manager), itemId, categoryId);
       });
     },
   );
@@ -58,11 +57,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // delete item category entry
   fastify.delete<{ Params: { itemCategoryId: string; itemId: string } }>(
     '/:itemId/categories/:itemCategoryId',
-    { schema: deleteOne, preHandler: [isAuthenticated, matchOne(validatedMember)] },
+    { schema: deleteOne, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async ({ user, params: { itemCategoryId, itemId } }) => {
+      const member = notUndefined(user?.account);
+      assertIsMember(member);
       return db.transaction(async (manager) => {
         const { id: deletedId } = await itemCategoryService.delete(
-          user?.member,
+          member,
           buildRepositories(manager),
           itemId,
           itemCategoryId,

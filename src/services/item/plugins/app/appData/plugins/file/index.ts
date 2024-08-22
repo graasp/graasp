@@ -60,7 +60,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     repositories: Repositories,
     args: { appData: AppData },
   ) => {
-    await appDataFileService.deleteOne(actor, repositories, args.appData);
+    await appDataFileService.deleteOne(args.appData);
   };
   appDataService.hooks.setPostHook('delete', deleteHook);
 
@@ -84,7 +84,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     preHandler: guestAuthenticateAppsJWT,
     handler: async (request) => {
       const { user } = request;
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
       const app = notUndefined(user?.app);
 
       return db
@@ -130,7 +130,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
         user,
         params: { id: appDataId },
       } = request;
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
       const app = notUndefined(user?.app);
 
       return appDataFileService

@@ -15,6 +15,7 @@ import {
   getChildFromPath,
   getParentFromPath,
 } from '@graasp/sdk';
+import { DEFAULT_LANG } from '@graasp/translations';
 
 import { MutableRepository } from '../../repositories/MutableRepository';
 import { DEFAULT_PRIMARY_KEY } from '../../repositories/const';
@@ -34,7 +35,7 @@ import {
   FILE_METADATA_MAX_PAGE_SIZE,
   FILE_METADATA_MIN_PAGE,
 } from '../member/constants';
-import { Actor, Member } from '../member/entities/member';
+import { Actor, Member, isMember } from '../member/entities/member';
 import { itemSchema } from '../member/plugins/export-data/schemas/schemas';
 import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils';
 import { mapById } from '../utils';
@@ -226,8 +227,8 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
           });
 
           // search by member lang
-          const memberLang = actor?.lang;
-          if (memberLang && memberLang != 'en' && ALLOWED_SEARCH_LANGS[memberLang]) {
+          const memberLang = actor && isMember(actor) ? actor?.lang : DEFAULT_LANG;
+          if (memberLang && ALLOWED_SEARCH_LANGS[memberLang]) {
             q.orWhere('item.search_document @@ plainto_tsquery(:lang, :keywords)', {
               keywords: keywordsString,
               lang: ALLOWED_SEARCH_LANGS[memberLang],
@@ -733,14 +734,14 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
    * @param memberId
    * @returns published items for given member
    */
-  async getPublishedItemsForMember(memberId: string): Promise<Item[]> {
+  async getPublishedItemsForMember(memberId: Member['id']): Promise<Item[]> {
     // get for membership write and admin -> createquerybuilder
     const result = await this.repository
       .createQueryBuilder('item')
       .innerJoin('item_published', 'pi', 'pi.item_path = item.path')
       .innerJoin('item_membership', 'im', 'im.item_path @> item.path')
       .innerJoinAndSelect('item.creator', 'member')
-      .where('im.member_id = :memberId', { memberId })
+      .where('im.account_id = :accountId', { accountId: memberId })
       .andWhere('im.permission IN (:...permissions)', {
         permissions: [PermissionLevel.Admin, PermissionLevel.Write],
       })

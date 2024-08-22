@@ -95,7 +95,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     preHandler: guestAuthenticateAppsJWT,
     handler: async (request) => {
       const { user } = request;
-      const member = notUndefined(user?.member);
+      const account = notUndefined(user?.account);
       const app = notUndefined(user?.app);
       // TODO: if one file fails, keep other files??? APPLY ROLLBACK
       // THEN WE SHOULD MOVE THE TRANSACTION
@@ -110,7 +110,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
           if (!file) {
             throw new UploadEmptyFileError();
           }
-          return appSettingFileService.upload(member, repositories, file, app.item);
+          return appSettingFileService.upload(account, repositories, file, app.item);
         })
         .catch((e) => {
           console.error(e);
@@ -142,7 +142,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
         user,
         params: { id: appSettingId },
       } = request;
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
       const app = notUndefined(user?.app);
 
       return appSettingFileService

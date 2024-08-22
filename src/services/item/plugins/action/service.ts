@@ -24,6 +24,7 @@ import {
 import { Action } from '../../../action/entities/action';
 import { ActionService } from '../../../action/services/action';
 import { InvalidAggregationError } from '../../../action/utils/errors';
+import { ChatMessage } from '../../../chat/chatMessage';
 import { Actor } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import { ItemService } from '../../service';
@@ -79,7 +80,7 @@ export class ActionItemService {
     return repositories.actionRepository.getForItem(item.path, {
       sampleSize: size,
       view,
-      memberId: permission === PermissionLevel.Admin ? undefined : actor.id,
+      accountId: permission === PermissionLevel.Admin ? undefined : actor.id,
     });
   }
 
@@ -165,7 +166,7 @@ export class ActionItemService {
     const actions = await repositories.actionRepository.getForItem(item.path, {
       sampleSize: payload.sampleSize,
       view: payload.view,
-      memberId: permission === PermissionLevel.Admin ? undefined : actor.id,
+      accountId: permission === PermissionLevel.Admin ? undefined : actor.id,
       startDate: payload.startDate,
       endDate: payload.endDate,
     });
@@ -177,7 +178,7 @@ export class ActionItemService {
     const allMemberships = [...inheritedMemberships, ...itemMemberships];
     // get members
     const members =
-      permission === PermissionLevel.Admin ? allMemberships.map(({ member }) => member) : [actor];
+      permission === PermissionLevel.Admin ? allMemberships.map(({ account }) => account) : [actor];
 
     // get descendants items
     const descendants = await this.itemService.getFilteredDescendants(
@@ -194,7 +195,7 @@ export class ActionItemService {
           ...descendants.map(({ id }) => id),
         ])
       ).data,
-    ).flat();
+    ).flat() as ChatMessage[];
 
     // get for all app-item
     const apps: {
@@ -243,7 +244,7 @@ export class ActionItemService {
       type: ItemActionType.Create,
       extra: { itemId: item.id },
     };
-    await this.actionService.postMany(user?.member, repositories, request, [action]);
+    await this.actionService.postMany(user?.account, repositories, request, [action]);
   }
 
   async postPatchAction(request: FastifyRequest, repositories: Repositories, item: Item) {
@@ -255,7 +256,7 @@ export class ActionItemService {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       extra: { itemId: item.id, body: request.body as any },
     };
-    await this.actionService.postMany(user?.member, repositories, request, [action]);
+    await this.actionService.postMany(user?.account, repositories, request, [action]);
   }
 
   async postManyPatchAction(request: FastifyRequest, repositories: Repositories, items: Item[]) {
@@ -267,7 +268,7 @@ export class ActionItemService {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       extra: { itemId: item.id, body: request.body as any },
     }));
-    await this.actionService.postMany(user?.member, repositories, request, actions);
+    await this.actionService.postMany(user?.account, repositories, request, actions);
   }
 
   async postManyDeleteAction(request: FastifyRequest, repositories: Repositories, items: Item[]) {
@@ -277,7 +278,7 @@ export class ActionItemService {
       type: ItemActionType.Delete,
       extra: { itemId: item.id },
     }));
-    await this.actionService.postMany(user?.member, repositories, request, actions);
+    await this.actionService.postMany(user?.account, repositories, request, actions);
   }
 
   async postManyMoveAction(request: FastifyRequest, repositories: Repositories, items: Item[]) {
@@ -289,7 +290,7 @@ export class ActionItemService {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       extra: { itemId: item.id, body: request.body as any },
     }));
-    await this.actionService.postMany(user?.member, repositories, request, actions);
+    await this.actionService.postMany(user?.account, repositories, request, actions);
   }
 
   async postManyCopyAction(request: FastifyRequest, repositories: Repositories, items: Item[]) {
@@ -301,6 +302,6 @@ export class ActionItemService {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       extra: { itemId: item.id, body: request.body as any },
     }));
-    await this.actionService.postMany(user?.member, repositories, request, actions);
+    await this.actionService.postMany(user?.account, repositories, request, actions);
   }
 }

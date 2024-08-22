@@ -1,3 +1,4 @@
+import { faker } from '@faker-js/faker';
 import { StatusCodes } from 'http-status-codes';
 import fetch from 'node-fetch';
 import { In } from 'typeorm';
@@ -8,11 +9,11 @@ import { HttpMethod, PermissionLevel, RecaptchaAction } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { resolveDependency } from '../../../../../di/utils';
+import { AppDataSource } from '../../../../../plugins/datasource';
 import { MailerService } from '../../../../../plugins/mailer/service';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { MOCK_CAPTCHA } from '../../../../auth/plugins/captcha/test/utils';
 import { Item } from '../../../../item/entities/Item';
-import { generateRandomEmail } from '../../../../itemLogin/utils';
 import { ItemMembershipRepository } from '../../../../itemMembership/repository';
 import { Member } from '../../../../member/entities/member';
 import { saveMember } from '../../../../member/test/fixtures/members';
@@ -55,7 +56,7 @@ const createInvitations = async ({ member, parentItem }: { member: Member; paren
       item,
       creator: member,
       permission: PermissionLevel.Read,
-      email: generateRandomEmail(),
+      email: faker.internet.email().toLowerCase(),
     }),
   );
   return { item, invitations };
@@ -150,7 +151,7 @@ describe('Invitation Plugin', () => {
 
         const result = await response.json();
         expect(result.memberships).toHaveLength(1);
-        expect(result.memberships[0].member.id).toEqual(toMember.id);
+        expect(result.memberships[0].account.id).toEqual(toMember.id);
         expect(result.memberships[0].item.id).toEqual(item.id);
         expect(result.memberships[0].permission).toEqual(PermissionLevel.Read);
         expect(result.invitations).toHaveLength(0);
@@ -542,15 +543,16 @@ describe('Invitation Plugin', () => {
         url: '/register',
         payload: { email, name: 'some-name', captcha: MOCK_CAPTCHA },
       });
-
+      const member = await AppDataSource.getRepository(Member).findOneBy({ email });
+      expect(member).not.toBeNull();
       // invitations should be removed and memberships created
       await new Promise((done) => {
         setTimeout(async () => {
           const savedInvitation = await InvitationRepository.findOneBy({ id });
           expect(savedInvitation).toBeFalsy();
           const membership = await ItemMembershipRepository.findOne({
-            where: { permission, member: { email }, item: { id: item.id } },
-            relations: { member: true, item: true },
+            where: { permission, account: { id: member!.id }, item: { id: item.id } },
+            relations: { account: true, item: true },
           });
           expect(membership).toBeTruthy();
           done(true);

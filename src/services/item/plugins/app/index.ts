@@ -71,7 +71,7 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
         '/most-used',
         { schema: getMostUsed, preHandler: isAuthenticated },
         async ({ user }) => {
-          const member = notUndefined(user?.member);
+          const member = notUndefined(user?.account);
           return appService.getMostUsedApps(member, buildRepositories());
         },
       );
@@ -87,7 +87,7 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
             body,
           } = request;
 
-          return appService.getApiAccessToken(user?.member, buildRepositories(), itemId, body);
+          return appService.getApiAccessToken(user?.account, buildRepositories(), itemId, body);
         },
       );
 
@@ -123,13 +123,13 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
         async ({ user, params: { itemId } }) => {
           const app = notUndefined(user?.app);
           const requestDetails: AuthTokenSubject = {
-            memberId: user?.member?.id,
+            accountId: user?.account?.id,
             itemId: app.item.id,
             origin: app.origin,
             key: app.key,
           };
           return appService.getContext(
-            requestDetails.memberId,
+            requestDetails.accountId,
             buildRepositories(),
             itemId,
             requestDetails,

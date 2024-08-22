@@ -14,7 +14,8 @@ import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/
 import { matchOne } from '../../../authorization';
 import FileService from '../../../file/service';
 import { UploadFileUnexpectedError } from '../../../file/utils/errors';
-import { validatedMember } from '../../../member/strategies/validatedMember';
+import { assertIsMember } from '../../../member/entities/member';
+import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
 import { deleteSchema, download, upload } from './schemas';
 import { ItemThumbnailService } from './service';
@@ -48,7 +49,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
     `/:id${THUMBNAILS_ROUTE_PREFIX}`,
     {
       schema: upload,
-      preHandler: [isAuthenticated, matchOne(validatedMember)],
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
     async (request, reply) => {
       const {
@@ -56,7 +57,8 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
         params: { id: itemId },
         log,
       } = request;
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
+      assertIsMember(member);
       return db
         .transaction(async (manager) => {
           // const files = request.files();
@@ -94,7 +96,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
       preHandler: optionalIsAuthenticated,
     },
     async ({ user, params: { size, id: itemId }, query: { replyUrl } }, reply) => {
-      const url = await itemThumbnailService.getUrl(user?.member, buildRepositories(), {
+      const url = await itemThumbnailService.getUrl(user?.account, buildRepositories(), {
         itemId,
         size,
       });
@@ -105,13 +107,14 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
 
   fastify.delete<{ Params: IdParam }>(
     `/:id${THUMBNAILS_ROUTE_PREFIX}`,
-    { schema: deleteSchema, preHandler: [isAuthenticated, matchOne(validatedMember)] },
+    { schema: deleteSchema, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async (request, reply) => {
       const {
         user,
         params: { id: itemId },
       } = request;
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
+      assertIsMember(member);
       await itemThumbnailService.deleteAllThumbnailSizes(member, buildRepositories(), {
         itemId,
       });

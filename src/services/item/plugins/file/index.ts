@@ -10,8 +10,9 @@ import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne, validatePermission } from '../../../authorization';
 import FileService from '../../../file/service';
+import { assertIsMember, isMember } from '../../../member/entities/member';
 import { StorageService } from '../../../member/plugins/storage/service';
-import { validatedMember } from '../../../member/strategies/validatedMember';
+import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { Item } from '../../entities/Item';
 import { ItemService } from '../../service';
 import { download, updateSchema, upload } from './schema';
@@ -60,9 +61,11 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
       }
       try {
         // delete file only if type is the current file type
-        if (!id || type !== fileService.fileType) return;
+        if (!id || type !== fileService.fileType) {
+          return;
+        }
         const filepath = (extra[fileService.fileType] as FileItemProperties).path;
-        await fileService.delete(actor, filepath);
+        await fileService.delete(filepath);
       } catch (err) {
         // we catch the error, it ensures the item is deleted even if the file is not
         // this is especially useful for the files uploaded before the migration to the new plugin
@@ -76,6 +79,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     if (!actor) {
       return;
     }
+    assertIsMember(actor);
 
     const { id, type } = item; // full copy with new `id`
 
@@ -88,7 +92,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
 
   // register post copy handler to copy the file object after item copy
   itemService.hooks.setPostHook('copy', async (actor, repositories, { original, copy }) => {
-    if (!actor) {
+    if (!actor || !isMember(actor)) {
       return;
     }
 
@@ -105,14 +109,16 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     method: HttpMethod.Post,
     url: '/upload',
     schema: upload,
-    preHandler: [isAuthenticated, matchOne(validatedMember)],
+    preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     handler: async (request) => {
       const {
         user,
         query: { id: parentId, previousItemId },
         log,
       } = request;
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
+      assertIsMember(member);
+
       // check rights
       if (parentId) {
         const repositories = buildRepositories();
@@ -181,7 +187,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
         query: { replyUrl },
       } = request;
 
-      const url = await fileItemService.getUrl(user?.member, buildRepositories(), {
+      const url = await fileItemService.getUrl(user?.account, buildRepositories(), {
         itemId,
       });
       fileService.setHeaders({ url, reply, replyUrl, id: itemId });

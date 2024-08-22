@@ -5,7 +5,9 @@ import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
-import { validatedMember } from '../../../member/strategies/validatedMember';
+import { assertIsMember } from '../../../member/entities/member';
+import { memberAccountRole } from '../../../member/strategies/memberAccountRole';
+import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import common, { create, deleteOne, getFavorite } from './schemas';
 import { FavoriteService } from './services/favorite';
 
@@ -19,9 +21,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // get favorites
   fastify.get(
     '/favorite',
-    { schema: getFavorite, preHandler: isAuthenticated },
+    { schema: getFavorite, preHandler: [isAuthenticated, matchOne(memberAccountRole)] },
     async ({ user }) => {
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
+      assertIsMember(member);
       return favoriteService.getOwn(member, buildRepositories());
     },
   );
@@ -29,9 +32,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // insert favorite
   fastify.post<{ Params: { itemId: string } }>(
     '/favorite/:itemId',
-    { schema: create, preHandler: [isAuthenticated, matchOne(validatedMember)] },
+    { schema: create, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async ({ user, params: { itemId } }) => {
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
+      assertIsMember(member);
       return db.transaction(async (manager) => {
         return favoriteService.post(member, buildRepositories(manager), itemId);
       });
@@ -41,9 +45,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // delete favorite
   fastify.delete<{ Params: { itemId: string } }>(
     '/favorite/:itemId',
-    { schema: deleteOne, preHandler: [isAuthenticated, matchOne(validatedMember)] },
+    { schema: deleteOne, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async ({ user, params: { itemId } }) => {
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
+      assertIsMember(member);
       return db.transaction(async (manager) => {
         return favoriteService.delete(member, buildRepositories(manager), itemId);
       });

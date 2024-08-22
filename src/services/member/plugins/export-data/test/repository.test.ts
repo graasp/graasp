@@ -83,22 +83,22 @@ describe('DataMember Export', () => {
     it('get all Actions for the member', async () => {
       // save for exporting actor
       const actions = await saveActions(rawActionRepository, [
-        { item, member: exportingActor },
-        { item, member: exportingActor },
-        { item, member: exportingActor },
+        { item, account: exportingActor },
+        { item, account: exportingActor },
+        { item, account: exportingActor },
       ]);
       // on item of random user
       const otherActions = await saveActions(rawActionRepository, [
-        { item: itemOfRandomUser, member: exportingActor },
-        { item: itemOfRandomUser, member: exportingActor },
-        { item: itemOfRandomUser, member: exportingActor },
+        { item: itemOfRandomUser, account: exportingActor },
+        { item: itemOfRandomUser, account: exportingActor },
+        { item: itemOfRandomUser, account: exportingActor },
       ]);
 
       // noise: save for a random user
-      await saveActions(rawActionRepository, [{ item, member: randomUser }]);
-      await saveActions(rawActionRepository, [{ item: itemOfRandomUser, member: randomUser }]);
+      await saveActions(rawActionRepository, [{ item, account: randomUser }]);
+      await saveActions(rawActionRepository, [{ item: itemOfRandomUser, account: randomUser }]);
 
-      const results = await new ActionRepository().getForMemberExport(exportingActor.id);
+      const results = await new ActionRepository().getForAccountExport(exportingActor.id);
       expectNoLeaksAndEquality(results, [...actions, ...otherActions], actionSchema);
     });
   });
@@ -108,7 +108,10 @@ describe('DataMember Export', () => {
       // save for exporting actor
       const appActions = await saveAppActions({ item, member: exportingActor });
       // on item of random user
-      const otherActions = await saveAppActions({ item: itemOfRandomUser, member: exportingActor });
+      const otherActions = await saveAppActions({
+        item: itemOfRandomUser,
+        member: exportingActor,
+      });
 
       // noise: for a random member
       await saveAppActions({ item, member: randomUser });
@@ -125,12 +128,12 @@ describe('DataMember Export', () => {
       const appDataWithActorAsMember = await saveAppData({
         item: itemOfRandomUser,
         creator: randomUser,
-        member: exportingActor,
+        account: exportingActor,
       });
       const appDataWithOtherMember = await saveAppData({
         item,
         creator: exportingActor,
-        member: randomUser,
+        account: randomUser,
       });
 
       // noise: for a random member
@@ -278,7 +281,7 @@ describe('DataMember Export', () => {
       for (const item of actorItems) {
         const membership = await itemTestUtils.saveMembership({
           item,
-          member: exportingActor,
+          account: exportingActor,
           permission: PermissionLevel.Admin,
         });
         memberships.push(membership);
@@ -287,7 +290,7 @@ describe('DataMember Export', () => {
       for (const item of randomItems) {
         const membership = await itemTestUtils.saveMembership({
           item,
-          member: exportingActor,
+          account: exportingActor,
           permission: PermissionLevel.Read,
         });
         memberships.push(membership);

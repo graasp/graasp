@@ -3,6 +3,7 @@ import { v4 } from 'uuid';
 import { AppDataVisibility } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../../../plugins/datasource';
+import { Account } from '../../../../../account/entities/account';
 import { Member } from '../../../../../member/entities/member';
 import { Item } from '../../../../entities/Item';
 import { AppData } from '../appData';
@@ -67,12 +68,12 @@ export const MOCK_APPS = [
 export const saveAppData = async ({
   item,
   creator,
-  member,
+  account,
   visibility,
 }: {
   item: Item;
   creator: Member;
-  member?: Member;
+  account?: Account;
   visibility?: AppDataVisibility;
 }) => {
   const defaultData = { type: 'some-type', data: { some: 'data' } };
@@ -80,28 +81,28 @@ export const saveAppData = async ({
   const s1 = await appDataRawRepository.save({
     item,
     creator,
-    member: member ?? creator,
+    account: account ?? creator,
     ...defaultData,
     visibility: visibility ?? AppDataVisibility.Item,
   });
   const s2 = await appDataRawRepository.save({
     item,
     creator,
-    member: member ?? creator,
+    account: account ?? creator,
     ...defaultData,
     visibility: visibility ?? AppDataVisibility.Item,
   });
   const s3 = await appDataRawRepository.save({
     item,
     creator,
-    member: member ?? creator,
+    account: account ?? creator,
     ...defaultData,
     visibility: visibility ?? AppDataVisibility.Member,
   });
   const s4 = await appDataRawRepository.save({
     item,
     creator,
-    member: member ?? creator,
+    account: account ?? creator,
     ...defaultData,
     visibility: visibility ?? AppDataVisibility.Member,
     type: 'other-type',

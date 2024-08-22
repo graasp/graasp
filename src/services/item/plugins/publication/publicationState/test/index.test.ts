@@ -8,7 +8,7 @@ import { HttpMethod } from '@graasp/sdk';
 import build, { clearDatabase } from '../../../../../../../test/app';
 import { notUndefined } from '../../../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../../utils/config';
-import { Actor, Member } from '../../../../../member/entities/member';
+import { Member } from '../../../../../member/entities/member';
 import { saveMember } from '../../../../../member/test/fixtures/members';
 import { ItemTestUtils } from '../../../../test/fixtures/items';
 
@@ -16,7 +16,7 @@ const testUtils = new ItemTestUtils();
 
 describe('Publication Controller', () => {
   let app: FastifyInstance;
-  let actor: Actor | undefined;
+  let actor: Member | undefined;
 
   afterEach(async () => {
     jest.clearAllMocks();

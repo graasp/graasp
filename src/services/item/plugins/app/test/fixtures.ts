@@ -110,7 +110,7 @@ export class AppTestUtils extends ItemTestUtils {
     // if specified, we have a complex case where actor did not create the items
     // and data, so we need to add a membership
     if (permission && actor && creator && actor !== creator) {
-      await this.saveMembership({ item, member: actor, permission });
+      await this.saveMembership({ item, account: actor, permission });
     }
     const response = await app.inject({
       method: HttpMethod.Post,
@@ -129,7 +129,7 @@ export class AppTestUtils extends ItemTestUtils {
     const { item } = await this.saveApp({ url: graaspApp.url, member: actor });
     // set a read permission for the unauthorized member to check that
     // this user can't use a token generated for its app in the graaspApp
-    await this.saveMembership({ item, member: unauthorized, permission: PermissionLevel.Read });
+    await this.saveMembership({ item, account: unauthorized, permission: PermissionLevel.Read });
 
     await app.inject({
       method: HttpMethod.Get,

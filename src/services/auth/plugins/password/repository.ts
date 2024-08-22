@@ -15,7 +15,7 @@ export class MemberPasswordRepository extends AbstractRepository<MemberPassword>
 
   async getForMemberId(memberId: string) {
     // additional check that id is not null
-    // o/w empty parameter to findOneBy returns the first entry
+    // o/w empty parameter to findOneBy return the first entry
     if (!memberId) {
       throw new MemberNotFound({ id: memberId });
     }

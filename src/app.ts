@@ -10,6 +10,7 @@ import databasePlugin from './plugins/database';
 import metaPlugin from './plugins/meta';
 import swaggerPlugin from './plugins/swagger';
 import shared from './schemas/fluent-schema';
+import accountPlugin from './services/account';
 import authPlugin from './services/auth';
 import { plugin as passportPlugin } from './services/auth/plugins/passport';
 import ItemServiceApi from './services/item';
@@ -61,6 +62,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
           },
         },
       })
+      .register(fp(accountPlugin))
       .register(fp(MemberServiceApi))
       .register(fp(ItemServiceApi))
       .register(fp(ItemMembershipServiceApi));

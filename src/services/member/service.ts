@@ -12,7 +12,7 @@ import {
   EMAIL_CHANGE_JWT_EXPIRATION_IN_MINUTES,
   EMAIL_CHANGE_JWT_SECRET,
 } from '../../utils/config';
-import { CannotModifyOtherMembers, MemberAlreadySignedUp } from '../../utils/errors';
+import { MemberAlreadySignedUp } from '../../utils/errors';
 import HookManager from '../../utils/hook';
 import { Repositories } from '../../utils/repositories';
 import { NEW_EMAIL_PARAM, SHORT_TOKEN_PARAM } from '../auth/plugins/passport';
@@ -29,7 +29,7 @@ export class MemberService {
     this.log = log;
   }
 
-  async get(actor: Actor, { memberRepository }: Repositories, id: string) {
+  async get({ memberRepository }: Repositories, id: string) {
     return memberRepository.get(id);
   }
 
@@ -37,11 +37,11 @@ export class MemberService {
     return await memberRepository.getByEmail(email);
   }
 
-  async getMany(actor: Actor, { memberRepository }: Repositories, ids: string[]) {
+  async getMany({ memberRepository }: Repositories, ids: string[]) {
     return memberRepository.getMany(ids);
   }
 
-  async getManyByEmail(actor: Actor, { memberRepository }: Repositories, emails: string[]) {
+  async getManyByEmail({ memberRepository }: Repositories, emails: string[]) {
     return memberRepository.getManyByEmail(emails.map((email) => email.trim().toLowerCase()));
   }
 
@@ -99,11 +99,7 @@ export class MemberService {
     return memberRepository.deleteOne(memberId);
   }
 
-  async deleteOne(actor: Actor, { memberRepository }: Repositories, id: UUID) {
-    if (!actor || actor.id !== id) {
-      throw new CannotModifyOtherMembers({ id });
-    }
-
+  async deleteOne({ memberRepository }: Repositories, id: UUID) {
     return memberRepository.deleteOne(id);
   }
 

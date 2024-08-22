@@ -5,7 +5,8 @@ import { resolveDependency } from '../../../../di/utils';
 import { notUndefined } from '../../../../utils/assertions';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
-import { validatedMember } from '../../../member/strategies/validatedMember';
+import { assertIsMember } from '../../../member/entities/member';
+import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { ItemService } from '../../service';
 import { createEtherpad, getEtherpadFromItem } from './schemas';
 import { EtherpadItemService } from './service';
@@ -22,14 +23,18 @@ const plugin: FastifyPluginAsync = async (fastify) => {
        */
       fastify.post<{ Querystring: { parentId?: string }; Body: { name: string } }>(
         '/create',
-        { schema: createEtherpad, preHandler: [isAuthenticated, matchOne(validatedMember)] },
+        {
+          schema: createEtherpad,
+          preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
+        },
         async (request) => {
           const {
             user,
             query: { parentId },
             body: { name },
           } = request;
-          const member = notUndefined(user?.member);
+          const member = notUndefined(user?.account);
+          assertIsMember(member);
           return await etherpadItemService.createEtherpadItem(member, name, parentId);
         },
       );
@@ -49,7 +54,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             params: { itemId },
             query: { mode = 'read' },
           } = request;
-          const member = notUndefined(user?.member);
+          const member = notUndefined(user?.account);
 
           const { cookie, padUrl } = await etherpadItemService.getEtherpadFromItem(
             member,
@@ -69,7 +74,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         if (!actor) {
           return;
         }
-        await etherpadItemService.deleteEtherpadForItem(actor, item);
+        await etherpadItemService.deleteEtherpadForItem(item);
       });
 
       /**
@@ -79,7 +84,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         if (!actor) {
           return;
         }
-        await etherpadItemService.copyEtherpadInMutableItem(actor, item);
+        await etherpadItemService.copyEtherpadInMutableItem(item);
       });
     },
     { prefix: 'etherpad' },

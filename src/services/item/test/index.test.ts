@@ -217,7 +217,7 @@ describe('Item routes tests', () => {
         const member = await saveMember();
         const { item: parent } = await testUtils.saveItemAndMembership({ member });
         await testUtils.saveMembership({
-          member: actor,
+          account: actor,
           item: parent,
           permission: PermissionLevel.Write,
         });
@@ -523,7 +523,11 @@ describe('Item routes tests', () => {
         const payload = FolderItemFactory();
 
         // save maximum children
-        await testUtils.saveItems({ nb: MAX_NUMBER_OF_CHILDREN, parentItem: parent, actor });
+        await testUtils.saveItems({
+          nb: MAX_NUMBER_OF_CHILDREN,
+          parentItem: parent,
+          member: actor,
+        });
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -680,7 +684,7 @@ describe('Item routes tests', () => {
       it('Returns successfully', async () => {
         ({ app } = await build({ member: null }));
         const member = await saveMember();
-        const { item, publicTag } = await testUtils.savePublicItem({ actor: member });
+        const { item, publicTag } = await testUtils.savePublicItem({ member });
 
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -695,8 +699,8 @@ describe('Item routes tests', () => {
       });
       it('Returns successfully for write right', async () => {
         ({ app, actor } = await build());
-        const { item, publicTag } = await testUtils.savePublicItem({ actor });
-        await testUtils.saveMembership({ item, member: actor, permission: PermissionLevel.Write });
+        const { item, publicTag } = await testUtils.savePublicItem({ member: actor });
+        await testUtils.saveMembership({ item, account: actor, permission: PermissionLevel.Write });
 
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -820,7 +824,7 @@ describe('Item routes tests', () => {
         const items: Item[] = [];
         const publicTags: ItemTag[] = [];
         for (let i = 0; i < 3; i++) {
-          const { item, publicTag } = await testUtils.savePublicItem({ actor: member });
+          const { item, publicTag } = await testUtils.savePublicItem({ member });
           items.push(item);
           publicTags.push(publicTag);
         }
@@ -918,15 +922,15 @@ describe('Item routes tests', () => {
         const { item: item2 } = await testUtils.saveItemAndMembership({ member });
         const { item: item3 } = await testUtils.saveItemAndMembership({ member });
         items = [item1, item2, item3];
-        await testUtils.saveMembership({ item: item1, member: actor });
+        await testUtils.saveMembership({ item: item1, account: actor });
         await testUtils.saveMembership({
           item: item2,
-          member: actor,
+          account: actor,
           permission: PermissionLevel.Write,
         });
         await testUtils.saveMembership({
           item: item3,
-          member: actor,
+          account: actor,
           permission: PermissionLevel.Read,
         });
 
@@ -1011,12 +1015,12 @@ describe('Item routes tests', () => {
         items = [item1, item2];
         await testUtils.saveMembership({
           item: item1,
-          member: actor,
+          account: actor,
           permission: PermissionLevel.Read,
         });
         await testUtils.saveMembership({
           item: item2,
-          member: actor,
+          account: actor,
           permission: PermissionLevel.Write,
         });
 
@@ -1043,17 +1047,17 @@ describe('Item routes tests', () => {
         const { item: item2 } = await testUtils.saveItemAndMembership({ member, parentItem });
         await testUtils.saveMembership({
           item: parentItem,
-          member: actor,
+          account: actor,
           permission: PermissionLevel.Read,
         });
         await testUtils.saveMembership({
           item: item1,
-          member: actor,
+          account: actor,
           permission: PermissionLevel.Read,
         });
         await testUtils.saveMembership({
           item: item2,
-          member: actor,
+          account: actor,
           permission: PermissionLevel.Write,
         });
 
@@ -1741,19 +1745,19 @@ describe('Item routes tests', () => {
       it('Returns successfully', async () => {
         ({ app } = await build({ member: null }));
         const actor = await saveMember();
-        const { item: parent, publicTag } = await testUtils.savePublicItem({ actor });
+        const { item: parent, publicTag } = await testUtils.savePublicItem({ member: actor });
         const { item: child1 } = await testUtils.savePublicItem({
-          actor,
+          member: actor,
           parentItem: parent,
         });
         const { item: child2 } = await testUtils.savePublicItem({
-          actor,
+          member: actor,
           parentItem: parent,
         });
 
         const children = [child1, child2];
         // create child of child
-        await testUtils.savePublicItem({ actor, parentItem: child1 });
+        await testUtils.savePublicItem({ member: actor, parentItem: child1 });
 
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -1917,21 +1921,21 @@ describe('Item routes tests', () => {
       it('Returns successfully', async () => {
         ({ app } = await build({ member: null }));
         const actor = await saveMember();
-        const { item: parent, publicTag } = await testUtils.savePublicItem({ actor });
+        const { item: parent, publicTag } = await testUtils.savePublicItem({ member: actor });
         const { item: child1 } = await testUtils.savePublicItem({
           item: { name: 'child1' },
-          actor,
+          member: actor,
           parentItem: parent,
         });
         const { item: child2 } = await testUtils.savePublicItem({
           item: { name: 'child2' },
-          actor,
+          member: actor,
           parentItem: parent,
         });
 
         const { item: childOfChild } = await testUtils.savePublicItem({
           item: { name: 'child3' },
-          actor,
+          member: actor,
           parentItem: child1,
         });
         const descendants = [child1, child2, childOfChild];
@@ -2061,23 +2065,23 @@ describe('Item routes tests', () => {
     describe('Public', () => {
       it('Returns successfully', async () => {
         ({ app } = await build({ member: null }));
-        const { item: parent, publicTag } = await testUtils.savePublicItem({ actor: null });
+        const { item: parent, publicTag } = await testUtils.savePublicItem({ member: null });
         const { item: child1 } = await testUtils.savePublicItem({
           item: { name: 'child1' },
-          actor: null,
+          member: null,
           parentItem: parent,
         });
 
         const { item: childOfChild } = await testUtils.savePublicItem({
           item: { name: 'child3' },
-          actor: null,
+          member: null,
           parentItem: child1,
         });
 
         // noise
         await testUtils.savePublicItem({
           item: { name: 'child2' },
-          actor: null,
+          member: null,
           parentItem: parent,
         });
 
@@ -2375,7 +2379,7 @@ describe('Item routes tests', () => {
         };
         const member = await saveMember();
         const { item } = await testUtils.saveItemAndMembership({ member });
-        await testUtils.saveMembership({ item, member: actor, permission: PermissionLevel.Read });
+        await testUtils.saveMembership({ item, account: actor, permission: PermissionLevel.Read });
         const response = await app.inject({
           method: HttpMethod.Patch,
           url: `/items/${item.id}`,
@@ -2564,7 +2568,7 @@ describe('Item routes tests', () => {
         // root with membership for two members
         const { item: root } = await testUtils.saveItemAndMembership({ member: actor });
         const member = await saveMember();
-        await testUtils.saveMembership({ member, item: root });
+        await testUtils.saveMembership({ account: member, item: root });
 
         // parent to delete and its child
         const { item: parent } = await testUtils.saveItemAndMembership({

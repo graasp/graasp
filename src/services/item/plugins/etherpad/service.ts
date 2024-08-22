@@ -9,6 +9,7 @@ import { ETHERPAD_NAME_FACTORY_DI_KEY } from '../../../../di/constants';
 import { BaseLogger } from '../../../../logger';
 import { MemberCannotWriteItem } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
+import { Account } from '../../../account/entities/account';
 import { validatePermission } from '../../../authorization';
 import { Member } from '../../../member/entities/member';
 import { Item, isItemType } from '../../entities/Item';
@@ -124,7 +125,7 @@ export class EtherpadItemService {
    */
   private async checkMode(
     requestedMode: 'read' | 'write',
-    member: Member,
+    account: Account,
     item: Item,
   ): Promise<'read' | 'write'> {
     // no specific check if read mode was requested
@@ -134,7 +135,7 @@ export class EtherpadItemService {
     // if mode was write, check that permission is at least write
     try {
       // validatePermission will throw if user does not have write rights
-      await validatePermission(buildRepositories(), PermissionLevel.Write, member, item);
+      await validatePermission(buildRepositories(), PermissionLevel.Write, account, item);
       return 'write';
     } catch (error) {
       // something else failed in the authorization
@@ -150,11 +151,11 @@ export class EtherpadItemService {
    * Retrieves the Etherpad service URL of the requested pad for a given item and a cookie
    * containing all valid sessions for pads for a given member (including the requested pad)
    */
-  public async getEtherpadFromItem(member: Member, itemId: string, mode: 'read' | 'write') {
+  public async getEtherpadFromItem(account: Account, itemId: string, mode: 'read' | 'write') {
     const repos = buildRepositories();
-    const item = await this.itemService.get(member, repos, itemId);
+    const item = await this.itemService.get(account, repos, itemId);
 
-    const checkedMode = await this.checkMode(mode, member, item);
+    const checkedMode = await this.checkMode(mode, account, item);
 
     if (!isItemType(item, ItemType.ETHERPAD) || !item.extra?.etherpad) {
       throw new ItemMissingExtraError(item?.id);
@@ -180,8 +181,8 @@ export class EtherpadItemService {
 
     // map user to etherpad author
     const { authorID } = await this.api.createAuthorIfNotExistsFor({
-      authorMapper: member.id,
-      name: member.name,
+      authorMapper: account.id,
+      name: account.name,
     });
 
     // start session for user on the group
@@ -287,7 +288,7 @@ export class EtherpadItemService {
   /**
    * Deletes an Etherpad associated to an item
    */
-  public async deleteEtherpadForItem(member: Member, item: Item) {
+  public async deleteEtherpadForItem(item: Item) {
     if (!isItemType(item, ItemType.ETHERPAD)) {
       return;
     }
@@ -306,7 +307,7 @@ export class EtherpadItemService {
   /**
    * Copies an Etherpad for an associated copied mutable item
    */
-  public async copyEtherpadInMutableItem(member: Member, item: Item) {
+  public async copyEtherpadInMutableItem(item: Item) {
     if (!isItemType(item, ItemType.ETHERPAD)) {
       return;
     }

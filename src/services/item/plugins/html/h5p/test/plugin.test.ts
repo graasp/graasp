@@ -12,7 +12,7 @@ import { H5PItemExtra, H5PItemType, ItemType } from '@graasp/sdk';
 import build, { clearDatabase } from '../../../../../../../test/app';
 import { resolveDependency } from '../../../../../../di/utils';
 import { H5P_LOCAL_CONFIG, H5P_PATH_PREFIX, TMP_FOLDER } from '../../../../../../utils/config';
-import { Actor } from '../../../../../member/entities/member';
+import { Member } from '../../../../../member/entities/member';
 import { Item, ItemTypeEnumKeys } from '../../../../entities/Item';
 import { ItemService } from '../../../../service';
 import { ItemTestUtils } from '../../../../test/fixtures/items';
@@ -36,7 +36,7 @@ async function cleanFiles() {
 
 describe('Service plugin', () => {
   let app: FastifyInstance;
-  let member: Actor;
+  let member: Member | undefined;
   let parent: Item;
 
   let res: LightMyRequestResponse,
@@ -268,7 +268,7 @@ describe('Service plugin', () => {
 describe('Upload valid .h5p package after previous item id', () => {
   let previousItem: Item;
   let app: FastifyInstance;
-  let member: Actor;
+  let member: Member | undefined;
   let parent: Item;
 
   let res: LightMyRequestResponse,

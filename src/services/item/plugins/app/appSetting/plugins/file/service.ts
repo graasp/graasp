@@ -7,6 +7,7 @@ import { MultipartFile } from '@fastify/multipart';
 import { FileItemProperties, MAX_ITEM_NAME_LENGTH, UUID } from '@graasp/sdk';
 
 import { Repositories } from '../../../../../../../utils/repositories';
+import { Account } from '../../../../../../account/entities/account';
 import FileService from '../../../../../../file/service';
 import { Member } from '../../../../../../member/entities/member';
 import { Item } from '../../../../../entities/Item';
@@ -35,7 +36,7 @@ class AppSettingFileService {
     this.itemService = itemService;
   }
 
-  async upload(member: Member, repositories: Repositories, file: MultipartFile, item: Item) {
+  async upload(member: Account, repositories: Repositories, file: MultipartFile, item: Item) {
     const { filename, mimetype, fields, file: stream } = file;
     const appSettingId = v4();
     const filepath = this.buildFilePath(item.id, appSettingId); // parentId, filename
@@ -81,13 +82,13 @@ class AppSettingFileService {
   }
 
   async download(
-    member: Member,
+    account: Account,
     repositories: Repositories,
     { item, appSettingId }: { item: Item; appSettingId: UUID },
   ) {
     // get app setting and check it is a file
     const appSetting = await this.appSettingService.get(
-      member,
+      account,
       repositories,
       item.id,
       appSettingId,
@@ -150,7 +151,7 @@ class AppSettingFileService {
       }
 
       const filepath = fileProp.path;
-      await this.fileService.delete(actor, filepath);
+      await this.fileService.delete(filepath);
     } catch (err) {
       // we catch the error, it ensures the item is deleted even if the file is not
       // this is especially useful for the files uploaded before the migration to the new plugin

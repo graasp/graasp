@@ -9,7 +9,9 @@ import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
-import { validatedMember } from '../../../member/strategies/validatedMember';
+import { assertIsMember } from '../../../member/entities/member';
+import { memberAccountRole } from '../../../member/strategies/memberAccountRole';
+import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
 import schemas, { getRecycledItemDatas, recycleMany, restoreMany } from './schemas';
 import { RecycledBinService } from './service';
@@ -43,9 +45,10 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
   // get own recycled items data
   fastify.get<{ Params: IdParam }>(
     '/recycled',
-    { schema: getRecycledItemDatas, preHandler: isAuthenticated },
+    { schema: getRecycledItemDatas, preHandler: [isAuthenticated, matchOne(memberAccountRole)] },
     async ({ user }) => {
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
+      assertIsMember(member);
       const result = await recycleBinService.getAll(member, buildRepositories());
       return result;
     },
@@ -56,7 +59,7 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
     '/recycle',
     {
       schema: recycleMany(maxItemsInRequest),
-      preHandler: [isAuthenticated, matchOne(validatedMember)],
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
     async (request, reply) => {
       const {
@@ -64,7 +67,8 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
         log,
         user,
       } = request;
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
+      assertIsMember(member);
       db.transaction(async (manager) => {
         const items = await recycleBinService.recycleMany(member, buildRepositories(manager), ids);
         websockets.publish(
@@ -92,7 +96,7 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
     '/restore',
     {
       schema: restoreMany(maxItemsInRequest),
-      preHandler: [isAuthenticated, matchOne(validatedMember)],
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
     async (request, reply) => {
       const {
@@ -100,7 +104,8 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
         log,
         user,
       } = request;
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
+      assertIsMember(member);
       log.info(`Restoring items ${ids}`);
 
       db.transaction(async (manager) => {

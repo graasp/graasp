@@ -338,13 +338,13 @@ describe('Item Published', () => {
         const anna = await saveMember();
         await testUtils.saveMembership({
           item,
-          member: anna,
+          account: anna,
           permission: PermissionLevel.Admin,
         });
         const cedric = await saveMember();
         await testUtils.saveMembership({
           item,
-          member: cedric,
+          account: cedric,
           permission: PermissionLevel.Admin,
         });
         await rawRepository.save({ item, type: ItemTagType.Public, creator: member });

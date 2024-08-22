@@ -4,15 +4,14 @@ import { Authenticator } from '@fastify/passport';
 
 import { APPS_JWT_SECRET } from '../../../../../utils/config';
 import { UnauthorizedMember } from '../../../../../utils/errors';
+import { AccountRepository } from '../../../../account/repository';
 import { ItemRepository } from '../../../../item/repository';
-import { Member } from '../../../../member/entities/member';
-import { MemberRepository } from '../../../../member/repository';
 import { PassportStrategy } from '../strategies';
 import { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
 
 export default (
   passport: Authenticator,
-  memberRepository: MemberRepository,
+  accountRepository: AccountRepository,
   itemRepository: ItemRepository,
   strategy: PassportStrategy,
   strict: boolean, // Throw 401 if member is not found
@@ -27,7 +26,7 @@ export default (
       },
       async (payload, done: StrictVerifiedCallback) => {
         const {
-          sub: { memberId, itemId, key, origin },
+          sub: { accountId, itemId, key, origin },
         } = payload;
         // Check inputs
         if (!key || !origin || !itemId) {
@@ -35,21 +34,17 @@ export default (
         }
 
         // Fetch Member datas
-        let member: Member | undefined;
-        try {
-          member = await memberRepository.get(memberId);
-        } catch (err) {
-          // Member can be undefined if authorized.
-          if (strict) {
-            return done(options?.propagateError ? err : new UnauthorizedMember(), false);
-          }
+        const account = await accountRepository.get(accountId);
+        // Member can be undefined if authorized.
+        if (strict && !account) {
+          return done(new UnauthorizedMember(), false);
         }
 
         // Fetch Item datas
         try {
           const item = await itemRepository.getOneOrThrow(itemId);
           return done(null, {
-            member,
+            account,
             app: {
               item,
               origin,

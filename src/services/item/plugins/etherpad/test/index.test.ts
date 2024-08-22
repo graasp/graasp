@@ -13,7 +13,7 @@ import build, { clearDatabase } from '../../../../../../test/app';
 import { resolveDependency } from '../../../../../di/utils';
 import { ETHERPAD_PUBLIC_URL } from '../../../../../utils/config';
 import { ItemNotFound, MemberCannotAccess } from '../../../../../utils/errors';
-import { Actor, Member } from '../../../../member/entities/member';
+import { Member } from '../../../../member/entities/member';
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { Item } from '../../../entities/Item';
 import { ItemService } from '../../../service';
@@ -52,7 +52,7 @@ describe('Etherpad service API', () => {
   };
 
   beforeEach(async () => {
-    let actor: Actor;
+    let actor: Member | undefined;
     ({ app, actor } = await build());
     if (!actor) {
       throw new Error('Test error: member should be defined');
@@ -269,7 +269,7 @@ describe('Etherpad service API', () => {
           }),
         },
       });
-      await testUtils.saveMembership({ item, member, permission: PermissionLevel.Read });
+      await testUtils.saveMembership({ item, account: member, permission: PermissionLevel.Read });
       const reqParams = setUpApi({
         getReadOnlyID: [
           StatusCodes.OK,

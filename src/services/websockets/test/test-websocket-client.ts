@@ -15,6 +15,9 @@ export class TestWsClient {
       this.ws.on('open', () => {
         resolve();
       });
+      this.ws.on('error', (err) => {
+        throw err;
+      });
     });
   }
 

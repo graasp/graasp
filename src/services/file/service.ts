@@ -5,9 +5,11 @@ import { inject, singleton } from 'tsyringe';
 
 import { FastifyReply } from 'fastify';
 
+import { Account, Member } from '@graasp/sdk';
+
 import { FILE_REPOSITORY_DI_KEY } from '../../di/constants';
 import { BaseLogger } from '../../logger';
-import { Actor, Member } from '../member/entities/member';
+import { Actor } from '../member/entities/member';
 import { LocalFileConfiguration, S3FileConfiguration } from './interfaces/configuration';
 import { FileRepository } from './interfaces/fileRepository';
 import {
@@ -40,7 +42,7 @@ class FileService {
     return this.repository.getFileSize(filepath);
   }
 
-  async upload(member: Member, data: { file: Readable; filepath: string; mimetype?: string }) {
+  async upload(account: Account, data: { file: Readable; filepath: string; mimetype?: string }) {
     const { file, filepath, mimetype } = data;
 
     if (!file || !filepath) {
@@ -54,20 +56,20 @@ class FileService {
       await this.repository.uploadFile({
         fileStream: file,
         filepath,
-        memberId: member.id,
+        memberId: account.id,
         mimetype,
       });
     } catch (e) {
       // rollback uploaded file
-      this.delete(member, filepath);
+      this.delete(filepath);
       this.logger.error(e);
-      throw new UploadFileUnexpectedError({ mimetype, memberId: member.id });
+      throw new UploadFileUnexpectedError({ mimetype, memberId: account.id });
     }
 
     return data;
   }
 
-  async getFile(member: Actor, data): Promise<Readable> {
+  async getFile(_actor: Actor, data): Promise<Readable> {
     const { id, path: filepath } = data;
     if (!filepath || !id) {
       throw new DownloadFileInvalidParameterError({
@@ -104,14 +106,14 @@ class FileService {
     );
   }
 
-  async delete(member: Member, filepath: string) {
+  async delete(filepath: string) {
     if (!filepath.length) {
       throw new DeleteFileInvalidPathError(filepath);
     }
     await this.repository.deleteFile({ filepath });
   }
 
-  async deleteFolder(member: Member, folderPath: string) {
+  async deleteFolder(folderPath: string) {
     if (!folderPath.length) {
       throw new DeleteFolderInvalidPathError(folderPath);
     }
@@ -146,13 +148,7 @@ class FileService {
     });
   }
 
-  async copyFolder(
-    member: Member,
-    data: {
-      originalFolderPath: string;
-      newFolderPath: string;
-    },
-  ) {
+  async copyFolder(data: { originalFolderPath: string; newFolderPath: string }) {
     const { originalFolderPath, newFolderPath } = data;
 
     if (!originalFolderPath.length) {

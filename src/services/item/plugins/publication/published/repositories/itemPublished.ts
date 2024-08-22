@@ -4,7 +4,8 @@ import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity
 import { PermissionLevel } from '@graasp/sdk';
 
 import { AbstractRepository } from '../../../../../../repositories/AbstractRepository';
-import { Actor, Member } from '../../../../../member/entities/member';
+import { Account as Member } from '../../../../../account/entities/account';
+import { Actor } from '../../../../../member/entities/member';
 import { mapById } from '../../../../../utils';
 import { Item } from '../../../../entities/Item';
 import { ItemPublished } from '../entities/itemPublished';
@@ -58,14 +59,14 @@ export class ItemPublishedRepository extends AbstractRepository<ItemPublished> {
         'im.item_path @> pi.item_path and im.permission IN (:...permissions)',
         { permissions: [PermissionLevel.Admin, PermissionLevel.Write] },
       )
-      // add a condition to the join to keep only relations for the memberId we are interested in
-      // this removes the need for the memberId in the where condition
-      .innerJoin('member', 'm', 'im.member_id = m.id and m.id = :memberId', {
-        memberId,
+      // add a condition to the join to keep only relations for the accountId we are interested in
+      // this removes the need for the accountId in the where condition
+      .innerJoin('account', 'm', 'im.account_id = m.id and m.id = :accountId', {
+        accountId: memberId,
       })
       // these two joins are for typeorm to get the relation data
       .innerJoinAndSelect('pi.item', 'item') // will ignore soft delted items
-      .innerJoinAndSelect('item.creator', 'member') // will ignore null creators (deleted accounts)
+      .innerJoinAndSelect('item.creator', 'account') // will ignore null creators (deleted accounts)
       .getMany();
 
     return itemPublished.map(({ item }) => item);

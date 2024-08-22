@@ -16,15 +16,15 @@ export class FavoriteService {
     this.itemService = itemService;
   }
 
-  async getOwn(actor: Member, repositories: Repositories): Promise<PackedItemFavorite[]> {
+  async getOwn(member: Member, repositories: Repositories): Promise<PackedItemFavorite[]> {
     const { itemFavoriteRepository } = repositories;
 
-    const favorites = await itemFavoriteRepository.getFavoriteForMember(actor.id);
+    const favorites = await itemFavoriteRepository.getFavoriteForMember(member.id);
 
     // filter out items user might not have access to
     // and packed item
     const filteredItems = await filterOutPackedItems(
-      actor,
+      member,
       repositories,
       favorites.map(({ item }) => item),
     );
@@ -40,17 +40,17 @@ export class FavoriteService {
     });
   }
 
-  async post(actor: Member, repositories: Repositories, itemId: string) {
+  async post(member: Member, repositories: Repositories, itemId: string) {
     const { itemFavoriteRepository } = repositories;
 
     // get and check permissions
-    const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Read);
-    return itemFavoriteRepository.post(item.id, actor.id);
+    const item = await this.itemService.get(member, repositories, itemId, PermissionLevel.Read);
+    return itemFavoriteRepository.post(item.id, member.id);
   }
 
-  async delete(actor: Member, repositories: Repositories, itemId: string) {
+  async delete(member: Member, repositories: Repositories, itemId: string) {
     const { itemFavoriteRepository } = repositories;
 
-    return itemFavoriteRepository.deleteOne(itemId, actor.id);
+    return itemFavoriteRepository.deleteOne(itemId, member.id);
   }
 }

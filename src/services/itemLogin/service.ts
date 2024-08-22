@@ -2,13 +2,17 @@ import { FastifyInstance } from 'fastify';
 
 import { ItemLoginSchemaType, PermissionLevel, UUID } from '@graasp/sdk';
 
+import { assertNonNull, notUndefined } from '../../utils/assertions';
+import { InvalidPassword } from '../../utils/errors';
 import { Repositories } from '../../utils/repositories';
+import { verifyCurrentPassword } from '../auth/plugins/password/utils';
 import { ItemService } from '../item/service';
 import { Actor, Member } from '../member/entities/member';
+import { Guest } from './entities/guest';
 import { ItemLoginSchema } from './entities/itemLoginSchema';
-import { ValidMemberSession } from './errors';
+import { MissingCredentialsForLoginSchema } from './errors';
 import { ItemLoginMemberCredentials } from './interfaces/item-login';
-import { encryptPassword, generateRandomEmail } from './utils';
+import { loginSchemaRequiresPassword } from './utils';
 
 export class ItemLoginService {
   fastify: FastifyInstance;
@@ -35,21 +39,11 @@ export class ItemLoginService {
     return itemLoginSchema?.type;
   }
 
-  async login(
-    actor: Actor,
-    repositories: Repositories,
-    itemId: string,
-    credentials: ItemLoginMemberCredentials,
-  ) {
-    // if there's already a valid session, fail immediately
-    if (actor) {
-      throw new ValidMemberSession(actor);
-    }
-
+  async login(repositories: Repositories, itemId: string, credentials: ItemLoginMemberCredentials) {
     const { username, password } = credentials; // TODO: allow for "empty" username and generate one (anonymous, anonymous+password)
-    let bondMember: Member | undefined = undefined;
+    let bondMember: Guest | undefined = undefined;
     if (username) {
-      bondMember = await this.loginWithUsername(actor, repositories, itemId, {
+      bondMember = await this.loginWithUsername(repositories, itemId, {
         username,
         password,
       });
@@ -72,13 +66,17 @@ export class ItemLoginService {
   }
 
   async loginWithUsername(
-    actor: Actor,
     repositories: Repositories,
     itemId: UUID,
     { username, password }: { username: string; password?: string },
   ) {
-    const { memberRepository, itemLoginRepository, itemRepository, itemLoginSchemaRepository } =
-      repositories;
+    const {
+      itemLoginRepository: guestRepository,
+      itemRepository,
+      itemLoginSchemaRepository,
+      guestPasswordRepository,
+      itemMembershipRepository,
+    } = repositories;
 
     const item = await itemRepository.getOneOrThrow(itemId);
 
@@ -88,72 +86,72 @@ export class ItemLoginService {
       shouldExist: true,
     })) as ItemLoginSchema;
 
-    const itemLogin = await itemLoginRepository.getForItemAndUsername(item, username);
-    let bondMember = itemLogin?.member;
+    let guestAccount = await guestRepository.getForItemAndUsername(item, username);
 
     // reuse existing item login for this user
-    if (itemLogin) {
-      await itemLoginRepository.validateCredentials(password, itemLogin);
+    if (guestAccount && loginSchemaRequiresPassword(itemLoginSchema.type)) {
+      password = notUndefined(password, new MissingCredentialsForLoginSchema());
+      const accountPassword = await guestPasswordRepository.getForGuestId(guestAccount.id);
+      if (accountPassword) {
+        if (!(await verifyCurrentPassword(accountPassword, password))) {
+          throw new InvalidPassword();
+        }
+      } else {
+        // If schema was modified from passwordless to '* + password' - update member with password
+        await guestPasswordRepository.patch(guestAccount.id, password);
+      }
     }
     // create a new item login
-    else {
+    else if (!guestAccount) {
       // create member w/ `username`
-      const data: Partial<Member> & Pick<Member, 'email' | 'name'> = {
+      const data: Partial<Guest> & Pick<Guest, 'name'> = {
         name: username,
-        email: generateRandomEmail(),
+        itemLoginSchema: itemLoginSchema,
       };
 
-      let encryptedPassword;
-      if (password) {
-        encryptedPassword = await encryptPassword(password);
+      if (loginSchemaRequiresPassword(itemLoginSchema.type)) {
+        // Check before creating account, so we don't create an account w/o password if it's required
+        notUndefined(password, new MissingCredentialsForLoginSchema());
       }
 
       // create account
-      bondMember = await memberRepository.post(data);
+      guestAccount = await guestRepository.addOne(data);
+      assertNonNull(guestAccount);
+      if (loginSchemaRequiresPassword(itemLoginSchema.type)) {
+        password = notUndefined(password, new MissingCredentialsForLoginSchema());
+        await guestPasswordRepository.patch(guestAccount.id, password);
+      }
 
-      // create item login
-      await this.linkMember(actor, repositories, itemLoginSchema, bondMember, encryptedPassword);
+      // create membership
+      await itemMembershipRepository.post({
+        item,
+        account: guestAccount,
+        creator: guestAccount,
+        permission: PermissionLevel.Read,
+      });
     }
 
-    return bondMember;
+    return guestAccount;
   }
 
-  async put(actor: Member, repositories: Repositories, itemId: string, type?: ItemLoginSchemaType) {
+  async put(
+    member: Member,
+    repositories: Repositories,
+    itemId: string,
+    type?: ItemLoginSchemaType,
+  ) {
     const { itemLoginSchemaRepository } = repositories;
 
-    const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
+    const item = await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
 
     return itemLoginSchemaRepository.put(item, type);
   }
 
-  async delete(actor: Member, repositories: Repositories, itemId: string) {
+  async delete(member: Member, repositories: Repositories, itemId: string) {
     const { itemLoginSchemaRepository } = repositories;
 
-    const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
+    const item = await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
 
     return itemLoginSchemaRepository.deleteForItem(item);
-  }
-
-  async linkMember(
-    actor: Actor,
-    repositories: Repositories,
-    itemLoginSchema: ItemLoginSchema,
-    member: Member,
-    password?: string,
-  ) {
-    const { itemLoginRepository, itemMembershipRepository } = repositories;
-
-    const { item } = itemLoginSchema;
-
-    // bond member to this item
-    await itemLoginRepository.post({ itemLoginSchema, member, password });
-
-    // create membership
-    await itemMembershipRepository.post({
-      item,
-      member,
-      creator: member,
-      permission: PermissionLevel.Read,
-    });
   }
 }

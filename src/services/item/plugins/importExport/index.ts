@@ -12,7 +12,8 @@ import { buildRepositories } from '../../../../utils/repositories';
 import { ActionService } from '../../../action/services/action';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
-import { validatedMember } from '../../../member/strategies/validatedMember';
+import { assertIsMember } from '../../../member/entities/member';
+import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { ItemService } from '../../service';
 import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
 import { ZIP_FILE_MIME_TYPES } from './constants';
@@ -40,14 +41,15 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.post<{ Querystring: { parentId?: string } }>(
     '/zip-import',
-    { schema: zipImport, preHandler: [isAuthenticated, matchOne(validatedMember)] },
+    { schema: zipImport, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async (request, reply) => {
       const {
         user,
         log,
         query: { parentId },
       } = request;
-      const member = notUndefined(user?.member);
+      const member = notUndefined(user?.account);
+      assertIsMember(member);
 
       log.debug('Import zip content');
 
@@ -92,7 +94,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         user,
         params: { itemId },
       } = request;
-      const member = user?.member;
+      const member = user?.account;
       const repositories = buildRepositories();
       const item = await itemService.get(member, repositories, itemId);
 

@@ -9,7 +9,7 @@ import { DEFAULT_LANG } from '@graasp/translations';
 
 import { AbstractRepository } from '../../../../repositories/AbstractRepository';
 import { ALLOWED_SEARCH_LANGS, GEOLOCATION_API_HOST } from '../../../../utils/config';
-import { Actor } from '../../../member/entities/member';
+import { Actor, isMember } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import { ItemGeolocation } from './ItemGeolocation';
 import { MissingGeolocationSearchParams } from './errors';
@@ -112,7 +112,7 @@ export class ItemGeolocationRepository extends AbstractRepository<ItemGeolocatio
     const allKeywords = keywords?.filter((s) => s && s.length);
     if (allKeywords?.length) {
       const keywordsString = allKeywords.join(' ');
-      const memberLang = actor?.lang;
+      const memberLang = actor && isMember(actor) ? actor?.lang : DEFAULT_LANG;
       query.andWhere(
         new Brackets((q) => {
           // search in english by default
