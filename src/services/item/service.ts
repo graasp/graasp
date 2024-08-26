@@ -121,7 +121,11 @@ export class ItemService {
     if (parentId) {
       this.log.debug(`verify parent ${parentId} exists and has permission over it`);
       parentItem = await this.get(member, repositories, parentId, PermissionLevel.Write);
-      inheritedMembership = await itemMembershipRepository.getInherited(parentItem, member, true);
+      inheritedMembership = await itemMembershipRepository.getInherited(
+        parentItem.path,
+        member.id,
+        true,
+      );
 
       // quick check, necessary for ts
       if (!isItemType(parentItem, ItemType.FOLDER)) {
@@ -159,10 +163,10 @@ export class ItemService {
       PermissionLevelCompare.lt(inheritedMembership?.permission, PermissionLevel.Admin)
     ) {
       this.log.debug(`create membership for ${createdItem.id}`);
-      await itemMembershipRepository.post({
-        item: createdItem,
-        account: member,
-        creator: member,
+      await itemMembershipRepository.addOne({
+        itemPath: createdItem.path,
+        accountId: member.id,
+        creatorId: member.id,
         permission: PermissionLevel.Admin,
       });
     }
@@ -651,10 +655,10 @@ export class ItemService {
 
     // adjust memberships to keep the constraints
     if (inserts.length) {
-      await itemMembershipRepository.createMany(inserts);
+      await itemMembershipRepository.addMany(inserts);
     }
     if (deletes.length) {
-      await itemMembershipRepository.deleteMany(deletes);
+      await itemMembershipRepository.deleteManyByItemPathAndAccount(deletes);
     }
 
     return result;
@@ -705,10 +709,10 @@ export class ItemService {
 
     // create a membership if needed
     await itemMembershipRepository
-      .post({
-        item: copyRoot,
-        account: member,
-        creator: member,
+      .addOne({
+        itemPath: copyRoot.path,
+        accountId: member.id,
+        creatorId: member.id,
         permission: PermissionLevel.Admin,
       })
       .catch((e) => {

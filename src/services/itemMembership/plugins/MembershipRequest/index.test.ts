@@ -11,15 +11,18 @@ import build, {
   unmockAuthenticate,
 } from '../../../../../test/app';
 import { resolveDependency } from '../../../../di/utils';
+import { AppDataSource } from '../../../../plugins/datasource';
 import { MailerService } from '../../../../plugins/mailer/service';
 import { buildRepositories } from '../../../../utils/repositories';
 import { Item } from '../../../item/entities/Item';
 import { ItemTestUtils } from '../../../item/test/fixtures/items';
 import { Member } from '../../../member/entities/member';
 import { saveMember } from '../../../member/test/fixtures/members';
+import { ItemMembership } from '../../entities/ItemMembership';
 import { MembershipRequestRepository } from './repository';
 
 const testUtils = new ItemTestUtils();
+const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
 
 function expectMemberRequestToBe(membershipRequest, member?: Member, item?: Item) {
   // There is no use to this Id since we should use the Item Id and the Member Id. This assertion check that AJV is doing his job by removing it.
@@ -412,8 +415,7 @@ describe('MembershipRequest', () => {
     });
 
     it('accepts when authenticated as the creator when there is no membership', async () => {
-      const { itemMembershipRepository } = buildRepositories();
-      await itemMembershipRepository.delete({ item, account: creator });
+      await itemMembershipRawRepository.delete({ item, account: creator });
       mockAuthenticate(creator);
 
       const response = await app.inject({

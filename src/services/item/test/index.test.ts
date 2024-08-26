@@ -32,7 +32,7 @@ import {
   MemberCannotWriteItem,
   TooManyChildren,
 } from '../../../utils/errors';
-import { ItemMembershipRepository } from '../../itemMembership/repository';
+import { ItemMembership } from '../../itemMembership/entities/ItemMembership';
 import { Member } from '../../member/entities/member';
 import { saveMember } from '../../member/test/fixtures/members';
 import { PackedItem } from '../ItemWrapper';
@@ -48,7 +48,7 @@ import {
 } from './fixtures/items';
 
 const rawRepository = AppDataSource.getRepository(ItemTag);
-
+const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
 const testUtils = new ItemTestUtils();
 
 // Mock S3 libraries
@@ -175,7 +175,9 @@ describe('Item routes tests', () => {
         expect(item?.id).toEqual(newItem.id);
 
         // a membership is created for this item
-        const membership = await ItemMembershipRepository.findOneBy({ item: { id: newItem.id } });
+        const membership = await itemMembershipRawRepository.findOneBy({
+          item: { id: newItem.id },
+        });
         expect(membership?.permission).toEqual(PermissionLevel.Admin);
         // check some creator properties are not leaked
         expect(newItem.creator.id).toBeTruthy();
@@ -206,7 +208,7 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
 
         // a membership does not need to be created for item with admin rights
-        const nbItemMemberships = await ItemMembershipRepository.count();
+        const nbItemMemberships = await itemMembershipRawRepository.count();
         expect(nbItemMemberships).toEqual(1);
 
         // add at beginning
@@ -236,7 +238,7 @@ describe('Item routes tests', () => {
         // one membership for the owner
         // one membership for sharing
         // admin for the new item
-        expect(await ItemMembershipRepository.count()).toEqual(3);
+        expect(await itemMembershipRawRepository.count()).toEqual(3);
       });
 
       it('Create successfully with geolocation', async () => {
@@ -2540,7 +2542,7 @@ describe('Item routes tests', () => {
         await waitForExpect(async () => {
           const remaining = await testUtils.rawItemRepository.count();
           expect(remaining).toEqual(0);
-          const memberships = await ItemMembershipRepository.count();
+          const memberships = await itemMembershipRawRepository.count();
           expect(memberships).toEqual(0);
           const { errors } = await testUtils.itemRepository.getMany(items.map(({ id }) => id));
           expect(errors).toHaveLength(items.length);
@@ -2560,7 +2562,7 @@ describe('Item routes tests', () => {
         await waitForExpect(async () => {
           expect(await testUtils.rawItemRepository.count()).toEqual(0);
 
-          const memberships = await ItemMembershipRepository.count();
+          const memberships = await itemMembershipRawRepository.count();
           expect(memberships).toEqual(0);
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
@@ -2590,7 +2592,7 @@ describe('Item routes tests', () => {
           // should keep root
           expect(remaining).toEqual(1);
 
-          const memberships = await ItemMembershipRepository.count();
+          const memberships = await itemMembershipRawRepository.count();
           // should keep root membership for actor and member
           expect(memberships).toEqual(2);
 
@@ -2691,7 +2693,7 @@ describe('Item routes tests', () => {
             expect(result.path.startsWith(parent.path)).toBeTruthy();
 
             // membership should have been deleted because has admin rights on parent
-            const im = await ItemMembershipRepository.findOneBy({
+            const im = await itemMembershipRawRepository.findOneBy({
               item: { path: buildPathFromIds(parent.id, item.id) },
             });
             expect(im).toBeNull();
@@ -2758,7 +2760,7 @@ describe('Item routes tests', () => {
           expect(result.path.startsWith(parentItem.path)).toBeFalsy();
 
           // membership should have been created
-          const im = await ItemMembershipRepository.findOneBy({
+          const im = await itemMembershipRawRepository.findOneBy({
             item: { path: buildPathFromIds(item.id) },
           });
           if (!im) {
@@ -2789,7 +2791,7 @@ describe('Item routes tests', () => {
           expect(result.path.startsWith(parentItem.path)).toBeTruthy();
 
           // membership should have been deleted
-          const im = await ItemMembershipRepository.findOneBy({
+          const im = await itemMembershipRawRepository.findOneBy({
             item: { path: buildPathFromIds(item.id) },
           });
           expect(im).toBeNull();
@@ -2922,7 +2924,7 @@ describe('Item routes tests', () => {
           member: actor,
         });
         const initialCount = await testUtils.rawItemRepository.count();
-        const initialCountMembership = await ItemMembershipRepository.count();
+        const initialCountMembership = await itemMembershipRawRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -2972,7 +2974,7 @@ describe('Item routes tests', () => {
           }
 
           // check it created a new membership per item
-          const newCountMembership = await ItemMembershipRepository.count();
+          const newCountMembership = await itemMembershipRawRepository.count();
           expect(newCountMembership).toEqual(initialCountMembership + items.length);
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
@@ -2980,7 +2982,7 @@ describe('Item routes tests', () => {
       it('Copy successfully from root to item with admin rights', async () => {
         const { item: targetItem } = await testUtils.saveItemAndMembership({ member: actor });
         const items = await saveNbOfItems({ nb: 3, actor });
-        const initialCountMembership = await ItemMembershipRepository.count();
+        const initialCountMembership = await itemMembershipRawRepository.count();
         const initialCount = await testUtils.rawItemRepository.count();
 
         const response = await app.inject({
@@ -3007,7 +3009,7 @@ describe('Item routes tests', () => {
           }
 
           // check it did not create a new membership because user is admin of parent
-          const newCountMembership = await ItemMembershipRepository.count();
+          const newCountMembership = await itemMembershipRawRepository.count();
           expect(newCountMembership).toEqual(initialCountMembership);
 
           // order is defined, order is not guaranteed because moving is done in parallel
@@ -3025,7 +3027,7 @@ describe('Item routes tests', () => {
           permission: PermissionLevel.Write,
         });
         const items = await saveNbOfItems({ nb: 3, actor: member, member: actor });
-        const initialCountMembership = await ItemMembershipRepository.count();
+        const initialCountMembership = await itemMembershipRawRepository.count();
         const initialCount = await testUtils.rawItemRepository.count();
 
         const response = await app.inject({
@@ -3050,7 +3052,7 @@ describe('Item routes tests', () => {
           }
 
           // check it created a new membership because user is writer of parent
-          const newCountMembership = await ItemMembershipRepository.count();
+          const newCountMembership = await itemMembershipRawRepository.count();
           expect(newCountMembership).toEqual(initialCountMembership + items.length);
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
@@ -3092,7 +3094,7 @@ describe('Item routes tests', () => {
           },
         });
 
-        const initialCountMembership = await ItemMembershipRepository.count();
+        const initialCountMembership = await itemMembershipRawRepository.count();
         const initialCount = await testUtils.rawItemRepository.count();
 
         const response = await app.inject({
@@ -3111,7 +3113,7 @@ describe('Item routes tests', () => {
           expect(newCount).toEqual(initialCount * 2);
 
           // check it created a new membership because user is writer of parent
-          const newCountMembership = await ItemMembershipRepository.count();
+          const newCountMembership = await itemMembershipRawRepository.count();
           expect(newCountMembership).toEqual(initialCountMembership + 1);
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
@@ -3120,7 +3122,7 @@ describe('Item routes tests', () => {
         const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
         const items = await saveNbOfItems({ nb: 3, actor, parentItem });
         const initialCount = await testUtils.rawItemRepository.count();
-        const initialCountMembership = await ItemMembershipRepository.count();
+        const initialCountMembership = await itemMembershipRawRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -3153,7 +3155,7 @@ describe('Item routes tests', () => {
           }
 
           // check it did not create a new membership because user is admin of parent
-          const newCountMembership = await ItemMembershipRepository.count();
+          const newCountMembership = await itemMembershipRawRepository.count();
           expect(newCountMembership).toEqual(initialCountMembership + items.length);
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });

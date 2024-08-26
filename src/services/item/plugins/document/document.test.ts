@@ -6,12 +6,14 @@ import { DocumentItemFactory, HttpMethod, ItemType, PermissionLevel } from '@gra
 
 import build, { clearDatabase } from '../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../test/constants';
-import { ItemMembershipRepository } from '../../../itemMembership/repository';
+import { AppDataSource } from '../../../../plugins/datasource';
+import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
 import { Member } from '../../../member/entities/member';
 import { saveMember } from '../../../member/test/fixtures/members';
 import { ItemTestUtils, expectItem } from '../../test/fixtures/items';
 
 const testUtils = new ItemTestUtils();
+const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
 
 const extra = {
   [ItemType.DOCUMENT]: {
@@ -69,7 +71,9 @@ describe('Document Item tests', () => {
         expectItem(item, payload);
 
         // a membership is created for this item
-        const membership = await ItemMembershipRepository.findOneBy({ item: { id: newItem.id } });
+        const membership = await itemMembershipRawRepository.findOneBy({
+          item: { id: newItem.id },
+        });
         expect(membership?.permission).toEqual(PermissionLevel.Admin);
       });
 

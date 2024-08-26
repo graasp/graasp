@@ -17,6 +17,17 @@ export enum Ordering {
   DESC = 'DESC',
 }
 
+export function orderingToUpperCase(ordering: Ordering): Ordering.ASC | Ordering.DESC {
+  switch (ordering) {
+    case Ordering.asc:
+      return Ordering.ASC;
+    case Ordering.desc:
+      return Ordering.DESC;
+    default:
+      return ordering;
+  }
+}
+
 export type ItemSearchParams = {
   creatorId?: Member['id'];
   keywords?: string[];

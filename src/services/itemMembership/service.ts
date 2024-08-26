@@ -94,10 +94,10 @@ export class ItemMembershipService {
 
     await this.hooks.runPreHooks('create', account, repositories, { item, account: member });
 
-    const result = await itemMembershipRepository.post({
-      item,
-      account: member,
-      creator: account,
+    const result = await itemMembershipRepository.addOne({
+      itemPath: item.path,
+      accountId: member.id,
+      creatorId: account.id,
       permission,
     });
 
@@ -159,7 +159,7 @@ export class ItemMembershipService {
 
     await this.hooks.runPreHooks('update', actor, repositories, membership);
 
-    const result = await itemMembershipRepository.patch(itemMembershipId, data);
+    const result = await itemMembershipRepository.updateOne(itemMembershipId, data);
 
     await this.hooks.runPostHooks('update', actor, repositories, result);
 
