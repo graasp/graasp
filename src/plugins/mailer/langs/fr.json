@@ -38,5 +38,8 @@
   "CHANGE_EMAIL_BUTTON_TEXT": "Valider le changement d'e-mail",
   "CHANGE_EMAIL_NOT_REQUESTED": "Si vous n'avez pas demandé ce changement, veuillez ignorer cet e-mail.",
   "CONFIRM_CHANGE_EMAIL_TITLE": "Votre email a été modifié",
-  "CONFIRM_CHANGE_EMAIL_TEXT": "Vous avez demandé à changer votre adresse e-mail en {{newEmail}}. Votre email a été mis à jour avec succès."
+  "CONFIRM_CHANGE_EMAIL_TEXT": "Vous avez demandé à changer votre adresse e-mail en {{newEmail}}. Votre email a été mis à jour avec succès.",
+  "MEMBERSHIP_REQUEST_TITLE": "{{memberName}} vous a demandé un accès à {{itemName}}",
+  "MEMBERSHIP_REQUEST_TEXT": "Il vous a été demandé d'accorder l'accès à {{itemName}} à {{memberName}}. Cliquez sur le bouton suivant pour accepter ou rejeter la demande.",
+  "MEMBERSHIP_REQUEST_BUTTON_TEXT": "Voir les adhésions de {{itemName}}"
 }
