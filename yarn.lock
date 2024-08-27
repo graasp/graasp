@@ -2005,16 +2005,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/swagger-ui@npm:4.0.0":
-  version: 4.0.0
-  resolution: "@fastify/swagger-ui@npm:4.0.0"
+"@fastify/swagger-ui@npm:4.0.1":
+  version: 4.0.1
+  resolution: "@fastify/swagger-ui@npm:4.0.1"
   dependencies:
     "@fastify/static": "npm:^7.0.0"
     fastify-plugin: "npm:^4.0.0"
     openapi-types: "npm:^12.0.2"
     rfdc: "npm:^1.3.0"
     yaml: "npm:^2.2.2"
-  checksum: 10/72dc37684b11b3143d11b78872908fb8d93943a82f8ce16ff9ded5c0206faf9a6730e2589090b5462ee7fbf7401859666df2e64d718bb0725903e6fb5bf93572
+  checksum: 10/7f86fa705b29a02b0d926d623dc62c22d6a29891db280f2dbb8ddc91f4ea213c2d9d48a15dd6a02b448d7dcc3c40a68d634df18cbda3086f8a30d310dc167912
   languageName: node
   linkType: hard
 
@@ -7551,7 +7551,7 @@ __metadata:
     "@fastify/secure-session": "npm:7.5.1"
     "@fastify/static": "npm:7.0.4"
     "@fastify/swagger": "npm:8.14.0"
-    "@fastify/swagger-ui": "npm:4.0.0"
+    "@fastify/swagger-ui": "npm:4.0.1"
     "@fastify/websocket": "npm:7.2.0"
     "@graasp/etherpad-api": "npm:2.1.1"
     "@graasp/sdk": "npm:4.26.0"
