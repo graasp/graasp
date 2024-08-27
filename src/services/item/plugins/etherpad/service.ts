@@ -286,6 +286,27 @@ export class EtherpadItemService {
   }
 
   /**
+   * Retrieves the Etherpad html content for a given item
+   * useful for exporting data
+   *
+   * @param {Account} account user retrieving the content
+   * @param {string} itemId item to retrieve the content of
+   * @returns {string} html content of the etherpad
+   */
+  public async getEtherpadContentFromItem(account: Account, itemId: string): Promise<string> {
+    const repos = buildRepositories();
+    const item = await this.itemService.get(account, repos, itemId);
+
+    if (!isItemType(item, ItemType.ETHERPAD) || !item.extra?.etherpad) {
+      throw new ItemMissingExtraError(item?.id);
+    }
+
+    const { padID } = item.extra.etherpad;
+
+    return (await this.api.getHTML({ padID })).html;
+  }
+
+  /**
    * Deletes an Etherpad associated to an item
    */
   public async deleteEtherpadForItem(item: Item) {

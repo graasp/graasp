@@ -19,6 +19,7 @@ import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { Actor, Member } from '../../../member/entities/member';
 import { Item, isItemType } from '../../entities/Item';
 import { ItemService } from '../../service';
+import { EtherpadItemService } from '../etherpad/service';
 import FileItemService from '../file/service';
 import { H5PService } from '../html/h5p/service';
 import {
@@ -39,6 +40,7 @@ export class ImportExportService {
   private readonly fileItemService: FileItemService;
   private readonly h5pService: H5PService;
   private readonly itemService: ItemService;
+  private readonly etherpadService: EtherpadItemService;
   private readonly db: DataSource;
   private readonly log: BaseLogger;
 
@@ -47,12 +49,14 @@ export class ImportExportService {
     fileItemService: FileItemService,
     itemService: ItemService,
     h5pService: H5PService,
+    etherpadService: EtherpadItemService,
     log: BaseLogger,
   ) {
     this.db = db;
     this.fileItemService = fileItemService;
     this.h5pService = h5pService;
     this.itemService = itemService;
+    this.etherpadService = etherpadService;
     this.log = log;
   }
 
@@ -254,6 +258,15 @@ export class ImportExportService {
           stream: Readable.from(buildTextContent(item.extra.app?.url, ItemType.APP)),
           name: getFilenameFromItem(item),
           mimetype: 'text/plain',
+        };
+      }
+      case isItemType(item, ItemType.ETHERPAD): {
+        return {
+          stream: Readable.from(
+            await this.etherpadService.getEtherpadContentFromItem(actor, item.id),
+          ),
+          name: getFilenameFromItem(item),
+          mimetype: 'text/html',
         };
       }
     }
