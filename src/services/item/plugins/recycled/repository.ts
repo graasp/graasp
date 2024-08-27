@@ -1,17 +1,40 @@
-import { In } from 'typeorm';
+import { EntityManager, In } from 'typeorm';
 
 import { PermissionLevel } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../../plugins/datasource';
+import { MutableRepository } from '../../../../repositories/MutableRepository';
+import { DEFAULT_PRIMARY_KEY } from '../../../../repositories/const';
 import { Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import { RecycledItemData } from './RecycledItemData';
-import { CannotRestoreNonDeletedItem } from './errors';
 
-export const RecycledItemDataRepository = AppDataSource.getRepository(RecycledItemData).extend({
-  async getOwnRecycledItemDatas(member: Member): Promise<RecycledItemData[]> {
+type CreateRecycledItemDataBody = { itemPath: string; creatorId: string };
+
+export class RecycledItemDataRepository extends MutableRepository<RecycledItemData, never> {
+  constructor(manager?: EntityManager) {
+    super(DEFAULT_PRIMARY_KEY, RecycledItemData, manager);
+  }
+
+  // warning: this call insert in the table
+  // but does not soft delete the item
+  // should we move to core item?
+  async addOne({ itemPath, creatorId }: CreateRecycledItemDataBody) {
+    return await super.insert({ item: { path: itemPath }, creator: { id: creatorId } });
+  }
+
+  // warning: this call insert in the table
+  // but does not soft delete the item
+  // should we move to core item?
+  async addMany(items: Item[], creator: Member) {
+    const recycled = items.map((item) => this.repository.create({ item, creator }));
+    await this.repository.insert(recycled);
+    return recycled;
+  }
+
+  async getManyByMember(member: Member): Promise<RecycledItemData[]> {
     // get only with admin membership
-    const recycledItemEntries = await this.createQueryBuilder('recycledItem')
+    return await this.repository
+      .createQueryBuilder('recycledItem')
       .withDeleted()
       .leftJoinAndSelect('recycledItem.creator', 'member')
       .leftJoinAndSelect('recycledItem.item', 'item')
@@ -25,52 +48,17 @@ export const RecycledItemDataRepository = AppDataSource.getRepository(RecycledIt
         { permission: PermissionLevel.Admin, accountId: member.id },
       )
       .getMany();
+  }
 
-    return recycledItemEntries;
-  },
-
-  // warning: this call insert in the table
+  // warning: this call removes from the table
   // but does not soft delete the item
   // should we move to core item?
-  async recycleOne(item: Item, creator: Member) {
-    const recycled = this.create({ item, creator });
-    await this.insert(recycled);
-    return recycled;
-  },
-
-  // warning: this call insert in the table
-  // but does not soft delete the item
-  // should we move to core item?
-  async recycleMany(items: Item[], creator: Member) {
-    const recycled = items.map((item) => this.create({ item, creator }));
-    this.insert(recycled);
-    return recycled;
-  },
-
-  // warning: this call insert in the table
-  // but does not soft delete the item
-  // should we move to core item?
-  async restoreOne(item: Item) {
+  async deleteManyByItemPath(itemsPath: Item['path'][]) {
+    this.throwsIfParamIsInvalid('itemsPath', itemsPath);
     // optimize ? delete by item ?
-    const entry = await this.findOne({
-      where: { item: { path: item.path } },
-      relations: { item: true },
+    const entries = await this.repository.findBy({
+      item: { path: In(itemsPath) },
     });
-
-    if (!entry) {
-      throw new CannotRestoreNonDeletedItem(item.id);
-    }
-
-    await this.delete(entry.id);
-    return entry;
-  },
-
-  // warning: this call insert in the table
-  // but does not soft delete the item
-  // should we move to core item?
-  async restoreMany(items: Item[]) {
-    // optimize ? delete by item ?
-    const entries = await this.findBy({ item: { path: In(items.map(({ path }) => path)) } });
     await this.delete(entries.map(({ id }) => id));
-  },
-});
+  }
+}

@@ -22,7 +22,7 @@ export class RecycledBinService {
   async getAll(member: Member, repositories: Repositories) {
     const { recycledItemRepository } = repositories;
 
-    const recycled = await recycledItemRepository.getOwnRecycledItemDatas(member);
+    const recycled = await recycledItemRepository.getManyByMember(member);
     const packedItems = await ItemWrapper.createPackedItems(
       member,
       repositories,
@@ -67,7 +67,7 @@ export class RecycledBinService {
     }
 
     await itemRepository.softRemove([...descendants, ...items]);
-    await recycledItemRepository.recycleMany(items, actor);
+    await recycledItemRepository.addMany(items, actor);
 
     for (const d of descendants) {
       this.hooks.runPostHooks('recycle', actor, repositories, { item: d, isRecycledRoot: false });
@@ -108,7 +108,7 @@ export class RecycledBinService {
     }
 
     await itemRepository.recover([...descendants, ...items]);
-    await recycledItemRepository.restoreMany(items);
+    await recycledItemRepository.deleteManyByItemPath(items.map((item) => item.path));
 
     for (const item of items) {
       await this.hooks.runPostHooks('restore', member, repositories, {

@@ -4,6 +4,7 @@ import waitForExpect from 'wait-for-expect';
 import { HttpMethod } from '@graasp/sdk';
 
 import { clearDatabase } from '../../../../../../test/app';
+import { AppDataSource } from '../../../../../plugins/datasource';
 import { TestWsClient } from '../../../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../../../websockets/test/ws-app';
 import { ItemTestUtils } from '../../../test/fixtures/items';
@@ -13,8 +14,10 @@ import {
   ItemOpFeedbackEvent,
   memberItemsTopic,
 } from '../../../ws/events';
+import { RecycledItemData } from '../RecycledItemData';
 import { RecycledItemDataRepository } from '../repository';
 
+const recycledItemDataRawRepository = AppDataSource.getRepository(RecycledItemData);
 const testUtils = new ItemTestUtils();
 
 describe('Recycle websocket hooks', () => {
@@ -49,7 +52,7 @@ describe('Recycle websocket hooks', () => {
       expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        expect(await RecycledItemDataRepository.count()).toEqual(1);
+        expect(await recycledItemDataRawRepository.count()).toEqual(1);
       });
       const updatedItem = await testUtils.rawItemRepository.findOne({
         where: { id: item.id },
@@ -71,7 +74,7 @@ describe('Recycle websocket hooks', () => {
         channel: actor.id,
       });
 
-      jest.spyOn(RecycledItemDataRepository, 'recycleMany').mockImplementation(async () => {
+      jest.spyOn(RecycledItemDataRepository.prototype, 'addMany').mockImplementation(async () => {
         throw new Error('mock error');
       });
 
@@ -104,7 +107,7 @@ describe('Recycle websocket hooks', () => {
       expect(restore.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        expect(await RecycledItemDataRepository.count()).toEqual(0);
+        expect(await recycledItemDataRawRepository.count()).toEqual(0);
       });
       const restored = await testUtils.rawItemRepository.findOneBy({ id: item.id });
       if (!restored) {
@@ -128,9 +131,11 @@ describe('Recycle websocket hooks', () => {
         channel: actor.id,
       });
 
-      jest.spyOn(RecycledItemDataRepository, 'restoreMany').mockImplementation(async () => {
-        throw new Error('mock error');
-      });
+      jest
+        .spyOn(RecycledItemDataRepository.prototype, 'deleteManyByItemPath')
+        .mockImplementation(async () => {
+          throw new Error('mock error');
+        });
 
       const restore = await app.inject({
         method: HttpMethod.Post,
