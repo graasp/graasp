@@ -1,7 +1,7 @@
 import extract from 'extract-zip';
 import { createWriteStream } from 'fs';
 import { mkdir } from 'fs/promises';
-import mime from 'mime-types';
+import mime from 'mime';
 import path from 'path';
 import { Transform } from 'stream';
 import { pipeline } from 'stream/promises';
@@ -63,7 +63,7 @@ const extractExtension = ({ name, mimetype }: { name: string; mimetype?: string 
   // slice to remove . character
   const ext = path.extname(name).slice(1);
   if (!ext && mimetype) {
-    return mime.extension(mimetype) || '';
+    return mime.getExtension(mimetype) || '';
   }
   return ext;
 };

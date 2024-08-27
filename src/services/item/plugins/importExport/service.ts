@@ -418,7 +418,7 @@ export class ImportExportService {
       parentId,
     }: { folderPath: string; targetFolder: string; parentId?: string },
   ): Promise<void> {
-    let parent;
+    let parent: Item | undefined;
     if (parentId) {
       // check item permission
       parent = await this.itemService.get(actor, repositories, parentId);
