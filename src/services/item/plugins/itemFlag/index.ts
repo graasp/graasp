@@ -1,14 +1,15 @@
 import { FastifyPluginAsync } from 'fastify';
 
+import { FlagType } from '@graasp/sdk';
+
 import { resolveDependency } from '../../../../di/utils';
 import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
-import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import { isAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
 import { guestAccountRole } from '../../../itemLogin/strategies/guestAccountRole';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { ItemFlag } from './itemFlag';
-import common, { create, getFlags } from './schemas';
+import common, { create, getFlagTypes } from './schemas';
 import { ItemFlagService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
@@ -19,26 +20,22 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // schemas
   fastify.addSchema(common);
 
-  // get flags
-  fastify.get(
-    '/flags',
-    { schema: getFlags, preHandler: optionalIsAuthenticated },
-    async ({ user }) => {
-      return itemFlagService.getAllFlags(user?.account, buildRepositories());
-    },
-  );
+  // Get all flag types that can be assigned to an ItemFlag entity.
+  fastify.get('/flags', { schema: getFlagTypes }, async () => {
+    return itemFlagService.getAllFlagTypes();
+  });
 
   // create item flag
-  fastify.post<{ Params: { itemId: string }; Body: Partial<ItemFlag> }>(
+  fastify.post<{ Params: { itemId: string }; Body: { type: FlagType } }>(
     '/:itemId/flags',
     {
       schema: create,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole, guestAccountRole)],
     },
-    async ({ user, params: { itemId }, body }) => {
+    async ({ user, params: { itemId }, body: { type } }) => {
       const account = notUndefined(user?.account);
       return db.transaction(async (manager) => {
-        return itemFlagService.post(account, buildRepositories(manager), itemId, body);
+        return itemFlagService.post(account, buildRepositories(manager), itemId, type);
       });
     },
   );

@@ -6,11 +6,12 @@ import { FastifyInstance } from 'fastify';
 import { FlagType, HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
+import { AppDataSource } from '../../../../../plugins/datasource';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { ItemNotFound } from '../../../../../utils/errors';
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemTestUtils } from '../../../test/fixtures/items';
-import { ItemFlagRepository } from '../repository';
+import { ItemFlag } from '../itemFlag';
 
 const testUtils = new ItemTestUtils();
 
@@ -90,7 +91,7 @@ describe('Item Flag Tests', () => {
           payload,
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
-        const [flagContent] = await ItemFlagRepository.find({
+        const [flagContent] = await AppDataSource.getRepository(ItemFlag).find({
           relations: { creator: true, item: true },
         });
         expect(flagContent.type).toEqual(payload.type);

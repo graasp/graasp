@@ -46,7 +46,7 @@ export type Repositories = {
   invitationRepository: typeof InvitationRepository;
   itemCategoryRepository: ItemCategoryRepository;
   itemFavoriteRepository: FavoriteRepository;
-  itemFlagRepository: typeof ItemFlagRepository;
+  itemFlagRepository: ItemFlagRepository;
   itemLikeRepository: typeof ItemLikeRepository;
   itemLoginRepository: GuestRepository;
   itemLoginSchemaRepository: typeof ItemLoginSchemaRepository;
@@ -95,7 +95,7 @@ export const buildRepositories = (manager?: EntityManager): Repositories => ({
     ? manager.withRepository(RecycledItemDataRepository)
     : RecycledItemDataRepository,
   itemLikeRepository: manager ? manager.withRepository(ItemLikeRepository) : ItemLikeRepository,
-  itemFlagRepository: manager ? manager.withRepository(ItemFlagRepository) : ItemFlagRepository,
+  itemFlagRepository: new ItemFlagRepository(manager),
   invitationRepository: manager
     ? manager.withRepository(InvitationRepository)
     : InvitationRepository,
