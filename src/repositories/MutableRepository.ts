@@ -50,9 +50,9 @@ export abstract class MutableRepository<
         entity as QueryDeepPartialEntity<T>,
       );
 
-      const updatedEntity = await this.findOne(pkValue);
+      const updatedEntity = await this.getOne(pkValue);
 
-      // Should never happen, if an error occurs, it should throw during the update.
+      // Could happen if the given pk doesn't exist, because update does not check if entity exists.
       if (!updatedEntity) {
         throw new EntryNotFoundAfterUpdateException(this.entity);
       }
