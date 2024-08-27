@@ -5,13 +5,14 @@ import { ItemType } from '@graasp/sdk';
 import build, { clearDatabase } from '../../../../../test/app';
 import { AppDataSource } from '../../../../plugins/datasource';
 import { ItemTestUtils } from '../../test/fixtures/items';
-import { RecycledItemDataRepository } from '../recycled/repository';
+import { RecycledItemData } from '../recycled/RecycledItemData';
 import { ItemGeolocation } from './ItemGeolocation';
 import { MissingGeolocationSearchParams } from './errors';
 import { ItemGeolocationRepository } from './repository';
 import { expectItemGeolocations } from './test/utils';
 
 const rawRepository = AppDataSource.getRepository(ItemGeolocation);
+const recycledItemDataRawRepository = AppDataSource.getRepository(RecycledItemData);
 const repository = new ItemGeolocationRepository();
 const testUtils = new ItemTestUtils();
 
@@ -556,7 +557,7 @@ describe('ItemGeolocationRepository', () => {
       const geoloc = { lat: 1, lng: 2, item: item1, country: 'de' };
       await rawRepository.save(geoloc);
       // recycle item1
-      await RecycledItemDataRepository.save({ item: item1 });
+      await recycledItemDataRawRepository.save({ item: item1 });
       await testUtils.rawItemRepository.softRemove(item1);
 
       await testUtils.saveItemAndMembership({ member: actor, parentItem });

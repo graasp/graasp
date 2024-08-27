@@ -104,7 +104,7 @@ export abstract class ImmutableRepository<T extends BaseEntity> extends Abstract
       throw new IllegalArgumentException(`The given ${name} is undefined!`);
     }
 
-    if (Array.isArray(value) && value.length === 0) {
+    if (Array.isArray(value) && (value.length === 0 || value.some((v) => !v))) {
       throw new IllegalArgumentException(`The given array of ${name} is empty!`);
     }
   }

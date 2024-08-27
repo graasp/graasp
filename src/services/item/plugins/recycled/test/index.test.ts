@@ -15,13 +15,15 @@ import {
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants';
+import { AppDataSource } from '../../../../../plugins/datasource';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { Item } from '../../../entities/Item';
 import { ItemTestUtils, expectItem, expectManyItems } from '../../../test/fixtures/items';
-import { RecycledItemDataRepository } from '../repository';
+import { RecycledItemData } from '../RecycledItemData';
 import { expectManyPackedRecycledItems, expectManyRecycledItems } from './fixtures';
 
+const recycledItemDataRawRepository = AppDataSource.getRepository(RecycledItemData);
 const testUtils = new ItemTestUtils();
 
 describe('Recycle Bin Tests', () => {
@@ -167,7 +169,7 @@ describe('Recycle Bin Tests', () => {
               expect(savedNotDeleted).toHaveLength(0);
 
               // check recycle item entries
-              const savedEntries = await RecycledItemDataRepository.find({
+              const savedEntries = await recycledItemDataRawRepository.find({
                 where: { item: { path: In(items.map(({ path }) => path)) } },
               });
               expectManyRecycledItems(savedEntries, saved);
@@ -196,7 +198,7 @@ describe('Recycle Bin Tests', () => {
               expect(savedNotDeleted).toHaveLength(items.length);
 
               // check NO recycle item entries
-              const savedEntries = await RecycledItemDataRepository.find({
+              const savedEntries = await recycledItemDataRawRepository.find({
                 where: { item: { path: In(items.map(({ path }) => path)) } },
               });
               expect(savedEntries).toHaveLength(0);
@@ -312,7 +314,7 @@ describe('Recycle Bin Tests', () => {
             permission: PermissionLevel.Write,
           });
           const initialCount = await testUtils.rawItemRepository.count();
-          const initialCountRecycled = await RecycledItemDataRepository.count();
+          const initialCountRecycled = await recycledItemDataRawRepository.count();
 
           const res = await app.inject({
             method: HttpMethod.Post,
@@ -326,7 +328,7 @@ describe('Recycle Bin Tests', () => {
             setTimeout(async () => {
               const allItemsCount = await testUtils.rawItemRepository.count();
               expect(allItemsCount).toEqual(initialCount);
-              expect(await RecycledItemDataRepository.count()).toEqual(initialCountRecycled);
+              expect(await recycledItemDataRawRepository.count()).toEqual(initialCountRecycled);
               res(true);
             }, MULTIPLE_ITEMS_LOADING_TIME);
           });
@@ -334,7 +336,7 @@ describe('Recycle Bin Tests', () => {
 
         it('Throws if one item does not exist', async () => {
           const initialCount = await testUtils.rawItemRepository.count();
-          const initialCountRecycled = await RecycledItemDataRepository.count();
+          const initialCountRecycled = await recycledItemDataRawRepository.count();
 
           const res = await app.inject({
             method: HttpMethod.Post,
@@ -348,7 +350,7 @@ describe('Recycle Bin Tests', () => {
             setTimeout(async () => {
               const allItemsCount = await testUtils.rawItemRepository.count();
               expect(allItemsCount).toEqual(initialCount);
-              expect(await RecycledItemDataRepository.count()).toEqual(initialCountRecycled);
+              expect(await recycledItemDataRawRepository.count()).toEqual(initialCountRecycled);
               res(true);
             }, MULTIPLE_ITEMS_LOADING_TIME);
           });
@@ -379,7 +381,7 @@ describe('Recycle Bin Tests', () => {
       expect(recycle.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        expect(await RecycledItemDataRepository.count()).toEqual(1);
+        expect(await recycledItemDataRawRepository.count()).toEqual(1);
       });
       expect(await testUtils.rawItemRepository.findOneBy({ id: childItem.id })).toBe(null);
 
@@ -390,7 +392,7 @@ describe('Recycle Bin Tests', () => {
       expect(restore.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        expect(await RecycledItemDataRepository.count()).toEqual(0);
+        expect(await recycledItemDataRawRepository.count()).toEqual(0);
       });
 
       const restoredChild = await testUtils.rawItemRepository.findOne({

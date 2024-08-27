@@ -33,14 +33,14 @@ export class ItemTestUtils {
   public itemRepository: ItemRepository;
   public itemTagRepository: ItemTagRepository;
   public rawItemRepository: Repository<Item<keyof ItemExtraMap>>;
-  recycledItemDataRepository: typeof RecycledItemDataRepository;
+  recycledItemDataRepository: RecycledItemDataRepository;
   rawItemPublishedRepository: Repository<ItemPublished>;
 
   constructor() {
     this.itemRepository = new ItemRepository();
     this.itemTagRepository = new ItemTagRepository();
     this.rawItemRepository = AppDataSource.getRepository(Item);
-    this.recycledItemDataRepository = RecycledItemDataRepository;
+    this.recycledItemDataRepository = new RecycledItemDataRepository();
     this.rawItemPublishedRepository = AppDataSource.getRepository(ItemPublished);
   }
 
@@ -186,7 +186,7 @@ export class ItemTestUtils {
     if (!item) {
       ({ item, packedItem } = await this.saveItemAndMembership({ member }));
     }
-    await this.recycledItemDataRepository.recycleOne(item, member);
+    await this.recycledItemDataRepository.addOne({ itemPath: item.path, creatorId: member.id });
     await this.rawItemRepository.softRemove(item);
     return { item, packedItem };
   };
