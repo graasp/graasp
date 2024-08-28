@@ -1,8 +1,9 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { ItemLoginSchemaType } from '@graasp/sdk';
+import { ItemLoginSchemaType, PermissionLevel } from '@graasp/sdk';
 
 import { resolveDependency } from '../../di/utils';
+import { EntryNotFoundBeforeDeleteException } from '../../repositories/errors';
 import { notUndefined } from '../../utils/assertions';
 import { buildRepositories } from '../../utils/repositories';
 import { SESSION_KEY, isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
@@ -10,7 +11,7 @@ import { matchOne } from '../authorization';
 import { ItemService } from '../item/service';
 import { assertIsMember } from '../member/entities/member';
 import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
-import { ValidMemberSession } from './errors';
+import { ItemLoginSchemaNotFound, ValidMemberSession } from './errors';
 import { ItemLoginMemberCredentials } from './interfaces/item-login';
 import {
   deleteLoginSchema,
@@ -95,8 +96,22 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     async ({ user, params: { id: itemId }, body: { type } }) => {
       const member = notUndefined(user?.account);
       assertIsMember(member);
-      return db.transaction(async (manager) => {
-        return itemLoginService.put(member, buildRepositories(manager), itemId, type);
+      return await db.transaction(async (manager) => {
+        const repositories = buildRepositories(manager);
+
+        const item = await itemService.get(member, repositories, itemId, PermissionLevel.Admin); // Validate permissions
+        const schema = await itemLoginService.getOneByItem(repositories, item.id);
+        if (schema) {
+          // If exists, then update the existing one
+          return await itemLoginService.update(
+            repositories,
+            schema.id,
+            type ?? ItemLoginSchemaType.Username,
+          );
+        } else {
+          // If not exists, then create a new one
+          return await itemLoginService.create(repositories, item.path, type);
+        }
       });
     },
   );
@@ -113,7 +128,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       return db.transaction(async (manager) => {
         const member = notUndefined(user?.account);
         assertIsMember(member);
-        return itemLoginService.delete(member, buildRepositories(manager), itemId);
+        try {
+          return (await itemLoginService.delete(member, buildRepositories(manager), itemId)).id;
+        } catch (e: unknown) {
+          if (e instanceof EntryNotFoundBeforeDeleteException) {
+            throw new ItemLoginSchemaNotFound({ itemId });
+          }
+        }
       });
     },
   );

@@ -9,8 +9,7 @@ import { verifyCurrentPassword } from '../auth/plugins/password/utils';
 import { ItemService } from '../item/service';
 import { Actor, Member } from '../member/entities/member';
 import { Guest } from './entities/guest';
-import { ItemLoginSchema } from './entities/itemLoginSchema';
-import { MissingCredentialsForLoginSchema } from './errors';
+import { ItemLoginSchemaNotFound, MissingCredentialsForLoginSchema } from './errors';
 import { ItemLoginMemberCredentials } from './interfaces/item-login';
 import { loginSchemaRequiresPassword } from './utils';
 
@@ -25,17 +24,20 @@ export class ItemLoginService {
 
   async get(actor: Actor, repositories: Repositories, itemId: string) {
     const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
-    const itemLoginSchema = await repositories.itemLoginSchemaRepository.getForItemPath(item.path, {
-      shouldExist: true,
-    });
-    return itemLoginSchema;
+    return await repositories.itemLoginSchemaRepository.getOneByItemPathOrThrow(
+      item.path,
+      ItemLoginSchemaNotFound,
+      { itemPath: item.path },
+    );
   }
 
   async getSchemaType(actor: Actor, repositories: Repositories, itemId: string) {
     const item = await repositories.itemRepository.getOneOrThrow(itemId);
     // do not need permission to get item login schema
     // we need to know the schema to display the correct form
-    const itemLoginSchema = await repositories.itemLoginSchemaRepository.getForItemPath(item.path);
+    const itemLoginSchema = await repositories.itemLoginSchemaRepository.getOneByItemPath(
+      item.path,
+    );
     return itemLoginSchema?.type;
   }
 
@@ -82,9 +84,11 @@ export class ItemLoginService {
 
     // initial validation
     // this throws if does not exist
-    const itemLoginSchema = (await itemLoginSchemaRepository.getForItemPath(item.path, {
-      shouldExist: true,
-    })) as ItemLoginSchema;
+    const itemLoginSchema = await itemLoginSchemaRepository.getOneByItemPathOrThrow(
+      item.path,
+      ItemLoginSchemaNotFound,
+      { itemPath: item.path },
+    );
 
     let guestAccount = await guestRepository.getForItemAndUsername(item, username);
 
@@ -134,24 +138,29 @@ export class ItemLoginService {
     return guestAccount;
   }
 
-  async put(
-    member: Member,
-    repositories: Repositories,
-    itemId: string,
+  async create(
+    { itemLoginSchemaRepository }: Repositories,
+    itemPath: string,
     type?: ItemLoginSchemaType,
   ) {
+    return itemLoginSchemaRepository.addOne({ itemPath, type });
+  }
+
+  async update(
+    { itemLoginSchemaRepository }: Repositories,
+    itemId: string,
+    type: ItemLoginSchemaType,
+  ) {
+    return itemLoginSchemaRepository.updateOne(itemId, { type });
+  }
+
+  async getOneByItem(repositories: Repositories, itemId: string) {
     const { itemLoginSchemaRepository } = repositories;
-
-    const item = await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
-
-    return itemLoginSchemaRepository.put(item, type);
+    return await itemLoginSchemaRepository.getOneByItem(itemId);
   }
 
   async delete(member: Member, repositories: Repositories, itemId: string) {
     const { itemLoginSchemaRepository } = repositories;
-
-    const item = await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
-
-    return itemLoginSchemaRepository.deleteForItem(item);
+    return itemLoginSchemaRepository.deleteOne(itemId);
   }
 }
