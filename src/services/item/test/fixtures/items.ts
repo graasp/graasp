@@ -144,7 +144,7 @@ export class ItemTestUtils {
     }
   };
 
-  saveMembership = ({
+  saveMembership = async ({
     item,
     account,
     permission = PermissionLevel.Admin,
@@ -153,7 +153,7 @@ export class ItemTestUtils {
     account: Actor;
     permission?: PermissionLevel;
   }) => {
-    return itemMembershipRawRepository.save({ item, account, permission });
+    return await itemMembershipRawRepository.save({ item, account, permission });
   };
 
   saveItemAndMembership = async (options: {
