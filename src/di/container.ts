@@ -11,7 +11,10 @@ import { MailerService } from '../plugins/mailer/service';
 import FileService from '../services/file/service';
 import { fileRepositoryFactory } from '../services/file/utils/factory';
 import { wrapEtherpadErrors } from '../services/item/plugins/etherpad/etherpad';
-import { RandomPadNameFactory } from '../services/item/plugins/etherpad/service';
+import {
+  EtherpadItemService,
+  RandomPadNameFactory,
+} from '../services/item/plugins/etherpad/service';
 import { EtherpadServiceConfig } from '../services/item/plugins/etherpad/serviceConfig';
 import FileItemService from '../services/item/plugins/file/service';
 import { H5PService } from '../services/item/plugins/html/h5p/service';
@@ -116,17 +119,6 @@ export const registerDependencies = (instance: FastifyInstance) => {
     ),
   );
 
-  registerValue(
-    ImportExportService,
-    new ImportExportService(
-      db,
-      resolveDependency(FileItemService),
-      resolveDependency(ItemService),
-      resolveDependency(H5PService),
-      resolveDependency(BaseLogger),
-    ),
-  );
-
   // Launch Job workers
   const jobServiceBuilder = new JobServiceBuilder(resolveDependency(BaseLogger));
   jobServiceBuilder
@@ -152,6 +144,18 @@ export const registerDependencies = (instance: FastifyInstance) => {
   );
 
   registerValue(ETHERPAD_NAME_FACTORY_DI_KEY, new RandomPadNameFactory());
+
+  registerValue(
+    ImportExportService,
+    new ImportExportService(
+      db,
+      resolveDependency(FileItemService),
+      resolveDependency(ItemService),
+      resolveDependency(H5PService),
+      resolveDependency(EtherpadItemService),
+      resolveDependency(BaseLogger),
+    ),
+  );
 
   // This code will be improved when we will be able to inject the repositories.
   const { itemTagRepository, itemValidationGroupRepository, itemPublishedRepository } =

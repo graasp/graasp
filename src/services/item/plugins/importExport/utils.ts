@@ -93,6 +93,9 @@ export const getFilenameFromItem = (item: Item): string => {
     case isItemType(item, ItemType.LINK): {
       return extractFileName(item.name, 'url');
     }
+    case isItemType(item, ItemType.ETHERPAD): {
+      return extractFileName(item.name, 'html');
+    }
     default:
       return item.name;
   }
