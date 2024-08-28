@@ -49,8 +49,8 @@ const create = {
   },
 };
 
-// schema for getting flags
-const getFlags = {
+// schema for getting flag types
+const getFlagTypes = {
   response: {
     200: {
       type: 'array',
@@ -59,4 +59,4 @@ const getFlags = {
   },
 };
 
-export { create, getFlags };
+export { create, getFlagTypes };
