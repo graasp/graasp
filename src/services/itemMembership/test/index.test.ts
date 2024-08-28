@@ -9,7 +9,7 @@ import { DiscriminatedItem, HttpMethod, PermissionLevel } from '@graasp/sdk';
 import build, { clearDatabase } from '../../../../test/app';
 import { resolveDependency } from '../../../di/utils';
 import { MailerService } from '../../../plugins/mailer/service';
-import { assertNonNull } from '../../../utils/assertions';
+import { assertIsDefined } from '../../../utils/assertions';
 import {
   CannotDeleteOnlyAdmin,
   InvalidMembership,
@@ -274,7 +274,7 @@ describe('Membership routes tests', () => {
         ({ app, actor } = await build());
       });
       it('Create new membership successfully', async () => {
-        assertNonNull(actor);
+        assertIsDefined(actor);
         const mailerService = resolveDependency(MailerService);
         const notificationMock = jest.spyOn(mailerService, 'sendEmail');
 
@@ -534,8 +534,8 @@ describe('Membership routes tests', () => {
         const savedMemberships = savedMembershispForItem[item.id];
         newMemberships.forEach((m) => {
           const member = members.find(({ id: thisId }) => thisId === m.accountId);
-          assertNonNull(member);
-          assertNonNull(actor);
+          assertIsDefined(member);
+          assertIsDefined(actor);
           const im = savedMemberships.find(({ account }) => account.id === m.accountId);
           const correctMembership = {
             ...m,
@@ -615,7 +615,7 @@ describe('Membership routes tests', () => {
       });
 
       it('Downgrading permission deletes the membership if has corresponding inherited permission', async () => {
-        assertNonNull(actor);
+        assertIsDefined(actor);
         const member = await saveMember();
         const { item: parent } = await testUtils.saveItemAndMembership({ member: actor });
         const inheritedMembership = await testUtils.saveMembership({
@@ -662,7 +662,7 @@ describe('Membership routes tests', () => {
       });
 
       it('Upgrade successfully', async () => {
-        assertNonNull(actor);
+        assertIsDefined(actor);
         const member = await saveMember();
         const { item } = await testUtils.saveItemAndMembership({ member: actor });
         const membership = await testUtils.saveMembership({
@@ -701,7 +701,7 @@ describe('Membership routes tests', () => {
       });
 
       it('Delete successfully memberships lower in the tree', async () => {
-        assertNonNull(actor);
+        assertIsDefined(actor);
         const member = await saveMember();
         const { item: parent } = await testUtils.saveItemAndMembership({ member: actor });
         const { item } = await testUtils.saveItemAndMembership({
@@ -800,14 +800,14 @@ describe('Membership routes tests', () => {
       });
 
       it('Cannot modify a Guest account permission', async () => {
-        assertNonNull(actor);
+        assertIsDefined(actor);
         const { item } = await testUtils.saveItemAndMembership({ member: actor });
 
         const { guest: member } = await saveItemLoginSchema({
           item: item as unknown as DiscriminatedItem,
           memberName: faker.internet.userName(),
         });
-        assertNonNull(member);
+        assertIsDefined(member);
 
         const membership = await testUtils.saveMembership({
           permission: PermissionLevel.Write,
@@ -853,7 +853,7 @@ describe('Membership routes tests', () => {
       });
 
       it('Delete successfully', async () => {
-        assertNonNull(actor);
+        assertIsDefined(actor);
         const member = await saveMember();
         const { item } = await testUtils.saveItemAndMembership({ member: actor });
         const { item: child } = await testUtils.saveItemAndMembership({

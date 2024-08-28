@@ -1,7 +1,7 @@
 import { FastifyPluginAsync } from 'fastify';
 
 import { resolveDependency } from '../../../../di/utils';
-import { notUndefined } from '../../../../utils/assertions';
+import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
@@ -47,7 +47,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     { schema: create, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async ({ user, params: { itemId }, body: { categoryId } }) => {
       return db.transaction(async (manager) => {
-        const member = notUndefined(user?.account);
+        const member = asDefined(user?.account);
         assertIsMember(member);
         return itemCategoryService.post(member, buildRepositories(manager), itemId, categoryId);
       });
@@ -59,7 +59,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:itemId/categories/:itemCategoryId',
     { schema: deleteOne, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async ({ user, params: { itemCategoryId, itemId } }) => {
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
       return db.transaction(async (manager) => {
         const { id: deletedId } = await itemCategoryService.delete(

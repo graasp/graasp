@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifyPluginAsync } from 'fastify';
 
 import { resolveDependency } from '../../../../di/utils';
-import { notUndefined } from '../../../../utils/assertions';
+import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
@@ -71,7 +71,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
       },
       async ({ user, body, params }, reply) => {
-        const member = notUndefined(user?.account);
+        const member = asDefined(user?.account);
         assertIsMember(member);
         return db.transaction(async (manager) => {
           await itemGeolocationService.put(
@@ -93,7 +93,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       },
       async ({ user, params }, reply) => {
         return db.transaction(async (manager) => {
-          const member = notUndefined(user?.account);
+          const member = asDefined(user?.account);
           assertIsMember(member);
           await itemGeolocationService.delete(member, buildRepositories(manager), params.id);
           reply.status(StatusCodes.NO_CONTENT);

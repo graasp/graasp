@@ -5,7 +5,7 @@ import { FileItemProperties, HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
 import { IdParam } from '../../../../types';
-import { notUndefined } from '../../../../utils/assertions';
+import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne, validatePermission } from '../../../authorization';
@@ -116,7 +116,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
         query: { id: parentId, previousItemId },
         log,
       } = request;
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
 
       // check rights

@@ -3,7 +3,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { ActionTriggers } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
-import { notUndefined } from '../../../../utils/assertions';
+import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { ActionService } from '../../../action/services/action';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
@@ -29,7 +29,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/liked',
     { schema: getLikesForMember, preHandler: [isAuthenticated, matchOne(memberAccountRole)] },
     async ({ user }) => {
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
       return itemLikeService.getForMember(member, buildRepositories());
     },
@@ -54,7 +54,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         user,
         params: { itemId },
       } = request;
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
       return db.transaction(async (manager) => {
         const newItemLike = await itemLikeService.post(member, buildRepositories(manager), itemId);
@@ -82,7 +82,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         user,
         params: { itemId },
       } = request;
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
 
       return db.transaction(async (manager) => {

@@ -6,7 +6,7 @@ import { Pagination } from '@graasp/sdk';
 
 import { resolveDependency } from '../../di/utils';
 import { IdParam, IdsParams } from '../../types';
-import { notUndefined } from '../../utils/assertions';
+import { asDefined } from '../../utils/assertions';
 import { CannotModifyOtherMembers } from '../../utils/errors';
 import { buildRepositories } from '../../utils/repositories';
 import {
@@ -56,7 +56,7 @@ const controller: FastifyPluginAsync = async (fastify) => {
     '/current/storage',
     { schema: getStorage, preHandler: [isAuthenticated, matchOne(memberAccountRole)] },
     async ({ user }) => {
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
       return storageService.getStorageLimits(member, fileService.fileType, buildRepositories());
     },
@@ -75,7 +75,7 @@ const controller: FastifyPluginAsync = async (fastify) => {
         reply.status(StatusCodes.BAD_REQUEST).send();
         return;
       }
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
       const storageFilesMetadata = await storageService.getStorageFilesMetadata(
         member,
@@ -131,7 +131,7 @@ const controller: FastifyPluginAsync = async (fastify) => {
     '/:id',
     { schema: updateOne, preHandler: isAuthenticated },
     async ({ user, params: { id }, body }) => {
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       // handle partial change
       // question: you can never remove a key?
       if (member.id !== id) {
@@ -177,7 +177,7 @@ const controller: FastifyPluginAsync = async (fastify) => {
     { schema: deleteCurrent, preHandler: isAuthenticated },
     async (request, reply) => {
       const { user } = request;
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       return db.transaction(async (manager) => {
         await memberService.deleteCurrent(member.id, buildRepositories(manager));
         // logout member
@@ -193,7 +193,7 @@ const controller: FastifyPluginAsync = async (fastify) => {
     '/current/email/change',
     { schema: postChangeEmail, preHandler: [isAuthenticated, matchOne(memberAccountRole)] },
     async ({ user, body: { email } }, reply) => {
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
 
       reply.status(StatusCodes.NO_CONTENT);
@@ -214,8 +214,8 @@ const controller: FastifyPluginAsync = async (fastify) => {
       preHandler: [authenticateEmailChange, matchOne(memberAccountRole)],
     },
     async ({ user }, reply) => {
-      const emailModification = notUndefined(user?.emailChange);
-      const member = notUndefined(user?.account);
+      const emailModification = asDefined(user?.emailChange);
+      const member = asDefined(user?.account);
       assertIsMember(member);
 
       await db.transaction(async (manager) => {

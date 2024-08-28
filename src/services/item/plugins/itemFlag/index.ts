@@ -3,7 +3,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { FlagType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
-import { notUndefined } from '../../../../utils/assertions';
+import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
@@ -33,7 +33,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole, guestAccountRole)],
     },
     async ({ user, params: { itemId }, body: { type } }) => {
-      const account = notUndefined(user?.account);
+      const account = asDefined(user?.account);
       return db.transaction(async (manager) => {
         return itemFlagService.post(account, buildRepositories(manager), itemId, type);
       });

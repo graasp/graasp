@@ -7,7 +7,7 @@ import { ThumbnailSizeType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
 import { IdParam } from '../../../../types';
-import { notUndefined } from '../../../../utils/assertions';
+import { asDefined } from '../../../../utils/assertions';
 import { THUMBNAILS_ROUTE_PREFIX } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
@@ -57,7 +57,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
         params: { id: itemId },
         log,
       } = request;
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
       return db
         .transaction(async (manager) => {
@@ -113,7 +113,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
         user,
         params: { id: itemId },
       } = request;
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
       await itemThumbnailService.deleteAllThumbnailSizes(member, buildRepositories(), {
         itemId,
