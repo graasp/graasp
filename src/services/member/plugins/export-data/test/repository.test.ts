@@ -260,7 +260,7 @@ describe('DataMember Export', () => {
       await saveItemLikes([itemOfRandomUser], randomUser);
       await saveItemLikes(items, randomUser);
 
-      const results = await ItemLikeRepository.getForMemberExport(exportingActor.id);
+      const results = await new ItemLikeRepository().getByCreatorToExport(exportingActor.id);
       expectNoLeaksAndEquality(results, likes, itemLikeSchema);
     });
 

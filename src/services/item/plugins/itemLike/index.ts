@@ -102,7 +102,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           },
         };
         await actionService.postMany(member, buildRepositories(manager), request, [action]);
-        return newItemLike;
+        return newItemLike.id;
       });
     },
   );
