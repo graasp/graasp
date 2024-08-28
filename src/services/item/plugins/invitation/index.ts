@@ -6,6 +6,7 @@ import fp from 'fastify-plugin';
 
 import { resolveDependency } from '../../../../di/utils';
 import { MailerService } from '../../../../plugins/mailer/service';
+import { EntryNotFoundBeforeDeleteException } from '../../../../repositories/errors';
 import { IdParam, isNonEmptyArray } from '../../../../types';
 import { notUndefined } from '../../../../utils/assertions';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
@@ -38,7 +39,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   const hook = async (actor: Actor, repositories: Repositories, args: { member: Member }) => {
     const { email } = args.member;
     await invitationService.createToMemberships(actor, repositories, args.member);
-    await repositories.invitationRepository.deleteForEmail(email);
+    try {
+      await repositories.invitationRepository.deleteByEmail(email);
+    } catch (e) {
+      if (!(e instanceof EntryNotFoundBeforeDeleteException)) {
+        throw e;
+      }
+    }
   };
   memberService.hooks.setPostHook('create', hook);
 
@@ -167,9 +174,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     async ({ user, params: { invitationId } }) => {
       const member = notUndefined(user?.account);
       assertIsMember(member);
-      return db.transaction(async (manager) => {
-        return invitationService.delete(member, buildRepositories(manager), invitationId);
+      await db.transaction(async (manager) => {
+        await invitationService.delete(member, buildRepositories(manager), invitationId);
       });
+      return invitationId;
     },
   );
 
