@@ -28,7 +28,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // schemas
   fastify.addSchema(common);
 
-  fastify.register(MembershipRequestAPI);
+  fastify.register(MembershipRequestAPI, { prefix: '/items/:itemId/memberships/requests' });
 
   // routes
   fastify.register(

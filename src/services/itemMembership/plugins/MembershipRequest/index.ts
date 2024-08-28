@@ -1,5 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 
+import { fastifyCors } from '@fastify/cors';
 import { FastifyPluginAsync } from 'fastify';
 
 import { ItemType, MembershipRequestStatus, PermissionLevel } from '@graasp/sdk';
@@ -40,8 +41,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.addSchema(simpleMembershipRequest);
   fastify.addSchema(completeMembershipRequest);
 
+  if (fastify.corsPluginOptions) {
+    await fastify.register(fastifyCors, fastify.corsPluginOptions);
+  }
+
   fastify.get<{ Params: { itemId: string } }>(
-    '/items/:itemId/memberships/requests',
+    '/',
     {
       schema: getAllByItem,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
@@ -66,7 +71,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   fastify.get<{ Params: { itemId: string } }>(
-    '/items/:itemId/memberships/requests/own',
+    '/own',
     {
       schema: getOwn,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
@@ -103,7 +108,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   fastify.post<{ Params: { itemId: string } }>(
-    '/items/:itemId/memberships/requests',
+    '/',
     {
       schema: createOne,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
@@ -155,7 +160,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   fastify.delete<{ Params: { itemId: string; memberId: string } }>(
-    '/items/:itemId/memberships/requests/:memberId',
+    '/:memberId',
     {
       schema: deleteOne,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
