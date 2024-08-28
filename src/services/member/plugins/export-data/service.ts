@@ -133,7 +133,7 @@ export class ExportMemberDataService {
     // TODO: check if we should also export the likes created by another actor on its items
     // In this case, don't forget to anonymize the id of the other actor ?
     // Or should we put the username of the other actor who liked the item ?
-    const results = await itemLikeRepository.getForMemberExport(actor.id);
+    const results = await itemLikeRepository.getByCreatorToExport(actor.id);
     return getFilteredData(results, itemLikeArraySchema);
   }
 }

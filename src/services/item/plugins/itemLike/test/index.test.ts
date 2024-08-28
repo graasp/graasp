@@ -42,7 +42,7 @@ export const expectManyItemLikes = (
 };
 
 const getFullItemLike = (id) => {
-  return ItemLikeRepository.findOne({ where: { id }, relations: { item: true, creator: true } });
+  return new ItemLikeRepository().getOne(id);
 };
 
 describe('Item Like', () => {

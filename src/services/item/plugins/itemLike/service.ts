@@ -16,7 +16,7 @@ export class ItemLikeService {
     // only own items
     // TODO: allow to get other's like?
 
-    const likes = await itemLikeRepository.getForMember(member.id);
+    const likes = await itemLikeRepository.getByCreator(member.id);
     // filter out items user might not have access to
     // and packed item
     const filteredItems = await filterOutPackedItems(
@@ -35,7 +35,7 @@ export class ItemLikeService {
 
     await this.itemService.get(actor, repositories, itemId);
 
-    return itemLikeRepository.getForItem(itemId);
+    return itemLikeRepository.getByItem(itemId);
   }
 
   async removeOne(member: Member, repositories: Repositories, itemId: string) {
@@ -44,7 +44,7 @@ export class ItemLikeService {
     // QUESTION: allow public to be liked?
     const item = await this.itemService.get(member, repositories, itemId);
 
-    return itemLikeRepository.deleteOne(member, item);
+    return itemLikeRepository.deleteOneByCreatorAndItem(member.id, item.id);
   }
 
   async post(member: Member, repositories: Repositories, itemId: string) {
@@ -52,6 +52,6 @@ export class ItemLikeService {
 
     // QUESTION: allow public to be liked?
     const item = await this.itemService.get(member, repositories, itemId);
-    return itemLikeRepository.post(member.id, item.id);
+    return itemLikeRepository.addOne({ creatorId: member.id, itemId: item.id });
   }
 }

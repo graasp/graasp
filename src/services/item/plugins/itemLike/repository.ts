@@ -1,96 +1,101 @@
-import { AppDataSource } from '../../../../plugins/datasource';
-import { Item } from '../../../item/entities/Item';
-import { MemberIdentifierNotFound } from '../../../itemLogin/errors';
-import { Member } from '../../../member/entities/member';
+import { EntityManager } from 'typeorm';
+
+import { MutableRepository } from '../../../../repositories/MutableRepository';
+import { DEFAULT_PRIMARY_KEY } from '../../../../repositories/const';
 import { itemLikeSchema } from '../../../member/plugins/export-data/schemas/schemas';
 import { schemaToSelectMapper } from '../../../member/plugins/export-data/utils/selection.utils';
 import { ItemLikeNotFound } from './errors';
 import { ItemLike } from './itemLike';
 
-export const ItemLikeRepository = AppDataSource.getRepository(ItemLike).extend({
-  get(entryId: string) {
-    // additional check that id is not null
-    // o/w empty parameter to findOneBy return the first entry
-    if (!entryId) {
-      throw new ItemLikeNotFound(entryId);
-    }
-    return this.findOneBy({ id: entryId });
-  },
+type CreatorId = ItemLike['creator']['id'];
+type ItemId = ItemLike['item']['id'];
+type CreateItemLikeBody = { creatorId: CreatorId; itemId: ItemId };
 
-  /**
-   * Get item likes by given memberId.
-   * @param memberId user's id
-   */
-  async getForMember(memberId: string): Promise<ItemLike[]> {
-    const itemLikes = await this.createQueryBuilder('itemLike')
-      .innerJoinAndSelect('itemLike.item', 'item')
-      .innerJoinAndSelect('item.creator', 'member')
-      .where('itemLike.creator = :memberId', { memberId })
-      .getMany();
-    return itemLikes;
-  },
-
-  /**
-   * Return all the likes created by the given member.
-   * @param memberId ID of the member to retrieve the data.
-   * @returns an array of item likes.
-   */
-  async getForMemberExport(memberId: string): Promise<ItemLike[]> {
-    if (!memberId) {
-      throw new MemberIdentifierNotFound();
-    }
-
-    return this.find({
-      select: schemaToSelectMapper(itemLikeSchema),
-      where: { creator: { id: memberId } },
-      order: { createdAt: 'DESC' },
-      relations: {
-        item: true,
-      },
-    });
-  },
-
-  /**
-   * Get likes for item
-   * @param itemId
-   */
-  async getForItem(itemId: string): Promise<ItemLike[]> {
-    const itemLikes = await this.createQueryBuilder('itemLike')
-      .innerJoinAndSelect('itemLike.item', 'item')
-      .where('itemLike.item = :itemId', { itemId })
-      .getMany();
-    return itemLikes;
-  },
+export class ItemLikeRepository extends MutableRepository<ItemLike, never> {
+  constructor(manager?: EntityManager) {
+    super(DEFAULT_PRIMARY_KEY, ItemLike, manager);
+  }
 
   /**
    * create an item like
    * @param memberId user's id
    * @param itemId item's id
    */
-  async post(memberId: string, itemId: string): Promise<ItemLike> {
-    const newLike = this.create({ item: { id: itemId }, creator: { id: memberId } });
-    await this.insert(newLike);
-    return newLike;
-  },
+  async addOne({ creatorId, itemId }: CreateItemLikeBody): Promise<ItemLike> {
+    return await super.insert({ item: { id: itemId }, creator: { id: creatorId } });
+  }
+
+  async getOne(id: string) {
+    return await super.findOne(id, { relations: { item: true, creator: true } });
+  }
+
+  /**
+   * Get item likes by given memberId.
+   * @param creatorId user's id
+   */
+  async getByCreator(creatorId: CreatorId): Promise<ItemLike[]> {
+    this.throwsIfParamIsInvalid('creatorId', creatorId);
+    return await this.repository
+      .createQueryBuilder('itemLike')
+      .innerJoinAndSelect('itemLike.item', 'item')
+      .innerJoinAndSelect('item.creator', 'member')
+      .where('itemLike.creator = :creatorId', { creatorId })
+      .getMany();
+  }
+
+  /**
+   * Return all the likes created by the given member.
+   * @param creatorId ID of the member to retrieve the data.
+   * @returns an array of item likes.
+   */
+  async getByCreatorToExport(creatorId: CreatorId): Promise<ItemLike[]> {
+    this.throwsIfParamIsInvalid('creatorId', creatorId);
+
+    return await this.repository.find({
+      select: schemaToSelectMapper(itemLikeSchema),
+      where: { creator: { id: creatorId } },
+      order: { createdAt: 'DESC' },
+      relations: {
+        item: true,
+      },
+    });
+  }
+
+  /**
+   * Get likes for item
+   * @param itemId
+   */
+  async getByItem(itemId: ItemId): Promise<ItemLike[]> {
+    this.throwsIfParamIsInvalid('itemId', itemId);
+    return await this.repository
+      .createQueryBuilder('itemLike')
+      .innerJoinAndSelect('itemLike.item', 'item')
+      .where('itemLike.item = :itemId', { itemId })
+      .getMany();
+  }
 
   /**
    * delete an item like
-   * @param memberId user's id
+   * @param creatorId user's id
    * @param itemId item's id
    */
-  async deleteOne(creator: Member, item: Item): Promise<ItemLike> {
-    const deleteResult = await this.createQueryBuilder()
-      .delete()
-      .where('creator = :creatorId', { creatorId: creator.id })
-      .andWhere('item = :itemId', { itemId: item.id })
-      .returning('*')
-      .execute();
+  async deleteOneByCreatorAndItem(creatorId: CreatorId, itemId: ItemId): Promise<ItemLike> {
+    this.throwsIfParamIsInvalid('creatorId', creatorId);
+    this.throwsIfParamIsInvalid('itemId', itemId);
 
-    // TODO
-    if (!deleteResult.raw.length) {
-      throw new ItemLikeNotFound({ creatorId: creator.id, itemId: item.id });
+    const entity = await this.repository.findOne({
+      where: {
+        item: { id: itemId },
+        creator: { id: creatorId },
+      },
+    });
+
+    if (!entity) {
+      throw new ItemLikeNotFound({ creatorId, itemId });
     }
 
-    return deleteResult.raw[0].id;
-  },
-});
+    await super.delete(entity.id);
+
+    return entity;
+  }
+}
