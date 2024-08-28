@@ -90,13 +90,20 @@ export class InvitationService {
   }
 
   async get(actor: Actor, repositories: Repositories, invitationId: string) {
-    return repositories.invitationRepository.get(invitationId, actor);
+    if (actor) {
+      return repositories.invitationRepository.getOneByIdAndByCreatorOrThrow(
+        invitationId,
+        actor.id,
+      );
+    } else {
+      return repositories.invitationRepository.getOneOrThrow(invitationId);
+    }
   }
 
   async getForItem(member: Member, repositories: Repositories, itemId: string) {
     const { invitationRepository } = repositories;
     const item = await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
-    return invitationRepository.getForItem(item.path);
+    return invitationRepository.getManyByItem(item.path);
   }
 
   async postManyForItem(
@@ -108,7 +115,7 @@ export class InvitationService {
     const { invitationRepository } = repositories;
     const item = await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
 
-    const completeInvitations = await invitationRepository.postMany(invitations, item.path, member);
+    const completeInvitations = await invitationRepository.addMany(invitations, item.path, member);
 
     this.log.debug('send invitation mails');
     completeInvitations.forEach((invitation: Invitation) => {
@@ -126,23 +133,23 @@ export class InvitationService {
     body: Partial<Invitation>,
   ) {
     const { invitationRepository } = repositories;
-    const invitation = await invitationRepository.get(invitationId);
+    const invitation = await invitationRepository.getOneOrThrow(invitationId);
     await validatePermission(repositories, PermissionLevel.Admin, member, invitation.item);
 
-    return invitationRepository.patch(invitationId, body);
+    return invitationRepository.updateOne(invitationId, body);
   }
 
   async delete(member: Member, repositories: Repositories, invitationId: string) {
     const { invitationRepository } = repositories;
-    const invitation = await invitationRepository.get(invitationId);
+    const invitation = await invitationRepository.getOneOrThrow(invitationId);
     await validatePermission(repositories, PermissionLevel.Admin, member, invitation.item);
 
-    return invitationRepository.deleteOne(invitationId);
+    await invitationRepository.delete(invitationId);
   }
 
   async resend(member: Member, repositories: Repositories, invitationId: string) {
     const { invitationRepository } = repositories;
-    const invitation = await invitationRepository.get(invitationId);
+    const invitation = await invitationRepository.getOneOrThrow(invitationId);
     await validatePermission(repositories, PermissionLevel.Admin, member, invitation.item);
 
     this.sendInvitationEmail({ invitation, member });
@@ -151,10 +158,7 @@ export class InvitationService {
   async createToMemberships(actor: Actor, repositories: Repositories, member: Member) {
     // invitations to memberships is triggered on register: no actor available
     const { invitationRepository, itemMembershipRepository } = repositories;
-    const invitations = await invitationRepository.find({
-      where: { email: member.email.toLowerCase() },
-      relations: { item: true },
-    });
+    const invitations = await invitationRepository.getManyByEmail(member.email);
     const memberships = invitations.map(({ permission, item }) => ({
       item,
       account: member,

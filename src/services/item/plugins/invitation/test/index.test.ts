@@ -19,9 +19,9 @@ import { Member } from '../../../../member/entities/member';
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemTestUtils } from '../../../test/fixtures/items';
 import { Invitation } from '../entity';
-import { InvitationRepository } from '../repository';
 
 const testUtils = new ItemTestUtils();
+const invitationRawRepository = AppDataSource.getRepository(Invitation);
 
 // mock captcha
 // bug: cannot reuse mockCaptchaValidation
@@ -52,7 +52,7 @@ const expectInvitations = (invitations: Invitation[], correctInvitations: Invita
 const createInvitations = async ({ member, parentItem }: { member: Member; parentItem?: Item }) => {
   const { item } = await testUtils.saveItemAndMembership({ member, parentItem });
   const invitations = Array.from({ length: 3 }, () =>
-    InvitationRepository.create({
+    invitationRawRepository.create({
       item,
       creator: member,
       permission: PermissionLevel.Read,
@@ -65,7 +65,7 @@ const createInvitations = async ({ member, parentItem }: { member: Member; paren
 const saveInvitations = async ({ member }) => {
   const { item, invitations } = await createInvitations({ member });
   for (const inv of invitations) {
-    await InvitationRepository.save(inv);
+    await invitationRawRepository.save(inv);
   }
   return { item, invitations };
 };
@@ -113,7 +113,7 @@ describe('Invitation Plugin', () => {
         });
 
         expect(response.statusCode).toEqual(StatusCodes.OK);
-        const completeInvitations = await InvitationRepository.find({
+        const completeInvitations = await invitationRawRepository.find({
           where: { email: In(invitations.map(({ email }) => email)) },
         });
         const result = await response.json();
@@ -133,7 +133,7 @@ describe('Invitation Plugin', () => {
         const { item } = await testUtils.saveItemAndMembership({ member: actor });
         const toMember = await saveMember();
         const invitations = [
-          InvitationRepository.create({
+          invitationRawRepository.create({
             item,
             creator: actor,
             permission: PermissionLevel.Read,
@@ -182,7 +182,7 @@ describe('Invitation Plugin', () => {
         });
 
         expect(response.statusCode).toEqual(StatusCodes.OK);
-        const completeInvitations = await InvitationRepository.find({
+        const completeInvitations = await invitationRawRepository.find({
           where: { email: invitation.email.toLowerCase() },
         });
         const result = await response.json();
@@ -254,7 +254,7 @@ describe('Invitation Plugin', () => {
           parentItem: item,
         });
         for (const inv of childInvitations) {
-          await InvitationRepository.save(inv);
+          await invitationRawRepository.save(inv);
         }
 
         const response = await app.inject({
@@ -548,7 +548,7 @@ describe('Invitation Plugin', () => {
       // invitations should be removed and memberships created
       await new Promise((done) => {
         setTimeout(async () => {
-          const savedInvitation = await InvitationRepository.findOneBy({ id });
+          const savedInvitation = await invitationRawRepository.findOneBy({ id });
           expect(savedInvitation).toBeFalsy();
           const membership = await ItemMembershipRepository.findOne({
             where: { permission, account: { id: member!.id }, item: { id: item.id } },
@@ -562,7 +562,7 @@ describe('Invitation Plugin', () => {
 
     it('does not throw if no invitation found', async () => {
       const email = 'random@email.org';
-      const allInvitationsCount = await InvitationRepository.count();
+      const allInvitationsCount = await invitationRawRepository.count();
       const allMembershipsCount = await ItemMembershipRepository.count();
 
       // register
@@ -575,7 +575,7 @@ describe('Invitation Plugin', () => {
       await new Promise((done) => {
         setTimeout(async () => {
           // all invitations and memberships should exist
-          expect(await InvitationRepository.count()).toEqual(allInvitationsCount);
+          expect(await invitationRawRepository.count()).toEqual(allInvitationsCount);
           expect(await ItemMembershipRepository.count()).toEqual(allMembershipsCount);
 
           done(true);
