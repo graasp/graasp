@@ -2,7 +2,6 @@ import { formatISO } from 'date-fns';
 import { singleton } from 'tsyringe';
 
 import { ItemTagType, PermissionLevel, PublicationStatus, UUID } from '@graasp/sdk';
-import { DEFAULT_LANG } from '@graasp/translations';
 
 import { BaseLogger } from '../../../../../logger';
 import { MAIL } from '../../../../../plugins/mailer/langs/constants';
@@ -65,21 +64,19 @@ export class ItemPublishedService {
 
     for (const member of contributors) {
       if (isMember(member)) {
-        const lang = member.lang ?? DEFAULT_LANG;
-        const t = this.mailerService.translate(lang);
-
-        const text = t(MAIL.PUBLISH_ITEM_TEXT, { itemName: item.name });
-        const html = `
-        ${this.mailerService.buildText(text)}
-        ${this.mailerService.buildButton(link, t(MAIL.PUBLISH_ITEM_BUTTON_TEXT))}
-      `;
-        const title = t(MAIL.PUBLISH_ITEM_TITLE, { itemName: item.name });
-
-        const footer = this.mailerService.buildFooter(lang);
-
-        await this.mailerService.sendEmail(title, member.email, link, html, footer).catch((err) => {
-          this.log.warn(err, `mailerService failed. published link: ${link}`);
-        });
+        await this.mailerService
+          .composeAndSendEmail(
+            member.email,
+            member.lang,
+            MAIL.PUBLISH_ITEM_TITLE,
+            MAIL.PUBLISH_ITEM_BUTTON_TEXT,
+            MAIL.PUBLISH_ITEM_TEXT,
+            { itemName: item.name },
+            link,
+          )
+          .catch((err) => {
+            this.log.warn(err, `mailerService failed. published link: ${link}`);
+          });
       }
     }
   }

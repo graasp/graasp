@@ -37,29 +37,24 @@ export class MentionService {
       itemId: item.id,
       chatOpen: true,
     });
-    const lang = member?.extra?.lang as string;
 
-    const translated = this.mailerService.translate(lang);
-    const subject = translated(MAIL.CHAT_MENTION_TITLE, {
-      creatorName: creator.name,
-      itemName: item.name,
-    });
-    const html = `
-    ${this.mailerService.buildText(translated(MAIL.GREETINGS))}
-    ${this.mailerService.buildText(
-      translated(MAIL.CHAT_MENTION_TEXT, {
-        creatorName: creator.name,
-        itemName: item.name,
-      }),
-    )}
-    ${this.mailerService.buildButton(itemLink, translated(MAIL.CHAT_MENTION_BUTTON_TEXT))}`;
-
-    const footer = this.mailerService.buildFooter(lang);
-
-    this.mailerService.sendEmail(subject, member.email, itemLink, html, footer).catch((err) => {
-      console.error(err);
-      // log.warn(err, `mailerService failed. notification link: ${itemLink}`);
-    });
+    this.mailerService
+      .composeAndSendEmail(
+        member.email,
+        member.lang,
+        MAIL.CHAT_MENTION_TITLE,
+        MAIL.CHAT_MENTION_BUTTON_TEXT,
+        MAIL.CHAT_MENTION_TEXT,
+        {
+          creatorName: creator.name,
+          itemName: item.name,
+        },
+        itemLink,
+      )
+      .catch((err) => {
+        console.error(err);
+        // log.warn(err, `mailerService failed. notification link: ${itemLink}`);
+      });
   }
 
   async createManyForItem(

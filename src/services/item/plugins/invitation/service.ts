@@ -9,7 +9,6 @@ import { BaseLogger } from '../../../../logger';
 import { MAIL } from '../../../../plugins/mailer/langs/constants';
 import { MailerService } from '../../../../plugins/mailer/service';
 import { NonEmptyArray } from '../../../../types';
-import { GRAASP_LANDING_PAGE_ORIGIN } from '../../../../utils/constants';
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import { Item, isItemType } from '../../../item/entities/Item';
@@ -54,39 +53,25 @@ export class InvitationService {
   }
 
   async sendInvitationEmail({ member, invitation }: { member: Member; invitation: Invitation }) {
-    const { item, email } = invitation;
+    const { item } = invitation;
 
     // factor out
-    const lang = member.lang;
     const link = buildInvitationLink(invitation);
 
-    const t = this.mailerService.translate(lang);
-
-    const text = t(MAIL.INVITATION_TEXT, {
-      itemName: item.name,
-      creatorName: member.name,
-    });
-    const html = `
-      ${this.mailerService.buildText(text)}
-      ${this.mailerService.buildButton(link, t(MAIL.SIGN_UP_BUTTON_TEXT))}
-      ${this.mailerService.buildText(
-        t(MAIL.USER_AGREEMENTS_MAIL_TEXT, {
-          signUpButtonText: t(MAIL.SIGN_UP_BUTTON_TEXT),
-          graaspLandingPageOrigin: GRAASP_LANDING_PAGE_ORIGIN,
-        }),
-        // Add margin top of -15px to remove 15px margin bottom of the button.
-        { 'text-align': 'center', 'font-size': '10px', 'margin-top': '-15px' },
-      )}
-    `;
-    const title = t(MAIL.INVITATION_TITLE, {
-      itemName: item.name,
-    });
-
-    const footer = this.mailerService.buildFooter(lang);
-
-    this.mailerService.sendEmail(title, email, link, html, footer).catch((err) => {
-      this.log.warn(err, `mailerService failed. invitation link: ${link}`);
-    });
+    this.mailerService
+      .composeAndSendEmail(
+        member.email,
+        member.lang,
+        MAIL.INVITATION_TITLE,
+        MAIL.SIGN_UP_BUTTON_TEXT,
+        MAIL.INVITATION_TEXT,
+        { itemName: item.name, creatorName: member.name },
+        link,
+        true,
+      )
+      .catch((err) => {
+        this.log.warn(err, `mailerService failed. invitation link: ${link}`);
+      });
   }
 
   async get(actor: Actor, repositories: Repositories, invitationId: string) {

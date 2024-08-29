@@ -126,36 +126,31 @@ export class MemberService {
    * @returns void
    */
   sendEmailChangeRequest(newEmail: string, token: string, lang: string): void {
-    const translated = this.mailerService.translate(lang);
-    const subject = translated(MAIL.CHANGE_EMAIL_TITLE);
     const destination = new URL('/email/change', ACCOUNT_HOST.url);
     destination.searchParams.set(SHORT_TOKEN_PARAM, token);
     destination.searchParams.set(NEW_EMAIL_PARAM, newEmail);
     const link = destination.toString();
 
-    const html = `
-      ${this.mailerService.buildText(translated(MAIL.CHANGE_EMAIL_TEXT))}
-      ${this.mailerService.buildButton(link, translated(MAIL.CHANGE_EMAIL_BUTTON_TEXT))}
-      ${this.mailerService.buildText(translated(MAIL.CHANGE_EMAIL_NOT_REQUESTED))}`;
-
-    const footer = this.mailerService.buildFooter(lang);
-
     // don't wait for mailer's response; log error and link if it fails.
     this.mailerService
-      .sendEmail(subject, newEmail, link, html, footer)
+      .composeAndSendEmail(
+        newEmail,
+        lang,
+        MAIL.CHANGE_EMAIL_TITLE,
+        MAIL.CHANGE_EMAIL_BUTTON_TEXT,
+        MAIL.CHANGE_EMAIL_TEXT,
+        {},
+        link,
+        false,
+        true,
+      )
       .catch((err) => this.log.warn(err, `mailer failed. link: ${link}`));
   }
 
   mailConfirmEmailChangeRequest(oldEmail: string, newEmail: string, lang: string) {
-    const translated = this.mailerService.translate(lang);
-    const subject = translated(MAIL.CONFIRM_CHANGE_EMAIL_TITLE);
-    const text = translated(MAIL.CONFIRM_CHANGE_EMAIL_TEXT, { newEmail });
-
-    const footer = this.mailerService.buildFooter(lang);
-
     // don't wait for mailer's response; log error and link if it fails.
     this.mailerService
-      .sendEmail(subject, oldEmail, text, text, footer)
+      .sendEmailChangeRequestConfirmation(oldEmail, newEmail, lang)
       .catch((err) => this.log.warn(err, `mailer failed.`));
   }
 }

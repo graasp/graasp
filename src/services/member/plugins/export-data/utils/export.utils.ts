@@ -202,24 +202,19 @@ export class RequestDataExportService {
       expiration: EXPORT_FILE_EXPIRATION,
     });
 
-    // factor out
-    const lang = actor.lang;
-    const t = this.mailerService.translate(lang);
-
-    const text = t(MAIL.EXPORT_MEMBER_DATA_TEXT, {
-      days: DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS,
-    });
-    const html = `
-        ${this.mailerService.buildText(text)}
-        ${this.mailerService.buildButton(link, t(MAIL.EXPORT_MEMBER_DATA_BUTTON_TEXT))}
-      `;
-    const title = t(MAIL.EXPORT_MEMBER_DATA_TITLE);
-
-    const footer = this.mailerService.buildFooter(lang);
-
-    this.mailerService.sendEmail(title, actor.email, link, html, footer).catch((err) => {
-      console.debug(err, `mailerService failed. export zip link: ${link}`);
-    });
+    this.mailerService
+      .composeAndSendEmail(
+        actor.email,
+        actor.lang,
+        MAIL.EXPORT_MEMBER_DATA_TITLE,
+        MAIL.EXPORT_MEMBER_DATA_BUTTON_TEXT,
+        MAIL.EXPORT_MEMBER_DATA_TEXT,
+        { days: DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS.toString() },
+        link,
+      )
+      .catch((err) => {
+        console.debug(err, `mailerService failed. export zip link: ${link}`);
+      });
   }
 
   async requestExport(
