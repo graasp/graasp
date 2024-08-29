@@ -176,12 +176,14 @@ describe('Reset Password', () => {
   let app: FastifyInstance;
   let entities: { id: string; email: string; password?: string }[];
   let mailerService: MailerService;
-  let mockSendEmail;
+  let mockComposeAndSendEmail;
   let mockRedisSetEx;
   beforeAll(async () => {
     ({ app } = await build());
     mailerService = resolveDependency(MailerService);
-    mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+    mockComposeAndSendEmail = jest
+      .spyOn(mailerService, 'composeAndSendEmail')
+      .mockImplementation(async () => Promise.resolve());
     mockRedisSetEx = jest.spyOn(Redis.prototype, 'setex');
   });
 
@@ -243,8 +245,8 @@ describe('Reset Password', () => {
 
       // Wait for the mail to be sent
       await waitForExpect(() => {
-        expect(mockSendEmail).toHaveBeenCalledTimes(1);
-        expect(mockSendEmail.mock.calls[0][1]).toBe(entities[0].email);
+        expect(mockComposeAndSendEmail).toHaveBeenCalledTimes(1);
+        expect(mockComposeAndSendEmail.mock.calls[0][0]).toBe(entities[0].email);
       });
     });
     it('Create a password request to a non-existing email', async () => {
@@ -261,7 +263,7 @@ describe('Reset Password', () => {
 
       // Wait for the mail to be sent
       await waitForExpect(() => {
-        expect(mockSendEmail).toHaveBeenCalledTimes(0);
+        expect(mockComposeAndSendEmail).toHaveBeenCalledTimes(0);
       });
     });
     it('Create a password request to a user without a password', async () => {
@@ -278,7 +280,7 @@ describe('Reset Password', () => {
 
       // Wait for the mail to be sent
       await waitForExpect(() => {
-        expect(mockSendEmail).toHaveBeenCalledTimes(0);
+        expect(mockComposeAndSendEmail).toHaveBeenCalledTimes(0);
       });
     });
     it('Create a password request with an invalid captcha', async () => {
@@ -295,7 +297,7 @@ describe('Reset Password', () => {
 
       // Wait for the mail to be sent
       await waitForExpect(() => {
-        expect(mockSendEmail).toHaveBeenCalledTimes(0);
+        expect(mockComposeAndSendEmail).toHaveBeenCalledTimes(0);
       });
     });
   });
@@ -317,10 +319,10 @@ describe('Reset Password', () => {
       // Wait for the mail to be sent
 
       await waitForExpect(() => {
-        expect(mockSendEmail).toHaveBeenCalledTimes(1);
-        expect(mockSendEmail.mock.calls[0][1]).toBe(entities[0].email);
+        expect(mockComposeAndSendEmail).toHaveBeenCalledTimes(1);
+        expect(mockComposeAndSendEmail.mock.calls[0][0]).toBe(entities[0].email);
       });
-      token = mockSendEmail.mock.calls[0][2].split('?t=')[1];
+      token = mockComposeAndSendEmail.mock.calls[0][6].split('?t=')[1];
     });
 
     it('Reset password', async () => {
@@ -438,9 +440,9 @@ describe('Reset Password', () => {
     // Wait for the token to expire
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    expect(mockSendEmail).toHaveBeenCalledTimes(1);
-    expect(mockSendEmail.mock.calls[0][1]).toBe(entities[0].email);
-    const token = mockSendEmail.mock.calls[0][2].split('?t=')[1];
+    expect(mockComposeAndSendEmail).toHaveBeenCalledTimes(1);
+    expect(mockComposeAndSendEmail.mock.calls[0][0]).toBe(entities[0].email);
+    const token = mockComposeAndSendEmail.mock.calls[0][6].split('?t=')[1];
 
     const newPassword = faker.internet.password({ prefix: '!1Aa' });
     const responseReset = await app.inject({

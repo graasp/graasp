@@ -38,21 +38,16 @@ export class ItemMembershipService {
   async _notifyMember(account: Account, member: Member, item: Item): Promise<void> {
     const link = new URL(item.id, PLAYER_HOST.url).toString();
 
-    const lang = member.lang;
-    const t = this.mailerService.translate(lang);
-
-    const text = t(MAIL.SHARE_ITEM_TEXT, { itemName: item.name });
-    const html = `
-        ${this.mailerService.buildText(text)}
-        ${this.mailerService.buildButton(link, t(MAIL.SHARE_ITEM_BUTTON))}
-      `;
-
-    const title = t(MAIL.SHARE_ITEM_TITLE, { creatorName: account.name, itemName: item.name });
-
-    const footer = this.mailerService.buildFooter(lang);
-
     await this.mailerService
-      .sendEmail(title, member.email, link, html, footer)
+      .composeAndSendEmail(
+        member.email,
+        member.lang,
+        MAIL.SHARE_ITEM_TITLE,
+        MAIL.SHARE_ITEM_BUTTON,
+        MAIL.SHARE_ITEM_TEXT,
+        { creatorName: member.name, itemName: item.name },
+        link,
+      )
       .then(() => {
         console.debug('send email on membership creation');
       })

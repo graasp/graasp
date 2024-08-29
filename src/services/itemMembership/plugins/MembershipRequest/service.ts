@@ -45,21 +45,16 @@ export class MembershipRequestService {
       if (!isMember(admin)) {
         continue;
       }
-      const lang = admin.lang;
-      const translated = this.mailerService.translate(lang);
+
       this.mailerService
-        .sendEmail(
-          translated(MAIL.MEMBERSHIP_REQUEST_TITLE, {
-            memberName: member.name,
-            itemName: item.name,
-          }),
+        .composeAndSendEmail(
           admin.email,
+          admin.lang,
+          MAIL.MEMBERSHIP_REQUEST_TITLE,
+          MAIL.MEMBERSHIP_REQUEST_BUTTON_TEXT,
+          MAIL.MEMBERSHIP_REQUEST_TEXT,
+          { memberName: member.name, itemName: item.name },
           link,
-          `
-          ${this.mailerService.buildText(translated(MAIL.MEMBERSHIP_REQUEST_TEXT, { memberName: member.name, itemName: item.name }))}
-          ${this.mailerService.buildButton(link, translated(MAIL.MEMBERSHIP_REQUEST_BUTTON_TEXT, { itemName: item.name }))}
-        `,
-          this.mailerService.buildFooter(lang),
         )
         .catch((err) => {
           this.log.error(err, `mailerService failed. shared link: ${link}`);
