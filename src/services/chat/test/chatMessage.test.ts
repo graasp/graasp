@@ -22,8 +22,8 @@ import { ChatMessageRepository } from '../repository';
 
 const testUtils = new ItemTestUtils();
 const memberRawRepository = AppDataSource.getRepository(Member);
-
 const adminChatMentionRepository = AppDataSource.getRepository(ChatMention);
+const rawChatMessageRepository = AppDataSource.getRepository(ChatMessage);
 
 export const saveItemWithChatMessages = async (creator) => {
   const { item } = await testUtils.saveItemAndMembership({ member: creator });
@@ -32,7 +32,9 @@ export const saveItemWithChatMessages = async (creator) => {
   for (let i = 0; i < 3; i++) {
     const member = await saveMember();
     members.push(member);
-    chatMessages.push(await ChatMessageRepository.save({ item, creator, body: 'some-text-' + i }));
+    chatMessages.push(
+      await rawChatMessageRepository.save({ item, creator, body: 'some-text-' + i }),
+    );
   }
   return { item, chatMessages, members };
 };
@@ -170,7 +172,7 @@ describe('Chat Message tests', () => {
 
       it('Post successfully', async () => {
         const payload = { body: 'hello' };
-        const initialCount = await ChatMessageRepository.count();
+        const initialCount = await rawChatMessageRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -181,7 +183,7 @@ describe('Chat Message tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(response.json().body).toEqual(payload.body);
 
-        expect(await ChatMessageRepository.count()).toEqual(initialCount + 1);
+        expect(await rawChatMessageRepository.count()).toEqual(initialCount + 1);
       });
 
       it('Post successfully with mentions', async () => {
@@ -190,7 +192,7 @@ describe('Chat Message tests', () => {
 
         const members = await memberRawRepository.find();
         const payload = { body: 'hello', mentions: members.map(({ id }) => id) };
-        const initialCount = await ChatMessageRepository.count();
+        const initialCount = await rawChatMessageRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -200,7 +202,7 @@ describe('Chat Message tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(response.json().body).toEqual(payload.body);
 
-        expect(await ChatMessageRepository.count()).toEqual(initialCount + 1);
+        expect(await rawChatMessageRepository.count()).toEqual(initialCount + 1);
 
         // check mentions and send email
         const nbMentions = await adminChatMentionRepository.count();
@@ -284,12 +286,12 @@ describe('Chat Message tests', () => {
 
       it('Patch successfully', async () => {
         const payload = { body: 'hello' };
-        const chatMessage = await ChatMessageRepository.save({
+        const chatMessage = await rawChatMessageRepository.save({
           item,
           creator: actor,
           body: 'body',
         });
-        const initialCount = await ChatMessageRepository.count();
+        const initialCount = await rawChatMessageRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Patch,
@@ -299,7 +301,7 @@ describe('Chat Message tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(response.json().body).toEqual(payload.body);
 
-        expect(await ChatMessageRepository.count()).toEqual(initialCount);
+        expect(await rawChatMessageRepository.count()).toEqual(initialCount);
       });
 
       it('Throws if item id is incorrect', async () => {
@@ -374,7 +376,7 @@ describe('Chat Message tests', () => {
 
       it('Throws if member does not have access to chat message', async () => {
         const payload = { body: 'hello' };
-        const chatMessage = await ChatMessageRepository.save({
+        const chatMessage = await rawChatMessageRepository.save({
           item,
           creator: members[0],
           body: 'body',
@@ -414,12 +416,12 @@ describe('Chat Message tests', () => {
       });
 
       it('Delete successfully', async () => {
-        const chatMessage = await ChatMessageRepository.save({
+        const chatMessage = await rawChatMessageRepository.save({
           item,
           creator: actor,
           body: 'body',
         });
-        const initialCount = await ChatMessageRepository.count();
+        const initialCount = await rawChatMessageRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Delete,
@@ -428,8 +430,8 @@ describe('Chat Message tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(response.json().body).toEqual(chatMessage.body);
 
-        expect(await ChatMessageRepository.count()).toEqual(initialCount - 1);
-        expect(await ChatMessageRepository.get(chatMessage.id)).toBeNull();
+        expect(await rawChatMessageRepository.count()).toEqual(initialCount - 1);
+        expect(await new ChatMessageRepository().getOne(chatMessage.id)).toBeNull();
       });
 
       it('Throws if item id is incorrect', async () => {
@@ -480,7 +482,7 @@ describe('Chat Message tests', () => {
       });
 
       it('Throws if member does not have access to chat message', async () => {
-        const chatMessage = await ChatMessageRepository.save({
+        const chatMessage = await rawChatMessageRepository.save({
           item,
           creator: members[0],
           body: 'body',
@@ -523,13 +525,13 @@ describe('Chat Message tests', () => {
         const { item: anotherItem } = await testUtils.saveItemAndMembership({ member: actor });
         const otherMessages: ChatMessage[] = [];
         otherMessages.push(
-          await ChatMessageRepository.save({ item: anotherItem, creator: actor, body: 'dd' }),
+          await rawChatMessageRepository.save({ item: anotherItem, creator: actor, body: 'dd' }),
         );
         otherMessages.push(
-          await ChatMessageRepository.save({ item: anotherItem, creator: actor, body: 'dd' }),
+          await rawChatMessageRepository.save({ item: anotherItem, creator: actor, body: 'dd' }),
         );
         otherMessages.push(
-          await ChatMessageRepository.save({ item: anotherItem, creator: actor, body: 'dd' }),
+          await rawChatMessageRepository.save({ item: anotherItem, creator: actor, body: 'dd' }),
         );
 
         const response = await app.inject({
@@ -538,7 +540,7 @@ describe('Chat Message tests', () => {
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
 
-        expect(await ChatMessageRepository.count()).toEqual(otherMessages.length);
+        expect(await rawChatMessageRepository.count()).toEqual(otherMessages.length);
       });
 
       it('Throws if item id is incorrect', async () => {

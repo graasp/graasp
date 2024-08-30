@@ -10,6 +10,11 @@ import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
 import { resolveDependency } from '../../di/utils';
+import {
+  EntityNotFound,
+  EntryNotFoundAfterUpdateException,
+  EntryNotFoundBeforeDeleteException,
+} from '../../repositories/errors';
 import { notUndefined } from '../../utils/assertions';
 import { buildRepositories } from '../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
@@ -17,6 +22,7 @@ import { matchOne } from '../authorization';
 import { ItemService } from '../item/service';
 import { guestAccountRole } from '../itemLogin/strategies/guestAccountRole';
 import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
+import { ChatMessageNotFound } from './errors';
 import { ActionChatService } from './plugins/action/service';
 import mentionPlugin from './plugins/mentions';
 import commonChat, {
@@ -107,13 +113,26 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify) => {
           params: { itemId, messageId },
           body,
         } = request;
-        return await db.transaction(async (manager) => {
-          const member = notUndefined(user?.account);
-          const repositories = buildRepositories(manager);
-          const message = await chatService.patchOne(member, repositories, itemId, messageId, body);
-          await actionChatService.postPatchMessageAction(request, repositories, message);
-          return message;
-        });
+        try {
+          return await db.transaction(async (manager) => {
+            const member = notUndefined(user?.account);
+            const repositories = buildRepositories(manager);
+            const message = await chatService.patchOne(
+              member,
+              repositories,
+              itemId,
+              messageId,
+              body,
+            );
+            await actionChatService.postPatchMessageAction(request, repositories, message);
+            return message;
+          });
+        } catch (e: unknown) {
+          if (e instanceof EntryNotFoundAfterUpdateException || e instanceof EntityNotFound) {
+            throw new ChatMessageNotFound(messageId);
+          }
+          throw e;
+        }
       },
     );
 
@@ -130,12 +149,19 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify) => {
           params: { itemId, messageId },
         } = request;
         const member = notUndefined(user?.account);
-        return await db.transaction(async (manager) => {
-          const repositories = buildRepositories(manager);
-          const message = await chatService.deleteOne(member, repositories, itemId, messageId);
-          await actionChatService.postDeleteMessageAction(request, repositories, message);
-          return message;
-        });
+        try {
+          return await db.transaction(async (manager) => {
+            const repositories = buildRepositories(manager);
+            const message = await chatService.deleteOne(member, repositories, itemId, messageId);
+            await actionChatService.postDeleteMessageAction(request, repositories, message);
+            return message;
+          });
+        } catch (e: unknown) {
+          if (e instanceof EntryNotFoundBeforeDeleteException || e instanceof EntityNotFound) {
+            throw new ChatMessageNotFound(messageId);
+          }
+          throw e;
+        }
       },
     );
 

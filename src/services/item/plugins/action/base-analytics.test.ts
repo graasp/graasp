@@ -5,7 +5,7 @@ import { FolderItemFactory } from '@graasp/sdk';
 import build, { clearDatabase } from '../../../../../test/app';
 import { AppDataSource } from '../../../../plugins/datasource';
 import { Account } from '../../../account/entities/account';
-import { ChatMessageRepository } from '../../../chat/repository';
+import { ChatMessage } from '../../../chat/chatMessage';
 import { Member } from '../../../member/entities/member';
 import { saveMembers } from '../../../member/test/fixtures/members';
 import { Item } from '../../entities/Item';
@@ -15,6 +15,7 @@ import { saveAppSettings } from '../app/appSetting/test/fixtures';
 import { BaseAnalytics } from './base-analytics';
 
 const rawItemRepository = AppDataSource.getRepository(Item);
+const rawChatMessageRepository = AppDataSource.getRepository(ChatMessage);
 
 const descendants = [];
 const actions = [];
@@ -53,7 +54,7 @@ describe('Base Analytics', () => {
     const item = await rawItemRepository.save(FolderItemFactory({ creator: members[0] }));
 
     const chatMessages = [
-      await ChatMessageRepository.create({
+      rawChatMessageRepository.create({
         item,
         creator: members[0],
         body: 'message',
