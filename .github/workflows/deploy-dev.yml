@@ -119,6 +119,7 @@ jobs:
             H5P_CONTENT_SECRET_ACCESS_KEY_ID=${{ secrets.H5P_CONTENT_SECRET_ACCESS_KEY }}
             H5P_FILE_STORAGE_TYPE=${{ vars.H5P_FILE_STORAGE_TYPE }}
             H5P_PATH_PREFIX=${{ vars.H5P_PATH_PREFIX }}
+            H5P_STORAGE_ROOT_PATH=${{ vars.H5P_STORAGE_ROOT_PATH }}
             HOSTNAME=${{ vars.HOSTNAME }}
             IMAGE_CLASSIFIER_API=${{ vars.IMAGE_CLASSIFIER_API }}
             JOB_SCHEDULING=${{ vars.JOB_SCHEDULING || false }}
