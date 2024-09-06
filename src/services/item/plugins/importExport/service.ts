@@ -40,7 +40,6 @@ export class ImportExportService {
   private readonly fileItemService: FileItemService;
   private readonly h5pService: H5PService;
   private readonly itemService: ItemService;
-  private readonly etherpadService: EtherpadItemService;
   private readonly db: DataSource;
   private readonly log: BaseLogger;
 
@@ -256,15 +255,6 @@ export class ImportExportService {
           stream: Readable.from(buildTextContent(item.extra.app?.url, ItemType.APP)),
           name: getFilenameFromItem(item),
           mimetype: 'text/plain',
-        };
-      }
-      case isItemType(item, ItemType.ETHERPAD): {
-        return {
-          stream: Readable.from(
-            await this.etherpadService.getEtherpadContentFromItem(actor, item.id),
-          ),
-          name: getFilenameFromItem(item),
-          mimetype: 'text/html',
         };
       }
     }
