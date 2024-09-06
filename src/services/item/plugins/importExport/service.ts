@@ -49,14 +49,12 @@ export class ImportExportService {
     fileItemService: FileItemService,
     itemService: ItemService,
     h5pService: H5PService,
-    etherpadService: EtherpadItemService,
     log: BaseLogger,
   ) {
     this.db = db;
     this.fileItemService = fileItemService;
     this.h5pService = h5pService;
     this.itemService = itemService;
-    this.etherpadService = etherpadService;
     this.log = log;
   }
 
