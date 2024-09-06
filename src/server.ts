@@ -40,10 +40,13 @@ const start = async () => {
     },
   });
 
+  console.log("Before Sentry");
   const { Sentry } = initSentry(instance);
+  console.log("After Sentry");
 
   instance.register(fastifyHelmet);
   // fastifyApp.register(fastifyCompress);
+  console.log("After fastifyHelmet");
 
   if (CORS_ORIGIN_REGEX) {
     instance.decorate('corsPluginOptions', {
@@ -52,8 +55,12 @@ const start = async () => {
       maxAge: 7200, // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Max-Age
     });
   }
+  console.log("After CORS");
+
 
   await registerAppPlugins(instance);
+  console.log("After registerAppPlugins");
+
 
   // const mainMetric = SentryConfig.enable
   //   ? Sentry.startTransaction({
