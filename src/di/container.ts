@@ -11,10 +11,7 @@ import { MailerService } from '../plugins/mailer/service';
 import FileService from '../services/file/service';
 import { fileRepositoryFactory } from '../services/file/utils/factory';
 import { wrapEtherpadErrors } from '../services/item/plugins/etherpad/etherpad';
-import {
-  EtherpadItemService,
-  RandomPadNameFactory,
-} from '../services/item/plugins/etherpad/service';
+import { RandomPadNameFactory } from '../services/item/plugins/etherpad/service';
 import { EtherpadServiceConfig } from '../services/item/plugins/etherpad/serviceConfig';
 import FileItemService from '../services/item/plugins/file/service';
 import { H5PService } from '../services/item/plugins/html/h5p/service';
@@ -141,6 +138,28 @@ export const registerDependencies = (instance: FastifyInstance) => {
   
     console.log("JobServiceBuilder Registered")
 
+  // Register EtherPad
+  const etherPadConfig = resolveDependency(EtherpadServiceConfig);
+
+  console.log("EtherPad Registered")
+
+
+  // connect to etherpad server
+  registerValue(
+    Etherpad,
+    wrapEtherpadErrors(
+      new Etherpad({
+        url: etherPadConfig.url,
+        apiKey: etherPadConfig.apiKey,
+        apiVersion: etherPadConfig.apiVersion,
+      }),
+    ),
+  );
+  console.log("EtherPad Registered 2")
+
+  registerValue(ETHERPAD_NAME_FACTORY_DI_KEY, new RandomPadNameFactory());
+  console.log("EtherPad Registered 3")
+
   registerValue(
     ImportExportService,
     new ImportExportService(
@@ -166,6 +185,5 @@ export const registerDependencies = (instance: FastifyInstance) => {
       resolveDependency(ValidationQueue),
     ),
   );
-  console.log("Final Step Registered")
-
+  
 };
