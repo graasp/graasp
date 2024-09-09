@@ -16,13 +16,13 @@ import { plugin as passportPlugin } from './services/auth/plugins/passport';
 import ItemServiceApi from './services/item';
 import ItemMembershipServiceApi from './services/itemMembership';
 import MemberServiceApi from './services/member';
-import websocketsPlugin from './services/websockets';
+// import websocketsPlugin from './services/websockets';
 import {
   DATABASE_LOGS,
-  REDIS_HOST,
-  REDIS_PASSWORD,
-  REDIS_PORT,
-  REDIS_USERNAME,
+  /* REDIS_HOST,
+ REDIS_PASSWORD,
+ REDIS_PORT,
+ REDIS_USERNAME, */
 } from './utils/config';
 
 export default async function (instance: FastifyInstance): Promise<void> {
@@ -57,7 +57,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
     await instance
       // the websockets plugin must be registered before but in the same scope as the apis
       // otherwise tests somehow bypass mocking the authentication through jest.spyOn(app, 'verifyAuthentication')
-      .register(fp(websocketsPlugin), {
+      /* .register(fp(websocketsPlugin), {
         prefix: '/ws',
         redis: {
           channelName: 'graasp-realtime-updates',
@@ -68,7 +68,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
             password: REDIS_PASSWORD,
           },
         },
-      })
+      })*/
       .register(fp(accountPlugin))
       .register(fp(MemberServiceApi))
       .register(fp(ItemServiceApi))
