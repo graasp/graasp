@@ -26,24 +26,23 @@ import {
 } from './utils/config';
 
 export default async function (instance: FastifyInstance): Promise<void> {
-  console.log("Inside app.ts")
+  console.log('Inside app.ts');
   await instance.register(fp(swaggerPlugin));
-  console.log("Register Swagger")
+  console.log('Register Swagger');
 
   // load some shared schema definitions
   instance.addSchema(shared);
-  console.log("Add Schema")
+  console.log('Add Schema');
 
   // db should be registered before the dependencies.
   await instance.register(fp(databasePlugin), {
     logs: DATABASE_LOGS,
   });
-  console.log("Register DB")
+  console.log('Register DB');
 
   // register some dependencies manually
   registerDependencies(instance);
-  console.log("Dependencies Registered")
-
+  console.log('Dependencies Registered');
 
   await instance
     .register(fp(metaPlugin))
@@ -51,7 +50,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
     // need to be defined before member and item for auth check
     .register(fp(authPlugin));
 
-  console.log("Passport Auth Registered")
+  console.log('Passport Auth Registered');
 
   instance.register(async (instance) => {
     // core API modules
@@ -75,7 +74,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
       .register(fp(ItemServiceApi))
       .register(fp(ItemMembershipServiceApi));
 
-  console.log("Regis Registered")
+    console.log('Redis Registered');
 
     // instance.register(
     //   async (instance) => {
