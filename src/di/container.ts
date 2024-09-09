@@ -14,7 +14,7 @@ import { wrapEtherpadErrors } from '../services/item/plugins/etherpad/etherpad';
 import { RandomPadNameFactory } from '../services/item/plugins/etherpad/service';
 import { EtherpadServiceConfig } from '../services/item/plugins/etherpad/serviceConfig';
 import FileItemService from '../services/item/plugins/file/service';
-import { H5PService } from '../services/item/plugins/html/h5p/service';
+// import { H5PService } from '../services/item/plugins/html/h5p/service';
 import { ImportExportService } from '../services/item/plugins/importExport/service';
 import { PublicationService } from '../services/item/plugins/publication/publicationState/service';
 import { MeiliSearchWrapper } from '../services/item/plugins/publication/published/plugins/search/meilisearch';
@@ -163,7 +163,7 @@ export const registerDependencies = (instance: FastifyInstance) => {
       db,
       resolveDependency(FileItemService),
       resolveDependency(ItemService),
-      resolveDependency(H5PService),
+      // resolveDependency(H5PService),
       resolveDependency(BaseLogger),
     ),
   );
