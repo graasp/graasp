@@ -20,7 +20,7 @@ import { Actor, Member } from '../../../member/entities/member';
 import { Item, isItemType } from '../../entities/Item';
 import { ItemService } from '../../service';
 import FileItemService from '../file/service';
-import { H5PService } from '../html/h5p/service';
+// import { H5PService } from '../html/h5p/service';
 import {
   DESCRIPTION_EXTENSION,
   GRAASP_DOCUMENT_EXTENSION,
@@ -37,7 +37,7 @@ const asyncDetectFile = util.promisify(magic.detectFile.bind(magic));
 
 export class ImportExportService {
   private readonly fileItemService: FileItemService;
-  private readonly h5pService: H5PService;
+  // private readonly h5pService: H5PService;
   private readonly itemService: ItemService;
   private readonly db: DataSource;
   private readonly log: BaseLogger;
@@ -46,12 +46,12 @@ export class ImportExportService {
     db: DataSource,
     fileItemService: FileItemService,
     itemService: ItemService,
-    h5pService: H5PService,
+    // h5pService: H5PService,
     log: BaseLogger,
   ) {
     this.db = db;
     this.fileItemService = fileItemService;
-    this.h5pService = h5pService;
+    // this.h5pService = h5pService;
     this.itemService = itemService;
     this.log = log;
   }
@@ -228,13 +228,13 @@ export class ImportExportService {
           stream: res.body,
         };
       }
-      case isItemType(item, ItemType.H5P): {
+      /* case isItemType(item, ItemType.H5P): {
         const h5pUrl = await this.h5pService.getUrl(item);
         const res = await fetch(h5pUrl);
 
         const filename = getFilenameFromItem(item);
         return { mimetype: 'application/octet-stream', name: filename, stream: res.body };
-      }
+      }*/
       case isItemType(item, ItemType.DOCUMENT): {
         return {
           stream: Readable.from([item.extra.document?.content]),
