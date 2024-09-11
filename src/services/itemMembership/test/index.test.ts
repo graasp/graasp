@@ -1,9 +1,10 @@
+import { faker } from '@faker-js/faker';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, PermissionLevel } from '@graasp/sdk';
+import { DiscriminatedItem, HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
 import { resolveDependency } from '../../../di/utils';
@@ -22,6 +23,7 @@ import {
 import { buildRepositories } from '../../../utils/repositories';
 import { setItemPublic } from '../../item/plugins/itemTag/test/fixtures';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
+import { saveItemLoginSchema } from '../../itemLogin/test/index.test';
 import { Member } from '../../member/entities/member';
 import { saveMember } from '../../member/test/fixtures/members';
 import { ItemMembershipRepository } from '../repository';
@@ -795,6 +797,39 @@ describe('Membership routes tests', () => {
 
         expect(response.json()).toEqual(new InvalidPermissionLevel(membership.id));
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      });
+
+      it('Cannot modify a Guest account permission', async () => {
+        assertNonNull(actor);
+        const { item } = await testUtils.saveItemAndMembership({ member: actor });
+
+        const { guest: member } = await saveItemLoginSchema({
+          item: item as unknown as DiscriminatedItem,
+          memberName: faker.internet.userName(),
+        });
+        assertNonNull(member);
+
+        const membership = await testUtils.saveMembership({
+          permission: PermissionLevel.Write,
+          item,
+          account: member,
+        });
+        const initialCount = await ItemMembershipRepository.count();
+
+        const newMembership = {
+          permission: PermissionLevel.Admin,
+          accountId: member.id,
+        };
+
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `/item-memberships/${membership.id}`,
+          payload: newMembership,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+        const newCount = await ItemMembershipRepository.count();
+        expect(newCount).toEqual(initialCount);
       });
     });
   });
