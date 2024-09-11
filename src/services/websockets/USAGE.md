@@ -123,11 +123,7 @@ Messages can then be published either globally (i.e. across all server and clien
 websockets.publish('foo', 'someChannelName', { hello: 'world' });
 
 // publish a message locally (i.e. only on the current server instance) to the channel `someChannelName`
-websockets.publishLocal(
-  'foo',
-  'someChannelName',
-  'Users connected to other instance will not receive me',
-);
+websockets.publishLocal('foo', 'someChannelName', 'Users connected to other instance will not receive me');
 ```
 
 ### Client-side implementation and hooks in `graasp-query-client`

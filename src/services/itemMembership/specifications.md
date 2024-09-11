@@ -4,9 +4,10 @@
 
 - A children membership can not be more restrictive (lower permission) than its parent memberships, but can be equal or more permissive (higher permission) than its parent membership
 
-Example: 
+Example:
 If we have the following structure: A (parent) > B (child)
 It is possible to have:
+
 - `read` on A and `write` on B
 - `read` on A and `admin` on B
 - `write` on A and `admin` on B (this happens if user created B inside A)
@@ -18,7 +19,8 @@ It is possible to have:
 - `admin` on B only (user does not have access to A)
 
 It is forbidden to have:
-- `admin` on A and `write` on B 
-- `admin` on A and `read` on B 
-- `write` on A and `read` on B 
-As these would result in B having a more restrictive permission than A.
+
+- `admin` on A and `write` on B
+- `admin` on A and `read` on B
+- `write` on A and `read` on B
+  As these would result in B having a more restrictive permission than A.
