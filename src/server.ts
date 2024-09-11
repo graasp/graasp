@@ -10,8 +10,7 @@ import {
   DEV,
   ENVIRONMENT,
   HOSTNAME,
-  PORT,
-  PROD,
+  PORT, // PROD,
 } from './utils/config';
 // import fastifyCompress from 'fastify-compress';
 import { GREETING } from './utils/constants';
@@ -52,18 +51,13 @@ const start = async () => {
       maxAge: 7200, // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Max-Age
     });
   }
-
   await registerAppPlugins(instance);
-  console.log("After registerAppPlugins");
-
-
   // const mainMetric = SentryConfig.enable
   //   ? Sentry.startTransaction({
   //       op: 'main',
   //       name: 'Main server listen',
   //     })
   //   : null;
-
   try {
     await instance.listen({ port: PORT, host: HOSTNAME });
     instance.log.info('App is running version %s in %s mode', APP_VERSION, ENVIRONMENT);

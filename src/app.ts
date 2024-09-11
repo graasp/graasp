@@ -20,9 +20,9 @@ import MemberServiceApi from './services/member';
 import {
   DATABASE_LOGS,
   /* REDIS_HOST,
- REDIS_PASSWORD,
- REDIS_PORT,
- REDIS_USERNAME, */
+REDIS_PASSWORD,
+REDIS_PORT,
+REDIS_USERNAME, */
 } from './utils/config';
 
 export default async function (instance: FastifyInstance): Promise<void> {
