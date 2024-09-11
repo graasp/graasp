@@ -1,99 +1,99 @@
-import path from 'path';
-import { singleton } from 'tsyringe';
-import { v4 } from 'uuid';
+// import path from 'path';
+// import { singleton } from 'tsyringe';
+// import { v4 } from 'uuid';
 
-import { H5PItemExtra, ItemType } from '@graasp/sdk';
+// import { H5PItemExtra, ItemType } from '@graasp/sdk';
 
-import { BaseLogger } from '../../../../../logger';
-import {
-  H5P_FILE_STORAGE_CONFIG,
-  H5P_FILE_STORAGE_TYPE,
-  H5P_PATH_PREFIX,
-} from '../../../../../utils/config';
-import { Repositories } from '../../../../../utils/repositories';
-import { Member } from '../../../../member/entities/member';
-import { Item } from '../../../entities/Item';
-import { HtmlService } from '../service';
-import { H5P_FILE_DOT_EXTENSION, H5P_FILE_MIME_TYPE } from './constants';
-import { H5P } from './validation/h5p';
-import { H5PValidator } from './validation/h5p-validator';
+// import { BaseLogger } from '../../../../../logger';
+// import {
+//   H5P_FILE_STORAGE_CONFIG,
+//   H5P_FILE_STORAGE_TYPE,
+//   H5P_PATH_PREFIX,
+// } from '../../../../../utils/config';
+// import { Repositories } from '../../../../../utils/repositories';
+// import { Member } from '../../../../member/entities/member';
+// import { Item } from '../../../entities/Item';
+// import { HtmlService } from '../service';
+// import { H5P_FILE_DOT_EXTENSION, H5P_FILE_MIME_TYPE } from './constants';
+// import { H5P } from './validation/h5p';
+// import { H5PValidator } from './validation/h5p-validator';
 
-/**
- * Implementation for the H5P service
- */
-@singleton()
-export class H5PService extends HtmlService {
-  constructor(log: BaseLogger) {
-    const h5pValidator = new H5PValidator();
+// /**
+//  * Implementation for the H5P service
+//  */
+// @singleton()
+// export class H5PService extends HtmlService {
+//   constructor(log: BaseLogger) {
+//     const h5pValidator = new H5PValidator();
 
-    super(
-      { config: H5P_FILE_STORAGE_CONFIG, type: H5P_FILE_STORAGE_TYPE },
-      H5P_PATH_PREFIX,
-      H5P_FILE_MIME_TYPE,
-      'h5p',
-      h5pValidator,
-      log,
-    );
-  }
+//     super(
+//       { config: H5P_FILE_STORAGE_CONFIG, type: H5P_FILE_STORAGE_TYPE },
+//       H5P_PATH_PREFIX,
+//       H5P_FILE_MIME_TYPE,
+//       'h5p',
+//       h5pValidator,
+//       log,
+//     );
+//   }
 
-  /**
-   * Helper to create H5P extra
-   */
-  buildH5PExtra(contentId: string, filename: string): H5PItemExtra {
-    return {
-      h5p: {
-        contentId,
-        h5pFilePath: this.buildPackagePath(contentId, filename),
-        contentFilePath: this.buildContentPath(contentId),
-      },
-    };
-  }
+//   /**
+//    * Helper to create H5P extra
+//    */
+//   buildH5PExtra(contentId: string, filename: string): H5PItemExtra {
+//     return {
+//       h5p: {
+//         contentId,
+//         h5pFilePath: this.buildPackagePath(contentId, filename),
+//         contentFilePath: this.buildContentPath(contentId),
+//       },
+//     };
+//   }
 
-  /**
-   * Helper to build the local or remote path of the .h5p file
-   */
-  buildH5PPath = (rootPath: string, filename: string) =>
-    path.join(rootPath, `${filename}.${H5P.H5P_FILE_EXTENSION}`);
+//   /**
+//    * Helper to build the local or remote path of the .h5p file
+//    */
+//   buildH5PPath = (rootPath: string, filename: string) =>
+//     path.join(rootPath, `${filename}.${H5P.H5P_FILE_EXTENSION}`);
 
-  /**
-   * Get the H5P file url referenced by a given Item
-   */
-  getUrl(item: Item<typeof ItemType.H5P>) {
-    const h5pPath = item.extra.h5p.h5pFilePath;
-    return super._getUrl(item.id, h5pPath);
-  }
+//   /**
+//    * Get the H5P file url referenced by a given Item
+//    */
+//   getUrl(item: Item<typeof ItemType.H5P>) {
+//     const h5pPath = item.extra.h5p.h5pFilePath;
+//     return super._getUrl(item.id, h5pPath);
+//   }
 
-  async copy(
-    member: Member,
-    repositories: Repositories,
-    {
-      original: item,
-      copy,
-    }: { original: Item<typeof ItemType.H5P>; copy: Item<typeof ItemType.H5P> },
-  ): Promise<void> {
-    const { extra } = item;
+//   async copy(
+//     member: Member,
+//     repositories: Repositories,
+//     {
+//       original: item,
+//       copy,
+//     }: { original: Item<typeof ItemType.H5P>; copy: Item<typeof ItemType.H5P> },
+//   ): Promise<void> {
+//     const { extra } = item;
 
-    const baseName = path.basename(item.name, H5P_FILE_DOT_EXTENSION);
-    const copySuffix = '-1';
-    const newName = `${baseName}${copySuffix}`;
+//     const baseName = path.basename(item.name, H5P_FILE_DOT_EXTENSION);
+//     const copySuffix = '-1';
+//     const newName = `${baseName}${copySuffix}`;
 
-    const newContentId = v4();
-    const remoteRootPath = this.buildRootPath(this.pathPrefix, newContentId);
+//     const newContentId = v4();
+//     const remoteRootPath = this.buildRootPath(this.pathPrefix, newContentId);
 
-    // copy .h5p file
-    await this.fileService.copy(member, {
-      originalPath: path.join(this.pathPrefix, extra.h5p.h5pFilePath),
-      newFilePath: this.buildH5PPath(remoteRootPath, newName),
-    });
-    // copy content folder
-    await this.fileService.copyFolder({
-      originalFolderPath: path.join(this.pathPrefix, extra.h5p.contentFilePath),
-      newFolderPath: this.buildContentPath(remoteRootPath),
-    });
+//     // copy .h5p file
+//     await this.fileService.copy(member, {
+//       originalPath: path.join(this.pathPrefix, extra.h5p.h5pFilePath),
+//       newFilePath: this.buildH5PPath(remoteRootPath, newName),
+//     });
+//     // copy content folder
+//     await this.fileService.copyFolder({
+//       originalFolderPath: path.join(this.pathPrefix, extra.h5p.contentFilePath),
+//       newFolderPath: this.buildContentPath(remoteRootPath),
+//     });
 
-    await repositories.itemRepository.updateOne(copy.id, {
-      name: this.buildH5PPath('', newName),
-      extra: { h5p: this.buildH5PExtra(newContentId, newName).h5p },
-    });
-  }
-}
+//     await repositories.itemRepository.updateOne(copy.id, {
+//       name: this.buildH5PPath('', newName),
+//       extra: { h5p: this.buildH5PExtra(newContentId, newName).h5p },
+//     });
+//   }
+// }

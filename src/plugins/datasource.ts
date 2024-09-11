@@ -20,10 +20,10 @@ import { ItemFavorite } from '../services/item/plugins/itemFavorite/entities/Ite
 import { ItemFlag } from '../services/item/plugins/itemFlag/itemFlag';
 import { ItemLike } from '../services/item/plugins/itemLike/itemLike';
 import { ItemTag } from '../services/item/plugins/itemTag/ItemTag';
-import { ItemPublished } from '../services/item/plugins/publication/published/entities/itemPublished';
-import { ItemValidation } from '../services/item/plugins/publication/validation/entities/ItemValidation';
-import { ItemValidationGroup } from '../services/item/plugins/publication/validation/entities/ItemValidationGroup';
-import { ItemValidationReview } from '../services/item/plugins/publication/validation/entities/itemValidationReview';
+// import { ItemPublished } from '../services/item/plugins/publication/published/entities/itemPublished';
+// import { ItemValidation } from '../services/item/plugins/publication/validation/entities/ItemValidation';
+// import { ItemValidationGroup } from '../services/item/plugins/publication/validation/entities/ItemValidationGroup';
+// import { ItemValidationReview } from '../services/item/plugins/publication/validation/entities/itemValidationReview';
 import { RecycledItemData } from '../services/item/plugins/recycled/RecycledItemData';
 import { ShortLink } from '../services/item/plugins/shortLink/entities/ShortLink';
 import { Guest } from '../services/itemLogin/entities/guest';
@@ -89,7 +89,7 @@ export const AppDataSource = new DataSource({
     AppSetting,
     ChatMessage,
     ChatMention,
-    ItemPublished,
+    // ItemPublished,
     RecycledItemData,
     ItemLike,
     ItemTag,
@@ -98,9 +98,9 @@ export const AppDataSource = new DataSource({
     ItemCategory,
     ItemFlag,
     Invitation,
-    ItemValidation,
-    ItemValidationGroup,
-    ItemValidationReview,
+    // ItemValidation,
+    // ItemValidationGroup,
+    // ItemValidationReview,
     Action,
     ActionRequestExport,
     MemberProfile,

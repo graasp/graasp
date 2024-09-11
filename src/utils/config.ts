@@ -4,8 +4,7 @@ import os from 'os';
 import {
   BUILDER_ITEMS_PREFIX,
   ClientHostManager,
-  Context,
-  FileItemType,
+  Context, // FileItemType,
   GPTVersion,
   ItemType,
   LIBRARY_ITEMS_PREFIX,
@@ -16,11 +15,12 @@ import {
   LocalFileConfiguration,
   S3FileConfiguration,
 } from '../services/file/interfaces/configuration';
-import { API_KEY_FORMAT } from '../services/item/plugins/etherpad/serviceConfig';
+// import { API_KEY_FORMAT } from '../services/item/plugins/etherpad/serviceConfig';
 import { notUndefined } from './assertions';
 import { ExpectedEnvVariable } from './errors';
-import { validateEnv } from './validators/utils';
-import { RegexValidator, UrlValidator } from './validators/validators';
+
+// import { validateEnv } from './validators/utils';
+// import { RegexValidator, UrlValidator } from './validators/validators';
 
 enum Environment {
   production = 'production',
@@ -278,6 +278,8 @@ export const S3_FILE_ITEM_PLUGIN_OPTIONS: S3FileConfiguration | undefined = S3_F
   ? getS3FilePluginConfig()
   : undefined;
 
+/*
+// H5P and Etherpad Initialization
 if (!process.env.H5P_PATH_PREFIX) {
   throw new Error('Invalid H5P path prefix');
 }
@@ -332,6 +334,7 @@ export const ETHERPAD_URL = validateEnv('ETHERPAD_URL', new UrlValidator());
 export const ETHERPAD_PUBLIC_URL = process.env.ETHERPAD_PUBLIC_URL;
 export const ETHERPAD_API_KEY = validateEnv('ETHERPAD_API_KEY', new RegexValidator(API_KEY_FORMAT));
 export const ETHERPAD_COOKIE_DOMAIN = process.env.ETHERPAD_COOKIE_DOMAIN;
+*/
 
 export const FILE_ITEM_TYPE = S3_FILE_ITEM_PLUGIN ? ItemType.S3_FILE : ItemType.LOCAL_FILE;
 
@@ -393,13 +396,14 @@ export const GET_MOST_RECENT_ITEMS_MAXIMUM = 50;
 // Job scheduling
 export const JOB_SCHEDULING: boolean = process.env.JOB_SCHEDULING === 'true';
 
+/*
 // Graasp Search
-
 export const MEILISEARCH_URL = process.env.MEILISEARCH_URL || '';
 export const MEILISEARCH_MASTER_KEY = process.env.MEILISEARCH_MASTER_KEY;
 export const MEILISEARCH_REBUILD_SECRET = process.env.MEILISEARCH_REBUILD_SECRET;
 export const MEILISEARCH_STORE_LEGACY_PDF_CONTENT: boolean =
   process.env.MEILISEARCH_STORE_LEGACY_PDF_CONTENT === 'true';
+*/
 
 // OpenAI
 const getGptVersion = (): GPTVersion => {

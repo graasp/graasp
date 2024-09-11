@@ -5,9 +5,12 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { UnionOfConst } from '@graasp/sdk';
 
-import { resolveDependency } from '../di/utils';
-import { SearchService } from '../services/item/plugins/publication/published/plugins/search/service';
-import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN, ETHERPAD_URL } from '../utils/config';
+// import { resolveDependency } from '../di/utils';
+// import { SearchService } from '../services/item/plugins/publication/published/plugins/search/service';
+import {
+  EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
+  /*, ETHERPAD_URL */
+} from '../utils/config';
 
 const Status = {
   Healthy: 'healthy',
@@ -68,11 +71,11 @@ class UnHealthyStatus extends ServiceStatus {
 const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.get('/status', async (_, reply) => {
     const { db } = fastify;
-    const searchService = resolveDependency(SearchService);
+    // const searchService = resolveDependency(SearchService);
     const api = new HealthyStatus().format();
     const database = (await getDBStatusCheck(db.manager)).format();
-    const etherpad = (await getEtherpadStatusCheck()).format();
-    const meilisearch = (await getSearchStatusCheck(searchService)).format();
+    // const etherpad = (await getEtherpadStatusCheck()).format();
+    // const meilisearch = (await getSearchStatusCheck(searchService)).format();
     const iframely = (await getIframelyStatusCheck()).format();
 
     // allow request cross origin
@@ -80,8 +83,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     return {
       api,
       database,
-      meilisearch,
-      etherpad,
+      // meilisearch,
+      // etherpad,
       iframely,
       // add nudenet, etc...
     };
@@ -105,6 +108,7 @@ const getDBStatusCheck = async (manager: EntityManager): Promise<ServiceStatus> 
   }
 };
 
+/*
 const getEtherpadStatusCheck = async (): Promise<ServiceStatus> => {
   try {
     const etherpadApiEndpoint = new URL(`${ETHERPAD_URL}/api`);
@@ -121,6 +125,7 @@ const getEtherpadStatusCheck = async (): Promise<ServiceStatus> => {
     return new UnexpectedErrorStatus(err);
   }
 };
+*/
 
 const getIframelyStatusCheck = async (): Promise<ServiceStatus> => {
   try {
@@ -139,6 +144,7 @@ const getIframelyStatusCheck = async (): Promise<ServiceStatus> => {
   }
 };
 
+/*
 const getSearchStatusCheck = async (search: SearchService): Promise<ServiceStatus> => {
   try {
     const res = await search.getHealth();
@@ -153,5 +159,6 @@ const getSearchStatusCheck = async (search: SearchService): Promise<ServiceStatu
     return new UnexpectedErrorStatus(err);
   }
 };
+*/
 
 export default plugin;

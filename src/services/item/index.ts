@@ -38,9 +38,9 @@ import graaspFavoritePlugin from './plugins/itemFavorite';
 import graaspItemFlags from './plugins/itemFlag';
 import graaspItemLikes from './plugins/itemLike';
 import graaspItemTags from './plugins/itemTag';
-import graaspItemPublicationState from './plugins/publication/publicationState';
-import graaspItemPublish from './plugins/publication/published';
-import graaspValidationPlugin from './plugins/publication/validation';
+// import graaspItemPublicationState from './plugins/publication/publicationState';
+// import graaspItemPublish from './plugins/publication/published';
+// import graaspValidationPlugin from './plugins/publication/validation';
 import graaspRecycledItemData from './plugins/recycled';
 import ShortLinkService from './plugins/shortLink';
 import { SHORT_LINKS_ROUTE_PREFIX } from './plugins/shortLink/service';
@@ -87,7 +87,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       fastify.register(graaspFavoritePlugin);
 
-      fastify.register(graaspItemPublish);
+      // fastify.register(graaspItemPublish);
 
       fastify.register(thumbnailsPlugin);
 
@@ -99,7 +99,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         prefix: SHORT_LINKS_ROUTE_PREFIX,
       });
 
-      fastify.register(graaspItemPublicationState);
+      // fastify.register(graaspItemPublicationState);
 
       // core routes - require authentication
       fastify.register(async function (fastify) {
@@ -126,7 +126,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         fastify.register(graaspRecycledItemData);
 
-        fastify.register(graaspValidationPlugin);
+        // fastify.register(graaspValidationPlugin);
 
         fastify.register(graaspItemLikes);
 

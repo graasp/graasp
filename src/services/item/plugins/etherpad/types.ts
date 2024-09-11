@@ -1,3 +1,3 @@
-export interface PadNameFactory {
-  getName: () => string;
-}
+// export interface PadNameFactory {
+//   getName: () => string;
+// }

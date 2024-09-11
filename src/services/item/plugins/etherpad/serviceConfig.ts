@@ -1,3 +1,4 @@
+/* 
 import { singleton } from 'tsyringe';
 
 import {
@@ -27,3 +28,4 @@ export class EtherpadServiceConfig {
     this.apiVersion = ETHERPAD_API_VERSION;
   }
 }
+*/

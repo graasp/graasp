@@ -1,3 +1,4 @@
+/*
 import { ConnectionOptions, Queue, Worker } from 'bullmq';
 
 import { BaseLogger } from './logger';
@@ -122,3 +123,4 @@ export class JobService {
     }
   }
 }
+*/

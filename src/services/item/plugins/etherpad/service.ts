@@ -1,3 +1,4 @@
+/*
 import { add, isBefore } from 'date-fns';
 import { inject, singleton } from 'tsyringe';
 import { v4 } from 'uuid';
@@ -29,6 +30,7 @@ export class RandomPadNameFactory implements PadNameFactory {
  * Handles interactions between items and the remote Etherpad service
  * Exposes API to manage etherpad items inside Graasp
  */
+/*
 @singleton()
 export class EtherpadItemService {
   public readonly api: Etherpad;
@@ -56,6 +58,7 @@ export class EtherpadItemService {
   /**
    * Creates a new standalone pad in Etherpad service
    */
+/*
   private async createPad(
     options: { action: 'create'; initHtml?: string } | { action: 'copy'; sourceID: string },
   ) {
@@ -91,6 +94,7 @@ export class EtherpadItemService {
   /**
    * Creates a new Etherpad item linked to a pad in the service
    */
+/*
   public async createEtherpadItem(
     member: Member,
     name: string,
@@ -123,6 +127,7 @@ export class EtherpadItemService {
   /**
    * Helper to determine the final viewing mode of an etherpad
    */
+/*
   private async checkMode(
     requestedMode: 'read' | 'write',
     account: Account,
@@ -151,6 +156,7 @@ export class EtherpadItemService {
    * Retrieves the Etherpad service URL of the requested pad for a given item and a cookie
    * containing all valid sessions for pads for a given member (including the requested pad)
    */
+/*
   public async getEtherpadFromItem(account: Account, itemId: string, mode: 'read' | 'write') {
     const repos = buildRepositories();
     const item = await this.itemService.get(account, repos, itemId);
@@ -293,6 +299,7 @@ export class EtherpadItemService {
    * @param {string} itemId item to retrieve the content of
    * @returns {string} html content of the etherpad
    */
+/*
   public async getEtherpadContentFromItem(account: Account, itemId: string): Promise<string> {
     const repos = buildRepositories();
     const item = await this.itemService.get(account, repos, itemId);
@@ -309,6 +316,7 @@ export class EtherpadItemService {
   /**
    * Deletes an Etherpad associated to an item
    */
+/*
   public async deleteEtherpadForItem(item: Item) {
     if (!isItemType(item, ItemType.ETHERPAD)) {
       return;
@@ -328,6 +336,7 @@ export class EtherpadItemService {
   /**
    * Copies an Etherpad for an associated copied mutable item
    */
+/*
   public async copyEtherpadInMutableItem(item: Item) {
     if (!isItemType(item, ItemType.ETHERPAD)) {
       return;
@@ -350,6 +359,7 @@ export class EtherpadItemService {
    * Builds a group pad ID
    * https://etherpad.org/doc/v1.8.18/#index_pad
    */
+/*
   static buildPadID({ groupID, padName }: { groupID: string; padName: string }) {
     return `${groupID}$${padName}`;
   }
@@ -360,6 +370,7 @@ export class EtherpadItemService {
    * https://etherpad.org/doc/v1.8.18/#index_embed-parameters
    * @param baseUrl if specified, will return the absolute url to the pad, otherwise the relative path will be given
    */
+/*
   static buildPadPath({ padID }: { padID: string }, baseUrl?: string) {
     const path = `/p/${padID}`;
     return baseUrl ? new URL(path, baseUrl).toString() : path;
@@ -369,6 +380,7 @@ export class EtherpadItemService {
   /**
    * Builds an Etherpad extra for Item
    */
+/*
   static buildEtherpadExtra({
     groupID,
     padName,
@@ -385,3 +397,4 @@ export class EtherpadItemService {
   }
   buildEtherpadExtra = EtherpadItemService.buildEtherpadExtra;
 }
+*/

@@ -5,10 +5,9 @@ import registerAppPlugins from './app';
 import ajvFormats from './schemas/ajvFormats';
 import { initSentry } from './sentry';
 import {
-  APP_VERSION,
+  // APP_VERSION,
   CORS_ORIGIN_REGEX,
-  DEV,
-  ENVIRONMENT,
+  DEV, // ENVIRONMENT,
   HOSTNAME,
   PORT, // PROD,
 } from './utils/config';
@@ -60,13 +59,13 @@ const start = async () => {
   //   : null;
   try {
     await instance.listen({ port: PORT, host: HOSTNAME });
-    instance.log.info('App is running version %s in %s mode', APP_VERSION, ENVIRONMENT);
+    // instance.log.info('App is running version %s in %s mode', APP_VERSION, ENVIRONMENT);
     if (DEV) {
       // greet the world
       console.log(`${GREETING}`);
     }
   } catch (err) {
-    instance.log.error(err);
+    // instance.log.error(err);
     Sentry?.withScope((_scope) => {
       // scope.setSpan(mainMetric);
       // scope.setTransactionName(mainMetric.name);

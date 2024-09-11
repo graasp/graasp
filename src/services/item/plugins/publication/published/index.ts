@@ -11,7 +11,7 @@ import { assertIsMember } from '../../../../member/entities/member';
 import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
 import { ItemService } from '../../../service';
 import { PublicationService } from '../publicationState/service';
-import graaspSearchPlugin from './plugins/search';
+// import graaspSearchPlugin from './plugins/search';
 import {
   getCollectionsForMember,
   getInformations,
@@ -29,7 +29,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   const publicationService = resolveDependency(PublicationService);
   const itemService = resolveDependency(ItemService);
 
-  fastify.register(graaspSearchPlugin);
+  // fastify.register(graaspSearchPlugin);
 
   fastify.get<{ Params: { memberId: UUID } }>(
     '/collections/members/:memberId',

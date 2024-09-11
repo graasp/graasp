@@ -2,10 +2,8 @@ import { Repository } from 'typeorm';
 
 import {
   AppItemFactory,
-  DocumentItemFactory,
-  EtherpadItemFactory,
-  FolderItemFactory,
-  H5PItemFactory,
+  DocumentItemFactory, // EtherpadItemFactory,
+  FolderItemFactory, // H5PItemFactory,
   ItemTagType,
   ItemType,
   LinkItemFactory,
@@ -25,7 +23,7 @@ import { DEFAULT_ORDER, Item, ItemExtraMap } from '../../entities/Item';
 import { ItemTag } from '../../plugins/itemTag/ItemTag';
 import { ItemTagRepository } from '../../plugins/itemTag/repository';
 import { setItemPublic } from '../../plugins/itemTag/test/fixtures';
-import { ItemPublished } from '../../plugins/publication/published/entities/itemPublished';
+// import { ItemPublished } from '../../plugins/publication/published/entities/itemPublished';
 import { RecycledItemDataRepository } from '../../plugins/recycled/repository';
 import { ItemRepository } from '../../repository';
 
@@ -34,14 +32,14 @@ export class ItemTestUtils {
   public itemTagRepository: ItemTagRepository;
   public rawItemRepository: Repository<Item<keyof ItemExtraMap>>;
   recycledItemDataRepository: RecycledItemDataRepository;
-  rawItemPublishedRepository: Repository<ItemPublished>;
+  // rawItemPublishedRepository: Repository<ItemPublished>;
 
   constructor() {
     this.itemRepository = new ItemRepository();
     this.itemTagRepository = new ItemTagRepository();
     this.rawItemRepository = AppDataSource.getRepository(Item);
     this.recycledItemDataRepository = new RecycledItemDataRepository();
-    this.rawItemPublishedRepository = AppDataSource.getRepository(ItemPublished);
+    // this.rawItemPublishedRepository = AppDataSource.getRepository(ItemPublished);
   }
 
   createItem(
@@ -71,12 +69,12 @@ export class ItemTestUtils {
       case ItemType.S3_FILE:
         item = S3FileItemFactory(castedArgs);
         break;
-      case ItemType.H5P:
-        item = H5PItemFactory(castedArgs);
-        break;
-      case ItemType.ETHERPAD:
-        item = EtherpadItemFactory(castedArgs);
-        break;
+      // case ItemType.H5P:
+      //   item = H5PItemFactory(castedArgs);
+      //   break;
+      // case ItemType.ETHERPAD:
+      //   item = EtherpadItemFactory(castedArgs);
+      //   break;
       case ItemType.SHORTCUT:
         item = ShortcutItemFactory(castedArgs);
         break;
@@ -201,7 +199,7 @@ export class ItemTestUtils {
       const publicTag = await setItemPublic(item, member);
       packedItems.push(new ItemWrapper(item, itemMembership, [publicTag]).packed());
       tags.push(publicTag);
-      await this.rawItemPublishedRepository.save({ item, creator: member });
+      // await this.rawItemPublishedRepository.save({ item, creator: member });
     }
     return { items, packedItems, tags };
   };

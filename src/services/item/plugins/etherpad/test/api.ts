@@ -1,3 +1,4 @@
+/*
 import nock from 'nock';
 
 import Etherpad from '@graasp/etherpad-api';
@@ -24,6 +25,7 @@ type Api = {
  * Helper to setup an emulator for the etherpad server
  * @param replies Enables which endpoints should be emulated with the given responses
  */
+/*
 export function setUpApi(replies: Api): Promise<{ [Endpoint in keyof Api]: URLSearchParams }> {
   const api = nock(`${ETHERPAD_URL}/api/${ETHERPAD_API_VERSION}/`);
 
@@ -45,3 +47,4 @@ export function setUpApi(replies: Api): Promise<{ [Endpoint in keyof Api]: URLSe
 
   return Promise.all(endpointAndParams).then(Object.fromEntries);
 }
+*/

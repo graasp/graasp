@@ -1,11 +1,10 @@
-/* 
 import { Redis } from 'ioredis';
-import { MeiliSearch } from 'meilisearch';
-*/
+
+// import { MeiliSearch } from 'meilisearch';
 import { FastifyInstance } from 'fastify';
 
 // import Etherpad from '@graasp/etherpad-api';
-import { CRON_3AM_MONDAY, JobServiceBuilder } from '../jobs';
+// import { CRON_3AM_MONDAY, JobServiceBuilder } from '../jobs';
 import { BaseLogger } from '../logger';
 import { MailerService } from '../plugins/mailer/service';
 // import FileService from '../services/file/service';
@@ -21,7 +20,7 @@ import FileItemService from '../services/item/plugins/file/service';
 import { ImportExportService } from '../services/item/plugins/importExport/service';
 import { PublicationService } from '../services/item/plugins/publication/publicationState/service';
 // import { MeiliSearchWrapper } from '../services/item/plugins/publication/published/plugins/search/meilisearch';
-import { SearchService } from '../services/item/plugins/publication/published/plugins/search/service';
+// import { SearchService } from '../services/item/plugins/publication/published/plugins/search/service';
 import { ValidationQueue } from '../services/item/plugins/publication/validation/validationQueue';
 import { ItemService } from '../services/item/service';
 import {
@@ -36,11 +35,11 @@ import {
   MAILER_CONFIG_SMTP_USE_SSL,
   MAILER_CONFIG_USERNAME,
   /*MEILISEARCH_MASTER_KEY,
-MEILISEARCH_URL,
-REDIS_HOST,
-REDIS_PASSWORD,
-REDIS_PORT,
-REDIS_USERNAME,*/
+MEILISEARCH_URL,*/
+  REDIS_HOST,
+  REDIS_PASSWORD,
+  REDIS_PORT,
+  REDIS_USERNAME,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
 } from '../utils/config';
 import { buildRepositories } from '../utils/repositories';
@@ -69,7 +68,7 @@ export const registerDependencies = (instance: FastifyInstance) => {
   // register geolocation key for the ItemGeolocationService.
   registerValue(GEOLOCATION_API_KEY_DI_KEY, GEOLOCATION_API_KEY);
 
-  /* registerValue(
+  registerValue(
     Redis,
     new Redis({
       host: REDIS_HOST,
@@ -77,7 +76,7 @@ export const registerDependencies = (instance: FastifyInstance) => {
       username: REDIS_USERNAME,
       password: REDIS_PASSWORD,
     }),
-  ); */
+  );
 
   registerValue(
     MailerService,
@@ -121,6 +120,7 @@ export const registerDependencies = (instance: FastifyInstance) => {
   );
   */
 
+  /*
   // Launch Job workers
   const jobServiceBuilder = new JobServiceBuilder(resolveDependency(BaseLogger));
   jobServiceBuilder
@@ -129,6 +129,7 @@ export const registerDependencies = (instance: FastifyInstance) => {
       pattern: CRON_3AM_MONDAY,
     })
     .build();
+  */
 
   /*
   // Register EtherPad
