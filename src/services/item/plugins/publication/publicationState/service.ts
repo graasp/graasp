@@ -33,7 +33,7 @@ export class PublicationService {
 
   public async computeStateForItem(member: Account, repositores: Repositories, itemId: string) {
     const item = await this.itemService.get(member, repositores, itemId, PermissionLevel.Admin);
-    const publicTag = await this.itemTagRepository.getType(item, ItemTagType.Public, {
+    const publicTag = await this.itemTagRepository.getType(item.path, ItemTagType.Public, {
       shouldThrow: false,
     });
     const packedItem = new ItemWrapper(item, undefined, publicTag ? [publicTag] : []).packed();

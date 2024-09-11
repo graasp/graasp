@@ -55,7 +55,7 @@ describe('validatePermission', () => {
     getManyForManyMock.mockClear();
   });
   it('Invalid saved membership', async () => {
-    jest.spyOn(itemTagRepository, 'getForItem').mockImplementation(returnDummyArray);
+    jest.spyOn(itemTagRepository, 'getByItemPath').mockImplementation(returnDummyArray);
 
     const repositories = {
       itemMembershipRepository: {
@@ -72,7 +72,7 @@ describe('validatePermission', () => {
 
   describe('Private item', () => {
     beforeEach(() => {
-      jest.spyOn(itemTagRepository, 'getForItem').mockImplementation(returnDummyArray);
+      jest.spyOn(itemTagRepository, 'getByItemPath').mockImplementation(returnDummyArray);
       repositories = {
         itemMembershipRepository: {
           getInherited: jest.fn((item, member) =>
@@ -134,7 +134,7 @@ describe('validatePermission', () => {
   describe('Shared item with Read permission', () => {
     const sharedMembership = buildSharedMembership(PermissionLevel.Read);
 
-    jest.spyOn(itemTagRepository, 'getForItem').mockImplementation(returnDummyArray);
+    jest.spyOn(itemTagRepository, 'getByItemPath').mockImplementation(returnDummyArray);
     const repositories = {
       itemMembershipRepository: {
         getInherited: jest.fn((item, member) => {
@@ -222,7 +222,7 @@ describe('validatePermission', () => {
   describe('Shared item with Write permission', () => {
     const sharedMembership = buildSharedMembership(PermissionLevel.Write);
 
-    jest.spyOn(itemTagRepository, 'getForItem').mockImplementation(returnDummyArray);
+    jest.spyOn(itemTagRepository, 'getByItemPath').mockImplementation(returnDummyArray);
     const repositories = {
       itemMembershipRepository: {
         getInherited: jest.fn((item, member) => {
@@ -314,7 +314,7 @@ describe('validatePermission', () => {
   describe('Shared item with Admin permission', () => {
     const sharedMembership = buildSharedMembership(PermissionLevel.Admin);
 
-    jest.spyOn(itemTagRepository, 'getForItem').mockImplementation(returnDummyArray);
+    jest.spyOn(itemTagRepository, 'getByItemPath').mockImplementation(returnDummyArray);
     const repositories = {
       itemMembershipRepository: {
         getInherited: jest.fn((item, member) => {
@@ -410,7 +410,7 @@ describe('validatePermission', () => {
   describe('Public item', () => {
     beforeEach(() => {
       jest
-        .spyOn(itemTagRepository, 'getForItem')
+        .spyOn(itemTagRepository, 'getByItemPath')
         .mockImplementation(async () => [MOCK_ITEM_TAG_PUBLIC]);
       repositories = {
         itemMembershipRepository: {
@@ -484,7 +484,7 @@ describe('validatePermission', () => {
     const sharedMembership = buildSharedMembership(PermissionLevel.Read);
     beforeEach(() => {
       jest
-        .spyOn(itemTagRepository, 'getForItem')
+        .spyOn(itemTagRepository, 'getByItemPath')
         .mockImplementation(async () => [MOCK_ITEM_TAG_PUBLIC]);
 
       repositories = {
@@ -580,7 +580,7 @@ describe('validatePermission', () => {
     const sharedMembership = buildSharedMembership(PermissionLevel.Write);
     beforeEach(() => {
       jest
-        .spyOn(itemTagRepository, 'getForItem')
+        .spyOn(itemTagRepository, 'getByItemPath')
         .mockImplementation(async () => [MOCK_ITEM_TAG_PUBLIC]);
 
       repositories = {
@@ -681,7 +681,7 @@ describe('validatePermission', () => {
 
     beforeEach(() => {
       jest
-        .spyOn(itemTagRepository, 'getForItem')
+        .spyOn(itemTagRepository, 'getByItemPath')
         .mockImplementation(async () => [MOCK_ITEM_TAG_PUBLIC]);
 
       repositories = {
@@ -786,7 +786,7 @@ describe('validatePermission', () => {
 
     beforeEach(() => {
       jest
-        .spyOn(itemTagRepository, 'getForItem')
+        .spyOn(itemTagRepository, 'getByItemPath')
         .mockImplementation(async () => [MOCK_ITEM_TAG_HIDDEN]);
 
       repositories = {
@@ -874,7 +874,7 @@ describe('validatePermission', () => {
     const sharedMembership = buildSharedMembership(PermissionLevel.Write);
     beforeEach(() => {
       jest
-        .spyOn(itemTagRepository, 'getForItem')
+        .spyOn(itemTagRepository, 'getByItemPath')
         .mockImplementation(async () => [MOCK_ITEM_TAG_HIDDEN]);
 
       repositories = {
@@ -970,7 +970,7 @@ describe('validatePermission', () => {
 
     beforeEach(() => {
       jest
-        .spyOn(itemTagRepository, 'getForItem')
+        .spyOn(itemTagRepository, 'getByItemPath')
         .mockImplementation(async () => [MOCK_ITEM_TAG_HIDDEN]);
 
       repositories = {
@@ -1068,7 +1068,7 @@ describe('validatePermission', () => {
   describe('Public & Hidden item', () => {
     beforeEach(() => {
       jest
-        .spyOn(itemTagRepository, 'getForItem')
+        .spyOn(itemTagRepository, 'getByItemPath')
         .mockImplementation(async () => [MOCK_ITEM_TAG_HIDDEN, MOCK_ITEM_TAG_PUBLIC]);
 
       repositories = {
@@ -1139,7 +1139,7 @@ describe('validatePermission', () => {
     const sharedMembership = buildSharedMembership(PermissionLevel.Read);
 
     jest
-      .spyOn(itemTagRepository, 'getForItem')
+      .spyOn(itemTagRepository, 'getByItemPath')
       .mockImplementation(async () => [MOCK_ITEM_TAG_HIDDEN, MOCK_ITEM_TAG_PUBLIC]);
     const repositories = {
       itemMembershipRepository: {
@@ -1225,7 +1225,7 @@ describe('validatePermission', () => {
     const sharedMembership = buildSharedMembership(PermissionLevel.Write);
 
     jest
-      .spyOn(itemTagRepository, 'getForItem')
+      .spyOn(itemTagRepository, 'getByItemPath')
       .mockImplementation(async () => [MOCK_ITEM_TAG_HIDDEN, MOCK_ITEM_TAG_PUBLIC]);
     const repositories = {
       itemMembershipRepository: {
@@ -1319,7 +1319,7 @@ describe('validatePermission', () => {
     const sharedMembership = buildSharedMembership(PermissionLevel.Admin);
 
     jest
-      .spyOn(itemTagRepository, 'getForItem')
+      .spyOn(itemTagRepository, 'getByItemPath')
       .mockImplementation(async () => [MOCK_ITEM_TAG_HIDDEN, MOCK_ITEM_TAG_PUBLIC]);
     const repositories = {
       itemMembershipRepository: {
@@ -1420,7 +1420,7 @@ describe('validatePermissionMany for no items', () => {
     getManyForManyMock.mockClear();
   });
   it('Should return empty data', async () => {
-    jest.spyOn(itemTagRepository, 'getForItem').mockImplementation(returnDummyArray);
+    jest.spyOn(itemTagRepository, 'getByItemPath').mockImplementation(returnDummyArray);
     const repositories = {
       itemMembershipRepository: {
         getInheritedMany: jest.fn(() => ({ permission: 'anything' })),
@@ -1449,7 +1449,7 @@ describe('validatePermissionMany for one item', () => {
   });
 
   it('Invalid saved membership', async () => {
-    jest.spyOn(itemTagRepository, 'getForItem').mockImplementation(returnDummyArray);
+    jest.spyOn(itemTagRepository, 'getByItemPath').mockImplementation(returnDummyArray);
     const repositories = {
       itemMembershipRepository: {
         getInheritedMany: jest.fn(() => ({ permission: 'anything' })),

@@ -82,7 +82,7 @@ export class ItemPublishedService {
     const item = await this.itemService.get(actor, repositories, itemId);
 
     // item should be public first
-    await itemTagRepository.getType(item, ItemTagType.Public, { shouldThrow: true });
+    await itemTagRepository.getType(item.path, ItemTagType.Public, { shouldThrow: true });
 
     // get item published entry
     const publishedItem = await itemPublishedRepository.getForItem(item);
@@ -171,7 +171,7 @@ export class ItemPublishedService {
     this.checkPublicationStatus(item, publicationStatus);
 
     // item should be public first
-    const tag = await itemTagRepository.getType(item, ItemTagType.Public, {
+    const tag = await itemTagRepository.getType(item.path, ItemTagType.Public, {
       shouldThrow: !canBePrivate,
     });
 

@@ -7,7 +7,7 @@ import { InvalidPassword } from '../../utils/errors';
 import { Repositories } from '../../utils/repositories';
 import { verifyCurrentPassword } from '../auth/plugins/password/utils';
 import { ItemService } from '../item/service';
-import { Actor, Member } from '../member/entities/member';
+import { Member } from '../member/entities/member';
 import { Guest } from './entities/guest';
 import { ItemLoginSchemaNotFound, MissingCredentialsForLoginSchema } from './errors';
 import { ItemLoginMemberCredentials } from './interfaces/item-login';
@@ -22,23 +22,8 @@ export class ItemLoginService {
     this.itemService = itemService;
   }
 
-  async get(actor: Actor, repositories: Repositories, itemId: string) {
-    const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
-    return await repositories.itemLoginSchemaRepository.getOneByItemPathOrThrow(
-      item.path,
-      ItemLoginSchemaNotFound,
-      { itemPath: item.path },
-    );
-  }
-
-  async getSchemaType(actor: Actor, repositories: Repositories, itemId: string) {
-    const item = await repositories.itemRepository.getOneOrThrow(itemId);
-    // do not need permission to get item login schema
-    // we need to know the schema to display the correct form
-    const itemLoginSchema = await repositories.itemLoginSchemaRepository.getOneByItemPath(
-      item.path,
-    );
-    return itemLoginSchema?.type;
+  async getByItemPath({ itemLoginSchemaRepository }: Repositories, itemPath: string) {
+    return itemLoginSchemaRepository.getOneByItemPath(itemPath);
   }
 
   async login(repositories: Repositories, itemId: string, credentials: ItemLoginMemberCredentials) {
