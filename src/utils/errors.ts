@@ -344,6 +344,19 @@ export class CannotReorderRootItem extends CoreError {
   }
 }
 
+export class CannotModifyGuestItemMembership extends CoreError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GERR035',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: FAILURE_MESSAGES.CANNOT_MODIFY_GUEST_ITEM_MEMBERSHIP,
+      },
+      data,
+    );
+  }
+}
+
 export class UnexpectedError extends CoreError {
   constructor(data?: unknown) {
     super(
