@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.48.0](https://github.com/graasp/graasp/compare/v1.47.0...v1.48.0) (2024-09-12)
+
+
+### Features
+
+* allow exporting etherpad ([#1343](https://github.com/graasp/graasp/issues/1343)) ([df38327](https://github.com/graasp/graasp/commit/df383279160091a00e298fe421f8576860c912a9))
+* item login users are different than members  ([#1131](https://github.com/graasp/graasp/issues/1131)) ([48342d4](https://github.com/graasp/graasp/commit/48342d4919f4c1e5652ed8f8b520f53eab984d7d))
+* restrict guest's membership modifications ([#1363](https://github.com/graasp/graasp/issues/1363)) ([9f71c0e](https://github.com/graasp/graasp/commit/9f71c0e9a77d942ba3ab8abbc52d991787b09035))
+
+
+### Bug Fixes
+
+* **deps:** update aws-sdk-js-v3 monorepo to v3.637.0 ([#1255](https://github.com/graasp/graasp/issues/1255)) ([2545aed](https://github.com/graasp/graasp/commit/2545aedafba37539a026553f820d657144aaf6ea))
+* **deps:** update dependency @fastify/swagger-ui to v4.0.1 ([#1321](https://github.com/graasp/graasp/issues/1321)) ([d5fccbe](https://github.com/graasp/graasp/commit/d5fccbef9672305a22ad2db7f2fcd850d745dc0f))
+* **deps:** update dependency openai to v4.56.0 ([#1261](https://github.com/graasp/graasp/issues/1261)) ([f0a65c8](https://github.com/graasp/graasp/commit/f0a65c894bb7a51cc304d4ef7dec759ebefc0ce0))
+* **french:** update translations ([#1329](https://github.com/graasp/graasp/issues/1329)) ([ab861b8](https://github.com/graasp/graasp/commit/ab861b86f704bfc3720756e7928d0268ef0b8efd))
+* membership request out of fastify cors scope ([#1352](https://github.com/graasp/graasp/issues/1352)) ([f02c593](https://github.com/graasp/graasp/commit/f02c593b85e74960979689bd6ef8b14ee55716dd))
+* **MutableRepository:** use getOne in updateOne ([#1346](https://github.com/graasp/graasp/issues/1346)) ([55f1730](https://github.com/graasp/graasp/commit/55f1730f1051c38d22a0a4bef968ab8f7497ca00))
+* remove deprecated packages ([#1259](https://github.com/graasp/graasp/issues/1259)) ([8f6f26a](https://github.com/graasp/graasp/commit/8f6f26a08b857e2e231b3fee95affebf4c6fc1a7))
+
 ## [1.47.0](https://github.com/graasp/graasp/compare/v1.46.0...v1.47.0) (2024-08-19)
 
 
