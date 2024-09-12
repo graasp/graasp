@@ -51,6 +51,16 @@ type ResultMoveHousekeeping = {
   inserts: CreateItemMembershipBody[];
   deletes: KeyCompositionItemMembership[];
 };
+type DetachedMoveHousekeepingType = {
+  accountId: string;
+  itemPath: string;
+  permission: PermissionLevel;
+};
+type MoveHousekeepingType = DetachedMoveHousekeepingType & {
+  action: number;
+  inherited: PermissionLevel;
+  action2IgnoreInherited: boolean;
+};
 
 export class ItemMembershipRepository extends MutableRepository<
   ItemMembership,
@@ -691,7 +701,7 @@ export class ItemMembershipRepository extends MutableRepository<
       .addSelect('max(permission)', 'permission') // Get the best permission
       .where('item_path @> :path', { path: item.path })
       .groupBy('account_id')
-      .getRawMany()) as { accountId: string; itemPath: string; permission: PermissionLevel }[];
+      .getRawMany()) as DetachedMoveHousekeepingType[];
 
     const changes: ResultMoveHousekeeping = {
       inserts: [],
@@ -764,14 +774,7 @@ export class ItemMembershipRepository extends MutableRepository<
         ${getPermissionsAtItemSql(item.path, newParentItemPath, itemIdAsPath, parentItemPath)}
       ) AS t2
       ORDER BY account_id, nlevel(item_path), permission;
-    `)) as {
-      accountId: string;
-      itemPath: string;
-      permission: PermissionLevel;
-      action: number;
-      inherited: PermissionLevel;
-      action2IgnoreInherited: boolean;
-    }[];
+    `)) as MoveHousekeepingType[];
 
     const changes: ResultMoveHousekeeping = {
       inserts: [],
