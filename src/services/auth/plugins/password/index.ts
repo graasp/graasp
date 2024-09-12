@@ -5,7 +5,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { ActionTriggers, Context, RecaptchaAction } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
-import { notUndefined } from '../../../../utils/assertions';
+import { asDefined } from '../../../../utils/assertions';
 import { LOGIN_TOKEN_EXPIRATION_IN_MINUTES, PUBLIC_URL } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
 import { ActionService } from '../../../action/services/action';
@@ -54,7 +54,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     async (request, reply) => {
       const { body, log, user } = request;
       const { url } = body;
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       const token = await memberPasswordService.generateToken(
         { sub: member.id },
         `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
@@ -81,7 +81,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/password',
     { schema: setPassword, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async ({ user, body: { password } }, reply) => {
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       return db.transaction(async (manager) => {
         await memberPasswordService.post(member, buildRepositories(manager), password);
         reply.status(StatusCodes.NO_CONTENT);
@@ -100,7 +100,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/password',
     { schema: updatePassword, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async ({ user, body: { currentPassword, password } }, reply) => {
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       return db.transaction(async (manager) => {
         await memberPasswordService.patch(
           member,
@@ -178,7 +178,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         user,
         body: { password },
       } = request;
-      const uuid = notUndefined(user?.passwordResetRedisKey);
+      const uuid = asDefined(user?.passwordResetRedisKey);
       await memberPasswordService.applyReset(repositories, password, uuid);
       const member = await memberPasswordService.getMemberByPasswordResetUuid(repositories, uuid);
       reply.status(StatusCodes.NO_CONTENT);
@@ -205,7 +205,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: [isAuthenticated],
     },
     async ({ user }) => {
-      const account = notUndefined(user?.account);
+      const account = asDefined(user?.account);
       const repositories = buildRepositories();
       const hasPassword = await memberPasswordService.hasPassword(repositories, account.id);
       return { hasPassword };

@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import { notUndefined } from '../../../../utils/assertions';
+import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
@@ -23,7 +23,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/own',
     { schema: getOwnProfile, preHandler: isAuthenticated },
     async ({ user }, reply) => {
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
       const profile = await memberProfileService.getOwn(member, buildRepositories());
       if (!profile) {
@@ -55,7 +55,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       const { user, body: data } = request;
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
       return db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
@@ -75,7 +75,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
     async ({ user, body }): Promise<MemberProfile> => {
       return db.transaction(async (manager) => {
-        const member = notUndefined(user?.account);
+        const member = asDefined(user?.account);
         assertIsMember(member);
         const profile = await memberProfileService.patch(member, buildRepositories(manager), body);
         if (!profile) {

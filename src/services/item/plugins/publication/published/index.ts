@@ -3,7 +3,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { PermissionLevel, UUID } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../di/utils';
-import { notUndefined } from '../../../../../utils/assertions';
+import { asDefined } from '../../../../../utils/assertions';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../../auth/plugins/passport';
 import { matchOne } from '../../../../authorization';
@@ -82,7 +82,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       schema: publishItem,
     },
     async ({ params, user }) => {
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
       return db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
@@ -107,7 +107,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       schema: unpublishItem,
     },
     async ({ params, user }) => {
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
       return db.transaction(async (manager) => {
         return itemPublishedService.delete(member, buildRepositories(manager), params.itemId);

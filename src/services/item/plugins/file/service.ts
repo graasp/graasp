@@ -15,7 +15,7 @@ import {
   getFileExtension,
 } from '@graasp/sdk';
 
-import { notUndefined } from '../../../../utils/assertions';
+import { asDefined } from '../../../../utils/assertions';
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import FileService from '../../../file/service';
@@ -143,7 +143,7 @@ class FileItemService {
         } else if (MimeTypes.isPdf(mimetype)) {
           // Convert first page of PDF to image buffer and upload as thumbnail
           const outputImg = await convertPDFtoImageFromPath(path)(1, { responseType: 'buffer' });
-          const buffer = notUndefined(outputImg.buffer);
+          const buffer = asDefined(outputImg.buffer);
           await this.itemThumbnailService.upload(
             actor,
             repositories,

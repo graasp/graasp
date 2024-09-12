@@ -15,7 +15,7 @@ import {
 
 import build, { clearDatabase } from '../../../../test/app';
 import { AppDataSource } from '../../../plugins/datasource';
-import { assertNonNull } from '../../../utils/assertions';
+import { assertIsDefined } from '../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
 import { MemberCannotAdminItem } from '../../../utils/errors';
 import { MemberPassword } from '../../auth/plugins/password/entities/password';
@@ -148,8 +148,8 @@ describe('Item Login Tests', () => {
       });
 
       it('Successfully get item login', async () => {
-        assertNonNull(item);
-        assertNonNull(actor);
+        assertIsDefined(item);
+        assertIsDefined(actor);
         await testUtils.saveMembership({ item, account: actor, permission: PermissionLevel.Admin });
         const res = await app.inject({
           method: HttpMethod.Get,
@@ -164,8 +164,8 @@ describe('Item Login Tests', () => {
       });
 
       it('Successfully get item login defined in parent when calling from child for child ', async () => {
-        assertNonNull(item);
-        assertNonNull(actor);
+        assertIsDefined(item);
+        assertIsDefined(actor);
         await testUtils.saveMembership({ item, account: actor, permission: PermissionLevel.Admin });
         const child = await testUtils.saveItem({ parentItem: item, actor });
         const res = await app.inject({
@@ -181,8 +181,8 @@ describe('Item Login Tests', () => {
       });
 
       it('Throws if has Write permission', async () => {
-        assertNonNull(item);
-        assertNonNull(actor);
+        assertIsDefined(item);
+        assertIsDefined(actor);
         await testUtils.saveMembership({ item, account: actor, permission: PermissionLevel.Write });
         const res = await app.inject({
           method: HttpMethod.Get,
@@ -215,7 +215,7 @@ describe('Item Login Tests', () => {
       });
 
       it('Cannot item login if already signed in', async () => {
-        assertNonNull(item);
+        assertIsDefined(item);
         const res = await app.inject({
           method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login`,
@@ -262,7 +262,7 @@ describe('Item Login Tests', () => {
 
         describe('Username', () => {
           it('Successfully create item login with username', async () => {
-            assertNonNull(item);
+            assertIsDefined(item);
             const payload = USERNAME_LOGIN;
             await saveItemLoginSchema({ item: item as unknown as DiscriminatedItem });
             expect(await rawItemLoginRepository.count()).toEqual(0);
@@ -278,7 +278,7 @@ describe('Item Login Tests', () => {
           });
 
           it('Successfully reuse item login with username', async () => {
-            assertNonNull(item);
+            assertIsDefined(item);
             const payload = USERNAME_LOGIN;
             // pre-create pseudonymized data
             const { guest: m } = await saveItemLoginSchema({
@@ -298,7 +298,7 @@ describe('Item Login Tests', () => {
           });
 
           it('Successfully reuse item login with username defined in parent when calling from child', async () => {
-            assertNonNull(item);
+            assertIsDefined(item);
             const payload = USERNAME_LOGIN;
             // pre-create pseudonymized data
             const { guest: m } = await saveItemLoginSchema({
@@ -360,7 +360,7 @@ describe('Item Login Tests', () => {
 
         describe('Username', () => {
           it('Successfully create item login with username and password', async () => {
-            assertNonNull(item);
+            assertIsDefined(item);
             await saveItemLoginSchema({
               item: item as unknown as DiscriminatedItem,
               type: ItemLoginSchemaType.UsernameAndPassword,
@@ -379,7 +379,7 @@ describe('Item Login Tests', () => {
           });
 
           it('Successfully reuse item login with username and password', async () => {
-            assertNonNull(item);
+            assertIsDefined(item);
             // pre-create pseudonymized data
             const { guest: m } = await saveItemLoginSchema({
               item: item as unknown as DiscriminatedItem,
@@ -399,7 +399,7 @@ describe('Item Login Tests', () => {
           });
 
           it('Throws if item login with username and wrong password', async () => {
-            assertNonNull(item);
+            assertIsDefined(item);
             await saveItemLoginSchema({
               item: item as unknown as DiscriminatedItem,
               type: ItemLoginSchemaType.UsernameAndPassword,
@@ -448,7 +448,7 @@ describe('Item Login Tests', () => {
       });
 
       it('Successfully change item login schema', async () => {
-        assertNonNull(item);
+        assertIsDefined(item);
         const res = await app.inject({
           method: HttpMethod.Put,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema`,
@@ -460,7 +460,7 @@ describe('Item Login Tests', () => {
       });
 
       it('Cannot change item login schema if have write permission', async () => {
-        assertNonNull(actor);
+        assertIsDefined(actor);
         // save new item with wanted memberships
         const { item: item1 } = await testUtils.saveItemAndMembership({
           member: actor,
@@ -479,7 +479,7 @@ describe('Item Login Tests', () => {
       });
 
       it('Cannot put item login schema if is inherited', async () => {
-        assertNonNull(item);
+        assertIsDefined(item);
         // save new item with wanted memberships
         const child = await testUtils.saveItem({ parentItem: item, actor });
 

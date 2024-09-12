@@ -7,7 +7,7 @@ import { ActionTriggers, ItemType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
 import { BaseLogger } from '../../../../logger';
-import { notUndefined } from '../../../../utils/assertions';
+import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { ActionService } from '../../../action/services/action';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
@@ -48,7 +48,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         log,
         query: { parentId },
       } = request;
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
 
       log.debug('Import zip content');

@@ -4,7 +4,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { AppIdentification, AuthTokenSubject } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
-import { notUndefined } from '../../../../utils/assertions';
+import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import {
   guestAuthenticateAppsJWT,
@@ -71,7 +71,7 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
         '/most-used',
         { schema: getMostUsed, preHandler: isAuthenticated },
         async ({ user }) => {
-          const member = notUndefined(user?.account);
+          const member = asDefined(user?.account);
           return appService.getMostUsedApps(member, buildRepositories());
         },
       );
@@ -121,7 +121,7 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
         '/:itemId/context',
         { schema: getContext, preHandler: guestAuthenticateAppsJWT },
         async ({ user, params: { itemId } }) => {
-          const app = notUndefined(user?.app);
+          const app = asDefined(user?.app);
           const requestDetails: AuthTokenSubject = {
             accountId: user?.account?.id,
             itemId: app.item.id,

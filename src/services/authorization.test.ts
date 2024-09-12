@@ -11,7 +11,7 @@ import {
 
 import build, { clearDatabase, mockAuthenticate } from '../../test/app';
 import { ItemMembershipRepository } from '../services/itemMembership/repository';
-import { notUndefined } from '../utils/assertions';
+import { asDefined } from '../utils/assertions';
 import { MemberCannotAccess, MemberCannotAdminItem, MemberCannotWriteItem } from '../utils/errors';
 import { Account } from './account/entities/account';
 import { isAuthenticated } from './auth/plugins/passport';
@@ -3350,7 +3350,7 @@ describe('Passport Plugin', () => {
   beforeEach(async () => {
     let actor: Member | undefined;
     ({ app, actor } = await build({}));
-    member = notUndefined(actor);
+    member = asDefined(actor);
     handler = jest.fn();
     preHandler = jest.fn(async () => {});
     app.get(MOCKED_ROUTE, { preHandler: [isAuthenticated, preHandler] }, async (...args) =>

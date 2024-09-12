@@ -1,7 +1,7 @@
 import build, { clearDatabase } from '../../../../../../test/app';
 import { resolveDependency } from '../../../../../di/utils';
 import { AppDataSource } from '../../../../../plugins/datasource';
-import { notUndefined } from '../../../../../utils/assertions';
+import { asDefined } from '../../../../../utils/assertions';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { Action } from '../../../../action/entities/action';
 import { ActionService } from '../../../../action/services/action';
@@ -37,7 +37,7 @@ describe('Action member service', () => {
   describe('Test getFilteredActions', () => {
     it('get filtered actions by start and end date for auth member ', async () => {
       ({ app, actor } = await build());
-      const member = notUndefined(actor);
+      const member = asDefined(actor);
       assertIsMember(member);
       await saveActionsWithItems(actor);
       const result = await getActionMemberService().getFilteredActions(
@@ -50,7 +50,7 @@ describe('Action member service', () => {
 
     it("get filtered actions by start and end date for auth member shouldn't contain actions for items with no permisson", async () => {
       ({ app, actor } = await build());
-      const member = notUndefined(actor);
+      const member = asDefined(actor);
       assertIsMember(member);
       await saveActionsWithItems(actor, { saveActionForNotOwnedItem: true });
       const result = await getActionMemberService().getFilteredActions(

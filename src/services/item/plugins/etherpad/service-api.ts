@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
 import { resolveDependency } from '../../../../di/utils';
-import { notUndefined } from '../../../../utils/assertions';
+import { asDefined } from '../../../../utils/assertions';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
 import { assertIsMember } from '../../../member/entities/member';
@@ -33,7 +33,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             query: { parentId },
             body: { name },
           } = request;
-          const member = notUndefined(user?.account);
+          const member = asDefined(user?.account);
           assertIsMember(member);
           return await etherpadItemService.createEtherpadItem(member, name, parentId);
         },
@@ -54,7 +54,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             params: { itemId },
             query: { mode = 'read' },
           } = request;
-          const member = notUndefined(user?.account);
+          const member = asDefined(user?.account);
 
           const { cookie, padUrl } = await etherpadItemService.getEtherpadFromItem(
             member,

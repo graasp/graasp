@@ -1,4 +1,4 @@
-import { notUndefined } from '../assertions';
+import { asDefined } from '../assertions';
 import { UndefinedVariableError } from './errors';
 import { Validator, Variable } from './types';
 
@@ -39,7 +39,7 @@ export function validateEnv(
 }
 
 export function valueShouldBeDefined<T>(name: string, value?: T) {
-  return notUndefined(value, new UndefinedVariableError(name));
+  return asDefined(value, UndefinedVariableError, name);
 }
 
 export function urlContainsProtocol(url: string) {

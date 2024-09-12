@@ -7,7 +7,7 @@ import { RecaptchaAction } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
 import { resolveDependency } from '../../../../di/utils';
-import { notUndefined } from '../../../../utils/assertions';
+import { asDefined } from '../../../../utils/assertions';
 import { AUTH_CLIENT_HOST } from '../../../../utils/config';
 import { MemberAlreadySignedUp } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
@@ -130,7 +130,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         query: { url },
         log,
       } = request;
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       const redirectionUrl = getRedirectionUrl(log, url ? decodeURIComponent(url) : undefined);
       await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);

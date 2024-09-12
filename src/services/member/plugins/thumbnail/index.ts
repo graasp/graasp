@@ -7,7 +7,7 @@ import { ThumbnailSizeType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
 import { IdParam } from '../../../../types';
-import { notUndefined } from '../../../../utils/assertions';
+import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
@@ -50,7 +50,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
     async (request, reply) => {
-      const member = notUndefined(request.user?.account);
+      const member = asDefined(request.user?.account);
       assertIsMember(member);
       return db
         .transaction(async (manager) => {

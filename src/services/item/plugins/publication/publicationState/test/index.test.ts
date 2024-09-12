@@ -6,7 +6,7 @@ import { FastifyInstance } from 'fastify';
 import { HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../../test/app';
-import { notUndefined } from '../../../../../../utils/assertions';
+import { asDefined } from '../../../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../../utils/config';
 import { Member } from '../../../../../member/entities/member';
 import { saveMember } from '../../../../../member/test/fixtures/members';
@@ -60,7 +60,7 @@ describe('Publication Controller', () => {
       });
 
       it('Get publication status of item with permission returns status', async () => {
-        const { item } = await testUtils.saveItemAndMembership({ member: notUndefined(actor) });
+        const { item } = await testUtils.saveItemAndMembership({ member: asDefined(actor) });
 
         const res = await app.inject({
           method: HttpMethod.Get,

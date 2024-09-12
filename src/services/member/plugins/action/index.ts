@@ -4,7 +4,7 @@ import { FileItemType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
 import { IdParam } from '../../../../types';
-import { notUndefined } from '../../../../utils/assertions';
+import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import {
@@ -29,7 +29,7 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
     '/actions',
     { schema: getMemberFilteredActions, preHandler: isAuthenticated },
     async ({ user, query }) => {
-      const account = notUndefined(user?.account);
+      const account = asDefined(user?.account);
       return actionMemberService.getFilteredActions(account, buildRepositories(), query);
     },
   );
@@ -39,7 +39,7 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
     '/members/:id/delete',
     { schema: deleteAllById, preHandler: isAuthenticated },
     async ({ user, params: { id } }) => {
-      const account = notUndefined(user?.account);
+      const account = asDefined(user?.account);
       return db.transaction(async (manager) => {
         return actionMemberService.deleteAllForMember(account, buildRepositories(manager), id);
       });

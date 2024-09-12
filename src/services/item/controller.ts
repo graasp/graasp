@@ -7,7 +7,7 @@ import { ItemTagType, Pagination, PermissionLevel } from '@graasp/sdk';
 
 import { resolveDependency } from '../../di/utils';
 import { IdParam, IdsParams } from '../../types';
-import { notUndefined } from '../../utils/assertions';
+import { asDefined } from '../../utils/assertions';
 import { buildRepositories } from '../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
 import { matchOne } from '../authorization';
@@ -66,7 +66,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         query: { parentId, previousItemId },
         body: data,
       } = request;
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
 
       const item = await db.transaction(async (manager) => {
@@ -118,7 +118,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           user,
           query: { parentId },
         } = request;
-        const member = notUndefined(user?.account);
+        const member = asDefined(user?.account);
         assertIsMember(member);
 
         // get the formData from the request
@@ -182,7 +182,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         permissions,
         types,
       } = query;
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
       return itemService.getAccessible(
         member,
@@ -198,7 +198,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/own',
     { schema: getOwn, preHandler: [isAuthenticated, matchOne(memberAccountRole)] },
     async ({ user }) => {
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
       return itemService.getOwn(member, buildRepositories());
     },
@@ -212,7 +212,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: [isAuthenticated, matchOne(memberAccountRole)],
     },
     async ({ user, query }) => {
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
       return itemService.getShared(member, buildRepositories(), query.permission);
     },
@@ -268,7 +268,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         params: { id },
         body,
       } = request;
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
       return await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
@@ -292,7 +292,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         body,
         log,
       } = request;
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
       db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
@@ -338,7 +338,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         body,
       } = request;
 
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
 
       const item = await db.transaction(async (manager) => {
@@ -367,7 +367,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         query: { id: ids },
         log,
       } = request;
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
       db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
@@ -413,7 +413,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         body: { parentId },
         log,
       } = request;
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
       db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
@@ -453,7 +453,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         body: { parentId },
         log,
       } = request;
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
       db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
