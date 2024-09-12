@@ -822,7 +822,7 @@ describe('Membership routes tests', () => {
           item,
           account: member,
         });
-        const initialCount = await ItemMembershipRepository.count();
+        const initialCount = await itemMembershipRawRepository.count();
 
         const newMembership = {
           permission: PermissionLevel.Admin,
@@ -836,7 +836,7 @@ describe('Membership routes tests', () => {
         });
 
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-        const newCount = await ItemMembershipRepository.count();
+        const newCount = await itemMembershipRawRepository.count();
         expect(newCount).toEqual(initialCount);
       });
     });
