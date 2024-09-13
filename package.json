@@ -65,7 +65,7 @@
     "@graasp/sdk": "4.26.0",
     "@graasp/translations": "1.36.0",
     "@rapideditor/country-coder": "5.2.2",
-    "@sentry/node": "7.118.0",
+    "@sentry/node": "8.30.0",
     "@sentry/tracing": "7.114.0",
     "ajv": "8.17.1",
     "archiver": "7.0.1",
