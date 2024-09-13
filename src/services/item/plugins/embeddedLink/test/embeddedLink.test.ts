@@ -6,7 +6,8 @@ import { FastifyInstance } from 'fastify';
 import { HttpMethod, ItemType, LinkItemFactory, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
-import { ItemMembershipRepository } from '../../../../itemMembership/repository';
+import { AppDataSource } from '../../../../../plugins/datasource';
+import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
 import { Member } from '../../../../member/entities/member';
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemRepository } from '../../../repository';
@@ -17,6 +18,7 @@ jest.mock('node-fetch');
 const testUtils = new ItemTestUtils();
 
 const itemRepository = new ItemRepository();
+const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
 
 const iframelyMeta = {
   title: 'title',
@@ -106,7 +108,9 @@ describe('Link Item tests', () => {
         expectItem(item, expectedItem);
 
         // a membership is created for this item
-        const membership = await ItemMembershipRepository.findOneBy({ item: { id: newItem.id } });
+        const membership = await itemMembershipRawRepository.findOneBy({
+          item: { id: newItem.id },
+        });
         expect(membership?.permission).toEqual(PermissionLevel.Admin);
       });
 

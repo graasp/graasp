@@ -8,6 +8,7 @@ import { DiscriminatedItem, HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
 import { resolveDependency } from '../../../di/utils';
+import { AppDataSource } from '../../../plugins/datasource';
 import { MailerService } from '../../../plugins/mailer/service';
 import { assertIsDefined } from '../../../utils/assertions';
 import {
@@ -20,16 +21,20 @@ import {
   MemberCannotAdminItem,
   ModifyExistingMembership,
 } from '../../../utils/errors';
-import { buildRepositories } from '../../../utils/repositories';
 import { setItemPublic } from '../../item/plugins/itemTag/test/fixtures';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
 import { saveItemLoginSchema } from '../../itemLogin/test/index.test';
 import { Member } from '../../member/entities/member';
 import { saveMember } from '../../member/test/fixtures/members';
+import { ItemMembership } from '../entities/ItemMembership';
+import { MembershipRequestRepository } from '../plugins/MembershipRequest/repository';
 import { ItemMembershipRepository } from '../repository';
 import { expectMembership } from './fixtures/memberships';
 
 const testUtils = new ItemTestUtils();
+const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
+const membershipRequestRepository = new MembershipRequestRepository();
+const itemMembershipRepository = new ItemMembershipRepository();
 
 describe('Membership routes tests', () => {
   let app: FastifyInstance;
@@ -295,7 +300,7 @@ describe('Membership routes tests', () => {
         const m = response.json();
         const correctMembership = { ...payload, item, account: member, creator: actor };
         expectMembership(m, correctMembership, actor);
-        const savedMembership = await ItemMembershipRepository.get(m.id);
+        const savedMembership = await itemMembershipRepository.get(m.id);
         expectMembership(savedMembership, correctMembership, actor);
         expect(response.statusCode).toBe(StatusCodes.OK);
 
@@ -333,14 +338,18 @@ describe('Membership routes tests', () => {
         // check item membership repository contains two memberships
         // the parent one and the new one
 
-        expect(await ItemMembershipRepository.count()).toEqual(4);
+        expect(await itemMembershipRawRepository.count()).toEqual(4);
         // previous membership is deleted
-        expect(await ItemMembershipRepository.findOneBy({ id: membership.id })).toBeFalsy();
+        expect(await itemMembershipRawRepository.findOneBy({ id: membership.id })).toBeFalsy();
 
-        expect(await ItemMembershipRepository.findOneBy({ id: response.json().id })).toBeTruthy();
+        expect(
+          await itemMembershipRawRepository.findOneBy({ id: response.json().id }),
+        ).toBeTruthy();
 
         // expect sibling not to be deleted
-        expect(await ItemMembershipRepository.findOneBy({ id: anotherMembership.id })).toBeTruthy();
+        expect(
+          await itemMembershipRawRepository.findOneBy({ id: anotherMembership.id }),
+        ).toBeTruthy();
       });
 
       it('Delete successfully Membership Request for the corresponding item and member', async () => {
@@ -349,7 +358,6 @@ describe('Membership routes tests', () => {
         const childItem = await testUtils.saveItem({ parentItem: targetItem, actor });
         const member = await saveMember();
 
-        const { membershipRequestRepository } = buildRepositories();
         await membershipRequestRepository.post(member.id, parentItem.id);
         await membershipRequestRepository.post(member.id, targetItem.id);
         await membershipRequestRepository.post(member.id, childItem.id);
@@ -382,7 +390,7 @@ describe('Membership routes tests', () => {
           item,
           account: member,
         });
-        const initialCount = await ItemMembershipRepository.count();
+        const initialCount = await itemMembershipRawRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -396,7 +404,7 @@ describe('Membership routes tests', () => {
 
         // check item membership repository contains one membership
         expect(response.json()).toEqual(new ModifyExistingMembership({ id: membership.id }));
-        const newCount = await ItemMembershipRepository.count();
+        const newCount = await itemMembershipRawRepository.count();
         expect(newCount).toEqual(initialCount);
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
@@ -413,7 +421,7 @@ describe('Membership routes tests', () => {
           item: parent,
           account: member,
         });
-        const initialCount = await ItemMembershipRepository.count();
+        const initialCount = await itemMembershipRawRepository.count();
 
         const newMembership = {
           permission: PermissionLevel.Read,
@@ -428,7 +436,7 @@ describe('Membership routes tests', () => {
         });
 
         // check item membership repository contains one membership
-        const newCount = await ItemMembershipRepository.count();
+        const newCount = await itemMembershipRawRepository.count();
         expect(newCount).toEqual(initialCount);
         expect(response.json()).toEqual(new InvalidMembership(newMembership));
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -437,7 +445,7 @@ describe('Membership routes tests', () => {
       it('Bad Request for invalid id', async () => {
         const member = await saveMember();
         const { item } = await testUtils.saveItemAndMembership({ member: actor });
-        const initialCount = await ItemMembershipRepository.count();
+        const initialCount = await itemMembershipRawRepository.count();
 
         const id = 'invalid-id';
         const response = await app.inject({
@@ -450,7 +458,7 @@ describe('Membership routes tests', () => {
           },
         });
 
-        const newCount = await ItemMembershipRepository.count();
+        const newCount = await itemMembershipRawRepository.count();
         expect(newCount).toEqual(initialCount);
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -459,7 +467,7 @@ describe('Membership routes tests', () => {
       it('Bad Request for invalid payload', async () => {
         const member = await saveMember();
         const { item } = await testUtils.saveItemAndMembership({ member: actor });
-        const initialCount = await ItemMembershipRepository.count();
+        const initialCount = await itemMembershipRawRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -470,7 +478,7 @@ describe('Membership routes tests', () => {
           },
         });
 
-        const newCount = await ItemMembershipRepository.count();
+        const newCount = await itemMembershipRawRepository.count();
         expect(newCount).toEqual(initialCount);
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -516,7 +524,7 @@ describe('Membership routes tests', () => {
           { accountId: member1.id, permission: PermissionLevel.Read },
           { accountId: member2.id, permission: PermissionLevel.Write },
         ];
-        const initialCount = await ItemMembershipRepository.count();
+        const initialCount = await itemMembershipRawRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -526,9 +534,9 @@ describe('Membership routes tests', () => {
 
         expect(response.statusCode).toBe(StatusCodes.OK);
 
-        const newCount = await ItemMembershipRepository.count();
+        const newCount = await itemMembershipRawRepository.count();
         expect(newCount).toEqual(initialCount + 2);
-        const { data: savedMembershispForItem } = await ItemMembershipRepository.getForManyItems([
+        const { data: savedMembershispForItem } = await itemMembershipRepository.getForManyItems([
           item,
         ]);
         const savedMemberships = savedMembershispForItem[item.id];
@@ -633,7 +641,7 @@ describe('Membership routes tests', () => {
           item,
           account: member,
         });
-        const initialCount = await ItemMembershipRepository.count();
+        const initialCount = await itemMembershipRawRepository.count();
 
         const newMembership = {
           permission: PermissionLevel.Read,
@@ -657,7 +665,7 @@ describe('Membership routes tests', () => {
         });
 
         // check contains one less membership
-        const newCount = await ItemMembershipRepository.count();
+        const newCount = await itemMembershipRawRepository.count();
         expect(newCount).toEqual(initialCount - 1);
       });
 
@@ -670,7 +678,7 @@ describe('Membership routes tests', () => {
           item,
           account: member,
         });
-        const initialCount = await ItemMembershipRepository.count();
+        const initialCount = await itemMembershipRawRepository.count();
 
         const newMembership = {
           permission: PermissionLevel.Admin,
@@ -686,12 +694,12 @@ describe('Membership routes tests', () => {
         const m = response.json();
 
         expect(response.statusCode).toBe(StatusCodes.OK);
-        const newCount = await ItemMembershipRepository.count();
+        const newCount = await itemMembershipRawRepository.count();
         expect(newCount).toEqual(initialCount);
 
         expectMembership(m, { ...newMembership, account: member, item, creator: actor });
 
-        const savedMembership = await ItemMembershipRepository.get(membership.id);
+        const savedMembership = await itemMembershipRepository.get(membership.id);
         expectMembership(savedMembership, {
           ...newMembership,
           account: member,
@@ -718,7 +726,7 @@ describe('Membership routes tests', () => {
           item,
           account: member,
         });
-        const initialCount = await ItemMembershipRepository.count();
+        const initialCount = await itemMembershipRawRepository.count();
 
         const newMembership = { permission: PermissionLevel.Write };
 
@@ -738,10 +746,10 @@ describe('Membership routes tests', () => {
         });
 
         // membership below does not exist
-        expect(await ItemMembershipRepository.count()).toEqual(initialCount - 1);
-        ItemMembershipRepository.get(membership.id).catch((e) =>
-          expect(e).toEqual(new ItemMembershipNotFound({ id: membership.id })),
-        );
+        expect(await itemMembershipRawRepository.count()).toEqual(initialCount - 1);
+        await itemMembershipRepository
+          .get(membership.id)
+          .catch((e) => expect(e).toEqual(new ItemMembershipNotFound({ id: membership.id })));
       });
       it('Bad request if payload is invalid', async () => {
         const response = await app.inject({
@@ -814,7 +822,7 @@ describe('Membership routes tests', () => {
           item,
           account: member,
         });
-        const initialCount = await ItemMembershipRepository.count();
+        const initialCount = await itemMembershipRawRepository.count();
 
         const newMembership = {
           permission: PermissionLevel.Admin,
@@ -828,7 +836,7 @@ describe('Membership routes tests', () => {
         });
 
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-        const newCount = await ItemMembershipRepository.count();
+        const newCount = await itemMembershipRawRepository.count();
         expect(newCount).toEqual(initialCount);
       });
     });
@@ -870,7 +878,7 @@ describe('Membership routes tests', () => {
           item: child,
           account: member,
         });
-        const initialCount = await ItemMembershipRepository.count();
+        const initialCount = await itemMembershipRawRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Delete,
@@ -881,7 +889,7 @@ describe('Membership routes tests', () => {
         expect(response.statusCode).toEqual(StatusCodes.OK);
         expectMembership(m, { ...membership, creator: actor, account: member, item });
         // delete only one membership -> purgeBelow = false
-        expect(await ItemMembershipRepository.count()).toEqual(initialCount - 1);
+        expect(await itemMembershipRawRepository.count()).toEqual(initialCount - 1);
       });
 
       it('Delete successfully with purgeBelow=true', async () => {
@@ -901,7 +909,7 @@ describe('Membership routes tests', () => {
           item: child,
           account: member,
         });
-        const initialCount = await ItemMembershipRepository.count();
+        const initialCount = await itemMembershipRawRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Delete,
@@ -909,7 +917,7 @@ describe('Membership routes tests', () => {
         });
 
         // delete membership + below
-        expect(await ItemMembershipRepository.count()).toEqual(initialCount - 2);
+        expect(await itemMembershipRawRepository.count()).toEqual(initialCount - 2);
 
         expect(response.statusCode).toEqual(StatusCodes.OK);
       });
@@ -927,7 +935,7 @@ describe('Membership routes tests', () => {
 
       it('Cannot delete membership if does not exist', async () => {
         await testUtils.saveItemAndMembership({ member: actor });
-        const initialCount = await ItemMembershipRepository.count();
+        const initialCount = await itemMembershipRawRepository.count();
 
         const id = v4();
         const response = await app.inject({
@@ -937,7 +945,7 @@ describe('Membership routes tests', () => {
 
         expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
         expect(response.json()).toEqual(new ItemMembershipNotFound({ id }));
-        expect(await ItemMembershipRepository.count()).toEqual(initialCount);
+        expect(await itemMembershipRawRepository.count()).toEqual(initialCount);
       });
 
       it('Cannot delete membership if can only read', async () => {
@@ -949,7 +957,7 @@ describe('Membership routes tests', () => {
           account: actor,
         });
 
-        const initialCount = await ItemMembershipRepository.count();
+        const initialCount = await itemMembershipRawRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Delete,
@@ -957,7 +965,7 @@ describe('Membership routes tests', () => {
         });
 
         expect(response.json()).toEqual(new MemberCannotAdminItem(item.id));
-        expect(await ItemMembershipRepository.count()).toEqual(initialCount);
+        expect(await itemMembershipRawRepository.count()).toEqual(initialCount);
         expect(response.statusCode).toEqual(StatusCodes.FORBIDDEN);
       });
 
@@ -970,7 +978,7 @@ describe('Membership routes tests', () => {
           account: actor,
         });
 
-        const initialCount = await ItemMembershipRepository.count();
+        const initialCount = await itemMembershipRawRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Delete,
@@ -979,7 +987,7 @@ describe('Membership routes tests', () => {
         expect(response.statusCode).toEqual(StatusCodes.FORBIDDEN);
 
         expect(response.json()).toEqual(new MemberCannotAdminItem(item.id));
-        expect(await ItemMembershipRepository.count()).toEqual(initialCount);
+        expect(await itemMembershipRawRepository.count()).toEqual(initialCount);
       });
 
       it('Cannot delete last admin membership', async () => {

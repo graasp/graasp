@@ -155,16 +155,19 @@ export class InvitationService {
     this.sendInvitationEmail({ invitation, member });
   }
 
-  async createToMemberships(actor: Actor, repositories: Repositories, member: Member) {
+  async createToMemberships(
+    actor: Actor,
+    { invitationRepository, itemMembershipRepository }: Repositories,
+    member: Member,
+  ) {
     // invitations to memberships is triggered on register: no actor available
-    const { invitationRepository, itemMembershipRepository } = repositories;
     const invitations = await invitationRepository.getManyByEmail(member.email);
     const memberships = invitations.map(({ permission, item }) => ({
-      item,
-      account: member,
+      itemPath: item.path,
+      accountId: member.id,
       permission,
     }));
-    await itemMembershipRepository.createMany(memberships);
+    await itemMembershipRepository.addMany(memberships);
   }
 
   async _partitionExistingUsersAndNewUsers(

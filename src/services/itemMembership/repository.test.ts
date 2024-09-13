@@ -3,7 +3,6 @@ import { FastifyInstance } from 'fastify';
 import { PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../test/app';
-import { buildRepositories } from '../../utils/repositories';
 import { Item } from '../item/entities/Item';
 import { ItemTestUtils } from '../item/test/fixtures/items';
 import { Member, isMember } from '../member/entities/member';
@@ -12,6 +11,7 @@ import { ItemMembership } from './entities/ItemMembership';
 import { ItemMembershipRepository } from './repository';
 
 const testUtils = new ItemTestUtils();
+const itemMembershipRepository = new ItemMembershipRepository();
 
 function crossArrayCheck(
   itemArray: Item[],
@@ -25,11 +25,9 @@ describe('ItemMembership Repository', () => {
   let app: FastifyInstance;
   let item: Item;
   let creator: Member;
-  let itemMembershipRepository: typeof ItemMembershipRepository;
 
   beforeAll(async () => {
     ({ app } = await build({ member: null }));
-    ({ itemMembershipRepository } = buildRepositories());
   });
 
   beforeEach(async () => {

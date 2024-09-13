@@ -38,7 +38,7 @@ export const validatePermissionMany = async (
     itemMembershipRepository,
     itemTagRepository,
   }: {
-    itemMembershipRepository: typeof ItemMembershipRepository;
+    itemMembershipRepository: ItemMembershipRepository;
     itemTagRepository: ItemTagRepository;
   },
   permission: PermissionLevel,
@@ -58,7 +58,7 @@ export const validatePermissionMany = async (
 
   // batch request for all items
   const inheritedMemberships = actor
-    ? await itemMembershipRepository.getInheritedMany(items, actor, true)
+    ? await itemMembershipRepository.getInheritedMany(items, actor.id, true)
     : null;
   const tags = await itemTagRepository.getManyForMany(items, [
     ItemTagType.Public,
@@ -131,7 +131,7 @@ export const validatePermission = async (
     itemMembershipRepository,
     itemTagRepository,
   }: {
-    itemMembershipRepository: typeof ItemMembershipRepository;
+    itemMembershipRepository: ItemMembershipRepository;
     itemTagRepository: ItemTagRepository;
   },
   permission: PermissionLevel,
@@ -142,7 +142,7 @@ export const validatePermission = async (
   // but do not fetch membership for signed out member
 
   const inheritedMembership = actor
-    ? await itemMembershipRepository.getInherited(item, actor, true)
+    ? await itemMembershipRepository.getInherited(item.path, actor.id, true)
     : null;
   const highest = inheritedMembership?.permission;
   const isValid = highest && permissionMapping[highest].includes(permission);
@@ -290,7 +290,7 @@ export const filterOutPackedDescendants = async (
   }
 
   const allMemberships = actor
-    ? await itemMembershipRepository.getAllBelow(item, actor.id, {
+    ? await itemMembershipRepository.getAllBelow(item.path, actor.id, {
         considerLocal: true,
         selectItem: true,
       })

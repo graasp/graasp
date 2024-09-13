@@ -11,6 +11,7 @@ import { HttpMethod, ItemType, MaxWidth, PermissionLevel, S3FileItemExtra } from
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants';
+import { AppDataSource } from '../../../../../plugins/datasource';
 import { FILE_ITEM_TYPE, ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { MemberCannotAccess, MemberCannotWriteItem } from '../../../../../utils/errors';
 import {
@@ -21,7 +22,7 @@ import {
   UploadFileUnexpectedError,
 } from '../../../../file/utils/errors';
 import { ItemTestUtils, expectItem, expectManyItems } from '../../../../item/test/fixtures/items';
-import { ItemMembershipRepository } from '../../../../itemMembership/repository';
+import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { ThumbnailSizeFormat } from '../../../../thumbnail/constants';
 import { Item } from '../../../entities/Item';
@@ -32,6 +33,7 @@ import { StorageExceeded } from '../utils/errors';
 // TODO: LOCAL FILE TESTS
 
 const testUtils = new ItemTestUtils();
+const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
 
 const deleteObjectMock = jest.fn(async () => console.debug('deleteObjectMock'));
 const copyObjectMock = jest.fn(async () => console.debug('copyObjectMock'));
@@ -134,7 +136,9 @@ describe('File Item routes tests', () => {
           expect(item?.extra[FILE_ITEM_TYPE]).toBeTruthy();
 
           // a membership is created for this item
-          const membership = await ItemMembershipRepository.findOneBy({ item: { id: newItem.id } });
+          const membership = await itemMembershipRawRepository.findOneBy({
+            item: { id: newItem.id },
+          });
           expect(membership?.permission).toEqual(PermissionLevel.Admin);
         });
 
@@ -192,7 +196,7 @@ describe('File Item routes tests', () => {
             expect(item?.extra[FILE_ITEM_TYPE]).toBeTruthy();
           }
           // a membership is created for this item
-          const memberships = await ItemMembershipRepository.findBy({
+          const memberships = await itemMembershipRawRepository.findBy({
             item: { id: In(items.map((i) => i.id)) },
           });
           for (const m of memberships) {
@@ -229,7 +233,9 @@ describe('File Item routes tests', () => {
           expect(item?.path).toContain(parentItem.path);
 
           // a membership is not created for new item because it inherits parent
-          const membership = await ItemMembershipRepository.findOneBy({ item: { id: newItem.id } });
+          const membership = await itemMembershipRawRepository.findOneBy({
+            item: { id: newItem.id },
+          });
           expect(membership).toBeNull();
         });
 

@@ -60,7 +60,7 @@ describe('validatePermission', () => {
     const repositories = {
       itemMembershipRepository: {
         getInherited: jest.fn(() => ({ permission: 'anything' })),
-      } as unknown as typeof ItemMembershipRepository,
+      } as unknown as ItemMembershipRepository,
       itemTagRepository,
     };
 
@@ -75,10 +75,10 @@ describe('validatePermission', () => {
       jest.spyOn(itemTagRepository, 'getForItem').mockImplementation(returnDummyArray);
       repositories = {
         itemMembershipRepository: {
-          getInherited: jest.fn((item, member) =>
-            member.id === OWNER.id ? ownerMembership : null,
+          getInherited: jest.fn((_itemPath, memberId) =>
+            memberId === OWNER.id ? ownerMembership : null,
           ),
-        } as unknown as typeof ItemMembershipRepository,
+        } as unknown as ItemMembershipRepository,
         itemTagRepository,
       };
     });
@@ -137,8 +137,8 @@ describe('validatePermission', () => {
     jest.spyOn(itemTagRepository, 'getForItem').mockImplementation(returnDummyArray);
     const repositories = {
       itemMembershipRepository: {
-        getInherited: jest.fn((item, member) => {
-          switch (member.id) {
+        getInherited: jest.fn((_itemPath, memberId) => {
+          switch (memberId) {
             case OWNER.id:
               return ownerMembership;
             case SHARED_MEMBER.id:
@@ -147,7 +147,7 @@ describe('validatePermission', () => {
               return null;
           }
         }),
-      } as unknown as typeof ItemMembershipRepository,
+      } as unknown as ItemMembershipRepository,
       itemTagRepository,
     };
 
@@ -225,8 +225,8 @@ describe('validatePermission', () => {
     jest.spyOn(itemTagRepository, 'getForItem').mockImplementation(returnDummyArray);
     const repositories = {
       itemMembershipRepository: {
-        getInherited: jest.fn((item, member) => {
-          switch (member.id) {
+        getInherited: jest.fn((_itemPath, memberId) => {
+          switch (memberId) {
             case OWNER.id:
               return ownerMembership;
             case SHARED_MEMBER.id:
@@ -235,7 +235,7 @@ describe('validatePermission', () => {
               return null;
           }
         }),
-      } as unknown as typeof ItemMembershipRepository,
+      } as unknown as ItemMembershipRepository,
       itemTagRepository,
     };
 
@@ -317,8 +317,8 @@ describe('validatePermission', () => {
     jest.spyOn(itemTagRepository, 'getForItem').mockImplementation(returnDummyArray);
     const repositories = {
       itemMembershipRepository: {
-        getInherited: jest.fn((item, member) => {
-          switch (member.id) {
+        getInherited: jest.fn((_itemPath, memberId) => {
+          switch (memberId) {
             case OWNER.id:
               return ownerMembership;
             case SHARED_MEMBER.id:
@@ -327,7 +327,7 @@ describe('validatePermission', () => {
               return null;
           }
         }),
-      } as unknown as typeof ItemMembershipRepository,
+      } as unknown as ItemMembershipRepository,
       itemTagRepository,
     };
 
@@ -414,15 +414,15 @@ describe('validatePermission', () => {
         .mockImplementation(async () => [MOCK_ITEM_TAG_PUBLIC]);
       repositories = {
         itemMembershipRepository: {
-          getInherited: jest.fn(async (item, member) => {
-            switch (member.id) {
+          getInherited: jest.fn(async (_itemPath, memberId) => {
+            switch (memberId) {
               case OWNER.id:
                 return ownerMembership;
               default:
                 return null;
             }
           }),
-        } as unknown as typeof ItemMembershipRepository,
+        } as unknown as ItemMembershipRepository,
         itemTagRepository,
       };
     });
@@ -489,8 +489,8 @@ describe('validatePermission', () => {
 
       repositories = {
         itemMembershipRepository: {
-          getInherited: jest.fn(async (item, member) => {
-            switch (member.id) {
+          getInherited: jest.fn(async (_itemPath, memberId) => {
+            switch (memberId) {
               case OWNER.id:
                 return ownerMembership;
               case SHARED_MEMBER.id:
@@ -499,7 +499,7 @@ describe('validatePermission', () => {
                 return null;
             }
           }),
-        } as unknown as typeof ItemMembershipRepository,
+        } as unknown as ItemMembershipRepository,
         itemTagRepository,
       };
     });
@@ -585,8 +585,8 @@ describe('validatePermission', () => {
 
       repositories = {
         itemMembershipRepository: {
-          getInherited: jest.fn(async (item, member) => {
-            switch (member.id) {
+          getInherited: jest.fn(async (_itemPath, memberId) => {
+            switch (memberId) {
               case OWNER.id:
                 return ownerMembership;
               case SHARED_MEMBER.id:
@@ -595,7 +595,7 @@ describe('validatePermission', () => {
                 return null;
             }
           }),
-        } as unknown as typeof ItemMembershipRepository,
+        } as unknown as ItemMembershipRepository,
         itemTagRepository,
       };
     });
@@ -686,8 +686,8 @@ describe('validatePermission', () => {
 
       repositories = {
         itemMembershipRepository: {
-          getInherited: jest.fn(async (item, member) => {
-            switch (member.id) {
+          getInherited: jest.fn(async (_itemPath, memberId) => {
+            switch (memberId) {
               case OWNER.id:
                 return ownerMembership;
               case SHARED_MEMBER.id:
@@ -696,7 +696,7 @@ describe('validatePermission', () => {
                 return null;
             }
           }),
-        } as unknown as typeof ItemMembershipRepository,
+        } as unknown as ItemMembershipRepository,
         itemTagRepository,
       };
     });
@@ -791,8 +791,8 @@ describe('validatePermission', () => {
 
       repositories = {
         itemMembershipRepository: {
-          getInherited: jest.fn(async (item, member) => {
-            switch (member.id) {
+          getInherited: jest.fn(async (_itemPath, memberId) => {
+            switch (memberId) {
               case OWNER.id:
                 return ownerMembership;
               case SHARED_MEMBER.id:
@@ -801,7 +801,7 @@ describe('validatePermission', () => {
                 return null;
             }
           }),
-        } as unknown as typeof ItemMembershipRepository,
+        } as unknown as ItemMembershipRepository,
         itemTagRepository,
       };
     });
@@ -879,8 +879,8 @@ describe('validatePermission', () => {
 
       repositories = {
         itemMembershipRepository: {
-          getInherited: jest.fn(async (item, member) => {
-            switch (member.id) {
+          getInherited: jest.fn(async (_itemPath, memberId) => {
+            switch (memberId) {
               case OWNER.id:
                 return ownerMembership;
               case SHARED_MEMBER.id:
@@ -889,7 +889,7 @@ describe('validatePermission', () => {
                 return null;
             }
           }),
-        } as unknown as typeof ItemMembershipRepository,
+        } as unknown as ItemMembershipRepository,
         itemTagRepository,
       };
     });
@@ -975,8 +975,8 @@ describe('validatePermission', () => {
 
       repositories = {
         itemMembershipRepository: {
-          getInherited: jest.fn(async (item, member) => {
-            switch (member.id) {
+          getInherited: jest.fn(async (_itemPath, memberId) => {
+            switch (memberId) {
               case OWNER.id:
                 return ownerMembership;
               case SHARED_MEMBER.id:
@@ -985,7 +985,7 @@ describe('validatePermission', () => {
                 return null;
             }
           }),
-        } as unknown as typeof ItemMembershipRepository,
+        } as unknown as ItemMembershipRepository,
         itemTagRepository,
       };
     });
@@ -1073,15 +1073,15 @@ describe('validatePermission', () => {
 
       repositories = {
         itemMembershipRepository: {
-          getInherited: jest.fn(async (item, member) => {
-            switch (member.id) {
+          getInherited: jest.fn(async (_itemPath, memberId) => {
+            switch (memberId) {
               case OWNER.id:
                 return ownerMembership;
               default:
                 return null;
             }
           }),
-        } as unknown as typeof ItemMembershipRepository,
+        } as unknown as ItemMembershipRepository,
         itemTagRepository,
       };
     });
@@ -1143,8 +1143,8 @@ describe('validatePermission', () => {
       .mockImplementation(async () => [MOCK_ITEM_TAG_HIDDEN, MOCK_ITEM_TAG_PUBLIC]);
     const repositories = {
       itemMembershipRepository: {
-        getInherited: jest.fn(async (item, member) => {
-          switch (member.id) {
+        getInherited: jest.fn(async (_itemPath, memberId) => {
+          switch (memberId) {
             case OWNER.id:
               return ownerMembership;
             case SHARED_MEMBER.id:
@@ -1153,7 +1153,7 @@ describe('validatePermission', () => {
               return null;
           }
         }),
-      } as unknown as typeof ItemMembershipRepository,
+      } as unknown as ItemMembershipRepository,
       itemTagRepository,
     };
 
@@ -1229,8 +1229,8 @@ describe('validatePermission', () => {
       .mockImplementation(async () => [MOCK_ITEM_TAG_HIDDEN, MOCK_ITEM_TAG_PUBLIC]);
     const repositories = {
       itemMembershipRepository: {
-        getInherited: jest.fn(async (item, member) => {
-          switch (member.id) {
+        getInherited: jest.fn(async (_itemPath, memberId) => {
+          switch (memberId) {
             case OWNER.id:
               return ownerMembership;
             case SHARED_MEMBER.id:
@@ -1239,7 +1239,7 @@ describe('validatePermission', () => {
               return null;
           }
         }),
-      } as unknown as typeof ItemMembershipRepository,
+      } as unknown as ItemMembershipRepository,
       itemTagRepository,
     };
 
@@ -1323,8 +1323,8 @@ describe('validatePermission', () => {
       .mockImplementation(async () => [MOCK_ITEM_TAG_HIDDEN, MOCK_ITEM_TAG_PUBLIC]);
     const repositories = {
       itemMembershipRepository: {
-        getInherited: jest.fn(async (item, member) => {
-          switch (member.id) {
+        getInherited: jest.fn(async (_itemPath, memberId) => {
+          switch (memberId) {
             case OWNER.id:
               return ownerMembership;
             case SHARED_MEMBER.id:
@@ -1333,7 +1333,7 @@ describe('validatePermission', () => {
               return null;
           }
         }),
-      } as unknown as typeof ItemMembershipRepository,
+      } as unknown as ItemMembershipRepository,
       itemTagRepository,
     };
 
@@ -1424,7 +1424,7 @@ describe('validatePermissionMany for no items', () => {
     const repositories = {
       itemMembershipRepository: {
         getInheritedMany: jest.fn(() => ({ permission: 'anything' })),
-      } as unknown as typeof ItemMembershipRepository,
+      } as unknown as ItemMembershipRepository,
       itemTagRepository,
     };
 
@@ -1453,7 +1453,7 @@ describe('validatePermissionMany for one item', () => {
     const repositories = {
       itemMembershipRepository: {
         getInheritedMany: jest.fn(() => ({ permission: 'anything' })),
-      } as unknown as typeof ItemMembershipRepository,
+      } as unknown as ItemMembershipRepository,
       itemTagRepository,
     };
 
@@ -1471,10 +1471,10 @@ describe('validatePermissionMany for one item', () => {
       }));
       repositories = {
         itemMembershipRepository: {
-          getInheritedMany: jest.fn((items, member) => {
+          getInheritedMany: jest.fn((_items, memberId) => {
             let im;
 
-            switch (member.id) {
+            switch (memberId) {
               case OWNER.id:
                 im = ownerMembership;
                 break;
@@ -1484,7 +1484,7 @@ describe('validatePermissionMany for one item', () => {
             }
             return { data: { [ITEM.id]: im }, errors: [] };
           }),
-        } as unknown as typeof ItemMembershipRepository,
+        } as unknown as ItemMembershipRepository,
         itemTagRepository,
       };
     });
@@ -1559,10 +1559,10 @@ describe('validatePermissionMany for one item', () => {
 
       repositories = {
         itemMembershipRepository: {
-          getInheritedMany: jest.fn((items, member) => {
+          getInheritedMany: jest.fn((_items, memberId) => {
             let im;
 
-            switch (member.id) {
+            switch (memberId) {
               case OWNER.id:
                 im = ownerMembership;
                 break;
@@ -1575,7 +1575,7 @@ describe('validatePermissionMany for one item', () => {
             }
             return { data: { [ITEM.id]: im }, errors: [] };
           }),
-        } as unknown as typeof ItemMembershipRepository,
+        } as unknown as ItemMembershipRepository,
         itemTagRepository,
       };
     });
@@ -1677,10 +1677,10 @@ describe('validatePermissionMany for one item', () => {
       }));
       repositories = {
         itemMembershipRepository: {
-          getInheritedMany: jest.fn((items, member) => {
+          getInheritedMany: jest.fn((_items, memberId) => {
             let im;
 
-            switch (member.id) {
+            switch (memberId) {
               case OWNER.id:
                 im = ownerMembership;
                 break;
@@ -1693,7 +1693,7 @@ describe('validatePermissionMany for one item', () => {
             }
             return { data: { [ITEM.id]: im }, errors: [] };
           }),
-        } as unknown as typeof ItemMembershipRepository,
+        } as unknown as ItemMembershipRepository,
         itemTagRepository,
       };
     });
@@ -1795,10 +1795,10 @@ describe('validatePermissionMany for one item', () => {
       }));
       repositories = {
         itemMembershipRepository: {
-          getInheritedMany: jest.fn((items, member) => {
+          getInheritedMany: jest.fn((_items, memberId) => {
             let im;
 
-            switch (member.id) {
+            switch (memberId) {
               case OWNER.id:
                 im = ownerMembership;
                 break;
@@ -1811,7 +1811,7 @@ describe('validatePermissionMany for one item', () => {
             }
             return { data: { [ITEM.id]: im }, errors: [] };
           }),
-        } as unknown as typeof ItemMembershipRepository,
+        } as unknown as ItemMembershipRepository,
         itemTagRepository,
       };
     });
@@ -1912,10 +1912,10 @@ describe('validatePermissionMany for one item', () => {
       }));
       repositories = {
         itemMembershipRepository: {
-          getInheritedMany: jest.fn((items, member) => {
+          getInheritedMany: jest.fn((_items, memberId) => {
             let im;
 
-            switch (member.id) {
+            switch (memberId) {
               case OWNER.id:
                 im = ownerMembership;
                 break;
@@ -1925,7 +1925,7 @@ describe('validatePermissionMany for one item', () => {
             }
             return { data: { [ITEM.id]: im }, errors: [] };
           }),
-        } as unknown as typeof ItemMembershipRepository,
+        } as unknown as ItemMembershipRepository,
         itemTagRepository,
       };
     });
@@ -2001,10 +2001,10 @@ describe('validatePermissionMany for one item', () => {
 
       repositories = {
         itemMembershipRepository: {
-          getInheritedMany: jest.fn((items, member) => {
+          getInheritedMany: jest.fn((_items, memberId) => {
             let im;
 
-            switch (member.id) {
+            switch (memberId) {
               case OWNER.id:
                 im = ownerMembership;
                 break;
@@ -2017,7 +2017,7 @@ describe('validatePermissionMany for one item', () => {
             }
             return { data: { [ITEM.id]: im }, errors: [] };
           }),
-        } as unknown as typeof ItemMembershipRepository,
+        } as unknown as ItemMembershipRepository,
         itemTagRepository,
       };
     });
@@ -2119,10 +2119,10 @@ describe('validatePermissionMany for one item', () => {
 
     const repositories = {
       itemMembershipRepository: {
-        getInheritedMany: jest.fn((items, member) => {
+        getInheritedMany: jest.fn((_items, memberId) => {
           let im;
 
-          switch (member.id) {
+          switch (memberId) {
             case OWNER.id:
               im = ownerMembership;
               break;
@@ -2135,7 +2135,7 @@ describe('validatePermissionMany for one item', () => {
           }
           return { data: { [ITEM.id]: im }, errors: [] };
         }),
-      } as unknown as typeof ItemMembershipRepository,
+      } as unknown as ItemMembershipRepository,
       itemTagRepository,
     };
 
@@ -2239,10 +2239,10 @@ describe('validatePermissionMany for one item', () => {
 
     const repositories = {
       itemMembershipRepository: {
-        getInheritedMany: jest.fn((items, member) => {
+        getInheritedMany: jest.fn((_items, memberId) => {
           let im;
 
-          switch (member.id) {
+          switch (memberId) {
             case OWNER.id:
               im = ownerMembership;
               break;
@@ -2255,7 +2255,7 @@ describe('validatePermissionMany for one item', () => {
           }
           return { data: { [ITEM.id]: im }, errors: [] };
         }),
-      } as unknown as typeof ItemMembershipRepository,
+      } as unknown as ItemMembershipRepository,
       itemTagRepository,
     };
 
@@ -2358,10 +2358,10 @@ describe('validatePermissionMany for one item', () => {
 
       repositories = {
         itemMembershipRepository: {
-          getInheritedMany: jest.fn((items, member) => {
+          getInheritedMany: jest.fn((_items, memberId) => {
             let im;
 
-            switch (member.id) {
+            switch (memberId) {
               case OWNER.id:
                 im = ownerMembership;
                 break;
@@ -2374,7 +2374,7 @@ describe('validatePermissionMany for one item', () => {
             }
             return { data: { [ITEM.id]: im }, errors: [] };
           }),
-        } as unknown as typeof ItemMembershipRepository,
+        } as unknown as ItemMembershipRepository,
         itemTagRepository,
       };
     });
@@ -2477,10 +2477,10 @@ describe('validatePermissionMany for one item', () => {
 
       repositories = {
         itemMembershipRepository: {
-          getInheritedMany: jest.fn((items, member) => {
+          getInheritedMany: jest.fn((_items, memberId) => {
             let im;
 
-            switch (member.id) {
+            switch (memberId) {
               case OWNER.id:
                 im = ownerMembership;
                 break;
@@ -2493,7 +2493,7 @@ describe('validatePermissionMany for one item', () => {
             }
             return { data: { [ITEM.id]: im }, errors: [] };
           }),
-        } as unknown as typeof ItemMembershipRepository,
+        } as unknown as ItemMembershipRepository,
         itemTagRepository,
       };
     });
@@ -2596,10 +2596,10 @@ describe('validatePermissionMany for one item', () => {
 
       repositories = {
         itemMembershipRepository: {
-          getInheritedMany: jest.fn((items, member) => {
+          getInheritedMany: jest.fn((_items, memberId) => {
             let im;
 
-            switch (member.id) {
+            switch (memberId) {
               case OWNER.id:
                 im = ownerMembership;
                 break;
@@ -2612,7 +2612,7 @@ describe('validatePermissionMany for one item', () => {
             }
             return { data: { [ITEM.id]: im }, errors: [] };
           }),
-        } as unknown as typeof ItemMembershipRepository,
+        } as unknown as ItemMembershipRepository,
         itemTagRepository,
       };
     });
@@ -2713,10 +2713,10 @@ describe('validatePermissionMany for one item', () => {
       }));
       repositories = {
         itemMembershipRepository: {
-          getInheritedMany: jest.fn((items, member) => {
+          getInheritedMany: jest.fn((_items, memberId) => {
             let im;
 
-            switch (member.id) {
+            switch (memberId) {
               case OWNER.id:
                 im = ownerMembership;
                 break;
@@ -2726,7 +2726,7 @@ describe('validatePermissionMany for one item', () => {
             }
             return { data: { [ITEM.id]: im }, errors: [] };
           }),
-        } as unknown as typeof ItemMembershipRepository,
+        } as unknown as ItemMembershipRepository,
         itemTagRepository,
       };
     });
@@ -2801,10 +2801,10 @@ describe('validatePermissionMany for one item', () => {
       }));
       repositories = {
         itemMembershipRepository: {
-          getInheritedMany: jest.fn((items, member) => {
+          getInheritedMany: jest.fn((_items, memberId) => {
             let im;
 
-            switch (member.id) {
+            switch (memberId) {
               case OWNER.id:
                 im = ownerMembership;
                 break;
@@ -2817,7 +2817,7 @@ describe('validatePermissionMany for one item', () => {
             }
             return { data: { [ITEM.id]: im }, errors: [] };
           }),
-        } as unknown as typeof ItemMembershipRepository,
+        } as unknown as ItemMembershipRepository,
         itemTagRepository,
       };
     });
@@ -2919,10 +2919,10 @@ describe('validatePermissionMany for one item', () => {
       }));
       repositories = {
         itemMembershipRepository: {
-          getInheritedMany: jest.fn((items, member) => {
+          getInheritedMany: jest.fn((_items, memberId) => {
             let im;
 
-            switch (member.id) {
+            switch (memberId) {
               case OWNER.id:
                 im = ownerMembership;
                 break;
@@ -2935,7 +2935,7 @@ describe('validatePermissionMany for one item', () => {
             }
             return { data: { [ITEM.id]: im }, errors: [] };
           }),
-        } as unknown as typeof ItemMembershipRepository,
+        } as unknown as ItemMembershipRepository,
         itemTagRepository,
       };
     });
@@ -3037,10 +3037,10 @@ describe('validatePermissionMany for one item', () => {
       }));
       repositories = {
         itemMembershipRepository: {
-          getInheritedMany: jest.fn((items, member) => {
+          getInheritedMany: jest.fn((_items, memberId) => {
             let im;
 
-            switch (member.id) {
+            switch (memberId) {
               case OWNER.id:
                 im = ownerMembership;
                 break;
@@ -3053,7 +3053,7 @@ describe('validatePermissionMany for one item', () => {
             }
             return { data: { [ITEM.id]: im }, errors: [] };
           }),
-        } as unknown as typeof ItemMembershipRepository,
+        } as unknown as ItemMembershipRepository,
         itemTagRepository,
       };
     });
@@ -3115,7 +3115,7 @@ describe('validatePermissionMany for one item', () => {
       expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
     });
 
-    it(PermissionLevel.Admin, async () => {
+    it('PermissionLevel.Admin', async () => {
       // owner should pass
       const { itemMemberships: result } = await validatePermissionMany(
         repositories,
@@ -3168,7 +3168,7 @@ describe('validatePermissionMany for many items', () => {
         getInheritedMany: jest.fn(() => {
           return { data: { [SHARED_ITEM.id]: sharedMembership }, errors: [] };
         }),
-      } as unknown as typeof ItemMembershipRepository,
+      } as unknown as ItemMembershipRepository,
       itemTagRepository,
     };
     // shared member can read both items

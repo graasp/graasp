@@ -127,10 +127,10 @@ export class ItemLoginService {
       }
 
       // create membership
-      await itemMembershipRepository.post({
-        item,
-        account: guestAccount,
-        creator: guestAccount,
+      await itemMembershipRepository.addOne({
+        itemPath: item.path,
+        accountId: guestAccount.id,
+        creatorId: guestAccount.id,
         permission: PermissionLevel.Read,
       });
     }

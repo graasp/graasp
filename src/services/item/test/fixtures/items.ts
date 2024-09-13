@@ -18,7 +18,6 @@ import {
 
 import { AppDataSource } from '../../../../plugins/datasource';
 import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
-import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { Actor, Member } from '../../../member/entities/member';
 import { ItemWrapper, PackedItem } from '../../ItemWrapper';
 import { DEFAULT_ORDER, Item, ItemExtraMap } from '../../entities/Item';
@@ -28,6 +27,8 @@ import { setItemPublic } from '../../plugins/itemTag/test/fixtures';
 import { ItemPublished } from '../../plugins/publication/published/entities/itemPublished';
 import { RecycledItemDataRepository } from '../../plugins/recycled/repository';
 import { ItemRepository } from '../../repository';
+
+const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
 
 export class ItemTestUtils {
   public itemRepository: ItemRepository;
@@ -143,7 +144,7 @@ export class ItemTestUtils {
     }
   };
 
-  saveMembership = ({
+  saveMembership = async ({
     item,
     account,
     permission = PermissionLevel.Admin,
@@ -152,7 +153,7 @@ export class ItemTestUtils {
     account: Actor;
     permission?: PermissionLevel;
   }) => {
-    return ItemMembershipRepository.save({ item, account, permission });
+    return await itemMembershipRawRepository.save({ item, account, permission });
   };
 
   saveItemAndMembership = async (options: {

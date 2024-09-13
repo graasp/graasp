@@ -61,8 +61,9 @@ export class ActionItemService {
     const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Read);
 
     // check permission
-    const permission = (await repositories.itemMembershipRepository.getInherited(item, actor, true))
-      ?.permission;
+    const permission = (
+      await repositories.itemMembershipRepository.getInherited(item.path, actor.id, true)
+    )?.permission;
 
     // Check validity of the requestSampleSize parameter (it is a number between min and max constants)
     let size = DEFAULT_ACTIONS_SAMPLE_SIZE;
@@ -156,7 +157,8 @@ export class ActionItemService {
 
     // check permission
     const permission = actor
-      ? (await repositories.itemMembershipRepository.getInherited(item, actor, true))?.permission
+      ? (await repositories.itemMembershipRepository.getInherited(item.path, actor.id, true))
+          ?.permission
       : null;
 
     if (payload.startDate && payload.endDate && isBefore(payload.endDate, payload.startDate)) {
@@ -174,7 +176,7 @@ export class ActionItemService {
     // get memberships
     const inheritedMemberships =
       (await repositories.itemMembershipRepository.getForManyItems([item])).data?.[item.id] ?? [];
-    const itemMemberships = await repositories.itemMembershipRepository.getAllBelow(item);
+    const itemMemberships = await repositories.itemMembershipRepository.getAllBelow(item.path);
     const allMemberships = [...inheritedMemberships, ...itemMemberships];
     // get members
     const members =

@@ -265,6 +265,7 @@ describe('DataMember Export', () => {
     });
 
     it('get all Item Memberships for the member', async () => {
+      const itemMembershipRepository = new ItemMembershipRepository();
       // TODO: maybe insert beforeEach...
       const actorItems = [
         await itemTestUtils.saveItem({ actor: exportingActor }),
@@ -305,7 +306,7 @@ describe('DataMember Export', () => {
         permission: PermissionLevel.Read,
       });
 
-      const results = await ItemMembershipRepository.getForMemberExport(exportingActor.id);
+      const results = await itemMembershipRepository.getForMemberExport(exportingActor.id);
       expectNoLeaksAndEquality(results, memberships, itemMembershipSchema);
     });
   });
