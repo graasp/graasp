@@ -7280,7 +7280,7 @@ __metadata:
     h5p-standalone: "npm:3.6.0"
     http-status-codes: "npm:2.3.0"
     husky: "npm:8.0.3"
-    i18next: "npm:23.12.2"
+    i18next: "npm:23.12.7"
     ioredis: "npm:5.4.1"
     is-url-http: "npm:2.3.8"
     jest: "npm:29.7.0"
@@ -7580,12 +7580,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"i18next@npm:23.12.2":
-  version: 23.12.2
-  resolution: "i18next@npm:23.12.2"
+"i18next@npm:23.12.7":
+  version: 23.12.7
+  resolution: "i18next@npm:23.12.7"
   dependencies:
     "@babel/runtime": "npm:^7.23.2"
-  checksum: 10/d7a743c54b83acc1203315e547bfe830bfe825dddd7706646aec2a49cb74254bcda70645b568d1bed55ee3610ba5e6f6012fb3c13f03080c1dd0f99db2c45478
+  checksum: 10/7c542b7fc67622ac35fb9c503f7683f8d764f6d17988b237b3f017790fd73c07b5b013885b874cbfd2eae36b12ea38b376764a927d391d57b21bad96b29c42b6
   languageName: node
   linkType: hard
 
