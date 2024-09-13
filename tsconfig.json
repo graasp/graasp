@@ -1,13 +1,16 @@
 {
   "compilerOptions": {
+    "module": "ESNext", // or "NodeNext"
+    "moduleResolution": "Bundler", // or "NodeNext"
+
     "lib": ["es5", "es6", "esnext.asynciterable"],
     "target": "es6",
-    "module": "Node16",
+    // "module": "Node16",
     // "strict": true, // TODO: enable
     "esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables `allowSyntheticDefaultImports` for type compatibility. */,
     "checkJs": false,
     "allowJs": false,
-    "moduleResolution": "node16",
+    // "moduleResolution": "node16",
     "resolveJsonModule": true,
     "skipLibCheck": true,
 

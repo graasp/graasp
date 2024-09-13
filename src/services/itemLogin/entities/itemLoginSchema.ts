@@ -32,6 +32,7 @@ export class ItemLoginSchema extends BaseEntity {
     enum: Object.values(ItemLoginSchemaType),
     nullable: false,
     length: 100,
+    type: 'character varying',
   })
   type: `${ItemLoginSchemaType}` | ItemLoginSchemaType;
 

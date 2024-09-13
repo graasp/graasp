@@ -28,29 +28,34 @@ export class MemberProfile extends BaseEntity {
   @Column({
     nullable: true,
     length: 5000,
+    type: 'character varying',
   })
   bio: string;
 
   @Column({
     nullable: false,
     default: false,
+    type: 'boolean',
   })
   visibility: boolean;
 
   @Column({
     nullable: true,
+    type: 'character varying',
     length: 100,
   })
   facebookID: string;
 
   @Column({
     nullable: true,
+    type: 'character varying',
     length: 100,
   })
   linkedinID: string;
 
   @Column({
     nullable: true,
+    type: 'character varying',
     length: 100,
   })
   twitterID: string;

@@ -40,7 +40,12 @@ export class ShortLink extends BaseEntity {
 
   // This column is needed to return the itemId only without doing a join (for mobile for example).
   // The select is set to false, to avoid to return the itemId when the item is returned.
-  @Column({ name: 'item_id', select: false })
+  @Column({
+    name: 'item_id',
+
+    type: 'character varying',
+    select: false,
+  })
   itemId: UUID;
 
   /**

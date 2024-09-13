@@ -28,11 +28,13 @@ export class App extends BaseEntity {
     unique: true,
     select: false,
     nullable: false,
+    type: 'character varying',
   })
   key: string = v4();
 
   @Column({
     nullable: false,
+    type: 'character varying',
     length: 250,
   })
   name: string;
@@ -40,6 +42,7 @@ export class App extends BaseEntity {
   @Column({
     nullable: false,
     length: 250,
+    type: 'character varying',
   })
   description: string;
 
@@ -47,6 +50,7 @@ export class App extends BaseEntity {
     nullable: false,
     unique: true,
     length: 250,
+    type: 'character varying',
   })
   url: string;
 

@@ -36,6 +36,7 @@ export class AppSetting extends BaseEntity {
 
   @Column({
     nullable: false,
+    type: 'character varying',
   })
   name: string;
 

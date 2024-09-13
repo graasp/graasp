@@ -23,6 +23,7 @@ export class Member extends Account {
     nullable: false,
     length: 150,
     unique: true,
+    type: 'character varying',
   })
   email: string;
 
@@ -32,6 +33,7 @@ export class Member extends Account {
   @Column({
     nullable: true,
     name: 'user_agreements_date',
+    type: 'date',
   })
   userAgreementsDate: Date;
 
@@ -39,6 +41,7 @@ export class Member extends Account {
     nullable: false,
     name: 'enable_save_actions',
     default: true,
+    type: 'boolean',
   })
   enableSaveActions: boolean;
 
@@ -46,6 +49,7 @@ export class Member extends Account {
     default: false,
     name: 'is_validated',
     nullable: false,
+    type: 'boolean',
   })
   isValidated: boolean;
 

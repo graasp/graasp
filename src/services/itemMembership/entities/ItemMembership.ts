@@ -26,6 +26,7 @@ export class ItemMembership extends BaseEntity {
   @Column({
     length: 100,
     nullable: false,
+    type: 'character varying',
     enum: Object.values(PermissionLevel),
   })
   @Index()

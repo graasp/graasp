@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import {
   BaseEntity,
   Column,
@@ -16,7 +17,9 @@ import { AccountType } from '@graasp/sdk';
 export class Account extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
   @Column({
+    type: 'character varying',
     nullable: false,
     length: 100,
   })
@@ -24,6 +27,7 @@ export class Account extends BaseEntity {
 
   @Index('IDX_account_type')
   @Column({
+    type: 'character varying',
     nullable: false,
     default: AccountType.Individual,
     enum: Object.values(AccountType),
@@ -33,6 +37,7 @@ export class Account extends BaseEntity {
 
   @Column({
     nullable: true,
+    type: 'boolean',
     name: 'last_authenticated_at',
   })
   lastAuthenticatedAt: Date;

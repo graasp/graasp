@@ -41,11 +41,13 @@ export class Action extends BaseEntity {
   @Column({
     nullable: false,
     enum: Object.values(Context),
+    type: 'character varying',
   })
   view: Context | 'Unknown';
 
   @Column({
     nullable: false,
+    type: 'character varying',
   })
   type: string;
 

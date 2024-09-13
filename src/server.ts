@@ -16,7 +16,7 @@ import {
 // import fastifyCompress from 'fastify-compress';
 import { GREETING } from './utils/constants';
 
-const start = async () => {
+export const start = async () => {
   const instance = fastify({
     // allows to remove logging of incomming requests
     // can not be set using an environnement variable

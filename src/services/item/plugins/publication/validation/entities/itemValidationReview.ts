@@ -35,12 +35,14 @@ export class ItemValidationReview extends BaseEntity {
 
   @Column({
     nullable: false,
+    type: 'character varying',
     enum: Object.values(ItemValidationReviewStatus),
   })
   status: ItemValidationReviewStatus;
 
   @Column({
     nullable: true,
+    type: 'character varying',
   })
   reason: string;
 

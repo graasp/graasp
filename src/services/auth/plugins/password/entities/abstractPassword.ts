@@ -12,6 +12,7 @@ export abstract class AbstractPassword extends BaseEntity {
 
   @Column({
     length: 100,
+    type: 'character varying',
   })
   password: string;
 

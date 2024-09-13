@@ -51,11 +51,13 @@ export class AppData extends BaseEntity {
   @Column({
     nullable: false,
     length: 25,
+    type: 'character varying',
   })
   type: string;
 
   @Column({
     nullable: false,
+    type: 'character varying',
   })
   visibility: AppDataVisibility;
 

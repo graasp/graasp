@@ -29,18 +29,21 @@ export class ItemValidation extends BaseEntity {
 
   @Column({
     nullable: false,
+    type: 'character varying',
     enum: Object.values(ItemValidationProcess),
   })
   process: `${ItemValidationProcess}`;
 
   @Column({
     nullable: false,
+    type: 'character varying',
     enum: Object.values(ItemValidationStatus),
   })
   status: ItemValidationStatus;
 
   @Column({
     nullable: true,
+    type: 'character varying',
   })
   result: string;
 
