@@ -5,7 +5,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { ShortLinkAvailable, ShortLinkPatchPayload, ShortLinkPostPayload } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
-import { notUndefined } from '../../../../utils/assertions';
+import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
@@ -56,7 +56,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         `${SHORT_LINKS_LIST_ROUTE}/:itemId`,
         { preHandler: isAuthenticated },
         async ({ user, params: { itemId } }) => {
-          const member = notUndefined(user?.account);
+          const member = asDefined(user?.account);
           return shortLinkService.getAllForItem(member, buildRepositories(), itemId);
         },
       );
@@ -68,7 +68,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
         },
         async ({ user, body: shortLink }) => {
-          const member = notUndefined(user?.account);
+          const member = asDefined(user?.account);
           assertIsMember(member);
           return db.transaction(async (manager) => {
             const newLink = await shortLinkService.post(
@@ -85,7 +85,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         '/:alias',
         { preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
         async ({ user, params: { alias } }) => {
-          const member = notUndefined(user?.account);
+          const member = asDefined(user?.account);
           assertIsMember(member);
           return db.transaction(async (manager) => {
             const oldLink = await shortLinkService.delete(
@@ -105,7 +105,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
         },
         async ({ user, body: shortLink, params: { alias } }) => {
-          const member = notUndefined(user?.account);
+          const member = asDefined(user?.account);
           assertIsMember(member);
           return db.transaction(async (manager) => {
             const updatedLink = await shortLinkService.update(

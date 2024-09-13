@@ -11,7 +11,7 @@ import { HttpMethod, MemberFactory } from '@graasp/sdk';
 import build, { clearDatabase } from '../../../../../test/app';
 import { resolveDependency } from '../../../../di/utils';
 import { AppDataSource } from '../../../../plugins/datasource';
-import { notUndefined } from '../../../../utils/assertions';
+import { asDefined } from '../../../../utils/assertions';
 import {
   APPS_JWT_SECRET,
   AUTH_TOKEN_JWT_SECRET,
@@ -464,7 +464,7 @@ describe('Passport Plugin', () => {
         EMAIL_CHANGE_JWT_SECRET,
       );
       handler.mockImplementation(({ user }: { user: PassportUser }) => {
-        const account = notUndefined(user.account);
+        const account = asDefined(user.account);
         assertIsMember(account);
         expectMember(account, member);
         expect(user.emailChange?.newEmail).toEqual(newEmail);

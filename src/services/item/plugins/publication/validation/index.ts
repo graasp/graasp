@@ -5,7 +5,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { PermissionLevel, PublicationStatus } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../di/utils';
-import { notUndefined } from '../../../../../utils/assertions';
+import { asDefined } from '../../../../../utils/assertions';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { isAuthenticated } from '../../../../auth/plugins/passport';
 import { matchOne } from '../../../../authorization';
@@ -39,7 +39,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: [isAuthenticated, matchOne(memberAccountRole)],
     },
     async ({ user, params: { itemId } }) => {
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
       const item = await itemService.get(member, buildRepositories(), itemId);
       return validationService.getLastItemValidationGroupForItem(member, buildRepositories(), item);
@@ -54,7 +54,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: [isAuthenticated, matchOne(memberAccountRole)],
     },
     async ({ user, params: { itemValidationGroupId } }) => {
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
       return validationService.getItemValidationGroup(
         member,
@@ -77,7 +77,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         params: { itemId },
         log,
       } = request;
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
 
       db.transaction(async (manager) => {

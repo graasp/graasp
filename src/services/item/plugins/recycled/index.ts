@@ -5,7 +5,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
 import { IdParam, IdsParams } from '../../../../types';
-import { notUndefined } from '../../../../utils/assertions';
+import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
@@ -47,7 +47,7 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
     '/recycled',
     { schema: getRecycledItemDatas, preHandler: [isAuthenticated, matchOne(memberAccountRole)] },
     async ({ user }) => {
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
       const result = await recycleBinService.getAll(member, buildRepositories());
       return result;
@@ -67,7 +67,7 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
         log,
         user,
       } = request;
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
       db.transaction(async (manager) => {
         const items = await recycleBinService.recycleMany(member, buildRepositories(manager), ids);
@@ -104,7 +104,7 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
         log,
         user,
       } = request;
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
       log.info(`Restoring items ${ids}`);
 

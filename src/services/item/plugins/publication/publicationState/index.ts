@@ -3,7 +3,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { UUID } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../di/utils';
-import { notUndefined } from '../../../../../utils/assertions';
+import { asDefined } from '../../../../../utils/assertions';
 import { UnauthorizedMember } from '../../../../../utils/errors';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { isAuthenticated } from '../../../../auth/plugins/passport';
@@ -18,7 +18,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: isAuthenticated,
     },
     async ({ user, params: { itemId } }) => {
-      const account = notUndefined(user?.account, new UnauthorizedMember());
+      const account = asDefined(user?.account, UnauthorizedMember);
       return await publicationService.computeStateForItem(account, buildRepositories(), itemId);
     },
   );

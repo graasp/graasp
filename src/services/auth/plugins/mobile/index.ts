@@ -6,7 +6,7 @@ import { RecaptchaAction } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
 import { resolveDependency } from '../../../../di/utils';
-import { notUndefined } from '../../../../utils/assertions';
+import { asDefined } from '../../../../utils/assertions';
 import {
   LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
   MOBILE_DEEP_LINK_PROTOCOL,
@@ -104,7 +104,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         user,
         body: { challenge },
       } = request;
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
 
       const token = memberPasswordService.generateToken(
         { sub: member.id, challenge: challenge },
@@ -128,7 +128,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: authenticateJWTChallengeVerifier,
     },
     async ({ user, authInfo }) => {
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
         await memberService.refreshLastAuthenticatedAt(member.id, repositories);
@@ -147,7 +147,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: authenticateRefreshToken,
     },
     async ({ user }) => {
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       return generateAuthTokensPair(member.id);
     },
   );

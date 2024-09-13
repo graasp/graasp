@@ -4,7 +4,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { HttpMethod, UUID } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../../../di/utils';
-import { notUndefined } from '../../../../../../../utils/assertions';
+import { asDefined } from '../../../../../../../utils/assertions';
 import { Repositories, buildRepositories } from '../../../../../../../utils/repositories';
 import {
   authenticateAppsJWT,
@@ -95,8 +95,8 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     preHandler: guestAuthenticateAppsJWT,
     handler: async (request) => {
       const { user } = request;
-      const account = notUndefined(user?.account);
-      const app = notUndefined(user?.app);
+      const account = asDefined(user?.account);
+      const app = asDefined(user?.app);
       // TODO: if one file fails, keep other files??? APPLY ROLLBACK
       // THEN WE SHOULD MOVE THE TRANSACTION
       return db
@@ -142,8 +142,8 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
         user,
         params: { id: appSettingId },
       } = request;
-      const member = notUndefined(user?.account);
-      const app = notUndefined(user?.app);
+      const member = asDefined(user?.account);
+      const app = asDefined(user?.app);
 
       return appSettingFileService
         .download(member, buildRepositories(), { item: app.item, appSettingId })

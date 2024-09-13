@@ -4,7 +4,7 @@ import { ItemType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../di/utils';
 import { IdParam } from '../../../../../types';
-import { notUndefined } from '../../../../../utils/assertions';
+import { asDefined } from '../../../../../utils/assertions';
 import { Repositories, buildRepositories } from '../../../../../utils/repositories';
 import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
 import { matchOne } from '../../../../authorization';
@@ -54,7 +54,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         preHandler: [authenticateAppsJWT, matchOne(validatedMemberAccountRole)],
       },
       async ({ user, params: { itemId }, body }) => {
-        const member = notUndefined(user?.account);
+        const member = asDefined(user?.account);
         assertIsMember(member);
         return db.transaction(async (manager) => {
           return appSettingService.post(member, buildRepositories(manager), itemId, body);
@@ -70,7 +70,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         preHandler: [authenticateAppsJWT, matchOne(validatedMemberAccountRole)],
       },
       async ({ user, params: { itemId, id: appSettingId }, body }) => {
-        const member = notUndefined(user?.account);
+        const member = asDefined(user?.account);
         assertIsMember(member);
         return db.transaction(async (manager) => {
           return appSettingService.patch(
@@ -92,7 +92,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         preHandler: [authenticateAppsJWT, matchOne(validatedMemberAccountRole)],
       },
       async ({ user, params: { itemId, id: appSettingId } }) => {
-        const member = notUndefined(user?.account);
+        const member = asDefined(user?.account);
         assertIsMember(member);
         return db.transaction(async (manager) => {
           return appSettingService.deleteOne(

@@ -7,7 +7,7 @@ import { PermissionLevel } from '@graasp/sdk';
 import build, { clearDatabase } from '../../../../../test/app';
 import { BaseLogger } from '../../../../logger';
 import { AppDataSource } from '../../../../plugins/datasource';
-import { assertNonNull } from '../../../../utils/assertions';
+import { assertIsDefined } from '../../../../utils/assertions';
 import { ItemNotFound, MemberCannotAccess, MemberCannotWriteItem } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { Member } from '../../../member/entities/member';
@@ -46,7 +46,7 @@ describe('ItemGeolocationService', () => {
 
   describe('delete', () => {
     it('delete successfully with admin permission', async () => {
-      assertNonNull(actor);
+      assertIsDefined(actor);
       const { item } = await testUtils.saveItemAndMembership({ member: actor });
       const geoloc = { lat: 1, lng: 2, item, country: 'de' };
       await rawRepository.save(geoloc);
@@ -56,7 +56,7 @@ describe('ItemGeolocationService', () => {
       expect(await rawRepository.count()).toEqual(0);
     });
     it('delete successfully with write permission', async () => {
-      assertNonNull(actor);
+      assertIsDefined(actor);
       const member = await saveMember();
       const { item } = await testUtils.saveItemAndMembership({
         member: actor,
@@ -71,7 +71,7 @@ describe('ItemGeolocationService', () => {
       expect(await rawRepository.count()).toEqual(0);
     });
     it('cannot delete with read permission', async () => {
-      assertNonNull(actor);
+      assertIsDefined(actor);
       const member = await saveMember();
       const { item } = await testUtils.saveItemAndMembership({
         member: actor,
@@ -93,7 +93,7 @@ describe('ItemGeolocationService', () => {
       expect(await rawRepository.count()).toEqual(1);
     });
     it('cannot delete without permission', async () => {
-      assertNonNull(actor);
+      assertIsDefined(actor);
       const member = await saveMember();
       const { item } = await testUtils.saveItemAndMembership({
         member,
@@ -110,7 +110,7 @@ describe('ItemGeolocationService', () => {
     });
 
     it('throws if item not found', async () => {
-      assertNonNull(actor);
+      assertIsDefined(actor);
       await service
         .delete(actor, buildRepositories(), v4())
         .then(() => {
@@ -346,7 +346,7 @@ describe('ItemGeolocationService', () => {
 
   describe('put', () => {
     it('save successfully for admin permission', async () => {
-      assertNonNull(actor);
+      assertIsDefined(actor);
       const { item } = await testUtils.saveItemAndMembership({
         member: actor,
       });
@@ -358,7 +358,7 @@ describe('ItemGeolocationService', () => {
     });
 
     it('save successfully for write permission', async () => {
-      assertNonNull(actor);
+      assertIsDefined(actor);
       const member = await saveMember();
       const { item } = await testUtils.saveItemAndMembership({
         member: actor,
@@ -373,7 +373,7 @@ describe('ItemGeolocationService', () => {
     });
 
     it('throws for read permission', async () => {
-      assertNonNull(actor);
+      assertIsDefined(actor);
       const member = await saveMember();
       const { item } = await testUtils.saveItemAndMembership({
         member: actor,
@@ -387,7 +387,7 @@ describe('ItemGeolocationService', () => {
     });
 
     it('throws if item not found', async () => {
-      assertNonNull(actor);
+      assertIsDefined(actor);
       await service
         .put(actor, buildRepositories(), v4(), { lat: 1, lng: 2 })
         .then(() => {

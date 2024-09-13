@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 
 import { ItemLoginSchemaType, PermissionLevel, UUID } from '@graasp/sdk';
 
-import { assertNonNull, notUndefined } from '../../utils/assertions';
+import { asDefined, assertIsDefined } from '../../utils/assertions';
 import { InvalidPassword } from '../../utils/errors';
 import { Repositories } from '../../utils/repositories';
 import { verifyCurrentPassword } from '../auth/plugins/password/utils';
@@ -94,7 +94,7 @@ export class ItemLoginService {
 
     // reuse existing item login for this user
     if (guestAccount && loginSchemaRequiresPassword(itemLoginSchema.type)) {
-      password = notUndefined(password, new MissingCredentialsForLoginSchema());
+      password = asDefined(password, MissingCredentialsForLoginSchema);
       const accountPassword = await guestPasswordRepository.getForGuestId(guestAccount.id);
       if (accountPassword) {
         if (!(await verifyCurrentPassword(accountPassword, password))) {
@@ -115,14 +115,14 @@ export class ItemLoginService {
 
       if (loginSchemaRequiresPassword(itemLoginSchema.type)) {
         // Check before creating account, so we don't create an account w/o password if it's required
-        notUndefined(password, new MissingCredentialsForLoginSchema());
+        asDefined(password, MissingCredentialsForLoginSchema);
       }
 
       // create account
       guestAccount = await guestRepository.addOne(data);
-      assertNonNull(guestAccount);
+      assertIsDefined(guestAccount);
       if (loginSchemaRequiresPassword(itemLoginSchema.type)) {
-        password = notUndefined(password, new MissingCredentialsForLoginSchema());
+        password = asDefined(password, MissingCredentialsForLoginSchema);
         await guestPasswordRepository.patch(guestAccount.id, password);
       }
 

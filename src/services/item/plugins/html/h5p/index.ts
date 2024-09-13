@@ -9,7 +9,7 @@ import fp from 'fastify-plugin';
 import { ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../di/utils';
-import { notUndefined } from '../../../../../utils/assertions';
+import { asDefined } from '../../../../../utils/assertions';
 import { CLIENT_HOSTS } from '../../../../../utils/config';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { isAuthenticated } from '../../../../auth/plugins/passport';
@@ -135,7 +135,7 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify) => {
           log,
           query: { parentId, previousItemId },
         } = request;
-        const member = notUndefined(user?.account);
+        const member = asDefined(user?.account);
         assertIsMember(member);
         return db.transaction(async (manager) => {
           const repositories = buildRepositories(manager);

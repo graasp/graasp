@@ -4,7 +4,7 @@ import { ItemTagType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
 import { IdParam, IdsParams } from '../../../../types';
-import { notUndefined } from '../../../../utils/assertions';
+import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
@@ -65,7 +65,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:itemId/tags/:type',
     { schema: create, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async ({ user, params: { itemId, type } }) => {
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
       return db.transaction(async (manager) => {
         return itemTagService.post(member, buildRepositories(manager), itemId, type);
@@ -79,7 +79,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     { schema: deleteOne, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async ({ user, params: { itemId, type } }) => {
       return db.transaction(async (manager) => {
-        const member = notUndefined(user?.account);
+        const member = asDefined(user?.account);
         assertIsMember(member);
         return itemTagService.deleteOne(member, buildRepositories(manager), itemId, type);
       });

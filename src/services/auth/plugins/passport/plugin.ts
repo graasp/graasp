@@ -3,7 +3,7 @@ import { fastifySecureSession } from '@fastify/secure-session';
 import { FastifyInstance, FastifyPluginAsync, PassportUser } from 'fastify';
 
 import { resolveDependency } from '../../../../di/utils';
-import { assertNonNull } from '../../../../utils/assertions';
+import { assertIsDefined } from '../../../../utils/assertions';
 import {
   AUTH_TOKEN_JWT_SECRET,
   COOKIE_DOMAIN,
@@ -121,7 +121,7 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
 
   // Serialize and Deserialize user
   fastifyPassport.registerUserSerializer(async (user: PassportUser, _req) => {
-    assertNonNull(user.account);
+    assertIsDefined(user.account);
     return user.account.id;
   });
   fastifyPassport.registerUserDeserializer(async (uuid: string, _req): Promise<PassportUser> => {

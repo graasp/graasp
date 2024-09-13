@@ -5,7 +5,7 @@ import { HttpMethod, UUID } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../../../di/utils';
 import { IdParam } from '../../../../../../../types';
-import { notUndefined } from '../../../../../../../utils/assertions';
+import { asDefined } from '../../../../../../../utils/assertions';
 import { Repositories, buildRepositories } from '../../../../../../../utils/repositories';
 import { guestAuthenticateAppsJWT } from '../../../../../../auth/plugins/passport';
 import FileService from '../../../../../../file/service';
@@ -84,8 +84,8 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     preHandler: guestAuthenticateAppsJWT,
     handler: async (request) => {
       const { user } = request;
-      const member = notUndefined(user?.account);
-      const app = notUndefined(user?.app);
+      const member = asDefined(user?.account);
+      const app = asDefined(user?.app);
 
       return db
         .transaction(async (manager) => {
@@ -130,8 +130,8 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
         user,
         params: { id: appDataId },
       } = request;
-      const member = notUndefined(user?.account);
-      const app = notUndefined(user?.app);
+      const member = asDefined(user?.account);
+      const app = asDefined(user?.app);
 
       return appDataFileService
         .download(member, buildRepositories(), { item: app.item, appDataId })

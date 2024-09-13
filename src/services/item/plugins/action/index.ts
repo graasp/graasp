@@ -16,7 +16,7 @@ import {
 
 import { resolveDependency } from '../../../../di/utils';
 import { IdParam } from '../../../../types';
-import { notUndefined } from '../../../../utils/assertions';
+import { asDefined } from '../../../../utils/assertions';
 import { CLIENT_HOSTS } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
 import { ActionService } from '../../../action/services/action';
@@ -163,7 +163,7 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
         query: { format = ExportActionsFormatting.JSON },
         log,
       } = request;
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       assertIsMember(member);
       db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);

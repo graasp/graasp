@@ -5,7 +5,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { MentionStatus } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
-import { notUndefined } from '../../../../utils/assertions';
+import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import { isMember } from '../../../member/entities/member';
@@ -63,7 +63,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/mentions',
     { schema: getMentions, preHandler: isAuthenticated },
     async ({ user }) => {
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       return mentionService.getForAccount(member, buildRepositories());
     },
   );
@@ -76,7 +76,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     { schema: patchMention, preHandler: isAuthenticated },
     async ({ user, params: { mentionId }, body: { status } }) => {
       return db.transaction(async (manager) => {
-        const member = notUndefined(user?.account);
+        const member = asDefined(user?.account);
         return mentionService.patch(member, buildRepositories(manager), mentionId, status);
       });
     },
@@ -88,7 +88,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     { schema: deleteMention, preHandler: isAuthenticated },
     async ({ user, params: { mentionId } }) => {
       return db.transaction(async (manager) => {
-        const member = notUndefined(user?.account);
+        const member = asDefined(user?.account);
         return mentionService.deleteOne(member, buildRepositories(manager), mentionId);
       });
     },
@@ -102,7 +102,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: isAuthenticated,
     },
     async ({ user }, reply) => {
-      const member = notUndefined(user?.account);
+      const member = asDefined(user?.account);
       await db.transaction(async (manager) => {
         await mentionService.deleteAll(member, buildRepositories(manager));
       });

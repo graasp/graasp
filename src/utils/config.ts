@@ -17,7 +17,7 @@ import {
   S3FileConfiguration,
 } from '../services/file/interfaces/configuration';
 import { API_KEY_FORMAT } from '../services/item/plugins/etherpad/serviceConfig';
-import { notUndefined } from './assertions';
+import { asDefined } from './assertions';
 import { ExpectedEnvVariable } from './errors';
 import { validateEnv } from './validators/utils';
 import { RegexValidator, UrlValidator } from './validators/validators';
@@ -208,9 +208,10 @@ export const PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES: number =
   Number(process.env.PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES) || 1440;
 
 /** Email change token Secret */
-export const EMAIL_CHANGE_JWT_SECRET: string = notUndefined(
+export const EMAIL_CHANGE_JWT_SECRET: string = asDefined(
   process.env.EMAIL_CHANGE_JWT_SECRET,
-  new ExpectedEnvVariable('EMAIL_CHANGE_JWT_SECRET'),
+  ExpectedEnvVariable,
+  'EMAIL_CHANGE_JWT_SECRET',
 );
 
 /** Email change token expiration, in minutes */
