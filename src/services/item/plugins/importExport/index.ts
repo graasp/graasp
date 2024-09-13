@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { fastifyMultipart } from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 
-import { ActionTriggers, ItemType } from '@graasp/sdk';
+import { ActionTriggers, ItemType, MAX_ZIP_FILE_SIZE } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
 import { BaseLogger } from '../../../../logger';
@@ -15,7 +15,6 @@ import { matchOne } from '../../../authorization';
 import { assertIsMember } from '../../../member/entities/member';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { ItemService } from '../../service';
-import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
 import { ZIP_FILE_MIME_TYPES } from './constants';
 import { FileIsInvalidArchiveError } from './errors';
 import { zipExport, zipImport } from './schema';
@@ -33,7 +32,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       // fieldNameSize: 0,             // Max field name size in bytes (Default: 100 bytes).
       // fieldSize: 1000000,           // Max field value size in bytes (Default: 1MB).
       fields: 0, // Max number of non-file fields (Default: Infinity).
-      fileSize: DEFAULT_MAX_FILE_SIZE, // For multipart forms, the max file size (Default: Infinity).
+      fileSize: MAX_ZIP_FILE_SIZE, // For multipart forms, the max file size (Default: Infinity).
       files: 1, // Max number of file fields (Default: Infinity).
       // headerPairs: 2000             // Max number of header key=>value pairs (Default: 2000 - same as node's http).
     },
