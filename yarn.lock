@@ -7284,7 +7284,7 @@ __metadata:
     french-badwords-list: "npm:1.0.7"
     fs-extra: "npm:11.2.0"
     geoip-lite: "npm:1.4.10"
-    h5p-standalone: "npm:3.6.0"
+    h5p-standalone: "npm:3.7.0"
     http-status-codes: "npm:2.3.0"
     husky: "npm:8.0.3"
     i18next: "npm:23.12.7"
@@ -7344,12 +7344,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"h5p-standalone@npm:3.6.0":
-  version: 3.6.0
-  resolution: "h5p-standalone@npm:3.6.0"
+"h5p-standalone@npm:3.7.0":
+  version: 3.7.0
+  resolution: "h5p-standalone@npm:3.7.0"
   dependencies:
     "@commitlint/cli": "npm:^17.6.3"
-  checksum: 10/f44e2f293b3d462753f76c895c8347ebd8697eded125ca2cff5787ca106dbc12ae63d7c3a8795a5a75d0e2a14b690c52dacf700f472d7c0ca6b9e60cddf34657
+  checksum: 10/f82823cb4f866856b4143ab09f234c5bef5513a0371153ad1d6c8ac98ce157974a7f919f8ed86d325c8b5d5d3c46f2176b3b8788ca7ab60158d9f22b92430d5b
   languageName: node
   linkType: hard
 
