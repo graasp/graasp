@@ -7,7 +7,7 @@ export default {
         id: { type: 'string' },
         account: { $ref: 'https://graasp.org/accounts/#/definitions/account' },
         /** @deprecated use account */
-        member: { $ref: 'https://graasp.org/accounts/#/definitions/account' },
+        member: { $ref: 'https://graasp.org/accounts/#/definitions/account', deprecated: true },
         item: {
           $ref: 'https://graasp.org/items/#/definitions/item',
         },
@@ -40,7 +40,7 @@ const getForOne = {
     type: 'object',
     properties: {
       /** @deprecated use accountId */
-      memberId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      memberId: { $ref: 'https://graasp.org/#/definitions/uuid', deprecated: true },
       accountId: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
     additionalProperties: false,

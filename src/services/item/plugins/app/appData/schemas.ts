@@ -6,15 +6,15 @@ export default {
       properties: {
         id: { type: 'string' },
         account: { $ref: 'https://graasp.org/accounts/#/definitions/account' },
-        /** deprecated use account - to support legacy apps */
-        member: { $ref: 'https://graasp.org/accounts/#/definitions/account' },
+        /** @deprecated use account - to support legacy apps */
+        member: { $ref: 'https://graasp.org/accounts/#/definitions/account', deprecated: true },
         item: { $ref: 'https://graasp.org/items/#/definitions/item' },
         data: {
           type: 'object',
           additionalProperties: true,
         },
         type: { type: 'string' },
-        visibility: { type: 'string' },
+        visibility: { type: 'string', enum: ['member', 'item'] },
         creator: { $ref: 'https://graasp.org/members/#/definitions/member' },
         createdAt: { type: 'string' },
         updatedAt: { type: 'string' },
@@ -33,7 +33,7 @@ const create = {
       type: { type: 'string', minLength: 3, maxLength: 25 },
       visibility: { type: 'string', enum: ['member', 'item'] },
       /** @deprecated use accountId */
-      memberId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      memberId: { $ref: 'https://graasp.org/#/definitions/uuid', deprecated: true },
       accountId: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
   },
