@@ -1,5 +1,3 @@
-import { UUID_REGEX } from '../../../../../schemas/global';
-
 export default {
   $id: 'https://graasp.org/apps/app-action/',
   definitions: {
@@ -7,9 +5,9 @@ export default {
       type: 'object',
       properties: {
         id: { type: 'string' },
-        member: {
-          $ref: 'https://graasp.org/members/#/definitions/member',
-        },
+        account: { $ref: 'https://graasp.org/accounts/#/definitions/account' },
+        /** @deprecated use account */
+        member: { $ref: 'https://graasp.org/accounts/#/definitions/account', deprecated: true },
         item: {
           $ref: 'https://graasp.org/items/#/definitions/item',
         },
@@ -29,7 +27,6 @@ const create = {
     properties: {
       data: { type: 'object', additionalProperties: true },
       type: { type: 'string', minLength: 3, maxLength: 25 },
-      memberId: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
   },
   response: {
@@ -42,7 +39,9 @@ const getForOne = {
   querystring: {
     type: 'object',
     properties: {
-      memberId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      /** @deprecated use accountId */
+      memberId: { $ref: 'https://graasp.org/#/definitions/uuid', deprecated: true },
+      accountId: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
     additionalProperties: false,
   },
@@ -54,43 +53,4 @@ const getForOne = {
   },
 };
 
-const getForMany = {
-  querystring: {
-    type: 'object',
-    required: ['itemId'],
-    properties: {
-      itemId: {
-        type: 'array',
-        items: { $ref: 'https://graasp.org/#/definitions/uuid' },
-        uniqueItems: true,
-      },
-      memberId: { $ref: 'https://graasp.org/#/definitions/uuid' },
-    },
-    additionalProperties: false,
-  },
-  response: {
-    200: {
-      type: 'object',
-      additionalProperties: false,
-      properties: {
-        data: {
-          type: 'object',
-          patternProperties: {
-            [UUID_REGEX]: {
-              type: 'array',
-              items: { $ref: 'https://graasp.org/apps/app-action/#/definitions/appAction' },
-            },
-          },
-        },
-        errors: {
-          type: 'array',
-          items: {
-            $ref: 'https://graasp.org/#/definitions/error',
-          },
-        },
-      },
-    },
-  },
-};
-
-export { create, getForOne, getForMany };
+export { create, getForOne };

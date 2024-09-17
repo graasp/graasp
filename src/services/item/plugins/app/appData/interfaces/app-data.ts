@@ -6,4 +6,8 @@ export interface InputAppData {
   type: string;
   visibility: AppDataVisibility;
   accountId?: string;
+  /**
+   * @deprecated use accountId - legacy to work with old apps
+   */
+  memberId?: string;
 }

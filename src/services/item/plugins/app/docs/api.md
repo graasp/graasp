@@ -27,8 +27,9 @@ Within Graasp, the apps are given some information by query string:
 App actions are analytic traces the app might save. They have the following structure:
 
 - `id`: the app action id
-- `memberId`: the member id related to the app action (default: current authenticated member id)
-- `itemId`: the item id corresponding to the current app
+- `account`: the member related to the app action (default: current authenticated member id).
+- `member`: use `account`
+- `item`: the item corresponding to the current app
 - `data`: object containing any necessary data
 - `type`: the related action related to the data
 - `createdAt`: creation timestamp of the app action
@@ -39,15 +40,11 @@ App actions are analytic traces the app might save. They have the following stru
 
 - return value: an array of all app data related to `itemId`
 
-### GET App Action for multiple items
-
-`TODO`
-
 ### POST App Action
 
 `POST <apiHost>/app-items/<item-id>/app-action`
 
-- body: `{ data: { ... }, type, [memberId], [visibility] }`
+- body: `{ data: { ... }, type, [visibility] }`
 - returned value: created app action
 
 ---
@@ -59,11 +56,12 @@ App actions are analytic traces the app might save. They have the following stru
 App data are all data the app might save. They have the following structure:
 
 - `id`: the app data id
-- `memberId`: the member id related to the data (default: current authenticated member id)
-- `itemId`: the item id corresponding to the current app
+- `account`: the member related to the data (default: current authenticated member id)
+- `member`: use `account`
+- `item`: the item corresponding to the current app
 - `data`: object containing any necessary data
 - `type`: the related action related to the data
-- `creator`: the member id who created the app data
+- `creator`: the member who created the app data
 - `visibility`: availability of the app data, either `member` or `item` (default: `member`)
   - `member`: the app data can be managed by the creator and members with admin permission. Members with write permission can view them but cannot modify them.
   - `item`: the app data can be managed by the creator and members with admin permission. All other members can view them but cannot modify them.
@@ -104,17 +102,13 @@ See examples of allowed operations in the table below.
 
 - return value: an array of all app data related to `itemId`
 
-### GET App Data for multiple items
-
-`TODO`
-
 ### POST App Data
 
 `POST <apiHost>/app-items/<item-id>/app-data`
 
-- body: `{ data: { ... }, type, [memberId], [visibility] }`
+- body: `{ data: { ... }, type, [accountId], [visibility] }`
 
-  The `memberId` is used to adress the app data to another member. All logged users can send an app data to another user.
+  `accountId` is used to adress the app data to another member. All logged users can send an app data to another user.
 
 - returned value: created app data
 
@@ -176,9 +170,9 @@ App settings have the following structure:
 
 - `id`: the app setting id
 - `name`: the app setting name
-- `itemId`: the item id corresponding to the current app
+- `item`: the item corresponding to the current app
 - `data`: object containing any necessary setting
-- `creator`: the member id who created the app setting
+- `creator`: the member who created the app setting
 - `createdAt`: creation timestamp of the app setting
 - `updatedAt`: update timestamp of the app setting
 
@@ -250,7 +244,8 @@ postMessage(
   - `context`: where the app is running (eg: `builder`, `explorer`, `standalone`, ...)
   - `itemId`: item id which corresponds to your app resource id
   - `lang`: language
-  - `memberId`: the current authenticated user using the app
+  - `accountId`: the current authenticated user using the app
+  - `memberId`: use `accountId`
   - `permission`: the current member's permission
   - `settings`: the corresponding item settings
   - as well as the `port` of the `MessageChannel` you will use from now on to communicate with the parent window.

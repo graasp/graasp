@@ -81,7 +81,7 @@ export class AppDataService {
     await validatePermission(repositories, PermissionLevel.Read, account, item);
 
     // any user can write app data for others
-    const attachedToMemberId = body.accountId ?? account.id;
+    const attachedToMemberId = body.accountId ?? body.memberId ?? account.id;
 
     const completeData = Object.assign(
       {
@@ -243,40 +243,6 @@ export class AppDataService {
       { accountId: account.id, type },
       itemMembership?.permission,
     );
-  }
-
-  // TODO: check for many items
-  async getForManyItems(account: Account, repositories: Repositories, itemIds: string[]) {
-    const { appDataRepository, itemRepository } = repositories;
-
-    // check item exists? let post fail?
-    const items = await itemRepository.getMany(itemIds);
-
-    // posting an app data is allowed to readers
-    const result = { data: {}, errors: items.errors };
-    for (const itemId of itemIds) {
-      const item = items.data[itemId];
-      if (!item) {
-        // errors already contained from getMany
-        return result;
-      }
-      // TODO: optimize
-      const { itemMembership } = await validatePermission(
-        repositories,
-        PermissionLevel.Read,
-        account,
-        item,
-      );
-      const appData = await appDataRepository.getForItem(
-        itemId,
-        { accountId: account.id },
-        itemMembership?.permission,
-      );
-      result.data[itemId] = appData;
-      return result;
-    }
-
-    // TODO: get only memberId or with visibility
   }
 
   // TODO: check
