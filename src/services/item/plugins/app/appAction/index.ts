@@ -3,10 +3,11 @@ import { FastifyPluginAsync } from 'fastify';
 import { asDefined } from '../../../../../utils/assertions';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
-import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request';
+import { SingleItemGetFilter } from '../interfaces/request';
+import { addMemberInAppAction } from '../legacy';
 import { appActionsWsHooks } from '../ws/hooks';
 import { InputAppAction } from './interfaces/app-action';
-import common, { create, getForMany, getForOne } from './schemas';
+import common, { create, getForOne } from './schemas';
 import { AppActionService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
@@ -28,7 +29,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       async ({ user, params: { itemId }, body }) => {
         const member = asDefined(user?.account);
         return db.transaction(async (manager) => {
-          return appActionService.post(member, buildRepositories(manager), itemId, body);
+          return addMemberInAppAction(
+            await appActionService.post(member, buildRepositories(manager), itemId, body),
+          );
         });
       },
     );
@@ -39,22 +42,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       { schema: getForOne, preHandler: authenticateAppsJWT },
       async ({ user, params: { itemId }, query: filters }) => {
         const member = asDefined(user?.account);
-        return appActionService.getForItem(member, buildRepositories(), itemId, filters);
-      },
-    );
-
-    // get app action from multiple items
-    fastify.get<{ Querystring: ManyItemsGetFilter }>(
-      '/app-action',
-      { schema: getForMany, preHandler: authenticateAppsJWT },
-      async ({ user, query: filters }) => {
-        const member = asDefined(user?.account);
-        return appActionService.getForManyItems(
-          member,
-          buildRepositories(),
-          filters.itemId,
-          filters,
-        );
+        return (
+          await appActionService.getForItem(member, buildRepositories(), itemId, filters)
+        ).map(addMemberInAppAction);
       },
     );
   });
