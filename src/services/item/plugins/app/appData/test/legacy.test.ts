@@ -105,7 +105,7 @@ describe('App Data Tests - Legacy', () => {
       chosenAppData = appData[0];
     });
 
-    it.only('Return member in patched app data', async () => {
+    it('Return member in patched app data', async () => {
       const response = await app.inject({
         method: HttpMethod.Patch,
         url: `${APP_ITEMS_PREFIX}/${item.id}/app-data/${chosenAppData.id}`,
