@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.49.0](https://github.com/graasp/graasp/compare/v1.48.0...v1.49.0) (2024-09-18)
+
+
+### Features
+
+* add back member key in app endpoints ([#1389](https://github.com/graasp/graasp/issues/1389)) ([2cb9fa3](https://github.com/graasp/graasp/commit/2cb9fa38f771078edd8abe0feed0a2444e764b2e))
+* cannot get item login schema type of hidden item ([#1365](https://github.com/graasp/graasp/issues/1365)) ([1a66c71](https://github.com/graasp/graasp/commit/1a66c71786d5b82b6fd396ecf44ad9ae3d843f45))
+* use max ZIP file size from SDK ([#1373](https://github.com/graasp/graasp/issues/1373)) ([895dce3](https://github.com/graasp/graasp/commit/895dce37937d75ce6effa9cd65774ab00b27b1c1))
+
+
+### Bug Fixes
+
+* **deps:** update dependency @graasp/translations to v1.36.1 ([#1378](https://github.com/graasp/graasp/issues/1378)) ([e13e75b](https://github.com/graasp/graasp/commit/e13e75be4c8f6c3bfa05b161a823622579a1cee2))
+* **deps:** update dependency bullmq to v5.13.0 ([#1265](https://github.com/graasp/graasp/issues/1265)) ([04bf9fc](https://github.com/graasp/graasp/commit/04bf9fce0256c233a13337cd5a1d295037c7113c))
+* **deps:** update dependency h5p-standalone to v3.7.0 ([#1260](https://github.com/graasp/graasp/issues/1260)) ([e4d81a6](https://github.com/graasp/graasp/commit/e4d81a6ceaeb9e736ffacc7ab07c0896e5b5093f))
+* **deps:** update dependency i18next to v23.12.7 ([#1353](https://github.com/graasp/graasp/issues/1353)) ([9c03393](https://github.com/graasp/graasp/commit/9c033931548336cd031bc2e99a1bba8c96138a43))
+* **deps:** update dependency pdf2pic to v3.1.3 ([#1382](https://github.com/graasp/graasp/issues/1382)) ([69dad6c](https://github.com/graasp/graasp/commit/69dad6cd6bcde843c8a8f1cd32367f9df9bbe4fa))
+* **deps:** update dependency sharp to v0.33.5 ([#1354](https://github.com/graasp/graasp/issues/1354)) ([d172146](https://github.com/graasp/graasp/commit/d17214696f9b2a86c932fe920259e93c97b433bc))
+* **deps:** update dependency uuid to v10 ([#1263](https://github.com/graasp/graasp/issues/1263)) ([13fa2d4](https://github.com/graasp/graasp/commit/13fa2d41cadb2d25233e65457d5ac74ac779c4c6))
+
 ## [1.48.0](https://github.com/graasp/graasp/compare/v1.47.0...v1.48.0) (2024-09-12)
 
 
