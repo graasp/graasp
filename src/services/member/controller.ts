@@ -35,6 +35,7 @@ import {
   getStorageFiles,
   patchChangeEmail,
   postChangeEmail,
+  updateCurrent,
   updateOne,
 } from './schemas';
 import { MemberService } from './service';
@@ -126,6 +127,9 @@ const controller: FastifyPluginAsync = async (fastify) => {
     },
   );
 
+  /**
+   * @deprecated use PATCH /members/current instead
+   */
   // update member
   fastify.patch<{ Params: IdParam; Body: Partial<Member> }>(
     '/:id',
@@ -140,6 +144,19 @@ const controller: FastifyPluginAsync = async (fastify) => {
 
       return db.transaction(async (manager) => {
         return memberService.patch(buildRepositories(manager), id, body);
+      });
+    },
+  );
+
+  // update current member
+  fastify.patch<{ Body: Partial<Member> }>(
+    '/current',
+    { schema: updateCurrent, preHandler: isAuthenticated },
+    async ({ user, body }) => {
+      const member = asDefined(user?.account);
+
+      return db.transaction(async (manager) => {
+        return memberService.patch(buildRepositories(manager), member.id, body);
       });
     },
   );

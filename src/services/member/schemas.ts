@@ -258,9 +258,18 @@ export const getManyBy: FastifySchema = {
   },
 };
 
-// schema for updating own member
+// schema for updating a member
 export const updateOne: FastifySchema = {
   params: { $ref: 'https://graasp.org/#/definitions/idParam' },
+  body: { $ref: 'https://graasp.org/members/#/definitions/partialMemberRequireOne' },
+  response: {
+    [StatusCodes.OK]: { $ref: 'https://graasp.org/members/#/definitions/currentMember' },
+    [StatusCodes.FORBIDDEN]: error,
+  },
+};
+
+// schema for updating the current member
+export const updateCurrent: FastifySchema = {
   body: { $ref: 'https://graasp.org/members/#/definitions/partialMemberRequireOne' },
   response: {
     [StatusCodes.OK]: { $ref: 'https://graasp.org/members/#/definitions/currentMember' },
