@@ -147,7 +147,7 @@ export const validatePermission = async (
   const highest = inheritedMembership?.permission;
   const isValid = highest && permissionMapping[highest].includes(permission);
   let isPublic = false;
-  const tags = await itemTagRepository.getForItem(item);
+  const tags = await itemTagRepository.getByItemPath(item.path);
   if (highest === PermissionLevel.Read || permission === PermissionLevel.Read) {
     isPublic = Boolean(tags.find((t) => t.type === ItemTagType.Public));
   }

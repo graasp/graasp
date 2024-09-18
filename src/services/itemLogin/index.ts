@@ -1,14 +1,17 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { ItemLoginSchemaType, PermissionLevel } from '@graasp/sdk';
+import { ItemLoginSchemaType, ItemTagType, PermissionLevel } from '@graasp/sdk';
 
 import { resolveDependency } from '../../di/utils';
 import { EntryNotFoundBeforeDeleteException } from '../../repositories/errors';
 import { asDefined } from '../../utils/assertions';
+import { ItemNotFound } from '../../utils/errors';
 import { buildRepositories } from '../../utils/repositories';
 import { SESSION_KEY, isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
 import { matchOne } from '../authorization';
+import { ItemTagService } from '../item/plugins/itemTag/service';
 import { ItemService } from '../item/service';
+import { ItemMembershipService } from '../itemMembership/service';
 import { assertIsMember } from '../member/entities/member';
 import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
 import { ItemLoginSchemaNotFound, ValidMemberSession } from './errors';
@@ -27,6 +30,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   const itemService = resolveDependency(ItemService);
   const itemLoginService = new ItemLoginService(fastify, itemService);
+  const itemTagService = resolveDependency(ItemTagService);
+  const itemMembershipService = resolveDependency(ItemMembershipService);
 
   // get login schema type for item
   // used to trigger item login for student
@@ -35,9 +40,37 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:id/login-schema-type',
     { schema: getLoginSchemaType, preHandler: optionalIsAuthenticated },
     async ({ user, params: { id: itemId } }) => {
-      const value =
-        (await itemLoginService.getSchemaType(user?.account, buildRepositories(), itemId)) ?? null;
-      return value;
+      return await db.transaction(async (manager) => {
+        const repositories = buildRepositories(manager);
+        const item = await itemService.get(
+          user?.account,
+          repositories,
+          itemId,
+          PermissionLevel.Read,
+          false,
+        );
+
+        const isHidden = await itemTagService.has(repositories, item.path, ItemTagType.Hidden);
+        // If the item is hidden AND there is no membership with the user, then throw an error
+        if (
+          isHidden &&
+          (user?.account === undefined || // If user is not logged in, then there is no membership
+            // OR try to get membership. If not exists, then condition is true
+            !(await itemMembershipService.getByAccountAndItem(
+              repositories,
+              user?.account?.id,
+              item.id,
+            )))
+        ) {
+          throw new ItemNotFound(itemId);
+        }
+
+        const itemLoginSchema = await itemLoginService.getByItemPath(repositories, item.path);
+        if (!itemLoginSchema) {
+          throw new ItemLoginSchemaNotFound({ itemId });
+        }
+        return itemLoginSchema.type;
+      });
     },
   );
 
@@ -49,8 +82,20 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: isAuthenticated,
     },
     async ({ user, params: { id: itemId } }) => {
-      const value = (await itemLoginService.get(user?.account, buildRepositories(), itemId)) ?? {};
-      return value;
+      return await db.transaction(async (manager) => {
+        const repositories = buildRepositories(manager);
+        const item = await itemService.get(
+          user?.account,
+          repositories,
+          itemId,
+          PermissionLevel.Admin,
+        );
+        const itemLoginSchema = await itemLoginService.getByItemPath(repositories, item.path);
+        if (!itemLoginSchema) {
+          throw new ItemLoginSchemaNotFound({ itemId });
+        }
+        return itemLoginSchema;
+      });
     },
   );
 

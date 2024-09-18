@@ -10,6 +10,7 @@ import {
   ItemLoginSchema,
   ItemLoginSchemaFactory,
   ItemLoginSchemaType,
+  ItemTagType,
   PermissionLevel,
 } from '@graasp/sdk';
 
@@ -21,6 +22,7 @@ import { MemberCannotAdminItem } from '../../../utils/errors';
 import { MemberPassword } from '../../auth/plugins/password/entities/password';
 import { encryptPassword } from '../../auth/plugins/password/utils';
 import { Item } from '../../item/entities/Item';
+import { ItemTag } from '../../item/plugins/itemTag/ItemTag';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
 import { Member } from '../../member/entities/member';
 import { expectMinimalMember, saveMember } from '../../member/test/fixtures/members';
@@ -34,6 +36,7 @@ const rawRepository = AppDataSource.getRepository(Guest);
 const rawMemberPasswordRepository = AppDataSource.getRepository(MemberPassword);
 const rawItemLoginRepository = AppDataSource.getRepository(Guest);
 const rawItemLoginSchemaRepository = AppDataSource.getRepository(ItemLoginSchemaEntity);
+const rawItemTagRepository = AppDataSource.getRepository(ItemTag);
 
 export async function saveItemLoginSchema({
   item,
@@ -99,6 +102,23 @@ describe('Item Login Tests', () => {
 
       expect(res.statusCode).toBe(StatusCodes.OK);
       expect(res.body).toEqual(itemLoginSchema.type);
+    });
+
+    it('Get item login if item is hidden', async () => {
+      ({ app } = await build({ member: null }));
+      const member = await saveMember();
+      ({ item } = await testUtils.saveItemAndMembership({ member }));
+      await rawItemTagRepository.save({ item, creator: member, type: ItemTagType.Hidden });
+      await saveItemLoginSchema({
+        item: item as unknown as DiscriminatedItem,
+      });
+
+      const res = await app.inject({
+        method: HttpMethod.Get,
+        url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema-type`,
+      });
+
+      expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
     });
 
     it('Get item login if signed out for child', async () => {
