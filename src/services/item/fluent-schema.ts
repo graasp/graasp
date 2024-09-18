@@ -13,6 +13,7 @@ import {
   MAX_TARGETS_FOR_READ_REQUEST,
   MaxWidth,
   PermissionLevel,
+  ThumbnailSizeInPackedItem,
 } from '@graasp/sdk';
 
 import { error, idParam, idsQuery, uuid } from '../../schemas/fluent-schema';
@@ -92,6 +93,15 @@ export const packedItem = item
       .prop('createdAt', S.string())
       .prop('type', S.string())
       .prop('item', item),
+  )
+  .prop(
+    'thumbnails',
+    S.oneOf([
+      S.null(),
+      S.object()
+        .prop(ThumbnailSizeInPackedItem.small, S.string())
+        .prop(ThumbnailSizeInPackedItem.medium, S.string()),
+    ]),
   );
 /**
  * for validation on create
@@ -418,6 +428,7 @@ export default {
         permission: { type: ['string', 'null'], enum: Object.values(PermissionLevel) },
         hidden: itemTag,
         public: itemTag,
+        thumbnails: { type: 'object', additionalProperties: true },
       },
     },
   },

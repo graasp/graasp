@@ -45,6 +45,7 @@ import {
   expectItem,
   expectManyPackedItems,
   expectPackedItem,
+  expectThumbnails,
 } from './fixtures/items';
 
 const rawRepository = AppDataSource.getRepository(ItemTag);
@@ -641,7 +642,26 @@ describe('Item routes tests', () => {
 
         const returnedItem = response.json();
         expectPackedItem(returnedItem, packedItem, actor);
+        expectThumbnails(returnedItem, MOCK_SIGNED_URL, false);
         expect(response.statusCode).toBe(StatusCodes.OK);
+      });
+
+      it('Return successfully with thumbnails', async () => {
+        const { packedItem } = await testUtils.saveItemAndMembership({
+          member: actor,
+          item: { settings: { hasThumbnail: true } },
+        });
+
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: `/items/${packedItem.id}`,
+        });
+
+        const returnedItem = response.json();
+        expectPackedItem(returnedItem, packedItem, actor);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        expectThumbnails(returnedItem, MOCK_SIGNED_URL, true);
       });
 
       it('Returns successfully with permission', async () => {
@@ -760,10 +780,40 @@ describe('Item routes tests', () => {
         const { data, errors } = response.json();
         expect(errors).toHaveLength(0);
         items.forEach(({ id }) => {
+          const item = data[id];
           expectPackedItem(
-            data[id],
+            item,
             items.find(({ id: thisId }) => thisId === id),
           );
+          expectThumbnails(item, MOCK_SIGNED_URL, false);
+        });
+      });
+      it('Returns successfully with thumbnails', async () => {
+        const items: PackedItem[] = [];
+        for (let i = 0; i < 3; i++) {
+          const { packedItem } = await testUtils.saveItemAndMembership({
+            member: actor,
+            item: { settings: { hasThumbnail: true } },
+          });
+          items.push(packedItem);
+        }
+
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: '/items',
+          query: { id: items.map(({ id }) => id) },
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        const { data, errors } = response.json();
+        expect(errors).toHaveLength(0);
+        items.forEach(({ id }) => {
+          const item = data[id];
+          expectPackedItem(
+            item,
+            items.find(({ id: thisId }) => thisId === id),
+          );
+          expectThumbnails(item, MOCK_SIGNED_URL, true);
         });
       });
       it('Returns one item successfully for valid item', async () => {
@@ -1134,11 +1184,58 @@ describe('Item routes tests', () => {
 
         expect(response.statusCode).toBe(StatusCodes.OK);
 
-        const { data, totalCount } = response.json();
+        const { data, totalCount } = response.json<{ data: PackedItem[]; totalCount: number }>();
         expect(totalCount).toEqual(items.length);
         expect(data).toHaveLength(items.length);
 
         expectManyPackedItems(data, items);
+
+        data.forEach((i) => expectThumbnails(i, MOCK_SIGNED_URL, false));
+      });
+
+      it('Returns items, some with thumbnails', async () => {
+        // owned items
+        await testUtils.saveItemAndMembership({
+          member: actor,
+        });
+        const { packedItem: item2 } = await testUtils.saveItemAndMembership({
+          member: actor,
+          item: { settings: { hasThumbnail: true } },
+        });
+        await testUtils.saveItemAndMembership({ member: actor });
+
+        // shared
+        const bob = await saveMember();
+        await testUtils.saveItemAndMembership({
+          member: actor,
+          creator: bob,
+        });
+        const { item: parentItem5 } = await testUtils.saveItemAndMembership({ member: bob });
+        const { packedItem: item6 } = await testUtils.saveItemAndMembership({
+          member: actor,
+          creator: bob,
+          parentItem: parentItem5,
+          item: { settings: { hasThumbnail: true } },
+        });
+
+        const itemsWithThumbnails = [item2, item6];
+
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: '/items/accessible',
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        const { data } = response.json<{ data: PackedItem[] }>();
+
+        data.forEach((i) => {
+          expectThumbnails(
+            i,
+            MOCK_SIGNED_URL,
+            Boolean(itemsWithThumbnails.find((item) => item.id === i.id)),
+          );
+        });
       });
 
       it('Returns successfully items for member id', async () => {
@@ -1566,10 +1663,43 @@ describe('Item routes tests', () => {
           url: `/items/${parentItem.id}/children`,
         });
 
-        const data = response.json();
+        const data = response.json<PackedItem[]>();
         expect(data).toHaveLength(children.length);
         expectManyPackedItems(data, children);
         expect(response.statusCode).toBe(StatusCodes.OK);
+        data.forEach((i) => expectThumbnails(i, MOCK_SIGNED_URL, false));
+      });
+
+      it('Returns successfully with thumbnails', async () => {
+        const { item: parentItem } = await testUtils.saveItemAndMembership({
+          member: actor,
+          item: { settings: { hasThumbnail: true } },
+        });
+        const { packedItem: child1, item: parentItem1 } = await testUtils.saveItemAndMembership({
+          member: actor,
+          parentItem,
+          item: { settings: { hasThumbnail: true } },
+        });
+        const { packedItem: child2 } = await testUtils.saveItemAndMembership({
+          member: actor,
+          parentItem,
+          item: { settings: { hasThumbnail: true } },
+        });
+
+        const children = [child1, child2];
+        // create child of child
+        await testUtils.saveItemAndMembership({ member: actor, parentItem: parentItem1 });
+
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: `/items/${parentItem.id}/children`,
+        });
+
+        const data = response.json<PackedItem[]>();
+        expect(data).toHaveLength(children.length);
+        expectManyPackedItems(data, children);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        data.forEach((i) => expectThumbnails(i, MOCK_SIGNED_URL, true));
       });
 
       it('Filter out hidden children on read permission', async () => {
@@ -1827,10 +1957,45 @@ describe('Item routes tests', () => {
           url: `/items/${parent.id}/descendants`,
         });
 
-        const data = response.json();
+        const data = response.json<PackedItem[]>();
         expect(data).toHaveLength(descendants.length);
         expectManyPackedItems(data, descendants);
         expect(response.statusCode).toBe(StatusCodes.OK);
+        data.forEach((i) => expectThumbnails(i, MOCK_SIGNED_URL, false));
+      });
+      it('Returns successfully with thumbnails', async () => {
+        const { item: parent } = await testUtils.saveItemAndMembership({
+          member: actor,
+          item: { settings: { hasThumbnail: true } },
+        });
+        const { packedItem: child1, item: parentItem1 } = await testUtils.saveItemAndMembership({
+          item: { name: 'child1', settings: { hasThumbnail: true } },
+          member: actor,
+          parentItem: parent,
+        });
+        const { packedItem: child2 } = await testUtils.saveItemAndMembership({
+          item: { name: 'child2', settings: { hasThumbnail: true } },
+          member: actor,
+          parentItem: parent,
+        });
+
+        const { packedItem: childOfChild } = await testUtils.saveItemAndMembership({
+          member: actor,
+          parentItem: parentItem1,
+          item: { settings: { hasThumbnail: true } },
+        });
+        const descendants = [child1, child2, childOfChild];
+
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: `/items/${parent.id}/descendants`,
+        });
+
+        const data = response.json<PackedItem[]>();
+        expect(data).toHaveLength(descendants.length);
+        expectManyPackedItems(data, descendants);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        data.forEach((i) => expectThumbnails(i, MOCK_SIGNED_URL, true));
       });
       it('Filter out hidden items for read rights', async () => {
         const member = await saveMember();
@@ -2014,10 +2179,43 @@ describe('Item routes tests', () => {
           url: `/items/${childOfChild.id}/parents`,
         });
 
-        const data = response.json();
+        const data = response.json<PackedItem[]>();
         expect(data).toHaveLength(parents.length);
         data.forEach((p, idx) => {
           expectPackedItem(p, parents[idx]);
+          expectThumbnails(p, MOCK_SIGNED_URL, false);
+        });
+        expect(response.statusCode).toBe(StatusCodes.OK);
+      });
+
+      it('Returns successfully with thumbnails', async () => {
+        const { packedItem: parent, item: parentItem } = await testUtils.saveItemAndMembership({
+          member: actor,
+          item: { settings: { hasThumbnail: true } },
+        });
+        const { packedItem: child1, item: parentItem1 } = await testUtils.saveItemAndMembership({
+          item: { name: 'child1', settings: { hasThumbnail: true } },
+          member: actor,
+          parentItem,
+        });
+
+        const { item: childOfChild } = await testUtils.saveItemAndMembership({
+          member: actor,
+          parentItem: parentItem1,
+          item: { settings: { hasThumbnail: true } },
+        });
+        const parents = [parent, child1];
+
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: `/items/${childOfChild.id}/parents`,
+        });
+
+        const data = response.json<PackedItem[]>();
+        expect(data).toHaveLength(parents.length);
+        data.forEach((p, idx) => {
+          expectPackedItem(p, parents[idx]);
+          expectThumbnails(p, MOCK_SIGNED_URL, true);
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
       });

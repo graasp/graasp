@@ -1,3 +1,5 @@
+import { singleton } from 'tsyringe';
+
 import { PermissionLevel } from '@graasp/sdk';
 
 import HookManager from '../../../../utils/hook';
@@ -6,8 +8,11 @@ import { validatePermission } from '../../../authorization';
 import { Member } from '../../../member/entities/member';
 import { ItemWrapper } from '../../ItemWrapper';
 import { Item } from '../../entities/Item';
+import { ItemThumbnailService } from '../thumbnail/service';
 
+@singleton()
 export class RecycledBinService {
+  private readonly itemThumbnailService: ItemThumbnailService;
   readonly hooks = new HookManager<{
     recycle: {
       pre: { item: Item; isRecycledRoot: boolean };
@@ -19,6 +24,10 @@ export class RecycledBinService {
     };
   }>();
 
+  constructor(itemThumbnailService: ItemThumbnailService) {
+    this.itemThumbnailService = itemThumbnailService;
+  }
+
   async getAll(member: Member, repositories: Repositories) {
     const { recycledItemRepository } = repositories;
 
@@ -26,6 +35,7 @@ export class RecycledBinService {
     const packedItems = await ItemWrapper.createPackedItems(
       member,
       repositories,
+      this.itemThumbnailService,
       recycled.map((r) => r.item),
       undefined,
       { withDeleted: true },

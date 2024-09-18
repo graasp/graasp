@@ -1,3 +1,4 @@
+import { AppDataSource } from '../../../../../plugins/datasource';
 import { ItemGeolocation, PackedItemGeolocation } from '../ItemGeolocation';
 
 export const expectItemGeolocations = (
@@ -48,4 +49,12 @@ export const expectPackedItemGeolocations = (
       }),
     );
   }
+};
+
+export const saveGeolocation = async (
+  args: Partial<PackedItemGeolocation> & Pick<PackedItemGeolocation, 'item'>,
+) => {
+  const repository = AppDataSource.getRepository(ItemGeolocation);
+  const geoloc = await repository.save(args);
+  return { geoloc, packed: { ...geoloc, item: args.item } };
 };

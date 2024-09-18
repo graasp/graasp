@@ -50,12 +50,14 @@ import { FolderItem, Item, isItemType } from './entities/Item';
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
 import { PartialItemGeolocation } from './plugins/geolocation/errors';
 import { ItemTag } from './plugins/itemTag/ItemTag';
+import { ItemThumbnailService } from './plugins/thumbnail/service';
 import { ItemChildrenParams, ItemSearchParams } from './types';
 
 @singleton()
 export class ItemService {
-  private log: BaseLogger;
-  private thumbnailService: ThumbnailService;
+  private readonly log: BaseLogger;
+  private readonly thumbnailService: ThumbnailService;
+  private readonly itemThumbnailService: ItemThumbnailService;
 
   hooks = new HookManager<{
     create: { pre: { item: Partial<Item> }; post: { item: Item } };
@@ -80,8 +82,13 @@ export class ItemService {
     };
   }>();
 
-  constructor(thumbnailService: ThumbnailService, log: BaseLogger) {
+  constructor(
+    thumbnailService: ThumbnailService,
+    itemThumbnailService: ItemThumbnailService,
+    log: BaseLogger,
+  ) {
     this.thumbnailService = thumbnailService;
+    this.itemThumbnailService = itemThumbnailService;
     this.log = log;
   }
 
@@ -262,8 +269,9 @@ export class ItemService {
     permission: PermissionLevel = PermissionLevel.Read,
   ) {
     const { item, itemMembership, tags } = await this._get(actor, repositories, id, permission);
+    const thumbnails = await this.itemThumbnailService.getUrlsByItems([item]);
 
-    return new ItemWrapper(item, itemMembership, tags).packed();
+    return new ItemWrapper(item, itemMembership, tags, thumbnails[item.id]).packed();
   }
 
   /**
@@ -326,7 +334,9 @@ export class ItemService {
   async getManyPacked(actor: Actor, repositories: Repositories, ids: string[]) {
     const { items, itemMemberships, tags } = await this._getMany(actor, repositories, ids);
 
-    return ItemWrapper.mergeResult(items, itemMemberships, tags);
+    const thumbnails = await this.itemThumbnailService.getUrlsByItems(Object.values(items.data));
+
+    return ItemWrapper.mergeResult(items, itemMemberships, tags, thumbnails);
   }
 
   async getAccessible(
@@ -350,6 +360,7 @@ export class ItemService {
     const packedItems = await ItemWrapper.createPackedItems(
       member,
       repositories,
+      this.itemThumbnailService,
       memberships.map(({ item }) => item),
       resultOfMembership,
     );
@@ -397,9 +408,10 @@ export class ItemService {
     params?: ItemChildrenParams,
   ) {
     const children = await this._getChildren(actor, repositories, itemId, params);
+    const thumbnails = await this.itemThumbnailService.getUrlsByItems(children);
 
     // TODO optimize?
-    return filterOutPackedItems(actor, repositories, children);
+    return filterOutPackedItems(actor, repositories, children, thumbnails);
   }
 
   private async getDescendants(
@@ -437,7 +449,8 @@ export class ItemService {
     if (!descendants.length) {
       return [];
     }
-    return filterOutPackedDescendants(actor, repositories, item, descendants, options);
+    const thumbnails = await this.itemThumbnailService.getUrlsByItems(descendants);
+    return filterOutPackedDescendants(actor, repositories, item, descendants, thumbnails, options);
   }
 
   async getParents(actor: Actor, repositories: Repositories, itemId: UUID) {
@@ -454,7 +467,8 @@ export class ItemService {
     // remove parents actor does not have access
     const parentsIds = Object.keys(itemMemberships.data);
     const items = parents.filter((p) => parentsIds.includes(p.id));
-    return ItemWrapper.merge(items, itemMemberships, tags);
+    const thumbnails = await this.itemThumbnailService.getUrlsByItems(items);
+    return ItemWrapper.merge(items, itemMemberships, tags, thumbnails);
   }
 
   async patch(member: Member, repositories: Repositories, itemId: UUID, body: Partial<Item>) {

@@ -13,6 +13,7 @@ import {
   PermissionLevel,
   S3FileItemFactory,
   ShortcutItemFactory,
+  ThumbnailSize,
   buildPathFromIds,
 } from '@graasp/sdk';
 
@@ -343,4 +344,18 @@ export const expectManyPackedItems = (
     const tTags = tags?.filter((t) => t.item.id === id);
     expectPackedItem(item, correctItem, creator, parent, tTags);
   });
+};
+
+export const expectThumbnails = (
+  item: PackedItem,
+  thumbnailUrl: string,
+  shouldContainThumbnails: boolean,
+) => {
+  if (shouldContainThumbnails) {
+    expect(item.thumbnails).toBeDefined();
+    expect(item.thumbnails![ThumbnailSize.Small]).toBe(thumbnailUrl);
+    expect(item.thumbnails![ThumbnailSize.Medium]).toBe(thumbnailUrl);
+  } else {
+    expect(item.thumbnails).toBeUndefined();
+  }
 };

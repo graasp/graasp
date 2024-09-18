@@ -7,6 +7,7 @@ import { BaseLogger } from '../../../logger';
 import { AppDataSource } from '../../../plugins/datasource';
 import { MailerService } from '../../../plugins/mailer/service';
 import { buildRepositories } from '../../../utils/repositories';
+import { ItemThumbnailService } from '../../item/plugins/thumbnail/service';
 import { ItemService } from '../../item/service';
 import { MemberService } from '../../member/service';
 import { ThumbnailService } from '../../thumbnail/service';
@@ -14,8 +15,8 @@ import { Action } from '../entities/action';
 import { ActionService } from './action';
 
 const service = new ActionService(
-  new ItemService({} as unknown as ThumbnailService, {} as unknown as BaseLogger),
-  new MemberService({} as unknown as MailerService, {} as unknown as BaseLogger),
+  new ItemService({} as ThumbnailService, {} as ItemThumbnailService, {} as BaseLogger),
+  new MemberService({} as MailerService, {} as BaseLogger),
 );
 const rawRepository = AppDataSource.getRepository(Action);
 

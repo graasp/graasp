@@ -4,6 +4,7 @@ import build, { clearDatabase } from '../../../test/app';
 import { BaseLogger } from '../../logger';
 import { buildRepositories } from '../../utils/repositories';
 import { ThumbnailService } from '../thumbnail/service';
+import { ItemThumbnailService } from './plugins/thumbnail/service';
 import { ItemService } from './service';
 import { ItemTestUtils } from './test/fixtures/items';
 
@@ -11,7 +12,11 @@ const testUtils = new ItemTestUtils();
 const mockedThumbnailService = {
   copyFolder: jest.fn(),
 } as unknown as jest.Mocked<ThumbnailService>;
-const service = new ItemService(mockedThumbnailService, {} as unknown as BaseLogger);
+const service = new ItemService(
+  mockedThumbnailService,
+  {} as ItemThumbnailService,
+  {} as BaseLogger,
+);
 
 describe('Item Service', () => {
   let app: FastifyInstance;

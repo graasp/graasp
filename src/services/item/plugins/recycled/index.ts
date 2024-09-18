@@ -4,6 +4,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
+import { resolveDependency } from '../../../../di/utils';
 import { IdParam, IdsParams } from '../../../../types';
 import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
@@ -32,7 +33,7 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
   const { db, websockets } = fastify;
   const { maxItemsInRequest = MAX_TARGETS_FOR_READ_REQUEST } = options;
 
-  const recycleBinService = new RecycledBinService();
+  const recycleBinService = resolveDependency(RecycledBinService);
 
   fastify.addSchema(schemas);
 
