@@ -27,5 +27,6 @@
   "appService.zipIgnorePattern": [
     ".vscode{,/**}"
   ],
-  "appService.deploySubpath": ""
+  "appService.deploySubpath": "",
+  "jest.runMode": "on-demand",
 }
