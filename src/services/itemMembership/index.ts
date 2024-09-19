@@ -60,7 +60,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         async ({ user, query: { itemId }, body }) => {
           const account = asDefined(user?.account);
           return db.transaction((manager) => {
-            return itemMembershipService.post(account, buildRepositories(manager), {
+            return itemMembershipService.create(account, buildRepositories(manager), {
               permission: body.permission,
               itemId,
               memberId: body.accountId,
@@ -82,7 +82,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           // we have to return immediately
           // solution: it's probably simpler to upload a csv and handle it in the back
           return db.transaction((manager) => {
-            return itemMembershipService.postMany(
+            return itemMembershipService.createMany(
               account,
               buildRepositories(manager),
               body.memberships,

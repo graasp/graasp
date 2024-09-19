@@ -27,6 +27,7 @@ import graaspApps from './plugins/app';
 import graaspDocumentItem from './plugins/document';
 import graaspEmbeddedLinkItem from './plugins/embeddedLink';
 import { PREFIX_EMBEDDED_LINK } from './plugins/embeddedLink/service';
+import graaspEnrollPlugin from './plugins/enroll';
 import graaspEtherpadPlugin from './plugins/etherpad';
 import graaspFileItem from './plugins/file';
 import itemGeolocationPlugin from './plugins/geolocation/index';
@@ -121,6 +122,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         await fastify.register(graaspDocumentItem);
 
         fastify.register(graaspInvitationsPlugin);
+
+        fastify.register(graaspEnrollPlugin);
 
         fastify.register(graaspItemFlags);
 

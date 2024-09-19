@@ -80,7 +80,7 @@ export class ItemMembershipService {
     return { data: result.data, errors: [...items.errors, ...result.errors] };
   }
 
-  private async _post(
+  private async _create(
     account: Account,
     repositories: Repositories,
     item: Item,
@@ -111,10 +111,11 @@ export class ItemMembershipService {
     return result;
   }
 
-  async post(
+  async create(
     actor: Account,
     repositories: Repositories,
     membership: { permission: PermissionLevel; itemId: UUID; memberId: UUID },
+    throwOnForbiddenPermission?: boolean,
   ) {
     // check memberships
     const item = await this.itemService.get(
@@ -122,12 +123,13 @@ export class ItemMembershipService {
       repositories,
       membership.itemId,
       PermissionLevel.Admin,
+      throwOnForbiddenPermission,
     );
 
-    return this._post(actor, repositories, item, membership.memberId, membership.permission);
+    return this._create(actor, repositories, item, membership.memberId, membership.permission);
   }
 
-  async postMany(
+  async createMany(
     actor: Account,
     repositories: Repositories,
     memberships: { permission: PermissionLevel; accountId: UUID }[],
@@ -138,7 +140,7 @@ export class ItemMembershipService {
 
     return Promise.all(
       memberships.map(async ({ accountId, permission }) => {
-        return this._post(actor, repositories, item, accountId, permission);
+        return this._create(actor, repositories, item, accountId, permission);
       }),
     );
   }

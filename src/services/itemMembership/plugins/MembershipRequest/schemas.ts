@@ -46,7 +46,9 @@ export const getAllByItem: FastifySchema = {
 export const createOne: FastifySchema = {
   tags: ['membershipRequest'],
   summary: 'Create a membership request',
-  description: 'Create a membership request for an item with the authenticated member',
+  description: `Create a membership request for an item with the authenticated member. 
+  The member should not have any permission on the item.
+  If there is an Item Login associated with the item, the request will be rejected.`,
   params: {
     type: 'object',
     properties: {

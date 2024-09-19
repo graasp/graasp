@@ -1,4 +1,4 @@
-import { FastifyInstance } from 'fastify';
+import { singleton } from 'tsyringe';
 
 import { ItemLoginSchemaType, PermissionLevel, UUID } from '@graasp/sdk';
 
@@ -7,23 +7,29 @@ import { InvalidPassword } from '../../utils/errors';
 import { Repositories } from '../../utils/repositories';
 import { verifyCurrentPassword } from '../auth/plugins/password/utils';
 import { ItemService } from '../item/service';
-import { Member } from '../member/entities/member';
+import { Actor, Member } from '../member/entities/member';
 import { Guest } from './entities/guest';
 import { ItemLoginSchemaNotFound, MissingCredentialsForLoginSchema } from './errors';
 import { ItemLoginMemberCredentials } from './interfaces/item-login';
 import { loginSchemaRequiresPassword } from './utils';
 
+@singleton()
 export class ItemLoginService {
-  fastify: FastifyInstance;
   private itemService: ItemService;
 
-  constructor(fastify: FastifyInstance, itemService: ItemService) {
-    this.fastify = fastify;
+  constructor(itemService: ItemService) {
     this.itemService = itemService;
   }
 
+  async getSchemaType(actor: Actor, repositories: Repositories, itemPath: string) {
+    // do not need permission to get item login schema
+    // we need to know the schema to display the correct form
+    const itemLoginSchema = await repositories.itemLoginSchemaRepository.getOneByItemPath(itemPath);
+    return itemLoginSchema?.type;
+  }
+
   async getByItemPath({ itemLoginSchemaRepository }: Repositories, itemPath: string) {
-    return itemLoginSchemaRepository.getOneByItemPath(itemPath);
+    return await itemLoginSchemaRepository.getOneByItemPath(itemPath);
   }
 
   async login(repositories: Repositories, itemId: string, credentials: ItemLoginMemberCredentials) {

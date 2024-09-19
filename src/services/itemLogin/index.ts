@@ -1,6 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { ItemLoginSchemaType, ItemTagType, PermissionLevel } from '@graasp/sdk';
+import { ItemLoginSchemaType, PermissionLevel } from '@graasp/sdk';
 
 import { resolveDependency } from '../../di/utils';
 import { EntryNotFoundBeforeDeleteException } from '../../repositories/errors';
@@ -8,7 +8,7 @@ import { asDefined } from '../../utils/assertions';
 import { ItemNotFound } from '../../utils/errors';
 import { buildRepositories } from '../../utils/repositories';
 import { SESSION_KEY, isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
-import { matchOne } from '../authorization';
+import { isItemVisible, matchOne } from '../authorization';
 import { ItemTagService } from '../item/plugins/itemTag/service';
 import { ItemService } from '../item/service';
 import { ItemMembershipService } from '../itemMembership/service';
@@ -28,8 +28,8 @@ import { ItemLoginService } from './service';
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db } = fastify;
 
+  const itemLoginService = resolveDependency(ItemLoginService);
   const itemService = resolveDependency(ItemService);
-  const itemLoginService = new ItemLoginService(fastify, itemService);
   const itemTagService = resolveDependency(ItemTagService);
   const itemMembershipService = resolveDependency(ItemMembershipService);
 
@@ -42,6 +42,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     async ({ user, params: { id: itemId } }) => {
       return await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
+
+        // Get item to have the path
         const item = await itemService.get(
           user?.account,
           repositories,
@@ -50,26 +52,18 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           false,
         );
 
-        const isHidden = await itemTagService.has(repositories, item.path, ItemTagType.Hidden);
-        // If the item is hidden AND there is no membership with the user, then throw an error
-        if (
-          isHidden &&
-          (user?.account === undefined || // If user is not logged in, then there is no membership
-            // OR try to get membership. If not exists, then condition is true
-            !(await itemMembershipService.getByAccountAndItem(
-              repositories,
-              user?.account?.id,
-              item.id,
-            )))
-        ) {
+        // If item is not visible, throw NOT_FOUND
+        const isVisible = await isItemVisible(
+          user?.account,
+          repositories,
+          { itemTagService, itemMembershipService },
+          item.path,
+        );
+        if (!isVisible) {
           throw new ItemNotFound(itemId);
         }
 
-        const itemLoginSchema = await itemLoginService.getByItemPath(repositories, item.path);
-        if (!itemLoginSchema) {
-          throw new ItemLoginSchemaNotFound({ itemId });
-        }
-        return itemLoginSchema.type;
+        return (await itemLoginService.getByItemPath(repositories, item.path))?.type ?? null;
       });
     },
   );

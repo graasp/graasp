@@ -3,7 +3,7 @@ import { v4 as uuid } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType, MembershipRequestStatus, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, MembershipRequestStatus, PermissionLevel } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -13,7 +13,6 @@ import build, {
 import { resolveDependency } from '../../../../di/utils';
 import { AppDataSource } from '../../../../plugins/datasource';
 import { MailerService } from '../../../../plugins/mailer/service';
-import { buildRepositories } from '../../../../utils/repositories';
 import { Item } from '../../../item/entities/Item';
 import { ItemTestUtils } from '../../../item/test/fixtures/items';
 import { Member } from '../../../member/entities/member';
@@ -23,6 +22,7 @@ import { MembershipRequestRepository } from './repository';
 
 const testUtils = new ItemTestUtils();
 const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
+const membershipRequestRepository = new MembershipRequestRepository();
 
 function expectMemberRequestToBe(membershipRequest, member?: Member, item?: Item) {
   // There is no use to this Id since we should use the Item Id and the Member Id. This assertion check that AJV is doing his job by removing it.
@@ -47,7 +47,6 @@ describe('MembershipRequest', () => {
   let member: Member;
   let creator: Member;
   let item: Item;
-  let membershipRequestRepository: MembershipRequestRepository;
 
   beforeAll(async () => {
     ({ app } = await build({ member: null }));
@@ -57,7 +56,6 @@ describe('MembershipRequest', () => {
     member = await saveMember();
     creator = await saveMember();
     ({ item } = await testUtils.saveItemAndMembership({ member: creator }));
-    ({ membershipRequestRepository } = buildRepositories());
   });
 
   afterEach(async () => {
@@ -137,18 +135,7 @@ describe('MembershipRequest', () => {
 
       expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
     });
-    it('rejects if item is not a folder', async () => {
-      const { item: anotherItem } = await testUtils.saveItemAndMembership({
-        member: creator,
-        item: { type: ItemType.DOCUMENT },
-      });
-      const response = await app.inject({
-        method: HttpMethod.Get,
-        url: `/items/${anotherItem.id}/memberships/requests`,
-      });
 
-      expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-    });
     it('rejects forbidden if authenticated member has no permissions on the item', async () => {
       mockAuthenticate(await saveMember());
       const response = await app.inject({
@@ -251,18 +238,6 @@ describe('MembershipRequest', () => {
       });
 
       expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
-    });
-    it('rejects if item is not a folder', async () => {
-      const anotherItem = await testUtils.saveItem({
-        actor: creator,
-        item: { type: ItemType.DOCUMENT },
-      });
-      const response = await app.inject({
-        method: HttpMethod.Get,
-        url: `/items/${anotherItem.id}/memberships/requests/own`,
-      });
-
-      expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
     });
     it('rejects unauthorized if unauthenticated', async () => {
       unmockAuthenticate();
@@ -395,22 +370,6 @@ describe('MembershipRequest', () => {
       });
 
       expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
-      expect(mockSendEmail).toHaveBeenCalledTimes(0);
-    });
-
-    it('rejects when item is not a folder', async () => {
-      mockAuthenticate(member);
-      const notAFolder = await testUtils.saveItem({
-        actor: creator,
-        item: { type: ItemType.DOCUMENT },
-      });
-
-      const response = await app.inject({
-        method: HttpMethod.Post,
-        url: `/items/${notAFolder.id}/memberships/requests`,
-      });
-
-      expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       expect(mockSendEmail).toHaveBeenCalledTimes(0);
     });
 
