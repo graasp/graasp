@@ -1,8 +1,10 @@
 import { EntityManager } from 'typeorm';
 
 import { AbstractRepository } from '../../../../repositories/AbstractRepository';
+import { EntryNotFoundAfterInsertException } from '../../../../repositories/errors';
 import { ItemNotFound, MemberNotFound } from '../../../../utils/errors';
 import { AccountNotFound } from '../../../account/errors';
+import { ItemLoginSchema } from '../../../itemLogin/entities/itemLoginSchema';
 import { MembershipRequest } from './entities/MembershipRequest';
 
 export class MembershipRequestRepository extends AbstractRepository<MembershipRequest> {
@@ -40,7 +42,11 @@ export class MembershipRequestRepository extends AbstractRepository<MembershipRe
       member: { id: memberId },
       item: { id: itemId },
     });
-    return await this.get(memberId, itemId);
+    const result = await this.get(memberId, itemId);
+    if (!result) {
+      throw new EntryNotFoundAfterInsertException(ItemLoginSchema);
+    }
+    return result;
   }
 
   async getAllByItem(itemId: string) {

@@ -14,7 +14,7 @@ import {
   PermissionLevel,
 } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../test/app';
+import build, { clearDatabase, mockAuthenticate } from '../../../../test/app';
 import { AppDataSource } from '../../../plugins/datasource';
 import { assertIsDefined } from '../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
@@ -119,6 +119,48 @@ describe('Item Login Tests', () => {
       });
 
       expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
+    });
+
+    it('Get item login if item is hidden with read permission', async () => {
+      ({ app } = await build({ member: null }));
+      const member = await saveMember();
+      ({ item } = await testUtils.saveItemAndMembership({ member }));
+      await rawItemTagRepository.save({ item, creator: member, type: ItemTagType.Hidden });
+      await saveItemLoginSchema({
+        item: item as unknown as DiscriminatedItem,
+      });
+
+      const reader = await saveMember();
+      await testUtils.saveMembership({ item, account: reader, permission: PermissionLevel.Read });
+      mockAuthenticate(reader);
+
+      const res = await app.inject({
+        method: HttpMethod.Get,
+        url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema-type`,
+      });
+
+      expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
+    });
+
+    it('Get item login if item is hidden with write permission', async () => {
+      ({ app } = await build({ member: null }));
+      const member = await saveMember();
+      ({ item } = await testUtils.saveItemAndMembership({ member }));
+      await rawItemTagRepository.save({ item, creator: member, type: ItemTagType.Hidden });
+      await saveItemLoginSchema({
+        item: item as unknown as DiscriminatedItem,
+      });
+
+      const writer = await saveMember();
+      await testUtils.saveMembership({ item, account: writer, permission: PermissionLevel.Write });
+      mockAuthenticate(writer);
+
+      const res = await app.inject({
+        method: HttpMethod.Get,
+        url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema-type`,
+      });
+
+      expect(res.statusCode).toBe(StatusCodes.OK);
     });
 
     it('Get item login if signed out for child', async () => {

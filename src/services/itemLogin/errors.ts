@@ -150,3 +150,29 @@ export class NotGuest extends GraaspItemLoginError {
     );
   }
 }
+
+export class ItemLoginSchemaExists extends GraaspItemLoginError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GILERR012',
+        statusCode: StatusCodes.CONFLICT,
+        message: FAILURE_MESSAGES.CANNOT_CREATE_MEMBERSHIP_CAUSE_ITEM_LOGIN_SCHEMA_EXISTS,
+      },
+      data,
+    );
+  }
+}
+
+export class CannotEnrollItemWithoutItemLoginSchema extends GraaspItemLoginError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GILERR013',
+        statusCode: StatusCodes.FORBIDDEN,
+        message: FAILURE_MESSAGES.CANNOT_ENROLL_ITEM_WITHOUT_ITEM_LOGIN_SCHEMA,
+      },
+      data,
+    );
+  }
+}

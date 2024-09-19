@@ -1,6 +1,12 @@
 import { FastifyRequest, RouteGenericInterface, RouteHandlerMethod } from 'fastify';
 
-import { ItemTagType, PermissionLevel, PermissionLevelCompare, ResultOf } from '@graasp/sdk';
+import {
+  ItemTagType,
+  PermissionLevel,
+  PermissionLevelCompare,
+  ResultOf,
+  getChildFromPath,
+} from '@graasp/sdk';
 
 import {
   InsufficientPermission,
@@ -14,8 +20,10 @@ import { ItemWrapper, PackedItem } from './item/ItemWrapper';
 import { Item } from './item/entities/Item';
 import { ItemTag } from './item/plugins/itemTag/ItemTag';
 import { ItemTagRepository } from './item/plugins/itemTag/repository';
+import { ItemTagService } from './item/plugins/itemTag/service';
 import { ItemMembership } from './itemMembership/entities/ItemMembership';
 import { ItemMembershipRepository } from './itemMembership/repository';
+import { ItemMembershipService } from './itemMembership/service';
 import { Actor } from './member/entities/member';
 
 const permissionMapping = {
@@ -124,6 +132,23 @@ export const validatePermissionMany = async (
   }
 
   return { itemMemberships: resultOfMemberships, tags };
+};
+
+export const hasPermission = async (
+  repositories: {
+    itemMembershipRepository: ItemMembershipRepository;
+    itemTagRepository: ItemTagRepository;
+  },
+  permission: PermissionLevel,
+  actor: Actor,
+  item: Item,
+) => {
+  try {
+    await validatePermission(repositories, permission, actor, item);
+    return true;
+  } catch (err: unknown) {
+    return false;
+  }
 };
 
 export const validatePermission = async (
@@ -372,3 +397,34 @@ export type RessourceAuthorizationStrategy<
   test: (req: FastifyRequest<R>) => boolean;
   error?: new () => Error;
 };
+
+export async function isItemVisible(
+  actor: Actor,
+  repositories: Repositories,
+  {
+    itemTagService,
+    itemMembershipService,
+  }: { itemTagService: ItemTagService; itemMembershipService: ItemMembershipService },
+  itemPath: Item['path'],
+) {
+  const isHidden = await itemTagService.has(repositories, itemPath, ItemTagType.Hidden);
+  // If the item is hidden AND there is no membership with the user, then throw an error
+  if (isHidden) {
+    if (!actor) {
+      // If actor is not provided, then there is no membership
+      return false;
+    }
+
+    // Check if the actor has at least write permission
+    const membership = await itemMembershipService.getByAccountAndItem(
+      repositories,
+      actor?.id,
+      getChildFromPath(itemPath),
+    );
+    if (!membership || PermissionLevelCompare.lt(membership.permission, PermissionLevel.Write)) {
+      return false;
+    }
+  }
+
+  return true;
+}

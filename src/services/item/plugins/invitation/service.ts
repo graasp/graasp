@@ -205,7 +205,7 @@ export class InvitationService {
     this.log.debug(`${JSON.stringify(membershipsToCreate)} memberships to create`);
 
     // create memberships for accounts that already exist
-    const memberships = await this.itemMembershipService.postMany(
+    const memberships = await this.itemMembershipService.createMany(
       actor,
       repositories,
       membershipsToCreate,

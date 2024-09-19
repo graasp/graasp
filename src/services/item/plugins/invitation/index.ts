@@ -5,7 +5,6 @@ import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
 import { resolveDependency } from '../../../../di/utils';
-import { MailerService } from '../../../../plugins/mailer/service';
 import { EntryNotFoundBeforeDeleteException } from '../../../../repositories/errors';
 import { IdParam, isNonEmptyArray } from '../../../../types';
 import { asDefined } from '../../../../utils/assertions';
@@ -24,13 +23,8 @@ import { InvitationService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db } = fastify;
-  const mailerService = resolveDependency(MailerService);
   const memberService = resolveDependency(MemberService);
   const invitationService = resolveDependency(InvitationService);
-
-  if (!mailerService) {
-    throw new Error('Mailer plugin is not defined');
-  }
 
   fastify.addSchema(definitions);
   // register multipart plugin for use in the invitations API
