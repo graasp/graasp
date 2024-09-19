@@ -1,4 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
+import { default as sanitize } from 'sanitize-filename';
 
 import { fastifyMultipart } from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
@@ -20,6 +21,10 @@ import { FileIsInvalidArchiveError } from './errors';
 import { zipExport, zipImport } from './schema';
 import { ImportExportService } from './service';
 import { prepareZip } from './utils';
+
+function encodeFilename(name: string) {
+  return encodeURI(sanitize(name, { replacement: '_' }));
+}
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const log = resolveDependency(BaseLogger);
@@ -118,7 +123,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         reply.raw.setHeader(
           'Content-Disposition',
-          `attachment; filename="${encodeURIComponent(name)}"`,
+          `attachment; filename="${encodeFilename(name)}"`,
         );
         reply.type(mimetype);
 
@@ -137,10 +142,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       );
 
       try {
-        reply.raw.setHeader(
-          'Content-Disposition',
-          `filename="${encodeURIComponent(item.name)}.zip"`,
-        );
+        reply.raw.setHeader('Content-Disposition', `filename="${encodeFilename(item.name)}.zip"`);
       } catch (e) {
         // TODO: send sentry error
         log?.error(e);

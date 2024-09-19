@@ -7313,6 +7313,7 @@ __metadata:
     pino-pretty: "npm:11.2.2"
     prettier: "npm:3.3.3"
     reflect-metadata: "npm:0.2.2"
+    sanitize-filename: "npm:1.6.3"
     sanitize-html: "npm:2.13.0"
     secure-json-parse: "npm:2.7.0"
     sharp: "npm:0.33.5"
@@ -11095,6 +11096,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"sanitize-filename@npm:1.6.3":
+  version: 1.6.3
+  resolution: "sanitize-filename@npm:1.6.3"
+  dependencies:
+    truncate-utf8-bytes: "npm:^1.0.0"
+  checksum: 10/1c162e2cffa797571221c3ed9fe796fa8c6eabb0812418b52a839e4fc63ab130093eb546ec39e1b94b8d3511c0d7de81db3e67906a7e76d7a7bcb6fbab4ed961
+  languageName: node
+  linkType: hard
+
 "sanitize-html@npm:2.13.0":
   version: 2.13.0
   resolution: "sanitize-html@npm:2.13.0"
@@ -12017,6 +12027,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"truncate-utf8-bytes@npm:^1.0.0":
+  version: 1.0.2
+  resolution: "truncate-utf8-bytes@npm:1.0.2"
+  dependencies:
+    utf8-byte-length: "npm:^1.0.1"
+  checksum: 10/366e47a0e22cc271d37eb4e62820453fb877784b55b37218842758b7aa1d402eedd0f8833cfb5d6f7a6cae1535d84289bd5e32c4ee962d2a86962fb7038a6983
+  languageName: node
+  linkType: hard
+
 "ts-api-utils@npm:^1.3.0":
   version: 1.3.0
   resolution: "ts-api-utils@npm:1.3.0"
@@ -12515,6 +12534,13 @@ __metadata:
     re2:
       optional: true
   checksum: 10/a6c73332de652572e52fa96ab616909deb1dad924a311e620ab63096d02219185570cb19dfed450a238bb38d44849a6cd41426db3f9887b3d0993bf7ce25aec6
+  languageName: node
+  linkType: hard
+
+"utf8-byte-length@npm:^1.0.1":
+  version: 1.0.5
+  resolution: "utf8-byte-length@npm:1.0.5"
+  checksum: 10/168edff8f7baca974b5bfb5256cebd57deaef8fbf2d0390301dd1009da52de64774d62f088254c94021e372147b6c938aa82f2318a3a19f9ebd21e48b7f40029
   languageName: node
   linkType: hard
 
