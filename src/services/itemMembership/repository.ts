@@ -33,7 +33,7 @@ import { itemMembershipSchema } from '../member/plugins/export-data/schemas/sche
 import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils';
 import { mapById } from '../utils';
 import { ItemMembership } from './entities/ItemMembership';
-import { getPermissionsAtItemSql } from './utils';
+import { PermissionType, getPermissionsAtItemSql } from './utils';
 
 type ItemPath = Item['path'];
 type AccountId = Account['id'];
@@ -703,11 +703,11 @@ export class ItemMembershipRepository extends MutableRepository<
       .groupBy('account_id')
       .getRawMany()) as DetachedMoveHousekeepingType[];
 
-    const changes = rows.reduce<ResultMoveHousekeeping>(
-      (chngs, row) => {
+    return rows.reduce<ResultMoveHousekeeping>(
+      (changes, row) => {
         const { accountId, itemPath, permission } = row;
         if (itemPath !== item.path) {
-          chngs.inserts.push({
+          changes.inserts.push({
             accountId,
             itemPath: itemIdAsPath,
             permission,
@@ -715,15 +715,13 @@ export class ItemMembershipRepository extends MutableRepository<
           });
         }
 
-        return chngs;
+        return changes;
       },
       {
         inserts: [],
         deletes: [],
       },
     );
-
-    return changes;
   }
 
   /**
@@ -764,7 +762,7 @@ export class ItemMembershipRepository extends MutableRepository<
           account_id,
           '${newParentItemPath}'::ltree AS item_path,
           max(permission) AS permission,
-          0 AS action -- 0: inherited at destination (no action)
+          ${PermissionType.InheritedAtDestination} AS action -- 0: inherited at destination (no action)
         FROM item_membership
         WHERE item_path @> '${newParentItemPath}'
         GROUP BY account_id
@@ -777,30 +775,23 @@ export class ItemMembershipRepository extends MutableRepository<
       ORDER BY account_id, nlevel(item_path), permission;
     `)) as MoveHousekeepingType[];
 
-    const changes = rows.reduce<ResultMoveHousekeeping>(
-      (chngs, row) => {
-        const {
-          accountId,
-          itemPath,
-          permission: p,
-          action,
-          inherited: ip,
-          action2IgnoreInherited,
-        } = row;
+    return rows.reduce<ResultMoveHousekeeping>(
+      (changes, row) => {
+        const { accountId, itemPath, permission, action, inherited, action2IgnoreInherited } = row;
 
-        if (action === 0) {
-          return chngs;
+        if (action === PermissionType.InheritedAtDestination) {
+          return changes;
         }
-        if (action === 2 && action2IgnoreInherited) {
-          return chngs;
+        if (action === PermissionType.BellongsToTree && action2IgnoreInherited) {
+          return changes;
         }
-
-        const permission = p;
-        const inherited = ip;
 
         // permission (inherited) at the "origin" better than inherited one at "destination"
-        if (action === 1 && PermissionLevelCompare.gt(permission, inherited)) {
-          chngs.inserts.push({
+        if (
+          action === PermissionType.InheritedAtOrigin &&
+          PermissionLevelCompare.gt(permission, inherited)
+        ) {
+          changes.inserts.push({
             accountId,
             itemPath,
             permission,
@@ -809,18 +800,19 @@ export class ItemMembershipRepository extends MutableRepository<
         }
 
         // permission worse or equal to inherited one at "destination"
-        if (action === 2 && PermissionLevelCompare.lte(permission, inherited)) {
-          chngs.deletes.push({ accountId, itemPath });
+        if (
+          action === PermissionType.BellongsToTree &&
+          PermissionLevelCompare.lte(permission, inherited)
+        ) {
+          changes.deletes.push({ accountId, itemPath });
         }
 
-        return chngs;
+        return changes;
       },
       {
         inserts: [],
         deletes: [],
       },
     );
-
-    return changes;
   }
 }
