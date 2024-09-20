@@ -26,7 +26,6 @@ import { EmailAlreadyTaken } from './error';
 import { StorageService } from './plugins/storage/service';
 import {
   deleteCurrent,
-  deleteOne,
   getCurrent,
   getMany,
   getManyBy,
@@ -35,6 +34,7 @@ import {
   getStorageFiles,
   patchChangeEmail,
   postChangeEmail,
+  updateCurrent,
   updateOne,
 } from './schemas';
 import { MemberService } from './service';
@@ -126,6 +126,9 @@ const controller: FastifyPluginAsync = async (fastify) => {
     },
   );
 
+  /**
+   * @deprecated use PATCH /members/current instead
+   */
   // update member
   fastify.patch<{ Params: IdParam; Body: Partial<Member> }>(
     '/:id',
@@ -144,29 +147,15 @@ const controller: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  // delete member
-  /**
-   * @deprecated use the delete member function without the id param
-   */
-  fastify.delete<{ Params: IdParam }>(
-    '/:id',
-    { schema: deleteOne, preHandler: isAuthenticated },
-    async (request, reply) => {
-      const {
-        user,
-        params: { id },
-      } = request;
-      if (!user?.account || user.account.id !== id) {
-        throw new CannotModifyOtherMembers({ id });
-      }
+  // update current member
+  fastify.patch<{ Body: Partial<Member> }>(
+    '/current',
+    { schema: updateCurrent, preHandler: isAuthenticated },
+    async ({ user, body }) => {
+      const member = asDefined(user?.account);
 
       return db.transaction(async (manager) => {
-        await memberService.deleteOne(buildRepositories(manager), id);
-        // logout member
-        request.logOut();
-        // remove session from browser
-        request.session.delete();
-        reply.status(StatusCodes.NO_CONTENT);
+        return memberService.patch(buildRepositories(manager), member.id, body);
       });
     },
   );

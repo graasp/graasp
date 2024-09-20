@@ -8,7 +8,7 @@ import build, { clearDatabase } from '../../../../test/app';
 import { AppDataSource } from '../../../plugins/datasource';
 import { DEFAULT_MAX_STORAGE } from '../../../services/item/plugins/file/utils/constants';
 import { FILE_ITEM_TYPE } from '../../../utils/config';
-import { CannotModifyOtherMembers, MemberNotFound } from '../../../utils/errors';
+import { MemberNotFound } from '../../../utils/errors';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
 import { Member } from '../entities/member';
 import { saveMember, saveMembers } from './fixtures/members';
@@ -448,7 +448,7 @@ describe('Member routes tests', () => {
     });
   });
 
-  describe('PATCH /members/:id', () => {
+  describe('PATCH /members/current', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
 
@@ -456,7 +456,7 @@ describe('Member routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: `/members/${actor.id}`,
+        url: `/members/current`,
         payload: {
           name: newName,
           extra: {
@@ -475,15 +475,15 @@ describe('Member routes tests', () => {
 
       it('Returns successfully', async () => {
         const newName = 'new name';
-
+        const newExtra = {
+          some: 'property',
+        };
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/members/${actor.id}`,
+          url: `/members/current`,
           payload: {
             name: newName,
-            extra: {
-              some: 'property',
-            },
+            extra: newExtra,
           },
         });
 
@@ -491,8 +491,11 @@ describe('Member routes tests', () => {
         expect(m?.name).toEqual(newName);
 
         expect(response.statusCode).toBe(StatusCodes.OK);
-        expect(response.json().name).toEqual(newName);
+
+        const result = await response.json();
+        expect(result.name).toEqual(newName);
         // todo: test whether extra is correctly modified (extra is not returned)
+        expect(result.extra).toMatchObject(newExtra);
       });
 
       it('New name too short throws', async () => {
@@ -500,7 +503,7 @@ describe('Member routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/members/${actor.id}`,
+          url: `/members/current`,
           payload: {
             name: newName,
           },
@@ -517,7 +520,7 @@ describe('Member routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/members/${actor.id}`,
+          url: `/members/current`,
           payload: {
             name: newName,
           },
@@ -533,7 +536,7 @@ describe('Member routes tests', () => {
         const enableSaveActions = true;
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/members/${actor.id}`,
+          url: `/members/current`,
           payload: { enableSaveActions },
         });
 
@@ -548,7 +551,7 @@ describe('Member routes tests', () => {
         // Start by enabling save actions
         await app.inject({
           method: HttpMethod.Patch,
-          url: `/members/${actor.id}`,
+          url: `/members/current`,
           payload: { enableSaveActions: true },
         });
         const memberBeforePatch = await rawRepository.findOneBy({ id: actor.id });
@@ -557,7 +560,7 @@ describe('Member routes tests', () => {
         const enableSaveActions = false;
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/members/${actor.id}`,
+          url: `/members/current`,
           payload: { enableSaveActions },
         });
 
@@ -567,35 +570,16 @@ describe('Member routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(response.json().enableSaveActions).toEqual(enableSaveActions);
       });
-
-      it('Current member cannot modify another member', async () => {
-        const member = await saveMember();
-        const newName = 'new name';
-        const response = await app.inject({
-          method: HttpMethod.Patch,
-          url: `/members/${member.id}`,
-          payload: {
-            name: newName,
-          },
-        });
-
-        const m = await rawRepository.findOneBy({ id: member.id });
-        expect(m?.name).not.toEqual(newName);
-
-        expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
-        expect(response.json()).toEqual(new CannotModifyOtherMembers({ id: member.id }));
-      });
     });
   });
 
-  describe('DELETE /members/:id', () => {
+  describe('DELETE /members/current', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const member = await saveMember();
 
       const response = await app.inject({
         method: HttpMethod.Delete,
-        url: `/members/${member.id}`,
+        url: `/members/current`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -608,27 +592,13 @@ describe('Member routes tests', () => {
       it('Returns successfully', async () => {
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: `/members/${actor.id}`,
+          url: `/members/current`,
         });
 
         const m = await rawRepository.findOneBy({ id: actor.id });
         expect(m).toBeFalsy();
 
         expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
-      });
-
-      it('Current member cannot delete another member', async () => {
-        const member = await saveMember();
-        const response = await app.inject({
-          method: HttpMethod.Delete,
-          url: `/members/${member.id}`,
-        });
-
-        const m = await rawRepository.findOneBy({ id: member.id });
-        expect(m).toBeTruthy();
-
-        expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
-        expect(response.json()).toEqual(new CannotModifyOtherMembers({ id: member.id }));
       });
     });
   });
