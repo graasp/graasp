@@ -25,7 +25,12 @@ export const getPermissionsAtItemSql = (
   }
 
   return `
-    SELECT account_id, item_path, max(permission) AS permission, max(action) AS action FROM (
+    SELECT 
+      account_id, 
+      item_path, 
+      max(permission) AS permission, 
+      max(action) AS action 
+    FROM (
       -- "last" inherited permission, for each account, at the origin of the moving item
       SELECT
         account_id,
