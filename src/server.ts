@@ -1,4 +1,5 @@
 import { fastifyHelmet } from '@fastify/helmet';
+import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import { fastify } from 'fastify';
 
 import registerAppPlugins from './app';
@@ -38,7 +39,7 @@ const start = async () => {
       },
       plugins: [ajvFormats],
     },
-  });
+  }).withTypeProvider<TypeBoxTypeProvider>();
 
   const { Sentry } = initSentry(instance);
 

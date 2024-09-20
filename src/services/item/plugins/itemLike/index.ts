@@ -1,4 +1,4 @@
-import { FastifyPluginAsync } from 'fastify';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { ActionTriggers } from '@graasp/sdk';
 
@@ -12,20 +12,19 @@ import { assertIsMember } from '../../../member/entities/member';
 import { memberAccountRole } from '../../../member/strategies/memberAccountRole';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { ItemService } from '../../service';
-import common, { create, deleteOne, getLikesForItem, getLikesForMember } from './schemas';
+import { create, deleteOne, getLikesForItem, getLikesForMember } from './schemas';
 import { ItemLikeService } from './service';
 
-const plugin: FastifyPluginAsync = async (fastify) => {
+const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db } = fastify;
 
   const itemService = resolveDependency(ItemService);
   const itemLikeService = new ItemLikeService(itemService);
   const actionService = resolveDependency(ActionService);
 
-  fastify.addSchema(common);
   //get liked entry for member
   // BUG: hide item you dont have membership (you liked then lose membership)
-  fastify.get<{ Querystring: { memberId: string } }>(
+  fastify.get(
     '/liked',
     { schema: getLikesForMember, preHandler: [isAuthenticated, matchOne(memberAccountRole)] },
     async ({ user }) => {
@@ -37,7 +36,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   // get likes
   // TODO: anonymize private members
-  fastify.get<{ Params: { itemId: string } }>(
+  fastify.get(
     '/:itemId/likes',
     { schema: getLikesForItem, preHandler: optionalIsAuthenticated },
     async ({ user, params: { itemId } }) => {
@@ -46,7 +45,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // create item like entry
-  fastify.post<{ Params: { itemId: string } }>(
+  fastify.post(
     '/:itemId/like',
     { schema: create, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async (request) => {
@@ -74,7 +73,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // delete item like entry
-  fastify.delete<{ Params: { itemId: string } }>(
+  fastify.delete(
     '/:itemId/like',
     { schema: deleteOne, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async (request) => {
