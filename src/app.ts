@@ -9,6 +9,7 @@ import { registerDependencies } from './di/container';
 import databasePlugin from './plugins/database';
 import metaPlugin from './plugins/meta';
 import swaggerPlugin from './plugins/swagger';
+import { schemaRegisterPlugin } from './plugins/typebox';
 import shared from './schemas/fluent-schema';
 import accountPlugin from './services/account';
 import authPlugin from './services/auth';
@@ -26,15 +27,17 @@ import {
 } from './utils/config';
 
 export default async function (instance: FastifyInstance): Promise<void> {
-  await instance.register(fp(swaggerPlugin));
+  await instance
+    .register(fp(swaggerPlugin))
+    .register(fp(schemaRegisterPlugin))
 
-  // load some shared schema definitions
-  instance.addSchema(shared);
+    // load some shared schema definitions
+    .addSchema(shared)
 
-  // db should be registered before the dependencies.
-  await instance.register(fp(databasePlugin), {
-    logs: DATABASE_LOGS,
-  });
+    // db should be registered before the dependencies.
+    .register(fp(databasePlugin), {
+      logs: DATABASE_LOGS,
+    });
 
   // register some dependencies manually
   registerDependencies(instance);
@@ -66,25 +69,6 @@ export default async function (instance: FastifyInstance): Promise<void> {
       .register(fp(MemberServiceApi))
       .register(fp(ItemServiceApi))
       .register(fp(ItemMembershipServiceApi));
-
-    // instance.register(
-    //   async (instance) => {
-    //     // add CORS support
-    //     if (instance.corsPluginOptions) {
-    //       instance.register(fastifyCors, instance.corsPluginOptions);
-    //     }
-    //     instance.addHook('preHandler', instance.verifyAuthentication);
-    //     instance.register(graaspPluginActions, {
-    //       shouldSave: SAVE_ACTIONS,
-    //       fileItemType: FILE_ITEM_TYPE,
-    //       fileConfigurations: {
-    //         s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
-    //         local: FILE_ITEM_PLUGIN_OPTIONS,
-    //       },
-    //     });
-    //   },
-    //   { prefix: '/analytics' },
-    // );
   });
 }
 
