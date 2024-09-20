@@ -703,24 +703,25 @@ export class ItemMembershipRepository extends MutableRepository<
       .groupBy('account_id')
       .getRawMany()) as DetachedMoveHousekeepingType[];
 
-    const changes: ResultMoveHousekeeping = {
-      inserts: [],
-      deletes: [],
-    };
+    const changes = rows.reduce<ResultMoveHousekeeping>(
+      (chngs, row) => {
+        const { accountId, itemPath, permission } = row;
+        if (itemPath !== item.path) {
+          chngs.inserts.push({
+            accountId,
+            itemPath: itemIdAsPath,
+            permission,
+            creatorId: account.id,
+          });
+        }
 
-    rows.reduce((chngs, row) => {
-      const { accountId, itemPath, permission } = row;
-      if (itemPath !== item.path) {
-        chngs.inserts.push({
-          accountId,
-          itemPath: itemIdAsPath,
-          permission,
-          creatorId: account.id,
-        });
-      }
-
-      return chngs;
-    }, changes);
+        return chngs;
+      },
+      {
+        inserts: [],
+        deletes: [],
+      },
+    );
 
     return changes;
   }
@@ -776,48 +777,49 @@ export class ItemMembershipRepository extends MutableRepository<
       ORDER BY account_id, nlevel(item_path), permission;
     `)) as MoveHousekeepingType[];
 
-    const changes: ResultMoveHousekeeping = {
-      inserts: [],
-      deletes: [],
-    };
-
-    rows.reduce((chngs, row) => {
-      const {
-        accountId,
-        itemPath,
-        permission: p,
-        action,
-        inherited: ip,
-        action2IgnoreInherited,
-      } = row;
-
-      if (action === 0) {
-        return chngs;
-      }
-      if (action === 2 && action2IgnoreInherited) {
-        return chngs;
-      }
-
-      const permission = p;
-      const inherited = ip;
-
-      // permission (inherited) at the "origin" better than inherited one at "destination"
-      if (action === 1 && PermissionLevelCompare.gt(permission, inherited)) {
-        chngs.inserts.push({
+    const changes = rows.reduce<ResultMoveHousekeeping>(
+      (chngs, row) => {
+        const {
           accountId,
           itemPath,
-          permission,
-          creatorId: accountId,
-        });
-      }
+          permission: p,
+          action,
+          inherited: ip,
+          action2IgnoreInherited,
+        } = row;
 
-      // permission worse or equal to inherited one at "destination"
-      if (action === 2 && PermissionLevelCompare.lte(permission, inherited)) {
-        chngs.deletes.push({ accountId, itemPath });
-      }
+        if (action === 0) {
+          return chngs;
+        }
+        if (action === 2 && action2IgnoreInherited) {
+          return chngs;
+        }
 
-      return chngs;
-    }, changes);
+        const permission = p;
+        const inherited = ip;
+
+        // permission (inherited) at the "origin" better than inherited one at "destination"
+        if (action === 1 && PermissionLevelCompare.gt(permission, inherited)) {
+          chngs.inserts.push({
+            accountId,
+            itemPath,
+            permission,
+            creatorId: accountId,
+          });
+        }
+
+        // permission worse or equal to inherited one at "destination"
+        if (action === 2 && PermissionLevelCompare.lte(permission, inherited)) {
+          chngs.deletes.push({ accountId, itemPath });
+        }
+
+        return chngs;
+      },
+      {
+        inserts: [],
+        deletes: [],
+      },
+    );
 
     return changes;
   }
