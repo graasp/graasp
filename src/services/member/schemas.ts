@@ -260,6 +260,7 @@ export const getManyBy: FastifySchema = {
 
 // schema for updating a member
 export const updateOne: FastifySchema = {
+  deprecated: true,
   params: { $ref: 'https://graasp.org/#/definitions/idParam' },
   body: { $ref: 'https://graasp.org/members/#/definitions/partialMemberRequireOne' },
   response: {
