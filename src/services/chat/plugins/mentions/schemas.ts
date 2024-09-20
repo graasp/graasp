@@ -4,6 +4,8 @@
  */
 import { MentionStatus } from '@graasp/sdk';
 
+import { accountSchemaRef } from '../../../account/schemas';
+
 export default {
   $id: 'https://graasp.org/mentions/',
   definitions: {
@@ -34,7 +36,7 @@ export default {
       properties: {
         id: { $ref: 'https://graasp.org/#/definitions/uuid' },
         message: { $ref: 'https://graasp.org/chat/#/definitions/chatMessage' },
-        account: { $ref: 'https://graasp.org/accounts/#/definitions/account' },
+        account: accountSchemaRef,
         createdAt: { type: 'string' },
         updatedAt: { type: 'string' },
         status: {

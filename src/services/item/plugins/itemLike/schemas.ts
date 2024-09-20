@@ -13,6 +13,7 @@ export const itemLikeSchemaRef = registerSchemaAsRef(
       // Schema Options
       title: 'Item Like',
       $id: 'itemLike',
+      additionalProperties: false,
     },
   ),
 );
@@ -28,6 +29,7 @@ export const packedItemLikeSchemaRef = registerSchemaAsRef(
       // Schema Options
       title: 'Packed Item Like',
       $id: 'packedItemLike',
+      additionalProperties: false,
     },
   ),
 );
@@ -42,6 +44,7 @@ export const itemIdSchemaRef = registerSchemaAsRef(
       // Schema Options
       title: 'Item ID',
       $id: 'itemId',
+      additionalProperties: false,
     },
   ),
 );
