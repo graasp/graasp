@@ -683,17 +683,25 @@ export class ItemMembershipRepository extends MutableRepository<
   // UTILS
 
   /**
+   * Retrieves all memberships related to the ancestors of the given item and returns the memberships
+   * we need to create so that accounts with permissions further up the tree maintain their best permissions
+   * on the item after it has been moved to the root.
+   *
    * Identify any new memberships that will be necessary to create
    * after moving the item from its parent item to *no-parent*.
    *
    * Moving to *no-parent* is simpler so this method is used instead of `moveHousekeeping()`.
    * @param item Item that will be moved
    * @param account Member used as `creator` for any new memberships
+   * @returns Object with `inserts` and `deletes` arrays of memberships to create and delete after moving the item to the root. `deletes` will always be empty.
    */
   async detachedMoveHousekeeping(item: Item, account: Account) {
+    // Get the Id of the item when it will be moved to the root
     const index = item.path.lastIndexOf('.');
     const itemIdAsPath = item.path.slice(index + 1);
 
+    // For each account that belongs to an ancestor of the element,
+    // retrieve its best permission and the path to the deepest element (closest to the element).
     const rows = (await this.repository
       .createQueryBuilder('item_membership')
       .select('account_id', 'accountId')
@@ -739,14 +747,18 @@ export class ItemMembershipRepository extends MutableRepository<
    */
   async moveHousekeeping(item: Item, account: Account, newParentItem?: Item) {
     if (!newParentItem) {
+      // Moving to the root
       return this.detachedMoveHousekeeping(item, account);
     }
 
     const { path: newParentItemPath } = newParentItem;
     const index = item.path.lastIndexOf('.');
 
-    const parentItemPath = index > -1 ? item.path.slice(0, index) : undefined;
-    const itemIdAsPath = index > -1 ? item.path.slice(index + 1) : item.path;
+    // If the a '.' has been found (>= 0) in item's path, this means that it has a parent.
+    // parentItemPath is the path of the direct parent item
+    const parentItemPath = index >= 0 ? item.path.slice(0, index) : undefined;
+    // itemIdAsPath is the path of the item without any parent
+    const itemIdAsPath = index >= 0 ? item.path.slice(index + 1) : item.path;
 
     const rows = (await this.repository.query(`
       SELECT
