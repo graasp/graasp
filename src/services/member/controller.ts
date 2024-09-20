@@ -26,7 +26,6 @@ import { EmailAlreadyTaken } from './error';
 import { StorageService } from './plugins/storage/service';
 import {
   deleteCurrent,
-  deleteOne,
   getCurrent,
   getMany,
   getManyBy,
@@ -157,33 +156,6 @@ const controller: FastifyPluginAsync = async (fastify) => {
 
       return db.transaction(async (manager) => {
         return memberService.patch(buildRepositories(manager), member.id, body);
-      });
-    },
-  );
-
-  // delete member
-  /**
-   * @deprecated use the delete member function without the id param
-   */
-  fastify.delete<{ Params: IdParam }>(
-    '/:id',
-    { schema: deleteOne, preHandler: isAuthenticated },
-    async (request, reply) => {
-      const {
-        user,
-        params: { id },
-      } = request;
-      if (!user?.account || user.account.id !== id) {
-        throw new CannotModifyOtherMembers({ id });
-      }
-
-      return db.transaction(async (manager) => {
-        await memberService.deleteOne(buildRepositories(manager), id);
-        // logout member
-        request.logOut();
-        // remove session from browser
-        request.session.delete();
-        reply.status(StatusCodes.NO_CONTENT);
       });
     },
   );
