@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { PermissionLevel } from '@graasp/sdk';
 
 import { UUID_REGEX } from '../../schemas/global';
+import { augmentedAccountSchemaRef } from '../account/schemas';
 
 export default {
   $id: 'https://graasp.org/item-memberships/',
@@ -18,7 +19,7 @@ export default {
       type: 'object',
       properties: {
         id: { $ref: 'https://graasp.org/#/definitions/uuid' },
-        account: { $ref: 'https://graasp.org/accounts/#/definitions/augmentedAccount' },
+        account: augmentedAccountSchemaRef,
         /**
          * itemPath's 'pattern' not supported in serialization.
          * since 'itemMembership' schema is only used for serialization it's safe

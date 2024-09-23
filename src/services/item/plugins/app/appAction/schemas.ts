@@ -1,3 +1,5 @@
+import { accountSchemaRef } from '../../../../account/schemas';
+
 export default {
   $id: 'https://graasp.org/apps/app-action/',
   definitions: {
@@ -5,9 +7,9 @@ export default {
       type: 'object',
       properties: {
         id: { type: 'string' },
-        account: { $ref: 'https://graasp.org/accounts/#/definitions/account' },
+        account: accountSchemaRef,
         /** @deprecated use account */
-        member: { $ref: 'https://graasp.org/accounts/#/definitions/account', deprecated: true },
+        member: { $ref: accountSchemaRef.$ref, deprecated: true },
         item: {
           $ref: 'https://graasp.org/items/#/definitions/item',
         },
