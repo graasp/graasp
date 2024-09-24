@@ -1,3 +1,4 @@
+import { faker } from '@faker-js/faker';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import { sign } from 'jsonwebtoken';
 import fetch from 'node-fetch';
@@ -222,6 +223,22 @@ describe('Auth routes tests', () => {
     it('Bad request for invalid email', async () => {
       const email = 'wrongemail';
       const name = 'anna';
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: '/register',
+        payload: { email, name, captcha: MOCK_CAPTCHA },
+      });
+
+      const members = await memberRawRepository.findBy({ email });
+      expect(members).toHaveLength(0);
+
+      expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
+      expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
+    });
+
+    it('Bad request if the username contains special characters', async () => {
+      const email = faker.internet.email().toLowerCase();
+      const name = '<div>%"^';
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/register',

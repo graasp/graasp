@@ -5,7 +5,7 @@ export const mregister = {
     type: 'object',
     required: ['name', 'email', 'challenge', 'captcha'],
     properties: {
-      name: { type: 'string', pattern: '^\\S+( \\S+)*$' },
+      name: { type: 'string', format: 'username' },
       email: { type: 'string', format: 'email' },
       challenge: { type: 'string' },
       captcha: { type: 'string' },
