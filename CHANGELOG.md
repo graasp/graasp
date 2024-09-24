@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.50.0](https://github.com/graasp/graasp/compare/v1.49.0...v1.50.0) (2024-09-23)
+
+
+### Features
+
+* can create a permission on item login without admin's confirmation ([#1364](https://github.com/graasp/graasp/issues/1364)) ([a2e9f0c](https://github.com/graasp/graasp/commit/a2e9f0c4f0c2223e1a4241927e409972ad73b304))
+* item like with typebox ([#1402](https://github.com/graasp/graasp/issues/1402)) ([bb1e057](https://github.com/graasp/graasp/commit/bb1e05728102aae814a5c3b4eab01010215abf89))
+* sanitize filename ([#1374](https://github.com/graasp/graasp/issues/1374)) ([2523506](https://github.com/graasp/graasp/commit/2523506233921ace19c7d9697c3ede0fa9295fa4))
+* **schema refactor:** service account ([#1408](https://github.com/graasp/graasp/issues/1408)) ([63477df](https://github.com/graasp/graasp/commit/63477df8a364761e08957dfd965e40c202a191f4))
+
+
+### Bug Fixes
+
+* deprecate patch member use current member instead ([#1399](https://github.com/graasp/graasp/issues/1399)) ([21ece6c](https://github.com/graasp/graasp/commit/21ece6c133adb8d0e55ea566c60b85f3092589f8))
+* set jest extension to run on-demand instead of watch ([#1401](https://github.com/graasp/graasp/issues/1401)) ([ec14145](https://github.com/graasp/graasp/commit/ec14145aca703c2630df65e7374bc83fbe0b4a8e))
+
 ## [1.49.0](https://github.com/graasp/graasp/compare/v1.48.0...v1.49.0) (2024-09-18)
 
 
