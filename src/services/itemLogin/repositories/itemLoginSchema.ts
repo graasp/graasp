@@ -4,7 +4,11 @@ import { ItemLoginSchemaType, getChildFromPath } from '@graasp/sdk';
 
 import { MutableRepository } from '../../../repositories/MutableRepository';
 import { DEFAULT_PRIMARY_KEY } from '../../../repositories/const';
-import { EntityNotFound } from '../../../repositories/errors';
+import {
+  DeleteException,
+  EntityNotFound,
+  EntryNotFoundBeforeDeleteException,
+} from '../../../repositories/errors';
 import { AncestorOf } from '../../../utils/typeorm/treeOperators';
 import { Item } from '../../item/entities/Item';
 import { ItemLoginSchema } from '../entities/itemLoginSchema';
@@ -28,7 +32,7 @@ export class ItemLoginSchemaRepository extends MutableRepository<
     super(DEFAULT_PRIMARY_KEY, ItemLoginSchema, manager);
   }
 
-  async getOneByItem(itemId: ItemId): Promise<ItemLoginSchema | null> {
+  async getOneByItemId(itemId: ItemId): Promise<ItemLoginSchema | null> {
     this.throwsIfParamIsInvalid('item', itemId);
 
     return await this.repository.findOne({
@@ -67,5 +71,22 @@ export class ItemLoginSchemaRepository extends MutableRepository<
     }
 
     return await super.insert({ item: { id: getChildFromPath(itemPath), path: itemPath }, type });
+  }
+
+  async deleteOneByItemId(itemId: ItemId) {
+    this.throwsIfParamIsInvalid('itemId', itemId);
+
+    const entity = await this.getOneByItemId(itemId);
+
+    if (!entity) {
+      throw new EntryNotFoundBeforeDeleteException(this.entity);
+    }
+
+    try {
+      await this.repository.delete(entity.id);
+      return entity;
+    } catch (e) {
+      throw new DeleteException(e);
+    }
   }
 }

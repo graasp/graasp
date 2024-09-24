@@ -21,6 +21,7 @@ import { Item } from './item/entities/Item';
 import { ItemTag } from './item/plugins/itemTag/ItemTag';
 import { ItemTagRepository } from './item/plugins/itemTag/repository';
 import { ItemTagService } from './item/plugins/itemTag/service';
+import { ItemRepository } from './item/repository';
 import { ItemMembership } from './itemMembership/entities/ItemMembership';
 import { ItemMembershipRepository } from './itemMembership/repository';
 import { ItemMembershipService } from './itemMembership/service';
@@ -149,6 +150,21 @@ export const hasPermission = async (
   } catch (err: unknown) {
     return false;
   }
+};
+
+export const validatePermissionWithItemId = async (
+  repositories: {
+    itemRepository: ItemRepository;
+    itemMembershipRepository: ItemMembershipRepository;
+    itemTagRepository: ItemTagRepository;
+  },
+  permission: PermissionLevel,
+  actor: Actor,
+  itemId: Item['id'],
+) => {
+  const { itemRepository } = repositories;
+  const item = await itemRepository.getOneOrThrow(itemId);
+  return validatePermission(repositories, permission, actor, item);
 };
 
 export const validatePermission = async (

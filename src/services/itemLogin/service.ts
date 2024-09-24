@@ -147,11 +147,10 @@ export class ItemLoginService {
 
   async getOneByItem(repositories: Repositories, itemId: string) {
     const { itemLoginSchemaRepository } = repositories;
-    return await itemLoginSchemaRepository.getOneByItem(itemId);
+    return await itemLoginSchemaRepository.getOneByItemId(itemId);
   }
 
-  async delete(member: Member, repositories: Repositories, itemId: string) {
-    const { itemLoginSchemaRepository } = repositories;
-    return itemLoginSchemaRepository.deleteOne(itemId);
+  async delete(_member: Member, { itemLoginSchemaRepository }: Repositories, itemId: string) {
+    return itemLoginSchemaRepository.deleteOneByItemId(itemId);
   }
 }

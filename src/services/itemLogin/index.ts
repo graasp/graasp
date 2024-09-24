@@ -8,7 +8,7 @@ import { asDefined } from '../../utils/assertions';
 import { ItemNotFound } from '../../utils/errors';
 import { buildRepositories } from '../../utils/repositories';
 import { SESSION_KEY, isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
-import { isItemVisible, matchOne } from '../authorization';
+import { isItemVisible, matchOne, validatePermissionWithItemId } from '../authorization';
 import { ItemTagService } from '../item/plugins/itemTag/service';
 import { ItemService } from '../item/service';
 import { ItemMembershipService } from '../itemMembership/service';
@@ -167,8 +167,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       return db.transaction(async (manager) => {
         const member = asDefined(user?.account);
         assertIsMember(member);
+        const repositories = buildRepositories(manager);
+
+        // Validate permission
+        await validatePermissionWithItemId(repositories, PermissionLevel.Admin, member, itemId);
+
         try {
-          return (await itemLoginService.delete(member, buildRepositories(manager), itemId)).id;
+          const { id } = await itemLoginService.delete(member, repositories, itemId);
+          return id;
         } catch (e: unknown) {
           if (e instanceof EntryNotFoundBeforeDeleteException) {
             throw new ItemLoginSchemaNotFound({ itemId });

@@ -585,4 +585,70 @@ describe('Item Login Tests', () => {
       });
     });
   });
+
+  describe('DELETE /:id/login-schema', () => {
+    it('Throws if signed out', async () => {
+      ({ app } = await build({ member: null }));
+      const member = await saveMember();
+      ({ item } = await testUtils.saveItemAndMembership({ member }));
+      await saveItemLoginSchema({ item: item as unknown as DiscriminatedItem });
+
+      const res = await app.inject({
+        method: HttpMethod.Delete,
+        url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema`,
+      });
+
+      expect(res.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    });
+
+    describe('Signed In', () => {
+      let itemLoginSchema: ItemLoginSchema;
+
+      beforeEach(async () => {
+        ({ app, actor } = await build());
+        const member = await saveMember();
+        ({ item } = await testUtils.saveItemAndMembership({ member }));
+        ({ itemLoginSchema } = await saveItemLoginSchema({
+          item: item as unknown as DiscriminatedItem,
+        }));
+      });
+
+      it('Successfully delete item login', async () => {
+        assertIsDefined(item);
+        assertIsDefined(actor);
+        await testUtils.saveMembership({ item, account: actor, permission: PermissionLevel.Admin });
+        const res = await app.inject({
+          method: HttpMethod.Delete,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema`,
+        });
+
+        expect(res.statusCode).toBe(StatusCodes.OK);
+        expect(res.body).toEqual(itemLoginSchema.id);
+        expect(await rawItemLoginSchemaRepository.findOneBy({ id: itemLoginSchema.id })).toBeNull();
+      });
+
+      it('Throws if has Write permission', async () => {
+        assertIsDefined(item);
+        assertIsDefined(actor);
+        await testUtils.saveMembership({ item, account: actor, permission: PermissionLevel.Write });
+        const res = await app.inject({
+          method: HttpMethod.Delete,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema`,
+        });
+
+        expect(res.json()).toMatchObject(new MemberCannotAdminItem(item.id));
+      });
+
+      it('Throws if id is not valid', async () => {
+        const id = 'invalid-id';
+
+        const res = await app.inject({
+          method: HttpMethod.Delete,
+          url: `${ITEMS_ROUTE_PREFIX}/${id}/login-schema`,
+        });
+
+        expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      });
+    });
+  });
 });
