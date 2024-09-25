@@ -1817,10 +1817,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@faker-js/faker@npm:9.0.0":
-  version: 9.0.0
-  resolution: "@faker-js/faker@npm:9.0.0"
-  checksum: 10/aedd68affd27065450da3c19a0ea3050e6a16078e7d591faf38402e572dd555f5ae6b402d26456eceb6b793c44b8f83ea7b48804d1fcb841610acd4988c41f91
+"@faker-js/faker@npm:9.0.1":
+  version: 9.0.1
+  resolution: "@faker-js/faker@npm:9.0.1"
+  checksum: 10/708629605392fdbe06887ca9b083d73801c64b47917f790870b240858ab65cada14b52dddf2cb7e471ad0f6ddf66ea30e7ffda741c5ba9bd5c27318b47262279
   languageName: node
   linkType: hard
 
@@ -2063,27 +2063,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@npm:4.28.0":
-  version: 4.28.0
-  resolution: "@graasp/sdk@npm:4.28.0"
+"@graasp/sdk@npm:4.31.0":
+  version: 4.31.0
+  resolution: "@graasp/sdk@npm:4.31.0"
   dependencies:
-    "@faker-js/faker": "npm:9.0.0"
+    "@faker-js/faker": "npm:9.0.1"
     filesize: "npm:10.1.6"
     js-cookie: "npm:3.0.5"
     validator: "npm:13.12.0"
   peerDependencies:
-    date-fns: ^3
+    date-fns: ^3 || ^4.0.0
     uuid: ^9 || ^10
-  checksum: 10/89f9c559154896637ac6d02daa710288de6ac2b753270037eef95dc32a763d6b597aeaafedab312bfd558d1b42b265d23066ffa640197acf4ef1883f4029ba48
+  checksum: 10/9b2bf85a51cc12b6f2bdefeb7bbc0c615db9ea3188ace6d460b14e61503763aeab13fd2aa1c4135cee602c2c58465895569b2845b91d942982f96f5594dfd1d4
   languageName: node
   linkType: hard
 
-"@graasp/translations@npm:1.37":
-  version: 1.37.0
-  resolution: "@graasp/translations@npm:1.37.0"
+"@graasp/translations@npm:1.39.0":
+  version: 1.39.0
+  resolution: "@graasp/translations@npm:1.39.0"
   peerDependencies:
     i18next: ^23.8.1
-  checksum: 10/a1026d4098cc1a84ced835352fd0672a305cdebe69562d2b885d5ac9bee0cbcfe2894b943855e65b74d464d031e72feaab5296d604e182abe1adf1edc731f791
+  checksum: 10/9aaa8bc1b0510668bf5cd167b68e0fd5bcd3a4ae0409161c44ff7da180010d2876dbf66275c344cc89bbfd983009aeaf1d90b39877b828b5443b9040892c2396
   languageName: node
   linkType: hard
 
@@ -7245,8 +7245,8 @@ __metadata:
     "@fastify/type-provider-typebox": "npm:4.1.0"
     "@fastify/websocket": "npm:7.2.0"
     "@graasp/etherpad-api": "npm:2.1.1"
-    "@graasp/sdk": "npm:4.28.0"
-    "@graasp/translations": "npm:1.37"
+    "@graasp/sdk": "npm:4.31.0"
+    "@graasp/translations": "npm:1.39.0"
     "@jest/globals": "npm:29.7.0"
     "@rapideditor/country-coder": "npm:5.2.2"
     "@sentry/node": "npm:7.118.0"

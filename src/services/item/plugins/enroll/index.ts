@@ -1,14 +1,17 @@
 import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
-import { PermissionLevel } from '@graasp/sdk';
+import { ItemLoginSchemaStatus, PermissionLevel } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
 import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import { hasPermission, matchOne } from '../../../authorization';
-import { CannotEnrollItemWithoutItemLoginSchema } from '../../../itemLogin/errors';
+import {
+  CannotEnrollFrozenItemLoginSchema,
+  CannotEnrollItemWithoutItemLoginSchema,
+} from '../../../itemLogin/errors';
 import { ItemLoginService } from '../../../itemLogin/service';
 import { ItemMembershipAlreadyExists } from '../../../itemMembership/plugins/MembershipRequest/error';
 import { ItemMembershipService } from '../../../itemMembership/service';
@@ -46,8 +49,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         );
 
         const itemLoginSchema = await itemLoginService.getByItemPath(repositories, item.path);
-        if (!itemLoginSchema) {
+        if (!itemLoginSchema || itemLoginSchema.status === ItemLoginSchemaStatus.Disabled) {
           throw new CannotEnrollItemWithoutItemLoginSchema();
+        } else if (itemLoginSchema.status === ItemLoginSchemaStatus.Freeze) {
+          throw new CannotEnrollFrozenItemLoginSchema();
         }
 
         // Check if the member already has an access to the item (from membership or item visibility), if so, throw an error

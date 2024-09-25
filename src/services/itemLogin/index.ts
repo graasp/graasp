@@ -1,9 +1,8 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { ItemLoginSchemaType, PermissionLevel } from '@graasp/sdk';
+import { ItemLoginSchemaStatus, ItemLoginSchemaType, PermissionLevel } from '@graasp/sdk';
 
 import { resolveDependency } from '../../di/utils';
-import { EntryNotFoundBeforeDeleteException } from '../../repositories/errors';
 import { asDefined } from '../../utils/assertions';
 import { ItemNotFound } from '../../utils/errors';
 import { buildRepositories } from '../../utils/repositories';
@@ -16,13 +15,7 @@ import { assertIsMember } from '../member/entities/member';
 import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
 import { ItemLoginSchemaNotFound, ValidMemberSession } from './errors';
 import { ItemLoginMemberCredentials } from './interfaces/item-login';
-import {
-  deleteLoginSchema,
-  getLoginSchema,
-  getLoginSchemaType,
-  login,
-  updateLoginSchema,
-} from './schemas';
+import { getLoginSchema, getLoginSchemaType, login, updateLoginSchema } from './schemas';
 import { ItemLoginService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
@@ -62,8 +55,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         if (!isVisible) {
           throw new ItemNotFound(itemId);
         }
-
-        return (await itemLoginService.getByItemPath(repositories, item.path))?.type ?? null;
+        const itemLoginSchema = await itemLoginService.getByItemPath(repositories, item.path);
+        if (itemLoginSchema && itemLoginSchema.status !== ItemLoginSchemaStatus.Disabled) {
+          return itemLoginSchema.type;
+        }
+        return null;
       });
     },
   );
@@ -112,7 +108,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         throw new ValidMemberSession(user?.account);
       }
       return db.transaction(async (manager) => {
-        const bondMember = await itemLoginService.login(
+        const bondMember = await itemLoginService.logInOrRegister(
           buildRepositories(manager),
           params.id,
           body,
@@ -124,7 +120,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  fastify.put<{ Params: { id: string }; Body: { type: ItemLoginSchemaType } }>(
+  fastify.put<{
+    Params: { id: string };
+    Body: { type: ItemLoginSchemaType; status: ItemLoginSchemaStatus };
+  }>(
     '/:id/login-schema',
     {
       schema: updateLoginSchema,
@@ -132,7 +131,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       // set member in request - throws if does not exist
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
-    async ({ user, params: { id: itemId }, body: { type } }) => {
+    async ({ user, params: { id: itemId }, body: { type, status } }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
       return await db.transaction(async (manager) => {
@@ -142,37 +141,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         const schema = await itemLoginService.getOneByItem(repositories, item.id);
         if (schema) {
           // If exists, then update the existing one
-          return await itemLoginService.update(
-            repositories,
-            schema.id,
-            type ?? ItemLoginSchemaType.Username,
-          );
+          return await itemLoginService.update(repositories, schema.id, type, status);
         } else {
           // If not exists, then create a new one
           return await itemLoginService.create(repositories, item.path, type);
-        }
-      });
-    },
-  );
-
-  fastify.delete<{ Params: { id: string } }>(
-    '/:id/login-schema',
-    {
-      schema: deleteLoginSchema,
-
-      // set member in request - throws if does not exist
-      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
-    },
-    async ({ user, params: { id: itemId } }) => {
-      return db.transaction(async (manager) => {
-        const member = asDefined(user?.account);
-        assertIsMember(member);
-        try {
-          return (await itemLoginService.delete(member, buildRepositories(manager), itemId)).id;
-        } catch (e: unknown) {
-          if (e instanceof EntryNotFoundBeforeDeleteException) {
-            throw new ItemLoginSchemaNotFound({ itemId });
-          }
         }
       });
     },

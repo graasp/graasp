@@ -176,3 +176,29 @@ export class CannotEnrollItemWithoutItemLoginSchema extends GraaspItemLoginError
     );
   }
 }
+
+export class CannotRegisterOnFrozenItemLoginSchema extends GraaspItemLoginError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GILERR014',
+        statusCode: StatusCodes.FORBIDDEN,
+        message: FAILURE_MESSAGES.CANNOT_REGISTER_ON_FROZEN_ITEM_LOGIN_SCHEMA,
+      },
+      data,
+    );
+  }
+}
+
+export class CannotEnrollFrozenItemLoginSchema extends GraaspItemLoginError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GILERR015',
+        statusCode: StatusCodes.FORBIDDEN,
+        message: FAILURE_MESSAGES.CANNOT_ENROLL_FROZEN_ITEM_LOGIN_SCHEMA,
+      },
+      data,
+    );
+  }
+}

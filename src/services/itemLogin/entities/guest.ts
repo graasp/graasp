@@ -19,7 +19,7 @@ export class Guest extends Account {
   })
   itemLoginSchema: ItemLoginSchema;
 
-  @Column('simple-json', { nullable: false, default: '{"lang":"de"}' })
+  @Column('simple-json', { nullable: false, default: '{}' })
   extra: CompleteMember['extra'];
 }
 

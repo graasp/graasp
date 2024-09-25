@@ -3,7 +3,7 @@ import { v4 as uuid } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
-import { DiscriminatedItem, HttpMethod, PermissionLevel } from '@graasp/sdk';
+import { DiscriminatedItem, HttpMethod, ItemLoginSchemaStatus, PermissionLevel } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -13,6 +13,10 @@ import build, {
 import { buildRepositories } from '../../../../utils/repositories';
 import { Item } from '../../../item/entities/Item';
 import { ItemTestUtils } from '../../../item/test/fixtures/items';
+import {
+  CannotEnrollFrozenItemLoginSchema,
+  CannotEnrollItemWithoutItemLoginSchema,
+} from '../../../itemLogin/errors';
 import { saveItemLoginSchema } from '../../../itemLogin/test/index.test';
 import { expectMembership } from '../../../itemMembership/test/fixtures/memberships';
 import { Member } from '../../../member/entities/member';
@@ -65,6 +69,45 @@ describe('Enroll', () => {
         account: member,
       });
     });
+
+    it('rejects when item login schema is frozen', async () => {
+      const { item: anotherItem } = await testUtils.saveItemAndMembership({ member: creator });
+      // We're forced to cast to the DiscriminatedItem type because of the ItemLoginSchemaFactory from Graasp SDK
+      await saveItemLoginSchema({
+        item: anotherItem as unknown as DiscriminatedItem,
+        status: ItemLoginSchemaStatus.Freeze,
+      });
+
+      mockAuthenticate(member);
+
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: `/items/${anotherItem.id}/enroll`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
+      expect(response.json()).toEqual(new CannotEnrollFrozenItemLoginSchema());
+    });
+
+    it('rejects when item login schema is disabled, should not leak that there was an item login schema before.', async () => {
+      const { item: anotherItem } = await testUtils.saveItemAndMembership({ member: creator });
+      // We're forced to cast to the DiscriminatedItem type because of the ItemLoginSchemaFactory from Graasp SDK
+      await saveItemLoginSchema({
+        item: anotherItem as unknown as DiscriminatedItem,
+        status: ItemLoginSchemaStatus.Disabled,
+      });
+
+      mockAuthenticate(member);
+
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: `/items/${anotherItem.id}/enroll`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
+      expect(response.json()).toEqual(new CannotEnrollItemWithoutItemLoginSchema());
+    });
+
     it('rejects when unauthenticated', async () => {
       unmockAuthenticate();
       const response = await app.inject({
