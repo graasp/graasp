@@ -1,8 +1,10 @@
+import { customType } from '../../../../plugins/typebox';
+
 export const zipImport = {
   querystring: {
     type: 'object',
     properties: {
-      parentId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      parentId: customType.UUID(),
     },
     additionalProperties: false,
   },

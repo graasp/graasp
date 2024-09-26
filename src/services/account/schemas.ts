@@ -2,13 +2,13 @@ import { Type } from '@fastify/type-provider-typebox';
 
 import { AccountType } from '@graasp/sdk';
 
-import { registerSchemaAsRef } from '../../plugins/typebox';
+import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 
 export const accountSchemaRef = registerSchemaAsRef(
   Type.Object(
     {
       // Object Definition
-      id: Type.String({ format: 'uuid' }),
+      id: customType.UUID(),
       name: Type.String(),
     },
     {

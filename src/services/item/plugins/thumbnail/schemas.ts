@@ -1,10 +1,13 @@
 import { ThumbnailSize } from '@graasp/sdk';
 
+import { customType } from '../../../../plugins/typebox';
+import { entityIdSchemaRef } from '../../../../schemas/global';
+
 const upload = {
   params: {
     type: 'object',
     properties: {
-      id: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      id: customType.UUID(),
     },
     additionalProperties: false,
   },
@@ -13,7 +16,7 @@ const upload = {
 const download = {
   params: {
     allOf: [
-      { $ref: 'https://graasp.org/#/definitions/idParam' },
+      entityIdSchemaRef,
       {
         type: 'object',
         properties: {
@@ -42,7 +45,7 @@ const deleteSchema = {
   params: {
     type: 'object',
     properties: {
-      id: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      id: customType.UUID(),
     },
     additionalProperties: false,
   },

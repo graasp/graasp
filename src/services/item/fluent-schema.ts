@@ -15,6 +15,7 @@ import {
   PermissionLevel,
 } from '@graasp/sdk';
 
+import { customType } from '../../plugins/typebox';
 import { error, idParam, idsQuery, uuid } from '../../schemas/fluent-schema';
 import { EMPTY_OR_SPACED_WORDS_REGEX, NAME_REGEX } from '../../schemas/global';
 import { ITEMS_PAGE_SIZE } from './constants';
@@ -354,7 +355,7 @@ export const itemTagType = {
 export const itemTag = {
   type: 'object',
   properties: {
-    id: { $ref: 'https://graasp.org/#/definitions/uuid' },
+    id: customType.UUID(),
     type: itemTagType,
     item: {
       $ref: 'https://graasp.org/items/#/definitions/item',
@@ -373,7 +374,7 @@ export default {
       type: 'object',
       additionalProperties: false,
       properties: {
-        id: { $ref: 'https://graasp.org/#/definitions/uuid' },
+        id: customType.UUID(),
         name: { type: 'string' },
         displayName: { type: 'string' },
         description: { type: ['string', 'null'] },
@@ -397,7 +398,7 @@ export default {
       type: 'object',
       additionalProperties: false,
       properties: {
-        id: { $ref: 'https://graasp.org/#/definitions/uuid' },
+        id: customType.UUID(),
         name: { type: 'string' },
         displayName: { type: 'string' },
         description: { type: ['string', 'null'] },

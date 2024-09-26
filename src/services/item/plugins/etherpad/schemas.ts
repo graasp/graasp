@@ -1,8 +1,10 @@
+import { customType } from '../../../../plugins/typebox';
+
 export const createEtherpad = {
   querystring: {
     type: 'object',
     properties: {
-      parentId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      parentId: customType.UUID(),
     },
     additionalProperties: false,
   },
@@ -27,7 +29,7 @@ export const getEtherpadFromItem = {
   params: {
     type: 'object',
     properties: {
-      itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      itemId: customType.UUID(),
     },
     required: ['itemId'],
     additionalProperties: false,

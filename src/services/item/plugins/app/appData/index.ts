@@ -1,6 +1,7 @@
-import { FastifyPluginAsync } from 'fastify';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../../di/utils';
+import { FastifyInstanceTypebox } from '../../../../../plugins/typebox';
 import { IdParam } from '../../../../../types';
 import { asDefined } from '../../../../../utils/assertions';
 import { buildRepositories } from '../../../../../utils/repositories';
@@ -13,7 +14,7 @@ import appDataFilePlugin from './plugins/file';
 import common, { create, deleteOne, getForOne, updateOne } from './schemas';
 import { AppDataService } from './service';
 
-const appDataPlugin: FastifyPluginAsync = async (fastify) => {
+const appDataPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db } = fastify;
 
   // register app data schema
@@ -22,7 +23,7 @@ const appDataPlugin: FastifyPluginAsync = async (fastify) => {
   const appDataService = resolveDependency(AppDataService);
 
   // endpoints accessible to third parties with Bearer token
-  fastify.register(async function (fastify) {
+  fastify.register(async function (fastify: FastifyInstanceTypebox) {
     // TODO: allow CORS but only the origins in the table from approved publishers - get all
     // origins from the publishers table an build a rule with that.
 
@@ -61,7 +62,7 @@ const appDataPlugin: FastifyPluginAsync = async (fastify) => {
     );
 
     // delete app data
-    fastify.delete<{ Params: { itemId: string } & IdParam }>(
+    fastify.delete(
       '/:itemId/app-data/:id',
       { schema: deleteOne, preHandler: authenticateAppsJWT },
       async ({ user, params: { itemId, id: appDataId } }) => {

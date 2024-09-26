@@ -1,3 +1,5 @@
+import { customType } from '../../../../plugins/typebox';
+
 export default {
   $id: 'https://graasp.org/favorite/',
   definitions: {
@@ -34,7 +36,7 @@ export const getFavorite = {
   querystring: {
     type: 'object',
     properties: {
-      memberId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      memberId: customType.UUID(),
     },
     additionalProperties: false,
   },
@@ -50,7 +52,7 @@ export const getFavorite = {
 
 export const create = {
   params: {
-    itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+    itemId: customType.UUID(),
   },
   response: {
     200: {
@@ -61,9 +63,9 @@ export const create = {
 
 export const deleteOne = {
   params: {
-    itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+    itemId: customType.UUID(),
   },
   response: {
-    200: { $ref: 'https://graasp.org/#/definitions/uuid' },
+    200: customType.UUID(),
   },
 };

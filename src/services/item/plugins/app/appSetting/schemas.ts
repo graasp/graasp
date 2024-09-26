@@ -1,3 +1,7 @@
+import { Type } from '@sinclair/typebox';
+
+import { customType } from '../../../../../plugins/typebox';
+
 export default {
   $id: 'https://graasp.org/apps/app-settings/',
   definitions: {
@@ -19,7 +23,9 @@ export default {
 };
 
 const create = {
-  params: { $ref: 'https://graasp.org/apps/#/definitions/itemIdParam' },
+  params: Type.Object({
+    itemId: customType.UUID(),
+  }),
   body: {
     type: 'object',
     required: ['data', 'name'],
@@ -34,12 +40,10 @@ const create = {
 };
 
 const updateOne = {
-  params: {
-    allOf: [
-      { $ref: 'https://graasp.org/apps/#/definitions/itemIdParam' },
-      { $ref: 'https://graasp.org/#/definitions/idParam' },
-    ],
-  },
+  params: Type.Object({
+    itemId: customType.UUID(),
+    id: customType.UUID(),
+  }),
   body: {
     type: 'object',
     required: ['data'],
@@ -53,19 +57,19 @@ const updateOne = {
 };
 
 const deleteOne = {
-  params: {
-    allOf: [
-      { $ref: 'https://graasp.org/apps/#/definitions/itemIdParam' },
-      { $ref: 'https://graasp.org/#/definitions/idParam' },
-    ],
-  },
+  params: Type.Object({
+    itemId: customType.UUID(),
+    id: customType.UUID(),
+  }),
   response: {
     200: { $ref: 'https://graasp.org/apps/app-settings/#/definitions/appSetting' },
   },
 };
 
 const getForOne = {
-  params: { $ref: 'https://graasp.org/apps/#/definitions/itemIdParam' },
+  params: Type.Object({
+    itemId: customType.UUID(),
+  }),
   querystring: {
     type: 'object',
     properties: {
