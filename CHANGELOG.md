@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.52.0](https://github.com/graasp/graasp/compare/v1.51.0...v1.52.0) (2024-09-27)
+
+
+### Features
+
+* add thumbnails urls in PackedItem ([#1398](https://github.com/graasp/graasp/issues/1398)) ([ed473b0](https://github.com/graasp/graasp/commit/ed473b0a813dbbf903060c89832802697f56f140))
+
 ## [1.51.0](https://github.com/graasp/graasp/compare/v1.50.2...v1.51.0) (2024-09-27)
 
 
