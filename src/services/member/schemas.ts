@@ -11,7 +11,7 @@ import {
 
 import { customType } from '../../plugins/typebox';
 import { error } from '../../schemas/fluent-schema';
-import { NAME_REGEX, UUID_REGEX, entityIdSchemaRef, errorSchemaRef } from '../../schemas/global';
+import { UUID_REGEX, entityIdSchemaRef, errorSchemaRef } from '../../schemas/global';
 import { FILE_METADATA_DEFAULT_PAGE_SIZE, FILE_METADATA_MIN_PAGE } from './constants';
 
 /**
@@ -74,7 +74,7 @@ export default {
           type: 'string',
           minLength: MIN_USERNAME_LENGTH,
           maxLength: MAX_USERNAME_LENGTH,
-          pattern: NAME_REGEX,
+          format: 'username',
         },
         extra: { type: 'object', additionalProperties: true },
         enableSaveActions: { type: 'boolean' },

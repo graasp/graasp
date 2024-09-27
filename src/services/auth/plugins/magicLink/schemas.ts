@@ -1,6 +1,5 @@
 import { MAX_USERNAME_LENGTH, MIN_USERNAME_LENGTH } from '@graasp/sdk';
 
-import { NAME_REGEX } from '../../../../schemas/global';
 import { SHORT_TOKEN_PARAM } from '../passport';
 
 export const register = {
@@ -12,7 +11,7 @@ export const register = {
         type: 'string',
         minLength: MIN_USERNAME_LENGTH,
         maxLength: MAX_USERNAME_LENGTH,
-        pattern: NAME_REGEX,
+        format: 'username',
       },
       email: { type: 'string', format: 'email' },
       captcha: { type: 'string' },
