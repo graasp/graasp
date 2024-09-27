@@ -2,6 +2,8 @@ import { FastifySchema } from 'fastify';
 
 import { MembershipRequestStatus } from '@graasp/sdk';
 
+import { customType } from '../../../../plugins/typebox';
+
 export const completeMembershipRequest = {
   $id: 'completeMembershipRequest',
   type: 'object',
@@ -30,7 +32,7 @@ export const getAllByItem: FastifySchema = {
   params: {
     type: 'object',
     properties: {
-      itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      itemId: customType.UUID(),
     },
     required: ['itemId'],
   },
@@ -52,7 +54,7 @@ export const createOne: FastifySchema = {
   params: {
     type: 'object',
     properties: {
-      itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      itemId: customType.UUID(),
     },
     required: ['itemId'],
   },
@@ -69,7 +71,7 @@ export const getOwn: FastifySchema = {
   params: {
     type: 'object',
     properties: {
-      itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      itemId: customType.UUID(),
     },
     required: ['itemId'],
   },
@@ -90,8 +92,8 @@ export const deleteOne: FastifySchema = {
   params: {
     type: 'object',
     properties: {
-      itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
-      memberId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      itemId: customType.UUID(),
+      memberId: customType.UUID(),
     },
     required: ['itemId', 'memberId'],
   },

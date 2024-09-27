@@ -1,15 +1,10 @@
 import { FlagType } from '@graasp/sdk';
 
+import { itemIdSchemaRef } from '../itemLike/schemas';
+
 export default {
   $id: 'https://graasp.org/item-flags/',
   definitions: {
-    itemIdParam: {
-      type: 'object',
-      required: ['itemId'],
-      properties: {
-        itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
-      },
-    },
     // flag
     flag: { type: 'string', enum: Object.values(FlagType) },
 
@@ -42,7 +37,7 @@ export default {
 
 // schema for creating an item flag
 const create = {
-  params: { $ref: 'https://graasp.org/item-flags/#/definitions/itemIdParam' },
+  params: itemIdSchemaRef,
   body: { $ref: 'https://graasp.org/item-flags/#/definitions/createPartialItemFlag' },
   response: {
     201: { $ref: 'https://graasp.org/item-flags/#/definitions/itemFlag' },

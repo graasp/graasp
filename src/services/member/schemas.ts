@@ -1,3 +1,4 @@
+import { Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
 import { FastifySchema } from 'fastify';
@@ -8,8 +9,9 @@ import {
   MIN_USERNAME_LENGTH,
 } from '@graasp/sdk';
 
+import { customType } from '../../plugins/typebox';
 import { error } from '../../schemas/fluent-schema';
-import { NAME_REGEX, UUID_REGEX } from '../../schemas/global';
+import { NAME_REGEX, UUID_REGEX, entityIdSchemaRef, errorSchemaRef } from '../../schemas/global';
 import { FILE_METADATA_DEFAULT_PAGE_SIZE, FILE_METADATA_MIN_PAGE } from './constants';
 
 /**
@@ -172,7 +174,7 @@ export const getStorageFiles: FastifySchema = {
 
 // schema for getting a member
 export const getOne: FastifySchema = {
-  params: { $ref: 'https://graasp.org/#/definitions/idParam' },
+  params: entityIdSchemaRef,
   response: {
     200: { $ref: 'https://graasp.org/members/#/definitions/member' },
   },
@@ -180,15 +182,14 @@ export const getOne: FastifySchema = {
 
 // schema for getting >1 members
 export const getMany: FastifySchema = {
-  querystring: {
-    allOf: [
-      { $ref: 'https://graasp.org/#/definitions/idsQuery' },
-      {
-        type: 'object',
-        properties: { id: { type: 'array', maxItems: MAX_TARGETS_FOR_READ_REQUEST } },
-      },
-    ],
-  },
+  querystring: Type.Object({
+    id: Type.Array(customType.UUID(), {
+      uniqueItems: true,
+      minItems: 1,
+      maxItems: MAX_TARGETS_FOR_READ_REQUEST,
+    }),
+  }),
+
   response: {
     200: {
       type: 'object',
@@ -206,12 +207,7 @@ export const getMany: FastifySchema = {
             },
           },
         },
-        errors: {
-          type: 'array',
-          items: {
-            $ref: 'https://graasp.org/#/definitions/error',
-          },
-        },
+        errors: Type.Array(errorSchemaRef),
       },
     },
   },
@@ -247,12 +243,7 @@ export const getManyBy: FastifySchema = {
             },
           },
         },
-        errors: {
-          type: 'array',
-          items: {
-            $ref: 'https://graasp.org/#/definitions/error',
-          },
-        },
+        errors: Type.Array(errorSchemaRef),
       },
     },
   },
@@ -261,7 +252,7 @@ export const getManyBy: FastifySchema = {
 // schema for updating a member
 export const updateOne: FastifySchema = {
   deprecated: true,
-  params: { $ref: 'https://graasp.org/#/definitions/idParam' },
+  params: entityIdSchemaRef,
   body: { $ref: 'https://graasp.org/members/#/definitions/partialMemberRequireOne' },
   response: {
     [StatusCodes.OK]: { $ref: 'https://graasp.org/members/#/definitions/currentMember' },
@@ -280,7 +271,7 @@ export const updateCurrent: FastifySchema = {
 
 // schema for deleting a member
 export const deleteOne: FastifySchema = {
-  params: { $ref: 'https://graasp.org/#/definitions/idParam' },
+  params: entityIdSchemaRef,
   response: {
     [StatusCodes.NO_CONTENT]: {},
   },

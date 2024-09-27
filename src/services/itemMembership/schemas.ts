@@ -1,8 +1,10 @@
+import { Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
 import { PermissionLevel } from '@graasp/sdk';
 
-import { UUID_REGEX } from '../../schemas/global';
+import { customType } from '../../plugins/typebox';
+import { UUID_REGEX, entityIdSchemaRef, errorSchemaRef } from '../../schemas/global';
 import { augmentedAccountSchemaRef } from '../account/schemas';
 
 export default {
@@ -18,7 +20,7 @@ export default {
     itemMembership: {
       type: 'object',
       properties: {
-        id: { $ref: 'https://graasp.org/#/definitions/uuid' },
+        id: customType.UUID(),
         account: augmentedAccountSchemaRef,
         /**
          * itemPath's 'pattern' not supported in serialization.
@@ -43,7 +45,7 @@ export default {
       type: 'object',
       required: ['accountId', 'permission'],
       properties: {
-        accountId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+        accountId: customType.UUID(),
         permission: { $ref: '#/definitions/permission' },
       },
       additionalProperties: false,
@@ -67,7 +69,7 @@ const create = {
     type: 'object',
     required: ['itemId'],
     properties: {
-      itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      itemId: customType.UUID(),
     },
     additionalProperties: false,
   },
@@ -83,7 +85,7 @@ const createMany = {
     type: 'object',
     required: ['itemId'],
     properties: {
-      itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      itemId: customType.UUID(),
     },
     additionalProperties: false,
   },
@@ -111,7 +113,7 @@ const getItems = {
     properties: {
       itemId: {
         type: 'array',
-        items: { $ref: 'https://graasp.org/#/definitions/uuid' },
+        items: customType.UUID(),
       },
     },
 
@@ -133,12 +135,7 @@ const getItems = {
             },
           },
         },
-        errors: {
-          type: 'array',
-          items: {
-            $ref: 'https://graasp.org/#/definitions/error',
-          },
-        },
+        errors: Type.Array(errorSchemaRef),
       },
     },
   },
@@ -146,7 +143,7 @@ const getItems = {
 
 // schema for updating an item membership
 const updateOne = {
-  params: { $ref: 'https://graasp.org/#/definitions/idParam' },
+  params: entityIdSchemaRef,
   body: { $ref: 'https://graasp.org/item-memberships/#/definitions/updatePartialItemMembership' },
   response: {
     200: { $ref: 'https://graasp.org/item-memberships/#/definitions/itemMembership' },
@@ -155,7 +152,7 @@ const updateOne = {
 
 // schema for deleting an item membership
 const deleteOne = {
-  params: { $ref: 'https://graasp.org/#/definitions/idParam' },
+  params: entityIdSchemaRef,
   querystring: {
     type: 'object',
     properties: {
@@ -174,7 +171,7 @@ const deleteAll = {
     type: 'object',
     required: ['itemId'],
     properties: {
-      itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      itemId: customType.UUID(),
     },
     additionalProperties: false,
   },

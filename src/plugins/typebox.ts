@@ -1,6 +1,14 @@
-import { TRef, TSchema, Type } from '@sinclair/typebox';
+import { StringOptions, TRef, TSchema, Type, UnsafeOptions } from '@sinclair/typebox';
 
-import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
+import { FastifyPluginAsyncTypebox, TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
+import {
+  FastifyBaseLogger,
+  FastifyInstance,
+  RawReplyDefaultExpression,
+  RawRequestDefaultExpression,
+  RawServerBase,
+  RawServerDefault,
+} from 'fastify';
 
 /**
  * List of schemas to be registered in the Fastify instance.
@@ -28,3 +36,24 @@ export const schemaRegisterPlugin: FastifyPluginAsyncTypebox = async (fastify) =
     fastify.addSchema(schema);
   }
 };
+
+/**
+ * Custom types to be used in schemas.
+ */
+export const customType = {
+  Date: (options?: UnsafeOptions) =>
+    Type.Unsafe<Date>({ ...options, type: 'string', format: 'date-time' }),
+  UUID: (options?: StringOptions) => Type.String({ ...options, format: 'uuid' }),
+} as const;
+
+/**
+ * Type definition for plugin options. This type is useful to be able to infer type in route handlers
+ */
+export type FastifyInstanceTypebox<
+  RawServer extends RawServerBase = RawServerDefault,
+  RawRequest extends
+    RawRequestDefaultExpression<RawServer> = RawRequestDefaultExpression<RawServer>,
+  RawReply extends RawReplyDefaultExpression<RawServer> = RawReplyDefaultExpression<RawServer>,
+  Logger extends FastifyBaseLogger = FastifyBaseLogger,
+  TypeProvider extends TypeBoxTypeProvider = TypeBoxTypeProvider,
+> = FastifyInstance<RawServer, RawRequest, RawReply, Logger, TypeProvider>;

@@ -1,12 +1,13 @@
 import { Type } from '@sinclair/typebox';
+import { StatusCodes } from 'http-status-codes';
 
-import { registerSchemaAsRef } from '../../../../plugins/typebox';
+import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 
 export const itemLikeSchemaRef = registerSchemaAsRef(
   Type.Object(
     {
       // Object Definition
-      id: Type.String({ format: 'uuid' }),
+      id: customType.UUID(),
       item: Type.Ref('https://graasp.org/items/#/definitions/item'),
     },
     {
@@ -22,7 +23,7 @@ export const packedItemLikeSchemaRef = registerSchemaAsRef(
   Type.Object(
     {
       // Object Definition
-      id: Type.Optional(Type.String({ format: 'uuid' })),
+      id: Type.Optional(customType.UUID()),
       item: Type.Ref('https://graasp.org/items/#/definitions/packedItem'),
     },
     {
@@ -38,7 +39,7 @@ export const itemIdSchemaRef = registerSchemaAsRef(
   Type.Object(
     {
       // Object Definition
-      itemId: Type.String({ format: 'uuid' }),
+      itemId: customType.UUID(),
     },
     {
       // Schema Options
@@ -51,27 +52,27 @@ export const itemIdSchemaRef = registerSchemaAsRef(
 
 export const getLikesForMember = {
   response: {
-    200: Type.Array(packedItemLikeSchemaRef),
+    [StatusCodes.OK]: Type.Array(packedItemLikeSchemaRef),
   },
 };
 
 export const getLikesForItem = {
   params: itemIdSchemaRef,
   response: {
-    200: Type.Array(itemLikeSchemaRef),
+    [StatusCodes.OK]: Type.Array(itemLikeSchemaRef),
   },
 };
 
 export const create = {
   params: itemIdSchemaRef,
   response: {
-    200: itemLikeSchemaRef,
+    [StatusCodes.OK]: itemLikeSchemaRef,
   },
 };
 
 export const deleteOne = {
   params: itemIdSchemaRef,
   response: {
-    200: Type.String({ format: 'uuid' }),
+    [StatusCodes.OK]: customType.UUID(),
   },
 };

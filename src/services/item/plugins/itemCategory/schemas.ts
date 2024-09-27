@@ -1,3 +1,6 @@
+import { customType } from '../../../../plugins/typebox';
+import { itemIdSchemaRef } from '../itemLike/schemas';
+
 export default {
   $id: 'https://graasp.org/categories/',
   definitions: {
@@ -33,14 +36,6 @@ export default {
       },
       additionalProperties: false,
     },
-    itemIdParam: {
-      type: 'object',
-      required: ['itemId'],
-      properties: {
-        itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
-      },
-      additionalProperties: false,
-    },
     concatenatedIds: {
       type: 'string',
       pattern:
@@ -51,7 +46,7 @@ export default {
 };
 
 export const getItemCategories = {
-  params: { $ref: 'https://graasp.org/categories/#/definitions/itemIdParam' },
+  params: itemIdSchemaRef,
   response: {
     200: {
       type: 'array',
@@ -68,7 +63,7 @@ export const getCategories = {
     properties: {
       typeId: {
         type: 'array',
-        items: { $ref: 'https://graasp.org/#/definitions/uuid' },
+        items: customType.UUID(),
       },
     },
     additionalProperties: false,
@@ -85,7 +80,7 @@ export const getCategory = {
   params: {
     type: 'object',
     properties: {
-      categoryId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      categoryId: customType.UUID(),
     },
     additionalProperties: false,
   },
@@ -106,11 +101,11 @@ export const getCategoryTypes = {
 };
 
 export const create = {
-  params: { $ref: 'https://graasp.org/categories/#/definitions/itemIdParam' },
+  params: itemIdSchemaRef,
   body: {
     type: 'object',
     properties: {
-      categoryId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      categoryId: customType.UUID(),
     },
   },
   response: {
@@ -147,13 +142,13 @@ export const deleteOne = {
     type: 'object',
     required: ['itemId', 'itemCategoryId'],
     properties: {
-      itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
-      itemCategoryId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      itemId: customType.UUID(),
+      itemCategoryId: customType.UUID(),
     },
     additionalProperties: false,
   },
   response: {
-    200: { $ref: 'https://graasp.org/#/definitions/uuid' },
+    200: customType.UUID(),
   },
 };
 
@@ -163,7 +158,7 @@ export const createCategory = {
     required: ['name', 'type'],
     properties: {
       name: { type: 'string' },
-      type: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      type: customType.UUID(),
     },
   },
   response: {
@@ -176,7 +171,7 @@ export const deleteById = {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      id: customType.UUID(),
     },
     additionalProperties: false,
   },
