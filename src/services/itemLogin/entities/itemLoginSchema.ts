@@ -10,7 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { ItemLoginSchemaType } from '@graasp/sdk';
+import { ItemLoginSchemaStatus, ItemLoginSchemaType } from '@graasp/sdk';
 
 import { Item } from '../../item/entities/Item';
 
@@ -34,6 +34,14 @@ export class ItemLoginSchema extends BaseEntity {
     length: 100,
   })
   type: `${ItemLoginSchemaType}` | ItemLoginSchemaType;
+
+  @Column({
+    enum: Object.values(ItemLoginSchemaStatus),
+    default: ItemLoginSchemaStatus.Active,
+    nullable: false,
+    length: 100,
+  })
+  status: `${ItemLoginSchemaStatus}` | ItemLoginSchemaStatus;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

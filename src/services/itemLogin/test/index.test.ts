@@ -9,6 +9,7 @@ import {
   HttpMethod,
   ItemLoginSchema,
   ItemLoginSchemaFactory,
+  ItemLoginSchemaStatus,
   ItemLoginSchemaType,
   ItemTagType,
   PermissionLevel,
@@ -41,17 +42,20 @@ const rawItemTagRepository = AppDataSource.getRepository(ItemTag);
 export async function saveItemLoginSchema({
   item,
   type = ItemLoginSchemaType.Username,
+  status = ItemLoginSchemaStatus.Active,
   password,
   memberName,
 }: {
   item: DiscriminatedItem;
   type?: ItemLoginSchemaType;
+  status?: ItemLoginSchemaStatus;
   password?: string;
   memberName?: string;
 }) {
   const itemLoginSchema = ItemLoginSchemaFactory({
     item,
     type,
+    status,
   });
   const rawItemLoginSchema = await rawItemLoginSchemaRepository.save(itemLoginSchema);
   let guest: Guest | undefined;
@@ -74,14 +78,14 @@ const expectItemLogin = (member, m) => {
 describe('Item Login Tests', () => {
   let app: FastifyInstance;
   let actor: Member | undefined | null;
-  let item: Item | null;
+  let anotherItem: Item | null;
   let member: Member | null;
 
   afterEach(async () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
     actor = null;
-    item = null;
+    anotherItem = null;
     member = null;
     app.close();
   });
@@ -90,32 +94,54 @@ describe('Item Login Tests', () => {
     it('Get item login if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember();
-      ({ item } = await testUtils.saveItemAndMembership({ member }));
+      ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member }));
       const { itemLoginSchema } = await saveItemLoginSchema({
-        item: item as unknown as DiscriminatedItem,
+        item: anotherItem as unknown as DiscriminatedItem,
       });
 
       const res = await app.inject({
         method: HttpMethod.Get,
-        url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema-type`,
+        url: `${ITEMS_ROUTE_PREFIX}/${anotherItem.id}/login-schema-type`,
       });
 
       expect(res.statusCode).toBe(StatusCodes.OK);
       expect(res.body).toEqual(itemLoginSchema.type);
     });
 
-    it('Get item login if item is hidden', async () => {
+    it('Cannot get item login type if disabled', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember();
-      ({ item } = await testUtils.saveItemAndMembership({ member }));
-      await rawItemTagRepository.save({ item, creator: member, type: ItemTagType.Hidden });
+      ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member }));
       await saveItemLoginSchema({
-        item: item as unknown as DiscriminatedItem,
+        item: anotherItem as unknown as DiscriminatedItem,
+        status: ItemLoginSchemaStatus.Disabled,
       });
 
       const res = await app.inject({
         method: HttpMethod.Get,
-        url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema-type`,
+        url: `${ITEMS_ROUTE_PREFIX}/${anotherItem.id}/login-schema-type`,
+      });
+
+      expect(res.statusCode).toBe(StatusCodes.OK);
+      expect(res.body).toBe('null');
+    });
+
+    it('Get item login if item is hidden', async () => {
+      ({ app } = await build({ member: null }));
+      const member = await saveMember();
+      ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member }));
+      await rawItemTagRepository.save({
+        item: anotherItem,
+        creator: member,
+        type: ItemTagType.Hidden,
+      });
+      await saveItemLoginSchema({
+        item: anotherItem as unknown as DiscriminatedItem,
+      });
+
+      const res = await app.inject({
+        method: HttpMethod.Get,
+        url: `${ITEMS_ROUTE_PREFIX}/${anotherItem.id}/login-schema-type`,
       });
 
       expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
@@ -124,19 +150,27 @@ describe('Item Login Tests', () => {
     it('Get item login if item is hidden with read permission', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember();
-      ({ item } = await testUtils.saveItemAndMembership({ member }));
-      await rawItemTagRepository.save({ item, creator: member, type: ItemTagType.Hidden });
+      ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member }));
+      await rawItemTagRepository.save({
+        item: anotherItem,
+        creator: member,
+        type: ItemTagType.Hidden,
+      });
       await saveItemLoginSchema({
-        item: item as unknown as DiscriminatedItem,
+        item: anotherItem as unknown as DiscriminatedItem,
       });
 
       const reader = await saveMember();
-      await testUtils.saveMembership({ item, account: reader, permission: PermissionLevel.Read });
+      await testUtils.saveMembership({
+        item: anotherItem,
+        account: reader,
+        permission: PermissionLevel.Read,
+      });
       mockAuthenticate(reader);
 
       const res = await app.inject({
         method: HttpMethod.Get,
-        url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema-type`,
+        url: `${ITEMS_ROUTE_PREFIX}/${anotherItem.id}/login-schema-type`,
       });
 
       expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
@@ -145,19 +179,27 @@ describe('Item Login Tests', () => {
     it('Get item login if item is hidden with write permission', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember();
-      ({ item } = await testUtils.saveItemAndMembership({ member }));
-      await rawItemTagRepository.save({ item, creator: member, type: ItemTagType.Hidden });
+      ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member }));
+      await rawItemTagRepository.save({
+        item: anotherItem,
+        creator: member,
+        type: ItemTagType.Hidden,
+      });
       await saveItemLoginSchema({
-        item: item as unknown as DiscriminatedItem,
+        item: anotherItem as unknown as DiscriminatedItem,
       });
 
       const writer = await saveMember();
-      await testUtils.saveMembership({ item, account: writer, permission: PermissionLevel.Write });
+      await testUtils.saveMembership({
+        item: anotherItem,
+        account: writer,
+        permission: PermissionLevel.Write,
+      });
       mockAuthenticate(writer);
 
       const res = await app.inject({
         method: HttpMethod.Get,
-        url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema-type`,
+        url: `${ITEMS_ROUTE_PREFIX}/${anotherItem.id}/login-schema-type`,
       });
 
       expect(res.statusCode).toBe(StatusCodes.OK);
@@ -166,11 +208,11 @@ describe('Item Login Tests', () => {
     it('Get item login if signed out for child', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember();
-      ({ item } = await testUtils.saveItemAndMembership({ member }));
+      ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member }));
       const { itemLoginSchema } = await saveItemLoginSchema({
-        item: item as unknown as DiscriminatedItem,
+        item: anotherItem as unknown as DiscriminatedItem,
       });
-      const child = await testUtils.saveItem({ parentItem: item });
+      const child = await testUtils.saveItem({ parentItem: anotherItem });
 
       const res = await app.inject({
         method: HttpMethod.Get,
@@ -186,12 +228,12 @@ describe('Item Login Tests', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember();
-      ({ item } = await testUtils.saveItemAndMembership({ member }));
-      await saveItemLoginSchema({ item: item as unknown as DiscriminatedItem });
+      ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member }));
+      await saveItemLoginSchema({ item: anotherItem as unknown as DiscriminatedItem });
 
       const res = await app.inject({
         method: HttpMethod.Get,
-        url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema`,
+        url: `${ITEMS_ROUTE_PREFIX}/${anotherItem.id}/login-schema`,
       });
 
       expect(res.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -203,33 +245,93 @@ describe('Item Login Tests', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
         const member = await saveMember();
-        ({ item } = await testUtils.saveItemAndMembership({ member }));
+        ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member }));
         ({ itemLoginSchema } = await saveItemLoginSchema({
-          item: item as unknown as DiscriminatedItem,
+          item: anotherItem as unknown as DiscriminatedItem,
         }));
       });
 
       it('Successfully get item login', async () => {
-        assertIsDefined(item);
+        assertIsDefined(anotherItem);
         assertIsDefined(actor);
-        await testUtils.saveMembership({ item, account: actor, permission: PermissionLevel.Admin });
+        await testUtils.saveMembership({
+          item: anotherItem,
+          account: actor,
+          permission: PermissionLevel.Admin,
+        });
         const res = await app.inject({
           method: HttpMethod.Get,
-          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema`,
+          url: `${ITEMS_ROUTE_PREFIX}/${anotherItem.id}/login-schema`,
         });
 
         expect(res.statusCode).toBe(StatusCodes.OK);
         const result = res.json();
         expect(result.id).toEqual(itemLoginSchema.id);
         expect(result.type).toEqual(itemLoginSchema.type);
+        expect(result.status).toEqual(itemLoginSchema.status);
+        expect(result.item.id).toEqual(itemLoginSchema.item.id);
+      });
+
+      it('Successfully get frozen item login', async () => {
+        assertIsDefined(actor);
+        const member = await saveMember();
+        ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member }));
+        ({ itemLoginSchema } = await saveItemLoginSchema({
+          item: anotherItem as unknown as DiscriminatedItem,
+          status: ItemLoginSchemaStatus.Freeze,
+        }));
+        await testUtils.saveMembership({
+          item: anotherItem,
+          account: actor,
+          permission: PermissionLevel.Admin,
+        });
+        const res = await app.inject({
+          method: HttpMethod.Get,
+          url: `${ITEMS_ROUTE_PREFIX}/${anotherItem.id}/login-schema`,
+        });
+
+        expect(res.statusCode).toBe(StatusCodes.OK);
+        const result = res.json();
+        expect(result.id).toEqual(itemLoginSchema.id);
+        expect(result.type).toEqual(itemLoginSchema.type);
+        expect(result.status).toEqual(itemLoginSchema.status);
+        expect(result.item.id).toEqual(itemLoginSchema.item.id);
+      });
+      it('Successfully get disabled item login', async () => {
+        assertIsDefined(actor);
+        const member = await saveMember();
+        ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member }));
+        ({ itemLoginSchema } = await saveItemLoginSchema({
+          item: anotherItem as unknown as DiscriminatedItem,
+          status: ItemLoginSchemaStatus.Disabled,
+        }));
+        await testUtils.saveMembership({
+          item: anotherItem,
+          account: actor,
+          permission: PermissionLevel.Admin,
+        });
+        const res = await app.inject({
+          method: HttpMethod.Get,
+          url: `${ITEMS_ROUTE_PREFIX}/${anotherItem.id}/login-schema`,
+        });
+
+        expect(res.statusCode).toBe(StatusCodes.OK);
+        const result = res.json();
+        expect(result.id).toEqual(itemLoginSchema.id);
+        expect(result.type).toEqual(itemLoginSchema.type);
+        expect(result.status).toEqual(itemLoginSchema.status);
         expect(result.item.id).toEqual(itemLoginSchema.item.id);
       });
 
       it('Successfully get item login defined in parent when calling from child for child ', async () => {
-        assertIsDefined(item);
+        assertIsDefined(anotherItem);
         assertIsDefined(actor);
-        await testUtils.saveMembership({ item, account: actor, permission: PermissionLevel.Admin });
-        const child = await testUtils.saveItem({ parentItem: item, actor });
+        await testUtils.saveMembership({
+          item: anotherItem,
+          account: actor,
+          permission: PermissionLevel.Admin,
+        });
+        const child = await testUtils.saveItem({ parentItem: anotherItem, actor });
         const res = await app.inject({
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${child.id}/login-schema`,
@@ -239,19 +341,24 @@ describe('Item Login Tests', () => {
         const result = res.json();
         expect(result.id).toEqual(itemLoginSchema.id);
         expect(result.type).toEqual(itemLoginSchema.type);
+        expect(result.status).toEqual(itemLoginSchema.status);
         expect(result.item.id).toEqual(itemLoginSchema.item.id);
       });
 
       it('Throws if has Write permission', async () => {
-        assertIsDefined(item);
+        assertIsDefined(anotherItem);
         assertIsDefined(actor);
-        await testUtils.saveMembership({ item, account: actor, permission: PermissionLevel.Write });
+        await testUtils.saveMembership({
+          item: anotherItem,
+          account: actor,
+          permission: PermissionLevel.Write,
+        });
         const res = await app.inject({
           method: HttpMethod.Get,
-          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema`,
+          url: `${ITEMS_ROUTE_PREFIX}/${anotherItem.id}/login-schema`,
         });
 
-        expect(res.json()).toMatchObject(new MemberCannotAdminItem(item.id));
+        expect(res.json()).toMatchObject(new MemberCannotAdminItem(anotherItem.id));
       });
 
       it('Throws if id is not valid', async () => {
@@ -272,44 +379,111 @@ describe('Item Login Tests', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
         const member = await saveMember();
-        ({ item } = await testUtils.saveItemAndMembership({ member }));
-        await saveItemLoginSchema({ item: item as unknown as DiscriminatedItem });
+        ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member }));
+        await saveItemLoginSchema({ item: anotherItem as unknown as DiscriminatedItem });
       });
 
       it('Cannot item login if already signed in', async () => {
-        assertIsDefined(item);
+        assertIsDefined(anotherItem);
         const res = await app.inject({
           method: HttpMethod.Post,
-          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login`,
+          url: `${ITEMS_ROUTE_PREFIX}/${anotherItem.id}/login`,
           payload: { username: faker.internet.userName() },
         });
         expect(res.json()).toMatchObject(new ValidMemberSession(expect.anything()));
       });
     });
 
+    describe('ItemLogin Schema Status', () => {
+      beforeEach(async () => {
+        ({ app } = await build({ member: null }));
+        member = await saveMember();
+        ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member }));
+      });
+
+      it('Register in ItemLogin', async () => {
+        assertIsDefined(anotherItem);
+        const payload = USERNAME_LOGIN;
+        await saveItemLoginSchema({
+          item: anotherItem as unknown as DiscriminatedItem,
+          status: ItemLoginSchemaStatus.Freeze,
+        });
+        expect(await rawItemLoginRepository.count()).toEqual(0);
+
+        const res = await app.inject({
+          method: HttpMethod.Post,
+          url: `${ITEMS_ROUTE_PREFIX}/${anotherItem.id}/login`,
+          payload,
+        });
+
+        expect(res.statusCode).toBe(StatusCodes.FORBIDDEN);
+      });
+
+      it('Login in frozen ItemLogin', async () => {
+        assertIsDefined(anotherItem);
+        const payload = USERNAME_LOGIN;
+        // pre-create pseudonymized data
+        const { guest: m } = await saveItemLoginSchema({
+          item: anotherItem as unknown as DiscriminatedItem,
+          memberName: payload.username,
+          status: ItemLoginSchemaStatus.Freeze,
+        });
+
+        const res = await app.inject({
+          method: HttpMethod.Post,
+          url: `${ITEMS_ROUTE_PREFIX}/${anotherItem.id}/login`,
+          payload,
+        });
+
+        const member = res.json();
+        expectItemLogin(member, m);
+        expect(res.statusCode).toBe(StatusCodes.OK);
+      });
+
+      it('Register in Disabled ItemLogin', async () => {
+        assertIsDefined(anotherItem);
+        const payload = USERNAME_LOGIN;
+        await saveItemLoginSchema({
+          item: anotherItem as unknown as DiscriminatedItem,
+          status: ItemLoginSchemaStatus.Disabled,
+        });
+        expect(await rawItemLoginRepository.count()).toEqual(0);
+
+        const res = await app.inject({
+          method: HttpMethod.Post,
+          url: `${ITEMS_ROUTE_PREFIX}/${anotherItem.id}/login`,
+          payload,
+        });
+
+        expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
+      });
+
+      it('Log In Disabled ItemLogin', async () => {
+        assertIsDefined(anotherItem);
+        const payload = USERNAME_LOGIN;
+        // pre-create pseudonymized data
+        await saveItemLoginSchema({
+          item: anotherItem as unknown as DiscriminatedItem,
+          memberName: payload.username,
+          status: ItemLoginSchemaStatus.Disabled,
+        });
+
+        const res = await app.inject({
+          method: HttpMethod.Post,
+          url: `${ITEMS_ROUTE_PREFIX}/${anotherItem.id}/login`,
+          payload,
+        });
+
+        expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
+      });
+    });
     describe('ItemLoginSchemaType.Username', () => {
       describe('Signed Out', () => {
         beforeEach(async () => {
           ({ app } = await build({ member: null }));
           member = await saveMember();
-          ({ item } = await testUtils.saveItemAndMembership({ member }));
+          ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member }));
         });
-
-        // TODO
-        // it('Generate tokens for mobile', async () => {
-        //   const payload = MEMBER_ID_LOGIN;
-        //   const result = { id: v4(), name: 'myname' };
-
-        //   const res = await app.inject({
-        //     method: HttpMethod.POST,
-        //     url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login?m=true`,
-        //     payload,
-        //   });
-
-        //   // expect(generateAuthTokensPair).toHaveBeenCalled();
-        //   expect(res.json()).toEqual(result);
-        //   expect(res.statusCode).toBe(StatusCodes.OK);
-        // });
 
         it('Throws if item id is not valid', async () => {
           const id = 'invalid-id';
@@ -324,14 +498,14 @@ describe('Item Login Tests', () => {
 
         describe('Username', () => {
           it('Successfully create item login with username', async () => {
-            assertIsDefined(item);
+            assertIsDefined(anotherItem);
             const payload = USERNAME_LOGIN;
-            await saveItemLoginSchema({ item: item as unknown as DiscriminatedItem });
+            await saveItemLoginSchema({ item: anotherItem as unknown as DiscriminatedItem });
             expect(await rawItemLoginRepository.count()).toEqual(0);
 
             const res = await app.inject({
               method: HttpMethod.Post,
-              url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login`,
+              url: `${ITEMS_ROUTE_PREFIX}/${anotherItem.id}/login`,
               payload,
             });
 
@@ -340,17 +514,17 @@ describe('Item Login Tests', () => {
           });
 
           it('Successfully reuse item login with username', async () => {
-            assertIsDefined(item);
+            assertIsDefined(anotherItem);
             const payload = USERNAME_LOGIN;
             // pre-create pseudonymized data
             const { guest: m } = await saveItemLoginSchema({
-              item: item as unknown as DiscriminatedItem,
+              item: anotherItem as unknown as DiscriminatedItem,
               memberName: payload.username,
             });
 
             const res = await app.inject({
               method: HttpMethod.Post,
-              url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login`,
+              url: `${ITEMS_ROUTE_PREFIX}/${anotherItem.id}/login`,
               payload,
             });
 
@@ -360,14 +534,14 @@ describe('Item Login Tests', () => {
           });
 
           it('Successfully reuse item login with username defined in parent when calling from child', async () => {
-            assertIsDefined(item);
+            assertIsDefined(anotherItem);
             const payload = USERNAME_LOGIN;
             // pre-create pseudonymized data
             const { guest: m } = await saveItemLoginSchema({
-              item: item as unknown as DiscriminatedItem,
+              item: anotherItem as unknown as DiscriminatedItem,
               memberName: payload.username,
             });
-            const child = await testUtils.saveItem({ parentItem: item });
+            const child = await testUtils.saveItem({ parentItem: anotherItem });
 
             const res = await app.inject({
               method: HttpMethod.Post,
@@ -390,24 +564,8 @@ describe('Item Login Tests', () => {
         beforeEach(async () => {
           ({ app } = await build({ member: null }));
           member = await saveMember();
-          ({ item } = await testUtils.saveItemAndMembership({ member }));
+          ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member }));
         });
-
-        // TODO
-        // it('Generate tokens for mobile', async () => {
-        //   const payload = MEMBER_ID_LOGIN;
-        //   const result = { id: v4(), name: 'myname' };
-
-        //   const res = await app.inject({
-        //     method: HttpMethod.POST,
-        //     url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login?m=true`,
-        //     payload,
-        //   });
-
-        //   // expect(generateAuthTokensPair).toHaveBeenCalled();
-        //   expect(res.json()).toEqual(result);
-        //   expect(res.statusCode).toBe(StatusCodes.OK);
-        // });
 
         it('Throws if item id is not valid', async () => {
           const id = 'invalid-id';
@@ -422,9 +580,9 @@ describe('Item Login Tests', () => {
 
         describe('Username', () => {
           it('Successfully create item login with username and password', async () => {
-            assertIsDefined(item);
+            assertIsDefined(anotherItem);
             await saveItemLoginSchema({
-              item: item as unknown as DiscriminatedItem,
+              item: anotherItem as unknown as DiscriminatedItem,
               type: ItemLoginSchemaType.UsernameAndPassword,
               password: payload.password,
             });
@@ -432,7 +590,7 @@ describe('Item Login Tests', () => {
 
             const res = await app.inject({
               method: HttpMethod.Post,
-              url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login`,
+              url: `${ITEMS_ROUTE_PREFIX}/${anotherItem.id}/login`,
               payload,
             });
 
@@ -441,10 +599,10 @@ describe('Item Login Tests', () => {
           });
 
           it('Successfully reuse item login with username and password', async () => {
-            assertIsDefined(item);
+            assertIsDefined(anotherItem);
             // pre-create pseudonymized data
             const { guest: m } = await saveItemLoginSchema({
-              item: item as unknown as DiscriminatedItem,
+              item: anotherItem as unknown as DiscriminatedItem,
               memberName: payload.username,
               type: ItemLoginSchemaType.UsernameAndPassword,
               password: payload.password,
@@ -452,7 +610,7 @@ describe('Item Login Tests', () => {
 
             const res = await app.inject({
               method: HttpMethod.Post,
-              url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login`,
+              url: `${ITEMS_ROUTE_PREFIX}/${anotherItem.id}/login`,
               payload,
             });
 
@@ -461,9 +619,9 @@ describe('Item Login Tests', () => {
           });
 
           it('Throws if item login with username and wrong password', async () => {
-            assertIsDefined(item);
+            assertIsDefined(anotherItem);
             await saveItemLoginSchema({
-              item: item as unknown as DiscriminatedItem,
+              item: anotherItem as unknown as DiscriminatedItem,
               type: ItemLoginSchemaType.UsernameAndPassword,
               password: payload.password,
             });
@@ -471,7 +629,7 @@ describe('Item Login Tests', () => {
 
             const res = await app.inject({
               method: HttpMethod.Post,
-              url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login`,
+              url: `${ITEMS_ROUTE_PREFIX}/${anotherItem.id}/login`,
               payload,
             });
 
@@ -491,11 +649,11 @@ describe('Item Login Tests', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember();
-      ({ item } = await testUtils.saveItemAndMembership({ member }));
+      ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member }));
 
       const res = await app.inject({
         method: HttpMethod.Put,
-        url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema`,
+        url: `${ITEMS_ROUTE_PREFIX}/${anotherItem.id}/login-schema`,
         payload,
       });
 
@@ -505,20 +663,114 @@ describe('Item Login Tests', () => {
     describe('Signed In', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
-        ({ item } = await testUtils.saveItemAndMembership({ member: actor }));
-        await saveItemLoginSchema({ item: item as unknown as DiscriminatedItem });
+        ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member: actor }));
+        await saveItemLoginSchema({ item: anotherItem as unknown as DiscriminatedItem });
       });
 
-      it('Successfully change item login schema', async () => {
-        assertIsDefined(item);
+      it('Successfully change type of item login schema', async () => {
+        assertIsDefined(anotherItem);
         const res = await app.inject({
           method: HttpMethod.Put,
-          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema`,
+          url: `${ITEMS_ROUTE_PREFIX}/${anotherItem.id}/login-schema`,
           payload,
         });
 
         expect(res.statusCode).toBe(StatusCodes.OK);
         expect(res.json()).toMatchObject(payload);
+        const itemLoginSchema = await rawItemLoginSchemaRepository.findOneBy({
+          item: { id: anotherItem.id },
+        });
+        assertIsDefined(itemLoginSchema);
+        expect(itemLoginSchema.type).toEqual(payload.type);
+        expect(itemLoginSchema.status).toEqual(ItemLoginSchemaStatus.Active);
+      });
+
+      it('Successfully change type of frozen item login schema', async () => {
+        assertIsDefined(actor);
+        ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member: actor }));
+        await saveItemLoginSchema({
+          item: anotherItem as unknown as DiscriminatedItem,
+          status: ItemLoginSchemaStatus.Freeze,
+        });
+        const res = await app.inject({
+          method: HttpMethod.Put,
+          url: `${ITEMS_ROUTE_PREFIX}/${anotherItem.id}/login-schema`,
+          payload,
+        });
+
+        expect(res.statusCode).toBe(StatusCodes.OK);
+        expect(res.json()).toMatchObject(payload);
+        const itemLoginSchema = await rawItemLoginSchemaRepository.findOneBy({
+          item: { id: anotherItem.id },
+        });
+        assertIsDefined(itemLoginSchema);
+        expect(itemLoginSchema.type).toEqual(payload.type);
+        expect(itemLoginSchema.status).toEqual(ItemLoginSchemaStatus.Freeze);
+      });
+      it('Successfully change type of disabled item login schema', async () => {
+        assertIsDefined(actor);
+        ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member: actor }));
+        await saveItemLoginSchema({
+          item: anotherItem as unknown as DiscriminatedItem,
+          status: ItemLoginSchemaStatus.Disabled,
+        });
+        const res = await app.inject({
+          method: HttpMethod.Put,
+          url: `${ITEMS_ROUTE_PREFIX}/${anotherItem.id}/login-schema`,
+          payload,
+        });
+
+        expect(res.statusCode).toBe(StatusCodes.OK);
+        expect(res.json()).toMatchObject(payload);
+        const itemLoginSchema = await rawItemLoginSchemaRepository.findOneBy({
+          item: { id: anotherItem.id },
+        });
+        assertIsDefined(itemLoginSchema);
+        expect(itemLoginSchema.type).toEqual(payload.type);
+        expect(itemLoginSchema.status).toEqual(ItemLoginSchemaStatus.Disabled);
+      });
+
+      it('Successfully change status of item login schema', async () => {
+        const newPayload = {
+          status: ItemLoginSchemaStatus.Freeze,
+        };
+        assertIsDefined(anotherItem);
+        const res = await app.inject({
+          method: HttpMethod.Put,
+          url: `${ITEMS_ROUTE_PREFIX}/${anotherItem.id}/login-schema`,
+          payload: newPayload,
+        });
+
+        expect(res.statusCode).toBe(StatusCodes.OK);
+        expect(res.json()).toMatchObject(newPayload);
+        const itemLoginSchema = await rawItemLoginSchemaRepository.findOneBy({
+          item: { id: anotherItem.id },
+        });
+        assertIsDefined(itemLoginSchema);
+        expect(itemLoginSchema.type).toEqual(ItemLoginSchemaType.Username);
+        expect(itemLoginSchema.status).toEqual(newPayload.status);
+      });
+
+      it('Successfully change status and type of item login schema', async () => {
+        const newPayload = {
+          status: ItemLoginSchemaStatus.Disabled,
+          type: ItemLoginSchemaType.UsernameAndPassword,
+        };
+        assertIsDefined(anotherItem);
+        const res = await app.inject({
+          method: HttpMethod.Put,
+          url: `${ITEMS_ROUTE_PREFIX}/${anotherItem.id}/login-schema`,
+          payload: newPayload,
+        });
+
+        expect(res.statusCode).toBe(StatusCodes.OK);
+        expect(res.json()).toMatchObject(newPayload);
+        const itemLoginSchema = await rawItemLoginSchemaRepository.findOneBy({
+          item: { id: anotherItem.id },
+        });
+        assertIsDefined(itemLoginSchema);
+        expect(itemLoginSchema.type).toEqual(newPayload.type);
+        expect(itemLoginSchema.status).toEqual(newPayload.status);
       });
 
       it('Cannot change item login schema if have write permission', async () => {
@@ -541,9 +793,9 @@ describe('Item Login Tests', () => {
       });
 
       it('Cannot put item login schema if is inherited', async () => {
-        assertIsDefined(item);
+        assertIsDefined(anotherItem);
         // save new item with wanted memberships
-        const child = await testUtils.saveItem({ parentItem: item, actor });
+        const child = await testUtils.saveItem({ parentItem: anotherItem, actor });
 
         const res = await app.inject({
           method: HttpMethod.Put,

@@ -1,26 +1,23 @@
 import { singleton } from 'tsyringe';
 
-import { ItemLoginSchemaType, PermissionLevel, UUID } from '@graasp/sdk';
+import { ItemLoginSchemaStatus, ItemLoginSchemaType, PermissionLevel, UUID } from '@graasp/sdk';
 
 import { asDefined, assertIsDefined } from '../../utils/assertions';
 import { InvalidPassword } from '../../utils/errors';
 import { Repositories } from '../../utils/repositories';
 import { verifyCurrentPassword } from '../auth/plugins/password/utils';
-import { ItemService } from '../item/service';
-import { Actor, Member } from '../member/entities/member';
+import { Actor } from '../member/entities/member';
 import { Guest } from './entities/guest';
-import { ItemLoginSchemaNotFound, MissingCredentialsForLoginSchema } from './errors';
+import {
+  CannotRegisterOnFrozenItemLoginSchema,
+  ItemLoginSchemaNotFound,
+  MissingCredentialsForLoginSchema,
+} from './errors';
 import { ItemLoginMemberCredentials } from './interfaces/item-login';
 import { loginSchemaRequiresPassword } from './utils';
 
 @singleton()
 export class ItemLoginService {
-  private itemService: ItemService;
-
-  constructor(itemService: ItemService) {
-    this.itemService = itemService;
-  }
-
   async getSchemaType(actor: Actor, repositories: Repositories, itemPath: string) {
     // do not need permission to get item login schema
     // we need to know the schema to display the correct form
@@ -32,11 +29,15 @@ export class ItemLoginService {
     return await itemLoginSchemaRepository.getOneByItemPath(itemPath);
   }
 
-  async login(repositories: Repositories, itemId: string, credentials: ItemLoginMemberCredentials) {
+  async logInOrRegister(
+    repositories: Repositories,
+    itemId: string,
+    credentials: ItemLoginMemberCredentials,
+  ) {
     const { username, password } = credentials; // TODO: allow for "empty" username and generate one (anonymous, anonymous+password)
     let bondMember: Guest | undefined = undefined;
     if (username) {
-      bondMember = await this.loginWithUsername(repositories, itemId, {
+      bondMember = await this.logInOrRegisterWithUsername(repositories, itemId, {
         username,
         password,
       });
@@ -46,19 +47,11 @@ export class ItemLoginService {
       // TODO
       throw new Error();
     }
-    // TODO: mobile ???
-    // app client
-    // if (m) {
-    //   // TODO: can this be dangerous? since it's available in the fastify scope?
-    //   // can this be done better with decorators on request/reply?
-    //   const tokens = this.fastify.generateAuthTokensPair(id);
-    //   return Object.assign({ id, name }, { tokens });
-    // }
 
     return bondMember;
   }
 
-  async loginWithUsername(
+  async logInOrRegisterWithUsername(
     repositories: Repositories,
     itemId: UUID,
     { username, password }: { username: string; password?: string },
@@ -81,6 +74,10 @@ export class ItemLoginService {
       { itemPath: item.path },
     );
 
+    if (itemLoginSchema.status === ItemLoginSchemaStatus.Disabled) {
+      throw new ItemLoginSchemaNotFound();
+    }
+
     let guestAccount = await guestRepository.getForItemAndUsername(item, username);
 
     // reuse existing item login for this user
@@ -98,6 +95,10 @@ export class ItemLoginService {
     }
     // create a new item login
     else if (!guestAccount) {
+      if (itemLoginSchema.status === ItemLoginSchemaStatus.Freeze) {
+        throw new CannotRegisterOnFrozenItemLoginSchema();
+      }
+
       // create member w/ `username`
       const data: Partial<Guest> & Pick<Guest, 'name'> = {
         name: username,
@@ -141,17 +142,13 @@ export class ItemLoginService {
     { itemLoginSchemaRepository }: Repositories,
     itemId: string,
     type: ItemLoginSchemaType,
+    status: ItemLoginSchemaStatus,
   ) {
-    return itemLoginSchemaRepository.updateOne(itemId, { type });
+    return itemLoginSchemaRepository.updateOne(itemId, { type, status });
   }
 
   async getOneByItem(repositories: Repositories, itemId: string) {
     const { itemLoginSchemaRepository } = repositories;
     return await itemLoginSchemaRepository.getOneByItem(itemId);
-  }
-
-  async delete(member: Member, repositories: Repositories, itemId: string) {
-    const { itemLoginSchemaRepository } = repositories;
-    return itemLoginSchemaRepository.deleteOne(itemId);
   }
 }
