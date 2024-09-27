@@ -1,3 +1,8 @@
+import { Type } from '@sinclair/typebox';
+
+import { customType } from '../../../../plugins/typebox';
+import { entityIdSchemaRef } from '../../../../schemas/global';
+
 export default {
   $id: 'https://graasp.org/recycle-bin/',
   definitions: {
@@ -6,7 +11,7 @@ export default {
       type: 'object',
       required: ['id', 'item'],
       properties: {
-        id: { $ref: 'https://graasp.org/#/definitions/uuid' },
+        id: customType.UUID(),
         item: {
           $ref: 'https://graasp.org/items/#/definitions/item',
         },
@@ -19,7 +24,7 @@ export default {
       type: 'object',
       required: ['id', 'item'],
       properties: {
-        id: { $ref: 'https://graasp.org/#/definitions/uuid' },
+        id: customType.UUID(),
         item: {
           $ref: 'https://graasp.org/items/#/definitions/packedItem',
         },
@@ -43,7 +48,7 @@ export const getRecycledItemDatas = {
 
 // schema for deleting one item
 export const deleteOne = {
-  params: { $ref: 'https://graasp.org/#/definitions/idParam' },
+  params: entityIdSchemaRef,
   response: {
     200: { $ref: 'https://graasp.org/recycle-bin/#/definitions/recycledItem' },
   },
@@ -52,51 +57,37 @@ export const deleteOne = {
 // schema for recycling >1 items
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const recycleMany = (maxItems: number) => ({
-  querystring: {
-    allOf: [
-      { $ref: 'https://graasp.org/#/definitions/idsQuery' },
-      { type: 'object', properties: { id: { type: 'array', maxItems } } },
-    ],
-  },
+  querystring: Type.Object({ id: Type.Array(customType.UUID(), { uniqueItems: true, maxItems }) }),
   response: {
     202: {
       // ids > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE
       type: 'array',
-      items: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      items: customType.UUID(),
     },
   },
 });
 // schema for restoring>1 items
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const restoreMany = (maxItems: number) => ({
-  querystring: {
-    allOf: [
-      { $ref: 'https://graasp.org/#/definitions/idsQuery' },
-      { type: 'object', properties: { id: { type: 'array', maxItems } } },
-    ],
-  },
+  querystring: Type.Object({ id: Type.Array(customType.UUID(), { uniqueItems: true, maxItems }) }),
+
   response: {
     202: {
       // ids > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE
       type: 'array',
-      items: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      items: customType.UUID(),
     },
   },
 });
 // schema for restoring>1 items
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const deleteMany = (maxItems: number) => ({
-  querystring: {
-    allOf: [
-      { $ref: 'https://graasp.org/#/definitions/idsQuery' },
-      { type: 'object', properties: { id: { type: 'array', maxItems } } },
-    ],
-  },
+  querystring: Type.Object({ id: Type.Array(customType.UUID(), { uniqueItems: true, maxItems }) }),
   response: {
     202: {
       // ids > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE
       type: 'array',
-      items: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      items: customType.UUID(),
     },
   },
 });

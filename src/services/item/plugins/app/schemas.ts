@@ -1,14 +1,9 @@
+import { customType } from '../../../../plugins/typebox';
+import { itemIdSchemaRef } from '../itemLike/schemas';
+
 export default {
   $id: 'https://graasp.org/apps/',
   definitions: {
-    itemIdParam: {
-      type: 'object',
-      required: ['itemId'],
-      properties: {
-        itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
-      },
-    },
-
     appContext: {
       type: 'object',
       properties: {
@@ -25,12 +20,12 @@ export default {
 };
 
 const generateToken = {
-  params: { $ref: 'https://graasp.org/apps/#/definitions/itemIdParam' },
+  params: itemIdSchemaRef,
   body: {
     type: 'object',
     required: ['key', 'origin'],
     properties: {
-      key: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      key: customType.UUID(),
       origin: { type: 'string', format: 'url' },
     },
     additionalProperties: false,
@@ -44,13 +39,13 @@ const generateToken = {
 };
 
 const getContext = {
-  params: { $ref: 'https://graasp.org/apps/#/definitions/itemIdParam' },
+  params: itemIdSchemaRef,
   response: {
     200: { $ref: 'https://graasp.org/apps/#/definitions/appContext' },
   },
 };
 const patchSettings = {
-  params: { $ref: 'https://graasp.org/apps/#/definitions/itemIdParam' },
+  params: itemIdSchemaRef,
   body: {
     type: 'object',
     additionalProperties: true,

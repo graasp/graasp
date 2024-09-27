@@ -1,13 +1,14 @@
 import { JSONSchemaType } from 'ajv';
 
+import { customType } from '../../../../../plugins/typebox';
 import { H5P } from './validation/h5p';
 
 export const h5pImport = {
   querystring: {
     type: 'object',
     properties: {
-      parentId: { $ref: 'https://graasp.org/#/definitions/uuid' },
-      previousItemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      parentId: customType.UUID(),
+      previousItemId: customType.UUID(),
     },
     additionalProperties: false,
   },

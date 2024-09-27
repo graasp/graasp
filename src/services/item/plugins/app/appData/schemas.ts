@@ -1,3 +1,8 @@
+import { Type } from '@sinclair/typebox';
+
+import { FastifySchema } from 'fastify';
+
+import { customType } from '../../../../../plugins/typebox';
 import { accountSchemaRef } from '../../../../account/schemas';
 
 export default {
@@ -26,7 +31,9 @@ export default {
 };
 
 const create = {
-  params: { $ref: 'https://graasp.org/apps/#/definitions/itemIdParam' },
+  params: Type.Object({
+    itemId: customType.UUID(),
+  }),
   body: {
     type: 'object',
     required: ['data', 'type'],
@@ -35,8 +42,8 @@ const create = {
       type: { type: 'string', minLength: 3, maxLength: 25 },
       visibility: { type: 'string', enum: ['member', 'item'] },
       /** @deprecated use accountId */
-      memberId: { $ref: 'https://graasp.org/#/definitions/uuid', deprecated: true },
-      accountId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      memberId: customType.UUID({ deprecated: true }),
+      accountId: customType.UUID(),
     },
   },
   response: {
@@ -45,12 +52,10 @@ const create = {
 };
 
 const updateOne = {
-  params: {
-    allOf: [
-      { $ref: 'https://graasp.org/apps/#/definitions/itemIdParam' },
-      { $ref: 'https://graasp.org/#/definitions/idParam' },
-    ],
-  },
+  params: Type.Object({
+    itemId: customType.UUID(),
+    id: customType.UUID(),
+  }),
   body: {
     type: 'object',
     required: ['data'],
@@ -61,22 +66,22 @@ const updateOne = {
   response: {
     200: { $ref: 'https://graasp.org/apps/app-data/#/definitions/appData' },
   },
-};
+} as const satisfies FastifySchema;
 
 const deleteOne = {
-  params: {
-    allOf: [
-      { $ref: 'https://graasp.org/apps/#/definitions/itemIdParam' },
-      { $ref: 'https://graasp.org/#/definitions/idParam' },
-    ],
-  },
+  params: Type.Object({
+    itemId: customType.UUID(),
+    id: customType.UUID(),
+  }),
   response: {
     200: { $ref: 'https://graasp.org/apps/app-data/#/definitions/appData' },
   },
-};
+} as const satisfies FastifySchema;
 
 const getForOne = {
-  params: { $ref: 'https://graasp.org/apps/#/definitions/itemIdParam' },
+  params: Type.Object({
+    itemId: customType.UUID(),
+  }),
   querystring: {
     type: 'object',
     properties: {
@@ -90,6 +95,6 @@ const getForOne = {
       items: { $ref: 'https://graasp.org/apps/app-data/#/definitions/appData' },
     },
   },
-};
+} as const satisfies FastifySchema;
 
 export { create, updateOne, deleteOne, getForOne };

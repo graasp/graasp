@@ -40,7 +40,7 @@ export class ChatMessageService {
     actor: Account,
     repositories: Repositories,
     itemId: string,
-    data: { body: string; mentions: string[] },
+    data: { body: string; mentions?: string[] },
   ) {
     const { chatMessageRepository } = repositories;
 

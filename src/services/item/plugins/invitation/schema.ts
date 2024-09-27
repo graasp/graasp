@@ -1,12 +1,15 @@
 import { StatusCodes } from 'http-status-codes';
 
+import { customType } from '../../../../plugins/typebox';
+import { entityIdSchemaRef, errorSchemaRef } from '../../../../schemas/global';
+
 export default {
   $id: 'https://graasp.org/invitations/',
   definitions: {
     invitation: {
       type: 'object',
       properties: {
-        id: { $ref: 'https://graasp.org/#/definitions/uuid' },
+        id: customType.UUID(),
         email: { type: 'string', format: 'email' },
         name: { type: ['string', 'null'] },
         permission: { type: 'string' },
@@ -58,7 +61,7 @@ export default {
 };
 
 export const invite = {
-  params: { $ref: 'https://graasp.org/#/definitions/idParam' },
+  params: entityIdSchemaRef,
   body: {
     type: 'object',
     properties: {
@@ -94,17 +97,13 @@ export const invite = {
         },
       },
     },
-    '4xx': {
-      $ref: 'https://graasp.org/#/definitions/error',
-    },
-    [StatusCodes.INTERNAL_SERVER_ERROR]: {
-      $ref: 'https://graasp.org/#/definitions/error',
-    },
+    '4xx': errorSchemaRef,
+    [StatusCodes.INTERNAL_SERVER_ERROR]: errorSchemaRef,
   },
 };
 
 export const getForItem = {
-  params: { $ref: 'https://graasp.org/#/definitions/idParam' },
+  params: entityIdSchemaRef,
   response: {
     200: {
       type: 'array',
@@ -114,7 +113,7 @@ export const getForItem = {
 };
 
 export const getById = {
-  params: { $ref: 'https://graasp.org/#/definitions/idParam' },
+  params: entityIdSchemaRef,
   response: {
     200: { $ref: 'https://graasp.org/invitations/#/definitions/invitation' },
   },
@@ -125,8 +124,8 @@ export const updateOne = {
     type: 'object',
     required: ['id', 'invitationId'],
     properties: {
-      id: { $ref: 'https://graasp.org/#/definitions/uuid' },
-      invitationId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      id: customType.UUID(),
+      invitationId: customType.UUID(),
     },
   },
   body: { $ref: 'https://graasp.org/invitations/#/definitions/partialInvitationForUpdate' },
@@ -140,8 +139,8 @@ export const deleteOne = {
     type: 'object',
     required: ['id', 'invitationId'],
     properties: {
-      id: { $ref: 'https://graasp.org/#/definitions/uuid' },
-      invitationId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      id: customType.UUID(),
+      invitationId: customType.UUID(),
     },
   },
   response: {
@@ -154,8 +153,8 @@ export const sendOne = {
     type: 'object',
     required: ['id', 'invitationId'],
     properties: {
-      id: { $ref: 'https://graasp.org/#/definitions/uuid' },
-      invitationId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      id: customType.UUID(),
+      invitationId: customType.UUID(),
     },
   },
 };
