@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.50.2](https://github.com/graasp/graasp/compare/v1.50.1...v1.50.2) (2024-09-26)
+
+
+### Bug Fixes
+
+* guest account migration ([#1426](https://github.com/graasp/graasp/issues/1426)) ([4ccec91](https://github.com/graasp/graasp/commit/4ccec9198cbd762c784130f30e49b46df35b9da4))
+
+## [1.50.1](https://github.com/graasp/graasp/compare/v1.50.0...v1.50.1) (2024-09-24)
+
+
+### Bug Fixes
+
+* migrate guest account ([#1417](https://github.com/graasp/graasp/issues/1417)) ([306e4fa](https://github.com/graasp/graasp/commit/306e4fa3fc79127e9245e954d77698ff69d189f6))
+
 ## [1.50.0](https://github.com/graasp/graasp/compare/v1.49.0...v1.50.0) (2024-09-23)
 
 
