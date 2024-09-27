@@ -3,12 +3,13 @@ import { faker } from '@faker-js/faker';
 import { FastifyInstance } from 'fastify';
 
 import build from '../../../test/app';
+import { FILE_SERVICE_URLS_CACHING_DI_KEY } from '../../di/constants';
 import { resolveDependency } from '../../di/utils';
-import { FileServiceUrlCaching } from './caching';
+import { ServiceCaching } from './caching';
 
-describe('FileServiceUrlCaching Tests', () => {
+describe('ServiceCaching Tests', () => {
   let app: FastifyInstance;
-  let cache: FileServiceUrlCaching;
+  let cache: ServiceCaching;
   const MOCKED_PATH = '1b304da5_b342_46e8_a484_1712d5209e43';
   const getRandomUrl = async () => faker.internet.url(); // returns a new URL at each run
   const getOrCache = (expirationInSeconds = 3600) =>
@@ -20,7 +21,7 @@ describe('FileServiceUrlCaching Tests', () => {
 
   beforeEach(async () => {
     ({ app } = await build());
-    cache = resolveDependency(FileServiceUrlCaching);
+    cache = resolveDependency(FILE_SERVICE_URLS_CACHING_DI_KEY);
   });
 
   afterEach(async () => {

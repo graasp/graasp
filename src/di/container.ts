@@ -8,6 +8,7 @@ import Etherpad from '@graasp/etherpad-api';
 import { CRON_3AM_MONDAY, JobServiceBuilder } from '../jobs';
 import { BaseLogger } from '../logger';
 import { MailerService } from '../plugins/mailer/service';
+import { ServiceCaching } from '../services/file/caching';
 import FileService from '../services/file/service';
 import { fileRepositoryFactory } from '../services/file/utils/factory';
 import { wrapEtherpadErrors } from '../services/item/plugins/etherpad/etherpad';
@@ -48,7 +49,7 @@ import {
   ETHERPAD_NAME_FACTORY_DI_KEY,
   FASTIFY_LOGGER_DI_KEY,
   FILE_ITEM_TYPE_DI_KEY,
-  FILE_REPOSITORY_DI_KEY,
+  FILE_SERVICE_URLS_CACHING_DI_KEY,
   GEOLOCATION_API_KEY_DI_KEY,
   IMAGE_CLASSIFIER_API_DI_KEY,
 } from './constants';
@@ -91,13 +92,23 @@ export const registerDependencies = (instance: FastifyInstance) => {
     }),
   );
 
-  // register the interface FileRepository with the concrete repo returned by the factory.
+  // Register CachingService for the thumbnails urls.
   registerValue(
-    FILE_REPOSITORY_DI_KEY,
-    fileRepositoryFactory(FILE_ITEM_TYPE, {
-      s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
-      local: FILE_ITEM_PLUGIN_OPTIONS,
-    }),
+    FILE_SERVICE_URLS_CACHING_DI_KEY,
+    new ServiceCaching(resolveDependency(Redis), 'file_service_url_caching'),
+  );
+  // Register the FileService to inject the CacheService.
+  const fileRepository = fileRepositoryFactory(FILE_ITEM_TYPE, {
+    s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
+    local: FILE_ITEM_PLUGIN_OPTIONS,
+  });
+  registerValue(
+    FileService,
+    new FileService(
+      fileRepository,
+      resolveDependency(BaseLogger),
+      resolveDependency(FILE_SERVICE_URLS_CACHING_DI_KEY),
+    ),
   );
 
   // register MeiliSearch and its wrapper.

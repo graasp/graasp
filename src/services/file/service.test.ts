@@ -6,7 +6,7 @@ import { ItemType } from '@graasp/sdk';
 
 import { BaseLogger } from '../../logger';
 import { Member } from '../member/entities/member';
-import { FileServiceUrlCaching } from './caching';
+import { ServiceCaching } from './caching';
 import { LocalFileRepository } from './repositories/local';
 import { S3FileRepository } from './repositories/s3';
 import FileService from './service';
@@ -42,7 +42,7 @@ const s3Repository = fileRepositoryFactory(ItemType.S3_FILE, { s3: MOCK_S3_CONFI
 const s3FileService = new FileService(
   s3Repository,
   console as unknown as BaseLogger,
-  new FileServiceUrlCaching({} as unknown as Redis),
+  new ServiceCaching({} as unknown as Redis, 'TEST'),
 );
 
 const getRandomUrl = async () => faker.internet.url();

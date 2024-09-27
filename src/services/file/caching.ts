@@ -1,49 +1,51 @@
 import { hoursToSeconds } from 'date-fns';
 import { Redis } from 'ioredis';
-import { singleton } from 'tsyringe';
 
-import { UrlServiceCaching } from './types';
+import { IServiceCaching } from './types';
 
 const EXPIRES_IN_SECONDS = hoursToSeconds(1);
-const REDIS_KEY = 'file_service_url_caching';
-const buildRedisKey = (filePath: string) => `${REDIS_KEY}:${filePath}`;
 
-@singleton()
-export class FileServiceUrlCaching implements UrlServiceCaching {
+export class ServiceCaching implements IServiceCaching {
   private readonly redis: Redis;
+  private readonly contextKey: string;
 
-  constructor(redis: Redis) {
+  constructor(redis: Redis, contextKey: string) {
     this.redis = redis;
+    this.contextKey = contextKey;
   }
 
-  async add(filePath: string, url: string, expiresInSeconds = EXPIRES_IN_SECONDS) {
-    await this.redis.set(buildRedisKey(filePath), url);
-    await this.redis.expire(buildRedisKey(filePath), expiresInSeconds);
+  private buildRedisKey(key: string) {
+    return `${this.contextKey}:${key}`;
   }
 
-  async get(filePath: string) {
-    return this.redis.get(buildRedisKey(filePath));
+  async add(key: string, value: string, expiresInSeconds = EXPIRES_IN_SECONDS) {
+    await this.redis.set(this.buildRedisKey(key), value);
+    await this.redis.expire(this.buildRedisKey(key), expiresInSeconds);
+  }
+
+  async get(key: string) {
+    return this.redis.get(this.buildRedisKey(key));
   }
 
   async getOrCache(
-    filePath: string,
-    newUrl: () => Promise<string>,
+    key: string,
+    newValue: () => Promise<string>,
     expiresInSeconds = EXPIRES_IN_SECONDS,
   ) {
-    const cachedUrl = await this.get(filePath);
+    const cachedvalue = await this.get(key);
 
-    if (cachedUrl) {
-      return cachedUrl;
+    if (cachedvalue) {
+      return cachedvalue;
     }
 
-    const url = await newUrl();
+    const value = await newValue();
 
-    await this.add(filePath, url, expiresInSeconds);
+    await this.add(key, value, expiresInSeconds);
 
-    return url;
+    return value;
   }
 
-  async delete(filePath: string) {
-    await this.redis.del(buildRedisKey(filePath));
+  async delete(key: string) {
+    await this.redis.del(this.buildRedisKey(key));
   }
 }

@@ -1,6 +1,6 @@
-import { UrlServiceCaching } from '../types';
+import { IServiceCaching } from '../types';
 
-export class FileServiceUrlCaching implements UrlServiceCaching {
+export class ServiceCaching implements IServiceCaching {
   private readonly cache: Map<string, string> = new Map();
 
   async add(filePath: string, url: string) {

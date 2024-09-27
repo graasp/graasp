@@ -1,16 +1,14 @@
 import contentDisposition from 'content-disposition';
 import { StatusCodes } from 'http-status-codes';
 import { Readable } from 'stream';
-import { inject, singleton } from 'tsyringe';
 
 import { FastifyReply } from 'fastify';
 
 import { Account, Member } from '@graasp/sdk';
 
-import { FILE_REPOSITORY_DI_KEY } from '../../di/constants';
 import { BaseLogger } from '../../logger';
 import { Actor } from '../member/entities/member';
-import { FileServiceUrlCaching } from './caching';
+import { ServiceCaching } from './caching';
 import { LocalFileConfiguration, S3FileConfiguration } from './interfaces/configuration';
 import { FileRepository } from './interfaces/fileRepository';
 import {
@@ -25,17 +23,12 @@ import {
 
 export type FileServiceConfig = { s3?: S3FileConfiguration; local?: LocalFileConfiguration };
 
-@singleton()
 class FileService {
   private readonly repository: FileRepository;
   private readonly logger: BaseLogger;
-  private readonly caching?: FileServiceUrlCaching;
+  private readonly caching?: ServiceCaching;
 
-  constructor(
-    @inject(FILE_REPOSITORY_DI_KEY) repository: FileRepository,
-    log: BaseLogger,
-    caching?: FileServiceUrlCaching,
-  ) {
+  constructor(repository: FileRepository, log: BaseLogger, caching?: ServiceCaching) {
     this.repository = repository;
     this.caching = caching;
     this.logger = log;

@@ -1,5 +1,5 @@
 export type BuildFilePathFunction = (itemId: string, filename: string) => string;
-export interface UrlServiceCaching {
+export interface IServiceCaching {
   add(filePath: string, url: string, expiresInSeconds?: number): Promise<void>;
 
   get(filePath: string): Promise<string | null>;
