@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.51.0](https://github.com/graasp/graasp/compare/v1.50.2...v1.51.0) (2024-09-27)
+
+
+### Features
+
+* freeze or disable item login schema ([#1422](https://github.com/graasp/graasp/issues/1422)) ([2473342](https://github.com/graasp/graasp/commit/24733420e6efa6b09f0ce131b7a041c916836aba))
+
 ## [1.50.2](https://github.com/graasp/graasp/compare/v1.50.1...v1.50.2) (2024-09-26)
 
 
