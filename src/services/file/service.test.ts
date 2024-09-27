@@ -1,11 +1,12 @@
 import { faker } from '@faker-js/faker';
 import { ReadStream } from 'fs';
+import { Redis } from 'ioredis';
 
 import { ItemType } from '@graasp/sdk';
 
 import { BaseLogger } from '../../logger';
 import { Member } from '../member/entities/member';
-import { stubUrlCachingFactory } from './fixtures';
+import { FileServiceUrlCaching } from './caching';
 import { LocalFileRepository } from './repositories/local';
 import { S3FileRepository } from './repositories/s3';
 import FileService from './service';
@@ -18,6 +19,9 @@ import {
   UploadFileUnexpectedError,
 } from './utils/errors';
 import { fileRepositoryFactory } from './utils/factory';
+
+// We are mocking the cache service to avoid using Redis.
+jest.mock('./caching');
 
 const MOCK_LOCAL_CONFIG = {
   storageRootPath: '/root-path',
@@ -38,7 +42,7 @@ const s3Repository = fileRepositoryFactory(ItemType.S3_FILE, { s3: MOCK_S3_CONFI
 const s3FileService = new FileService(
   s3Repository,
   console as unknown as BaseLogger,
-  stubUrlCachingFactory(),
+  new FileServiceUrlCaching({} as unknown as Redis),
 );
 
 const getRandomUrl = async () => faker.internet.url();

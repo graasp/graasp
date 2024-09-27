@@ -1,7 +1,6 @@
-import { FileServiceUrlCaching } from './caching';
-import { UrlServiceCaching } from './types';
+import { UrlServiceCaching } from '../types';
 
-class StubFileServiceUrlCaching implements UrlServiceCaching {
+export class FileServiceUrlCaching implements UrlServiceCaching {
   private readonly cache: Map<string, string> = new Map();
 
   async add(filePath: string, url: string) {
@@ -30,8 +29,3 @@ class StubFileServiceUrlCaching implements UrlServiceCaching {
     this.cache.delete(filePath);
   }
 }
-
-export const stubUrlCachingFactory = () => {
-  // The cast is necessary as the StubCaching doesn't have the redis property.
-  return new StubFileServiceUrlCaching() as unknown as FileServiceUrlCaching;
-};
