@@ -7,8 +7,8 @@ import { FastifyReply } from 'fastify';
 import { Account, Member } from '@graasp/sdk';
 
 import { BaseLogger } from '../../logger';
+import { ServiceCaching } from '../caching/service';
 import { Actor } from '../member/entities/member';
-import { ServiceCaching } from './caching';
 import { LocalFileConfiguration, S3FileConfiguration } from './interfaces/configuration';
 import { FileRepository } from './interfaces/fileRepository';
 import {

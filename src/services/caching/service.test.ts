@@ -5,7 +5,7 @@ import { FastifyInstance } from 'fastify';
 import build from '../../../test/app';
 import { FILE_SERVICE_URLS_CACHING_DI_KEY } from '../../di/constants';
 import { resolveDependency } from '../../di/utils';
-import { ServiceCaching } from './caching';
+import { ServiceCaching } from './service';
 
 describe('ServiceCaching Tests', () => {
   let app: FastifyInstance;

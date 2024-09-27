@@ -1,4 +1,4 @@
-import { IServiceCaching } from '../types';
+import { IServiceCaching } from '../interfaces';
 
 export class ServiceCaching implements IServiceCaching {
   private readonly cache: Map<string, string> = new Map();

@@ -5,8 +5,8 @@ import { Redis } from 'ioredis';
 import { ItemType } from '@graasp/sdk';
 
 import { BaseLogger } from '../../logger';
+import { ServiceCaching } from '../caching/service';
 import { Member } from '../member/entities/member';
-import { ServiceCaching } from './caching';
 import { LocalFileRepository } from './repositories/local';
 import { S3FileRepository } from './repositories/s3';
 import FileService from './service';
@@ -21,7 +21,7 @@ import {
 import { fileRepositoryFactory } from './utils/factory';
 
 // We are mocking the cache service to avoid using Redis.
-jest.mock('./caching');
+jest.mock('../caching/service');
 
 const MOCK_LOCAL_CONFIG = {
   storageRootPath: '/root-path',

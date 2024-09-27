@@ -1,7 +1,7 @@
 import { hoursToSeconds } from 'date-fns';
 import { Redis } from 'ioredis';
 
-import { IServiceCaching } from './types';
+import { IServiceCaching } from './interfaces';
 
 const EXPIRES_IN_SECONDS = hoursToSeconds(1);
 
