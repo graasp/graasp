@@ -93,7 +93,8 @@ describe('Validation Queue Tests', () => {
     const exists = await validationQueue.isInProgress(childPath);
     expect(exists).toBe(true);
 
-    await new Promise((resolve) => setTimeout(resolve, EXPIRES_IN_MS));
+    // Wait a bit more than the expiration time to avoid flacky test.
+    await new Promise((resolve) => setTimeout(resolve, EXPIRES_IN_MS + 500));
 
     const results = await validationQueue.isInProgress(childPath);
     expect(results).toBe(false);

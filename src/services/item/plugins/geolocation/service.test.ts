@@ -16,15 +16,17 @@ import { ThumbnailService } from '../../../thumbnail/service';
 import { ItemWrapper } from '../../ItemWrapper';
 import { ItemService } from '../../service';
 import { ItemTestUtils } from '../../test/fixtures/items';
+import { StubItemThumbnailService } from '../thumbnail/test/fixtures/itemThumbnailService';
 import { ItemGeolocation } from './ItemGeolocation';
-import { saveGeolocation } from './index.test';
 import { ItemGeolocationService } from './service';
-import { expectPackedItemGeolocations } from './test/utils';
+import { expectPackedItemGeolocations, saveGeolocation } from './test/utils';
 
 const testUtils = new ItemTestUtils();
+const stubItemThumbnailService = StubItemThumbnailService();
 
 const service = new ItemGeolocationService(
-  new ItemService({} as unknown as ThumbnailService, {} as unknown as BaseLogger),
+  new ItemService({} as ThumbnailService, stubItemThumbnailService, {} as BaseLogger),
+  stubItemThumbnailService,
   'geolocation-key',
 );
 const rawRepository = AppDataSource.getRepository(ItemGeolocation);

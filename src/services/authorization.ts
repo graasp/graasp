@@ -21,6 +21,7 @@ import { Item } from './item/entities/Item';
 import { ItemTag } from './item/plugins/itemTag/ItemTag';
 import { ItemTagRepository } from './item/plugins/itemTag/repository';
 import { ItemTagService } from './item/plugins/itemTag/service';
+import { ItemsThumbnails } from './item/plugins/thumbnail/types';
 import { ItemMembership } from './itemMembership/entities/ItemMembership';
 import { ItemMembershipRepository } from './itemMembership/repository';
 import { ItemMembershipService } from './itemMembership/service';
@@ -262,7 +263,7 @@ const _filterOutItems = async (
  *  */
 export const filterOutItems = async (
   actor: Actor,
-  repositories,
+  repositories: Repositories,
   items: Item[],
 ): Promise<Item[]> => {
   return (await _filterOutItems(actor, repositories, items)).items;
@@ -273,8 +274,9 @@ export const filterOutItems = async (
  *  */
 export const filterOutPackedItems = async (
   actor: Actor,
-  repositories,
+  repositories: Repositories,
   items: Item[],
+  itemsThumbnails?: ItemsThumbnails,
   options?: { showHidden?: boolean },
 ): Promise<PackedItem[]> => {
   const {
@@ -286,11 +288,13 @@ export const filterOutPackedItems = async (
     const permission = PermissionLevelCompare.getHighest(
       memberships[item.id]?.map(({ permission }) => permission),
     );
+    const thumbnails = itemsThumbnails?.[item.id];
     // return packed item
     return new ItemWrapper(
       item,
       permission ? { permission } : undefined,
       tags?.data[item.id],
+      thumbnails,
     ).packed();
   });
 };
@@ -302,9 +306,10 @@ export const filterOutPackedItems = async (
  *  */
 export const filterOutPackedDescendants = async (
   actor: Actor,
-  repositories,
+  repositories: Repositories,
   item: Item,
   descendants: Item[],
+  itemsThumbnails?: ItemsThumbnails,
   options?: { showHidden?: boolean },
 ): Promise<PackedItem[]> => {
   const { itemMembershipRepository, itemTagRepository } = repositories;
@@ -335,7 +340,12 @@ export const filterOutPackedDescendants = async (
         const permission = PermissionLevelCompare.getHighest(permissions);
         const itemTags = tags.filter((t) => item.path.includes(t.item.path));
 
-        return new ItemWrapper(item, permission ? { permission } : undefined, itemTags).packed();
+        return new ItemWrapper(
+          item,
+          permission ? { permission } : undefined,
+          itemTags,
+          itemsThumbnails?.[item.id],
+        ).packed();
       })
       .filter((i) => {
         if (i.hidden && !showHidden) {

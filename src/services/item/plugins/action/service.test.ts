@@ -26,14 +26,16 @@ import { saveMember } from '../../../member/test/fixtures/members';
 import { ThumbnailService } from '../../../thumbnail/service';
 import { ItemService } from '../../service';
 import { ItemTestUtils } from '../../test/fixtures/items';
+import { ItemThumbnailService } from '../thumbnail/service';
 import { ActionItemService } from './service';
 import { ItemActionType } from './utils';
 
-const itemService = new ItemService({} as unknown as ThumbnailService, {} as unknown as BaseLogger);
-const memberService = new MemberService(
-  {} as unknown as MailerService,
-  {} as unknown as BaseLogger,
+const itemService = new ItemService(
+  {} as ThumbnailService,
+  {} as ItemThumbnailService,
+  {} as BaseLogger,
 );
+const memberService = new MemberService({} as MailerService, {} as BaseLogger);
 const service = new ActionItemService(new ActionService(itemService, memberService), itemService);
 const rawRepository = AppDataSource.getRepository(Action);
 const testUtils = new ItemTestUtils();
