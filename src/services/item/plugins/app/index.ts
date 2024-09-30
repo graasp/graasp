@@ -17,8 +17,8 @@ import appDataPlugin from './appData';
 import appSettingPlugin from './appSetting';
 import chatBotPlugin from './chatBot';
 import { DEFAULT_JWT_EXPIRATION } from './constants';
-import { createSchema, getMany, getMostUsed, updateSchema } from './fluent-schema';
-import common, { generateToken, getContext } from './schemas';
+import { createSchema, updateSchema } from './fluent-schema';
+import { generateToken, getContext, getMany, getMostUsed } from './schemas';
 import { AppService } from './service';
 import { AppsPluginOptions } from './types';
 
@@ -39,8 +39,6 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
   extendCreateSchema(createSchema);
   // "install" custom schema for validating document items update
   extendExtrasUpdateSchema(updateSchema);
-
-  fastify.addSchema(common);
 
   const appService = new AppService(itemService, jwtExpiration);
 
