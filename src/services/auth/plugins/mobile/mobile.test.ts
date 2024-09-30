@@ -111,7 +111,7 @@ describe('Mobile Endpoints', () => {
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
     });
 
-    it('Save actions is disabled when explicitly asked', async () => {
+    it('Save actions are disabled when explicitly asked', async () => {
       const email = 'someemail@email.com';
       const name = 'anna';
       const enableSaveActions = false;
@@ -175,6 +175,19 @@ describe('Mobile Endpoints', () => {
     it('Bad request for invalid email', async () => {
       const email = 'wrongemail';
       const name = 'anna';
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: '/m/register',
+        payload: { email, name, captcha: MOCK_CAPTCHA },
+      });
+
+      expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
+      expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
+    });
+
+    it('Bad request for invalid username', async () => {
+      const email = faker.internet.email().toLowerCase();
+      const name = '<divvy> "\'';
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/m/register',

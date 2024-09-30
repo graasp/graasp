@@ -1,4 +1,6 @@
+import { customType } from '../../../../../plugins/typebox';
 import { accountSchemaRef } from '../../../../account/schemas';
+import { itemIdSchemaRef } from '../../itemLike/schemas';
 
 export default {
   $id: 'https://graasp.org/apps/app-action/',
@@ -22,7 +24,7 @@ export default {
 };
 
 const create = {
-  params: { $ref: 'https://graasp.org/apps/#/definitions/itemIdParam' },
+  params: itemIdSchemaRef,
   body: {
     type: 'object',
     required: ['data', 'type'],
@@ -37,13 +39,13 @@ const create = {
 };
 
 const getForOne = {
-  params: { $ref: 'https://graasp.org/apps/#/definitions/itemIdParam' },
+  params: itemIdSchemaRef,
   querystring: {
     type: 'object',
     properties: {
       /** @deprecated use accountId */
-      memberId: { $ref: 'https://graasp.org/#/definitions/uuid', deprecated: true },
-      accountId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      memberId: customType.UUID({ deprecated: true }),
+      accountId: customType.UUID(),
     },
     additionalProperties: false,
   },

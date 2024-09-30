@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { beforeAll } from '@jest/globals';
-import { StatusCodes } from 'http-status-codes';
+import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import { sign as jwtSign } from 'jsonwebtoken';
 
 import { FastifyInstance } from 'fastify';
@@ -459,6 +459,21 @@ describe('Member Controller', () => {
           lastSize = data.size;
         }
       });
+    });
+  });
+
+  describe('PATCH /members/:id', () => {
+    it('username can not contain special characters', async () => {
+      const invalidName = '<divvy>%$^&';
+
+      const response = await app.inject({
+        method: HttpMethod.Patch,
+        url: `members/${member.id}`,
+        body: { name: invalidName },
+      });
+
+      expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
+      expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
     });
   });
 });

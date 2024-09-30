@@ -1,4 +1,8 @@
+import { StatusCodes } from 'http-status-codes';
+
 import { ThumbnailSize } from '@graasp/sdk';
+
+import { entityIdSchemaRef, errorSchemaRef } from '../../../../schemas/global';
 
 const upload = {
   params: {
@@ -10,7 +14,7 @@ const upload = {
 const download = {
   params: {
     allOf: [
-      { $ref: 'https://graasp.org/#/definitions/idParam' },
+      entityIdSchemaRef,
       {
         type: 'object',
         properties: {
@@ -34,15 +38,9 @@ const download = {
     additionalProperties: false,
   },
   response: {
-    200: {
-      type: 'string',
-    },
-    '4xx': {
-      $ref: 'https://graasp.org/#/definitions/error',
-    },
-    500: {
-      $ref: 'https://graasp.org/#/definitions/error',
-    },
+    [StatusCodes.OK]: errorSchemaRef,
+    '4xx': errorSchemaRef,
+    [StatusCodes.INTERNAL_SERVER_ERROR]: errorSchemaRef,
   },
 };
 

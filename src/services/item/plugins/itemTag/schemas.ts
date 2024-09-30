@@ -1,24 +1,20 @@
+import { Type } from '@sinclair/typebox';
+
 import { MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
-import { UUID_REGEX } from '../../../../schemas/global';
+import { customType } from '../../../../plugins/typebox';
+import { UUID_REGEX, errorSchemaRef } from '../../../../schemas/global';
 import { itemTag, itemTagType } from '../../fluent-schema';
+import { itemIdSchemaRef } from '../itemLike/schemas';
 
 export default {
   $id: 'https://graasp.org/item-tags/',
   definitions: {
-    itemIdParam: {
-      type: 'object',
-      required: ['itemId'],
-      properties: {
-        itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
-      },
-    },
-
     idParam: {
       type: 'object',
       required: ['id'],
       properties: {
-        id: { $ref: 'https://graasp.org/#/definitions/uuid' },
+        id: customType.UUID(),
       },
     },
 
@@ -33,7 +29,7 @@ export default {
       type: 'object',
       required: ['tagId'],
       properties: {
-        tagId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+        tagId: customType.UUID(),
       },
       additionalProperties: false,
     },
@@ -42,7 +38,7 @@ export default {
     tag: {
       type: 'object',
       properties: {
-        id: { $ref: 'https://graasp.org/#/definitions/uuid' },
+        id: customType.UUID(),
         name: { type: 'string' },
         nested: { type: 'string' },
         createdAt: { type: 'string' },
@@ -57,7 +53,7 @@ const create = {
   params: {
     type: 'object',
     properties: {
-      itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      itemId: customType.UUID(),
       type: { $ref: 'https://graasp.org/item-tags/#/definitions/itemTagType' },
     },
   },
@@ -68,7 +64,7 @@ const create = {
 
 // schema for getting an item's tags
 const getItemTags = {
-  params: { $ref: 'https://graasp.org/item-tags/#/definitions/itemIdParam' },
+  params: itemIdSchemaRef,
   response: {
     200: {
       type: 'array',
@@ -78,15 +74,13 @@ const getItemTags = {
 };
 
 const getMany = {
-  querystring: {
-    allOf: [
-      { $ref: 'https://graasp.org/#/definitions/idsQuery' },
-      {
-        type: 'object',
-        properties: { id: { type: 'array', minItems: 1, maxItems: MAX_TARGETS_FOR_READ_REQUEST } },
-      },
-    ],
-  },
+  querystring: Type.Object({
+    id: Type.Array(customType.UUID(), {
+      uniqueItems: true,
+      minItems: 1,
+      maxItems: MAX_TARGETS_FOR_READ_REQUEST,
+    }),
+  }),
   response: {
     200: {
       type: 'object',
@@ -102,12 +96,7 @@ const getMany = {
             },
           },
         },
-        errors: {
-          type: 'array',
-          items: {
-            $ref: 'https://graasp.org/#/definitions/error',
-          },
-        },
+        errors: Type.Array(errorSchemaRef),
       },
     },
   },
@@ -118,7 +107,7 @@ const deleteOne = {
   params: {
     type: 'object',
     properties: {
-      itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      itemId: customType.UUID(),
       type: { $ref: 'https://graasp.org/item-tags/#/definitions/itemTagType' },
     },
   },

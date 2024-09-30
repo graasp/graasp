@@ -1,8 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifyPluginAsync } from 'fastify';
-
-import { MentionStatus } from '@graasp/sdk';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../di/utils';
 import { asDefined } from '../../../../utils/assertions';
@@ -10,35 +8,13 @@ import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import { isMember } from '../../../member/entities/member';
 import { ChatMention } from './chatMention';
-import commonMentions, {
-  clearAllMentions,
-  deleteMention,
-  getMentions,
-  patchMention,
-} from './schemas';
+import { clearAllMentions, deleteMention, getMentions, patchMention } from './schemas';
 import { MentionService } from './service';
 
-const plugin: FastifyPluginAsync = async (fastify) => {
+const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   // isolate plugin content using fastify.register to ensure that the action hook from chat_message will not be called when using mention routes
   const { db } = fastify;
   const mentionService = resolveDependency(MentionService);
-
-  fastify.addSchema(commonMentions);
-
-  // // register websocket behaviours for chats
-  // if (websockets) {
-  //   registerChatMentionsWsHooks(
-  //     websockets,
-  //     runner,
-  //     mentionService,
-  //     membersService,
-  //     itemMembershipsService,
-  //     iTM,
-  //     chatTaskManager,
-  //     taskManager,
-  //     db.pool,
-  //   );
-  // }
 
   // TODO: MEMBERSHIP POSTHOOK: REMOVE MENTION TO AVOID PROVIDING ITEM INFO through message
 
@@ -64,26 +40,23 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     { schema: getMentions, preHandler: isAuthenticated },
     async ({ user }) => {
       const member = asDefined(user?.account);
-      return mentionService.getForAccount(member, buildRepositories());
+      return await mentionService.getForAccount(member, buildRepositories());
     },
   );
 
-  fastify.patch<{
-    Params: { mentionId: string };
-    Body: { status: MentionStatus };
-  }>(
+  fastify.patch(
     '/mentions/:mentionId',
     { schema: patchMention, preHandler: isAuthenticated },
     async ({ user, params: { mentionId }, body: { status } }) => {
       return db.transaction(async (manager) => {
         const member = asDefined(user?.account);
-        return mentionService.patch(member, buildRepositories(manager), mentionId, status);
+        return await mentionService.patch(member, buildRepositories(manager), mentionId, status);
       });
     },
   );
 
   // delete one mention by id
-  fastify.delete<{ Params: { mentionId: string } }>(
+  fastify.delete(
     '/mentions/:mentionId',
     { schema: deleteMention, preHandler: isAuthenticated },
     async ({ user, params: { mentionId } }) => {

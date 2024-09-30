@@ -10,6 +10,7 @@ import {
 } from '@graasp/sdk';
 
 import { idParam } from '../../../../schemas/fluent-schema';
+import { entityIdSchemaRef } from '../../../../schemas/global';
 import {
   MAX_ACTIONS_SAMPLE_SIZE,
   MIN_ACTIONS_SAMPLE_SIZE,
@@ -157,7 +158,7 @@ export const memberSchemaForAnalytics = {
 };
 
 export const postAction = {
-  params: { $ref: 'https://graasp.org/#/definitions/idParam' },
+  params: entityIdSchemaRef,
   body: {
     type: 'object',
     properties: {

@@ -1,9 +1,10 @@
+import { customType } from '../../../../plugins/typebox';
 import { idParam } from '../../../../schemas/fluent-schema';
 
 const geolocation = {
   type: 'object',
   properties: {
-    id: { $ref: 'https://graasp.org/#/definitions/uuid' },
+    id: customType.UUID(),
     lat: { type: 'number' },
     lng: { type: 'number' },
     country: { type: ['string', 'null'] },
@@ -39,7 +40,7 @@ export const getByItem = {
 const getItemsInBoxProps = {
   type: 'object',
   properties: {
-    parentItemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+    parentItemId: customType.UUID(),
     lat1: { type: 'number' },
     lat2: { type: 'number' },
     lng1: { type: 'number' },
