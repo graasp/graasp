@@ -8,7 +8,7 @@ import Etherpad from '@graasp/etherpad-api';
 import { CRON_3AM_MONDAY, JobServiceBuilder } from '../jobs';
 import { BaseLogger } from '../logger';
 import { MailerService } from '../plugins/mailer/service';
-import { ServiceCaching } from '../services/caching/service';
+import { CachingService } from '../services/caching/service';
 import FileService from '../services/file/service';
 import { fileRepositoryFactory } from '../services/file/utils/factory';
 import { wrapEtherpadErrors } from '../services/item/plugins/etherpad/etherpad';
@@ -95,7 +95,7 @@ export const registerDependencies = (instance: FastifyInstance) => {
   // Register CachingService for the thumbnails urls.
   registerValue(
     FILE_SERVICE_URLS_CACHING_DI_KEY,
-    new ServiceCaching(resolveDependency(Redis), 'file_service_url_caching'),
+    new CachingService(resolveDependency(Redis), 'file_service_url_caching'),
   );
   // Register the FileService to inject the CacheService.
   const fileRepository = fileRepositoryFactory(FILE_ITEM_TYPE, {

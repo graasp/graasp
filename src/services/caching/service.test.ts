@@ -5,11 +5,11 @@ import { FastifyInstance } from 'fastify';
 import build from '../../../test/app';
 import { FILE_SERVICE_URLS_CACHING_DI_KEY } from '../../di/constants';
 import { resolveDependency } from '../../di/utils';
-import { ServiceCaching } from './service';
+import { CachingService } from './service';
 
-describe('ServiceCaching Tests', () => {
+describe('CachingService Tests', () => {
   let app: FastifyInstance;
-  let cache: ServiceCaching;
+  let cache: CachingService;
   const MOCKED_PATH = '1b304da5_b342_46e8_a484_1712d5209e43';
   const getRandomUrl = async () => faker.internet.url(); // returns a new URL at each run
   const getOrCache = (expirationInSeconds = 3600) =>

@@ -1,4 +1,4 @@
-export interface IServiceCaching {
+export interface ICachingService {
   add(filePath: string, url: string, expiresInSeconds?: number): Promise<void>;
 
   get(filePath: string): Promise<string | null>;

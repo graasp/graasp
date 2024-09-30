@@ -1,6 +1,6 @@
-import { IServiceCaching } from '../interfaces';
+import { ICachingService } from '../interfaces';
 
-export class ServiceCaching implements IServiceCaching {
+export class CachingService implements ICachingService {
   private readonly cache: Map<string, string> = new Map();
 
   async add(filePath: string, url: string) {

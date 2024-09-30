@@ -1,11 +1,11 @@
 import { hoursToSeconds } from 'date-fns';
 import { Redis } from 'ioredis';
 
-import { IServiceCaching } from './interfaces';
+import { ICachingService } from './interfaces';
 
 const EXPIRES_IN_SECONDS = hoursToSeconds(1);
 
-export class ServiceCaching implements IServiceCaching {
+export class CachingService implements ICachingService {
   private readonly redis: Redis;
   private readonly contextKey: string;
 

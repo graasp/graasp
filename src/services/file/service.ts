@@ -7,7 +7,7 @@ import { FastifyReply } from 'fastify';
 import { Account, Member } from '@graasp/sdk';
 
 import { BaseLogger } from '../../logger';
-import { ServiceCaching } from '../caching/service';
+import { CachingService } from '../caching/service';
 import { Actor } from '../member/entities/member';
 import { LocalFileConfiguration, S3FileConfiguration } from './interfaces/configuration';
 import { FileRepository } from './interfaces/fileRepository';
@@ -26,9 +26,9 @@ export type FileServiceConfig = { s3?: S3FileConfiguration; local?: LocalFileCon
 class FileService {
   private readonly repository: FileRepository;
   private readonly logger: BaseLogger;
-  private readonly caching?: ServiceCaching;
+  private readonly caching?: CachingService;
 
-  constructor(repository: FileRepository, log: BaseLogger, caching?: ServiceCaching) {
+  constructor(repository: FileRepository, log: BaseLogger, caching?: CachingService) {
     this.repository = repository;
     this.caching = caching;
     this.logger = log;
