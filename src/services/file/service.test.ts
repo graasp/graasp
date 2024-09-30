@@ -1,8 +1,11 @@
+import { faker } from '@faker-js/faker';
 import { ReadStream } from 'fs';
+import { Redis } from 'ioredis';
 
 import { ItemType } from '@graasp/sdk';
 
 import { BaseLogger } from '../../logger';
+import { CachingService } from '../caching/service';
 import { Member } from '../member/entities/member';
 import { LocalFileRepository } from './repositories/local';
 import { S3FileRepository } from './repositories/s3';
@@ -16,6 +19,9 @@ import {
   UploadFileUnexpectedError,
 } from './utils/errors';
 import { fileRepositoryFactory } from './utils/factory';
+
+// We are mocking the cache service to avoid using Redis.
+jest.mock('../caching/service');
 
 const MOCK_LOCAL_CONFIG = {
   storageRootPath: '/root-path',
@@ -33,7 +39,16 @@ const member = new Member();
 
 const s3Repository = fileRepositoryFactory(ItemType.S3_FILE, { s3: MOCK_S3_CONFIG });
 
-const s3FileService = new FileService(s3Repository, console as unknown as BaseLogger);
+const s3FileService = new FileService(
+  s3Repository,
+  console as unknown as BaseLogger,
+  new CachingService({} as unknown as Redis, 'TEST'),
+);
+
+const getRandomUrl = async () => faker.internet.url();
+const doNothing = async () => {
+  // do nothing
+};
 
 describe('FileService', () => {
   describe('constructor', () => {
@@ -59,18 +74,35 @@ describe('FileService', () => {
     const uploadPayload = { file: {} as unknown as ReadStream, size: 10, filepath: 'filepath' };
 
     it('upload successfully', async () => {
-      const uploadFileMock = jest.spyOn(s3Repository, 'uploadFile').mockImplementation(async () => {
-        // do nothing
-      });
+      const uploadFileMock = jest.spyOn(s3Repository, 'uploadFile').mockImplementation(doNothing);
       expect((await s3FileService.upload(member, uploadPayload)).file).toBeTruthy();
       expect(uploadFileMock).toHaveBeenCalled();
     });
 
+    it('uploading twice replace in the cache', async () => {
+      // Define the mock implementations.
+      jest.spyOn(s3Repository, 'getUrl').mockImplementation(getRandomUrl);
+      jest.spyOn(s3Repository, 'deleteFile').mockImplementation(doNothing);
+      jest.spyOn(s3Repository, 'uploadFile').mockImplementation(doNothing);
+
+      // Upload a file.
+      expect((await s3FileService.upload(member, uploadPayload)).file).toBeTruthy();
+
+      // Verify that the file's url is cached.
+      const downloadPayload = { path: 'filepath', id: 'id' };
+      const url = await s3FileService.getUrl(downloadPayload);
+      expect(await s3FileService.getUrl(downloadPayload)).toBe(url);
+
+      // Upload another file with the same file path.
+      expect((await s3FileService.upload(member, uploadPayload)).file).toBeTruthy();
+
+      // Verify that the cached url is replaced.
+      expect(await s3FileService.getUrl(downloadPayload)).not.toBe(url);
+    });
+
     it('upload failure will delete file', async () => {
       const uploadFileMock = jest.spyOn(s3Repository, 'uploadFile').mockRejectedValue('error');
-      const deleteFileMock = jest.spyOn(s3Repository, 'deleteFile').mockImplementation(async () => {
-        // do nothing
-      });
+      const deleteFileMock = jest.spyOn(s3Repository, 'deleteFile').mockImplementation(doNothing);
       await expect(s3FileService.upload(member, uploadPayload)).rejects.toMatchObject(
         new UploadFileUnexpectedError(expect.anything()),
       );
@@ -105,12 +137,13 @@ describe('FileService', () => {
     const downloadPayload = { path: 'filepath', id: 'id' };
 
     it('get url successfully', async () => {
-      const returnValue = 'url';
-      const downloadMock = jest
-        .spyOn(s3Repository, 'getUrl')
-        .mockImplementation(async () => returnValue);
-      expect(await s3FileService.getUrl(downloadPayload)).toBeTruthy();
+      const downloadMock = jest.spyOn(s3Repository, 'getUrl').mockImplementation(getRandomUrl);
+      const url = await s3FileService.getUrl(downloadPayload);
+      expect(url).toBeTruthy();
       expect(downloadMock).toHaveBeenCalled();
+
+      // Verify that the service use the cache
+      expect(await s3FileService.getUrl(downloadPayload)).toBe(url);
     });
 
     it('signed out member can get url', async () => {
@@ -125,11 +158,25 @@ describe('FileService', () => {
 
   describe('delete', () => {
     it('delete successfully', async () => {
-      const deleteMock = jest.spyOn(s3Repository, 'deleteFile').mockImplementation(async () => {
-        // do nothing
-      });
+      const deleteMock = jest.spyOn(s3Repository, 'deleteFile').mockImplementation(doNothing);
       await s3FileService.delete('filepath');
       expect(deleteMock).toHaveBeenCalled();
+    });
+
+    it('deleting file also remove in the cache', async () => {
+      // Define the mock implementations.
+      jest.spyOn(s3Repository, 'getUrl').mockImplementation(getRandomUrl);
+      jest.spyOn(s3Repository, 'deleteFile').mockImplementation(doNothing);
+
+      // Verify the cache.
+      const downloadPayload = { path: 'filepath', id: 'id' };
+      const url = await s3FileService.getUrl(downloadPayload);
+      expect(await s3FileService.getUrl(downloadPayload)).toBe(url);
+
+      await s3FileService.delete('filepath');
+
+      // Verify that the url is removed from the cache.
+      expect(await s3FileService.getUrl(downloadPayload)).not.toBe(url);
     });
 
     it('empty path throws', async () => {
@@ -141,9 +188,7 @@ describe('FileService', () => {
 
   describe('deleteFolder', () => {
     it('delete successfully', async () => {
-      const deleteMock = jest.spyOn(s3Repository, 'deleteFolder').mockImplementation(async () => {
-        // do nothing
-      });
+      const deleteMock = jest.spyOn(s3Repository, 'deleteFolder').mockImplementation(doNothing);
       await s3FileService.deleteFolder('filepath');
       expect(deleteMock).toHaveBeenCalled();
     });

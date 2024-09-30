@@ -1,14 +1,13 @@
 import contentDisposition from 'content-disposition';
 import { StatusCodes } from 'http-status-codes';
 import { Readable } from 'stream';
-import { inject, singleton } from 'tsyringe';
 
 import { FastifyReply } from 'fastify';
 
 import { Account, Member } from '@graasp/sdk';
 
-import { FILE_REPOSITORY_DI_KEY } from '../../di/constants';
 import { BaseLogger } from '../../logger';
+import { CachingService } from '../caching/service';
 import { Actor } from '../member/entities/member';
 import { LocalFileConfiguration, S3FileConfiguration } from './interfaces/configuration';
 import { FileRepository } from './interfaces/fileRepository';
@@ -24,13 +23,14 @@ import {
 
 export type FileServiceConfig = { s3?: S3FileConfiguration; local?: LocalFileConfiguration };
 
-@singleton()
 class FileService {
-  private repository: FileRepository;
-  private logger: BaseLogger;
+  private readonly repository: FileRepository;
+  private readonly logger: BaseLogger;
+  private readonly caching?: CachingService;
 
-  constructor(@inject(FILE_REPOSITORY_DI_KEY) repository: FileRepository, log: BaseLogger) {
+  constructor(repository: FileRepository, log: BaseLogger, caching?: CachingService) {
     this.repository = repository;
+    this.caching = caching;
     this.logger = log;
   }
 
@@ -59,6 +59,7 @@ class FileService {
         memberId: account.id,
         mimetype,
       });
+      await this.caching?.delete(filepath);
     } catch (e) {
       // rollback uploaded file
       this.delete(filepath);
@@ -96,14 +97,17 @@ class FileService {
       });
     }
 
-    return this.repository.getUrl(
-      {
-        expiration,
-        filepath,
-        id,
-      },
-      this.logger,
-    );
+    const getUrl = () =>
+      this.repository.getUrl(
+        {
+          expiration,
+          filepath,
+          id,
+        },
+        this.logger,
+      );
+
+    return this.caching?.getOrCache(filepath, getUrl, expiration) ?? getUrl();
   }
 
   async delete(filepath: string) {
@@ -111,6 +115,7 @@ class FileService {
       throw new DeleteFileInvalidPathError(filepath);
     }
     await this.repository.deleteFile({ filepath });
+    await this.caching?.delete(filepath);
   }
 
   async deleteFolder(folderPath: string) {

@@ -26,6 +26,7 @@ const copyObjectMock = jest.fn(async () => console.debug('copyObjectMock'));
 const headObjectMock = jest.fn(async () => ({ ContentLength: 10 }));
 const uploadDoneMock = jest.fn(async () => console.debug('aws s3 storage upload'));
 const MOCK_SIGNED_URL = 'signed-url';
+
 jest.mock('@aws-sdk/client-s3', () => {
   return {
     GetObjectCommand: jest.fn(),
