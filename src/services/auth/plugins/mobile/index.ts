@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifyPluginAsync } from 'fastify';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { RecaptchaAction } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
@@ -18,7 +18,6 @@ import { generateAuthTokensPair, getRedirectionUrl } from '../../utils';
 import captchaPreHandler from '../captcha';
 import {
   SHORT_TOKEN_PARAM,
-  TOKEN_PARAM,
   authenticateJWTChallengeVerifier,
   authenticateMobileMagicLink,
   authenticatePassword,
@@ -29,7 +28,7 @@ import { authWeb, mPasswordLogin, mauth, mlogin, mregister } from './schemas';
 import { MobileService } from './service';
 
 // token based auth and endpoints for mobile
-const plugin: FastifyPluginAsync = async (fastify) => {
+const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { log, db } = fastify;
 
   const mobileService = resolveDependency(MobileService);
@@ -38,16 +37,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   // no need to add CORS support here - only used by mobile app
 
-  fastify.post<{
-    Body: {
-      name: string;
-      email: string;
-      challenge: string;
-      captcha: string;
-      enableSaveActions?: boolean;
-    };
-    Querystring: { lang?: string };
-  }>(
+  fastify.post(
     '/register',
     {
       schema: mregister,
@@ -66,10 +56,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  fastify.post<{
-    Body: { email: string; challenge: string; captcha: string };
-    Querystring: { lang?: string };
-  }>(
+  fastify.post(
     '/login',
     {
       schema: mlogin,
@@ -87,7 +74,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // login with password
-  fastify.post<{ Body: { email: string; challenge: string; password: string; captcha: string } }>(
+  fastify.post(
     '/login-password',
     {
       schema: mPasswordLogin,
@@ -121,7 +108,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  fastify.post<{ Body: { [SHORT_TOKEN_PARAM]: string; verifier: string } }>(
+  fastify.post(
     '/auth',
     {
       schema: mauth,
@@ -153,7 +140,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // from user token, set corresponding cookie
-  fastify.get<{ Querystring: { [TOKEN_PARAM]: string; url: string } }>(
+  fastify.get(
     '/auth/web',
     {
       schema: authWeb,

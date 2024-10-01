@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifyPluginAsync } from 'fastify';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { ActionTriggers, Context, RecaptchaAction } from '@graasp/sdk';
 
@@ -32,15 +32,13 @@ import { MemberPasswordService } from './service';
 const REDIRECTION_URL_PARAM = 'url';
 const AUTHENTICATION_FALLBACK_ROUTE = '/auth';
 
-const plugin: FastifyPluginAsync = async (fastify) => {
+const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db } = fastify;
   const actionService = resolveDependency(ActionService);
   const memberPasswordService = resolveDependency(MemberPasswordService);
 
   // login with password
-  fastify.post<{
-    Body: { email: string; password: string; captcha: string; url?: string };
-  }>(
+  fastify.post(
     '/login-password',
     {
       schema: passwordLogin,
@@ -77,7 +75,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
    * @param password - The new password.
    * @returns 204 No Content if the request was successful.
    */
-  fastify.post<{ Body: { password: string } }>(
+  fastify.post(
     '/password',
     { schema: setPassword, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async ({ user, body: { password } }, reply) => {
@@ -96,7 +94,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
    * @param password - The new password.
    * @returns 204 No Content if the request was successful.
    */
-  fastify.patch<{ Body: { currentPassword: string; password: string } }>(
+  fastify.patch(
     '/password',
     { schema: updatePassword, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async ({ user, body: { currentPassword, password } }, reply) => {
@@ -124,7 +122,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
    * @param captcha - Recaptcha response token.
    * @returns 204 No Content if the request was successful.
    */
-  fastify.post<{ Body: { email: string; captcha: string } }>(
+  fastify.post(
     '/password/reset',
     {
       schema: postResetPasswordRequest,
@@ -166,7 +164,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
    * @param password - New password.
    * @returns 204 No Content if the request was successful.
    */
-  fastify.patch<{ Body: { password: string }; User: { uuid: string } }>(
+  fastify.patch(
     '/password/reset',
     {
       schema: patchResetPasswordRequest,

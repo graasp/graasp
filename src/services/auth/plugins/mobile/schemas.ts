@@ -1,81 +1,84 @@
+import { Type } from '@sinclair/typebox';
+import { StatusCodes } from 'http-status-codes';
+
+import { MAX_USERNAME_LENGTH, MIN_USERNAME_LENGTH } from '@graasp/sdk';
+
 import { SHORT_TOKEN_PARAM, TOKEN_PARAM } from '../passport';
 
 export const mregister = {
-  body: {
-    type: 'object',
-    required: ['name', 'email', 'challenge', 'captcha'],
-    properties: {
-      name: { type: 'string', format: 'username' },
-      email: { type: 'string', format: 'email' },
-      challenge: { type: 'string' },
-      captcha: { type: 'string' },
-      enableSaveActions: { type: 'boolean' },
+  body: Type.Object(
+    {
+      name: Type.String({
+        format: 'username',
+        minLength: MIN_USERNAME_LENGTH,
+        maxLength: MAX_USERNAME_LENGTH,
+      }),
+      email: Type.String({ format: 'email' }),
+      challenge: Type.String(),
+      captcha: Type.String(),
+      enableSaveActions: Type.Optional(Type.Boolean()),
     },
-    additionalProperties: false,
-  },
-  querystring: {
-    type: 'object',
-    properties: {
-      lang: { type: 'string' },
+    { additionalProperties: false },
+  ),
+  querystring: Type.Object(
+    {
+      lang: Type.Optional(Type.String()),
     },
-    additionalProperties: false,
+    { additionalProperties: false },
+  ),
+  response: {
+    [StatusCodes.NO_CONTENT]: Type.Null(),
   },
 };
 
 export const mlogin = {
-  body: {
-    type: 'object',
-    required: ['email', 'challenge', 'captcha'],
-    properties: {
-      email: { type: 'string', format: 'email' },
-      challenge: { type: 'string' },
-      captcha: { type: 'string' },
+  body: Type.Object(
+    {
+      email: Type.String({ format: 'email' }),
+      challenge: Type.String(),
+      captcha: Type.String(),
     },
-    additionalProperties: false,
-  },
-  querystring: {
-    type: 'object',
-    properties: {
-      lang: { type: 'string' },
+    { additionalProperties: false },
+  ),
+  querystring: Type.Object(
+    {
+      lang: Type.Optional(Type.String()),
     },
-    additionalProperties: false,
+    { additionalProperties: false },
+  ),
+  response: {
+    [StatusCodes.NO_CONTENT]: Type.Null(),
   },
 };
 
 export const mPasswordLogin = {
-  body: {
-    type: 'object',
-    required: ['email', 'challenge', 'password', 'captcha'],
-    properties: {
-      email: { type: 'string', format: 'email' },
-      challenge: { type: 'string' },
-      password: { type: 'string' },
-      captcha: { type: 'string' },
+  body: Type.Object(
+    {
+      email: Type.String({ format: 'email' }),
+      challenge: Type.String(),
+      password: Type.String(),
+      captcha: Type.String(),
     },
-    additionalProperties: false,
-  },
+    { additionalProperties: false },
+  ),
 };
 
 export const mauth = {
-  body: {
-    type: 'object',
-    required: [SHORT_TOKEN_PARAM, 'verifier'],
-    properties: {
-      [SHORT_TOKEN_PARAM]: { type: 'string' },
-      verifier: { type: 'string' },
+  body: Type.Object(
+    {
+      [SHORT_TOKEN_PARAM]: Type.String({ format: 'jwt' }),
+      verifier: Type.String(),
     },
-    additionalProperties: false,
-  },
+    { additionalProperties: false },
+  ),
 };
 
 export const authWeb = {
-  querystring: {
-    type: 'object',
-    required: [TOKEN_PARAM],
-    properties: {
-      [TOKEN_PARAM]: { type: 'string' },
-      url: { type: 'string' },
+  querystring: Type.Object(
+    {
+      [TOKEN_PARAM]: Type.String({ format: 'jwt' }),
+      url: Type.Optional(Type.String({ format: 'uri-reference' })),
     },
-    additionalProperties: false,
-  },
+    { additionalProperties: false },
+  ),
 };

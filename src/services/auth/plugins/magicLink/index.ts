@@ -1,7 +1,8 @@
 import { StatusCodes } from 'http-status-codes';
 
 import fastifyPassport from '@fastify/passport';
-import { FastifyPluginAsync, PassportUser } from 'fastify';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
+import { PassportUser } from 'fastify';
 
 import { RecaptchaAction } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
@@ -15,7 +16,6 @@ import { isMember } from '../../../member/entities/member';
 import { MemberService } from '../../../member/service';
 import { getRedirectionUrl } from '../../utils';
 import captchaPreHandler from '../captcha';
-import { SHORT_TOKEN_PARAM } from '../passport';
 import { PassportStrategy } from '../passport/strategies';
 import { PassportInfo } from '../passport/types';
 import { auth, login, register } from './schemas';
@@ -24,23 +24,14 @@ import { MagicLinkService } from './service';
 const ERROR_SEARCH_PARAM = 'error';
 const ERROR_SEARCH_PARAM_HAS_ERROR = 'true';
 
-const plugin: FastifyPluginAsync = async (fastify) => {
+const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db } = fastify;
 
   const memberService = resolveDependency(MemberService);
   const magicLinkService = resolveDependency(MagicLinkService);
 
   // register
-  fastify.post<{
-    Body: {
-      name: string;
-      email: string;
-      captcha: string;
-      url?: string;
-      enableSaveActions?: boolean;
-    };
-    Querystring: { lang?: string };
-  }>(
+  fastify.post(
     '/register',
     { schema: register, preHandler: captchaPreHandler(RecaptchaAction.SignUp) },
     async (request, reply) => {
@@ -80,10 +71,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // login
-  fastify.post<{
-    Body: { email: string; captcha: string; url?: string };
-    Querystring: { lang?: string };
-  }>(
+  fastify.post(
     '/login',
     {
       schema: login,
@@ -102,7 +90,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // authenticate
-  fastify.get<{ Querystring: { [SHORT_TOKEN_PARAM]: string; url?: string } }>(
+  fastify.get(
     '/auth',
     {
       schema: auth,
