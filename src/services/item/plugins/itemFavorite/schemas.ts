@@ -1,4 +1,5 @@
 import { customType } from '../../../../plugins/typebox';
+import { itemSchemaRef, packedItemSchemaRef } from '../../schema';
 
 export default {
   $id: 'https://graasp.org/favorite/',
@@ -9,9 +10,7 @@ export default {
         id: {
           $ref: 'https://graasp.org/#/definitions/uuid',
         },
-        item: {
-          $ref: 'https://graasp.org/items/#/definitions/item',
-        },
+        item: itemSchemaRef,
         createdAt: { type: 'string' },
       },
       additionalProperties: false,
@@ -22,9 +21,7 @@ export default {
         id: {
           $ref: 'https://graasp.org/#/definitions/uuid',
         },
-        item: {
-          $ref: 'https://graasp.org/items/#/definitions/packedItem',
-        },
+        item: packedItemSchemaRef,
         createdAt: { type: 'string' },
       },
       additionalProperties: false,

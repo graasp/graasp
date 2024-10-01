@@ -1,6 +1,6 @@
 import { FlagType } from '@graasp/sdk';
 
-import { itemIdSchemaRef } from '../itemLike/schemas';
+import { itemIdSchemaRef, itemSchemaRef } from '../../schema';
 
 export default {
   $id: 'https://graasp.org/item-flags/',
@@ -13,9 +13,7 @@ export default {
       type: 'object',
       properties: {
         id: { type: 'string' },
-        item: {
-          $ref: 'https://graasp.org/items/#/definitions/item',
-        },
+        item: itemSchemaRef,
         type: { $ref: 'https://graasp.org/item-flags/#/definitions/flag' },
         creator: { $ref: 'https://graasp.org/members/#/definitions/member' },
         createdAt: { type: 'string' },

@@ -5,6 +5,7 @@ import { FastifySchema } from 'fastify';
 
 import { customType, registerSchemaAsRef } from '../../../../../plugins/typebox';
 import { accountSchemaRef } from '../../../../account/schemas';
+import { itemSchemaRef } from '../../../schema';
 
 export const appDataSchemaRef = registerSchemaAsRef(
   Type.Object(
@@ -13,7 +14,7 @@ export const appDataSchemaRef = registerSchemaAsRef(
       id: customType.UUID(),
       account: accountSchemaRef,
       member: Type.Ref(accountSchemaRef.$ref, { deprecated: true }),
-      item: Type.Ref('https://graasp.org/items/#/definitions/item'),
+      item: itemSchemaRef,
       data: Type.Object({}, { additionalProperties: true }),
       type: Type.String(),
       visibility: Type.String({ enum: ['member', 'item'] }),

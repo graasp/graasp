@@ -1,5 +1,8 @@
+import { Type } from '@sinclair/typebox';
+import { StatusCodes } from 'http-status-codes';
+
 import { customType } from '../../../../plugins/typebox';
-import { itemIdSchemaRef } from '../itemLike/schemas';
+import { itemIdSchemaRef, itemSchemaRef } from '../../schema';
 
 export default {
   $id: 'https://graasp.org/categories/',
@@ -27,9 +30,7 @@ export default {
           $ref: 'https://graasp.org/categories/#/definitions/category',
         },
         createdAt: {},
-        item: {
-          $ref: 'https://graasp.org/items/#/definitions/item',
-        },
+
         creator: {
           $ref: 'https://graasp.org/members/#/definitions/member',
         },
@@ -128,12 +129,7 @@ export const getByCategories = {
     additionalProperties: false,
   },
   response: {
-    200: {
-      type: 'array',
-      items: {
-        $ref: 'https://graasp.org/items/#/definitions/item',
-      },
-    },
+    [StatusCodes.OK]: Type.Array(itemSchemaRef),
   },
 };
 

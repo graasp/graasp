@@ -5,7 +5,7 @@ import { FastifySchema } from 'fastify';
 
 import { customType, registerSchemaAsRef } from '../../../../../plugins/typebox';
 import { accountSchemaRef } from '../../../../account/schemas';
-import { itemIdSchemaRef } from '../../itemLike/schemas';
+import { itemIdSchemaRef } from '../../../schema';
 
 export const appActionSchemaRef = registerSchemaAsRef(
   Type.Object(

@@ -6,6 +6,7 @@ import { PermissionLevel } from '@graasp/sdk';
 import { customType } from '../../plugins/typebox';
 import { UUID_REGEX, entityIdSchemaRef, errorSchemaRef } from '../../schemas/global';
 import { augmentedAccountSchemaRef } from '../account/schemas';
+import { itemSchemaRef } from '../item/schema';
 
 export default {
   $id: 'https://graasp.org/item-memberships/',
@@ -29,7 +30,7 @@ export default {
          */
         // itemPath: { $ref: 'https://graasp.org/#/definitions/itemPath' },
         // bug: cannot set item schema because it's a fluent schema
-        item: { $ref: 'https://graasp.org/items/#/definitions/item' },
+        item: itemSchemaRef,
         // TODO: bug! should allow relative $ref: #/definitions/permission
         // check: https://github.com/fastify/fastify/issues/2328
         permission: { $ref: 'https://graasp.org/item-memberships/#/definitions/permission' },

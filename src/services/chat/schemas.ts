@@ -4,7 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifySchema } from 'fastify';
 
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
-import { itemIdSchemaRef } from '../item/plugins/itemLike/schemas';
+import { itemIdSchemaRef, itemSchemaRef } from '../item/schema';
 
 /**
  * JSON schema definitions to validate requests and responses
@@ -36,7 +36,7 @@ export const chatMessageSchemaRef = registerSchemaAsRef(
       createdAt: customType.DateTime(),
       updatedAt: customType.DateTime(),
       body: Type.String(),
-      item: Type.Ref('https://graasp.org/items/#/definitions/item'),
+      item: itemSchemaRef,
     },
     {
       // Schema Options

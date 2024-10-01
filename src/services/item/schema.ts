@@ -1,3 +1,4 @@
+import { Type } from '@sinclair/typebox';
 import { JSONSchema, ObjectSchema, S } from 'fluent-json-schema';
 import { StatusCodes } from 'http-status-codes';
 
@@ -16,7 +17,7 @@ import {
   ThumbnailSizeInPackedItem,
 } from '@graasp/sdk';
 
-import { customType } from '../../plugins/typebox';
+import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 import { error, idParam, idsQuery, uuid } from '../../schemas/fluent-schema';
 import { EMPTY_OR_SPACED_WORDS_REGEX, NAME_REGEX } from '../../schemas/global';
 import { ITEMS_PAGE_SIZE } from './constants';
@@ -24,6 +25,92 @@ import { Ordering, SortBy } from './types';
 
 export const SHOW_HIDDEN_PARRAM = 'showHidden';
 export const TYPES_FILTER_PARAM = 'types';
+
+export const itemIdSchemaRef = registerSchemaAsRef(
+  Type.Object(
+    {
+      // Object Definition
+      itemId: customType.UUID(),
+    },
+    {
+      // Schema Options
+      title: 'Item ID',
+      $id: 'itemId',
+      additionalProperties: false,
+    },
+  ),
+);
+
+export const itemSchemaRef = registerSchemaAsRef(
+  Type.Object(
+    {
+      // Object Definition
+      id: customType.UUID(),
+      name: Type.String(),
+      displayName: Type.String(),
+      description: Type.Optional(Type.Union([Type.String(), Type.Null()])),
+      type: Type.String(),
+      path: Type.String(),
+      lang: Type.String(),
+      extra: Type.Object({}, { additionalProperties: true }),
+      settings: Type.Object({}, { additionalProperties: true }),
+      creator: Type.Optional(Type.Ref('https://graasp.org/members/#/definitions/member')),
+      createdAt: customType.DateTime(),
+      updatedAt: customType.DateTime(),
+    },
+    {
+      // Schema Options
+      title: 'Item',
+      $id: 'item',
+      additionalProperties: false,
+    },
+  ),
+);
+
+// Because packedItemSchemaRef use itemTagSchemaRef which use itemSchemaRef. We need to define itemTagSchemaRef in between, so we can not move it to the ItemTag folder.
+export const itemTagSchemaRef = registerSchemaAsRef(
+  Type.Object(
+    {
+      id: customType.UUID(),
+      type: Type.Enum(ItemTagType),
+      item: itemSchemaRef,
+      creator: Type.Optional(Type.Ref('https://graasp.org/members/#/definitions/member')),
+      createdAt: customType.DateTime(),
+    },
+    {
+      title: 'Item Tag',
+      $id: 'itemTag',
+      additionalProperties: false,
+    },
+  ),
+);
+
+export const packedItemSchemaRef = registerSchemaAsRef(
+  Type.Object(
+    {
+      id: customType.UUID(),
+      name: Type.String(),
+      description: Type.Optional(Type.Union([Type.String(), Type.Null()])),
+      type: Type.String(),
+      path: Type.String(),
+      lang: Type.String(),
+      extra: Type.Object({}, { additionalProperties: true }),
+      settings: Type.Object({}, { additionalProperties: true }),
+      creator: Type.Optional(Type.Ref('https://graasp.org/members/#/definitions/member')),
+      createdAt: customType.DateTime(),
+      updatedAt: customType.DateTime(),
+      permission: Type.Union([Type.Enum(PermissionLevel), Type.Null()]),
+      hidden: Type.Optional(itemTagSchemaRef),
+      public: Type.Optional(itemTagSchemaRef),
+      thumbnails: Type.Optional(Type.Object({}, { additionalProperties: true })),
+    },
+    {
+      title: 'Packed Item',
+      $id: 'packedItem',
+      additionalProperties: false,
+    },
+  ),
+);
 
 /**
  * for serialization
@@ -355,84 +442,6 @@ export const copyMany = {
     .prop('id', S.array().maxItems(MAX_TARGETS_FOR_MODIFY_REQUEST))
     .extend(idsQuery),
   body: S.object().additionalProperties(false).prop('parentId', uuid),
-};
-
-// item tag properties to be returned to the client
-export const itemTagType = {
-  type: 'string',
-  enum: Object.values(ItemTagType),
-};
-export const itemTag = {
-  type: 'object',
-  properties: {
-    id: customType.UUID(),
-    type: itemTagType,
-    item: {
-      $ref: 'https://graasp.org/items/#/definitions/item',
-    },
-    creator: { $ref: 'https://graasp.org/members/#/definitions/member' },
-    createdAt: { type: 'string' },
-  },
-  additionalProperties: false,
-};
-
-// ajv for other schemas to import
-export default {
-  $id: 'https://graasp.org/items/',
-  definitions: {
-    item: {
-      type: 'object',
-      additionalProperties: false,
-      properties: {
-        id: customType.UUID(),
-        name: { type: 'string' },
-        displayName: { type: 'string' },
-        description: { type: ['string', 'null'] },
-        type: { type: 'string' },
-        path: { type: 'string' },
-        lang: { type: 'string' },
-        extra: {
-          type: 'object',
-          additionalProperties: true,
-        },
-        settings: {
-          type: 'object',
-          additionalProperties: true,
-        },
-        creator: { $ref: 'https://graasp.org/members/#/definitions/member' },
-        createdAt: { type: 'string' },
-        updatedAt: { type: 'string' },
-      },
-    },
-    packedItem: {
-      type: 'object',
-      additionalProperties: false,
-      properties: {
-        id: customType.UUID(),
-        name: { type: 'string' },
-        displayName: { type: 'string' },
-        description: { type: ['string', 'null'] },
-        type: { type: 'string' },
-        path: { type: 'string' },
-        lang: { type: 'string' },
-        extra: {
-          type: 'object',
-          additionalProperties: true,
-        },
-        settings: {
-          type: 'object',
-          additionalProperties: true,
-        },
-        creator: { $ref: 'https://graasp.org/members/#/definitions/member' },
-        createdAt: { type: 'string' },
-        updatedAt: { type: 'string' },
-        permission: { type: ['string', 'null'], enum: Object.values(PermissionLevel) },
-        hidden: itemTag,
-        public: itemTag,
-        thumbnails: { type: 'object', additionalProperties: true },
-      },
-    },
-  },
 };
 
 export const geolocation = S.object().prop('lat', S.number()).prop('lng', S.number());
