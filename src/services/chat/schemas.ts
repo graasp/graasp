@@ -33,8 +33,8 @@ export const chatMessageSchemaRef = registerSchemaAsRef(
       // Object Definition
       id: customType.UUID(),
       creator: Type.Ref('https://graasp.org/members/#/definitions/member'),
-      createdAt: customType.Date(),
-      updatedAt: customType.Date(),
+      createdAt: customType.DateTime(),
+      updatedAt: customType.DateTime(),
       body: Type.String(),
       item: Type.Ref('https://graasp.org/items/#/definitions/item'),
     },

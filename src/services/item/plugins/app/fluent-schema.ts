@@ -1,30 +1,5 @@
 import { S } from 'fluent-json-schema';
 
-// we don't want to return the id since it's the key!
-export const appSchema = S.object()
-  .additionalProperties(false)
-  .prop('name', S.string())
-  .prop('description', S.string())
-  .prop('url', S.string())
-  .prop('extra', S.object().additionalProperties(true));
-
-export const mostUsedAppSchema = S.object()
-  .additionalProperties(false)
-  .prop('name', S.string())
-  .prop('url', S.string())
-  .prop('count', S.number());
-
-export const getMany = {
-  response: {
-    200: S.array().items(appSchema),
-  },
-};
-
-export const getMostUsed = {
-  response: {
-    200: S.array().items(mostUsedAppSchema),
-  },
-};
 /**
  * Fluent schema definitions to extend core schemas
  */

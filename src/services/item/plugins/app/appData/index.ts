@@ -11,14 +11,11 @@ import { appDataWsHooks } from '../ws/hooks';
 import { AppData } from './appData';
 import { InputAppData } from './interfaces/app-data';
 import appDataFilePlugin from './plugins/file';
-import common, { create, deleteOne, getForOne, updateOne } from './schemas';
+import { create, deleteOne, getForOne, updateOne } from './schemas';
 import { AppDataService } from './service';
 
 const appDataPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db } = fastify;
-
-  // register app data schema
-  fastify.addSchema(common);
 
   const appDataService = resolveDependency(AppDataService);
 

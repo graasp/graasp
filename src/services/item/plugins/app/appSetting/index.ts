@@ -16,14 +16,11 @@ import { appSettingsWsHooks } from '../ws/hooks';
 import { AppSetting } from './appSettings';
 import { InputAppSetting } from './interfaces/app-setting';
 import appSettingFilePlugin from './plugins/file';
-import common, { create, deleteOne, getForOne, updateOne } from './schemas';
+import { create, deleteOne, getForOne, updateOne } from './schemas';
 import { AppSettingService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db } = fastify;
-
-  // register app setting schema
-  fastify.addSchema(common);
 
   const itemService = resolveDependency(ItemService);
   const appSettingService = resolveDependency(AppSettingService);

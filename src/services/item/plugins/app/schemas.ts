@@ -1,25 +1,65 @@
-import { customType } from '../../../../plugins/typebox';
+import { Type } from '@sinclair/typebox';
+import { StatusCodes } from 'http-status-codes';
+
+import { FastifySchema } from 'fastify';
+
+import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { itemIdSchemaRef } from '../itemLike/schemas';
 
-export default {
-  $id: 'https://graasp.org/apps/',
-  definitions: {
-    appContext: {
-      type: 'object',
-      properties: {
-        item: { $ref: 'https://graasp.org/items/#/definitions/item' },
-        members: {
-          type: 'array',
-          items: {
-            $ref: 'https://graasp.org/members/#/definitions/member',
-          },
-        },
-      },
+export const appContextSchemaRef = registerSchemaAsRef(
+  Type.Object(
+    {
+      // Object Definition
+      item: Type.Ref('https://graasp.org/items/#/definitions/item'),
+      members: Type.Array(Type.Ref('https://graasp.org/members/#/definitions/member')),
     },
-  },
-};
+    {
+      // Schema Options
+      title: 'App Context',
+      $id: 'appContext',
+      additionalProperties: false,
+    },
+  ),
+);
 
-const generateToken = {
+// we don't want to return the id since it's the key!
+
+export const appSchemaRef = registerSchemaAsRef(
+  Type.Object(
+    {
+      // Object Definition
+      name: Type.String(),
+      description: Type.String(),
+      url: Type.String(),
+      extra: Type.Object({}, { additionalProperties: true }),
+    },
+    {
+      // Schema Options
+      title: 'App',
+      $id: 'app',
+      additionalProperties: false,
+    },
+  ),
+);
+
+export const mostUsedAppSchemaRef = registerSchemaAsRef(
+  Type.Object(
+    {
+      // Object Definition
+      name: Type.String(),
+      url: Type.String(),
+      count: Type.Number(),
+    },
+    {
+      // Schema Options
+      title: 'Most Used App',
+      $id: 'mostUsedApp',
+      additionalProperties: false,
+    },
+  ),
+);
+
+export const generateToken = {
   params: itemIdSchemaRef,
   body: {
     type: 'object',
@@ -36,23 +76,23 @@ const generateToken = {
       properties: { token: { type: 'string' } },
     },
   },
-};
+} as const satisfies FastifySchema;
 
-const getContext = {
+export const getContext = {
   params: itemIdSchemaRef,
   response: {
-    200: { $ref: 'https://graasp.org/apps/#/definitions/appContext' },
+    [StatusCodes.OK]: appContextSchemaRef,
   },
-};
-const patchSettings = {
-  params: itemIdSchemaRef,
-  body: {
-    type: 'object',
-    additionalProperties: true,
-  },
-  response: {
-    204: {},
-  },
-};
+} as const satisfies FastifySchema;
 
-export { generateToken, getContext, patchSettings };
+export const getMany = {
+  response: {
+    [StatusCodes.OK]: Type.Array(appSchemaRef),
+  },
+} as const satisfies FastifySchema;
+
+export const getMostUsed = {
+  response: {
+    [StatusCodes.OK]: Type.Array(mostUsedAppSchemaRef),
+  },
+} as const satisfies FastifySchema;

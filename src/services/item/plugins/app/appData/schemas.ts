@@ -1,36 +1,36 @@
 import { Type } from '@sinclair/typebox';
+import { StatusCodes } from 'http-status-codes';
 
 import { FastifySchema } from 'fastify';
 
-import { customType } from '../../../../../plugins/typebox';
+import { customType, registerSchemaAsRef } from '../../../../../plugins/typebox';
 import { accountSchemaRef } from '../../../../account/schemas';
 
-export default {
-  $id: 'https://graasp.org/apps/app-data/',
-  definitions: {
-    appData: {
-      type: 'object',
-      properties: {
-        id: { type: 'string' },
-        account: accountSchemaRef,
-        /** @deprecated use account - to support legacy apps */
-        member: { $ref: accountSchemaRef.$ref, deprecated: true },
-        item: { $ref: 'https://graasp.org/items/#/definitions/item' },
-        data: {
-          type: 'object',
-          additionalProperties: true,
-        },
-        type: { type: 'string' },
-        visibility: { type: 'string', enum: ['member', 'item'] },
-        creator: { $ref: 'https://graasp.org/members/#/definitions/member' },
-        createdAt: { type: 'string' },
-        updatedAt: { type: 'string' },
-      },
+export const appDataSchemaRef = registerSchemaAsRef(
+  Type.Object(
+    {
+      // Object Definition
+      id: customType.UUID(),
+      account: accountSchemaRef,
+      member: Type.Ref(accountSchemaRef.$ref, { deprecated: true }),
+      item: Type.Ref('https://graasp.org/items/#/definitions/item'),
+      data: Type.Object({}, { additionalProperties: true }),
+      type: Type.String(),
+      visibility: Type.String({ enum: ['member', 'item'] }),
+      creator: Type.Ref('https://graasp.org/members/#/definitions/member'),
+      createdAt: customType.DateTime(),
+      updatedAt: customType.DateTime(),
     },
-  },
-};
+    {
+      // Schema Options
+      title: 'App Data',
+      $id: 'appData',
+      additionalProperties: false,
+    },
+  ),
+);
 
-const create = {
+export const create = {
   params: Type.Object({
     itemId: customType.UUID(),
   }),
@@ -47,11 +47,11 @@ const create = {
     },
   },
   response: {
-    200: { $ref: 'https://graasp.org/apps/app-data/#/definitions/appData' },
+    [StatusCodes.OK]: appDataSchemaRef,
   },
 };
 
-const updateOne = {
+export const updateOne = {
   params: Type.Object({
     itemId: customType.UUID(),
     id: customType.UUID(),
@@ -64,21 +64,21 @@ const updateOne = {
     },
   },
   response: {
-    200: { $ref: 'https://graasp.org/apps/app-data/#/definitions/appData' },
+    [StatusCodes.OK]: appDataSchemaRef,
   },
 } as const satisfies FastifySchema;
 
-const deleteOne = {
+export const deleteOne = {
   params: Type.Object({
     itemId: customType.UUID(),
     id: customType.UUID(),
   }),
   response: {
-    200: { $ref: 'https://graasp.org/apps/app-data/#/definitions/appData' },
+    [StatusCodes.OK]: customType.UUID(),
   },
 } as const satisfies FastifySchema;
 
-const getForOne = {
+export const getForOne = {
   params: Type.Object({
     itemId: customType.UUID(),
   }),
@@ -90,11 +90,6 @@ const getForOne = {
     additionalProperties: false,
   },
   response: {
-    200: {
-      type: 'array',
-      items: { $ref: 'https://graasp.org/apps/app-data/#/definitions/appData' },
-    },
+    [StatusCodes.OK]: Type.Array(appDataSchemaRef),
   },
 } as const satisfies FastifySchema;
-
-export { create, updateOne, deleteOne, getForOne };

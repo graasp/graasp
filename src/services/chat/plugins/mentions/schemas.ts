@@ -34,8 +34,8 @@ export const minimalChatMentionSchemaRef = registerSchemaAsRef(
       // Object Definition
       id: customType.UUID(),
       account: accountSchemaRef,
-      createdAt: customType.Date(),
-      updatedAt: customType.Date(),
+      createdAt: customType.DateTime(),
+      updatedAt: customType.DateTime(),
       status: Type.Enum(MentionStatus),
     },
     {
