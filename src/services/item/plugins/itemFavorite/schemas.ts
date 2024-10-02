@@ -1,33 +1,42 @@
-import { customType } from '../../../../plugins/typebox';
+import { Type } from '@sinclair/typebox';
+import { StatusCodes } from 'http-status-codes';
+
+import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { itemSchemaRef, packedItemSchemaRef } from '../../schema';
 
-export default {
-  $id: 'https://graasp.org/favorite/',
-  definitions: {
-    favorite: {
-      type: 'object',
-      properties: {
-        id: {
-          $ref: 'https://graasp.org/#/definitions/uuid',
-        },
-        item: itemSchemaRef,
-        createdAt: { type: 'string' },
-      },
+export const favoriteSchemaRef = registerSchemaAsRef(
+  Type.Object(
+    {
+      // Object definition
+      id: customType.UUID(),
+      item: itemSchemaRef,
+      createdAt: customType.DateTime(),
+    },
+    {
+      // Schema options
+      title: 'Favorite',
+      $id: 'favorite',
       additionalProperties: false,
     },
-    packedFavorite: {
-      type: 'object',
-      properties: {
-        id: {
-          $ref: 'https://graasp.org/#/definitions/uuid',
-        },
-        item: packedItemSchemaRef,
-        createdAt: { type: 'string' },
-      },
+  ),
+);
+
+export const packedFavoriteSchemaRef = registerSchemaAsRef(
+  Type.Object(
+    {
+      // Object definition
+      id: customType.UUID(),
+      item: packedItemSchemaRef,
+      createdAt: customType.DateTime(),
+    },
+    {
+      // Schema options
+      title: 'Packed Favorite',
+      $id: 'packedFavorite',
       additionalProperties: false,
     },
-  },
-};
+  ),
+);
 
 export const getFavorite = {
   querystring: {
@@ -38,12 +47,7 @@ export const getFavorite = {
     additionalProperties: false,
   },
   response: {
-    200: {
-      type: 'array',
-      items: {
-        $ref: 'https://graasp.org/favorite/#/definitions/packedFavorite',
-      },
-    },
+    [StatusCodes.OK]: Type.Array(packedFavoriteSchemaRef),
   },
 };
 
@@ -52,9 +56,7 @@ export const create = {
     itemId: customType.UUID(),
   },
   response: {
-    200: {
-      $ref: 'https://graasp.org/favorite/#/definitions/favorite',
-    },
+    [StatusCodes.OK]: favoriteSchemaRef,
   },
 };
 
@@ -63,6 +65,6 @@ export const deleteOne = {
     itemId: customType.UUID(),
   },
   response: {
-    200: customType.UUID(),
+    [StatusCodes.OK]: customType.UUID(),
   },
 };

@@ -12,7 +12,7 @@ import { assertIsMember } from '../../../member/entities/member';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { Item } from '../../entities/Item';
 import { ItemService } from '../../service';
-import common, { create, deleteOne, getItemTags, getMany } from './schemas';
+import { create, deleteOne, getItemTags, getMany } from './schemas';
 import { ItemTagService } from './service';
 
 /**
@@ -30,9 +30,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   const itemService = resolveDependency(ItemService);
   const itemTagService = resolveDependency(ItemTagService);
-
-  // schemas
-  fastify.addSchema(common);
 
   // TODO: where should we define this???
   // TODO: STRING

@@ -2,8 +2,6 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import { MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
-
 import { resolveDependency } from '../../../../di/utils';
 import { IdParam, IdsParams } from '../../../../types';
 import { asDefined } from '../../../../utils/assertions';
@@ -14,28 +12,13 @@ import { assertIsMember } from '../../../member/entities/member';
 import { memberAccountRole } from '../../../member/strategies/memberAccountRole';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
-import schemas, { getRecycledItemDatas, recycleMany, restoreMany } from './schemas';
+import { getRecycledItemDatas, recycleOrRestoreMany } from './schemas';
 import { RecycledBinService } from './service';
 
-export interface RecycledItemDataOptions {
-  /** Max number of items to recycle in a request.
-   * A number above this value will trigger an immediate bad request (400). Defaults to `10`. */
-  maxItemsInRequest: number;
-  /** Max number of items to recycle in a request w/ response. A number of items less or equal
-   * to this value will make the server completely finish the execution before returning a response.
-   * Above this value, the server will immediatly return a 202 (accepted) and the execution
-   * will continue "in the back". **This value should be smaller than `maxItemsInRequest`**
-   * otherwise it has no effect. Defaults to `5`. */
-  maxItemsWithResponse: number;
-}
-
-const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, options) => {
+const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, websockets } = fastify;
-  const { maxItemsInRequest = MAX_TARGETS_FOR_READ_REQUEST } = options;
 
   const recycleBinService = resolveDependency(RecycledBinService);
-
-  fastify.addSchema(schemas);
 
   // Note: it's okay to not prevent memberships changes on recycled items
   // it is not really possible to change them in the interface
@@ -59,7 +42,7 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
   fastify.post<{ Querystring: IdsParams }>(
     '/recycle',
     {
-      schema: recycleMany(maxItemsInRequest),
+      schema: recycleOrRestoreMany,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
     async (request, reply) => {
@@ -96,7 +79,7 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
   fastify.post<{ Querystring: IdsParams }>(
     '/restore',
     {
-      schema: restoreMany(maxItemsInRequest),
+      schema: recycleOrRestoreMany,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
     async (request, reply) => {

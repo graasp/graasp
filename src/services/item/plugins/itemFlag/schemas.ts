@@ -1,54 +1,58 @@
+import { Type } from '@sinclair/typebox';
+import { StatusCodes } from 'http-status-codes';
+
 import { FlagType } from '@graasp/sdk';
 
+import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { itemIdSchemaRef, itemSchemaRef } from '../../schema';
 
-export default {
-  $id: 'https://graasp.org/item-flags/',
-  definitions: {
-    // flag
-    flag: { type: 'string', enum: Object.values(FlagType) },
-
-    // item flag
-    itemFlag: {
-      type: 'object',
-      properties: {
-        id: { type: 'string' },
-        item: itemSchemaRef,
-        type: { $ref: 'https://graasp.org/item-flags/#/definitions/flag' },
-        creator: { $ref: 'https://graasp.org/members/#/definitions/member' },
-        createdAt: { type: 'string' },
-      },
+export const itemFlagSchemaRef = registerSchemaAsRef(
+  Type.Object(
+    {
+      // Object definition
+      id: customType.UUID(),
+      item: itemSchemaRef,
+      type: Type.Enum(FlagType),
+      creator: Type.Ref('https://graasp.org/members/#/definitions/member'),
+      createdAt: customType.DateTime(),
+    },
+    {
+      // Schema options
+      title: 'Item Flag',
+      $id: 'itemFlag',
       additionalProperties: false,
     },
+  ),
+);
 
-    // item flag properties required at creation
-    createPartialItemFlag: {
-      type: 'object',
-      required: ['type'],
-      properties: {
-        type: { $ref: 'https://graasp.org/item-flags/#/definitions/flag' },
-      },
+export const createItemFlagSchemaRef = registerSchemaAsRef(
+  Type.Object(
+    {
+      // Object definition
+      type: Type.Enum(FlagType),
+    },
+    {
+      // Schema options
+      title: 'Create Flag',
+      $id: 'createFlag',
       additionalProperties: false,
     },
-  },
-};
+  ),
+);
 
 // schema for creating an item flag
 const create = {
   params: itemIdSchemaRef,
-  body: { $ref: 'https://graasp.org/item-flags/#/definitions/createPartialItemFlag' },
+  body: createItemFlagSchemaRef,
   response: {
-    201: { $ref: 'https://graasp.org/item-flags/#/definitions/itemFlag' },
+    [StatusCodes.CREATED]: itemFlagSchemaRef,
   },
 };
 
 // schema for getting flag types
 const getFlagTypes = {
   response: {
-    200: {
-      type: 'array',
-      items: { $ref: 'https://graasp.org/item-flags/#/definitions/flag' },
-    },
+    [StatusCodes.OK]: Type.Array(Type.Enum(FlagType)),
   },
 };
 

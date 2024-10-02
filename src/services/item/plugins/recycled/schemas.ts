@@ -1,90 +1,86 @@
 import { Type } from '@sinclair/typebox';
+import { StatusCodes } from 'http-status-codes';
 
-import { customType } from '../../../../plugins/typebox';
+import { FastifySchema } from 'fastify';
+
+import { MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
+
+import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { entityIdSchemaRef } from '../../../../schemas/global';
 import { itemSchemaRef, packedItemSchemaRef } from '../../schema';
 
-export default {
-  $id: 'https://graasp.org/recycle-bin/',
-  definitions: {
-    // item properties to be returned to the client
-    recycledItem: {
-      type: 'object',
-      required: ['id', 'item'],
-      properties: {
-        id: customType.UUID(),
-        item: itemSchemaRef,
-        creator: { $ref: 'https://graasp.org/members/#/definitions/member' },
-        createdAt: { type: 'string' },
-      },
+export const recycledItemSchemaRef = registerSchemaAsRef(
+  Type.Object(
+    {
+      // Object definition
+      id: customType.UUID(),
+      item: itemSchemaRef,
+      creator: Type.Optional(Type.Ref('https://graasp.org/members/#/definitions/member')),
+      createdAt: customType.DateTime(),
+    },
+    {
+      // Schema options
+      title: 'Recycled Item',
+      $id: 'recycledItem',
       additionalProperties: false,
     },
-    packedRecycledItem: {
-      type: 'object',
-      required: ['id', 'item'],
-      properties: {
-        id: customType.UUID(),
-        item: packedItemSchemaRef,
-        creator: { $ref: 'https://graasp.org/members/#/definitions/member' },
-        createdAt: { type: 'string' },
-      },
+  ),
+);
+
+export const packedRecycledItemSchemaRef = registerSchemaAsRef(
+  Type.Object(
+    {
+      // Object definition
+      id: customType.UUID(),
+      item: packedItemSchemaRef,
+      creator: Type.Optional(Type.Ref('https://graasp.org/members/#/definitions/member')),
+      createdAt: customType.DateTime(),
+    },
+    {
+      // Schema options
+      title: 'Packed Recycled Item',
+      $id: 'packedRecycledItem',
       additionalProperties: false,
     },
-  },
-};
+  ),
+);
 
 // schema for getting recycled items
 export const getRecycledItemDatas = {
   response: {
-    200: {
-      type: 'array',
-      items: { $ref: 'https://graasp.org/recycle-bin/#/definitions/packedRecycledItem' },
-    },
+    [StatusCodes.OK]: Type.Array(packedRecycledItemSchemaRef),
   },
-};
+} as const satisfies FastifySchema;
 
 // schema for deleting one item
 export const deleteOne = {
   params: entityIdSchemaRef,
   response: {
-    200: { $ref: 'https://graasp.org/recycle-bin/#/definitions/recycledItem' },
+    [StatusCodes.OK]: recycledItemSchemaRef,
   },
-};
+} as const satisfies FastifySchema;
 
-// schema for recycling >1 items
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export const recycleMany = (maxItems: number) => ({
-  querystring: Type.Object({ id: Type.Array(customType.UUID(), { uniqueItems: true, maxItems }) }),
-  response: {
-    202: {
+export const recycleMany = (maxItems: number) =>
+  ({
+    querystring: Type.Object({
+      id: Type.Array(customType.UUID(), { uniqueItems: true, maxItems }),
+    }),
+    response: {
       // ids > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE
-      type: 'array',
-      items: customType.UUID(),
+      [StatusCodes.ACCEPTED]: Type.Array(customType.UUID()),
     },
-  },
-});
-// schema for restoring>1 items
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export const restoreMany = (maxItems: number) => ({
-  querystring: Type.Object({ id: Type.Array(customType.UUID(), { uniqueItems: true, maxItems }) }),
+  }) as const satisfies FastifySchema;
+
+export const recycleOrRestoreMany = {
+  querystring: Type.Object({
+    id: Type.Array(customType.UUID(), {
+      uniqueItems: true,
+      maxItems: MAX_TARGETS_FOR_READ_REQUEST,
+    }),
+  }),
 
   response: {
-    202: {
-      // ids > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE
-      type: 'array',
-      items: customType.UUID(),
-    },
+    // ids > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE
+    [StatusCodes.ACCEPTED]: Type.Array(customType.UUID()),
   },
-});
-// schema for restoring>1 items
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export const deleteMany = (maxItems: number) => ({
-  querystring: Type.Object({ id: Type.Array(customType.UUID(), { uniqueItems: true, maxItems }) }),
-  response: {
-    202: {
-      // ids > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE
-      type: 'array',
-      items: customType.UUID(),
-    },
-  },
-});
+} as const satisfies FastifySchema;

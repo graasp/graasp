@@ -3,44 +3,27 @@ import { StatusCodes } from 'http-status-codes';
 
 import { ItemTagType, MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
-import { customType } from '../../../../plugins/typebox';
+import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { UUID_REGEX, errorSchemaRef } from '../../../../schemas/global';
 import { itemIdSchemaRef, itemTagSchemaRef } from '../../schema';
 
-export default {
-  $id: 'https://graasp.org/item-tags/',
-  definitions: {
-    idParam: {
-      type: 'object',
-      required: ['id'],
-      properties: {
-        id: customType.UUID(),
-      },
+export const tagSchemaRef = registerSchemaAsRef(
+  Type.Object(
+    {
+      // Object definition
+      id: customType.UUID(),
+      name: Type.String(),
+      nested: Type.String(),
+      createdAt: customType.DateTime(),
     },
-
-    // item tag properties required at creation
-    createPartialItemTag: {
-      type: 'object',
-      required: ['tagId'],
-      properties: {
-        tagId: customType.UUID(),
-      },
+    {
+      // Schema options
+      title: 'Tag',
+      $id: 'tag',
       additionalProperties: false,
     },
-
-    // tag
-    tag: {
-      type: 'object',
-      properties: {
-        id: customType.UUID(),
-        name: { type: 'string' },
-        nested: { type: 'string' },
-        createdAt: { type: 'string' },
-      },
-      additionalProperties: false,
-    },
-  },
-};
+  ),
+);
 
 // schema for creating an item tag
 const create = {
@@ -105,10 +88,7 @@ const deleteOne = {
 // schema for getting available tags
 const getTags = {
   response: {
-    [StatusCodes.OK]: {
-      type: 'array',
-      items: { $ref: 'https://graasp.org/item-tags/#/definitions/tag' },
-    },
+    [StatusCodes.OK]: Type.Array(tagSchemaRef),
   },
 };
 
