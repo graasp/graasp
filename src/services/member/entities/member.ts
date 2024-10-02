@@ -49,6 +49,8 @@ export class Member extends Account {
   })
   isValidated: boolean;
 
+  type: AccountType.Individual;
+
   get lang(): string {
     return (this.extra.lang as string) ?? DEFAULT_LANG;
   }

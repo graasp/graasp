@@ -21,6 +21,8 @@ export class Guest extends Account {
 
   @Column('simple-json', { nullable: false, default: '{}' })
   extra: CompleteMember['extra'];
+
+  type: AccountType.Guest;
 }
 
 export function isGuest(account: Account): account is Guest {

@@ -18,8 +18,10 @@ import {
 } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../plugins/datasource';
+import { Guest } from '../../../itemLogin/entities/guest';
 import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
-import { Actor, Member } from '../../../member/entities/member';
+import { Member } from '../../../member/entities/member';
+import { saveMember } from '../../../member/test/fixtures/members';
 import { ItemWrapper, PackedItem } from '../../ItemWrapper';
 import { DEFAULT_ORDER, Item, ItemExtraMap } from '../../entities/Item';
 import { ItemTag } from '../../plugins/itemTag/ItemTag';
@@ -151,7 +153,7 @@ export class ItemTestUtils {
     permission = PermissionLevel.Admin,
   }: {
     item: Item;
-    account: Actor;
+    account: Member | Guest;
     permission?: PermissionLevel;
   }) => {
     return await itemMembershipRawRepository.save({ item, account, permission });
@@ -168,12 +170,16 @@ export class ItemTestUtils {
     itemMembership: ItemMembership;
     packedItem: PackedItem;
   }> => {
-    const { item, member, permission, creator, parentItem } = options;
+    const { item, permission, creator, parentItem } = options;
+    let member = options.member;
     const newItem = await this.saveItem({
       item,
       actor: creator ?? member,
       parentItem,
     });
+    if (!member) {
+      member = await saveMember();
+    }
     const im = await this.saveMembership({ item: newItem, account: member, permission });
     return {
       item: newItem,

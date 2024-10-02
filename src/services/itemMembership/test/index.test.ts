@@ -122,6 +122,7 @@ describe('Membership routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
       it('Nested usecase', async () => {
+        assertIsDefined(actor);
         // A (Membership)
         // |-> B
         //     |-> C (Membership)
@@ -949,6 +950,7 @@ describe('Membership routes tests', () => {
       });
 
       it('Cannot delete membership if can only read', async () => {
+        assertIsDefined(actor);
         const member = await saveMember();
         const { item } = await testUtils.saveItemAndMembership({ member });
         const membership = await testUtils.saveMembership({
@@ -970,6 +972,7 @@ describe('Membership routes tests', () => {
       });
 
       it('Cannot delete membership if can only write', async () => {
+        assertIsDefined(actor);
         const member = await saveMember();
         const { item } = await testUtils.saveItemAndMembership({ member });
         const membership = await testUtils.saveMembership({

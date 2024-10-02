@@ -6,8 +6,10 @@ import { FastifyInstance } from 'fastify';
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
+import { assertIsDefined } from '../../../../../utils/assertions';
 import { APP_ITEMS_PREFIX } from '../../../../../utils/config';
-import { Actor, Member } from '../../../../member/entities/member';
+import { Guest } from '../../../../itemLogin/entities/guest';
+import { Member } from '../../../../member/entities/member';
 import { expectMinimalMember, saveMember } from '../../../../member/test/fixtures/members';
 import { Item } from '../../../entities/Item';
 import { expectItem } from '../../../test/fixtures/items';
@@ -18,7 +20,7 @@ const testUtils = new AppTestUtils();
 
 const setUpForAppContext = async (
   app,
-  actor: Actor,
+  actor: Member | Guest,
   creator: Member,
   permission?: PermissionLevel,
   setPublic?: boolean,
@@ -223,6 +225,7 @@ describe('Apps Plugin Tests', () => {
 
       it('Get app context successfully for one item', async () => {
         ({ app, actor } = await build());
+        assertIsDefined(actor);
         const member = await saveMember();
         ({ item, token } = await setUpForAppContext(app, actor, member, PermissionLevel.Read));
         if (!actor) {

@@ -20,7 +20,6 @@ import { AppDataSource } from '../../../plugins/datasource';
 import { assertIsDefined } from '../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
 import { MemberCannotAdminItem } from '../../../utils/errors';
-import { MemberPassword } from '../../auth/plugins/password/entities/password';
 import { encryptPassword } from '../../auth/plugins/password/utils';
 import { Item } from '../../item/entities/Item';
 import { ItemTag } from '../../item/plugins/itemTag/ItemTag';
@@ -28,13 +27,14 @@ import { ItemTestUtils } from '../../item/test/fixtures/items';
 import { Member } from '../../member/entities/member';
 import { expectMinimalMember, saveMember } from '../../member/test/fixtures/members';
 import { Guest } from '../entities/guest';
+import { GuestPassword } from '../entities/guestPassword';
 import { ItemLoginSchema as ItemLoginSchemaEntity } from '../entities/itemLoginSchema';
 import { CannotNestItemLoginSchema, ValidMemberSession } from '../errors';
 import { USERNAME_LOGIN } from './fixtures';
 
 const testUtils = new ItemTestUtils();
 const rawRepository = AppDataSource.getRepository(Guest);
-const rawMemberPasswordRepository = AppDataSource.getRepository(MemberPassword);
+const rawGuestPasswordRepository = AppDataSource.getRepository(GuestPassword);
 const rawItemLoginRepository = AppDataSource.getRepository(Guest);
 const rawItemLoginSchemaRepository = AppDataSource.getRepository(ItemLoginSchemaEntity);
 const rawItemTagRepository = AppDataSource.getRepository(ItemTag);
@@ -65,7 +65,7 @@ export async function saveItemLoginSchema({
 
     if (password) {
       const hashedPassword = await encryptPassword(password);
-      await rawMemberPasswordRepository.save({ member: guest, password: hashedPassword });
+      await rawGuestPasswordRepository.save({ guest, password: hashedPassword });
     }
   }
   return { itemLoginSchema: rawItemLoginSchema, guest };
