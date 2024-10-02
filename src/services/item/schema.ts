@@ -88,6 +88,7 @@ export const itemTagSchemaRef = registerSchemaAsRef(
 export const packedItemSchemaRef = registerSchemaAsRef(
   Type.Object(
     {
+      // Object Definition
       id: customType.UUID(),
       name: Type.String(),
       description: Type.Optional(Type.Union([Type.String(), Type.Null()])),
@@ -105,6 +106,7 @@ export const packedItemSchemaRef = registerSchemaAsRef(
       thumbnails: Type.Optional(Type.Object({}, { additionalProperties: true })),
     },
     {
+      // Schema Options
       title: 'Packed Item',
       $id: 'packedItem',
       additionalProperties: false,

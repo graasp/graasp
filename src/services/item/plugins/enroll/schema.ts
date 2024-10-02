@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 
 import { customType } from '../../../../plugins/typebox';
+import { itemMembershipSchemaRef } from '../../../itemMembership/schemas';
 
 export const enroll = {
   tags: ['itemMemberships'],
@@ -15,8 +16,6 @@ export const enroll = {
     },
   },
   response: {
-    [StatusCodes.OK]: {
-      $ref: 'https://graasp.org/item-memberships/#/definitions/itemMembership',
-    },
+    [StatusCodes.OK]: itemMembershipSchemaRef,
   },
 };
