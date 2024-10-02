@@ -1,60 +1,49 @@
 import { Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
-import { customType } from '../../../../plugins/typebox';
+import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
+import { UUID_V4_REGEX_PATTERN } from '../../../../utils/constants';
 import { itemIdSchemaRef, itemSchemaRef } from '../../schema';
 
-export default {
-  $id: 'https://graasp.org/categories/',
-  definitions: {
-    category: {
-      type: 'object',
-      properties: {
-        id: {
-          $ref: 'https://graasp.org/#/definitions/uuid',
-        },
-        name: { type: 'string' },
-        type: {
-          $ref: 'https://graasp.org/#/definitions/uuid',
-        },
-      },
+export const categorySchemaRef = registerSchemaAsRef(
+  Type.Object(
+    {
+      // Object definition
+      id: customType.UUID(),
+      name: Type.String(),
+      type: customType.UUID(),
+    },
+    {
+      // Schema options
+      title: 'Category',
+      $id: 'category',
       additionalProperties: false,
     },
-    itemCategory: {
-      type: 'object',
-      properties: {
-        id: {
-          $ref: 'https://graasp.org/#/definitions/uuid',
-        },
-        category: {
-          $ref: 'https://graasp.org/categories/#/definitions/category',
-        },
-        createdAt: {},
+  ),
+);
 
-        creator: {
-          $ref: 'https://graasp.org/members/#/definitions/member',
-        },
-      },
+export const itemCategorySchemaRef = registerSchemaAsRef(
+  Type.Object(
+    {
+      // Object definition
+      id: customType.UUID(),
+      category: categorySchemaRef,
+      createdAt: customType.DateTime(),
+      creator: Type.Optional(Type.Ref('https://graasp.org/members/#/definitions/member')),
+    },
+    {
+      // Schema options
+      title: 'Item Category',
+      $id: 'itemCategory',
       additionalProperties: false,
     },
-    concatenatedIds: {
-      type: 'string',
-      pattern:
-        '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}' +
-        '(,[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})*$',
-    },
-  },
-};
+  ),
+);
 
 export const getItemCategories = {
   params: itemIdSchemaRef,
   response: {
-    200: {
-      type: 'array',
-      items: {
-        $ref: 'https://graasp.org/categories/#/definitions/itemCategory',
-      },
-    },
+    [StatusCodes.OK]: Type.Array(itemCategorySchemaRef),
   },
 };
 
@@ -70,10 +59,7 @@ export const getCategories = {
     additionalProperties: false,
   },
   response: {
-    200: {
-      type: 'array',
-      items: { $ref: 'https://graasp.org/categories/#/definitions/category' },
-    },
+    [StatusCodes.OK]: Type.Array(categorySchemaRef),
   },
 };
 
@@ -86,18 +72,7 @@ export const getCategory = {
     additionalProperties: false,
   },
   response: {
-    200: { $ref: 'https://graasp.org/categories/#/definitions/category' },
-  },
-};
-
-export const getCategoryTypes = {
-  response: {
-    200: {
-      type: 'array',
-      items: {
-        $ref: 'https://graasp.org/categories/#/definitions/categoryType',
-      },
-    },
+    [StatusCodes.OK]: categorySchemaRef,
   },
 };
 
@@ -110,7 +85,7 @@ export const create = {
     },
   },
   response: {
-    200: { $ref: 'https://graasp.org/categories/#/definitions/itemCategory' },
+    [StatusCodes.OK]: itemCategorySchemaRef,
   },
 };
 
@@ -119,12 +94,11 @@ export const getByCategories = {
     type: 'object',
     required: ['categoryId'],
     properties: {
-      categoryId: {
-        type: 'array',
-        items: {
-          $ref: 'https://graasp.org/categories/#/definitions/concatenatedIds',
-        },
-      },
+      categoryId: Type.Array(
+        Type.String({
+          pattern: `^${UUID_V4_REGEX_PATTERN}(,${UUID_V4_REGEX_PATTERN})*$`,
+        }),
+      ),
     },
     additionalProperties: false,
   },
@@ -144,7 +118,7 @@ export const deleteOne = {
     additionalProperties: false,
   },
   response: {
-    200: customType.UUID(),
+    [StatusCodes.OK]: customType.UUID(),
   },
 };
 
@@ -158,7 +132,7 @@ export const createCategory = {
     },
   },
   response: {
-    200: { $ref: 'https://graasp.org/categories/#/definitions/category' },
+    [StatusCodes.OK]: categorySchemaRef,
   },
 };
 

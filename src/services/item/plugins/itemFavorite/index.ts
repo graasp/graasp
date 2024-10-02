@@ -8,15 +8,12 @@ import { matchOne } from '../../../authorization';
 import { assertIsMember } from '../../../member/entities/member';
 import { memberAccountRole } from '../../../member/strategies/memberAccountRole';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import common, { create, deleteOne, getFavorite } from './schemas';
+import { create, deleteOne, getFavorite } from './schemas';
 import { FavoriteService } from './services/favorite';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db } = fastify;
   const favoriteService = resolveDependency(FavoriteService);
-
-  // schemas
-  fastify.addSchema(common);
 
   // get favorites
   fastify.get(

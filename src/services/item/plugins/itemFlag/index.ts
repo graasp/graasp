@@ -9,16 +9,13 @@ import { isAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
 import { guestAccountRole } from '../../../itemLogin/strategies/guestAccountRole';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import common, { create, getFlagTypes } from './schemas';
+import { create, getFlagTypes } from './schemas';
 import { ItemFlagService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db } = fastify;
 
   const itemFlagService = resolveDependency(ItemFlagService);
-
-  // schemas
-  fastify.addSchema(common);
 
   // Get all flag types that can be assigned to an ItemFlag entity.
   fastify.get('/flags', { schema: getFlagTypes }, async () => {

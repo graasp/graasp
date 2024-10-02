@@ -7,7 +7,7 @@ import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/
 import { matchOne } from '../../../authorization';
 import { assertIsMember } from '../../../member/entities/member';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import common, { create, deleteOne, getCategories, getItemCategories } from './schemas';
+import { create, deleteOne, getCategories, getItemCategories } from './schemas';
 import { CategoryService } from './services/category';
 import { ItemCategoryService } from './services/itemCategory';
 
@@ -15,9 +15,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   const { db } = fastify;
   const itemCategoryService = resolveDependency(ItemCategoryService);
   const categoryService = resolveDependency(CategoryService);
-
-  // schemas
-  fastify.addSchema(common);
 
   // get categories
   fastify.get<{ Params: { categoryId: string } }>(
