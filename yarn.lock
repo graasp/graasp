@@ -2018,16 +2018,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/swagger@npm:8.14.0":
-  version: 8.14.0
-  resolution: "@fastify/swagger@npm:8.14.0"
+"@fastify/swagger@npm:8.15.0":
+  version: 8.15.0
+  resolution: "@fastify/swagger@npm:8.15.0"
   dependencies:
     fastify-plugin: "npm:^4.0.0"
     json-schema-resolver: "npm:^2.0.0"
     openapi-types: "npm:^12.0.0"
     rfdc: "npm:^1.3.0"
     yaml: "npm:^2.2.2"
-  checksum: 10/e63f1ecb7c4915ec950d52766ffc99f46efa9c13a7572b3395c12342ee3dcaa7d0ab54f8aae08db1f949f2f17dd2e3be1e7f79818139e1799fbfcfada933fd76
+  checksum: 10/f6932cb8dcfa3866cf4cd0ec39797e8a33410ca9e28289ffcde00059eedc5b317ecf3202c22749d3af859767c4fa669bfe58ae4ef155f370cfb50fe2bc2a5bc2
   languageName: node
   linkType: hard
 
@@ -7240,7 +7240,7 @@ __metadata:
     "@fastify/passport": "npm:2.5.0"
     "@fastify/secure-session": "npm:7.5.1"
     "@fastify/static": "npm:7.0.4"
-    "@fastify/swagger": "npm:8.14.0"
+    "@fastify/swagger": "npm:8.15.0"
     "@fastify/swagger-ui": "npm:4.0.1"
     "@fastify/type-provider-typebox": "npm:4.1.0"
     "@fastify/websocket": "npm:7.2.0"
