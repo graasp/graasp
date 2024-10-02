@@ -123,8 +123,8 @@
     "yazl": "2.5.1"
   },
   "devDependencies": {
-    "@commitlint/cli": "19.3.0",
-    "@commitlint/config-conventional": "19.2.2",
+    "@commitlint/cli": "19.5.0",
+    "@commitlint/config-conventional": "19.5.0",
     "@faker-js/faker": "8.4.1",
     "@jest/globals": "29.7.0",
     "@trivago/prettier-plugin-sort-imports": "4.3.0",
