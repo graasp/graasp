@@ -3,13 +3,14 @@ import { FastifySchema } from 'fastify';
 import { MembershipRequestStatus } from '@graasp/sdk';
 
 import { customType } from '../../../../plugins/typebox';
+import { itemSchemaRef } from '../../../item/schema';
 
 export const completeMembershipRequest = {
   $id: 'completeMembershipRequest',
   type: 'object',
   properties: {
     member: { $ref: 'https://graasp.org/members/#/definitions/member' },
-    item: { $ref: 'https://graasp.org/items/#/definitions/item' },
+    item: itemSchemaRef,
     createdAt: { type: 'string' },
   },
   additionalProperties: false,

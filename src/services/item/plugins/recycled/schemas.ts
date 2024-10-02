@@ -2,6 +2,7 @@ import { Type } from '@sinclair/typebox';
 
 import { customType } from '../../../../plugins/typebox';
 import { entityIdSchemaRef } from '../../../../schemas/global';
+import { itemSchemaRef, packedItemSchemaRef } from '../../schema';
 
 export default {
   $id: 'https://graasp.org/recycle-bin/',
@@ -12,9 +13,7 @@ export default {
       required: ['id', 'item'],
       properties: {
         id: customType.UUID(),
-        item: {
-          $ref: 'https://graasp.org/items/#/definitions/item',
-        },
+        item: itemSchemaRef,
         creator: { $ref: 'https://graasp.org/members/#/definitions/member' },
         createdAt: { type: 'string' },
       },
@@ -25,9 +24,7 @@ export default {
       required: ['id', 'item'],
       properties: {
         id: customType.UUID(),
-        item: {
-          $ref: 'https://graasp.org/items/#/definitions/packedItem',
-        },
+        item: packedItemSchemaRef,
         creator: { $ref: 'https://graasp.org/members/#/definitions/member' },
         createdAt: { type: 'string' },
       },

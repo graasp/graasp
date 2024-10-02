@@ -2,13 +2,14 @@ import { Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
+import { itemIdSchemaRef, itemSchemaRef, packedItemSchemaRef } from '../../schema';
 
 export const itemLikeSchemaRef = registerSchemaAsRef(
   Type.Object(
     {
       // Object Definition
       id: customType.UUID(),
-      item: Type.Ref('https://graasp.org/items/#/definitions/item'),
+      item: itemSchemaRef,
     },
     {
       // Schema Options
@@ -24,7 +25,7 @@ export const packedItemLikeSchemaRef = registerSchemaAsRef(
     {
       // Object Definition
       id: Type.Optional(customType.UUID()),
-      item: Type.Ref('https://graasp.org/items/#/definitions/packedItem'),
+      item: packedItemSchemaRef,
     },
     {
       // Schema Options
@@ -34,22 +35,6 @@ export const packedItemLikeSchemaRef = registerSchemaAsRef(
     },
   ),
 );
-
-export const itemIdSchemaRef = registerSchemaAsRef(
-  Type.Object(
-    {
-      // Object Definition
-      itemId: customType.UUID(),
-    },
-    {
-      // Schema Options
-      title: 'Item ID',
-      $id: 'itemId',
-      additionalProperties: false,
-    },
-  ),
-);
-
 export const getLikesForMember = {
   response: {
     [StatusCodes.OK]: Type.Array(packedItemLikeSchemaRef),

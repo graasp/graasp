@@ -3,7 +3,7 @@ import { S } from 'fluent-json-schema';
 import { ItemLoginSchemaStatus, ItemLoginSchemaType } from '@graasp/sdk';
 
 import { error, idParam, uuid } from '../../schemas/fluent-schema';
-import { item } from '../item/fluent-schema';
+import { item } from '../item/schema';
 
 export const credentials = S.object()
   .additionalProperties(false)

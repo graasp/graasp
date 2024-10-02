@@ -4,7 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifySchema } from 'fastify';
 
 import { error, uuid } from '../../../../schemas/fluent-schema';
-import { partialMember } from '../../../item/fluent-schema';
+import { partialMember } from '../../../item/schema';
 
 const memberSharedSchema = S.object()
   .additionalProperties(false)

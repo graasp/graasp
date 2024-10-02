@@ -17,6 +17,8 @@ import { validatedMemberAccountRole } from '../member/strategies/validatedMember
 import { resultOfToList } from '../utils';
 import { ITEMS_PAGE_SIZE } from './constants';
 import { Item } from './entities/Item';
+import { ActionItemService } from './plugins/action/service';
+import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
 import {
   SHOW_HIDDEN_PARRAM,
   TYPES_FILTER_PARAM,
@@ -33,9 +35,7 @@ import {
   moveMany,
   reorder,
   updateMany,
-} from './fluent-schema';
-import { ActionItemService } from './plugins/action/service';
-import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
+} from './schema';
 import { ItemService } from './service';
 import { ItemChildrenParams, ItemSearchParams } from './types';
 import { getPostItemPayloadFromFormData } from './utils';

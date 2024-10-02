@@ -2,6 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { customType } from '../../../../plugins/typebox';
 import { entityIdSchemaRef, errorSchemaRef } from '../../../../schemas/global';
+import { itemSchemaRef } from '../../schema';
 
 export default {
   $id: 'https://graasp.org/invitations/',
@@ -13,7 +14,7 @@ export default {
         email: { type: 'string', format: 'email' },
         name: { type: ['string', 'null'] },
         permission: { type: 'string' },
-        item: { $ref: 'https://graasp.org/items/#/definitions/item' },
+        item: itemSchemaRef,
 
         /**
          * for some reason setting these date fields as "type: 'string'"

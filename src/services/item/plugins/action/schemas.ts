@@ -15,7 +15,7 @@ import {
   MAX_ACTIONS_SAMPLE_SIZE,
   MIN_ACTIONS_SAMPLE_SIZE,
 } from '../../../action/constants/constants';
-import { item } from '../../fluent-schema';
+import { item } from '../../schema';
 
 // todo: complete schema
 export const baseAnalytics = S.object()

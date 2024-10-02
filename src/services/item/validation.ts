@@ -3,7 +3,7 @@ import { Ajv } from 'ajv';
 import { ItemGeolocation } from '@graasp/sdk';
 
 import { Item } from './entities/Item';
-import { geolocation, settings } from './fluent-schema';
+import { geolocation, settings } from './schema';
 
 /**
  * Decalre compiled validators to be used in manual validation

@@ -1,5 +1,6 @@
 import { customType } from '../../../../plugins/typebox';
 import { idParam } from '../../../../schemas/fluent-schema';
+import { itemSchemaRef, packedItemSchemaRef } from '../../schema';
 
 const geolocation = {
   type: 'object',
@@ -12,9 +13,7 @@ const geolocation = {
     helperLabel: { type: ['string', 'null'] },
     createdAt: { type: 'string' },
     updatedAt: { type: 'string' },
-    item: {
-      $ref: 'https://graasp.org/items/#/definitions/item',
-    },
+    item: itemSchemaRef,
   },
   required: ['lat', 'lng'],
   nullable: true,
@@ -24,9 +23,7 @@ const geolocationPacked = {
   ...geolocation,
   properties: {
     ...geolocation.properties,
-    item: {
-      $ref: 'https://graasp.org/items/#/definitions/packedItem',
-    },
+    item: packedItemSchemaRef,
   },
 };
 

@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifySchema } from 'fastify';
 
 import { customType, registerSchemaAsRef } from '../../../../../plugins/typebox';
+import { itemSchemaRef } from '../../../schema';
 
 export const appSettingSchemaRef = registerSchemaAsRef(
   Type.Object(
@@ -11,7 +12,7 @@ export const appSettingSchemaRef = registerSchemaAsRef(
       // Object Definition
       id: customType.UUID(),
       name: Type.String(),
-      item: Type.Ref('https://graasp.org/items/#/definitions/item'),
+      item: itemSchemaRef,
       data: Type.Object({}, { additionalProperties: true }),
       creator: Type.Ref('https://graasp.org/members/#/definitions/member'),
       createdAt: customType.DateTime(),

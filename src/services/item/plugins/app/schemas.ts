@@ -4,13 +4,13 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifySchema } from 'fastify';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
-import { itemIdSchemaRef } from '../itemLike/schemas';
+import { itemIdSchemaRef, itemSchemaRef } from '../../schema';
 
 export const appContextSchemaRef = registerSchemaAsRef(
   Type.Object(
     {
       // Object Definition
-      item: Type.Ref('https://graasp.org/items/#/definitions/item'),
+      item: itemSchemaRef,
       members: Type.Array(Type.Ref('https://graasp.org/members/#/definitions/member')),
     },
     {

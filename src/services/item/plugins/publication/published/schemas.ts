@@ -1,3 +1,6 @@
+import { Type } from '@sinclair/typebox';
+import { StatusCodes } from 'http-status-codes';
+
 import { MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
 import { UUID_REGEX } from '../../../../../schemas/global';
@@ -5,14 +8,13 @@ import {
   GET_MOST_LIKED_ITEMS_MAXIMUM,
   GET_MOST_RECENT_ITEMS_MAXIMUM,
 } from '../../../../../utils/config';
+import { itemSchemaRef, packedItemSchemaRef } from '../../../schema';
 
 const publishEntry = {
   type: 'object',
   properties: {
     id: { type: 'string' },
-    item: {
-      $ref: 'https://graasp.org/items/#/definitions/item',
-    },
+    item: itemSchemaRef,
     creator: {
       $ref: 'https://graasp.org/members/#/definitions/member',
     },
@@ -25,9 +27,7 @@ const publishEntryWithViews = {
   type: 'object',
   properties: {
     id: { type: 'string' },
-    item: {
-      $ref: 'https://graasp.org/items/#/definitions/item',
-    },
+    item: itemSchemaRef,
     creator: {
       $ref: 'https://graasp.org/members/#/definitions/member',
     },
@@ -63,12 +63,7 @@ export const getCollections = {
   },
 
   response: {
-    200: {
-      type: 'array',
-      items: {
-        $ref: 'https://graasp.org/items/#/definitions/item',
-      },
-    },
+    [StatusCodes.OK]: Type.Array(itemSchemaRef),
   },
 };
 
@@ -85,12 +80,7 @@ export const getRecentCollections = {
   },
 
   response: {
-    200: {
-      type: 'array',
-      items: {
-        $ref: 'https://graasp.org/items/#/definitions/item',
-      },
-    },
+    [StatusCodes.OK]: Type.Array(itemSchemaRef),
   },
 };
 
@@ -107,12 +97,7 @@ export const getMostLikedItems = {
   },
 
   response: {
-    200: {
-      type: 'array',
-      items: {
-        $ref: 'https://graasp.org/items/#/definitions/item',
-      },
-    },
+    [StatusCodes.OK]: Type.Array(itemSchemaRef),
   },
 };
 
@@ -128,12 +113,7 @@ export const getCollectionsForMember = {
   },
 
   response: {
-    200: {
-      type: 'array',
-      items: {
-        $ref: 'https://graasp.org/items/#/definitions/packedItem',
-      },
-    },
+    [StatusCodes.OK]: Type.Array(packedItemSchemaRef),
   },
 };
 

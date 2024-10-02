@@ -17,7 +17,7 @@ import { MentionService } from '../services/chat/plugins/mentions/service';
 import { ChatMessageService } from '../services/chat/service';
 import FileService from '../services/file/service';
 import { Item } from '../services/item/entities/Item';
-import { create, updateOne } from '../services/item/fluent-schema';
+import { create, updateOne } from '../services/item/schema';
 import { Actor, Member } from '../services/member/entities/member';
 import { WebsocketService } from '../services/websockets/ws-service';
 
