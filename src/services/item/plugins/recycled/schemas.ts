@@ -34,13 +34,24 @@ export default {
 };
 
 // schema for getting recycled items
-export const getRecycledItemDatas = {
-  response: {
-    200: {
-      type: 'array',
-      items: { $ref: 'https://graasp.org/recycle-bin/#/definitions/packedRecycledItem' },
+export const getOwnRecycledItemData = {
+  querystring: {
+    type: 'object',
+    properties: {
+      keywords: {
+        type: 'array',
+        items: {
+          type: 'string',
+        },
+      },
     },
   },
+  // response: {
+  //   200: {
+  //     type: 'object',
+  //     // items: { $ref: 'https://graasp.org/recycle-bin/#/definitions/packedRecycledItem' },
+  //   },
+  // },
 };
 
 // schema for deleting one item
