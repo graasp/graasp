@@ -15,6 +15,8 @@ import { PermissionLevel } from '@graasp/sdk';
 
 import { Account } from '../../account/entities/account';
 import { Item } from '../../item/entities/Item';
+import { Guest } from '../../itemLogin/entities/guest';
+import { Member } from '../../member/entities/member';
 
 @Entity()
 @Index('IDX_gist_item_membership_path', { synchronize: false })
@@ -43,7 +45,7 @@ export class ItemMembership extends BaseEntity {
     nullable: false,
   })
   @JoinColumn({ name: 'account_id', foreignKeyConstraintName: 'FK_item_membership_account_id' })
-  account: Account;
+  account: Member | Guest;
 
   @ManyToOne(() => Item, (item) => item.path, {
     onUpdate: 'CASCADE',

@@ -10,7 +10,8 @@ import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../../test/app';
 import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
-import { Actor, Member } from '../../../../../member/entities/member';
+import { Guest } from '../../../../../itemLogin/entities/guest';
+import { Member } from '../../../../../member/entities/member';
 import { saveMember } from '../../../../../member/test/fixtures/members';
 import { AppTestUtils } from '../../test/fixtures';
 import { saveAppData } from './fixtures';
@@ -20,7 +21,7 @@ const testUtils = new AppTestUtils();
 // save apps, app data, and get token
 const setUpForAppData = async (
   app,
-  actor: Actor,
+  actor: Member | Guest,
   creator: Member,
   permission?: PermissionLevel,
   setPublic?: boolean,

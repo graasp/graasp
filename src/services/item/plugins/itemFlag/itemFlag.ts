@@ -12,8 +12,8 @@ import { v4 } from 'uuid';
 
 import { FlagType } from '@graasp/sdk';
 
+import { Account } from '../../../account/entities/account';
 import { Item } from '../../../item/entities/Item';
-import { Member } from '../../../member/entities/member';
 
 @Entity()
 @Unique('item-flag-creator', ['item', 'type', 'creator'])
@@ -32,11 +32,11 @@ export class ItemFlag extends BaseEntity {
   @JoinColumn({ name: 'item_id' })
   item: Item;
 
-  @ManyToOne(() => Member, (member) => member.id, {
+  @ManyToOne(() => Account, (account) => account.id, {
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'creator_id' })
-  creator: Member;
+  creator: Account;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

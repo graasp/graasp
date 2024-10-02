@@ -30,7 +30,7 @@ export const augmentedAccountSchemaRef = registerSchemaAsRef(
         // Then the augmented account can either be an individual or a guest
         Type.Object({
           type: Type.Literal(AccountType.Individual),
-          email: Type.Optional(Type.String({ format: 'email' })),
+          email: Type.String({ format: 'email' }),
         }),
         Type.Object({
           type: Type.Literal(AccountType.Guest),

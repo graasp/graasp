@@ -8,7 +8,8 @@ import { AppDataVisibility, HttpMethod, ItemType, PermissionLevel } from '@graas
 import build, { clearDatabase } from '../../../../../../../test/app';
 import { AppDataSource } from '../../../../../../plugins/datasource';
 import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
-import { Actor, Member } from '../../../../../member/entities/member';
+import { Guest } from '../../../../../itemLogin/entities/guest';
+import { Member } from '../../../../../member/entities/member';
 import { expectMinimalMember, saveMember } from '../../../../../member/test/fixtures/members';
 import { AppTestUtils } from '../../test/fixtures';
 import { AppData } from '../appData';
@@ -29,7 +30,7 @@ const expectAppData = (values, expected) => {
 // save apps, app data, and get token
 const setUpForAppData = async (
   app,
-  actor: Actor,
+  actor: Member | Guest,
   creator: Member,
   permission?: PermissionLevel,
   setPublic?: boolean,

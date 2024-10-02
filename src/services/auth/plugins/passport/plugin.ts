@@ -85,7 +85,7 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   //-- JWT Strategies --//
   passwordResetStrategy(fastifyPassport, memberPasswordService);
   emailChangeStrategy(fastifyPassport, memberRepository);
-  jwtChallengeVerifierStrategy(fastifyPassport, memberRepository, {
+  jwtChallengeVerifierStrategy(fastifyPassport, accountRepository, {
     propagateError: true,
   });
   jwtStrategy(
