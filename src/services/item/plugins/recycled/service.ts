@@ -1,14 +1,15 @@
 import { singleton } from 'tsyringe';
 
-import { PermissionLevel } from '@graasp/sdk';
+import { Paginated, Pagination, PermissionLevel } from '@graasp/sdk';
 
 import HookManager from '../../../../utils/hook';
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import { Member } from '../../../member/entities/member';
-import { ItemWrapper } from '../../ItemWrapper';
 import { Item } from '../../entities/Item';
+import { ItemSearchParams } from '../../types';
 import { ItemThumbnailService } from '../thumbnail/service';
+import { RecycledItemData } from './RecycledItemData';
 
 @singleton()
 export class RecycledBinService {
@@ -28,28 +29,17 @@ export class RecycledBinService {
     this.itemThumbnailService = itemThumbnailService;
   }
 
-  async getAll(member: Member, repositories: Repositories) {
+  async getOwn(
+    member: Member,
+    repositories: Repositories,
+    itemSearchParams: ItemSearchParams,
+    pagination: Pagination,
+  ): Promise<Paginated<RecycledItemData>> {
     const { recycledItemRepository } = repositories;
 
-    const recycled = await recycledItemRepository.getManyByMember(member);
-    const packedItems = await ItemWrapper.createPackedItems(
-      member,
-      repositories,
-      this.itemThumbnailService,
-      recycled.map((r) => r.item),
-      undefined,
-      { withDeleted: true },
-    );
+    const recycled = await recycledItemRepository.getOwn(member, itemSearchParams, pagination);
 
-    // insert back packed item inside recycled entities
-    return recycled.map((r) => {
-      const item = packedItems.find((i) => i.id === r.item.id);
-      // should never pass here
-      if (!item) {
-        throw new Error(`item should be defined`);
-      }
-      return { ...r, item };
-    });
+    return recycled;
   }
 
   async recycleMany(actor: Member, repositories: Repositories, itemIds: string[]) {

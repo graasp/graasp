@@ -2,10 +2,10 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import { MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
+import { MAX_TARGETS_FOR_READ_REQUEST, Pagination } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
-import { IdParam, IdsParams } from '../../../../types';
+import { IdsParams } from '../../../../types';
 import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
@@ -13,8 +13,10 @@ import { matchOne } from '../../../authorization';
 import { assertIsMember } from '../../../member/entities/member';
 import { memberAccountRole } from '../../../member/strategies/memberAccountRole';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
+import { ITEMS_PAGE_SIZE } from '../../constants';
+import { ItemSearchParams } from '../../types';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
-import schemas, { getRecycledItemDatas, recycleMany, restoreMany } from './schemas';
+import schemas, { getOwnRecycledItemData, recycleMany, restoreMany } from './schemas';
 import { RecycledBinService } from './service';
 
 export interface RecycledItemDataOptions {
@@ -44,13 +46,33 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
   // API endpoints
 
   // get own recycled items data
-  fastify.get<{ Params: IdParam }>(
+  fastify.get<{
+    Querystring: ItemSearchParams & Partial<Pagination>;
+  }>(
     '/recycled',
-    { schema: getRecycledItemDatas, preHandler: [isAuthenticated, matchOne(memberAccountRole)] },
-    async ({ user }) => {
+    {
+      schema: getOwnRecycledItemData,
+      preHandler: [isAuthenticated, matchOne(memberAccountRole)],
+    },
+    async ({ user, query }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      const result = await recycleBinService.getAll(member, buildRepositories());
+      const {
+        page = 1,
+        pageSize = ITEMS_PAGE_SIZE,
+        creatorId,
+        keywords,
+        sortBy,
+        ordering,
+        permissions,
+        types,
+      } = query;
+      const result = await recycleBinService.getOwn(
+        member,
+        buildRepositories(),
+        { creatorId, keywords, sortBy, ordering, permissions, types },
+        { page, pageSize },
+      );
       return result;
     },
   );
