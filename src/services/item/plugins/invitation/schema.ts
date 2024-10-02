@@ -1,7 +1,9 @@
+import { Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
 import { customType } from '../../../../plugins/typebox';
 import { entityIdSchemaRef, errorSchemaRef } from '../../../../schemas/global';
+import { itemMembershipSchemaRef } from '../../../itemMembership/schemas';
 import { itemSchemaRef } from '../../schema';
 
 export default {
@@ -84,12 +86,7 @@ export const invite = {
     200: {
       type: 'object',
       properties: {
-        memberships: {
-          type: 'array',
-          items: {
-            $ref: 'https://graasp.org/item-memberships/#/definitions/itemMembership',
-          },
-        },
+        memberships: Type.Array(itemMembershipSchemaRef),
         invitations: {
           type: 'array',
           items: {

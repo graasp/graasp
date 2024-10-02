@@ -14,7 +14,7 @@ import { matchOne } from '../authorization';
 import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
 import { PurgeBelowParam } from './interfaces/requests';
 import MembershipRequestAPI from './plugins/MembershipRequest';
-import common, { create, createMany, deleteOne, getItems, updateOne } from './schemas';
+import { create, createMany, deleteOne, getItems, updateOne } from './schemas';
 import { ItemMembershipService } from './service';
 import { membershipWsHooks } from './ws/hooks';
 
@@ -24,9 +24,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   const { db } = fastify;
 
   const itemMembershipService = resolveDependency(ItemMembershipService);
-
-  // schemas
-  fastify.addSchema(common);
 
   fastify.register(MembershipRequestAPI, { prefix: '/items/:itemId/memberships/requests' });
 
