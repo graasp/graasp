@@ -5,6 +5,7 @@ import { singleton } from 'tsyringe';
 
 import { DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS } from '@graasp/sdk';
 
+import { MailBuilder } from '../../../../../plugins/mailer/builder';
 import { MAIL } from '../../../../../plugins/mailer/langs/constants';
 import { MailerService } from '../../../../../plugins/mailer/service';
 import { TMP_FOLDER } from '../../../../../utils/config';
@@ -202,19 +203,18 @@ export class RequestDataExportService {
       expiration: EXPORT_FILE_EXPIRATION,
     });
 
-    this.mailerService
-      .composeAndSendEmail(
-        actor.email,
-        actor.lang,
-        MAIL.EXPORT_MEMBER_DATA_TITLE,
-        MAIL.EXPORT_MEMBER_DATA_BUTTON_TEXT,
-        MAIL.EXPORT_MEMBER_DATA_TEXT,
-        { days: DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS.toString() },
-        link,
-      )
-      .catch((err) => {
-        console.debug(err, `mailerService failed. export zip link: ${link}`);
-      });
+    const mail = new MailBuilder({
+      subject: MAIL.EXPORT_MEMBER_DATA_TITLE,
+      translationVariables: { days: DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS.toString() },
+      lang: actor.lang,
+    })
+      .addText(MAIL.EXPORT_MEMBER_DATA_TEXT)
+      .addButton(MAIL.EXPORT_MEMBER_DATA_BUTTON_TEXT, link)
+      .build();
+
+    this.mailerService.send(mail, actor.email).catch((err) => {
+      console.debug(err, `mailerService failed. export zip link: ${link}`);
+    });
   }
 
   async requestExport(

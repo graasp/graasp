@@ -2,6 +2,7 @@ import { singleton } from 'tsyringe';
 
 import { PermissionLevel, UUID } from '@graasp/sdk';
 
+import { MailBuilder } from '../../plugins/mailer/builder';
 import { MAIL } from '../../plugins/mailer/langs/constants';
 import { MailerService } from '../../plugins/mailer/service';
 import { PLAYER_HOST } from '../../utils/config';
@@ -38,16 +39,17 @@ export class ItemMembershipService {
   async _notifyMember(account: Account, member: Member, item: Item): Promise<void> {
     const link = new URL(item.id, PLAYER_HOST.url).toString();
 
+    const mail = new MailBuilder({
+      subject: MAIL.SHARE_ITEM_TITLE,
+      translationVariables: { creatorName: account.name, itemName: item.name },
+      lang: member.lang,
+    })
+      .addText(MAIL.SHARE_ITEM_TEXT)
+      .addButton(MAIL.SHARE_ITEM_BUTTON, link)
+      .build();
+
     await this.mailerService
-      .composeAndSendEmail(
-        member.email,
-        member.lang,
-        MAIL.SHARE_ITEM_TITLE,
-        MAIL.SHARE_ITEM_BUTTON,
-        MAIL.SHARE_ITEM_TEXT,
-        { creatorName: member.name, itemName: item.name },
-        link,
-      )
+      .send(mail, member.email)
       .then(() => {
         console.debug('send email on membership creation');
       })

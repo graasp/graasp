@@ -6,6 +6,7 @@ import { MultipartFile } from '@fastify/multipart';
 import { ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { BaseLogger } from '../../../../logger';
+import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MAIL } from '../../../../plugins/mailer/langs/constants';
 import { MailerService } from '../../../../plugins/mailer/service';
 import { NonEmptyArray } from '../../../../types';
@@ -57,21 +58,19 @@ export class InvitationService {
 
     // factor out
     const link = buildInvitationLink(invitation);
+    const mail = new MailBuilder({
+      subject: MAIL.INVITATION_TITLE,
+      translationVariables: { itemName: item.name, creatorName: member.name },
+      lang: member.lang,
+    })
+      .addText(MAIL.INVITATION_TEXT)
+      .addButton(MAIL.SIGN_UP_BUTTON_TEXT, link)
+      .includeUserAgreement()
+      .build();
 
-    this.mailerService
-      .composeAndSendEmail(
-        member.email,
-        member.lang,
-        MAIL.INVITATION_TITLE,
-        MAIL.SIGN_UP_BUTTON_TEXT,
-        MAIL.INVITATION_TEXT,
-        { itemName: item.name, creatorName: member.name },
-        link,
-        true,
-      )
-      .catch((err) => {
-        this.log.warn(err, `mailerService failed. invitation link: ${link}`);
-      });
+    this.mailerService.send(mail, member.email).catch((err) => {
+      this.log.warn(err, `mailerService failed. invitation link: ${link}`);
+    });
   }
 
   async get(actor: Actor, repositories: Repositories, invitationId: string) {

@@ -9,6 +9,7 @@ import {
   UUID,
 } from '@graasp/sdk';
 
+import { MailBuilder } from '../../../../../plugins/mailer/builder';
 import { MAIL } from '../../../../../plugins/mailer/langs/constants';
 import { MailerService } from '../../../../../plugins/mailer/service';
 import { Repositories } from '../../../../../utils/repositories';
@@ -112,23 +113,22 @@ export class ActionRequestExportService {
       expiration: EXPORT_FILE_EXPIRATION,
     });
 
-    this.mailerService
-      .composeAndSendEmail(
-        actor.email,
-        actor.lang,
-        MAIL.EXPORT_ACTIONS_TITLE,
-        MAIL.EXPORT_ACTIONS_BUTTON_TEXT,
-        MAIL.EXPORT_ACTIONS_TEXT,
-        {
-          itemName: item.name,
-          days: DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS.toString(),
-          exportFormat: format,
-        },
-        link,
-      )
-      .catch((err) => {
-        console.debug(err, `mailer failed. export zip link: ${link}`);
-      });
+    const mail = new MailBuilder({
+      subject: MAIL.EXPORT_ACTIONS_TITLE,
+      translationVariables: {
+        itemName: item.name,
+        days: DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS.toString(),
+        exportFormat: format,
+      },
+      lang: actor.lang,
+    })
+      .addText(MAIL.EXPORT_ACTIONS_TEXT)
+      .addButton(MAIL.EXPORT_ACTIONS_BUTTON_TEXT, link)
+      .build();
+
+    this.mailerService.send(mail, actor.email).catch((err) => {
+      console.debug(err, `mailer failed. export zip link: ${link}`);
+    });
   }
 
   async _createAndUploadArchive(
