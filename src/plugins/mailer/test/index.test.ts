@@ -1,9 +1,8 @@
 import { FastifyInstance } from 'fastify';
 
-import { SUCCESS_MESSAGES } from '@graasp/translations';
-
 import build, { clearDatabase } from '../../../../test/app';
 import { resolveDependency } from '../../../di/utils';
+import { MailBuilder } from '../builder';
 import { MAIL } from '../langs/constants';
 import { MailerService } from '../service';
 
@@ -29,56 +28,54 @@ describe('Mailer', () => {
     app.close();
   });
 
-  describe('buildButton', () => {
-    it('generates button given link and text', () => {
-      const link = 'mylink';
-      const text = 'mytext';
-
-      // this is a hack to get the private function of the class
-      const mailerServiceProto = Object.getPrototypeOf(mailerService);
-      const button = mailerServiceProto.buildButton(link, text);
-
-      expect(button).toContain(link);
-      expect(button).toContain(text);
-    });
-  });
-
-  describe('buildText', () => {
-    it('generates text paragraph', () => {
-      const text = 'mytext';
-
-      // this is a hack to get the private function of the class
-      const mailerServiceProto = Object.getPrototypeOf(mailerService);
-      const result = mailerServiceProto.buildText(text);
-
-      expect(result).toContain(text);
-    });
-  });
-
-  describe('translate', () => {
-    it('generates button given link and text', () => {
-      const translate = mailerService.translate('fr');
-      expect(translate(SUCCESS_MESSAGES.COPY_ITEM).length).toBeGreaterThan(1);
-    });
-  });
-
-  describe('composeMail', () => {
+  describe('MailBuilder', () => {
     const email = 'toto@toto.com';
     const lang = 'fr';
     const link = 'http//localhost:3000';
     const itemName = 'specific item';
     const memberName = 'respectedMember';
 
-    it('composes mail', async () => {
-      await mailerService.composeAndSendEmail(
-        email,
-        lang,
-        MAIL.MEMBERSHIP_REQUEST_TITLE,
-        MAIL.MEMBERSHIP_REQUEST_BUTTON_TEXT,
-        MAIL.MEMBERSHIP_REQUEST_TEXT,
-        { itemName, memberName },
-        link,
-      );
+    it('addButton generates button given link and text', () => {
+      const link = 'mylink';
+      const text = 'mytext';
+
+      const mail = new MailBuilder({
+        subject: 'subject',
+        translationVariables: {},
+      })
+        .addButton(text, link)
+        .build();
+
+      expect(mail.html).toContain(link);
+      expect(mail.html).toContain(text);
+      expect(mail.text).toContain(link);
+    });
+
+    it('addText generates text paragraph', () => {
+      const text = 'mytext';
+
+      const mail = new MailBuilder({
+        subject: 'subject',
+        translationVariables: {},
+      })
+        .addText(text)
+        .build();
+
+      expect(mail.text).toContain(text);
+      expect(mail.html).toContain(text);
+    });
+
+    it('builds mail', async () => {
+      const mail = new MailBuilder({
+        subject: MAIL.MEMBERSHIP_REQUEST_TITLE,
+        translationVariables: { itemName, memberName },
+        lang: lang,
+      })
+        .addText(MAIL.MEMBERSHIP_REQUEST_TEXT)
+        .addButton(MAIL.MEMBERSHIP_REQUEST_BUTTON_TEXT, link)
+        .build();
+
+      await mailerService.send(mail, email);
 
       expect(mockSendEmail).toHaveBeenCalledWith(
         expect.stringContaining(memberName),
@@ -86,6 +83,7 @@ describe('Mailer', () => {
         expect.stringContaining(link),
         expect.stringContaining(itemName) && expect.stringContaining(link),
         expect.stringContaining('Graasp'),
+        expect.anything(),
       );
     });
 
@@ -93,15 +91,16 @@ describe('Mailer', () => {
       const itemName = 'very Cool Item name>';
       const memberName = 'Member007';
 
-      mailerService.composeAndSendEmail(
-        email,
-        lang,
-        MAIL.MEMBERSHIP_REQUEST_TITLE,
-        MAIL.MEMBERSHIP_REQUEST_BUTTON_TEXT,
-        MAIL.MEMBERSHIP_REQUEST_TEXT,
-        { itemName, memberName },
-        link,
-      );
+      const mail = new MailBuilder({
+        subject: MAIL.MEMBERSHIP_REQUEST_TITLE,
+        translationVariables: { itemName, memberName },
+        lang: lang,
+      })
+        .addText(MAIL.MEMBERSHIP_REQUEST_TEXT)
+        .addButton(MAIL.MEMBERSHIP_REQUEST_BUTTON_TEXT, link)
+        .build();
+
+      await mailerService.send(mail, email);
 
       expect(mockSendEmail).toHaveBeenCalledWith(
         expect.stringContaining(itemName),
@@ -109,21 +108,22 @@ describe('Mailer', () => {
         expect.stringContaining(link),
         expect.stringContaining(itemName.slice(0, -1).concat('&gt;')),
         expect.anything(),
+        expect.anything(),
       );
     });
 
     it('user agreement and sign up not requested blocks are generated', async () => {
-      await mailerService.composeAndSendEmail(
-        email,
-        'en',
-        MAIL.MEMBERSHIP_REQUEST_TITLE,
-        MAIL.MEMBERSHIP_REQUEST_BUTTON_TEXT,
-        MAIL.MEMBERSHIP_REQUEST_TEXT,
-        { itemName, memberName },
-        link,
-        true,
-        true,
-      );
+      const mail = new MailBuilder({
+        subject: MAIL.MEMBERSHIP_REQUEST_TITLE,
+        translationVariables: { itemName, memberName },
+      })
+        .addText(MAIL.MEMBERSHIP_REQUEST_TEXT)
+        .addButton(MAIL.MEMBERSHIP_REQUEST_BUTTON_TEXT, link)
+        .includeUserAgreement()
+        .signUpNotRequested()
+        .build();
+
+      await mailerService.send(mail, email);
 
       expect(mockSendEmail).toHaveBeenCalledWith(
         expect.stringContaining(memberName),
@@ -135,6 +135,7 @@ describe('Mailer', () => {
           expect.stringContaining('terms of service') &&
           expect.stringContaining('privacy policy'),
         expect.stringContaining('Graasp'),
+        expect.anything(),
       );
     });
   });

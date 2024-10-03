@@ -4,6 +4,7 @@ import { singleton } from 'tsyringe';
 import { v4 as uuid } from 'uuid';
 
 import { BaseLogger } from '../../../../logger';
+import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MAIL } from '../../../../plugins/mailer/langs/constants';
 import { MailerService } from '../../../../plugins/mailer/service';
 import {
@@ -151,19 +152,19 @@ export class MemberPasswordService {
     destination.searchParams.set(SHORT_TOKEN_PARAM, token);
     const link = destination.toString();
 
+    const mail = new MailBuilder({
+      subject: MAIL.RESET_PASSWORD_TITLE,
+      translationVariables: {},
+      lang: lang,
+    })
+      .addText(MAIL.CHANGE_EMAIL_TEXT)
+      .addButton(MAIL.CHANGE_EMAIL_BUTTON_TEXT, link)
+      .signUpNotRequested()
+      .build();
+
     // don't wait for mailerService's response; log error and link if it fails.
     this.mailerService
-      .composeAndSendEmail(
-        email,
-        lang,
-        MAIL.RESET_PASSWORD_TITLE,
-        MAIL.RESET_PASSWORD_BUTTON_TEXT,
-        MAIL.RESET_PASSWORD_TEXT,
-        {},
-        link,
-        false,
-        true,
-      )
+      .send(mail, email)
       .catch((err) => this.log.warn(err, `mailerService failed. link: ${link}`));
   }
 

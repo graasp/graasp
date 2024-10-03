@@ -2,6 +2,7 @@ import { singleton } from 'tsyringe';
 
 import { MentionStatus, PermissionLevel, buildItemLinkForBuilder } from '@graasp/sdk';
 
+import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MAIL } from '../../../../plugins/mailer/langs/constants';
 import { MailerService } from '../../../../plugins/mailer/service';
 import { BUILDER_HOST } from '../../../../utils/config';
@@ -38,23 +39,21 @@ export class MentionService {
       chatOpen: true,
     });
 
-    this.mailerService
-      .composeAndSendEmail(
-        member.email,
-        member.lang,
-        MAIL.CHAT_MENTION_TITLE,
-        MAIL.CHAT_MENTION_BUTTON_TEXT,
-        MAIL.CHAT_MENTION_TEXT,
-        {
-          creatorName: creator.name,
-          itemName: item.name,
-        },
-        itemLink,
-      )
-      .catch((err) => {
-        console.error(err);
-        // log.warn(err, `mailerService failed. notification link: ${itemLink}`);
-      });
+    const mail = new MailBuilder({
+      subject: MAIL.CHAT_MENTION_TITLE,
+      translationVariables: {
+        creatorName: creator.name,
+        itemName: item.name,
+      },
+      lang: member.lang,
+    })
+      .addText(MAIL.CHAT_MENTION_TEXT)
+      .addButton(MAIL.CHAT_MENTION_BUTTON_TEXT, itemLink)
+      .build();
+
+    this.mailerService.send(mail, member.email).catch((err) => {
+      console.error(err);
+    });
   }
 
   async createManyForItem(

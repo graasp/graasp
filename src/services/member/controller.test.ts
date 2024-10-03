@@ -128,9 +128,7 @@ describe('Member Controller', () => {
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
       expect(mockSendEmail).toHaveBeenCalledTimes(1);
       expect(mockSendEmail.mock.calls[0][1]).toBe(email);
-      expect(mockSendEmail.mock.calls[0][2]).toMatch(
-        new RegExp(`^${ACCOUNT_HOST.url}email/change\\?t=.*$`),
-      );
+      expect(mockSendEmail.mock.calls[0][2]).toContain(`${ACCOUNT_HOST.url}email/change?t=`);
       // Email didn't change
       const rawMember = await memberRawRepository.findOneBy({ id: member.id });
       expect(rawMember?.email).toEqual(member.email);

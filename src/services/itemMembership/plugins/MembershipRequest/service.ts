@@ -3,6 +3,7 @@ import { singleton } from 'tsyringe';
 import { Member, PermissionLevel } from '@graasp/sdk';
 
 import { BaseLogger } from '../../../../logger';
+import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MAIL } from '../../../../plugins/mailer/langs/constants';
 import { MailerService } from '../../../../plugins/mailer/service';
 import { BUILDER_HOST } from '../../../../utils/config';
@@ -46,19 +47,18 @@ export class MembershipRequestService {
         continue;
       }
 
-      this.mailerService
-        .composeAndSendEmail(
-          admin.email,
-          admin.lang,
-          MAIL.MEMBERSHIP_REQUEST_TITLE,
-          MAIL.MEMBERSHIP_REQUEST_BUTTON_TEXT,
-          MAIL.MEMBERSHIP_REQUEST_TEXT,
-          { memberName: member.name, itemName: item.name },
-          link,
-        )
-        .catch((err) => {
-          this.log.error(err, `mailerService failed. shared link: ${link}`);
-        });
+      const mail = new MailBuilder({
+        subject: MAIL.MEMBERSHIP_REQUEST_TITLE,
+        translationVariables: { memberName: member.name, itemName: item.name },
+        lang: admin.lang,
+      })
+        .addText(MAIL.MEMBERSHIP_REQUEST_TEXT)
+        .addButton(MAIL.MEMBERSHIP_REQUEST_BUTTON_TEXT, link)
+        .build();
+
+      this.mailerService.send(mail, admin.email).catch((err) => {
+        this.log.error(err, `mailerService failed. shared link: ${link}`);
+      });
     }
   }
 

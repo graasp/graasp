@@ -95,13 +95,7 @@ describe('Mobile Endpoints', () => {
         payload: { email, name, challenge, captcha: MOCK_CAPTCHA },
       });
 
-      expect(mockSendEmail).toHaveBeenCalledWith(
-        expect.anything(),
-        member.email,
-        expect.anything(),
-        expect.anything(),
-        expect.anything(),
-      );
+      expect(mockSendEmail.mock.calls[0][1]).toBe(member.email);
 
       const m = await memberRawRepository.findOneBy({ email });
       expectMember(m, member);
@@ -159,13 +153,8 @@ describe('Mobile Endpoints', () => {
         payload: { ...member, challenge, captcha: MOCK_CAPTCHA },
       });
 
-      expect(mockSendEmail).toHaveBeenCalledWith(
-        expect.anything(),
-        member.email,
-        expect.anything(),
-        expect.anything(),
-        expect.anything(),
-      );
+      expect(mockSendEmail.mock.calls[0][1]).toBe(member.email);
+
       const m = await memberRawRepository.findOneBy({ email: member.email });
       expectMember(m, member);
 
@@ -214,13 +203,7 @@ describe('Mobile Endpoints', () => {
         payload: { email: member.email, challenge, captcha: MOCK_CAPTCHA },
       });
 
-      expect(mockSendEmail).toHaveBeenCalledWith(
-        expect.anything(),
-        member.email,
-        expect.anything(),
-        expect.anything(),
-        expect.anything(),
-      );
+      expect(mockSendEmail.mock.calls[0][1]).toBe(member.email);
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
     });
 
@@ -235,13 +218,7 @@ describe('Mobile Endpoints', () => {
         payload: { email: member.email, challenge, captcha: MOCK_CAPTCHA },
       });
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
-      expect(mockSendEmail).toHaveBeenCalledWith(
-        expect.anything(),
-        member.email,
-        expect.anything(),
-        expect.anything(),
-        expect.anything(),
-      );
+      expect(mockSendEmail.mock.calls[0][1]).toBe(member.email);
     });
 
     it('Sign In does send not found error for non-existing email', async () => {
@@ -604,13 +581,15 @@ describe('Mobile Endpoints', () => {
 
       expect(responseRegister.statusCode).toBe(StatusCodes.NO_CONTENT);
       expect(mockSendEmail).toHaveBeenCalledTimes(1);
-      const authUrl = new URL(mockSendEmail.mock.calls[0][2]);
+
+      const tokenRegex = /\?t=([\w\-\.]{1,1000})/;
+      const token = mockSendEmail.mock.calls[0][2].match(tokenRegex)![1];
 
       const responseAuth = await app.inject({
         method: HttpMethod.Post,
         url: `/m/auth`,
         payload: {
-          [SHORT_TOKEN_PARAM]: authUrl.searchParams.get(SHORT_TOKEN_PARAM)!,
+          [SHORT_TOKEN_PARAM]: token,
           verifier,
         },
       });

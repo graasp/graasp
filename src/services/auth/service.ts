@@ -2,6 +2,7 @@ import { sign } from 'jsonwebtoken';
 import { singleton } from 'tsyringe';
 
 import { BaseLogger } from '../../logger';
+import { MailBuilder } from '../../plugins/mailer/builder';
 import { MAIL } from '../../plugins/mailer/langs/constants';
 import { MailerService } from '../../plugins/mailer/service';
 import {
@@ -44,23 +45,21 @@ export class AuthService {
     destination.searchParams.set('url', redirectionUrl);
     const link = destination.toString();
 
-    const lang = member.lang;
-    const t = this.mailerService.translate(lang);
-    const greetingsAndSignupText = `${t(MAIL.GREETINGS)} ${t(MAIL.SIGN_UP_TEXT)}`;
+    const mail = new MailBuilder({
+      subject: MAIL.SIGN_UP_TITLE,
+      translationVariables: {},
+      lang: member.lang,
+    })
+      .addText(MAIL.GREETINGS)
+      .addText(MAIL.SIGN_UP_TEXT)
+      .addButton(MAIL.SIGN_UP_BUTTON_TEXT, link)
+      .includeUserAgreement()
+      .signUpNotRequested()
+      .build();
 
     // don't wait for mailerService's response; log error and link if it fails.
     this.mailerService
-      .composeAndSendEmail(
-        member.email,
-        member.lang,
-        MAIL.SIGN_UP_TITLE,
-        MAIL.SIGN_UP_BUTTON_TEXT,
-        greetingsAndSignupText,
-        {},
-        link,
-        true,
-        true,
-      )
+      .send(mail, member.email)
       .catch((err) => this.log.warn(err, `mailerService failed. link: ${link}`));
   };
 
@@ -82,19 +81,19 @@ export class AuthService {
     destination.searchParams.set('url', redirectionUrl);
     const link = destination.toString();
 
+    const mail = new MailBuilder({
+      subject: MAIL.SIGN_IN_TITLE,
+      translationVariables: {},
+      lang: member.lang,
+    })
+      .addText(MAIL.SIGN_IN_TEXT)
+      .addButton(MAIL.SIGN_IN_BUTTON_TEXT, link)
+      .signUpNotRequested()
+      .build();
+
     // don't wait for mailerService's response; log error and link if it fails.
     this.mailerService
-      .composeAndSendEmail(
-        member.email,
-        member.lang,
-        MAIL.SIGN_IN_TITLE,
-        MAIL.SIGN_IN_BUTTON_TEXT,
-        MAIL.SIGN_IN_TEXT,
-        {},
-        link,
-        false,
-        true,
-      )
+      .send(mail, member.email)
       .catch((err) => this.log.warn(err, `mailerService failed. link: ${link}`));
   };
 

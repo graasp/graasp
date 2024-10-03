@@ -5,6 +5,7 @@ import { UUID } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
 import { BaseLogger } from '../../logger';
+import { MailBuilder } from '../../plugins/mailer/builder';
 import { MAIL } from '../../plugins/mailer/langs/constants';
 import { MailerService } from '../../plugins/mailer/service';
 import {
@@ -131,26 +132,32 @@ export class MemberService {
     destination.searchParams.set(NEW_EMAIL_PARAM, newEmail);
     const link = destination.toString();
 
+    const mail = new MailBuilder({
+      subject: MAIL.CHANGE_EMAIL_TITLE,
+      translationVariables: {},
+      lang: lang,
+    })
+      .addText(MAIL.CHANGE_EMAIL_TEXT)
+      .addButton(MAIL.CHANGE_EMAIL_BUTTON_TEXT, link)
+      .signUpNotRequested()
+      .build();
+
     // don't wait for mailer's response; log error and link if it fails.
     this.mailerService
-      .composeAndSendEmail(
-        newEmail,
-        lang,
-        MAIL.CHANGE_EMAIL_TITLE,
-        MAIL.CHANGE_EMAIL_BUTTON_TEXT,
-        MAIL.CHANGE_EMAIL_TEXT,
-        {},
-        link,
-        false,
-        true,
-      )
+      .send(mail, newEmail)
       .catch((err) => this.log.warn(err, `mailer failed. link: ${link}`));
   }
 
   mailConfirmEmailChangeRequest(oldEmail: string, newEmail: string, lang: string) {
+    const mail = new MailBuilder({
+      subject: MAIL.CONFIRM_CHANGE_EMAIL_TITLE,
+      translationVariables: { newEmail },
+      lang: lang,
+    })
+      .addText(MAIL.CONFIRM_CHANGE_EMAIL_TEXT)
+      .build();
+
     // don't wait for mailer's response; log error and link if it fails.
-    this.mailerService
-      .sendEmailChangeRequestConfirmation(oldEmail, newEmail, lang)
-      .catch((err) => this.log.warn(err, `mailer failed.`));
+    this.mailerService.send(mail, oldEmail).catch((err) => this.log.warn(err, `mailer failed.`));
   }
 }
