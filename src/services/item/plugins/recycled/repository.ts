@@ -8,8 +8,6 @@ import { Account } from '../../../account/entities/account';
 import { Member } from '../../../member/entities/member';
 import { ITEMS_PAGE_SIZE_MAX } from '../../constants';
 import { Item } from '../../entities/Item';
-import { ItemSearchParams } from '../../types';
-import { applySearchParamsToQuery } from '../../utils';
 import { RecycledItemData } from './RecycledItemData';
 
 type CreateRecycledItemDataBody = { itemPath: string; creatorId: string };
@@ -35,11 +33,7 @@ export class RecycledItemDataRepository extends MutableRepository<RecycledItemDa
     return recycled;
   }
 
-  async getOwn(
-    account: Account,
-    itemSearchParams: ItemSearchParams,
-    pagination: Pagination,
-  ): Promise<Paginated<RecycledItemData>> {
+  async getOwn(account: Account, pagination: Pagination): Promise<Paginated<RecycledItemData>> {
     const { page, pageSize } = pagination;
     const limit = Math.min(pageSize, ITEMS_PAGE_SIZE_MAX);
     const skip = (page - 1) * limit;
@@ -58,8 +52,6 @@ export class RecycledItemDataRepository extends MutableRepository<RecycledItemDa
         AND im.account_id = :accountId`,
         { permission: PermissionLevel.Admin, accountId: account.id },
       );
-
-    applySearchParamsToQuery(query, account, itemSearchParams);
 
     const [im, totalCount] = await query.offset(skip).limit(limit).getManyAndCount();
     return { data: im, totalCount, pagination };

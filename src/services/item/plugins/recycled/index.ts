@@ -11,7 +11,6 @@ import { assertIsMember } from '../../../member/entities/member';
 import { memberAccountRole } from '../../../member/strategies/memberAccountRole';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { ITEMS_PAGE_SIZE } from '../../constants';
-import { ItemSearchParams } from '../../types';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
 import { getRecycledItemDatas, recycleOrRestoreMany } from './schemas';
 import { RecycledBinService } from './service';
@@ -31,28 +30,17 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.get(
     '/recycled',
     {
-      schema: getOwnRecycledItemData,
+      schema: getRecycledItemDatas,
       preHandler: [isAuthenticated, matchOne(memberAccountRole)],
     },
     async ({ user, query }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      const {
-        page = 1,
-        pageSize = ITEMS_PAGE_SIZE,
-        creatorId,
-        keywords,
-        sortBy,
-        ordering,
-        permissions,
-        types,
-      } = query;
-      const result = await recycleBinService.getOwn(
-        member,
-        buildRepositories(),
-        { creatorId, keywords, sortBy, ordering, permissions, types },
-        { page, pageSize },
-      );
+      const { page = 1, pageSize = ITEMS_PAGE_SIZE } = query;
+      const result = await recycleBinService.getOwn(member, buildRepositories(), {
+        page,
+        pageSize,
+      });
       return result;
     },
   );
