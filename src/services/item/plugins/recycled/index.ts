@@ -47,7 +47,7 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
 
   // get own recycled items data
   fastify.get<{
-    Querystring: ItemSearchParams & Partial<Pagination>;
+    Querystring: Partial<Pagination>;
   }>(
     '/recycled',
     {
@@ -57,22 +57,11 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
     async ({ user, query }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      const {
-        page = 1,
-        pageSize = ITEMS_PAGE_SIZE,
-        creatorId,
-        keywords,
-        sortBy,
-        ordering,
-        permissions,
-        types,
-      } = query;
-      const result = await recycleBinService.getOwn(
-        member,
-        buildRepositories(),
-        { creatorId, keywords, sortBy, ordering, permissions, types },
-        { page, pageSize },
-      );
+      const { page = 1, pageSize = ITEMS_PAGE_SIZE } = query;
+      const result = await recycleBinService.getOwn(member, buildRepositories(), {
+        page,
+        pageSize,
+      });
       return result;
     },
   );

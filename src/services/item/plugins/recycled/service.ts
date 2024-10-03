@@ -32,12 +32,11 @@ export class RecycledBinService {
   async getOwn(
     member: Member,
     repositories: Repositories,
-    itemSearchParams: ItemSearchParams,
     pagination: Pagination,
   ): Promise<Paginated<RecycledItemData>> {
     const { recycledItemRepository } = repositories;
 
-    const recycled = await recycledItemRepository.getOwn(member, itemSearchParams, pagination);
+    const recycled = await recycledItemRepository.getOwn(member, pagination);
 
     return recycled;
   }
