@@ -39,7 +39,6 @@ import { Actor, Member, isMember } from '../member/entities/member';
 import { itemSchema } from '../member/plugins/export-data/schemas/schemas';
 import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils';
 import { mapById } from '../utils';
-import { SearchBuilder } from './SearchBuilder';
 import { IS_COPY_REGEX } from './constants';
 import { DEFAULT_ORDER, FolderItem, Item, ItemExtraUnion, isItemType } from './entities/Item';
 import { ItemChildrenParams } from './types';
@@ -205,8 +204,39 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
       query.andWhere('item.type IN (:...types)', { types });
     }
 
-    const s = new SearchBuilder(query);
-    s.filterByKeywords(params?.keywords);
+    const allKeywords = params?.keywords?.filter((s) => s && s.length);
+    if (allKeywords?.length) {
+      const keywordsString = allKeywords.join(' ');
+      query.andWhere(
+        new Brackets((q) => {
+          // search in english by default
+          q.where("item.search_document @@ plainto_tsquery('english', :keywords)", {
+            keywords: keywordsString,
+          });
+
+          // no dictionary
+          q.orWhere("item.search_document @@ plainto_tsquery('simple', :keywords)", {
+            keywords: keywordsString,
+          });
+
+          // raw words search
+          allKeywords.forEach((k, idx) => {
+            q.orWhere(`item.name ILIKE :k_${idx}`, {
+              [`k_${idx}`]: `%${k}%`,
+            });
+          });
+
+          // search by member lang
+          const memberLang = actor && isMember(actor) ? actor?.lang : DEFAULT_LANG;
+          if (memberLang && ALLOWED_SEARCH_LANGS[memberLang]) {
+            q.orWhere('item.search_document @@ plainto_tsquery(:lang, :keywords)', {
+              keywords: keywordsString,
+              lang: ALLOWED_SEARCH_LANGS[memberLang],
+            });
+          }
+        }),
+      );
+    }
 
     if (params?.ordered) {
       query
