@@ -8,7 +8,6 @@ import { ItemGeolocation, ItemType, ItemTypeUnion, isChildOf } from '@graasp/sdk
 
 import { NoFileProvided } from '../../utils/errors';
 import { FolderItem, Item, isItemType } from './entities/Item';
-import { Ordering } from './types';
 import { validateGeolocation, validateSettings } from './validation';
 
 const itemOrderFn = (a: Item, b: Item) => {

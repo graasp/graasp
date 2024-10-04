@@ -51,7 +51,8 @@ export class RecycledItemDataRepository extends MutableRepository<RecycledItemDa
         AND im.permission = :permission 
         AND im.account_id = :accountId`,
         { permission: PermissionLevel.Admin, accountId: account.id },
-      );
+      )
+      .orderBy('recycledItem.created_at', 'DESC');
 
     const [im, totalCount] = await query.offset(skip).limit(limit).getManyAndCount();
     return { data: im, totalCount, pagination };

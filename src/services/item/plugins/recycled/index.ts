@@ -14,7 +14,6 @@ import { assertIsMember } from '../../../member/entities/member';
 import { memberAccountRole } from '../../../member/strategies/memberAccountRole';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { ITEMS_PAGE_SIZE } from '../../constants';
-import { ItemSearchParams } from '../../types';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
 import schemas, { getOwnRecycledItemData, recycleMany, restoreMany } from './schemas';
 import { RecycledBinService } from './service';
