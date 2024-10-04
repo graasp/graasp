@@ -25,6 +25,7 @@ import { encryptPassword } from '../../auth/plugins/password/utils';
 import { Item } from '../../item/entities/Item';
 import { ItemTag } from '../../item/plugins/itemTag/ItemTag';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
+import { ItemMembership } from '../../itemMembership/entities/ItemMembership';
 import { Member } from '../../member/entities/member';
 import { expectMinimalMember, saveMember } from '../../member/test/fixtures/members';
 import { Guest } from '../entities/guest';
@@ -35,6 +36,7 @@ import { USERNAME_LOGIN } from './fixtures';
 const testUtils = new ItemTestUtils();
 const rawRepository = AppDataSource.getRepository(Guest);
 const rawMemberPasswordRepository = AppDataSource.getRepository(MemberPassword);
+const rawItemMembershipRepository = AppDataSource.getRepository(ItemMembership);
 const rawItemLoginRepository = AppDataSource.getRepository(Guest);
 const rawItemLoginSchemaRepository = AppDataSource.getRepository(ItemLoginSchemaEntity);
 const rawItemTagRepository = AppDataSource.getRepository(ItemTag);
@@ -477,6 +479,40 @@ describe('Item Login Tests', () => {
         expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
       });
     });
+
+    describe('ItemLogin from child', () => {
+      beforeEach(async () => {
+        ({ app } = await build({ member: null }));
+      });
+
+      it('Successfully register when item login is defined in parent', async () => {
+        const payload = USERNAME_LOGIN;
+        // pre-create pseudonymized data
+        const item = await testUtils.saveItem({});
+        const { itemLoginSchema } = await saveItemLoginSchema({
+          item: item as unknown as DiscriminatedItem,
+        });
+        const child = await testUtils.saveItem({ parentItem: item });
+
+        const res = await app.inject({
+          method: HttpMethod.Post,
+          url: `${ITEMS_ROUTE_PREFIX}/${child.id}/login`,
+          payload,
+        });
+
+        const member = res.json();
+
+        // membership is saved on the right path
+        const membership = await rawItemMembershipRepository.findOne({
+          where: { account: { id: member.id } },
+          relations: { item: true, account: true },
+        });
+        expect(membership?.item.path).toEqual(itemLoginSchema.item.path);
+
+        expect(res.statusCode).toBe(StatusCodes.OK);
+      });
+    });
+
     describe('ItemLoginSchemaType.Username', () => {
       describe('Signed Out', () => {
         beforeEach(async () => {
@@ -551,6 +587,7 @@ describe('Item Login Tests', () => {
 
             const member = res.json();
             expectItemLogin(member, m);
+
             expect(res.statusCode).toBe(StatusCodes.OK);
           });
         });
