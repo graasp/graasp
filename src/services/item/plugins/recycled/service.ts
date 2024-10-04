@@ -7,7 +7,6 @@ import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import { Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
-import { ItemSearchParams } from '../../types';
 import { ItemThumbnailService } from '../thumbnail/service';
 import { RecycledItemData } from './RecycledItemData';
 
