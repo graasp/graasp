@@ -56,6 +56,7 @@ RUN apk update \
 COPY ./package.json ./
 COPY ./.yarnrc.yml ./
 COPY ./.yarn/ ./.yarn/
+COPY ./yarn.lock ./
 
 
 # Husky's script are needed for postinstall script
