@@ -11415,7 +11415,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sodium-native@npm:^4.0.0":
+"sodium-native@npm:4.1.1":
   version: 4.1.1
   resolution: "sodium-native@npm:4.1.1"
   dependencies:
