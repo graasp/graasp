@@ -5,6 +5,8 @@ import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { itemSchemaRef, packedItemSchemaRef } from '../../schema';
 
 export const favoriteSchemaRef = registerSchemaAsRef(
+  'favorite',
+  'Favorite',
   Type.Object(
     {
       // Object definition
@@ -14,14 +16,14 @@ export const favoriteSchemaRef = registerSchemaAsRef(
     },
     {
       // Schema options
-      title: 'Favorite',
-      $id: 'favorite',
       additionalProperties: false,
     },
   ),
 );
 
 export const packedFavoriteSchemaRef = registerSchemaAsRef(
+  'packedFavorite',
+  'Packed Favorite',
   Type.Object(
     {
       // Object definition
@@ -31,8 +33,6 @@ export const packedFavoriteSchemaRef = registerSchemaAsRef(
     },
     {
       // Schema options
-      title: 'Packed Favorite',
-      $id: 'packedFavorite',
       additionalProperties: false,
     },
   ),

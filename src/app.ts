@@ -10,7 +10,6 @@ import databasePlugin from './plugins/database';
 import metaPlugin from './plugins/meta';
 import swaggerPlugin from './plugins/swagger';
 import { schemaRegisterPlugin } from './plugins/typebox';
-import shared from './schemas/fluent-schema';
 import authPlugin from './services/auth';
 import { plugin as passportPlugin } from './services/auth/plugins/passport';
 import ItemServiceApi from './services/item';
@@ -29,9 +28,6 @@ export default async function (instance: FastifyInstance): Promise<void> {
   await instance
     .register(fp(swaggerPlugin))
     .register(fp(schemaRegisterPlugin))
-
-    // load some shared schema definitions
-    .addSchema(shared)
 
     // db should be registered before the dependencies.
     .register(fp(databasePlugin), {

@@ -4,28 +4,31 @@ import { StatusCodes } from 'http-status-codes';
 import { FlagType } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
+import { nullableMemberSchemaRef } from '../../../member/schemas';
 import { itemIdSchemaRef, itemSchemaRef } from '../../schema';
 
 export const itemFlagSchemaRef = registerSchemaAsRef(
+  'itemFlag',
+  'Item Flag',
   Type.Object(
     {
       // Object definition
       id: customType.UUID(),
       item: itemSchemaRef,
       type: Type.Enum(FlagType),
-      creator: Type.Ref('https://graasp.org/members/#/definitions/member'),
+      creator: nullableMemberSchemaRef,
       createdAt: customType.DateTime(),
     },
     {
       // Schema options
-      title: 'Item Flag',
-      $id: 'itemFlag',
       additionalProperties: false,
     },
   ),
 );
 
 export const createItemFlagSchemaRef = registerSchemaAsRef(
+  'createFlag',
+  'Create Flag',
   Type.Object(
     {
       // Object definition
@@ -33,8 +36,6 @@ export const createItemFlagSchemaRef = registerSchemaAsRef(
     },
     {
       // Schema options
-      title: 'Create Flag',
-      $id: 'createFlag',
       additionalProperties: false,
     },
   ),

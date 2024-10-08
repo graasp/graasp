@@ -1,4 +1,4 @@
-import { FastifyPluginAsync } from 'fastify';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../di/utils';
 import { asDefined } from '../../../../utils/assertions';
@@ -11,7 +11,7 @@ import { create, deleteOne, getCategories, getItemCategories } from './schemas';
 import { CategoryService } from './services/category';
 import { ItemCategoryService } from './services/itemCategory';
 
-const plugin: FastifyPluginAsync = async (fastify) => {
+const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db } = fastify;
   const itemCategoryService = resolveDependency(ItemCategoryService);
   const categoryService = resolveDependency(CategoryService);
@@ -26,7 +26,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   //get item category of an item
-  fastify.get<{ Params: { itemId: string } }>(
+  fastify.get(
     '/:itemId/categories',
     {
       schema: getItemCategories,

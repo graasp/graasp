@@ -16,7 +16,7 @@ import {
   EntryNotFoundAfterUpdateException,
   EntryNotFoundBeforeDeleteException,
 } from '../../repositories/errors';
-import { asDefined } from '../../utils/assertions';
+import { asDefined, assertIsMemberOrGuest } from '../../utils/assertions';
 import { buildRepositories } from '../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
 import { matchOne } from '../authorization';
@@ -74,10 +74,11 @@ const plugin: FastifyPluginAsyncTypebox<GraaspChatPluginOptions> = async (fastif
           params: { itemId },
           body,
         } = request;
-        const member = asDefined(user?.account);
+        const account = asDefined(user?.account);
+        assertIsMemberOrGuest(account);
         return await db.transaction(async (manager) => {
           const repositories = buildRepositories(manager);
-          const message = await chatService.postOne(member, repositories, itemId, body);
+          const message = await chatService.postOne(account, repositories, itemId, body);
           await actionChatService.postPostMessageAction(request, repositories, message);
           return message;
         });

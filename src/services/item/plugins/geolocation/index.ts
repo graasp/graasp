@@ -1,8 +1,9 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifyPluginAsync } from 'fastify';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../di/utils';
+import { FastifyInstanceTypebox } from '../../../../plugins/typebox';
 import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
@@ -21,13 +22,13 @@ import {
 } from './schemas';
 import { ItemGeolocationService } from './service';
 
-const plugin: FastifyPluginAsync = async (fastify) => {
+const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db } = fastify;
 
   const itemGeolocationService = resolveDependency(ItemGeolocationService);
 
-  fastify.register(async function (fastify) {
-    fastify.get<{ Params: { id: Item['id'] } }>(
+  fastify.register(async function (fastify: FastifyInstanceTypebox) {
+    fastify.get(
       '/:id/geolocation',
       {
         schema: getByItem,

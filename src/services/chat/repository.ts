@@ -5,14 +5,15 @@ import { ResultOf } from '@graasp/sdk';
 import { MutableRepository } from '../../repositories/MutableRepository';
 import { DEFAULT_PRIMARY_KEY } from '../../repositories/const';
 import { DeleteException, EntryNotFoundBeforeDeleteException } from '../../repositories/errors';
-import { Account } from '../account/entities/account';
+import { Guest } from '../itemLogin/entities/guest';
+import { Member } from '../member/entities/member';
 import { messageSchema } from '../member/plugins/export-data/schemas/schemas';
 import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils';
 import { mapById } from '../utils';
 import { ChatMessage } from './chatMessage';
 
 type ChatMessageUpdateBody = Partial<ChatMessage>;
-type ChatMessageCreateBody = { itemId: string; creator: Account; body: string };
+type ChatMessageCreateBody = { itemId: string; creator: Guest | Member; body: string };
 
 export class ChatMessageRepository extends MutableRepository<ChatMessage, ChatMessageUpdateBody> {
   constructor(manager?: EntityManager) {

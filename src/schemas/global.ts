@@ -12,6 +12,8 @@ export const NAME_REGEX = '^\\S+( \\S+)*$';
 export const EMPTY_OR_SPACED_WORDS_REGEX = /^(\S+( \S+)*)?$/;
 
 export const entityIdSchemaRef = registerSchemaAsRef(
+  'entityId',
+  'Entity ID',
   Type.Object(
     {
       // Object Definition
@@ -19,14 +21,14 @@ export const entityIdSchemaRef = registerSchemaAsRef(
     },
     {
       // Schema Options
-      title: 'Entity ID',
-      $id: 'entityId',
       additionalProperties: false,
     },
   ),
 );
 
 export const errorSchemaRef = registerSchemaAsRef(
+  'error',
+  'Error',
   Type.Object(
     {
       // Object Definition
@@ -46,8 +48,6 @@ export const errorSchemaRef = registerSchemaAsRef(
     },
     {
       // Schema Options
-      title: 'Error',
-      $id: 'error',
       additionalProperties: false,
     },
   ),
