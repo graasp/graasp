@@ -2858,10 +2858,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sinclair/typebox@npm:0.33.12":
-  version: 0.33.12
-  resolution: "@sinclair/typebox@npm:0.33.12"
-  checksum: 10/3b868a540480a914fb05e939fd875f1db9d078671038786394d8ac21f1cb12f2e5e25f0cc1092925f613821d0a959a14c8c8ad35a4064639822ce5f7b83ce380
+"@sinclair/typebox@npm:0.33.15":
+  version: 0.33.15
+  resolution: "@sinclair/typebox@npm:0.33.15"
+  checksum: 10/b54f965ff6123ac9beab6b92c264599c65ce78e899e5e3498ab212867a3b7f15b0c8f9788bdebdecc0eebf6ea9164ee2e8c0c5279e2494746405ab249dd17f91
   languageName: node
   linkType: hard
 
@@ -7251,7 +7251,7 @@ __metadata:
     "@rapideditor/country-coder": "npm:5.2.2"
     "@sentry/node": "npm:7.118.0"
     "@sentry/tracing": "npm:7.114.0"
-    "@sinclair/typebox": "npm:0.33.12"
+    "@sinclair/typebox": "npm:0.33.15"
     "@trivago/prettier-plugin-sort-imports": "npm:4.3.0"
     "@types/archiver": "npm:6.0.2"
     "@types/bad-words": "npm:3.0.3"
