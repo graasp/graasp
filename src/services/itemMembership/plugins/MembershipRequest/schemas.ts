@@ -4,12 +4,13 @@ import { MembershipRequestStatus } from '@graasp/sdk';
 
 import { customType } from '../../../../plugins/typebox';
 import { itemSchemaRef } from '../../../item/schema';
+import { memberSchemaRef } from '../../../member/schemas';
 
 export const completeMembershipRequest = {
   $id: 'completeMembershipRequest',
   type: 'object',
   properties: {
-    member: { $ref: 'https://graasp.org/members/#/definitions/member' },
+    member: memberSchemaRef,
     item: itemSchemaRef,
     createdAt: { type: 'string' },
   },
@@ -20,7 +21,7 @@ export const simpleMembershipRequest = {
   $id: 'simpleMembershipRequest',
   type: 'object',
   properties: {
-    member: { $ref: 'https://graasp.org/members/#/definitions/member' },
+    member: memberSchemaRef,
     createdAt: { type: 'string' },
   },
   additionalProperties: false,

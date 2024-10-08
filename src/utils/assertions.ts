@@ -1,3 +1,7 @@
+import { Account } from '../services/account/entities/account';
+import { NotMemberOrGuest } from '../services/account/errors';
+import { Guest, isGuest } from '../services/itemLogin/entities/guest';
+import { Member, isMember } from '../services/member/entities/member';
 import { UnexpectedError } from './errors';
 
 export type Nullable<T> = T | null | undefined;
@@ -41,5 +45,19 @@ export function assertIsDefined<T, Err extends Error, Args extends unknown[]>(
 ): asserts object is NonNullable<T> {
   if (!isDefined(object)) {
     throw error ? new error(...args) : new UnexpectedError();
+  }
+}
+
+export function assertIsMemberOrGuest<Err extends Error, Args extends unknown[]>(
+  account: Account,
+  error?: new (...args: Args) => Err,
+  ...args: Args
+): asserts account is Member | Guest {
+  if (!(isMember(account) || isGuest(account))) {
+    if (error) {
+      throw new error(...args);
+    } else {
+      throw new NotMemberOrGuest();
+    }
   }
 }

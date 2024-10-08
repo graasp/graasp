@@ -20,6 +20,8 @@ import {
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 import { error, idParam, idsQuery, uuid } from '../../schemas/fluent-schema';
 import { EMPTY_OR_SPACED_WORDS_REGEX, NAME_REGEX } from '../../schemas/global';
+import { nullableAccountSchemaRef } from '../account/schemas';
+import { nullableMemberSchemaRef } from '../member/schemas';
 import { ITEMS_PAGE_SIZE } from './constants';
 import { Ordering, SortBy } from './types';
 
@@ -27,6 +29,8 @@ export const SHOW_HIDDEN_PARRAM = 'showHidden';
 export const TYPES_FILTER_PARAM = 'types';
 
 export const itemIdSchemaRef = registerSchemaAsRef(
+  'itemId',
+  'Item ID',
   Type.Object(
     {
       // Object Definition
@@ -34,34 +38,32 @@ export const itemIdSchemaRef = registerSchemaAsRef(
     },
     {
       // Schema Options
-      title: 'Item ID',
-      $id: 'itemId',
       additionalProperties: false,
     },
   ),
 );
 
 export const itemSchemaRef = registerSchemaAsRef(
+  'item',
+  'Item',
   Type.Object(
     {
       // Object Definition
       id: customType.UUID(),
       name: Type.String(),
       displayName: Type.String(),
-      description: Type.Optional(Type.Union([Type.String(), Type.Null()])),
+      description: Type.Optional(customType.Nullable(Type.String())),
       type: Type.String(),
       path: Type.String(),
       lang: Type.String(),
       extra: Type.Object({}, { additionalProperties: true }),
       settings: Type.Object({}, { additionalProperties: true }),
-      creator: Type.Optional(Type.Ref('https://graasp.org/members/#/definitions/member')),
+      creator: Type.Optional(nullableAccountSchemaRef),
       createdAt: customType.DateTime(),
       updatedAt: customType.DateTime(),
     },
     {
       // Schema Options
-      title: 'Item',
-      $id: 'item',
       additionalProperties: false,
     },
   ),
@@ -69,35 +71,37 @@ export const itemSchemaRef = registerSchemaAsRef(
 
 // Because packedItemSchemaRef use itemTagSchemaRef which use itemSchemaRef. We need to define itemTagSchemaRef in between, so we can not move it to the ItemTag folder.
 export const itemTagSchemaRef = registerSchemaAsRef(
+  'itemTag',
+  'Item Tag',
   Type.Object(
     {
       id: customType.UUID(),
       type: Type.Enum(ItemTagType),
       item: itemSchemaRef,
-      creator: Type.Optional(Type.Ref('https://graasp.org/members/#/definitions/member')),
+      creator: Type.Optional(nullableMemberSchemaRef),
       createdAt: customType.DateTime(),
     },
     {
-      title: 'Item Tag',
-      $id: 'itemTag',
       additionalProperties: false,
     },
   ),
 );
 
 export const packedItemSchemaRef = registerSchemaAsRef(
+  'packedItem',
+  'Packed Item',
   Type.Object(
     {
       // Object Definition
       id: customType.UUID(),
       name: Type.String(),
-      description: Type.Optional(Type.Union([Type.String(), Type.Null()])),
+      description: Type.Optional(customType.Nullable(Type.String())),
       type: Type.String(),
       path: Type.String(),
       lang: Type.String(),
       extra: Type.Object({}, { additionalProperties: true }),
       settings: Type.Object({}, { additionalProperties: true }),
-      creator: Type.Optional(Type.Ref('https://graasp.org/members/#/definitions/member')),
+      creator: nullableMemberSchemaRef,
       createdAt: customType.DateTime(),
       updatedAt: customType.DateTime(),
       permission: Type.Union([Type.Enum(PermissionLevel), Type.Null()]),
@@ -107,8 +111,6 @@ export const packedItemSchemaRef = registerSchemaAsRef(
     },
     {
       // Schema Options
-      title: 'Packed Item',
-      $id: 'packedItem',
       additionalProperties: false,
     },
   ),

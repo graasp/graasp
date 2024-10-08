@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifySchema } from 'fastify';
 
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
+import { nullableAccountSchemaRef } from '../account/schemas';
 import { itemIdSchemaRef, itemSchemaRef } from '../item/schema';
 
 /**
@@ -12,6 +13,8 @@ import { itemIdSchemaRef, itemSchemaRef } from '../item/schema';
  */
 
 export const messageParamSchemaRef = registerSchemaAsRef(
+  'messageParam',
+  'Message Param',
   Type.Object(
     {
       // Object Definition
@@ -20,19 +23,19 @@ export const messageParamSchemaRef = registerSchemaAsRef(
     },
     {
       // Schema Options
-      title: 'Message Param',
-      $id: 'messageParam',
       additionalProperties: false,
     },
   ),
 );
 
 export const chatMessageSchemaRef = registerSchemaAsRef(
+  'chatMessage',
+  'Chat Message',
   Type.Object(
     {
       // Object Definition
       id: customType.UUID(),
-      creator: Type.Ref('https://graasp.org/members/#/definitions/member'),
+      creator: nullableAccountSchemaRef,
       createdAt: customType.DateTime(),
       updatedAt: customType.DateTime(),
       body: Type.String(),
@@ -40,14 +43,14 @@ export const chatMessageSchemaRef = registerSchemaAsRef(
     },
     {
       // Schema Options
-      title: 'Chat Message',
-      $id: 'chatMessage',
       additionalProperties: false,
     },
   ),
 );
 
 export const chatSchemaRef = registerSchemaAsRef(
+  'chat',
+  'Chat',
   Type.Object(
     {
       // Object Definition
@@ -56,14 +59,14 @@ export const chatSchemaRef = registerSchemaAsRef(
     },
     {
       // Schema Options
-      title: 'Chat',
-      $id: 'chat',
       additionalProperties: false,
     },
   ),
 );
 
 export const createChatMessageSchemaRef = registerSchemaAsRef(
+  'createChatMessage',
+  'Create Chat Message',
   Type.Object(
     {
       // Object Definition
@@ -72,8 +75,6 @@ export const createChatMessageSchemaRef = registerSchemaAsRef(
     },
     {
       // Schema Options
-      title: 'Create Chat Message',
-      $id: 'createChatMessage',
       additionalProperties: false,
     },
   ),

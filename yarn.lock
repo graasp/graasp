@@ -2078,12 +2078,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/translations@npm:1.39.0":
+"@graasp/translations@github:graasp/graasp-translations#555-add-failure-message-for-notmemberorguest":
   version: 1.39.0
-  resolution: "@graasp/translations@npm:1.39.0"
+  resolution: "@graasp/translations@https://github.com/graasp/graasp-translations.git#commit=62ccaf16afe852cdf9cb5b511292e700332c0254"
   peerDependencies:
     i18next: ^23.8.1
-  checksum: 10/9aaa8bc1b0510668bf5cd167b68e0fd5bcd3a4ae0409161c44ff7da180010d2876dbf66275c344cc89bbfd983009aeaf1d90b39877b828b5443b9040892c2396
+  checksum: 10/dd5c703d4ffa9993e8d8dfe6923f0e2ce1a9f5f6b042d581bfce825d5831cd3d75dd5baa968b2150e857ea03fa9e6afe7f1e0914ac202537c6e89e82f5a4fd26
   languageName: node
   linkType: hard
 
@@ -7246,7 +7246,7 @@ __metadata:
     "@fastify/websocket": "npm:7.2.0"
     "@graasp/etherpad-api": "npm:2.1.1"
     "@graasp/sdk": "npm:4.31.0"
-    "@graasp/translations": "npm:1.39.0"
+    "@graasp/translations": "github:graasp/graasp-translations#555-add-failure-message-for-notmemberorguest"
     "@jest/globals": "npm:29.7.0"
     "@rapideditor/country-coder": "npm:5.2.2"
     "@sentry/node": "npm:7.118.0"

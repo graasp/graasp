@@ -5,6 +5,8 @@ import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { itemIdSchemaRef, itemSchemaRef, packedItemSchemaRef } from '../../schema';
 
 export const itemLikeSchemaRef = registerSchemaAsRef(
+  'itemLike',
+  'Item Like',
   Type.Object(
     {
       // Object Definition
@@ -13,14 +15,14 @@ export const itemLikeSchemaRef = registerSchemaAsRef(
     },
     {
       // Schema Options
-      title: 'Item Like',
-      $id: 'itemLike',
       additionalProperties: false,
     },
   ),
 );
 
 export const packedItemLikeSchemaRef = registerSchemaAsRef(
+  'packedItemLike',
+  'Packed Item Like',
   Type.Object(
     {
       // Object Definition
@@ -29,8 +31,6 @@ export const packedItemLikeSchemaRef = registerSchemaAsRef(
     },
     {
       // Schema Options
-      title: 'Packed Item Like',
-      $id: 'packedItemLike',
       additionalProperties: false,
     },
   ),

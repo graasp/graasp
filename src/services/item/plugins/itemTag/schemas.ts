@@ -8,6 +8,8 @@ import { UUID_REGEX, errorSchemaRef } from '../../../../schemas/global';
 import { itemIdSchemaRef, itemTagSchemaRef } from '../../schema';
 
 export const tagSchemaRef = registerSchemaAsRef(
+  'tag',
+  'Tag',
   Type.Object(
     {
       // Object definition
@@ -18,8 +20,6 @@ export const tagSchemaRef = registerSchemaAsRef(
     },
     {
       // Schema options
-      title: 'Tag',
-      $id: 'tag',
       additionalProperties: false,
     },
   ),

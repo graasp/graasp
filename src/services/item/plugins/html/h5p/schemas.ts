@@ -16,9 +16,7 @@ export const h5pImport = {
 
 export const h5pDownload = {
   params: {
-    itemId: {
-      $ref: 'https://graasp.org/#/definitions/uuid',
-    },
+    itemId: customType.UUID(),
   },
   required: ['itemId'],
   additionalProperties: false,

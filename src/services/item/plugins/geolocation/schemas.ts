@@ -1,5 +1,8 @@
+import { StatusCodes } from 'http-status-codes';
+
 import { customType } from '../../../../plugins/typebox';
 import { idParam } from '../../../../schemas/fluent-schema';
+import { entityIdSchemaRef } from '../../../../schemas/global';
 import { itemSchemaRef, packedItemSchemaRef } from '../../schema';
 
 const geolocation = {
@@ -28,9 +31,9 @@ const geolocationPacked = {
 };
 
 export const getByItem = {
-  params: idParam,
+  params: entityIdSchemaRef,
   response: {
-    200: geolocationPacked,
+    [StatusCodes.OK]: geolocationPacked,
   },
 };
 

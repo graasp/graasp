@@ -3,11 +3,13 @@ import { StatusCodes } from 'http-status-codes';
 
 import { MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
-import { UUID_REGEX } from '../../../../../schemas/global';
+import { customType } from '../../../../../plugins/typebox';
+import { UUID_REGEX, errorSchemaRef } from '../../../../../schemas/global';
 import {
   GET_MOST_LIKED_ITEMS_MAXIMUM,
   GET_MOST_RECENT_ITEMS_MAXIMUM,
 } from '../../../../../utils/config';
+import { nullableMemberSchemaRef } from '../../../../member/schemas';
 import { itemSchemaRef, packedItemSchemaRef } from '../../../schema';
 
 const publishEntry = {
@@ -15,9 +17,7 @@ const publishEntry = {
   properties: {
     id: { type: 'string' },
     item: itemSchemaRef,
-    creator: {
-      $ref: 'https://graasp.org/members/#/definitions/member',
-    },
+    creator: nullableMemberSchemaRef,
     createdAt: { type: 'string' },
   },
   additionalProperties: false,
@@ -28,9 +28,7 @@ const publishEntryWithViews = {
   properties: {
     id: { type: 'string' },
     item: itemSchemaRef,
-    creator: {
-      $ref: 'https://graasp.org/members/#/definitions/member',
-    },
+    creator: nullableMemberSchemaRef,
     createdAt: { type: 'string' },
     totalViews: {
       type: 'number',
@@ -105,9 +103,7 @@ export const getCollectionsForMember = {
   params: {
     type: 'object',
     properties: {
-      memberId: {
-        $ref: 'https://graasp.org/#/definitions/uuid',
-      },
+      memberId: customType.UUID(),
     },
     required: ['memberId'],
   },
@@ -121,9 +117,7 @@ export const publishItem = {
   params: {
     type: 'object',
     properties: {
-      itemId: {
-        $ref: 'https://graasp.org/#/definitions/uuid',
-      },
+      itemId: customType.UUID(),
     },
     required: ['itemId'],
   },
@@ -137,9 +131,7 @@ export const unpublishItem = {
   params: {
     type: 'object',
     properties: {
-      itemId: {
-        $ref: 'https://graasp.org/#/definitions/uuid',
-      },
+      itemId: customType.UUID(),
     },
     required: ['itemId'],
   },
@@ -153,9 +145,7 @@ export const getInformations = {
   params: {
     type: 'object',
     properties: {
-      itemId: {
-        $ref: 'https://graasp.org/#/definitions/uuid',
-      },
+      itemId: customType.UUID(),
     },
     required: ['itemId'],
   },
@@ -175,13 +165,7 @@ export const getManyInformations = {
         type: 'object',
         required: ['itemId'],
         properties: {
-          itemId: {
-            type: 'array',
-            items: {
-              $ref: 'https://graasp.org/#/definitions/uuid',
-            },
-            uniqueItems: true,
-          },
+          itemId: Type.Array(customType.UUID(), { uniqueItems: true }),
         },
         additionalProperties: false,
       },
@@ -202,12 +186,7 @@ export const getManyInformations = {
             [UUID_REGEX]: publishEntry,
           },
         },
-        errors: {
-          type: 'array',
-          items: {
-            $ref: 'https://graasp.org/#/definitions/error',
-          },
-        },
+        errors: Type.Array(errorSchemaRef),
       },
     },
   },

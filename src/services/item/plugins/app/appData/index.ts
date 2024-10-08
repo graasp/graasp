@@ -2,13 +2,11 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../../di/utils';
 import { FastifyInstanceTypebox } from '../../../../../plugins/typebox';
-import { IdParam } from '../../../../../types';
 import { asDefined } from '../../../../../utils/assertions';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
 import { addMemberInAppData } from '../legacy';
 import { appDataWsHooks } from '../ws/hooks';
-import { AppData } from './appData';
 import { InputAppData } from './interfaces/app-data';
 import appDataFilePlugin from './plugins/file';
 import { create, deleteOne, getForOne, updateOne } from './schemas';
@@ -45,7 +43,7 @@ const appDataPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
     );
 
     // update app data
-    fastify.patch<{ Params: { itemId: string } & IdParam; Body: Partial<AppData> }>(
+    fastify.patch(
       '/:itemId/app-data/:id',
       { schema: updateOne, preHandler: authenticateAppsJWT },
       async ({ user, params: { itemId, id: appDataId }, body }) => {

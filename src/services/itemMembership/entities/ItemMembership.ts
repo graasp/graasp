@@ -37,7 +37,7 @@ export class ItemMembership extends BaseEntity {
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'creator_id' })
-  creator: Account | null;
+  creator: Member | Guest | null;
 
   @Index('IDX_item_membership_account_id')
   @ManyToOne(() => Account, (account) => account.id, {

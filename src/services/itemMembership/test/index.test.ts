@@ -78,6 +78,7 @@ describe('Membership routes tests', () => {
           method: HttpMethod.Get,
           url: `/item-memberships?itemId=${item.id}`,
         });
+        expect(response.statusCode).toBe(StatusCodes.OK);
         const { data, errors } = response.json();
 
         for (const m of memberships) {
@@ -86,7 +87,6 @@ describe('Membership routes tests', () => {
           expectMembership(m, im, actor);
         }
         expect(errors).toHaveLength(0);
-        expect(response.statusCode).toBe(StatusCodes.OK);
       });
       it('Returns successfully for two ids', async () => {
         const { item: item1, itemMembership: im1 } = await testUtils.saveItemAndMembership({
