@@ -1,6 +1,8 @@
 import { S } from 'fluent-json-schema';
 import { StatusCodes } from 'http-status-codes';
 
+import { FastifySchema } from 'fastify';
+
 import {
   AggregateBy,
   AggregateFunction,
@@ -128,7 +130,7 @@ export const getAggregateActions = {
   },
 };
 
-export const exportAction = {
+export const exportAction: FastifySchema = {
   params: idParam,
   querystring: S.object().prop('format', S.enum(Object.values(ExportActionsFormatting))),
   response: {

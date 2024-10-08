@@ -7,6 +7,9 @@ import { ExportActionsFormatting } from '@graasp/sdk';
 
 import { TMP_FOLDER } from '../../../utils/config';
 import { BaseAnalytics } from '../../item/plugins/action/base-analytics';
+import { AppAction } from '../../item/plugins/app/appAction/appAction';
+import { AppData } from '../../item/plugins/app/appData/appData';
+import { AppSetting } from '../../item/plugins/app/appSetting/appSettings';
 import { CannotWriteFileError } from './errors';
 
 export const buildItemTmpFolder = (itemId: string): string =>
@@ -40,14 +43,15 @@ const flattenObject = (obj: RecursiveObject, prefix: string = ''): ReturnObject 
   }, {});
 };
 
-const writeFileForFormat = (
+export const writeFileForFormat = (
   path: string,
   format: ExportActionsFormatting,
-  data: object[], // TODO: Replace 'object' with specific type(s) when defining schema for data to export
+  // TODO: Replace 'object' with specific type(s) when defining schema for data to export
+  data: object[] | object,
 ): void => {
-  if (data.length) {
-    switch (format) {
-      case ExportActionsFormatting.CSV: {
+  switch (format) {
+    case ExportActionsFormatting.CSV: {
+      if (Array.isArray(data) && data.length) {
         const newData = data.map((obj) => flattenObject(obj as RecursiveObject));
         const csv = unparse(newData, {
           header: true,
@@ -57,13 +61,20 @@ const writeFileForFormat = (
         fs.writeFileSync(path, csv);
         break;
       }
-      case ExportActionsFormatting.JSON:
-      default: {
+    }
+    case ExportActionsFormatting.JSON:
+    default: {
+      // data can be an object or an array of objects
+      if (
+        (Array.isArray(data) && data.length) ||
+        (!Array.isArray(data) && Object.keys(data).length)
+      ) {
         fs.writeFileSync(path, JSON.stringify(data));
       }
     }
   }
 };
+
 export const exportActionsInArchive = async (args: {
   views: string[];
   storageFolder: string;
@@ -130,23 +141,57 @@ export const exportActionsInArchive = async (args: {
     const chatPath = path.join(fileFolderPath, buildActionFileName('chat', archiveDate, format));
     writeFileForFormat(chatPath, format, baseAnalytics.chatMessages);
 
-    // create file for the apps
-    const appsPath = path.join(fileFolderPath, buildActionFileName('apps', archiveDate, format));
-    writeFileForFormat(
-      appsPath,
-      format,
-      // get actions from apps data
-      Object.entries(baseAnalytics.apps)
-        .map(([appID, { actions, data, settings }]) =>
-          actions.map((action) => ({
-            ...action,
-            appID,
-            data: JSON.stringify(data),
-            settings: JSON.stringify(settings),
-          })),
-        )
-        .flat(),
+    // merge together actions, data and settings from all app_items
+    const { appActions, appData, appSettings } = Object.entries(baseAnalytics.apps).reduce<{
+      appActions: AppAction[];
+      appData: AppData[];
+      appSettings: AppSetting[];
+    }>(
+      (acc, [_appID, { actions, data, settings }]) => {
+        acc.appActions.push(...actions);
+        acc.appData.push(...data);
+        acc.appSettings.push(...settings);
+        return acc;
+      },
+      { appActions: [], appData: [], appSettings: [] },
     );
+
+    switch (format) {
+      // For JSON format only output a single file
+      case ExportActionsFormatting.JSON: {
+        // create files for the apps
+        const appsPath = path.join(
+          fileFolderPath,
+          buildActionFileName('apps', archiveDate, format),
+        );
+        writeFileForFormat(appsPath, format, { appActions, appData, appSettings });
+        break;
+      }
+      // For CSV format there will be one file for actions, one fofr data and one for settings
+      // with all the apps together.
+      case ExportActionsFormatting.CSV: {
+        // create files for the apps
+        const appActionsPath = path.join(
+          fileFolderPath,
+          buildActionFileName('app_actions', archiveDate, format),
+        );
+        writeFileForFormat(appActionsPath, format, appActions);
+
+        const appDataPath = path.join(
+          fileFolderPath,
+          buildActionFileName('app_data', archiveDate, format),
+        );
+        writeFileForFormat(appDataPath, format, appData);
+
+        const appSettingsPath = path.join(
+          fileFolderPath,
+          buildActionFileName('app_settings', archiveDate, format),
+        );
+        writeFileForFormat(appSettingsPath, format, appSettings);
+
+        break;
+      }
+    }
 
     // add directory in archive
     archive.directory(fileFolderPath, fileName);
