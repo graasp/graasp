@@ -1,6 +1,6 @@
 import { EntityManager } from 'typeorm';
 
-import { ItemLoginSchemaStatus, ItemLoginSchemaType, getChildFromPath } from '@graasp/sdk';
+import { ItemLoginSchemaType, getChildFromPath } from '@graasp/sdk';
 
 import { MutableRepository } from '../../../repositories/MutableRepository';
 import { DEFAULT_PRIMARY_KEY } from '../../../repositories/const';
@@ -14,11 +14,11 @@ type ItemPath = Item['path'];
 type ItemId = Item['id'];
 type CreateItemLoginSchemaBody = {
   itemPath: ItemPath;
-  type?: ItemLoginSchemaType;
+  type?: ItemLoginSchema['type'];
 };
 type UpdateItemLoginSchemaBody = {
-  type: ItemLoginSchemaType;
-  status: ItemLoginSchemaStatus;
+  type?: ItemLoginSchema['type'];
+  status?: ItemLoginSchema['status'];
 };
 
 export class ItemLoginSchemaRepository extends MutableRepository<

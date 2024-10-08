@@ -104,7 +104,7 @@ export const packedItemSchemaRef = registerSchemaAsRef(
       creator: nullableMemberSchemaRef,
       createdAt: customType.DateTime(),
       updatedAt: customType.DateTime(),
-      permission: Type.Union([Type.Enum(PermissionLevel), Type.Null()]),
+      permission: customType.Nullable(customType.EnumString(Object.values(PermissionLevel))),
       hidden: Type.Optional(itemTagSchemaRef),
       public: Type.Optional(itemTagSchemaRef),
       thumbnails: Type.Optional(Type.Object({}, { additionalProperties: true })),
