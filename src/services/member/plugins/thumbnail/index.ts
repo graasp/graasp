@@ -1,12 +1,9 @@
 import { StatusCodes } from 'http-status-codes';
 
 import { fastifyMultipart } from '@fastify/multipart';
-import { FastifyPluginAsync } from 'fastify';
-
-import { ThumbnailSizeType } from '@graasp/sdk';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../di/utils';
-import { IdParam } from '../../../../types';
 import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
@@ -25,7 +22,7 @@ type GraaspThumbnailsOptions = {
   maxFileSize?: number; // max size for an uploaded file in bytes
 };
 
-const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, options) => {
+const plugin: FastifyPluginAsyncTypebox<GraaspThumbnailsOptions> = async (fastify, options) => {
   const { maxFileSize = DEFAULT_MAX_FILE_SIZE } = options;
   const { db } = fastify;
   const fileService = resolveDependency(FileService);
@@ -43,7 +40,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
     },
   });
 
-  fastify.post<{ Params: IdParam }>(
+  fastify.post(
     '/avatar',
     {
       schema: upload,
@@ -81,10 +78,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
     },
   );
 
-  fastify.get<{
-    Params: IdParam & { size: ThumbnailSizeType };
-    Querystring: { replyUrl?: boolean };
-  }>(
+  fastify.get(
     '/:id/avatar/:size',
     {
       schema: download,

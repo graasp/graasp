@@ -1,42 +1,29 @@
+import { Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
 import { ThumbnailSize } from '@graasp/sdk';
 
-import { entityIdSchemaRef, errorSchemaRef } from '../../../../schemas/global';
+import { customType } from '../../../../plugins/typebox';
+import { errorSchemaRef } from '../../../../schemas/global';
 
 const upload = {
-  params: {
-    type: 'object',
-    additionalProperties: false,
-  },
+  params: Type.Object({}, { additionalProperties: false }),
 };
 
 const download = {
-  params: {
-    allOf: [
-      entityIdSchemaRef,
-      {
-        type: 'object',
-        properties: {
-          size: {
-            enum: Object.values(ThumbnailSize),
-            default: ThumbnailSize.Medium,
-          },
-        },
-        required: ['size'],
-      },
-    ],
-  },
-  querystring: {
-    type: 'object',
-    properties: {
-      replyUrl: {
-        type: 'boolean',
-        default: false,
-      },
+  params: Type.Object(
+    {
+      id: customType.UUID(),
+      size: Type.Enum(ThumbnailSize, { default: ThumbnailSize.Medium }),
     },
-    additionalProperties: false,
-  },
+    { additionalProperties: false },
+  ),
+  querystring: Type.Object(
+    {
+      replyUrl: Type.Boolean({ default: false }),
+    },
+    { additionalProperties: false },
+  ),
   response: {
     [StatusCodes.OK]: errorSchemaRef,
     '4xx': errorSchemaRef,

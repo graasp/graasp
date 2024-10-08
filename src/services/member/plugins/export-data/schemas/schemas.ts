@@ -1,3 +1,4 @@
+import { Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
 import {
@@ -13,7 +14,7 @@ import {
 
 export const exportMemberData = {
   response: {
-    [StatusCodes.NO_CONTENT]: {},
+    [StatusCodes.NO_CONTENT]: Type.Null(),
   },
 };
 

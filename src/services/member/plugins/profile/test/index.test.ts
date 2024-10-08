@@ -196,7 +196,7 @@ describe('Profile Member routes tests', () => {
 
       it('updated successfully', async () => {
         const memberProfile = await saveMemberProfile(actor, ANNA_PROFILE);
-        const payload = { id: 'i2345', bio: 'Random Bio' };
+        const payload = { bio: 'Random Bio' };
 
         const response = await app.inject({
           method: HttpMethod.Patch,

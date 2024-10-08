@@ -1,18 +1,13 @@
 import { Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
-import { MAX_USERNAME_LENGTH, MIN_USERNAME_LENGTH } from '@graasp/sdk';
-
+import { customType } from '../../../../plugins/typebox';
 import { SHORT_TOKEN_PARAM, TOKEN_PARAM } from '../passport';
 
 export const mregister = {
   body: Type.Object(
     {
-      name: Type.String({
-        format: 'username',
-        minLength: MIN_USERNAME_LENGTH,
-        maxLength: MAX_USERNAME_LENGTH,
-      }),
+      name: customType.Username(),
       email: Type.String({ format: 'email' }),
       challenge: Type.String(),
       captcha: Type.String(),
