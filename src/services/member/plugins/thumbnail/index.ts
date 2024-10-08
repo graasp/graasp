@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { fastifyMultipart } from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 
-import { ThumbnailSizeType } from '@graasp/sdk';
+import { MAX_THUMBNAIL_SIZE, ThumbnailSizeType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
 import { IdParam } from '../../../../types';
@@ -12,7 +12,6 @@ import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
 import FileService from '../../../file/service';
-import { DEFAULT_MAX_FILE_SIZE } from '../../../file/utils/constants';
 import { UploadEmptyFileError, UploadFileUnexpectedError } from '../../../file/utils/errors';
 import { assertIsMember } from '../../entities/member';
 import { validatedMemberAccountRole } from '../../strategies/validatedMemberAccountRole';
@@ -26,7 +25,7 @@ type GraaspThumbnailsOptions = {
 };
 
 const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, options) => {
-  const { maxFileSize = DEFAULT_MAX_FILE_SIZE } = options;
+  const { maxFileSize = MAX_THUMBNAIL_SIZE } = options;
   const { db } = fastify;
   const fileService = resolveDependency(FileService);
   const thumbnailService = resolveDependency(MemberThumbnailService);

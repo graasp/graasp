@@ -11,7 +11,6 @@ import {
   CountGroupBy,
   ExportActionsFormatting,
   FileItemType,
-  HttpMethod,
 } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
@@ -115,12 +114,13 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
     },
   );
 
-  fastify.route<{ Params: IdParam; Body: { type: string; extra?: { [key: string]: unknown } } }>({
-    method: HttpMethod.Post,
-    url: '/:id/actions',
-    schema: postAction,
-    preHandler: optionalIsAuthenticated,
-    handler: async (request) => {
+  fastify.post<{ Params: IdParam; Body: { type: string; extra?: { [key: string]: unknown } } }>(
+    '/:id/actions',
+    {
+      schema: postAction,
+      preHandler: optionalIsAuthenticated,
+    },
+    async (request) => {
       const {
         user,
         params: { id: itemId },
@@ -148,15 +148,13 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
         ]);
       });
     },
-  });
+  );
 
   // export actions matching the given `id`
-  fastify.route<{ Params: IdParam; Querystring: { format?: ExportActionsFormatting } }>({
-    method: 'POST',
-    url: '/:id/actions/export',
-    schema: exportAction,
-    preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
-    handler: async (request, reply) => {
+  fastify.post<{ Params: IdParam; Querystring: { format?: ExportActionsFormatting } }>(
+    '/:id/actions/export',
+    { schema: exportAction, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
+    async (request, reply) => {
       const {
         user,
         params: { id: itemId },
@@ -187,7 +185,7 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
       // reply no content and let the server create the archive and send the mail
       reply.status(StatusCodes.NO_CONTENT);
     },
-  });
+  );
 };
 
 export default fp(plugin);
