@@ -7,10 +7,12 @@ import { PermissionLevel } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 import { UUID_REGEX, entityIdSchemaRef, errorSchemaRef } from '../../schemas/global';
-import { augmentedAccountSchemaRef } from '../account/schemas';
+import { augmentedAccountSchemaRef, nullableAugmentedAccountSchemaRef } from '../account/schemas';
 import { itemSchemaRef } from '../item/schema';
 
 export const itemMembershipSchemaRef = registerSchemaAsRef(
+  'itemMembership',
+  'Item Membership',
   Type.Object(
     {
       // Object Definition
@@ -18,41 +20,39 @@ export const itemMembershipSchemaRef = registerSchemaAsRef(
       account: augmentedAccountSchemaRef,
       item: itemSchemaRef,
       permission: Type.Enum(PermissionLevel),
-      creator: Type.Optional(Type.Ref('https://graasp.org/members/#/definitions/member')),
+      creator: Type.Optional(nullableAugmentedAccountSchemaRef),
       createdAt: customType.DateTime(),
       updatedAt: customType.DateTime(),
     },
     {
       // Schema Options
-      title: 'Item Membership',
-      $id: 'itemMembership',
       additionalProperties: false,
     },
   ),
 );
 
 export const createItemMembershipSchemaRef = registerSchemaAsRef(
+  'createItemMembership',
+  'Create Item Membership',
   Type.Object(
     {
       accountId: customType.UUID(),
       permission: Type.Enum(PermissionLevel),
     },
     {
-      title: 'Create Item Membership',
-      $id: 'createItemMembership',
       additionalProperties: false,
     },
   ),
 );
 
 export const updateItemMembershipSchemaRef = registerSchemaAsRef(
+  'updateItemMembership',
+  'Update Item Membership',
   Type.Object(
     {
       permission: Type.Enum(PermissionLevel),
     },
     {
-      title: 'Update Item Membership',
-      $id: 'updateItemMembership',
       additionalProperties: false,
     },
   ),

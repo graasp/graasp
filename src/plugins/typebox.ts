@@ -1,4 +1,4 @@
-import { StringOptions, TRef, TSchema, Type, UnsafeOptions } from '@sinclair/typebox';
+import { Static, StringOptions, TRef, TSchema, Type, UnsafeOptions } from '@sinclair/typebox';
 
 import { FastifyPluginAsyncTypebox, TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import {
@@ -18,11 +18,20 @@ const schemas: TSchema[] = [];
 /**
  * Register a schema in the Fastify instance.
  * This function needs to be called before the server starts, so the schema will be registered in the Fastify instance.
- * Each schema needs to have defined the `$id` property.
+ * Each schema needs to have a unique `$id` property.
  * @param schema The schema to be registered.
+ * @param options The options for the schema.
  * @returns The schema passed as argument.
  */
-export function registerSchemaAsRef<T extends TSchema>(schema: T): TRef<T> {
+export function registerSchemaAsRef<T extends TSchema>(
+  id: string,
+  title: string,
+  schema: T,
+): TRef<T> {
+  // Set schema options
+  schema.$id = id;
+  schema.title = title;
+
   schemas.push(schema);
   return Type.Ref(schema);
 }
@@ -44,6 +53,11 @@ export const customType = {
   DateTime: (options?: UnsafeOptions) =>
     Type.Unsafe<Date>({ ...options, type: 'string', format: 'date-time' }),
   UUID: (options?: StringOptions) => Type.String({ ...options, format: 'uuid' }),
+  Nullable: <T extends TSchema & { type: string }>(schema: T) =>
+    Type.Unsafe<Static<T> | null>({
+      ...schema,
+      type: ['null', schema.type],
+    }),
 } as const;
 
 /**

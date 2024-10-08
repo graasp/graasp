@@ -14,6 +14,8 @@ import { v4 } from 'uuid';
 import { AppDataVisibility } from '@graasp/sdk';
 
 import { Account } from '../../../../account/entities/account';
+import { Guest } from '../../../../itemLogin/entities/guest';
+import { Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 
 export type Filters = {
@@ -38,7 +40,7 @@ export class AppData extends BaseEntity {
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'creator_id' })
-  creator: Account | null;
+  creator: Member | Guest | null;
 
   @ManyToOne(() => Account, (account) => account.id, {
     onDelete: 'CASCADE',

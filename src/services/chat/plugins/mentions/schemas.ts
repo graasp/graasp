@@ -14,6 +14,8 @@ import { accountSchemaRef } from '../../../account/schemas';
 import { chatMessageSchemaRef } from '../../schemas';
 
 export const mentionIdSchemaRef = registerSchemaAsRef(
+  'mentionId',
+  'Mention ID',
   Type.Object(
     {
       // Object Definition
@@ -21,14 +23,14 @@ export const mentionIdSchemaRef = registerSchemaAsRef(
     },
     {
       // Schema Options
-      title: 'Mention ID',
-      $id: 'mentionId',
       additionalProperties: false,
     },
   ),
 );
 
 export const minimalChatMentionSchemaRef = registerSchemaAsRef(
+  'minimalChatMention',
+  'Minimal Chat Mention',
   Type.Object(
     {
       // Object Definition
@@ -40,14 +42,14 @@ export const minimalChatMentionSchemaRef = registerSchemaAsRef(
     },
     {
       // Schema Options
-      title: 'Minimal Chat Mention',
-      $id: 'minimalChatMention',
       additionalProperties: false,
     },
   ),
 );
 
 export const completeChatMentionSchemaRef = registerSchemaAsRef(
+  'completeChatMention',
+  'Complete Chat Mention',
   Type.Intersect(
     [
       minimalChatMentionSchemaRef,
@@ -57,14 +59,14 @@ export const completeChatMentionSchemaRef = registerSchemaAsRef(
     ],
     {
       // Schema Options
-      title: 'Complete Chat Mention',
-      $id: 'completeChatMention',
       additionalProperties: false,
     },
   ),
 );
 
 export const updateChatMentionSchemaRef = registerSchemaAsRef(
+  'updateChatMention',
+  'Update Chat Mention',
   Type.Object(
     {
       // Object Definition
@@ -72,8 +74,6 @@ export const updateChatMentionSchemaRef = registerSchemaAsRef(
     },
     {
       // Schema Options
-      title: 'Update Chat Mention',
-      $id: 'updateChatMention',
       additionalProperties: false,
     },
   ),

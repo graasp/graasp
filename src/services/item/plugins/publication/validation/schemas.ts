@@ -1,3 +1,8 @@
+import { Type } from '@sinclair/typebox';
+
+import { customType } from '../../../../../plugins/typebox';
+import { itemIdSchemaRef } from '../../../schema';
+
 export const itemValidationReviews = {
   params: {},
   additionalProperties: false,
@@ -9,42 +14,19 @@ export const status = {
 };
 
 export const itemValidation = {
-  params: {
-    itemId: {
-      $ref: 'https://graasp.org/#/definitions/uuid',
-    },
-  },
+  params: itemIdSchemaRef,
   required: ['itemId'],
   additionalProperties: false,
 };
 
-// export const itemValidationReview = {
-//   params: {
-//     id: {
-//       $ref: 'https://graasp.org/#/definitions/uuid',
-//     },
-//   },
-//   body: {
-//     status: {
-//       type: 'string',
-//     },
-//     reason: {
-//       type: 'string',
-//     },
-//   },
-//   required: ['id'],
-//   additionalProperties: false,
-// };
-
 export const itemValidationGroup = {
-  params: {
-    itemId: {
-      $ref: 'https://graasp.org/#/definitions/uuid',
+  params: Type.Object(
+    {
+      itemId: customType.UUID(),
+      itemValidationGroupId: customType.UUID(),
     },
-    itemValidationGroupId: {
-      $ref: 'https://graasp.org/#/definitions/uuid',
-    },
-  },
+    { additionalProperties: false },
+  ),
   required: ['itemValidationId'],
   additionalProperties: false,
 };

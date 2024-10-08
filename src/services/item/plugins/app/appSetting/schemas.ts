@@ -4,9 +4,12 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifySchema } from 'fastify';
 
 import { customType, registerSchemaAsRef } from '../../../../../plugins/typebox';
+import { nullableMemberSchemaRef } from '../../../../member/schemas';
 import { itemSchemaRef } from '../../../schema';
 
 export const appSettingSchemaRef = registerSchemaAsRef(
+  'appSetting',
+  'App Setting',
   Type.Object(
     {
       // Object Definition
@@ -14,14 +17,12 @@ export const appSettingSchemaRef = registerSchemaAsRef(
       name: Type.String(),
       item: itemSchemaRef,
       data: Type.Object({}, { additionalProperties: true }),
-      creator: Type.Ref('https://graasp.org/members/#/definitions/member'),
+      creator: nullableMemberSchemaRef,
       createdAt: customType.DateTime(),
       updatedAt: customType.DateTime(),
     },
     {
       // Schema Options
-      title: 'App Setting',
-      $id: 'appSetting',
       additionalProperties: false,
     },
   ),

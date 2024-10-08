@@ -4,10 +4,12 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifySchema } from 'fastify';
 
 import { customType, registerSchemaAsRef } from '../../../../../plugins/typebox';
-import { accountSchemaRef } from '../../../../account/schemas';
+import { accountSchemaRef, nullableAccountSchemaRef } from '../../../../account/schemas';
 import { itemSchemaRef } from '../../../schema';
 
 export const appDataSchemaRef = registerSchemaAsRef(
+  'appData',
+  'App Data',
   Type.Object(
     {
       // Object Definition
@@ -18,14 +20,12 @@ export const appDataSchemaRef = registerSchemaAsRef(
       data: Type.Object({}, { additionalProperties: true }),
       type: Type.String(),
       visibility: Type.String({ enum: ['member', 'item'] }),
-      creator: Type.Ref('https://graasp.org/members/#/definitions/member'),
+      creator: nullableAccountSchemaRef,
       createdAt: customType.DateTime(),
       updatedAt: customType.DateTime(),
     },
     {
       // Schema Options
-      title: 'App Data',
-      $id: 'appData',
       additionalProperties: false,
     },
   ),
@@ -57,13 +57,9 @@ export const updateOne = {
     itemId: customType.UUID(),
     id: customType.UUID(),
   }),
-  body: {
-    type: 'object',
-    required: ['data'],
-    properties: {
-      data: { type: 'object', additionalProperties: true },
-    },
-  },
+  body: Type.Object({
+    data: Type.Object({}, { additionalProperties: true }),
+  }),
   response: {
     [StatusCodes.OK]: appDataSchemaRef,
   },

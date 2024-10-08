@@ -9,7 +9,7 @@ import {
   MIN_USERNAME_LENGTH,
 } from '@graasp/sdk';
 
-import { customType } from '../../plugins/typebox';
+import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 import { error } from '../../schemas/fluent-schema';
 import { UUID_REGEX, entityIdSchemaRef, errorSchemaRef } from '../../schemas/global';
 import { FILE_METADATA_DEFAULT_PAGE_SIZE, FILE_METADATA_MIN_PAGE } from './constants';
@@ -34,74 +34,84 @@ import { FILE_METADATA_DEFAULT_PAGE_SIZE, FILE_METADATA_MIN_PAGE } from './const
  */
 export const EMAIL_REGEX = '^[.-\\w]+@[.-\\w]+.[-\\w]{2,63}$';
 
-export default {
-  $id: 'https://graasp.org/members/',
-  definitions: {
-    member: {
-      type: 'object',
-      nullable: true,
-      properties: {
-        id: { type: 'string' },
-        name: { type: 'string' },
-        email: { type: 'string' },
-      },
+const memberSchema = Type.Object(
+  {
+    // Object definition
+    id: customType.UUID(),
+    name: Type.String({
+      format: 'username',
+      minLength: MIN_USERNAME_LENGTH,
+      maxLength: MAX_USERNAME_LENGTH,
+    }),
+    email: Type.String({ format: 'email' }),
+  },
+  {
+    // Schema options
+    additionalProperties: false,
+  },
+);
+
+export const memberSchemaRef = registerSchemaAsRef('member', 'Member', memberSchema);
+
+export const nullableMemberSchemaRef = registerSchemaAsRef(
+  'nullableMember',
+  'Nullable Member',
+  customType.Nullable(memberSchema),
+);
+
+export const currentMemberSchemaRef = registerSchemaAsRef(
+  'currentMember',
+  'Current Member',
+  Type.Object(
+    {
+      // Object definition
+      id: customType.UUID(),
+      name: Type.String({
+        format: 'username',
+        minLength: MIN_USERNAME_LENGTH,
+        maxLength: MAX_USERNAME_LENGTH,
+      }),
+      email: Type.String({ format: 'email' }),
+      type: Type.String(),
+      createdAt: customType.DateTime(),
+      updatedAt: customType.DateTime(),
+      lastAuthenticatedAt: customType.DateTime(),
+      isValidated: Type.Boolean(),
+      userAgreementsDate: customType.DateTime(),
+      enableSaveActions: Type.Boolean(),
+      extra: Type.Object({}, { additionalProperties: true }),
+    },
+    {
+      // Schema options
       additionalProperties: false,
     },
+  ),
+);
 
-    currentMember: {
-      type: 'object',
-      properties: {
-        id: { type: 'string' },
-        name: { type: 'string' },
-        email: { type: 'string' },
-        type: { type: 'string' },
-        createdAt: { type: 'string' },
-        updatedAt: { type: 'string' },
-        lastAuthenticatedAt: { type: 'string' },
-        isValidated: { type: 'boolean' },
-        userAgreementsDate: { type: 'string' },
-        enableSaveActions: { type: 'boolean' },
-        extra: { type: 'object', additionalProperties: true },
-      },
-      additionalProperties: false,
-    },
-
-    // member properties that can be modified with user input
-    partialMember: {
-      type: 'object',
-      properties: {
-        name: {
-          type: 'string',
+export const updateMemberRequiredOneSchemaRef = registerSchemaAsRef(
+  'updateMemberRequiredOne',
+  'Update Member Required One',
+  Type.Object(
+    {
+      // Object definition
+      name: Type.Optional(
+        Type.String({
+          format: 'username',
           minLength: MIN_USERNAME_LENGTH,
           maxLength: MAX_USERNAME_LENGTH,
-          format: 'username',
-        },
-        extra: { type: 'object', additionalProperties: true },
-        enableSaveActions: { type: 'boolean' },
-      },
-      additionalProperties: false,
+        }),
+      ),
+      enableSaveActions: Type.Optional(Type.Boolean()),
+      extra: Type.Optional(Type.Object({}, { additionalProperties: true })),
     },
-
-    // partialMember requiring one property to be defined
-    partialMemberRequireOne: {
-      allOf: [
-        { $ref: '#/definitions/partialMember' },
-        {
-          anyOf: [
-            { type: 'object', required: ['name'] },
-            { type: 'object', required: ['extra'] },
-            { type: 'object', required: ['enableSaveActions'] },
-          ],
-        },
-      ],
-    },
-  },
-};
+    { additionalProperties: false, minProperties: 1 },
+  ),
+);
 
 // schema for getting current member
 export const getCurrent: FastifySchema = {
   response: {
-    200: { $ref: 'https://graasp.org/members/#/definitions/currentMember' },
+    [StatusCodes.OK]: currentMemberSchemaRef,
   },
 };
 
@@ -176,7 +186,7 @@ export const getStorageFiles: FastifySchema = {
 export const getOne: FastifySchema = {
   params: entityIdSchemaRef,
   response: {
-    200: { $ref: 'https://graasp.org/members/#/definitions/member' },
+    [StatusCodes.OK]: memberSchemaRef,
   },
 };
 
@@ -253,18 +263,18 @@ export const getManyBy: FastifySchema = {
 export const updateOne: FastifySchema = {
   deprecated: true,
   params: entityIdSchemaRef,
-  body: { $ref: 'https://graasp.org/members/#/definitions/partialMemberRequireOne' },
+  body: updateMemberRequiredOneSchemaRef,
   response: {
-    [StatusCodes.OK]: { $ref: 'https://graasp.org/members/#/definitions/currentMember' },
+    [StatusCodes.OK]: currentMemberSchemaRef,
     [StatusCodes.FORBIDDEN]: error,
   },
 };
 
 // schema for updating the current member
 export const updateCurrent: FastifySchema = {
-  body: { $ref: 'https://graasp.org/members/#/definitions/partialMemberRequireOne' },
+  body: updateMemberRequiredOneSchemaRef,
   response: {
-    [StatusCodes.OK]: { $ref: 'https://graasp.org/members/#/definitions/currentMember' },
+    [StatusCodes.OK]: currentMemberSchemaRef,
     [StatusCodes.FORBIDDEN]: error,
   },
 };

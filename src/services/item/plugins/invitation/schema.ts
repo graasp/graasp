@@ -11,12 +11,14 @@ import { itemMembershipSchemaRef } from '../../../itemMembership/schemas';
 import { itemSchemaRef } from '../../schema';
 
 export const invitationSchemaRef = registerSchemaAsRef(
+  'invitation',
+  'Invitation',
   Type.Object(
     {
       // Object Definition
       id: customType.UUID(),
       email: Type.String({ format: 'email' }),
-      name: Type.Optional(Type.Union([Type.String(), Type.Null()])),
+      name: Type.Optional(customType.Nullable(Type.String())),
       permission: Type.Enum(PermissionLevel),
       item: itemSchemaRef,
       createdAt: customType.DateTime(),
@@ -24,51 +26,38 @@ export const invitationSchemaRef = registerSchemaAsRef(
     },
     {
       // Schema Options
-      title: 'Invitation',
-      $id: 'invitation',
       additionalProperties: false,
     },
   ),
 );
 
 export const minimalInvitationSchemaRef = registerSchemaAsRef(
+  'minimalInvitation',
+  'Minimal Invitation',
   Type.Object(
     {
       // Object Definition
       email: Type.String({ format: 'email' }),
-      name: Type.Optional(Type.Union([Type.String(), Type.Null()])),
+      name: Type.Optional(customType.Nullable(Type.String())),
       permission: Type.Enum(PermissionLevel),
     },
     {
       // Schema Options
-      title: 'Minimal Invitation',
-      $id: 'minimalInvitation',
       additionalProperties: false,
     },
   ),
 );
 
 export const updateInvitationSchemaRef = registerSchemaAsRef(
-  // This union is necessary so we filter request without neither `name` nor `permission`.
-  Type.Union(
-    [
-      // Object Definition
-      Type.Object({
-        name: Type.Optional(Type.String()),
-        permission: Type.Enum(PermissionLevel),
-      }),
-      Type.Object({
-        name: Type.String(),
-        permission: Type.Optional(Type.Enum(PermissionLevel)),
-      }),
-    ],
+  'updateInvitation',
+  'Update Invitation',
+  // Object Definition
+  Type.Object(
     {
-      // Schema Options
-      title: 'Update Invitation',
-      $id: 'updateInvitation',
-      // For some reason, `additionalProperties: false` breaks the sanitizer. It could result with an empty object `{}`.
-      additionalProperties: true,
+      name: Type.Optional(Type.String()),
+      permission: Type.Optional(Type.Enum(PermissionLevel)),
     },
+    { additionalProperties: true, minProperties: 1 },
   ),
 );
 

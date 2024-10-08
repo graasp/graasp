@@ -8,6 +8,8 @@ import { accountSchemaRef } from '../../../../account/schemas';
 import { itemIdSchemaRef } from '../../../schema';
 
 export const appActionSchemaRef = registerSchemaAsRef(
+  'appAction',
+  'App Action',
   Type.Object(
     {
       // Object Definition
@@ -20,8 +22,6 @@ export const appActionSchemaRef = registerSchemaAsRef(
     },
     {
       // Schema Options
-      title: 'App Action',
-      $id: 'appAction',
       additionalProperties: false,
     },
   ),

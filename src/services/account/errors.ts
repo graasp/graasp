@@ -17,3 +17,16 @@ export class AccountNotFound extends GraaspAccountError {
     );
   }
 }
+
+export class NotMemberOrGuest extends GraaspAccountError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GPAECCRR002',
+        statusCode: StatusCodes.FORBIDDEN,
+        message: FAILURE_MESSAGES.NOT_MEMBER_OR_GUEST,
+      },
+      data,
+    );
+  }
+}

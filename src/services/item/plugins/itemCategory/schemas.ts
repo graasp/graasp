@@ -3,9 +3,12 @@ import { StatusCodes } from 'http-status-codes';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { UUID_V4_REGEX_PATTERN } from '../../../../utils/constants';
+import { nullableMemberSchemaRef } from '../../../member/schemas';
 import { itemIdSchemaRef, itemSchemaRef } from '../../schema';
 
 export const categorySchemaRef = registerSchemaAsRef(
+  'category',
+  'Category',
   Type.Object(
     {
       // Object definition
@@ -15,26 +18,24 @@ export const categorySchemaRef = registerSchemaAsRef(
     },
     {
       // Schema options
-      title: 'Category',
-      $id: 'category',
       additionalProperties: false,
     },
   ),
 );
 
 export const itemCategorySchemaRef = registerSchemaAsRef(
+  'itemCategory',
+  'Item Category',
   Type.Object(
     {
       // Object definition
       id: customType.UUID(),
       category: categorySchemaRef,
       createdAt: customType.DateTime(),
-      creator: Type.Optional(Type.Ref('https://graasp.org/members/#/definitions/member')),
+      creator: Type.Optional(nullableMemberSchemaRef),
     },
     {
       // Schema options
-      title: 'Item Category',
-      $id: 'itemCategory',
       additionalProperties: false,
     },
   ),

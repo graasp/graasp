@@ -7,39 +7,40 @@ import { MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { entityIdSchemaRef } from '../../../../schemas/global';
+import { nullableMemberSchemaRef } from '../../../member/schemas';
 import { itemSchemaRef, packedItemSchemaRef } from '../../schema';
 
 export const recycledItemSchemaRef = registerSchemaAsRef(
+  'recycledItem',
+  'Recycled Item',
   Type.Object(
     {
       // Object definition
       id: customType.UUID(),
       item: itemSchemaRef,
-      creator: Type.Optional(Type.Ref('https://graasp.org/members/#/definitions/member')),
+      creator: nullableMemberSchemaRef,
       createdAt: customType.DateTime(),
     },
     {
       // Schema options
-      title: 'Recycled Item',
-      $id: 'recycledItem',
       additionalProperties: false,
     },
   ),
 );
 
 export const packedRecycledItemSchemaRef = registerSchemaAsRef(
+  'packedRecycledItem',
+  'Packed Recycled Item',
   Type.Object(
     {
       // Object definition
       id: customType.UUID(),
       item: packedItemSchemaRef,
-      creator: Type.Optional(Type.Ref('https://graasp.org/members/#/definitions/member')),
+      creator: nullableMemberSchemaRef,
       createdAt: customType.DateTime(),
     },
     {
       // Schema options
-      title: 'Packed Recycled Item',
-      $id: 'packedRecycledItem',
       additionalProperties: false,
     },
   ),

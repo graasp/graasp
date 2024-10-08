@@ -27,16 +27,3 @@ export const error = S.object()
   .prop('error', S.string())
   // .prop('stack', S.object())
   .prop('validation', S.array().items(S.object().additionalProperties(true)));
-
-// "installed" globally to be available everywhere
-// this way 'graasp-file-item', or "others", can use these using '$ref' - without using
-// fluent schema or TS, just static JSON Schema
-const shared = S.object()
-  .id('https://graasp.org/')
-  .definition('uuid', uuid)
-  .definition('itemPath', itemPath)
-  .definition('idParam', idParam)
-  .definition('idsQuery', idsQuery)
-  .definition('error', error);
-
-export default shared;
