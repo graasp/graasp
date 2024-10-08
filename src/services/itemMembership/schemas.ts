@@ -8,7 +8,7 @@ import { PermissionLevel } from '@graasp/sdk';
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 import { UUID_REGEX, entityIdSchemaRef, errorSchemaRef } from '../../schemas/global';
 import { augmentedAccountSchemaRef, nullableAugmentedAccountSchemaRef } from '../account/schemas';
-import { itemSchemaRef } from '../item/schema';
+import { itemIdSchemaRef, itemSchemaRef } from '../item/schema';
 
 export const itemMembershipSchemaRef = registerSchemaAsRef(
   'itemMembership',
@@ -60,14 +60,7 @@ export const updateItemMembershipSchemaRef = registerSchemaAsRef(
 
 // schema for creating an item membership
 export const create = {
-  querystring: {
-    type: 'object',
-    required: ['itemId'],
-    properties: {
-      itemId: customType.UUID(),
-    },
-    additionalProperties: false,
-  },
+  querystring: itemIdSchemaRef,
   body: createItemMembershipSchemaRef,
   response: {
     [StatusCodes.OK]: itemMembershipSchemaRef,
@@ -76,20 +69,11 @@ export const create = {
 
 // schema for creating many item memberships
 export const createMany = {
-  params: {
-    type: 'object',
-    required: ['itemId'],
-    properties: {
-      itemId: customType.UUID(),
-    },
-    additionalProperties: false,
-  },
-  body: {
-    type: 'object',
-    properties: {
-      memberships: Type.Array(createItemMembershipSchemaRef),
-    },
-  },
+  params: itemIdSchemaRef,
+  body: Type.Object(
+    { memberships: Type.Array(createItemMembershipSchemaRef) },
+    { additionalProperties: false },
+  ),
   response: {
     [StatusCodes.ACCEPTED]: {},
   },
@@ -97,32 +81,15 @@ export const createMany = {
 
 // schema for getting many item's memberships
 export const getItems = {
-  querystring: {
-    type: 'object',
-    required: ['itemId'],
-    properties: {
-      itemId: {
-        type: 'array',
-        items: customType.UUID(),
-      },
-    },
-
-    additionalProperties: false,
-  },
+  querystring: Type.Object(
+    { itemId: Type.Array(customType.UUID()) },
+    { additionalProperties: false },
+  ),
   response: {
-    [StatusCodes.OK]: {
-      type: 'object',
-      // additionalProperties:true,
-      properties: {
-        data: {
-          type: 'object',
-          patternProperties: {
-            [UUID_REGEX]: Type.Array(itemMembershipSchemaRef),
-          },
-        },
-        errors: Type.Array(errorSchemaRef),
-      },
-    },
+    [StatusCodes.OK]: Type.Object({
+      data: Type.Record(Type.String({ pattern: UUID_REGEX }), Type.Array(itemMembershipSchemaRef)),
+      errors: Type.Array(errorSchemaRef),
+    }),
   },
 } as const satisfies FastifySchema;
 
@@ -138,13 +105,10 @@ export const updateOne = {
 // schema for deleting an item membership
 export const deleteOne = {
   params: entityIdSchemaRef,
-  querystring: {
-    type: 'object',
-    properties: {
-      purgeBelow: { type: 'boolean' },
-    },
-    additionalProperties: false,
-  },
+  querystring: Type.Object(
+    { purgeBelow: Type.Optional(Type.Boolean()) },
+    { additionalProperties: false },
+  ),
   response: {
     [StatusCodes.OK]: itemMembershipSchemaRef,
   },
@@ -152,12 +116,5 @@ export const deleteOne = {
 
 // schema for deleting all item's tree item memberships
 export const deleteAll = {
-  querystring: {
-    type: 'object',
-    required: ['itemId'],
-    properties: {
-      itemId: customType.UUID(),
-    },
-    additionalProperties: false,
-  },
+  querystring: Type.Object({ itemId: customType.UUID() }, { additionalProperties: false }),
 } as const satisfies FastifySchema;

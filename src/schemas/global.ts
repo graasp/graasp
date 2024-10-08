@@ -33,16 +33,18 @@ export const errorSchemaRef = registerSchemaAsRef(
     {
       // Object Definition
       name: Type.Optional(Type.String()),
-      code: Type.Union([
-        Type.Number({
-          minimum: 400,
-          maximum: 599,
-          examples: [StatusCodes.INTERNAL_SERVER_ERROR],
-        }),
-        Type.String(),
-      ]),
+      code: Type.Optional(
+        Type.Union([
+          Type.Number({
+            minimum: 400,
+            maximum: 599,
+            examples: [StatusCodes.INTERNAL_SERVER_ERROR],
+          }),
+          Type.String(),
+        ]),
+      ),
       message: Type.String(),
-      statusCode: Type.Number(),
+      statusCode: Type.Optional(Type.Number()),
       data: Type.Optional(Type.Any()),
       origin: Type.Optional(Type.String()),
     },
