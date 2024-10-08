@@ -43,11 +43,10 @@ const flattenObject = (obj: RecursiveObject, prefix: string = ''): ReturnObject 
   }, {});
 };
 
-export const writeFileForFormat = (
+export const writeFileForFormat = <T extends object>(
   path: string,
   format: ExportActionsFormatting,
-  // TODO: Replace 'object' with specific type(s) when defining schema for data to export
-  data: object[] | object,
+  data: T[] | T,
 ): void => {
   switch (format) {
     case ExportActionsFormatting.CSV: {
@@ -167,7 +166,7 @@ export const exportActionsInArchive = async (args: {
         writeFileForFormat(appsPath, format, { appActions, appData, appSettings });
         break;
       }
-      // For CSV format there will be one file for actions, one fofr data and one for settings
+      // For CSV format there will be one file for actions, one for data and one for settings
       // with all the apps together.
       case ExportActionsFormatting.CSV: {
         // create files for the apps

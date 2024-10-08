@@ -12,7 +12,7 @@ describe('writeFileForFormat', () => {
       expect(writeFileSyncMock).not.toHaveBeenCalled();
     });
 
-    it('Object should not write anything', () => {
+    it('Empty object should not write anything', () => {
       writeFileForFormat('./test.csv', ExportActionsFormatting.CSV, {});
       expect(writeFileSyncMock).not.toHaveBeenCalled();
     });
@@ -43,7 +43,7 @@ describe('writeFileForFormat', () => {
       expect(writeFileSyncMock).not.toHaveBeenCalled();
     });
 
-    it('Object should not write anything', () => {
+    it('Empty object should not write anything', () => {
       writeFileForFormat('./test.json', ExportActionsFormatting.JSON, {});
       expect(writeFileSyncMock).not.toHaveBeenCalled();
     });
