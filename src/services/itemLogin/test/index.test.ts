@@ -633,8 +633,8 @@ describe('Item Login Tests', () => {
               payload,
             });
 
-            expect(res.json().name).toEqual(payload.username);
             expect(res.statusCode).toBe(StatusCodes.OK);
+            expect(res.json().name).toEqual(payload.username);
           });
         });
       });

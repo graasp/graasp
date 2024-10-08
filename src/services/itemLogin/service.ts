@@ -1,6 +1,6 @@
 import { singleton } from 'tsyringe';
 
-import { ItemLoginSchemaStatus, ItemLoginSchemaType, PermissionLevel, UUID } from '@graasp/sdk';
+import { ItemLoginSchemaStatus, PermissionLevel, UUID } from '@graasp/sdk';
 
 import { asDefined, assertIsDefined } from '../../utils/assertions';
 import { InvalidPassword } from '../../utils/errors';
@@ -8,6 +8,7 @@ import { Repositories } from '../../utils/repositories';
 import { verifyCurrentPassword } from '../auth/plugins/password/utils';
 import { Actor } from '../member/entities/member';
 import { Guest } from './entities/guest';
+import { ItemLoginSchema } from './entities/itemLoginSchema';
 import {
   CannotRegisterOnFrozenItemLoginSchema,
   ItemLoginSchemaNotFound,
@@ -133,7 +134,7 @@ export class ItemLoginService {
   async create(
     { itemLoginSchemaRepository }: Repositories,
     itemPath: string,
-    type?: ItemLoginSchemaType,
+    type?: ItemLoginSchema['type'],
   ) {
     return itemLoginSchemaRepository.addOne({ itemPath, type });
   }
@@ -141,8 +142,8 @@ export class ItemLoginService {
   async update(
     { itemLoginSchemaRepository }: Repositories,
     itemId: string,
-    type: ItemLoginSchemaType,
-    status: ItemLoginSchemaStatus,
+    type?: ItemLoginSchema['type'],
+    status?: ItemLoginSchema['status'],
   ) {
     return itemLoginSchemaRepository.updateOne(itemId, { type, status });
   }

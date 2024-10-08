@@ -1,83 +1,88 @@
-import { S } from 'fluent-json-schema';
+import { Type } from '@sinclair/typebox';
+
+import { FastifySchema } from 'fastify';
 
 import { ItemLoginSchemaStatus, ItemLoginSchemaType } from '@graasp/sdk';
 
-import { error, idParam, uuid } from '../../schemas/fluent-schema';
-import { item } from '../item/schema';
+import { customType, registerSchemaAsRef } from '../../plugins/typebox';
+import { entityIdSchemaRef, errorSchemaRef } from '../../schemas/global';
+import { accountSchemaRef } from '../account/schemas';
+import { itemSchemaRef } from '../item/schema';
 
-export const credentials = S.object()
-  .additionalProperties(false)
-  .prop('username', S.string().minLength(3).maxLength(50).pattern('^\\S+( \\S+)*$'))
-  .prop('password', S.string().minLength(3).maxLength(50).pattern('^\\S+( \\S+)*$'))
-  .prop('memberId', uuid)
-  .oneOf([S.required(['username']), S.required(['memberId'])]);
+export const credentialsSchemaRef = registerSchemaAsRef(
+  'itemLoginCredentials',
+  'Item Login Credentials',
+  Type.Object(
+    {
+      username: Type.String({ minLength: 3, maxLength: 50, pattern: '^\\S+( \\S+)*$' }),
+      password: Type.Optional(
+        Type.String({ minLength: 3, maxLength: 50, pattern: '^\\S+( \\S+)*$' }),
+      ),
+    },
+    { additionalProperties: false },
+  ),
+);
 
-const loginSchemaType = S.string().enum(Object.values(ItemLoginSchemaType));
-const loginSchemaStatus = S.string().enum(Object.values(ItemLoginSchemaStatus));
-
-export const loginSchema = S.object()
-  .additionalProperties(false)
-  .prop('type', loginSchemaType)
-  .prop('status', loginSchemaStatus)
-  .prop('item', item)
-  .prop('createdAt', S.string())
-  .prop('updatedAt', S.string())
-  .prop('id', uuid);
-
-// tood: refactor out -> use uniform schema
-export const member = S.object()
-  .additionalProperties(false)
-  .prop('email', S.string())
-  .prop('name', S.string())
-  .prop('createdAt', S.string())
-  .prop('updatedAt', S.string())
-  .prop('id', uuid);
+const itemLoginSchemaSchema = Type.Object(
+  {
+    id: customType.UUID(),
+    type: customType.EnumString(Object.values(ItemLoginSchemaType)),
+    status: customType.EnumString(Object.values(ItemLoginSchemaStatus)),
+    item: Type.Optional(itemSchemaRef),
+    createdAt: customType.DateTime(),
+    updatedAt: customType.DateTime(),
+  },
+  { additionalProperties: false },
+);
+export const itemLoginSchemaSchemaRef = registerSchemaAsRef(
+  'itemLoginSchema',
+  'Item Login Schema',
+  itemLoginSchemaSchema,
+);
 
 export const login = {
-  params: idParam,
-  querystring: S.object().additionalProperties(false).prop('m', S.boolean()),
-  body: credentials,
+  params: entityIdSchemaRef,
+  body: credentialsSchemaRef,
   response: {
-    // TODO: use member schema
-    '2xx': member,
-    '4xx': error,
-    '5xx': error,
+    '2xx': accountSchemaRef,
+    '4xx': errorSchemaRef,
+    '5xx': errorSchemaRef,
   },
-};
+} as const satisfies FastifySchema;
 
 export const getLoginSchemaType = {
-  params: idParam,
+  params: entityIdSchemaRef,
   response: {
-    '2xx': S.oneOf([loginSchemaType, S.null()]),
-    '4xx': error,
-    '5xx': error,
+    '2xx': customType.Nullable(customType.EnumString(Object.values(ItemLoginSchemaType))),
+    '4xx': errorSchemaRef,
+    '5xx': errorSchemaRef,
   },
-};
+} as const satisfies FastifySchema;
 
 export const getLoginSchema = {
-  params: idParam,
+  params: entityIdSchemaRef,
   response: {
-    '2xx': loginSchema,
-    '4xx': error,
-    '5xx': error,
+    '2xx': itemLoginSchemaSchemaRef,
+    '4xx': errorSchemaRef,
+    '5xx': errorSchemaRef,
   },
-};
+} as const satisfies FastifySchema;
 
 export const updateLoginSchema = {
-  params: idParam,
-  body: loginSchema,
+  params: entityIdSchemaRef,
+  body: Type.Partial(Type.Pick(itemLoginSchemaSchema, ['status', 'type']), { minProperties: 1 }),
   response: {
-    '2xx': loginSchema,
-    '4xx': error,
-    '5xx': error,
+    '2xx': itemLoginSchemaSchemaRef,
+    '4xx': errorSchemaRef,
+    '5xx': errorSchemaRef,
   },
-};
+} as const satisfies FastifySchema;
 
 export const deleteLoginSchema = {
-  params: idParam,
+  params: entityIdSchemaRef,
   response: {
-    '2xx': loginSchema,
-    '4xx': error,
-    '5xx': error,
+    '2xx': itemLoginSchemaSchemaRef,
+    '4xx': errorSchemaRef,
+    '5xx': errorSchemaRef,
   },
-};
+} as const satisfies FastifySchema;
