@@ -6,6 +6,9 @@ import { writeFileForFormat } from './export';
 
 const writeFileSyncMock = jest.spyOn(fs, 'writeFileSync').mockImplementation(() => {});
 describe('writeFileForFormat', () => {
+  beforeEach(() => {
+    jest.resetAllMocks();
+  });
   describe('CSV format', () => {
     it('Empty array should not write anything', () => {
       writeFileForFormat('./test.csv', ExportActionsFormatting.CSV, []);
