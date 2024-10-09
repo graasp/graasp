@@ -1,7 +1,6 @@
 import { singleton } from 'tsyringe';
 
 import { ActionTriggers, Context } from '@graasp/sdk';
-import { DEFAULT_LANG } from '@graasp/translations';
 
 import { BaseLogger } from '../../../../logger';
 import { MemberNotSignedUp } from '../../../../utils/errors';
@@ -23,13 +22,13 @@ export class MagicLinkService {
     await this.authService.generateRegisterLinkAndEmailIt(member, { url });
   }
 
-  async login(actor: Actor, repositories: Repositories, body, lang = DEFAULT_LANG, url?: string) {
+  async login(actor: Actor, repositories: Repositories, body, url?: string) {
     const { memberRepository, actionRepository } = repositories;
     const { email } = body;
     const member = await memberRepository.getByEmail(email);
 
     if (member) {
-      await this.authService.generateLoginLinkAndEmailIt(member, { lang, url });
+      await this.authService.generateLoginLinkAndEmailIt(member, { lang: member.lang, url });
       const actions = [
         {
           member,

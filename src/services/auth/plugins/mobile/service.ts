@@ -56,14 +56,13 @@ export class MobileService {
     actor: Actor,
     repositories: Repositories,
     { email, challenge }: { email: string; challenge: string },
-    lang = DEFAULT_LANG,
   ) {
     const { memberRepository } = repositories;
 
     const member = await memberRepository.getByEmail(email);
 
     if (member) {
-      await this.authService.generateLoginLinkAndEmailIt(member, { challenge, lang });
+      await this.authService.generateLoginLinkAndEmailIt(member, { challenge, lang: member.lang });
     } else {
       this.log.warn(`Login attempt with non-existent email '${email}'`);
       throw new MemberNotSignedUp({ email });

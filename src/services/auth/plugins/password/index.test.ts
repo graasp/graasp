@@ -389,7 +389,7 @@ describe('Reset Password', () => {
           password: newPassword,
         },
       });
-      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+      expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
 
       // Try to login with the new password
       const responseLogin = await login(app, entities[0].email, newPassword);

@@ -98,7 +98,7 @@ export class AuthService {
     ${this.mailerService.buildButton(link, translated(MAIL.SIGN_IN_BUTTON_TEXT))}
     ${this.mailerService.buildText(translated(MAIL.SIGN_IN_NOT_REQUESTED))}`;
 
-    const footer = this.mailerService.buildFooter(lang);
+    const footer = this.mailerService.buildFooter(memberLang);
 
     // don't wait for mailerService's response; log error and link if it fails.
     this.mailerService
