@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.53.0](https://github.com/graasp/graasp/compare/v1.52.0...v1.53.0) (2024-10-09)
+
+
+### Features
+
+* optimize thumbnails caching ([#1414](https://github.com/graasp/graasp/issues/1414)) ([4c8631f](https://github.com/graasp/graasp/commit/4c8631f3ed1c96458809d3d7724a15ce37a80ea7))
+
+
+### Bug Fixes
+
+* add yarn lock to docker build ([#1469](https://github.com/graasp/graasp/issues/1469)) ([ebbd7f8](https://github.com/graasp/graasp/commit/ebbd7f892c3e5c5a8a8616bf5d721683c5dfea7b))
+* app actions structure is wrong for export ([#1479](https://github.com/graasp/graasp/issues/1479)) ([98c2fa7](https://github.com/graasp/graasp/commit/98c2fa71a50d88b737a4f640bb72bf156a295d77))
+* **deps:** update dependency @graasp/sdk to v4.32.1 ([#1481](https://github.com/graasp/graasp/issues/1481)) ([0721447](https://github.com/graasp/graasp/commit/072144709a9e7a3abfcef229899207fe93b930bd))
+* **deps:** update dependency @sinclair/typebox to v0.33.15 ([#1464](https://github.com/graasp/graasp/issues/1464)) ([dddd7dc](https://github.com/graasp/graasp/commit/dddd7dc9b3d33df20fad865d3f7cc2d494a4f986))
+* **deps:** update dependency bullmq to v5.17.1 ([#1451](https://github.com/graasp/graasp/issues/1451)) ([34acaaa](https://github.com/graasp/graasp/commit/34acaaaa0414f71055b58ba1db4e6ce6df079a37))
+* **deps:** update dependency bullmq to v5.18.0 ([#1486](https://github.com/graasp/graasp/issues/1486)) ([496faf2](https://github.com/graasp/graasp/commit/496faf2458cc74e049111621cce3c2478d01f7cd))
+* **deps:** update dependency i18next to v23.15.2 ([#1452](https://github.com/graasp/graasp/issues/1452)) ([9d67343](https://github.com/graasp/graasp/commit/9d6734380b39980c9c85af91f3cd1a35ea4bb5fe))
+* **deps:** update dependency openai to v4.67.2 ([#1456](https://github.com/graasp/graasp/issues/1456)) ([5f0abb0](https://github.com/graasp/graasp/commit/5f0abb08636a23cc9d7ca2d14132e97edfaf1de1))
+* **deps:** update dependency pg to v8.13.0 ([#1457](https://github.com/graasp/graasp/issues/1457)) ([44e1f45](https://github.com/graasp/graasp/commit/44e1f455094b3adf0a4797046df606b3d7a07f5c))
+* do not allow special characters in username ([#1406](https://github.com/graasp/graasp/issues/1406)) ([2e9ea18](https://github.com/graasp/graasp/commit/2e9ea18d6eaba0645446e8f5c0e14743bff9b9e9))
+* flacky tests post items ([#1444](https://github.com/graasp/graasp/issues/1444)) ([ae7b2d7](https://github.com/graasp/graasp/commit/ae7b2d75ec8313f28b588b639d657d42f0f7ac48))
+
 ## [1.52.0](https://github.com/graasp/graasp/compare/v1.51.0...v1.52.0) (2024-09-27)
 
 
