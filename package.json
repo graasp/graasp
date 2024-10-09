@@ -67,6 +67,7 @@
     "@graasp/sdk": "4.32.1",
     "@graasp/translations": "1.40.0",
     "@rapideditor/country-coder": "5.2.2",
+    "@rollup/plugin-typescript": "12.1.0",
     "@sentry/node": "7.118.0",
     "@sentry/tracing": "7.114.0",
     "@sinclair/typebox": "0.33.15",
