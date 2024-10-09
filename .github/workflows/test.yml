@@ -210,3 +210,6 @@ jobs:
 
       - name: yarn test
         run: yarn test:ci --shard=${{ matrix.shard }}
+
+      - name: run vitest test
+        run: yarn test:vitest

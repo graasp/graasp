@@ -82,6 +82,7 @@ export class Item<T extends ItemTypeEnumKeys = ItemTypeEnumKeys> extends BaseEnt
   @Column({
     length: MAX_ITEM_NAME_LENGTH,
     nullable: false,
+    type: 'varchar',
   })
   name: string;
 
@@ -89,6 +90,7 @@ export class Item<T extends ItemTypeEnumKeys = ItemTypeEnumKeys> extends BaseEnt
     name: 'display_name',
     length: MAX_ITEM_NAME_LENGTH,
     nullable: false,
+    type: 'varchar',
   })
   displayName: string;
 
@@ -103,6 +105,7 @@ export class Item<T extends ItemTypeEnumKeys = ItemTypeEnumKeys> extends BaseEnt
     default: ItemType.FOLDER,
     nullable: false,
     enum: Object.values(ItemType),
+    type: 'varchar',
   })
   type: T;
 
@@ -146,7 +149,7 @@ export class Item<T extends ItemTypeEnumKeys = ItemTypeEnumKeys> extends BaseEnt
 
   // We don't use an enum because it might easily break if a new language is added in the frontend
   // plus this value should be at least the same set of member.extra.lang
-  @Column({ nullable: false, default: 'en' })
+  @Column({ nullable: false, default: 'en', type: 'varchar' })
   lang: string;
 
   @Column({

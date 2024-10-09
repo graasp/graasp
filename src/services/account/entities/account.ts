@@ -19,6 +19,7 @@ export class Account extends BaseEntity {
   @Column({
     nullable: false,
     length: 100,
+    type: 'varchar',
   })
   name: string;
 
@@ -28,12 +29,14 @@ export class Account extends BaseEntity {
     default: AccountType.Individual,
     enum: Object.values(AccountType),
     readonly: true,
+    type: 'varchar',
   })
   type: `${AccountType}` | AccountType;
 
   @Column({
     nullable: true,
     name: 'last_authenticated_at',
+    type: 'date',
   })
   lastAuthenticatedAt: Date;
 
@@ -41,6 +44,7 @@ export class Account extends BaseEntity {
     update: false,
     name: 'created_at',
     nullable: false,
+    type: 'date',
   })
   createdAt: Date;
 
@@ -48,6 +52,7 @@ export class Account extends BaseEntity {
     update: false,
     name: 'updated_at',
     nullable: false,
+    type: 'date',
   })
   updatedAt: Date;
 }

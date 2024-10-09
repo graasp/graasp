@@ -21,6 +21,7 @@
     "test": "jest --forceExit --verbose --runInBand",
     "test:ci": "jest --forceExit --verbose --coverage --silent --maxWorkers=2",
     "test:watch": "yarn test --watchAll",
+    "test:vitest": "vitest",
     "build-ts": "tsc -p tsconfig.build.json",
     "watch-ts": "tsc -w -p tsconfig.build.json",
     "type-check": "tsc --noEmit",
@@ -168,6 +169,7 @@
     "ts-jest": "29.2.3",
     "ts-node": "10.9.2",
     "typescript": "5.5.4",
+    "vitest": "2.1.2",
     "wait-for-expect": "3.0.2"
   },
   "packageManager": "yarn@4.5.0"
