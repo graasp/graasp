@@ -1,6 +1,6 @@
-import { FastifyPluginAsync } from 'fastify';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { ItemLoginSchemaStatus, ItemLoginSchemaType, PermissionLevel } from '@graasp/sdk';
+import { ItemLoginSchemaStatus, PermissionLevel } from '@graasp/sdk';
 
 import { resolveDependency } from '../../di/utils';
 import { asDefined } from '../../utils/assertions';
@@ -14,11 +14,10 @@ import { ItemMembershipService } from '../itemMembership/service';
 import { assertIsMember } from '../member/entities/member';
 import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
 import { ItemLoginSchemaNotFound, ValidMemberSession } from './errors';
-import { ItemLoginMemberCredentials } from './interfaces/item-login';
 import { getLoginSchema, getLoginSchemaType, login, updateLoginSchema } from './schemas';
 import { ItemLoginService } from './service';
 
-const plugin: FastifyPluginAsync = async (fastify) => {
+const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db } = fastify;
 
   const itemLoginService = resolveDependency(ItemLoginService);
@@ -29,7 +28,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // get login schema type for item
   // used to trigger item login for student
   // public endpoint
-  fastify.get<{ Params: { id: string } }>(
+  fastify.get(
     '/:id/login-schema-type',
     { schema: getLoginSchemaType, preHandler: optionalIsAuthenticated },
     async ({ user, params: { id: itemId } }) => {
@@ -65,7 +64,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // get login schema for item
-  fastify.get<{ Params: { id: string } }>(
+  fastify.get(
     '/:id/login-schema',
     {
       schema: getLoginSchema,
@@ -91,11 +90,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   // TODO: MOBILE
   // log in to item
-  fastify.post<{
-    Params: { id: string };
-    Querystring: { m: boolean };
-    Body: ItemLoginMemberCredentials;
-  }>(
+  fastify.post(
     '/:id/login',
     {
       schema: login,
@@ -120,10 +115,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  fastify.put<{
-    Params: { id: string };
-    Body: { type: ItemLoginSchemaType; status: ItemLoginSchemaStatus };
-  }>(
+  fastify.put(
     '/:id/login-schema',
     {
       schema: updateLoginSchema,

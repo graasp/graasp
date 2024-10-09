@@ -1,4 +1,12 @@
-import { Static, StringOptions, TRef, TSchema, Type, UnsafeOptions } from '@sinclair/typebox';
+import {
+  SchemaOptions,
+  Static,
+  StringOptions,
+  TRef,
+  TSchema,
+  Type,
+  UnsafeOptions,
+} from '@sinclair/typebox';
 
 import { FastifyPluginAsyncTypebox, TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import {
@@ -58,6 +66,18 @@ export const customType = {
       ...schema,
       type: ['null', schema.type],
     }),
+  EnumString: <T extends string[]>(values: [...T], options?: SchemaOptions) =>
+    Object.assign(
+      /* 
+      Object Assign is used so the return type contains the intersection with `{ type: 'string' }`,
+      and so can be used in combination with `customType.Nullable(...)`
+       */
+      Type.Unsafe<`${T[number]}` | T[number]>({
+        ...options,
+        enum: values,
+      }),
+      { type: 'string' },
+    ),
 } as const;
 
 /**
