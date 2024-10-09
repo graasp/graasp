@@ -31,13 +31,13 @@ export class Invitation extends BaseEntity {
   @JoinColumn({ name: 'creator_id' })
   creator: Member | null;
 
-  @Column({ nullable: false })
+  @Column({ nullable: false, type: 'varchar' })
   permission: PermissionLevel;
 
-  @Column({ length: 100, nullable: true })
+  @Column({ length: 100, nullable: true, type: 'varchar' })
   name: string;
 
-  @Column({ length: 100, nullable: false })
+  @Column({ length: 100, nullable: false, type: 'varchar' })
   email: string;
 
   @ManyToOne(() => Item, (item) => item.path, {

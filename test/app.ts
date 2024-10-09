@@ -1,5 +1,6 @@
 import { Strategy as CustomStrategy } from 'passport-custom';
 import { DataSource } from 'typeorm';
+import { vi } from 'vitest';
 
 import fastifyPassport from '@fastify/passport';
 import { fastify } from 'fastify';
@@ -96,5 +97,5 @@ export const clearDatabase = async (db: DataSource) => {
 export default build;
 
 export const MOCK_LOGGER = {
-  error: jest.fn(),
+  error: vi.fn(),
 } as unknown as BaseLogger;

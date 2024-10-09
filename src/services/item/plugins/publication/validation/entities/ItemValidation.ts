@@ -30,17 +30,20 @@ export class ItemValidation extends BaseEntity {
   @Column({
     nullable: false,
     enum: Object.values(ItemValidationProcess),
+    type: 'varchar',
   })
   process: `${ItemValidationProcess}`;
 
   @Column({
     nullable: false,
     enum: Object.values(ItemValidationStatus),
+    type: 'varchar',
   })
   status: ItemValidationStatus;
 
   @Column({
     nullable: true,
+    type: 'text',
   })
   result: string;
 

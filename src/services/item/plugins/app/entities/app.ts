@@ -28,18 +28,21 @@ export class App extends BaseEntity {
     unique: true,
     select: false,
     nullable: false,
+    type: 'char',
   })
   key: string = v4();
 
   @Column({
     nullable: false,
     length: 250,
+    type: 'varchar',
   })
   name: string;
 
   @Column({
     nullable: false,
     length: 250,
+    type: 'varchar',
   })
   description: string;
 
@@ -47,6 +50,7 @@ export class App extends BaseEntity {
     nullable: false,
     unique: true,
     length: 250,
+    type: 'varchar',
   })
   url: string;
 

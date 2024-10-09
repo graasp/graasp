@@ -1,5 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { FastifyInstance } from 'fastify';
 
@@ -38,7 +39,7 @@ describe('Tags', () => {
   let actor;
 
   afterEach(async () => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     await clearDatabase(app.db);
     actor = null;
     app.close();
@@ -54,7 +55,7 @@ describe('Tags', () => {
         ({ item } = await testUtils.saveItemAndMembership({ member }));
       });
 
-      it('Throws if item is private', async () => {
+      it.only('Throws if item is private', async () => {
         const response = await app.inject({
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/tags`,

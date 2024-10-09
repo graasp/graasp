@@ -28,30 +28,35 @@ export class MemberProfile extends BaseEntity {
   @Column({
     nullable: true,
     length: 5000,
+    type: 'varchar',
   })
   bio: string;
 
   @Column({
     nullable: false,
     default: false,
+    type: 'varchar',
   })
   visibility: boolean;
 
   @Column({
     nullable: true,
     length: 100,
+    type: 'varchar',
   })
   facebookID: string;
 
   @Column({
     nullable: true,
     length: 100,
+    type: 'varchar',
   })
   linkedinID: string;
 
   @Column({
     nullable: true,
     length: 100,
+    type: 'varchar',
   })
   twitterID: string;
 
