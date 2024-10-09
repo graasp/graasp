@@ -72,8 +72,7 @@ const controller: FastifyPluginAsync = async (fastify) => {
         pageSize < FILE_METADATA_MIN_PAGE_SIZE ||
         pageSize > FILE_METADATA_MAX_PAGE_SIZE
       ) {
-        reply.status(StatusCodes.BAD_REQUEST).send();
-        return;
+        return reply.status(StatusCodes.BAD_REQUEST).send();
       }
       const member = asDefined(user?.account);
       assertIsMember(member);
@@ -216,13 +215,16 @@ const controller: FastifyPluginAsync = async (fastify) => {
         await memberService.patch(repositories, member.id, {
           email: emailModification.newEmail,
         });
+
+        // we send the email asynchronously without awaiting
         memberService.mailConfirmEmailChangeRequest(
           member.email,
           emailModification.newEmail,
           member.lang,
         );
-        return reply.status(StatusCodes.NO_CONTENT).send();
       });
+      // this needs to be outside the transaction
+      return reply.status(StatusCodes.NO_CONTENT).send();
     },
   );
 };
