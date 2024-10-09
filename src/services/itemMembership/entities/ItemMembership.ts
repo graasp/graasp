@@ -29,6 +29,7 @@ export class ItemMembership extends BaseEntity {
     length: 100,
     nullable: false,
     enum: Object.values(PermissionLevel),
+    type: 'varchar',
   })
   @Index()
   permission: PermissionLevel;

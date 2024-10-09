@@ -6,6 +6,7 @@ import {
   JoinColumn,
   OneToOne,
   PrimaryGeneratedColumn,
+  Relation,
   Unique,
 } from 'typeorm';
 import { v4 } from 'uuid';
@@ -34,10 +35,10 @@ export class ItemGeolocation extends BaseEntity {
   @Column({ type: 'float' })
   lng: number;
 
-  @Column({ length: 300, nullable: true })
-  addressLabel: string;
+  @Column({ length: 300, nullable: true, type: 'varchar' })
+  addressLabel: Relation<string>;
 
-  @Column({ length: 300, nullable: true })
+  @Column({ length: 300, nullable: true, type: 'varchar' })
   helperLabel: string;
 
   @Column({ type: 'character varying', nullable: true, length: 4 })

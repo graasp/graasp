@@ -12,11 +12,13 @@ export class Category extends BaseEntity implements GraaspCategory {
   @Column({
     nullable: false,
     length: 50,
+    type: 'varchar',
   })
   name: string;
 
   @Column({
     nullable: false,
+    type: 'varchar',
   })
   type: CategoryType;
 }

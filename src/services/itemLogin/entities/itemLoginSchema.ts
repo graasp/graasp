@@ -32,6 +32,7 @@ export class ItemLoginSchema extends BaseEntity {
     enum: Object.values(ItemLoginSchemaType),
     nullable: false,
     length: 100,
+    type: 'varchar',
   })
   type: `${ItemLoginSchemaType}` | ItemLoginSchemaType;
 
@@ -40,6 +41,7 @@ export class ItemLoginSchema extends BaseEntity {
     default: ItemLoginSchemaStatus.Active,
     nullable: false,
     length: 100,
+    type: 'varchar',
   })
   status: `${ItemLoginSchemaStatus}` | ItemLoginSchemaStatus;
 

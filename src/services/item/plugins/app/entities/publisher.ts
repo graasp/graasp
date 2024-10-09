@@ -19,6 +19,7 @@ export class Publisher extends BaseEntity {
     unique: true,
     nullable: false,
     length: 250,
+    type: 'varchar',
   })
   name: string;
 

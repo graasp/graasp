@@ -39,6 +39,7 @@ export class ChatMessage extends BaseEntity {
   @Column({
     nullable: false,
     length: 500,
+    type: 'varchar',
   })
   body: string;
 }
