@@ -465,7 +465,7 @@ describe('Mobile Endpoints', () => {
           verifier,
         },
       });
-      expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
+      expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
     });
 
     it('Fail to authenticate if token contains undefined member id', async () => {
