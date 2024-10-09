@@ -1,105 +1,80 @@
+import { Type } from '@sinclair/typebox';
+import { StatusCodes } from 'http-status-codes';
+
 import { FastifySchema } from 'fastify';
 
 import { MembershipRequestStatus } from '@graasp/sdk';
 
-import { customType } from '../../../../plugins/typebox';
-import { itemSchemaRef } from '../../../item/schema';
+import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
+import { itemIdSchemaRef, itemSchemaRef } from '../../../item/schema';
 import { memberSchemaRef } from '../../../member/schemas';
 
-export const completeMembershipRequest = {
-  $id: 'completeMembershipRequest',
-  type: 'object',
-  properties: {
+const completeMembershipRequestSchema = Type.Object(
+  {
     member: memberSchemaRef,
     item: itemSchemaRef,
-    createdAt: { type: 'string' },
+    createdAt: customType.DateTime(),
   },
-  additionalProperties: false,
-};
+  { additionalProperties: false },
+);
 
-export const simpleMembershipRequest = {
-  $id: 'simpleMembershipRequest',
-  type: 'object',
-  properties: {
-    member: memberSchemaRef,
-    createdAt: { type: 'string' },
-  },
-  additionalProperties: false,
-};
+export const completeMembershipRequestSchemaRef = registerSchemaAsRef(
+  'completeMembershipRequest',
+  'Complete Membership Request',
+  completeMembershipRequestSchema,
+);
 
-export const getAllByItem: FastifySchema = {
+export const simpleMembershipRequestSchemaRef = registerSchemaAsRef(
+  'simpleMembershipRequest',
+  'Simple Membership Request',
+  Type.Pick(completeMembershipRequestSchema, ['member', 'createdAt']),
+);
+
+export const getAllByItem = {
   tags: ['membershipRequest'],
   summary: 'Get all membership requests for an item',
   description: 'Get all membership requests with member information for an item by its ID',
-  params: {
-    type: 'object',
-    properties: {
-      itemId: customType.UUID(),
-    },
-    required: ['itemId'],
-  },
+  params: itemIdSchemaRef,
   response: {
-    200: {
-      type: 'array',
-      items: { $ref: 'simpleMembershipRequest' },
-      uniqueItems: true,
-    },
+    [StatusCodes.OK]: Type.Array(simpleMembershipRequestSchemaRef, { uniqueItems: true }),
   },
-};
+} as const satisfies FastifySchema;
 
-export const createOne: FastifySchema = {
+export const createOne = {
   tags: ['membershipRequest'],
   summary: 'Create a membership request',
   description: `Create a membership request for an item with the authenticated member. 
   The member should not have any permission on the item.
   If there is an Item Login associated with the item, the request will be rejected.`,
-  params: {
-    type: 'object',
-    properties: {
-      itemId: customType.UUID(),
-    },
-    required: ['itemId'],
-  },
+  params: itemIdSchemaRef,
   response: {
-    200: { $ref: 'completeMembershipRequest' },
+    [StatusCodes.OK]: completeMembershipRequestSchemaRef,
   },
-};
+} as const satisfies FastifySchema;
 
-export const getOwn: FastifySchema = {
+export const getOwn = {
   tags: ['membershipRequest'],
   summary: 'Get the status of the membership request for the authenticated member',
   description:
     'Get the status of the membership request for the authenticated member for an item by its ID',
-  params: {
-    type: 'object',
-    properties: {
-      itemId: customType.UUID(),
-    },
-    required: ['itemId'],
-  },
+  params: itemIdSchemaRef,
   response: {
-    200: {
-      type: 'object',
-      properties: {
-        status: { type: 'string', enum: Object.values(MembershipRequestStatus) },
-      },
-    },
+    [StatusCodes.OK]: Type.Object(
+      { status: Type.Enum(MembershipRequestStatus) },
+      { additionalProperties: false },
+    ),
   },
-};
+} as const satisfies FastifySchema;
 
-export const deleteOne: FastifySchema = {
+export const deleteOne = {
   tags: ['membershipRequest'],
   summary: 'Delete a membership request',
   description: 'Delete a membership request from a member id and an item id.',
-  params: {
-    type: 'object',
-    properties: {
-      itemId: customType.UUID(),
-      memberId: customType.UUID(),
-    },
-    required: ['itemId', 'memberId'],
-  },
+  params: Type.Object({
+    itemId: customType.UUID(),
+    memberId: customType.UUID(),
+  }),
   response: {
-    200: { $ref: 'completeMembershipRequest' },
+    [StatusCodes.OK]: completeMembershipRequestSchemaRef,
   },
-};
+} as const satisfies FastifySchema;

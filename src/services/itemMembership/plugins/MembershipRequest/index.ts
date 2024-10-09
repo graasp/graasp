@@ -1,5 +1,5 @@
 import { fastifyCors } from '@fastify/cors';
-import { FastifyPluginAsync } from 'fastify';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { MembershipRequestStatus, PermissionLevel } from '@graasp/sdk';
 
@@ -20,17 +20,10 @@ import {
   MembershipRequestAlreadyExists,
   MembershipRequestNotFound,
 } from './error';
-import {
-  completeMembershipRequest,
-  createOne,
-  deleteOne,
-  getAllByItem,
-  getOwn,
-  simpleMembershipRequest,
-} from './schemas';
+import { createOne, deleteOne, getAllByItem, getOwn } from './schemas';
 import { MembershipRequestService } from './service';
 
-const plugin: FastifyPluginAsync = async (fastify) => {
+const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db } = fastify;
 
   const membershipRequestService = resolveDependency(MembershipRequestService);
@@ -38,15 +31,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   const itemService = resolveDependency(ItemService);
   const itemLoginService = resolveDependency(ItemLoginService);
 
-  // schemas
-  fastify.addSchema(simpleMembershipRequest);
-  fastify.addSchema(completeMembershipRequest);
-
   if (fastify.corsPluginOptions) {
     await fastify.register(fastifyCors, fastify.corsPluginOptions);
   }
 
-  fastify.get<{ Params: { itemId: string } }>(
+  fastify.get(
     '/',
     {
       schema: getAllByItem,
@@ -68,7 +57,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  fastify.get<{ Params: { itemId: string } }>(
+  fastify.get(
     '/own',
     {
       schema: getOwn,
@@ -115,7 +104,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  fastify.post<{ Params: { itemId: string } }>(
+  fastify.post(
     '/',
     {
       schema: createOne,
@@ -163,7 +152,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  fastify.delete<{ Params: { itemId: string; memberId: string } }>(
+  fastify.delete(
     '/:memberId',
     {
       schema: deleteOne,
