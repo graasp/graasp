@@ -19,7 +19,7 @@ import {
   FILE_METADATA_MIN_PAGE,
   FILE_METADATA_MIN_PAGE_SIZE,
 } from './constants';
-import { Actor, Member } from './entities/member';
+import { Member } from './entities/member';
 import { saveMember } from './test/fixtures/members';
 
 jest.mock('node-fetch');
@@ -55,7 +55,7 @@ describe('Member Controller', () => {
   });
   beforeEach(async () => {
     member = await saveMember();
-    mockAuthenticate(member as Actor);
+    mockAuthenticate(member);
     mockSendEmail = jest.spyOn(resolveDependency(MailerService), 'sendEmail');
   });
   afterEach(async () => {

@@ -207,12 +207,12 @@ export class ActionItemService {
         actions: AppAction[];
       };
     } = {};
-    for (const { id: appId } of [item, ...descendants].filter(
-      ({ type }) => type === ItemType.APP,
-    )) {
+    const appItems = [item, ...descendants].filter(({ type }) => type === ItemType.APP);
+    for (const { id: appId } of appItems) {
       const appData = await repositories.appDataRepository.getForItem(
         appId,
         {},
+        // needs investigating: does this mean a reader could export the actions of an item and see all users responses ?
         PermissionLevel.Admin,
       );
       // TODO member id?

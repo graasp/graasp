@@ -135,7 +135,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       // We can already return to avoid leaking timing information.
       reply.status(StatusCodes.NO_CONTENT);
-      reply.send();
+      // need to await this
+      await reply.send();
 
       const repositories = buildRepositories();
 
