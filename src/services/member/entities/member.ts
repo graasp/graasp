@@ -23,7 +23,7 @@ export class Member extends Account {
     nullable: false,
     length: 150,
     unique: true,
-    type: 'string',
+    type: 'varchar',
   })
   email: string;
 
