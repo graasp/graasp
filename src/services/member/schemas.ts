@@ -3,11 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifySchema } from 'fastify';
 
-import {
-  MAX_TARGETS_FOR_READ_REQUEST,
-  MAX_USERNAME_LENGTH,
-  MIN_USERNAME_LENGTH,
-} from '@graasp/sdk';
+import { AccountType, MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 import { error } from '../../schemas/fluent-schema';
@@ -38,11 +34,7 @@ const memberSchema = Type.Object(
   {
     // Object definition
     id: customType.UUID(),
-    name: Type.String({
-      format: 'username',
-      minLength: MIN_USERNAME_LENGTH,
-      maxLength: MAX_USERNAME_LENGTH,
-    }),
+    name: customType.Username(),
     email: Type.String({ format: 'email' }),
   },
   {
@@ -59,33 +51,37 @@ export const nullableMemberSchemaRef = registerSchemaAsRef(
   customType.Nullable(memberSchema),
 );
 
+const currentMemberSchema = Type.Object(
+  {
+    // Object definition
+    id: customType.UUID(),
+    name: customType.Username(),
+    email: Type.Optional(Type.String({ format: 'email' })),
+    type: Type.Enum(AccountType),
+    createdAt: customType.DateTime(),
+    updatedAt: customType.DateTime(),
+    lastAuthenticatedAt: customType.DateTime(),
+    isValidated: Type.Boolean(),
+    userAgreementsDate: customType.DateTime(),
+    enableSaveActions: Type.Boolean(),
+    extra: Type.Object({}, { additionalProperties: true }),
+  },
+  {
+    // Schema options
+    additionalProperties: false,
+  },
+);
+
 export const currentMemberSchemaRef = registerSchemaAsRef(
   'currentMember',
   'Current Member',
-  Type.Object(
-    {
-      // Object definition
-      id: customType.UUID(),
-      name: Type.String({
-        format: 'username',
-        minLength: MIN_USERNAME_LENGTH,
-        maxLength: MAX_USERNAME_LENGTH,
-      }),
-      email: Type.String({ format: 'email' }),
-      type: Type.String(),
-      createdAt: customType.DateTime(),
-      updatedAt: customType.DateTime(),
-      lastAuthenticatedAt: customType.DateTime(),
-      isValidated: Type.Boolean(),
-      userAgreementsDate: customType.DateTime(),
-      enableSaveActions: Type.Boolean(),
-      extra: Type.Object({}, { additionalProperties: true }),
-    },
-    {
-      // Schema options
-      additionalProperties: false,
-    },
-  ),
+  currentMemberSchema,
+);
+
+export const nullableCurrentMemberSchemaRef = registerSchemaAsRef(
+  'nullableCurrentMember',
+  'Nullable Current Member',
+  customType.Nullable(currentMemberSchema),
 );
 
 export const updateMemberRequiredOneSchemaRef = registerSchemaAsRef(
@@ -94,13 +90,7 @@ export const updateMemberRequiredOneSchemaRef = registerSchemaAsRef(
   Type.Object(
     {
       // Object definition
-      name: Type.Optional(
-        Type.String({
-          format: 'username',
-          minLength: MIN_USERNAME_LENGTH,
-          maxLength: MAX_USERNAME_LENGTH,
-        }),
-      ),
+      name: Type.Optional(customType.Username()),
       enableSaveActions: Type.Optional(Type.Boolean()),
       extra: Type.Optional(Type.Object({}, { additionalProperties: true })),
     },
@@ -109,158 +99,143 @@ export const updateMemberRequiredOneSchemaRef = registerSchemaAsRef(
 );
 
 // schema for getting current member
-export const getCurrent: FastifySchema = {
+export const getCurrent = {
   response: {
-    [StatusCodes.OK]: currentMemberSchemaRef,
+    [StatusCodes.OK]: nullableCurrentMemberSchemaRef,
   },
-};
+} as const satisfies FastifySchema;
 
 // schema for getting current member's storage limits
-export const getStorage: FastifySchema = {
+export const getStorage = {
   response: {
-    200: {
-      type: 'object',
-      properties: {
-        current: {
-          type: 'number',
-        },
-        maximum: {
-          type: 'number',
-        },
+    [StatusCodes.OK]: Type.Object(
+      {
+        current: Type.Integer(),
+        maximum: Type.Integer(),
       },
-      additionalProperties: false,
-      require: ['current', 'maximum'],
-    },
+      {
+        additionalProperties: false,
+      },
+    ),
   },
-};
+} as const satisfies FastifySchema;
 
-export const getStorageFiles: FastifySchema = {
-  querystring: {
-    type: 'object',
-    properties: {
-      page: { type: 'number', default: FILE_METADATA_MIN_PAGE },
-      pageSize: { type: 'number', default: FILE_METADATA_DEFAULT_PAGE_SIZE },
+export const getStorageFiles = {
+  querystring: Type.Object(
+    {
+      page: Type.Integer({ minimum: FILE_METADATA_MIN_PAGE, default: FILE_METADATA_MIN_PAGE }),
+      pageSize: Type.Integer({ default: FILE_METADATA_DEFAULT_PAGE_SIZE }),
     },
-  },
+    { additionalProperties: false },
+  ),
   response: {
-    200: {
-      type: 'object',
-      properties: {
-        data: {
-          type: 'array',
-          items: {
-            type: 'object',
-            additionalProperties: false,
-            properties: {
-              id: { type: 'string' },
-              name: { type: 'string' },
-              size: { type: 'number' },
-              updatedAt: { type: 'string' },
-              path: { type: 'string' },
-              parent: {
-                type: 'object',
-                additionalProperties: false,
-                properties: {
-                  id: { type: 'string' },
-                  name: { type: 'string' },
-                },
-              },
+    [StatusCodes.OK]: Type.Object(
+      {
+        data: Type.Array(
+          Type.Object(
+            {
+              id: customType.UUID(),
+              name: Type.String(),
+              size: Type.Integer(),
+              updatedAt: customType.DateTime(),
+              path: Type.String(),
+              parent: Type.Optional(
+                Type.Object(
+                  {
+                    id: customType.UUID(),
+                    name: Type.String(),
+                  },
+                  {
+                    additionalProperties: false,
+                  },
+                ),
+              ),
             },
+            {
+              additionalProperties: false,
+            },
+          ),
+        ),
+        totalCount: Type.Integer(),
+        pagination: customType.Pagination({
+          page: {
+            minimum: FILE_METADATA_MIN_PAGE,
+            default: FILE_METADATA_MIN_PAGE,
           },
-        },
-        totalCount: { type: 'number' },
-        pagination: {
-          type: 'object',
-          properties: {
-            page: { type: 'number' },
-            pageSize: { type: 'number' },
-          },
-        },
+          pageSize: { default: FILE_METADATA_DEFAULT_PAGE_SIZE },
+        }),
       },
-    },
+      { additionalProperties: false },
+    ),
     '4xx': error,
   },
-};
+} as const satisfies FastifySchema;
 
 // schema for getting a member
-export const getOne: FastifySchema = {
+export const getOne = {
   params: entityIdSchemaRef,
   response: {
     [StatusCodes.OK]: memberSchemaRef,
   },
-};
+} as const satisfies FastifySchema;
 
 // schema for getting >1 members
-export const getMany: FastifySchema = {
-  querystring: Type.Object({
-    id: Type.Array(customType.UUID(), {
-      uniqueItems: true,
-      minItems: 1,
-      maxItems: MAX_TARGETS_FOR_READ_REQUEST,
-    }),
-  }),
+export const getMany = {
+  querystring: Type.Object(
+    {
+      id: Type.Array(customType.UUID(), {
+        uniqueItems: true,
+        minItems: 1,
+        maxItems: MAX_TARGETS_FOR_READ_REQUEST,
+      }),
+    },
+    { additionalProperties: false },
+  ),
 
   response: {
-    200: {
-      type: 'object',
-      properties: {
-        data: {
-          type: 'object',
-          patternProperties: {
-            [UUID_REGEX]: {
-              type: 'object',
-              properties: {
-                id: { type: 'string' },
-                name: { type: 'string' },
-                email: { type: 'string' },
-              },
-            },
-          },
-        },
-        errors: Type.Array(errorSchemaRef),
-      },
-    },
+    [StatusCodes.OK]: Type.Object({
+      data: Type.Record(
+        Type.String({ pattern: UUID_REGEX }),
+        Type.Object({
+          id: customType.UUID(),
+          name: customType.Username(),
+          email: Type.String(),
+        }),
+      ),
+      errors: Type.Array(errorSchemaRef),
+    }),
   },
-};
+} as const satisfies FastifySchema;
 
 // schema for getting members by
-export const getManyBy: FastifySchema = {
-  querystring: {
-    type: 'object',
-    properties: {
-      email: {
-        type: 'array',
-        items: { type: 'string', format: 'email' },
-      },
-      additionalProperties: false,
-    },
-  },
+export const getManyBy = {
+  querystring: Type.Object(
+    { email: Type.Array(Type.String({ format: 'email' }), { uniqueItems: true, minItems: 1 }) },
+    { additionalProperties: false },
+  ),
   response: {
-    200: {
-      type: 'object',
-      // additionalProperties:true,
-      properties: {
-        data: {
-          type: 'object',
-          patternProperties: {
-            [EMAIL_REGEX]: {
-              type: 'object',
-              properties: {
-                id: { type: 'string' },
-                name: { type: 'string' },
-                email: { type: 'string' },
-              },
+    [StatusCodes.OK]: Type.Object(
+      {
+        data: Type.Record(
+          Type.String({ pattern: EMAIL_REGEX }),
+          Type.Object(
+            {
+              id: customType.UUID(),
+              name: customType.Username(),
+              email: Type.String({ format: 'email' }),
             },
-          },
-        },
+            { additionalProperties: false },
+          ),
+        ),
         errors: Type.Array(errorSchemaRef),
       },
-    },
+      { additionalProperties: false },
+    ),
   },
-};
+} as const satisfies FastifySchema;
 
 // schema for updating a member
-export const updateOne: FastifySchema = {
+export const updateOne = {
   deprecated: true,
   params: entityIdSchemaRef,
   body: updateMemberRequiredOneSchemaRef,
@@ -268,51 +243,45 @@ export const updateOne: FastifySchema = {
     [StatusCodes.OK]: currentMemberSchemaRef,
     [StatusCodes.FORBIDDEN]: error,
   },
-};
+} as const satisfies FastifySchema;
 
 // schema for updating the current member
-export const updateCurrent: FastifySchema = {
+export const updateCurrent = {
   body: updateMemberRequiredOneSchemaRef,
   response: {
     [StatusCodes.OK]: currentMemberSchemaRef,
     [StatusCodes.FORBIDDEN]: error,
   },
-};
+} as const satisfies FastifySchema;
 
 // schema for deleting a member
-export const deleteOne: FastifySchema = {
+export const deleteOne = {
   params: entityIdSchemaRef,
   response: {
     [StatusCodes.NO_CONTENT]: {},
   },
-};
+} as const satisfies FastifySchema;
 
 // schema for deleting the current member
-export const deleteCurrent: FastifySchema = {
+export const deleteCurrent = {
   response: {
-    [StatusCodes.NO_CONTENT]: {},
+    [StatusCodes.NO_CONTENT]: Type.Null(),
   },
-};
+} as const satisfies FastifySchema;
 
-export const postChangeEmail: FastifySchema = {
-  body: {
-    type: 'object',
-    properties: {
-      email: { type: 'string', format: 'email' },
-    },
-    additionalProperties: false,
-  },
+export const postChangeEmail = {
+  body: Type.Object({ email: Type.String({ format: 'email' }) }, { additionalProperties: false }),
   response: {
     [StatusCodes.NO_CONTENT]: {},
     [StatusCodes.CONFLICT]: error,
     [StatusCodes.UNAUTHORIZED]: error,
   },
-};
+} as const satisfies FastifySchema;
 
-export const patchChangeEmail: FastifySchema = {
+export const patchChangeEmail = {
   response: {
     [StatusCodes.NO_CONTENT]: {},
     [StatusCodes.CONFLICT]: error,
     [StatusCodes.UNAUTHORIZED]: error,
   },
-};
+} as const satisfies FastifySchema;

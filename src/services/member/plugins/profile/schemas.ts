@@ -1,66 +1,73 @@
-import { S } from 'fluent-json-schema';
+import { Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
 import { FastifySchema } from 'fastify';
 
-import { error, uuid } from '../../../../schemas/fluent-schema';
-import { partialMember } from '../../../item/schema';
+import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
+import { errorSchemaRef } from '../../../../schemas/global';
 
-const memberSharedSchema = S.object()
-  .additionalProperties(false)
-  .prop('bio', S.string())
-  .prop('facebookID', S.anyOf([S.string(), S.null()]))
-  .prop('linkedinID', S.anyOf([S.string(), S.null()]))
-  .prop('twitterID', S.anyOf([S.string(), S.null()]));
+const inputPublicProfileMemberSchemaRef = registerSchemaAsRef(
+  'publicProfile',
+  'Public Profile',
 
-export const profileMember = S.object()
-  .prop('id', uuid)
-  .prop('bio', S.string())
-  .prop('visibility', S.boolean())
-  .prop('facebookID', S.string())
-  .prop('linkedinID', S.string())
-  .prop('twitterID', S.string())
-  .prop('createdAt', S.string().format('date-time'))
-  .prop('updatedAt', S.string().format('date-time'))
-  .prop('member', partialMember);
+  Type.Object(
+    {
+      bio: Type.String(),
+      facebookID: Type.String(),
+      linkedinID: Type.String(),
+      twitterID: Type.String(),
+      visibility: Type.Boolean(),
+    },
+    { additionalProperties: false },
+  ),
+);
+
+export const profileMemberSchemaRef = registerSchemaAsRef(
+  'profileMember',
+  'Profile Member',
+  Type.Object({
+    id: customType.UUID(),
+    bio: Type.String(),
+    facebookID: Type.String(),
+    linkedinID: Type.String(),
+    twitterID: Type.String(),
+    visibility: Type.Boolean(),
+    createdAt: customType.DateTime(),
+    updatedAt: customType.DateTime(),
+  }),
+);
 
 export const createProfile = {
-  body: S.object()
-    .additionalProperties(false)
-    .prop('visibility', S.boolean())
-    // QUESTION: why is the bio always required ? Can't we only update a social link ?
-    .required(['bio'])
-    .extend(memberSharedSchema),
+  body: inputPublicProfileMemberSchemaRef,
   response: {
-    [StatusCodes.CREATED]: profileMember,
-    [StatusCodes.UNAUTHORIZED]: error,
+    [StatusCodes.CREATED]: profileMemberSchemaRef,
+    [StatusCodes.UNAUTHORIZED]: errorSchemaRef,
   },
-};
+} as const satisfies FastifySchema;
 
-export const getProfileForMember: FastifySchema = {
-  params: S.object().additionalProperties(false).prop('memberId', uuid),
+export const getProfileForMember = {
+  params: Type.Object({ memberId: customType.UUID() }, { additionalProperties: false }),
   response: {
-    [StatusCodes.OK]: profileMember,
-    [StatusCodes.NO_CONTENT]: S.null(),
-    [StatusCodes.UNAUTHORIZED]: error,
+    [StatusCodes.OK]: profileMemberSchemaRef,
+    // Status NO CONTENT is used instead of NOT FOUND, so it doesn't trigger an error in the Frontend
+    [StatusCodes.NO_CONTENT]: Type.Null(),
+    [StatusCodes.UNAUTHORIZED]: errorSchemaRef,
   },
-};
+} as const satisfies FastifySchema;
 
-export const getOwnProfile: FastifySchema = {
+export const getOwnProfile = {
   response: {
-    [StatusCodes.OK]: profileMember,
-    [StatusCodes.NO_CONTENT]: S.null(),
-    [StatusCodes.UNAUTHORIZED]: error,
+    [StatusCodes.OK]: profileMemberSchemaRef,
+    // Status NO CONTENT is used instead of NOT FOUND, so it doesn't trigger an error in the Frontend
+    [StatusCodes.NO_CONTENT]: Type.Null(),
+    [StatusCodes.UNAUTHORIZED]: errorSchemaRef,
   },
-};
+} as const satisfies FastifySchema;
 
 export const updateMemberProfile = {
-  body: S.object()
-    .additionalProperties(false)
-    .prop('visibility', S.boolean())
-    .extend(memberSharedSchema),
+  body: Type.Partial(inputPublicProfileMemberSchemaRef),
   response: {
-    [StatusCodes.OK]: profileMember,
-    [StatusCodes.UNAUTHORIZED]: error,
+    [StatusCodes.OK]: profileMemberSchemaRef,
+    [StatusCodes.UNAUTHORIZED]: errorSchemaRef,
   },
-};
+} as const satisfies FastifySchema;

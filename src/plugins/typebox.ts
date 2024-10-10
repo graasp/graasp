@@ -18,6 +18,8 @@ import {
   RawServerDefault,
 } from 'fastify';
 
+import { MAX_USERNAME_LENGTH, MIN_USERNAME_LENGTH } from '@graasp/sdk';
+
 /**
  * List of schemas to be registered in the Fastify instance.
  */
@@ -61,6 +63,13 @@ export const customType = {
   DateTime: (options?: UnsafeOptions) =>
     Type.Unsafe<Date>({ ...options, type: 'string', format: 'date-time' }),
   UUID: (options?: StringOptions) => Type.String({ ...options, format: 'uuid' }),
+  Username: (options?: StringOptions) =>
+    Type.String({
+      ...options,
+      format: 'username',
+      minLength: MIN_USERNAME_LENGTH,
+      maxLength: MAX_USERNAME_LENGTH,
+    }),
   Nullable: <T extends TSchema & { type: string }>(schema: T) =>
     Type.Unsafe<Static<T> | null>({
       ...schema,
@@ -77,6 +86,23 @@ export const customType = {
         enum: values,
       }),
       { type: 'string' },
+    ),
+  Pagination: ({
+    page,
+    pageSize,
+  }: {
+    page: { minimum?: number; maximum?: number; default?: number };
+    pageSize: { minimum?: number; maximum?: number; default?: number };
+  }) =>
+    Type.Object(
+      {
+        page: Type.Integer({
+          default: 0,
+          ...page,
+        }),
+        pageSize: Type.Integer(pageSize),
+      },
+      { additionalProperties: false },
     ),
 } as const;
 

@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifyPluginAsync } from 'fastify';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../di/utils';
 import { asDefined } from '../../../../utils/assertions';
@@ -12,7 +12,7 @@ import { memberAccountRole } from '../../strategies/memberAccountRole';
 import { exportMemberData } from './schemas/schemas';
 import { ExportMemberDataService } from './service';
 
-const plugin: FastifyPluginAsync = async (fastify) => {
+const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db } = fastify;
   const exportMemberDataService = resolveDependency(ExportMemberDataService);
 

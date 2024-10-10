@@ -1,11 +1,8 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifyPluginAsync } from 'fastify';
-
-import { Pagination } from '@graasp/sdk';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../di/utils';
-import { IdParam, IdsParams } from '../../types';
 import { asDefined } from '../../utils/assertions';
 import { CannotModifyOtherMembers } from '../../utils/errors';
 import { buildRepositories } from '../../utils/repositories';
@@ -21,7 +18,7 @@ import {
   FILE_METADATA_MIN_PAGE,
   FILE_METADATA_MIN_PAGE_SIZE,
 } from './constants';
-import { Member, assertIsMember } from './entities/member';
+import { assertIsMember } from './entities/member';
 import { EmailAlreadyTaken } from './error';
 import { StorageService } from './plugins/storage/service';
 import {
@@ -40,7 +37,7 @@ import {
 import { MemberService } from './service';
 import { memberAccountRole } from './strategies/memberAccountRole';
 
-const controller: FastifyPluginAsync = async (fastify) => {
+const controller: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db } = fastify;
   const fileService = resolveDependency(FileService);
   const memberService = resolveDependency(MemberService);
@@ -63,7 +60,7 @@ const controller: FastifyPluginAsync = async (fastify) => {
   );
 
   // get current member storage files metadata
-  fastify.get<{ Querystring: Pagination }>(
+  fastify.get(
     '/current/storage/files',
     { schema: getStorageFiles, preHandler: [isAuthenticated, matchOne(memberAccountRole)] },
     async ({ user, query: { page, pageSize } }, reply) => {
@@ -91,7 +88,7 @@ const controller: FastifyPluginAsync = async (fastify) => {
 
   // get member
   // PUBLIC ENDPOINT
-  fastify.get<{ Params: IdParam }>(
+  fastify.get(
     '/:id',
     { schema: getOne, preHandler: optionalIsAuthenticated },
     async ({ params: { id } }) => {
@@ -101,7 +98,7 @@ const controller: FastifyPluginAsync = async (fastify) => {
 
   // get members
   // PUBLIC ENDPOINT
-  fastify.get<{ Querystring: IdsParams }>(
+  fastify.get(
     '/',
     {
       schema: getMany,
@@ -114,7 +111,7 @@ const controller: FastifyPluginAsync = async (fastify) => {
 
   // get members by
   // PUBLIC ENDPOINT
-  fastify.get<{ Querystring: { email: string[] } }>(
+  fastify.get(
     '/search',
     {
       schema: getManyBy,
@@ -129,7 +126,7 @@ const controller: FastifyPluginAsync = async (fastify) => {
    * @deprecated use PATCH /members/current instead
    */
   // update member
-  fastify.patch<{ Params: IdParam; Body: Partial<Member> }>(
+  fastify.patch(
     '/:id',
     { schema: updateOne, preHandler: isAuthenticated },
     async ({ user, params: { id }, body }) => {
@@ -147,7 +144,7 @@ const controller: FastifyPluginAsync = async (fastify) => {
   );
 
   // update current member
-  fastify.patch<{ Body: Partial<Member> }>(
+  fastify.patch(
     '/current',
     { schema: updateCurrent, preHandler: isAuthenticated },
     async ({ user, body }) => {
@@ -177,7 +174,7 @@ const controller: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  fastify.post<{ Body: { email: string } }>(
+  fastify.post(
     '/current/email/change',
     { schema: postChangeEmail, preHandler: [isAuthenticated, matchOne(memberAccountRole)] },
     async ({ user, body: { email } }, reply) => {

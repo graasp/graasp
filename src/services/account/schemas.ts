@@ -8,7 +8,7 @@ const accountSchema = Type.Object(
   {
     // Object Definition
     id: customType.UUID(),
-    name: Type.String(),
+    name: customType.Username(),
   },
   {
     // Schema Options
