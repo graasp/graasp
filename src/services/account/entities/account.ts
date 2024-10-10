@@ -36,7 +36,7 @@ export class Account extends BaseEntity {
   @Column({
     nullable: true,
     name: 'last_authenticated_at',
-    type: 'date',
+    type: 'timestamp',
   })
   lastAuthenticatedAt: Date;
 
@@ -44,7 +44,7 @@ export class Account extends BaseEntity {
     update: false,
     name: 'created_at',
     nullable: false,
-    type: 'date',
+    type: 'timestamp',
   })
   createdAt: Date;
 
@@ -52,7 +52,7 @@ export class Account extends BaseEntity {
     update: false,
     name: 'updated_at',
     nullable: false,
-    type: 'date',
+    type: 'timestamp',
   })
   updatedAt: Date;
 }

@@ -21,7 +21,7 @@
     "test": "jest --forceExit --verbose --runInBand",
     "test:ci": "jest --forceExit --verbose --coverage --silent --maxWorkers=2",
     "test:watch": "yarn test --watchAll",
-    "test:vitest": "vitest",
+    "test:vitest": "yarn vitest",
     "build-ts": "tsc -p tsconfig.build.json",
     "watch-ts": "tsc -w -p tsconfig.build.json",
     "type-check": "tsc --noEmit",
