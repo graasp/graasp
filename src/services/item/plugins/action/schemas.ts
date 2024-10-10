@@ -1,4 +1,4 @@
-import { S } from 'fluent-json-schema';
+import { Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
 import { FastifySchema } from 'fastify';
@@ -11,132 +11,75 @@ import {
   ExportActionsFormatting,
 } from '@graasp/sdk';
 
-import { idParam } from '../../../../schemas/fluent-schema';
+import { customType } from '../../../../plugins/typebox';
 import { entityIdSchemaRef } from '../../../../schemas/global';
 import {
   MAX_ACTIONS_SAMPLE_SIZE,
   MIN_ACTIONS_SAMPLE_SIZE,
 } from '../../../action/constants/constants';
-import { item } from '../../schema';
-
-// todo: complete schema
-export const baseAnalytics = S.object()
-  .prop('actions', S.array())
-  .prop('descendants', S.array().items(item))
-  .prop('item', item)
-  .prop('itemMemberships', S.array())
-  .prop('members', S.array())
-  .prop(
-    'apps',
-    S.object()
-      .additionalProperties(false)
-      .prop('actions', S.array())
-      .prop('settings', S.array())
-      .prop('data', S.array()),
-  )
-  .prop('metadata', S.object())
-  .required(['item', 'actions', 'itemMemberships', 'members', 'metadata', 'apps']);
+import { ItemActionType } from './utils';
 
 // schema for getting item analytics with view and requestedSampleSize query parameters
 export const getItemActions = {
-  params: idParam,
-  querystring: {
-    type: 'object',
-    properties: {
-      requestedSampleSize: {
-        type: 'number',
+  params: entityIdSchemaRef,
+  querystring: Type.Object(
+    {
+      requestedSampleSize: Type.Number({
         minimum: MIN_ACTIONS_SAMPLE_SIZE,
         maximum: MAX_ACTIONS_SAMPLE_SIZE,
-      },
-      view: {
-        type: 'string',
-      },
-      startDate: {
-        type: 'string',
-        format: 'date-time',
-      },
-      endDate: {
-        type: 'string',
-        format: 'date-time',
-      },
+      }),
+      view: Type.String(),
+      startDate: Type.Optional(Type.String({ format: 'date-time' })),
+      endDate: Type.Optional(Type.String({ format: 'date-time' })),
     },
-    required: ['view', 'requestedSampleSize'],
-  },
-};
+    { additionalProperties: false },
+  ),
+} as const satisfies FastifySchema;
 
 // schema for getting aggregation of actions
 export const getAggregateActions = {
-  params: idParam,
-  querystring: {
-    type: 'object',
-    properties: {
-      requestedSampleSize: {
-        type: 'number',
+  params: entityIdSchemaRef,
+  querystring: Type.Object(
+    {
+      requestedSampleSize: Type.Number({
         minimum: MIN_ACTIONS_SAMPLE_SIZE,
         maximum: MAX_ACTIONS_SAMPLE_SIZE,
-      },
-      view: {
-        type: 'string',
-      },
-      type: {
-        type: 'array',
-        items: { type: 'string' },
-      },
-      countGroupBy: {
-        type: 'array',
-        items: {
-          type: 'string',
-          enum: Object.values(CountGroupBy),
-        },
-      },
-      aggregateFunction: {
-        type: 'string',
-        enum: Object.values(AggregateFunction),
-      },
-      aggregateMetric: {
-        type: 'string',
-        enum: Object.values(AggregateMetric),
-      },
-      aggregateBy: {
-        type: 'array',
-        items: {
-          type: 'string',
-          enum: Object.values(AggregateBy),
-        },
-      },
-      startDate: { type: 'string', format: 'date-time' },
-      endDate: { type: 'string', format: 'date-time' },
+      }),
+      view: Type.String(),
+      type: Type.Optional(Type.Array(Type.String())),
+      countGroupBy: Type.Array(Type.Enum(CountGroupBy)),
+      aggregateFunction: Type.Enum(AggregateFunction),
+      aggregateMetric: Type.Enum(AggregateMetric),
+      aggregateBy: Type.Optional(Type.Array(Type.Enum(AggregateBy))),
+      startDate: Type.Optional(Type.String({ format: 'date-time' })),
+      endDate: Type.Optional(Type.String({ format: 'date-time' })),
     },
-    required: [
-      'view',
-      'requestedSampleSize',
-      'countGroupBy',
-      'aggregateFunction',
-      'aggregateMetric',
-    ],
-  },
+    { additionalProperties: false },
+  ),
   response: {
-    200: {
-      type: 'array',
-      items: {
-        type: 'object',
-        additionalProperties: true,
-        properties: {
-          aggregateResult: { type: 'number' },
+    [StatusCodes.OK]: Type.Array(
+      Type.Object(
+        {
+          aggregateResult: Type.Number(),
+          createdTimeOfDay: Type.Optional(Type.String()),
+          actionType: Type.Optional(Type.Enum(ItemActionType)),
+          createdDay: Type.Optional(customType.DateTime()),
         },
-        required: ['aggregateResult'],
-      },
-    },
+        { additionalProperties: false },
+      ),
+    ),
   },
-};
+} as const satisfies FastifySchema;
 
-export const exportAction: FastifySchema = {
-  params: idParam,
-  querystring: S.object().prop('format', S.enum(Object.values(ExportActionsFormatting))),
+export const exportAction = {
+  params: entityIdSchemaRef,
+  querystring: Type.Partial(
+    Type.Object({ format: Type.Enum(ExportActionsFormatting) }, { additionalProperties: false }),
+  ),
   response: {
-    [StatusCodes.NO_CONTENT]: {},
+    [StatusCodes.NO_CONTENT]: Type.Null(),
   },
-};
+} as const satisfies FastifySchema;
 
 export const memberSchema = {
   // copy of member's schema
@@ -161,15 +104,14 @@ export const memberSchemaForAnalytics = {
 
 export const postAction = {
   params: entityIdSchemaRef,
-  body: {
-    type: 'object',
-    properties: {
-      type: { type: 'string' },
-      extra: { type: 'object' },
+  body: Type.Object(
+    {
+      type: Type.String(),
+      extra: Type.Optional(Type.Object({}, { additionalProperties: true })),
     },
-    required: ['type'],
-  },
+    { additionalProperties: false },
+  ),
   response: {
-    200: {},
+    [StatusCodes.OK]: {},
   },
-};
+} as const satisfies FastifySchema;

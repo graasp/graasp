@@ -1,7 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
-import { MultiSearchParams } from 'meilisearch';
 
-import { FastifyPluginAsync } from 'fastify';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { ActionTriggers } from '@graasp/sdk';
 
@@ -21,11 +20,11 @@ export type SearchFields = {
   creator?: string;
 };
 
-const plugin: FastifyPluginAsync = async (fastify) => {
+const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const searchService = resolveDependency(SearchService);
   const actionService = resolveDependency(ActionService);
 
-  fastify.post<{ Body: MultiSearchParams }>(
+  fastify.post(
     '/collections/search',
     { preHandler: optionalIsAuthenticated, schema: search },
     async (request) => {

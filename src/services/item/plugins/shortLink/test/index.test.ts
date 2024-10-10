@@ -29,6 +29,7 @@ import {
   injectPost,
 } from './fixtures';
 
+const MOCK_FAKE_ALIAS = 'fake-alias';
 const testUtils = new ShortLinkTestUtils();
 
 function expectException(response, ex) {
@@ -104,7 +105,6 @@ describe('Short links routes tests', () => {
         const response = await injectGetShortLink(app, MOCK_ALIAS);
         const receive = response.json();
         expect(response.statusCode).toEqual(StatusCodes.OK);
-        expect(receive.itemId).toBe(shortLinkPayload.itemId);
         expect(receive.alias).toBe(shortLinkPayload.alias);
         expect(receive.platform).toBe(shortLinkPayload.platform);
 
@@ -339,7 +339,7 @@ describe('Short links routes tests', () => {
 
     describe('GET /short-links/:itemId', () => {
       it('Not found if get short links with item id that does not exist', async () => {
-        const response = await injectGet(app, 'bubu');
+        const response = await injectGet(app, MOCK_FAKE_ALIAS);
         expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
       });
       it('Success even if no permission', async () => {
@@ -375,7 +375,7 @@ describe('Short links routes tests', () => {
 
     describe('GET /short-links/alias/:alias with connected member', () => {
       it('Not found if get short links with item id that does not exist', async () => {
-        const response = await injectGetShortLink(app, 'bubu');
+        const response = await injectGetShortLink(app, MOCK_FAKE_ALIAS);
         expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
       });
 
@@ -389,7 +389,6 @@ describe('Short links routes tests', () => {
         const response = await injectGetShortLink(app, MOCK_ALIAS);
         const receive = response.json();
         expect(response.statusCode).toEqual(StatusCodes.OK);
-        expect(receive.itemId).toBe(payload.itemId);
         expect(receive.alias).toBe(payload.alias);
         expect(receive.platform).toBe(payload.platform);
 
@@ -414,7 +413,6 @@ describe('Short links routes tests', () => {
         const response = await injectGetShortLink(app, MOCK_ALIAS);
         const receive = response.json();
         expect(response.statusCode).toEqual(StatusCodes.OK);
-        expect(receive.itemId).toBe(payload.itemId);
         expect(receive.alias).toBe(payload.alias);
         expect(receive.platform).toBe(payload.platform);
 

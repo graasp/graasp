@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 import nock from 'nock';
-import { v4 } from 'uuid';
+import { v4 as uuid, v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
@@ -655,17 +655,20 @@ describe('Item Geolocation', () => {
       });
 
       it('get address from search', async () => {
+        const id1 = uuid();
+        const id2 = uuid();
+
         if (GEOLOCATION_API_HOST) {
           nock(GEOLOCATION_API_HOST)
             .get('/search')
             .query(true)
             .reply(200, {
               results: [
-                { formatted: 'address', country_code: 'country', place_id: 'id', lat: 45, lon: 23 },
+                { formatted: 'address', country_code: 'country', place_id: id1, lat: 45, lon: 23 },
                 {
                   formatted: 'address1',
                   country_code: 'country1',
-                  place_id: 'id1',
+                  place_id: id2,
                   lat: 23,
                   lon: 12,
                 },
@@ -681,18 +684,19 @@ describe('Item Geolocation', () => {
           },
         });
 
+        expect(res.statusCode).toBe(StatusCodes.OK);
         expect(res.json()).toMatchObject([
           {
             addressLabel: 'address',
             country: 'country',
             lat: 45,
             lng: 23,
-            id: 'id',
+            id: id1,
           },
           {
             addressLabel: 'address1',
             country: 'country1',
-            id: 'id1',
+            id: id2,
             lat: 23,
             lng: 12,
           },

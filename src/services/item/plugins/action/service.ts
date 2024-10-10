@@ -102,7 +102,7 @@ export class ActionItemService {
       startDate?: string;
       endDate?: string;
     },
-  ): Promise<unknown[]> {
+  ) {
     // check rights
     const item = await this.itemService.get(
       actor,

@@ -5,6 +5,7 @@ import { ItemTagType, MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { UUID_REGEX, errorSchemaRef } from '../../../../schemas/global';
+import { nullableMemberSchemaRef } from '../../../member/schemas';
 import { itemIdSchemaRef, itemTagSchemaRef } from '../../schema';
 
 export const tagSchemaRef = registerSchemaAsRef(
@@ -27,15 +28,26 @@ export const tagSchemaRef = registerSchemaAsRef(
 
 // schema for creating an item tag
 const create = {
-  params: {
-    type: 'object',
-    properties: {
+  params: Type.Object(
+    {
       itemId: customType.UUID(),
       type: Type.Enum(ItemTagType),
     },
-  },
+    { additionalProperties: false },
+  ),
   response: {
-    [StatusCodes.CREATED]: itemTagSchemaRef,
+    [StatusCodes.CREATED]: Type.Object(
+      {
+        id: customType.UUID(),
+        type: Type.Enum(ItemTagType),
+        item: Type.Object({ path: Type.String() }),
+        creator: Type.Optional(nullableMemberSchemaRef),
+        createdAt: customType.DateTime(),
+      },
+      {
+        additionalProperties: false,
+      },
+    ),
   },
 };
 
@@ -56,30 +68,25 @@ const getMany = {
     }),
   }),
   response: {
-    [StatusCodes.OK]: {
-      type: 'object',
-      properties: {
-        data: {
-          type: 'object',
-          patternProperties: {
-            [UUID_REGEX]: Type.Array(itemTagSchemaRef),
-          },
-        },
+    [StatusCodes.OK]: Type.Object(
+      {
+        data: Type.Record(Type.String({ pattern: UUID_REGEX }), Type.Array(itemTagSchemaRef)),
         errors: Type.Array(errorSchemaRef),
       },
-    },
+      { additionalProperties: false },
+    ),
   },
 };
 
 // schema for deleting an item tag
 const deleteOne = {
-  params: {
-    type: 'object',
-    properties: {
+  params: Type.Object(
+    {
       itemId: customType.UUID(),
       type: Type.Enum(ItemTagType),
     },
-  },
+    { additionalProperties: false },
+  ),
   response: {
     [StatusCodes.OK]: Type.Object({ item: Type.Object({ path: Type.String() }) }),
   },

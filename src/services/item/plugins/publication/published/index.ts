@@ -1,6 +1,6 @@
-import { FastifyPluginAsync } from 'fastify';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { PermissionLevel, UUID } from '@graasp/sdk';
+import { PermissionLevel } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../di/utils';
 import { asDefined } from '../../../../../utils/assertions';
@@ -23,7 +23,7 @@ import {
 } from './schemas';
 import { ItemPublishedService } from './service';
 
-const plugin: FastifyPluginAsync = async (fastify) => {
+const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db } = fastify;
   const itemPublishedService = resolveDependency(ItemPublishedService);
   const publicationService = resolveDependency(PublicationService);
@@ -31,7 +31,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.register(graaspSearchPlugin);
 
-  fastify.get<{ Params: { memberId: UUID } }>(
+  fastify.get(
     '/collections/members/:memberId',
     {
       schema: getCollectionsForMember,
@@ -42,7 +42,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  fastify.get<{ Params: { itemId: string } }>(
+  fastify.get(
     '/collections/:itemId/informations',
     {
       preHandler: optionalIsAuthenticated,
@@ -53,7 +53,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  fastify.get<{ Querystring: { itemId: string[] } }>(
+  fastify.get(
     '/collections/informations',
     {
       preHandler: optionalIsAuthenticated,
@@ -64,7 +64,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  fastify.get<{ Querystring: { limit?: number } }>(
+  fastify.get(
     '/collections/liked',
     {
       preHandler: optionalIsAuthenticated,
@@ -75,7 +75,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  fastify.post<{ Params: { itemId: string } }>(
+  fastify.post(
     '/collections/:itemId/publish',
     {
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
@@ -100,7 +100,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  fastify.delete<{ Params: { itemId: string } }>(
+  fastify.delete(
     '/collections/:itemId/unpublish',
     {
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
@@ -115,7 +115,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  fastify.get<{ Querystring: { limit?: number } }>(
+  fastify.get(
     '/collections/recent',
     {
       preHandler: optionalIsAuthenticated,
