@@ -42,7 +42,7 @@ export class AuthService {
     const domain = challenge ? MOBILE_AUTH_URL : PUBLIC_URL;
     const destination = new URL('/auth', domain);
     destination.searchParams.set(SHORT_TOKEN_PARAM, token);
-    destination.searchParams.set('url', encodeURIComponent(redirectionUrl));
+    destination.searchParams.set('url', redirectionUrl);
     const link = destination.toString();
 
     const lang = member.lang;
@@ -86,7 +86,7 @@ export class AuthService {
     const domain = challenge ? MOBILE_AUTH_URL : PUBLIC_URL;
     const destination = new URL('/auth', domain);
     destination.searchParams.set(SHORT_TOKEN_PARAM, token);
-    destination.searchParams.set('url', encodeURIComponent(redirectionUrl));
+    destination.searchParams.set('url', redirectionUrl);
     const link = destination.toString();
 
     const memberLang = member.lang ?? lang;

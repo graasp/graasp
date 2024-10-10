@@ -573,6 +573,7 @@ describe('Mobile Endpoints', () => {
       expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
     });
   });
+
   describe('Complete Authentication Process', () => {
     let verifier;
     let challenge;
