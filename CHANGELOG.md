@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.53.1](https://github.com/graasp/graasp/compare/v1.53.0...v1.53.1) (2024-10-10)
+
+
+### Bug Fixes
+
+* register double encoding uri component ([#1492](https://github.com/graasp/graasp/issues/1492)) ([9585040](https://github.com/graasp/graasp/commit/958504077808128a5a6d24fe181fc6aec207eba7))
+* remove dependency to fix deploy ([#1499](https://github.com/graasp/graasp/issues/1499)) ([782483d](https://github.com/graasp/graasp/commit/782483d8a93f137e218162cc50487db87a76bf61))
+* save membership on item login schema item on item login ([#1467](https://github.com/graasp/graasp/issues/1467)) ([6def707](https://github.com/graasp/graasp/commit/6def707491f8dd06a9b08b1b3dfd4bab97e0f7b5))
+
 ## [1.53.0](https://github.com/graasp/graasp/compare/v1.52.0...v1.53.0) (2024-10-09)
 
 
