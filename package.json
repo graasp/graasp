@@ -170,5 +170,8 @@
     "typescript": "5.5.4",
     "wait-for-expect": "3.0.2"
   },
+  "resolutions": {
+    "sodium-native": "4.1.1"
+  },
   "packageManager": "yarn@4.5.0"
 }
