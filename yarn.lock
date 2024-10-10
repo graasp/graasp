@@ -7292,7 +7292,7 @@ __metadata:
     node-fetch: "npm:2"
     nodemailer: "npm:6.9.14"
     nodemon: "npm:3.1.4"
-    openai: "npm:4.67.2"
+    openai: "npm:4.67.3"
     papaparse: "npm:^5.4.1"
     passport-custom: "npm:1.1.1"
     passport-jwt: "npm:4.0.1"
@@ -9965,9 +9965,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:4.67.2":
-  version: 4.67.2
-  resolution: "openai@npm:4.67.2"
+"openai@npm:4.67.3":
+  version: 4.67.3
+  resolution: "openai@npm:4.67.3"
   dependencies:
     "@types/node": "npm:^18.11.18"
     "@types/node-fetch": "npm:^2.6.4"
@@ -9983,7 +9983,7 @@ __metadata:
       optional: true
   bin:
     openai: bin/cli
-  checksum: 10/ccdfb74c56f1072d4aea097ff79ea219b6fbae4e1421397431389a25a831cf8c63d0e099b6663c1f50a46352b67773f6d1d484a86b8cda2ce054c02efe1f9413
+  checksum: 10/fcb07a80a9e08a52aaa1fd014764b39ca956bfdecea0c1b3e430b258e8e53ff886ead0ae362f2a5c4af5786cdad5d3713234cf5870243c348c53ea4a2510549b
   languageName: node
   linkType: hard
 
