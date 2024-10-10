@@ -60,7 +60,7 @@ services:
 
   db:
     container_name: graasp-postgres
-    image: postgres:15
+    image: postgres:17
     restart: on-failure
     ports:
       - 5432:5432
@@ -75,7 +75,7 @@ services:
 
   test-db:
     container_name: graasp-postgres-test
-    image: postgres:15
+    image: postgres:17
     restart: on-failure
     ports:
       - 5434:5432
@@ -119,7 +119,7 @@ services:
 
   etherpad-db:
     container_name: graasp-postgres-etherpad
-    image: postgres:15
+    image: postgres:17
     restart: on-failure
     # not strictly necessary to expose these ports outside the container
     # ports:
