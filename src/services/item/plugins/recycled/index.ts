@@ -1,9 +1,8 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifyPluginAsync } from 'fastify';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../di/utils';
-import { IdParam, IdsParams } from '../../../../types';
 import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
@@ -15,7 +14,7 @@ import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from 
 import { getRecycledItemDatas, recycleOrRestoreMany } from './schemas';
 import { RecycledBinService } from './service';
 
-const plugin: FastifyPluginAsync = async (fastify) => {
+const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db, websockets } = fastify;
 
   const recycleBinService = resolveDependency(RecycledBinService);
@@ -27,7 +26,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // API endpoints
 
   // get own recycled items data
-  fastify.get<{ Params: IdParam }>(
+  fastify.get(
     '/recycled',
     { schema: getRecycledItemDatas, preHandler: [isAuthenticated, matchOne(memberAccountRole)] },
     async ({ user }) => {
@@ -39,7 +38,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // recycle multiple items
-  fastify.post<{ Querystring: IdsParams }>(
+  fastify.post(
     '/recycle',
     {
       schema: recycleOrRestoreMany,
@@ -76,7 +75,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // restore multiple items
-  fastify.post<{ Querystring: IdsParams }>(
+  fastify.post(
     '/restore',
     {
       schema: recycleOrRestoreMany,

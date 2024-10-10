@@ -1,9 +1,10 @@
 import { fastifyCors } from '@fastify/cors';
-import { FastifyPluginAsync } from 'fastify';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { AppIdentification, AuthTokenSubject } from '@graasp/sdk';
+import { AuthTokenSubject } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
+import { FastifyInstanceTypebox } from '../../../../plugins/typebox';
 import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import {
@@ -22,7 +23,7 @@ import { generateToken, getContext, getMany, getMostUsed } from './schemas';
 import { AppService } from './service';
 import { AppsPluginOptions } from './types';
 
-const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) => {
+const plugin: FastifyPluginAsyncTypebox<AppsPluginOptions> = async (fastify, options) => {
   const { jwtSecret, jwtExpiration = DEFAULT_JWT_EXPIRATION, publisherId } = options;
 
   if (!jwtSecret) {
@@ -43,7 +44,7 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
   const appService = new AppService(itemService, jwtExpiration);
 
   // API endpoints
-  fastify.register(async function (fastify) {
+  fastify.register(async function (fastify: FastifyInstanceTypebox) {
     // add CORS support that allows graasp's origin(s) + app publishers' origins.
     // TODO: not perfect because it's allowing apps' origins to call "/<id>/api-access-token",
     // even though they would not be able to fulfill the request because they need the
@@ -59,7 +60,7 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
       );
     }
 
-    fastify.register(async function (fastify) {
+    fastify.register(async function (fastify: FastifyInstanceTypebox) {
       // get all apps
       fastify.get('/list', { schema: getMany }, async () => {
         return appService.getAllApps(buildRepositories(), publisherId);
@@ -75,7 +76,7 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
       );
 
       // generate api access token for member + (app-)item.
-      fastify.post<{ Params: { itemId: string }; Body: { origin: string } & AppIdentification }>(
+      fastify.post(
         '/:itemId/api-access-token',
         { schema: generateToken, preHandler: optionalIsAuthenticated },
         async (request) => {
@@ -113,9 +114,9 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
       // });
     });
 
-    fastify.register(async function (fastify) {
+    fastify.register(async function (fastify: FastifyInstanceTypebox) {
       // get app item context
-      fastify.get<{ Params: { itemId: string } }>(
+      fastify.get(
         '/:itemId/context',
         { schema: getContext, preHandler: guestAuthenticateAppsJWT },
         async ({ user, params: { itemId } }) => {

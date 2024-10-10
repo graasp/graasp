@@ -1,20 +1,11 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifyPluginAsync } from 'fastify';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import fp from 'fastify-plugin';
 
-import {
-  AggregateBy,
-  AggregateFunction,
-  AggregateMetric,
-  Context,
-  CountGroupBy,
-  ExportActionsFormatting,
-  FileItemType,
-} from '@graasp/sdk';
+import { ExportActionsFormatting, FileItemType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
-import { IdParam } from '../../../../types';
 import { asDefined } from '../../../../utils/assertions';
 import { CLIENT_HOSTS } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
@@ -40,7 +31,7 @@ export interface GraaspActionsOptions {
   fileConfigurations: { s3: S3FileConfiguration; local: LocalFileConfiguration };
 }
 
-const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
+const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) => {
   const { db, websockets } = fastify;
 
   const itemService = resolveDependency(ItemService);
@@ -51,15 +42,7 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
   const allowedOrigins = Object.values(CLIENT_HOSTS).map(({ url }) => url.origin);
 
   // get actions and more data matching the given `id`
-  fastify.get<{
-    Params: IdParam;
-    Querystring: {
-      requestedSampleSize?: number;
-      view?: Context;
-      startDate?: string;
-      endDate?: string;
-    };
-  }>(
+  fastify.get(
     '/:id/actions',
     {
       schema: getItemActions,
@@ -77,20 +60,7 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
   );
 
   // get actions aggregate data matching the given `id`
-  fastify.get<{
-    Params: IdParam;
-    Querystring: {
-      requestedSampleSize: number;
-      view: Context;
-      type?: string[];
-      countGroupBy: CountGroupBy[];
-      aggregateFunction: AggregateFunction;
-      aggregateMetric: AggregateMetric;
-      aggregateBy?: AggregateBy[];
-      startDate?: string;
-      endDate?: string;
-    };
-  }>(
+  fastify.get(
     '/:id/actions/aggregation',
     {
       schema: getAggregateActions,
@@ -114,7 +84,7 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
     },
   );
 
-  fastify.post<{ Params: IdParam; Body: { type: string; extra?: { [key: string]: unknown } } }>(
+  fastify.post(
     '/:id/actions',
     {
       schema: postAction,
@@ -151,9 +121,12 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
   );
 
   // export actions matching the given `id`
-  fastify.post<{ Params: IdParam; Querystring: { format?: ExportActionsFormatting } }>(
+  fastify.post(
     '/:id/actions/export',
-    { schema: exportAction, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
+    {
+      schema: exportAction,
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
+    },
     async (request, reply) => {
       const {
         user,

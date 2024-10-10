@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 import { default as sanitize } from 'sanitize-filename';
 
 import { fastifyMultipart } from '@fastify/multipart';
-import { FastifyPluginAsync } from 'fastify';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { ActionTriggers, ItemType, MAX_ZIP_FILE_SIZE } from '@graasp/sdk';
 
@@ -26,7 +26,7 @@ function encodeFilename(name: string) {
   return encodeURI(sanitize(name, { replacement: '_' }));
 }
 
-const plugin: FastifyPluginAsync = async (fastify) => {
+const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const log = resolveDependency(BaseLogger);
   const itemService = resolveDependency(ItemService);
   const actionService = resolveDependency(ActionService);
@@ -43,7 +43,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   });
 
-  fastify.post<{ Querystring: { parentId?: string } }>(
+  fastify.post(
     '/zip-import',
     { schema: zipImport, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async (request, reply) => {
@@ -88,12 +88,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // download item
-  fastify.route<{ Params: { itemId: string } }>({
-    method: 'GET',
-    url: '/:itemId/export',
-    schema: zipExport,
-    preHandler: optionalIsAuthenticated,
-    handler: async (request, reply) => {
+  fastify.get(
+    '/:itemId/export',
+    {
+      schema: zipExport,
+      preHandler: optionalIsAuthenticated,
+    },
+    async (request, reply) => {
       const {
         user,
         params: { itemId },
@@ -151,7 +152,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       reply.type('application/octet-stream');
       return archiveStream.outputStream;
     },
-  });
+  );
 };
 
 export default plugin;

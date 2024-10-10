@@ -154,7 +154,7 @@ export class ActionRepository extends AbstractRepository<Action> {
       aggregateMetric: AggregateMetric;
       aggregateBy?: AggregateBy[];
     },
-  ): Promise<unknown[]> {
+  ) {
     // verify parameters
     validateAggregationParameters({ countGroupBy, aggregationParams });
 

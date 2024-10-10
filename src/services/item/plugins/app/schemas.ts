@@ -62,20 +62,17 @@ export const mostUsedAppSchemaRef = registerSchemaAsRef(
 
 export const generateToken = {
   params: itemIdSchemaRef,
-  body: {
-    type: 'object',
-    required: ['key', 'origin'],
-    properties: {
+  body: Type.Object(
+    {
       key: customType.UUID(),
-      origin: { type: 'string', format: 'url' },
+      origin: Type.String({ format: 'url' }),
     },
-    additionalProperties: false,
-  },
+    {
+      additionalProperties: false,
+    },
+  ),
   response: {
-    200: {
-      type: 'object',
-      properties: { token: { type: 'string' } },
-    },
+    [StatusCodes.OK]: Type.Object({ token: Type.String() }),
   },
 } as const satisfies FastifySchema;
 

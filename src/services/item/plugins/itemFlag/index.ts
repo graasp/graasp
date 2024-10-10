@@ -1,6 +1,4 @@
-import { FastifyPluginAsync } from 'fastify';
-
-import { FlagType } from '@graasp/sdk';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../di/utils';
 import { asDefined } from '../../../../utils/assertions';
@@ -12,7 +10,7 @@ import { validatedMemberAccountRole } from '../../../member/strategies/validated
 import { create, getFlagTypes } from './schemas';
 import { ItemFlagService } from './service';
 
-const plugin: FastifyPluginAsync = async (fastify) => {
+const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db } = fastify;
 
   const itemFlagService = resolveDependency(ItemFlagService);
@@ -23,7 +21,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   });
 
   // create item flag
-  fastify.post<{ Params: { itemId: string }; Body: { type: FlagType } }>(
+  fastify.post(
     '/:itemId/flags',
     {
       schema: create,

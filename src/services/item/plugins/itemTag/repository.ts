@@ -3,6 +3,7 @@ import { Brackets, EntityManager } from 'typeorm';
 import { ItemTagType, ResultOf, getChildFromPath } from '@graasp/sdk';
 
 import { AbstractRepository } from '../../../../repositories/AbstractRepository';
+import { EntryNotFoundAfterInsertException } from '../../../../repositories/errors';
 import { AncestorOf } from '../../../../utils/typeorm/treeOperators';
 import { Member } from '../../../member/entities/member';
 import { mapById } from '../../../utils';
@@ -180,7 +181,11 @@ export class ItemTagRepository extends AbstractRepository<ItemTag> {
 
     const entry = { item: { path: item.path }, type, creator };
     const created = await this.repository.insert(entry);
-    return this.repository.findOneBy({ id: created.identifiers[0].id });
+    const result = await this.repository.findOneBy({ id: created.identifiers[0].id });
+    if (!result) {
+      throw new EntryNotFoundAfterInsertException(ItemTag);
+    }
+    return result;
   }
 
   /**

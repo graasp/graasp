@@ -9,44 +9,34 @@ import {
   GET_MOST_LIKED_ITEMS_MAXIMUM,
   GET_MOST_RECENT_ITEMS_MAXIMUM,
 } from '../../../../../utils/config';
+import { LIST_OF_UUID_V4_REGEX_PATTERN } from '../../../../../utils/constants';
 import { nullableMemberSchemaRef } from '../../../../member/schemas';
-import { itemSchemaRef, packedItemSchemaRef } from '../../../schema';
+import { itemIdSchemaRef, itemSchemaRef, packedItemSchemaRef } from '../../../schema';
 
-const publishEntry = {
-  type: 'object',
-  properties: {
-    id: { type: 'string' },
+const publishEntry = Type.Object(
+  {
+    id: customType.UUID(),
     item: itemSchemaRef,
     creator: nullableMemberSchemaRef,
-    createdAt: { type: 'string' },
+    createdAt: customType.DateTime(),
   },
-  additionalProperties: false,
-};
+  {
+    additionalProperties: false,
+  },
+);
 
-const publishEntryWithViews = {
-  type: 'object',
-  properties: {
-    id: { type: 'string' },
+const publishEntryWithViews = Type.Object(
+  {
+    id: customType.UUID(),
     item: itemSchemaRef,
     creator: nullableMemberSchemaRef,
-    createdAt: { type: 'string' },
-    totalViews: {
-      type: 'number',
-    },
+    createdAt: customType.DateTime(),
+    totalViews: Type.Number(),
   },
-  additionalProperties: false,
-};
-
-// the query string from frontend is in the form of ['A1,A2', 'B1', 'C1,C2,C3']
-// where A, B, C denote different category types, and 1, 2 denote different categories within same type
-// intersection between index
-// union in strings
-const concatenatedIds = {
-  type: 'string',
-  pattern:
-    '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}' +
-    '(,[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})*$',
-};
+  {
+    additionalProperties: false,
+  },
+);
 
 export const getCollections = {
   querystring: {
@@ -54,7 +44,9 @@ export const getCollections = {
     properties: {
       categoryId: {
         type: 'array',
-        items: concatenatedIds,
+        items: Type.String({
+          pattern: LIST_OF_UUID_V4_REGEX_PATTERN,
+        }),
         maxItems: MAX_TARGETS_FOR_READ_REQUEST,
       },
     },
@@ -66,16 +58,16 @@ export const getCollections = {
 };
 
 export const getRecentCollections = {
-  querystring: {
-    type: 'object',
-    properties: {
-      limit: {
-        type: 'number',
+  querystring: Type.Object(
+    {
+      limit: Type.Number({
         maximum: GET_MOST_RECENT_ITEMS_MAXIMUM,
         minimum: 1,
-      },
+        default: GET_MOST_RECENT_ITEMS_MAXIMUM,
+      }),
     },
-  },
+    { additionalProperties: false },
+  ),
 
   response: {
     [StatusCodes.OK]: Type.Array(itemSchemaRef),
@@ -83,30 +75,28 @@ export const getRecentCollections = {
 };
 
 export const getMostLikedItems = {
-  querystring: {
-    type: 'object',
-    properties: {
-      limit: {
-        type: 'number',
+  querystring: Type.Object(
+    {
+      limit: Type.Number({
         maximum: GET_MOST_LIKED_ITEMS_MAXIMUM,
         minimum: 1,
-      },
+        default: GET_MOST_LIKED_ITEMS_MAXIMUM,
+      }),
     },
-  },
-
+    { additionalProperties: false },
+  ),
   response: {
     [StatusCodes.OK]: Type.Array(itemSchemaRef),
   },
 };
 
 export const getCollectionsForMember = {
-  params: {
-    type: 'object',
-    properties: {
+  params: Type.Object(
+    {
       memberId: customType.UUID(),
     },
-    required: ['memberId'],
-  },
+    { additionalProperties: false },
+  ),
 
   response: {
     [StatusCodes.OK]: Type.Array(packedItemSchemaRef),
@@ -114,80 +104,45 @@ export const getCollectionsForMember = {
 };
 
 export const publishItem = {
-  params: {
-    type: 'object',
-    properties: {
-      itemId: customType.UUID(),
-    },
-    required: ['itemId'],
-  },
-
+  params: itemIdSchemaRef,
   response: {
-    200: publishEntry,
+    [StatusCodes.OK]: publishEntry,
   },
 };
 
 export const unpublishItem = {
-  params: {
-    type: 'object',
-    properties: {
-      itemId: customType.UUID(),
-    },
-    required: ['itemId'],
-  },
-
+  params: itemIdSchemaRef,
   response: {
-    200: publishEntry,
+    [StatusCodes.OK]: publishEntry,
   },
 };
 
 export const getInformations = {
-  params: {
-    type: 'object',
-    properties: {
-      itemId: customType.UUID(),
-    },
-    required: ['itemId'],
-  },
-
+  params: itemIdSchemaRef,
   response: {
-    200: {
-      ...publishEntryWithViews,
-      nullable: true,
-    },
+    [StatusCodes.OK]: customType.Nullable(publishEntryWithViews),
   },
 };
 
 export const getManyInformations = {
-  querystring: {
-    allOf: [
-      {
-        type: 'object',
-        required: ['itemId'],
-        properties: {
-          itemId: Type.Array(customType.UUID(), { uniqueItems: true }),
-        },
-        additionalProperties: false,
-      },
-      {
-        type: 'object',
-        properties: { itemId: { type: 'array', maxItems: MAX_TARGETS_FOR_READ_REQUEST } },
-      },
-    ],
-  },
-
+  querystring: Type.Object(
+    {
+      itemId: Type.Array(customType.UUID(), {
+        uniqueItems: true,
+        maxItems: MAX_TARGETS_FOR_READ_REQUEST,
+      }),
+    },
+    {
+      additionalProperties: false,
+    },
+  ),
   response: {
-    200: {
-      type: 'object',
-      properties: {
-        data: {
-          type: 'object',
-          patternProperties: {
-            [UUID_REGEX]: publishEntry,
-          },
-        },
+    [StatusCodes.OK]: Type.Object(
+      {
+        data: Type.Record(Type.String({ pattern: UUID_REGEX }), publishEntry),
         errors: Type.Array(errorSchemaRef),
       },
-    },
+      { additionalProperties: false },
+    ),
   },
 };

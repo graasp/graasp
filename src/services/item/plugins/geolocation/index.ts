@@ -10,8 +10,6 @@ import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/
 import { matchOne } from '../../../authorization';
 import { assertIsMember } from '../../../member/entities/member';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { Item } from '../../entities/Item';
-import { ItemGeolocation } from './ItemGeolocation';
 import {
   deleteGeolocation,
   geolocationReverse,
@@ -39,16 +37,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       },
     );
 
-    fastify.get<{
-      Querystring: {
-        parentItemId?: Item['id'];
-        lat1?: ItemGeolocation['lat'];
-        lat2?: ItemGeolocation['lat'];
-        lng1?: ItemGeolocation['lng'];
-        lng2?: ItemGeolocation['lng'];
-        keywords?: string[];
-      };
-    }>(
+    fastify.get(
       '/geolocation',
       {
         schema: getItemsInBox,
@@ -59,13 +48,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       },
     );
 
-    fastify.put<{
-      Body: {
-        geolocation: Pick<ItemGeolocation, 'lat' | 'lng'> &
-          Pick<Partial<ItemGeolocation>, 'addressLabel' | 'helperLabel'>;
-      };
-      Params: { id: Item['id'] };
-    }>(
+    fastify.put(
       '/:id/geolocation',
       {
         schema: putGeolocation,
@@ -86,7 +69,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       },
     );
 
-    fastify.delete<{ Params: { id: Item['id'] } }>(
+    fastify.delete(
       '/:id/geolocation',
       {
         schema: deleteGeolocation,
@@ -102,7 +85,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       },
     );
 
-    fastify.get<{ Querystring: Pick<ItemGeolocation, 'lat' | 'lng'> & { lang?: string } }>(
+    fastify.get(
       '/geolocation/reverse',
       {
         schema: geolocationReverse,
@@ -113,7 +96,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       },
     );
 
-    fastify.get<{ Querystring: { query: string } & { lang?: string } }>(
+    fastify.get(
       '/geolocation/search',
       {
         schema: geolocationSearch,

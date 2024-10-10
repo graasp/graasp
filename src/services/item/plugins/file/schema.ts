@@ -1,3 +1,4 @@
+import { Type } from '@sinclair/typebox';
 import { S } from 'fluent-json-schema';
 
 import { FileItemType } from '@graasp/sdk';
@@ -6,28 +7,25 @@ import { customType } from '../../../../plugins/typebox';
 import { entityIdSchemaRef } from '../../../../schemas/global';
 
 export const upload = {
-  querystring: {
-    type: 'object',
-    properties: {
-      id: customType.UUID(),
-      previousItemId: customType.UUID(),
-    },
-    additionalProperties: false,
-  },
+  querystring: Type.Partial(
+    Type.Object(
+      {
+        id: customType.UUID(),
+        previousItemId: customType.UUID(),
+      },
+      {
+        additionalProperties: false,
+      },
+    ),
+  ),
 };
 
 export const download = {
   params: entityIdSchemaRef,
-  querystring: {
-    type: 'object',
-    properties: {
-      replyUrl: {
-        type: 'boolean',
-        default: false,
-      },
-    },
-    additionalProperties: false,
-  },
+  querystring: Type.Object(
+    { replyUrl: Type.Boolean({ default: false }) },
+    { additionalProperties: false },
+  ),
 };
 
 export const updateSchema = (type: FileItemType) =>
