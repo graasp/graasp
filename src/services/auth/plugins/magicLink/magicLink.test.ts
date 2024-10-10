@@ -77,13 +77,8 @@ describe('Auth routes tests', () => {
       expect(m?.userAgreementsDate).toBeInstanceOf(Date);
 
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
-      expect(mockSendEmail).toHaveBeenCalledWith(
-        expect.anything(),
-        email,
-        expect.anything(),
-        expect.anything(),
-        expect.anything(),
-      );
+      expect(mockSendEmail).toHaveBeenCalledTimes(1);
+      expect(mockSendEmail.mock.calls[0][1]).toBe(email);
     });
 
     it('Sign Up successfully with given lang', async () => {
@@ -98,13 +93,8 @@ describe('Auth routes tests', () => {
         payload: { email, name, captcha: MOCK_CAPTCHA },
       });
 
-      expect(mockSendEmail).toHaveBeenCalledWith(
-        expect.anything(),
-        email,
-        expect.anything(),
-        expect.anything(),
-        expect.anything(),
-      );
+      expect(mockSendEmail).toHaveBeenCalledTimes(1);
+      expect(mockSendEmail.mock.calls[0][1]).toBe(email);
       const m = await memberRawRepository.findOneBy({ email, name });
       expectMember(m, { name, email, extra: { lang } });
       expect(m?.lastAuthenticatedAt).toBeNull();
@@ -143,13 +133,8 @@ describe('Auth routes tests', () => {
         payload: { email, name, captcha: MOCK_CAPTCHA, enableSaveActions },
       });
 
-      expect(mockSendEmail).toHaveBeenCalledWith(
-        expect.anything(),
-        email,
-        expect.anything(),
-        expect.anything(),
-        expect.anything(),
-      );
+      expect(mockSendEmail).toHaveBeenCalledTimes(1);
+      expect(mockSendEmail.mock.calls[0][1]).toBe(email);
       const m = await memberRawRepository.findOneBy({ email, name });
       expectMember(m, { name, email });
       expect(m?.enableSaveActions).toBe(enableSaveActions);
@@ -174,13 +159,8 @@ describe('Auth routes tests', () => {
         payload: { email, name, enableSaveActions, captcha: MOCK_CAPTCHA },
       });
 
-      expect(mockSendEmail).toHaveBeenCalledWith(
-        expect.anything(),
-        email,
-        expect.anything(),
-        expect.anything(),
-        expect.anything(),
-      );
+      expect(mockSendEmail).toHaveBeenCalledTimes(1);
+      expect(mockSendEmail.mock.calls[0][1]).toBe(email);
       const m = await memberRawRepository.findOneBy({ email, name });
       expectMember(m, { name, email });
       expect(m?.enableSaveActions).toBe(enableSaveActions);
@@ -204,13 +184,8 @@ describe('Auth routes tests', () => {
         payload: { ...member, captcha: MOCK_CAPTCHA },
       });
 
-      expect(mockSendEmail).toHaveBeenCalledWith(
-        expect.anything(),
-        member.email,
-        expect.anything(),
-        expect.anything(),
-        expect.anything(),
-      );
+      expect(mockSendEmail).toHaveBeenCalledTimes(1);
+      expect(mockSendEmail.mock.calls[0][1]).toBe(member.email);
 
       const members = await memberRawRepository.findBy({ email: member.email });
       expect(members).toHaveLength(1);
@@ -267,13 +242,8 @@ describe('Auth routes tests', () => {
         payload: { email: member.email, captcha: MOCK_CAPTCHA },
       });
 
-      expect(mockSendEmail).toHaveBeenCalledWith(
-        expect.anything(),
-        member.email,
-        expect.anything(),
-        expect.anything(),
-        expect.anything(),
-      );
+      expect(mockSendEmail).toHaveBeenCalledTimes(1);
+      expect(mockSendEmail.mock.calls[0][1]).toBe(member.email);
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
     });
 
@@ -287,13 +257,8 @@ describe('Auth routes tests', () => {
         payload: { email: member.email, captcha: MOCK_CAPTCHA },
       });
 
-      expect(mockSendEmail).toHaveBeenCalledWith(
-        expect.anything(),
-        member.email,
-        expect.anything(),
-        expect.anything(),
-        expect.anything(),
-      );
+      expect(mockSendEmail).toHaveBeenCalledTimes(1);
+      expect(mockSendEmail.mock.calls[0][1]).toBe(member.email);
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
     });
 

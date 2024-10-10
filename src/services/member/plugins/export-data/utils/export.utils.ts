@@ -5,6 +5,7 @@ import { singleton } from 'tsyringe';
 
 import { DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS } from '@graasp/sdk';
 
+import { MailBuilder } from '../../../../../plugins/mailer/builder';
 import { MAIL } from '../../../../../plugins/mailer/langs/constants';
 import { MailerService } from '../../../../../plugins/mailer/service';
 import { TMP_FOLDER } from '../../../../../utils/config';
@@ -159,7 +160,9 @@ export class ArchiveDataExporter {
     // Because we are mocking S3 in tests, the stream is never read and so, never closed.
     // Never closing the stream throws an error when trying to remove the ZIP folder in the tests.
     const onArchiveClosed = new Promise<{ archiveCreationTime: Date }>((resolve, reject) => {
-      const res = { archiveCreationTime: new Date(archive.timestamp.getTime()) };
+      const res = {
+        archiveCreationTime: new Date(archive.timestamp.getTime()),
+      };
 
       archivedFile.on('error', (err) => reject(err));
       archivedFile.on('close', async () => resolve(res));
@@ -202,22 +205,17 @@ export class RequestDataExportService {
       expiration: EXPORT_FILE_EXPIRATION,
     });
 
-    // factor out
-    const lang = actor.lang;
-    const t = this.mailerService.translate(lang);
+    const mail = new MailBuilder({
+      subject: { text: MAIL.EXPORT_MEMBER_DATA_TITLE },
+      lang: actor.lang,
+    })
+      .addText(MAIL.EXPORT_MEMBER_DATA_TEXT, {
+        days: DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS.toString(),
+      })
+      .addButton(MAIL.EXPORT_MEMBER_DATA_BUTTON_TEXT, link)
+      .build();
 
-    const text = t(MAIL.EXPORT_MEMBER_DATA_TEXT, {
-      days: DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS,
-    });
-    const html = `
-        ${this.mailerService.buildText(text)}
-        ${this.mailerService.buildButton(link, t(MAIL.EXPORT_MEMBER_DATA_BUTTON_TEXT))}
-      `;
-    const title = t(MAIL.EXPORT_MEMBER_DATA_TITLE);
-
-    const footer = this.mailerService.buildFooter(lang);
-
-    this.mailerService.sendEmail(title, actor.email, link, html, footer).catch((err) => {
+    this.mailerService.send(mail, actor.email).catch((err) => {
       console.debug(err, `mailerService failed. export zip link: ${link}`);
     });
   }

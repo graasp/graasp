@@ -9,6 +9,7 @@ import {
   UUID,
 } from '@graasp/sdk';
 
+import { MailBuilder } from '../../../../../plugins/mailer/builder';
 import { MAIL } from '../../../../../plugins/mailer/langs/constants';
 import { MailerService } from '../../../../../plugins/mailer/service';
 import { Repositories } from '../../../../../utils/repositories';
@@ -112,24 +113,24 @@ export class ActionRequestExportService {
       expiration: EXPORT_FILE_EXPIRATION,
     });
 
-    // factor out
-    const lang = actor.lang;
-    const t = this.mailerService.translate(lang);
+    const mail = new MailBuilder({
+      subject: {
+        text: MAIL.EXPORT_ACTIONS_TITLE,
+        translationVariables: {
+          itemName: item.name,
+        },
+      },
+      lang: actor.lang,
+    })
+      .addText(MAIL.EXPORT_ACTIONS_TEXT, {
+        itemName: item.name,
+        days: DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS.toString(),
+        exportFormat: format,
+      })
+      .addButton(MAIL.EXPORT_ACTIONS_BUTTON_TEXT, link)
+      .build();
 
-    const text = t(MAIL.EXPORT_ACTIONS_TEXT, {
-      itemName: item.name,
-      days: DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS,
-      exportFormat: format,
-    });
-    const html = `
-      ${this.mailerService.buildText(text)}
-      ${this.mailerService.buildButton(link, t(MAIL.EXPORT_ACTIONS_BUTTON_TEXT))}
-    `;
-    const title = t(MAIL.EXPORT_ACTIONS_TITLE, { itemName: item.name });
-
-    const footer = this.mailerService.buildFooter(lang);
-
-    this.mailerService.sendEmail(title, actor.email, link, html, footer).catch((err) => {
+    this.mailerService.send(mail, actor.email).catch((err) => {
       console.debug(err, `mailer failed. export zip link: ${link}`);
     });
   }
