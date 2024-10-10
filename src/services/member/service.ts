@@ -105,7 +105,9 @@ export class MemberService {
   }
 
   async refreshLastAuthenticatedAt(id: UUID, { memberRepository }: Repositories) {
-    return await memberRepository.patch(id, { lastAuthenticatedAt: new Date() });
+    return await memberRepository.patch(id, {
+      lastAuthenticatedAt: new Date(),
+    });
   }
   async validate(id: UUID, { memberRepository }: Repositories) {
     return await memberRepository.patch(id, { isValidated: true });
@@ -133,13 +135,12 @@ export class MemberService {
     const link = destination.toString();
 
     const mail = new MailBuilder({
-      subject: MAIL.CHANGE_EMAIL_TITLE,
-      translationVariables: {},
+      subject: { text: MAIL.CHANGE_EMAIL_TITLE },
       lang: lang,
     })
       .addText(MAIL.CHANGE_EMAIL_TEXT)
       .addButton(MAIL.CHANGE_EMAIL_BUTTON_TEXT, link)
-      .signUpNotRequested()
+      .addSignUpNotRequested()
       .build();
 
     // don't wait for mailer's response; log error and link if it fails.
@@ -150,11 +151,10 @@ export class MemberService {
 
   mailConfirmEmailChangeRequest(oldEmail: string, newEmail: string, lang: string) {
     const mail = new MailBuilder({
-      subject: MAIL.CONFIRM_CHANGE_EMAIL_TITLE,
-      translationVariables: { newEmail },
+      subject: { text: MAIL.CONFIRM_CHANGE_EMAIL_TITLE },
       lang: lang,
     })
-      .addText(MAIL.CONFIRM_CHANGE_EMAIL_TEXT)
+      .addText(MAIL.CONFIRM_CHANGE_EMAIL_TEXT, { newEmail })
       .build();
 
     // don't wait for mailer's response; log error and link if it fails.

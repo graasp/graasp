@@ -153,13 +153,12 @@ export class MemberPasswordService {
     const link = destination.toString();
 
     const mail = new MailBuilder({
-      subject: MAIL.RESET_PASSWORD_TITLE,
-      translationVariables: {},
-      lang: lang,
+      subject: { text: MAIL.RESET_PASSWORD_TITLE },
+      lang,
     })
       .addText(MAIL.CHANGE_EMAIL_TEXT)
       .addButton(MAIL.CHANGE_EMAIL_BUTTON_TEXT, link)
-      .signUpNotRequested()
+      .addSignUpNotRequested()
       .build();
 
     // don't wait for mailerService's response; log error and link if it fails.

@@ -1,9 +1,12 @@
+import { faker } from '@faker-js/faker';
+
 import { FastifyInstance } from 'fastify';
 
 import build, { clearDatabase } from '../../../../test/app';
 import { resolveDependency } from '../../../di/utils';
 import { MailBuilder } from '../builder';
 import { MAIL } from '../langs/constants';
+import enTranslations from '../langs/en.json';
 import { MailerService } from '../service';
 
 describe('Mailer', () => {
@@ -29,50 +32,50 @@ describe('Mailer', () => {
   });
 
   describe('MailBuilder', () => {
-    const email = 'toto@toto.com';
+    const email = faker.internet.email();
     const lang = 'fr';
-    const link = 'http//localhost:3000';
-    const itemName = 'specific item';
-    const memberName = 'respectedMember';
+    const link = faker.internet.url();
+    const itemName = faker.lorem.lines(1);
+    const memberName = faker.internet.userName();
 
     it('addButton generates button given link and text', () => {
       const link = 'mylink';
-      const text = 'mytext';
+      const text = MAIL.GREETINGS;
 
       const mail = new MailBuilder({
-        subject: 'subject',
-        translationVariables: {},
+        subject: { text: MAIL.SIGN_UP_TITLE },
       })
         .addButton(text, link)
         .build();
 
       expect(mail.html).toContain(link);
-      expect(mail.html).toContain(text);
+      expect(mail.html).toContain(enTranslations.GREETINGS);
       expect(mail.text).toContain(link);
     });
 
     it('addText generates text paragraph', () => {
-      const text = 'mytext';
+      const text = MAIL.GREETINGS;
 
       const mail = new MailBuilder({
-        subject: 'subject',
-        translationVariables: {},
+        subject: { text: MAIL.SIGN_UP_TITLE },
       })
         .addText(text)
         .build();
 
-      expect(mail.text).toContain(text);
-      expect(mail.html).toContain(text);
+      expect(mail.text).toContain(enTranslations.GREETINGS);
+      expect(mail.html).toContain(enTranslations.GREETINGS);
     });
 
     it('builds mail', async () => {
       const mail = new MailBuilder({
-        subject: MAIL.MEMBERSHIP_REQUEST_TITLE,
-        translationVariables: { itemName, memberName },
-        lang: lang,
+        subject: {
+          text: MAIL.MEMBERSHIP_REQUEST_TITLE,
+          translationVariables: { itemName, memberName },
+        },
+        lang,
       })
-        .addText(MAIL.MEMBERSHIP_REQUEST_TEXT)
-        .addButton(MAIL.MEMBERSHIP_REQUEST_BUTTON_TEXT, link)
+        .addText(MAIL.MEMBERSHIP_REQUEST_TEXT, { itemName, memberName })
+        .addButton(MAIL.MEMBERSHIP_REQUEST_BUTTON_TEXT, link, { itemName })
         .build();
 
       await mailerService.send(mail, email);
@@ -92,12 +95,14 @@ describe('Mailer', () => {
       const memberName = 'Member007';
 
       const mail = new MailBuilder({
-        subject: MAIL.MEMBERSHIP_REQUEST_TITLE,
-        translationVariables: { itemName, memberName },
+        subject: {
+          text: MAIL.MEMBERSHIP_REQUEST_TITLE,
+          translationVariables: { itemName, memberName },
+        },
         lang: lang,
       })
-        .addText(MAIL.MEMBERSHIP_REQUEST_TEXT)
-        .addButton(MAIL.MEMBERSHIP_REQUEST_BUTTON_TEXT, link)
+        .addText(MAIL.MEMBERSHIP_REQUEST_TEXT, { itemName, memberName })
+        .addButton(MAIL.MEMBERSHIP_REQUEST_BUTTON_TEXT, link, { itemName })
         .build();
 
       await mailerService.send(mail, email);
@@ -114,13 +119,15 @@ describe('Mailer', () => {
 
     it('user agreement and sign up not requested blocks are generated', async () => {
       const mail = new MailBuilder({
-        subject: MAIL.MEMBERSHIP_REQUEST_TITLE,
-        translationVariables: { itemName, memberName },
+        subject: {
+          text: MAIL.MEMBERSHIP_REQUEST_TITLE,
+          translationVariables: { itemName, memberName },
+        },
       })
-        .addText(MAIL.MEMBERSHIP_REQUEST_TEXT)
-        .addButton(MAIL.MEMBERSHIP_REQUEST_BUTTON_TEXT, link)
-        .includeUserAgreement()
-        .signUpNotRequested()
+        .addText(MAIL.MEMBERSHIP_REQUEST_TEXT, { itemName, memberName })
+        .addButton(MAIL.MEMBERSHIP_REQUEST_BUTTON_TEXT, link, { itemName })
+        .addUserAgreement(MAIL.MEMBERSHIP_REQUEST_BUTTON_TEXT, { itemName })
+        .addSignUpNotRequested()
         .build();
 
       await mailerService.send(mail, email);

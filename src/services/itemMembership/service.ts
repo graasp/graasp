@@ -40,11 +40,16 @@ export class ItemMembershipService {
     const link = new URL(item.id, PLAYER_HOST.url).toString();
 
     const mail = new MailBuilder({
-      subject: MAIL.SHARE_ITEM_TITLE,
-      translationVariables: { creatorName: account.name, itemName: item.name },
+      subject: {
+        text: MAIL.SHARE_ITEM_TITLE,
+        translationVariables: {
+          creatorName: account.name,
+          itemName: item.name,
+        },
+      },
       lang: member.lang,
     })
-      .addText(MAIL.SHARE_ITEM_TEXT)
+      .addText(MAIL.SHARE_ITEM_TEXT, { itemName: item.name })
       .addButton(MAIL.SHARE_ITEM_BUTTON, link)
       .build();
 
@@ -89,7 +94,10 @@ export class ItemMembershipService {
       repositories;
     const member = await memberRepository.get(memberId);
 
-    await this.hooks.runPreHooks('create', account, repositories, { item, account: member });
+    await this.hooks.runPreHooks('create', account, repositories, {
+      item,
+      account: member,
+    });
 
     const result = await itemMembershipRepository.addOne({
       itemPath: item.path,

@@ -10,76 +10,101 @@ import { Mail } from './service';
 type CssStyles = { [key: string]: string };
 
 export class MailBuilder {
+  /**
+   * The subject of the e-mail. Note that the interpolation in the subject translation string will not be escaped.
+   */
   private subject: string;
+  /**
+   * The contents of the e-mail in plaintext. Note that the interpolation in the subject translation string will not be escaped.
+   */
   private plainText = '';
+  /**
+   * The HTML contents of the e-mail. Note that the interpolation in the subject translation string will be escaped for security reasons.
+   */
   private htmlText = '';
-  private buttonText: string;
-  private translationVariables: { [key: string]: string };
+  /**
+   * The language of the e-mail.
+   */
   private language: string = DEFAULT_LANG;
 
-  private t: TFunction;
+  private translate: TFunction;
 
   constructor({
     subject,
-    translationVariables,
     lang,
   }: {
-    subject: string;
-    translationVariables: { [key: string]: string };
+    subject: {
+      text: (typeof MAIL)[keyof typeof MAIL];
+      translationVariables?: { [key: string]: string };
+    };
     lang?: string;
   }) {
-    this.subject = subject;
-    this.translationVariables = translationVariables;
-
     if (lang) {
       this.language = lang;
     }
 
     i18next.changeLanguage(this.language);
-    this.t = i18next.t;
+    this.translate = i18next.t;
+
+    this.subject = this.translate(subject.text, {
+      ...subject.translationVariables,
+      interpolation: { escapeValue: false },
+    });
   }
 
-  public addText(stringId: string): MailBuilder {
-    const unescapedText = this.t(stringId, {
-      ...this.translationVariables,
+  public addText(
+    mailTextId: (typeof MAIL)[keyof typeof MAIL],
+    translationVariables?: { [key: string]: string },
+  ): MailBuilder {
+    const unescapedText = this.translate(mailTextId, {
+      ...translationVariables,
       interpolation: { escapeValue: false },
     });
     this.plainText += `\n${unescapedText}\n`;
 
-    const escapedText = this.t(stringId, this.translationVariables);
+    const escapedText = this.translate(mailTextId, translationVariables);
     this.htmlText += this.buildText(escapedText);
 
     return this;
   }
 
-  public addButton(buttonText: string, callToActionLink: string): MailBuilder {
+  public addButton(
+    mailButtonTextId: (typeof MAIL)[keyof typeof MAIL],
+    callToActionLink: string,
+    translationVariables?: { [key: string]: string },
+  ): MailBuilder {
     this.plainText += `\n${callToActionLink}\n`;
 
     this.htmlText += this.buildButton(
       callToActionLink,
-      this.t(buttonText, this.translationVariables),
+      this.translate(mailButtonTextId, translationVariables),
     );
-
-    // keep this text for user agreement
-    this.buttonText = buttonText;
 
     return this;
   }
 
-  public includeUserAgreement(): MailBuilder {
-    const unescapedSignUpButtonText = this.t(this.buttonText, {
-      ...this.translationVariables,
+  /**
+   * This function add the user agreement usually placed at the end of the e-mail.
+   */
+  public addUserAgreement(
+    mailButtonTextId: (typeof MAIL)[keyof typeof MAIL],
+    translationVariables?: {
+      [key: string]: string;
+    },
+  ): MailBuilder {
+    const unescapedSignUpButtonText = this.translate(mailButtonTextId, {
+      ...translationVariables,
       interpolation: { escapeValue: false },
     });
-    const unescapedText = this.t(MAIL.USER_AGREEMENTS_MAIL_TEXT, {
+    const unescapedText = this.translate(MAIL.USER_AGREEMENTS_MAIL_TEXT, {
       signUpButtonText: unescapedSignUpButtonText,
       graaspLandingPageOrigin: GRAASP_LANDING_PAGE_ORIGIN,
       interpolation: { escapeValue: false },
     });
     this.plainText += `\n${unescapedText}\n`;
 
-    const escapedText = this.t(MAIL.USER_AGREEMENTS_MAIL_TEXT, {
-      signUpButtonText: this.t(this.buttonText, this.translationVariables),
+    const escapedText = this.translate(MAIL.USER_AGREEMENTS_MAIL_TEXT, {
+      signUpButtonText: this.translate(mailButtonTextId, translationVariables),
       graaspLandingPageOrigin: GRAASP_LANDING_PAGE_ORIGIN,
     });
     this.htmlText += this.buildText(
@@ -91,25 +116,15 @@ export class MailBuilder {
     return this;
   }
 
-  public signUpNotRequested(): MailBuilder {
-    const translatedText = this.t(MAIL.SIGN_UP_NOT_REQUESTED);
-
-    this.plainText += `\n${translatedText}\n`;
-    this.htmlText += this.buildText(this.t(MAIL.SIGN_UP_NOT_REQUESTED));
-
-    return this;
+  public addSignUpNotRequested(): MailBuilder {
+    return this.addText(MAIL.SIGN_UP_NOT_REQUESTED);
   }
 
   public build(): Mail {
-    const emailSubject = this.t(this.subject, {
-      ...this.translationVariables,
-      interpolation: { escapeValue: false },
-    });
-
     const footer = this.buildFooter();
 
     return {
-      subject: emailSubject,
+      subject: this.subject,
       text: this.plainText,
       html: this.htmlText,
       footer: footer,
@@ -125,14 +140,14 @@ export class MailBuilder {
       <table role="presentation" border="0" cellpadding="0" cellspacing="0">
         <tr>
           <td class="content-block">
-            ${this.t('FOOTER')}.
+            ${this.translate('FOOTER')}.
             <br />
             <span class="apple-link">Graasp Association, Valais, Switzerland</span>
           </td>
         </tr>
         <tr>
           <td class="content-block powered-by">
-            ${this.t('POWERED_BY')}
+            ${this.translate('POWERED_BY')}
           </td>
         </tr>
       </table>

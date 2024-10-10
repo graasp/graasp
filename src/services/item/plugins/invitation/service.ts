@@ -59,13 +59,18 @@ export class InvitationService {
     // factor out
     const link = buildInvitationLink(invitation);
     const mail = new MailBuilder({
-      subject: MAIL.INVITATION_TITLE,
-      translationVariables: { itemName: item.name, creatorName: member.name },
+      subject: {
+        text: MAIL.INVITATION_TITLE,
+        translationVariables: { itemName: item.name },
+      },
       lang: member.lang,
     })
-      .addText(MAIL.INVITATION_TEXT)
+      .addText(MAIL.INVITATION_TEXT, {
+        itemName: item.name,
+        creatorName: member.name,
+      })
       .addButton(MAIL.SIGN_UP_BUTTON_TEXT, link)
-      .includeUserAgreement()
+      .addUserAgreement(MAIL.SIGN_UP_BUTTON_TEXT)
       .build();
 
     this.mailerService.send(mail, member.email).catch((err) => {
@@ -347,7 +352,9 @@ export class InvitationService {
         parentItem,
       );
       // edit name of parent element to match the name of the group
-      await this.itemService.patch(actor, repositories, newItem.id, { name: groupName });
+      await this.itemService.patch(actor, repositories, newItem.id, {
+        name: groupName,
+      });
       const { memberships, invitations } = await this._createMembershipsAndInvitationsForUserList(
         actor,
         repositories,

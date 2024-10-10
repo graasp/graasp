@@ -48,12 +48,22 @@ export class MembershipRequestService {
       }
 
       const mail = new MailBuilder({
-        subject: MAIL.MEMBERSHIP_REQUEST_TITLE,
-        translationVariables: { memberName: member.name, itemName: item.name },
+        subject: {
+          text: MAIL.MEMBERSHIP_REQUEST_TITLE,
+          translationVariables: {
+            memberName: member.name,
+            itemName: item.name,
+          },
+        },
         lang: admin.lang,
       })
-        .addText(MAIL.MEMBERSHIP_REQUEST_TEXT)
-        .addButton(MAIL.MEMBERSHIP_REQUEST_BUTTON_TEXT, link)
+        .addText(MAIL.MEMBERSHIP_REQUEST_TEXT, {
+          memberName: member.name,
+          itemName: item.name,
+        })
+        .addButton(MAIL.MEMBERSHIP_REQUEST_BUTTON_TEXT, link, {
+          itemName: item.name,
+        })
         .build();
 
       this.mailerService.send(mail, admin.email).catch((err) => {

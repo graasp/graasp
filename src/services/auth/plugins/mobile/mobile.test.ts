@@ -10,6 +10,7 @@ import { FastifyInstance } from 'fastify';
 import { HttpMethod, MemberFactory, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
+import { tokenRegex } from '../../../../../test/utils';
 import { resolveDependency } from '../../../../di/utils';
 import { AppDataSource } from '../../../../plugins/datasource';
 import { MailerService } from '../../../../plugins/mailer/service';
@@ -34,7 +35,9 @@ const memberRawRepository = AppDataSource.getRepository(Member);
 const mockCaptchaValidation = (action: RecaptchaActionType) => {
   (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return { json: async () => ({ success: true, action, score: 1 }) } as Response;
+    return {
+      json: async () => ({ success: true, action, score: 1 }),
+    } as Response;
   });
 };
 
@@ -114,7 +117,13 @@ describe('Mobile Endpoints', () => {
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/m/register',
-        payload: { email, name, challenge, captcha: MOCK_CAPTCHA, enableSaveActions },
+        payload: {
+          email,
+          name,
+          challenge,
+          captcha: MOCK_CAPTCHA,
+          enableSaveActions,
+        },
       });
 
       const m = await memberRawRepository.findOneBy({ email });
@@ -133,7 +142,13 @@ describe('Mobile Endpoints', () => {
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/m/register',
-        payload: { email, name, challenge, enableSaveActions, captcha: MOCK_CAPTCHA },
+        payload: {
+          email,
+          name,
+          challenge,
+          enableSaveActions,
+          captcha: MOCK_CAPTCHA,
+        },
       });
 
       const m = await memberRawRepository.findOneBy({ email });
@@ -345,7 +360,12 @@ describe('Mobile Endpoints', () => {
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/m/login-password',
-        payload: { email: member.email, challenge, password: wrongPassword, captcha: MOCK_CAPTCHA },
+        payload: {
+          email: member.email,
+          challenge,
+          password: wrongPassword,
+          captcha: MOCK_CAPTCHA,
+        },
       });
       expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
       expect(response.statusMessage).toEqual(ReasonPhrases.UNAUTHORIZED);
@@ -358,7 +378,12 @@ describe('Mobile Endpoints', () => {
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/m/login-password',
-        payload: { email: member.email, challenge, password: clearPassword, captcha: MOCK_CAPTCHA },
+        payload: {
+          email: member.email,
+          challenge,
+          password: clearPassword,
+          captcha: MOCK_CAPTCHA,
+        },
       });
       expect(response.statusCode).toEqual(StatusCodes.NOT_ACCEPTABLE);
       expect(response.statusMessage).toEqual(ReasonPhrases.NOT_ACCEPTABLE);
@@ -582,7 +607,6 @@ describe('Mobile Endpoints', () => {
       expect(responseRegister.statusCode).toBe(StatusCodes.NO_CONTENT);
       expect(mockSendEmail).toHaveBeenCalledTimes(1);
 
-      const tokenRegex = /\?t=([\w\-\.]{1,1000})/;
       const token = mockSendEmail.mock.calls[0][2].match(tokenRegex)![1];
 
       const responseAuth = await app.inject({
