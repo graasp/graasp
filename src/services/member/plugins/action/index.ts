@@ -1,9 +1,8 @@
-import { FastifyPluginAsync } from 'fastify';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { FileItemType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
-import { IdParam } from '../../../../types';
 import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
@@ -20,12 +19,12 @@ export interface GraaspActionsOptions {
   fileConfigurations: { s3: S3FileConfiguration; local: LocalFileConfiguration };
 }
 
-const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
+const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) => {
   const { db } = fastify;
 
   const actionMemberService = resolveDependency(ActionMemberService);
 
-  fastify.get<{ Querystring: { startDate?: string; endDate?: string } }>(
+  fastify.get(
     '/actions',
     { schema: getMemberFilteredActions, preHandler: isAuthenticated },
     async ({ user, query }) => {
@@ -33,9 +32,10 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
       return actionMemberService.getFilteredActions(account, buildRepositories(), query);
     },
   );
+
   // todo: delete self data
   // delete all the actions matching the given `memberId`
-  fastify.delete<{ Params: IdParam }>(
+  fastify.delete(
     '/members/:id/delete',
     { schema: deleteAllById, preHandler: isAuthenticated },
     async ({ user, params: { id } }) => {

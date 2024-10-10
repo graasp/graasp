@@ -14,7 +14,7 @@ export const credentialsSchemaRef = registerSchemaAsRef(
   'Item Login Credentials',
   Type.Object(
     {
-      username: Type.String({ minLength: 3, maxLength: 50, pattern: '^\\S+( \\S+)*$' }),
+      username: customType.Username(),
       password: Type.Optional(
         Type.String({ minLength: 3, maxLength: 50, pattern: '^\\S+( \\S+)*$' }),
       ),
