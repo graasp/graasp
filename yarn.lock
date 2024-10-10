@@ -5493,15 +5493,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cross-fetch@npm:^3.1.6":
-  version: 3.1.8
-  resolution: "cross-fetch@npm:3.1.8"
-  dependencies:
-    node-fetch: "npm:^2.6.12"
-  checksum: 10/ac8c4ca87d2ac0e17a19b6a293a67ee8934881aee5ec9a5a8323c30e9a9a60a0f5291d3c0d633ec2a2f970cbc60978d628804dfaf03add92d7e720b6d37f392c
-  languageName: node
-  linkType: hard
-
 "cross-spawn@npm:^4.0.0":
   version: 4.0.2
   resolution: "cross-spawn@npm:4.0.2"
@@ -7285,7 +7276,7 @@ __metadata:
     lodash.groupby: "npm:4.6.0"
     lodash.partition: "npm:4.6.0"
     lodash.uniqby: "npm:4.7.0"
-    meilisearch: "npm:0.41.0"
+    meilisearch: "npm:0.44.1"
     mime: "npm:3.0.0"
     mmmagic: "npm:0.5.3"
     nock: "npm:13.5.4"
@@ -9215,12 +9206,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"meilisearch@npm:0.41.0":
-  version: 0.41.0
-  resolution: "meilisearch@npm:0.41.0"
-  dependencies:
-    cross-fetch: "npm:^3.1.6"
-  checksum: 10/c09a874a81cc7b955ab8915b47f3638f961739e9dd64995bac95e01f0d457e1f1676dbd3466d037c4fce3c40db999cef77d6150aa134405eb6da7b9a1cdcf8fe
+"meilisearch@npm:0.44.1":
+  version: 0.44.1
+  resolution: "meilisearch@npm:0.44.1"
+  checksum: 10/2a051d25fbca5d22dbecd57142bbc489d403f8fda02f45f8b294442f6f13f7e13ce8c56702582cbff3f623f45da6e49916401bc7124c122cb614af6abe799867
   languageName: node
   linkType: hard
 
@@ -9636,7 +9625,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-fetch@npm:2, node-fetch@npm:^2.6.12":
+"node-fetch@npm:2":
   version: 2.7.0
   resolution: "node-fetch@npm:2.7.0"
   dependencies:
