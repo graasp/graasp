@@ -15,7 +15,7 @@ Head over to: [Builder](https://github.com/graasp/graasp-builder), [Player](http
 In order to run the Graasp backend, it requires:
 
 - Node v20
-- NPM v9
+- NPM v10
 - Yarn (can be installed through [`nvm`](https://github.com/nvm-sh/nvm))
 - [Docker](https://docs.docker.com/get-docker/) : Docker is not necessary, it is possible to install everything locally. However it is strongly recommanded to use the Docker installation guide.
 
