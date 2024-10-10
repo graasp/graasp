@@ -530,19 +530,6 @@ describe('ActionItemService', () => {
       expect(action.extra).toMatchObject({ itemId: item.id, body });
     });
 
-    it('postManyPatchAction', async () => {
-      const body = { name: 'new name' };
-      await service.postManyPatchAction({ ...MOCK_REQUEST, body }, buildRepositories(), [
-        item,
-        item,
-      ]);
-      const [action1, action2] = await rawRepository.find();
-      expect(action1.type).toEqual(ItemActionType.Update);
-      expect(action1.extra).toMatchObject({ itemId: item.id });
-      expect(action2.type).toEqual(ItemActionType.Update);
-      expect(action2.extra).toMatchObject({ itemId: item.id });
-    });
-
     it('postManyDeleteAction', async () => {
       await service.postManyDeleteAction(MOCK_REQUEST, buildRepositories(), [item, item]);
       const [action1, action2] = await rawRepository.find();

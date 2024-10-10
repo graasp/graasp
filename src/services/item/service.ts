@@ -24,7 +24,6 @@ import {
   CannotReorderRootItem,
   InvalidMembership,
   ItemNotFolder,
-  MemberCannotWriteItem,
   MissingNameOrTypeForItemError,
   TooManyChildren,
   TooManyDescendants,
@@ -487,24 +486,6 @@ export class ItemService {
     await this.hooks.runPostHooks('update', member, repositories, { item: updated });
 
     return updated;
-  }
-
-  async patchMany(
-    member: Member,
-    repositories: Repositories,
-    itemIds: UUID[],
-    body: Partial<Item>,
-  ): Promise<ResultOf<Item>> {
-    // TODO: extra + settings
-    const ops = await Promise.all(
-      itemIds.map(async (id) => this.patch(member, repositories, id, body)),
-    );
-
-    return mapById({
-      keys: itemIds,
-      findElement: (id) => ops.find(({ id: thisId }) => id === thisId),
-      buildError: (id) => new MemberCannotWriteItem(id),
-    });
   }
 
   // QUESTION? DELETE BY PATH???

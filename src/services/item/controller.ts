@@ -14,7 +14,6 @@ import { matchOne } from '../authorization';
 import { assertIsMember } from '../member/entities/member';
 import { memberAccountRole } from '../member/strategies/memberAccountRole';
 import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
-import { resultOfToList } from '../utils';
 import { ITEMS_PAGE_SIZE } from './constants';
 import { Item } from './entities/Item';
 import { ActionItemService } from './plugins/action/service';
@@ -34,7 +33,6 @@ import {
   getShared,
   moveMany,
   reorder,
-  updateMany,
 } from './schema';
 import { ItemService } from './service';
 import { ItemChildrenParams, ItemSearchParams } from './types';
@@ -275,52 +273,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         await actionItemService.postPatchAction(request, repositories, item);
         return item;
       });
-    },
-  );
-
-  fastify.patch<{ Querystring: IdsParams; Body: Partial<Item> }>(
-    '/',
-    {
-      schema: updateMany(items.extendExtrasUpdateSchema()),
-      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
-    },
-    async (request, reply) => {
-      const {
-        user,
-        query: { id: ids },
-        body,
-        log,
-      } = request;
-      const member = asDefined(user?.account);
-      assertIsMember(member);
-      db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-        const items = await itemService.patchMany(member, repositories, ids, body);
-        await actionItemService.postManyPatchAction(
-          request,
-
-          repositories,
-          resultOfToList(items),
-        );
-        return items;
-      })
-        .then((items) => {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackEvent('update', ids, items.data, items.errors),
-          );
-        })
-        .catch((e: Error) => {
-          log.error(e);
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackErrorEvent('update', ids, e),
-          );
-        });
-      reply.status(StatusCodes.ACCEPTED);
-      return ids;
     },
   );
 

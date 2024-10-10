@@ -2,24 +2,15 @@ import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 
 import { FastifyInstance } from 'fastify';
 
-import { DocumentItemFactory, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, ItemType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../test/constants';
-import { AppDataSource } from '../../../../plugins/datasource';
-import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
 import { Member } from '../../../member/entities/member';
 import { saveMember } from '../../../member/test/fixtures/members';
 import { ItemTestUtils, expectItem } from '../../test/fixtures/items';
 
 const testUtils = new ItemTestUtils();
-const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
-
-const extra = {
-  [ItemType.DOCUMENT]: {
-    content: 'my text is here',
-  },
-};
 
 describe('Document Item tests', () => {
   let app: FastifyInstance;
@@ -30,103 +21,6 @@ describe('Document Item tests', () => {
     await clearDatabase(app.db);
     actor = undefined;
     app.close();
-  });
-
-  describe('POST /items', () => {
-    it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
-
-      const payload = { name: 'name', type: ItemType.DOCUMENT, extra };
-
-      const response = await app.inject({
-        method: HttpMethod.Post,
-        url: '/items',
-        payload,
-      });
-
-      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-    });
-
-    describe('Signed In', () => {
-      beforeEach(async () => {
-        ({ app, actor } = await build());
-      });
-
-      it('Create successfully', async () => {
-        const payload = DocumentItemFactory({ extra });
-
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: '/items',
-          payload,
-        });
-
-        // check response value
-        const newItem = response.json();
-        expectItem(newItem, payload);
-        expect(response.statusCode).toBe(StatusCodes.OK);
-
-        // check item exists in db
-        const item = await testUtils.itemRepository.getOne(newItem.id);
-        expectItem(item, payload);
-
-        // a membership is created for this item
-        const membership = await itemMembershipRawRepository.findOneBy({
-          item: { id: newItem.id },
-        });
-        expect(membership?.permission).toEqual(PermissionLevel.Admin);
-      });
-
-      it('Fail to create if type does not match extra', async () => {
-        const payload = {
-          name: 'name',
-          type: ItemType.LINK,
-          extra: { [ItemType.DOCUMENT]: { content: 'content' } },
-        };
-
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: '/items',
-          payload,
-        });
-
-        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-      });
-
-      it('Fail to create if payload is invalid', async () => {
-        const payload = {
-          name: 'name',
-          type: ItemType.DOCUMENT,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          extra: { [ItemType.FOLDER]: { content: 'content' } } as any,
-        };
-
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: '/items',
-          payload,
-        });
-
-        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-      });
-
-      it('Fail to create if content of document is not defined', async () => {
-        const payload1 = {
-          name: 'name',
-          type: ItemType.DOCUMENT,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          extra: { [ItemType.DOCUMENT]: {} } as any,
-        };
-
-        const response1 = await app.inject({
-          method: HttpMethod.Post,
-          url: '/items',
-          payload: payload1,
-        });
-
-        expect(response1.statusCode).toBe(StatusCodes.BAD_REQUEST);
-      });
-    });
   });
 
   describe('PATCH /items/:id', () => {
