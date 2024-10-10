@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest';
+
 import { FolderItemFactory } from '@graasp/sdk';
 
 import { FolderItem } from './entities/Item';
