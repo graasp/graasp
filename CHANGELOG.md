@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.53.2](https://github.com/graasp/graasp/compare/v1.53.1...v1.53.2) (2024-10-10)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @sentry/node to v7.119.1 ([#1482](https://github.com/graasp/graasp/issues/1482)) ([4d67a15](https://github.com/graasp/graasp/commit/4d67a150cf0789b2bdc834410fe1867618b0f1cc))
+* **deps:** update dependency openai to v4.67.3 ([#1483](https://github.com/graasp/graasp/issues/1483)) ([5f2535f](https://github.com/graasp/graasp/commit/5f2535f5eb3e844cac6af6dae945fd20c0ef1062))
+* **deps:** update dependency sanitize-html to v2.13.1 ([#1476](https://github.com/graasp/graasp/issues/1476)) ([0baa218](https://github.com/graasp/graasp/commit/0baa2184dbaaf04f45fa874b65ad3e1a78e72481))
+
 ## [1.53.1](https://github.com/graasp/graasp/compare/v1.53.0...v1.53.1) (2024-10-10)
 
 
