@@ -40,14 +40,19 @@ export class MentionService {
     });
 
     const mail = new MailBuilder({
-      subject: MAIL.CHAT_MENTION_TITLE,
-      translationVariables: {
-        creatorName: creator.name,
-        itemName: item.name,
+      subject: {
+        text: MAIL.CHAT_MENTION_TITLE,
+        translationVariables: {
+          creatorName: creator.name,
+          itemName: item.name,
+        },
       },
       lang: member.lang,
     })
-      .addText(MAIL.CHAT_MENTION_TEXT)
+      .addText(MAIL.CHAT_MENTION_TEXT, {
+        creatorName: creator.name,
+        itemName: item.name,
+      })
       .addButton(MAIL.CHAT_MENTION_BUTTON_TEXT, itemLink)
       .build();
 
@@ -71,7 +76,10 @@ export class MentionService {
     // TODO: optimize ? suppose same item - validate multiple times
     const results = await mentionRepository.postMany(mentionedMembers, message.id);
 
-    this.hooks.runPostHooks('createMany', account, repositories, { mentions: results, item });
+    this.hooks.runPostHooks('createMany', account, repositories, {
+      mentions: results,
+      item,
+    });
 
     return results;
   }

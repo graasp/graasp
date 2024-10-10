@@ -114,15 +114,19 @@ export class ActionRequestExportService {
     });
 
     const mail = new MailBuilder({
-      subject: MAIL.EXPORT_ACTIONS_TITLE,
-      translationVariables: {
-        itemName: item.name,
-        days: DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS.toString(),
-        exportFormat: format,
+      subject: {
+        text: MAIL.EXPORT_ACTIONS_TITLE,
+        translationVariables: {
+          itemName: item.name,
+        },
       },
       lang: actor.lang,
     })
-      .addText(MAIL.EXPORT_ACTIONS_TEXT)
+      .addText(MAIL.EXPORT_ACTIONS_TEXT, {
+        itemName: item.name,
+        days: DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS.toString(),
+        exportFormat: format,
+      })
       .addButton(MAIL.EXPORT_ACTIONS_BUTTON_TEXT, link)
       .build();
 

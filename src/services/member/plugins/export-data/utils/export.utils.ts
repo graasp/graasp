@@ -160,7 +160,9 @@ export class ArchiveDataExporter {
     // Because we are mocking S3 in tests, the stream is never read and so, never closed.
     // Never closing the stream throws an error when trying to remove the ZIP folder in the tests.
     const onArchiveClosed = new Promise<{ archiveCreationTime: Date }>((resolve, reject) => {
-      const res = { archiveCreationTime: new Date(archive.timestamp.getTime()) };
+      const res = {
+        archiveCreationTime: new Date(archive.timestamp.getTime()),
+      };
 
       archivedFile.on('error', (err) => reject(err));
       archivedFile.on('close', async () => resolve(res));
@@ -204,11 +206,12 @@ export class RequestDataExportService {
     });
 
     const mail = new MailBuilder({
-      subject: MAIL.EXPORT_MEMBER_DATA_TITLE,
-      translationVariables: { days: DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS.toString() },
+      subject: { text: MAIL.EXPORT_MEMBER_DATA_TITLE },
       lang: actor.lang,
     })
-      .addText(MAIL.EXPORT_MEMBER_DATA_TEXT)
+      .addText(MAIL.EXPORT_MEMBER_DATA_TEXT, {
+        days: DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS.toString(),
+      })
       .addButton(MAIL.EXPORT_MEMBER_DATA_BUTTON_TEXT, link)
       .build();
 

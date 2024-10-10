@@ -17,7 +17,7 @@ import build, {
   unmockAuthenticate,
 } from '../../../../../test/app';
 import seed from '../../../../../test/mocks';
-import { mockCaptchaValidationOnce } from '../../../../../test/utils';
+import { mockCaptchaValidationOnce, tokenRegex } from '../../../../../test/utils';
 import { resolveDependency } from '../../../../di/utils';
 import { MailerService } from '../../../../plugins/mailer/service';
 import {
@@ -51,8 +51,6 @@ async function login(
   });
 }
 
-const tokenRegex = /\?t=([\w\-\.]{1,1000})/;
-
 describe('Login with password', () => {
   let app: FastifyInstance;
 
@@ -74,7 +72,11 @@ describe('Login with password', () => {
     const response = await app.inject({
       method: HttpMethod.Post,
       url: '/login-password',
-      payload: { email: member.email, password: pwd.password, captcha: MOCK_CAPTCHA },
+      payload: {
+        email: member.email,
+        password: pwd.password,
+        captcha: MOCK_CAPTCHA,
+      },
     });
     console.log(await response.json());
     expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
@@ -95,7 +97,11 @@ describe('Login with password', () => {
     const response = await app.inject({
       method: HttpMethod.Post,
       url: '/login-password',
-      payload: { email: member.email, password: pwd.password, captcha: MOCK_CAPTCHA },
+      payload: {
+        email: member.email,
+        password: pwd.password,
+        captcha: MOCK_CAPTCHA,
+      },
     });
     expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
     expect(response.json()).toHaveProperty('resource');
@@ -115,7 +121,11 @@ describe('Login with password', () => {
     const response = await app.inject({
       method: HttpMethod.Post,
       url: '/login-password',
-      payload: { email: member.email, password: pwd.password, captcha: MOCK_CAPTCHA },
+      payload: {
+        email: member.email,
+        password: pwd.password,
+        captcha: MOCK_CAPTCHA,
+      },
     });
     expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
     expect(response.json()).toHaveProperty('resource');
@@ -129,7 +139,11 @@ describe('Login with password', () => {
     const response = await app.inject({
       method: HttpMethod.Post,
       url: '/login-password',
-      payload: { email: member.email, password: wrongPassword, captcha: MOCK_CAPTCHA },
+      payload: {
+        email: member.email,
+        password: wrongPassword,
+        captcha: MOCK_CAPTCHA,
+      },
     });
     expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
     expect(response.statusMessage).toEqual(ReasonPhrases.UNAUTHORIZED);
@@ -228,7 +242,10 @@ describe('Reset Password', () => {
         entities: await Promise.all(
           entities
             .filter((e) => e.password)
-            .map(async (e) => ({ member: e.id, password: await encryptPassword(e.password!) })),
+            .map(async (e) => ({
+              member: e.id,
+              password: await encryptPassword(e.password!),
+            })),
         ),
       },
     });
@@ -493,7 +510,10 @@ describe('Set Password', () => {
         entities: await Promise.all(
           entities
             .filter((e) => e.password)
-            .map(async (e) => ({ member: e.id, password: await encryptPassword(e.password!) })),
+            .map(async (e) => ({
+              member: e.id,
+              password: await encryptPassword(e.password!),
+            })),
         ),
       },
     });
@@ -605,7 +625,10 @@ describe('Update Password', () => {
         entities: await Promise.all(
           entities
             .filter((e) => e.password)
-            .map(async (e) => ({ member: e.id, password: await encryptPassword(e.password!) })),
+            .map(async (e) => ({
+              member: e.id,
+              password: await encryptPassword(e.password!),
+            })),
         ),
       },
     });

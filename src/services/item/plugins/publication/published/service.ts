@@ -66,12 +66,16 @@ export class ItemPublishedService {
     for (const member of contributors) {
       if (isMember(member)) {
         const mail = new MailBuilder({
-          subject: MAIL.PUBLISH_ITEM_TITLE,
-          translationVariables: { itemName: item.name },
+          subject: {
+            text: MAIL.PUBLISH_ITEM_TITLE,
+            translationVariables: { itemName: item.name },
+          },
           lang: member.lang,
         })
-          .addText(MAIL.PUBLISH_ITEM_TEXT)
-          .addButton(MAIL.PUBLISH_ITEM_BUTTON_TEXT, link)
+          .addText(MAIL.PUBLISH_ITEM_TEXT, { itemName: item.name })
+          .addButton(MAIL.PUBLISH_ITEM_BUTTON_TEXT, link, {
+            itemName: item.name,
+          })
           .build();
 
         await this.mailerService.send(mail, member.email).catch((err) => {
@@ -87,7 +91,9 @@ export class ItemPublishedService {
     const item = await this.itemService.get(actor, repositories, itemId);
 
     // item should be public first
-    await itemTagRepository.getType(item.path, ItemTagType.Public, { shouldThrow: true });
+    await itemTagRepository.getType(item.path, ItemTagType.Public, {
+      shouldThrow: true,
+    });
 
     // get item published entry
     const publishedItem = await itemPublishedRepository.getForItem(item);
@@ -102,7 +108,10 @@ export class ItemPublishedService {
       startDate: formatISO(publishedItem.createdAt),
       endDate: formatISO(new Date()),
     });
-    return { totalViews: (totalViews?.[0] as ActionCount)?.actionCount, ...publishedItem };
+    return {
+      totalViews: (totalViews?.[0] as ActionCount)?.actionCount,
+      ...publishedItem,
+    };
   }
 
   async getMany(actor: Actor, repositories: Repositories, itemIds: string[]) {
@@ -142,7 +151,9 @@ export class ItemPublishedService {
       return itemPublished;
     }
 
-    return await this.post(member, repositories, item, publicationStatus, { canBePrivate: true });
+    return await this.post(member, repositories, item, publicationStatus, {
+      canBePrivate: true,
+    });
   }
 
   private checkPublicationStatus({ id, type }: Item, publicationStatus: PublicationStatus) {

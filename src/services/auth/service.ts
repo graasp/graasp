@@ -46,15 +46,14 @@ export class AuthService {
     const link = destination.toString();
 
     const mail = new MailBuilder({
-      subject: MAIL.SIGN_UP_TITLE,
-      translationVariables: {},
+      subject: { text: MAIL.SIGN_UP_TITLE },
       lang: member.lang,
     })
       .addText(MAIL.GREETINGS)
       .addText(MAIL.SIGN_UP_TEXT)
       .addButton(MAIL.SIGN_UP_BUTTON_TEXT, link)
-      .includeUserAgreement()
-      .signUpNotRequested()
+      .addUserAgreement(MAIL.SIGN_UP_BUTTON_TEXT)
+      .addSignUpNotRequested()
       .build();
 
     // don't wait for mailerService's response; log error and link if it fails.
@@ -82,13 +81,12 @@ export class AuthService {
     const link = destination.toString();
 
     const mail = new MailBuilder({
-      subject: MAIL.SIGN_IN_TITLE,
-      translationVariables: {},
+      subject: { text: MAIL.SIGN_IN_TITLE },
       lang: member.lang,
     })
       .addText(MAIL.SIGN_IN_TEXT)
       .addButton(MAIL.SIGN_IN_BUTTON_TEXT, link)
-      .signUpNotRequested()
+      .addSignUpNotRequested()
       .build();
 
     // don't wait for mailerService's response; log error and link if it fails.

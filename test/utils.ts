@@ -17,3 +17,5 @@ export function mockCaptchaValidationOnce(action: RecaptchaActionType) {
     score: 1,
   });
 }
+
+export const tokenRegex = /\?t=([\w\-\.]{1,1000})/;
