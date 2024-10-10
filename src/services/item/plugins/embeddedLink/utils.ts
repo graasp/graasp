@@ -1,7 +1,8 @@
-import isUrlHttp from 'is-url-http';
+import urlHttp from 'url-http';
 
-export const isValidUrl = (url: string) => {
-  return isUrlHttp(ensureProtocol(url));
+export const isValidUrl = (url: string): boolean => {
+  // url-http returns the URL href or false if it is not a URL
+  return Boolean(urlHttp(ensureProtocol(url)));
 };
 
 export const ensureProtocol = (url: string) => {
