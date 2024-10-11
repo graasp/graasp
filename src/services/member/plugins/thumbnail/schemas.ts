@@ -1,47 +1,34 @@
+import { Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
+
+import { FastifySchema } from 'fastify';
 
 import { ThumbnailSize } from '@graasp/sdk';
 
-import { entityIdSchemaRef, errorSchemaRef } from '../../../../schemas/global';
+import { customType } from '../../../../plugins/typebox';
+import { errorSchemaRef } from '../../../../schemas/global';
 
-const upload = {
-  params: {
-    type: 'object',
-    additionalProperties: false,
-  },
-};
+export const upload = {
+  response: { [StatusCodes.NO_CONTENT]: Type.Null() },
+} as const satisfies FastifySchema;
 
-const download = {
-  params: {
-    allOf: [
-      entityIdSchemaRef,
-      {
-        type: 'object',
-        properties: {
-          size: {
-            enum: Object.values(ThumbnailSize),
-            default: ThumbnailSize.Medium,
-          },
-        },
-        required: ['size'],
-      },
-    ],
-  },
-  querystring: {
-    type: 'object',
-    properties: {
-      replyUrl: {
-        type: 'boolean',
-        default: false,
-      },
+export const download = {
+  params: Type.Object(
+    {
+      id: customType.UUID(),
+      size: Type.Enum(ThumbnailSize, { default: ThumbnailSize.Medium }),
     },
-    additionalProperties: false,
-  },
+    { additionalProperties: false },
+  ),
+  querystring: Type.Object(
+    {
+      replyUrl: Type.Boolean({ default: false }),
+    },
+    { additionalProperties: false },
+  ),
   response: {
     [StatusCodes.OK]: errorSchemaRef,
     '4xx': errorSchemaRef,
     [StatusCodes.INTERNAL_SERVER_ERROR]: errorSchemaRef,
   },
-};
-
-export { upload, download };
+} as const satisfies FastifySchema;

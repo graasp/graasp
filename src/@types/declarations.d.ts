@@ -36,7 +36,7 @@ declare module 'fastify' {
   }
 
   interface PassportUser {
-    account?: Account;
+    account?: Member | Guest;
     passwordResetRedisKey?: string; // Used for Password Reset
     emailChange?: {
       newEmail: string;
