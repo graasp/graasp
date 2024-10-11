@@ -33,7 +33,7 @@ export class Member extends Account {
   @Column({
     nullable: true,
     name: 'user_agreements_date',
-    type: 'date',
+    type: 'timestamp',
   })
   userAgreementsDate: Date;
 
