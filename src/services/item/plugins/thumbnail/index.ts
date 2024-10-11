@@ -1,12 +1,9 @@
 import { StatusCodes } from 'http-status-codes';
 
 import { fastifyMultipart } from '@fastify/multipart';
-import { FastifyPluginAsync } from 'fastify';
-
-import { ThumbnailSizeType } from '@graasp/sdk';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../di/utils';
-import { IdParam } from '../../../../types';
 import { asDefined } from '../../../../utils/assertions';
 import { THUMBNAILS_ROUTE_PREFIX } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
@@ -26,7 +23,7 @@ type GraaspThumbnailsOptions = {
   maxFileSize?: number; // max size for an uploaded file in bytes
 };
 
-const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, options) => {
+const plugin: FastifyPluginAsyncTypebox<GraaspThumbnailsOptions> = async (fastify, options) => {
   const { maxFileSize = DEFAULT_MAX_FILE_SIZE } = options;
   const { db } = fastify;
 
@@ -45,7 +42,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
     },
   });
 
-  fastify.post<{ Params: IdParam }>(
+  fastify.post(
     `/:id${THUMBNAILS_ROUTE_PREFIX}`,
     {
       schema: upload,
@@ -86,10 +83,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
     },
   );
 
-  fastify.get<{
-    Params: IdParam & { size: ThumbnailSizeType };
-    Querystring: { replyUrl?: boolean };
-  }>(
+  fastify.get(
     `/:id${THUMBNAILS_ROUTE_PREFIX}/:size`,
     {
       schema: download,
@@ -105,7 +99,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
     },
   );
 
-  fastify.delete<{ Params: IdParam }>(
+  fastify.delete(
     `/:id${THUMBNAILS_ROUTE_PREFIX}`,
     { schema: deleteSchema, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async (request, reply) => {

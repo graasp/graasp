@@ -4,7 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import { FlagType } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
-import { nullableMemberSchemaRef } from '../../../member/schemas';
+import { nullableAccountSchemaRef } from '../../../account/schemas';
 import { itemIdSchemaRef, itemSchemaRef } from '../../schema';
 
 export const itemFlagSchemaRef = registerSchemaAsRef(
@@ -16,7 +16,7 @@ export const itemFlagSchemaRef = registerSchemaAsRef(
       id: customType.UUID(),
       item: itemSchemaRef,
       type: Type.Enum(FlagType),
-      creator: nullableMemberSchemaRef,
+      creator: nullableAccountSchemaRef,
       createdAt: customType.DateTime(),
     },
     {

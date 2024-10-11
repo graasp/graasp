@@ -17,7 +17,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const categoryService = resolveDependency(CategoryService);
 
   // get categories
-  fastify.get<{ Params: { categoryId: string } }>(
+  fastify.get(
     '/categories',
     { schema: getCategories, preHandler: optionalIsAuthenticated },
     async ({ user }) => {
@@ -39,7 +39,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   );
 
   // insert item category
-  fastify.post<{ Params: { itemId: string }; Body: { categoryId: string } }>(
+  fastify.post(
     '/:itemId/categories',
     { schema: create, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async ({ user, params: { itemId }, body: { categoryId } }) => {
@@ -52,7 +52,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   );
 
   // delete item category entry
-  fastify.delete<{ Params: { itemCategoryId: string; itemId: string } }>(
+  fastify.delete(
     '/:itemId/categories/:itemCategoryId',
     { schema: deleteOne, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async ({ user, params: { itemCategoryId, itemId } }) => {

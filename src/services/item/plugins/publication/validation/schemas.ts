@@ -15,7 +15,6 @@ export const status = {
 
 export const itemValidation = {
   params: itemIdSchemaRef,
-  required: ['itemId'],
   additionalProperties: false,
 };
 
@@ -27,6 +26,5 @@ export const itemValidationGroup = {
     },
     { additionalProperties: false },
   ),
-  required: ['itemValidationId'],
   additionalProperties: false,
 };

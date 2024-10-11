@@ -1,4 +1,4 @@
-import { FastifyPluginAsync } from 'fastify';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import fp from 'fastify-plugin';
 
 import { ItemLoginSchemaStatus, PermissionLevel } from '@graasp/sdk';
@@ -20,13 +20,13 @@ import { validatedMemberAccountRole } from '../../../member/strategies/validated
 import { ItemService } from '../../service';
 import { enroll } from './schema';
 
-const plugin: FastifyPluginAsync = async (fastify) => {
+const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db } = fastify;
   const itemService = resolveDependency(ItemService);
   const itemLoginService = resolveDependency(ItemLoginService);
   const itemMembershipService = resolveDependency(ItemMembershipService);
 
-  fastify.post<{ Params: { itemId: string } }>(
+  fastify.post(
     '/:itemId/enroll',
     {
       schema: enroll,

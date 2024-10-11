@@ -213,7 +213,17 @@ export class ItemGeolocationRepository extends AbstractRepository<ItemGeolocatio
   async getSuggestionsForQuery(
     { query, lang = DEFAULT_LANG }: { query: string; lang?: string },
     key: string,
-  ) {
+  ): Promise<
+    [
+      {
+        id: string;
+        addressLabel: string;
+        country: string;
+        lat: number;
+        lng: number;
+      },
+    ]
+  > {
     const searchParams = new URLSearchParams({
       text: query,
       format: 'json',

@@ -1,9 +1,8 @@
-import { FastifyPluginAsync } from 'fastify';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { ItemTagType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
-import { IdParam, IdsParams } from '../../../../types';
 import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
@@ -25,7 +24,7 @@ import { ItemTagService } from './service';
  * The tag can be copied alongside the item
  */
 
-const plugin: FastifyPluginAsync = async (fastify) => {
+const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db } = fastify;
 
   const itemService = resolveDependency(ItemService);
@@ -41,7 +40,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   itemService.hooks.setPostHook('copy', hook);
 
   // get item tags
-  fastify.get<{ Params: { itemId: string } }>(
+  fastify.get(
     '/:itemId/tags',
     { schema: getItemTags, preHandler: optionalIsAuthenticated },
     async ({ user, params: { itemId } }) => {
@@ -50,7 +49,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // get item tags for many items
-  fastify.get<{ Querystring: IdsParams }>(
+  fastify.get(
     '/tags',
     { schema: getMany, preHandler: optionalIsAuthenticated },
     async ({ user, query: { id: ids } }) => {
@@ -58,7 +57,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  fastify.post<{ Params: { itemId: string; type: ItemTagType } }>(
+  fastify.post(
     '/:itemId/tags/:type',
     { schema: create, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async ({ user, params: { itemId, type } }) => {
@@ -71,7 +70,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // delete item tag
-  fastify.delete<{ Params: { itemId: string; type: ItemTagType } & IdParam }>(
+  fastify.delete(
     '/:itemId/tags/:type',
     { schema: deleteOne, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async ({ user, params: { itemId, type } }) => {

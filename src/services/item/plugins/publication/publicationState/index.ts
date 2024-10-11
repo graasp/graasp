@@ -1,20 +1,20 @@
-import { FastifyPluginAsync } from 'fastify';
-
-import { UUID } from '@graasp/sdk';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../../di/utils';
 import { asDefined } from '../../../../../utils/assertions';
 import { UnauthorizedMember } from '../../../../../utils/errors';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { isAuthenticated } from '../../../../auth/plugins/passport';
+import { getPublicationState } from './schemas';
 import { PublicationService } from './service';
 
-const plugin: FastifyPluginAsync = async (fastify) => {
+const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const publicationService = resolveDependency(PublicationService);
 
-  fastify.get<{ Params: { itemId: UUID } }>(
+  fastify.get(
     '/publication/:itemId/status',
     {
+      schema: getPublicationState,
       preHandler: isAuthenticated,
     },
     async ({ user, params: { itemId } }) => {
