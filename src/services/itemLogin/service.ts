@@ -121,7 +121,7 @@ export class ItemLoginService {
 
       // create membership
       await itemMembershipRepository.addOne({
-        itemPath: item.path,
+        itemPath: itemLoginSchema.item.path,
         accountId: guestAccount.id,
         creatorId: guestAccount.id,
         permission: PermissionLevel.Read,

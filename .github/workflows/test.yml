@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - 1466-fix-item-login # allow test to run for a temporary deploy
   pull_request:
   merge_group:
 

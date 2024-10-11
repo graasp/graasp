@@ -418,4 +418,38 @@ describe('Auth routes tests', () => {
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
     });
   });
+
+  describe('Complete Authentication Process', () => {
+    it('MagicLink', async () => {
+      mockCaptchaValidation(RecaptchaAction.SignUp);
+      const mockSendEmail = jest.spyOn(resolveDependency(MailerService), 'sendEmail');
+
+      const name = faker.internet.userName().toLowerCase();
+      const email = faker.internet.email().toLowerCase();
+
+      const responseRegister = await app.inject({
+        method: HttpMethod.Post,
+        url: '/register',
+        payload: { email, name, captcha: MOCK_CAPTCHA },
+      });
+      expect(responseRegister.statusCode).toBe(StatusCodes.NO_CONTENT);
+
+      let m = await memberRawRepository.findOneBy({ email });
+      expect(m?.lastAuthenticatedAt).toBeNull();
+      expect(m?.isValidated).toBeFalsy();
+
+      expect(mockSendEmail).toHaveBeenCalledTimes(1);
+      const fetchedURL = new URL(mockSendEmail.mock.calls[0][2]);
+      const authURL = fetchedURL.toString();
+      const responseAuth = await app.inject({
+        method: HttpMethod.Get,
+        url: authURL,
+      });
+      expect(responseAuth.statusCode).toBe(StatusCodes.SEE_OTHER);
+
+      m = await memberRawRepository.findOneBy({ email });
+      expect(m?.lastAuthenticatedAt).toBeDefined();
+      expect(m?.isValidated).toBeTruthy();
+    });
+  });
 });
