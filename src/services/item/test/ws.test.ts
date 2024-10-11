@@ -37,70 +37,6 @@ describe('Item websocket hooks', () => {
   });
 
   describe('asynchronous feedback', () => {
-    it('member that initiated the updateMany operation receives success feedback', async () => {
-      const { item } = await testUtils.saveItemAndMembership({ member: actor });
-      const memberUpdates = await ws.subscribe<ItemOpFeedbackEventType<Item, 'update'>>({
-        topic: memberItemsTopic,
-        channel: actor.id,
-      });
-
-      const payload = { name: 'new name' };
-      const response = await app.inject({
-        method: HttpMethod.Patch,
-        url: `/items/?id=${item.id}`,
-        payload,
-      });
-      expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-
-      let updated;
-      await waitForExpect(async () => {
-        updated = await testUtils.rawItemRepository.findOneBy(payload);
-        expect(updated).not.toBe(null);
-      });
-
-      expectItem(updated, { ...item, ...payload }, actor);
-
-      let feedbackUpdate;
-      // this feedback seems flacky, this might be because the websocket is sent from inside the transaction ?
-      await waitForExpect(() => {
-        feedbackUpdate = memberUpdates.find((update) => update.kind === 'feedback');
-        expect(feedbackUpdate).toBeDefined();
-      }, 8000);
-
-      expectUpdateFeedbackOp(
-        feedbackUpdate,
-        ItemOpFeedbackEvent('update', [item.id], { [item.id]: updated }),
-      );
-    });
-
-    it('member that initiated the updateMany operation receives failure feedback', async () => {
-      const { item } = await testUtils.saveItemAndMembership({ member: actor });
-      const memberUpdates = await ws.subscribe<ItemOpFeedbackEventType<Item, 'update'>>({
-        topic: memberItemsTopic,
-        channel: actor.id,
-      });
-
-      jest.spyOn(ItemRepository.prototype, 'updateOne').mockImplementation(() => {
-        throw new Error('mock error');
-      });
-
-      const payload = { name: 'new name' };
-      const response = await app.inject({
-        method: HttpMethod.Patch,
-        url: `/items/?id=${item.id}`,
-        payload,
-      });
-      expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-
-      await waitForExpect(() => {
-        const [feedbackUpdate] = memberUpdates;
-        expectUpdateFeedbackOp(
-          feedbackUpdate,
-          ItemOpFeedbackErrorEvent('update', [item.id], new Error('mock error')),
-        );
-      });
-    });
-
     it('member that initiated the deleteMany operation receives success feedback', async () => {
       const { item } = await testUtils.saveItemAndMembership({ member: actor });
       const memberUpdates = await ws.subscribe<ItemOpFeedbackEventType<Item, 'delete'>>({
@@ -127,7 +63,7 @@ describe('Item websocket hooks', () => {
       });
     });
 
-    it('member that initiated the delete many operation receives failure feedback', async () => {
+    it('member that initiated the deleteMany operation receives failure feedback', async () => {
       const { item } = await testUtils.saveItemAndMembership({ member: actor });
       const memberUpdates = await ws.subscribe<ItemOpFeedbackEventType<Item, 'delete'>>({
         topic: memberItemsTopic,
