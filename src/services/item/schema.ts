@@ -400,20 +400,6 @@ export const updateOne =
     };
   };
 
-export const updateMany = ({ body }) => {
-  return {
-    querystring: S.object()
-      .prop('id', S.array().maxItems(MAX_TARGETS_FOR_MODIFY_REQUEST))
-      .extend(idsQuery),
-    body,
-    response: {
-      200: S.array().items(S.anyOf([error, item])),
-      202: S.array().items(uuid), // ids > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE
-      '4xx': error,
-    },
-  };
-};
-
 export const reorder = {
   params: S.object().prop('id', uuid),
   body: S.object().additionalProperties(false).prop('previousItemId', uuid),

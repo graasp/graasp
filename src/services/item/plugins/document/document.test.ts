@@ -5,7 +5,6 @@ import { FastifyInstance } from 'fastify';
 import { DocumentItemFactory, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
-import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../test/constants';
 import { AppDataSource } from '../../../../plugins/datasource';
 import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
 import { Member } from '../../../member/entities/member';
@@ -20,7 +19,6 @@ const extra = {
     content: 'my text is here',
   },
 };
-
 describe('Document Item tests', () => {
   let app: FastifyInstance;
   let actor: Member | undefined;
@@ -221,107 +219,6 @@ describe('Document Item tests', () => {
         const response = await app.inject({
           method: HttpMethod.Patch,
           url: `/items/${item.id}`,
-          payload,
-        });
-
-        expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
-        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-      });
-    });
-  });
-
-  describe('PATCH many /items', () => {
-    it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
-      const member = await saveMember();
-      const { item } = await testUtils.saveItemAndMembership({ member });
-
-      const response = await app.inject({
-        method: HttpMethod.Patch,
-        url: `/items?id=${item.id}`,
-        payload: { name: 'new name' },
-      });
-
-      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-    });
-
-    describe('Signed In', () => {
-      beforeEach(async () => {
-        ({ app, actor } = await build());
-      });
-
-      it('Update successfully', async () => {
-        const { item } = await testUtils.saveItemAndMembership({
-          item: {
-            type: ItemType.DOCUMENT,
-            extra: {
-              [ItemType.DOCUMENT]: {
-                content: 'value',
-              },
-            },
-          },
-          member: actor,
-        });
-        const payload = {
-          name: 'new name',
-          extra: {
-            [ItemType.DOCUMENT]: {
-              content: 'new value',
-            },
-          },
-          settings: {
-            hasThumbnail: true,
-          },
-        };
-
-        const response = await app.inject({
-          method: HttpMethod.Patch,
-          url: `/items?id=${item.id}`,
-          payload,
-        });
-
-        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-        await new Promise((res) => {
-          setTimeout(async () => {
-            const savedItem = await testUtils.itemRepository.getOne(item.id);
-            // this test a bit how we deal with extra: it replaces existing keys
-            expectItem(savedItem, {
-              ...item,
-              ...payload,
-              extra: { ...item.extra, ...payload.extra },
-            });
-            res(true);
-          }, MULTIPLE_ITEMS_LOADING_TIME);
-        });
-      });
-
-      it('Bad Request if extra is invalid', async () => {
-        const { item } = await testUtils.saveItemAndMembership({
-          item: {
-            type: ItemType.DOCUMENT,
-            extra: {
-              [ItemType.DOCUMENT]: {
-                content: 'value',
-              },
-            },
-          },
-          member: actor,
-        });
-        const payload = {
-          name: 'new name',
-          extra: {
-            [ItemType.LINK]: {
-              content: 'new value',
-            },
-          },
-          settings: {
-            someSetting: 'value',
-          },
-        };
-
-        const response = await app.inject({
-          method: HttpMethod.Patch,
-          url: `/items?id=${item.id}`,
           payload,
         });
 

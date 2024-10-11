@@ -261,18 +261,6 @@ export class ActionItemService {
     await this.actionService.postMany(user?.account, repositories, request, [action]);
   }
 
-  async postManyPatchAction(request: FastifyRequest, repositories: Repositories, items: Item[]) {
-    const { user } = request;
-    const actions = items.map((item) => ({
-      item,
-      type: ItemActionType.Update,
-      // TODO: remove any
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      extra: { itemId: item.id, body: request.body as any },
-    }));
-    await this.actionService.postMany(user?.account, repositories, request, actions);
-  }
-
   async postManyDeleteAction(request: FastifyRequest, repositories: Repositories, items: Item[]) {
     const { user } = request;
     const actions = items.map((item) => ({
