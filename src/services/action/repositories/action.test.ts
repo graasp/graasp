@@ -14,7 +14,7 @@ import {
   Action as GraaspAction,
 } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../test/app';
+import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
 import { AppDataSource } from '../../../plugins/datasource';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
 import { getPreviousMonthFromNow } from '../../member/plugins/action/service';
@@ -37,20 +37,28 @@ describe('Action Repository', () => {
   let member;
   let item;
 
-  beforeEach(async () => {
-    ({ app, actor } = await build());
-    member = await saveMember();
+  beforeAll(async () => {
+    ({ app } = await build({ member: null }));
+  });
 
+  afterAll(async () => {
+    await clearDatabase(app.db);
+    app.close();
+  });
+
+  beforeEach(async () => {
+    actor = await saveMember();
+    mockAuthenticate(actor);
     item = await testUtils.saveItem({ actor });
+    member = await saveMember();
   });
 
   afterEach(async () => {
     jest.clearAllMocks();
-    await clearDatabase(app.db);
+    unmockAuthenticate();
     actor = null;
     member = null;
     item = null;
-    app.close();
   });
 
   describe('postMany', () => {
@@ -86,7 +94,9 @@ describe('Action Repository', () => {
 
       await r.deleteAllForAccount(member.id);
 
-      expect(await rawRepository.count()).toEqual(1);
+      expect(await rawRepository.findBy({ account: member })).toHaveLength(0);
+      // contains at least bob's actions
+      expect(await rawRepository.count()).toBeGreaterThanOrEqual(1);
     });
   });
 
