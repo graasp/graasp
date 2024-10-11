@@ -11,11 +11,10 @@ import {
   expectCopyFeedbackOp,
   expectDeleteFeedbackOp,
   expectMoveFeedbackOp,
-  expectUpdateFeedbackOp,
 } from '../plugins/action/test/utils';
 import { ItemRepository } from '../repository';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../ws/events';
-import { ItemTestUtils, expectItem } from './fixtures/items';
+import { ItemTestUtils } from './fixtures/items';
 
 const testUtils = new ItemTestUtils();
 
