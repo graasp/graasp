@@ -44,10 +44,10 @@ describe('Enroll', () => {
 
   afterEach(async () => {
     jest.clearAllMocks();
-    await clearDatabase(app.db);
   });
 
   afterAll(async () => {
+    await clearDatabase(app.db);
     app.close();
   });
 
