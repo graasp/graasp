@@ -1,54 +1,38 @@
+import { Type } from '@sinclair/typebox';
+
+import { FastifySchema } from 'fastify';
+
 import { ThumbnailSize } from '@graasp/sdk';
 
 import { customType } from '../../../../plugins/typebox';
 import { entityIdSchemaRef } from '../../../../schemas/global';
 
-const upload = {
-  params: {
-    type: 'object',
-    properties: {
+export const upload = {
+  params: entityIdSchemaRef,
+} as const satisfies FastifySchema;
+
+export const download = {
+  params: Type.Object(
+    {
+      // Object Definition
       id: customType.UUID(),
+      size: Type.Enum(ThumbnailSize, { default: ThumbnailSize.Medium }),
     },
-    additionalProperties: false,
-  },
-};
-
-const download = {
-  params: {
-    allOf: [
-      entityIdSchemaRef,
-      {
-        type: 'object',
-        properties: {
-          size: {
-            enum: Object.values(ThumbnailSize),
-            default: ThumbnailSize.Medium,
-          },
-        },
-        required: ['size'],
-      },
-    ],
-  },
-  querystring: {
-    type: 'object',
-    properties: {
-      replyUrl: {
-        type: 'boolean',
-        default: false,
-      },
+    {
+      // Schema Options
+      additionalProperties: false,
     },
-    additionalProperties: false,
-  },
-};
-
-const deleteSchema = {
-  params: {
-    type: 'object',
-    properties: {
-      id: customType.UUID(),
+  ),
+  querystring: Type.Object(
+    {
+      replyUrl: Type.Boolean({ default: false }),
     },
-    additionalProperties: false,
-  },
-};
+    {
+      additionalProperties: false,
+    },
+  ),
+} as const satisfies FastifySchema;
 
-export { upload, download, deleteSchema };
+export const deleteSchema = {
+  params: entityIdSchemaRef,
+} as const satisfies FastifySchema;

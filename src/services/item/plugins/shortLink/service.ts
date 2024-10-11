@@ -100,8 +100,9 @@ export class ShortLinkService {
     updatedShortLink: ShortLinkPatchPayload,
   ) {
     const { shortLinkRepository } = repositories;
-
-    if (!member) throw new UnauthorizedMember();
+    if (!member) {
+      throw new UnauthorizedMember();
+    }
     const shortLink = await shortLinkRepository.getOne(alias);
 
     // check that the member can admin the item to be allowed to create short link

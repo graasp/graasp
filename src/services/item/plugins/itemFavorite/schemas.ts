@@ -1,8 +1,10 @@
 import { Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
+import { FastifySchema } from 'fastify';
+
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
-import { itemSchemaRef, packedItemSchemaRef } from '../../schema';
+import { itemIdSchemaRef, itemSchemaRef, packedItemSchemaRef } from '../../schema';
 
 export const favoriteSchemaRef = registerSchemaAsRef(
   'favorite',
@@ -39,32 +41,31 @@ export const packedFavoriteSchemaRef = registerSchemaAsRef(
 );
 
 export const getFavorite = {
-  querystring: {
-    type: 'object',
-    properties: {
-      memberId: customType.UUID(),
-    },
-    additionalProperties: false,
-  },
+  querystring: Type.Partial(
+    Type.Object(
+      {
+        memberId: customType.UUID(),
+      },
+      {
+        additionalProperties: false,
+      },
+    ),
+  ),
   response: {
     [StatusCodes.OK]: Type.Array(packedFavoriteSchemaRef),
   },
-};
+} as const satisfies FastifySchema;
 
 export const create = {
-  params: {
-    itemId: customType.UUID(),
-  },
+  params: itemIdSchemaRef,
   response: {
     [StatusCodes.OK]: favoriteSchemaRef,
   },
-};
+} as const satisfies FastifySchema;
 
 export const deleteOne = {
-  params: {
-    itemId: customType.UUID(),
-  },
+  params: itemIdSchemaRef,
   response: {
     [StatusCodes.OK]: customType.UUID(),
   },
-};
+} as const satisfies FastifySchema;

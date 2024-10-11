@@ -1,19 +1,23 @@
+import { Type } from '@sinclair/typebox';
+
+import { FastifySchema } from 'fastify';
+
 import { customType } from '../../../../plugins/typebox';
+import { itemIdSchemaRef } from '../../schema';
 
 export const zipImport = {
-  querystring: {
-    type: 'object',
-    properties: {
-      parentId: customType.UUID(),
-    },
-    additionalProperties: false,
-  },
-};
+  querystring: Type.Partial(
+    Type.Object(
+      {
+        parentId: customType.UUID(),
+      },
+      {
+        additionalProperties: false,
+      },
+    ),
+  ),
+} as const satisfies FastifySchema;
 
 export const zipExport = {
-  params: {
-    itemId: customType.UUID(),
-  },
-  required: ['itemId'],
-  additionalProperties: false,
-};
+  params: itemIdSchemaRef,
+} as const satisfies FastifySchema;

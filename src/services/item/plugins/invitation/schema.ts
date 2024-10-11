@@ -85,7 +85,7 @@ export const invite = {
     '4xx': errorSchemaRef,
     [StatusCodes.INTERNAL_SERVER_ERROR]: errorSchemaRef,
   },
-};
+} as const satisfies FastifySchema;
 
 export const inviteFromCSV = {
   params: entityIdSchemaRef,
@@ -114,14 +114,14 @@ export const getForItem = {
   response: {
     [StatusCodes.OK]: Type.Array(invitationSchemaRef),
   },
-};
+} as const satisfies FastifySchema;
 
 export const getById = {
   params: entityIdSchemaRef,
   response: {
     [StatusCodes.OK]: invitationSchemaRef,
   },
-};
+} as const satisfies FastifySchema;
 
 export const updateOne = {
   params: Type.Object({ id: customType.UUID(), invitationId: customType.UUID() }),
@@ -129,15 +129,15 @@ export const updateOne = {
   response: {
     [StatusCodes.OK]: invitationSchemaRef,
   },
-};
+} as const satisfies FastifySchema;
 
 export const deleteOne = {
   params: Type.Object({ id: customType.UUID(), invitationId: customType.UUID() }),
   response: {
     [StatusCodes.OK]: Type.String(),
   },
-};
+} as const satisfies FastifySchema;
 
 export const sendOne = {
   params: Type.Object({ id: customType.UUID(), invitationId: customType.UUID() }),
-};
+} as const satisfies FastifySchema;

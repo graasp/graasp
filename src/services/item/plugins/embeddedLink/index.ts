@@ -1,4 +1,4 @@
-import { FastifyPluginAsync } from 'fastify';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { ItemType } from '@graasp/sdk';
 
@@ -18,7 +18,10 @@ interface GraaspEmbeddedLinkItemOptions {
   iframelyHrefOrigin: string;
 }
 
-const plugin: FastifyPluginAsync<GraaspEmbeddedLinkItemOptions> = async (fastify, options) => {
+const plugin: FastifyPluginAsyncTypebox<GraaspEmbeddedLinkItemOptions> = async (
+  fastify,
+  options,
+) => {
   const { iframelyHrefOrigin } = options;
   const {
     log,
@@ -35,9 +38,9 @@ const plugin: FastifyPluginAsync<GraaspEmbeddedLinkItemOptions> = async (fastify
   // add link extra update schema that allows to update url
   extendExtrasUpdateSchema(updateExtraSchema);
 
-  fastify.get<{ Querystring: { link: string } }>(
+  fastify.get(
     '/metadata',
-    { preHandler: isAuthenticated, schema: getLinkMetadata },
+    { schema: getLinkMetadata, preHandler: isAuthenticated },
     async ({ query: { link } }) => {
       if (!link) {
         throw new LinkQueryParameterIsRequired();

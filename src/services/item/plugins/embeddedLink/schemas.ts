@@ -1,8 +1,12 @@
+import { Type } from '@sinclair/typebox';
 import { S } from 'fluent-json-schema';
+import { StatusCodes } from 'http-status-codes';
+
+import { FastifySchema } from 'fastify';
 
 import { ItemType } from '@graasp/sdk';
 
-import { error } from '../../../../schemas/fluent-schema';
+import { errorSchemaRef } from '../../../../schemas/global';
 
 // on link creation or update, the only allowed property in extra is the "url" property.
 // all other extra properties are filled by the backend.
@@ -30,18 +34,24 @@ export const updateExtraSchema = S.object()
   .required([ItemType.LINK]);
 
 export const getLinkMetadata = {
-  querystring: S.object()
-    .additionalProperties(false)
-    .prop('link', S.string().format('uri-reference')),
+  querystring: Type.Partial(
+    Type.Object(
+      { link: Type.String({ format: 'uri-reference' }) },
+      { additionalProperties: false },
+    ),
+  ),
   response: {
-    '2xx': S.object()
-      .additionalProperties(false)
-      .prop('title', S.string())
-      .prop('description', S.string())
-      .prop('html', S.string())
-      .prop('isEmbeddingAllowed', S.boolean())
-      .prop('icons', S.array().items(S.string()))
-      .prop('thumbnails', S.array().items(S.string())),
-    '4xx': error,
+    [StatusCodes.OK]: Type.Object(
+      {
+        title: Type.Optional(Type.String()),
+        description: Type.Optional(Type.String()),
+        html: Type.String(),
+        isEmbeddingAllowed: Type.Boolean(),
+        icons: Type.Array(Type.String()),
+        thumbnails: Type.Array(Type.String()),
+      },
+      { additionalProperties: false },
+    ),
+    '4xx': errorSchemaRef,
   },
-};
+} as const satisfies FastifySchema;

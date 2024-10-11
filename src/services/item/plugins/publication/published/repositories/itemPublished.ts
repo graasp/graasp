@@ -1,5 +1,4 @@
 import { EntityManager } from 'typeorm';
-import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 
 import { PermissionLevel } from '@graasp/sdk';
 
@@ -96,7 +95,7 @@ export class ItemPublishedRepository extends AbstractRepository<ItemPublished> {
     const p = this.repository.create({
       item: item,
       creator,
-    }) as QueryDeepPartialEntity<ItemPublished>;
+    });
     await this.repository.insert(p);
     return p;
   }

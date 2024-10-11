@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifyPluginAsync } from 'fastify';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { PermissionLevel, PublicationStatus } from '@graasp/sdk';
 
@@ -23,7 +23,7 @@ import { itemValidation, itemValidationGroup } from './schemas';
 import { ItemValidationService } from './service';
 import { assertItemIsFolder } from './utils';
 
-const plugin: FastifyPluginAsync = async (fastify) => {
+const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db, websockets } = fastify;
 
   const validationService = resolveDependency(ItemValidationService);
@@ -31,7 +31,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   const itemService = resolveDependency(ItemService);
 
   // get validation status of given itemId
-  fastify.get<{ Params: { itemId: string } }>(
+  fastify.get(
     '/:itemId/validations/latest',
     {
       schema: itemValidation,
@@ -47,7 +47,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // get validation group
-  fastify.get<{ Params: { itemValidationGroupId: string } }>(
+  fastify.get(
     '/:itemId/validations/:itemValidationGroupId',
     {
       schema: itemValidationGroup,
@@ -65,7 +65,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // validate item with given itemId in param
-  fastify.post<{ Params: { itemId: string } }>(
+  fastify.post(
     '/:itemId/validate',
     {
       schema: itemValidation,

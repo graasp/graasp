@@ -1,10 +1,9 @@
 import { fastifyMultipart } from '@fastify/multipart';
-import { FastifyPluginAsync } from 'fastify';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { FileItemProperties, HttpMethod, PermissionLevel } from '@graasp/sdk';
+import { FileItemProperties, PermissionLevel } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
-import { IdParam } from '../../../../types';
 import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
@@ -25,7 +24,7 @@ export interface GraaspPluginFileOptions {
   maxMemberStorage?: number; // max storage space for a user
 }
 
-const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, options) => {
+const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fastify, options) => {
   const { uploadMaxFileNb = MAX_NUMBER_OF_FILES_UPLOAD, maxFileSize = DEFAULT_MAX_FILE_SIZE } =
     options;
 
@@ -105,9 +104,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     await fileItemService.copy(actor, repositories, { original, copy });
   });
 
-  fastify.route<{ Querystring: IdParam & { previousItemId?: string }; Body: unknown }>({
-    method: HttpMethod.Post,
-    url: '/upload',
+  fastify.post('/upload', {
     schema: upload,
     preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     handler: async (request) => {
@@ -173,7 +170,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     },
   });
 
-  fastify.get<{ Params: IdParam; Querystring: { replyUrl?: boolean } }>(
+  fastify.get(
     '/:id/download',
     {
       schema: download,
