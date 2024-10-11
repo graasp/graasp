@@ -5,7 +5,11 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, ItemTagType } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
+import build, {
+  clearDatabase,
+  mockAuthenticate,
+  unmockAuthenticate,
+} from '../../../../../../test/app';
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { ItemNotFound, MemberCannotAccess } from '../../../../../utils/errors';
@@ -37,11 +41,19 @@ describe('Tags', () => {
   let app: FastifyInstance;
   let actor;
 
+  beforeAll(async () => {
+    ({ app } = await build({ member: null }));
+  });
+
+  afterAll(async () => {
+    await clearDatabase(app.db);
+    app.close();
+  });
+
   afterEach(async () => {
     jest.clearAllMocks();
-    await clearDatabase(app.db);
     actor = null;
-    app.close();
+    unmockAuthenticate();
   });
 
   describe('GET /:itemId/tags', () => {
@@ -49,7 +61,6 @@ describe('Tags', () => {
 
     describe('Signed Out', () => {
       beforeEach(async () => {
-        ({ app } = await build({ member: null }));
         member = await saveMember();
         ({ item } = await testUtils.saveItemAndMembership({ member }));
       });
@@ -82,7 +93,8 @@ describe('Tags', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('Get tags of an item', async () => {
@@ -120,7 +132,6 @@ describe('Tags', () => {
       let item, member;
 
       beforeEach(async () => {
-        ({ app } = await build({ member: null }));
         member = await saveMember();
         ({ item } = await testUtils.saveItemAndMembership({ member }));
       });
@@ -156,8 +167,10 @@ describe('Tags', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
+
       it('Get tags for a single item', async () => {
         const { item } = await testUtils.saveItemAndMembership({ member: actor });
         const itemTags = await saveTagsForItem({ item, creator: actor });
@@ -235,11 +248,8 @@ describe('Tags', () => {
     const type = ItemTagType.Hidden;
 
     describe('Signed Out', () => {
-      let member;
-
       it('Throws if item is private', async () => {
-        ({ app } = await build({ member: null }));
-        member = await saveMember();
+        const member = await saveMember();
         ({ item } = await testUtils.saveItemAndMembership({ member }));
 
         const response = await app.inject({
@@ -253,7 +263,8 @@ describe('Tags', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('Create a tag for an item', async () => {
@@ -322,11 +333,8 @@ describe('Tags', () => {
     const type = ItemTagType.Public;
 
     describe('Signed Out', () => {
-      let member;
-
       it('Throws if item is private', async () => {
-        ({ app } = await build({ member: null }));
-        member = await saveMember();
+        const member = await saveMember();
         ({ item } = await testUtils.saveItemAndMembership({ member }));
 
         const response = await app.inject({
@@ -342,7 +350,9 @@ describe('Tags', () => {
       let toDelete;
 
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
+
         ({ item } = await testUtils.saveItemAndMembership({ member: actor }));
         itemTags = await saveTagsForItem({ item, creator: actor });
         toDelete = itemTags[0];
