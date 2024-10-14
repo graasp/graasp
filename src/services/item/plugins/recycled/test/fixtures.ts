@@ -42,17 +42,3 @@ export const expectManyRecycledItems = (
     );
   });
 };
-
-export const expectManyPackedRecycledItems = (
-  newRecycledItems: PackedRecycledItemData[],
-  items: PackedItem[],
-  creator?: Member,
-) => {
-  newRecycledItems.forEach((rI) => {
-    expectPackedRecycledItem(
-      rI,
-      items.find(({ path }) => rI.item?.path === path),
-      creator,
-    );
-  });
-};

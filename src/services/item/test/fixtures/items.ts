@@ -190,13 +190,12 @@ export class ItemTestUtils {
 
   saveRecycledItem = async (member: Member, defaultItem?: Item) => {
     let item = defaultItem;
-    let packedItem;
     if (!item) {
-      ({ item, packedItem } = await this.saveItemAndMembership({ member }));
+      ({ item } = await this.saveItemAndMembership({ member }));
     }
     await this.recycledItemDataRepository.addOne({ itemPath: item.path, creatorId: member.id });
     await this.rawItemRepository.softRemove(item);
-    return { item, packedItem };
+    return { item };
   };
 
   saveCollections = async (member) => {

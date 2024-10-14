@@ -54,8 +54,8 @@ export class RecycledItemDataRepository extends MutableRepository<RecycledItemDa
       )
       .orderBy('recycledItem.created_at', 'DESC');
 
-    const [im, totalCount] = await query.offset(skip).limit(limit).getManyAndCount();
-    return { data: im, totalCount, pagination };
+    const [data, totalCount] = await query.offset(skip).limit(limit).getManyAndCount();
+    return { data, totalCount, pagination };
   }
 
   // warning: this call removes from the table
