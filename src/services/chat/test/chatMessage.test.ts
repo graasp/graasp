@@ -543,7 +543,10 @@ describe('Chat Message tests', () => {
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
 
-        expect(await rawChatMessageRepository.count()).toEqual(otherMessages.length);
+        expect(await rawChatMessageRepository.countBy({ item })).toEqual(0);
+        expect(await rawChatMessageRepository.countBy({ item: anotherItem })).toEqual(
+          otherMessages.length,
+        );
       });
 
       it('Throws if item id is incorrect', async () => {
