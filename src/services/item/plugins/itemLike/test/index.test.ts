@@ -5,7 +5,11 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
+import build, {
+  clearDatabase,
+  mockAuthenticate,
+  unmockAuthenticate,
+} from '../../../../../../test/app';
 import { MemberCannotAccess } from '../../../../../utils/errors';
 import { Member } from '../../../../member/entities/member';
 import { saveMember } from '../../../../member/test/fixtures/members';
@@ -49,17 +53,23 @@ describe('Item Like', () => {
   let app: FastifyInstance;
   let actor;
 
+  beforeAll(async () => {
+    ({ app } = await build({ member: null }));
+  });
+
+  afterAll(async () => {
+    await clearDatabase(app.db);
+    app.close();
+  });
+
   afterEach(async () => {
     jest.clearAllMocks();
-    await clearDatabase(app.db);
+    unmockAuthenticate();
     actor = null;
-    app.close();
   });
 
   describe('GET /liked', () => {
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
-
       const response = await app.inject({
         method: HttpMethod.Get,
         url: '/items/liked',
@@ -70,7 +80,8 @@ describe('Item Like', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('Get item likes of a user', async () => {
@@ -131,7 +142,6 @@ describe('Item Like', () => {
     describe('Signed Out', () => {
       let member;
       beforeEach(async () => {
-        ({ app } = await build({ member: null }));
         member = await saveMember();
       });
 
@@ -149,7 +159,6 @@ describe('Item Like', () => {
     describe('Public', () => {
       let member;
       beforeEach(async () => {
-        ({ app } = await build({ member: null }));
         member = await saveMember();
       });
 
@@ -183,7 +192,8 @@ describe('Item Like', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('Get like entries for item', async () => {
@@ -241,7 +251,6 @@ describe('Item Like', () => {
 
   describe('POST /:itemId/like', () => {
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
       const member = await saveMember();
       const { item } = await testUtils.saveItemAndMembership({ member });
 
@@ -255,7 +264,8 @@ describe('Item Like', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('Create like record', async () => {
@@ -298,7 +308,6 @@ describe('Item Like', () => {
 
   describe('DELETE :itemId/like', () => {
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
       const member = await saveMember();
       const { item } = await testUtils.saveItemAndMembership({ member });
 
@@ -312,7 +321,8 @@ describe('Item Like', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('Delete item like', async () => {
