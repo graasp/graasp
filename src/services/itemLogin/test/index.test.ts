@@ -15,7 +15,7 @@ import {
   PermissionLevel,
 } from '@graasp/sdk';
 
-import build, { clearDatabase, mockAuthenticate } from '../../../../test/app';
+import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
 import { AppDataSource } from '../../../plugins/datasource';
 import { assertIsDefined } from '../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
@@ -83,18 +83,25 @@ describe('Item Login Tests', () => {
   let anotherItem: Item | null;
   let member: Member | null;
 
+  beforeAll(async () => {
+    ({ app } = await build({ member: null }));
+  });
+
+  afterAll(async () => {
+    await clearDatabase(app.db);
+    app.close();
+  });
+
   afterEach(async () => {
     jest.clearAllMocks();
-    await clearDatabase(app.db);
     actor = null;
+    unmockAuthenticate();
     anotherItem = null;
     member = null;
-    app.close();
   });
 
   describe('GET /:id/login-schema-type', () => {
     it('Get item login if signed out', async () => {
-      ({ app } = await build({ member: null }));
       const member = await saveMember();
       ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member }));
       const { itemLoginSchema } = await saveItemLoginSchema({
@@ -111,7 +118,6 @@ describe('Item Login Tests', () => {
     });
 
     it('Cannot get item login type if disabled', async () => {
-      ({ app } = await build({ member: null }));
       const member = await saveMember();
       ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member }));
       await saveItemLoginSchema({
@@ -129,7 +135,6 @@ describe('Item Login Tests', () => {
     });
 
     it('Get item login if item is hidden', async () => {
-      ({ app } = await build({ member: null }));
       const member = await saveMember();
       ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member }));
       await rawItemTagRepository.save({
@@ -150,7 +155,6 @@ describe('Item Login Tests', () => {
     });
 
     it('Get item login if item is hidden with read permission', async () => {
-      ({ app } = await build({ member: null }));
       const member = await saveMember();
       ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member }));
       await rawItemTagRepository.save({
@@ -179,7 +183,6 @@ describe('Item Login Tests', () => {
     });
 
     it('Get item login if item is hidden with write permission', async () => {
-      ({ app } = await build({ member: null }));
       const member = await saveMember();
       ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member }));
       await rawItemTagRepository.save({
@@ -208,7 +211,6 @@ describe('Item Login Tests', () => {
     });
 
     it('Get item login if signed out for child', async () => {
-      ({ app } = await build({ member: null }));
       const member = await saveMember();
       ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member }));
       const { itemLoginSchema } = await saveItemLoginSchema({
@@ -228,7 +230,6 @@ describe('Item Login Tests', () => {
 
   describe('GET /:id/login-schema', () => {
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
       const member = await saveMember();
       ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member }));
       await saveItemLoginSchema({ item: anotherItem as unknown as DiscriminatedItem });
@@ -245,7 +246,8 @@ describe('Item Login Tests', () => {
       let itemLoginSchema: ItemLoginSchema;
 
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
         const member = await saveMember();
         ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member }));
         ({ itemLoginSchema } = await saveItemLoginSchema({
@@ -379,7 +381,8 @@ describe('Item Login Tests', () => {
   describe('POST /:id/login', () => {
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
         const member = await saveMember();
         ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member }));
         await saveItemLoginSchema({ item: anotherItem as unknown as DiscriminatedItem });
@@ -398,7 +401,6 @@ describe('Item Login Tests', () => {
 
     describe('ItemLogin Schema Status', () => {
       beforeEach(async () => {
-        ({ app } = await build({ member: null }));
         member = await saveMember();
         ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member }));
       });
@@ -449,7 +451,6 @@ describe('Item Login Tests', () => {
           item: anotherItem as unknown as DiscriminatedItem,
           status: ItemLoginSchemaStatus.Disabled,
         });
-        expect(await rawItemLoginRepository.count()).toEqual(0);
 
         const res = await app.inject({
           method: HttpMethod.Post,
@@ -481,10 +482,6 @@ describe('Item Login Tests', () => {
     });
 
     describe('ItemLogin from child', () => {
-      beforeEach(async () => {
-        ({ app } = await build({ member: null }));
-      });
-
       it('Successfully register when item login is defined in parent', async () => {
         const payload = USERNAME_LOGIN;
         // pre-create pseudonymized data
@@ -516,7 +513,6 @@ describe('Item Login Tests', () => {
     describe('ItemLoginSchemaType.Username', () => {
       describe('Signed Out', () => {
         beforeEach(async () => {
-          ({ app } = await build({ member: null }));
           member = await saveMember();
           ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member }));
         });
@@ -537,7 +533,6 @@ describe('Item Login Tests', () => {
             assertIsDefined(anotherItem);
             const payload = USERNAME_LOGIN;
             await saveItemLoginSchema({ item: anotherItem as unknown as DiscriminatedItem });
-            expect(await rawItemLoginRepository.count()).toEqual(0);
 
             const res = await app.inject({
               method: HttpMethod.Post,
@@ -599,7 +594,6 @@ describe('Item Login Tests', () => {
 
       describe('Signed Out', () => {
         beforeEach(async () => {
-          ({ app } = await build({ member: null }));
           member = await saveMember();
           ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member }));
         });
@@ -623,7 +617,6 @@ describe('Item Login Tests', () => {
               type: ItemLoginSchemaType.UsernameAndPassword,
               password: payload.password,
             });
-            expect(await rawItemLoginRepository.count()).toEqual(0);
 
             const res = await app.inject({
               method: HttpMethod.Post,
@@ -662,16 +655,22 @@ describe('Item Login Tests', () => {
               type: ItemLoginSchemaType.UsernameAndPassword,
               password: payload.password,
             });
-            expect(await rawItemLoginRepository.count()).toEqual(0);
 
-            const res = await app.inject({
+            // save previous login with some password
+            await app.inject({
               method: HttpMethod.Post,
               url: `${ITEMS_ROUTE_PREFIX}/${anotherItem.id}/login`,
               payload,
             });
 
-            expect(res.statusCode).toBe(StatusCodes.OK);
-            expect(res.json().name).toEqual(payload.username);
+            // login again with wrong password - should throw
+            const res = await app.inject({
+              method: HttpMethod.Post,
+              url: `${ITEMS_ROUTE_PREFIX}/${anotherItem.id}/login`,
+              payload: { username: payload.username, password: 'wrong' },
+            });
+
+            expect(res.statusCode).toBe(StatusCodes.UNAUTHORIZED);
           });
         });
       });
@@ -684,7 +683,6 @@ describe('Item Login Tests', () => {
     };
 
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
       const member = await saveMember();
       ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member }));
 
@@ -699,7 +697,8 @@ describe('Item Login Tests', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
         ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member: actor }));
         await saveItemLoginSchema({ item: anotherItem as unknown as DiscriminatedItem });
       });

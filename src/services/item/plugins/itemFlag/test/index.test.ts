@@ -5,7 +5,11 @@ import { FastifyInstance } from 'fastify';
 
 import { FlagType, HttpMethod } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
+import build, {
+  clearDatabase,
+  mockAuthenticate,
+  unmockAuthenticate,
+} from '../../../../../../test/app';
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { ItemNotFound } from '../../../../../utils/errors';
@@ -27,16 +31,23 @@ describe('Item Flag Tests', () => {
   let actor;
   const payload = { type: FlagType.FalseInformation };
 
+  beforeAll(async () => {
+    ({ app } = await build({ member: null }));
+  });
+
+  afterAll(async () => {
+    await clearDatabase(app.db);
+    app.close();
+  });
+
   afterEach(async () => {
     jest.clearAllMocks();
-    await clearDatabase(app.db);
     actor = null;
-    app.close();
+    unmockAuthenticate();
   });
 
   describe('GET /flags', () => {
     it('Successfully get flags', async () => {
-      ({ app } = await build({ member: null }));
       const response = await app.inject({
         method: HttpMethod.Get,
         url: `${ITEMS_ROUTE_PREFIX}/flags`,
@@ -48,7 +59,8 @@ describe('Item Flag Tests', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('Successfully get flags', async () => {
@@ -65,7 +77,6 @@ describe('Item Flag Tests', () => {
 
   describe('POST /:itemId/flags', () => {
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
       const member = await saveMember();
       const { item } = await testUtils.saveItemAndMembership({ member });
 
@@ -80,7 +91,8 @@ describe('Item Flag Tests', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
       it('Successfully post item flag', async () => {
         const { item } = await testUtils.saveItemAndMembership({ member: actor });

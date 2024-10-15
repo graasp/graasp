@@ -6,7 +6,7 @@ import { MentionStatus } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
 import { AppDataSource } from '../../../../plugins/datasource';
-import { Actor } from '../../../member/entities/member';
+import { Member } from '../../../member/entities/member';
 import { ChatMentionNotFound, NoChatMentionForMember } from '../../errors';
 import { expectChatMentions } from '../../test/chatMention.test';
 import { saveItemWithChatMessages } from '../../test/chatMessage.test';
@@ -16,7 +16,7 @@ import { ChatMentionRepository } from './repository';
 const rawRepository = AppDataSource.getRepository(ChatMention);
 const repository = new ChatMentionRepository();
 
-const saveItemWithChatMessagesAndMentionsAndNoise = async (actor: Actor) => {
+const saveItemWithChatMessagesAndMentionsAndNoise = async (actor: Member) => {
   const { chatMessages, members } = await saveItemWithChatMessages(actor);
   const member = members[0];
   const mention1 = await rawRepository.save({ account: member, message: chatMessages[0] });

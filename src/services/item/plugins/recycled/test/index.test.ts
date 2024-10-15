@@ -13,7 +13,11 @@ import {
   PermissionLevel,
 } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
+import build, {
+  clearDatabase,
+  mockAuthenticate,
+  unmockAuthenticate,
+} from '../../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants';
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
@@ -30,18 +34,24 @@ describe('Recycle Bin Tests', () => {
   let app: FastifyInstance;
   let actor;
 
+  beforeAll(async () => {
+    ({ app } = await build({ member: null }));
+  });
+
+  afterAll(async () => {
+    await clearDatabase(app.db);
+    app.close();
+  });
+
   afterEach(async () => {
     jest.clearAllMocks();
-    await clearDatabase(app.db);
     actor = null;
-    app.close();
+    unmockAuthenticate();
   });
 
   describe('Endpoints', () => {
     describe('GET /recycled', () => {
       it('Throws if signed out', async () => {
-        ({ app } = await build({ member: null }));
-
         const response = await app.inject({
           method: HttpMethod.Get,
           url: '/items/recycled',
@@ -52,7 +62,8 @@ describe('Recycle Bin Tests', () => {
 
       describe('Signed In', () => {
         beforeEach(async () => {
-          ({ app, actor } = await build());
+          actor = await saveMember();
+          mockAuthenticate(actor);
         });
 
         it('Successfully get recycled items', async () => {
@@ -123,7 +134,6 @@ describe('Recycle Bin Tests', () => {
 
     describe('POST /recycle', () => {
       it('Throws if signed out', async () => {
-        ({ app } = await build({ member: null }));
         const member = await saveMember();
         const { item } = await testUtils.saveItemAndMembership({ member });
 
@@ -139,7 +149,8 @@ describe('Recycle Bin Tests', () => {
         let items;
         let itemIds;
         beforeEach(async () => {
-          ({ app, actor } = await build());
+          actor = await saveMember();
+          mockAuthenticate(actor);
           const { item: item1 } = await testUtils.saveItemAndMembership({ member: actor });
           const { item: item2 } = await testUtils.saveItemAndMembership({ member: actor });
           const { item: item3 } = await testUtils.saveItemAndMembership({ member: actor });
@@ -235,8 +246,6 @@ describe('Recycle Bin Tests', () => {
 
     describe('POST /restore', () => {
       it('Throws if signed out', async () => {
-        ({ app } = await build({ member: null }));
-
         const response = await app.inject({
           method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/restore?id=${v4()}`,
@@ -249,7 +258,8 @@ describe('Recycle Bin Tests', () => {
         let items: Item[];
         let itemIds: string[];
         beforeEach(async () => {
-          ({ app, actor } = await build());
+          actor = await saveMember();
+          mockAuthenticate(actor);
           const { item: item1 } = await testUtils.saveRecycledItem(actor);
           const { item: item2 } = await testUtils.saveRecycledItem(actor);
           const { item: item3 } = await testUtils.saveRecycledItem(actor);
@@ -361,7 +371,8 @@ describe('Recycle Bin Tests', () => {
 
   describe('Scenarios', () => {
     beforeEach(async () => {
-      ({ app, actor } = await build());
+      actor = await saveMember();
+      mockAuthenticate(actor);
     });
 
     /**
@@ -381,7 +392,12 @@ describe('Recycle Bin Tests', () => {
       expect(recycle.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        expect(await recycledItemDataRawRepository.count()).toEqual(1);
+        expect(
+          await recycledItemDataRawRepository.find({
+            where: { item: { id: parentItem.id } },
+            withDeleted: true,
+          }),
+        ).toHaveLength(1);
       });
       expect(await testUtils.rawItemRepository.findOneBy({ id: childItem.id })).toBe(null);
 
@@ -392,7 +408,12 @@ describe('Recycle Bin Tests', () => {
       expect(restore.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        expect(await recycledItemDataRawRepository.count()).toEqual(0);
+        expect(
+          await recycledItemDataRawRepository.find({
+            where: { item: { id: parentItem.id } },
+            withDeleted: true,
+          }),
+        ).toHaveLength(0);
       });
 
       const restoredChild = await testUtils.rawItemRepository.findOne({

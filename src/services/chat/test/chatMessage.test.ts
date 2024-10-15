@@ -5,7 +5,7 @@ import { FastifyInstance } from 'fastify';
 
 import { FolderItemFactory, HttpMethod } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../test/app';
+import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
 import { resolveDependency } from '../../../di/utils';
 import { AppDataSource } from '../../../plugins/datasource';
 import { MailerService } from '../../../plugins/mailer/service';
@@ -25,7 +25,7 @@ const memberRawRepository = AppDataSource.getRepository(Member);
 const adminChatMentionRepository = AppDataSource.getRepository(ChatMention);
 const rawChatMessageRepository = AppDataSource.getRepository(ChatMessage);
 
-export const saveItemWithChatMessages = async (creator) => {
+export const saveItemWithChatMessages = async (creator: Member) => {
   const { item } = await testUtils.saveItemAndMembership({ member: creator });
   const chatMessages: ChatMessage[] = [];
   const members: Member[] = [];
@@ -52,17 +52,23 @@ describe('Chat Message tests', () => {
   let app: FastifyInstance;
   let actor;
 
+  beforeAll(async () => {
+    ({ app } = await build({ member: null }));
+  });
+
+  afterAll(async () => {
+    await clearDatabase(app.db);
+    app.close();
+  });
+
   afterEach(async () => {
     jest.clearAllMocks();
-    await clearDatabase(app.db);
     actor = null;
-    app.close();
+    unmockAuthenticate();
   });
 
   describe('GET /item-id/chat', () => {
     it('Throws for private item', async () => {
-      ({ app } = await build({ member: null }));
-
       const member = await saveMember();
       const item = await testUtils.saveItem({ actor: member });
 
@@ -76,7 +82,8 @@ describe('Chat Message tests', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('Get successfully', async () => {
@@ -127,7 +134,6 @@ describe('Chat Message tests', () => {
 
     describe('Public', () => {
       it('Get successfully', async () => {
-        ({ app } = await build({ member: null }));
         const member = await saveMember();
         const { item, chatMessages } = await saveItemWithChatMessages(member);
         await setItemPublic(item, member);
@@ -148,8 +154,6 @@ describe('Chat Message tests', () => {
 
   describe('POST /item-id/chat', () => {
     it('Throws for private item', async () => {
-      ({ app } = await build({ member: null }));
-
       const item = FolderItemFactory();
       const payload = { body: 'hello' };
 
@@ -166,7 +170,8 @@ describe('Chat Message tests', () => {
       let item;
 
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
         ({ item } = await saveItemWithChatMessages(actor));
       });
 
@@ -262,8 +267,6 @@ describe('Chat Message tests', () => {
 
   describe('PATCH /item-id/chat/message-id', () => {
     it('Throws for private item', async () => {
-      ({ app } = await build({ member: null }));
-
       const item = FolderItemFactory();
       const payload = { body: 'hello' };
 
@@ -280,7 +283,8 @@ describe('Chat Message tests', () => {
       let item, chatMessages, members;
 
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
         ({ item, chatMessages, members } = await saveItemWithChatMessages(actor));
       });
 
@@ -291,6 +295,7 @@ describe('Chat Message tests', () => {
           creator: actor,
           body: 'body',
         });
+
         const initialCount = await rawChatMessageRepository.count();
 
         const response = await app.inject({
@@ -395,8 +400,6 @@ describe('Chat Message tests', () => {
 
   describe('DELETE /item-id/chat/message-id', () => {
     it('Throws for private item', async () => {
-      ({ app } = await build({ member: null }));
-
       const item = FolderItemFactory();
 
       const response = await app.inject({
@@ -411,7 +414,8 @@ describe('Chat Message tests', () => {
       let item, members;
 
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
         ({ item, members } = await saveItemWithChatMessages(actor));
       });
 
@@ -500,8 +504,6 @@ describe('Chat Message tests', () => {
 
   describe('DELETE /item-id/chat', () => {
     it('Throws for private item', async () => {
-      ({ app } = await build({ member: null }));
-
       const item = FolderItemFactory();
 
       const response = await app.inject({
@@ -516,7 +518,8 @@ describe('Chat Message tests', () => {
       let item;
 
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
         ({ item } = await saveItemWithChatMessages(actor));
       });
 
@@ -540,7 +543,10 @@ describe('Chat Message tests', () => {
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
 
-        expect(await rawChatMessageRepository.count()).toEqual(otherMessages.length);
+        expect(await rawChatMessageRepository.countBy({ item })).toEqual(0);
+        expect(await rawChatMessageRepository.countBy({ item: anotherItem })).toEqual(
+          otherMessages.length,
+        );
       });
 
       it('Throws if item id is incorrect', async () => {
