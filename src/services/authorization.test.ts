@@ -9,7 +9,7 @@ import {
   PermissionLevel,
 } from '@graasp/sdk';
 
-import build, { clearDatabase, mockAuthenticate } from '../../test/app';
+import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../test/app';
 import { ItemMembershipRepository } from '../services/itemMembership/repository';
 import { asDefined } from '../utils/assertions';
 import { MemberCannotAccess, MemberCannotAdminItem, MemberCannotWriteItem } from '../utils/errors';
@@ -29,6 +29,7 @@ import { expectPackedItem } from './item/test/fixtures/items';
 import { ItemMembership } from './itemMembership/entities/ItemMembership';
 import { Member } from './member/entities/member';
 import { validatedMemberAccountRole } from './member/strategies/validatedMemberAccountRole';
+import { saveMember } from './member/test/fixtures/members';
 
 const OWNER = { id: 'owner', name: 'owner' } as Account;
 const SHARED_MEMBER = { id: 'shared', name: 'shared' } as Account;
@@ -3347,10 +3348,10 @@ describe('Passport Plugin', () => {
   function shouldBeActor(actor: Member) {
     return ({ user }) => expect(user.account).toEqual(actor);
   }
-  beforeEach(async () => {
-    let actor: Member | undefined;
-    ({ app, actor } = await build({}));
-    member = asDefined(actor);
+
+  beforeAll(async () => {
+    ({ app } = await build({ member: null }));
+
     handler = jest.fn();
     preHandler = jest.fn(async () => {});
     app.get(MOCKED_ROUTE, { preHandler: [isAuthenticated, preHandler] }, async (...args) =>
@@ -3358,10 +3359,20 @@ describe('Passport Plugin', () => {
     );
   });
 
-  afterEach(async () => {
-    handler.mockClear();
+  afterAll(async () => {
     await clearDatabase(app.db);
     app.close();
+  });
+
+  beforeEach(async () => {
+    const actor = await saveMember();
+    mockAuthenticate(actor);
+    member = asDefined(actor);
+  });
+
+  afterEach(async () => {
+    unmockAuthenticate();
+    handler.mockClear();
   });
 
   it('No Whitelist', async () => {

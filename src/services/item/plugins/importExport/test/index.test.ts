@@ -3,12 +3,18 @@ import fs from 'fs';
 import { StatusCodes } from 'http-status-codes';
 import fetch from 'node-fetch';
 import path from 'path';
+import { ILike } from 'typeorm';
 import waitForExpect from 'wait-for-expect';
 
 import { HttpMethod, ItemType } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
+import build, {
+  clearDatabase,
+  mockAuthenticate,
+  unmockAuthenticate,
+} from '../../../../../../test/app';
 import { LocalFileRepository } from '../../../../file/repositories/local';
+import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemTestUtils } from '../../../test/fixtures/items';
 import * as ARCHIVE_CONTENT from './fixtures/archive';
 
@@ -72,6 +78,15 @@ const iframelyResult = {
 describe('ZIP routes tests', () => {
   let app, actor;
 
+  beforeAll(async () => {
+    ({ app } = await build({ member: null }));
+  });
+
+  afterAll(async () => {
+    await clearDatabase(app.db);
+    app.close();
+  });
+
   beforeEach(() => {
     (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -80,27 +95,33 @@ describe('ZIP routes tests', () => {
   });
 
   afterEach(async () => {
+    unmockAuthenticate();
     jest.clearAllMocks();
-    await clearDatabase(app.db);
-    app.close();
   });
 
   describe('POST /zip-import', () => {
     it('Import successfully if signed in', async () => {
-      ({ app, actor } = await build());
+      actor = await saveMember();
+      mockAuthenticate(actor);
       const form = createFormData('archive.zip');
+      const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
 
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/items/zip-import',
         payload: form,
+        query: { parentId: parentItem.id },
         headers: form.getHeaders(),
       });
 
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        const items = await testUtils.rawItemRepository.find({ relations: { creator: true } });
+        const items = await testUtils.rawItemRepository
+          .createQueryBuilder('item')
+          .leftJoinAndSelect('item.creator', 'creator')
+          .where('item.path <@ :path AND item.path != :path', { path: parentItem.path })
+          .getMany();
         expect(items).toHaveLength(8);
 
         for (const file of ARCHIVE_CONTENT.archive) {
@@ -140,38 +161,52 @@ describe('ZIP routes tests', () => {
       }, 5000);
     });
     it('Import archive with empty folder', async () => {
-      ({ app } = await build());
+      actor = await saveMember();
+      mockAuthenticate(actor);
       const form = createFormData('empty.zip');
+      const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
 
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/items/zip-import',
         payload: form,
         headers: form.getHeaders(),
+        query: { parentId: parentItem.id },
       });
 
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        const items = await testUtils.rawItemRepository.count();
-        expect(items).toEqual(1);
+        const items = await testUtils.rawItemRepository
+          .createQueryBuilder('item')
+          .leftJoinAndSelect('item.creator', 'creator')
+          .where('item.path <@ :path AND item.path != :path', { path: parentItem.path })
+          .getMany();
+        expect(items).toHaveLength(1);
       }, 1000);
     });
     it('Import and sanitize html, txt and description', async () => {
-      ({ app } = await build());
+      actor = await saveMember();
+      mockAuthenticate(actor);
       const form = createFormData('htmlAndText.zip');
+      const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
 
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/items/zip-import',
         payload: form,
         headers: form.getHeaders(),
+        query: { parentId: parentItem.id },
       });
 
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        const items = await testUtils.rawItemRepository.find();
+        const items = await testUtils.rawItemRepository
+          .createQueryBuilder('item')
+          .leftJoinAndSelect('item.creator', 'creator')
+          .where('item.path <@ :path AND item.path != :path', { path: parentItem.path })
+          .getMany();
         expect(items).toHaveLength(2);
 
         for (const item of items) {
@@ -207,7 +242,6 @@ describe('ZIP routes tests', () => {
       }, 1000);
     });
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
       const form = createFormData('archive.zip');
 
       const response = await app.inject({
@@ -222,7 +256,8 @@ describe('ZIP routes tests', () => {
 
   describe('POST /export', () => {
     it('Export successfully if signed in', async () => {
-      ({ app, actor } = await build());
+      actor = await saveMember();
+      mockAuthenticate(actor);
       const { item } = await testUtils.saveItemAndMembership({
         member: actor,
         item: { name: 'itemname' },
@@ -238,7 +273,8 @@ describe('ZIP routes tests', () => {
     });
 
     it('Export successfully h5p file', async () => {
-      ({ app, actor } = await build());
+      actor = await saveMember();
+      mockAuthenticate(actor);
 
       // mocks - fetching some h5p content
       jest.spyOn(LocalFileRepository.prototype, 'getUrl').mockImplementation(async () => 'getUrl');

@@ -1,11 +1,12 @@
 import { StatusCodes } from 'http-status-codes';
+import { In } from 'typeorm';
 import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, MentionStatus } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../test/app';
+import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
 import { AppDataSource } from '../../../plugins/datasource';
 import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
 import { saveMember } from '../../member/test/fixtures/members';
@@ -71,17 +72,23 @@ describe('Chat Mention tests', () => {
   let app: FastifyInstance;
   let actor;
 
+  beforeAll(async () => {
+    ({ app } = await build({ member: null }));
+  });
+
+  afterAll(async () => {
+    await clearDatabase(app.db);
+    app.close();
+  });
+
   afterEach(async () => {
     jest.clearAllMocks();
-    await clearDatabase(app.db);
+    unmockAuthenticate();
     actor = null;
-    app.close();
   });
 
   describe('GET /mentions', () => {
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
-
       const response = await app.inject({
         method: HttpMethod.Get,
         url: `${ITEMS_ROUTE_PREFIX}/mentions`,
@@ -94,7 +101,8 @@ describe('Chat Mention tests', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('Get successfully', async () => {
@@ -113,8 +121,6 @@ describe('Chat Mention tests', () => {
 
   describe('PATCH /items/mentions/mention-id', () => {
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
-
       const payload = { status: MentionStatus.Read };
 
       const response = await app.inject({
@@ -131,7 +137,8 @@ describe('Chat Mention tests', () => {
       const payload = { status: MentionStatus.Read };
 
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
         ({ chatMessages, chatMentions } = await saveItemWithChatMessagesAndMentions(actor));
       });
 
@@ -191,8 +198,6 @@ describe('Chat Mention tests', () => {
 
   describe('DELETE /item-id/chat/message-id', () => {
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
-
       const response = await app.inject({
         method: HttpMethod.Delete,
         url: `${ITEMS_ROUTE_PREFIX}/mentions/${v4()}`,
@@ -205,14 +210,13 @@ describe('Chat Mention tests', () => {
       let chatMentions, chatMessages, members;
 
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
         ({ chatMessages, chatMentions, members } =
           await saveItemWithChatMessagesAndMentions(actor));
       });
 
       it('Delete successfully', async () => {
-        const initialCount = await adminRepository.count();
-
         const response = await app.inject({
           method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/mentions/${chatMentions[0].id}`,
@@ -220,7 +224,9 @@ describe('Chat Mention tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(response.json().body).toEqual(chatMentions[0].body);
 
-        expect(await adminRepository.count()).toEqual(initialCount - 1);
+        expect(await adminRepository.countBy({ id: In(chatMentions.map(({ id }) => id)) })).toEqual(
+          chatMentions.length - 1,
+        );
         expect(await adminRepository.findOneBy({ id: chatMentions[0].id })).toBeNull();
       });
 
@@ -261,8 +267,6 @@ describe('Chat Mention tests', () => {
 
   describe('DELETE /mentions', () => {
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
-
       const response = await app.inject({
         method: HttpMethod.Delete,
         url: `${ITEMS_ROUTE_PREFIX}/mentions`,
@@ -272,11 +276,13 @@ describe('Chat Mention tests', () => {
     });
 
     describe('Signed In', () => {
-      let chatMessages, members;
+      let chatMessages, chatMentions, members;
 
       beforeEach(async () => {
-        ({ app, actor } = await build());
-        ({ chatMessages, members } = await saveItemWithChatMessagesAndMentions(actor));
+        actor = await saveMember();
+        mockAuthenticate(actor);
+        ({ chatMessages, members, chatMentions } =
+          await saveItemWithChatMessagesAndMentions(actor));
       });
 
       it('Delete all successfully', async () => {
@@ -293,7 +299,12 @@ describe('Chat Mention tests', () => {
         });
         expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
 
-        expect(await adminRepository.count()).toEqual(otherMessages.length);
+        expect(await adminRepository.countBy({ id: In(chatMentions.map(({ id }) => id)) })).toEqual(
+          0,
+        );
+        expect(
+          await adminRepository.countBy({ id: In(otherMessages.map(({ id }) => id)) }),
+        ).toEqual(otherMessages.length);
       });
     });
   });
