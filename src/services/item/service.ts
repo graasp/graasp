@@ -1,5 +1,6 @@
 import { Readable } from 'stream';
 import { singleton } from 'tsyringe';
+import { DeepPartial } from 'typeorm';
 
 import {
   ItemType,
@@ -95,7 +96,7 @@ export class ItemService {
     member: Member,
     repositories: Repositories,
     args: {
-      item: Partial<Item> & Pick<Item, 'name' | 'type'>;
+      item: Partial<Omit<Item, 'geolocation'>> & Pick<Item, 'name' | 'type'>;
       parentId?: string;
       geolocation?: Pick<ItemGeolocation, 'lat' | 'lng'>;
       thumbnail?: Readable;
@@ -470,7 +471,7 @@ export class ItemService {
     return ItemWrapper.merge(items, itemMemberships, tags, thumbnails);
   }
 
-  async patch(member: Member, repositories: Repositories, itemId: UUID, body: Partial<Item>) {
+  async patch(member: Member, repositories: Repositories, itemId: UUID, body: DeepPartial<Item>) {
     const { itemRepository } = repositories;
 
     // check memberships

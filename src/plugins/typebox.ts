@@ -21,6 +21,8 @@ import {
 
 import { MAX_USERNAME_LENGTH, MIN_USERNAME_LENGTH } from '@graasp/sdk';
 
+import { discrimineable } from './typebox/discrimineable';
+
 /**
  * List of schemas to be registered in the Fastify instance.
  */
@@ -89,11 +91,11 @@ export const customType = {
       { type: 'string' },
     ),
   Pagination: ({
-    page,
-    pageSize,
+    page = {},
+    pageSize = {},
   }: {
-    page: { minimum?: number; maximum?: number; default?: number };
-    pageSize: { minimum?: number; maximum?: number; default?: number };
+    page?: { minimum?: number; maximum?: number; default?: number };
+    pageSize?: { minimum?: number; maximum?: number; default?: number };
   }) =>
     Type.Object(
       {
@@ -105,9 +107,7 @@ export const customType = {
       },
       { additionalProperties: false },
     ),
-
-  StrictObject: <T extends TProperties>(properties: T, options?: SchemaOptions) =>
-    Type.Object(properties, { ...options, additionalProperties: false }),
+  Discrimineable: discrimineable,
 } as const;
 
 /**

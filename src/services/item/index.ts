@@ -16,7 +16,6 @@ import graaspItemLogin from '../itemLogin';
 import itemController from './controller';
 import actionItemPlugin from './plugins/action';
 import graaspApps from './plugins/app';
-import graaspDocumentItem from './plugins/document';
 import graaspEmbeddedLinkItem from './plugins/embeddedLink';
 import { PREFIX_EMBEDDED_LINK } from './plugins/embeddedLink/service';
 import graaspEnrollPlugin from './plugins/enroll';
@@ -38,14 +37,6 @@ import graaspRecycledItemData from './plugins/recycled';
 import ShortLinkService from './plugins/shortLink';
 import { SHORT_LINKS_ROUTE_PREFIX } from './plugins/shortLink/service';
 import thumbnailsPlugin from './plugins/thumbnail';
-import {
-  baseItemCreate,
-  create,
-  folderExtra,
-  folderItemCreate,
-  shortcutItemCreate,
-  updateOne,
-} from './schema';
 import { itemWsHooks } from './ws/hooks';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
@@ -60,16 +51,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     jwtSecret: APPS_JWT_SECRET,
     prefix: APP_ITEMS_PREFIX,
     publisherId: APPS_PUBLISHER_ID,
-  });
-
-  // we move this from fluent schema because it was a global value
-  // this did not fit well with tests
-  const initializedCreate = create(baseItemCreate, folderItemCreate, shortcutItemCreate);
-  const initializedUpdate = updateOne(folderExtra);
-
-  fastify.decorate('items', {
-    extendCreateSchema: initializedCreate,
-    extendExtrasUpdateSchema: initializedUpdate,
   });
 
   await fastify.register(
@@ -116,8 +97,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           iframelyHrefOrigin: EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
           prefix: PREFIX_EMBEDDED_LINK,
         });
-
-        await fastify.register(graaspDocumentItem);
 
         fastify.register(graaspInvitationsPlugin);
 
