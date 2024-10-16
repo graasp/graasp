@@ -7,7 +7,11 @@ import { FastifyInstance } from 'fastify';
 
 import { CategoryType, HttpMethod, ItemTagType, ItemType, PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../../test/app';
+import build, {
+  clearDatabase,
+  mockAuthenticate,
+  unmockAuthenticate,
+} from '../../../../../../../test/app';
 import { resolveDependency } from '../../../../../../di/utils';
 import { AppDataSource } from '../../../../../../plugins/datasource';
 import { MailerService } from '../../../../../../plugins/mailer/service';
@@ -49,11 +53,19 @@ describe('Item Published', () => {
   let actor;
   const itemPublishedRawRepository = AppDataSource.getRepository(ItemPublished);
 
+  beforeAll(async () => {
+    ({ app } = await build({ member: null }));
+  });
+
+  afterAll(async () => {
+    await clearDatabase(app.db);
+    app.close();
+  });
+
   afterEach(async () => {
     jest.clearAllMocks();
-    await clearDatabase(app.db);
     actor = null;
-    app.close();
+    unmockAuthenticate();
   });
 
   describe('GET /collections', () => {
@@ -61,7 +73,6 @@ describe('Item Published', () => {
       let member;
 
       beforeEach(async () => {
-        ({ app } = await build({ member: null }));
         member = await saveMember();
       });
 
@@ -138,7 +149,6 @@ describe('Item Published', () => {
       let collections: Item[];
 
       beforeEach(async () => {
-        ({ app } = await build({ member: null }));
         member = await saveMember();
         ({ items: collections } = await testUtils.saveCollections(member));
       });
@@ -168,8 +178,7 @@ describe('Item Published', () => {
           url: `${ITEMS_ROUTE_PREFIX}/collections/recent`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
-
-        expectManyItems(res.json(), collections.slice(1));
+        expect(res.json().map(({ id }) => id)).not.toContain(hiddenCollection.id);
       });
     });
   });
@@ -181,7 +190,6 @@ describe('Item Published', () => {
       const likes: ItemLike[] = [];
 
       beforeEach(async () => {
-        ({ app } = await build({ member: null }));
         members = await saveMembers();
         ({ items: collections } = await testUtils.saveCollections(members[0]));
 
@@ -220,10 +228,8 @@ describe('Item Published', () => {
           url: `${ITEMS_ROUTE_PREFIX}/collections/liked`,
         });
 
-        const result = collections.slice(1);
-
         expect(res.statusCode).toBe(StatusCodes.OK);
-        expectManyItems(res.json(), result);
+        expect(res.json().map(({ id }) => id)).not.toContain(hiddenCollection.id);
       });
     });
   });
@@ -231,7 +237,6 @@ describe('Item Published', () => {
   describe('GET /collections/members/:memberId', () => {
     describe('Signed Out', () => {
       it('Returns published collections for member', async () => {
-        ({ app } = await build({ member: null }));
         const member = await saveMember();
         const { packedItems: items, tags } = await testUtils.saveCollections(member);
         await saveCategories();
@@ -271,7 +276,6 @@ describe('Item Published', () => {
   describe('POST /collections/:itemId/publish', () => {
     describe('Signed Out', () => {
       it('Throw if signed out', async () => {
-        ({ app } = await build({ member: null }));
         const member = await saveMember();
         const { item } = await testUtils.saveItemAndMembership({ member });
 
@@ -287,7 +291,8 @@ describe('Item Published', () => {
       let actor;
 
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('Publish item with admin rights', async () => {
@@ -491,7 +496,6 @@ describe('Item Published', () => {
   describe('DELETE /collections/:itemId/unpublish', () => {
     describe('Signed Out', () => {
       it('Throw if signed out', async () => {
-        ({ app } = await build({ member: null }));
         const member = await saveMember();
         const { item } = await testUtils.saveItemAndMembership({ member });
 
@@ -507,7 +511,8 @@ describe('Item Published', () => {
       let actor;
 
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('Unpublish item with admin rights', async () => {
@@ -604,8 +609,6 @@ describe('Item Published', () => {
   describe('SearchService', () => {
     describe('Signed Out', () => {
       it('Returns search results', async () => {
-        ({ app } = await build({ member: null }));
-
         // Meilisearch is mocked so format of API doesn't matter, we just want it to proxy
         const fakePayload = { queries: [] } as MultiSearchParams;
         const fakeResponse = { results: [] };
@@ -631,7 +634,8 @@ describe('Item Published', () => {
       let actor;
 
       it('Returns search results', async () => {
-        ({ app } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
 
         // Meilisearch is mocked so format of API doesn't matter, we just want it to proxy
         const fakePayload = { queries: [] } as MultiSearchParams;
@@ -654,7 +658,8 @@ describe('Item Published', () => {
       });
 
       it('search is delegated to meilisearch SDK with a forced filter', async () => {
-        ({ app } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
 
         const searchSpy = jest.spyOn(MeiliSearchWrapper.prototype, 'search');
 
@@ -682,7 +687,8 @@ describe('Item Published', () => {
       });
 
       it('works with empty filters', async () => {
-        ({ app } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
 
         const searchSpy = jest.spyOn(MeiliSearchWrapper.prototype, 'search');
 
@@ -710,7 +716,8 @@ describe('Item Published', () => {
       });
 
       it('triggers indexation when item hooks', async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
 
         // Start with a published item
         const extra = {

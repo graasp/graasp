@@ -4,7 +4,7 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, ItemType, MAX_USERNAME_LENGTH, MemberFactory } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../test/app';
+import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
 import { AppDataSource } from '../../../plugins/datasource';
 import { DEFAULT_MAX_STORAGE } from '../../../services/item/plugins/file/utils/constants';
 import { FILE_ITEM_TYPE } from '../../../utils/config';
@@ -21,15 +21,24 @@ describe('Member routes tests', () => {
   let app: FastifyInstance;
   let actor;
 
-  afterEach(async () => {
-    jest.clearAllMocks();
+  beforeAll(async () => {
+    ({ app } = await build({ member: null }));
+  });
+
+  afterAll(async () => {
     await clearDatabase(app.db);
     app.close();
   });
 
+  afterEach(async () => {
+    jest.clearAllMocks();
+    unmockAuthenticate();
+  });
+
   describe('GET /members/current', () => {
     it('Returns successfully if signed in', async () => {
-      ({ app, actor } = await build());
+      actor = await saveMember();
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -45,8 +54,6 @@ describe('Member routes tests', () => {
       expect(response.statusCode).toBe(StatusCodes.OK);
     });
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
-
       const response = await app.inject({
         method: HttpMethod.Get,
         url: '/members/current',
@@ -58,7 +65,8 @@ describe('Member routes tests', () => {
 
   describe('GET /members/current/storage', () => {
     it('Returns successfully if signed in', async () => {
-      ({ app, actor } = await build());
+      actor = await saveMember();
+      mockAuthenticate(actor);
 
       const fileServiceType = FILE_ITEM_TYPE;
 
@@ -129,7 +137,8 @@ describe('Member routes tests', () => {
       expect(maximum).toEqual(DEFAULT_MAX_STORAGE);
     });
     it('Returns successfully if empty items', async () => {
-      ({ app, actor } = await build());
+      actor = await saveMember();
+      mockAuthenticate(actor);
 
       // fill db with noise data
       const member = await saveMember();
@@ -160,8 +169,6 @@ describe('Member routes tests', () => {
       expect(maximum).toEqual(DEFAULT_MAX_STORAGE);
     });
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
-
       const response = await app.inject({
         method: HttpMethod.Get,
         url: '/members/current/storage',
@@ -173,9 +180,6 @@ describe('Member routes tests', () => {
 
   describe('GET /members/:id', () => {
     describe('Signed Out', () => {
-      beforeEach(async () => {
-        ({ app } = await build({ member: null }));
-      });
       it('Returns successfully', async () => {
         const member = await saveMember();
         const memberId = member.id;
@@ -193,7 +197,8 @@ describe('Member routes tests', () => {
     });
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('Returns successfully', async () => {
@@ -238,10 +243,6 @@ describe('Member routes tests', () => {
   // get many members
   describe('GET /members', () => {
     describe('Signed Out', () => {
-      beforeEach(async () => {
-        ({ app } = await build({ member: null }));
-      });
-
       it('Returns successfully', async () => {
         const members = await saveMembers();
 
@@ -265,7 +266,8 @@ describe('Member routes tests', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('Returns successfully', async () => {
@@ -356,10 +358,6 @@ describe('Member routes tests', () => {
 
   describe('GET /members/search?email=<email>', () => {
     describe('Signed Out', () => {
-      beforeEach(async () => {
-        ({ app } = await build({ member: null }));
-      });
-
       it('Returns successfully', async () => {
         const member = await saveMember();
         const response = await app.inject({
@@ -380,7 +378,8 @@ describe('Member routes tests', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('Returns successfully', async () => {
@@ -450,8 +449,6 @@ describe('Member routes tests', () => {
 
   describe('PATCH /members/current', () => {
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
-
       const newName = 'new name';
 
       const response = await app.inject({
@@ -470,7 +467,8 @@ describe('Member routes tests', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('Returns successfully', async () => {
@@ -575,8 +573,6 @@ describe('Member routes tests', () => {
 
   describe('DELETE /members/current', () => {
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
-
       const response = await app.inject({
         method: HttpMethod.Delete,
         url: `/members/current`,
@@ -587,7 +583,8 @@ describe('Member routes tests', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
       it('Returns successfully', async () => {
         const response = await app.inject({

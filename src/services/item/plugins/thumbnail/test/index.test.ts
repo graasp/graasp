@@ -8,7 +8,11 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, ThumbnailSize } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
+import build, {
+  clearDatabase,
+  mockAuthenticate,
+  unmockAuthenticate,
+} from '../../../../../../test/app';
 import { ITEMS_ROUTE_PREFIX, THUMBNAILS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { MemberCannotAccess } from '../../../../../utils/errors';
 import { saveMember } from '../../../../member/test/fixtures/members';
@@ -58,16 +62,23 @@ describe('Thumbnail Plugin Tests', () => {
   let app: FastifyInstance;
   let actor;
 
+  beforeAll(async () => {
+    ({ app } = await build({ member: null }));
+  });
+
+  afterAll(async () => {
+    await clearDatabase(app.db);
+    app.close();
+  });
+
   afterEach(async () => {
     jest.clearAllMocks();
-    await clearDatabase(app.db);
     actor = null;
-    app.close();
+    unmockAuthenticate();
   });
 
   describe('GET /:id/thumbnails/:size', () => {
     it('Throws if item is private', async () => {
-      ({ app } = await build({ member: null }));
       const member = await saveMember();
       const { item } = await testUtils.saveItemAndMembership({ member });
 
@@ -83,7 +94,6 @@ describe('Thumbnail Plugin Tests', () => {
       let item;
 
       beforeEach(async () => {
-        ({ app } = await build({ member: null }));
         const member = await saveMember();
         ({ item } = await testUtils.saveItemAndMembership({ member }));
         await setItemPublic(item, member);
@@ -105,7 +115,8 @@ describe('Thumbnail Plugin Tests', () => {
       let item;
 
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
         ({ item } = await testUtils.saveItemAndMembership({ member: actor }));
       });
 
@@ -156,7 +167,6 @@ describe('Thumbnail Plugin Tests', () => {
       const form = new FormData();
       form.append('file', fileStream);
 
-      ({ app } = await build({ member: null }));
       const member = await saveMember();
       const { item } = await testUtils.saveItemAndMembership({ member });
 
@@ -174,7 +184,8 @@ describe('Thumbnail Plugin Tests', () => {
       let item;
 
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
         ({ item } = await testUtils.saveItemAndMembership({ member: actor }));
       });
 
@@ -240,7 +251,8 @@ describe('Thumbnail Plugin Tests', () => {
       let item;
 
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('Successfully delete thumbnail', async () => {
