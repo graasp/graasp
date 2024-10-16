@@ -38,7 +38,6 @@ import { saveMember } from '../../member/test/fixtures/members';
 import { Item } from '../entities/Item';
 import { ActionItemService } from '../plugins/action/service';
 import { ItemGeolocation } from '../plugins/geolocation/ItemGeolocation';
-import { expectItemGeolocations } from '../plugins/geolocation/test/utils';
 import { ItemService } from '../service';
 import { ItemTestUtils, expectItem } from './fixtures/items';
 
@@ -1442,14 +1441,17 @@ describe('Item routes tests', () => {
         await waitForExpect(async () => {
           // contains twice the items (and the target item)
           const orders: (number | null)[] = [];
-          for (const { name } of items) {
-            const itemsInDb = await testUtils.rawItemRepository.findBy({ name });
-            expect(itemsInDb).toHaveLength(2);
-            orders.push(await testUtils.getOrderForItemId(itemsInDb[1].id));
+          for (const { id, name } of items) {
+            const itemsInDb = await testUtils.rawItemRepository.findBy({ name, id });
+            expect(itemsInDb).toHaveLength(1);
+            const copiedItemInDb = await testUtils.rawItemRepository.findBy({ name, id: Not(id) });
+            expect(copiedItemInDb).toHaveLength(1);
+
+            orders.push(await testUtils.getOrderForItemId(copiedItemInDb[0].id));
 
             // check it did not create a new membership because user is admin of parent
             const newCountMembership = await itemMembershipRawRepository.findBy({
-              item: { id: In(itemsInDb.map(({ id }) => id)) },
+              item: { id: In([itemsInDb[0].id, copiedItemInDb[0].id]) },
             });
             expect(newCountMembership).toHaveLength(1);
           }
@@ -1484,13 +1486,15 @@ describe('Item routes tests', () => {
         // wait a bit for tasks to complete
         await waitForExpect(async () => {
           // contains twice the items (and the target item)
-          for (const { name } of items) {
-            const itemsInDb = await testUtils.rawItemRepository.findBy({ name });
-            expect(itemsInDb).toHaveLength(2);
+          for (const { id, name } of items) {
+            const itemsInDb = await testUtils.rawItemRepository.findBy({ name, id });
+            expect(itemsInDb).toHaveLength(1);
+            const copiedItemInDb = await testUtils.rawItemRepository.findBy({ name, id: Not(id) });
+            expect(copiedItemInDb).toHaveLength(1);
 
             // check it created a new membership because user is writer of parent
             const newCountMembership = await itemMembershipRawRepository.findBy({
-              item: { id: In(itemsInDb.map(({ id }) => id)) },
+              item: { id: In([itemsInDb[0].id, copiedItemInDb[0].id]) },
             });
             expect(newCountMembership).toHaveLength(2);
           }
@@ -1577,16 +1581,17 @@ describe('Item routes tests', () => {
         // wait a bit for tasks to complete
         await waitForExpect(async () => {
           // contains twice the items (and the target item)
-          for (const { name } of items) {
-            const itemsInDb = await testUtils.rawItemRepository.findBy({ name });
-            expect(itemsInDb).toHaveLength(2);
-            const copiedItemId = itemsInDb[1].id;
+          for (const { id, name } of items) {
+            const itemsInDb = await testUtils.rawItemRepository.findBy({ name, id });
+            expect(itemsInDb).toHaveLength(1);
+            const copiedItemInDb = await testUtils.rawItemRepository.findBy({ name, id: Not(id) });
+            expect(copiedItemInDb).toHaveLength(1);
 
             const newCountMembership = await itemMembershipRawRepository.findBy({
-              item: { id: In(itemsInDb.map(({ id }) => id)) },
+              item: { id: In([itemsInDb[0].id, copiedItemInDb[0].id]) },
             });
             expect(newCountMembership).toHaveLength(2);
-            expect(await testUtils.getOrderForItemId(copiedItemId)).toBeNull();
+            expect(await testUtils.getOrderForItemId(copiedItemInDb[0].id)).toBeNull();
           }
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
