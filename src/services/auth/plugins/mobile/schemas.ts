@@ -16,13 +16,14 @@ const authTokensPairSchemaRef = registerSchemaAsRef(
       refreshToken: Type.String(),
     },
     {
-      // Schema Options
+      description: 'Pair of tokens used for authentication in mobile',
       additionalProperties: false,
     },
   ),
 );
 
 export const mregister = {
+  operationId: 'registerMobile',
   tags: ['authentication', 'mobile'],
   summary: 'Register with email and name',
   description:
@@ -51,6 +52,7 @@ export const mregister = {
 } as const satisfies FastifySchema;
 
 export const mlogin = {
+  operationId: 'loginMobile',
   tags: ['authentication', 'mobile'],
   summary: 'Login with email',
   description:
@@ -70,6 +72,7 @@ export const mlogin = {
 } as const satisfies FastifySchema;
 
 export const mPasswordLogin = {
+  operationId: 'LoginWithPasswordMobile',
   tags: ['authentication', 'password', 'mobile'],
   summary: 'Login with email and password',
   description:
@@ -93,6 +96,7 @@ export const mPasswordLogin = {
 } as const satisfies FastifySchema;
 
 export const mauth = {
+  operationId: 'authenticateMobile',
   tags: ['authentication', 'mobile'],
   summary: 'Authentication validating the token',
   description: 'Authenticate to obtain session cookie given provided token and verifier',
@@ -110,6 +114,7 @@ export const mauth = {
 } as const satisfies FastifySchema;
 
 export const authWeb = {
+  operationId: 'authenticateMobileToWeb',
   tags: ['authentication', 'mobile'],
   summary: 'Authentication on the web with mobile token',
   description:
