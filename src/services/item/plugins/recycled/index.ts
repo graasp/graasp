@@ -36,7 +36,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user, query }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      const { page = 1, pageSize = ITEMS_PAGE_SIZE } = query.pagination ?? {};
+      const { page = 1, pageSize = ITEMS_PAGE_SIZE } = query;
       const result = await recycleBinService.getOwn(member, buildRepositories(), {
         page,
         pageSize,
