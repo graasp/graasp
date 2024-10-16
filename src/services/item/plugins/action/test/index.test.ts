@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { faker } from '@faker-js/faker';
 import { StatusCodes } from 'http-status-codes';
 import waitForExpect from 'wait-for-expect';
 
@@ -6,7 +7,11 @@ import { FastifyInstance } from 'fastify';
 
 import { Context, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
+import build, {
+  clearDatabase,
+  mockAuthenticate,
+  unmockAuthenticate,
+} from '../../../../../../test/app';
 import { resolveDependency } from '../../../../../di/utils';
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { MailerService } from '../../../../../plugins/mailer/service';
@@ -62,148 +67,166 @@ describe('Action Plugin Tests', () => {
   let app: FastifyInstance;
   let actor;
 
+  beforeAll(async () => {
+    ({ app } = await build({ member: null }));
+  });
+
+  afterAll(async () => {
+    await clearDatabase(app.db);
+    app.close();
+  });
+
   afterEach(async () => {
     jest.clearAllMocks();
-    await clearDatabase(app.db);
     actor = null;
-    app.close();
+    unmockAuthenticate();
   });
 
   describe('POST /:id/actions', () => {
     describe('Sign Out', () => {
       it('Cannot post action when signed out', async () => {
-        ({ app, actor } = await build({ member: null }));
         const member = await saveMember();
         const { item } = await testUtils.saveItemAndMembership({
           member,
         });
+        const body = {
+          type: faker.word.sample(),
+        };
         const response = await app.inject({
           method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions`,
-          body: {
-            type: 'view',
-          },
+          body,
           headers: {
             Origin: BUILDER_HOST.url.toString(),
           },
         });
 
         expect(response.statusCode).toEqual(StatusCodes.FORBIDDEN);
-        expect(await rawActionRepository.count()).toEqual(0);
+        expect(await rawActionRepository.countBy(body)).toEqual(0);
       });
     });
     describe('Public', () => {
       it('Post action for public item', async () => {
-        ({ app, actor } = await build({ member: null }));
         const member = await saveMember();
+        const body = {
+          type: faker.word.sample(),
+        };
         const { item } = await testUtils.savePublicItem({ member });
         const response = await app.inject({
           method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions`,
-          body: {
-            type: 'view',
-          },
+          body,
           headers: {
             Origin: BUILDER_HOST.url.origin,
           },
         });
 
         expect(response.statusCode).toEqual(StatusCodes.OK);
-        const [action] = await rawActionRepository.find({
+        const actions = await rawActionRepository.find({
+          where: body,
           relations: { item: true, account: true },
         });
-        expect(action.type).toEqual('view');
-        expect(action.item!.id).toEqual(item.id);
-        expect(action.account).toBeNull();
+        expect(actions).toHaveLength(1);
+        expect(actions[0].item!.id).toEqual(item.id);
+        expect(actions[0].account).toBeNull();
       });
     });
     describe('Signed in', () => {
       let item;
 
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
         ({ item } = await testUtils.saveItemAndMembership({
           member: actor,
         }));
       });
 
       it('Post action with allowed origin', async () => {
+        const body = {
+          type: faker.word.sample(),
+        };
         const response = await app.inject({
           method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions`,
-          body: {
-            type: 'view',
-          },
+          body,
           headers: {
             Origin: BUILDER_HOST.url.origin,
           },
         });
         expect(response.statusCode).toEqual(StatusCodes.OK);
-        const [action] = await rawActionRepository.find({
+        const actions = await rawActionRepository.find({
+          where: body,
           relations: { item: true, account: true },
         });
-        expect(action.type).toEqual('view');
-        expect(action.item!.id).toEqual(item.id);
-        expect(action.account!.id).toEqual(actor.id);
+        expect(actions).toHaveLength(1);
+        expect(actions[0].item!.id).toEqual(item.id);
+        expect(actions[0].account!.id).toEqual(actor.id);
       });
 
       it('Post action with extra', async () => {
+        const body = {
+          type: faker.word.sample(),
+          extra: { foo: faker.word.sample() },
+        };
         const response = await app.inject({
           method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions`,
-          body: {
-            type: 'view',
-            extra: { foo: 'bar' },
-          },
+          body,
           headers: {
             Origin: BUILDER_HOST.url.origin,
           },
         });
 
         expect(response.statusCode).toEqual(StatusCodes.OK);
-        const [action] = await rawActionRepository.find({
+        const actions = await rawActionRepository.find({
+          where: body,
           relations: { item: true, account: true },
         });
-        expect(action.type).toEqual('view');
-        expect(action.item!.id).toEqual(item.id);
-        expect(action.account!.id).toEqual(actor.id);
-        expect(action.extra.foo).toEqual('bar');
+        expect(actions).toHaveLength(1);
+        expect(actions[0].item!.id).toEqual(item.id);
+        expect(actions[0].account!.id).toEqual(actor.id);
       });
 
       it('Throw for non-allowed origin', async () => {
+        const body = {
+          type: faker.word.sample(),
+        };
         const response = await app.inject({
           method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions`,
-          body: {
-            type: 'view',
-          },
+          body,
           headers: {
             Origin: 'https://myorigin.com',
           },
         });
         expect(response.json().message).toEqual(new CannotPostAction().message);
-        expect(await rawActionRepository.count()).toEqual(0);
+        expect(await rawActionRepository.countBy(body)).toEqual(0);
       });
 
       it('Throw for missing type', async () => {
+        const body = {
+          extra: { foo: faker.word.sample() },
+        };
         const response = await app.inject({
           method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions`,
-          body: {},
+          body,
           headers: {
             Origin: BUILDER_HOST.url.toString(),
           },
         });
 
         expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
-        expect(await rawActionRepository.count()).toEqual(0);
+        expect(await rawActionRepository.countBy(body)).toEqual(0);
       });
     });
   });
 
   describe('POST /:id/actions/export', () => {
     it('Create archive and send email', async () => {
-      ({ app, actor } = await build());
+      actor = await saveMember();
+      mockAuthenticate(actor);
       const mailerService = resolveDependency(MailerService);
       const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
 
@@ -225,7 +248,8 @@ describe('Action Plugin Tests', () => {
     });
 
     it('Create archive for item with an app and send email', async () => {
-      ({ app, actor } = await build());
+      actor = await saveMember();
+      mockAuthenticate(actor);
       const mailerService = resolveDependency(MailerService);
       const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
 
@@ -255,7 +279,8 @@ describe('Action Plugin Tests', () => {
     });
 
     it('Create archive if last export is old and send email', async () => {
-      ({ app, actor } = await build());
+      actor = await saveMember();
+      mockAuthenticate(actor);
       const mailerService = resolveDependency(MailerService);
       const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
 
@@ -292,7 +317,8 @@ describe('Action Plugin Tests', () => {
     });
 
     it('Does not create archive if last export is recent, but send email', async () => {
-      ({ app, actor } = await build());
+      actor = await saveMember();
+      mockAuthenticate(actor);
       const mailerService = resolveDependency(MailerService);
       const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
 
@@ -321,7 +347,8 @@ describe('Action Plugin Tests', () => {
 
   describe('GET /:id/actions/aggregation', () => {
     beforeEach(async () => {
-      ({ app, actor } = await build());
+      actor = await saveMember();
+      mockAuthenticate(actor);
     });
 
     it('Unauthorized if the user does not have any permission', async () => {

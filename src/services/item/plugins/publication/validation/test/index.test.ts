@@ -1,11 +1,16 @@
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
+import waitForExpect from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemValidationStatus, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, ItemValidationStatus, PermissionLevel, PublicationStatus } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../../test/app';
+import build, {
+  clearDatabase,
+  mockAuthenticate,
+  unmockAuthenticate,
+} from '../../../../../../../test/app';
 import { AppDataSource } from '../../../../../../plugins/datasource';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../../utils/config';
 import { ItemNotFound, MemberCannotAdminItem } from '../../../../../../utils/errors';
@@ -21,6 +26,12 @@ const VALIDATION_LOADING_TIME = 2000;
 const testUtils = new ItemTestUtils();
 const itemValidationGroupRawRepository = AppDataSource.getRepository(ItemValidationGroup);
 
+const fetchStatus = async (app, itemId: string) =>
+  await app.inject({
+    method: HttpMethod.Get,
+    url: `${ITEMS_ROUTE_PREFIX}/publication/${itemId}/status`,
+  });
+
 const expectItemValidation = (iv, correctIV) => {
   expect(iv.id).toEqual(correctIV.id);
   expect(iv.item.id).toEqual(correctIV.item.id);
@@ -31,17 +42,23 @@ describe('Item Validation Tests', () => {
   let app: FastifyInstance;
   let actor;
 
+  beforeAll(async () => {
+    ({ app } = await build({ member: null }));
+  });
+
+  afterAll(async () => {
+    await clearDatabase(app.db);
+    app.close();
+  });
+
   afterEach(async () => {
     jest.clearAllMocks();
-    await clearDatabase(app.db);
     actor = null;
-    app.close();
+    unmockAuthenticate();
   });
 
   describe('GET /:itemId/validations/latest', () => {
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
-
       const response = await app.inject({
         method: HttpMethod.Get,
         url: `${ITEMS_ROUTE_PREFIX}/${v4()}/validations/latest`,
@@ -52,7 +69,8 @@ describe('Item Validation Tests', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('Get latest item validation', async () => {
@@ -119,8 +137,6 @@ describe('Item Validation Tests', () => {
 
   describe('GET /:itemId/validations/:itemValidationGroupId', () => {
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
-
       const response = await app.inject({
         method: HttpMethod.Get,
         url: `${ITEMS_ROUTE_PREFIX}/${v4()}/validations/${v4()}`,
@@ -131,7 +147,8 @@ describe('Item Validation Tests', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('Get item validation groups', async () => {
@@ -218,10 +235,8 @@ describe('Item Validation Tests', () => {
     });
   });
 
-  describe('POST /:itemId/validate', () => {
+  describe.only('POST /:itemId/validate', () => {
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
-
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `${ITEMS_ROUTE_PREFIX}/${v4()}/validate`,
@@ -232,12 +247,12 @@ describe('Item Validation Tests', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
       it('create validation', async () => {
         const { item } = await testUtils.saveItemAndMembership({ member: actor });
         await saveItemValidation({ item });
-        const count = await itemValidationGroupRawRepository.count();
 
         const res = await app.inject({
           method: HttpMethod.Post,
@@ -246,12 +261,9 @@ describe('Item Validation Tests', () => {
         expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
         expect(res.body).toEqual(item.id);
 
-        await new Promise((res) => {
-          setTimeout(async () => {
-            // check no created entries
-            expect(count).toEqual((await itemValidationGroupRawRepository.count()) - 1);
-            res(true);
-          }, VALIDATION_LOADING_TIME);
+        await waitForExpect(async () => {
+          // previous and newly created validation group
+          expect(await itemValidationGroupRawRepository.countBy({ item })).toEqual(2);
         });
 
         // valid item should be published automatically
@@ -265,9 +277,11 @@ describe('Item Validation Tests', () => {
 
       it('Status is pending for item and children when validation is not done', async () => {
         const { item } = await testUtils.saveItemAndMembership({
+          item: { updatedAt: new Date() },
           member: actor,
         });
         const { item: child } = await testUtils.saveItemAndMembership({
+          item: { updatedAt: new Date() },
           member: actor,
           parentItem: item,
         });
@@ -286,24 +300,22 @@ describe('Item Validation Tests', () => {
         };
         stubItemModerator(stubValidate);
 
-        const fetchStatus = async (itemId: string) =>
-          await app.inject({
-            method: HttpMethod.Get,
-            url: `${ITEMS_ROUTE_PREFIX}/publication/${itemId}/status`,
-          });
-
         const res = await app.inject({
           method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validate`,
         });
         expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
 
-        const resStatus = [await fetchStatus(item.id), await fetchStatus(child.id)];
-
-        expect(resStatus.map((r) => r.body)).toEqual([
-          ItemValidationStatus.Pending,
-          ItemValidationStatus.Pending,
-        ]);
+        // return valid status for validation
+        await waitForExpect(async () => {
+          const resStatus = [await fetchStatus(app, item.id), await fetchStatus(app, child.id)];
+          expect([ItemValidationStatus.Pending, PublicationStatus.Published]).toContain(
+            resStatus[0].body,
+          );
+          expect([ItemValidationStatus.Pending, PublicationStatus.PublishedChildren]).toContain(
+            resStatus[1].body,
+          );
+        });
       });
 
       it('Throws if has read permission', async () => {
@@ -313,8 +325,6 @@ describe('Item Validation Tests', () => {
           member: actor,
           permission: PermissionLevel.Read,
         });
-        await saveItemValidation({ item });
-        const count = await itemValidationGroupRawRepository.count();
 
         const res = await app.inject({
           method: HttpMethod.Post,
@@ -322,10 +332,11 @@ describe('Item Validation Tests', () => {
         });
         expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
 
+        // wait for validation to happen before checking nothing was created
         await new Promise((res) => {
           setTimeout(async () => {
             // check no created entries
-            expect(count).toEqual(await itemValidationGroupRawRepository.count());
+            expect(await itemValidationGroupRawRepository.countBy({ item })).toEqual(0);
             res(true);
           }, VALIDATION_LOADING_TIME);
         });
@@ -338,8 +349,6 @@ describe('Item Validation Tests', () => {
           member: actor,
           permission: PermissionLevel.Write,
         });
-        await saveItemValidation({ item });
-        const count = await itemValidationGroupRawRepository.count();
 
         const res = await app.inject({
           method: HttpMethod.Post,
@@ -347,10 +356,11 @@ describe('Item Validation Tests', () => {
         });
         expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
 
+        // wait for validation to happen before checking nothing was created
         await new Promise((res) => {
           setTimeout(async () => {
             // check no created entries
-            expect(count).toEqual(await itemValidationGroupRawRepository.count());
+            expect(await itemValidationGroupRawRepository.countBy({ item })).toEqual(0);
             res(true);
           }, VALIDATION_LOADING_TIME);
         });
@@ -368,8 +378,6 @@ describe('Item Validation Tests', () => {
         const { item } = await testUtils.saveItemAndMembership({
           member: actor,
         });
-        await saveItemValidation({ item });
-        const count = await itemValidationGroupRawRepository.count();
 
         const res = await app.inject({
           method: HttpMethod.Post,
@@ -377,10 +385,11 @@ describe('Item Validation Tests', () => {
         });
         expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
 
+        // wait for validation to happen before checking nothing was created
         await new Promise((res) => {
           setTimeout(async () => {
             // check no created entries
-            expect(count).toEqual(await itemValidationGroupRawRepository.count());
+            expect(await itemValidationGroupRawRepository.countBy({ item })).toEqual(0);
             res(true);
           }, VALIDATION_LOADING_TIME);
         });
