@@ -14,7 +14,7 @@ import { StorageService } from '../../../member/plugins/storage/service';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { Item } from '../../entities/Item';
 import { ItemService } from '../../service';
-import { download, updateSchema, upload } from './schema';
+import { download, upload } from './schema';
 import FileItemService from './service';
 import { DEFAULT_MAX_FILE_SIZE, MAX_NUMBER_OF_FILES_UPLOAD } from './utils/constants';
 
@@ -28,8 +28,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
   const { uploadMaxFileNb = MAX_NUMBER_OF_FILES_UPLOAD, maxFileSize = DEFAULT_MAX_FILE_SIZE } =
     options;
 
-  const { db, items } = fastify;
-  const { extendExtrasUpdateSchema } = items;
+  const { db } = fastify;
 
   const fileService = resolveDependency(FileService);
   const itemService = resolveDependency(ItemService);
@@ -47,9 +46,6 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
       // headerPairs: 2000             // Max number of header key=>value pairs (Default: 2000 - same as node's http).
     },
   });
-
-  // "install" custom schema for validating file items update
-  extendExtrasUpdateSchema(updateSchema(fileService.fileType));
 
   // register post delete handler to remove the file object after item delete
   itemService.hooks.setPostHook(

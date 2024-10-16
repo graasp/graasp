@@ -3,7 +3,7 @@ import { Type } from '@sinclair/typebox';
 import { FastifySchema } from 'fastify';
 
 import { customType } from '../../../../plugins/typebox';
-import { itemIdSchemaRef } from '../../schema';
+import { itemIdSchemaRef } from '../../schemas';
 
 export const zipImport = {
   querystring: Type.Partial(

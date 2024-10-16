@@ -6,7 +6,7 @@ import { FastifySchema } from 'fastify';
 import { ShortLinkPlatform } from '@graasp/sdk';
 
 import { customType } from '../../../../plugins/typebox';
-import { itemIdSchemaRef } from '../../schema';
+import { itemIdSchemaRef } from '../../schemas';
 
 const shortLinkPayloadFlatten = Type.Object(
   {

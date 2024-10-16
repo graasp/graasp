@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 
 import { itemMembershipSchemaRef } from '../../../itemMembership/schemas';
-import { itemIdSchemaRef } from '../../schema';
+import { itemIdSchemaRef } from '../../schemas';
 
 export const enroll = {
   tags: ['itemMemberships'],
