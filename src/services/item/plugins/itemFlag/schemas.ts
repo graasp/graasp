@@ -5,7 +5,7 @@ import { FlagType } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { nullableAccountSchemaRef } from '../../../account/schemas';
-import { itemIdSchemaRef, itemSchemaRef } from '../../schema';
+import { itemIdSchemaRef, itemSchemaRef } from '../../schemas';
 
 export const itemFlagSchemaRef = registerSchemaAsRef(
   'itemFlag',

@@ -2,7 +2,13 @@ import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 
 import { FastifyInstance } from 'fastify';
 
-import { DocumentItemFactory, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
+import {
+  DocumentItemExtraFlavor,
+  DocumentItemFactory,
+  HttpMethod,
+  ItemType,
+  PermissionLevel,
+} from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -176,7 +182,7 @@ describe('Document Item tests', () => {
             [ItemType.DOCUMENT]: {
               content: 'new value',
               // test that flavor can be updated
-              flavor: 'info' as const,
+              flavor: DocumentItemExtraFlavor.Info,
             },
           },
           settings: {
@@ -191,6 +197,8 @@ describe('Document Item tests', () => {
           payload,
         });
         // this test a bit how we deal with extra: it replaces existing keys
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
         expectItem(response.json(), {
           ...item,
           ...payload,
@@ -199,8 +207,6 @@ describe('Document Item tests', () => {
         });
 
         expect(response.json().settings).toMatchObject(payload.settings);
-
-        expect(response.statusCode).toBe(StatusCodes.OK);
       });
 
       it('Bad Request if extra is invalid', async () => {
@@ -233,8 +239,8 @@ describe('Document Item tests', () => {
           payload,
         });
 
-        expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+        expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
       });
     });
   });

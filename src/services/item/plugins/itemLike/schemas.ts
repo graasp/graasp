@@ -2,7 +2,7 @@ import { Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
-import { itemIdSchemaRef, itemSchemaRef, packedItemSchemaRef } from '../../schema';
+import { itemIdSchemaRef, itemSchemaRef, packedItemSchemaRef } from '../../schemas';
 
 export const itemLikeSchemaRef = registerSchemaAsRef(
   'itemLike',

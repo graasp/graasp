@@ -3,18 +3,38 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifySchema } from 'fastify';
 
-import { customType } from '../../../../plugins/typebox';
+import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { entityIdSchemaRef } from '../../../../schemas/global';
-import { itemSchemaRef, packedItemSchemaRef } from '../../schema';
+import { itemSchemaRef, packedItemSchemaRef } from '../../schemas';
 
-const geolocationMinimal = Type.Object(
+const geoCoordinateSchema = Type.Object(
   {
-    id: customType.UUID(),
     lat: Type.Number(),
     lng: Type.Number(),
-    country: customType.Nullable(Type.String()),
-    addressLabel: customType.Nullable(Type.String()),
   },
+  { additionalProperties: false },
+);
+
+export const geoCoordinateSchemaRef = registerSchemaAsRef(
+  'geoCoordinate',
+  'Geographic Coordinate',
+  geoCoordinateSchema,
+);
+
+const geolocationMinimal = Type.Composite(
+  [
+    geoCoordinateSchema,
+    Type.Object(
+      {
+        id: customType.UUID(),
+        lat: Type.Number(),
+        lng: Type.Number(),
+        country: customType.Nullable(Type.String()),
+        addressLabel: customType.Nullable(Type.String()),
+      },
+      { additionalProperties: false },
+    ),
+  ],
   { additionalProperties: false },
 );
 

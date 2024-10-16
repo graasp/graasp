@@ -6,7 +6,7 @@ import { ItemTagType, MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { UUID_REGEX, errorSchemaRef } from '../../../../schemas/global';
 import { nullableMemberSchemaRef } from '../../../member/schemas';
-import { itemIdSchemaRef, itemTagSchemaRef } from '../../schema';
+import { itemIdSchemaRef, itemTagSchemaRef } from '../../schemas';
 
 export const tagSchemaRef = registerSchemaAsRef(
   'tag',

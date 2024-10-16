@@ -1,12 +1,10 @@
 import { StatusCodes } from 'http-status-codes';
 
 import { fastifyMultipart } from '@fastify/multipart';
-import { FastifyPluginAsync } from 'fastify';
-
-import { ItemTagType, Pagination, PermissionLevel } from '@graasp/sdk';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../di/utils';
-import { IdParam, IdsParams } from '../../types';
+import { FastifyInstanceTypebox } from '../../plugins/typebox';
 import { asDefined } from '../../utils/assertions';
 import { buildRepositories } from '../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
@@ -17,11 +15,10 @@ import { validatedMemberAccountRole } from '../member/strategies/validatedMember
 import { ITEMS_PAGE_SIZE } from './constants';
 import { Item } from './entities/Item';
 import { ActionItemService } from './plugins/action/service';
-import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
 import {
-  SHOW_HIDDEN_PARRAM,
-  TYPES_FILTER_PARAM,
   copyMany,
+  create,
+  createWithThumbnail,
   deleteMany,
   getAccessible,
   getChildren,
@@ -33,29 +30,23 @@ import {
   getShared,
   moveMany,
   reorder,
-} from './schema';
+  updateOne,
+} from './schemas';
 import { ItemService } from './service';
-import { ItemChildrenParams, ItemSearchParams } from './types';
 import { getPostItemPayloadFromFormData } from './utils';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from './ws/events';
 
-const plugin: FastifyPluginAsync = async (fastify) => {
-  const { db, items, websockets } = fastify;
+const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
+  const { db, websockets } = fastify;
   const itemService = resolveDependency(ItemService);
   const actionItemService = resolveDependency(ActionItemService);
 
   // create item
   // question: add link hook here? or have another endpoint?
-  fastify.post<{
-    Querystring: {
-      parentId?: string;
-      previousItemId?: string;
-    };
-    Body: Partial<Item> & Pick<Item, 'name' | 'type'> & Pick<ItemGeolocation, 'lat' | 'lng'>;
-  }>(
+  fastify.post(
     '/',
     {
-      schema: items.extendCreateSchema(),
+      schema: create,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
     async (request, reply) => {
@@ -70,7 +61,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       const item = await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
         const item = await itemService.post(member, repositories, {
-          item: data,
+          item: data as Partial<Item> & Pick<Item, 'name' | 'type'>,
           previousItemId,
           parentId,
           geolocation: data.geolocation,
@@ -90,7 +81,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // isolate inside a register because of the mutlipart
-  fastify.register(async (fastify) => {
+  fastify.register(async (fastify: FastifyInstanceTypebox) => {
     fastify.register(fastifyMultipart, {
       limits: {
         // fieldNameSize: 0,             // Max field name size in bytes (Default: 100 bytes).
@@ -102,13 +93,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       },
     });
     // create folder element with thumbnail
-    fastify.post<{
-      Querystring: {
-        parentId?: string;
-      };
-    }>(
+    fastify.post(
       '/with-thumbnail',
       {
+        schema: createWithThumbnail,
         preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
       },
       async (request) => {
@@ -143,7 +131,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   });
 
   // get item
-  fastify.get<{ Params: IdParam }>(
+  fastify.get(
     '/:id',
     {
       schema: getOne,
@@ -154,7 +142,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  fastify.get<{ Querystring: IdsParams }>(
+  fastify.get(
     '/',
     { schema: getMany, preHandler: optionalIsAuthenticated },
     async ({ user, query: { id: ids } }) => {
@@ -163,9 +151,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // returns items you have access to given the parameters
-  fastify.get<{
-    Querystring: ItemSearchParams & Partial<Pagination>;
-  }>(
+  fastify.get(
     '/accessible',
     { schema: getAccessible, preHandler: [isAuthenticated, matchOne(memberAccountRole)] },
     async ({ user, query }) => {
@@ -202,7 +188,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // get shared with
-  fastify.get<{ Querystring: { permission?: PermissionLevel } }>(
+  fastify.get(
     '/shared-with',
     {
       schema: getShared,
@@ -216,7 +202,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // get item's children
-  fastify.get<{ Params: IdParam; Querystring: ItemChildrenParams }>(
+  fastify.get(
     '/:id/children',
     { schema: getChildren, preHandler: optionalIsAuthenticated },
     async ({ user, params: { id }, query: { ordered, types, keywords } }) => {
@@ -229,10 +215,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // get item's descendants
-  fastify.get<{
-    Params: IdParam;
-    Querystring: { [SHOW_HIDDEN_PARRAM]?: boolean; [TYPES_FILTER_PARAM]?: ItemTagType[] };
-  }>(
+  fastify.get(
     '/:id/descendants',
     { schema: getDescendants, preHandler: optionalIsAuthenticated },
     async ({ user, params: { id }, query }) => {
@@ -241,7 +224,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // get item's parents
-  fastify.get<{ Params: IdParam }>(
+  fastify.get(
     '/:id/parents',
     {
       schema: getParents,
@@ -253,10 +236,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // update item
-  fastify.patch<{ Params: IdParam; Body: Partial<Item> }>(
+  fastify.patch(
     '/:id',
     {
-      schema: items.extendExtrasUpdateSchema(),
+      schema: updateOne,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
     async (request) => {
@@ -276,7 +259,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  fastify.patch<{ Params: { id: string }; Body: { previousItemId?: string } }>(
+  fastify.patch(
     '/:id/reorder',
     {
       schema: reorder,
@@ -306,7 +289,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  fastify.delete<{ Querystring: IdsParams }>(
+  fastify.delete(
     '/',
     {
       schema: deleteMany,
@@ -346,12 +329,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  fastify.post<{
-    Querystring: IdsParams;
-    Body: {
-      parentId?: string;
-    };
-  }>(
+  fastify.post(
     '/move',
     {
       schema: moveMany,
@@ -388,10 +366,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  fastify.post<{
-    Querystring: IdsParams;
-    Body: { parentId: string };
-  }>(
+  fastify.post(
     '/copy',
     {
       schema: copyMany,
