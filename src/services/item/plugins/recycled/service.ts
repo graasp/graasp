@@ -7,12 +7,10 @@ import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import { Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
-import { ItemThumbnailService } from '../thumbnail/service';
 import { RecycledItemData } from './RecycledItemData';
 
 @singleton()
 export class RecycledBinService {
-  private readonly itemThumbnailService: ItemThumbnailService;
   readonly hooks = new HookManager<{
     recycle: {
       pre: { item: Item; isRecycledRoot: boolean };
@@ -24,10 +22,6 @@ export class RecycledBinService {
     };
   }>();
 
-  constructor(itemThumbnailService: ItemThumbnailService) {
-    this.itemThumbnailService = itemThumbnailService;
-  }
-
   async getOwn(
     member: Member,
     repositories: Repositories,
@@ -35,9 +29,7 @@ export class RecycledBinService {
   ): Promise<Paginated<RecycledItemData>> {
     const { recycledItemRepository } = repositories;
 
-    const recycled = await recycledItemRepository.getOwn(member, pagination);
-
-    return recycled;
+    return await recycledItemRepository.getOwn(member, pagination);
   }
 
   async recycleMany(actor: Member, repositories: Repositories, itemIds: string[]) {

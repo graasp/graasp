@@ -29,26 +29,6 @@ export const recycledItemSchemaRef = registerSchemaAsRef(
   ),
 );
 
-export const paginationSchemaRef = registerSchemaAsRef(
-  'pagination',
-  'Pagination',
-  Type.Object(
-    {
-      page: Type.Number({
-        minimum: 0,
-        default: 1,
-      }),
-      pageSize: Type.Number({
-        minimum: 1,
-        default: ITEMS_PAGE_SIZE,
-      }),
-    },
-    {
-      additionalProperties: false,
-    },
-  ),
-);
-
 export const buildPaginatedSchemaRef = (entity: TRef) =>
   Type.Object(
     {
@@ -56,7 +36,13 @@ export const buildPaginatedSchemaRef = (entity: TRef) =>
       totalCount: Type.Number({
         minimum: 0,
       }),
-      pagination: paginationSchemaRef,
+      pagination: customType.Pagination({
+        page: {
+          minimum: 0,
+          default: 1,
+        },
+        pageSize: { minimum: 1, default: ITEMS_PAGE_SIZE },
+      }),
     },
     {
       additionalProperties: false,
@@ -65,7 +51,15 @@ export const buildPaginatedSchemaRef = (entity: TRef) =>
 
 // schema for getting own recycled items
 export const getOwnRecycledItemDatas = {
-  querystring: paginationSchemaRef,
+  querystring: Type.Object({
+    pagination: customType.Pagination({
+      page: {
+        minimum: 0,
+        default: 1,
+      },
+      pageSize: { minimum: 1, default: ITEMS_PAGE_SIZE },
+    }),
+  }),
   response: {
     [StatusCodes.OK]: buildPaginatedSchemaRef(recycledItemSchemaRef),
   },
