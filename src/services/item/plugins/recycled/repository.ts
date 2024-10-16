@@ -1,10 +1,12 @@
 import { EntityManager, In } from 'typeorm';
 
-import { PermissionLevel } from '@graasp/sdk';
+import { Paginated, Pagination, PermissionLevel } from '@graasp/sdk';
 
 import { MutableRepository } from '../../../../repositories/MutableRepository';
 import { DEFAULT_PRIMARY_KEY } from '../../../../repositories/const';
+import { Account } from '../../../account/entities/account';
 import { Member } from '../../../member/entities/member';
+import { ITEMS_PAGE_SIZE_MAX } from '../../constants';
 import { Item } from '../../entities/Item';
 import { RecycledItemData } from './RecycledItemData';
 
@@ -31,12 +33,15 @@ export class RecycledItemDataRepository extends MutableRepository<RecycledItemDa
     return recycled;
   }
 
-  async getManyByMember(member: Member): Promise<RecycledItemData[]> {
+  async getOwn(account: Account, pagination: Pagination): Promise<Paginated<RecycledItemData>> {
+    const { page, pageSize } = pagination;
+    const limit = Math.min(pageSize, ITEMS_PAGE_SIZE_MAX);
+    const skip = (page - 1) * limit;
     // get only with admin membership
-    return await this.repository
+    const query = this.repository
       .createQueryBuilder('recycledItem')
       .withDeleted()
-      .leftJoinAndSelect('recycledItem.creator', 'member')
+      .leftJoinAndSelect('recycledItem.creator', 'creator')
       .leftJoinAndSelect('recycledItem.item', 'item')
       .leftJoinAndSelect('item.creator', 'itemMember')
       .innerJoin(
@@ -45,9 +50,12 @@ export class RecycledItemDataRepository extends MutableRepository<RecycledItemDa
         `im.item_path @> item.path 
         AND im.permission = :permission 
         AND im.account_id = :accountId`,
-        { permission: PermissionLevel.Admin, accountId: member.id },
+        { permission: PermissionLevel.Admin, accountId: account.id },
       )
-      .getMany();
+      .orderBy('recycledItem.created_at', 'DESC');
+
+    const [data, totalCount] = await query.offset(skip).limit(limit).getManyAndCount();
+    return { data, totalCount, pagination };
   }
 
   // warning: this call removes from the table

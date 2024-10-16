@@ -1,4 +1,4 @@
-import { Type } from '@sinclair/typebox';
+import { TRef, Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
 import { FastifySchema } from 'fastify';
@@ -8,7 +8,8 @@ import { MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { entityIdSchemaRef } from '../../../../schemas/global';
 import { nullableMemberSchemaRef } from '../../../member/schemas';
-import { itemSchemaRef, packedItemSchemaRef } from '../../schema';
+import { ITEMS_PAGE_SIZE } from '../../constants';
+import { itemSchemaRef } from '../../schema';
 
 export const recycledItemSchemaRef = registerSchemaAsRef(
   'recycledItem',
@@ -28,28 +29,39 @@ export const recycledItemSchemaRef = registerSchemaAsRef(
   ),
 );
 
-export const packedRecycledItemSchemaRef = registerSchemaAsRef(
-  'packedRecycledItem',
-  'Packed Recycled Item',
+export const buildPaginatedSchemaRef = (entity: TRef) =>
   Type.Object(
     {
-      // Object definition
-      id: customType.UUID(),
-      item: packedItemSchemaRef,
-      creator: nullableMemberSchemaRef,
-      createdAt: customType.DateTime(),
+      data: Type.Array(entity),
+      totalCount: Type.Number({
+        minimum: 0,
+      }),
+      pagination: customType.Pagination({
+        page: {
+          minimum: 0,
+          default: 1,
+        },
+        pageSize: { minimum: 1, default: ITEMS_PAGE_SIZE },
+      }),
     },
     {
-      // Schema options
       additionalProperties: false,
     },
-  ),
-);
+  );
 
-// schema for getting recycled items
-export const getRecycledItemDatas = {
+// schema for getting own recycled items
+export const getOwnRecycledItemDatas = {
+  querystring: Type.Optional(
+    customType.Pagination({
+      page: {
+        minimum: 0,
+        default: 1,
+      },
+      pageSize: { minimum: 1, default: ITEMS_PAGE_SIZE },
+    }),
+  ),
   response: {
-    [StatusCodes.OK]: Type.Array(packedRecycledItemSchemaRef),
+    [StatusCodes.OK]: buildPaginatedSchemaRef(recycledItemSchemaRef),
   },
 } as const satisfies FastifySchema;
 
