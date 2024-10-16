@@ -4,7 +4,11 @@ import { FastifyInstance } from 'fastify';
 
 import { DocumentItemFactory, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../test/app';
+import build, {
+  clearDatabase,
+  mockAuthenticate,
+  unmockAuthenticate,
+} from '../../../../../test/app';
 import { AppDataSource } from '../../../../plugins/datasource';
 import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
 import { Member } from '../../../member/entities/member';
@@ -23,17 +27,23 @@ describe('Document Item tests', () => {
   let app: FastifyInstance;
   let actor: Member | undefined;
 
+  beforeAll(async () => {
+    ({ app } = await build({ member: null }));
+  });
+
+  afterAll(async () => {
+    await clearDatabase(app.db);
+    app.close();
+  });
+
   afterEach(async () => {
     jest.clearAllMocks();
-    await clearDatabase(app.db);
     actor = undefined;
-    app.close();
+    unmockAuthenticate();
   });
 
   describe('POST /items', () => {
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
-
       const payload = { name: 'name', type: ItemType.DOCUMENT, extra };
 
       const response = await app.inject({
@@ -47,7 +57,8 @@ describe('Document Item tests', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('Create successfully', async () => {
@@ -129,7 +140,6 @@ describe('Document Item tests', () => {
 
   describe('PATCH /items/:id', () => {
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
       const member = await saveMember();
       const { item } = await testUtils.saveItemAndMembership({ member });
 
@@ -144,7 +154,8 @@ describe('Document Item tests', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('Update successfully', async () => {

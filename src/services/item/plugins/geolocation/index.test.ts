@@ -6,7 +6,11 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../test/app';
+import build, {
+  clearDatabase,
+  mockAuthenticate,
+  unmockAuthenticate,
+} from '../../../../../test/app';
 import { AppDataSource } from '../../../../plugins/datasource';
 import { GEOLOCATION_API_HOST, ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
 import { MemberCannotAccess } from '../../../../utils/errors';
@@ -61,19 +65,26 @@ describe('Item Geolocation', () => {
   let item;
   let packedItem: PackedItem | null;
 
+  beforeAll(async () => {
+    ({ app } = await build({ member: null }));
+  });
+
+  afterAll(async () => {
+    await clearDatabase(app.db);
+    app.close();
+  });
+
   afterEach(async () => {
     jest.clearAllMocks();
-    await clearDatabase(app.db);
     actor = null;
     packedItem = null;
+    unmockAuthenticate();
     item = null;
-    app.close();
   });
 
   describe('GET /:id/geolocation', () => {
     describe('Signed out', () => {
       it('Get geolocation for public item', async () => {
-        ({ app } = await build({ member: null }));
         const member = await saveMember();
         ({ packedItem } = await testUtils.savePublicItem({ member }));
         const geoloc = await repository.save({ item: packedItem, lat: 1, lng: 2, country: 'de' });
@@ -88,7 +99,6 @@ describe('Item Geolocation', () => {
       });
 
       it('Throws for non public item', async () => {
-        ({ app } = await build({ member: null }));
         const member = await saveMember();
         ({ item } = await testUtils.saveItemAndMembership({ member }));
         await repository.save({ item, lat: 1, lng: 2, country: 'de' });
@@ -103,7 +113,8 @@ describe('Item Geolocation', () => {
     });
     describe('Signed in', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
         ({ packedItem, item } = await testUtils.saveItemAndMembership({ member: actor }));
       });
 
@@ -187,7 +198,6 @@ describe('Item Geolocation', () => {
   describe('GET /geolocation', () => {
     describe('Signed out', () => {
       it('Does not get public item geolocations on root', async () => {
-        ({ app } = await build({ member: null }));
         const member = await saveMember();
         const { packedItem } = await testUtils.savePublicItem({ member });
         await saveGeolocation({
@@ -221,7 +231,6 @@ describe('Item Geolocation', () => {
       });
 
       it('Get public item geolocations within public item', async () => {
-        ({ app } = await build({ member: null }));
         const member = await saveMember();
         const { item: parentItem, publicTag } = await testUtils.savePublicItem({ member });
 
@@ -259,7 +268,8 @@ describe('Item Geolocation', () => {
 
     describe('Signed in', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('throws if missing one parameter', async () => {
@@ -433,7 +443,6 @@ describe('Item Geolocation', () => {
   describe('PUT /:id/geolocation', () => {
     describe('Signed out', () => {
       it('Throw', async () => {
-        ({ app } = await build({ member: null }));
         const res = await app.inject({
           method: HttpMethod.Put,
           url: `${ITEMS_ROUTE_PREFIX}/${uuid()}/geolocation`,
@@ -450,7 +459,8 @@ describe('Item Geolocation', () => {
 
     describe('Signed in', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
       it('throw for invalid id', async () => {
         const res = await app.inject({
@@ -533,7 +543,6 @@ describe('Item Geolocation', () => {
   describe('DELETE /:id/geolocation', () => {
     describe('Signed out', () => {
       it('Throw', async () => {
-        ({ app } = await build({ member: null }));
         const res = await app.inject({
           method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/${uuid()}/geolocation`,
@@ -544,7 +553,8 @@ describe('Item Geolocation', () => {
 
     describe('Signed in', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
       it('throw for invalid id', async () => {
         const res = await app.inject({
@@ -569,7 +579,6 @@ describe('Item Geolocation', () => {
   describe('GET /geolocation/reverse', () => {
     describe('Signed out', () => {
       it('Throw', async () => {
-        ({ app } = await build({ member: null }));
         const res = await app.inject({
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/geolocation/reverse`,
@@ -585,7 +594,8 @@ describe('Item Geolocation', () => {
 
     describe('Signed in', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('get adress from coordinates', async () => {
@@ -636,7 +646,6 @@ describe('Item Geolocation', () => {
   describe('GET /geolocation/search', () => {
     describe('Signed out', () => {
       it('Throw', async () => {
-        ({ app } = await build({ member: null }));
         const res = await app.inject({
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/geolocation/search`,
@@ -651,7 +660,8 @@ describe('Item Geolocation', () => {
 
     describe('Signed in', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('get address from search', async () => {

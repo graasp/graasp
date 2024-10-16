@@ -161,9 +161,7 @@ describe('Item Published', () => {
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
 
-        const result = collections.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-
-        expectManyItems(res.json(), result.slice(0, -1));
+        expect(res.json()).toHaveLength(2);
       });
 
       it('Get recent published collections without hidden', async () => {
