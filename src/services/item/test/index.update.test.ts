@@ -2,6 +2,7 @@ import FormData from 'form-data';
 import fs from 'fs';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import path from 'node:path';
+import { In, Not } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
 
@@ -19,7 +20,7 @@ import {
   buildPathFromIds,
 } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../test/app';
+import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../test/constants';
 import { resolveDependency } from '../../../di/utils';
 import { AppDataSource } from '../../../plugins/datasource';
@@ -37,6 +38,7 @@ import { saveMember } from '../../member/test/fixtures/members';
 import { Item } from '../entities/Item';
 import { ActionItemService } from '../plugins/action/service';
 import { ItemGeolocation } from '../plugins/geolocation/ItemGeolocation';
+import { expectItemGeolocations } from '../plugins/geolocation/test/utils';
 import { ItemService } from '../service';
 import { ItemTestUtils, expectItem } from './fixtures/items';
 
@@ -108,7 +110,7 @@ const saveNbOfItems = async ({
   const items: Item[] = [];
   for (let i = 0; i < nb; i++) {
     const { item } = await testUtils.saveItemAndMembership({
-      item: { name: 'item ' + i, ...itemData },
+      item: itemData,
       member: member ?? actor,
       parentItem,
       creator: actor,
@@ -122,17 +124,23 @@ describe('Item routes tests', () => {
   let app: FastifyInstance;
   let actor;
 
+  beforeAll(async () => {
+    ({ app } = await build({ member: null }));
+  });
+
+  afterAll(async () => {
+    await clearDatabase(app.db);
+    app.close();
+  });
+
   afterEach(async () => {
     jest.clearAllMocks();
-    await clearDatabase(app.db);
+    unmockAuthenticate();
     actor = null;
-    app.close();
   });
 
   describe('POST /items', () => {
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
-
       const payload = FolderItemFactory();
       const response = await app.inject({
         method: HttpMethod.Post,
@@ -146,7 +154,8 @@ describe('Item routes tests', () => {
     describe('Signed In', () => {
       let waitForPostCreation: () => Promise<unknown>;
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
 
         const itemService = resolveDependency(ItemService);
         const actionItemService = resolveDependency(ActionItemService);
@@ -218,8 +227,10 @@ describe('Item routes tests', () => {
         await waitForPostCreation();
 
         // a membership does not need to be created for item with admin rights
-        const nbItemMemberships = await itemMembershipRawRepository.count();
-        expect(nbItemMemberships).toEqual(1);
+        const nbItemMemberships = await itemMembershipRawRepository.countBy({
+          item: { id: newItem.id },
+        });
+        expect(nbItemMemberships).toEqual(0);
 
         // add at beginning
         await testUtils.expectOrder(newItem.id, undefined, child.id);
@@ -249,7 +260,13 @@ describe('Item routes tests', () => {
         // one membership for the owner
         // one membership for sharing
         // admin for the new item
-        expect(await itemMembershipRawRepository.count()).toEqual(3);
+        expect(
+          await itemMembershipRawRepository.countBy({
+            permission: PermissionLevel.Admin,
+            item: { id: newItem.id },
+            account: { id: actor.id },
+          }),
+        ).toEqual(1);
       });
 
       it('Create successfully with geolocation', async () => {
@@ -265,7 +282,9 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
         await waitForPostCreation();
 
-        expect(await AppDataSource.getRepository(ItemGeolocation).count()).toEqual(1);
+        expect(
+          await AppDataSource.getRepository(ItemGeolocation).countBy({ item: { id: newItem.id } }),
+        ).toEqual(1);
       });
 
       it('Create successfully with language', async () => {
@@ -338,7 +357,7 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
         await waitForPostCreation();
 
-        expect(await AppDataSource.getRepository(Item).count()).toEqual(1);
+        expect(await AppDataSource.getRepository(Item).countBy({ id: newItem.id })).toEqual(1);
       });
 
       it('Create successfully with between children', async () => {
@@ -420,8 +439,7 @@ describe('Item routes tests', () => {
 
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
         // no item nor geolocation is created
-        expect(await testUtils.rawItemRepository.count()).toEqual(0);
-        expect(await AppDataSource.getRepository(ItemGeolocation).count()).toEqual(0);
+        expect(await testUtils.rawItemRepository.countBy({ name: payload.name })).toEqual(0);
 
         const response1 = await app.inject({
           method: HttpMethod.Post,
@@ -431,8 +449,7 @@ describe('Item routes tests', () => {
 
         expect(response1.statusCode).toBe(StatusCodes.BAD_REQUEST);
         // no item nor geolocation is created
-        expect(await testUtils.rawItemRepository.count()).toEqual(0);
-        expect(await AppDataSource.getRepository(ItemGeolocation).count()).toEqual(0);
+        expect(await testUtils.rawItemRepository.countBy({ name: payload.name })).toEqual(0);
       });
 
       it('Bad request if name is invalid', async () => {
@@ -597,7 +614,8 @@ describe('Item routes tests', () => {
 
   describe('POST /items/with-thumbnail', () => {
     beforeEach(async () => {
-      ({ app, actor } = await build());
+      actor = await saveMember();
+      mockAuthenticate(actor);
     });
     it('Post item with thumbnail', async () => {
       const imageStream = fs.createReadStream(path.resolve(__dirname, './fixtures/image.png'));
@@ -633,7 +651,6 @@ describe('Item routes tests', () => {
 
   describe('PATCH /items/:id', () => {
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
       const member = await saveMember();
       const { item } = await testUtils.saveItemAndMembership({ member });
 
@@ -648,7 +665,8 @@ describe('Item routes tests', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('Update successfully', async () => {
@@ -922,7 +940,6 @@ describe('Item routes tests', () => {
   // delete many items
   describe('DELETE /items', () => {
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
       const member = await saveMember();
       const { item } = await testUtils.saveItemAndMembership({ member });
 
@@ -937,7 +954,8 @@ describe('Item routes tests', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
       it('Delete successfully', async () => {
         const { item: item1 } = await testUtils.saveItemAndMembership({ member: actor });
@@ -954,10 +972,14 @@ describe('Item routes tests', () => {
         expect(response.json()).toEqual(items.map(({ id }) => id));
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
         await waitForExpect(async () => {
-          const remaining = await testUtils.rawItemRepository.count();
-          expect(remaining).toEqual(0);
-          const memberships = await itemMembershipRawRepository.count();
-          expect(memberships).toEqual(0);
+          const remaining = await testUtils.rawItemRepository.findBy({
+            id: In([item1.id, item2.id]),
+          });
+          expect(remaining).toHaveLength(0);
+          const memberships = await itemMembershipRawRepository.findBy({
+            item: { id: In([item1.id, item2.id]) },
+          });
+          expect(memberships).toHaveLength(0);
           const { errors } = await testUtils.itemRepository.getMany(items.map(({ id }) => id));
           expect(errors).toHaveLength(items.length);
         }, MULTIPLE_ITEMS_LOADING_TIME);
@@ -974,10 +996,15 @@ describe('Item routes tests', () => {
         expect(response.json()).toEqual([item1.id]);
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
         await waitForExpect(async () => {
-          expect(await testUtils.rawItemRepository.count()).toEqual(0);
+          const remaining = await testUtils.rawItemRepository.findBy({
+            id: item1.id,
+          });
+          expect(remaining).toHaveLength(0);
 
-          const memberships = await itemMembershipRawRepository.count();
-          expect(memberships).toEqual(0);
+          const memberships = await itemMembershipRawRepository.findBy({
+            item: { id: item1.id },
+          });
+          expect(memberships).toHaveLength(0);
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
       it('Delete successfully one item in parent, with children and memberships', async () => {
@@ -1002,12 +1029,14 @@ describe('Item routes tests', () => {
         expect(response.json()).toEqual([parent.id]);
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
         await waitForExpect(async () => {
-          const remaining = await testUtils.rawItemRepository.count();
           // should keep root
+          const remaining = await testUtils.rawItemRepository.countBy({ id: root.id });
           expect(remaining).toEqual(1);
 
-          const memberships = await itemMembershipRawRepository.count();
           // should keep root membership for actor and member
+          const memberships = await itemMembershipRawRepository.countBy({
+            account: { id: In([actor.id, member.id]) },
+          });
           expect(memberships).toEqual(2);
 
           // ws should not fail
@@ -1057,7 +1086,6 @@ describe('Item routes tests', () => {
   // move many items
   describe('POST /items/move', () => {
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
       const member = await saveMember();
       const { item: item1 } = await testUtils.saveItemAndMembership({ member });
       const { item: item2 } = await testUtils.saveItemAndMembership({ member });
@@ -1079,7 +1107,8 @@ describe('Item routes tests', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('Move successfully root item to parent', async () => {
@@ -1309,7 +1338,6 @@ describe('Item routes tests', () => {
   // copy many items
   describe('POST /items/copy', () => {
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
       const member = await saveMember();
       const { item } = await testUtils.saveItemAndMembership({ member });
 
@@ -1325,7 +1353,8 @@ describe('Item routes tests', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('Copy successfully from root to root', async () => {
@@ -1337,8 +1366,6 @@ describe('Item routes tests', () => {
           item: { lang: 'fr', settings },
           member: actor,
         });
-        const initialCount = await testUtils.rawItemRepository.count();
-        const initialCountMembership = await itemMembershipRawRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -1351,9 +1378,6 @@ describe('Item routes tests', () => {
 
         // wait a bit for tasks to complete
         await waitForExpect(async () => {
-          // contains twice the items (and the target item)
-          const newCount = await testUtils.rawItemRepository.count();
-          expect(newCount).toEqual(initialCount + items.length);
           for (const { name } of items) {
             const itemsInDb1 = await testUtils.rawItemRepository.find({
               where: { name },
@@ -1385,19 +1409,23 @@ describe('Item routes tests', () => {
             expect(itemsInDb[0].path).not.toEqual(itemsInDb[1].path);
 
             expect(await testUtils.getOrderForItemId(itemsInDb2[0].id)).toBeNull();
-          }
 
-          // check it created a new membership per item
-          const newCountMembership = await itemMembershipRawRepository.count();
-          expect(newCountMembership).toEqual(initialCountMembership + items.length);
+            // check it created a new membership per item
+            const m1 = await itemMembershipRawRepository.findBy({
+              item: { id: itemsInDb1[0].id },
+            });
+            expect(m1).toHaveLength(1);
+            const m2 = await itemMembershipRawRepository.findBy({
+              item: { id: itemsInDb2[0].id },
+            });
+            expect(m2).toHaveLength(1);
+          }
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
 
       it('Copy successfully from root to item with admin rights', async () => {
         const { item: targetItem } = await testUtils.saveItemAndMembership({ member: actor });
         const items = await saveNbOfItems({ nb: 3, actor });
-        const initialCountMembership = await itemMembershipRawRepository.count();
-        const initialCount = await testUtils.rawItemRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -1413,18 +1441,18 @@ describe('Item routes tests', () => {
         // wait a bit for tasks to complete
         await waitForExpect(async () => {
           // contains twice the items (and the target item)
-          const newCount = await testUtils.rawItemRepository.count();
-          expect(newCount).toEqual(initialCount + items.length);
           const orders: (number | null)[] = [];
           for (const { name } of items) {
             const itemsInDb = await testUtils.rawItemRepository.findBy({ name });
             expect(itemsInDb).toHaveLength(2);
             orders.push(await testUtils.getOrderForItemId(itemsInDb[1].id));
-          }
 
-          // check it did not create a new membership because user is admin of parent
-          const newCountMembership = await itemMembershipRawRepository.count();
-          expect(newCountMembership).toEqual(initialCountMembership);
+            // check it did not create a new membership because user is admin of parent
+            const newCountMembership = await itemMembershipRawRepository.findBy({
+              item: { id: In(itemsInDb.map(({ id }) => id)) },
+            });
+            expect(newCountMembership).toHaveLength(1);
+          }
 
           // order is defined, order is not guaranteed because moving is done in parallel
           orders.forEach((o) => expect(o).toBeGreaterThan(0));
@@ -1441,8 +1469,6 @@ describe('Item routes tests', () => {
           permission: PermissionLevel.Write,
         });
         const items = await saveNbOfItems({ nb: 3, actor: member, member: actor });
-        const initialCountMembership = await itemMembershipRawRepository.count();
-        const initialCount = await testUtils.rawItemRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -1458,20 +1484,20 @@ describe('Item routes tests', () => {
         // wait a bit for tasks to complete
         await waitForExpect(async () => {
           // contains twice the items (and the target item)
-          const newCount = await testUtils.rawItemRepository.count();
-          expect(newCount).toEqual(initialCount + items.length);
           for (const { name } of items) {
             const itemsInDb = await testUtils.rawItemRepository.findBy({ name });
             expect(itemsInDb).toHaveLength(2);
-          }
 
-          // check it created a new membership because user is writer of parent
-          const newCountMembership = await itemMembershipRawRepository.count();
-          expect(newCountMembership).toEqual(initialCountMembership + items.length);
+            // check it created a new membership because user is writer of parent
+            const newCountMembership = await itemMembershipRawRepository.findBy({
+              item: { id: In(itemsInDb.map(({ id }) => id)) },
+            });
+            expect(newCountMembership).toHaveLength(2);
+          }
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
 
-      it('Copy successfully root item from shared items to home', async () => {
+      it('Copy successfully shared root item to home', async () => {
         const member = await saveMember();
         const { item } = await testUtils.saveItemAndMembership({
           member: actor,
@@ -1479,7 +1505,6 @@ describe('Item routes tests', () => {
           permission: PermissionLevel.Admin,
         });
         const { item: youngParent } = await testUtils.saveItemAndMembership({
-          item: { name: 'young parent' },
           member: actor,
           creator: member,
           permission: PermissionLevel.Admin,
@@ -1487,7 +1512,6 @@ describe('Item routes tests', () => {
         });
         // children, saved in weird order (children updated first so it appears first when fetching)
         await testUtils.saveItemAndMembership({
-          item: { name: 'old child' },
           member: actor,
           creator: member,
           permission: PermissionLevel.Admin,
@@ -1508,9 +1532,6 @@ describe('Item routes tests', () => {
           },
         });
 
-        const initialCountMembership = await itemMembershipRawRepository.count();
-        const initialCount = await testUtils.rawItemRepository.count();
-
         const response = await app.inject({
           method: HttpMethod.Post,
           url: '/items/copy',
@@ -1523,20 +1544,26 @@ describe('Item routes tests', () => {
         // wait a bit for tasks to complete
         await waitForExpect(async () => {
           // contains twice the items (and the target item)
-          const newCount = await testUtils.rawItemRepository.count();
-          expect(newCount).toEqual(initialCount * 2);
+          const itemsInDb1 = await testUtils.rawItemRepository.find({
+            where: { name: item.name },
+          });
+          const itemsInDb2 = await testUtils.rawItemRepository.find({
+            where: { name: `${item.name} (2)` },
+          });
+          expect(itemsInDb1).toHaveLength(1);
+          expect(itemsInDb2).toHaveLength(1);
 
           // check it created a new membership because user is writer of parent
-          const newCountMembership = await itemMembershipRawRepository.count();
-          expect(newCountMembership).toEqual(initialCountMembership + 1);
+          const newCountMembership = await itemMembershipRawRepository.findBy({
+            item: { id: In([itemsInDb1[0].id, itemsInDb2[0].id]) },
+          });
+          expect(newCountMembership).toHaveLength(2);
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
 
       it('Copy successfully from item to root', async () => {
         const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
         const items = await saveNbOfItems({ nb: 3, actor, parentItem });
-        const initialCount = await testUtils.rawItemRepository.count();
-        const initialCountMembership = await itemMembershipRawRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -1550,27 +1577,17 @@ describe('Item routes tests', () => {
         // wait a bit for tasks to complete
         await waitForExpect(async () => {
           // contains twice the items (and the target item)
-          const newCount = await testUtils.rawItemRepository.count();
-          expect(newCount).toEqual(initialCount + items.length);
           for (const { name } of items) {
-            let copiedItemId: string;
-            if (name === parentItem.name) {
-              const itemsInDb1 = await testUtils.rawItemRepository.findBy({ name });
-              expect(itemsInDb1).toHaveLength(1);
-              const itemsInDb2 = await testUtils.rawItemRepository.findBy({ name: `${name} (2)` });
-              expect(itemsInDb2).toHaveLength(1);
-              copiedItemId = itemsInDb2[0].id;
-            } else {
-              const itemsInDb = await testUtils.rawItemRepository.findBy({ name });
-              expect(itemsInDb).toHaveLength(2);
-              copiedItemId = itemsInDb[1].id;
-            }
+            const itemsInDb = await testUtils.rawItemRepository.findBy({ name });
+            expect(itemsInDb).toHaveLength(2);
+            const copiedItemId = itemsInDb[1].id;
+
+            const newCountMembership = await itemMembershipRawRepository.findBy({
+              item: { id: In(itemsInDb.map(({ id }) => id)) },
+            });
+            expect(newCountMembership).toHaveLength(2);
             expect(await testUtils.getOrderForItemId(copiedItemId)).toBeNull();
           }
-
-          // check it did not create a new membership because user is admin of parent
-          const newCountMembership = await itemMembershipRawRepository.count();
-          expect(newCountMembership).toEqual(initialCountMembership + items.length);
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
 
@@ -1591,7 +1608,6 @@ describe('Item routes tests', () => {
       it('Fail to copy if one item does not exist', async () => {
         const items = await saveNbOfItems({ nb: 3, actor });
         const missingId = uuidv4();
-        const initialCount = await testUtils.rawItemRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -1604,9 +1620,17 @@ describe('Item routes tests', () => {
 
         // wait a bit for tasks to complete
         await waitForExpect(async () => {
-          // contains twice the items (and the target item)
-          const newCount = await testUtils.rawItemRepository.count();
-          expect(newCount).toEqual(initialCount);
+          for (const item of items) {
+            const itemsInDb1 = await testUtils.rawItemRepository.find({
+              where: { name: item.name },
+            });
+            expect(itemsInDb1).toHaveLength(1);
+
+            const itemsInDb2 = await testUtils.rawItemRepository.find({
+              where: { name: `${item.name} (2)` },
+            });
+            expect(itemsInDb2).toHaveLength(0);
+          }
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
 
@@ -1619,8 +1643,6 @@ describe('Item routes tests', () => {
           member: actor,
           item: { type: ItemType.DOCUMENT },
         });
-
-        const count = await testUtils.rawItemRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -1635,9 +1657,15 @@ describe('Item routes tests', () => {
 
         // wait a bit for tasks to complete
         await waitForExpect(async () => {
-          // contains twice the items (and the target item)
-          const newCount = await testUtils.rawItemRepository.count();
-          expect(newCount).toEqual(count);
+          const itemsInDb1 = await testUtils.rawItemRepository.find({
+            where: { name: item.name },
+          });
+          expect(itemsInDb1).toHaveLength(1);
+
+          const itemsInDb2 = await testUtils.rawItemRepository.find({
+            where: { name: `${item.name} (2)` },
+          });
+          expect(itemsInDb2).toHaveLength(0);
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
       it('Copy lots of items', async () => {
@@ -1657,12 +1685,12 @@ describe('Item routes tests', () => {
         // wait a bit for tasks to complete
         await waitForExpect(async () => {
           for (const item of items) {
-            const results = await testUtils.rawItemRepository.findBy({ name: item.name });
-            if (!results.length) {
-              fail('item does not exist!');
-            }
-            expect(results).toHaveLength(2);
-            expect(results[1].path.startsWith(parentItem.path)).toBeTruthy();
+            const results = await testUtils.rawItemRepository.findBy({
+              name: item.name,
+              id: Not(item.id),
+            });
+            expect(results).toHaveLength(1);
+            expect(results[0].path.startsWith(parentItem.path)).toBeTruthy();
           }
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
@@ -1671,7 +1699,7 @@ describe('Item routes tests', () => {
         const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
         const itemGeolocationRepository = AppDataSource.getRepository(ItemGeolocation);
         const { item } = await testUtils.saveItemAndMembership({ member: actor });
-        await itemGeolocationRepository.save({ item, lat: 1, lng: 22 });
+        const geoloc = await itemGeolocationRepository.save({ item, lat: 1, lng: 22 });
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -1685,8 +1713,16 @@ describe('Item routes tests', () => {
 
         // wait a bit for tasks to complete
         await waitForExpect(async () => {
-          const results = await itemGeolocationRepository.count();
-          expect(results).toEqual(2);
+          const itemsInDb = await testUtils.rawItemRepository.findBy({ name: item.name });
+          expect(itemsInDb).toHaveLength(2);
+          for (const i of itemsInDb) {
+            const ig = await itemGeolocationRepository.findBy({
+              item: { id: i.id },
+            });
+            expect(ig).toHaveLength(1);
+            expect(ig[0].lat).toEqual(geoloc.lat);
+            expect(ig[0].lng).toEqual(geoloc.lng);
+          }
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
     });
@@ -1695,7 +1731,6 @@ describe('Item routes tests', () => {
   // copy many items
   describe('PATCH /items/id/reorder', () => {
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
       const member = await saveMember();
       const { item: parentItem } = await testUtils.saveItemAndMembership({ member });
       const toReorder = await testUtils.saveItem({
@@ -1720,7 +1755,8 @@ describe('Item routes tests', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
       it('reorder at beginning', async () => {
         const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });

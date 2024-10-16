@@ -5,7 +5,7 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, ItemTagType, ItemType, MemberFactory, PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../test/app';
+import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
 import { AppDataSource } from '../../../plugins/datasource';
 import { ItemNotFound, MemberCannotAccess } from '../../../utils/errors';
 import { saveMember } from '../../member/test/fixtures/members';
@@ -62,16 +62,23 @@ describe('Item routes tests', () => {
   let app: FastifyInstance;
   let actor;
 
+  beforeAll(async () => {
+    ({ app } = await build({ member: null }));
+  });
+
+  afterAll(async () => {
+    await clearDatabase(app.db);
+    app.close();
+  });
+
   afterEach(async () => {
     jest.clearAllMocks();
-    await clearDatabase(app.db);
+    unmockAuthenticate();
     actor = null;
-    app.close();
   });
 
   describe('GET /items/:id', () => {
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
       const member = await saveMember();
       const { item } = await testUtils.saveItemAndMembership({ member });
 
@@ -85,7 +92,8 @@ describe('Item routes tests', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('Returns successfully', async () => {
@@ -160,7 +168,6 @@ describe('Item routes tests', () => {
 
     describe('Public', () => {
       it('Returns successfully', async () => {
-        ({ app } = await build({ member: null }));
         const member = await saveMember();
         const { item, publicTag } = await testUtils.savePublicItem({ member });
 
@@ -176,7 +183,8 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
       it('Returns successfully for write right', async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
         const { item, publicTag } = await testUtils.savePublicItem({ member: actor });
         await testUtils.saveMembership({ item, account: actor, permission: PermissionLevel.Write });
 
@@ -201,7 +209,6 @@ describe('Item routes tests', () => {
   describe('GET /items?id=<id>', () => {
     // warning: this will change if it becomes a public endpoint
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
       const member = await saveMember();
       const { item } = await testUtils.saveItemAndMembership({ member });
 
@@ -216,7 +223,8 @@ describe('Item routes tests', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('Returns successfully', async () => {
@@ -327,7 +335,6 @@ describe('Item routes tests', () => {
 
     describe('Public', () => {
       it('Returns successfully', async () => {
-        ({ app } = await build({ member: null }));
         const member = await saveMember();
         const items: Item[] = [];
         const publicTags: ItemTag[] = [];
@@ -363,7 +370,6 @@ describe('Item routes tests', () => {
   });
   describe('GET /items/own', () => {
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
       const member = await saveMember();
       await testUtils.saveItemAndMembership({ member });
 
@@ -377,7 +383,8 @@ describe('Item routes tests', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('Returns successfully', async () => {
@@ -406,7 +413,6 @@ describe('Item routes tests', () => {
   });
   describe('GET /items/shared-with', () => {
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
       const member = await saveMember();
       await testUtils.saveItemAndMembership({ member });
 
@@ -423,7 +429,8 @@ describe('Item routes tests', () => {
       let member;
 
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
 
         member = await saveMember();
         const { item: item1 } = await testUtils.saveItemAndMembership({ member });
@@ -588,7 +595,6 @@ describe('Item routes tests', () => {
   });
   describe('GET /items/accessible', () => {
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
       const member = await saveMember();
       await testUtils.saveItemAndMembership({ member });
 
@@ -602,7 +608,8 @@ describe('Item routes tests', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('Returns successfully owned and shared items', async () => {
@@ -1080,7 +1087,6 @@ describe('Item routes tests', () => {
   describe('GET /items/:id/children', () => {
     // warning: this will change if the endpoint becomes public
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
       const member = await saveMember();
       const { item } = await testUtils.saveItemAndMembership({ member });
 
@@ -1094,7 +1100,8 @@ describe('Item routes tests', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('Returns successfully', async () => {
@@ -1331,7 +1338,6 @@ describe('Item routes tests', () => {
 
     describe('Public', () => {
       it('Returns successfully', async () => {
-        ({ app } = await build({ member: null }));
         const actor = await saveMember();
         const { item: parent, publicTag } = await testUtils.savePublicItem({ member: actor });
         const { item: child1 } = await testUtils.savePublicItem({
@@ -1372,7 +1378,6 @@ describe('Item routes tests', () => {
   describe('GET /items/:id/descendants', () => {
     // warning: this will change if the endpoint becomes public
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
       const member = await saveMember();
       const { item } = await testUtils.saveItemAndMembership({ member });
 
@@ -1386,7 +1391,8 @@ describe('Item routes tests', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('Returns successfully', async () => {
@@ -1542,7 +1548,6 @@ describe('Item routes tests', () => {
 
     describe('Public', () => {
       it('Returns successfully', async () => {
-        ({ app } = await build({ member: null }));
         const actor = await saveMember();
         const { item: parent, publicTag } = await testUtils.savePublicItem({ member: actor });
         const { item: child1 } = await testUtils.savePublicItem({
@@ -1587,7 +1592,6 @@ describe('Item routes tests', () => {
 
   describe('GET /items/:id/parents', () => {
     it('Throws if signed out and item is private', async () => {
-      ({ app } = await build({ member: null }));
       const member = await saveMember();
       const { item } = await testUtils.saveItemAndMembership({ member });
 
@@ -1601,7 +1605,8 @@ describe('Item routes tests', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
       });
 
       it('Returns successfully in order', async () => {
@@ -1720,7 +1725,6 @@ describe('Item routes tests', () => {
 
     describe('Public', () => {
       it('Returns successfully', async () => {
-        ({ app } = await build({ member: null }));
         const { item: parent, publicTag } = await testUtils.savePublicItem({ member: null });
         const { item: child1 } = await testUtils.savePublicItem({
           item: { name: 'child1' },
