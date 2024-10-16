@@ -10,6 +10,7 @@ import { matchOne } from '../../../authorization';
 import { assertIsMember } from '../../../member/entities/member';
 import { memberAccountRole } from '../../../member/strategies/memberAccountRole';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
+import { ITEMS_PAGE_SIZE } from '../../constants';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
 import { getOwnRecycledItemDatas, recycleOrRestoreMany } from './schemas';
 import { RecycledBinService } from './service';
@@ -35,7 +36,11 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user, query }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      const result = await recycleBinService.getOwn(member, buildRepositories(), query.pagination);
+      const { page = 1, pageSize = ITEMS_PAGE_SIZE } = query.pagination ?? {};
+      const result = await recycleBinService.getOwn(member, buildRepositories(), {
+        page,
+        pageSize,
+      });
       return result;
     },
   );

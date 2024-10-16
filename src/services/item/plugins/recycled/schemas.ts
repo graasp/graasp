@@ -51,15 +51,19 @@ export const buildPaginatedSchemaRef = (entity: TRef) =>
 
 // schema for getting own recycled items
 export const getOwnRecycledItemDatas = {
-  querystring: Type.Object({
-    pagination: customType.Pagination({
-      page: {
-        minimum: 0,
-        default: 1,
-      },
-      pageSize: { minimum: 1, default: ITEMS_PAGE_SIZE },
+  querystring: Type.Optional(
+    Type.Object({
+      pagination: Type.Optional(
+        customType.Pagination({
+          page: {
+            minimum: 0,
+            default: 1,
+          },
+          pageSize: { minimum: 1, default: ITEMS_PAGE_SIZE },
+        }),
+      ),
     }),
-  }),
+  ),
   response: {
     [StatusCodes.OK]: buildPaginatedSchemaRef(recycledItemSchemaRef),
   },
