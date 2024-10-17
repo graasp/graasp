@@ -89,7 +89,6 @@ describe('App Data Tests - Legacy', () => {
       });
       expect(response.statusCode).toEqual(StatusCodes.OK);
       const newAppData = response.json();
-      console.log(newAppData);
 
       expect(newAppData.member.id).toEqual(bob.id);
     });

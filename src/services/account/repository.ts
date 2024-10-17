@@ -1,5 +1,7 @@
 import { EntityManager } from 'typeorm';
 
+import { UUID } from '@graasp/sdk';
+
 import { AbstractRepository } from '../../repositories/AbstractRepository';
 import { Account } from './entities/account';
 
@@ -17,5 +19,11 @@ export class AccountRepository extends AbstractRepository<Account> {
       return undefined;
     }
     return result;
+  }
+
+  async refreshLastAuthenticatedAt(id: UUID, lastAuthenticatedAt: Date) {
+    await this.repository.update(id, { lastAuthenticatedAt });
+
+    return this.get(id);
   }
 }

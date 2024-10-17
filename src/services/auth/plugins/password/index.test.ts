@@ -74,7 +74,6 @@ describe('Login with password', () => {
       url: '/login-password',
       payload: { email: member.email, password: pwd.password, captcha: MOCK_CAPTCHA },
     });
-    console.log(await response.json());
     expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
     expect(response.json()).toHaveProperty('resource');
   });
@@ -569,7 +568,6 @@ describe('Set Password', () => {
       },
     });
     expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-    console.log(await response.json());
   });
 });
 
@@ -710,7 +708,6 @@ describe('Update Password', () => {
       },
     });
     expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-    console.log(await response.json());
   });
 });
 
