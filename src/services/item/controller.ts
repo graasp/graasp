@@ -17,21 +17,17 @@ import { Item } from './entities/Item';
 import { ActionItemService } from './plugins/action/service';
 import {
   copyMany,
-  create,
   createWithThumbnail,
   deleteMany,
-  getAccessible,
-  getChildren,
-  getDescendants,
   getMany,
-  getOne,
   getOwn,
-  getParents,
   getShared,
   moveMany,
   reorder,
   updateOne,
 } from './schemas';
+import { create } from './schemas.create';
+import { getAccessible, getChildren, getDescendants, getOne, getParents } from './schemas.packed';
 import { ItemService } from './service';
 import { getPostItemPayloadFromFormData } from './utils';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from './ws/events';
@@ -61,6 +57,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const item = await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
         const item = await itemService.post(member, repositories, {
+          // Because of an incoherence between the service and the schema, we need to cast the data to the correct type
+          // This need to be fixed in issue #1288 https://github.com/graasp/graasp/issues/1288
           item: data as Partial<Item> & Pick<Item, 'name' | 'type'>,
           previousItemId,
           parentId,

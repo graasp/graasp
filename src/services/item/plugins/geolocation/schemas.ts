@@ -5,7 +5,8 @@ import { FastifySchema } from 'fastify';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { entityIdSchemaRef } from '../../../../schemas/global';
-import { itemSchemaRef, packedItemSchemaRef } from '../../schemas';
+import { itemSchemaRef } from '../../schemas';
+import { packedItemSchemaRef } from '../../schemas.packed';
 
 const geoCoordinateSchema = Type.Object(
   {

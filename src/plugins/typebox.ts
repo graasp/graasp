@@ -21,7 +21,7 @@ import {
 
 import { MAX_USERNAME_LENGTH, MIN_USERNAME_LENGTH } from '@graasp/sdk';
 
-import { discrimineable } from './typebox/discrimineable';
+import { discriminable } from './typebox/discriminable';
 
 /**
  * List of schemas to be registered in the Fastify instance.
@@ -107,7 +107,7 @@ export const customType = {
       },
       { additionalProperties: false },
     ),
-  Discrimineable: discrimineable,
+  Discriminable: discriminable,
 } as const;
 
 /**

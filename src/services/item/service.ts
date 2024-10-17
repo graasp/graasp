@@ -96,7 +96,7 @@ export class ItemService {
     member: Member,
     repositories: Repositories,
     args: {
-      item: Partial<Omit<Item, 'geolocation'>> & Pick<Item, 'name' | 'type'>;
+      item: Partial<Item> & Pick<Item, 'name' | 'type'>;
       parentId?: string;
       geolocation?: Pick<ItemGeolocation, 'lat' | 'lng'>;
       thumbnail?: Readable;

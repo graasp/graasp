@@ -5,6 +5,7 @@ import { ItemTagType } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { nullableMemberSchemaRef } from '../../../member/schemas';
+import { itemSchemaRef } from '../../schemas';
 
 export const tagSchemaRef = registerSchemaAsRef(
   'tag',
@@ -19,6 +20,23 @@ export const tagSchemaRef = registerSchemaAsRef(
     },
     {
       // Schema options
+      additionalProperties: false,
+    },
+  ),
+);
+
+export const itemTagSchemaRef = registerSchemaAsRef(
+  'itemTag',
+  'Item Tag',
+  Type.Object(
+    {
+      id: customType.UUID(),
+      type: Type.Enum(ItemTagType),
+      item: itemSchemaRef,
+      creator: Type.Optional(nullableMemberSchemaRef),
+      createdAt: customType.DateTime(),
+    },
+    {
       additionalProperties: false,
     },
   ),
