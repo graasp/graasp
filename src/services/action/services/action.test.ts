@@ -2,7 +2,7 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 
 import { ActionFactory, MemberFactory } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../test/app';
+import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
 import { BaseLogger } from '../../../logger';
 import { AppDataSource } from '../../../plugins/datasource';
 import { MailerService } from '../../../plugins/mailer/service';
@@ -10,6 +10,7 @@ import { buildRepositories } from '../../../utils/repositories';
 import { ItemThumbnailService } from '../../item/plugins/thumbnail/service';
 import { ItemService } from '../../item/service';
 import { MemberService } from '../../member/service';
+import { saveMember } from '../../member/test/fixtures/members';
 import { ThumbnailService } from '../../thumbnail/service';
 import { Action } from '../entities/action';
 import { ActionService } from './action';
@@ -29,16 +30,25 @@ describe('ActionService', () => {
   let app: FastifyInstance;
   let actor;
 
+  beforeAll(async () => {
+    ({ app } = await build({ member: null }));
+  });
+
+  afterEach(async () => {
+    await clearDatabase(app.db);
+    app.close();
+  });
+
   afterEach(async () => {
     jest.clearAllMocks();
-    await clearDatabase(app.db);
+    unmockAuthenticate();
     actor = null;
-    app.close();
   });
 
   describe('postMany', () => {
     it('post many actions', async () => {
-      ({ app, actor } = await build());
+      actor = await saveMember();
+      mockAuthenticate(actor);
       const actions = [
         ActionFactory(),
         ActionFactory({ geolocation: null }),
@@ -51,9 +61,8 @@ describe('ActionService', () => {
     });
 
     it('does not post actions if member disable analytics', async () => {
-      ({ app, actor } = await build({
-        member: MemberFactory({ enableSaveActions: false }),
-      }));
+      actor = await saveMember(MemberFactory({ enableSaveActions: false }));
+      mockAuthenticate(actor);
       const actions = [ActionFactory(), ActionFactory(), ActionFactory()] as unknown as Action[];
       const request = MOCK_REQUEST;
       await service.postMany(actor, buildRepositories(), request, actions);

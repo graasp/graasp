@@ -4,7 +4,11 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
+import build, {
+  clearDatabase,
+  mockAuthenticate,
+  unmockAuthenticate,
+} from '../../../../../../test/app';
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { saveMember } from '../../../../member/test/fixtures/members';
@@ -23,20 +27,29 @@ describe('Favorite', () => {
   let item;
   let favorite;
 
+  beforeAll(async () => {
+    ({ app } = await build({ member: null }));
+  });
+
+  afterAll(async () => {
+    await clearDatabase(app.db);
+    app.close();
+  });
+
   afterEach(async () => {
     jest.clearAllMocks();
-    await clearDatabase(app.db);
+    unmockAuthenticate();
     actor = null;
     member = null;
     item = null;
     favorite = null;
-    app.close();
   });
 
   describe('GET /favorite', () => {
     describe('Signed in', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
         const { item } = await testUtils.saveItemAndMembership({ member: actor });
         await testUtils.saveItemAndMembership({ member: actor }); // Unused second item
 
@@ -74,8 +87,6 @@ describe('Favorite', () => {
   describe('POST /favorite/:id', () => {
     describe('Signed out', () => {
       beforeEach(async () => {
-        ({ app } = await build({ member: null }));
-
         member = await saveMember();
         ({ item } = await testUtils.saveItemAndMembership({ member }));
       });
@@ -91,7 +102,8 @@ describe('Favorite', () => {
 
     describe('Signed in', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        actor = await saveMember();
+        mockAuthenticate(actor);
         ({ item } = await testUtils.saveItemAndMembership({ member: actor }));
       });
 
@@ -140,7 +152,6 @@ describe('Favorite', () => {
     describe('DELETE /favorite/:id', () => {
       describe('Signed out', () => {
         beforeEach(async () => {
-          ({ app } = await build({ member: null }));
           member = await saveMember();
           ({ item } = await testUtils.saveItemAndMembership({ member }));
         });
@@ -157,7 +168,8 @@ describe('Favorite', () => {
 
       describe('Signed in', () => {
         beforeEach(async () => {
-          ({ app, actor } = await build());
+          actor = await saveMember();
+          mockAuthenticate(actor);
           ({ item } = await testUtils.saveItemAndMembership({ member: actor }));
           favorite = await new FavoriteRepository().post(item.id, actor.id);
         });
