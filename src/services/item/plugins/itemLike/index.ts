@@ -12,7 +12,7 @@ import { assertIsMember } from '../../../member/entities/member';
 import { memberAccountRole } from '../../../member/strategies/memberAccountRole';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { ItemService } from '../../service';
-import { create, deleteOne, getLikesForItem, getLikesForMember } from './schemas';
+import { create, deleteOne, getLikesForCurrentMember, getLikesForItem } from './schemas';
 import { ItemLikeService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
@@ -26,7 +26,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   // BUG: hide item you dont have membership (you liked then lose membership)
   fastify.get(
     '/liked',
-    { schema: getLikesForMember, preHandler: [isAuthenticated, matchOne(memberAccountRole)] },
+    {
+      schema: getLikesForCurrentMember,
+      preHandler: [isAuthenticated, matchOne(memberAccountRole)],
+    },
     async ({ user }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);

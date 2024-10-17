@@ -26,7 +26,7 @@ import { validatedMemberAccountRole } from '../member/strategies/validatedMember
 import { ChatMessageNotFound } from './errors';
 import { ActionChatService } from './plugins/action/service';
 import mentionPlugin from './plugins/mentions';
-import { clearChat, deleteMessage, getChat, patchMessage, publishMessage } from './schemas';
+import { clearChat, createChatMessage, deleteMessage, getChat, patchMessage } from './schemas';
 import { ChatMessageService } from './service';
 import { registerChatWsHooks } from './ws/hooks';
 
@@ -65,7 +65,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspChatPluginOptions> = async (fastif
     fastify.post(
       '/:itemId/chat',
       {
-        schema: publishMessage,
+        schema: createChatMessage,
         preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole, guestAccountRole)],
       },
       async (request) => {
