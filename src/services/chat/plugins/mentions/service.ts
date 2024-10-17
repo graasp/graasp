@@ -2,6 +2,7 @@ import { singleton } from 'tsyringe';
 
 import { MentionStatus, PermissionLevel, buildItemLinkForBuilder } from '@graasp/sdk';
 
+import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MAIL } from '../../../../plugins/mailer/langs/constants';
 import { MailerService } from '../../../../plugins/mailer/service';
 import { BUILDER_HOST } from '../../../../utils/config';
@@ -37,28 +38,26 @@ export class MentionService {
       itemId: item.id,
       chatOpen: true,
     });
-    const lang = member?.extra?.lang as string;
 
-    const translated = this.mailerService.translate(lang);
-    const subject = translated(MAIL.CHAT_MENTION_TITLE, {
-      creatorName: creator.name,
-      itemName: item.name,
-    });
-    const html = `
-    ${this.mailerService.buildText(translated(MAIL.GREETINGS))}
-    ${this.mailerService.buildText(
-      translated(MAIL.CHAT_MENTION_TEXT, {
+    const mail = new MailBuilder({
+      subject: {
+        text: MAIL.CHAT_MENTION_TITLE,
+        translationVariables: {
+          creatorName: creator.name,
+          itemName: item.name,
+        },
+      },
+      lang: member.lang,
+    })
+      .addText(MAIL.CHAT_MENTION_TEXT, {
         creatorName: creator.name,
         itemName: item.name,
-      }),
-    )}
-    ${this.mailerService.buildButton(itemLink, translated(MAIL.CHAT_MENTION_BUTTON_TEXT))}`;
+      })
+      .addButton(MAIL.CHAT_MENTION_BUTTON_TEXT, itemLink)
+      .build();
 
-    const footer = this.mailerService.buildFooter(lang);
-
-    this.mailerService.sendEmail(subject, member.email, itemLink, html, footer).catch((err) => {
+    this.mailerService.send(mail, member.email).catch((err) => {
       console.error(err);
-      // log.warn(err, `mailerService failed. notification link: ${itemLink}`);
     });
   }
 
@@ -77,7 +76,10 @@ export class MentionService {
     // TODO: optimize ? suppose same item - validate multiple times
     const results = await mentionRepository.postMany(mentionedMembers, message.id);
 
-    this.hooks.runPostHooks('createMany', account, repositories, { mentions: results, item });
+    this.hooks.runPostHooks('createMany', account, repositories, {
+      mentions: results,
+      item,
+    });
 
     return results;
   }

@@ -2,9 +2,9 @@ import { formatISO } from 'date-fns';
 import { singleton } from 'tsyringe';
 
 import { ItemTagType, PermissionLevel, PublicationStatus, UUID } from '@graasp/sdk';
-import { DEFAULT_LANG } from '@graasp/translations';
 
 import { BaseLogger } from '../../../../../logger';
+import { MailBuilder } from '../../../../../plugins/mailer/builder';
 import { MAIL } from '../../../../../plugins/mailer/langs/constants';
 import { MailerService } from '../../../../../plugins/mailer/service';
 import { resultOfToList } from '../../../../../services/utils';
@@ -65,19 +65,20 @@ export class ItemPublishedService {
 
     for (const member of contributors) {
       if (isMember(member)) {
-        const lang = member.lang ?? DEFAULT_LANG;
-        const t = this.mailerService.translate(lang);
+        const mail = new MailBuilder({
+          subject: {
+            text: MAIL.PUBLISH_ITEM_TITLE,
+            translationVariables: { itemName: item.name },
+          },
+          lang: member.lang,
+        })
+          .addText(MAIL.PUBLISH_ITEM_TEXT, { itemName: item.name })
+          .addButton(MAIL.PUBLISH_ITEM_BUTTON_TEXT, link, {
+            itemName: item.name,
+          })
+          .build();
 
-        const text = t(MAIL.PUBLISH_ITEM_TEXT, { itemName: item.name });
-        const html = `
-        ${this.mailerService.buildText(text)}
-        ${this.mailerService.buildButton(link, t(MAIL.PUBLISH_ITEM_BUTTON_TEXT))}
-      `;
-        const title = t(MAIL.PUBLISH_ITEM_TITLE, { itemName: item.name });
-
-        const footer = this.mailerService.buildFooter(lang);
-
-        await this.mailerService.sendEmail(title, member.email, link, html, footer).catch((err) => {
+        await this.mailerService.send(mail, member.email).catch((err) => {
           this.log.warn(err, `mailerService failed. published link: ${link}`);
         });
       }
@@ -90,7 +91,9 @@ export class ItemPublishedService {
     const item = await this.itemService.get(actor, repositories, itemId);
 
     // item should be public first
-    await itemTagRepository.getType(item.path, ItemTagType.Public, { shouldThrow: true });
+    await itemTagRepository.getType(item.path, ItemTagType.Public, {
+      shouldThrow: true,
+    });
 
     // get item published entry
     const publishedItem = await itemPublishedRepository.getForItem(item);
@@ -105,7 +108,10 @@ export class ItemPublishedService {
       startDate: formatISO(publishedItem.createdAt),
       endDate: formatISO(new Date()),
     });
-    return { totalViews: (totalViews?.[0] as ActionCount)?.actionCount, ...publishedItem };
+    return {
+      totalViews: (totalViews?.[0] as ActionCount)?.actionCount,
+      ...publishedItem,
+    };
   }
 
   async getMany(actor: Actor, repositories: Repositories, itemIds: string[]) {
@@ -145,7 +151,9 @@ export class ItemPublishedService {
       return itemPublished;
     }
 
-    return await this.post(member, repositories, item, publicationStatus, { canBePrivate: true });
+    return await this.post(member, repositories, item, publicationStatus, {
+      canBePrivate: true,
+    });
   }
 
   private checkPublicationStatus({ id, type }: Item, publicationStatus: PublicationStatus) {
