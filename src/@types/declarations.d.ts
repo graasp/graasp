@@ -27,10 +27,6 @@ declare module 'fastify' {
     // remove once fastify-polyglot has types
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     i18n: any;
-    items: {
-      extendCreateSchema: ReturnType<typeof create>;
-      extendExtrasUpdateSchema: ReturnType<typeof updateOne>;
-    };
     websockets: WebsocketService;
     corsPluginOptions: any;
   }

@@ -1,7 +1,7 @@
 import { Type } from '@sinclair/typebox';
 
 import { customType } from '../../../../../plugins/typebox';
-import { itemIdSchemaRef } from '../../../schema';
+import { itemIdSchemaRef } from '../../../schemas';
 
 export const itemValidationReviews = {
   params: {},
