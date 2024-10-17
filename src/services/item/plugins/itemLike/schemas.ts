@@ -2,6 +2,7 @@ import { Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
+import { errorSchemaRef } from '../../../../schemas/global';
 import { itemIdSchemaRef, itemSchemaRef, packedItemSchemaRef } from '../../schema';
 
 export const itemLikeSchemaRef = registerSchemaAsRef(
@@ -14,7 +15,7 @@ export const itemLikeSchemaRef = registerSchemaAsRef(
       item: itemSchemaRef,
     },
     {
-      // Schema Options
+      description: 'Like object of an item when a member likes it.',
       additionalProperties: false,
     },
   ),
@@ -31,33 +32,58 @@ export const packedItemLikeSchemaRef = registerSchemaAsRef(
     },
     {
       // Schema Options
+      description: 'Like object of an item when a member likes it. Item property is a packed item',
       additionalProperties: false,
     },
   ),
 );
-export const getLikesForMember = {
+export const getLikesForCurrentMember = {
+  operationId: 'getLikesForCurrentMember',
+  tags: ['like', 'current'],
+  summary: 'Get likes for current member',
+  description: 'Get likes for current member. Item property is a packed item.',
+
   response: {
-    [StatusCodes.OK]: Type.Array(packedItemLikeSchemaRef),
+    [StatusCodes.OK]: Type.Array(packedItemLikeSchemaRef, { description: 'Successful Response' }),
+    '4xx': errorSchemaRef,
   },
 };
 
 export const getLikesForItem = {
+  operationId: 'getLikesForItem',
+  tags: ['like'],
+  summary: 'Get likes for item',
+  description: 'Get likes for item.',
+
   params: itemIdSchemaRef,
   response: {
-    [StatusCodes.OK]: Type.Array(itemLikeSchemaRef),
+    [StatusCodes.OK]: Type.Array(itemLikeSchemaRef, { description: 'Successful Response' }),
+    '4xx': errorSchemaRef,
   },
 };
 
 export const create = {
+  operationId: 'createItemLike',
+  tags: ['like'],
+  summary: 'Like item',
+  description: 'Like item.',
+
   params: itemIdSchemaRef,
   response: {
     [StatusCodes.OK]: itemLikeSchemaRef,
+    '4xx': errorSchemaRef,
   },
 };
 
 export const deleteOne = {
+  operationId: 'deleteItemLike',
+  tags: ['like'],
+  summary: 'Delete like for item',
+  description: 'Delete like for item.',
+
   params: itemIdSchemaRef,
   response: {
-    [StatusCodes.OK]: customType.UUID(),
+    [StatusCodes.OK]: customType.UUID({ description: 'Successful Response' }),
+    '4xx': errorSchemaRef,
   },
 };
