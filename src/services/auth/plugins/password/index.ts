@@ -61,7 +61,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
       const target = new URL(AUTHENTICATION_FALLBACK_ROUTE, PUBLIC_URL);
       target.searchParams.set(SHORT_TOKEN_PARAM, token);
-      target.searchParams.set(REDIRECTION_URL_PARAM, encodeURIComponent(redirectionUrl));
+      target.searchParams.set(REDIRECTION_URL_PARAM, redirectionUrl);
       const resource = target.toString();
 
       reply.status(StatusCodes.SEE_OTHER);
