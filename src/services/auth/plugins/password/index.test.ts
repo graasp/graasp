@@ -323,6 +323,7 @@ describe('Reset Password', () => {
       });
       token = mockSendEmail.mock.calls[0][2].split('?t=')[1];
     });
+
     it('Reset password', async () => {
       const newPassword = faker.internet.password({ prefix: '!1Aa' });
       const responseReset = await app.inject({
@@ -360,7 +361,21 @@ describe('Reset Password', () => {
 
       // Set new password to the entities array
       entities[0].password = newPassword;
+
+      // token should be single use
+      const responseSecondReset = await app.inject({
+        method: 'PATCH',
+        url: '/password/reset',
+        payload: {
+          password: `${newPassword}a`,
+        },
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+      });
+      expect(responseSecondReset.statusCode).toBe(StatusCodes.UNAUTHORIZED);
     });
+
     it('Reset password with an invalid token', async () => {
       const newPassword = faker.internet.password({ prefix: '!1Aa' });
       const response = await app.inject({

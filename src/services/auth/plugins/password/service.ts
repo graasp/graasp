@@ -85,7 +85,7 @@ export class MemberPasswordService {
     if (!id) {
       return;
     }
-    await this.redis.del(uuid);
+    await this.redis.del(`${REDIS_PREFIX}${uuid}`);
     const { memberPasswordRepository } = repositories;
     await memberPasswordRepository.patch(id, password);
   }
