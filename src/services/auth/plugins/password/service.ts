@@ -35,6 +35,15 @@ export class MemberPasswordService {
   }
 
   /**
+   * Get the key to use to store the password reset request in Redis
+   * @param uuid uuid of the reset request
+   * @returns The redis key to use for storing password reset requests in redis
+   */
+  buildRedisKey(uuid: string) {
+    return `${REDIS_PREFIX}${uuid}`;
+  }
+
+  /**
    * Generate a Token with the member id and an optional challenge.
    * @param data The data to be included in the token.
    * @param expiration The expiration time of the token.
@@ -81,11 +90,11 @@ export class MemberPasswordService {
    * @returns void
    */
   async applyReset(repositories: Repositories, password: string, uuid: string): Promise<void> {
-    const id = await this.redis.get(`${REDIS_PREFIX}${uuid}`);
+    const id = await this.redis.get(this.buildRedisKey(uuid));
     if (!id) {
       return;
     }
-    await this.redis.del(`${REDIS_PREFIX}${uuid}`);
+    await this.redis.del(this.buildRedisKey(uuid));
     const { memberPasswordRepository } = repositories;
     await memberPasswordRepository.patch(id, password);
   }
@@ -120,7 +129,7 @@ export class MemberPasswordService {
       expiresIn: `${PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES}m`,
     });
     this.redis.setex(
-      `${REDIS_PREFIX}${payload.uuid}`,
+      this.buildRedisKey(payload.uuid),
       PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES * 60,
       member.id,
     );
@@ -163,7 +172,7 @@ export class MemberPasswordService {
    * @returns True if the UUID is registered, false otherwise.
    */
   async validatePasswordResetUuid(uuid: string): Promise<boolean> {
-    return (await this.redis.get(`${REDIS_PREFIX}${uuid}`)) !== null;
+    return (await this.redis.get(this.buildRedisKey(uuid))) !== null;
   }
 
   /**
@@ -176,7 +185,7 @@ export class MemberPasswordService {
     repositories: Repositories,
     uuid: string,
   ): Promise<Member | undefined> {
-    const id = await this.redis.get(`${REDIS_PREFIX}${uuid}`);
+    const id = await this.redis.get(this.buildRedisKey(uuid));
     if (!id) {
       return;
     }
