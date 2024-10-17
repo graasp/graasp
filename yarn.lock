@@ -4925,9 +4925,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bullmq@npm:5.18.0":
-  version: 5.18.0
-  resolution: "bullmq@npm:5.18.0"
+"bullmq@npm:5.20.0":
+  version: 5.20.0
+  resolution: "bullmq@npm:5.20.0"
   dependencies:
     cron-parser: "npm:^4.6.0"
     ioredis: "npm:^5.4.1"
@@ -4936,7 +4936,7 @@ __metadata:
     semver: "npm:^7.5.4"
     tslib: "npm:^2.0.0"
     uuid: "npm:^9.0.0"
-  checksum: 10/25cd4ca305c52d656b56c8e2c5d08d98628ec122cd738f8181de368dd1abae71e65802f334b0643d2bf5393192970e24780515f1130e1ac69676a9b353e356f3
+  checksum: 10/ddd7c14af81af54dd4325dc27077b935d2bec1a40875c7217bf061f362fbf92565b27dda0ed691a78652ac176b30bc77b5aff31abba9dd5372a2c22253e548bb
   languageName: node
   linkType: hard
 
@@ -7278,7 +7278,7 @@ __metadata:
     archiver: "npm:7.0.1"
     bad-words: "npm:3.0.4"
     bcrypt: "npm:5.1.1"
-    bullmq: "npm:5.18.0"
+    bullmq: "npm:5.20.0"
     checksum: "npm:1.0.0"
     concurrently: "npm:9.0.1"
     content-disposition: "npm:0.5.4"
