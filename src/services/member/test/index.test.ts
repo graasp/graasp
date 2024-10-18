@@ -6,7 +6,6 @@ import { FastifyInstance } from 'fastify';
 import { HttpMethod, ItemType, MAX_USERNAME_LENGTH, MemberFactory } from '@graasp/sdk';
 
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
-import { setupGuest } from '../../../../test/setup';
 import { AppDataSource } from '../../../plugins/datasource';
 import { DEFAULT_MAX_STORAGE } from '../../../services/item/plugins/file/utils/constants';
 import { FILE_ITEM_TYPE, JWT_SECRET } from '../../../utils/config';
@@ -14,6 +13,7 @@ import { MemberNotFound } from '../../../utils/errors';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
 import { Member } from '../entities/member';
 import { saveMember, saveMembers } from './fixtures/members';
+import { setupGuest } from './setup';
 
 const testUtils = new ItemTestUtils();
 

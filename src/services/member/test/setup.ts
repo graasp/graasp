@@ -5,15 +5,15 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, ItemLoginSchemaType } from '@graasp/sdk';
 
-import { AppDataSource } from '../src/plugins/datasource';
-import { Account } from '../src/services/account/entities/account';
-import { ItemTestUtils } from '../src/services/item/test/fixtures/items';
-import { ItemLoginSchema as ItemLoginSchemaEntity } from '../src/services/itemLogin/entities/itemLoginSchema';
-import { ITEMS_ROUTE_PREFIX } from '../src/utils/config';
+import { AppDataSource } from '../../../plugins/datasource';
+import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
+import { Account } from '../../account/entities/account';
+import { ItemTestUtils } from '../../item/test/fixtures/items';
+import { ItemLoginSchema } from '../../itemLogin/entities/itemLoginSchema';
 
 const testUtils = new ItemTestUtils();
 
-const rawItemLoginSchemaRepository = AppDataSource.getRepository(ItemLoginSchemaEntity);
+const rawItemLoginSchemaRepository = AppDataSource.getRepository(ItemLoginSchema);
 const rawAccountRepository = AppDataSource.getRepository(Account);
 
 /**
