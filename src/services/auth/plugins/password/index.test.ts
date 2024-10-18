@@ -760,3 +760,45 @@ describe('GET members current password status', () => {
     expect(response.json()).toEqual({ hasPassword: true });
   });
 });
+
+describe('Flow tests', () => {
+  let app: FastifyInstance;
+
+  beforeAll(async () => {
+    ({ app } = await build({ member: null }));
+  });
+
+  afterEach(async () => {
+    await clearDatabase(app.db);
+  });
+
+  afterAll(async () => {
+    app.close();
+  });
+
+  it('Sign in with password and use the resource to receive the token', async () => {
+    // mock captcha validation
+    mockCaptchaValidationOnce(RecaptchaAction.SignInWithPassword);
+
+    const m = MemberFactory();
+    const pwd = MOCK_PASSWORD;
+    const member = await saveMemberAndPassword(m, pwd);
+
+    // login
+    const loginResponse = await app.inject({
+      method: HttpMethod.Post,
+      url: '/login-password',
+      payload: { email: member.email, password: pwd.password, captcha: MOCK_CAPTCHA },
+    });
+
+    expect(loginResponse.statusCode).toEqual(StatusCodes.SEE_OTHER);
+
+    const response = await app.inject({
+      method: HttpMethod.Get,
+      url: loginResponse.json().resource,
+    });
+
+    expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
+    expect(response.headers['set-cookie']).toContain('session=');
+  });
+});
