@@ -9,14 +9,11 @@ import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { itemIdSchemaRef, itemSchemaRef } from '../../../item/schema';
 import { memberSchemaRef } from '../../../member/schemas';
 
-const completeMembershipRequestSchema = Type.Object(
-  {
-    member: memberSchemaRef,
-    item: itemSchemaRef,
-    createdAt: customType.DateTime(),
-  },
-  { additionalProperties: false },
-);
+const completeMembershipRequestSchema = customType.StrictObject({
+  member: memberSchemaRef,
+  item: itemSchemaRef,
+  createdAt: customType.DateTime(),
+});
 
 export const completeMembershipRequestSchemaRef = registerSchemaAsRef(
   'completeMembershipRequest',
@@ -59,10 +56,7 @@ export const getOwn = {
     'Get the status of the membership request for the authenticated member for an item by its ID',
   params: itemIdSchemaRef,
   response: {
-    [StatusCodes.OK]: Type.Object(
-      { status: Type.Enum(MembershipRequestStatus) },
-      { additionalProperties: false },
-    ),
+    [StatusCodes.OK]: customType.StrictObject({ status: Type.Enum(MembershipRequestStatus) }),
   },
 } as const satisfies FastifySchema;
 
@@ -70,7 +64,7 @@ export const deleteOne = {
   tags: ['membershipRequest'],
   summary: 'Delete a membership request',
   description: 'Delete a membership request from a member id and an item id.',
-  params: Type.Object({
+  params: customType.StrictObject({
     itemId: customType.UUID(),
     memberId: customType.UUID(),
   }),

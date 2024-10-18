@@ -2,6 +2,7 @@ import {
   SchemaOptions,
   Static,
   StringOptions,
+  TProperties,
   TRef,
   TSchema,
   Type,
@@ -104,6 +105,9 @@ export const customType = {
       },
       { additionalProperties: false },
     ),
+
+  StrictObject: <T extends TProperties>(properties: T, options?: SchemaOptions) =>
+    Type.Object(properties, { ...options, additionalProperties: false }),
 } as const;
 
 /**
