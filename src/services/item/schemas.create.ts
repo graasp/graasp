@@ -16,7 +16,7 @@ const baseItemCreateSchema = Type.Composite(
     Type.Partial(Type.Pick(itemSchema, ['displayName', 'description', 'settings', 'lang'])),
     Type.Object(
       {
-        geolocation: geoCoordinateSchemaRef,
+        geolocation: Type.Optional(geoCoordinateSchemaRef),
       },
       { additionalProperties: false },
     ),
