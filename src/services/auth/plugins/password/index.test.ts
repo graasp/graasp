@@ -791,7 +791,7 @@ describe('Flow tests', () => {
       payload: { email: member.email, password: pwd.password, captcha: MOCK_CAPTCHA },
     });
 
-    expect(loginResponse.statusCode).toEqual(StatusCodes.OK);
+    expect(loginResponse.statusCode).toEqual(StatusCodes.SEE_OTHER);
 
     const response = await app.inject({
       method: HttpMethod.Get,
