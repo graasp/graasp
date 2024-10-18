@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.54.0](https://github.com/graasp/graasp/compare/v1.53.1...v1.54.0) (2024-10-18)
+
+
+### Features
+
+* custom type strict object ([#1540](https://github.com/graasp/graasp/issues/1540)) ([eba0475](https://github.com/graasp/graasp/commit/eba047573d170fe3fb616e0c593c95151faef85f))
+* remove packed from own recycled, add pagination ([#1446](https://github.com/graasp/graasp/issues/1446)) ([25abbae](https://github.com/graasp/graasp/commit/25abbae3564dc9ddd86e872240802ad790f7a119))
+* save last authenticated for guest ([#1539](https://github.com/graasp/graasp/issues/1539)) ([f84e920](https://github.com/graasp/graasp/commit/f84e920f43d1aed6fcae6bf7c798c7c2d6741825))
+
+
+### Bug Fixes
+
+* **deps:** update aws-sdk-js-v3 monorepo to v3.669.0 ([#1477](https://github.com/graasp/graasp/issues/1477)) ([5f0b875](https://github.com/graasp/graasp/commit/5f0b8759808fe4e8b9a00b382e1d7ca1079228dd))
+* **deps:** update dependency @sentry/node to v7.119.1 ([#1482](https://github.com/graasp/graasp/issues/1482)) ([4d67a15](https://github.com/graasp/graasp/commit/4d67a150cf0789b2bdc834410fe1867618b0f1cc))
+* **deps:** update dependency form-data to v4.0.1 ([#1502](https://github.com/graasp/graasp/issues/1502)) ([42363f7](https://github.com/graasp/graasp/commit/42363f708370db0241ecfe88bbeaba4e9f9f2116))
+* **deps:** update dependency openai to v4.67.3 ([#1483](https://github.com/graasp/graasp/issues/1483)) ([5f2535f](https://github.com/graasp/graasp/commit/5f2535f5eb3e844cac6af6dae945fd20c0ef1062))
+* **deps:** update dependency sanitize-html to v2.13.1 ([#1476](https://github.com/graasp/graasp/issues/1476)) ([0baa218](https://github.com/graasp/graasp/commit/0baa2184dbaaf04f45fa874b65ad3e1a78e72481))
+* do not encode redirection url for password ([#1535](https://github.com/graasp/graasp/issues/1535)) ([8d07cda](https://github.com/graasp/graasp/commit/8d07cdab575f530f03ebac65a780ef1bcf2933c5))
+* password reset token should be single use ([#1533](https://github.com/graasp/graasp/issues/1533)) ([531d8c2](https://github.com/graasp/graasp/commit/531d8c2a6f1e9d3790021d540a1e4efbf723607c))
+* remove unused route `PATCH /items` ([#1505](https://github.com/graasp/graasp/issues/1505)) ([02f4f20](https://github.com/graasp/graasp/commit/02f4f20879b6087035b97a333bb8ca8aeb341697))
+* update log group name to use for graasp core container to match infrastructure ([#1512](https://github.com/graasp/graasp/issues/1512)) ([bf215a9](https://github.com/graasp/graasp/commit/bf215a9e7e96e1e6691d066740c50f46e705ce38))
+* update task def ([#1518](https://github.com/graasp/graasp/issues/1518)) ([01ffe3e](https://github.com/graasp/graasp/commit/01ffe3e1e3af4ca2acedb5fea8bc794ee22640fd))
+
 ## [1.53.1](https://github.com/graasp/graasp/compare/v1.53.0...v1.53.1) (2024-10-10)
 
 
