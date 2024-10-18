@@ -108,6 +108,8 @@ export const customType = {
       { additionalProperties: false },
     ),
   Discriminable: discriminable,
+  StrictObject: <T extends TProperties>(properties: T, options?: SchemaOptions) =>
+    Type.Object(properties, { ...options, additionalProperties: false }),
 } as const;
 
 /**
