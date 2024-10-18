@@ -49,6 +49,9 @@ export class ItemLoginService {
       throw new Error();
     }
 
+    // update last authenticated at
+    await repositories.accountRepository.refreshLastAuthenticatedAt(bondMember.id, new Date());
+
     return bondMember;
   }
 

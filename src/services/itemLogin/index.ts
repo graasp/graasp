@@ -6,7 +6,6 @@ import { resolveDependency } from '../../di/utils';
 import { asDefined } from '../../utils/assertions';
 import { ItemNotFound } from '../../utils/errors';
 import { buildRepositories } from '../../utils/repositories';
-import { AccountService } from '../account/service';
 import { SESSION_KEY, isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
 import { isItemVisible, matchOne } from '../authorization';
 import { ItemTagService } from '../item/plugins/itemTag/service';
@@ -21,7 +20,6 @@ import { ItemLoginService } from './service';
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db } = fastify;
 
-  const accountService = resolveDependency(AccountService);
   const itemLoginService = resolveDependency(ItemLoginService);
   const itemService = resolveDependency(ItemService);
   const itemTagService = resolveDependency(ItemTagService);
@@ -107,8 +105,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       return db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
         const bondMember = await itemLoginService.logInOrRegister(repositories, params.id, body);
-        // update last authenticated at
-        await accountService.refreshLastAuthenticatedAt(bondMember.id, repositories);
         // set session
         session.set(SESSION_KEY, bondMember.id);
         return bondMember;
