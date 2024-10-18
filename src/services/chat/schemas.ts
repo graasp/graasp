@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifySchema } from 'fastify';
 
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
+import { errorSchemaRef } from '../../schemas/global';
 import { nullableAccountSchemaRef } from '../account/schemas';
 import { itemIdSchemaRef, itemSchemaRef } from '../item/schema';
 
@@ -11,22 +12,6 @@ import { itemIdSchemaRef, itemSchemaRef } from '../item/schema';
  * JSON schema definitions to validate requests and responses
  * through Fastify's AJV instance
  */
-
-export const messageParamSchemaRef = registerSchemaAsRef(
-  'messageParam',
-  'Message Param',
-  Type.Object(
-    {
-      // Object Definition
-      itemId: customType.UUID(),
-      messageId: customType.UUID(),
-    },
-    {
-      // Schema Options
-      additionalProperties: false,
-    },
-  ),
-);
 
 export const chatMessageSchemaRef = registerSchemaAsRef(
   'chatMessage',
@@ -43,6 +28,7 @@ export const chatMessageSchemaRef = registerSchemaAsRef(
     },
     {
       // Schema Options
+      description: 'Message from a member in a chat of an item.',
       additionalProperties: false,
     },
   ),
@@ -59,15 +45,39 @@ export const chatSchemaRef = registerSchemaAsRef(
     },
     {
       // Schema Options
+      description: 'Chat object of an item with its messages.',
       additionalProperties: false,
     },
   ),
 );
 
-export const createChatMessageSchemaRef = registerSchemaAsRef(
-  'createChatMessage',
-  'Create Chat Message',
-  Type.Object(
+/**
+ * JSON schema on GET chat route for request and response
+ */
+export const getChat = {
+  operationId: 'getChat',
+  tags: ['chat'],
+  summary: 'Get chat',
+  description: 'Get chat object for given item.',
+
+  params: itemIdSchemaRef,
+  response: {
+    [StatusCodes.OK]: Type.Array(chatMessageSchemaRef, { description: 'Successful Response' }),
+    '4xx': errorSchemaRef,
+  },
+} as const satisfies FastifySchema;
+
+/**
+ * JSON schema on POST publish message route for request and response
+ */
+export const createChatMessage = {
+  operationId: 'createChatMessage',
+  tags: ['chat'],
+  summary: 'Save message in chat',
+  description: 'Save message in chat for given item.',
+
+  params: itemIdSchemaRef,
+  body: Type.Object(
     {
       // Object Definition
       body: Type.String(),
@@ -78,26 +88,9 @@ export const createChatMessageSchemaRef = registerSchemaAsRef(
       additionalProperties: false,
     },
   ),
-);
-
-/**
- * JSON schema on GET chat route for request and response
- */
-export const getChat = {
-  params: itemIdSchemaRef,
-  response: {
-    [StatusCodes.OK]: Type.Array(chatMessageSchemaRef),
-  },
-} as const satisfies FastifySchema;
-
-/**
- * JSON schema on POST publish message route for request and response
- */
-export const publishMessage = {
-  params: itemIdSchemaRef,
-  body: createChatMessageSchemaRef,
   response: {
     [StatusCodes.CREATED]: chatMessageSchemaRef,
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
@@ -105,12 +98,28 @@ export const publishMessage = {
  * JSON schema on PATCH message route for request and response
  */
 export const patchMessage = {
-  params: messageParamSchemaRef,
+  operationId: 'patchChatMessage',
+  tags: ['chat'],
+  summary: 'Edit message in chat',
+  description: 'Edit message in chat for given item.',
+
+  params: Type.Object(
+    {
+      // Object Definition
+      itemId: customType.UUID(),
+      messageId: customType.UUID(),
+    },
+    {
+      // Schema Options
+      additionalProperties: false,
+    },
+  ),
   body: Type.Object({
     body: Type.String(),
   }),
   response: {
     [StatusCodes.OK]: chatMessageSchemaRef,
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
@@ -118,9 +127,25 @@ export const patchMessage = {
  * JSON schema on DELETE remove message route for request and response
  */
 export const deleteMessage = {
-  params: messageParamSchemaRef,
+  operationId: 'deleteChatMessage',
+  tags: ['chat'],
+  summary: 'Delete message in chat',
+  description: 'Delete message in chat for given item.',
+
+  params: Type.Object(
+    {
+      // Object Definition
+      itemId: customType.UUID(),
+      messageId: customType.UUID(),
+    },
+    {
+      // Schema Options
+      additionalProperties: false,
+    },
+  ),
   response: {
     [StatusCodes.OK]: chatMessageSchemaRef,
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
@@ -128,8 +153,14 @@ export const deleteMessage = {
  * JSON schema on DELETE clear chat route for request and response
  */
 export const clearChat = {
+  operationId: 'clearChatMessage',
+  tags: ['chat'],
+  summary: 'Clear messages of chat',
+  description: 'Clear messages of chat for given item.',
+
   params: itemIdSchemaRef,
   response: {
     [StatusCodes.OK]: chatSchemaRef,
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
