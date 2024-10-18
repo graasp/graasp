@@ -1,4 +1,5 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
+import { sign } from 'jsonwebtoken';
 
 import { FastifyInstance } from 'fastify';
 
@@ -7,11 +8,12 @@ import { HttpMethod, ItemType, MAX_USERNAME_LENGTH, MemberFactory } from '@graas
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
 import { AppDataSource } from '../../../plugins/datasource';
 import { DEFAULT_MAX_STORAGE } from '../../../services/item/plugins/file/utils/constants';
-import { FILE_ITEM_TYPE } from '../../../utils/config';
+import { FILE_ITEM_TYPE, JWT_SECRET } from '../../../utils/config';
 import { MemberNotFound } from '../../../utils/errors';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
 import { Member } from '../entities/member';
 import { saveMember, saveMembers } from './fixtures/members';
+import { setupGuest } from './setup';
 
 const testUtils = new ItemTestUtils();
 
@@ -37,8 +39,16 @@ describe('Member routes tests', () => {
 
   describe('GET /members/current', () => {
     it('Returns successfully if signed in', async () => {
-      actor = await saveMember();
-      mockAuthenticate(actor);
+      // inject login - necessary to fill lastAuthenticated correctly
+      const member = await saveMember(MemberFactory({ isValidated: false }));
+      const t = sign({ sub: member.id }, JWT_SECRET);
+      await app.inject({
+        method: HttpMethod.Get,
+        url: `/auth?t=${t}`,
+      });
+
+      // mock authentication because the cookie is not set inbetween inject
+      mockAuthenticate(member);
 
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -47,11 +57,28 @@ describe('Member routes tests', () => {
       const m = response.json();
 
       expect(response.statusCode).toBe(StatusCodes.OK);
-      expect(m.name).toEqual(actor.name);
-      expect(m.email).toEqual(actor.email);
-      expect(m.id).toEqual(actor.id);
+      expect(m.name).toEqual(member.name);
+      expect(m.email).toEqual(member.email);
+      expect(m.id).toEqual(member.id);
       expect(m.password).toBeUndefined();
+    });
+
+    it('Returns successfully if signed in as guest', async () => {
+      const { guest } = await setupGuest(app);
+
+      mockAuthenticate(guest);
+
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: '/members/current',
+      });
+      const m = response.json();
+
       expect(response.statusCode).toBe(StatusCodes.OK);
+      expect(m.name).toEqual(guest.name);
+      expect(m.id).toEqual(guest.id);
+      expect(m.email).toBeUndefined();
+      expect(m.password).toBeUndefined();
     });
     it('Throws if signed out', async () => {
       const response = await app.inject({
@@ -465,7 +492,7 @@ describe('Member routes tests', () => {
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
     });
 
-    describe('Signed In', () => {
+    describe('Signed In as Member', () => {
       beforeEach(async () => {
         actor = await saveMember();
         mockAuthenticate(actor);
