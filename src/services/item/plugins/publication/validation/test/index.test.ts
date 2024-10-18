@@ -235,7 +235,7 @@ describe('Item Validation Tests', () => {
     });
   });
 
-  describe.only('POST /:itemId/validate', () => {
+  describe('POST /:itemId/validate', () => {
     it('Throws if signed out', async () => {
       const response = await app.inject({
         method: HttpMethod.Post,

@@ -1,13 +1,17 @@
 import { EntityManager } from 'typeorm';
 
-import { AbstractRepository } from '../../../repositories/AbstractRepository';
+import { UUID } from '@graasp/sdk';
+
+import { ImmutableRepository } from '../../../repositories/ImmutableRepository';
+import { DEFAULT_PRIMARY_KEY } from '../../../repositories/const';
 import { AncestorOf } from '../../../utils/typeorm/treeOperators';
 import { Item } from '../../item/entities/Item';
 import { Guest } from '../entities/guest';
+import { GuestNotFound } from '../errors';
 
-export class GuestRepository extends AbstractRepository<Guest> {
+export class GuestRepository extends ImmutableRepository<Guest> {
   constructor(manager?: EntityManager) {
-    super(Guest, manager);
+    super(DEFAULT_PRIMARY_KEY, Guest, manager);
   }
 
   async getForItemAndUsername(item: Item, username: string): Promise<Guest | null> {
@@ -28,5 +32,11 @@ export class GuestRepository extends AbstractRepository<Guest> {
     return await this.repository.save({
       ...guestData,
     });
+  }
+
+  async refreshLastAuthenticatedAt(id: UUID) {
+    await this.repository.update(id, { lastAuthenticatedAt: new Date() });
+
+    return await super.getOneOrThrow(id, {}, new GuestNotFound(id));
   }
 }

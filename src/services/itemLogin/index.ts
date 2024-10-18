@@ -103,11 +103,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         throw new ValidMemberSession(user?.account);
       }
       return db.transaction(async (manager) => {
-        const bondMember = await itemLoginService.logInOrRegister(
-          buildRepositories(manager),
-          params.id,
-          body,
-        );
+        const repositories = buildRepositories(manager);
+        const bondMember = await itemLoginService.logInOrRegister(repositories, params.id, body);
         // set session
         session.set(SESSION_KEY, bondMember.id);
         return bondMember;

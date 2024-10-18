@@ -47,12 +47,14 @@ export async function saveItemLoginSchema({
   status = ItemLoginSchemaStatus.Active,
   password,
   memberName,
+  lastAuthenticatedAt = new Date(),
 }: {
   item: DiscriminatedItem;
   type?: ItemLoginSchemaType;
   status?: ItemLoginSchemaStatus;
   password?: string;
   memberName?: string;
+  lastAuthenticatedAt?: Date;
 }) {
   const itemLoginSchema = ItemLoginSchemaFactory({
     item,
@@ -62,7 +64,11 @@ export async function saveItemLoginSchema({
   const rawItemLoginSchema = await rawItemLoginSchemaRepository.save(itemLoginSchema);
   let guest: Guest | undefined;
   if (memberName) {
-    const guestF = GuestFactory({ name: memberName, itemLoginSchema });
+    const guestF = GuestFactory({
+      name: memberName,
+      itemLoginSchema,
+      lastAuthenticatedAt: lastAuthenticatedAt.toISOString(),
+    });
     guest = await rawRepository.save(guestF);
 
     if (password) {
@@ -405,7 +411,7 @@ describe('Item Login Tests', () => {
         ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member }));
       });
 
-      it('Register in ItemLogin', async () => {
+      it('Register in frozen ItemLogin', async () => {
         assertIsDefined(anotherItem);
         const payload = USERNAME_LOGIN;
         await saveItemLoginSchema({
@@ -532,7 +538,9 @@ describe('Item Login Tests', () => {
           it('Successfully create item login with username', async () => {
             assertIsDefined(anotherItem);
             const payload = USERNAME_LOGIN;
-            await saveItemLoginSchema({ item: anotherItem as unknown as DiscriminatedItem });
+            const { itemLoginSchema } = await saveItemLoginSchema({
+              item: anotherItem as unknown as DiscriminatedItem,
+            });
 
             const res = await app.inject({
               method: HttpMethod.Post,
@@ -540,18 +548,27 @@ describe('Item Login Tests', () => {
               payload,
             });
 
-            expect(res.json().name).toEqual(payload.username);
             expect(res.statusCode).toBe(StatusCodes.OK);
+            const guestInDb = await rawItemLoginRepository.findBy({
+              name: payload.username,
+              itemLoginSchema,
+            });
+            expect(guestInDb).toHaveLength(1);
+            expect(guestInDb[0].lastAuthenticatedAt).toBeDefined();
+            expect(res.json().name).toEqual(payload.username);
           });
 
           it('Successfully reuse item login with username', async () => {
             assertIsDefined(anotherItem);
             const payload = USERNAME_LOGIN;
             // pre-create pseudonymized data
-            const { guest: m } = await saveItemLoginSchema({
+            const { guest, itemLoginSchema } = await saveItemLoginSchema({
               item: anotherItem as unknown as DiscriminatedItem,
               memberName: payload.username,
+              // purposely set lastAuthenticatedAt date to yesterday
+              lastAuthenticatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
             });
+            assertIsDefined(guest);
 
             const res = await app.inject({
               method: HttpMethod.Post,
@@ -559,9 +576,23 @@ describe('Item Login Tests', () => {
               payload,
             });
 
-            const member = res.json();
-            expectItemLogin(member, m);
             expect(res.statusCode).toBe(StatusCodes.OK);
+            const member = res.json();
+            expectItemLogin(member, guest);
+
+            const guestInDb = await rawItemLoginRepository.findBy({
+              name: payload.username,
+              itemLoginSchema,
+            });
+            expect(guestInDb).toHaveLength(1);
+            // last authenticated got updated
+            expect(
+              new Date(guestInDb[0].lastAuthenticatedAt) > new Date(guest.lastAuthenticatedAt),
+            ).toEqual(true);
+            // last authenticated is within last minute
+            expect(
+              new Date(guestInDb[0].lastAuthenticatedAt) > new Date(Date.now() - 60 * 1000),
+            ).toEqual(true);
           });
 
           it('Successfully reuse item login with username defined in parent when calling from child', async () => {

@@ -128,7 +128,11 @@ export class ItemLoginService {
       });
     }
 
-    return guestAccount;
+    const refreshedMember = await repositories.itemLoginRepository.refreshLastAuthenticatedAt(
+      guestAccount.id,
+    );
+
+    return refreshedMember;
   }
 
   async create(

@@ -202,3 +202,16 @@ export class CannotEnrollFrozenItemLoginSchema extends GraaspItemLoginError {
     );
   }
 }
+
+export class GuestNotFound extends GraaspItemLoginError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GILERR016',
+        statusCode: StatusCodes.NOT_FOUND,
+        message: 'GUEST_NOT_FOUND',
+      },
+      data,
+    );
+  }
+}
