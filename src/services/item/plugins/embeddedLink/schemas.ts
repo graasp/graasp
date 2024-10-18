@@ -45,7 +45,7 @@ export const getLinkMetadata = {
       {
         title: Type.Optional(Type.String()),
         description: Type.Optional(Type.String()),
-        html: Type.String(),
+        html: Type.Optional(Type.String()),
         isEmbeddingAllowed: Type.Boolean(),
         icons: Type.Array(Type.String()),
         thumbnails: Type.Array(Type.String()),

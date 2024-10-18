@@ -1,3 +1,4 @@
+import { faker } from '@faker-js/faker';
 import { StatusCodes } from 'http-status-codes';
 import fetch, { Response } from 'node-fetch';
 
@@ -6,7 +7,7 @@ import { FastifyInstance } from 'fastify';
 import { HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
-import { FETCH_RESULT } from './fixtures';
+import { FETCH_RESULT, METADATA } from './fixtures';
 
 jest.mock('node-fetch');
 
@@ -61,6 +62,38 @@ describe('Tests Embedded Link Controller', () => {
     it('Returns 200 Ok when a valid URL is set', async () => {
       (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
         return { json: async () => FETCH_RESULT } as Response;
+      });
+
+      ({ app } = await build());
+
+      const validUrl = encodeURI('https://valid-url.ch:5050/myPage');
+      const url = `${URL}?${QUERY_PARAM}=${validUrl}`;
+
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.OK);
+    });
+
+    it('Returns 200 Ok when a valid URL without html', async () => {
+      (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
+        return {
+          json: async () => ({
+            meta: METADATA,
+            links: [
+              {
+                rel: ['thumbnail'],
+                href: faker.internet.url(),
+              },
+              {
+                rel: ['icon'],
+                href: faker.internet.url(),
+              },
+            ],
+          }),
+        } as Response;
       });
 
       ({ app } = await build());
