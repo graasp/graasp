@@ -2,6 +2,7 @@ import { Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
+import { errorSchemaRef } from '../../../../schemas/global';
 import { itemIdSchemaRef, itemSchemaRef } from '../../schemas';
 import { packedItemSchemaRef } from '../../schemas.packed';
 
