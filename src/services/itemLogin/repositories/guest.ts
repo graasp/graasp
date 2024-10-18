@@ -2,14 +2,16 @@ import { EntityManager } from 'typeorm';
 
 import { UUID } from '@graasp/sdk';
 
-import { AbstractRepository } from '../../../repositories/AbstractRepository';
+import { ImmutableRepository } from '../../../repositories/ImmutableRepository';
+import { DEFAULT_PRIMARY_KEY } from '../../../repositories/const';
 import { AncestorOf } from '../../../utils/typeorm/treeOperators';
 import { Item } from '../../item/entities/Item';
 import { Guest } from '../entities/guest';
+import { GuestNotFound } from '../errors';
 
-export class GuestRepository extends AbstractRepository<Guest> {
+export class GuestRepository extends ImmutableRepository<Guest> {
   constructor(manager?: EntityManager) {
-    super(Guest, manager);
+    super(DEFAULT_PRIMARY_KEY, Guest, manager);
   }
 
   async getForItemAndUsername(item: Item, username: string): Promise<Guest | null> {
@@ -32,20 +34,9 @@ export class GuestRepository extends AbstractRepository<Guest> {
     });
   }
 
-  async get(id: UUID) {
-    if (!id) {
-      return undefined;
-    }
-    const result = await this.repository.findOneBy({ id });
-    if (result === null) {
-      return undefined;
-    }
-    return result;
-  }
+  async refreshLastAuthenticatedAt(id: UUID) {
+    await this.repository.update(id, { lastAuthenticatedAt: new Date() });
 
-  async refreshLastAuthenticatedAt(id: UUID, lastAuthenticatedAt: Date) {
-    await this.repository.update(id, { lastAuthenticatedAt });
-
-    return this.get(id);
+    return await super.getOneOrThrow(id, {}, new GuestNotFound(id));
   }
 }

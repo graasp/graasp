@@ -47,12 +47,14 @@ export async function saveItemLoginSchema({
   status = ItemLoginSchemaStatus.Active,
   password,
   memberName,
+  lastAuthenticatedAt = new Date(),
 }: {
   item: DiscriminatedItem;
   type?: ItemLoginSchemaType;
   status?: ItemLoginSchemaStatus;
   password?: string;
   memberName?: string;
+  lastAuthenticatedAt?: Date;
 }) {
   const itemLoginSchema = ItemLoginSchemaFactory({
     item,
@@ -62,7 +64,11 @@ export async function saveItemLoginSchema({
   const rawItemLoginSchema = await rawItemLoginSchemaRepository.save(itemLoginSchema);
   let guest: Guest | undefined;
   if (memberName) {
-    const guestF = GuestFactory({ name: memberName, itemLoginSchema });
+    const guestF = GuestFactory({
+      name: memberName,
+      itemLoginSchema,
+      lastAuthenticatedAt: lastAuthenticatedAt.toString(),
+    });
     guest = await rawRepository.save(guestF);
 
     if (password) {
@@ -556,10 +562,12 @@ describe('Item Login Tests', () => {
             assertIsDefined(anotherItem);
             const payload = USERNAME_LOGIN;
             // pre-create pseudonymized data
-            const { guest: m, itemLoginSchema } = await saveItemLoginSchema({
+            const { guest, itemLoginSchema } = await saveItemLoginSchema({
               item: anotherItem as unknown as DiscriminatedItem,
               memberName: payload.username,
+              lastAuthenticatedAt: new Date(Date.now() - 1),
             });
+            assertIsDefined(guest);
 
             const res = await app.inject({
               method: HttpMethod.Post,
@@ -569,7 +577,7 @@ describe('Item Login Tests', () => {
 
             expect(res.statusCode).toBe(StatusCodes.OK);
             const member = res.json();
-            expectItemLogin(member, m);
+            expectItemLogin(member, guest);
 
             // last authenticated is updated
             const guestInDb = await rawItemLoginRepository.findBy({
@@ -577,7 +585,10 @@ describe('Item Login Tests', () => {
               itemLoginSchema,
             });
             expect(guestInDb).toHaveLength(1);
-            expect(guestInDb[0].lastAuthenticatedAt).toBeDefined();
+            // last authenticated got updated
+            expect(
+              new Date(guestInDb[0].lastAuthenticatedAt) > new Date(guest.lastAuthenticatedAt),
+            ).toEqual(true);
           });
 
           it('Successfully reuse item login with username defined in parent when calling from child', async () => {
