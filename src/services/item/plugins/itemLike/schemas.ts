@@ -78,8 +78,8 @@ export const create = {
 export const deleteOne = {
   operationId: 'deleteItemLike',
   tags: ['like'],
-  summary: 'Delete like for item',
-  description: 'Delete like for item.',
+  summary: 'Unlike item',
+  description: 'Unlike item.',
 
   params: itemIdSchemaRef,
   response: {
