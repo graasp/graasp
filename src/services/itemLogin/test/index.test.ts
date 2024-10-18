@@ -566,7 +566,7 @@ describe('Item Login Tests', () => {
               item: anotherItem as unknown as DiscriminatedItem,
               memberName: payload.username,
               // purposely set lastAuthenticatedAt date to yesterday
-              lastAuthenticatedAt: new Date(new Date().getDate() - 1),
+              lastAuthenticatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
             });
             assertIsDefined(guest);
 
@@ -588,6 +588,10 @@ describe('Item Login Tests', () => {
             // last authenticated got updated
             expect(
               new Date(guestInDb[0].lastAuthenticatedAt) > new Date(guest.lastAuthenticatedAt),
+            ).toEqual(true);
+            // last authenticated is within last minute
+            expect(
+              new Date(guestInDb[0].lastAuthenticatedAt) > new Date(Date.now() - 60 * 1000),
             ).toEqual(true);
           });
 
