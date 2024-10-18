@@ -67,7 +67,7 @@ export async function saveItemLoginSchema({
     const guestF = GuestFactory({
       name: memberName,
       itemLoginSchema,
-      lastAuthenticatedAt: lastAuthenticatedAt.toString(),
+      lastAuthenticatedAt: lastAuthenticatedAt.toISOString(),
     });
     guest = await rawRepository.save(guestF);
 
@@ -565,7 +565,8 @@ describe('Item Login Tests', () => {
             const { guest, itemLoginSchema } = await saveItemLoginSchema({
               item: anotherItem as unknown as DiscriminatedItem,
               memberName: payload.username,
-              lastAuthenticatedAt: new Date(Date.now() - 1),
+              // purposely set lastAuthenticatedAt date to yesterday
+              lastAuthenticatedAt: new Date(new Date().getDate() - 1),
             });
             assertIsDefined(guest);
 
@@ -579,7 +580,6 @@ describe('Item Login Tests', () => {
             const member = res.json();
             expectItemLogin(member, guest);
 
-            // last authenticated is updated
             const guestInDb = await rawItemLoginRepository.findBy({
               name: payload.username,
               itemLoginSchema,
