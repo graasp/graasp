@@ -51,20 +51,6 @@ export const nullableMemberSchemaRef = registerSchemaAsRef(
   customType.Nullable(memberSchema),
 );
 
-export const updateMemberRequiredOneSchemaRef = registerSchemaAsRef(
-  'updateMemberRequiredOne',
-  'Update Member Required One',
-  Type.Object(
-    {
-      // Object definition
-      name: Type.Optional(customType.Username()),
-      enableSaveActions: Type.Optional(Type.Boolean()),
-      extra: Type.Optional(Type.Object({}, { additionalProperties: true })),
-    },
-    { additionalProperties: false, minProperties: 1 },
-  ),
-);
-
 const currentAccountSchema = Type.Object(
   {
     // Object Definition
@@ -136,6 +122,20 @@ export const nullableCurrentAccountSchemaRef = registerSchemaAsRef(
     {
       discriminator: { propertyName: 'type' },
     },
+  ),
+);
+
+export const updateMemberRequiredOneSchemaRef = registerSchemaAsRef(
+  'updateMemberRequiredOne',
+  'Update Member Required One',
+  Type.Object(
+    {
+      // Object definition
+      name: Type.Optional(customType.Username()),
+      enableSaveActions: Type.Optional(Type.Boolean()),
+      extra: Type.Optional(Type.Object({}, { additionalProperties: true })),
+    },
+    { additionalProperties: false, minProperties: 1 },
   ),
 );
 

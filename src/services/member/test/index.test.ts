@@ -37,7 +37,7 @@ describe('Member routes tests', () => {
     unmockAuthenticate();
   });
 
-  describe.only('GET /members/current', () => {
+  describe('GET /members/current', () => {
     it('Returns successfully if signed in', async () => {
       // inject login - necessary to fill lastAuthenticated correctly
       const member = await saveMember(MemberFactory({ isValidated: false }));
