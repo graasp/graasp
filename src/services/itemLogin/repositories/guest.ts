@@ -1,5 +1,7 @@
 import { EntityManager } from 'typeorm';
 
+import { UUID } from '@graasp/sdk';
+
 import { AbstractRepository } from '../../../repositories/AbstractRepository';
 import { AncestorOf } from '../../../utils/typeorm/treeOperators';
 import { Item } from '../../item/entities/Item';
@@ -28,5 +30,22 @@ export class GuestRepository extends AbstractRepository<Guest> {
     return await this.repository.save({
       ...guestData,
     });
+  }
+
+  async get(id: UUID) {
+    if (!id) {
+      return undefined;
+    }
+    const result = await this.repository.findOneBy({ id });
+    if (result === null) {
+      return undefined;
+    }
+    return result;
+  }
+
+  async refreshLastAuthenticatedAt(id: UUID, lastAuthenticatedAt: Date) {
+    await this.repository.update(id, { lastAuthenticatedAt });
+
+    return this.get(id);
   }
 }

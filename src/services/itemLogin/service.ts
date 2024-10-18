@@ -10,6 +10,7 @@ import { Actor } from '../member/entities/member';
 import { Guest } from './entities/guest';
 import { ItemLoginSchema } from './entities/itemLoginSchema';
 import {
+  CannotRefreshLastAuthenticatedAt,
   CannotRegisterOnFrozenItemLoginSchema,
   ItemLoginSchemaNotFound,
   MissingCredentialsForLoginSchema,
@@ -48,9 +49,6 @@ export class ItemLoginService {
       // TODO
       throw new Error();
     }
-
-    // update last authenticated at
-    await repositories.accountRepository.refreshLastAuthenticatedAt(bondMember.id, new Date());
 
     return bondMember;
   }
@@ -131,6 +129,8 @@ export class ItemLoginService {
       });
     }
 
+    guestAccount = await this.refreshLastAuthenticatedAt(repositories, guestAccount.id);
+
     return guestAccount;
   }
 
@@ -154,5 +154,19 @@ export class ItemLoginService {
   async getOneByItem(repositories: Repositories, itemId: string) {
     const { itemLoginSchemaRepository } = repositories;
     return await itemLoginSchemaRepository.getOneByItem(itemId);
+  }
+
+  async refreshLastAuthenticatedAt(repositories: Repositories, guestId: UUID) {
+    // update last authenticated at date
+    const refreshedMember = await repositories.itemLoginRepository.refreshLastAuthenticatedAt(
+      guestId,
+      new Date(),
+    );
+
+    if (!refreshedMember) {
+      throw new CannotRefreshLastAuthenticatedAt();
+    }
+
+    return refreshedMember;
   }
 }

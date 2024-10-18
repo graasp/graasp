@@ -202,3 +202,16 @@ export class CannotEnrollFrozenItemLoginSchema extends GraaspItemLoginError {
     );
   }
 }
+
+export class CannotRefreshLastAuthenticatedAt extends GraaspItemLoginError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GILERR016',
+        statusCode: StatusCodes.FORBIDDEN,
+        message: 'CANNOT_REFRESH_LAST_AUTHENTICATED_AT',
+      },
+      data,
+    );
+  }
+}
