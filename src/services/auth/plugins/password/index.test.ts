@@ -761,7 +761,7 @@ describe('GET members current password status', () => {
   });
 });
 
-describe('Regression tests', () => {
+describe('Flow tests', () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
@@ -790,6 +790,8 @@ describe('Regression tests', () => {
       url: '/login-password',
       payload: { email: member.email, password: pwd.password, captcha: MOCK_CAPTCHA },
     });
+
+    expect(loginResponse.statusCode).toEqual(StatusCodes.OK);
 
     const response = await app.inject({
       method: HttpMethod.Get,
