@@ -51,39 +51,6 @@ export const nullableMemberSchemaRef = registerSchemaAsRef(
   customType.Nullable(memberSchema),
 );
 
-const currentMemberSchema = Type.Object(
-  {
-    // Object definition
-    id: customType.UUID(),
-    name: customType.Username(),
-    email: Type.Optional(Type.String({ format: 'email' })),
-    type: Type.Enum(AccountType),
-    createdAt: customType.DateTime(),
-    updatedAt: customType.DateTime(),
-    lastAuthenticatedAt: customType.DateTime(),
-    isValidated: Type.Boolean(),
-    userAgreementsDate: customType.DateTime(),
-    enableSaveActions: Type.Boolean(),
-    extra: Type.Object({}, { additionalProperties: true }),
-  },
-  {
-    // Schema options
-    additionalProperties: false,
-  },
-);
-
-export const currentMemberSchemaRef = registerSchemaAsRef(
-  'currentMember',
-  'Current Member',
-  currentMemberSchema,
-);
-
-export const nullableCurrentMemberSchemaRef = registerSchemaAsRef(
-  'nullableCurrentMember',
-  'Nullable Current Member',
-  customType.Nullable(currentMemberSchema),
-);
-
 export const updateMemberRequiredOneSchemaRef = registerSchemaAsRef(
   'updateMemberRequiredOne',
   'Update Member Required One',
@@ -98,10 +65,84 @@ export const updateMemberRequiredOneSchemaRef = registerSchemaAsRef(
   ),
 );
 
+const currentAccountSchema = Type.Object(
+  {
+    // Object Definition
+    id: customType.UUID(),
+    name: customType.Username(),
+    createdAt: customType.DateTime(),
+    updatedAt: customType.DateTime(),
+    // for legacy issue we support null
+    // but on login last authenticatedAt should always be updated
+    lastAuthenticatedAt: Type.Union([Type.Null(), customType.DateTime()]),
+  },
+  {
+    // Schema Options
+    additionalProperties: false,
+  },
+);
+
+// Current Member
+const compositeCurrentMemberSchema = Type.Composite([
+  currentAccountSchema, // Base properties from minimal current account
+  Type.Object(
+    {
+      email: Type.Optional(Type.String({ format: 'email' })),
+      type: Type.Literal(AccountType.Individual),
+      isValidated: Type.Boolean(),
+      userAgreementsDate: Type.Union([Type.Null(), customType.DateTime()]),
+      enableSaveActions: Type.Boolean(),
+      extra: Type.Object({}, { additionalProperties: true }),
+    },
+    { additionalProperties: false },
+  ),
+]);
+// Current Guest
+const compositeCurrentGuestSchema = Type.Composite([
+  currentAccountSchema, // Base properties from minimal current account
+  Type.Object(
+    {
+      type: Type.Literal(AccountType.Guest),
+      extra: Type.Object({}, { additionalProperties: true }),
+    },
+    { additionalProperties: false },
+  ),
+]);
+
+export const currentAccountSchemaRef = registerSchemaAsRef(
+  'currentAccountSchemaRef',
+  'Current Account',
+  Type.Union(
+    [
+      // The current account can either be an individual or a guest
+      compositeCurrentMemberSchema,
+      compositeCurrentGuestSchema,
+    ],
+    {
+      discriminator: { propertyName: 'type' },
+    },
+  ),
+);
+
+export const nullableCurrentAccountSchemaRef = registerSchemaAsRef(
+  'nullableCurrentAccountSchemaRef',
+  'Nullable Current Account',
+  Type.Union(
+    [
+      // The current account can either be an individual or a guest
+      customType.Nullable(compositeCurrentMemberSchema),
+      customType.Nullable(compositeCurrentGuestSchema),
+    ],
+    {
+      discriminator: { propertyName: 'type' },
+    },
+  ),
+);
+
 // schema for getting current member
 export const getCurrent = {
   response: {
-    [StatusCodes.OK]: nullableCurrentMemberSchemaRef,
+    [StatusCodes.OK]: nullableCurrentAccountSchemaRef,
   },
 } as const satisfies FastifySchema;
 
@@ -240,7 +281,7 @@ export const updateOne = {
   params: entityIdSchemaRef,
   body: updateMemberRequiredOneSchemaRef,
   response: {
-    [StatusCodes.OK]: currentMemberSchemaRef,
+    [StatusCodes.OK]: currentAccountSchemaRef,
     [StatusCodes.FORBIDDEN]: error,
   },
 } as const satisfies FastifySchema;
@@ -249,7 +290,7 @@ export const updateOne = {
 export const updateCurrent = {
   body: updateMemberRequiredOneSchemaRef,
   response: {
-    [StatusCodes.OK]: currentMemberSchemaRef,
+    [StatusCodes.OK]: currentAccountSchemaRef,
     [StatusCodes.FORBIDDEN]: error,
   },
 } as const satisfies FastifySchema;
