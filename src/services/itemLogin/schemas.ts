@@ -1,4 +1,5 @@
 import { Type } from '@sinclair/typebox';
+import { StatusCodes } from 'http-status-codes';
 
 import { FastifySchema } from 'fastify';
 
@@ -9,20 +10,6 @@ import { entityIdSchemaRef, errorSchemaRef } from '../../schemas/global';
 import { accountSchemaRef } from '../account/schemas';
 import { itemSchemaRef } from '../item/schema';
 
-export const credentialsSchemaRef = registerSchemaAsRef(
-  'itemLoginCredentials',
-  'Item Login Credentials',
-  Type.Object(
-    {
-      username: customType.Username(),
-      password: Type.Optional(
-        Type.String({ minLength: 3, maxLength: 50, pattern: '^\\S+( \\S+)*$' }),
-      ),
-    },
-    { additionalProperties: false },
-  ),
-);
-
 const itemLoginSchemaSchema = Type.Object(
   {
     id: customType.UUID(),
@@ -32,7 +19,10 @@ const itemLoginSchemaSchema = Type.Object(
     createdAt: customType.DateTime(),
     updatedAt: customType.DateTime(),
   },
-  { additionalProperties: false },
+  {
+    description: 'Item login Schema for an item, including its status and type',
+    additionalProperties: false,
+  },
 );
 export const itemLoginSchemaSchemaRef = registerSchemaAsRef(
   'itemLoginSchema',
@@ -41,16 +31,35 @@ export const itemLoginSchemaSchemaRef = registerSchemaAsRef(
 );
 
 export const login = {
+  operationId: 'loginItemLogin',
+  tags: ['authentication', 'itemLogin'],
+  summary: 'Register or login to guest account',
+  description:
+    'Register or login to guest account. Required inputs depends on the item login schema type. ',
+
   params: entityIdSchemaRef,
-  body: credentialsSchemaRef,
+  body: Type.Object(
+    {
+      username: customType.Username(),
+      password: Type.Optional(
+        Type.String({ minLength: 3, maxLength: 50, pattern: '^\\S+( \\S+)*$' }),
+      ),
+    },
+    { additionalProperties: false },
+  ),
   response: {
-    '2xx': accountSchemaRef,
+    [StatusCodes.OK]: accountSchemaRef,
     '4xx': errorSchemaRef,
     '5xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
 export const getLoginSchemaType = {
+  operationId: 'getItemLoginSchemaType',
+  tags: ['itemLogin'],
+  summary: 'Get item login schema type',
+  description: 'Get item logins schema type. Publicly available.',
+
   params: entityIdSchemaRef,
   response: {
     '2xx': customType.Nullable(customType.EnumString(Object.values(ItemLoginSchemaType))),
@@ -60,28 +69,29 @@ export const getLoginSchemaType = {
 } as const satisfies FastifySchema;
 
 export const getLoginSchema = {
+  operationId: 'getItemLoginSchema',
+  tags: ['itemLogin'],
+  summary: 'Get item login schema',
+  description: 'Get item logins schema.',
+
   params: entityIdSchemaRef,
   response: {
-    '2xx': itemLoginSchemaSchemaRef,
+    [StatusCodes.OK]: itemLoginSchemaSchemaRef,
     '4xx': errorSchemaRef,
     '5xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
 export const updateLoginSchema = {
+  operationId: 'updateItemLoginSchema',
+  tags: ['itemLogin'],
+  summary: 'Update item login schema',
+  description: 'Update item logins schema type and/or status.',
+
   params: entityIdSchemaRef,
   body: Type.Partial(Type.Pick(itemLoginSchemaSchema, ['status', 'type']), { minProperties: 1 }),
   response: {
-    '2xx': itemLoginSchemaSchemaRef,
-    '4xx': errorSchemaRef,
-    '5xx': errorSchemaRef,
-  },
-} as const satisfies FastifySchema;
-
-export const deleteLoginSchema = {
-  params: entityIdSchemaRef,
-  response: {
-    '2xx': itemLoginSchemaSchemaRef,
+    [StatusCodes.OK]: itemLoginSchemaSchemaRef,
     '4xx': errorSchemaRef,
     '5xx': errorSchemaRef,
   },

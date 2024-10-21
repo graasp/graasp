@@ -5,8 +5,10 @@ import { FastifySchema } from 'fastify';
 
 import { customType } from '../../../../plugins/typebox';
 import { error } from '../../../../schemas/fluent-schema';
+import { errorSchemaRef } from '../../../../schemas/global';
 
 export const passwordLogin = {
+  operationId: 'passwordLogin',
   tags: ['password'],
   summary: 'Log in with email and password',
   description:
@@ -20,9 +22,17 @@ export const passwordLogin = {
   querystring: customType.StrictObject({
     lang: Type.Optional(Type.String()),
   }),
+  response: {
+    [StatusCodes.SEE_OTHER]: customType.StrictObject(
+      { resource: Type.String({ format: 'uri' }) },
+      { description: 'Successful Response' },
+    ),
+    '4xx': errorSchemaRef,
+  },
 } as const satisfies FastifySchema;
 
 export const setPassword = {
+  operationId: 'setPassword',
   tags: ['password'],
   summary: 'Set a password for the authenticated member',
   description:
@@ -31,13 +41,14 @@ export const setPassword = {
     password: Type.String({ format: 'strongPassword' }),
   }),
   response: {
-    [StatusCodes.NO_CONTENT]: Type.Null(),
+    [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
     // returns conflict when there is already a password set
     [StatusCodes.CONFLICT]: error,
   },
 } as const satisfies FastifySchema;
 
 export const updatePassword = {
+  operationId: 'updatePassword',
   tags: ['password'],
   summary: 'Update the password of the authenticated member',
   description:
@@ -47,7 +58,7 @@ export const updatePassword = {
     currentPassword: Type.String({ format: 'strongPassword' }),
   }),
   response: {
-    [StatusCodes.NO_CONTENT]: Type.Null(),
+    [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
     // there was an issue with matching the current password with what is stored or the password was empty
     [StatusCodes.BAD_REQUEST]: error,
     // the user needs to be authenticated and the current password needs to match
@@ -56,6 +67,7 @@ export const updatePassword = {
 } as const satisfies FastifySchema;
 
 export const postResetPasswordRequest = {
+  operationId: 'postResetPasswordRequest',
   tags: ['password'],
   summary: 'Create a reset password request',
   description:
@@ -71,6 +83,7 @@ export const postResetPasswordRequest = {
 } as const satisfies FastifySchema;
 
 export const patchResetPasswordRequest = {
+  operationId: 'patchResetPasswordRequest',
   tags: ['password'],
   summary: 'Confirm the reset password request',
   description:
@@ -86,10 +99,12 @@ export const patchResetPasswordRequest = {
 } as const satisfies FastifySchema;
 
 export const getMembersCurrentPasswordStatus = {
+  operationId: 'getMembersCurrentPasswordStatus',
   tags: ['password', 'current'],
   summary: 'Get the current password status of the authenticated member',
   description: 'Return whether the authenticated member has a password defined.',
   response: {
     [StatusCodes.OK]: customType.StrictObject({ hasPassword: Type.Boolean() }),
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
