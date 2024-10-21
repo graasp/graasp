@@ -7,14 +7,14 @@ import { HttpMethod, ItemLoginSchemaType } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../plugins/datasource';
 import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
-import { Account } from '../../account/entities/account';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
+import { Guest } from '../../itemLogin/entities/guest';
 import { ItemLoginSchema } from '../../itemLogin/entities/itemLoginSchema';
 
 const testUtils = new ItemTestUtils();
 
 const rawItemLoginSchemaRepository = AppDataSource.getRepository(ItemLoginSchema);
-const rawAccountRepository = AppDataSource.getRepository(Account);
+const rawGuestRepository = AppDataSource.getRepository(Guest);
 
 /**
  * Setup environment for a guest logging in
@@ -36,7 +36,7 @@ export const setupGuest = async (app: FastifyInstance) => {
   });
 
   // necessary to fetch complete guest to return correct current account
-  const currentGuest = await rawAccountRepository.findOneBy({ id: loginResponse.json().id });
+  const currentGuest = await rawGuestRepository.findOneBy({ id: loginResponse.json().id });
   assert(currentGuest);
 
   return { guest: currentGuest };
