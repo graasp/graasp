@@ -8,7 +8,7 @@ import { AccountRepository } from './repository';
 
 const accountRepository = new AccountRepository();
 
-describe('MemberRepository', () => {
+describe('AccountRepository', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {

@@ -148,6 +148,11 @@ export class ItemWrapper {
    * @returns item unit with permission
    */
   packed(): PackedItem {
+    // sort tags to retrieve most relevant (highest) tag first
+    if (this.tags) {
+      this.tags.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
+    }
+
     return {
       ...this.item,
       permission: this.actorPermission?.permission ?? null,
