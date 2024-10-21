@@ -1,4 +1,3 @@
-import fetch from 'node-fetch';
 import sharp from 'sharp';
 
 import { HttpMethod, MimeTypes } from '@graasp/sdk';
@@ -6,7 +5,17 @@ import { HttpMethod, MimeTypes } from '@graasp/sdk';
 import { IMAGE_CLASSIFIER_PREDICTION_THRESHOLD } from '../constants';
 import { FailedImageClassificationRequestError } from '../errors';
 
-const imageToBase64 = async (buffer: ArrayBuffer, mimetype?: string) => {
+type PredictionResult = {
+  class: string;
+  score: number;
+  box: [number, number, number, number];
+};
+type ClassificationResponse = {
+  prediction: PredictionResult[][];
+  success: boolean;
+};
+
+const imageToBlob = async (buffer: ArrayBuffer, mimetype?: string) => {
   let imageBuffer = buffer;
 
   // if image is SVG or unkown, convert it to PNG to solve nudenet issues
@@ -14,7 +23,7 @@ const imageToBase64 = async (buffer: ArrayBuffer, mimetype?: string) => {
     imageBuffer = await sharp(buffer).png().toBuffer();
   }
 
-  return Buffer.from(imageBuffer).toString('base64');
+  return new Blob([imageBuffer]);
 };
 
 const sendRequestToClassifier = async (
@@ -22,23 +31,28 @@ const sendRequestToClassifier = async (
   url: string,
   mimetype?: string,
 ): Promise<{
-  prediction?: {
-    image?: {
-      unsafe: number;
-      safe: number;
-    };
-  };
+  prediction?: PredictionResult[][];
+  success: boolean;
+  isSafe: boolean;
 }> => {
   try {
     const imageUrlData = await fetch(url);
     const buffer = await imageUrlData.arrayBuffer();
-    const encodedImage = await imageToBase64(buffer, mimetype);
+    const encodedImage = await imageToBlob(buffer, mimetype);
+    const formData = new FormData();
+    formData.append('file', encodedImage);
     const response = await fetch(classifierApi, {
       method: HttpMethod.Post,
-      body: JSON.stringify({ data: { image: encodedImage } }),
-      headers: { 'Content-Type': 'application/json' },
+      body: formData,
     });
-    return response.json();
+    const classificationResult = (await response.json()) as ClassificationResponse;
+    // for every image sent, every object predicted MUST be below the threshold to pass the validation
+    const isSafe = classificationResult.prediction.every((pred) =>
+      pred.every(({ score }) => score < IMAGE_CLASSIFIER_PREDICTION_THRESHOLD),
+    );
+    console.log(JSON.stringify(classificationResult));
+    console.log(classificationResult.prediction[0].map((c) => c.score));
+    return { ...classificationResult, isSafe };
   } catch (error) {
     console.error(error);
     throw new FailedImageClassificationRequestError(error);
@@ -53,10 +67,11 @@ export const classifyImage = async (
   const response = await sendRequestToClassifier(classifierApi, url, mimetype);
   console.debug('image classification result', response);
 
-  const prediction = response?.prediction?.image;
-  if (!prediction) {
-    throw new FailedImageClassificationRequestError('Invalid Response');
-  }
+  const isSafe = response?.isSafe;
+  // if (!isSafe) {
+  //   throw new FailedImageClassificationRequestError('Invalid Response');
+  // }
 
-  return prediction.unsafe < IMAGE_CLASSIFIER_PREDICTION_THRESHOLD;
+  // return isUnsafe < IMAGE_CLASSIFIER_PREDICTION_THRESHOLD;
+  return isSafe;
 };
