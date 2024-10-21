@@ -1,12 +1,10 @@
 import { Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
-import { ItemTagType, MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
+import { ItemTagType } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
-import { UUID_REGEX, errorSchemaRef } from '../../../../schemas/global';
 import { nullableMemberSchemaRef } from '../../../member/schemas';
-import { itemIdSchemaRef, itemTagSchemaRef } from '../../schema';
 
 export const tagSchemaRef = registerSchemaAsRef(
   'tag',
@@ -51,33 +49,6 @@ const create = {
   },
 };
 
-// schema for getting an item's tags
-const getItemTags = {
-  params: itemIdSchemaRef,
-  response: {
-    [StatusCodes.OK]: Type.Array(itemTagSchemaRef),
-  },
-};
-
-const getMany = {
-  querystring: Type.Object({
-    id: Type.Array(customType.UUID(), {
-      uniqueItems: true,
-      minItems: 1,
-      maxItems: MAX_TARGETS_FOR_READ_REQUEST,
-    }),
-  }),
-  response: {
-    [StatusCodes.OK]: Type.Object(
-      {
-        data: Type.Record(Type.String({ pattern: UUID_REGEX }), Type.Array(itemTagSchemaRef)),
-        errors: Type.Array(errorSchemaRef),
-      },
-      { additionalProperties: false },
-    ),
-  },
-};
-
 // schema for deleting an item tag
 const deleteOne = {
   params: Type.Object(
@@ -92,11 +63,4 @@ const deleteOne = {
   },
 };
 
-// schema for getting available tags
-const getTags = {
-  response: {
-    [StatusCodes.OK]: Type.Array(tagSchemaRef),
-  },
-};
-
-export { getItemTags, create, deleteOne, getTags, getMany };
+export { create, deleteOne };
