@@ -5,12 +5,17 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
+import build, {
+  clearDatabase,
+  mockAuthenticate,
+  unmockAuthenticate,
+} from '../../../../../../test/app';
 import { assertIsDefined } from '../../../../../utils/assertions';
 import { APP_ITEMS_PREFIX } from '../../../../../utils/config';
 import { Guest } from '../../../../itemLogin/entities/guest';
 import { Member } from '../../../../member/entities/member';
-import { expectMinimalMember, saveMember } from '../../../../member/test/fixtures/members';
+import { expectAccount, saveMember } from '../../../../member/test/fixtures/members';
+import { setupGuest } from '../../../../member/test/setup';
 import { Item } from '../../../entities/Item';
 import { expectItem } from '../../../test/fixtures/items';
 import { setItemPublic } from '../../itemTag/test/fixtures';
@@ -39,6 +44,7 @@ describe('Apps Plugin Tests', () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
     actor = undefined;
+    unmockAuthenticate();
     app.close();
   });
 
@@ -244,7 +250,32 @@ describe('Apps Plugin Tests', () => {
         expect(data.members).toHaveLength(2);
         for (const m of response.json().members) {
           const expectedMember = m.id === actor.id ? actor : member;
-          expectMinimalMember(m, expectedMember);
+          expectAccount(m, expectedMember);
+        }
+      });
+
+      it('Get app context successfully for one item as guest', async () => {
+        ({ app } = await build({ member: null }));
+        const { guest } = await setupGuest(app);
+        mockAuthenticate(guest);
+        assertIsDefined(guest);
+
+        const member = await saveMember();
+        ({ item, token } = await setUpForAppContext(app, guest, member, PermissionLevel.Read));
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/context`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        const data = response.json();
+        expect(data.item.id).toEqual(item.id);
+        expect(data.members).toHaveLength(2);
+        for (const m of response.json().members) {
+          const expectedMember = m.id === guest.id ? guest : member;
+          expectAccount(m, expectedMember);
         }
       });
 
@@ -280,7 +311,7 @@ describe('Apps Plugin Tests', () => {
         expect(members).toHaveLength(2);
         for (const m of response.json().members) {
           const expectedMember = m.id === actor.id ? actor : member;
-          expectMinimalMember(m, expectedMember);
+          expectAccount(m, expectedMember);
         }
       });
 
@@ -318,7 +349,7 @@ describe('Apps Plugin Tests', () => {
         expect(members).toHaveLength(2);
         for (const m of response.json().members) {
           const expectedMember = m.id === actor.id ? actor : member;
-          expectMinimalMember(m, expectedMember);
+          expectAccount(m, expectedMember);
         }
       });
 

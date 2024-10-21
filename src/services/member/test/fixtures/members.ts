@@ -2,6 +2,7 @@ import { AccountType, CompleteMember, MemberFactory } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
 import { AppDataSource } from '../../../../plugins/datasource';
+import { Account } from '../../../account/entities/account';
 import { Member } from '../../entities/member';
 
 export const saveMember = async (m: CompleteMember = MemberFactory()) => {
@@ -30,9 +31,9 @@ export const expectMember = (
   expect(m.extra).toEqual(validation.extra ?? { lang: DEFAULT_LANG });
 };
 
-export const expectMinimalMember = (
-  m: Member | undefined | null,
-  validation: Partial<Member> & Pick<Member, 'name' | 'email'>,
+export const expectAccount = (
+  m: Account | undefined | null,
+  validation: Partial<Account> & Pick<Account, 'name' | 'id'>,
 ) => {
   if (!m) {
     throw 'member does not exist';

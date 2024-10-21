@@ -10,7 +10,7 @@ import { AppDataSource } from '../../../../../../plugins/datasource';
 import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
 import { Guest } from '../../../../../itemLogin/entities/guest';
 import { Member } from '../../../../../member/entities/member';
-import { expectMinimalMember, saveMember } from '../../../../../member/test/fixtures/members';
+import { expectAccount, saveMember } from '../../../../../member/test/fixtures/members';
 import { AppTestUtils } from '../../test/fixtures';
 import { AppData } from '../appData';
 import { PreventUpdateAppDataFile } from '../errors';
@@ -321,8 +321,8 @@ describe('App Data Tests', () => {
         // we don't use the util function because it does not contain an id for iteration
         expect(newAppData.type).toEqual(payload.type);
         expect(newAppData.data).toEqual(payload.data);
-        expectMinimalMember(newAppData.account, bob);
-        expectMinimalMember(newAppData.creator, actor);
+        expectAccount(newAppData.account, bob);
+        expectAccount(newAppData.creator, actor);
 
         const savedAppData = await new AppDataRepository().getOne(newAppData.id);
         expectAppData([newAppData], [savedAppData]);
@@ -363,8 +363,8 @@ describe('App Data Tests', () => {
         // we don't use the util function because it does not contain an id for iteration
         expect(newAppData.type).toEqual(payload.type);
         expect(newAppData.data).toEqual(payload.data);
-        expectMinimalMember(newAppData.account, bob);
-        expectMinimalMember(newAppData.creator, actor);
+        expectAccount(newAppData.account, bob);
+        expectAccount(newAppData.creator, actor);
 
         const savedAppData = await new AppDataRepository().getOne(newAppData.id);
         expectAppData([newAppData], [savedAppData]);
