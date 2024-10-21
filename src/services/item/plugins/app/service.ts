@@ -70,14 +70,13 @@ export class AppService {
     itemId: string,
     requestDetails?: AuthTokenSubject,
   ) {
-    const { itemRepository, memberRepository } = repositories;
+    const { itemRepository, accountRepository } = repositories;
 
     const item = await itemRepository.getOneOrThrow(itemId);
     if (!isItemType(item, ItemType.APP)) {
       throw new Error('Item is not an app');
     }
-    const member = actorId ? await memberRepository.get(actorId) : undefined;
-
+    const account = actorId ? await accountRepository.get(actorId) : undefined;
     if (requestDetails) {
       const { itemId: tokenItemId } = requestDetails;
       checkTargetItemAndTokenItemMatch(itemId, tokenItemId);
@@ -85,8 +84,8 @@ export class AppService {
 
     // return member data only if authenticated
     let members: Member[] = [];
-    if (member) {
-      members = await this.getTreeMembers(member, repositories, item);
+    if (account) {
+      members = await this.getTreeMembers(account, repositories, item);
     }
 
     return { item, members };

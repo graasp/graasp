@@ -26,7 +26,7 @@ import { ItemTag } from '../../item/plugins/itemTag/ItemTag';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
 import { ItemMembership } from '../../itemMembership/entities/ItemMembership';
 import { Member } from '../../member/entities/member';
-import { expectMinimalMember, saveMember } from '../../member/test/fixtures/members';
+import { expectAccount, saveMember } from '../../member/test/fixtures/members';
 import { Guest } from '../entities/guest';
 import { GuestPassword } from '../entities/guestPassword';
 import { ItemLoginSchema as ItemLoginSchemaEntity } from '../entities/itemLoginSchema';
@@ -80,7 +80,7 @@ export async function saveItemLoginSchema({
 }
 
 const expectItemLogin = (member, m) => {
-  expectMinimalMember(member, m);
+  expectAccount(member, m);
 };
 
 describe('Item Login Tests', () => {
