@@ -1574,6 +1574,7 @@ describe('Item routes tests', () => {
         });
 
         const data = response.json();
+        expect(data).toHaveLength(descendants.length);
         descendants.forEach(({ id }) => {
           expectPackedItem(
             data.find(({ id: thisId }) => thisId === id),
