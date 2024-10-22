@@ -158,7 +158,7 @@ export class MemberPasswordService {
     })
       .addText(MAIL.CHANGE_EMAIL_TEXT)
       .addButton(MAIL.CHANGE_EMAIL_BUTTON_TEXT, link)
-      .addSignUpNotRequested()
+      .addIgnoreEmailIfNotRequestedNotice()
       .build();
 
     // don't wait for mailerService's response; log error and link if it fails.

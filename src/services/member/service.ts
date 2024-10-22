@@ -140,7 +140,7 @@ export class MemberService {
     })
       .addText(MAIL.CHANGE_EMAIL_TEXT)
       .addButton(MAIL.CHANGE_EMAIL_BUTTON_TEXT, link)
-      .addSignUpNotRequested()
+      .addIgnoreEmailIfNotRequestedNotice()
       .build();
 
     // don't wait for mailer's response; log error and link if it fails.

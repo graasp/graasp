@@ -74,7 +74,7 @@ describe('Export Member Data Plugin Tests', () => {
     it('Create archive and send email', async () => {
       ({ app, actor } = await build());
       const mailerService = resolveDependency(MailerService);
-      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
 
       await testUtils.saveItem({ actor });
 

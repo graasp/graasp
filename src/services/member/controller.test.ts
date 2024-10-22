@@ -56,7 +56,7 @@ describe('Member Controller', () => {
   beforeEach(async () => {
     member = await saveMember();
     mockAuthenticate(member);
-    mockSendEmail = jest.spyOn(resolveDependency(MailerService), 'sendEmail');
+    mockSendEmail = jest.spyOn(resolveDependency(MailerService), 'sendRaw');
   });
   afterEach(async () => {
     await clearDatabase(app.db);

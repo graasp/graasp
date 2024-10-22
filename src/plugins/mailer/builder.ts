@@ -86,25 +86,14 @@ export class MailBuilder {
   /**
    * This function add the user agreement usually placed at the end of the e-mail.
    */
-  public addUserAgreement(
-    mailButtonTextId: (typeof MAIL)[keyof typeof MAIL],
-    translationVariables?: {
-      [key: string]: string;
-    },
-  ): MailBuilder {
-    const unescapedSignUpButtonText = this.translate(mailButtonTextId, {
-      ...translationVariables,
-      interpolation: { escapeValue: false },
-    });
+  public addUserAgreement(): MailBuilder {
     const unescapedText = this.translate(MAIL.USER_AGREEMENTS_MAIL_TEXT, {
-      signUpButtonText: unescapedSignUpButtonText,
       graaspLandingPageOrigin: GRAASP_LANDING_PAGE_ORIGIN,
       interpolation: { escapeValue: false },
     });
     this.plainText += `\n${unescapedText}\n`;
 
     const escapedText = this.translate(MAIL.USER_AGREEMENTS_MAIL_TEXT, {
-      signUpButtonText: this.translate(mailButtonTextId, translationVariables),
       graaspLandingPageOrigin: GRAASP_LANDING_PAGE_ORIGIN,
     });
     this.htmlText += this.buildText(
@@ -116,8 +105,8 @@ export class MailBuilder {
     return this;
   }
 
-  public addSignUpNotRequested(): MailBuilder {
-    return this.addText(MAIL.SIGN_UP_NOT_REQUESTED);
+  public addIgnoreEmailIfNotRequestedNotice(): MailBuilder {
+    return this.addText(MAIL.IGNORE_EMAIL_IF_NOT_REQUESTED);
   }
 
   public build(): Mail {

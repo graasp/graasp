@@ -35,11 +35,20 @@ export class MailerService {
     });
   }
 
+  /**
+   * Send an e-mail from a pre-processed object
+   * @param mail Mail object
+   * @param to Destination email
+   * @param from Emitter email
+   */
   public async send(mail: Mail, to: string, from: string = this.fromEmail) {
-    await this.sendEmail(mail.subject, to, mail.text, mail.html, mail.footer, from);
+    await this.sendRaw(mail.subject, to, mail.text, mail.html, mail.footer, from);
   }
 
-  public async sendEmail(
+  /**
+   * Send an e-mail bypassing the mail builder and translations
+   */
+  public async sendRaw(
     subject: string,
     to: string,
     text: string,

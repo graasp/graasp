@@ -17,11 +17,8 @@ describe('Mailer', () => {
   beforeAll(async () => {
     ({ app } = await build());
     mailerService = resolveDependency(MailerService);
-  });
-
-  beforeEach(async () => {
     mockSendEmail = jest
-      .spyOn(mailerService, 'sendEmail')
+      .spyOn(mailerService, 'sendRaw')
       .mockImplementation(async () => Promise.resolve());
   });
 
@@ -84,7 +81,7 @@ describe('Mailer', () => {
         expect.stringContaining(memberName),
         email,
         expect.stringContaining(link),
-        expect.stringContaining(itemName) && expect.stringContaining(link),
+        expect.stringContaining(link),
         expect.stringContaining('Graasp'),
         expect.anything(),
       );
@@ -126,8 +123,8 @@ describe('Mailer', () => {
       })
         .addText(MAIL.MEMBERSHIP_REQUEST_TEXT, { itemName, memberName })
         .addButton(MAIL.MEMBERSHIP_REQUEST_BUTTON_TEXT, link, { itemName })
-        .addUserAgreement(MAIL.MEMBERSHIP_REQUEST_BUTTON_TEXT, { itemName })
-        .addSignUpNotRequested()
+        .addUserAgreement()
+        .addIgnoreEmailIfNotRequestedNotice()
         .build();
 
       await mailerService.send(mail, email);

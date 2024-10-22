@@ -52,8 +52,8 @@ export class AuthService {
       .addText(MAIL.GREETINGS)
       .addText(MAIL.SIGN_UP_TEXT)
       .addButton(MAIL.SIGN_UP_BUTTON_TEXT, link)
-      .addUserAgreement(MAIL.SIGN_UP_BUTTON_TEXT)
-      .addSignUpNotRequested()
+      .addUserAgreement()
+      .addIgnoreEmailIfNotRequestedNotice()
       .build();
 
     // don't wait for mailerService's response; log error and link if it fails.
@@ -64,7 +64,7 @@ export class AuthService {
 
   generateLoginLinkAndEmailIt = async (
     member: Member,
-    options: { challenge?: string; lang?: string; url?: string } = {},
+    options: { challenge?: string; url?: string } = {},
   ): Promise<void> => {
     const { challenge, url } = options;
 
@@ -86,7 +86,7 @@ export class AuthService {
     })
       .addText(MAIL.SIGN_IN_TEXT)
       .addButton(MAIL.SIGN_IN_BUTTON_TEXT, link)
-      .addSignUpNotRequested()
+      .addIgnoreEmailIfNotRequestedNotice()
       .build();
 
     // don't wait for mailerService's response; log error and link if it fails.

@@ -282,7 +282,7 @@ describe('Membership routes tests', () => {
       it('Create new membership successfully', async () => {
         assertIsDefined(actor);
         const mailerService = resolveDependency(MailerService);
-        const notificationMock = jest.spyOn(mailerService, 'sendEmail');
+        const notificationMock = jest.spyOn(mailerService, 'sendRaw');
 
         const { item } = await testUtils.saveItemAndMembership({ member: actor });
         const member = await saveMember();
@@ -516,7 +516,7 @@ describe('Membership routes tests', () => {
 
       it('Create new memberships successfully', async () => {
         const mailerService = resolveDependency(MailerService);
-        const notificationMock = jest.spyOn(mailerService, 'sendEmail');
+        const notificationMock = jest.spyOn(mailerService, 'sendRaw');
         const { item } = await testUtils.saveItemAndMembership({ member: actor });
         const member1 = await saveMember();
         const member2 = await saveMember();

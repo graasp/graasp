@@ -10,7 +10,7 @@ import { FastifyInstance } from 'fastify';
 import { HttpMethod, MemberFactory, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
-import { tokenRegex } from '../../../../../test/utils';
+import { TOKEN_REGEX } from '../../../../../test/utils';
 import { resolveDependency } from '../../../../di/utils';
 import { AppDataSource } from '../../../../plugins/datasource';
 import { MailerService } from '../../../../plugins/mailer/service';
@@ -34,7 +34,6 @@ const memberRawRepository = AppDataSource.getRepository(Member);
 // bug: cannot use exported mockCaptchaValidation
 const mockCaptchaValidation = (action: RecaptchaActionType) => {
   (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return {
       json: async () => ({ success: true, action, score: 1 }),
     } as Response;
@@ -67,7 +66,7 @@ describe('Mobile Endpoints', () => {
       const email = 'someemail@email.com';
       const name = 'anna';
 
-      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/m/register',
@@ -91,7 +90,7 @@ describe('Mobile Endpoints', () => {
       const lang = 'fr';
       const member = { email, name, extra: { lang } };
 
-      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/m/register?lang=${lang}`,
@@ -113,7 +112,7 @@ describe('Mobile Endpoints', () => {
       const name = 'anna';
       const enableSaveActions = false;
 
-      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/m/register',
@@ -138,7 +137,7 @@ describe('Mobile Endpoints', () => {
       const name = 'anna';
       const enableSaveActions = true;
 
-      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/m/register',
@@ -161,7 +160,7 @@ describe('Mobile Endpoints', () => {
     it('Sign Up fallback to login for already register member', async () => {
       const member = await saveMember();
 
-      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/m/register',
@@ -211,7 +210,7 @@ describe('Mobile Endpoints', () => {
     it('Sign In successfully', async () => {
       const member = await saveMember();
 
-      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/m/login',
@@ -226,7 +225,7 @@ describe('Mobile Endpoints', () => {
       const lang = 'de';
       const member = await saveMember();
 
-      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/m/login?lang=${lang}`,
@@ -239,7 +238,7 @@ describe('Mobile Endpoints', () => {
     it('Sign In does send not found error for non-existing email', async () => {
       const email = 'some@email.com';
 
-      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/m/login',
@@ -585,7 +584,7 @@ describe('Mobile Endpoints', () => {
     });
     it('MagicLink', async () => {
       mockCaptchaValidation(RecaptchaAction.SignUpMobile);
-      const mockSendEmail = jest.spyOn(resolveDependency(MailerService), 'sendEmail');
+      const mockSendEmail = jest.spyOn(resolveDependency(MailerService), 'sendRaw');
 
       const username = faker.internet.userName().toLowerCase();
       const email = faker.internet.email().toLowerCase();
@@ -607,7 +606,7 @@ describe('Mobile Endpoints', () => {
       expect(responseRegister.statusCode).toBe(StatusCodes.NO_CONTENT);
       expect(mockSendEmail).toHaveBeenCalledTimes(1);
 
-      const token = mockSendEmail.mock.calls[0][2].match(tokenRegex)![1];
+      const token = mockSendEmail.mock.calls[0][2].match(TOKEN_REGEX)![1];
 
       const responseAuth = await app.inject({
         method: HttpMethod.Post,

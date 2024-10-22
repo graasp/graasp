@@ -18,4 +18,4 @@ export function mockCaptchaValidationOnce(action: RecaptchaActionType) {
   });
 }
 
-export const tokenRegex = /\?t=([\w\-\.]{1,1000})/;
+export const TOKEN_REGEX = /\?t=([\w\-\.]+)/;

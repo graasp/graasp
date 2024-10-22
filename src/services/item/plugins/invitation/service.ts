@@ -70,10 +70,10 @@ export class InvitationService {
         creatorName: member.name,
       })
       .addButton(MAIL.SIGN_UP_BUTTON_TEXT, link)
-      .addUserAgreement(MAIL.SIGN_UP_BUTTON_TEXT)
+      .addUserAgreement()
       .build();
 
-    this.mailerService.send(mail, member.email).catch((err) => {
+    this.mailerService.send(mail, invitation.email).catch((err) => {
       this.log.warn(err, `mailerService failed. invitation link: ${link}`);
     });
   }

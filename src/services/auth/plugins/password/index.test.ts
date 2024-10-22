@@ -17,7 +17,7 @@ import build, {
   unmockAuthenticate,
 } from '../../../../../test/app';
 import seed from '../../../../../test/mocks';
-import { mockCaptchaValidationOnce, tokenRegex } from '../../../../../test/utils';
+import { TOKEN_REGEX, mockCaptchaValidationOnce } from '../../../../../test/utils';
 import { resolveDependency } from '../../../../di/utils';
 import { MailerService } from '../../../../plugins/mailer/service';
 import {
@@ -199,7 +199,7 @@ describe('Reset Password', () => {
     ({ app } = await build());
     mailerService = resolveDependency(MailerService);
     mockSendEmail = jest
-      .spyOn(mailerService, 'sendEmail')
+      .spyOn(mailerService, 'sendRaw')
       .mockImplementation(async () => Promise.resolve());
     mockRedisSetEx = jest.spyOn(Redis.prototype, 'setex');
   });
@@ -344,7 +344,7 @@ describe('Reset Password', () => {
         expect(mockSendEmail).toHaveBeenCalledTimes(1);
         expect(mockSendEmail.mock.calls[0][1]).toBe(entities[0].email);
       });
-      token = mockSendEmail.mock.calls[0][3].match(tokenRegex)[1];
+      token = mockSendEmail.mock.calls[0][3].match(TOKEN_REGEX)[1];
     });
 
     it('Reset password', async () => {
@@ -464,7 +464,7 @@ describe('Reset Password', () => {
 
     expect(mockSendEmail).toHaveBeenCalledTimes(1);
     expect(mockSendEmail.mock.calls[0][1]).toBe(entities[0].email);
-    const token = mockSendEmail.mock.calls[0][3].match(tokenRegex)[1];
+    const token = mockSendEmail.mock.calls[0][3].match(TOKEN_REGEX)[1];
 
     const newPassword = faker.internet.password({ prefix: '!1Aa' });
     const responseReset = await app.inject({

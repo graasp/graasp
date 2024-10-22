@@ -60,7 +60,7 @@ describe('Auth routes tests', () => {
     it('Sign Up successfully', async () => {
       const email = 'someemail@email.com';
       const name = 'anna';
-      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/register',
@@ -86,7 +86,7 @@ describe('Auth routes tests', () => {
       const name = 'anna';
       const lang = 'fr';
 
-      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/register?lang=${lang}`,
@@ -126,7 +126,7 @@ describe('Auth routes tests', () => {
       const name = 'anna';
       const enableSaveActions = false;
 
-      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/register`,
@@ -152,7 +152,7 @@ describe('Auth routes tests', () => {
       const name = 'anna';
       const enableSaveActions = true;
 
-      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/register`,
@@ -176,7 +176,7 @@ describe('Auth routes tests', () => {
     it('Sign Up fallback to login for already register member', async () => {
       // register already existing member
       const member = await saveMember(MemberFactory({ isValidated: false }));
-      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
 
       const response = await app.inject({
         method: HttpMethod.Post,
@@ -235,7 +235,7 @@ describe('Auth routes tests', () => {
     });
     it('Sign In successfully', async () => {
       const member = await saveMember();
-      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/login',
@@ -250,7 +250,7 @@ describe('Auth routes tests', () => {
     it('Sign In successfully with given lang', async () => {
       const member = await saveMember(MemberFactory({ extra: { lang: 'fr' } }));
       const { lang } = member.extra;
-      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/login?lang=${lang}`,
@@ -265,7 +265,7 @@ describe('Auth routes tests', () => {
     it('Sign In does send not found on non-existing email', async () => {
       const email = 'some@email.com';
 
-      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/login',
