@@ -16,6 +16,7 @@ import {
 import { FAILURE_MESSAGES } from '@graasp/translations';
 
 import build, { clearDatabase } from '../../../../../test/app';
+import { URL_REGEX } from '../../../../../test/utils';
 import { resolveDependency } from '../../../../di/utils';
 import { AppDataSource } from '../../../../plugins/datasource';
 import { MailerService } from '../../../../plugins/mailer/service';
@@ -387,7 +388,7 @@ describe('Auth routes tests', () => {
   describe('Complete Authentication Process', () => {
     it('MagicLink', async () => {
       mockCaptchaValidation(RecaptchaAction.SignUp);
-      const mockSendEmail = jest.spyOn(resolveDependency(MailerService), 'sendEmail');
+      const mockSendEmail = jest.spyOn(resolveDependency(MailerService), 'sendRaw');
 
       const name = faker.internet.userName().toLowerCase();
       const email = faker.internet.email().toLowerCase();
@@ -404,7 +405,7 @@ describe('Auth routes tests', () => {
       expect(m?.isValidated).toBeFalsy();
 
       expect(mockSendEmail).toHaveBeenCalledTimes(1);
-      const fetchedURL = new URL(mockSendEmail.mock.calls[0][2]);
+      const fetchedURL = new URL(mockSendEmail.mock.calls[0][2].match(URL_REGEX)![1]);
       const authURL = fetchedURL.toString();
       const responseAuth = await app.inject({
         method: HttpMethod.Get,
