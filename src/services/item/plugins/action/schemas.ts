@@ -24,11 +24,13 @@ export const getItemActions = {
   params: entityIdSchemaRef,
   querystring: Type.Object(
     {
-      requestedSampleSize: Type.Number({
-        minimum: MIN_ACTIONS_SAMPLE_SIZE,
-        maximum: MAX_ACTIONS_SAMPLE_SIZE,
-      }),
-      view: Type.String(),
+      requestedSampleSize: Type.Optional(
+        Type.Number({
+          minimum: MIN_ACTIONS_SAMPLE_SIZE,
+          maximum: MAX_ACTIONS_SAMPLE_SIZE,
+        }),
+      ),
+      view: Type.Optional(Type.String()),
       startDate: Type.Optional(Type.String({ format: 'date-time' })),
       endDate: Type.Optional(Type.String({ format: 'date-time' })),
     },
@@ -41,11 +43,13 @@ export const getAggregateActions = {
   params: entityIdSchemaRef,
   querystring: Type.Object(
     {
-      requestedSampleSize: Type.Number({
-        minimum: MIN_ACTIONS_SAMPLE_SIZE,
-        maximum: MAX_ACTIONS_SAMPLE_SIZE,
-      }),
-      view: Type.String(),
+      requestedSampleSize: Type.Optional(
+        Type.Number({
+          minimum: MIN_ACTIONS_SAMPLE_SIZE,
+          maximum: MAX_ACTIONS_SAMPLE_SIZE,
+        }),
+      ),
+      view: Type.Optional(Type.String()),
       type: Type.Optional(Type.Array(Type.String())),
       countGroupBy: Type.Array(Type.Enum(CountGroupBy)),
       aggregateFunction: Type.Enum(AggregateFunction),
