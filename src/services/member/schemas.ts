@@ -69,7 +69,7 @@ const currentAccountSchema = Type.Object(
 );
 
 // Current Member
-export const compositeCurrentMemberSchema = Type.Composite([
+const compositeCurrentMemberSchema = Type.Composite([
   currentAccountSchema, // Base properties from minimal current account
   Type.Object(
     {

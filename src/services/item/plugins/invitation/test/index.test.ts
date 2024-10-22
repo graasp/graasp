@@ -581,7 +581,7 @@ describe('Invitation Plugin', () => {
       });
 
       it('upload csv successfully', async () => {
-        const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+        const mockSendEmail = jest.spyOn(mailerService, 'send');
         const form = createFormData('users.csv');
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -591,14 +591,13 @@ describe('Invitation Plugin', () => {
         });
         expect(response.statusCode).toEqual(StatusCodes.OK);
 
-        for (const inv of response.json().invitations) {
-          expect(mockSendEmail).toHaveBeenCalledWith(
-            expect.anything(),
-            inv.email,
-            expect.anything(),
-            expect.anything(),
-            expect.anything(),
-          );
+        const { invitations, memberships } = response.json();
+        // no membership created
+        expect(memberships).toHaveLength(0);
+
+        // send invitations
+        for (const inv of invitations) {
+          expect(mockSendEmail).toHaveBeenCalledWith(expect.anything(), inv.email);
         }
       });
     });
@@ -630,7 +629,7 @@ describe('Invitation Plugin', () => {
 
       it('upload csv successfully', async () => {
         const { item: templateItem } = await testUtils.saveItemAndMembership({ member: actor });
-        const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+        const mockSendEmail = jest.spyOn(mailerService, 'send');
         const form = createFormData('users-groups.csv');
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -641,14 +640,13 @@ describe('Invitation Plugin', () => {
         });
         expect(response.statusCode).toEqual(StatusCodes.OK);
         for (const group of response.json()) {
-          for (const inv of group.invitations) {
-            expect(mockSendEmail).toHaveBeenCalledWith(
-              expect.anything(),
-              inv.email,
-              expect.anything(),
-              expect.anything(),
-              expect.anything(),
-            );
+          const { invitations, memberships } = group;
+          // no membership created
+          expect(memberships).toHaveLength(0);
+
+          // send invitations
+          for (const inv of invitations) {
+            expect(mockSendEmail).toHaveBeenCalledWith(expect.anything(), inv.email);
           }
         }
       });
