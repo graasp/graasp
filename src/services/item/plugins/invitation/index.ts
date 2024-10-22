@@ -24,6 +24,7 @@ import {
   getForItem,
   invite,
   inviteFromCSV,
+  inviteFromCSVWithTemplate,
   sendOne,
   updateOne,
 } from './schema';
@@ -94,9 +95,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
     // post invitations from a csv file
     fastify.post(
-      '/:id/invitations/upload-csv',
+      '/:id/invitations/upload-csv-template',
       {
-        schema: inviteFromCSV,
+        schema: inviteFromCSVWithTemplate,
         preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
       },
       async (request) => {
@@ -121,24 +122,53 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         const { id: itemId } = params;
         const { templateId } = query;
 
-        if (templateId) {
-          return await db.transaction(async (manager) =>
-            invitationService.createStructureForCSVAndTemplate(
+        return await db.transaction(
+          async (manager) =>
+            await invitationService.createStructureForCSVAndTemplate(
               member,
               buildRepositories(manager),
               itemId,
               templateId,
               uploadedFile,
             ),
-          );
+        );
+      },
+    );
+    // post invitations from a csv file
+    fastify.post(
+      '/:id/invitations/upload-csv',
+      {
+        schema: inviteFromCSV,
+        preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
+      },
+      async (request) => {
+        const { params, user } = request;
+        const member = asDefined(user?.account);
+        assertIsMember(member);
+
+        // get uploaded file
+        const uploadedFile = await request.file({
+          limits: {
+            fields: 0, // Max number of non-file fields (Default: Infinity).
+            fileSize: MAX_FILE_SIZE, // For multipart forms, the max file size (Default: Infinity).
+            files: 1, // Max number of file fields (Default: Infinity).
+          },
+        });
+
+        if (!uploadedFile) {
+          throw new NoFileProvidedForInvitations();
         }
-        return await db.transaction(async (manager) =>
-          invitationService.importUsersWithCSV(
-            member,
-            buildRepositories(manager),
-            itemId,
-            uploadedFile,
-          ),
+
+        // destructure query params
+        const { id: itemId } = params;
+        return await db.transaction(
+          async (manager) =>
+            await invitationService.importUsersWithCSV(
+              member,
+              buildRepositories(manager),
+              itemId,
+              uploadedFile,
+            ),
         );
       },
     );

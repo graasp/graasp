@@ -89,23 +89,27 @@ export const invite = {
 
 export const inviteFromCSV = {
   params: entityIdSchemaRef,
+  response: {
+    [StatusCodes.OK]: Type.Object({
+      memberships: Type.Array(itemMembershipSchemaRef),
+      invitations: Type.Array(invitationSchemaRef),
+    }),
+  },
+} as const satisfies FastifySchema;
+
+export const inviteFromCSVWithTemplate = {
+  params: entityIdSchemaRef,
   querystring: Type.Object({
     templateId: customType.UUID(),
   }),
   response: {
-    [StatusCodes.OK]: Type.Union([
-      Type.Array(
-        Type.Object({
-          groupName: Type.String(),
-          memberships: Type.Array(itemMembershipSchemaRef),
-          invitations: Type.Array(invitationSchemaRef),
-        }),
-      ),
+    [StatusCodes.OK]: Type.Array(
       Type.Object({
+        groupName: Type.String(),
         memberships: Type.Array(itemMembershipSchemaRef),
         invitations: Type.Array(invitationSchemaRef),
       }),
-    ]),
+    ),
   },
 } as const satisfies FastifySchema;
 
