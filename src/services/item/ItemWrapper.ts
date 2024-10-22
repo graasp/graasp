@@ -129,15 +129,21 @@ export class ItemWrapper {
 
     const itemsThumbnails = await itemThumbnailService.getUrlsByItems(items);
 
-    // TODO
     return items.map((item) => {
       const permission = m.data[item.id][0]?.permission;
       const thumbnails = itemsThumbnails[item.id];
+
+      // sort tags to retrieve most relevant (highest) tag first
+      const thisTags = tags?.data?.[item.id] ?? [];
+      if (thisTags) {
+        thisTags.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
+      }
+
       return {
         ...item,
         permission,
-        hidden: (tags?.data?.[item.id] ?? [])?.find((t) => t.type === ItemTagType.Hidden),
-        public: (tags?.data?.[item.id] ?? [])?.find((t) => t.type === ItemTagType.Public),
+        hidden: thisTags.find((t) => t.type === ItemTagType.Hidden),
+        public: thisTags.find((t) => t.type === ItemTagType.Public),
         ...(thumbnails ? { thumbnails } : {}),
       } as unknown as PackedItem;
     });
@@ -148,6 +154,11 @@ export class ItemWrapper {
    * @returns item unit with permission
    */
   packed(): PackedItem {
+    // sort tags to retrieve most relevant (highest) tag first
+    if (this.tags) {
+      this.tags.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
+    }
+
     return {
       ...this.item,
       permission: this.actorPermission?.permission ?? null,
