@@ -84,23 +84,6 @@ export class ItemTagRepository extends AbstractRepository<ItemTag> {
     return hasTags;
   }
 
-  async hasManyForMany(items: Item[], tagTypes: ItemTagType[]): Promise<ResultOf<ItemTagType[]>> {
-    const tags = await this.getManyTagsForTypes(items, tagTypes);
-
-    const mapByPath = mapById({
-      keys: items.map(({ path }) => path),
-      findElement: (path) =>
-        tags.filter((itemTag) => path.includes(itemTag.item.path)).map((t) => t.type),
-    });
-
-    // use id as key
-    const idToItemTagTypes = Object.fromEntries(
-      Object.entries(mapByPath.data).map(([key, value]) => [getChildFromPath(key), value]),
-    );
-
-    return { data: idToItemTagTypes, errors: mapByPath.errors };
-  }
-
   async getManyForMany(items: Item[], tagTypes: ItemTagType[]): Promise<ResultOf<ItemTag[]>> {
     const tags = await this.getManyTagsForTypes(items, tagTypes);
 

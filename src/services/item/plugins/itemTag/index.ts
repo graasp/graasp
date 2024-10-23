@@ -5,13 +5,13 @@ import { ItemTagType } from '@graasp/sdk';
 import { resolveDependency } from '../../../../di/utils';
 import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
-import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import { isAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
 import { assertIsMember } from '../../../member/entities/member';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { Item } from '../../entities/Item';
 import { ItemService } from '../../service';
-import { create, deleteOne, getItemTags, getMany } from './schemas';
+import { create, deleteOne } from './schemas';
 import { ItemTagService } from './service';
 
 /**
@@ -38,24 +38,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     await repositories.itemTagRepository.copyAll(actor, original, copy, [ItemTagType.Public]);
   };
   itemService.hooks.setPostHook('copy', hook);
-
-  // get item tags
-  fastify.get(
-    '/:itemId/tags',
-    { schema: getItemTags, preHandler: optionalIsAuthenticated },
-    async ({ user, params: { itemId } }) => {
-      return itemTagService.getForItem(user?.account, buildRepositories(), itemId);
-    },
-  );
-
-  // get item tags for many items
-  fastify.get(
-    '/tags',
-    { schema: getMany, preHandler: optionalIsAuthenticated },
-    async ({ user, query: { id: ids } }) => {
-      return itemTagService.getForManyItems(user?.account, buildRepositories(), ids);
-    },
-  );
 
   fastify.post(
     '/:itemId/tags/:type',
