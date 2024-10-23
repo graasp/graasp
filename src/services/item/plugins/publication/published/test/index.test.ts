@@ -325,7 +325,7 @@ describe('Item Published', () => {
 
       it('Publish item with admin rights and send notification', async () => {
         const mailerService = resolveDependency(MailerService);
-        const sendEmailMock = jest.spyOn(mailerService, 'sendEmail');
+        const sendEmailMock = jest.spyOn(mailerService, 'sendRaw');
 
         const member = await saveMember();
         const { item } = await testUtils.saveItemAndMembership({
@@ -369,11 +369,13 @@ describe('Item Published', () => {
             expect.stringContaining(item.id),
             expect.anything(),
             expect.anything(),
+            expect.anything(),
           );
           expect(sendEmailMock).toHaveBeenCalledWith(
             expect.stringContaining(item.name),
             cedric.email,
             expect.stringContaining(item.id),
+            expect.anything(),
             expect.anything(),
             expect.anything(),
           );

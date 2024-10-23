@@ -6,10 +6,10 @@ import { MultipartFile } from '@fastify/multipart';
 import { ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { BaseLogger } from '../../../../logger';
+import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MAIL } from '../../../../plugins/mailer/langs/constants';
 import { MailerService } from '../../../../plugins/mailer/service';
 import { NonEmptyArray } from '../../../../types';
-import { GRAASP_LANDING_PAGE_ORIGIN } from '../../../../utils/constants';
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import { Item, isItemType } from '../../../item/entities/Item';
@@ -54,37 +54,26 @@ export class InvitationService {
   }
 
   async sendInvitationEmail({ member, invitation }: { member: Member; invitation: Invitation }) {
-    const { item, email } = invitation;
+    const { item } = invitation;
 
     // factor out
-    const lang = member.lang;
     const link = buildInvitationLink(invitation);
+    const mail = new MailBuilder({
+      subject: {
+        text: MAIL.INVITATION_TITLE,
+        translationVariables: { itemName: item.name },
+      },
+      lang: member.lang,
+    })
+      .addText(MAIL.INVITATION_TEXT, {
+        itemName: item.name,
+        creatorName: member.name,
+      })
+      .addButton(MAIL.SIGN_UP_BUTTON_TEXT, link)
+      .addUserAgreement()
+      .build();
 
-    const t = this.mailerService.translate(lang);
-
-    const text = t(MAIL.INVITATION_TEXT, {
-      itemName: item.name,
-      creatorName: member.name,
-    });
-    const html = `
-      ${this.mailerService.buildText(text)}
-      ${this.mailerService.buildButton(link, t(MAIL.SIGN_UP_BUTTON_TEXT))}
-      ${this.mailerService.buildText(
-        t(MAIL.USER_AGREEMENTS_MAIL_TEXT, {
-          signUpButtonText: t(MAIL.SIGN_UP_BUTTON_TEXT),
-          graaspLandingPageOrigin: GRAASP_LANDING_PAGE_ORIGIN,
-        }),
-        // Add margin top of -15px to remove 15px margin bottom of the button.
-        { 'text-align': 'center', 'font-size': '10px', 'margin-top': '-15px' },
-      )}
-    `;
-    const title = t(MAIL.INVITATION_TITLE, {
-      itemName: item.name,
-    });
-
-    const footer = this.mailerService.buildFooter(lang);
-
-    this.mailerService.sendEmail(title, email, link, html, footer).catch((err) => {
+    this.mailerService.send(mail, invitation.email).catch((err) => {
       this.log.warn(err, `mailerService failed. invitation link: ${link}`);
     });
   }
@@ -363,7 +352,9 @@ export class InvitationService {
         parentItem,
       );
       // edit name of parent element to match the name of the group
-      await this.itemService.patch(actor, repositories, newItem.id, { name: groupName });
+      await this.itemService.patch(actor, repositories, newItem.id, {
+        name: groupName,
+      });
       const { memberships, invitations } = await this._createMembershipsAndInvitationsForUserList(
         actor,
         repositories,

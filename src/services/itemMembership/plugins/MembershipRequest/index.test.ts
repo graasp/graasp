@@ -256,7 +256,7 @@ describe('MembershipRequest', () => {
 
     beforeEach(async () => {
       mailerService = resolveDependency(MailerService);
-      mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+      mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
     });
 
     it('returns valid object when successful', async () => {

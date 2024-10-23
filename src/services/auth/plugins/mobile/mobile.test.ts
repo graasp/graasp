@@ -10,6 +10,7 @@ import { FastifyInstance } from 'fastify';
 import { HttpMethod, MemberFactory, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
+import { TOKEN_REGEX } from '../../../../../test/utils';
 import { resolveDependency } from '../../../../di/utils';
 import { AppDataSource } from '../../../../plugins/datasource';
 import { MailerService } from '../../../../plugins/mailer/service';
@@ -33,8 +34,9 @@ const memberRawRepository = AppDataSource.getRepository(Member);
 // bug: cannot use exported mockCaptchaValidation
 const mockCaptchaValidation = (action: RecaptchaActionType) => {
   (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return { json: async () => ({ success: true, action, score: 1 }) } as Response;
+    return {
+      json: async () => ({ success: true, action, score: 1 }),
+    } as Response;
   });
 };
 
@@ -64,7 +66,7 @@ describe('Mobile Endpoints', () => {
       const email = 'someemail@email.com';
       const name = 'anna';
 
-      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/m/register',
@@ -88,20 +90,14 @@ describe('Mobile Endpoints', () => {
       const lang = 'fr';
       const member = { email, name, extra: { lang } };
 
-      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/m/register?lang=${lang}`,
         payload: { email, name, challenge, captcha: MOCK_CAPTCHA },
       });
 
-      expect(mockSendEmail).toHaveBeenCalledWith(
-        expect.anything(),
-        member.email,
-        expect.anything(),
-        expect.anything(),
-        expect.anything(),
-      );
+      expect(mockSendEmail.mock.calls[0][1]).toBe(member.email);
 
       const m = await memberRawRepository.findOneBy({ email });
       expectMember(m, member);
@@ -116,11 +112,17 @@ describe('Mobile Endpoints', () => {
       const name = 'anna';
       const enableSaveActions = false;
 
-      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/m/register',
-        payload: { email, name, challenge, captcha: MOCK_CAPTCHA, enableSaveActions },
+        payload: {
+          email,
+          name,
+          challenge,
+          captcha: MOCK_CAPTCHA,
+          enableSaveActions,
+        },
       });
 
       const m = await memberRawRepository.findOneBy({ email });
@@ -135,11 +137,17 @@ describe('Mobile Endpoints', () => {
       const name = 'anna';
       const enableSaveActions = true;
 
-      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/m/register',
-        payload: { email, name, challenge, enableSaveActions, captcha: MOCK_CAPTCHA },
+        payload: {
+          email,
+          name,
+          challenge,
+          enableSaveActions,
+          captcha: MOCK_CAPTCHA,
+        },
       });
 
       const m = await memberRawRepository.findOneBy({ email });
@@ -152,20 +160,15 @@ describe('Mobile Endpoints', () => {
     it('Sign Up fallback to login for already register member', async () => {
       const member = await saveMember();
 
-      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/m/register',
         payload: { ...member, challenge, captcha: MOCK_CAPTCHA },
       });
 
-      expect(mockSendEmail).toHaveBeenCalledWith(
-        expect.anything(),
-        member.email,
-        expect.anything(),
-        expect.anything(),
-        expect.anything(),
-      );
+      expect(mockSendEmail.mock.calls[0][1]).toBe(member.email);
+
       const m = await memberRawRepository.findOneBy({ email: member.email });
       expectMember(m, member);
 
@@ -207,20 +210,14 @@ describe('Mobile Endpoints', () => {
     it('Sign In successfully', async () => {
       const member = await saveMember();
 
-      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/m/login',
         payload: { email: member.email, challenge, captcha: MOCK_CAPTCHA },
       });
 
-      expect(mockSendEmail).toHaveBeenCalledWith(
-        expect.anything(),
-        member.email,
-        expect.anything(),
-        expect.anything(),
-        expect.anything(),
-      );
+      expect(mockSendEmail.mock.calls[0][1]).toBe(member.email);
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
     });
 
@@ -228,26 +225,20 @@ describe('Mobile Endpoints', () => {
       const lang = 'de';
       const member = await saveMember();
 
-      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/m/login?lang=${lang}`,
         payload: { email: member.email, challenge, captcha: MOCK_CAPTCHA },
       });
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
-      expect(mockSendEmail).toHaveBeenCalledWith(
-        expect.anything(),
-        member.email,
-        expect.anything(),
-        expect.anything(),
-        expect.anything(),
-      );
+      expect(mockSendEmail.mock.calls[0][1]).toBe(member.email);
     });
 
     it('Sign In does send not found error for non-existing email', async () => {
       const email = 'some@email.com';
 
-      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/m/login',
@@ -368,7 +359,12 @@ describe('Mobile Endpoints', () => {
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/m/login-password',
-        payload: { email: member.email, challenge, password: wrongPassword, captcha: MOCK_CAPTCHA },
+        payload: {
+          email: member.email,
+          challenge,
+          password: wrongPassword,
+          captcha: MOCK_CAPTCHA,
+        },
       });
       expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
       expect(response.statusMessage).toEqual(ReasonPhrases.UNAUTHORIZED);
@@ -381,7 +377,12 @@ describe('Mobile Endpoints', () => {
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/m/login-password',
-        payload: { email: member.email, challenge, password: clearPassword, captcha: MOCK_CAPTCHA },
+        payload: {
+          email: member.email,
+          challenge,
+          password: clearPassword,
+          captcha: MOCK_CAPTCHA,
+        },
       });
       expect(response.statusCode).toEqual(StatusCodes.NOT_ACCEPTABLE);
       expect(response.statusMessage).toEqual(ReasonPhrases.NOT_ACCEPTABLE);
@@ -583,7 +584,7 @@ describe('Mobile Endpoints', () => {
     });
     it('MagicLink', async () => {
       mockCaptchaValidation(RecaptchaAction.SignUpMobile);
-      const mockSendEmail = jest.spyOn(resolveDependency(MailerService), 'sendEmail');
+      const mockSendEmail = jest.spyOn(resolveDependency(MailerService), 'sendRaw');
 
       const username = faker.internet.userName().toLowerCase();
       const email = faker.internet.email().toLowerCase();
@@ -604,13 +605,14 @@ describe('Mobile Endpoints', () => {
 
       expect(responseRegister.statusCode).toBe(StatusCodes.NO_CONTENT);
       expect(mockSendEmail).toHaveBeenCalledTimes(1);
-      const authUrl = new URL(mockSendEmail.mock.calls[0][2]);
+
+      const token = mockSendEmail.mock.calls[0][2].match(TOKEN_REGEX)![1];
 
       const responseAuth = await app.inject({
         method: HttpMethod.Post,
         url: `/m/auth`,
         payload: {
-          [SHORT_TOKEN_PARAM]: authUrl.searchParams.get(SHORT_TOKEN_PARAM)!,
+          [SHORT_TOKEN_PARAM]: token,
           verifier,
         },
       });

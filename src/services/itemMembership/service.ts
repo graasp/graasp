@@ -2,6 +2,7 @@ import { singleton } from 'tsyringe';
 
 import { PermissionLevel, UUID } from '@graasp/sdk';
 
+import { MailBuilder } from '../../plugins/mailer/builder';
 import { MAIL } from '../../plugins/mailer/langs/constants';
 import { MailerService } from '../../plugins/mailer/service';
 import { PLAYER_HOST } from '../../utils/config';
@@ -38,21 +39,22 @@ export class ItemMembershipService {
   async _notifyMember(account: Account, member: Member, item: Item): Promise<void> {
     const link = new URL(item.id, PLAYER_HOST.url).toString();
 
-    const lang = member.lang;
-    const t = this.mailerService.translate(lang);
-
-    const text = t(MAIL.SHARE_ITEM_TEXT, { itemName: item.name });
-    const html = `
-        ${this.mailerService.buildText(text)}
-        ${this.mailerService.buildButton(link, t(MAIL.SHARE_ITEM_BUTTON))}
-      `;
-
-    const title = t(MAIL.SHARE_ITEM_TITLE, { creatorName: account.name, itemName: item.name });
-
-    const footer = this.mailerService.buildFooter(lang);
+    const mail = new MailBuilder({
+      subject: {
+        text: MAIL.SHARE_ITEM_TITLE,
+        translationVariables: {
+          creatorName: account.name,
+          itemName: item.name,
+        },
+      },
+      lang: member.lang,
+    })
+      .addText(MAIL.SHARE_ITEM_TEXT, { itemName: item.name })
+      .addButton(MAIL.SHARE_ITEM_BUTTON, link)
+      .build();
 
     await this.mailerService
-      .sendEmail(title, member.email, link, html, footer)
+      .send(mail, member.email)
       .then(() => {
         console.debug('send email on membership creation');
       })
@@ -92,7 +94,10 @@ export class ItemMembershipService {
       repositories;
     const member = await memberRepository.get(memberId);
 
-    await this.hooks.runPreHooks('create', account, repositories, { item, account: member });
+    await this.hooks.runPreHooks('create', account, repositories, {
+      item,
+      account: member,
+    });
 
     const result = await itemMembershipRepository.addOne({
       itemPath: item.path,

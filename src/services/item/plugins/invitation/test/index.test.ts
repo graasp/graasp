@@ -38,7 +38,7 @@ jest.mock('node-fetch');
 
 const mockEmail = () => {
   const mailerService = resolveDependency(MailerService);
-  return jest.spyOn(mailerService, 'sendEmail').mockImplementation(async () => {
+  return jest.spyOn(mailerService, 'sendRaw').mockImplementation(async () => {
     // do nothing
     console.debug('SEND EMAIL');
   });
@@ -140,6 +140,11 @@ describe('Invitation Plugin', () => {
             done(true);
           }, 2000);
         });
+
+        // check that the invitation emails have been sent to the correct addresses
+        const invitationEmails = invitations.map((x) => x.email);
+        const sentEmails = mockSendMail.mock.calls.map((x) => x[1]);
+        expect(new Set(invitationEmails)).toEqual(new Set(sentEmails));
       });
 
       it('create memberships if member already exists', async () => {

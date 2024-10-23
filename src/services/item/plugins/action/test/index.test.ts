@@ -228,7 +228,7 @@ describe('Action Plugin Tests', () => {
       actor = await saveMember();
       mockAuthenticate(actor);
       const mailerService = resolveDependency(MailerService);
-      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
 
       const { item } = await testUtils.saveItemAndMembership({
         member: actor,
@@ -251,7 +251,7 @@ describe('Action Plugin Tests', () => {
       actor = await saveMember();
       mockAuthenticate(actor);
       const mailerService = resolveDependency(MailerService);
-      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
 
       const { item } = await testUtils.saveItemAndMembership({
         member: actor,
@@ -282,7 +282,7 @@ describe('Action Plugin Tests', () => {
       actor = await saveMember();
       mockAuthenticate(actor);
       const mailerService = resolveDependency(MailerService);
-      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
 
       const { item } = await testUtils.saveItemAndMembership({
         member: actor,
@@ -320,7 +320,7 @@ describe('Action Plugin Tests', () => {
       actor = await saveMember();
       mockAuthenticate(actor);
       const mailerService = resolveDependency(MailerService);
-      const mockSendEmail = jest.spyOn(mailerService, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
 
       const { item } = await testUtils.saveItemAndMembership({
         member: actor,

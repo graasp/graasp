@@ -193,7 +193,7 @@ describe('Chat Message tests', () => {
 
       it('Post successfully with mentions', async () => {
         const mailerService = resolveDependency(MailerService);
-        const mock = jest.spyOn(mailerService, 'sendEmail');
+        const mock = jest.spyOn(mailerService, 'sendRaw');
 
         const members = await memberRawRepository.find();
         const payload = { body: 'hello', mentions: members.map(({ id }) => id) };

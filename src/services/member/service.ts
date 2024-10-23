@@ -5,6 +5,7 @@ import { UUID } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
 import { BaseLogger } from '../../logger';
+import { MailBuilder } from '../../plugins/mailer/builder';
 import { MAIL } from '../../plugins/mailer/langs/constants';
 import { MailerService } from '../../plugins/mailer/service';
 import {
@@ -104,7 +105,9 @@ export class MemberService {
   }
 
   async refreshLastAuthenticatedAt(id: UUID, { memberRepository }: Repositories) {
-    return await memberRepository.patch(id, { lastAuthenticatedAt: new Date() });
+    return await memberRepository.patch(id, {
+      lastAuthenticatedAt: new Date(),
+    });
   }
   async validate(id: UUID, { memberRepository }: Repositories) {
     return await memberRepository.patch(id, { isValidated: true });
@@ -126,36 +129,35 @@ export class MemberService {
    * @returns void
    */
   sendEmailChangeRequest(newEmail: string, token: string, lang: string): void {
-    const translated = this.mailerService.translate(lang);
-    const subject = translated(MAIL.CHANGE_EMAIL_TITLE);
     const destination = new URL('/email/change', ACCOUNT_HOST.url);
     destination.searchParams.set(SHORT_TOKEN_PARAM, token);
     destination.searchParams.set(NEW_EMAIL_PARAM, newEmail);
     const link = destination.toString();
 
-    const html = `
-      ${this.mailerService.buildText(translated(MAIL.CHANGE_EMAIL_TEXT))}
-      ${this.mailerService.buildButton(link, translated(MAIL.CHANGE_EMAIL_BUTTON_TEXT))}
-      ${this.mailerService.buildText(translated(MAIL.CHANGE_EMAIL_NOT_REQUESTED))}`;
-
-    const footer = this.mailerService.buildFooter(lang);
+    const mail = new MailBuilder({
+      subject: { text: MAIL.CHANGE_EMAIL_TITLE },
+      lang: lang,
+    })
+      .addText(MAIL.CHANGE_EMAIL_TEXT)
+      .addButton(MAIL.CHANGE_EMAIL_BUTTON_TEXT, link)
+      .addIgnoreEmailIfNotRequestedNotice()
+      .build();
 
     // don't wait for mailer's response; log error and link if it fails.
     this.mailerService
-      .sendEmail(subject, newEmail, link, html, footer)
+      .send(mail, newEmail)
       .catch((err) => this.log.warn(err, `mailer failed. link: ${link}`));
   }
 
   mailConfirmEmailChangeRequest(oldEmail: string, newEmail: string, lang: string) {
-    const translated = this.mailerService.translate(lang);
-    const subject = translated(MAIL.CONFIRM_CHANGE_EMAIL_TITLE);
-    const text = translated(MAIL.CONFIRM_CHANGE_EMAIL_TEXT, { newEmail });
-
-    const footer = this.mailerService.buildFooter(lang);
+    const mail = new MailBuilder({
+      subject: { text: MAIL.CONFIRM_CHANGE_EMAIL_TITLE },
+      lang: lang,
+    })
+      .addText(MAIL.CONFIRM_CHANGE_EMAIL_TEXT, { newEmail })
+      .build();
 
     // don't wait for mailer's response; log error and link if it fails.
-    this.mailerService
-      .sendEmail(subject, oldEmail, text, text, footer)
-      .catch((err) => this.log.warn(err, `mailer failed.`));
+    this.mailerService.send(mail, oldEmail).catch((err) => this.log.warn(err, `mailer failed.`));
   }
 }

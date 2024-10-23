@@ -28,7 +28,7 @@ export class MagicLinkService {
     const member = await memberRepository.getByEmail(email);
 
     if (member) {
-      await this.authService.generateLoginLinkAndEmailIt(member, { lang: member.lang, url });
+      await this.authService.generateLoginLinkAndEmailIt(member, { url });
       const actions = [
         {
           member,

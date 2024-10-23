@@ -47,7 +47,7 @@ export class MobileService {
       await this.authService.generateRegisterLinkAndEmailIt(newMember, { challenge });
     } else {
       this.log.warn(`Member re-registration attempt for email '${email}'`);
-      await this.authService.generateLoginLinkAndEmailIt(member, { challenge, lang });
+      await this.authService.generateLoginLinkAndEmailIt(member, { challenge });
       throw new MemberAlreadySignedUp({ email });
     }
   }
@@ -62,7 +62,7 @@ export class MobileService {
     const member = await memberRepository.getByEmail(email);
 
     if (member) {
-      await this.authService.generateLoginLinkAndEmailIt(member, { challenge, lang: member.lang });
+      await this.authService.generateLoginLinkAndEmailIt(member, { challenge });
     } else {
       this.log.warn(`Login attempt with non-existent email '${email}'`);
       throw new MemberNotSignedUp({ email });

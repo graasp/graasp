@@ -17,3 +17,8 @@ export function mockCaptchaValidationOnce(action: RecaptchaActionType) {
     score: 1,
   });
 }
+
+export const TOKEN_REGEX = /\?t=([\w\-\.]+)/;
+
+export const URL_REGEX =
+  /((?:(?:https?|ftp|file):\/\/|www\.|ftp\.)(?:\([-A-Z0-9+&@#\/%=~_|$?!:,.]*\)|[-A-Z0-9+&@#\/%=~_|$?!:,.])*(?:\([-A-Z0-9+&@#\/%=~_|$?!:,.]*\)|[A-Z0-9+&@#\/%=~_|$]))/i;

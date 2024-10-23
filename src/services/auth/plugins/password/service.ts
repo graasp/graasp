@@ -4,6 +4,7 @@ import { singleton } from 'tsyringe';
 import { v4 as uuid } from 'uuid';
 
 import { BaseLogger } from '../../../../logger';
+import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MAIL } from '../../../../plugins/mailer/langs/constants';
 import { MailerService } from '../../../../plugins/mailer/service';
 import {
@@ -145,24 +146,24 @@ export class MemberPasswordService {
    * @returns void
    */
   mailResetPasswordRequest(email: string, token: string, lang: string): void {
-    const translated = this.mailerService.translate(lang);
-    const subject = translated(MAIL.RESET_PASSWORD_TITLE);
     // auth.graasp.org/reset-password?t=<token>
     const domain = AUTH_CLIENT_HOST;
     const destination = new URL('/reset-password', domain);
     destination.searchParams.set(SHORT_TOKEN_PARAM, token);
     const link = destination.toString();
 
-    const html = `
-      ${this.mailerService.buildText(translated(MAIL.RESET_PASSWORD_TEXT))}
-      ${this.mailerService.buildButton(link, translated(MAIL.RESET_PASSWORD_BUTTON_TEXT))}
-      ${this.mailerService.buildText(translated(MAIL.RESET_PASSWORD_NOT_REQUESTED))}`;
-
-    const footer = this.mailerService.buildFooter(lang);
+    const mail = new MailBuilder({
+      subject: { text: MAIL.RESET_PASSWORD_TITLE },
+      lang,
+    })
+      .addText(MAIL.CHANGE_EMAIL_TEXT)
+      .addButton(MAIL.CHANGE_EMAIL_BUTTON_TEXT, link)
+      .addIgnoreEmailIfNotRequestedNotice()
+      .build();
 
     // don't wait for mailerService's response; log error and link if it fails.
     this.mailerService
-      .sendEmail(subject, email, link, html, footer)
+      .send(mail, email)
       .catch((err) => this.log.warn(err, `mailerService failed. link: ${link}`));
   }
 
