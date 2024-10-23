@@ -22,8 +22,11 @@ describe('Mailer', () => {
       .mockImplementation(async () => Promise.resolve());
   });
 
-  afterEach(async () => {
+  afterEach(() => {
     jest.clearAllMocks();
+  });
+
+  afterAll(async () => {
     await clearDatabase(app.db);
     app.close();
   });
