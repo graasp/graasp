@@ -141,7 +141,7 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
         ...settings,
       },
       // set lang from user lang
-      lang: lang ?? creator?.lang ?? 'en',
+      lang: lang ?? parent?.lang ?? creator?.lang ?? 'en',
       creator,
       order,
     });
