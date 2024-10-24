@@ -89,23 +89,29 @@ export const invite = {
 
 export const inviteFromCSV = {
   params: entityIdSchemaRef,
+  response: {
+    [StatusCodes.OK]: Type.Object({
+      memberships: Type.Array(itemMembershipSchemaRef),
+      invitations: Type.Array(invitationSchemaRef),
+    }),
+    '4xx': errorSchemaRef,
+  },
+} as const satisfies FastifySchema;
+
+export const inviteFromCSVWithTemplate = {
+  params: entityIdSchemaRef,
   querystring: Type.Object({
     templateId: customType.UUID(),
   }),
   response: {
-    [StatusCodes.OK]: Type.Union([
-      Type.Array(
-        Type.Object({
-          groupName: Type.String(),
-          memberships: Type.Array(itemMembershipSchemaRef),
-          invitations: Type.Array(invitationSchemaRef),
-        }),
-      ),
+    [StatusCodes.OK]: Type.Array(
       Type.Object({
+        groupName: Type.String(),
         memberships: Type.Array(itemMembershipSchemaRef),
         invitations: Type.Array(invitationSchemaRef),
       }),
-    ]),
+    ),
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
@@ -113,6 +119,7 @@ export const getForItem = {
   params: entityIdSchemaRef,
   response: {
     [StatusCodes.OK]: Type.Array(invitationSchemaRef),
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
@@ -120,6 +127,7 @@ export const getById = {
   params: entityIdSchemaRef,
   response: {
     [StatusCodes.OK]: invitationSchemaRef,
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
@@ -128,6 +136,7 @@ export const updateOne = {
   body: updateInvitationSchemaRef,
   response: {
     [StatusCodes.OK]: invitationSchemaRef,
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
@@ -135,6 +144,7 @@ export const deleteOne = {
   params: Type.Object({ id: customType.UUID(), invitationId: customType.UUID() }),
   response: {
     [StatusCodes.OK]: Type.String(),
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 

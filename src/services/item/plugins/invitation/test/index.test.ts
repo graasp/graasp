@@ -1,7 +1,11 @@
 import { faker } from '@faker-js/faker';
+import FormData from 'form-data';
+import fs from 'fs';
 import { StatusCodes } from 'http-status-codes';
 import fetch from 'node-fetch';
+import path from 'path';
 import { In } from 'typeorm';
+import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
@@ -23,10 +27,19 @@ import { Member } from '../../../../member/entities/member';
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemTestUtils } from '../../../test/fixtures/items';
 import { Invitation } from '../entity';
+import { MissingGroupColumnInCSVError } from '../errors';
 
 const testUtils = new ItemTestUtils();
 const invitationRawRepository = AppDataSource.getRepository(Invitation);
 const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
+
+// we need a different form data for each test
+const createFormData = (filename) => {
+  const form = new FormData();
+  form.append('myfile', fs.createReadStream(path.resolve(__dirname, `./fixtures/${filename}`)));
+
+  return form;
+};
 
 // mock captcha
 // bug: cannot reuse mockCaptchaValidation
@@ -540,6 +553,116 @@ describe('Invitation Plugin', () => {
         });
 
         expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
+      });
+    });
+  });
+
+  describe('POST /:itemId/invitations/upload-csv', () => {
+    it('throws if signed out', async () => {
+      const form = createFormData('users.csv');
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: `${ITEMS_ROUTE_PREFIX}/${v4()}/invitations/upload-csv`,
+        payload: form,
+        headers: form.getHeaders(),
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    });
+
+    describe('Signed In', () => {
+      let item, mailerService;
+
+      beforeEach(async () => {
+        actor = await saveMember();
+        mockAuthenticate(actor);
+        ({ item } = await testUtils.saveItemAndMembership({ member: actor }));
+        mailerService = resolveDependency(MailerService);
+      });
+
+      it('upload csv successfully', async () => {
+        const mockSendEmail = jest.spyOn(mailerService, 'send');
+        const form = createFormData('users.csv');
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations/upload-csv`,
+          payload: form,
+          headers: form.getHeaders(),
+        });
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+
+        const { invitations, memberships } = response.json();
+        // no membership created
+        expect(memberships).toHaveLength(0);
+
+        // send invitations
+        for (const inv of invitations) {
+          expect(mockSendEmail).toHaveBeenCalledWith(expect.anything(), inv.email);
+        }
+      });
+    });
+  });
+
+  describe('POST /:itemId/invitations/upload-csv-template', () => {
+    it('throws if signed out', async () => {
+      const form = createFormData('users-groups.csv');
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: `${ITEMS_ROUTE_PREFIX}/${v4()}/invitations/upload-csv-template`,
+        query: { templateId: v4() },
+        payload: form,
+        headers: form.getHeaders(),
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    });
+
+    describe('Signed In', () => {
+      let item, mailerService;
+
+      beforeEach(async () => {
+        actor = await saveMember();
+        mockAuthenticate(actor);
+        ({ item } = await testUtils.saveItemAndMembership({ member: actor }));
+        mailerService = resolveDependency(MailerService);
+      });
+
+      it('upload csv successfully', async () => {
+        const { item: templateItem } = await testUtils.saveItemAndMembership({ member: actor });
+        const mockSendEmail = jest.spyOn(mailerService, 'send');
+        const form = createFormData('users-groups.csv');
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations/upload-csv-template`,
+          query: { templateId: templateItem.id },
+          payload: form,
+          headers: form.getHeaders(),
+        });
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        for (const group of response.json()) {
+          const { invitations, memberships } = group;
+          // no membership created
+          expect(memberships).toHaveLength(0);
+
+          // send invitations
+          for (const inv of invitations) {
+            expect(mockSendEmail).toHaveBeenCalledWith(expect.anything(), inv.email);
+          }
+        }
+      });
+
+      it('throw if csv does not have group name column', async () => {
+        const { item: templateItem } = await testUtils.saveItemAndMembership({ member: actor });
+        const form = createFormData('users.csv');
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations/upload-csv-template`,
+          query: { templateId: templateItem.id },
+          payload: form,
+          headers: form.getHeaders(),
+        });
+        expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
+        expect(response.json().code).toEqual(new MissingGroupColumnInCSVError().code);
       });
     });
   });
