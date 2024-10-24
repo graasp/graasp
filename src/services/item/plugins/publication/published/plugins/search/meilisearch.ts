@@ -49,8 +49,14 @@ const DISPLAY_ATTRIBUTES: (keyof IndexItem)[] = [
   'categories',
   'isPublishedRoot',
   'isHidden',
+  'lang',
 ];
-const FILTERABLE_ATTRIBUTES: (keyof IndexItem)[] = ['categories', 'isPublishedRoot', 'isHidden'];
+const FILTERABLE_ATTRIBUTES: (keyof IndexItem)[] = [
+  'categories',
+  'isPublishedRoot',
+  'isHidden',
+  'lang',
+];
 const TYPO_TOLERANCE: TypoTolerance = {
   enabled: true,
   minWordSizeForTypos: {
@@ -165,6 +171,7 @@ export class MeiliSearchWrapper {
       // todo: fix these types
       createdAt: item.createdAt.toISOString(),
       updatedAt: item.updatedAt.toISOString(),
+      lang: item.lang,
     };
   }
 
