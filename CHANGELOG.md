@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.55.0](https://github.com/graasp/graasp/compare/v1.54.2...v1.55.0) (2024-10-24)
+
+
+### Features
+
+* remove GET tags endpoints ([#1557](https://github.com/graasp/graasp/issues/1557)) ([fd01d45](https://github.com/graasp/graasp/commit/fd01d453d8259da5d9a85738cdd68bfc92e7da4f))
+* split upload csv ([#1561](https://github.com/graasp/graasp/issues/1561)) ([2daf09e](https://github.com/graasp/graasp/commit/2daf09e1a5b8c10a86831d80a61d2f57259a106a))
+
+
+### Bug Fixes
+
+* add optional param for actions ([#1562](https://github.com/graasp/graasp/issues/1562)) ([e52f1aa](https://github.com/graasp/graasp/commit/e52f1aabf04f39cb038ef4e38a8ac41e6ee8f9b5))
+* fix packed tag ([#1552](https://github.com/graasp/graasp/issues/1552)) ([6fd9910](https://github.com/graasp/graasp/commit/6fd9910f2ece88e75285e8649dbeff27cc269241))
+* new email builder and title escape fix ([#1289](https://github.com/graasp/graasp/issues/1289)) ([4dce241](https://github.com/graasp/graasp/commit/4dce241796c878d816adfba88ec66c0d6e88a3a1))
+* put nudenet back in container ([#1558](https://github.com/graasp/graasp/issues/1558)) ([d502058](https://github.com/graasp/graasp/commit/d5020582cc756a5d1c84a5fae472516d8cbaaf7a))
+
 ## [1.54.2](https://github.com/graasp/graasp/compare/v1.54.1...v1.54.2) (2024-10-21)
 
 
