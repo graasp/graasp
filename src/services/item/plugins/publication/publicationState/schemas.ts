@@ -1,6 +1,6 @@
 import { FastifySchema } from 'fastify';
 
-import { itemIdSchemaRef } from '../../../schema';
+import { itemIdSchemaRef } from '../../../schemas';
 
 export const getPublicationState = {
   params: itemIdSchemaRef,

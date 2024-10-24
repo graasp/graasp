@@ -7,7 +7,7 @@ import { ItemLoginSchemaStatus, ItemLoginSchemaType } from '@graasp/sdk';
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 import { entityIdSchemaRef, errorSchemaRef } from '../../schemas/global';
 import { accountSchemaRef } from '../account/schemas';
-import { itemSchemaRef } from '../item/schema';
+import { itemSchemaRef } from '../item/schemas';
 
 export const credentialsSchemaRef = registerSchemaAsRef(
   'itemLoginCredentials',
