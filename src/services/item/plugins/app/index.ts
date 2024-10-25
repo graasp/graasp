@@ -18,7 +18,7 @@ import appDataPlugin from './appData';
 import appSettingPlugin from './appSetting';
 import chatBotPlugin from './chatBot';
 import { DEFAULT_JWT_EXPIRATION } from './constants';
-import { generateToken, getContext, getMany, getMostUsed } from './schemas';
+import { generateToken, getContext, getList, getMostUsed } from './schemas';
 import { AppService } from './service';
 import { AppsPluginOptions } from './types';
 
@@ -51,7 +51,7 @@ const plugin: FastifyPluginAsyncTypebox<AppsPluginOptions> = async (fastify, opt
 
     fastify.register(async function (fastify: FastifyInstanceTypebox) {
       // get all apps
-      fastify.get('/list', { schema: getMany }, async () => {
+      fastify.get('/list', { schema: getList }, async () => {
         return appService.getAllApps(buildRepositories(), publisherId);
       });
 

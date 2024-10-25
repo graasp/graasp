@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifySchema } from 'fastify';
 
 import { customType, registerSchemaAsRef } from '../../../../../plugins/typebox';
+import { errorSchemaRef } from '../../../../../schemas/global';
 import { accountSchemaRef, nullableAccountSchemaRef } from '../../../../account/schemas';
 import { itemSchemaRef } from '../../../schemas';
 
@@ -25,13 +26,18 @@ export const appDataSchemaRef = registerSchemaAsRef(
       updatedAt: customType.DateTime(),
     },
     {
-      // Schema Options
+      description: 'User data saved for an app.',
       additionalProperties: false,
     },
   ),
 );
 
 export const create = {
+  operationId: 'createAppData',
+  tags: ['app', 'app-data'],
+  summary: 'Create a user data for an app',
+  description: 'Create a user data in an app given data and type.',
+
   params: Type.Object({
     itemId: customType.UUID(),
   }),
@@ -49,10 +55,16 @@ export const create = {
   },
   response: {
     [StatusCodes.OK]: appDataSchemaRef,
+    '4xx': errorSchemaRef,
   },
 };
 
 export const updateOne = {
+  operationId: 'updateAppData',
+  tags: ['app', 'app-data'],
+  summary: 'Update app data',
+  description: 'Update given app data with new data.',
+
   params: Type.Object({
     itemId: customType.UUID(),
     id: customType.UUID(),
@@ -62,20 +74,33 @@ export const updateOne = {
   }),
   response: {
     [StatusCodes.OK]: appDataSchemaRef,
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
 export const deleteOne = {
+  operationId: 'deleteAppData',
+  tags: ['app', 'app-data'],
+  summary: 'Delete app data',
+  description: 'Delete given app data.',
+
   params: Type.Object({
     itemId: customType.UUID(),
     id: customType.UUID(),
   }),
   response: {
-    [StatusCodes.OK]: customType.UUID(),
+    [StatusCodes.OK]: customType.UUID({ descritpion: 'Successful Response' }),
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
 export const getForOne = {
+  operationId: 'getAppDataForApp',
+  tags: ['app', 'app-data'],
+  summary: 'Get all app data of an app',
+  description:
+    'Get app data saved for an app, depending on the permission of the user and the data visibility.',
+
   params: Type.Object({
     itemId: customType.UUID(),
   }),
@@ -87,6 +112,7 @@ export const getForOne = {
     additionalProperties: false,
   },
   response: {
-    [StatusCodes.OK]: Type.Array(appDataSchemaRef),
+    [StatusCodes.OK]: Type.Array(appDataSchemaRef, { descritpion: 'Successful Response' }),
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;

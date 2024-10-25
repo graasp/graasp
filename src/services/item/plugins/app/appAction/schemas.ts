@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifySchema } from 'fastify';
 
 import { customType, registerSchemaAsRef } from '../../../../../plugins/typebox';
+import { errorSchemaRef } from '../../../../../schemas/global';
 import { accountSchemaRef } from '../../../../account/schemas';
 import { itemIdSchemaRef } from '../../../schemas';
 
@@ -21,13 +22,18 @@ export const appActionSchemaRef = registerSchemaAsRef(
       createdAt: customType.DateTime(),
     },
     {
-      // Schema Options
+      description: 'Activity trace saved by an app.',
       additionalProperties: false,
     },
   ),
 );
 
 export const create = {
+  operationId: 'createAppAction',
+  tags: ['app', 'app-action'],
+  summary: 'Create an action happening in an app',
+  description: 'Create an action happening in an app given data and type.',
+
   params: itemIdSchemaRef,
   body: Type.Object({
     data: Type.Object({}, { additionalProperties: true }),
@@ -35,10 +41,16 @@ export const create = {
   }),
   response: {
     [StatusCodes.OK]: appActionSchemaRef,
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
 export const getForOne = {
+  operationId: 'getAppActionsForApp',
+  tags: ['app', 'app-action'],
+  summary: 'Get all actions of an app',
+  description: 'Get all actions saved for an app.',
+
   params: itemIdSchemaRef,
   querystring: Type.Union([
     Type.Object(
@@ -57,5 +69,6 @@ export const getForOne = {
   ]),
   response: {
     [StatusCodes.OK]: Type.Array(appActionSchemaRef),
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
