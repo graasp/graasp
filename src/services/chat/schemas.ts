@@ -6,7 +6,7 @@ import { FastifySchema } from 'fastify';
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 import { errorSchemaRef } from '../../schemas/global';
 import { nullableAccountSchemaRef } from '../account/schemas';
-import { itemIdSchemaRef, itemSchemaRef } from '../item/schema';
+import { itemIdSchemaRef, itemSchemaRef } from '../item/schemas';
 
 /**
  * JSON schema definitions to validate requests and responses

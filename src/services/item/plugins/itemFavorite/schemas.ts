@@ -4,7 +4,8 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifySchema } from 'fastify';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
-import { itemIdSchemaRef, itemSchemaRef, packedItemSchemaRef } from '../../schema';
+import { itemIdSchemaRef, itemSchemaRef } from '../../schemas';
+import { packedItemSchemaRef } from '../../schemas.packed';
 
 export const favoriteSchemaRef = registerSchemaAsRef(
   'favorite',

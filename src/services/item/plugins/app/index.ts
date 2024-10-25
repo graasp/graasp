@@ -18,7 +18,6 @@ import appDataPlugin from './appData';
 import appSettingPlugin from './appSetting';
 import chatBotPlugin from './chatBot';
 import { DEFAULT_JWT_EXPIRATION } from './constants';
-import { createSchema, updateSchema } from './fluent-schema';
 import { generateToken, getContext, getMany, getMostUsed } from './schemas';
 import { AppService } from './service';
 import { AppsPluginOptions } from './types';
@@ -29,17 +28,7 @@ const plugin: FastifyPluginAsyncTypebox<AppsPluginOptions> = async (fastify, opt
   if (!jwtSecret) {
     throw new Error('jwtSecret is not defined!');
   }
-
-  const {
-    items: { extendCreateSchema, extendExtrasUpdateSchema },
-  } = fastify;
-
   const itemService = resolveDependency(ItemService);
-
-  // "install" custom schema for validating document items creation
-  extendCreateSchema(createSchema);
-  // "install" custom schema for validating document items update
-  extendExtrasUpdateSchema(updateSchema);
 
   const appService = new AppService(itemService, jwtExpiration);
 

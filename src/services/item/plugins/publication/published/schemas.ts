@@ -11,7 +11,8 @@ import {
 } from '../../../../../utils/config';
 import { LIST_OF_UUID_V4_REGEX_PATTERN } from '../../../../../utils/constants';
 import { nullableMemberSchemaRef } from '../../../../member/schemas';
-import { itemIdSchemaRef, itemSchemaRef, packedItemSchemaRef } from '../../../schema';
+import { itemIdSchemaRef, itemSchemaRef } from '../../../schemas';
+import { packedItemSchemaRef } from '../../../schemas.packed';
 
 const publishEntry = Type.Object(
   {

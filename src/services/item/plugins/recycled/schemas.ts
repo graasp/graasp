@@ -9,7 +9,7 @@ import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { entityIdSchemaRef } from '../../../../schemas/global';
 import { nullableMemberSchemaRef } from '../../../member/schemas';
 import { ITEMS_PAGE_SIZE } from '../../constants';
-import { itemSchemaRef } from '../../schema';
+import { itemSchemaRef } from '../../schemas';
 
 export const recycledItemSchemaRef = registerSchemaAsRef(
   'recycledItem',

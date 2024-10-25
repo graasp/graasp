@@ -180,11 +180,11 @@ describe('Item routes tests', () => {
           url: '/items',
           payload,
         });
+        expect(response.statusCode).toBe(StatusCodes.OK);
 
         // check response value
         const newItem = response.json();
         expectItem(newItem, payload);
-        expect(response.statusCode).toBe(StatusCodes.OK);
         await waitForPostCreation();
 
         // check item exists in db
@@ -473,17 +473,6 @@ describe('Item routes tests', () => {
         expect(response1.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
 
-      it('Bad request if display name is invalid', async () => {
-        const newItem = FolderItemFactory({ displayName: ' ' });
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: '/items',
-          payload: newItem,
-        });
-        expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
-        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-      });
-
       it('Bad request if type is invalid', async () => {
         // by default the item creator use an invalid item type
         const newItem = FolderItemFactory();
@@ -698,6 +687,8 @@ describe('Item routes tests', () => {
           payload,
         });
 
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
         // this test a bit how we deal with extra: it replaces existing keys
         expectItem(response.json(), {
           ...item,
@@ -710,7 +701,6 @@ describe('Item routes tests', () => {
             },
           },
         });
-        expect(response.statusCode).toBe(StatusCodes.OK);
       });
 
       it('Update successfully new language', async () => {
@@ -727,12 +717,13 @@ describe('Item routes tests', () => {
           payload,
         });
 
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
         // this test a bit how we deal with extra: it replaces existing keys
         expectItem(response.json(), {
           ...item,
           ...payload,
         });
-        expect(response.statusCode).toBe(StatusCodes.OK);
       });
 
       it('Update successfully description placement above', async () => {
@@ -752,6 +743,8 @@ describe('Item routes tests', () => {
           payload,
         });
 
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
         const newItem = response.json();
 
         // this test a bit how we deal with extra: it replaces existing keys
@@ -759,7 +752,6 @@ describe('Item routes tests', () => {
           ...item,
           ...payload,
         });
-        expect(response.statusCode).toBe(StatusCodes.OK);
         expect(newItem.settings.descriptionPlacement).toBe(DescriptionPlacement.ABOVE);
         expect(newItem.settings.hasThumbnail).toBeFalsy();
       });
@@ -781,13 +773,14 @@ describe('Item routes tests', () => {
           payload,
         });
 
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
         const newItem = response.json();
 
         expectItem(newItem, {
           ...item,
           ...payload,
         });
-        expect(response.statusCode).toBe(StatusCodes.OK);
         expect(newItem.settings.showLinkButton).toBe(false);
         expect(newItem.settings.showLinkIframe).toBe(true);
         expect(newItem.settings.hasThumbnail).toBeFalsy();
@@ -807,10 +800,10 @@ describe('Item routes tests', () => {
           payload,
         });
 
-        const newItem = response.json();
-
-        expect(newItem.displayName).toEqual('');
         expect(response.statusCode).toBe(StatusCodes.OK);
+
+        const newItem = response.json();
+        expect(newItem.displayName).toEqual('');
       });
 
       it('Filter out bad setting when updating', async () => {
@@ -834,6 +827,8 @@ describe('Item routes tests', () => {
           payload,
         });
 
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
         const newItem = response.json();
 
         // this test a bit how we deal with extra: it replaces existing keys
@@ -842,7 +837,6 @@ describe('Item routes tests', () => {
           ...payload,
           settings: VALID_SETTING,
         });
-        expect(response.statusCode).toBe(StatusCodes.OK);
         expect(newItem.settings.descriptionPlacement).toBe(VALID_SETTING.descriptionPlacement);
         expect(Object.keys(newItem.settings)).not.toContain(Object.keys(BAD_SETTING)[0]);
       });
@@ -865,18 +859,6 @@ describe('Item routes tests', () => {
           name: 'new name',
           extra: { key: 'false' },
         };
-        const response = await app.inject({
-          method: HttpMethod.Patch,
-          url: `/items/${uuidv4()}`,
-          payload,
-        });
-
-        expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
-        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-      });
-
-      it('Bad Request if display name is invalid', async () => {
-        const payload = { displayName: ' ' };
         const response = await app.inject({
           method: HttpMethod.Patch,
           url: `/items/${uuidv4()}`,

@@ -5,7 +5,7 @@ import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { entityIdSchemaRef } from '../../../../schemas/global';
 import { LIST_OF_UUID_V4_REGEX_PATTERN } from '../../../../utils/constants';
 import { nullableMemberSchemaRef } from '../../../member/schemas';
-import { itemIdSchemaRef, itemSchemaRef } from '../../schema';
+import { itemIdSchemaRef, itemSchemaRef } from '../../schemas';
 
 export const categorySchemaRef = registerSchemaAsRef(
   'category',
