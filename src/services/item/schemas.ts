@@ -124,6 +124,14 @@ export const itemUpdateSchemaRef = registerSchemaAsRef(
               ),
               Type.Object(
                 {
+                  file: Type.Object({
+                    altText: Type.String(),
+                  }),
+                },
+                { additionalProperties: false },
+              ),
+              Type.Object(
+                {
                   embeddedLink: Type.Object(
                     { url: Type.String() },
                     { additionalProperties: false },

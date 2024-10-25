@@ -524,6 +524,15 @@ describe('File Item routes tests', () => {
       }));
     });
 
+    it('Edit name for file item', async () => {
+      const response = await app.inject({
+        method: HttpMethod.Patch,
+        url: `${ITEMS_ROUTE_PREFIX}/${item.id}`,
+        payload: { name: 'newName' },
+      });
+      expect(response.json().name).toEqual('newName');
+    });
+
     it('Edit file item altText', async () => {
       const response = await app.inject({
         method: HttpMethod.Patch,
