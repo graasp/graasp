@@ -1,3 +1,4 @@
+import { faker } from '@faker-js/faker';
 import FormData from 'form-data';
 import fs from 'fs';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
@@ -297,6 +298,25 @@ describe('Item routes tests', () => {
         const newItem = response.json();
         expectItem(newItem, payload, actor);
         expect(response.statusCode).toBe(StatusCodes.OK);
+        await waitForPostCreation();
+      });
+
+      it('Create successfully with parent language', async () => {
+        const lang = 'es';
+        const { item: parentItem } = await testUtils.saveItemAndMembership({
+          member: actor,
+          item: { lang },
+        });
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `/items`,
+          payload: { name: faker.word.adverb(), type: ItemType.FOLDER },
+          query: { parentId: parentItem.id },
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        const newItem = response.json();
+        expect(newItem.lang).toEqual(lang);
         await waitForPostCreation();
       });
 
