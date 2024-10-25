@@ -5,7 +5,7 @@ import { FastifySchema } from 'fastify';
 import { ItemLoginSchemaStatus, ItemLoginSchemaType } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
-import { entityIdSchemaRef, errorSchemaRef } from '../../schemas/global';
+import { errorSchemaRef } from '../../schemas/global';
 import { accountSchemaRef } from '../account/schemas';
 import { itemSchemaRef } from '../item/schemas';
 
@@ -41,7 +41,9 @@ export const itemLoginSchemaSchemaRef = registerSchemaAsRef(
 );
 
 export const login = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
   body: credentialsSchemaRef,
   response: {
     '2xx': accountSchemaRef,
@@ -51,7 +53,9 @@ export const login = {
 } as const satisfies FastifySchema;
 
 export const getLoginSchemaType = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
   response: {
     '2xx': customType.Nullable(customType.EnumString(Object.values(ItemLoginSchemaType))),
     '4xx': errorSchemaRef,
@@ -60,7 +64,9 @@ export const getLoginSchemaType = {
 } as const satisfies FastifySchema;
 
 export const getLoginSchema = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
   response: {
     '2xx': itemLoginSchemaSchemaRef,
     '4xx': errorSchemaRef,
@@ -69,7 +75,9 @@ export const getLoginSchema = {
 } as const satisfies FastifySchema;
 
 export const updateLoginSchema = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
   body: Type.Partial(Type.Pick(itemLoginSchemaSchema, ['status', 'type']), { minProperties: 1 }),
   response: {
     '2xx': itemLoginSchemaSchemaRef,
@@ -79,7 +87,9 @@ export const updateLoginSchema = {
 } as const satisfies FastifySchema;
 
 export const deleteLoginSchema = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
   response: {
     '2xx': itemLoginSchemaSchemaRef,
     '4xx': errorSchemaRef,
