@@ -4,26 +4,9 @@ import { StatusCodes } from 'http-status-codes';
 import { ItemTagType } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
+import { errorSchemaRef } from '../../../../schemas/global';
 import { nullableMemberSchemaRef } from '../../../member/schemas';
 import { itemSchemaRef } from '../../schemas';
-
-export const tagSchemaRef = registerSchemaAsRef(
-  'tag',
-  'Tag',
-  Type.Object(
-    {
-      // Object definition
-      id: customType.UUID(),
-      name: Type.String(),
-      nested: Type.String(),
-      createdAt: customType.DateTime(),
-    },
-    {
-      // Schema options
-      additionalProperties: false,
-    },
-  ),
-);
 
 export const itemTagSchemaRef = registerSchemaAsRef(
   'itemTag',
@@ -37,6 +20,7 @@ export const itemTagSchemaRef = registerSchemaAsRef(
       createdAt: customType.DateTime(),
     },
     {
+      description: 'Tag attached to an item and its descendants.',
       additionalProperties: false,
     },
   ),
@@ -44,6 +28,11 @@ export const itemTagSchemaRef = registerSchemaAsRef(
 
 // schema for creating an item tag
 const create = {
+  operationId: 'createTag',
+  tags: ['tag'],
+  summary: 'Create tag on item',
+  description: 'Create tag on item with given tag that will apply on itself and its descendants.',
+
   params: Type.Object(
     {
       itemId: customType.UUID(),
@@ -61,14 +50,21 @@ const create = {
         createdAt: customType.DateTime(),
       },
       {
+        description: 'Successful Response',
         additionalProperties: false,
       },
     ),
+    '4xx': errorSchemaRef,
   },
 };
 
 // schema for deleting an item tag
 const deleteOne = {
+  operationId: 'deleteTag',
+  tags: ['tag'],
+  summary: 'Delete tag of item',
+  description: 'Delete tag of item with given tag.',
+
   params: Type.Object(
     {
       itemId: customType.UUID(),
@@ -77,7 +73,13 @@ const deleteOne = {
     { additionalProperties: false },
   ),
   response: {
-    [StatusCodes.OK]: Type.Object({ item: Type.Object({ path: Type.String() }) }),
+    [StatusCodes.OK]: Type.Object(
+      { item: Type.Object({ path: Type.String() }) },
+      {
+        description: 'Successful Response',
+      },
+    ),
+    '4xx': errorSchemaRef,
   },
 };
 
