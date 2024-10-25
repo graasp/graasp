@@ -69,16 +69,16 @@ export class ItemWrapper {
       const thumbnails = itemsThumbnails?.[i.id];
 
       // sort tags to retrieve most relevant (highest) tag first
-      const thisTags = tags?.data?.[i.id];
-      if (thisTags) {
-        thisTags.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
+      const itemTags = tags?.data?.[i.id];
+      if (itemTags) {
+        itemTags.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
       }
 
       data.push({
         ...i,
         permission,
-        hidden: thisTags?.find((t) => t.type === ItemTagType.Hidden),
-        public: thisTags?.find((t) => t.type === ItemTagType.Public),
+        hidden: itemTags?.find((t) => t.type === ItemTagType.Hidden),
+        public: itemTags?.find((t) => t.type === ItemTagType.Public),
         ...(thumbnails ? { thumbnails } : {}),
       });
     }
@@ -105,16 +105,16 @@ export class ItemWrapper {
       const thumbnails = itemsThumbnails?.[i.id];
 
       // sort tags to retrieve most relevant (highest) tag first
-      const thisTags = tags?.data?.[i.id];
-      if (thisTags) {
-        thisTags.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
+      const itemTags = tags?.data?.[i.id];
+      if (itemTags) {
+        itemTags.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
       }
 
       data[i.id] = {
         ...i,
         permission,
-        hidden: thisTags?.find((t) => t.type === ItemTagType.Hidden),
-        public: thisTags?.find((t) => t.type === ItemTagType.Public),
+        hidden: itemTags?.find((t) => t.type === ItemTagType.Hidden),
+        public: itemTags?.find((t) => t.type === ItemTagType.Public),
         ...(thumbnails ? { thumbnails } : {}),
       };
     }
@@ -148,16 +148,16 @@ export class ItemWrapper {
       const thumbnails = itemsThumbnails[item.id];
 
       // sort tags to retrieve most relevant (highest) tag first
-      const thisTags = tags?.data?.[item.id] ?? [];
-      if (thisTags) {
-        thisTags.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
+      const itemTags = tags?.data?.[item.id] ?? [];
+      if (itemTags) {
+        itemTags.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
       }
 
       return {
         ...item,
         permission,
-        hidden: thisTags.find((t) => t.type === ItemTagType.Hidden),
-        public: thisTags.find((t) => t.type === ItemTagType.Public),
+        hidden: itemTags.find((t) => t.type === ItemTagType.Hidden),
+        public: itemTags.find((t) => t.type === ItemTagType.Public),
         ...(thumbnails ? { thumbnails } : {}),
       } as unknown as PackedItem;
     });
