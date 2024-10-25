@@ -67,11 +67,18 @@ export class ItemWrapper {
     for (const i of items) {
       const { permission = null } = memberships.data[i.id] ?? {};
       const thumbnails = itemsThumbnails?.[i.id];
+
+      // sort tags to retrieve most relevant (highest) tag first
+      const thisTags = tags?.data?.[i.id];
+      if (thisTags) {
+        thisTags.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
+      }
+
       data.push({
         ...i,
         permission,
-        hidden: tags?.data?.[i.id]?.find((t) => t.type === ItemTagType.Hidden),
-        public: tags?.data?.[i.id]?.find((t) => t.type === ItemTagType.Public),
+        hidden: thisTags?.find((t) => t.type === ItemTagType.Hidden),
+        public: thisTags?.find((t) => t.type === ItemTagType.Public),
         ...(thumbnails ? { thumbnails } : {}),
       });
     }
@@ -96,11 +103,18 @@ export class ItemWrapper {
     for (const i of Object.values(items.data)) {
       const { permission = null } = memberships.data[i.id] ?? {};
       const thumbnails = itemsThumbnails?.[i.id];
+
+      // sort tags to retrieve most relevant (highest) tag first
+      const thisTags = tags?.data?.[i.id];
+      if (thisTags) {
+        thisTags.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
+      }
+
       data[i.id] = {
         ...i,
         permission,
-        hidden: tags?.data?.[i.id]?.find((t) => t.type === ItemTagType.Hidden),
-        public: tags?.data?.[i.id]?.find((t) => t.type === ItemTagType.Public),
+        hidden: thisTags?.find((t) => t.type === ItemTagType.Hidden),
+        public: thisTags?.find((t) => t.type === ItemTagType.Public),
         ...(thumbnails ? { thumbnails } : {}),
       };
     }
