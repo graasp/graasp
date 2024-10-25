@@ -298,3 +298,17 @@ In details:
 - the files stored on the fake s3 are not.
 
 In the future we might investigate different solutions to mocking s3 storage, or improve the local storage to provide a durable local storage option.
+
+## Openapi
+
+Generate an `openapi.json` specification file by running the following query. You should have built the backend at least once beforehand.
+
+```sh
+yarn openapi:generate
+```
+
+You can then lint the specifications with
+
+```sh
+yarn openapi:lint
+```

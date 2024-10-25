@@ -57,4 +57,4 @@ types
 secret-key
 
 # Generated
-.openapi.json
+openapi.json

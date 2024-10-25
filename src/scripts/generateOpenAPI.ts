@@ -3,7 +3,7 @@ import { writeFile } from 'node:fs/promises';
 import registerAppPlugins from '../app';
 import { instance } from '../fastify';
 
-const output = '.openapi.json';
+const output = 'openapi.json';
 
 (async () => {
   await registerAppPlugins(instance);
