@@ -55,3 +55,6 @@ types
 
 # Secrets
 secret-key
+
+# Generated
+openapi.json
