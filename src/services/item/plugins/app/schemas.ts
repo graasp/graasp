@@ -22,11 +22,11 @@ export const generateToken = {
     },
     {
       additionalProperties: false,
-      '4xx': errorSchemaRef,
     },
   ),
   response: {
     [StatusCodes.OK]: Type.Object({ token: Type.String() }),
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
