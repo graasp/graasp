@@ -3,8 +3,7 @@ import path from 'path';
 
 import { fastifyMultipart } from '@fastify/multipart';
 import { fastifyStatic } from '@fastify/static';
-import { FastifyPluginAsync } from 'fastify';
-import fp from 'fastify-plugin';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { ItemType, PermissionLevel } from '@graasp/sdk';
 
@@ -25,7 +24,6 @@ import {
   MAX_FILES,
   MAX_FILE_SIZE,
   MAX_NON_FILE_FIELDS,
-  PLUGIN_NAME,
 } from './constants';
 import { H5PInvalidFileError } from './errors';
 import { renderHtml } from './integration';
@@ -33,14 +31,12 @@ import { h5pImport } from './schemas';
 import { H5PService } from './service';
 import { H5PPluginOptions } from './types';
 
-const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify) => {
-  // get services from server instance
+const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
   const { db } = fastify;
 
   const itemService = resolveDependency(ItemService);
   const h5pService = resolveDependency(H5PService);
 
-  // question: this is difficult to move this in the service because of the transaction
   /**
    * Creates a Graasp item for the uploaded H5P package
    * @param filename Name of the original H5P file WITHOUT EXTENSION
@@ -111,64 +107,56 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify) => {
     });
   }
 
-  /*
-    we create an artificial plugin scope, so that fastify-multipart does not conflict
-    with other instances since we use fp to remove the outer scope
-  */
-  await fastify.register(async (fastify) => {
-    fastify.register(fastifyMultipart, {
-      limits: {
-        fields: MAX_NON_FILE_FIELDS,
-        files: MAX_FILES,
-        fileSize: MAX_FILE_SIZE,
-      },
-    });
-
-    /* routes in this scope are authenticated */
-
-    fastify.post<{ Querystring: { parentId?: string; previousItemId?: string } }>(
-      '/h5p-import',
-      { schema: h5pImport, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
-      async (request) => {
-        const {
-          user,
-          log,
-          query: { parentId, previousItemId },
-        } = request;
-        const member = asDefined(user?.account);
-        assertIsMember(member);
-        return db.transaction(async (manager) => {
-          const repositories = buildRepositories(manager);
-
-          // validate write permission in parent if it exists
-          if (parentId) {
-            const item = await itemService.get(member, repositories, parentId);
-            await validatePermission(repositories, PermissionLevel.Write, member, item);
-          }
-
-          // WARNING: cannot destructure { file } = request, which triggers an undefined TypeError internally
-          // (maybe getter performs side-effect on promise handler?)
-          // so use request.file notation instead
-          // const h5pFiles = await request.files();
-          const h5pFile = await request.file();
-
-          if (!h5pFile) {
-            throw new H5PInvalidFileError(h5pFile);
-          }
-
-          return await h5pService.createItem(
-            member,
-            repositories,
-            h5pFile,
-            createH5PItem,
-            parentId,
-            previousItemId,
-            log,
-          );
-        });
-      },
-    );
+  fastify.register(fastifyMultipart, {
+    limits: {
+      fields: MAX_NON_FILE_FIELDS,
+      files: MAX_FILES,
+      fileSize: MAX_FILE_SIZE,
+    },
   });
+
+  fastify.post(
+    '/h5p-import',
+    { schema: h5pImport, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
+    async (request) => {
+      const {
+        user,
+        log,
+        query: { parentId, previousItemId },
+      } = request;
+      const member = asDefined(user?.account);
+      assertIsMember(member);
+      return db.transaction(async (manager) => {
+        const repositories = buildRepositories(manager);
+
+        // validate write permission in parent if it exists
+        if (parentId) {
+          const item = await itemService.get(member, repositories, parentId);
+          await validatePermission(repositories, PermissionLevel.Write, member, item);
+        }
+
+        // WARNING: cannot destructure { file } = request, which triggers an undefined TypeError internally
+        // (maybe getter performs side-effect on promise handler?)
+        // so use request.file notation instead
+        // const h5pFiles = await request.files();
+        const h5pFile = await request.file();
+
+        if (!h5pFile) {
+          throw new H5PInvalidFileError(h5pFile);
+        }
+
+        return await h5pService.createItem(
+          member,
+          repositories,
+          h5pFile,
+          createH5PItem,
+          parentId,
+          previousItemId,
+          log,
+        );
+      });
+    },
+  );
 
   /**
    * Delete H5P assets on item delete
@@ -203,7 +191,4 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify) => {
   });
 };
 
-export default fp(plugin, {
-  fastify: '4.x',
-  name: PLUGIN_NAME,
-});
+export default plugin;
