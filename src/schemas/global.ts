@@ -6,7 +6,7 @@ import { customType, registerSchemaAsRef } from '../plugins/typebox';
 
 export const UUID_REGEX =
   '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$';
-export const NAME_REGEX = '^\\S+( \\S+)*$';
+export const ITEM_NAME_REGEX = '^\\S+( \\S+)*$';
 // allow empty strings or words separated by one space
 export const EMPTY_OR_SPACED_WORDS_REGEX = /^(\S+( \S+)*)?$/;
 
