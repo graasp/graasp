@@ -93,7 +93,9 @@ export const getForOne = {
     itemId: customType.UUID(),
   }),
   querystring: customType.StrictObject({
-    name: Type.String({ description: 'Return only app settings that match the given name' }),
+    name: Type.Optional(
+      Type.String({ description: 'Return only app settings that match the given name' }),
+    ),
   }),
   response: {
     [StatusCodes.OK]: Type.Array(appSettingSchemaRef, { descritpion: 'Successful Response' }),
