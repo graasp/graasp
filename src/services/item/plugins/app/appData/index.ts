@@ -7,7 +7,6 @@ import { buildRepositories } from '../../../../../utils/repositories';
 import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
 import { addMemberInAppData } from '../legacy';
 import { appDataWsHooks } from '../ws/hooks';
-import { InputAppData } from './interfaces/app-data';
 import appDataFilePlugin from './plugins/file';
 import { create, deleteOne, getForOne, updateOne } from './schemas';
 import { AppDataService } from './service';
@@ -26,7 +25,7 @@ const appDataPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
     fastify.register(appDataWsHooks, { appDataService });
 
     // create app data
-    fastify.post<{ Params: { itemId: string }; Body: Partial<InputAppData> }>(
+    fastify.post(
       '/:itemId/app-data',
       {
         schema: create,
@@ -75,7 +74,7 @@ const appDataPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
     );
 
     // get app data
-    fastify.get<{ Params: { itemId: string }; Querystring: { type?: string } }>(
+    fastify.get(
       '/:itemId/app-data',
       { schema: getForOne, preHandler: authenticateAppsJWT },
       async ({ user, params: { itemId }, query }) => {

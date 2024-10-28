@@ -11,20 +11,18 @@ import { itemSchemaRef } from '../../../schemas';
 export const appSettingSchemaRef = registerSchemaAsRef(
   'appSetting',
   'App Setting',
-  Type.Object(
+  customType.StrictObject(
     {
-      // Object Definition
       id: customType.UUID(),
       name: Type.String(),
       item: itemSchemaRef,
       data: Type.Object({}, { additionalProperties: true }),
-      creator: nullableMemberSchemaRef,
+      creator: Type.Optional(nullableMemberSchemaRef),
       createdAt: customType.DateTime(),
       updatedAt: customType.DateTime(),
     },
     {
       description: 'Settings for an app.',
-      additionalProperties: false,
     },
   ),
 );
@@ -78,7 +76,7 @@ export const deleteOne = {
     id: customType.UUID(),
   }),
   response: {
-    [StatusCodes.OK]: appSettingSchemaRef,
+    [StatusCodes.OK]: customType.UUID({ description: 'Successful Response' }),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;

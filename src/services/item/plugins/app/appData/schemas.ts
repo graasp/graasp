@@ -3,6 +3,8 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifySchema } from 'fastify';
 
+import { AppDataVisibility } from '@graasp/sdk';
+
 import { customType, registerSchemaAsRef } from '../../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../../schemas/global';
 import { accountSchemaRef, nullableAccountSchemaRef } from '../../../../account/schemas';
@@ -43,7 +45,7 @@ export const create = {
   body: customType.StrictObject({
     data: Type.Object({}),
     type: Type.String({ minLength: 3, maxLength: 25 }),
-    visibility: Type.Optional(customType.EnumString(['member', 'item'])),
+    visibility: Type.Optional(Type.Enum(AppDataVisibility)),
     /** @deprecated use accountId */
     memberId: Type.Optional(customType.UUID({ deprecated: true })),
     accountId: Type.Optional(customType.UUID()),

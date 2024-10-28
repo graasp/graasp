@@ -261,7 +261,6 @@ describe('App Data Tests', () => {
           url: `${APP_ITEMS_PREFIX}/${v4()}/app-data`,
           payload,
         });
-        console.log(response);
         expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
       });
 
