@@ -45,8 +45,8 @@ const packedFavoriteSchemaRef = registerSchemaAsRef(
 export const getOwnFavorite = {
   operationId: 'getOwnFavorite',
   tags: ['favorite'],
-  summary: 'Get all own bookmarked instances',
-  description: 'Get all own bookmarked instances',
+  summary: 'Get all bookmarked instances of the current member',
+  description: 'Get all bookmarked instances of the current member',
 
   response: {
     [StatusCodes.OK]: Type.Array(packedFavoriteSchemaRef),
