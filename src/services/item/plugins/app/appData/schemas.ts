@@ -45,7 +45,7 @@ export const create = {
     type: Type.String({ minLength: 3, maxLength: 25 }),
     visibility: Type.Optional(customType.EnumString(['member', 'item'])),
     /** @deprecated use accountId */
-    memberId: customType.UUID({ deprecated: true }),
+    memberId: Type.Optional(customType.UUID({ deprecated: true })),
     accountId: Type.Optional(customType.UUID()),
   }),
   response: {
