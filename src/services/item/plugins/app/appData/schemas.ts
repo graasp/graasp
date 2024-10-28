@@ -46,7 +46,7 @@ export const create = {
     visibility: Type.Optional(customType.EnumString(['member', 'item'])),
     /** @deprecated use accountId */
     memberId: customType.UUID({ deprecated: true }),
-    accountId: customType.UUID(),
+    accountId: Type.Optional(customType.UUID()),
   }),
   response: {
     [StatusCodes.OK]: appDataSchemaRef,
@@ -100,7 +100,9 @@ export const getForOne = {
     itemId: customType.UUID(),
   }),
   querystring: customType.StrictObject({
-    type: Type.String({ description: 'Return only app data that exactly match given type.' }),
+    type: Type.Optional(
+      Type.String({ description: 'Return only app data that exactly match given type.' }),
+    ),
   }),
   response: {
     [StatusCodes.OK]: Type.Array(appDataSchemaRef, { descritpion: 'Successful Response' }),
