@@ -13,7 +13,7 @@ export const passwordLogin = {
     'Log in with email and password. The user must provide a valid email, password, and captcha. The captcha is used to prevent brute force attacks.',
   body: customType.StrictObject({
     email: Type.String({ format: 'email' }),
-    password: Type.String({ format: 'strongPassword' }),
+    password: Type.String(),
     captcha: Type.String(),
     url: Type.Optional(Type.String({ format: 'uri' })),
   }),

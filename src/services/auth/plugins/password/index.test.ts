@@ -82,6 +82,28 @@ describe('Login with password', () => {
     expect(response.json()).toHaveProperty('resource');
   });
 
+  it('Sign In successfully with weak password', async () => {
+    const m = MemberFactory();
+    const pwd = {
+      password: 'weakpassword',
+      hashed: encryptPassword('weakpassword'),
+    };
+
+    const member = await saveMemberAndPassword(m, pwd);
+
+    const response = await app.inject({
+      method: HttpMethod.Post,
+      url: '/login-password',
+      payload: {
+        email: member.email,
+        password: pwd.password,
+        captcha: MOCK_CAPTCHA,
+      },
+    });
+    expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
+    expect(response.json()).toHaveProperty('resource');
+  });
+
   it('Sign In successfully with captcha score = 0', async () => {
     nock('https://www.google.com').get('/recaptcha/api/siteverify').query(true).reply(200, {
       success: true,
