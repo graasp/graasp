@@ -1,5 +1,4 @@
 // we need this file used in classic json schema
-// duplicate of shared fluent-schema.ts
 import { Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
