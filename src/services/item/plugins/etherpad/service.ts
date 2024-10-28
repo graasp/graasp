@@ -162,7 +162,7 @@ export class EtherpadItemService {
     }
     const { padID, groupID } = item.extra.etherpad;
 
-    let padUrl;
+    let padUrl: string;
     switch (checkedMode) {
       case 'read': {
         const readOnlyResult = await this.api.getReadOnlyID({ padID });
