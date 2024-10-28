@@ -1,4 +1,4 @@
-import { EMPTY_OR_SPACED_WORDS_REGEX, ITEM_NAME_REGEX } from './global';
+import { EMPTY_OR_SPACED_WORDS_REGEX, ITEM_NAME_REGEX } from './regex';
 
 describe('Globals', () => {
   describe('Item name regex', () => {
