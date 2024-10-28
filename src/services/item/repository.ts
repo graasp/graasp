@@ -1,9 +1,9 @@
+import { type Static } from '@sinclair/typebox';
 import { Brackets, DeepPartial, EntityManager, FindManyOptions, FindOneOptions, In } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { v4 } from 'uuid';
 
 import {
-  FileItemMetadata,
   FileItemType,
   ItemSettings,
   ItemType,
@@ -38,6 +38,7 @@ import {
 import { Actor, Member, isMember } from '../member/entities/member';
 import { itemSchema } from '../member/plugins/export-data/schemas/schemas';
 import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils';
+import { fileItemMetadata } from '../member/schemas';
 import { mapById } from '../utils';
 import { IS_COPY_REGEX } from './constants';
 import { DEFAULT_ORDER, FolderItem, Item, ItemExtraUnion, isItemType } from './entities/Item';
@@ -701,7 +702,7 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
     const rawEntities = await query
       .orderBy("(item.extra::json -> :type ->> 'size')::decimal", 'DESC')
       .getRawMany();
-    const entities: FileItemMetadata[] = rawEntities.map((item) => ({
+    const entities: Static<typeof fileItemMetadata>[] = rawEntities.map((item) => ({
       id: item.item_id,
       name: item.item_name,
       updatedAt: item.item_updated_at,

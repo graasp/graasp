@@ -8,7 +8,7 @@ import { entityIdSchemaRef } from '../../../../schemas/global';
 import { itemSchemaRef } from '../../schemas';
 import { packedItemSchemaRef } from '../../schemas.packed';
 
-const geoCoordinateSchema = Type.Object(
+export const geoCoordinateSchema = Type.Object(
   {
     lat: Type.Number(),
     lng: Type.Number(),

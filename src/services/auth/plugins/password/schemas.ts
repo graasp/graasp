@@ -4,7 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifySchema } from 'fastify';
 
 import { customType } from '../../../../plugins/typebox';
-import { error } from '../../../../schemas/fluent-schema';
+import { errorSchemaRef } from '../../../../schemas/global';
 
 export const passwordLogin = {
   tags: ['password'],
@@ -33,7 +33,7 @@ export const setPassword = {
   response: {
     [StatusCodes.NO_CONTENT]: Type.Null(),
     // returns conflict when there is already a password set
-    [StatusCodes.CONFLICT]: error,
+    [StatusCodes.CONFLICT]: errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
@@ -49,9 +49,9 @@ export const updatePassword = {
   response: {
     [StatusCodes.NO_CONTENT]: Type.Null(),
     // there was an issue with matching the current password with what is stored or the password was empty
-    [StatusCodes.BAD_REQUEST]: error,
+    [StatusCodes.BAD_REQUEST]: errorSchemaRef,
     // the user needs to be authenticated and the current password needs to match
-    [StatusCodes.UNAUTHORIZED]: error,
+    [StatusCodes.UNAUTHORIZED]: errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
