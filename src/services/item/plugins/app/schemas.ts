@@ -15,15 +15,10 @@ export const generateToken = {
   description: 'Generate auth token for an app to access app API',
 
   params: itemIdSchemaRef,
-  body: Type.Object(
-    {
-      key: customType.UUID(),
-      origin: Type.String({ format: 'url' }),
-    },
-    {
-      additionalProperties: false,
-    },
-  ),
+  body: customType.StrictObject({
+    key: customType.UUID(),
+    origin: Type.String({ format: 'url' }),
+  }),
   response: {
     [StatusCodes.OK]: Type.Object({ token: Type.String() }),
     '4xx': errorSchemaRef,
@@ -38,14 +33,13 @@ export const getContext = {
 
   params: itemIdSchemaRef,
   response: {
-    [StatusCodes.OK]: Type.Object(
+    [StatusCodes.OK]: customType.StrictObject(
       {
         item: itemSchemaRef,
         members: Type.Array(accountSchemaRef),
       },
       {
         description: 'App context',
-        additionalProperties: false,
       },
     ),
   },
@@ -59,7 +53,7 @@ export const getList = {
 
   response: {
     [StatusCodes.OK]: Type.Array(
-      Type.Object(
+      customType.StrictObject(
         {
           name: Type.String(),
           description: Type.String(),
@@ -69,7 +63,6 @@ export const getList = {
         },
         {
           description: 'List of available apps',
-          additionalProperties: false,
         },
       ),
     ),
@@ -77,25 +70,23 @@ export const getList = {
   },
 } as const satisfies FastifySchema;
 
-export const getMostUsed = {
-  operationId: 'getMostUsedApp',
+export const getOwnMostUsedApps = {
+  operationId: 'getOwnMostUsedApps',
   tags: ['app'],
-  summary: 'Get informations about most used apps',
-  description: 'Get informations about most used apps',
+  summary: "Get the user's most used apps",
+  description:
+    'Get a list of the apps the user has used the most to ease the addition of new apps.',
 
   response: {
     [StatusCodes.OK]: Type.Array(
-      Type.Object(
-        {
-          name: Type.String(),
-          url: Type.String(),
-          count: Type.Number(),
-        },
-        {
-          description: 'Stats of most used apps',
-          additionalProperties: false,
-        },
-      ),
+      customType.StrictObject({
+        name: Type.String(),
+        url: Type.String(),
+        count: Type.Number(),
+      }),
+      {
+        description: 'Apps regularly used by the user',
+      },
     ),
     '4xx': errorSchemaRef,
   },

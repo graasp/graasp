@@ -11,7 +11,7 @@ import { itemSchemaRef } from '../../../schemas';
 export const appDataSchemaRef = registerSchemaAsRef(
   'appData',
   'App Data',
-  Type.Object(
+  customType.StrictObject(
     {
       // Object Definition
       id: customType.UUID(),
@@ -27,7 +27,6 @@ export const appDataSchemaRef = registerSchemaAsRef(
     },
     {
       description: 'User data saved for an app.',
-      additionalProperties: false,
     },
   ),
 );
@@ -41,18 +40,14 @@ export const create = {
   params: Type.Object({
     itemId: customType.UUID(),
   }),
-  body: {
-    type: 'object',
-    required: ['data', 'type'],
-    properties: {
-      data: { type: 'object', additionalProperties: true },
-      type: { type: 'string', minLength: 3, maxLength: 25 },
-      visibility: { type: 'string', enum: ['member', 'item'] },
-      /** @deprecated use accountId */
-      memberId: customType.UUID({ deprecated: true }),
-      accountId: customType.UUID(),
-    },
-  },
+  body: customType.StrictObject({
+    data: Type.Object({}),
+    type: Type.String({ minLength: 3, maxLength: 25 }),
+    visibility: Type.Optional(customType.EnumString(['member', 'item'])),
+    /** @deprecated use accountId */
+    memberId: customType.UUID({ deprecated: true }),
+    accountId: customType.UUID(),
+  }),
   response: {
     [StatusCodes.OK]: appDataSchemaRef,
     '4xx': errorSchemaRef,
@@ -62,14 +57,14 @@ export const create = {
 export const updateOne = {
   operationId: 'updateAppData',
   tags: ['app', 'app-data'],
-  summary: 'Update app data',
-  description: 'Update given app data with new data.',
+  summary: 'Update an app data',
+  description: 'Update a given app data with new data.',
 
-  params: Type.Object({
+  params: customType.StrictObject({
     itemId: customType.UUID(),
     id: customType.UUID(),
   }),
-  body: Type.Object({
+  body: customType.StrictObject({
     data: Type.Object({}, { additionalProperties: true }),
   }),
   response: {
@@ -81,10 +76,10 @@ export const updateOne = {
 export const deleteOne = {
   operationId: 'deleteAppData',
   tags: ['app', 'app-data'],
-  summary: 'Delete app data',
-  description: 'Delete given app data.',
+  summary: 'Delete an app data',
+  description: 'Delete a given app data.',
 
-  params: Type.Object({
+  params: customType.StrictObject({
     itemId: customType.UUID(),
     id: customType.UUID(),
   }),
@@ -101,16 +96,12 @@ export const getForOne = {
   description:
     'Get app data saved for an app, depending on the permission of the user and the data visibility.',
 
-  params: Type.Object({
+  params: customType.StrictObject({
     itemId: customType.UUID(),
   }),
-  querystring: {
-    type: 'object',
-    properties: {
-      type: { type: 'string' },
-    },
-    additionalProperties: false,
-  },
+  querystring: customType.StrictObject({
+    type: Type.String({ description: 'Return only app data that exactly match given type.' }),
+  }),
   response: {
     [StatusCodes.OK]: Type.Array(appDataSchemaRef, { descritpion: 'Successful Response' }),
     '4xx': errorSchemaRef,

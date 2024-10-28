@@ -23,7 +23,7 @@ export const appSettingSchemaRef = registerSchemaAsRef(
       updatedAt: customType.DateTime(),
     },
     {
-      description: 'Settings saved for an app.',
+      description: 'Settings for an app.',
       additionalProperties: false,
     },
   ),
@@ -38,14 +38,10 @@ export const create = {
   params: Type.Object({
     itemId: customType.UUID(),
   }),
-  body: {
-    type: 'object',
-    required: ['data', 'name'],
-    properties: {
-      data: { type: 'object', additionalProperties: true },
-      name: { type: 'string' },
-    },
-  },
+  body: customType.StrictObject({
+    data: Type.Object({}),
+    name: Type.String(),
+  }),
   response: {
     [StatusCodes.OK]: appSettingSchemaRef,
     '4xx': errorSchemaRef,
@@ -62,13 +58,9 @@ export const updateOne = {
     itemId: customType.UUID(),
     id: customType.UUID(),
   }),
-  body: {
-    type: 'object',
-    required: ['data'],
-    properties: {
-      data: { type: 'object', additionalProperties: true },
-    },
-  },
+  body: customType.StrictObject({
+    data: Type.Object({}),
+  }),
   response: {
     [StatusCodes.OK]: appSettingSchemaRef,
     '4xx': errorSchemaRef,
@@ -95,18 +87,14 @@ export const getForOne = {
   operationId: 'getAppSettingsForApp',
   tags: ['app', 'app-setting'],
   summary: 'Get all settings of an app',
-  description: 'Get all settings saved for an app.',
+  description: 'Get all settings for an app.',
 
   params: Type.Object({
     itemId: customType.UUID(),
   }),
-  querystring: {
-    type: 'object',
-    properties: {
-      name: { type: 'string' },
-    },
-    additionalProperties: false,
-  },
+  querystring: customType.StrictObject({
+    name: Type.String({ description: 'Return only app settings that match the given name' }),
+  }),
   response: {
     [StatusCodes.OK]: Type.Array(appSettingSchemaRef, { descritpion: 'Successful Response' }),
     '4xx': errorSchemaRef,
