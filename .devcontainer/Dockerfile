@@ -18,6 +18,8 @@ RUN if [ "$USER_GID" != "1000" ] || [ "$USER_UID" != "1000" ]; then \
 
 # install GNUPG to allow signing commits with GPG signature
 RUN apt-get update && apt-get install gnupg2 -y
+# install psql to connect to the database
+RUN apt-get update && apt-get install postgresql-client -y
 
 # [Optional] Uncomment if you want to install an additional version of node using nvm
 # ARG EXTRA_NODE_VERSION=10

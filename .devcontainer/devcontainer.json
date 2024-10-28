@@ -10,34 +10,48 @@
       "settings": {
         "sqltools.connections": [
           {
-            "name": "Graasp database",
-            "driver": "PostgreSQL",
             "previewLimit": 50,
-            "server": "graasp-postgres",
+            "server": "db",
             "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "Umami",
+            "group": "graasp",
+            "database": "umami",
+            "username": "umami",
+            "password": "umami"
+          },
+          {
+            "previewLimit": 50,
+            "server": "db",
+            "port": 5432,
+            "name": "backend",
+            "driver": "PostgreSQL",
             "database": "docker",
             "username": "docker",
-            "password": "docker"
+            "password": "docker",
+            "group": "graasp"
           },
           {
-            "name": "Graasp Test database",
-            "driver": "PostgreSQL",
             "previewLimit": 50,
-            "server": "graasp-postgres-test",
+            "server": "db",
             "port": 5432,
-            "database": "docker-test",
-            "username": "docker-test",
-            "password": "docker-test"
-          },
-          {
-            "name": "Etherpad database",
             "driver": "PostgreSQL",
-            "previewLimit": 50,
-            "server": "graasp-postgres-etherpad",
-            "port": 5432,
+            "name": "etherpad",
+            "group": "graasp",
             "database": "etherpad",
             "username": "etherpad",
             "password": "etherpad"
+          },
+          {
+            "previewLimit": 50,
+            "server": "db",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "test",
+            "group": "graasp",
+            "database": "test",
+            "username": "test",
+            "password": "test"
           }
         ]
       },

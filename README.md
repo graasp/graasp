@@ -17,7 +17,7 @@ In order to run the Graasp backend, it requires:
 - Node v20
 - NPM v10
 - Yarn (can be installed through [`nvm`](https://github.com/nvm-sh/nvm))
-- [Docker](https://docs.docker.com/get-docker/) : Docker is not necessary, it is possible to install everything locally. However it is strongly recommanded to use the Docker installation guide.
+- [Docker](https://docs.docker.com/get-docker/) or [Podman](https://podman.io/) : Docker is not necessary, it is possible to install everything locally. However it is strongly recommanded to use the Docker installation guide.
 
 ## Recommended Tools
 
@@ -46,16 +46,14 @@ First open the folder in the dev-container by using the command palette <kbd>cmd
 This will create 10 containers :
 
 - `graasp-core` : Node.js backend of Graasp
-- `graasp-postgres` : PostgreSQL database used by the backend
-- `graasp-postgres-test` : PostgreSQL database used when running tests
+- `db` : PostgreSQL cluster used by multiple services
 - `graasp-etherpad` : Container for the etherpad service
-- `graasp-postgres-etherpad` : PostgreSQL database used by the etherpad service
 - `graasp-meilisearch` : Container for the meilisearch service
 - `graasp-redis` : Redis instance to enable websockets
 - `graasp-localstack` : Localstack instance use to fake S3 storage locally
+- `localfile` : Simple static file server to get files stored in graasp when using the `local` storage otpion (see the [Utilities section](#utilities))
 - `graasp-iframely` : Iframely instance used to get embeds for links
-- `mailer-1` : Simple mailer instance used to receive emails locally (see the [Utilities section](#utilities))
-- `localfile-1` : Simple static file server to get files stored in graasp when using the `local` storage otpion (see the [Utilities section](#utilities))
+- `mailer` : Simple mailer instance used to receive emails locally (see the [Utilities section](#utilities))
 
 > **Important**
 > To use localstack with the Docker installation, it is necessary to edit your `/etc/hosts` with the following line `127.0.0.1 localstack`. This is necessary because the backend creates signed urls with the localstack container hostname. Without changing the hosts, the developpement machine cannot resolve the `http://localstack` hostname.
@@ -65,6 +63,18 @@ Then install the required npm packages with `yarn install`. You should run this 
 > **Info**
 > If the process is killed during the installation of the packages, you'll need to increase the memory limit for docker.  
 > To increase the memory limit, go to `Docker > Preferences > Resources` and change the memory from default (2 GB) to 8GB.
+
+Once the packages are installed we need to bootstrap the database. Run this line in the terminal of the DevContainer. It will connect to the Postgres Engine running in the `db` container with the `docker` user and run the `bootstrapDB.sql` file. You will be asked for a password. Enter `docker`. 
+
+```sh
+psql -h db -U docker -f bootstrapDB.sql 
+```
+
+It will create 4 roles with their associated database for the services that need them:
+- Graasp: the db for the backend
+- Umami: google analytics replacement
+- Etherpad: realtime documents
+- Test: a test database that will be wiped during tests
 
 ### Local Installation
 
@@ -228,6 +238,14 @@ OPENAI_API_KEY=<openai-api-key>
 # GEOLOCATION API - this can be empty if you don't use geolocation
 GEOLOCATION_API_KEY=
 ```
+
+### Umami
+
+To log into umami in your local instance:
+https://umami.is/docs/login
+
+The first time you log in use username: `admin` and password: `umami`. It is recommended to change these.
+
 
 ## Running
 

@@ -26,10 +26,10 @@ services:
       # enpoint of the nudenet model
       IMAGE_CLASSIFIER_API: http://nudenet:8080/sync
       # the DB config is set by the "db" service below
-      DB_NAME: docker
-      DB_USERNAME: docker
-      DB_PASSWORD: docker
       DB_HOST: db
+      DB_NAME: graasp
+      DB_USERNAME: graasper
+      DB_PASSWORD: graasper
       # the Etherpad config is set by the "etherpad" service below
       ETHERPAD_URL: http://etherpad:9001
       ETHERPAD_PUBLIC_URL: http://localhost:9001
@@ -59,7 +59,7 @@ services:
       - 3000:3000
 
   db:
-    container_name: graasp-postgres
+    container_name: db
     image: postgres:15
     restart: on-failure
     ports:
@@ -70,20 +70,11 @@ services:
       POSTGRES_DB: docker
       POSTGRES_USER: docker
       POSTGRES_PASSWORD: docker
-    # Add "forwardPorts": ["5432"] to **devcontainer.json** to forward MongoDB locally.
-    # (Adding the "ports" property to this file will not forward from a Codespace.)
-
-  test-db:
-    container_name: graasp-postgres-test
-    image: postgres:15
-    restart: on-failure
-    ports:
-      - 5434:5432
-    environment:
-      POSTGRES_DB: docker-test
-      POSTGRES_USER: docker-test
-      POSTGRES_PASSWORD: docker-test
-    # no volumes since we don't care about perssissting the data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   redis:
     container_name: graasp-redis
@@ -103,7 +94,7 @@ services:
       - 9001:9001
     environment:
       - DB_TYPE=postgres
-      - DB_HOST=etherpad-db
+      - DB_HOST=db
       - DB_PORT=5432
       - DB_NAME=etherpad
       - DB_USER=etherpad
@@ -115,21 +106,7 @@ services:
     # restart the container until db has created tables
     restart: on-failure
     depends_on:
-      - etherpad-db
-
-  etherpad-db:
-    container_name: graasp-postgres-etherpad
-    image: postgres:15
-    restart: on-failure
-    # not strictly necessary to expose these ports outside the container
-    # ports:
-    #   - 5433:5432
-    volumes:
-      - postgres-data-etherpad:/var/lib/postgresql/data
-    environment:
-      POSTGRES_DB: etherpad
-      POSTGRES_USER: etherpad
-      POSTGRES_PASSWORD: etherpad
+      - db
 
   meilisearch:
     container_name: graasp-meilisearch
@@ -146,6 +123,25 @@ services:
     #   - 7700:7700
     volumes:
       - ./meilisearch_data:/meili_data
+
+  umami:
+    container_name: umami
+    image: ghcr.io/umami-software/umami:postgresql-latest
+    environment:
+      DATABASE_URL: postgresql://umami:umami@db:5432/umami
+      DATABASE_TYPE: postgresql
+      APP_SECRET: a5b20f9ac88eb6d9c2a443664968052ee9f34a3ea8ed1ebe0c0d5c51d5ea78ca
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: on-failure
+    healthcheck:
+      test: ["CMD-SHELL", "curl http://localhost:3000/api/heartbeat"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - 8000:3000
 
   # Localstack is used to test aws services locally
   localstack:
@@ -181,7 +177,7 @@ services:
     container_name: graasp-iframely
     image: graasp/iframely:latest
     environment:
-      NODE_ENV: staging # why "staging" ??
+      NODE_ENV: production # required in order for the responses to not timeout ???
     # exposing these ports is not necessary
     # ports:
     #   - 8061:8061
@@ -201,6 +197,16 @@ services:
     ports:
       - "1080:1080"
 
+  # nginx:
+  #   container_name: reverse_proxy
+  #   image: nginx:1-alpine
+  #   volumes:
+  #     - ./nginx-templates:/etc/nginx/templates
+  #   environment:
+  #     - NGINX_HOST=localhost
+  #     - NGINX_PORT=3000
+  #   ports:
+  #     - 3000:3000
+
 volumes:
   postgres-data:
-  postgres-data-etherpad:
