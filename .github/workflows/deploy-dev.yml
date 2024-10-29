@@ -94,6 +94,7 @@ jobs:
             DATABASE_LOGS=${{ vars.DATABASE_LOGS }}
             DB_CONNECTION_POOL_SIZE=${{ vars.DB_CONNECTION_POOL_SIZE }}
             ANALYTICS_CLIENT_HOST=${{ vars.ANALYTICS_CLIENT_HOST }}
+            ACCOUNT_CLIENT_HOST=${{ vars.ACCOUNT_CLIENT_HOST }}
             APPS_JWT_SECRET=${{ secrets.APPS_JWT_SECRET }}
             APPS_PUBLISHER_ID=${{ secrets.APPS_PUBLISHER_ID }}
             AUTH_CLIENT_HOST=${{ vars.AUTH_CLIENT_HOST }}
