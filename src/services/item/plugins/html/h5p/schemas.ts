@@ -1,26 +1,38 @@
+import { Type } from '@sinclair/typebox';
 import { JSONSchemaType } from 'ajv';
+import { StatusCodes } from 'http-status-codes';
+
+import { FastifySchema } from 'fastify';
 
 import { customType } from '../../../../../plugins/typebox';
+import { errorSchemaRef } from '../../../../../schemas/global';
+import { itemSchemaRef } from '../../../schemas';
 import { H5P } from './validation/h5p';
 
 export const h5pImport = {
-  querystring: {
-    type: 'object',
-    properties: {
-      parentId: customType.UUID(),
-      previousItemId: customType.UUID(),
-    },
-    additionalProperties: false,
-  },
-};
+  operationId: 'importH5p',
+  tags: ['item', 'h5p'],
+  summary: 'Import H5P file',
+  description: 'Import H5P file and create corresponding item.',
 
-export const h5pDownload = {
-  params: {
-    itemId: customType.UUID(),
+  querystring: customType.StrictObject({
+    parentId: Type.Optional(
+      customType.UUID({
+        description:
+          'The H5P item will be created in this parent item. The current user should have write access to this item.',
+      }),
+    ),
+    previousItemId: Type.Optional(
+      customType.UUID({
+        description: 'The new H5P item will be placed immediately after this item in the list.',
+      }),
+    ),
+  }),
+  response: {
+    [StatusCodes.OK]: itemSchemaRef,
+    '4xx': errorSchemaRef,
   },
-  required: ['itemId'],
-  additionalProperties: false,
-};
+} as const satisfies FastifySchema;
 
 /**
  * Describes an h5p.json manifest as a JSON schema
