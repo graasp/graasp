@@ -4,10 +4,11 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifySchema } from 'fastify';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
-import { itemIdSchemaRef, itemSchemaRef } from '../../schemas';
+import { errorSchemaRef } from '../../../../schemas/global';
+import { itemSchemaRef } from '../../schemas';
 import { packedItemSchemaRef } from '../../schemas.packed';
 
-export const favoriteSchemaRef = registerSchemaAsRef(
+const favoriteSchemaRef = registerSchemaAsRef(
   'favorite',
   'Favorite',
   Type.Object(
@@ -18,13 +19,13 @@ export const favoriteSchemaRef = registerSchemaAsRef(
       createdAt: customType.DateTime(),
     },
     {
-      // Schema options
+      description: 'Bookmark instance for member of a given item.',
       additionalProperties: false,
     },
   ),
 );
 
-export const packedFavoriteSchemaRef = registerSchemaAsRef(
+const packedFavoriteSchemaRef = registerSchemaAsRef(
   'packedFavorite',
   'Packed Favorite',
   Type.Object(
@@ -35,38 +36,50 @@ export const packedFavoriteSchemaRef = registerSchemaAsRef(
       createdAt: customType.DateTime(),
     },
     {
-      // Schema options
+      description: 'Bookmark instance for member of a given packed item.',
       additionalProperties: false,
     },
   ),
 );
 
-export const getFavorite = {
-  querystring: Type.Partial(
-    Type.Object(
-      {
-        memberId: customType.UUID(),
-      },
-      {
-        additionalProperties: false,
-      },
-    ),
-  ),
+export const getOwnFavorite = {
+  operationId: 'getOwnFavorite',
+  tags: ['favorite'],
+  summary: 'Get all bookmarked instances of the current member',
+  description: 'Get all bookmarked instances of the current member',
+
   response: {
     [StatusCodes.OK]: Type.Array(packedFavoriteSchemaRef),
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
 export const create = {
-  params: itemIdSchemaRef,
+  operationId: 'createFavorite',
+  tags: ['favorite'],
+  summary: 'Bookmark item',
+  description: 'Bookmark item',
+
+  params: customType.StrictObject({
+    itemId: customType.UUID(),
+  }),
   response: {
     [StatusCodes.OK]: favoriteSchemaRef,
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
 export const deleteOne = {
-  params: itemIdSchemaRef,
+  operationId: 'getOwnFavorite',
+  tags: ['favorite'],
+  summary: 'Remove item from bookmarks',
+  description: 'Remove item from bookmarks',
+
+  params: customType.StrictObject({
+    itemId: customType.UUID(),
+  }),
   response: {
-    [StatusCodes.OK]: customType.UUID(),
+    [StatusCodes.OK]: customType.UUID({ description: 'Successful Response' }),
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;

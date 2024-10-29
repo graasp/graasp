@@ -8,7 +8,7 @@ import { matchOne } from '../../../authorization';
 import { assertIsMember } from '../../../member/entities/member';
 import { memberAccountRole } from '../../../member/strategies/memberAccountRole';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { create, deleteOne, getFavorite } from './schemas';
+import { create, deleteOne, getOwnFavorite } from './schemas';
 import { FavoriteService } from './services/favorite';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
@@ -18,7 +18,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   // get favorites
   fastify.get(
     '/favorite',
-    { schema: getFavorite, preHandler: [isAuthenticated, matchOne(memberAccountRole)] },
+    { schema: getOwnFavorite, preHandler: [isAuthenticated, matchOne(memberAccountRole)] },
     async ({ user }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
