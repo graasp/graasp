@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.55.0](https://github.com/graasp/graasp/compare/v1.54.2...v1.55.0) (2024-10-29)
+
+
+### Features
+
+* add health endpoint ([#1576](https://github.com/graasp/graasp/issues/1576)) ([7e4bfd7](https://github.com/graasp/graasp/commit/7e4bfd74828bb6702489dfcc99c788870902c7cd))
+* add item lang in meilisearch index ([#1565](https://github.com/graasp/graasp/issues/1565)) ([bb467a5](https://github.com/graasp/graasp/commit/bb467a5909e94bb5d7f7e0a6e99403ae35b69fb6))
+* lint openapi during git actions ([#1527](https://github.com/graasp/graasp/issues/1527)) ([c507153](https://github.com/graasp/graasp/commit/c507153219389649b4a601c853e4c6d9a4361d9b))
+* remove GET tags endpoints ([#1557](https://github.com/graasp/graasp/issues/1557)) ([fd01d45](https://github.com/graasp/graasp/commit/fd01d453d8259da5d9a85738cdd68bfc92e7da4f))
+* split upload csv ([#1561](https://github.com/graasp/graasp/issues/1561)) ([2daf09e](https://github.com/graasp/graasp/commit/2daf09e1a5b8c10a86831d80a61d2f57259a106a))
+
+
+### Bug Fixes
+
+* add env var for account ([#1578](https://github.com/graasp/graasp/issues/1578)) ([04a6bee](https://github.com/graasp/graasp/commit/04a6bee13cf03605c2c1b5fac81e611fa798ff32))
+* add optional param for actions ([#1562](https://github.com/graasp/graasp/issues/1562)) ([e52f1aa](https://github.com/graasp/graasp/commit/e52f1aabf04f39cb038ef4e38a8ac41e6ee8f9b5))
+* allow local file in update schema ([#1570](https://github.com/graasp/graasp/issues/1570)) ([85b5ff1](https://github.com/graasp/graasp/commit/85b5ff17167f2daebf274529be75fcb509888c15))
+* does not check password format on password login ([#1574](https://github.com/graasp/graasp/issues/1574)) ([bba91ed](https://github.com/graasp/graasp/commit/bba91edb587fad2e518f6d214e0eac3cb5e30736))
+* fix packed tag ([#1552](https://github.com/graasp/graasp/issues/1552)) ([6fd9910](https://github.com/graasp/graasp/commit/6fd9910f2ece88e75285e8649dbeff27cc269241))
+* new email builder and title escape fix ([#1289](https://github.com/graasp/graasp/issues/1289)) ([4dce241](https://github.com/graasp/graasp/commit/4dce241796c878d816adfba88ec66c0d6e88a3a1))
+* put nudenet back in container ([#1558](https://github.com/graasp/graasp/issues/1558)) ([d502058](https://github.com/graasp/graasp/commit/d5020582cc756a5d1c84a5fae472516d8cbaaf7a))
+* setup single db instance ([#1575](https://github.com/graasp/graasp/issues/1575)) ([bf8e86a](https://github.com/graasp/graasp/commit/bf8e86a7690e2d1e52904706886c3c86d5b5b728))
+
 ## [1.54.2](https://github.com/graasp/graasp/compare/v1.54.1...v1.54.2) (2024-10-21)
 
 
