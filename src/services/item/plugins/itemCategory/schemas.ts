@@ -2,7 +2,6 @@ import { Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
-import { entityIdSchemaRef } from '../../../../schemas/global';
 import { LIST_OF_UUID_V4_REGEX_PATTERN } from '../../../../utils/constants';
 import { nullableMemberSchemaRef } from '../../../member/schemas';
 import { itemIdSchemaRef, itemSchemaRef } from '../../schemas';
@@ -138,5 +137,7 @@ export const createCategory = {
 };
 
 export const deleteById = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
 };

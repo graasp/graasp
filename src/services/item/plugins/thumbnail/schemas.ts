@@ -5,10 +5,11 @@ import { FastifySchema } from 'fastify';
 import { ThumbnailSize } from '@graasp/sdk';
 
 import { customType } from '../../../../plugins/typebox';
-import { entityIdSchemaRef } from '../../../../schemas/global';
 
 export const upload = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
 } as const satisfies FastifySchema;
 
 export const download = {
@@ -34,5 +35,7 @@ export const download = {
 } as const satisfies FastifySchema;
 
 export const deleteSchema = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
 } as const satisfies FastifySchema;

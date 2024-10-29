@@ -1,7 +1,6 @@
 import { Type } from '@sinclair/typebox';
 
 import { customType } from '../../../../plugins/typebox';
-import { entityIdSchemaRef } from '../../../../schemas/global';
 
 export const upload = {
   querystring: Type.Partial(
@@ -18,7 +17,9 @@ export const upload = {
 };
 
 export const download = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
   querystring: Type.Object(
     { replyUrl: Type.Boolean({ default: false }) },
     { additionalProperties: false },

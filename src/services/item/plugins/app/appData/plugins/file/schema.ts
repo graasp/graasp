@@ -1,5 +1,4 @@
 import { customType } from '../../../../../../../plugins/typebox';
-import { entityIdSchemaRef } from '../../../../../../../schemas/global';
 
 const upload = {
   querystring: {
@@ -12,7 +11,9 @@ const upload = {
 };
 
 const download = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
   querystring: {
     type: 'object',
     properties: {

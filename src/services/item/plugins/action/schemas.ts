@@ -12,7 +12,6 @@ import {
 } from '@graasp/sdk';
 
 import { customType } from '../../../../plugins/typebox';
-import { entityIdSchemaRef } from '../../../../schemas/global';
 import {
   MAX_ACTIONS_SAMPLE_SIZE,
   MIN_ACTIONS_SAMPLE_SIZE,
@@ -21,7 +20,9 @@ import { ItemActionType } from './utils';
 
 // schema for getting item analytics with view and requestedSampleSize query parameters
 export const getItemActions = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
   querystring: Type.Object(
     {
       requestedSampleSize: Type.Optional(
@@ -40,7 +41,9 @@ export const getItemActions = {
 
 // schema for getting aggregation of actions
 export const getAggregateActions = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
   querystring: Type.Object(
     {
       requestedSampleSize: Type.Optional(
@@ -76,7 +79,9 @@ export const getAggregateActions = {
 } as const satisfies FastifySchema;
 
 export const exportAction = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
   querystring: Type.Partial(
     Type.Object({ format: Type.Enum(ExportActionsFormatting) }, { additionalProperties: false }),
   ),
@@ -107,7 +112,9 @@ export const memberSchemaForAnalytics = {
 };
 
 export const postAction = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
   body: Type.Object(
     {
       type: Type.String(),

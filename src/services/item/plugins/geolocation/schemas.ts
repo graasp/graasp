@@ -4,7 +4,6 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifySchema } from 'fastify';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
-import { entityIdSchemaRef } from '../../../../schemas/global';
 import { itemSchemaRef } from '../../schemas';
 import { packedItemSchemaRef } from '../../schemas.packed';
 
@@ -68,7 +67,9 @@ const geolocationPacked = Type.Composite([
 ]);
 
 export const getByItem = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
   response: {
     [StatusCodes.OK]: customType.Nullable(geolocationPacked),
   },
@@ -115,7 +116,9 @@ export const getItemsInBox = {
 } as const satisfies FastifySchema;
 
 export const putGeolocation = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
   body: Type.Object(
     {
       geolocation: Type.Object(
@@ -133,7 +136,9 @@ export const putGeolocation = {
 } as const satisfies FastifySchema;
 
 export const deleteGeolocation = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
 } as const satisfies FastifySchema;
 
 export const geolocationReverse = {

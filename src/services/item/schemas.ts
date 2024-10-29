@@ -18,7 +18,7 @@ import {
 } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
-import { entityIdSchemaRef, errorSchemaRef } from '../../schemas/global';
+import { errorSchemaRef } from '../../schemas/global';
 import { nullableAccountSchemaRef } from '../account/schemas';
 
 export const SHOW_HIDDEN_PARRAM = 'showHidden';
@@ -208,7 +208,9 @@ export const getShared = {
 } as const satisfies FastifySchema;
 
 export const updateOne = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
   body: itemUpdateSchemaRef,
   response: { [StatusCodes.OK]: itemSchemaRef, '4xx': errorSchemaRef },
 } as const satisfies FastifySchema;
@@ -234,7 +236,9 @@ export const updateMany = {
 } as const satisfies FastifySchema;
 
 export const reorder = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
   body: Type.Object({ previousItemId: customType.UUID() }, { additionalProperties: false }),
   response: {
     [StatusCodes.OK]: itemSchemaRef,

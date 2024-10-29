@@ -6,7 +6,6 @@ import { FastifySchema } from 'fastify';
 import { MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
-import { entityIdSchemaRef } from '../../../../schemas/global';
 import { nullableMemberSchemaRef } from '../../../member/schemas';
 import { ITEMS_PAGE_SIZE } from '../../constants';
 import { itemSchemaRef } from '../../schemas';
@@ -67,7 +66,9 @@ export const getOwnRecycledItemDatas = {
 
 // schema for deleting one item
 export const deleteOne = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
   response: {
     [StatusCodes.OK]: recycledItemSchemaRef,
   },
