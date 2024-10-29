@@ -29,4 +29,39 @@
   ],
   "appService.deploySubpath": "",
   "jest.runMode": "on-demand",
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "server": "db",
+      "port": 5432,
+      "driver": "PostgreSQL",
+      "name": "Umami",
+      "group": "graasp",
+      "database": "umami",
+      "username": "umami",
+      "password": "umami"
+    },
+    {
+      "previewLimit": 50,
+      "server": "db",
+      "port": 5432,
+      "name": "backend",
+      "driver": "PostgreSQL",
+      "database": "docker",
+      "username": "docker",
+      "password": "docker",
+      "group": "graasp"
+    },
+    {
+      "previewLimit": 50,
+      "server": "db",
+      "port": 5432,
+      "driver": "PostgreSQL",
+      "name": "etherpad",
+      "group": "graasp",
+      "database": "etherpad",
+      "username": "etherpad",
+      "password": "etherpad"
+    }
+  ],
 }
