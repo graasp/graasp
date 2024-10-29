@@ -1,7 +1,9 @@
+import { StatusCodes } from 'http-status-codes';
 import fetch from 'node-fetch';
 import { EntityManager } from 'typeorm';
 
-import { FastifyPluginAsync } from 'fastify';
+import { FastifyPluginAsyncTypebox, Type } from '@fastify/type-provider-typebox';
+import { FastifySchema } from 'fastify';
 
 import { UnionOfConst } from '@graasp/sdk';
 
@@ -65,7 +67,23 @@ class UnHealthyStatus extends ServiceStatus {
   }
 }
 
-const plugin: FastifyPluginAsync = async (fastify) => {
+const health = {
+  operationId: 'health',
+  tags: ['meta'],
+  summary: 'Health check endpoint',
+  description: 'Return a simple 200: OK when the server is running',
+  response: {
+    [StatusCodes.OK]: Type.Literal('OK'),
+  },
+} as const satisfies FastifySchema;
+
+const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
+  fastify.get('/health', { schema: health }, async (_, reply) => {
+    // allow request cross origin
+    reply.header('Access-Control-Allow-Origin', '*');
+    return 'OK' as const;
+  });
+
   fastify.get('/status', async (_, reply) => {
     const { db } = fastify;
     const searchService = resolveDependency(SearchService);
