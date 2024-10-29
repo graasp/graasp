@@ -18,7 +18,7 @@ import {
 } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
-import { NAME_REGEX, entityIdSchemaRef, errorSchemaRef } from '../../schemas/global';
+import { entityIdSchemaRef, errorSchemaRef } from '../../schemas/global';
 import { nullableAccountSchemaRef } from '../account/schemas';
 
 export const SHOW_HIDDEN_PARRAM = 'showHidden';
@@ -43,7 +43,7 @@ export const itemSchema = Type.Object(
   {
     // Object Definition
     id: customType.UUID(),
-    name: Type.String({ minLength: 1, maxLength: MAX_ITEM_NAME_LENGTH, pattern: NAME_REGEX }),
+    name: customType.ItemName(),
     displayName: Type.String({ maxLength: MAX_ITEM_NAME_LENGTH }),
     description: Type.Optional(customType.Nullable(Type.String())),
     type: Type.String(),

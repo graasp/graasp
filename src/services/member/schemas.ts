@@ -6,7 +6,7 @@ import { FastifySchema } from 'fastify';
 import { AccountType, MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
-import { UUID_REGEX, entityIdSchemaRef, errorSchemaRef } from '../../schemas/global';
+import { entityIdSchemaRef, errorSchemaRef } from '../../schemas/global';
 import { FILE_METADATA_DEFAULT_PAGE_SIZE, FILE_METADATA_MIN_PAGE } from './constants';
 
 /**
@@ -227,7 +227,7 @@ export const getMany = {
   response: {
     [StatusCodes.OK]: Type.Object({
       data: Type.Record(
-        Type.String({ pattern: UUID_REGEX }),
+        Type.String({ format: 'uuid' }),
         Type.Object({
           id: customType.UUID(),
           name: customType.Username(),

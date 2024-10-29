@@ -4,7 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import { MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
 import { customType } from '../../../../../plugins/typebox';
-import { UUID_REGEX, errorSchemaRef } from '../../../../../schemas/global';
+import { errorSchemaRef } from '../../../../../schemas/global';
 import {
   GET_MOST_LIKED_ITEMS_MAXIMUM,
   GET_MOST_RECENT_ITEMS_MAXIMUM,
@@ -140,7 +140,7 @@ export const getManyInformations = {
   response: {
     [StatusCodes.OK]: Type.Object(
       {
-        data: Type.Record(Type.String({ pattern: UUID_REGEX }), publishEntry),
+        data: Type.Record(Type.String({ format: 'uuid' }), publishEntry),
         errors: Type.Array(errorSchemaRef),
       },
       { additionalProperties: false },
