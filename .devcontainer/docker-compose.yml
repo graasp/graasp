@@ -197,16 +197,5 @@ services:
     ports:
       - "1080:1080"
 
-  # nginx:
-  #   container_name: reverse_proxy
-  #   image: nginx:1-alpine
-  #   volumes:
-  #     - ./nginx-templates:/etc/nginx/templates
-  #   environment:
-  #     - NGINX_HOST=localhost
-  #     - NGINX_PORT=3000
-  #   ports:
-  #     - 3000:3000
-
 volumes:
   postgres-data:
