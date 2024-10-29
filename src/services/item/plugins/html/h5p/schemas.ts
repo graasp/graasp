@@ -12,18 +12,20 @@ import { H5P } from './validation/h5p';
 export const h5pImport = {
   operationId: 'importH5p',
   tags: ['item', 'h5p'],
-  summary: 'Import h5p file',
-  description: 'Import h5p file and create corresponding item.',
+  summary: 'Import H5P file',
+  description: 'Import H5P file and create corresponding item.',
 
   querystring: customType.StrictObject({
     parentId: Type.Optional(
       customType.UUID({
         description:
-          'The h5p item will be created in this parent item. The current user should have write access to this item.',
+          'The H5P item will be created in this parent item. The current user should have write access to this item.',
       }),
     ),
     previousItemId: Type.Optional(
-      customType.UUID({ description: 'The h5p item will be created after this item.' }),
+      customType.UUID({
+        description: 'The new H5P item will be placed immediately after this item in the list.',
+      }),
     ),
   }),
   response: {
