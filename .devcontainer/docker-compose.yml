@@ -177,7 +177,7 @@ services:
     container_name: graasp-iframely
     image: graasp/iframely:latest
     environment:
-      NODE_ENV: production # required in order for the responses to not timeout ???
+      NODE_ENV: production # required in order for the responses to not timeout
     # exposing these ports is not necessary
     # ports:
     #   - 8061:8061

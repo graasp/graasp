@@ -51,7 +51,7 @@ This will create 10 containers :
 - `graasp-meilisearch` : Container for the meilisearch service
 - `graasp-redis` : Redis instance to enable websockets
 - `graasp-localstack` : Localstack instance use to fake S3 storage locally
-- `localfile` : Simple static file server to get files stored in graasp when using the `local` storage otpion (see the [Utilities section](#utilities))
+- `localfile` : Simple static file server to get files stored in graasp when using the `local` storage option (see the [Utilities section](#utilities))
 - `graasp-iframely` : Iframely instance used to get embeds for links
 - `mailer` : Simple mailer instance used to receive emails locally (see the [Utilities section](#utilities))
 
