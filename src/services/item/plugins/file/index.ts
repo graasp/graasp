@@ -170,7 +170,6 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
     '/:id/download',
     {
       schema: download,
-
       preHandler: optionalIsAuthenticated,
     },
     async (request, reply) => {
