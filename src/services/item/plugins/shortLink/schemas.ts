@@ -6,7 +6,6 @@ import { FastifySchema } from 'fastify';
 import { ShortLinkPlatform } from '@graasp/sdk';
 
 import { customType } from '../../../../plugins/typebox';
-import { itemIdSchemaRef } from '../../schemas';
 
 const shortLinkPayloadFlatten = Type.Object(
   {
@@ -34,7 +33,9 @@ export const getAvailable = {
 } as const satisfies FastifySchema;
 
 export const getAllByItem = {
-  params: itemIdSchemaRef,
+  params: customType.StrictObject({
+    itemId: customType.UUID(),
+  }),
   response: { [StatusCodes.OK]: Type.Array(shortLinkPayload) },
 } as const satisfies FastifySchema;
 

@@ -8,7 +8,7 @@ import { PermissionLevel } from '@graasp/sdk';
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 import { errorSchemaRef } from '../../schemas/global';
 import { augmentedAccountSchemaRef, nullableAugmentedAccountSchemaRef } from '../account/schemas';
-import { itemIdSchemaRef, itemSchemaRef } from '../item/schemas';
+import { itemSchemaRef } from '../item/schemas';
 
 export const itemMembershipSchemaRef = registerSchemaAsRef(
   'itemMembership',
@@ -60,7 +60,9 @@ export const updateItemMembershipSchemaRef = registerSchemaAsRef(
 
 // schema for creating an item membership
 export const create = {
-  querystring: itemIdSchemaRef,
+  querystring: customType.StrictObject({
+    itemId: customType.UUID(),
+  }),
   body: createItemMembershipSchemaRef,
   response: {
     [StatusCodes.OK]: itemMembershipSchemaRef,
@@ -69,7 +71,9 @@ export const create = {
 
 // schema for creating many item memberships
 export const createMany = {
-  params: itemIdSchemaRef,
+  params: customType.StrictObject({
+    itemId: customType.UUID(),
+  }),
   body: Type.Object(
     { memberships: Type.Array(createItemMembershipSchemaRef) },
     { additionalProperties: false },

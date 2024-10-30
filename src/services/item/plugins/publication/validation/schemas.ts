@@ -1,7 +1,6 @@
 import { Type } from '@sinclair/typebox';
 
 import { customType } from '../../../../../plugins/typebox';
-import { itemIdSchemaRef } from '../../../schemas';
 
 export const itemValidationReviews = {
   params: {},
@@ -14,7 +13,9 @@ export const status = {
 };
 
 export const itemValidation = {
-  params: itemIdSchemaRef,
+  params: customType.StrictObject({
+    itemId: customType.UUID(),
+  }),
   additionalProperties: false,
 };
 

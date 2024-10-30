@@ -3,7 +3,6 @@ import { Type } from '@sinclair/typebox';
 import { FastifySchema } from 'fastify';
 
 import { customType } from '../../../../plugins/typebox';
-import { itemIdSchemaRef } from '../../schemas';
 
 export const zipImport = {
   querystring: Type.Partial(
@@ -19,5 +18,7 @@ export const zipImport = {
 } as const satisfies FastifySchema;
 
 export const zipExport = {
-  params: itemIdSchemaRef,
+  params: customType.StrictObject({
+    itemId: customType.UUID(),
+  }),
 } as const satisfies FastifySchema;

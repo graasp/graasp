@@ -4,7 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { LIST_OF_UUID_V4_REGEX_PATTERN } from '../../../../utils/constants';
 import { nullableMemberSchemaRef } from '../../../member/schemas';
-import { itemIdSchemaRef, itemSchemaRef } from '../../schemas';
+import { itemSchemaRef } from '../../schemas';
 
 export const categorySchemaRef = registerSchemaAsRef(
   'category',
@@ -42,7 +42,9 @@ export const itemCategorySchemaRef = registerSchemaAsRef(
 );
 
 export const getItemCategories = {
-  params: itemIdSchemaRef,
+  params: customType.StrictObject({
+    itemId: customType.UUID(),
+  }),
   response: {
     [StatusCodes.OK]: Type.Array(itemCategorySchemaRef),
   },
@@ -79,7 +81,9 @@ export const getCategory = {
 };
 
 export const create = {
-  params: itemIdSchemaRef,
+  params: customType.StrictObject({
+    itemId: customType.UUID(),
+  }),
   body: Type.Object(
     {
       categoryId: customType.UUID(),

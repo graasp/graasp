@@ -1,7 +1,9 @@
 import { FastifySchema } from 'fastify';
 
-import { itemIdSchemaRef } from '../../../schemas';
+import { customType } from '../../../../../plugins/typebox';
 
 export const getPublicationState = {
-  params: itemIdSchemaRef,
+  params: customType.StrictObject({
+    itemId: customType.UUID(),
+  }),
 } as const satisfies FastifySchema;

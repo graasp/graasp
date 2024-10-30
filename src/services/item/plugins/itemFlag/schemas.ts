@@ -6,7 +6,7 @@ import { FlagType } from '@graasp/sdk';
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
 import { nullableAccountSchemaRef } from '../../../account/schemas';
-import { itemIdSchemaRef, itemSchemaRef } from '../../schemas';
+import { itemSchemaRef } from '../../schemas';
 
 export const itemFlagSchemaRef = registerSchemaAsRef(
   'itemFlag',
@@ -35,7 +35,9 @@ const create = {
   summary: 'Flag item',
   description: 'Flag item with given type.',
 
-  params: itemIdSchemaRef,
+  params: customType.StrictObject({
+    itemId: customType.UUID(),
+  }),
   body: Type.Object(
     {
       // Object definition

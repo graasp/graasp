@@ -6,7 +6,7 @@ import { FastifySchema } from 'fastify';
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 import { errorSchemaRef } from '../../schemas/global';
 import { nullableAccountSchemaRef } from '../account/schemas';
-import { itemIdSchemaRef, itemSchemaRef } from '../item/schemas';
+import { itemSchemaRef } from '../item/schemas';
 
 /**
  * JSON schema definitions to validate requests and responses
@@ -60,7 +60,9 @@ export const getChat = {
   summary: 'Get chat',
   description: 'Get chat object for given item.',
 
-  params: itemIdSchemaRef,
+  params: customType.StrictObject({
+    itemId: customType.UUID(),
+  }),
   response: {
     [StatusCodes.OK]: Type.Array(chatMessageSchemaRef, { description: 'Successful Response' }),
     '4xx': errorSchemaRef,
@@ -76,7 +78,9 @@ export const createChatMessage = {
   summary: 'Save message in chat',
   description: 'Save message in chat for given item.',
 
-  params: itemIdSchemaRef,
+  params: customType.StrictObject({
+    itemId: customType.UUID(),
+  }),
   body: Type.Object(
     {
       // Object Definition
@@ -158,7 +162,9 @@ export const clearChat = {
   summary: 'Clear messages of chat',
   description: 'Clear messages of chat for given item.',
 
-  params: itemIdSchemaRef,
+  params: customType.StrictObject({
+    itemId: customType.UUID(),
+  }),
   response: {
     [StatusCodes.OK]: chatSchemaRef,
     '4xx': errorSchemaRef,
