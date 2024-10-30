@@ -258,7 +258,7 @@ describe('Recycle Bin Tests', () => {
         });
 
         it('Bad request if recycle more than maxItemsInRequest items', async () => {
-          const items = Array.from({ length: MAX_TARGETS_FOR_READ_REQUEST + 1 }, () =>
+          const items = Array.from({ length: MAX_TARGETS_FOR_MODIFY_REQUEST + 1 }, () =>
             FolderItemFactory(),
           );
 
@@ -348,7 +348,7 @@ describe('Recycle Bin Tests', () => {
           const res = await app.inject({
             method: HttpMethod.Post,
             url: `${ITEMS_ROUTE_PREFIX}/restore`,
-            query: { id: Array.from({ length: MAX_TARGETS_FOR_MODIFY_REQUEST }, () => v4()) },
+            query: { id: Array.from({ length: MAX_TARGETS_FOR_MODIFY_REQUEST + 1 }, () => v4()) },
           });
 
           expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
