@@ -24,7 +24,8 @@ export const invitationSchemaRef = registerSchemaAsRef(
       updatedAt: customType.DateTime(),
     },
     {
-      description: 'Invitation non-registered user by email to have access to an item',
+      description:
+        'Invitation for a non-registered user to access an item. The user is identified by email.',
       additionalProperties: false,
     },
   ),
