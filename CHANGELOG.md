@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.56.0](https://github.com/graasp/graasp/compare/v1.55.0...v1.56.0) (2024-10-30)
+
+
+### Features
+
+* add migration from item category to item lang ([#1567](https://github.com/graasp/graasp/issues/1567)) ([dcff750](https://github.com/graasp/graasp/commit/dcff750995ad0501ccd7ffe38deea62588f78938))
+
 ## [1.55.0](https://github.com/graasp/graasp/compare/v1.54.2...v1.55.0) (2024-10-29)
 
 
