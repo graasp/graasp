@@ -11,9 +11,6 @@ export const upload = {
   summary: 'Create app setting file',
   description: 'Upload a file to create a corresponding app setting.',
 
-  querystring: customType.StrictObject({
-    id: customType.UUID(),
-  }),
   response: {
     [StatusCodes.OK]: appSettingSchemaRef,
     '4xx': errorSchemaRef,
@@ -27,7 +24,9 @@ export const download = {
   description: 'Download app setting file.',
 
   params: customType.StrictObject({
-    id: customType.UUID(),
+    id: customType.UUID({
+      description: 'Id of the app setting corresponding to the file to download',
+    }),
   }),
   querystring: customType.StrictObject({
     replyUrl: Type.Boolean({
