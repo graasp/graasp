@@ -6,7 +6,7 @@ import { FastifySchema } from 'fastify';
 import { MembershipRequestStatus } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
-import { itemIdSchemaRef, itemSchemaRef } from '../../../item/schemas';
+import { itemSchemaRef } from '../../../item/schemas';
 import { memberSchemaRef } from '../../../member/schemas';
 
 const completeMembershipRequestSchema = customType.StrictObject({
@@ -31,7 +31,9 @@ export const getAllByItem = {
   tags: ['membershipRequest'],
   summary: 'Get all membership requests for an item',
   description: 'Get all membership requests with member information for an item by its ID',
-  params: itemIdSchemaRef,
+  params: customType.StrictObject({
+    itemId: customType.UUID(),
+  }),
   response: {
     [StatusCodes.OK]: Type.Array(simpleMembershipRequestSchemaRef, { uniqueItems: true }),
   },
@@ -43,7 +45,9 @@ export const createOne = {
   description: `Create a membership request for an item with the authenticated member. 
   The member should not have any permission on the item.
   If there is an Item Login associated with the item, the request will be rejected.`,
-  params: itemIdSchemaRef,
+  params: customType.StrictObject({
+    itemId: customType.UUID(),
+  }),
   response: {
     [StatusCodes.OK]: completeMembershipRequestSchemaRef,
   },
@@ -54,7 +58,9 @@ export const getOwn = {
   summary: 'Get the status of the membership request for the authenticated member',
   description:
     'Get the status of the membership request for the authenticated member for an item by its ID',
-  params: itemIdSchemaRef,
+  params: customType.StrictObject({
+    itemId: customType.UUID(),
+  }),
   response: {
     [StatusCodes.OK]: customType.StrictObject({ status: Type.Enum(MembershipRequestStatus) }),
   },

@@ -6,7 +6,7 @@ import { FastifySchema } from 'fastify';
 import { customType } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
 import { accountSchemaRef } from '../../../account/schemas';
-import { itemIdSchemaRef, itemSchemaRef } from '../../schemas';
+import { itemSchemaRef } from '../../schemas';
 
 export const generateToken = {
   operationId: 'generateAppToken',
@@ -14,7 +14,9 @@ export const generateToken = {
   summary: 'Generate auth token for an app',
   description: 'Generate auth token for an app to access app API',
 
-  params: itemIdSchemaRef,
+  params: customType.StrictObject({
+    itemId: customType.UUID(),
+  }),
   body: customType.StrictObject({
     key: customType.UUID(),
     origin: Type.String({ format: 'url' }),
@@ -31,7 +33,9 @@ export const getContext = {
   summary: 'Get context information of an app',
   description: 'Get context information of an app',
 
-  params: itemIdSchemaRef,
+  params: customType.StrictObject({
+    itemId: customType.UUID(),
+  }),
   response: {
     [StatusCodes.OK]: customType.StrictObject(
       {

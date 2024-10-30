@@ -24,21 +24,6 @@ import { nullableAccountSchemaRef } from '../account/schemas';
 export const SHOW_HIDDEN_PARRAM = 'showHidden';
 export const TYPES_FILTER_PARAM = 'types';
 
-export const itemIdSchemaRef = registerSchemaAsRef(
-  'itemId',
-  'Item ID',
-  Type.Object(
-    {
-      // Object Definition
-      itemId: customType.UUID(),
-    },
-    {
-      // Schema Options
-      additionalProperties: false,
-    },
-  ),
-);
-
 export const itemSchema = Type.Object(
   {
     // Object Definition

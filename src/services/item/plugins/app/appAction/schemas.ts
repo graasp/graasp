@@ -6,7 +6,6 @@ import { FastifySchema } from 'fastify';
 import { customType, registerSchemaAsRef } from '../../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../../schemas/global';
 import { accountSchemaRef } from '../../../../account/schemas';
-import { itemIdSchemaRef } from '../../../schemas';
 
 export const appActionSchemaRef = registerSchemaAsRef(
   'appAction',
@@ -34,7 +33,9 @@ export const create = {
   summary: 'Create an action happening in an app',
   description: 'Create an action happening in an app given data and type.',
 
-  params: itemIdSchemaRef,
+  params: customType.StrictObject({
+    itemId: customType.UUID(),
+  }),
   body: Type.Object({
     data: Type.Object({}, { additionalProperties: true }),
     type: Type.String({ minLength: 3, maxLength: 25 }),
@@ -51,7 +52,9 @@ export const getForOne = {
   summary: 'Get all actions of an app',
   description: 'Get all actions saved for an app.',
 
-  params: itemIdSchemaRef,
+  params: customType.StrictObject({
+    itemId: customType.UUID(),
+  }),
   querystring: Type.Union([
     Type.Object(
       {
