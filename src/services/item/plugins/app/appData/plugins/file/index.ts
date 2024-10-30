@@ -1,10 +1,9 @@
 import { fastifyMultipart } from '@fastify/multipart';
-import { FastifyPluginAsync } from 'fastify';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { HttpMethod, UUID } from '@graasp/sdk';
+import { HttpMethod } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../../../di/utils';
-import { IdParam } from '../../../../../../../types';
 import { asDefined } from '../../../../../../../utils/assertions';
 import { Repositories, buildRepositories } from '../../../../../../../utils/repositories';
 import { guestAuthenticateAppsJWT } from '../../../../../../auth/plugins/passport';
@@ -15,6 +14,7 @@ import {
   UploadFileUnexpectedError,
 } from '../../../../../../file/utils/errors';
 import { Actor, Member } from '../../../../../../member/entities/member';
+import { addMemberInAppData } from '../../../legacy';
 import { AppData } from '../../appData';
 import { PreventUpdateAppDataFile } from '../../errors';
 import { AppDataService } from '../../service';
@@ -29,7 +29,7 @@ export interface GraaspPluginFileOptions {
 
 export const DEFAULT_MAX_FILE_SIZE = 1024 * 1024 * 1024; // 1GB
 
-const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, options) => {
+const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fastify, options) => {
   const {
     maxFileSize = DEFAULT_MAX_FILE_SIZE,
 
@@ -77,7 +77,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   };
   appDataService.hooks.setPreHook('patch', patchPreHook);
 
-  fastify.route<{ Querystring: IdParam; Body: unknown }>({
+  fastify.route({
     method: HttpMethod.Post,
     url: '/app-data/upload',
     schema: upload,
@@ -98,7 +98,9 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
           if (!file) {
             throw new UploadEmptyFileError();
           }
-          return appDataFileService.upload(member, repositories, file, app.item);
+          return addMemberInAppData(
+            await appDataFileService.upload(member, repositories, file, app.item),
+          );
         })
         .catch((e) => {
           console.error(e);
@@ -111,15 +113,9 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
           throw new UploadFileUnexpectedError(e);
         });
     },
-    // onResponse: async (request, reply) => {
-    //   uploadOnResponse?.(request, reply);
-    // },
   });
 
-  fastify.get<{
-    Params: { id: UUID };
-    Querystring: { size?: string };
-  }>(
+  fastify.get(
     '/app-data/:id/download',
     {
       schema: download,

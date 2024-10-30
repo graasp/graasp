@@ -1,28 +1,43 @@
+import { Type } from '@sinclair/typebox';
+import { StatusCodes } from 'http-status-codes';
+
 import { customType } from '../../../../../../../plugins/typebox';
+import { errorSchemaRef } from '../../../../../../../schemas/global';
+import { appDataSchemaRef } from '../../schemas';
 
 const upload = {
-  querystring: {
-    type: 'object',
-    properties: {
-      id: customType.UUID(),
-    },
-    additionalProperties: false,
+  operationId: 'createAppDataFile',
+  tags: ['app', 'file'],
+  summary: 'Create app data file',
+  description: 'Upload a file to create a corresponding app data.',
+
+  querystring: customType.StrictObject({
+    id: customType.UUID(),
+  }),
+  response: {
+    [StatusCodes.OK]: appDataSchemaRef,
+    '4xx': errorSchemaRef,
   },
 };
 
 const download = {
+  operationId: 'downloadAppDataFile',
+  tags: ['app', 'file'],
+  summary: 'Download app data file',
+  description: 'Download app data file.',
+
   params: customType.StrictObject({
     id: customType.UUID(),
   }),
-  querystring: {
-    type: 'object',
-    properties: {
-      replyUrl: {
-        type: 'boolean',
-        default: false,
-      },
-    },
-    additionalProperties: false,
+  querystring: customType.StrictObject({
+    replyUrl: Type.Boolean({
+      default: false,
+    }),
+  }),
+
+  response: {
+    [StatusCodes.OK]: Type.String({ format: 'uri' }),
+    '4xx': errorSchemaRef,
   },
 };
 
