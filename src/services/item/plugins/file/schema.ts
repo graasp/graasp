@@ -14,10 +14,12 @@ export const upload = {
   querystring: customType.StrictObject({
     id: Type.Optional(
       customType.UUID({
-        description: 'Folder id in which the upload should be uploaded.',
+        description: 'Folder id in which the uploaded files should be created.',
       }),
     ),
-    previousItemId: Type.Optional(customType.UUID()),
+    previousItemId: Type.Optional(
+      customType.UUID({ description: 'The uploaded files should be created after this item.' }),
+    ),
   }),
   response: {
     [StatusCodes.OK]: customType.StrictObject({
