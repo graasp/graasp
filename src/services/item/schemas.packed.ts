@@ -6,7 +6,7 @@ import { FastifySchema } from 'fastify';
 import { ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
-import { entityIdSchemaRef, errorSchemaRef } from '../../schemas/global';
+import { errorSchemaRef } from '../../schemas/global';
 import { nullableMemberSchemaRef } from '../member/schemas';
 import { ITEMS_PAGE_SIZE } from './constants';
 import { itemTagSchemaRef } from './plugins/itemTag/schemas';
@@ -43,7 +43,9 @@ export const packedItemSchemaRef = registerSchemaAsRef(
 );
 
 export const getOne = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
   response: { [StatusCodes.OK]: packedItemSchemaRef, '4xx': errorSchemaRef },
 } as const satisfies FastifySchema;
 
@@ -77,7 +79,9 @@ export const getAccessible = {
 } as const satisfies FastifySchema;
 
 export const getChildren = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
   querystring: Type.Partial(
     Type.Object(
       {
@@ -95,7 +99,9 @@ export const getChildren = {
 } as const satisfies FastifySchema;
 
 export const getDescendants = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
   querystring: Type.Partial(
     Type.Object(
       {
@@ -113,7 +119,9 @@ export const getDescendants = {
 } as const satisfies FastifySchema;
 
 export const getParents = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
   response: {
     [StatusCodes.OK]: Type.Array(packedItemSchemaRef),
     '4xx': errorSchemaRef,

@@ -2,11 +2,13 @@ import { Type } from '@sinclair/typebox';
 
 import { FastifySchema } from 'fastify';
 
-import { entityIdSchemaRef } from '../../../../schemas/global';
+import { customType } from '../../../../plugins/typebox';
 
 // schema for removing all actions of a member
 export const deleteAllById = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
 } as const satisfies FastifySchema;
 
 export const getMemberFilteredActions = {

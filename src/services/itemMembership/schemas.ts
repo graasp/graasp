@@ -6,7 +6,7 @@ import { FastifySchema } from 'fastify';
 import { PermissionLevel } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
-import { entityIdSchemaRef, errorSchemaRef } from '../../schemas/global';
+import { errorSchemaRef } from '../../schemas/global';
 import { augmentedAccountSchemaRef, nullableAugmentedAccountSchemaRef } from '../account/schemas';
 import { itemIdSchemaRef, itemSchemaRef } from '../item/schemas';
 
@@ -95,7 +95,9 @@ export const getItems = {
 
 // schema for updating an item membership
 export const updateOne = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
   body: updateItemMembershipSchemaRef,
   response: {
     [StatusCodes.OK]: itemMembershipSchemaRef,
@@ -104,7 +106,9 @@ export const updateOne = {
 
 // schema for deleting an item membership
 export const deleteOne = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
   querystring: Type.Object(
     { purgeBelow: Type.Optional(Type.Boolean()) },
     { additionalProperties: false },

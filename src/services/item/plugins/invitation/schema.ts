@@ -6,7 +6,7 @@ import { FastifySchema } from 'fastify';
 import { PermissionLevel } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
-import { entityIdSchemaRef, errorSchemaRef } from '../../../../schemas/global';
+import { errorSchemaRef } from '../../../../schemas/global';
 import { itemMembershipSchemaRef } from '../../../itemMembership/schemas';
 import { itemSchemaRef } from '../../schemas';
 
@@ -62,7 +62,9 @@ export const updateInvitationSchemaRef = registerSchemaAsRef(
 );
 
 export const invite = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
   body: Type.Object(
     {
       invitations: Type.Array(
@@ -88,7 +90,9 @@ export const invite = {
 } as const satisfies FastifySchema;
 
 export const inviteFromCSV = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
   response: {
     [StatusCodes.OK]: Type.Object({
       memberships: Type.Array(itemMembershipSchemaRef),
@@ -99,7 +103,9 @@ export const inviteFromCSV = {
 } as const satisfies FastifySchema;
 
 export const inviteFromCSVWithTemplate = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
   querystring: Type.Object({
     templateId: customType.UUID(),
   }),
@@ -116,7 +122,9 @@ export const inviteFromCSVWithTemplate = {
 } as const satisfies FastifySchema;
 
 export const getForItem = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
   response: {
     [StatusCodes.OK]: Type.Array(invitationSchemaRef),
     '4xx': errorSchemaRef,
@@ -124,7 +132,9 @@ export const getForItem = {
 } as const satisfies FastifySchema;
 
 export const getById = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
   response: {
     [StatusCodes.OK]: invitationSchemaRef,
     '4xx': errorSchemaRef,

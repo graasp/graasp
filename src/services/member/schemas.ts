@@ -6,7 +6,7 @@ import { FastifySchema } from 'fastify';
 import { AccountType, MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
-import { entityIdSchemaRef, errorSchemaRef } from '../../schemas/global';
+import { errorSchemaRef } from '../../schemas/global';
 import { FILE_METADATA_DEFAULT_PAGE_SIZE, FILE_METADATA_MIN_PAGE } from './constants';
 
 /**
@@ -205,7 +205,9 @@ export const getStorageFiles = {
 
 // schema for getting a member
 export const getOne = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
   response: {
     [StatusCodes.OK]: memberSchemaRef,
   },
@@ -269,7 +271,9 @@ export const getManyBy = {
 // schema for updating a member
 export const updateOne = {
   deprecated: true,
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
   body: updateMemberRequiredOneSchemaRef,
   response: {
     [StatusCodes.OK]: currentAccountSchemaRef,
@@ -288,7 +292,9 @@ export const updateCurrent = {
 
 // schema for deleting a member
 export const deleteOne = {
-  params: entityIdSchemaRef,
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
   response: {
     [StatusCodes.NO_CONTENT]: {},
   },

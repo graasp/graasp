@@ -2,22 +2,7 @@
 import { Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
-import { customType, registerSchemaAsRef } from '../plugins/typebox';
-
-export const entityIdSchemaRef = registerSchemaAsRef(
-  'entityId',
-  'Entity ID',
-  Type.Object(
-    {
-      // Object Definition
-      id: customType.UUID(),
-    },
-    {
-      // Schema Options
-      additionalProperties: false,
-    },
-  ),
-);
+import { registerSchemaAsRef } from '../plugins/typebox';
 
 export const errorSchemaRef = registerSchemaAsRef(
   'error',
