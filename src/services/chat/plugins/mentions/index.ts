@@ -8,7 +8,7 @@ import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import { isMember } from '../../../member/entities/member';
 import { ChatMention } from './chatMention';
-import { clearAllMentions, deleteMention, getMentions, patchMention } from './schemas';
+import { clearAllMentions, deleteMention, getOwnMentions, patchMention } from './schemas';
 import { MentionService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
@@ -37,7 +37,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   // mentions
   fastify.get(
     '/mentions',
-    { schema: getMentions, preHandler: isAuthenticated },
+    { schema: getOwnMentions, preHandler: isAuthenticated },
     async ({ user }) => {
       const member = asDefined(user?.account);
       return await mentionService.getForAccount(member, buildRepositories());

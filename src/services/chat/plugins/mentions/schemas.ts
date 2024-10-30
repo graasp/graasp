@@ -10,30 +10,15 @@ import { FastifySchema } from 'fastify';
 import { MentionStatus } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
+import { errorSchemaRef } from '../../../../schemas/global';
 import { accountSchemaRef } from '../../../account/schemas';
 import { chatMessageSchemaRef } from '../../schemas';
-
-export const mentionIdSchemaRef = registerSchemaAsRef(
-  'mentionId',
-  'Mention ID',
-  Type.Object(
-    {
-      // Object Definition
-      mentionId: customType.UUID(),
-    },
-    {
-      // Schema Options
-      additionalProperties: false,
-    },
-  ),
-);
 
 export const minimalChatMentionSchemaRef = registerSchemaAsRef(
   'minimalChatMention',
   'Minimal Chat Mention',
-  Type.Object(
+  customType.StrictObject(
     {
-      // Object Definition
       id: customType.UUID(),
       account: accountSchemaRef,
       createdAt: customType.DateTime(),
@@ -41,8 +26,7 @@ export const minimalChatMentionSchemaRef = registerSchemaAsRef(
       status: Type.Enum(MentionStatus),
     },
     {
-      // Schema Options
-      additionalProperties: false,
+      description: 'Mention of a user in a chat, without message',
     },
   ),
 );
@@ -53,67 +37,70 @@ export const completeChatMentionSchemaRef = registerSchemaAsRef(
   Type.Intersect(
     [
       minimalChatMentionSchemaRef,
-      Type.Object({
+      customType.StrictObject({
         message: chatMessageSchemaRef,
       }),
     ],
     {
-      // Schema Options
+      description: 'Mention of a user in a chat including message',
       additionalProperties: false,
     },
   ),
 );
 
-export const updateChatMentionSchemaRef = registerSchemaAsRef(
-  'updateChatMention',
-  'Update Chat Mention',
-  Type.Object(
-    {
-      // Object Definition
-      status: Type.Enum(MentionStatus),
-    },
-    {
-      // Schema Options
-      additionalProperties: false,
-    },
-  ),
-);
+export const getOwnMentions = {
+  operationId: 'getOwnMentions',
+  tags: ['chat', 'mention'],
+  summary: 'Get mentions for current user',
+  description: 'Get mentions for current user.',
 
-/**
- * JSON schema on GET mentions route for request and response
- */
-export const getMentions = {
   response: {
     [StatusCodes.OK]: Type.Array(completeChatMentionSchemaRef),
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
-/**
- * JSON schema on PATCH mention route for request and response
- */
 export const patchMention = {
-  params: mentionIdSchemaRef,
-  body: updateChatMentionSchemaRef,
+  operationId: 'patchMention',
+  tags: ['chat', 'mention'],
+  summary: 'Patch mention',
+  description: "Patch mention's status.",
+
+  params: customType.StrictObject({
+    mentionId: customType.UUID(),
+  }),
+  body: customType.StrictObject({
+    status: Type.Enum(MentionStatus),
+  }),
   response: {
     [StatusCodes.OK]: minimalChatMentionSchemaRef,
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
-/**
- * JSON schema on DELETE remove mention route for request and response
- */
 export const deleteMention = {
-  params: mentionIdSchemaRef,
+  operationId: 'deleteMention',
+  tags: ['chat', 'mention'],
+  summary: 'Delete mention',
+  description: 'Delete mention.',
+
+  params: customType.StrictObject({
+    mentionId: customType.UUID(),
+  }),
   response: {
     [StatusCodes.OK]: minimalChatMentionSchemaRef,
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
-/**
- * JSON schema on DELETE clear all mentions route for request and response
- */
 export const clearAllMentions = {
+  operationId: 'clearAllMentions',
+  tags: ['chat', 'mention'],
+  summary: 'Clear all mentions for current user',
+  description: 'Clear all mentions for current user.',
+
   response: {
     [StatusCodes.OK]: Type.Array(completeChatMentionSchemaRef),
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
