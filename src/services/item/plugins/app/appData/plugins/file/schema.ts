@@ -5,9 +5,9 @@ import { customType } from '../../../../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../../../../schemas/global';
 import { appDataSchemaRef } from '../../schemas';
 
-const upload = {
+export const upload = {
   operationId: 'createAppDataFile',
-  tags: ['app', 'file'],
+  tags: ['app', 'app-data', 'file'],
   summary: 'Create app data file',
   description: 'Upload a file to create a corresponding app data.',
 
@@ -20,9 +20,9 @@ const upload = {
   },
 };
 
-const download = {
+export const download = {
   operationId: 'downloadAppDataFile',
-  tags: ['app', 'file'],
+  tags: ['app', 'app-data', 'file'],
   summary: 'Download app data file',
   description: 'Download app data file.',
 
@@ -40,5 +40,3 @@ const download = {
     '4xx': errorSchemaRef,
   },
 };
-
-export { upload, download };
