@@ -3,14 +3,17 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifySchema } from 'fastify';
 
+import { AppDataVisibility } from '@graasp/sdk';
+
 import { customType, registerSchemaAsRef } from '../../../../../plugins/typebox';
+import { errorSchemaRef } from '../../../../../schemas/global';
 import { accountSchemaRef, nullableAccountSchemaRef } from '../../../../account/schemas';
 import { itemSchemaRef } from '../../../schemas';
 
 export const appDataSchemaRef = registerSchemaAsRef(
   'appData',
   'App Data',
-  Type.Object(
+  customType.StrictObject(
     {
       // Object Definition
       id: customType.UUID(),
@@ -25,68 +28,86 @@ export const appDataSchemaRef = registerSchemaAsRef(
       updatedAt: customType.DateTime(),
     },
     {
-      // Schema Options
-      additionalProperties: false,
+      description: 'User data saved for an app.',
     },
   ),
 );
 
 export const create = {
+  operationId: 'createAppData',
+  tags: ['app', 'app-data'],
+  summary: 'Create a user data for an app',
+  description: 'Create a user data in an app given data and type.',
+
   params: Type.Object({
     itemId: customType.UUID(),
   }),
-  body: {
-    type: 'object',
-    required: ['data', 'type'],
-    properties: {
-      data: { type: 'object', additionalProperties: true },
-      type: { type: 'string', minLength: 3, maxLength: 25 },
-      visibility: { type: 'string', enum: ['member', 'item'] },
-      /** @deprecated use accountId */
-      memberId: customType.UUID({ deprecated: true }),
-      accountId: customType.UUID(),
-    },
-  },
+  body: customType.StrictObject({
+    data: Type.Object({}),
+    type: Type.String({ minLength: 3, maxLength: 25 }),
+    visibility: Type.Optional(Type.Enum(AppDataVisibility)),
+    /** @deprecated use accountId */
+    memberId: Type.Optional(customType.UUID({ deprecated: true })),
+    accountId: Type.Optional(customType.UUID()),
+  }),
   response: {
     [StatusCodes.OK]: appDataSchemaRef,
+    '4xx': errorSchemaRef,
   },
 };
 
 export const updateOne = {
-  params: Type.Object({
+  operationId: 'updateAppData',
+  tags: ['app', 'app-data'],
+  summary: 'Update an app data',
+  description: 'Update a given app data with new data.',
+
+  params: customType.StrictObject({
     itemId: customType.UUID(),
     id: customType.UUID(),
   }),
-  body: Type.Object({
+  body: customType.StrictObject({
     data: Type.Object({}, { additionalProperties: true }),
   }),
   response: {
     [StatusCodes.OK]: appDataSchemaRef,
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
 export const deleteOne = {
-  params: Type.Object({
+  operationId: 'deleteAppData',
+  tags: ['app', 'app-data'],
+  summary: 'Delete an app data',
+  description: 'Delete a given app data.',
+
+  params: customType.StrictObject({
     itemId: customType.UUID(),
     id: customType.UUID(),
   }),
   response: {
-    [StatusCodes.OK]: customType.UUID(),
+    [StatusCodes.OK]: customType.UUID({ descritpion: 'Successful Response' }),
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
 export const getForOne = {
-  params: Type.Object({
+  operationId: 'getAppDataForApp',
+  tags: ['app', 'app-data'],
+  summary: 'Get all app data of an app',
+  description:
+    'Get app data saved for an app, depending on the permission of the user and the data visibility.',
+
+  params: customType.StrictObject({
     itemId: customType.UUID(),
   }),
-  querystring: {
-    type: 'object',
-    properties: {
-      type: { type: 'string' },
-    },
-    additionalProperties: false,
-  },
+  querystring: customType.StrictObject({
+    type: Type.Optional(
+      Type.String({ description: 'Return only app data that exactly match given type.' }),
+    ),
+  }),
   response: {
-    [StatusCodes.OK]: Type.Array(appDataSchemaRef),
+    [StatusCodes.OK]: Type.Array(appDataSchemaRef, { descritpion: 'Successful Response' }),
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
