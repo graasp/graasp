@@ -6,7 +6,7 @@ import { FastifySchema } from 'fastify';
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
 
-const inputPublicProfileMemberSchemaRef = customType.StrictObject({
+const inputPublicProfileMemberSchema = customType.StrictObject({
   bio: Type.String(),
   facebookID: Type.String(),
   linkedinID: Type.String(),
@@ -15,11 +15,11 @@ const inputPublicProfileMemberSchemaRef = customType.StrictObject({
 });
 
 export const profileMemberSchemaRef = registerSchemaAsRef(
-  'memberProfile',
-  'Member Profile',
+  'profile',
+  'Profile',
   Type.Intersect(
     [
-      inputPublicProfileMemberSchemaRef,
+      inputPublicProfileMemberSchema,
       customType.StrictObject({
         id: customType.UUID(),
         createdAt: customType.DateTime(),
@@ -31,12 +31,12 @@ export const profileMemberSchemaRef = registerSchemaAsRef(
 );
 
 export const createOwnProfile = {
-  operationId: 'createOwnMemberProfile',
+  operationId: 'createOwnProfile',
   tags: ['profile', 'member'],
   summary: 'Create profile for current member',
   description: 'Create profile for current member.',
 
-  body: inputPublicProfileMemberSchemaRef,
+  body: inputPublicProfileMemberSchema,
   response: {
     [StatusCodes.CREATED]: profileMemberSchemaRef,
     [StatusCodes.UNAUTHORIZED]: errorSchemaRef,
@@ -61,7 +61,7 @@ export const getProfileForMember = {
 } as const satisfies FastifySchema;
 
 export const getOwnProfile = {
-  operationId: 'getOwnMemberProfile',
+  operationId: 'getOwnProfile',
   tags: ['profile', 'member'],
   summary: 'Get profile of current member',
   description: 'Get profile of current member',
@@ -75,13 +75,13 @@ export const getOwnProfile = {
   },
 } as const satisfies FastifySchema;
 
-export const updateOwnMemberProfile = {
-  operationId: 'updateMemberProfile',
+export const updateOwnProfile = {
+  operationId: 'updateOwnProfile',
   tags: ['profile', 'member'],
   summary: 'Update profile of current member',
   description: 'Update profile of current member',
 
-  body: Type.Partial(inputPublicProfileMemberSchemaRef),
+  body: Type.Partial(inputPublicProfileMemberSchema),
   response: {
     [StatusCodes.OK]: profileMemberSchemaRef,
     [StatusCodes.UNAUTHORIZED]: errorSchemaRef,
