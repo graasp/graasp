@@ -9,7 +9,12 @@ import { matchOne } from '../../../authorization';
 import { assertIsMember } from '../../entities/member';
 import { validatedMemberAccountRole } from '../../strategies/validatedMemberAccountRole';
 import { MemberProfileNotFound } from './errors';
-import { createProfile, getOwnProfile, getProfileForMember, updateMemberProfile } from './schemas';
+import {
+  createOwnProfile,
+  getOwnProfile,
+  getProfileForMember,
+  updateOwnMemberProfile,
+} from './schemas';
 import { MemberProfileService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
@@ -48,7 +53,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.post(
     '/',
     {
-      schema: createProfile,
+      schema: createOwnProfile,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
     async (request, reply) => {
@@ -68,7 +73,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.patch(
     '/',
     {
-      schema: updateMemberProfile,
+      schema: updateOwnMemberProfile,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
     async ({ user, body }) => {
