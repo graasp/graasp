@@ -41,17 +41,16 @@ export class RecycledItemDataRepository extends MutableRepository<RecycledItemDa
     const query = this.repository
       .createQueryBuilder('recycledItem')
       .withDeleted()
-      .leftJoinAndSelect('recycledItem.creator', 'creator')
-      .leftJoinAndSelect('recycledItem.item', 'item')
-      .leftJoinAndSelect('item.creator', 'itemMember')
       .innerJoin(
         'item_membership',
         'im',
-        `im.item_path @> item.path 
-        AND im.permission = :permission 
-        AND im.account_id = :accountId`,
+        `im.account_id = :accountId
+        AND im.permission = :permission
+        AND im.item_path @> recycledItem.item_path`,
         { permission: PermissionLevel.Admin, accountId: account.id },
       )
+      .leftJoinAndSelect('recycledItem.item', 'item')
+      .leftJoinAndSelect('item.creator', 'itemMember')
       .orderBy('recycledItem.created_at', 'DESC');
 
     const [data, totalCount] = await query.offset(skip).limit(limit).getManyAndCount();

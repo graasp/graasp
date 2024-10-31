@@ -7,7 +7,6 @@ import { MAX_TARGETS_FOR_MODIFY_REQUEST } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
-import { nullableMemberSchemaRef } from '../../../member/schemas';
 import { ITEMS_PAGE_SIZE } from '../../constants';
 import { itemSchemaRef } from '../../schemas';
 
@@ -18,7 +17,6 @@ export const recycledItemSchemaRef = registerSchemaAsRef(
     {
       id: customType.UUID(),
       item: itemSchemaRef,
-      creator: nullableMemberSchemaRef,
       createdAt: customType.DateTime(),
     },
     {
