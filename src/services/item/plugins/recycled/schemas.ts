@@ -22,7 +22,8 @@ export const recycledItemSchemaRef = registerSchemaAsRef(
       createdAt: customType.DateTime(),
     },
     {
-      description: 'Instance representing a deleted item and its deleted descendants',
+      description:
+        "Instance representing a deleted item and its deleted descendants. A recycled item is not permanently deleted, it's still possible to recover it.",
     },
   ),
 );

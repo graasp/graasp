@@ -9,7 +9,6 @@ import {
   FolderItemFactory,
   HttpMethod,
   MAX_TARGETS_FOR_MODIFY_REQUEST,
-  MAX_TARGETS_FOR_READ_REQUEST,
   PermissionLevel,
 } from '@graasp/sdk';
 
