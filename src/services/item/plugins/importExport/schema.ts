@@ -10,7 +10,8 @@ export const zipImport = {
   operationId: 'importZip',
   tags: ['item', 'import'],
   summary: 'Import ZIP content',
-  description: 'Import content of a ZIP, creating corresponding structure and items.',
+  description:
+    'Import and extract the content of a ZIP, creating the corresponding structure and items.',
 
   querystring: customType.StrictObject({
     parentId: Type.Optional(
