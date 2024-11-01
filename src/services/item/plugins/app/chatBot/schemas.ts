@@ -5,35 +5,42 @@ import { ChatbotRole, GPTVersion } from '@graasp/sdk';
 
 import { customType } from '../../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../../schemas/global';
-
-const chatBotDefinition = Type.Object(
-  {
-    role: Type.Enum(ChatbotRole),
-    content: Type.String(),
-  },
-  {
-    description: 'Chatbot',
-  },
-);
+import { OPENAI_GPT_VERSION } from '../../../../../utils/config';
 
 export const create = {
-  operationId: 'createAppChatbotPrompt',
+  operationId: 'createChatbotCompletionPrompt',
   tags: ['app', 'chatbot'],
-  summary: 'Create app chatbot prompt',
-  description: 'Create app chatbot prompt.',
+  summary: 'Get a prompt completion from a chatbot',
+  description: 'Given a prompt, it returns a completion from a chatbot.',
 
-  body: Type.Array(chatBotDefinition, { minItems: 1 }),
+  body: Type.Array(
+    Type.Object(
+      {
+        role: Type.Enum(ChatbotRole),
+        content: Type.String(),
+      },
+      {
+        description: 'Chatbot Completion Prompt',
+      },
+    ),
+    { minItems: 1 },
+  ),
   params: customType.StrictObject({
     itemId: customType.UUID(),
   }),
   querystring: customType.StrictObject({
-    gptVersion: Type.Optional(Type.Enum(GPTVersion)),
+    gptVersion: Type.Optional(
+      Type.Enum(GPTVersion, { description: 'Model to use', default: OPENAI_GPT_VERSION }),
+    ),
   }),
   response: {
-    [StatusCodes.OK]: Type.Object({
-      completion: customType.Nullable(Type.String()),
-      model: Type.Optional(Type.String()),
-    }),
+    [StatusCodes.OK]: Type.Object(
+      {
+        completion: customType.Nullable(Type.String()),
+        model: Type.Optional(Type.String()),
+      },
+      { description: 'Successful Response' },
+    ),
     '4xx': errorSchemaRef,
   },
 };
