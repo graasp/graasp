@@ -1,33 +1,46 @@
+import { Type } from '@sinclair/typebox';
+import { StatusCodes } from 'http-status-codes';
+
 import { ChatbotRole, GPTVersion } from '@graasp/sdk';
 
-const chatBotDefinition = {
-  type: 'object',
-  required: ['role', 'content'],
-  properties: {
-    role: { type: 'string', enum: Object.values(ChatbotRole) },
-    content: { type: 'string' },
-  },
-};
+import { customType } from '../../../../../plugins/typebox';
+import { errorSchemaRef } from '../../../../../schemas/global';
+import { OPENAI_GPT_VERSION } from '../../../../../utils/config';
 
-const create = {
-  body: {
-    type: 'array',
-    items: chatBotDefinition,
-    minItems: 1, // do not allow empty array
-  },
-  querystring: {
-    type: 'object',
-    properties: {
-      gptVersion: { type: 'string', enum: Object.values(GPTVersion) },
-    },
-    additionalProperties: false,
-  },
+export const create = {
+  operationId: 'createChatbotCompletionPrompt',
+  tags: ['app', 'chatbot'],
+  summary: 'Get a prompt completion from a chatbot',
+  description: 'Given a prompt, it returns a completion from a chatbot.',
+
+  body: Type.Array(
+    Type.Object(
+      {
+        role: Type.Enum(ChatbotRole),
+        content: Type.String(),
+      },
+      {
+        description: 'Chatbot Completion Prompt',
+      },
+    ),
+    { minItems: 1 },
+  ),
+  params: customType.StrictObject({
+    itemId: customType.UUID(),
+  }),
+  querystring: customType.StrictObject({
+    gptVersion: Type.Optional(
+      Type.Enum(GPTVersion, { description: 'Model to use', default: OPENAI_GPT_VERSION }),
+    ),
+  }),
   response: {
-    200: {
-      completion: { type: 'string' },
-      model: { type: 'string' },
-    },
+    [StatusCodes.OK]: Type.Object(
+      {
+        completion: customType.Nullable(Type.String()),
+        model: Type.Optional(Type.String()),
+      },
+      { description: 'Successful Response' },
+    ),
+    '4xx': errorSchemaRef,
   },
 };
-
-export { create };
