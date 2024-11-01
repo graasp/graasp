@@ -7,7 +7,6 @@ import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import { Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
-import { RecycledItemData } from './RecycledItemData';
 
 @singleton()
 export class RecycledBinService {
@@ -26,10 +25,10 @@ export class RecycledBinService {
     member: Member,
     repositories: Repositories,
     pagination: Pagination,
-  ): Promise<Paginated<RecycledItemData>> {
+  ): Promise<Paginated<Item>> {
     const { recycledItemRepository } = repositories;
 
-    return await recycledItemRepository.getOwn(member, pagination);
+    return await recycledItemRepository.getOwnRecycledItems(member, pagination);
   }
 
   async recycleMany(actor: Member, repositories: Repositories, itemIds: string[]) {

@@ -12,7 +12,7 @@ import { memberAccountRole } from '../../../member/strategies/memberAccountRole'
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { ITEMS_PAGE_SIZE } from '../../constants';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
-import { getOwnRecycledItemDatas, recycleMany, restoreMany } from './schemas';
+import { getOwnRecycledItems, recycleMany, restoreMany } from './schemas';
 import { RecycledBinService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
@@ -30,7 +30,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.get(
     '/recycled',
     {
-      schema: getOwnRecycledItemDatas,
+      schema: getOwnRecycledItems,
       preHandler: [isAuthenticated, matchOne(memberAccountRole)],
     },
     async ({ user, query }) => {

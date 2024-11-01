@@ -5,6 +5,7 @@ import { Paginated, Pagination, PermissionLevel } from '@graasp/sdk';
 import { MutableRepository } from '../../../../repositories/MutableRepository';
 import { DEFAULT_PRIMARY_KEY } from '../../../../repositories/const';
 import { Account } from '../../../account/entities/account';
+import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
 import { Member } from '../../../member/entities/member';
 import { ITEMS_PAGE_SIZE_MAX } from '../../constants';
 import { Item } from '../../entities/Item';
@@ -33,28 +34,41 @@ export class RecycledItemDataRepository extends MutableRepository<RecycledItemDa
     return recycled;
   }
 
-  async getOwn(account: Account, pagination: Pagination): Promise<Paginated<RecycledItemData>> {
+  async getOwnRecycledItems(account: Account, pagination: Pagination): Promise<Paginated<Item>> {
     const { page, pageSize } = pagination;
     const limit = Math.min(pageSize, ITEMS_PAGE_SIZE_MAX);
     const skip = (page - 1) * limit;
-    // get only with admin membership
-    const query = this.repository
-      .createQueryBuilder('recycledItem')
-      .withDeleted()
-      .innerJoin(
-        'item_membership',
-        'im',
-        `im.account_id = :accountId
-        AND im.permission = :permission
-        AND im.item_path @> recycledItem.item_path`,
-        { permission: PermissionLevel.Admin, accountId: account.id },
-      )
-      .leftJoinAndSelect('recycledItem.item', 'item')
-      .leftJoinAndSelect('item.creator', 'itemMember')
-      .orderBy('recycledItem.created_at', 'DESC');
 
-    const [data, totalCount] = await query.offset(skip).limit(limit).getManyAndCount();
-    return { data, totalCount, pagination };
+    const query = this.manager
+      // start with smaller table that can have the most contraints: membership with admin and accountId
+      .getRepository(ItemMembership)
+      .createQueryBuilder('im')
+      // we want to join on recycled item
+      .withDeleted()
+      .innerJoinAndSelect(
+        'im.item',
+        'item',
+        // reduce size by getting only recycled items
+        `item.path <@ im.item_path and item.deleted_at is not null`,
+      )
+      // get top most recycled item
+      .innerJoin(RecycledItemData, 'rid', 'item.path = rid.item_path')
+      // return item's creator
+      .leftJoinAndSelect('item.creator', 'member')
+      // item membership constraints
+      .where(`im.account_id = :accountId`, {
+        accountId: account.id,
+      })
+      .andWhere(` im.permission = :permission`, {
+        permission: PermissionLevel.Admin,
+      })
+      // show most recently deleted items first
+      .orderBy('item.deleted_at', 'DESC')
+      .offset(skip)
+      .limit(limit);
+
+    const [data, totalCount] = await query.getManyAndCount();
+    return { data: data.map(({ item }) => item), totalCount, pagination };
   }
 
   // warning: this call removes from the table

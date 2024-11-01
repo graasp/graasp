@@ -2,7 +2,6 @@ import {
   BaseEntity,
   CreateDateColumn,
   Entity,
-  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -15,7 +14,6 @@ import { PackedItem } from '../../ItemWrapper';
 import { Item } from '../../entities/Item';
 
 @Entity()
-@Index('IDX_gist_recycled_item_data_item_path', { synchronize: false })
 @Unique('recycled-item-data', ['item'])
 export class RecycledItemData extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -28,7 +26,6 @@ export class RecycledItemData extends BaseEntity {
   @JoinColumn({ name: 'creator_id' })
   creator: Member;
 
-  @Index('IDX_recycled_item_data_created_at')
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

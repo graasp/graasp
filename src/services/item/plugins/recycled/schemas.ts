@@ -26,11 +26,11 @@ export const recycledItemSchemaRef = registerSchemaAsRef(
   ),
 );
 
-export const getOwnRecycledItemDatas = {
-  operationId: 'getOwnRecycledItemData',
+export const getOwnRecycledItems = {
+  operationId: 'getOwnRecycledItems',
   tags: ['recycled', 'item'],
-  summary: 'Get own recycled item data',
-  description: 'Get own recycled item data.',
+  summary: 'Get own recycled items',
+  description: 'Get own recycled items.',
 
   querystring: Type.Optional(
     customType.Pagination({
@@ -43,7 +43,7 @@ export const getOwnRecycledItemDatas = {
   ),
   response: {
     [StatusCodes.OK]: customType.StrictObject({
-      data: Type.Array(recycledItemSchemaRef),
+      data: Type.Array(itemSchemaRef),
       totalCount: Type.Number({
         minimum: 0,
       }),
