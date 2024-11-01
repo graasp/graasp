@@ -9,7 +9,7 @@ export const upload = {
   operationId: 'createAppSettingFile',
   tags: ['app', 'app-setting', 'file'],
   summary: 'Create app setting file',
-  description: 'Upload a file to create a corresponding app setting.',
+  description: `Upload a file to create a corresponding app setting. The setting's name can be defined in the file body (form data) as "name", otherwise it will default to "file"`,
 
   response: {
     [StatusCodes.OK]: appSettingSchemaRef,

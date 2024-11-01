@@ -1,15 +1,18 @@
 import { Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
+import { AppDataVisibility } from '@graasp/sdk';
+
 import { customType } from '../../../../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../../../../schemas/global';
+import { APP_DATA_TYPE_FILE } from '../../../constants';
 import { appDataSchemaRef } from '../../schemas';
 
 export const upload = {
   operationId: 'createAppDataFile',
   tags: ['app', 'app-data', 'file'],
   summary: 'Create app data file',
-  description: 'Upload a file to create a corresponding app data.',
+  description: `Upload a file to create a corresponding app data. The created app data will be "${APP_DATA_TYPE_FILE}" and visibility ${AppDataVisibility.Member}. The data property will contain the file properties.`,
 
   response: {
     [StatusCodes.OK]: appDataSchemaRef,
