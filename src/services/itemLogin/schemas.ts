@@ -14,11 +14,11 @@ const itemLoginSchemaSchema = customType.StrictObject(
   {
     id: customType.UUID(),
     type: customType.EnumString(Object.values(ItemLoginSchemaType), {
-      description: 'Defined which credentials are necessary to login.',
+      description: 'Defines which credentials are necessary to login.',
     }),
     status: customType.EnumString(Object.values(ItemLoginSchemaStatus), {
       description:
-        'Whether the item login is enabled, freezed or disabled. An item login is never deleted, but disabled instead to prevent attached guests to be deleted.',
+        'Item login status, which can be enabled, frozen, or disabled. Item login cannot be deleted, an item login can be disabled instead to prevent deleting associated guest accounts.',
     }),
     item: Type.Optional(itemSchemaRef),
     createdAt: customType.DateTime(),
@@ -26,7 +26,7 @@ const itemLoginSchemaSchema = customType.StrictObject(
   },
   {
     description:
-      'Instance allowing to login without a member on related item and its descendants. The required credentials are defined given the status.',
+      'Instance allowing to login without a member on related item and its descendants. The required credentials are defined given the type.',
   },
 );
 
@@ -36,20 +36,18 @@ export const itemLoginSchemaSchemaRef = registerSchemaAsRef(
   itemLoginSchemaSchema,
 );
 
-export const loginOrRegister = {
-  operationId: 'itemLogin',
+export const loginOrRegisterAsGuest = {
+  operationId: 'loginOrRegisterAsGuest',
   tags: ['item-login'],
-  summary: 'Login or Register in item',
-  description: `Login in item with necessary credentials depending on item login's status. If the username does not exist, a guest account is created and the user is logged in.`,
+  summary: 'Login or Register in item as guest',
+  description: `Log in to an item with necessary credentials depending on item login's type. If the username does not exist, a guest account is created and is given access.`,
 
   params: customType.StrictObject({
     id: customType.UUID(),
   }),
   body: customType.StrictObject({
     username: customType.Username(),
-    password: Type.Optional(
-      Type.String({ minLength: 3, maxLength: 50, pattern: '^\\S+( \\S+)*$' }),
-    ),
+    password: Type.Optional(Type.String({ minLength: 3, maxLength: 50 })),
   }),
   response: {
     [StatusCodes.OK]: accountSchemaRef,
@@ -76,7 +74,7 @@ export const getLoginSchemaType = {
   },
 } as const satisfies FastifySchema;
 
-export const getLoginSchema = {
+export const getItemLoginSchema = {
   operationId: 'getItemLoginSchema',
   tags: ['item-login'],
   summary: 'Get item login data',
