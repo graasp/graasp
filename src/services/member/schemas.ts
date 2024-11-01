@@ -3,10 +3,11 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifySchema } from 'fastify';
 
-import { AccountType, MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
+import { MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 import { errorSchemaRef } from '../../schemas/global';
+import { accountTypeGuestRef, accountTypeIndividualRef } from '../account/schemas';
 import { FILE_METADATA_DEFAULT_PAGE_SIZE, FILE_METADATA_MIN_PAGE } from './constants';
 
 /**
@@ -73,7 +74,7 @@ const compositeCurrentMemberSchema = Type.Composite([
   Type.Object(
     {
       email: Type.Optional(Type.String({ format: 'email' })),
-      type: Type.Literal(AccountType.Individual),
+      type: accountTypeIndividualRef,
       isValidated: Type.Boolean(),
       userAgreementsDate: Type.Union([Type.Null(), customType.DateTime()]),
       enableSaveActions: Type.Boolean(),
@@ -87,7 +88,7 @@ const compositeCurrentGuestSchema = Type.Composite([
   currentAccountSchema, // Base properties from minimal current account
   Type.Object(
     {
-      type: Type.Literal(AccountType.Guest),
+      type: accountTypeGuestRef,
       extra: Type.Object({}, { additionalProperties: true }),
     },
     { additionalProperties: false },
@@ -124,18 +125,14 @@ export const nullableCurrentAccountSchemaRef = registerSchemaAsRef(
   ),
 );
 
-export const updateMemberRequiredOneSchemaRef = registerSchemaAsRef(
-  'updateMemberRequiredOne',
-  'Update Member Required One',
-  Type.Object(
-    {
-      // Object definition
-      name: Type.Optional(customType.Username()),
-      enableSaveActions: Type.Optional(Type.Boolean()),
-      extra: Type.Optional(Type.Object({}, { additionalProperties: true })),
-    },
-    { additionalProperties: false, minProperties: 1 },
-  ),
+const updateMemberRequiredOneSchema = Type.Object(
+  {
+    // Object definition
+    name: Type.Optional(customType.Username()),
+    enableSaveActions: Type.Optional(Type.Boolean()),
+    extra: Type.Optional(Type.Object({}, { additionalProperties: true })),
+  },
+  { additionalProperties: false, minProperties: 1 },
 );
 
 export const fileItemMetadata = customType.StrictObject(
@@ -274,7 +271,7 @@ export const updateOne = {
   params: customType.StrictObject({
     id: customType.UUID(),
   }),
-  body: updateMemberRequiredOneSchemaRef,
+  body: updateMemberRequiredOneSchema,
   response: {
     [StatusCodes.OK]: currentAccountSchemaRef,
     [StatusCodes.FORBIDDEN]: errorSchemaRef,
@@ -283,7 +280,7 @@ export const updateOne = {
 
 // schema for updating the current member
 export const updateCurrent = {
-  body: updateMemberRequiredOneSchemaRef,
+  body: updateMemberRequiredOneSchema,
   response: {
     [StatusCodes.OK]: currentAccountSchemaRef,
     [StatusCodes.FORBIDDEN]: errorSchemaRef,

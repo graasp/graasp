@@ -25,7 +25,7 @@ const baseItemCreateSchema = Type.Composite(
 );
 
 /**
- * Items' extra field is discriminated by the type field. This function creates a schema for the extra field based on the type field, so the `augmentedItemCreateSchemaRef` can be created.
+ * Items' extra field is discriminated by the type field. This function creates a schema for the extra field based on the type field, so `augmentedItemCreateSchema` can be created.
  * @param literal Item type
  * @param extra Extra object associated with the item type
  * @returns The complete item create schema for the item type
@@ -39,7 +39,7 @@ function itemCreateSchemaFactory<L extends string, E extends TProperties>(
       Type.Omit(baseItemCreateSchema, ['settings']),
       Type.Object(
         {
-          type: Type.Literal(literal),
+          type: Type.String(literal),
           settings: Type.Optional(settingsSchema),
           extra: Type.Optional(
             Type.Object({ [literal]: extra } as Record<L, TObject<E>>, {
@@ -137,10 +137,14 @@ const shortcutItemCreateSchema = itemCreateSchemaFactory(
   Type.Object({ target: customType.UUID() }, { additionalProperties: false }),
 );
 
-export const augmentedItemCreateSchemaRef = registerSchemaAsRef(
-  'augmentedItemCreate',
-  'Augmented Item Create',
-  customType.Discriminable(
+export const create = {
+  querystring: Type.Partial(
+    Type.Object(
+      { parentId: customType.UUID(), previousItemId: customType.UUID() },
+      { additionalProperties: false },
+    ),
+  ),
+  body: customType.Discriminable(
     [
       folderItemCreateSchema,
       appItemCreateSchema,
@@ -154,15 +158,5 @@ export const augmentedItemCreateSchemaRef = registerSchemaAsRef(
     ],
     'type',
   ),
-);
-
-export const create = {
-  querystring: Type.Partial(
-    Type.Object(
-      { parentId: customType.UUID(), previousItemId: customType.UUID() },
-      { additionalProperties: false },
-    ),
-  ),
-  body: augmentedItemCreateSchemaRef,
   response: { [StatusCodes.OK]: itemSchemaRef, '4xx': errorSchemaRef },
 } as const satisfies FastifySchema;

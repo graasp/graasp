@@ -14,6 +14,11 @@ export default async function (instance: FastifyInstance): Promise<void> {
         description: 'Graasp Backend API used to serve data to frontend applications',
       },
     },
+    refResolver: {
+      buildLocalReference(json, baseUri, fragment, i) {
+        return json.$id?.toString() || `my-fragment-${i}`;
+      },
+    },
   });
 
   await instance.register(swaggerUiPlugin, {

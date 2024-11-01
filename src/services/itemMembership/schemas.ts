@@ -31,31 +31,14 @@ export const itemMembershipSchemaRef = registerSchemaAsRef(
   ),
 );
 
-export const createItemMembershipSchemaRef = registerSchemaAsRef(
-  'createItemMembership',
-  'Create Item Membership',
-  Type.Object(
-    {
-      accountId: customType.UUID(),
-      permission: Type.Enum(PermissionLevel),
-    },
-    {
-      additionalProperties: false,
-    },
-  ),
-);
-
-export const updateItemMembershipSchemaRef = registerSchemaAsRef(
-  'updateItemMembership',
-  'Update Item Membership',
-  Type.Object(
-    {
-      permission: Type.Enum(PermissionLevel),
-    },
-    {
-      additionalProperties: false,
-    },
-  ),
+export const createItemMembershipSchema = Type.Object(
+  {
+    accountId: customType.UUID(),
+    permission: Type.Enum(PermissionLevel),
+  },
+  {
+    additionalProperties: false,
+  },
 );
 
 // schema for creating an item membership
@@ -63,7 +46,7 @@ export const create = {
   querystring: customType.StrictObject({
     itemId: customType.UUID(),
   }),
-  body: createItemMembershipSchemaRef,
+  body: createItemMembershipSchema,
   response: {
     [StatusCodes.OK]: itemMembershipSchemaRef,
   },
@@ -75,7 +58,7 @@ export const createMany = {
     itemId: customType.UUID(),
   }),
   body: Type.Object(
-    { memberships: Type.Array(createItemMembershipSchemaRef) },
+    { memberships: Type.Array(createItemMembershipSchema) },
     { additionalProperties: false },
   ),
   response: {
@@ -102,7 +85,9 @@ export const updateOne = {
   params: customType.StrictObject({
     id: customType.UUID(),
   }),
-  body: updateItemMembershipSchemaRef,
+  body: customType.StrictObject({
+    permission: Type.Enum(PermissionLevel),
+  }),
   response: {
     [StatusCodes.OK]: itemMembershipSchemaRef,
   },
