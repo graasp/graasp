@@ -1,7 +1,7 @@
 import { fastifyMultipart } from '@fastify/multipart';
-import { FastifyPluginAsync } from 'fastify';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { HttpMethod, UUID } from '@graasp/sdk';
+import { HttpMethod } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../../../di/utils';
 import { asDefined } from '../../../../../../../utils/assertions';
@@ -29,7 +29,7 @@ export interface GraaspPluginFileOptions {
   appSettingService: AppSettingService;
 }
 
-const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, options) => {
+const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fastify, options) => {
   const { maxFileSize = DEFAULT_MAX_FILE_SIZE, appSettingService } = options;
 
   const { db } = fastify;
@@ -88,7 +88,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   };
   appSettingService.hooks.setPreHook('patch', patchPreHook);
 
-  fastify.route<{ Body: unknown }>({
+  fastify.route({
     method: HttpMethod.Post,
     url: '/app-settings/upload',
     schema: upload,
@@ -123,15 +123,9 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
           throw new UploadFileUnexpectedError(e);
         });
     },
-    // onResponse: async (request, reply) => {
-    //   uploadOnResponse?.(request, reply);
-    // },
   });
 
-  fastify.get<{
-    Params: { id: UUID };
-    Querystring: { size?: string };
-  }>(
+  fastify.get(
     '/app-settings/:id/download',
     {
       schema: download,
