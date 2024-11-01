@@ -336,7 +336,6 @@ describe('ZIP routes tests', () => {
         method: HttpMethod.Get,
         url: `/items/${item.id}/export`,
       });
-
       expect(response.statusCode).toBe(StatusCodes.OK);
       expect(response.headers['content-disposition']).toContain(item.name);
     });
