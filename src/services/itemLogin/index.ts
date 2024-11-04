@@ -14,7 +14,12 @@ import { ItemMembershipService } from '../itemMembership/service';
 import { assertIsMember } from '../member/entities/member';
 import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
 import { ItemLoginSchemaNotFound, ValidMemberSession } from './errors';
-import { getLoginSchema, getLoginSchemaType, login, updateLoginSchema } from './schemas';
+import {
+  getItemLoginSchema,
+  getLoginSchemaType,
+  loginOrRegisterAsGuest,
+  updateLoginSchema,
+} from './schemas';
 import { ItemLoginService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
@@ -67,7 +72,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.get(
     '/:id/login-schema',
     {
-      schema: getLoginSchema,
+      schema: getItemLoginSchema,
       preHandler: isAuthenticated,
     },
     async ({ user, params: { id: itemId } }) => {
@@ -93,7 +98,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.post(
     '/:id/login',
     {
-      schema: login,
+      schema: loginOrRegisterAsGuest,
       // set member in request if exists without throwing
       preHandler: optionalIsAuthenticated,
     },
