@@ -1,6 +1,6 @@
 import { singleton } from 'tsyringe';
 
-import { PermissionLevel, UUID } from '@graasp/sdk';
+import { PermissionLevel, TagCategory, UUID } from '@graasp/sdk';
 
 import { Repositories } from '../../../../utils/repositories';
 import { Actor } from '../../../member/entities/member';
@@ -12,6 +12,23 @@ export class ItemTagService {
 
   constructor(itemService: ItemService) {
     this.itemService = itemService;
+  }
+
+  async createForItem(
+    actor: Actor,
+    repositories: Repositories,
+    itemId: UUID,
+    tagInfo: { name: string; category: TagCategory },
+  ) {
+    const { itemTagRepository, tagRepository } = repositories;
+
+    // Get item and check permission
+    await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
+
+    // create tag if does not exist
+    const tag = await tagRepository.addOneIfDoesNotExist(tagInfo);
+
+    return await itemTagRepository.createForItem(itemId, tag.id);
   }
 
   async getForItem(actor: Actor, repositories: Repositories, itemId: UUID) {

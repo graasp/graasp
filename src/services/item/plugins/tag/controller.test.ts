@@ -135,4 +135,76 @@ describe('Tag Endpoints', () => {
       });
     });
   });
+
+  describe('POST /:itemId/tags', () => {
+    it('Throw for invalid item id', async () => {
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: `/items/invalid/tags`,
+      });
+      expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+    });
+
+    describe('Signed out', () => {
+      it('Cannot add tag', async () => {
+        const member = await saveMember();
+        const { item } = await testUtils.savePublicItem({ member });
+        await createTagsForItem(item, tags);
+
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `/items/${item.id}/tags`,
+          payload: { name: 'name', category: TagCategory.Discipline },
+        });
+        expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+      });
+    });
+
+    describe('Signed In', () => {
+      beforeEach(async () => {
+        actor = await saveMember();
+        mockAuthenticate(actor);
+      });
+
+      it('Add tag for private item', async () => {
+        const member = await saveMember();
+        const { item } = await testUtils.saveItemAndMembership({ member: actor, creator: member });
+        await createTagsForItem(item, tags);
+
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `/items/${item.id}/tags`,
+          payload: { name: 'name', category: TagCategory.Discipline },
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
+      });
+
+      it('Cannot add tag with wrong category', async () => {
+        const { item } = await testUtils.saveItemAndMembership({ member: actor });
+
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `/items/${item.id}/tags`,
+          payload: { name: 'name', category: 'wrong' },
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      });
+
+      it('Throw if does not have access to item', async () => {
+        const member = await saveMember();
+        const item = await testUtils.saveItem({ actor: member });
+        await createTagsForItem(item, tags);
+
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `/items/${item.id}/tags`,
+          payload: { name: 'name', category: TagCategory.Discipline },
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
+      });
+    });
+  });
 });

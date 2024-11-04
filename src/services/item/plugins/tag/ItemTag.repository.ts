@@ -4,8 +4,10 @@ import { UUID } from '@graasp/sdk';
 
 import { AbstractRepository } from '../../../../repositories/AbstractRepository';
 import { IllegalArgumentException } from '../../../../repositories/errors';
+import { isDuplicateEntryError } from '../../../../utils/typeormError';
 import { ItemTag } from './ItemTag.entity';
 import { Tag } from './Tag.entity';
+import { ItemTagAlreadyExists } from './errors';
 
 export class ItemTagRepository extends AbstractRepository<ItemTag> {
   constructor(manager?: EntityManager) {
@@ -19,5 +21,16 @@ export class ItemTagRepository extends AbstractRepository<ItemTag> {
 
     const itemTags = await this.repository.find({ where: { itemId }, relations: { tag: true } });
     return itemTags.map(({ tag }) => tag);
+  }
+
+  async createForItem(itemId: UUID, tagId: Tag['id']): Promise<void> {
+    try {
+      await this.repository.insert({ itemId, tagId });
+    } catch (e) {
+      if (isDuplicateEntryError(e)) {
+        throw new ItemTagAlreadyExists({ itemId, tagId });
+      }
+      throw e;
+    }
   }
 }

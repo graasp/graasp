@@ -1,9 +1,13 @@
+import { StatusCodes } from 'http-status-codes';
+
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../di/utils';
 import { buildRepositories } from '../../../../utils/repositories';
-import { optionalIsAuthenticated } from '../../../auth/plugins/passport';
-import { getTagsForItem } from './schemas';
+import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import { matchOne } from '../../../authorization';
+import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
+import { createTagForItem, getTagsForItem } from './schemas';
 import { ItemTagService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
@@ -20,6 +24,22 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
         return await itemToTagService.getForItem(user?.account, repositories, itemId);
       });
+    },
+  );
+
+  fastify.post(
+    '/:itemId/tags',
+    {
+      schema: createTagForItem,
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
+    },
+    async ({ user, params: { itemId }, body }, reply) => {
+      await db.transaction(async (manager) => {
+        const repositories = buildRepositories(manager);
+
+        await itemToTagService.createForItem(user?.account, repositories, itemId, body);
+      });
+      reply.status(StatusCodes.NO_CONTENT);
     },
   );
 };
