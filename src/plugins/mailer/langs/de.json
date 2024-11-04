@@ -38,5 +38,8 @@
   "CHANGE_EMAIL_BUTTON_TEXT": "E-Mail-Änderung validieren",
   "CHANGE_EMAIL_NOT_REQUESTED": "Wenn Sie diese Änderung nicht angefordert haben, ignorieren Sie diese E-Mail bitte.",
   "CONFIRM_CHANGE_EMAIL_TITLE": "Ihre E-Mail wurde geändert",
-  "CONFIRM_CHANGE_EMAIL_TEXT": "Sie haben beantragt, Ihre E-Mail-Adresse in {{newEmail}} zu ändern. Ihre E-Mail-Adresse wurde erfolgreich aktualisiert."
+  "CONFIRM_CHANGE_EMAIL_TEXT": "Sie haben beantragt, Ihre E-Mail-Adresse in {{newEmail}} zu ändern. Ihre E-Mail-Adresse wurde erfolgreich aktualisiert.",
+  "MEMBERSHIP_REQUEST_TITLE": "{{memberName}} hat bei Ihnen einen Zugriff auf {{itemName}} angefordert",
+  "MEMBERSHIP_REQUEST_TEXT": "Sie wurden aufgefordert, {{memberName}} Zugriff auf {{itemName}} zu gewähren. Klicken Sie auf die folgende Schaltfläche, um die Anfrage anzunehmen oder abzulehnen.",
+  "MEMBERSHIP_REQUEST_BUTTON_TEXT": "Mitgliedschaften von {{itemName}} anzeigen"
 }
