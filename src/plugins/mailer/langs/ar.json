@@ -38,5 +38,8 @@
   "CHANGE_EMAIL_BUTTON_TEXT": "التحقق من صحة تغيير البريد الإلكتروني",
   "CHANGE_EMAIL_NOT_REQUESTED": "إذا لم تطلب هذا التغيير، فيرجى تجاهل هذه الرسالة الإلكترونية.",
   "CONFIRM_CHANGE_EMAIL_TITLE": "لقد تم تغيير بريدك الإلكتروني",
-  "CONFIRM_CHANGE_EMAIL_TEXT": "لقد طلبت تغيير بريدك الإلكتروني إلى {{newEmail}}. لقد تم تحديث بريدك الإلكتروني بنجاح."
+  "CONFIRM_CHANGE_EMAIL_TEXT": "لقد طلبت تغيير بريدك الإلكتروني إلى {{newEmail}}. لقد تم تحديث بريدك الإلكتروني بنجاح.",
+  "MEMBERSHIP_REQUEST_TITLE": "طلب منك {{memberName}} الوصول إلى {{itemName}}",
+  "MEMBERSHIP_REQUEST_TEXT": "لقد تم طلب منك منح حق الوصول إلى {{itemName}} لـ {{memberName}}. انقر على الزر التالي لقبول الطلب أو رفضه.",
+  "MEMBERSHIP_REQUEST_BUTTON_TEXT": "عرض عضويات {{itemName}}"
 }
