@@ -38,5 +38,8 @@
   "CHANGE_EMAIL_BUTTON_TEXT": "Convalida la modifica dell'e-mail",
   "CHANGE_EMAIL_NOT_REQUESTED": "Se non hai richiesto tu questa modifica, ignora questa email.",
   "CONFIRM_CHANGE_EMAIL_TITLE": "La tua email è stata modificata",
-  "CONFIRM_CHANGE_EMAIL_TEXT": "Hai richiesto di modificare la tua email in {{newEmail}}. La tua email è stata aggiornata con successo."
+  "CONFIRM_CHANGE_EMAIL_TEXT": "Hai richiesto di modificare la tua email in {{newEmail}}. La tua email è stata aggiornata con successo.",
+  "MEMBERSHIP_REQUEST_TITLE": "{{memberName}} ti ha richiesto l'accesso a {{itemName}}",
+  "MEMBERSHIP_REQUEST_TEXT": "Ti è stato richiesto di concedere l'accesso a {{itemName}} a {{memberName}}. Fai clic sul pulsante seguente per accettare o rifiutare la richiesta.",
+  "MEMBERSHIP_REQUEST_BUTTON_TEXT": "Visualizza le iscrizioni di {{itemName}}"
 }
