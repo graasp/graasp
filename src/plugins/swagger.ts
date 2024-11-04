@@ -15,6 +15,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
       },
     },
     refResolver: {
+      // define generated name of the definition
       buildLocalReference(json, baseUri, fragment, i) {
         return json.$id?.toString() || `my-fragment-${i}`;
       },
