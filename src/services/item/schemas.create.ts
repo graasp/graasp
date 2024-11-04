@@ -39,7 +39,7 @@ function itemCreateSchemaFactory<L extends string, E extends TProperties>(
       Type.Omit(baseItemCreateSchema, ['settings']),
       Type.Object(
         {
-          type: Type.String(literal),
+          type: Type.Literal(literal),
           settings: Type.Optional(settingsSchema),
           extra: Type.Optional(
             Type.Object({ [literal]: extra } as Record<L, TObject<E>>, {
