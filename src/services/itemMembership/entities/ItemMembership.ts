@@ -20,6 +20,7 @@ import { Member } from '../../member/entities/member';
 
 @Entity()
 @Index('IDX_gist_item_membership_path', { synchronize: false })
+@Index('IDX_item_membership_account_id_permission', ['account', 'permission'])
 @Unique('item_membership-item-member', ['item', 'account'])
 export class ItemMembership extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')

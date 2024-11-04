@@ -91,7 +91,7 @@ describe('Recycle Bin Tests', () => {
           });
           expectManyItems(dbDeletedItems, recycledItems);
           // check response recycled items
-          expectManyRecycledItems(response.data, recycledItems, actor);
+          expectManyItems(response.data, recycledItems, actor);
           expect(response.totalCount).toEqual(2);
           expect(response.pagination.page).toEqual(1);
           expect(response.pagination.pageSize).toEqual(ITEMS_PAGE_SIZE);
@@ -127,13 +127,13 @@ describe('Recycle Bin Tests', () => {
           });
           expectManyItems(dbDeletedItems, recycledItems);
           // receive last created item
-          expectManyRecycledItems(response.data, [item0], actor);
+          expectManyItems(response.data, [item0], actor);
           expect(response.totalCount).toEqual(recycledItems.length);
           expect(response.pagination.page).toEqual(2);
           expect(response.pagination.pageSize).toEqual(5);
         });
 
-        it('Successfully get subitems recycled items', async () => {
+        it('Successfully return recycled subitems', async () => {
           const { item: item0 } = await testUtils.saveRecycledItem(actor);
           const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
           const { item: deletedChild } = await testUtils.saveItemAndMembership({
@@ -158,11 +158,43 @@ describe('Recycle Bin Tests', () => {
           const response = res.json();
           expect(res.statusCode).toBe(StatusCodes.OK);
 
-          const dbDeletedItems = response.data.map(({ item }) => item);
-          expectManyItems(dbDeletedItems, recycledItems);
           // check response recycled item
-          expectManyRecycledItems(response.data, recycledItems, actor);
+          expectManyItems(response.data, recycledItems, actor);
           expect(response.totalCount).toEqual(2);
+          expect(response.pagination.page).toEqual(1);
+          expect(response.pagination.pageSize).toEqual(ITEMS_PAGE_SIZE);
+        });
+
+        it('Does not return child of recycled item', async () => {
+          const creator = await saveMember();
+          const { item: parentItem } = await testUtils.saveItemAndMembership({
+            member: actor,
+            permission: PermissionLevel.Read,
+            creator,
+          });
+          await testUtils.saveItemAndMembership({
+            item: { name: 'child' },
+            parentItem,
+            member: actor,
+          });
+          await testUtils.saveRecycledItem(actor, parentItem);
+
+          // actor does not have access
+          const member = await saveMember();
+          await testUtils.saveRecycledItem(member);
+
+          const res = await app.inject({
+            method: HttpMethod.Get,
+            url: '/items/recycled',
+          });
+
+          const response = res.json();
+          expect(res.statusCode).toBe(StatusCodes.OK);
+
+          // should not return child item for actor
+          // does not return parent because actor has read permissio
+          expect(res.json().data).toHaveLength(0);
+          expect(response.totalCount).toEqual(0);
           expect(response.pagination.page).toEqual(1);
           expect(response.pagination.pageSize).toEqual(ITEMS_PAGE_SIZE);
         });

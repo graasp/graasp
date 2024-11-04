@@ -7,7 +7,6 @@ import { MAX_TARGETS_FOR_MODIFY_REQUEST } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
-import { nullableMemberSchemaRef } from '../../../member/schemas';
 import { ITEMS_PAGE_SIZE } from '../../constants';
 import { itemSchemaRef } from '../../schemas';
 
@@ -18,7 +17,6 @@ export const recycledItemSchemaRef = registerSchemaAsRef(
     {
       id: customType.UUID(),
       item: itemSchemaRef,
-      creator: nullableMemberSchemaRef,
       createdAt: customType.DateTime(),
     },
     {
@@ -28,11 +26,11 @@ export const recycledItemSchemaRef = registerSchemaAsRef(
   ),
 );
 
-export const getOwnRecycledItemDatas = {
-  operationId: 'getOwnRecycledItemData',
+export const getOwnRecycledItems = {
+  operationId: 'getOwnRecycledItems',
   tags: ['recycled', 'item'],
-  summary: 'Get own recycled item data',
-  description: 'Get own recycled item data.',
+  summary: 'Get own recycled items',
+  description: 'Get own recycled items.',
 
   querystring: Type.Optional(
     customType.Pagination({
@@ -45,7 +43,7 @@ export const getOwnRecycledItemDatas = {
   ),
   response: {
     [StatusCodes.OK]: customType.StrictObject({
-      data: Type.Array(recycledItemSchemaRef),
+      data: Type.Array(itemSchemaRef),
       totalCount: Type.Number({
         minimum: 0,
       }),
