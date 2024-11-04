@@ -11,13 +11,12 @@ import { matchOne } from '../../../authorization';
 import { assertIsMember } from '../../../member/entities/member';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import {
-  create,
-  deleteAlias,
+  createShortLink,
+  deleteShortLink,
   getAllByItem,
   getAvailable,
   getRedirection,
-  getRestricted,
-  update,
+  updateShortLink,
 } from './schemas';
 import { SHORT_LINKS_LIST_ROUTE, ShortLinkService } from './service';
 
@@ -32,18 +31,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       reply.code(StatusCodes.MOVED_TEMPORARILY).redirect(path);
     });
 
-    // WARNING: Do not return the entire item, because this route is not protected !
-    // the restricted_get schema filter all item's fields except the id.
-    fastify.get(
-      '/alias/:alias',
-      {
-        schema: getRestricted,
-      },
-      async ({ params: { alias } }) => {
-        return await shortLinkService.getOneWithoutJoin(buildRepositories(), alias);
-      },
-    );
-
     fastify.get('/available/:alias', { schema: getAvailable }, async ({ params: { alias } }) => {
       try {
         await shortLinkService.getOne(buildRepositories(), alias);
@@ -54,7 +41,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     });
 
     // Only the admin can manage a short link of this resource
-    // or list all the shortlinks associated to this resource
     await fastify.register(async (fastify: FastifyInstanceTypebox) => {
       fastify.get(
         `${SHORT_LINKS_LIST_ROUTE}/:itemId`,
@@ -68,7 +54,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       fastify.post(
         '/',
         {
-          schema: create,
+          schema: createShortLink,
           preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
         },
         async ({ user, body: shortLink }) => {
@@ -88,7 +74,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       fastify.delete(
         '/:alias',
         {
-          schema: deleteAlias,
+          schema: deleteShortLink,
           preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
         },
         async ({ user, params: { alias } }) => {
@@ -108,7 +94,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       fastify.patch(
         '/:alias',
         {
-          schema: update,
+          schema: updateShortLink,
           preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
         },
         async ({ user, body: shortLink, params: { alias } }) => {

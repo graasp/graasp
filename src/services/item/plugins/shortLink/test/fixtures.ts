@@ -66,13 +66,6 @@ export const injectGet = async (app, alias) => {
   });
 };
 
-export const injectGetShortLink = async (app, alias) => {
-  return app.inject({
-    method: HttpMethod.Get,
-    url: `${SHORT_LINKS_FULL_PREFIX}/alias/${alias}`,
-  });
-};
-
 export const injectGetAvailable = async (app, alias) => {
   return app.inject({
     method: HttpMethod.Get,

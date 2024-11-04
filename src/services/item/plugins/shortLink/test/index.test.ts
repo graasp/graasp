@@ -24,7 +24,6 @@ import {
   injectGet,
   injectGetAll,
   injectGetAvailable,
-  injectGetShortLink,
   injectPatch,
   injectPost,
 } from './fixtures';
@@ -100,23 +99,9 @@ describe('Short links routes tests', () => {
       });
     });
 
-    describe('GET /short-links/alias/:alias without connected member', () => {
-      it('Success even if not connected', async () => {
-        const response = await injectGetShortLink(app, MOCK_ALIAS);
-        const receive = response.json();
-        expect(response.statusCode).toEqual(StatusCodes.OK);
-        expect(receive.alias).toBe(shortLinkPayload.alias);
-        expect(receive.platform).toBe(shortLinkPayload.platform);
-
-        // Ensure that the received item contain the
-        // id only because this route is not protected.
-        expect(Object.keys(receive)).not.toEqual(expect.arrayContaining(['item']));
-      });
-    });
-
     describe('PATCH /short-links/:itemId without connected member', () => {
       it('Unauthorized if patch short links without connected member', async () => {
-        const response = await injectPatch(app, MOCK_ALIAS, { platform: Context.Builder });
+        const response = await injectPatch(app, MOCK_ALIAS, { alias: 'new-alias' });
         expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
       });
     });
@@ -373,58 +358,9 @@ describe('Short links routes tests', () => {
       });
     });
 
-    describe('GET /short-links/alias/:alias with connected member', () => {
-      it('Not found if get short links with item id that does not exist', async () => {
-        const response = await injectGetShortLink(app, MOCK_FAKE_ALIAS);
-        expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
-      });
-
-      it('Success even if no permission', async () => {
-        const { item } = await testUtils.mockItemAndMemberships({ itemCreator: actor });
-        const payload = { itemId: item.id, alias: MOCK_ALIAS, platform: MOCK_PLATFORM };
-        const post = await injectPost(app, payload);
-        expect(post.statusCode).toEqual(StatusCodes.OK);
-        expect(post.json().alias).toEqual(MOCK_ALIAS);
-
-        const response = await injectGetShortLink(app, MOCK_ALIAS);
-        const receive = response.json();
-        expect(response.statusCode).toEqual(StatusCodes.OK);
-        expect(receive.alias).toBe(payload.alias);
-        expect(receive.platform).toBe(payload.platform);
-
-        // Ensure that the received item contain the
-        // id only because this route is not protected.
-        expect(Object.keys(receive)).not.toEqual(expect.arrayContaining(['item']));
-      });
-
-      it('Success when admin', async () => {
-        const { item } = await testUtils.mockItemAndMemberships({
-          itemCreator: bob,
-          memberWithPermission: {
-            member: actor,
-            permission: PermissionLevel.Admin,
-          },
-        });
-        const payload = { itemId: item.id, alias: MOCK_ALIAS, platform: MOCK_PLATFORM };
-        const post = await injectPost(app, payload);
-        expect(post.statusCode).toEqual(StatusCodes.OK);
-        expect(post.json().alias).toEqual(MOCK_ALIAS);
-
-        const response = await injectGetShortLink(app, MOCK_ALIAS);
-        const receive = response.json();
-        expect(response.statusCode).toEqual(StatusCodes.OK);
-        expect(receive.alias).toBe(payload.alias);
-        expect(receive.platform).toBe(payload.platform);
-
-        // Ensure that the received item contain the
-        // id only because this route is not protected.
-        expect(Object.keys(receive)).not.toEqual(expect.arrayContaining(['item']));
-      });
-    });
-
     describe('PATCH /short-links/:itemId', () => {
       it('Not found if patch short links with invalid item id', async () => {
-        const response = await injectPatch(app, MOCK_ALIAS, { platform: Context.Builder });
+        const response = await injectPatch(app, MOCK_ALIAS, { alias: 'new-alias' });
         expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
       });
       describe('Forbidden', () => {
@@ -446,7 +382,7 @@ describe('Short links routes tests', () => {
           // sign in as bob
           mockAuthenticate(bob);
 
-          const response = await injectPatch(app, MOCK_ALIAS, { platform: Context.Builder });
+          const response = await injectPatch(app, MOCK_ALIAS, { alias: 'new-alias' });
           expect(response.statusCode).toEqual(StatusCodes.FORBIDDEN);
         });
       });
@@ -470,9 +406,10 @@ describe('Short links routes tests', () => {
           // sign in as bob
           mockAuthenticate(bob);
 
-          const response = await injectPatch(app, MOCK_ALIAS, { platform: Context.Builder });
+          const response = await injectPatch(app, MOCK_ALIAS, { alias: 'new-alias' });
           expect(response.statusCode).toEqual(StatusCodes.OK);
-          expect(response.json().platform).toEqual(Context.Builder);
+          expect(response.json().platform).toEqual(MOCK_PLATFORM);
+          expect(response.json().alias).toEqual('new-alias');
         });
 
         it('Success if patch full short links with admin permission', async () => {
@@ -484,9 +421,10 @@ describe('Short links routes tests', () => {
           });
           expect(post.statusCode).toEqual(StatusCodes.OK);
 
-          const response = await injectPatch(app, MOCK_ALIAS, { platform: Context.Builder });
+          const response = await injectPatch(app, MOCK_ALIAS, { alias: 'new-alias' });
           expect(response.statusCode).toEqual(StatusCodes.OK);
-          expect(response.json().platform).toEqual(Context.Builder);
+          expect(response.json().platform).toEqual(MOCK_PLATFORM);
+          expect(response.json().alias).toEqual('new-alias');
         });
       });
 
@@ -585,6 +523,21 @@ describe('Short links routes tests', () => {
           expect(post.statusCode).toEqual(StatusCodes.OK);
 
           const response = await injectPatch(app, MOCK_ALIAS, { itemId: MOCK_ITEM_ID });
+          expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
+        });
+
+        it('Bad request if patch short links to change platform', async () => {
+          const { item } = await testUtils.mockItemAndMemberships({ itemCreator: actor });
+          const post = await injectPost(app, {
+            itemId: item.id,
+            alias: MOCK_ALIAS,
+            platform: MOCK_PLATFORM,
+          });
+          expect(post.statusCode).toEqual(StatusCodes.OK);
+
+          const response = await injectPatch(app, MOCK_ALIAS, {
+            platform: ShortLinkPlatform.Builder,
+          });
           expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
         });
       });
@@ -715,21 +668,21 @@ describe('Short links routes tests', () => {
           const { item } = await testUtils.mockItemAndMemberships({ itemCreator: actor });
           const response = await injectGetAll(app, item.id);
           expect(response.statusCode).toEqual(StatusCodes.OK);
-          expect(response.json()).toEqual([]);
+          expect(response.json()).toEqual({});
         });
 
         it('Success if read permission', async () => {
           mockAuthenticate(anna);
           const response = await injectGetAll(app, item.id);
           expect(response.statusCode).toEqual(StatusCodes.OK);
-          expect(response.json()).toHaveLength(platformLinks.length);
+          expect(Object.keys(response.json())).toHaveLength(platformLinks.length);
         });
 
         it('Success if admin', async () => {
           mockAuthenticate(bob);
           const response = await injectGetAll(app, item.id);
           expect(response.statusCode).toEqual(StatusCodes.OK);
-          expect(response.json()).toHaveLength(platformLinks.length);
+          expect(Object.keys(response.json())).toHaveLength(platformLinks.length);
         });
       });
     });
