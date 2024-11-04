@@ -5,7 +5,7 @@ import { FastifySchema } from 'fastify';
 
 import { DocumentItemExtraFlavor, ItemType } from '@graasp/sdk';
 
-import { customType, registerSchemaAsRef } from '../../plugins/typebox';
+import { customType } from '../../plugins/typebox';
 import { errorSchemaRef } from '../../schemas/global';
 import { geoCoordinateSchemaRef } from './plugins/geolocation/schemas';
 import { itemSchema, itemSchemaRef, settingsSchema } from './schemas';
