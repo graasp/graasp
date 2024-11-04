@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.56.1](https://github.com/graasp/graasp/compare/v1.56.0...v1.56.1) (2024-11-04)
+
+
+### Bug Fixes
+
+* **arabic:** update membership request translations ([#1605](https://github.com/graasp/graasp/issues/1605)) ([02ab379](https://github.com/graasp/graasp/commit/02ab379dca03e50271f59a18c6cd68c16f1ae99e))
+* **german:** update translations ([#1602](https://github.com/graasp/graasp/issues/1602)) ([bb4ce03](https://github.com/graasp/graasp/commit/bb4ce03a4b9476cee8321b23db6291da2f928439))
+* **italian:** update membership request translations ([#1603](https://github.com/graasp/graasp/issues/1603)) ([aefa15b](https://github.com/graasp/graasp/commit/aefa15b75461aeb594ca1cbb7de735d6c31316e6))
+* **spanish:** update membership request translations ([#1604](https://github.com/graasp/graasp/issues/1604)) ([9a8ae46](https://github.com/graasp/graasp/commit/9a8ae4685dafed6b468461f5d0ad5c8d3b2d32a8))
+
 ## [1.56.0](https://github.com/graasp/graasp/compare/v1.55.0...v1.56.0) (2024-10-30)
 
 
