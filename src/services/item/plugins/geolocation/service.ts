@@ -89,7 +89,7 @@ export class ItemGeolocationService {
       return [];
     }
 
-    const { itemMemberships, tags } = await validatePermissionMany(
+    const { itemMemberships, visibilities } = await validatePermissionMany(
       repositories,
       PermissionLevel.Read,
       actor,
@@ -114,7 +114,7 @@ export class ItemGeolocationService {
           const newItem = new ItemWrapper(
             g.item,
             itemMemberships.data[itemId],
-            tags.data[itemId],
+            visibilities.data[itemId],
             thumbnails,
           );
           return {

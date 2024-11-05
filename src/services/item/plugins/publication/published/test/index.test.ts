@@ -254,7 +254,7 @@ describe('Item Published', () => {
     describe('Signed Out', () => {
       it('Returns published collections for member', async () => {
         const member = await saveMember();
-        const { packedItems: items, tags } = await testUtils.saveCollections(member);
+        const { packedItems: items, visibilities } = await testUtils.saveCollections(member);
         await saveCategories();
 
         const res = await app.inject({
@@ -262,7 +262,7 @@ describe('Item Published', () => {
           url: `${ITEMS_ROUTE_PREFIX}/collections/members/${member.id}`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
-        expectManyPackedItems(res.json(), items, undefined, undefined, tags);
+        expectManyPackedItems(res.json(), items, undefined, undefined, visibilities);
       });
     });
 
@@ -277,14 +277,14 @@ describe('Item Published', () => {
       it('Get published collections for member', async () => {
         // add other collections
         const member = await saveMember();
-        const { packedItems: items, tags } = await testUtils.saveCollections(member);
+        const { packedItems: items, visibilities } = await testUtils.saveCollections(member);
 
         const res = await app.inject({
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/collections/members/${member.id}`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
-        expectManyPackedItems(res.json(), items, member, undefined, tags);
+        expectManyPackedItems(res.json(), items, member, undefined, visibilities);
       });
     });
   });

@@ -201,16 +201,16 @@ export class ItemTestUtils {
   saveCollections = async (member) => {
     const items: Item[] = [];
     const packedItems: PackedItem[] = [];
-    const tags: ItemVisibility[] = [];
+    const visibilities: ItemVisibility[] = [];
     for (let i = 0; i < 3; i++) {
       const { item, itemMembership } = await this.saveItemAndMembership({ member });
       items.push(item);
       const publicTag = await setItemPublic(item, member);
       packedItems.push(new ItemWrapper(item, itemMembership, [publicTag]).packed());
-      tags.push(publicTag);
+      visibilities.push(publicTag);
       await this.rawItemPublishedRepository.save({ item, creator: member });
     }
-    return { items, packedItems, tags };
+    return { items, packedItems, visibilities };
   };
 
   getOrderForItemId = async (itemId: Item['id']): Promise<number | null> => {
@@ -294,19 +294,19 @@ export const expectPackedItem = (
     | null,
   creator?: Member,
   parent?: Item,
-  tags?: ItemVisibility[],
+  visibilities?: ItemVisibility[],
 ) => {
   expectItem(newItem, correctItem, creator, parent);
 
   expect(newItem!.permission).toEqual(correctItem?.permission);
 
-  const pTag = tags?.find((t) => t.type === ItemVisibilityType.Public);
+  const pTag = visibilities?.find((t) => t.type === ItemVisibilityType.Public);
   if (pTag) {
     expect(newItem!.public!.type).toEqual(pTag.type);
     expect(newItem!.public!.id).toEqual(pTag.id);
     expect(newItem!.public!.item!.id).toEqual(pTag.item.id);
   }
-  const hTag = tags?.find((t) => t.type === ItemVisibilityType.Hidden);
+  const hTag = visibilities?.find((t) => t.type === ItemVisibilityType.Hidden);
   if (hTag) {
     expect(newItem!.hidden!.type).toEqual(hTag.type);
     expect(newItem!.hidden!.id).toEqual(hTag.id);
@@ -339,14 +339,14 @@ export const expectManyPackedItems = (
     Pick<PackedItem, 'permission'>)[],
   creator?: Member,
   parent?: Item,
-  tags?: ItemVisibility[],
+  visibilities?: ItemVisibility[],
 ) => {
   expect(items).toHaveLength(correctItems.length);
 
   items.forEach(({ id }) => {
     const item = items.find(({ id: thisId }) => thisId === id);
     const correctItem = correctItems.find(({ id: thisId }) => thisId === id);
-    const tTags = tags?.filter((t) => t.item.id === id);
+    const tTags = visibilities?.filter((t) => t.item.id === id);
     expectPackedItem(item, correctItem, creator, parent, tTags);
   });
 };

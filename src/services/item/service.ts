@@ -216,16 +216,16 @@ export class ItemService {
     const item = await repositories.itemRepository.getOneOrThrow(id);
 
     if (throwOnForbiddenPermission) {
-      const { itemMembership, tags } = await validatePermission(
+      const { itemMembership, visibilities } = await validatePermission(
         repositories,
         permission,
         actor,
         item,
       );
-      return { item, itemMembership, tags };
+      return { item, itemMembership, visibilities };
     }
 
-    return { item, itemMembership: null, tags: [] };
+    return { item, itemMembership: null, visibilities: [] };
   }
 
   /**
@@ -268,10 +268,15 @@ export class ItemService {
     id: string,
     permission: PermissionLevel = PermissionLevel.Read,
   ) {
-    const { item, itemMembership, tags } = await this._get(actor, repositories, id, permission);
+    const { item, itemMembership, visibilities } = await this._get(
+      actor,
+      repositories,
+      id,
+      permission,
+    );
     const thumbnails = await this.itemThumbnailService.getUrlsByItems([item]);
 
-    return new ItemWrapper(item, itemMembership, tags, thumbnails[item.id]).packed();
+    return new ItemWrapper(item, itemMembership, visibilities, thumbnails[item.id]).packed();
   }
 
   /**
@@ -288,13 +293,13 @@ export class ItemService {
   ): Promise<{
     items: ResultOf<Item>;
     itemMemberships: ResultOf<ItemMembership | null>;
-    tags: ResultOf<ItemVisibility[] | null>;
+    visibilities: ResultOf<ItemVisibility[] | null>;
   }> {
     const { itemRepository } = repositories;
     const result = await itemRepository.getMany(ids);
     // check memberships
     // remove items if they do not have permissions
-    const { itemMemberships, tags } = await validatePermissionMany(
+    const { itemMemberships, visibilities } = await validatePermissionMany(
       repositories,
       PermissionLevel.Read,
       actor,
@@ -308,7 +313,7 @@ export class ItemService {
       }
     }
 
-    return { items: result, itemMemberships, tags };
+    return { items: result, itemMemberships, visibilities };
   }
 
   /**
@@ -332,11 +337,11 @@ export class ItemService {
    * @returns
    */
   async getManyPacked(actor: Actor, repositories: Repositories, ids: string[]) {
-    const { items, itemMemberships, tags } = await this._getMany(actor, repositories, ids);
+    const { items, itemMemberships, visibilities } = await this._getMany(actor, repositories, ids);
 
     const thumbnails = await this.itemThumbnailService.getUrlsByItems(Object.values(items.data));
 
-    return ItemWrapper.mergeResult(items, itemMemberships, tags, thumbnails);
+    return ItemWrapper.mergeResult(items, itemMemberships, visibilities, thumbnails);
   }
 
   async getAccessible(
@@ -458,7 +463,7 @@ export class ItemService {
     const item = await this.get(actor, repositories, itemId);
     const parents = await itemRepository.getAncestors(item);
 
-    const { itemMemberships, tags } = await validatePermissionMany(
+    const { itemMemberships, visibilities } = await validatePermissionMany(
       repositories,
       PermissionLevel.Read,
       actor,
@@ -468,7 +473,7 @@ export class ItemService {
     const parentsIds = Object.keys(itemMemberships.data);
     const items = parents.filter((p) => parentsIds.includes(p.id));
     const thumbnails = await this.itemThumbnailService.getUrlsByItems(items);
-    return ItemWrapper.merge(items, itemMemberships, tags, thumbnails);
+    return ItemWrapper.merge(items, itemMemberships, visibilities, thumbnails);
   }
 
   async patch(member: Member, repositories: Repositories, itemId: UUID, body: DeepPartial<Item>) {

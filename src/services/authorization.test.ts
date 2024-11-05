@@ -1432,7 +1432,7 @@ describe('validatePermissionMany for no items', () => {
     const res = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, []);
     const expected: Awaited<ReturnType<typeof validatePermissionMany>> = {
       itemMemberships: { data: {}, errors: [] },
-      tags: { data: {}, errors: [] },
+      visibilities: { data: {}, errors: [] },
     };
     // any other member shouldn't access
     expect(res).toEqual(expected);

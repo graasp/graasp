@@ -32,7 +32,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
   // TODO: where should we define this???
   // TODO: STRING
-  // copy tags alongside item
+  // copy visibilities alongside item
   // TODO: AUTOMATIZE WITH OWN CLASS
   const hook = async (actor, repositories, { original, copy }: { original: Item; copy: Item }) => {
     await repositories.itemVisibilityRepository.copyAll(actor, original, copy, [

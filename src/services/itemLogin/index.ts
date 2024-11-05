@@ -27,7 +27,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
   const itemLoginService = resolveDependency(ItemLoginService);
   const itemService = resolveDependency(ItemService);
-  const itemTagService = resolveDependency(ItemVisibilityService);
+  const itemVisibilityService = resolveDependency(ItemVisibilityService);
   const itemMembershipService = resolveDependency(ItemMembershipService);
 
   // get login schema type for item
@@ -53,7 +53,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         const isVisible = await isItemVisible(
           user?.account,
           repositories,
-          { itemTagService, itemMembershipService },
+          { itemVisibilityService, itemMembershipService },
           item.path,
         );
         if (!isVisible) {

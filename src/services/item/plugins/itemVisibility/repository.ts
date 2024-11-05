@@ -63,7 +63,7 @@ export class ItemVisibilityRepository extends AbstractRepository<ItemVisibility>
     items: Item[],
     visibilityTypes: ItemVisibilityType[],
   ): Promise<ItemVisibility[]> {
-    // we expect to query tags for defined items, if the items array is empty we will return
+    // we expect to query visibilities for defined items, if the items array is empty we will return
     if (!items.length) {
       return [];
     }
@@ -91,12 +91,12 @@ export class ItemVisibilityRepository extends AbstractRepository<ItemVisibility>
     items: Item[],
     visibilityTypes: ItemVisibilityType[],
   ): Promise<ResultOf<ItemVisibility[]>> {
-    const tags = await this.getManyTagsForTypes(items, visibilityTypes);
+    const visibilities = await this.getManyTagsForTypes(items, visibilityTypes);
 
     const mapByPath = mapById({
       keys: items.map(({ path }) => path),
       findElement: (path) =>
-        tags.filter((itemVisibility) => path.includes(itemVisibility.item.path)),
+        visibilities.filter((itemVisibility) => path.includes(itemVisibility.item.path)),
     });
 
     // use id as key
@@ -123,11 +123,11 @@ export class ItemVisibilityRepository extends AbstractRepository<ItemVisibility>
 
     query.where(`item.path <@ :path`, { path: item.path });
 
-    const tags: ItemVisibility[] = await query
+    const visibilities: ItemVisibility[] = await query
       .andWhere('itemVisibility.type IN (:...types)', { types: visibilityTypes })
       .getMany();
 
-    return tags;
+    return visibilities;
   }
 
   async hasForMany(items: Item[], tagType: ItemVisibilityType): Promise<ResultOf<boolean>> {
@@ -194,7 +194,7 @@ export class ItemVisibilityRepository extends AbstractRepository<ItemVisibility>
     await this.isNotInherited(item, type);
 
     // delete item visibility
-    // we delete descendants tags, they happen on copy, move, or if you had on ancestor
+    // we delete descendants visibilities, they happen on copy, move, or if you had on ancestor
     // but does not change the behavior
     // cannot use leftJoinAndSelect for delete, so we select first
     const itemVisibilitys = await this.repository
@@ -257,12 +257,12 @@ export class ItemVisibilityRepository extends AbstractRepository<ItemVisibility>
       query.withDeleted();
     }
 
-    const tags = await query.getMany();
+    const visibilities = await query.getMany();
 
     const mapByPath = mapById({
       keys: items.map(({ path }) => path),
       findElement: (path) =>
-        tags.filter((itemVisibility) => path.includes(itemVisibility.item.path)),
+        visibilities.filter((itemVisibility) => path.includes(itemVisibility.item.path)),
     });
     // use id as key
     const idToItemVisibilities = Object.fromEntries(
@@ -273,7 +273,7 @@ export class ItemVisibilityRepository extends AbstractRepository<ItemVisibility>
   }
 
   /**
-   * Copy all item tags from original to copy
+   * Copy all item visibilities from original to copy
    * @param  {Member} creator
    * @param  {Item} original
    * @param  {Item} copy

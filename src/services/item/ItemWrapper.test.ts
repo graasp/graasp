@@ -36,7 +36,7 @@ describe('ItemWrapper', () => {
   });
 
   describe('createPackedItems', () => {
-    it('Return highest tags for child item', async () => {
+    it('Return highest visibilities for child item', async () => {
       const repositories = buildRepositories();
       const itemThumbnailService = new ItemThumbnailService(
         {} as unknown as ItemService,
@@ -68,7 +68,7 @@ describe('ItemWrapper', () => {
   });
 
   describe('packed', () => {
-    it('Return highest tags for child item', async () => {
+    it('Return highest visibilities for child item', async () => {
       const parentItem = testUtils.createItem();
       const item = testUtils.createItem({ parentItem });
 
@@ -78,9 +78,9 @@ describe('ItemWrapper', () => {
         type: ItemVisibilityType.Hidden,
       });
       const hiddenTag = await createTag({ item, type: ItemVisibilityType.Hidden });
-      // unordered tags
-      const tags = [hiddenTag, publicTag, parentHiddenTag];
-      const itemWrapper = new ItemWrapper(item, undefined, tags);
+      // unordered visibilities
+      const visibilities = [hiddenTag, publicTag, parentHiddenTag];
+      const itemWrapper = new ItemWrapper(item, undefined, visibilities);
 
       const packedItem = itemWrapper.packed();
       expect(packedItem.public!.id).toEqual(publicTag.id);

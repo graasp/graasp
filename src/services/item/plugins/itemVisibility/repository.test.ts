@@ -35,21 +35,21 @@ describe('getManyBelowAndSelf', () => {
     // noise should not be returned
     await rawRepository.save({ type: ItemVisibilityType.Public, item });
 
-    const tags = await repository.getManyBelowAndSelf(item, visibilityTypes);
+    const visibilities = await repository.getManyBelowAndSelf(item, visibilityTypes);
 
-    expect(tags).toHaveLength(0);
+    expect(visibilities).toHaveLength(0);
   });
 
-  it("get self's tags", async () => {
+  it("get self's visibilities", async () => {
     const { item } = await testUtils.saveItemAndMembership({ member: actor });
     const visibilityTypes = [ItemVisibilityType.Hidden, ItemVisibilityType.Public];
     const visibility = await rawRepository.save({ type: ItemVisibilityType.Public, item });
 
-    const tags = await repository.getManyBelowAndSelf(item, visibilityTypes);
+    const visibilities = await repository.getManyBelowAndSelf(item, visibilityTypes);
 
-    expect(tags).toHaveLength(1);
-    expect(tags[0].type).toEqual(visibility.type);
-    expectItem(tags[0].item, visibility.item);
+    expect(visibilities).toHaveLength(1);
+    expect(visibilities[0].type).toEqual(visibility.type);
+    expectItem(visibilities[0].item, visibility.item);
   });
 
   it('get self and parents', async () => {
@@ -62,10 +62,10 @@ describe('getManyBelowAndSelf', () => {
     const tag1 = await rawRepository.save({ type: ItemVisibilityType.Public, item });
     const tag2 = await rawRepository.save({ type: ItemVisibilityType.Public, item: child });
 
-    const tags = await repository.getManyBelowAndSelf(item, visibilityTypes);
+    const visibilities = await repository.getManyBelowAndSelf(item, visibilityTypes);
 
-    expect(tags).toHaveLength(2);
-    tags.forEach((t) => {
+    expect(visibilities).toHaveLength(2);
+    visibilities.forEach((t) => {
       if (tag1.id === t.id) {
         expect(t.type).toEqual(tag1.type);
         expectItem(t.item, tag1.item);
