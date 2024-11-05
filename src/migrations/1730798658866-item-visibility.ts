@@ -5,14 +5,18 @@ export class Migrations1730798658866 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`ALTER TABLE "item_tag" RENAME TO "item_visibility"`);
-    await queryRunner.query(`RENAME INDEX IDX_gist_item_tag_path TO IDX_gist_item_visibility_path`);
+    await queryRunner.query(
+      `ALTER INDEX IDX_gist_item_tag_path RENAME TO IDX_gist_item_visibility_path`,
+    );
     await queryRunner.query(
       `ALTER TABLE "item_visibility" RENAME CONSTRAINT item-tag TO UQ_item_visibility_item_type`,
     );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`RENAME INDEX IDX_gist_item_visibility_path TO IDX_gist_item_tag_path`);
+    await queryRunner.query(
+      `ALTER INDEX IDX_gist_item_visibility_path RENAME TO IDX_gist_item_tag_path`,
+    );
     await queryRunner.query(
       `ALTER TABLE "item_visibility" RENAME CONSTRAINT UQ_item_visibility_item_type TO item-tag`,
     );
