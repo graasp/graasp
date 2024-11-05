@@ -30,7 +30,7 @@ import { ItemMembership } from '../../../../itemMembership/entities/ItemMembersh
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { ThumbnailSizeFormat } from '../../../../thumbnail/constants';
 import { Item } from '../../../entities/Item';
-import { setItemPublic } from '../../itemTag/test/fixtures';
+import { setItemPublic } from '../../itemVisibility/test/fixtures';
 import { DEFAULT_MAX_STORAGE } from '../utils/constants';
 import { StorageExceeded } from '../utils/errors';
 

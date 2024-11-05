@@ -1,42 +1,43 @@
 import { Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
-import { ItemTagType } from '@graasp/sdk';
+import { ItemVisibilityType } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
 import { nullableMemberSchemaRef } from '../../../member/schemas';
 import { itemSchemaRef } from '../../schemas';
 
-export const itemTagSchemaRef = registerSchemaAsRef(
-  'itemTag',
-  'Item Tag',
+export const itemVisibilitySchemaRef = registerSchemaAsRef(
+  'itemVisibility',
+  'Item Visibility',
   Type.Object(
     {
       id: customType.UUID(),
-      type: Type.Enum(ItemTagType),
+      type: Type.Enum(ItemVisibilityType),
       item: itemSchemaRef,
       creator: Type.Optional(nullableMemberSchemaRef),
       createdAt: customType.DateTime(),
     },
     {
-      description: 'Tag attached to an item and its descendants.',
+      description: 'Visibility attached to an item and its descendants.',
       additionalProperties: false,
     },
   ),
 );
 
-// schema for creating an item tag
+// schema for creating an item visibility
 const create = {
-  operationId: 'createTag',
-  tags: ['tag'],
-  summary: 'Create tag on item',
-  description: 'Create tag on item with given tag that will apply on itself and its descendants.',
+  operationId: 'createVisibility',
+  tags: ['visibility'],
+  summary: 'Create visibility on item',
+  description:
+    'Create visibility on item with given visibility that will apply on itself and its descendants.',
 
   params: Type.Object(
     {
       itemId: customType.UUID(),
-      type: Type.Enum(ItemTagType),
+      type: Type.Enum(ItemVisibilityType),
     },
     { additionalProperties: false },
   ),
@@ -44,7 +45,7 @@ const create = {
     [StatusCodes.CREATED]: Type.Object(
       {
         id: customType.UUID(),
-        type: Type.Enum(ItemTagType),
+        type: Type.Enum(ItemVisibilityType),
         item: Type.Object({ path: Type.String() }),
         creator: Type.Optional(nullableMemberSchemaRef),
         createdAt: customType.DateTime(),
@@ -58,17 +59,17 @@ const create = {
   },
 };
 
-// schema for deleting an item tag
+// schema for deleting an item visibility
 const deleteOne = {
-  operationId: 'deleteTag',
-  tags: ['tag'],
-  summary: 'Delete tag of item',
-  description: 'Delete tag of item with given tag.',
+  operationId: 'deleteVisibility',
+  tags: ['visibility'],
+  summary: 'Delete visibility of item',
+  description: 'Delete visibility of item with given type.',
 
   params: Type.Object(
     {
       itemId: customType.UUID(),
-      type: Type.Enum(ItemTagType),
+      type: Type.Enum(ItemVisibilityType),
     },
     { additionalProperties: false },
   ),

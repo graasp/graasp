@@ -3,10 +3,10 @@ import { BaseEntity } from 'typeorm';
 
 import {
   CompleteMember,
-  ItemTagType,
   ItemType,
   ItemValidationProcess,
   ItemValidationStatus,
+  ItemVisibilityType,
   MemberFactory,
   PermissionLevel,
   buildPathFromIds,
@@ -17,7 +17,7 @@ import { Item } from '../../src/services/item/entities/Item';
 import { App } from '../../src/services/item/plugins/app/entities/app';
 import { Publisher } from '../../src/services/item/plugins/app/entities/publisher';
 import { ItemGeolocation } from '../../src/services/item/plugins/geolocation/ItemGeolocation';
-import { ItemTag } from '../../src/services/item/plugins/itemTag/ItemTag';
+import { ItemVisibility } from '../../src/services/item/plugins/itemVisibility/ItemVisibility';
 import { ItemPublished } from '../../src/services/item/plugins/publication/published/entities/itemPublished';
 import { ItemValidation } from '../../src/services/item/plugins/publication/validation/entities/ItemValidation';
 import { ItemValidationGroup } from '../../src/services/item/plugins/publication/validation/entities/ItemValidationGroup';
@@ -58,7 +58,7 @@ const datas: {
     ItemGeolocation,
     { [K in keyof Omit<ItemGeolocation, defaultOmitedKeys>] }
   >;
-  itemTags?: TableType<ItemTag, { [K in keyof Omit<ItemTag, defaultOmitedKeys>] }>;
+  itemTags?: TableType<ItemVisibility, { [K in keyof Omit<ItemVisibility, defaultOmitedKeys>] }>;
   itemValidationGroups?: TableType<
     ItemValidationGroup,
     { [K in keyof Omit<ItemValidationGroup, defaultOmitedKeys | 'itemValidations'>] }
@@ -182,11 +182,11 @@ const datas: {
   },
 
   itemTags: {
-    constructor: ItemTag,
+    constructor: ItemVisibility,
     entities: [
       {
         id: '22d21f0f-f8fb-43e1-9ff7-ec76c8eb416c',
-        type: ItemTagType.Public,
+        type: ItemVisibilityType.Public,
         item: buildPathFromIds(sharedIds.publicRootFolder),
         creator: sharedIds.bobMember,
       },

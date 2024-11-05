@@ -1,10 +1,10 @@
-import { ItemTagType, ResultOf, ThumbnailsBySize } from '@graasp/sdk';
+import { ItemVisibilityType, ResultOf, ThumbnailsBySize } from '@graasp/sdk';
 
 import { Repositories } from '../../utils/repositories';
 import { ItemMembership } from '../itemMembership/entities/ItemMembership';
 import { Actor } from '../member/entities/member';
 import { Item } from './entities/Item';
-import { ItemTag } from './plugins/itemTag/ItemTag';
+import { ItemVisibility } from './plugins/itemVisibility/ItemVisibility';
 import { ItemThumbnailService } from './plugins/thumbnail/service';
 import { ItemsThumbnails } from './plugins/thumbnail/types';
 
@@ -27,21 +27,21 @@ type GraaspItem = Pick<
 export type PackedItem = GraaspItem & {
   // permission can be undefined because the item is public
   permission: ItemMembership['permission'] | null;
-  hidden: ItemTag | undefined;
-  public: ItemTag | undefined;
+  hidden: ItemVisibility | undefined;
+  public: ItemVisibility | undefined;
   thumbnails?: ThumbnailsBySize;
 };
 
 export class ItemWrapper {
   item: Item;
   actorPermission?: { permission: ItemMembership['permission'] } | null;
-  tags?: ItemTag[] | null;
+  tags?: ItemVisibility[] | null;
   private readonly thumbnails?: ThumbnailsBySize;
 
   constructor(
     item: Item,
     im?: { permission: ItemMembership['permission'] } | null,
-    tags?: ItemTag[] | null,
+    tags?: ItemVisibility[] | null,
     thumbnails?: ThumbnailsBySize,
   ) {
     this.item = item;
@@ -59,7 +59,7 @@ export class ItemWrapper {
   static merge(
     items: Item[],
     memberships: ResultOf<ItemMembership | null>,
-    tags?: ResultOf<ItemTag[] | null>,
+    tags?: ResultOf<ItemVisibility[] | null>,
     itemsThumbnails?: ItemsThumbnails,
   ): PackedItem[] {
     const data: PackedItem[] = [];
@@ -68,17 +68,17 @@ export class ItemWrapper {
       const { permission = null } = memberships.data[i.id] ?? {};
       const thumbnails = itemsThumbnails?.[i.id];
 
-      // sort tags to retrieve most relevant (highest) tag first
-      const itemTags = tags?.data?.[i.id];
-      if (itemTags) {
-        itemTags.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
+      // sort tags to retrieve most relevant (highest) visibility first
+      const itemVisibilities = tags?.data?.[i.id];
+      if (itemVisibilities) {
+        itemVisibilities.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
       }
 
       data.push({
         ...i,
         permission,
-        hidden: itemTags?.find((t) => t.type === ItemTagType.Hidden),
-        public: itemTags?.find((t) => t.type === ItemTagType.Public),
+        hidden: itemVisibilities?.find((t) => t.type === ItemVisibilityType.Hidden),
+        public: itemVisibilities?.find((t) => t.type === ItemVisibilityType.Public),
         ...(thumbnails ? { thumbnails } : {}),
       });
     }
@@ -95,7 +95,7 @@ export class ItemWrapper {
   static mergeResult(
     items: ResultOf<Item>,
     memberships: ResultOf<ItemMembership | null>,
-    tags?: ResultOf<ItemTag[] | null>,
+    tags?: ResultOf<ItemVisibility[] | null>,
     itemsThumbnails?: ItemsThumbnails,
   ): ResultOf<PackedItem> {
     const data: ResultOf<PackedItem>['data'] = {};
@@ -104,17 +104,17 @@ export class ItemWrapper {
       const { permission = null } = memberships.data[i.id] ?? {};
       const thumbnails = itemsThumbnails?.[i.id];
 
-      // sort tags to retrieve most relevant (highest) tag first
-      const itemTags = tags?.data?.[i.id];
-      if (itemTags) {
-        itemTags.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
+      // sort tags to retrieve most relevant (highest) visibility first
+      const itemVisibilities = tags?.data?.[i.id];
+      if (itemVisibilities) {
+        itemVisibilities.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
       }
 
       data[i.id] = {
         ...i,
         permission,
-        hidden: itemTags?.find((t) => t.type === ItemTagType.Hidden),
-        public: itemTags?.find((t) => t.type === ItemTagType.Public),
+        hidden: itemVisibilities?.find((t) => t.type === ItemVisibilityType.Hidden),
+        public: itemVisibilities?.find((t) => t.type === ItemVisibilityType.Public),
         ...(thumbnails ? { thumbnails } : {}),
       };
     }
@@ -135,7 +135,9 @@ export class ItemWrapper {
       return [];
     }
 
-    const tags = await repositories.itemTagRepository.getForManyItems(items, { withDeleted });
+    const tags = await repositories.itemVisibilityRepository.getForManyItems(items, {
+      withDeleted,
+    });
 
     const m =
       memberships ??
@@ -147,17 +149,17 @@ export class ItemWrapper {
       const permission = m.data[item.id][0]?.permission;
       const thumbnails = itemsThumbnails[item.id];
 
-      // sort tags to retrieve most relevant (highest) tag first
-      const itemTags = tags?.data?.[item.id] ?? [];
-      if (itemTags) {
-        itemTags.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
+      // sort tags to retrieve most relevant (highest) visibility first
+      const itemVisibilities = tags?.data?.[item.id] ?? [];
+      if (itemVisibilities) {
+        itemVisibilities.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
       }
 
       return {
         ...item,
         permission,
-        hidden: itemTags.find((t) => t.type === ItemTagType.Hidden),
-        public: itemTags.find((t) => t.type === ItemTagType.Public),
+        hidden: itemVisibilities.find((t) => t.type === ItemVisibilityType.Hidden),
+        public: itemVisibilities.find((t) => t.type === ItemVisibilityType.Public),
         ...(thumbnails ? { thumbnails } : {}),
       } as unknown as PackedItem;
     });
@@ -168,7 +170,7 @@ export class ItemWrapper {
    * @returns item unit with permission
    */
   packed(): PackedItem {
-    // sort tags to retrieve most relevant (highest) tag first
+    // sort tags to retrieve most relevant (highest) visibility first
     if (this.tags) {
       this.tags.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
     }
@@ -176,8 +178,8 @@ export class ItemWrapper {
     return {
       ...this.item,
       permission: this.actorPermission?.permission ?? null,
-      hidden: this.tags?.find((t) => t.type === ItemTagType.Hidden),
-      public: this.tags?.find((t) => t.type === ItemTagType.Public),
+      hidden: this.tags?.find((t) => t.type === ItemVisibilityType.Hidden),
+      public: this.tags?.find((t) => t.type === ItemVisibilityType.Public),
       thumbnails: this.thumbnails,
     };
   }

@@ -3,7 +3,7 @@ import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemTagType } from '@graasp/sdk';
+import { HttpMethod, ItemVisibilityType } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -14,17 +14,23 @@ import { AppDataSource } from '../../../../../plugins/datasource';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemTestUtils } from '../../../test/fixtures/items';
-import { ItemTag } from '../ItemTag';
-import { CannotModifyParentTag, ConflictingTagsInTheHierarchy, ItemTagNotFound } from '../errors';
+import { ItemVisibility } from '../ItemVisibility';
+import {
+  CannotModifyParentVisibility,
+  ConflictingVisibilitiesInTheHierarchy,
+  ItemVisibilityNotFound,
+} from '../errors';
 
 const testUtils = new ItemTestUtils();
-const rawItemTagRepository = AppDataSource.getRepository(ItemTag);
+const rawItemTagRepository = AppDataSource.getRepository(ItemVisibility);
 
 export const saveTagsForItem = async ({ item, creator }) => {
-  const itemTags: ItemTag[] = [];
-  itemTags.push(await rawItemTagRepository.save({ item, creator, type: ItemTagType.Hidden }));
+  const itemVisibilities: ItemVisibility[] = [];
+  itemVisibilities.push(
+    await rawItemTagRepository.save({ item, creator, type: ItemVisibilityType.Hidden }),
+  );
 
-  return itemTags;
+  return itemVisibilities;
 };
 
 describe('Tags', () => {
@@ -48,7 +54,7 @@ describe('Tags', () => {
 
   describe('POST /:itemId/tags', () => {
     let item;
-    const type = ItemTagType.Hidden;
+    const type = ItemVisibilityType.Hidden;
 
     describe('Signed Out', () => {
       it('Throws if item is private', async () => {
@@ -70,7 +76,7 @@ describe('Tags', () => {
         mockAuthenticate(actor);
       });
 
-      it('Create a tag for an item', async () => {
+      it('Create a visibility for an item', async () => {
         ({ item } = await testUtils.saveItemAndMembership({ member: actor }));
 
         const res = await app.inject({
@@ -82,7 +88,7 @@ describe('Tags', () => {
         expect(res.json().item.path).toEqual(item.path);
       });
 
-      it('Cannot create tag if exists for item', async () => {
+      it('Cannot create visibility if exists for item', async () => {
         ({ item } = await testUtils.saveItemAndMembership({ member: actor }));
         await rawItemTagRepository.save({ item, type, creator: actor });
 
@@ -90,10 +96,12 @@ describe('Tags', () => {
           method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/tags/${type}`,
         });
-        expect(res.json()).toMatchObject(new ConflictingTagsInTheHierarchy(expect.anything()));
+        expect(res.json()).toMatchObject(
+          new ConflictingVisibilitiesInTheHierarchy(expect.anything()),
+        );
       });
 
-      it('Cannot create tag if exists on parent', async () => {
+      it('Cannot create visibility if exists on parent', async () => {
         const { item: parent } = await testUtils.saveItemAndMembership({ member: actor });
         ({ item } = await testUtils.saveItemAndMembership({ member: actor, parentItem: parent }));
         await rawItemTagRepository.save({ item: parent, type, creator: actor });
@@ -102,7 +110,9 @@ describe('Tags', () => {
           method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/tags/${type}`,
         });
-        expect(res.json()).toMatchObject(new ConflictingTagsInTheHierarchy(expect.anything()));
+        expect(res.json()).toMatchObject(
+          new ConflictingVisibilitiesInTheHierarchy(expect.anything()),
+        );
       });
 
       it('Bad request if item id is invalid', async () => {
@@ -132,8 +142,8 @@ describe('Tags', () => {
   });
 
   describe('DELETE /:itemId/tags/:id', () => {
-    let item, itemTags;
-    const type = ItemTagType.Public;
+    let item, itemVisibilities;
+    const type = ItemVisibilityType.Public;
 
     describe('Signed Out', () => {
       it('Throws if item is private', async () => {
@@ -157,11 +167,11 @@ describe('Tags', () => {
         mockAuthenticate(actor);
 
         ({ item } = await testUtils.saveItemAndMembership({ member: actor }));
-        itemTags = await saveTagsForItem({ item, creator: actor });
-        toDelete = itemTags[0];
+        itemVisibilities = await saveTagsForItem({ item, creator: actor });
+        toDelete = itemVisibilities[0];
       });
 
-      it('Delete a tag of an item (and descendants)', async () => {
+      it('Delete a visibility of an item (and descendants)', async () => {
         const { item: child } = await testUtils.saveItemAndMembership({
           member: actor,
           parentItem: item,
@@ -176,40 +186,40 @@ describe('Tags', () => {
 
         expect(res.statusCode).toBe(StatusCodes.OK);
         expect(res.json().item.path).toEqual(item.path);
-        const itemTag = await rawItemTagRepository.findOneBy({ id: toDelete.id });
-        expect(itemTag).toBeNull();
+        const itemVisibility = await rawItemTagRepository.findOneBy({ id: toDelete.id });
+        expect(itemVisibility).toBeNull();
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const childItemTag = await rawItemTagRepository.findOneBy({ id: descendantToDelete!.id });
         expect(childItemTag).toBeNull();
       });
-      it('Cannot delete inherited tag', async () => {
+      it('Cannot delete inherited visibility', async () => {
         const { item: parent } = await testUtils.saveItemAndMembership({ member: actor });
         ({ item } = await testUtils.saveItemAndMembership({ member: actor, parentItem: parent }));
-        const tag = await rawItemTagRepository.save({ item: parent, type, creator: actor });
+        const visibility = await rawItemTagRepository.save({ item: parent, type, creator: actor });
 
         const res = await app.inject({
           method: HttpMethod.Delete,
-          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/tags/${tag.type}`,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/tags/${visibility.type}`,
         });
-        expect(res.json()).toMatchObject(new CannotModifyParentTag(expect.anything()));
+        expect(res.json()).toMatchObject(new CannotModifyParentVisibility(expect.anything()));
       });
-      it('Throws if tag does not exist', async () => {
+      it('Throws if visibility does not exist', async () => {
         const { item: itemWithoutTag } = await testUtils.saveItemAndMembership({ member: actor });
 
         const res = await app.inject({
           method: HttpMethod.Delete,
-          url: `${ITEMS_ROUTE_PREFIX}/${itemWithoutTag.id}/tags/${ItemTagType.Hidden}`,
+          url: `${ITEMS_ROUTE_PREFIX}/${itemWithoutTag.id}/tags/${ItemVisibilityType.Hidden}`,
         });
-        expect(res.json()).toMatchObject(new ItemTagNotFound(expect.anything()));
+        expect(res.json()).toMatchObject(new ItemVisibilityNotFound(expect.anything()));
       });
       it('Bad request if item id is invalid', async () => {
         const res = await app.inject({
           method: HttpMethod.Delete,
-          url: `${ITEMS_ROUTE_PREFIX}/invalid-id/tags/${ItemTagType.Hidden}`,
+          url: `${ITEMS_ROUTE_PREFIX}/invalid-id/tags/${ItemVisibilityType.Hidden}`,
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
-      it('Bad request if item tag id is invalid', async () => {
+      it('Bad request if item visibility id is invalid', async () => {
         const res = await app.inject({
           method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/tags/invalid-id`,

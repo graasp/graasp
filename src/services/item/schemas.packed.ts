@@ -9,7 +9,7 @@ import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 import { errorSchemaRef } from '../../schemas/global';
 import { nullableMemberSchemaRef } from '../member/schemas';
 import { ITEMS_PAGE_SIZE } from './constants';
-import { itemTagSchemaRef } from './plugins/itemTag/schemas';
+import { itemVisibilitySchemaRef } from './plugins/itemVisibility/schemas';
 import { Ordering, SortBy } from './types';
 
 export const packedItemSchemaRef = registerSchemaAsRef(
@@ -29,8 +29,8 @@ export const packedItemSchemaRef = registerSchemaAsRef(
       createdAt: customType.DateTime(),
       updatedAt: customType.DateTime(),
       permission: customType.Nullable(customType.EnumString(Object.values(PermissionLevel))),
-      hidden: Type.Optional(itemTagSchemaRef),
-      public: Type.Optional(itemTagSchemaRef),
+      hidden: Type.Optional(itemVisibilitySchemaRef),
+      public: Type.Optional(itemVisibilitySchemaRef),
       thumbnails: Type.Optional(Type.Object({}, { additionalProperties: true })),
     },
     {

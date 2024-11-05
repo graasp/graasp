@@ -49,7 +49,7 @@ import { IS_COPY_REGEX, MAX_COPY_SUFFIX_LENGTH } from './constants';
 import { FolderItem, Item, isItemType } from './entities/Item';
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
 import { PartialItemGeolocation } from './plugins/geolocation/errors';
-import { ItemTag } from './plugins/itemTag/ItemTag';
+import { ItemVisibility } from './plugins/itemVisibility/ItemVisibility';
 import { ItemThumbnailService } from './plugins/thumbnail/service';
 import { ItemChildrenParams, ItemSearchParams } from './types';
 
@@ -288,7 +288,7 @@ export class ItemService {
   ): Promise<{
     items: ResultOf<Item>;
     itemMemberships: ResultOf<ItemMembership | null>;
-    tags: ResultOf<ItemTag[] | null>;
+    tags: ResultOf<ItemVisibility[] | null>;
   }> {
     const { itemRepository } = repositories;
     const result = await itemRepository.getMany(ids);

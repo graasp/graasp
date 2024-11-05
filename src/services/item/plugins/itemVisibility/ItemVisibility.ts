@@ -11,15 +11,15 @@ import {
 } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { ItemTagType } from '@graasp/sdk';
+import { ItemVisibilityType } from '@graasp/sdk';
 
 import { Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 
 @Entity()
-@Index('IDX_gist_item_tag_path', { synchronize: false })
-@Unique('item-tag', ['item', 'type'])
-export class ItemTag extends BaseEntity {
+@Index('IDX_gist_item_visibility_path', { synchronize: false })
+@Unique('UQ_item_visibility_item_type', ['item', 'type'])
+export class ItemVisibility extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string = v4();
 
@@ -32,8 +32,8 @@ export class ItemTag extends BaseEntity {
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @Column({ nullable: false, enum: Object.values(ItemTagType) })
-  type: ItemTagType;
+  @Column({ nullable: false, enum: Object.values(ItemVisibilityType) })
+  type: ItemVisibilityType;
 
   @ManyToOne(() => Item, (item) => item.path, {
     onUpdate: 'CASCADE',

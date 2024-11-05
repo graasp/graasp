@@ -4,7 +4,7 @@ import { FastifyInstance } from 'fastify';
 
 import {
   FolderItemFactory,
-  ItemTagType,
+  ItemVisibilityType,
   PackedFolderItemFactory,
   PermissionLevel,
 } from '@graasp/sdk';
@@ -23,8 +23,8 @@ import {
 } from './authorization';
 import { PackedItem } from './item/ItemWrapper';
 import { Item } from './item/entities/Item';
-import { ItemTag } from './item/plugins/itemTag/ItemTag';
-import { ItemTagRepository } from './item/plugins/itemTag/repository';
+import { ItemVisibility } from './item/plugins/itemVisibility/ItemVisibility';
+import { ItemVisibilityRepository } from './item/plugins/itemVisibility/repository';
 import { expectPackedItem } from './item/test/fixtures/items';
 import { ItemMembership } from './itemMembership/entities/ItemMembership';
 import { Member } from './member/entities/member';
@@ -39,13 +39,13 @@ const ownerMembership = { account: OWNER, permission: PermissionLevel.Admin } as
 const buildSharedMembership = (permission: PermissionLevel, item: Item = ITEM) =>
   ({ account: SHARED_MEMBER, permission, item }) as ItemMembership;
 
-jest.mock('./item/plugins/itemTag/repository');
+jest.mock('./item/plugins/itemVisibility/repository');
 
-const itemTagRepository = new ItemTagRepository();
-const getManyForManyMock = jest.spyOn(itemTagRepository, 'getManyForMany');
+const itemVisibilityRepository = new ItemVisibilityRepository();
+const getManyForManyMock = jest.spyOn(itemVisibilityRepository, 'getManyForMany');
 
-const MOCK_ITEM_TAG_PUBLIC = { type: ItemTagType.Public } as ItemTag;
-const MOCK_ITEM_TAG_HIDDEN = { type: ItemTagType.Hidden } as ItemTag;
+const MOCK_ITEM_VISIBILITY_PUBLIC = { type: ItemVisibilityType.Public } as ItemVisibility;
+const MOCK_ITEM_VISIBILITY_HIDDEN = { type: ItemVisibilityType.Hidden } as ItemVisibility;
 const returnDummyArray = async () => [];
 
 describe('validatePermission', () => {
@@ -56,13 +56,13 @@ describe('validatePermission', () => {
     getManyForManyMock.mockClear();
   });
   it('Invalid saved membership', async () => {
-    jest.spyOn(itemTagRepository, 'getByItemPath').mockImplementation(returnDummyArray);
+    jest.spyOn(itemVisibilityRepository, 'getByItemPath').mockImplementation(returnDummyArray);
 
     const repositories = {
       itemMembershipRepository: {
         getInherited: jest.fn(() => ({ permission: 'anything' })),
       } as unknown as ItemMembershipRepository,
-      itemTagRepository,
+      itemVisibilityRepository,
     };
 
     // any other member shouldn't access
@@ -73,14 +73,14 @@ describe('validatePermission', () => {
 
   describe('Private item', () => {
     beforeEach(() => {
-      jest.spyOn(itemTagRepository, 'getByItemPath').mockImplementation(returnDummyArray);
+      jest.spyOn(itemVisibilityRepository, 'getByItemPath').mockImplementation(returnDummyArray);
       repositories = {
         itemMembershipRepository: {
           getInherited: jest.fn((_itemPath, memberId) =>
             memberId === OWNER.id ? ownerMembership : null,
           ),
         } as unknown as ItemMembershipRepository,
-        itemTagRepository,
+        itemVisibilityRepository,
       };
     });
 
@@ -135,7 +135,7 @@ describe('validatePermission', () => {
   describe('Shared item with Read permission', () => {
     const sharedMembership = buildSharedMembership(PermissionLevel.Read);
 
-    jest.spyOn(itemTagRepository, 'getByItemPath').mockImplementation(returnDummyArray);
+    jest.spyOn(itemVisibilityRepository, 'getByItemPath').mockImplementation(returnDummyArray);
     const repositories = {
       itemMembershipRepository: {
         getInherited: jest.fn((_itemPath, memberId) => {
@@ -149,7 +149,7 @@ describe('validatePermission', () => {
           }
         }),
       } as unknown as ItemMembershipRepository,
-      itemTagRepository,
+      itemVisibilityRepository,
     };
 
     it(PermissionLevel.Read, async () => {
@@ -223,7 +223,7 @@ describe('validatePermission', () => {
   describe('Shared item with Write permission', () => {
     const sharedMembership = buildSharedMembership(PermissionLevel.Write);
 
-    jest.spyOn(itemTagRepository, 'getByItemPath').mockImplementation(returnDummyArray);
+    jest.spyOn(itemVisibilityRepository, 'getByItemPath').mockImplementation(returnDummyArray);
     const repositories = {
       itemMembershipRepository: {
         getInherited: jest.fn((_itemPath, memberId) => {
@@ -237,7 +237,7 @@ describe('validatePermission', () => {
           }
         }),
       } as unknown as ItemMembershipRepository,
-      itemTagRepository,
+      itemVisibilityRepository,
     };
 
     it(PermissionLevel.Read, async () => {
@@ -315,7 +315,7 @@ describe('validatePermission', () => {
   describe('Shared item with Admin permission', () => {
     const sharedMembership = buildSharedMembership(PermissionLevel.Admin);
 
-    jest.spyOn(itemTagRepository, 'getByItemPath').mockImplementation(returnDummyArray);
+    jest.spyOn(itemVisibilityRepository, 'getByItemPath').mockImplementation(returnDummyArray);
     const repositories = {
       itemMembershipRepository: {
         getInherited: jest.fn((_itemPath, memberId) => {
@@ -329,7 +329,7 @@ describe('validatePermission', () => {
           }
         }),
       } as unknown as ItemMembershipRepository,
-      itemTagRepository,
+      itemVisibilityRepository,
     };
 
     it(PermissionLevel.Read, async () => {
@@ -411,8 +411,8 @@ describe('validatePermission', () => {
   describe('Public item', () => {
     beforeEach(() => {
       jest
-        .spyOn(itemTagRepository, 'getByItemPath')
-        .mockImplementation(async () => [MOCK_ITEM_TAG_PUBLIC]);
+        .spyOn(itemVisibilityRepository, 'getByItemPath')
+        .mockImplementation(async () => [MOCK_ITEM_VISIBILITY_PUBLIC]);
       repositories = {
         itemMembershipRepository: {
           getInherited: jest.fn(async (_itemPath, memberId) => {
@@ -424,7 +424,7 @@ describe('validatePermission', () => {
             }
           }),
         } as unknown as ItemMembershipRepository,
-        itemTagRepository,
+        itemVisibilityRepository,
       };
     });
 
@@ -485,8 +485,8 @@ describe('validatePermission', () => {
     const sharedMembership = buildSharedMembership(PermissionLevel.Read);
     beforeEach(() => {
       jest
-        .spyOn(itemTagRepository, 'getByItemPath')
-        .mockImplementation(async () => [MOCK_ITEM_TAG_PUBLIC]);
+        .spyOn(itemVisibilityRepository, 'getByItemPath')
+        .mockImplementation(async () => [MOCK_ITEM_VISIBILITY_PUBLIC]);
 
       repositories = {
         itemMembershipRepository: {
@@ -501,7 +501,7 @@ describe('validatePermission', () => {
             }
           }),
         } as unknown as ItemMembershipRepository,
-        itemTagRepository,
+        itemVisibilityRepository,
       };
     });
 
@@ -581,8 +581,8 @@ describe('validatePermission', () => {
     const sharedMembership = buildSharedMembership(PermissionLevel.Write);
     beforeEach(() => {
       jest
-        .spyOn(itemTagRepository, 'getByItemPath')
-        .mockImplementation(async () => [MOCK_ITEM_TAG_PUBLIC]);
+        .spyOn(itemVisibilityRepository, 'getByItemPath')
+        .mockImplementation(async () => [MOCK_ITEM_VISIBILITY_PUBLIC]);
 
       repositories = {
         itemMembershipRepository: {
@@ -597,7 +597,7 @@ describe('validatePermission', () => {
             }
           }),
         } as unknown as ItemMembershipRepository,
-        itemTagRepository,
+        itemVisibilityRepository,
       };
     });
 
@@ -682,8 +682,8 @@ describe('validatePermission', () => {
 
     beforeEach(() => {
       jest
-        .spyOn(itemTagRepository, 'getByItemPath')
-        .mockImplementation(async () => [MOCK_ITEM_TAG_PUBLIC]);
+        .spyOn(itemVisibilityRepository, 'getByItemPath')
+        .mockImplementation(async () => [MOCK_ITEM_VISIBILITY_PUBLIC]);
 
       repositories = {
         itemMembershipRepository: {
@@ -698,7 +698,7 @@ describe('validatePermission', () => {
             }
           }),
         } as unknown as ItemMembershipRepository,
-        itemTagRepository,
+        itemVisibilityRepository,
       };
     });
 
@@ -787,8 +787,8 @@ describe('validatePermission', () => {
 
     beforeEach(() => {
       jest
-        .spyOn(itemTagRepository, 'getByItemPath')
-        .mockImplementation(async () => [MOCK_ITEM_TAG_HIDDEN]);
+        .spyOn(itemVisibilityRepository, 'getByItemPath')
+        .mockImplementation(async () => [MOCK_ITEM_VISIBILITY_HIDDEN]);
 
       repositories = {
         itemMembershipRepository: {
@@ -803,7 +803,7 @@ describe('validatePermission', () => {
             }
           }),
         } as unknown as ItemMembershipRepository,
-        itemTagRepository,
+        itemVisibilityRepository,
       };
     });
 
@@ -875,8 +875,8 @@ describe('validatePermission', () => {
     const sharedMembership = buildSharedMembership(PermissionLevel.Write);
     beforeEach(() => {
       jest
-        .spyOn(itemTagRepository, 'getByItemPath')
-        .mockImplementation(async () => [MOCK_ITEM_TAG_HIDDEN]);
+        .spyOn(itemVisibilityRepository, 'getByItemPath')
+        .mockImplementation(async () => [MOCK_ITEM_VISIBILITY_HIDDEN]);
 
       repositories = {
         itemMembershipRepository: {
@@ -891,7 +891,7 @@ describe('validatePermission', () => {
             }
           }),
         } as unknown as ItemMembershipRepository,
-        itemTagRepository,
+        itemVisibilityRepository,
       };
     });
     it(PermissionLevel.Read, async () => {
@@ -971,8 +971,8 @@ describe('validatePermission', () => {
 
     beforeEach(() => {
       jest
-        .spyOn(itemTagRepository, 'getByItemPath')
-        .mockImplementation(async () => [MOCK_ITEM_TAG_HIDDEN]);
+        .spyOn(itemVisibilityRepository, 'getByItemPath')
+        .mockImplementation(async () => [MOCK_ITEM_VISIBILITY_HIDDEN]);
 
       repositories = {
         itemMembershipRepository: {
@@ -987,7 +987,7 @@ describe('validatePermission', () => {
             }
           }),
         } as unknown as ItemMembershipRepository,
-        itemTagRepository,
+        itemVisibilityRepository,
       };
     });
 
@@ -1069,8 +1069,8 @@ describe('validatePermission', () => {
   describe('Public & Hidden item', () => {
     beforeEach(() => {
       jest
-        .spyOn(itemTagRepository, 'getByItemPath')
-        .mockImplementation(async () => [MOCK_ITEM_TAG_HIDDEN, MOCK_ITEM_TAG_PUBLIC]);
+        .spyOn(itemVisibilityRepository, 'getByItemPath')
+        .mockImplementation(async () => [MOCK_ITEM_VISIBILITY_HIDDEN, MOCK_ITEM_VISIBILITY_PUBLIC]);
 
       repositories = {
         itemMembershipRepository: {
@@ -1083,7 +1083,7 @@ describe('validatePermission', () => {
             }
           }),
         } as unknown as ItemMembershipRepository,
-        itemTagRepository,
+        itemVisibilityRepository,
       };
     });
 
@@ -1140,8 +1140,8 @@ describe('validatePermission', () => {
     const sharedMembership = buildSharedMembership(PermissionLevel.Read);
 
     jest
-      .spyOn(itemTagRepository, 'getByItemPath')
-      .mockImplementation(async () => [MOCK_ITEM_TAG_HIDDEN, MOCK_ITEM_TAG_PUBLIC]);
+      .spyOn(itemVisibilityRepository, 'getByItemPath')
+      .mockImplementation(async () => [MOCK_ITEM_VISIBILITY_HIDDEN, MOCK_ITEM_VISIBILITY_PUBLIC]);
     const repositories = {
       itemMembershipRepository: {
         getInherited: jest.fn(async (_itemPath, memberId) => {
@@ -1155,7 +1155,7 @@ describe('validatePermission', () => {
           }
         }),
       } as unknown as ItemMembershipRepository,
-      itemTagRepository,
+      itemVisibilityRepository,
     };
 
     it(PermissionLevel.Read, async () => {
@@ -1226,8 +1226,8 @@ describe('validatePermission', () => {
     const sharedMembership = buildSharedMembership(PermissionLevel.Write);
 
     jest
-      .spyOn(itemTagRepository, 'getByItemPath')
-      .mockImplementation(async () => [MOCK_ITEM_TAG_HIDDEN, MOCK_ITEM_TAG_PUBLIC]);
+      .spyOn(itemVisibilityRepository, 'getByItemPath')
+      .mockImplementation(async () => [MOCK_ITEM_VISIBILITY_HIDDEN, MOCK_ITEM_VISIBILITY_PUBLIC]);
     const repositories = {
       itemMembershipRepository: {
         getInherited: jest.fn(async (_itemPath, memberId) => {
@@ -1241,7 +1241,7 @@ describe('validatePermission', () => {
           }
         }),
       } as unknown as ItemMembershipRepository,
-      itemTagRepository,
+      itemVisibilityRepository,
     };
 
     it(PermissionLevel.Read, async () => {
@@ -1320,8 +1320,8 @@ describe('validatePermission', () => {
     const sharedMembership = buildSharedMembership(PermissionLevel.Admin);
 
     jest
-      .spyOn(itemTagRepository, 'getByItemPath')
-      .mockImplementation(async () => [MOCK_ITEM_TAG_HIDDEN, MOCK_ITEM_TAG_PUBLIC]);
+      .spyOn(itemVisibilityRepository, 'getByItemPath')
+      .mockImplementation(async () => [MOCK_ITEM_VISIBILITY_HIDDEN, MOCK_ITEM_VISIBILITY_PUBLIC]);
     const repositories = {
       itemMembershipRepository: {
         getInherited: jest.fn(async (_itemPath, memberId) => {
@@ -1335,7 +1335,7 @@ describe('validatePermission', () => {
           }
         }),
       } as unknown as ItemMembershipRepository,
-      itemTagRepository,
+      itemVisibilityRepository,
     };
 
     it(PermissionLevel.Read, async () => {
@@ -1421,12 +1421,12 @@ describe('validatePermissionMany for no items', () => {
     getManyForManyMock.mockClear();
   });
   it('Should return empty data', async () => {
-    jest.spyOn(itemTagRepository, 'getByItemPath').mockImplementation(returnDummyArray);
+    jest.spyOn(itemVisibilityRepository, 'getByItemPath').mockImplementation(returnDummyArray);
     const repositories = {
       itemMembershipRepository: {
         getInheritedMany: jest.fn(() => ({ permission: 'anything' })),
       } as unknown as ItemMembershipRepository,
-      itemTagRepository,
+      itemVisibilityRepository,
     };
 
     const res = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, []);
@@ -1437,7 +1437,7 @@ describe('validatePermissionMany for no items', () => {
     // any other member shouldn't access
     expect(res).toEqual(expected);
     expect(repositories.itemMembershipRepository.getInheritedMany).not.toHaveBeenCalled();
-    expect(repositories.itemTagRepository.getManyForMany).not.toHaveBeenCalled();
+    expect(repositories.itemVisibilityRepository.getManyForMany).not.toHaveBeenCalled();
   });
 });
 
@@ -1450,12 +1450,12 @@ describe('validatePermissionMany for one item', () => {
   });
 
   it('Invalid saved membership', async () => {
-    jest.spyOn(itemTagRepository, 'getByItemPath').mockImplementation(returnDummyArray);
+    jest.spyOn(itemVisibilityRepository, 'getByItemPath').mockImplementation(returnDummyArray);
     const repositories = {
       itemMembershipRepository: {
         getInheritedMany: jest.fn(() => ({ permission: 'anything' })),
       } as unknown as ItemMembershipRepository,
-      itemTagRepository,
+      itemVisibilityRepository,
     };
 
     // any other member shouldn't access
@@ -1486,7 +1486,7 @@ describe('validatePermissionMany for one item', () => {
             return { data: { [ITEM.id]: im }, errors: [] };
           }),
         } as unknown as ItemMembershipRepository,
-        itemTagRepository,
+        itemVisibilityRepository,
       };
     });
     it(PermissionLevel.Read, async () => {
@@ -1577,7 +1577,7 @@ describe('validatePermissionMany for one item', () => {
             return { data: { [ITEM.id]: im }, errors: [] };
           }),
         } as unknown as ItemMembershipRepository,
-        itemTagRepository,
+        itemVisibilityRepository,
       };
     });
 
@@ -1695,7 +1695,7 @@ describe('validatePermissionMany for one item', () => {
             return { data: { [ITEM.id]: im }, errors: [] };
           }),
         } as unknown as ItemMembershipRepository,
-        itemTagRepository,
+        itemVisibilityRepository,
       };
     });
 
@@ -1813,7 +1813,7 @@ describe('validatePermissionMany for one item', () => {
             return { data: { [ITEM.id]: im }, errors: [] };
           }),
         } as unknown as ItemMembershipRepository,
-        itemTagRepository,
+        itemVisibilityRepository,
       };
     });
 
@@ -1908,7 +1908,7 @@ describe('validatePermissionMany for one item', () => {
   describe('Public item', () => {
     beforeEach(() => {
       getManyForManyMock.mockImplementation(async () => ({
-        data: { [ITEM.id]: [MOCK_ITEM_TAG_PUBLIC] },
+        data: { [ITEM.id]: [MOCK_ITEM_VISIBILITY_PUBLIC] },
         errors: [],
       }));
       repositories = {
@@ -1927,7 +1927,7 @@ describe('validatePermissionMany for one item', () => {
             return { data: { [ITEM.id]: im }, errors: [] };
           }),
         } as unknown as ItemMembershipRepository,
-        itemTagRepository,
+        itemVisibilityRepository,
       };
     });
 
@@ -1996,7 +1996,7 @@ describe('validatePermissionMany for one item', () => {
     const sharedMembership = buildSharedMembership(PermissionLevel.Read);
     beforeEach(() => {
       getManyForManyMock.mockImplementation(async () => ({
-        data: { [ITEM.id]: [MOCK_ITEM_TAG_PUBLIC] },
+        data: { [ITEM.id]: [MOCK_ITEM_VISIBILITY_PUBLIC] },
         errors: [],
       }));
 
@@ -2019,7 +2019,7 @@ describe('validatePermissionMany for one item', () => {
             return { data: { [ITEM.id]: im }, errors: [] };
           }),
         } as unknown as ItemMembershipRepository,
-        itemTagRepository,
+        itemVisibilityRepository,
       };
     });
     it(PermissionLevel.Read, async () => {
@@ -2114,7 +2114,7 @@ describe('validatePermissionMany for one item', () => {
     const sharedMembership = buildSharedMembership(PermissionLevel.Write);
 
     getManyForManyMock.mockImplementation(async () => ({
-      data: { [ITEM.id]: [MOCK_ITEM_TAG_PUBLIC] },
+      data: { [ITEM.id]: [MOCK_ITEM_VISIBILITY_PUBLIC] },
       errors: [],
     }));
 
@@ -2137,7 +2137,7 @@ describe('validatePermissionMany for one item', () => {
           return { data: { [ITEM.id]: im }, errors: [] };
         }),
       } as unknown as ItemMembershipRepository,
-      itemTagRepository,
+      itemVisibilityRepository,
     };
 
     it(PermissionLevel.Read, async () => {
@@ -2233,7 +2233,7 @@ describe('validatePermissionMany for one item', () => {
 
     getManyForManyMock.mockImplementation(async () => {
       return {
-        data: { [ITEM.id]: [MOCK_ITEM_TAG_PUBLIC] },
+        data: { [ITEM.id]: [MOCK_ITEM_VISIBILITY_PUBLIC] },
         errors: [],
       };
     });
@@ -2257,7 +2257,7 @@ describe('validatePermissionMany for one item', () => {
           return { data: { [ITEM.id]: im }, errors: [] };
         }),
       } as unknown as ItemMembershipRepository,
-      itemTagRepository,
+      itemVisibilityRepository,
     };
 
     it(PermissionLevel.Read, async () => {
@@ -2353,7 +2353,7 @@ describe('validatePermissionMany for one item', () => {
 
     beforeEach(() => {
       getManyForManyMock.mockImplementation(async () => ({
-        data: { [ITEM.id]: [MOCK_ITEM_TAG_HIDDEN] },
+        data: { [ITEM.id]: [MOCK_ITEM_VISIBILITY_HIDDEN] },
         errors: [],
       }));
 
@@ -2376,7 +2376,7 @@ describe('validatePermissionMany for one item', () => {
             return { data: { [ITEM.id]: im }, errors: [] };
           }),
         } as unknown as ItemMembershipRepository,
-        itemTagRepository,
+        itemVisibilityRepository,
       };
     });
     it(PermissionLevel.Read, async () => {
@@ -2472,7 +2472,7 @@ describe('validatePermissionMany for one item', () => {
 
     beforeEach(() => {
       getManyForManyMock.mockImplementation(async () => ({
-        data: { [ITEM.id]: [MOCK_ITEM_TAG_HIDDEN] },
+        data: { [ITEM.id]: [MOCK_ITEM_VISIBILITY_HIDDEN] },
         errors: [],
       }));
 
@@ -2495,7 +2495,7 @@ describe('validatePermissionMany for one item', () => {
             return { data: { [ITEM.id]: im }, errors: [] };
           }),
         } as unknown as ItemMembershipRepository,
-        itemTagRepository,
+        itemVisibilityRepository,
       };
     });
 
@@ -2591,7 +2591,7 @@ describe('validatePermissionMany for one item', () => {
     const sharedMembership = buildSharedMembership(PermissionLevel.Admin);
     beforeEach(() => {
       getManyForManyMock.mockImplementation(async () => ({
-        data: { [ITEM.id]: [MOCK_ITEM_TAG_HIDDEN] },
+        data: { [ITEM.id]: [MOCK_ITEM_VISIBILITY_HIDDEN] },
         errors: [],
       }));
 
@@ -2614,7 +2614,7 @@ describe('validatePermissionMany for one item', () => {
             return { data: { [ITEM.id]: im }, errors: [] };
           }),
         } as unknown as ItemMembershipRepository,
-        itemTagRepository,
+        itemVisibilityRepository,
       };
     });
 
@@ -2709,7 +2709,7 @@ describe('validatePermissionMany for one item', () => {
   describe('Public & Hidden item', () => {
     beforeEach(() => {
       getManyForManyMock.mockImplementation(async () => ({
-        data: { [ITEM.id]: [MOCK_ITEM_TAG_HIDDEN, MOCK_ITEM_TAG_PUBLIC] },
+        data: { [ITEM.id]: [MOCK_ITEM_VISIBILITY_HIDDEN, MOCK_ITEM_VISIBILITY_PUBLIC] },
         errors: [],
       }));
       repositories = {
@@ -2728,7 +2728,7 @@ describe('validatePermissionMany for one item', () => {
             return { data: { [ITEM.id]: im }, errors: [] };
           }),
         } as unknown as ItemMembershipRepository,
-        itemTagRepository,
+        itemVisibilityRepository,
       };
     });
 
@@ -2797,7 +2797,7 @@ describe('validatePermissionMany for one item', () => {
     const sharedMembership = buildSharedMembership(PermissionLevel.Read);
     beforeEach(() => {
       getManyForManyMock.mockImplementation(async () => ({
-        data: { [ITEM.id]: [MOCK_ITEM_TAG_HIDDEN] },
+        data: { [ITEM.id]: [MOCK_ITEM_VISIBILITY_HIDDEN] },
         errors: [],
       }));
       repositories = {
@@ -2819,7 +2819,7 @@ describe('validatePermissionMany for one item', () => {
             return { data: { [ITEM.id]: im }, errors: [] };
           }),
         } as unknown as ItemMembershipRepository,
-        itemTagRepository,
+        itemVisibilityRepository,
       };
     });
 
@@ -2915,7 +2915,7 @@ describe('validatePermissionMany for one item', () => {
     const sharedMembership = buildSharedMembership(PermissionLevel.Write);
     beforeEach(() => {
       getManyForManyMock.mockImplementation(async () => ({
-        data: { [ITEM.id]: [MOCK_ITEM_TAG_HIDDEN] },
+        data: { [ITEM.id]: [MOCK_ITEM_VISIBILITY_HIDDEN] },
         errors: [],
       }));
       repositories = {
@@ -2937,7 +2937,7 @@ describe('validatePermissionMany for one item', () => {
             return { data: { [ITEM.id]: im }, errors: [] };
           }),
         } as unknown as ItemMembershipRepository,
-        itemTagRepository,
+        itemVisibilityRepository,
       };
     });
 
@@ -3033,7 +3033,7 @@ describe('validatePermissionMany for one item', () => {
     const sharedMembership = buildSharedMembership(PermissionLevel.Admin);
     beforeEach(() => {
       getManyForManyMock.mockImplementation(async () => ({
-        data: { [ITEM.id]: [MOCK_ITEM_TAG_HIDDEN] },
+        data: { [ITEM.id]: [MOCK_ITEM_VISIBILITY_HIDDEN] },
         errors: [],
       }));
       repositories = {
@@ -3055,7 +3055,7 @@ describe('validatePermissionMany for one item', () => {
             return { data: { [ITEM.id]: im }, errors: [] };
           }),
         } as unknown as ItemMembershipRepository,
-        itemTagRepository,
+        itemVisibilityRepository,
       };
     });
 
@@ -3161,7 +3161,7 @@ describe('validatePermissionMany for many items', () => {
   it('Public item & Shared write item', async () => {
     const sharedMembership = buildSharedMembership(PermissionLevel.Write, SHARED_ITEM);
     getManyForManyMock.mockImplementation(async () => ({
-      data: { [PUBLIC_ITEM.id]: [MOCK_ITEM_TAG_PUBLIC], [SHARED_ITEM.id]: [] },
+      data: { [PUBLIC_ITEM.id]: [MOCK_ITEM_VISIBILITY_PUBLIC], [SHARED_ITEM.id]: [] },
       errors: [],
     }));
     repositories = {
@@ -3170,7 +3170,7 @@ describe('validatePermissionMany for many items', () => {
           return { data: { [SHARED_ITEM.id]: sharedMembership }, errors: [] };
         }),
       } as unknown as ItemMembershipRepository,
-      itemTagRepository,
+      itemVisibilityRepository,
     };
     // shared member can read both items
     const { itemMemberships: result } = await validatePermissionMany(
@@ -3218,7 +3218,7 @@ describe('filterOutPackedDescendants', () => {
     FolderItemFactory({ parentItem: item }) as unknown as Item,
     FolderItemFactory({ parentItem: item }) as unknown as Item,
   ];
-  const hiddenTag = { type: ItemTagType.Hidden, item: descendants[2] } as ItemTag;
+  const hiddenTag = { type: ItemVisibilityType.Hidden, item: descendants[2] } as ItemVisibility;
 
   /** build packed descendants for checking returned values
    * types don't play nicely because factory does not use the same types as the backend
@@ -3249,7 +3249,7 @@ describe('filterOutPackedDescendants', () => {
       itemMembershipRepository: {
         getAllBelow: jest.fn(async () => memberships),
       },
-      itemTagRepository: {
+      itemVisibilityRepository: {
         getManyBelowAndSelf: jest.fn(async () => [hiddenTag]),
       },
     };
@@ -3273,7 +3273,7 @@ describe('filterOutPackedDescendants', () => {
       itemMembershipRepository: {
         getAllBelow: jest.fn(async () => memberships),
       },
-      itemTagRepository: {
+      itemVisibilityRepository: {
         getManyBelowAndSelf: jest.fn(async () => [hiddenTag]),
       },
     };
@@ -3297,7 +3297,7 @@ describe('filterOutPackedDescendants', () => {
       itemMembershipRepository: {
         getAllBelow: jest.fn(async () => memberships),
       },
-      itemTagRepository: {
+      itemVisibilityRepository: {
         getManyBelowAndSelf: jest.fn(async () => [hiddenTag]),
       },
     };
@@ -3320,7 +3320,7 @@ describe('filterOutPackedDescendants', () => {
       itemMembershipRepository: {
         getAllBelow: jest.fn(async () => []),
       },
-      itemTagRepository: {
+      itemVisibilityRepository: {
         getManyBelowAndSelf: jest.fn(async () => [hiddenTag]),
       },
     };

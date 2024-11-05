@@ -1,7 +1,7 @@
 import { formatISO } from 'date-fns';
 import { singleton } from 'tsyringe';
 
-import { ItemTagType, PermissionLevel, PublicationStatus, UUID } from '@graasp/sdk';
+import { ItemVisibilityType, PermissionLevel, PublicationStatus, UUID } from '@graasp/sdk';
 
 import { BaseLogger } from '../../../../../logger';
 import { MailBuilder } from '../../../../../plugins/mailer/builder';
@@ -86,12 +86,12 @@ export class ItemPublishedService {
   }
 
   async get(actor: Actor, repositories: Repositories, itemId: string) {
-    const { itemPublishedRepository, itemTagRepository, actionRepository } = repositories;
+    const { itemPublishedRepository, itemVisibilityRepository, actionRepository } = repositories;
 
     const item = await this.itemService.get(actor, repositories, itemId);
 
     // item should be public first
-    await itemTagRepository.getType(item.path, ItemTagType.Public, {
+    await itemVisibilityRepository.getType(item.path, ItemVisibilityType.Public, {
       shouldThrow: true,
     });
 
@@ -115,16 +115,14 @@ export class ItemPublishedService {
   }
 
   async getMany(actor: Actor, repositories: Repositories, itemIds: string[]) {
-    const { itemPublishedRepository, itemTagRepository } = repositories;
+    const { itemPublishedRepository, itemVisibilityRepository } = repositories;
     const { data: itemsMap, errors } = await this.itemService.getMany(actor, repositories, itemIds);
 
     const items = Object.values(itemsMap);
 
     // item should be public first
-    const { data: areItemsPublic, errors: publicErrors } = await itemTagRepository.hasForMany(
-      items,
-      ItemTagType.Public,
-    );
+    const { data: areItemsPublic, errors: publicErrors } =
+      await itemVisibilityRepository.hasForMany(items, ItemVisibilityType.Public);
 
     const { data: publishedInfo, errors: publishedErrors } =
       await itemPublishedRepository.getForItems(items.filter((i) => areItemsPublic[i.id]));
@@ -181,21 +179,25 @@ export class ItemPublishedService {
     publicationStatus: PublicationStatus,
     { canBePrivate }: { canBePrivate?: boolean } = {},
   ) {
-    const { itemPublishedRepository, itemTagRepository } = repositories;
+    const { itemPublishedRepository, itemVisibilityRepository } = repositories;
 
     // ensure that the item can be published
     this.checkPublicationStatus(item, publicationStatus);
 
     // item should be public first
-    const tag = await itemTagRepository.getType(item.path, ItemTagType.Public, {
-      shouldThrow: !canBePrivate,
-    });
+    const visibility = await itemVisibilityRepository.getType(
+      item.path,
+      ItemVisibilityType.Public,
+      {
+        shouldThrow: !canBePrivate,
+      },
+    );
 
     // if the item can be private and be published, set it to public automatically.
     // it's usefull to publish the item automatically after the validation.
     // the user is asked to set the item to public in the frontend.
-    if (!tag && canBePrivate) {
-      await itemTagRepository.post(member, item, ItemTagType.Public);
+    if (!visibility && canBePrivate) {
+      await itemVisibilityRepository.post(member, item, ItemVisibilityType.Public);
     }
 
     // TODO: check validation is alright

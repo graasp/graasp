@@ -8,7 +8,7 @@ import { ItemNotFound } from '../../utils/errors';
 import { buildRepositories } from '../../utils/repositories';
 import { SESSION_KEY, isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
 import { isItemVisible, matchOne } from '../authorization';
-import { ItemTagService } from '../item/plugins/itemTag/service';
+import { ItemVisibilityService } from '../item/plugins/itemVisibility/service';
 import { ItemService } from '../item/service';
 import { ItemMembershipService } from '../itemMembership/service';
 import { assertIsMember } from '../member/entities/member';
@@ -27,7 +27,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
   const itemLoginService = resolveDependency(ItemLoginService);
   const itemService = resolveDependency(ItemService);
-  const itemTagService = resolveDependency(ItemTagService);
+  const itemTagService = resolveDependency(ItemVisibilityService);
   const itemMembershipService = resolveDependency(ItemMembershipService);
 
   // get login schema type for item

@@ -3,7 +3,7 @@ import { ClientHostManager, Context, HttpMethod, PermissionLevel } from '@graasp
 import { Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 import { ItemTestUtils } from '../../../test/fixtures/items';
-import { setItemPublic } from '../../itemTag/test/fixtures';
+import { setItemPublic } from '../../itemVisibility/test/fixtures';
 import { SHORT_LINKS_FULL_PREFIX, SHORT_LINKS_LIST_ROUTE } from '../service';
 
 export const MOCK_ALIAS = 'mocked-alias';

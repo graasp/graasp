@@ -18,7 +18,7 @@ import { expectAccount, saveMember } from '../../../../member/test/fixtures/memb
 import { setupGuest } from '../../../../member/test/setup';
 import { Item } from '../../../entities/Item';
 import { expectItem } from '../../../test/fixtures/items';
-import { setItemPublic } from '../../itemTag/test/fixtures';
+import { setItemPublic } from '../../itemVisibility/test/fixtures';
 import { AppTestUtils, MOCK_APP_ORIGIN } from './fixtures';
 
 const testUtils = new AppTestUtils();

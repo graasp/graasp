@@ -1,14 +1,14 @@
 import { v4 } from 'uuid';
 
 import {
-  ItemTagType,
   ItemType,
   ItemValidationProcess,
   ItemValidationStatus,
+  ItemVisibilityType,
   buildPathFromIds,
 } from '@graasp/sdk';
 
-import { ItemTag } from '../../../itemTag/ItemTag';
+import { ItemVisibility } from '../../../itemVisibility/ItemVisibility';
 import { ItemMetadata, ItemValidationGroupStatus } from '../types';
 
 export const ItemMetadataFactory = (
@@ -21,7 +21,7 @@ export const ItemMetadataFactory = (
     updatedAt: item?.updatedAt ?? new Date(),
     path: item?.parentItem ? buildPathFromIds[(item.parentItem.path, path)] : path,
     type: item?.type ?? ItemType.FOLDER,
-    public: isPublic ? ({ type: ItemTagType.Public } as ItemTag) : undefined,
+    public: isPublic ? ({ type: ItemVisibilityType.Public } as ItemVisibility) : undefined,
   };
 };
 

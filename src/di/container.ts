@@ -169,13 +169,13 @@ export const registerDependencies = (instance: FastifyInstance) => {
   );
 
   // This code will be improved when we will be able to inject the repositories.
-  const { itemTagRepository, itemValidationGroupRepository, itemPublishedRepository } =
+  const { itemVisibilityRepository, itemValidationGroupRepository, itemPublishedRepository } =
     buildRepositories();
   registerValue(
     PublicationService,
     new PublicationService(
       resolveDependency(ItemService),
-      itemTagRepository,
+      itemVisibilityRepository,
       itemValidationGroupRepository,
       itemPublishedRepository,
       resolveDependency(ValidationQueue),

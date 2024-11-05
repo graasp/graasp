@@ -52,7 +52,7 @@ export class MissingItemLoginTag extends GraaspItemLoginError {
       {
         code: 'GILERR005',
         statusCode: StatusCodes.BAD_REQUEST,
-        message: 'Item does not possess the required tag',
+        message: 'Item does not possess the required visibility',
       },
       data,
     );

@@ -11,7 +11,7 @@ import {
   ItemLoginSchemaFactory,
   ItemLoginSchemaStatus,
   ItemLoginSchemaType,
-  ItemTagType,
+  ItemVisibilityType,
   PermissionLevel,
 } from '@graasp/sdk';
 
@@ -22,7 +22,7 @@ import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
 import { MemberCannotAdminItem } from '../../../utils/errors';
 import { encryptPassword } from '../../auth/plugins/password/utils';
 import { Item } from '../../item/entities/Item';
-import { ItemTag } from '../../item/plugins/itemTag/ItemTag';
+import { ItemVisibility } from '../../item/plugins/itemVisibility/ItemVisibility';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
 import { ItemMembership } from '../../itemMembership/entities/ItemMembership';
 import { Member } from '../../member/entities/member';
@@ -39,7 +39,7 @@ const rawGuestPasswordRepository = AppDataSource.getRepository(GuestPassword);
 const rawItemMembershipRepository = AppDataSource.getRepository(ItemMembership);
 const rawItemLoginRepository = AppDataSource.getRepository(Guest);
 const rawItemLoginSchemaRepository = AppDataSource.getRepository(ItemLoginSchemaEntity);
-const rawItemTagRepository = AppDataSource.getRepository(ItemTag);
+const rawItemTagRepository = AppDataSource.getRepository(ItemVisibility);
 
 export async function saveItemLoginSchema({
   item,
@@ -146,7 +146,7 @@ describe('Item Login Tests', () => {
       await rawItemTagRepository.save({
         item: anotherItem,
         creator: member,
-        type: ItemTagType.Hidden,
+        type: ItemVisibilityType.Hidden,
       });
       await saveItemLoginSchema({
         item: anotherItem as unknown as DiscriminatedItem,
@@ -166,7 +166,7 @@ describe('Item Login Tests', () => {
       await rawItemTagRepository.save({
         item: anotherItem,
         creator: member,
-        type: ItemTagType.Hidden,
+        type: ItemVisibilityType.Hidden,
       });
       await saveItemLoginSchema({
         item: anotherItem as unknown as DiscriminatedItem,
@@ -194,7 +194,7 @@ describe('Item Login Tests', () => {
       await rawItemTagRepository.save({
         item: anotherItem,
         creator: member,
-        type: ItemTagType.Hidden,
+        type: ItemVisibilityType.Hidden,
       });
       await saveItemLoginSchema({
         item: anotherItem as unknown as DiscriminatedItem,

@@ -3,7 +3,13 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemTagType, ItemType, MemberFactory, PermissionLevel } from '@graasp/sdk';
+import {
+  HttpMethod,
+  ItemType,
+  ItemVisibilityType,
+  MemberFactory,
+  PermissionLevel,
+} from '@graasp/sdk';
 
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
 import { AppDataSource } from '../../../plugins/datasource';
@@ -11,7 +17,7 @@ import { ItemNotFound, MemberCannotAccess } from '../../../utils/errors';
 import { saveMember } from '../../member/test/fixtures/members';
 import { PackedItem } from '../ItemWrapper';
 import { Item } from '../entities/Item';
-import { ItemTag } from '../plugins/itemTag/ItemTag';
+import { ItemVisibility } from '../plugins/itemVisibility/ItemVisibility';
 import { Ordering, SortBy } from '../types';
 import {
   ItemTestUtils,
@@ -21,7 +27,7 @@ import {
   expectThumbnails,
 } from './fixtures/items';
 
-const rawRepository = AppDataSource.getRepository(ItemTag);
+const rawRepository = AppDataSource.getRepository(ItemVisibility);
 const testUtils = new ItemTestUtils();
 
 // Mock S3 libraries
@@ -337,7 +343,7 @@ describe('Item routes tests', () => {
       it('Returns successfully', async () => {
         const member = await saveMember();
         const items: Item[] = [];
-        const publicTags: ItemTag[] = [];
+        const publicTags: ItemVisibility[] = [];
         for (let i = 0; i < 3; i++) {
           const { item, publicTag } = await testUtils.savePublicItem({ member });
           items.push(item);
@@ -1182,7 +1188,7 @@ describe('Item routes tests', () => {
           member,
           parentItem: parent,
         });
-        await rawRepository.save({ item: child1, creator: actor, type: ItemTagType.Hidden });
+        await rawRepository.save({ item: child1, creator: actor, type: ItemVisibilityType.Hidden });
 
         const children = [child2];
 
@@ -1476,7 +1482,11 @@ describe('Item routes tests', () => {
           member,
           parentItem: parent,
         });
-        await rawRepository.save({ item: child1, creator: member, type: ItemTagType.Hidden });
+        await rawRepository.save({
+          item: child1,
+          creator: member,
+          type: ItemVisibilityType.Hidden,
+        });
 
         await testUtils.saveItemAndMembership({
           member,

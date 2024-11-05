@@ -9,7 +9,7 @@ import { Guest } from '../../../../itemLogin/entities/guest';
 import { Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 import { ItemTestUtils } from '../../../test/fixtures/items';
-import { setItemPublic } from '../../itemTag/test/fixtures';
+import { setItemPublic } from '../../itemVisibility/test/fixtures';
 import { App } from '../entities/app';
 import { Publisher } from '../entities/publisher';
 

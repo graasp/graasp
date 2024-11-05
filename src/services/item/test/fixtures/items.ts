@@ -6,8 +6,8 @@ import {
   EtherpadItemFactory,
   FolderItemFactory,
   H5PItemFactory,
-  ItemTagType,
   ItemType,
+  ItemVisibilityType,
   LinkItemFactory,
   LocalFileItemFactory,
   PermissionLevel,
@@ -24,9 +24,9 @@ import { Member } from '../../../member/entities/member';
 import { saveMember } from '../../../member/test/fixtures/members';
 import { ItemWrapper, PackedItem } from '../../ItemWrapper';
 import { DEFAULT_ORDER, Item, ItemExtraMap } from '../../entities/Item';
-import { ItemTag } from '../../plugins/itemTag/ItemTag';
-import { ItemTagRepository } from '../../plugins/itemTag/repository';
-import { setItemPublic } from '../../plugins/itemTag/test/fixtures';
+import { ItemVisibility } from '../../plugins/itemVisibility/ItemVisibility';
+import { ItemVisibilityRepository } from '../../plugins/itemVisibility/repository';
+import { setItemPublic } from '../../plugins/itemVisibility/test/fixtures';
 import { ItemPublished } from '../../plugins/publication/published/entities/itemPublished';
 import { RecycledItemDataRepository } from '../../plugins/recycled/repository';
 import { ItemRepository } from '../../repository';
@@ -35,14 +35,14 @@ const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
 
 export class ItemTestUtils {
   public itemRepository: ItemRepository;
-  public itemTagRepository: ItemTagRepository;
+  public itemVisibilityRepository: ItemVisibilityRepository;
   public rawItemRepository: Repository<Item<keyof ItemExtraMap>>;
   recycledItemDataRepository: RecycledItemDataRepository;
   rawItemPublishedRepository: Repository<ItemPublished>;
 
   constructor() {
     this.itemRepository = new ItemRepository();
-    this.itemTagRepository = new ItemTagRepository();
+    this.itemVisibilityRepository = new ItemVisibilityRepository();
     this.rawItemRepository = AppDataSource.getRepository(Item);
     this.recycledItemDataRepository = new RecycledItemDataRepository();
     this.rawItemPublishedRepository = AppDataSource.getRepository(ItemPublished);
@@ -201,7 +201,7 @@ export class ItemTestUtils {
   saveCollections = async (member) => {
     const items: Item[] = [];
     const packedItems: PackedItem[] = [];
-    const tags: ItemTag[] = [];
+    const tags: ItemVisibility[] = [];
     for (let i = 0; i < 3; i++) {
       const { item, itemMembership } = await this.saveItemAndMembership({ member });
       items.push(item);
@@ -294,19 +294,19 @@ export const expectPackedItem = (
     | null,
   creator?: Member,
   parent?: Item,
-  tags?: ItemTag[],
+  tags?: ItemVisibility[],
 ) => {
   expectItem(newItem, correctItem, creator, parent);
 
   expect(newItem!.permission).toEqual(correctItem?.permission);
 
-  const pTag = tags?.find((t) => t.type === ItemTagType.Public);
+  const pTag = tags?.find((t) => t.type === ItemVisibilityType.Public);
   if (pTag) {
     expect(newItem!.public!.type).toEqual(pTag.type);
     expect(newItem!.public!.id).toEqual(pTag.id);
     expect(newItem!.public!.item!.id).toEqual(pTag.item.id);
   }
-  const hTag = tags?.find((t) => t.type === ItemTagType.Hidden);
+  const hTag = tags?.find((t) => t.type === ItemVisibilityType.Hidden);
   if (hTag) {
     expect(newItem!.hidden!.type).toEqual(hTag.type);
     expect(newItem!.hidden!.id).toEqual(hTag.id);
@@ -339,7 +339,7 @@ export const expectManyPackedItems = (
     Pick<PackedItem, 'permission'>)[],
   creator?: Member,
   parent?: Item,
-  tags?: ItemTag[],
+  tags?: ItemVisibility[],
 ) => {
   expect(items).toHaveLength(correctItems.length);
 

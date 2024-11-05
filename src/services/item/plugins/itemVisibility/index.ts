@@ -1,6 +1,6 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { ItemTagType } from '@graasp/sdk';
+import { ItemVisibilityType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
 import { asDefined } from '../../../../utils/assertions';
@@ -12,54 +12,56 @@ import { validatedMemberAccountRole } from '../../../member/strategies/validated
 import { Item } from '../../entities/Item';
 import { ItemService } from '../../service';
 import { create, deleteOne } from './schemas';
-import { ItemTagService } from './service';
+import { ItemVisibilityService } from './service';
 
 /**
- * Item tag plugin
- * Dynamic tag behavior for simple cases
+ * Item Visibility plugin
+ * Dynamic visibility behavior for simple cases
  * - public:
  * - hidden
  *
  * The feature should be stackable and be inherited (a parent public and an item public is allowed)
- * The tag can be copied alongside the item
+ * The visibility can be copied alongside the item
  */
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db } = fastify;
 
   const itemService = resolveDependency(ItemService);
-  const itemTagService = resolveDependency(ItemTagService);
+  const itemVisibilityService = resolveDependency(ItemVisibilityService);
 
   // TODO: where should we define this???
   // TODO: STRING
   // copy tags alongside item
   // TODO: AUTOMATIZE WITH OWN CLASS
   const hook = async (actor, repositories, { original, copy }: { original: Item; copy: Item }) => {
-    await repositories.itemTagRepository.copyAll(actor, original, copy, [ItemTagType.Public]);
+    await repositories.itemVisibilityRepository.copyAll(actor, original, copy, [
+      ItemVisibilityType.Public,
+    ]);
   };
   itemService.hooks.setPostHook('copy', hook);
 
   fastify.post(
-    '/:itemId/tags/:type',
+    '/:itemId/visibility/:type',
     { schema: create, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async ({ user, params: { itemId, type } }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
       return db.transaction(async (manager) => {
-        return itemTagService.post(member, buildRepositories(manager), itemId, type);
+        return itemVisibilityService.post(member, buildRepositories(manager), itemId, type);
       });
     },
   );
 
-  // delete item tag
+  // delete item visibility
   fastify.delete(
-    '/:itemId/tags/:type',
+    '/:itemId/visibility/:type',
     { schema: deleteOne, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async ({ user, params: { itemId, type } }) => {
       return db.transaction(async (manager) => {
         const member = asDefined(user?.account);
         assertIsMember(member);
-        return itemTagService.deleteOne(member, buildRepositories(manager), itemId, type);
+        return itemVisibilityService.deleteOne(member, buildRepositories(manager), itemId, type);
       });
     },
   );

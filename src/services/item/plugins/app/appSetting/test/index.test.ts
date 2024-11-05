@@ -10,7 +10,7 @@ import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
 import { MemberCannotAdminItem } from '../../../../../../utils/errors';
 import { Member } from '../../../../../member/entities/member';
 import { saveMember } from '../../../../../member/test/fixtures/members';
-import { setItemPublic } from '../../../itemTag/test/fixtures';
+import { setItemPublic } from '../../../itemVisibility/test/fixtures';
 import { AppTestUtils } from '../../test/fixtures';
 import { AppSettingRepository } from '../repository';
 import { saveAppSettings } from './fixtures';

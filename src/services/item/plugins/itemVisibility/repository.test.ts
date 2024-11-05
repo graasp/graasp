@@ -1,15 +1,15 @@
 import { FastifyInstance } from 'fastify';
 
-import { ItemTagType } from '@graasp/sdk';
+import { ItemVisibilityType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
 import { AppDataSource } from '../../../../plugins/datasource';
 import { ItemTestUtils, expectItem } from '../../test/fixtures/items';
-import { ItemTag } from './ItemTag';
-import { ItemTagRepository } from './repository';
+import { ItemVisibility } from './ItemVisibility';
+import { ItemVisibilityRepository } from './repository';
 
-const rawRepository = AppDataSource.getRepository(ItemTag);
-const repository = new ItemTagRepository();
+const rawRepository = AppDataSource.getRepository(ItemVisibility);
+const repository = new ItemVisibilityRepository();
 const testUtils = new ItemTestUtils();
 
 describe('getManyBelowAndSelf', () => {
@@ -31,25 +31,25 @@ describe('getManyBelowAndSelf', () => {
 
   it('get empty', async () => {
     const { item } = await testUtils.saveItemAndMembership({ member: actor });
-    const tagTypes = [ItemTagType.Hidden];
+    const visibilityTypes = [ItemVisibilityType.Hidden];
     // noise should not be returned
-    await rawRepository.save({ type: ItemTagType.Public, item });
+    await rawRepository.save({ type: ItemVisibilityType.Public, item });
 
-    const tags = await repository.getManyBelowAndSelf(item, tagTypes);
+    const tags = await repository.getManyBelowAndSelf(item, visibilityTypes);
 
     expect(tags).toHaveLength(0);
   });
 
   it("get self's tags", async () => {
     const { item } = await testUtils.saveItemAndMembership({ member: actor });
-    const tagTypes = [ItemTagType.Hidden, ItemTagType.Public];
-    const tag = await rawRepository.save({ type: ItemTagType.Public, item });
+    const visibilityTypes = [ItemVisibilityType.Hidden, ItemVisibilityType.Public];
+    const visibility = await rawRepository.save({ type: ItemVisibilityType.Public, item });
 
-    const tags = await repository.getManyBelowAndSelf(item, tagTypes);
+    const tags = await repository.getManyBelowAndSelf(item, visibilityTypes);
 
     expect(tags).toHaveLength(1);
-    expect(tags[0].type).toEqual(tag.type);
-    expectItem(tags[0].item, tag.item);
+    expect(tags[0].type).toEqual(visibility.type);
+    expectItem(tags[0].item, visibility.item);
   });
 
   it('get self and parents', async () => {
@@ -58,11 +58,11 @@ describe('getManyBelowAndSelf', () => {
     await testUtils.saveItem({ actor, parentItem: item });
     await testUtils.saveItem({ actor, parentItem: item });
 
-    const tagTypes = [ItemTagType.Hidden, ItemTagType.Public];
-    const tag1 = await rawRepository.save({ type: ItemTagType.Public, item });
-    const tag2 = await rawRepository.save({ type: ItemTagType.Public, item: child });
+    const visibilityTypes = [ItemVisibilityType.Hidden, ItemVisibilityType.Public];
+    const tag1 = await rawRepository.save({ type: ItemVisibilityType.Public, item });
+    const tag2 = await rawRepository.save({ type: ItemVisibilityType.Public, item: child });
 
-    const tags = await repository.getManyBelowAndSelf(item, tagTypes);
+    const tags = await repository.getManyBelowAndSelf(item, visibilityTypes);
 
     expect(tags).toHaveLength(2);
     tags.forEach((t) => {
@@ -73,7 +73,7 @@ describe('getManyBelowAndSelf', () => {
         expect(t.type).toEqual(tag2.type);
         expectItem(t.item, tag2.item);
       } else {
-        throw new Error('error in tag');
+        throw new Error('error in visibility');
       }
     });
   });

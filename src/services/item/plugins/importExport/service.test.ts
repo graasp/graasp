@@ -3,7 +3,7 @@ import { ZipFile } from 'yazl';
 
 import { FastifyInstance, FastifyReply } from 'fastify';
 
-import { ItemTagType, ItemType } from '@graasp/sdk';
+import { ItemType, ItemVisibilityType } from '@graasp/sdk';
 
 import build, {
   MOCK_LOGGER,
@@ -20,7 +20,7 @@ import { ItemTestUtils } from '../../test/fixtures/items';
 import { EtherpadItemService } from '../etherpad/service';
 import FileItemService from '../file/service';
 import type { H5PService } from '../html/h5p/service';
-import { ItemTagRepository } from '../itemTag/repository';
+import { ItemVisibilityRepository } from '../itemVisibility/repository';
 import { ImportExportService } from './service';
 
 const testUtils = new ItemTestUtils();
@@ -59,7 +59,7 @@ describe('ZIP routes tests', () => {
         actor,
         parentItem: item,
       });
-      await new ItemTagRepository().post(actor, child1, ItemTagType.Hidden);
+      await new ItemVisibilityRepository().post(actor, child1, ItemVisibilityType.Hidden);
 
       const importExportService = new ImportExportService(
         app.db,
