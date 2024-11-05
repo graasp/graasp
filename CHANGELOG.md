@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 
 ### Bug Fixes
-
+* Optimize slow GET own recycled items [1594](https://github.com/graasp/graasp/commit/1b9c3651c58b47c365492ec0ff996423aeed23c7)
 * **arabic:** update membership request translations ([#1605](https://github.com/graasp/graasp/issues/1605)) ([02ab379](https://github.com/graasp/graasp/commit/02ab379dca03e50271f59a18c6cd68c16f1ae99e))
 * **german:** update translations ([#1602](https://github.com/graasp/graasp/issues/1602)) ([bb4ce03](https://github.com/graasp/graasp/commit/bb4ce03a4b9476cee8321b23db6291da2f928439))
 * **italian:** update membership request translations ([#1603](https://github.com/graasp/graasp/issues/1603)) ([aefa15b](https://github.com/graasp/graasp/commit/aefa15b75461aeb594ca1cbb7de735d6c31316e6))
