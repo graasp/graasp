@@ -3,18 +3,17 @@ import fs from 'fs';
 import { lstat, mkdir, readdir } from 'fs/promises';
 import mime from 'mime';
 import path from 'path';
+import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
 import { dir } from 'tmp-promise';
 import { v4 } from 'uuid';
 
-import { MultipartFile } from '@fastify/multipart';
 import { FastifyBaseLogger } from 'fastify';
 
 import { FileItemType } from '@graasp/sdk';
 
 import { BaseLogger } from '../../../../logger';
 import { TMP_FOLDER } from '../../../../utils/config';
-import { Repositories } from '../../../../utils/repositories';
 import FileService, { FileServiceConfig } from '../../../file/service';
 import { fileRepositoryFactory } from '../../../file/utils/factory';
 import { Member } from '../../../member/entities/member';
@@ -154,8 +153,8 @@ export abstract class HtmlService {
 
   async createItem(
     actor: Member,
-    repositories: Repositories,
-    htmlFile: MultipartFile,
+    filename: string,
+    stream: Readable,
     onComplete: (
       actor: Member,
       baseName: string,
@@ -174,7 +173,7 @@ export abstract class HtmlService {
     const remoteRootPath = this.buildRootPath(this.pathPrefix, contentId);
 
     await mkdir(targetFolder, { recursive: true });
-    const baseName = path.basename(htmlFile.filename, `.${this.extension}`);
+    const baseName = path.basename(filename, `.${this.extension}`);
 
     // try-catch block for local storage cleanup
     try {
@@ -182,7 +181,7 @@ export abstract class HtmlService {
       const contentFolder = this.buildContentPath(targetFolder);
 
       // save html file
-      await pipeline(htmlFile.file, fs.createWriteStream(savePath));
+      await pipeline(stream, fs.createWriteStream(savePath));
       await extract(savePath, { dir: contentFolder });
 
       // validate package before saving it

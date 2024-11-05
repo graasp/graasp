@@ -126,6 +126,7 @@ const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
       } = request;
       const member = asDefined(user?.account);
       assertIsMember(member);
+
       return db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
 
@@ -135,20 +136,18 @@ const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
           await validatePermission(repositories, PermissionLevel.Write, member, item);
         }
 
-        // WARNING: cannot destructure { file } = request, which triggers an undefined TypeError internally
-        // (maybe getter performs side-effect on promise handler?)
-        // so use request.file notation instead
-        // const h5pFiles = await request.files();
         const h5pFile = await request.file();
 
         if (!h5pFile) {
           throw new H5PInvalidFileError(h5pFile);
         }
 
+        const { filename, file: stream } = h5pFile;
+
         return await h5pService.createItem(
           member,
-          repositories,
-          h5pFile,
+          filename,
+          stream,
           createH5PItem,
           parentId,
           previousItemId,
