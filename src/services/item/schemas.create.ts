@@ -14,12 +14,9 @@ const baseItemCreateSchema = Type.Composite(
   [
     Type.Pick(itemSchema, ['name']),
     Type.Partial(Type.Pick(itemSchema, ['displayName', 'description', 'settings', 'lang'])),
-    Type.Object(
-      {
-        geolocation: Type.Optional(geoCoordinateSchemaRef),
-      },
-      { additionalProperties: false },
-    ),
+    customType.StrictObject({
+      geolocation: Type.Optional(geoCoordinateSchemaRef),
+    }),
   ],
   { additionalProperties: false },
 );
@@ -37,18 +34,13 @@ function itemCreateSchemaFactory<L extends string, E extends TProperties>(
   return Type.Composite(
     [
       Type.Omit(baseItemCreateSchema, ['settings']),
-      Type.Object(
-        {
-          type: Type.Literal(literal),
-          settings: Type.Optional(settingsSchema),
-          extra: Type.Optional(
-            Type.Object({ [literal]: extra } as Record<L, TObject<E>>, {
-              additionalProperties: false,
-            }),
-          ),
-        },
-        { additionalProperties: false },
-      ),
+      customType.StrictObject({
+        type: Type.Literal(literal),
+        settings: Type.Optional(settingsSchema),
+        extra: Type.Optional(
+          customType.StrictObject({ [literal]: extra } as Record<L, TObject<E>>),
+        ),
+      }),
     ],
     { additionalProperties: false },
   );
@@ -62,87 +54,94 @@ function itemCreateSchemaFactoryWithSettings<
   return Type.Composite(
     [
       Type.Omit(itemCreateSchemaFactory(literal, extra), ['settings']),
-      Type.Object({ settings }, { additionalProperties: false }),
+      customType.StrictObject({ settings }),
     ],
     { additionalProperties: false },
   );
 }
 
-const emptyExtra = Type.Object({}, { additionalProperties: false });
-const fileItemExtra = Type.Object(
-  {
-    name: Type.String(),
-  },
-  { additionalProperties: false },
+// FOLDER
+const folderItemCreateSchema = itemCreateSchemaFactory(
+  ItemType.FOLDER,
+  customType.StrictObject({}),
 );
-const folderItemCreateSchema = itemCreateSchemaFactory(ItemType.FOLDER, emptyExtra);
+
+// APP
 const appItemCreateSchema = itemCreateSchemaFactory(
   ItemType.APP,
-  Type.Object({ url: Type.String({ format: 'uri' }) }, { additionalProperties: false }),
+  customType.StrictObject({ url: Type.String({ format: 'uri' }) }),
 );
+
+// DOCUMENT
 const documentItemCreateSchema = itemCreateSchemaFactory(
   ItemType.DOCUMENT,
-  Type.Object(
-    {
-      content: Type.String(),
-      flavor: Type.Optional(Type.Enum(DocumentItemExtraFlavor)),
-      isRaw: Type.Optional(Type.Boolean()),
-    },
-    { additionalProperties: false },
-  ),
+  customType.StrictObject({
+    content: Type.String(),
+    flavor: Type.Optional(Type.Enum(DocumentItemExtraFlavor)),
+    isRaw: Type.Optional(Type.Boolean()),
+  }),
 );
+
+// LINK
 const linkItemCreateSchema = itemCreateSchemaFactoryWithSettings(
   ItemType.LINK,
-  Type.Object(
-    {
-      url: Type.String({ format: 'uri' }),
-      thumbnails: Type.Optional(Type.Array(Type.String())),
-      icons: Type.Optional(Type.Array(Type.String())),
-      html: Type.Optional(Type.String()),
-      description: Type.Optional(Type.String()),
-    },
-    { additionalProperties: false },
-  ),
+  customType.StrictObject({
+    url: Type.String({ format: 'uri' }),
+    thumbnails: Type.Optional(Type.Array(Type.String())),
+    icons: Type.Optional(Type.Array(Type.String())),
+    html: Type.Optional(Type.String()),
+    description: Type.Optional(Type.String()),
+  }),
   Type.Composite(
     [
       settingsSchema,
-      Type.Object(
-        {
-          showLinkIframe: Type.Optional(Type.Boolean()),
-          showLinkButton: Type.Optional(Type.Boolean()),
-        },
-        { additionalProperties: false },
-      ),
+      customType.StrictObject({
+        showLinkIframe: Type.Optional(Type.Boolean()),
+        showLinkButton: Type.Optional(Type.Boolean()),
+      }),
     ],
     {
       additionalProperties: false,
     },
   ),
 );
+
+// FILE
+const fileItemExtra = customType.StrictObject({
+  name: Type.String(),
+});
 const localFileItemCreateSchema = itemCreateSchemaFactory(ItemType.LOCAL_FILE, fileItemExtra);
 const s3FileItemCreateSchema = itemCreateSchemaFactory(ItemType.S3_FILE, fileItemExtra);
 const etherpadItemCreateSchema = itemCreateSchemaFactory(
   ItemType.ETHERPAD,
-  Type.Object({ groupID: Type.String(), padID: Type.String() }, { additionalProperties: false }),
+  customType.StrictObject({ groupID: Type.String(), padID: Type.String() }),
 );
+
+// H5P
 const h5pItemCreateSchema = itemCreateSchemaFactory(
   ItemType.H5P,
-  Type.Object(
-    { contentId: Type.String(), h5pFilePath: Type.String(), contentFilePath: Type.String() },
-    { additionalProperties: false },
-  ),
+  customType.StrictObject({
+    contentId: Type.String(),
+    h5pFilePath: Type.String(),
+    contentFilePath: Type.String(),
+  }),
 );
+
+// SHORTCUT
 const shortcutItemCreateSchema = itemCreateSchemaFactory(
   ItemType.SHORTCUT,
-  Type.Object({ target: customType.UUID() }, { additionalProperties: false }),
+  customType.StrictObject({ target: customType.UUID() }),
 );
 
 export const create = {
+  operationId: 'createItem',
+  tags: ['item'],
+  summary: 'Create item',
+  description:
+    'Create item, whose possible types are folder, app, document, embeddedLink, localFile, s3File, etherpad, h5p and shortcut.',
+
   querystring: Type.Partial(
-    Type.Object(
-      { parentId: customType.UUID(), previousItemId: customType.UUID() },
-      { additionalProperties: false },
-    ),
+    customType.StrictObject({ parentId: customType.UUID(), previousItemId: customType.UUID() }),
   ),
   body: customType.Discriminable(
     [
@@ -158,5 +157,15 @@ export const create = {
     ],
     'type',
   ),
+  response: { [StatusCodes.OK]: itemSchemaRef, '4xx': errorSchemaRef },
+} as const satisfies FastifySchema;
+
+export const createWithThumbnail = {
+  operationId: 'createItemWithThumbnail',
+  tags: ['item', 'thumbnail'],
+  summary: 'Create an item with a thumbnail',
+  description: 'Create an item with a thumbnail. The data is sent using a form-data.',
+
+  querystring: Type.Partial(customType.StrictObject({ parentId: customType.UUID() })),
   response: { [StatusCodes.OK]: itemSchemaRef, '4xx': errorSchemaRef },
 } as const satisfies FastifySchema;

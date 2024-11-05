@@ -21,35 +21,8 @@ import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 import { errorSchemaRef } from '../../schemas/global';
 import { nullableAccountSchemaRef } from '../account/schemas';
 
-export const SHOW_HIDDEN_PARRAM = 'showHidden';
-export const TYPES_FILTER_PARAM = 'types';
-
-export const itemSchema = Type.Object(
-  {
-    // Object Definition
-    id: customType.UUID(),
-    name: customType.ItemName(),
-    displayName: Type.String({ maxLength: MAX_ITEM_NAME_LENGTH }),
-    description: Type.Optional(customType.Nullable(Type.String())),
-    type: Type.String(),
-    path: Type.String(),
-    lang: Type.String(),
-    extra: Type.Object({}, { additionalProperties: true }),
-    settings: Type.Object({}, { additionalProperties: true }),
-    creator: Type.Optional(nullableAccountSchemaRef),
-    createdAt: customType.DateTime(),
-    updatedAt: customType.DateTime(),
-  },
-  {
-    // Schema Options
-    additionalProperties: false,
-  },
-);
-
-export const itemSchemaRef = registerSchemaAsRef('item', 'Item', itemSchema);
-
 export const settingsSchema = Type.Partial(
-  Type.Object(
+  customType.StrictObject(
     {
       lang: Type.String({ deprecated: true }),
       isPinned: Type.Boolean(),
@@ -72,69 +45,71 @@ export const settingsSchema = Type.Partial(
       maxWidth: Type.Enum(MaxWidth),
       alignment: Type.Enum(Alignment),
     },
-    { additionalProperties: false },
+    {
+      title: 'Item settings',
+      description: 'Parameters, mostly visual, common to all types of items.',
+    },
   ),
 );
+
+export const itemSchema = customType.StrictObject(
+  {
+    id: customType.UUID(),
+    name: customType.ItemName(),
+    displayName: Type.String({ maxLength: MAX_ITEM_NAME_LENGTH }),
+    description: Type.Optional(customType.Nullable(Type.String())),
+    type: Type.String(),
+    path: Type.String(),
+    lang: Type.String(),
+    extra: Type.Object({}, { additionalProperties: true }),
+    settings: settingsSchema,
+    creator: Type.Optional(nullableAccountSchemaRef),
+    createdAt: customType.DateTime(),
+    updatedAt: customType.DateTime(),
+  },
+  {
+    title: 'Item',
+    description: 'Smallest unit of a learning collection',
+  },
+);
+
+export const itemSchemaRef = registerSchemaAsRef('item', 'Item', itemSchema);
 
 export const itemUpdateSchema = Type.Partial(
   Type.Composite(
     [
       Type.Pick(itemSchema, ['name', 'displayName', 'description', 'lang']),
-      Type.Object(
-        {
-          settings: Type.Optional(settingsSchema),
-          extra: Type.Union([
-            Type.Object(
-              {
-                folder: Type.Object({}),
-              },
-              { additionalProperties: false },
-            ),
-            Type.Object(
-              {
-                app: Type.Object({}),
-              },
-              { additionalProperties: false },
-            ),
-            Type.Object(
-              {
-                s3File: Type.Object({
-                  altText: Type.String(),
-                }),
-              },
-              { additionalProperties: false },
-            ),
-            Type.Object(
-              {
-                file: Type.Object({
-                  altText: Type.String(),
-                }),
-              },
-              { additionalProperties: false },
-            ),
-            Type.Object(
-              {
-                embeddedLink: Type.Object({ url: Type.String() }, { additionalProperties: false }),
-              },
-              { additionalProperties: false },
-            ),
-            Type.Object(
-              {
-                document: Type.Object(
-                  {
-                    content: Type.String(),
-                    flavor: Type.Optional(Type.Enum(DocumentItemExtraFlavor)),
-                    isRaw: Type.Optional(Type.Boolean()),
-                  },
-                  { additionalProperties: false },
-                ),
-              },
-              { additionalProperties: false },
-            ),
-          ]),
-        },
-        { additionalProperties: false },
-      ),
+      customType.StrictObject({
+        settings: Type.Optional(settingsSchema),
+        extra: Type.Union([
+          customType.StrictObject({
+            folder: Type.Object({}),
+          }),
+          customType.StrictObject({
+            app: Type.Object({}),
+          }),
+          customType.StrictObject({
+            s3File: Type.Object({
+              altText: Type.String(),
+            }),
+          }),
+          customType.StrictObject({
+            file: Type.Object({
+              altText: Type.String(),
+            }),
+          }),
+          customType.StrictObject({
+            embeddedLink: customType.StrictObject({ url: Type.String() }),
+          }),
+          customType.StrictObject({
+            document: customType.StrictObject({
+              content: Type.String(),
+              flavor: Type.Optional(Type.Enum(DocumentItemExtraFlavor)),
+              isRaw: Type.Optional(Type.Boolean()),
+            }),
+          }),
+        ]),
+      }),
     ],
     {
       additionalProperties: false,
@@ -142,33 +117,10 @@ export const itemUpdateSchema = Type.Partial(
   ),
 );
 
-export const createWithThumbnail = {
-  querystring: Type.Partial(
-    Type.Object({ parentId: customType.UUID() }, { additionalProperties: false }),
-  ),
-  response: { [StatusCodes.OK]: itemSchemaRef },
-} as const satisfies FastifySchema;
-
-export const getMany = {
-  querystring: Type.Object(
-    {
-      id: Type.Array(customType.UUID(), {
-        maxItems: MAX_TARGETS_FOR_READ_REQUEST,
-        uniqueItems: true,
-      }),
-    },
-    { additionalProperties: false },
-  ),
-  response: {
-    [StatusCodes.OK]: Type.Object({
-      data: Type.Object({}, { additionalProperties: true }),
-      errors: Type.Array(errorSchemaRef),
-    }),
-    '4xx': errorSchemaRef,
-  },
-} as const satisfies FastifySchema;
-
 export const getOwn = {
+  // use GET accessible
+  deprecated: true,
+
   response: {
     [StatusCodes.OK]: Type.Array(itemSchemaRef),
     '4xx': errorSchemaRef,
@@ -176,9 +128,10 @@ export const getOwn = {
 } as const satisfies FastifySchema;
 
 export const getShared = {
-  querystring: Type.Partial(
-    Type.Object({ permission: Type.Enum(PermissionLevel) }, { additionalProperties: false }),
-  ),
+  // use GET accessible
+  deprecated: true,
+
+  querystring: Type.Partial(customType.StrictObject({ permission: Type.Enum(PermissionLevel) })),
   response: {
     [StatusCodes.OK]: Type.Array(itemSchemaRef),
     '4xx': errorSchemaRef,
@@ -186,6 +139,11 @@ export const getShared = {
 } as const satisfies FastifySchema;
 
 export const updateOne = {
+  operationId: 'updateItem',
+  tags: ['item'],
+  summary: 'Update item',
+  description: 'Update item given body.',
+
   params: customType.StrictObject({
     id: customType.UUID(),
   }),
@@ -193,31 +151,20 @@ export const updateOne = {
   response: { [StatusCodes.OK]: itemSchemaRef, '4xx': errorSchemaRef },
 } as const satisfies FastifySchema;
 
-export const updateMany = {
-  querystring: Type.Object(
-    {
-      id: Type.Array(customType.UUID(), {
-        maxItems: MAX_TARGETS_FOR_MODIFY_REQUEST,
-        uniqueItems: true,
-      }),
-    },
-    { additionalProperties: false },
-  ),
-  body: itemUpdateSchema,
-  response: {
-    [StatusCodes.OK]: Type.Array(Type.Intersect([itemSchemaRef, errorSchemaRef])),
-    [StatusCodes.ACCEPTED]: Type.Array(customType.UUID(), {
-      maxItems: MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE,
-    }),
-    '4xx': errorSchemaRef,
-  },
-} as const satisfies FastifySchema;
-
 export const reorder = {
+  operationId: 'reorderItem',
+  tags: ['item'],
+  summary: 'Reorder item',
+  description: 'Reorder item within its parent given previous item id.',
+
   params: customType.StrictObject({
-    id: customType.UUID(),
+    id: customType.UUID({ description: 'Item to reorder' }),
   }),
-  body: Type.Object({ previousItemId: customType.UUID() }, { additionalProperties: false }),
+  body: customType.StrictObject({
+    previousItemId: customType.UUID({
+      description: 'Item which the item defined in params should go after',
+    }),
+  }),
   response: {
     [StatusCodes.OK]: itemSchemaRef,
     '4xx': errorSchemaRef,
@@ -225,15 +172,18 @@ export const reorder = {
 } as const satisfies FastifySchema;
 
 export const deleteMany = {
-  querystring: Type.Object(
-    {
-      id: Type.Array(customType.UUID(), {
-        maxItems: MAX_TARGETS_FOR_MODIFY_REQUEST,
-        uniqueItems: true,
-      }),
-    },
-    { additionalProperties: false },
-  ),
+  operationId: 'deleteManyItems',
+  tags: ['item'],
+  summary: 'Delete many items',
+  description:
+    'Delete many items given their ids. This endpoint is asynchronous and a feedback is returned through websockets.',
+
+  querystring: customType.StrictObject({
+    id: Type.Array(customType.UUID(), {
+      maxItems: MAX_TARGETS_FOR_MODIFY_REQUEST,
+      uniqueItems: true,
+    }),
+  }),
   response: {
     [StatusCodes.ACCEPTED]: Type.Array(customType.UUID(), {
       maxItems: MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE,
@@ -243,33 +193,55 @@ export const deleteMany = {
 } as const satisfies FastifySchema;
 
 export const moveMany = {
-  querystring: Type.Object(
-    {
-      id: Type.Array(customType.UUID(), {
-        maxItems: MAX_TARGETS_FOR_MODIFY_REQUEST,
-        uniqueItems: true,
-      }),
-    },
-    { additionalProperties: false },
-  ),
-  body: Type.Object(
-    { parentId: Type.Optional(customType.UUID()) },
-    { additionalProperties: false },
-  ),
+  operationId: 'moveManyItems',
+  tags: ['item'],
+  summary: 'Move many items',
+  description:
+    'Move many items given their ids to a parent target. This endpoint is asynchronous and a feedback is returned through websockets.',
+
+  querystring: customType.StrictObject({
+    id: Type.Array(customType.UUID(), {
+      maxItems: MAX_TARGETS_FOR_MODIFY_REQUEST,
+      uniqueItems: true,
+      description: 'Ids of the items to move',
+    }),
+  }),
+  body: customType.StrictObject({
+    parentId: Type.Optional(
+      customType.UUID({ description: 'Parent item id where to move the items' }),
+    ),
+  }),
+  response: {
+    [StatusCodes.ACCEPTED]: Type.Array(customType.UUID(), {
+      maxItems: MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE,
+    }),
+    '4xx': errorSchemaRef,
+  },
 } as const satisfies FastifySchema;
 
 export const copyMany = {
-  querystring: Type.Object(
-    {
-      id: Type.Array(customType.UUID(), {
-        maxItems: MAX_TARGETS_FOR_MODIFY_REQUEST,
-        uniqueItems: true,
-      }),
-    },
-    { additionalProperties: false },
-  ),
-  body: Type.Object(
-    { parentId: Type.Optional(customType.UUID()) },
-    { additionalProperties: false },
-  ),
+  operationId: 'copyManyItems',
+  tags: ['item'],
+  summary: 'Copy many items',
+  description:
+    'Copy many items given their ids in a parent target. This endpoint is asynchronous and a feedback is returned through websockets.',
+
+  querystring: customType.StrictObject({
+    id: Type.Array(customType.UUID(), {
+      maxItems: MAX_TARGETS_FOR_MODIFY_REQUEST,
+      uniqueItems: true,
+      description: 'Ids of the items to move',
+    }),
+  }),
+  body: customType.StrictObject({
+    parentId: Type.Optional(
+      customType.UUID({ description: 'Parent item id where the items are copied' }),
+    ),
+  }),
+  response: {
+    [StatusCodes.ACCEPTED]: Type.Array(customType.UUID(), {
+      maxItems: MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE,
+    }),
+    '4xx': errorSchemaRef,
+  },
 } as const satisfies FastifySchema;

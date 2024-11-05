@@ -15,19 +15,16 @@ import { validatedMemberAccountRole } from '../member/strategies/validatedMember
 import { ITEMS_PAGE_SIZE } from './constants';
 import { Item } from './entities/Item';
 import { ActionItemService } from './plugins/action/service';
+import { copyMany, deleteMany, getOwn, getShared, moveMany, reorder, updateOne } from './schemas';
+import { create, createWithThumbnail } from './schemas.create';
 import {
-  copyMany,
-  createWithThumbnail,
-  deleteMany,
+  getAccessible,
+  getChildren,
+  getDescendantItems,
   getMany,
-  getOwn,
-  getShared,
-  moveMany,
-  reorder,
-  updateOne,
-} from './schemas';
-import { create } from './schemas.create';
-import { getAccessible, getChildren, getDescendants, getOne, getParents } from './schemas.packed';
+  getOne,
+  getParentItems,
+} from './schemas.packed';
 import { ItemService } from './service';
 import { getPostItemPayloadFromFormData } from './utils';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from './ws/events';
@@ -215,7 +212,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   // get item's descendants
   fastify.get(
     '/:id/descendants',
-    { schema: getDescendants, preHandler: optionalIsAuthenticated },
+    { schema: getDescendantItems, preHandler: optionalIsAuthenticated },
     async ({ user, params: { id }, query }) => {
       return itemService.getPackedDescendants(user?.account, buildRepositories(), id, query);
     },
@@ -225,7 +222,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.get(
     '/:id/parents',
     {
-      schema: getParents,
+      schema: getParentItems,
       preHandler: optionalIsAuthenticated,
     },
     async ({ user, params: { id } }) => {
