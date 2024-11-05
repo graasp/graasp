@@ -42,7 +42,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   itemService.hooks.setPostHook('copy', hook);
 
   fastify.post(
-    '/:itemId/visibility/:type',
+    '/:itemId/visibilities/:type',
     { schema: create, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async ({ user, params: { itemId, type } }) => {
       const member = asDefined(user?.account);
@@ -55,7 +55,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
   // delete item visibility
   fastify.delete(
-    '/:itemId/visibility/:type',
+    '/:itemId/visibilities/:type',
     { schema: deleteOne, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async ({ user, params: { itemId, type } }) => {
       return db.transaction(async (manager) => {

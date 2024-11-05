@@ -33,7 +33,7 @@ export const saveTagsForItem = async ({ item, creator }) => {
   return itemVisibilities;
 };
 
-describe('Tags', () => {
+describe('Item Visibility', () => {
   let app: FastifyInstance;
   let actor;
 
@@ -52,7 +52,7 @@ describe('Tags', () => {
     unmockAuthenticate();
   });
 
-  describe('POST /:itemId/tags', () => {
+  describe('POST /:itemId/visibilities', () => {
     let item;
     const type = ItemVisibilityType.Hidden;
 
@@ -63,7 +63,7 @@ describe('Tags', () => {
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/tags/${type}`,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/visibilities/${type}`,
         });
 
         expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
@@ -81,7 +81,7 @@ describe('Tags', () => {
 
         const res = await app.inject({
           method: HttpMethod.Post,
-          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/tags/${type}`,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/visibilities/${type}`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
         expect(res.json().type).toEqual(type);
@@ -94,7 +94,7 @@ describe('Tags', () => {
 
         const res = await app.inject({
           method: HttpMethod.Post,
-          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/tags/${type}`,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/visibilities/${type}`,
         });
         expect(res.json()).toMatchObject(
           new ConflictingVisibilitiesInTheHierarchy(expect.anything()),
@@ -108,7 +108,7 @@ describe('Tags', () => {
 
         const res = await app.inject({
           method: HttpMethod.Post,
-          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/tags/${type}`,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/visibilities/${type}`,
         });
         expect(res.json()).toMatchObject(
           new ConflictingVisibilitiesInTheHierarchy(expect.anything()),
@@ -118,7 +118,7 @@ describe('Tags', () => {
       it('Bad request if item id is invalid', async () => {
         const res = await app.inject({
           method: HttpMethod.Post,
-          url: `${ITEMS_ROUTE_PREFIX}/invalid-id/tags/${type}`,
+          url: `${ITEMS_ROUTE_PREFIX}/invalid-id/visibilities/${type}`,
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
@@ -126,7 +126,7 @@ describe('Tags', () => {
       it('Bad request if type is invalid', async () => {
         const res = await app.inject({
           method: HttpMethod.Post,
-          url: `${ITEMS_ROUTE_PREFIX}/${v4()}/tags/invalid-type`,
+          url: `${ITEMS_ROUTE_PREFIX}/${v4()}/visibilities/invalid-type`,
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
@@ -134,14 +134,14 @@ describe('Tags', () => {
       it('Throws if type is invalid', async () => {
         const res = await app.inject({
           method: HttpMethod.Post,
-          url: `${ITEMS_ROUTE_PREFIX}/${v4()}/tags/invalid-type`,
+          url: `${ITEMS_ROUTE_PREFIX}/${v4()}/visibilities/invalid-type`,
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
     });
   });
 
-  describe('DELETE /:itemId/tags/:id', () => {
+  describe('DELETE /:itemId/visibilities/:id', () => {
     let item, itemVisibilities;
     const type = ItemVisibilityType.Public;
 
@@ -152,7 +152,7 @@ describe('Tags', () => {
 
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: `${ITEMS_ROUTE_PREFIX}/${v4()}/tags/${type}`,
+          url: `${ITEMS_ROUTE_PREFIX}/${v4()}/visibilities/${type}`,
         });
 
         expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
@@ -181,7 +181,7 @@ describe('Tags', () => {
 
         const res = await app.inject({
           method: HttpMethod.Delete,
-          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/tags/${toDelete.type}`,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/visibilities/${toDelete.type}`,
         });
 
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -199,7 +199,7 @@ describe('Tags', () => {
 
         const res = await app.inject({
           method: HttpMethod.Delete,
-          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/tags/${visibility.type}`,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/visibilities/${visibility.type}`,
         });
         expect(res.json()).toMatchObject(new CannotModifyParentVisibility(expect.anything()));
       });
@@ -208,21 +208,21 @@ describe('Tags', () => {
 
         const res = await app.inject({
           method: HttpMethod.Delete,
-          url: `${ITEMS_ROUTE_PREFIX}/${itemWithoutTag.id}/tags/${ItemVisibilityType.Hidden}`,
+          url: `${ITEMS_ROUTE_PREFIX}/${itemWithoutTag.id}/visibilities/${ItemVisibilityType.Hidden}`,
         });
         expect(res.json()).toMatchObject(new ItemVisibilityNotFound(expect.anything()));
       });
       it('Bad request if item id is invalid', async () => {
         const res = await app.inject({
           method: HttpMethod.Delete,
-          url: `${ITEMS_ROUTE_PREFIX}/invalid-id/tags/${ItemVisibilityType.Hidden}`,
+          url: `${ITEMS_ROUTE_PREFIX}/invalid-id/visibilities/${ItemVisibilityType.Hidden}`,
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
       it('Bad request if item visibility id is invalid', async () => {
         const res = await app.inject({
           method: HttpMethod.Delete,
-          url: `${ITEMS_ROUTE_PREFIX}/${v4()}/tags/invalid-id`,
+          url: `${ITEMS_ROUTE_PREFIX}/${v4()}/visibilities/invalid-id`,
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
