@@ -26,7 +26,7 @@ export class ItemVisibility extends BaseEntity {
   @ManyToOne(() => Member, (member) => member.id, {
     onDelete: 'SET NULL',
   })
-  @JoinColumn({ name: 'creator_id' })
+  @JoinColumn({ name: 'creator_id', foreignKeyConstraintName: 'FK_item_visibility_creator' })
   creator: Member | null;
 
   @CreateDateColumn({ name: 'created_at' })
@@ -40,6 +40,10 @@ export class ItemVisibility extends BaseEntity {
     onDelete: 'CASCADE',
     nullable: false,
   })
-  @JoinColumn({ referencedColumnName: 'path', name: 'item_path' })
+  @JoinColumn({
+    referencedColumnName: 'path',
+    name: 'item_path',
+    foreignKeyConstraintName: 'FK_item_visibility_item',
+  })
   item: Item;
 }
