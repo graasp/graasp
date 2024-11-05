@@ -76,76 +76,69 @@ export const settingsSchema = Type.Partial(
   ),
 );
 
-export const itemUpdateSchemaRef = registerSchemaAsRef(
-  'itemUpdate',
-  'Item Update',
-  Type.Partial(
-    Type.Composite(
-      [
-        Type.Pick(itemSchema, ['name', 'displayName', 'description', 'lang']),
-        Type.Object(
-          {
-            settings: Type.Optional(settingsSchema),
-            extra: Type.Union([
-              Type.Object(
-                {
-                  folder: Type.Object({}),
-                },
-                { additionalProperties: false },
-              ),
-              Type.Object(
-                {
-                  app: Type.Object({}),
-                },
-                { additionalProperties: false },
-              ),
-              Type.Object(
-                {
-                  s3File: Type.Object({
-                    altText: Type.String(),
-                  }),
-                },
-                { additionalProperties: false },
-              ),
-              Type.Object(
-                {
-                  file: Type.Object({
-                    altText: Type.String(),
-                  }),
-                },
-                { additionalProperties: false },
-              ),
-              Type.Object(
-                {
-                  embeddedLink: Type.Object(
-                    { url: Type.String() },
-                    { additionalProperties: false },
-                  ),
-                },
-                { additionalProperties: false },
-              ),
-              Type.Object(
-                {
-                  document: Type.Object(
-                    {
-                      content: Type.String(),
-                      flavor: Type.Optional(Type.Enum(DocumentItemExtraFlavor)),
-                      isRaw: Type.Optional(Type.Boolean()),
-                    },
-                    { additionalProperties: false },
-                  ),
-                },
-                { additionalProperties: false },
-              ),
-            ]),
-          },
-          { additionalProperties: false },
-        ),
-      ],
-      {
-        additionalProperties: false,
-      },
-    ),
+export const itemUpdateSchema = Type.Partial(
+  Type.Composite(
+    [
+      Type.Pick(itemSchema, ['name', 'displayName', 'description', 'lang']),
+      Type.Object(
+        {
+          settings: Type.Optional(settingsSchema),
+          extra: Type.Union([
+            Type.Object(
+              {
+                folder: Type.Object({}),
+              },
+              { additionalProperties: false },
+            ),
+            Type.Object(
+              {
+                app: Type.Object({}),
+              },
+              { additionalProperties: false },
+            ),
+            Type.Object(
+              {
+                s3File: Type.Object({
+                  altText: Type.String(),
+                }),
+              },
+              { additionalProperties: false },
+            ),
+            Type.Object(
+              {
+                file: Type.Object({
+                  altText: Type.String(),
+                }),
+              },
+              { additionalProperties: false },
+            ),
+            Type.Object(
+              {
+                embeddedLink: Type.Object({ url: Type.String() }, { additionalProperties: false }),
+              },
+              { additionalProperties: false },
+            ),
+            Type.Object(
+              {
+                document: Type.Object(
+                  {
+                    content: Type.String(),
+                    flavor: Type.Optional(Type.Enum(DocumentItemExtraFlavor)),
+                    isRaw: Type.Optional(Type.Boolean()),
+                  },
+                  { additionalProperties: false },
+                ),
+              },
+              { additionalProperties: false },
+            ),
+          ]),
+        },
+        { additionalProperties: false },
+      ),
+    ],
+    {
+      additionalProperties: false,
+    },
   ),
 );
 
@@ -196,7 +189,7 @@ export const updateOne = {
   params: customType.StrictObject({
     id: customType.UUID(),
   }),
-  body: itemUpdateSchemaRef,
+  body: itemUpdateSchema,
   response: { [StatusCodes.OK]: itemSchemaRef, '4xx': errorSchemaRef },
 } as const satisfies FastifySchema;
 
@@ -210,7 +203,7 @@ export const updateMany = {
     },
     { additionalProperties: false },
   ),
-  body: itemUpdateSchemaRef,
+  body: itemUpdateSchema,
   response: {
     [StatusCodes.OK]: Type.Array(Type.Intersect([itemSchemaRef, errorSchemaRef])),
     [StatusCodes.ACCEPTED]: Type.Array(customType.UUID(), {

@@ -27,11 +27,22 @@ export const nullableAccountSchemaRef = registerSchemaAsRef(
   customType.Nullable(accountSchema),
 );
 
+export const accountTypeIndividualRef = registerSchemaAsRef(
+  'accountTypeIndividual',
+  'Account Type Individual',
+  Type.Literal(AccountType.Individual),
+);
+export const accountTypeGuestRef = registerSchemaAsRef(
+  'accountTypeGuest',
+  'Account Type Guest',
+  Type.Literal(AccountType.Guest),
+);
+
 const compositeMemberAccountSchema = Type.Composite([
   accountSchema, // Base properties from minimal account
   Type.Object(
     {
-      type: Type.Literal(AccountType.Individual),
+      type: accountTypeIndividualRef,
       email: Type.String({ format: 'email' }),
     },
     { additionalProperties: false },
@@ -43,7 +54,7 @@ const compositeGuestAccountSchema = Type.Composite(
     accountSchema, // Base properties from minimal account
     Type.Object(
       {
-        type: Type.Literal(AccountType.Guest),
+        type: accountTypeGuestRef,
       },
       { additionalProperties: false },
     ),
