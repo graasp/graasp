@@ -9,7 +9,7 @@ import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passpo
 import { matchOne } from '../authorization';
 import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
 import MembershipRequestAPI from './plugins/MembershipRequest';
-import { create, createMany, deleteOne, getItems, updateOne } from './schemas';
+import { create, createMany, deleteOne, getManyItemMemberships, updateOne } from './schemas';
 import { ItemMembershipService } from './service';
 import { membershipWsHooks } from './ws/hooks';
 
@@ -36,7 +36,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       // returns empty for item not found
       fastify.get(
         '/',
-        { schema: getItems, preHandler: optionalIsAuthenticated },
+        { schema: getManyItemMemberships, preHandler: optionalIsAuthenticated },
         async ({ user, query: { itemId: ids } }) => {
           return itemMembershipService.getForManyItems(user?.account, buildRepositories(), ids);
         },
