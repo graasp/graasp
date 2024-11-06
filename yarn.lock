@@ -1821,6 +1821,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@faker-js/faker@npm:9.2.0":
+  version: 9.2.0
+  resolution: "@faker-js/faker@npm:9.2.0"
+  checksum: 10/c233aaa41ebc4f4bed36c1304c399c424b9e5abca9cb8fe54ce73d4162ec7acd66f294b90c85ed7a5df774400e44f0a10364bdd41f49e72cb519a48b5948939f
+  languageName: node
+  linkType: hard
+
 "@fastify/accept-negotiator@npm:^1.0.0":
   version: 1.1.0
   resolution: "@fastify/accept-negotiator@npm:1.1.0"
@@ -2087,18 +2094,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@npm:4.33.0":
-  version: 4.33.0
-  resolution: "@graasp/sdk@npm:4.33.0"
+"@graasp/sdk@npm:4.35.0":
+  version: 4.35.0
+  resolution: "@graasp/sdk@npm:4.35.0"
   dependencies:
-    "@faker-js/faker": "npm:9.0.3"
+    "@faker-js/faker": "npm:9.2.0"
     filesize: "npm:10.1.6"
     js-cookie: "npm:3.0.5"
-    validator: "npm:13.12.0"
   peerDependencies:
     date-fns: ^3 || ^4.0.0
-    uuid: ^9 || ^10
-  checksum: 10/6e0b0f661f52e1ca97b48c4b90ddc3c18e2afe7b8d3bf7818010b24bbc57f3c1ddc9bfa90c6fe2a1c05535f73ffe15956523b2557906b4a21a9a9f8b61d1647a
+    uuid: ^9 || ^10 || ^11.0.0
+  checksum: 10/72f4ad5c689f94fb0bd99696b7b18d7a7d893df5117b6b39e019d7943cd48c909e11a80bc5de0c0cf66fd4f0f7ffb79fc29fad244ff5070d9a1699538c8ea5d2
   languageName: node
   linkType: hard
 
@@ -7448,7 +7454,7 @@ __metadata:
     "@fastify/type-provider-typebox": "npm:4.1.0"
     "@fastify/websocket": "npm:7.2.0"
     "@graasp/etherpad-api": "npm:2.1.1"
-    "@graasp/sdk": "npm:4.33.0"
+    "@graasp/sdk": "npm:4.35.0"
     "@graasp/translations": "npm:1.40.0"
     "@jest/globals": "npm:29.7.0"
     "@quobix/vacuum": "npm:0.13.6"
@@ -12962,13 +12968,6 @@ __metadata:
     spdx-correct: "npm:^3.0.0"
     spdx-expression-parse: "npm:^3.0.0"
   checksum: 10/86242519b2538bb8aeb12330edebb61b4eb37fd35ef65220ab0b03a26c0592c1c8a7300d32da3cde5abd08d18d95e8dabfad684b5116336f6de9e6f207eec224
-  languageName: node
-  linkType: hard
-
-"validator@npm:13.12.0":
-  version: 13.12.0
-  resolution: "validator@npm:13.12.0"
-  checksum: 10/db6eb0725e2b67d60d30073ae8573982713b5903195d031dc3c7db7e82df8b74e8c13baef8e2106d146d979599fd61a06cde1fec5c148e4abd53d52817ff0fd9
   languageName: node
   linkType: hard
 

@@ -4,7 +4,6 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  EntityManager,
   Index,
   JoinColumn,
   ManyToOne,
@@ -12,7 +11,7 @@ import {
   Unique,
 } from 'typeorm';
 
-import { ShortLinkPlatform, UUID, UnionOfConst } from '@graasp/sdk';
+import { ShortLinkPlatform, UnionOfConst } from '@graasp/sdk';
 
 import { Item } from '../../../../item/entities/Item';
 
@@ -37,20 +36,4 @@ export class ShortLink extends BaseEntity {
   @Index()
   @JoinColumn({ referencedColumnName: 'id', name: 'item_id' })
   item: Item;
-
-  // This column is needed to return the itemId only without doing a join (for mobile for example).
-  // The select is set to false, to avoid to return the itemId when the item is returned.
-  @Column({ name: 'item_id', select: false })
-  itemId: UUID;
-
-  /**
-   * This method return all the columns of the entity.
-   * It is useful when you want to select all columns without having to list their manually.
-   * @returns all the columns of this entity, hidden columns are also include.
-   */
-  static getAllColumns(manager: EntityManager) {
-    return manager.connection
-      .getMetadata(ShortLink)
-      .columns.map((x) => x.propertyName as keyof ShortLink);
-  }
 }

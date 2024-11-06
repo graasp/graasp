@@ -1,14 +1,17 @@
 import { EntityManager } from 'typeorm';
 
 import {
-  ShortLinkPatchPayload,
+  ShortLink as CreateShortLink,
   ShortLinkPlatform,
-  ShortLinkPostPayload,
   UnionOfConst,
+  UpdateShortLink,
 } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../../plugins/datasource';
 import { MutableRepository } from '../../../../repositories/MutableRepository';
+import {
+  EntryNotFoundAfterUpdateException,
+  UpdateException,
+} from '../../../../repositories/errors';
 import {
   ShortLinkDuplication,
   ShortLinkLimitExceed,
@@ -17,8 +20,8 @@ import {
 import { isDuplicateEntryError } from '../../../../utils/typeormError';
 import { ShortLink } from './entities/ShortLink';
 
-type CreateShortLinkBody = ShortLinkPostPayload;
-type UpdateShortLinkBody = ShortLinkPatchPayload;
+type CreateShortLinkBody = CreateShortLink;
+type UpdateShortLinkBody = UpdateShortLink;
 const PRIMARY_KEY = 'alias';
 
 export class ShortLinkRepository extends MutableRepository<ShortLink, UpdateShortLinkBody> {
@@ -28,7 +31,7 @@ export class ShortLinkRepository extends MutableRepository<ShortLink, UpdateShor
 
   async addOne({ alias, platform, itemId }: CreateShortLinkBody): Promise<ShortLink> {
     super.throwsIfPKIsInvalid(alias);
-    if ((await this.countByItemAndPlateform(itemId, platform)) > 0) {
+    if ((await this.countByItemAndPlatform(itemId, platform)) > 0) {
       throw new ShortLinkLimitExceed(itemId, platform);
     }
 
@@ -42,7 +45,7 @@ export class ShortLinkRepository extends MutableRepository<ShortLink, UpdateShor
     }
   }
 
-  private async countByItemAndPlateform(
+  private async countByItemAndPlatform(
     itemId: string,
     platform: UnionOfConst<typeof ShortLinkPlatform>,
   ): Promise<number> {
@@ -88,26 +91,29 @@ export class ShortLinkRepository extends MutableRepository<ShortLink, UpdateShor
     return shortLink;
   }
 
-  async getOneFlat(alias: string): Promise<ShortLink> {
-    const shortLink = await super.findOne(alias, {
-      select: ShortLink.getAllColumns(AppDataSource.manager),
-    });
-
-    if (!shortLink) {
-      throw new ShortLinkNotFound(alias);
-    }
-
-    return shortLink;
-  }
-
   async updateOne(alias: string, entity: UpdateShortLinkBody): Promise<ShortLink> {
+    // Because we are updating the alias, which is the PK, we cannot use the super.updateOne method.
+    this.throwsIfPKIsInvalid(alias);
+
     try {
-      return await super.updateOne(alias, entity);
+      await this.repository.update({ alias }, entity);
+
+      const updatedEntity = await this.getOne(entity.alias);
+
+      // Could happen if the given pk doesn't exist, because update does not check if entity exists.
+      if (!updatedEntity) {
+        throw new EntryNotFoundAfterUpdateException(this.entity);
+      }
+
+      return updatedEntity;
     } catch (e) {
-      if (isDuplicateEntryError(e.message)) {
+      if (isDuplicateEntryError(e)) {
         throw new ShortLinkDuplication(alias);
       }
-      throw e;
+      if (e instanceof EntryNotFoundAfterUpdateException) {
+        throw e;
+      }
+      throw new UpdateException(e);
     }
   }
 }
