@@ -66,17 +66,16 @@ export const createMany = {
   },
 } as const satisfies FastifySchema;
 
-// schema for getting many item's memberships
-export const getItems = {
-  querystring: Type.Object(
-    { itemId: Type.Array(customType.UUID()) },
-    { additionalProperties: false },
-  ),
+export const getForItem = {
+  operationId: 'getMembershipsForItem',
+  tags: ['item-membership'],
+  summary: 'Get item memberships for item',
+  description: 'Get item memberships for item for admin purpose.',
+
+  params: customType.StrictObject({ itemId: customType.UUID() }),
   response: {
-    [StatusCodes.OK]: Type.Object({
-      data: Type.Record(Type.String({ format: 'uuid' }), Type.Array(itemMembershipSchemaRef)),
-      errors: Type.Array(errorSchemaRef),
-    }),
+    [StatusCodes.OK]: Type.Array(itemMembershipSchemaRef),
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
