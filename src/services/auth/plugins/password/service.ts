@@ -156,8 +156,8 @@ export class MemberPasswordService {
       subject: { text: MAIL.RESET_PASSWORD_TITLE },
       lang,
     })
-      .addText(MAIL.CHANGE_EMAIL_TEXT)
-      .addButton(MAIL.CHANGE_EMAIL_BUTTON_TEXT, link)
+      .addText(MAIL.RESET_PASSWORD_TEXT)
+      .addButton(MAIL.RESET_PASSWORD_BUTTON_TEXT, link)
       .addIgnoreEmailIfNotRequestedNotice()
       .build();
 

@@ -2,7 +2,7 @@
   "GREETINGS": "Thank you for signing up to our platform.",
   "SIGN_UP_VERIFY_EMAIL": "Please verify your email by clicking on the following button.",
   "SIGN_UP_TEXT": "Complete registration and sign in.",
-  "IGNORE_EMAIL_IF_NOT_REQUESTED": "If you don't remember signing up to Graasp, you can just ignore this email.",
+  "IGNORE_EMAIL_IF_NOT_REQUESTED": "If you are not the author of this action, you can just ignore this email.",
   "SIGN_IN_BUTTON_TEXT": "Sign In",
   "SIGN_UP_BUTTON_TEXT": "Register",
   "SIGN_IN_TEXT": "You asked us to send you a magic link for quickly signing in to your account. Here your go:",
