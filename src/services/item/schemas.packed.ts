@@ -3,22 +3,20 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifySchema } from 'fastify';
 
-import { ItemType, PermissionLevel } from '@graasp/sdk';
+import { ItemType, MAX_TARGETS_FOR_READ_REQUEST, PermissionLevel } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 import { errorSchemaRef } from '../../schemas/global';
 import { nullableMemberSchemaRef } from '../member/schemas';
 import { ITEMS_PAGE_SIZE } from './constants';
 import { itemTagSchemaRef } from './plugins/itemTag/schemas';
-import { SHOW_HIDDEN_PARRAM, TYPES_FILTER_PARAM } from './schemas';
 import { Ordering, SortBy } from './types';
 
 export const packedItemSchemaRef = registerSchemaAsRef(
   'packedItem',
   'Packed Item',
-  Type.Object(
+  customType.StrictObject(
     {
-      // Object Definition
       id: customType.UUID(),
       name: Type.String(),
       description: Type.Optional(customType.Nullable(Type.String())),
@@ -36,35 +34,62 @@ export const packedItemSchemaRef = registerSchemaAsRef(
       thumbnails: Type.Optional(Type.Object({}, { additionalProperties: true })),
     },
     {
-      // Schema Options
-      additionalProperties: false,
+      description: 'Item with additional information',
     },
   ),
 );
 
 export const getOne = {
+  operationId: 'getItem',
+  tags: ['item'],
+  summary: 'Get item',
+  description: 'Get item by its id.',
+
   params: customType.StrictObject({
     id: customType.UUID(),
   }),
   response: { [StatusCodes.OK]: packedItemSchemaRef, '4xx': errorSchemaRef },
 } as const satisfies FastifySchema;
 
+export const getMany = {
+  operationId: 'getManyItems',
+  tags: ['item'],
+  summary: 'Get many items',
+  description: 'Get many items by their ids.',
+
+  querystring: customType.StrictObject({
+    id: Type.Array(customType.UUID(), {
+      maxItems: MAX_TARGETS_FOR_READ_REQUEST,
+      uniqueItems: true,
+    }),
+  }),
+  response: {
+    [StatusCodes.OK]: Type.Object({
+      data: Type.Record(Type.String({ format: 'uuid' }), packedItemSchemaRef),
+      errors: Type.Array(errorSchemaRef),
+    }),
+    '4xx': errorSchemaRef,
+  },
+} as const satisfies FastifySchema;
+
 export const getAccessible = {
+  operationId: 'getAccessibleItems',
+  tags: ['item'],
+  summary: 'Get accessible items',
+  description: 'Get items the user has access to',
+
   querystring: Type.Composite(
     [
       customType.Pagination({ page: { default: 1 }, pageSize: { default: ITEMS_PAGE_SIZE } }),
       Type.Partial(
-        Type.Object(
-          {
-            creatorId: Type.String(),
-            permissions: Type.Array(Type.Enum(PermissionLevel)),
-            types: Type.Array(Type.Enum(ItemType)),
-            keywords: Type.Array(Type.String()),
-            sortBy: Type.Enum(SortBy),
-            ordering: Type.Enum(Ordering),
-          },
-          { additionalProperties: false },
-        ),
+        customType.StrictObject({
+          creatorId: Type.String(),
+          permissions: Type.Array(Type.Enum(PermissionLevel)),
+          types: Type.Array(Type.Enum(ItemType)),
+          keywords: Type.Array(Type.String()),
+          sortBy: Type.Enum(SortBy),
+          ordering: Type.Enum(Ordering),
+        }),
       ),
     ],
     { additionalProperties: false },
@@ -79,18 +104,20 @@ export const getAccessible = {
 } as const satisfies FastifySchema;
 
 export const getChildren = {
+  operationId: 'getChildren',
+  tags: ['item'],
+  summary: 'Get children of item',
+  description: 'Get children of item given its id.',
+
   params: customType.StrictObject({
     id: customType.UUID(),
   }),
   querystring: Type.Partial(
-    Type.Object(
-      {
-        ordered: Type.Boolean({ default: true }),
-        keywords: Type.Array(Type.String()),
-        types: Type.Array(Type.Enum(ItemType)),
-      },
-      { additionalProperties: false },
-    ),
+    customType.StrictObject({
+      ordered: Type.Boolean({ default: true }),
+      keywords: Type.Array(Type.String()),
+      types: Type.Array(Type.Enum(ItemType)),
+    }),
   ),
   response: {
     [StatusCodes.OK]: Type.Array(packedItemSchemaRef),
@@ -98,19 +125,21 @@ export const getChildren = {
   },
 } as const satisfies FastifySchema;
 
-export const getDescendants = {
+export const getDescendantItems = {
+  operationId: 'getDescendantItems',
+  tags: ['item'],
+  summary: 'Get descendant items of item',
+  description: 'Get descendant items of item given its id.',
+
   params: customType.StrictObject({
     id: customType.UUID(),
   }),
   querystring: Type.Partial(
-    Type.Object(
-      {
-        // SHOW_HIDDEN_PARRAM default value is true so it handles the legacy behavior.
-        [SHOW_HIDDEN_PARRAM]: Type.Boolean({ default: true }),
-        [TYPES_FILTER_PARAM]: Type.Array(Type.Enum(ItemType)),
-      },
-      { additionalProperties: false },
-    ),
+    customType.StrictObject({
+      // showHidden default value is true so it handles the legacy behavior.
+      showHidden: Type.Boolean({ default: true }),
+      types: Type.Array(Type.Enum(ItemType)),
+    }),
   ),
   response: {
     [StatusCodes.OK]: Type.Array(packedItemSchemaRef),
@@ -118,7 +147,12 @@ export const getDescendants = {
   },
 } as const satisfies FastifySchema;
 
-export const getParents = {
+export const getParentItems = {
+  operationId: 'getParentItems',
+  tags: ['item'],
+  summary: 'Get parent items of item',
+  description: 'Get parent items of item given its id.',
+
   params: customType.StrictObject({
     id: customType.UUID(),
   }),
