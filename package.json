@@ -46,7 +46,8 @@
     "migration:revert:fake": "npx typeorm-ts-node-commonjs migration:revert --fake",
     "migration:check": "npx typeorm-ts-node-commonjs migration:generate src/migrations/migrations --check -d src/plugins/datasource.ts",
     "openapi:generate": "node dist/scripts/generateOpenAPI.js",
-    "openapi:lint": "vacuum lint ./openapi.json"
+    "openapi:lint": "vacuum lint ./openapi.json",
+    "openapi:report": "vacuum html-report ./openapi.json vacuum-report.html"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.669.0",

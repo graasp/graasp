@@ -18,7 +18,7 @@ const shortLinkAlias = Type.Pick(shortLink, ['alias']);
 
 export const getRedirection = {
   operationId: 'getShortLinkRedirection',
-  tags: ['shortLink'],
+  tags: ['short-link'],
   summary: 'Get redirection for short link',
   description: 'Get redirection for given short link.',
 
@@ -31,7 +31,7 @@ export const getRedirection = {
 
 export const getAvailable = {
   operationId: 'getShortLinkAvailability',
-  tags: ['shortLink'],
+  tags: ['short-link'],
   summary: 'Get whether an alias is available',
   description: 'Get whether an alias is available.',
 
@@ -44,7 +44,7 @@ export const getAvailable = {
 
 export const getAllByItem = {
   operationId: 'getShortLinksForItem',
-  tags: ['shortLink'],
+  tags: ['short-link'],
   summary: 'Get all short links for item',
   description:
     'Get all short links created for an item. The response could be an empty object or a key-value with at least one platform and the alias.',
@@ -70,7 +70,7 @@ export const getAllByItem = {
 
 export const createShortLink = {
   operationId: 'createShortLink',
-  tags: ['shortLink'],
+  tags: ['short-link'],
   summary: 'Create short link for item',
   description: 'Create short link for item.',
 
@@ -80,7 +80,7 @@ export const createShortLink = {
 
 export const updateShortLink = {
   operationId: 'updateShortLink',
-  tags: ['shortLink'],
+  tags: ['short-link'],
   summary: 'Update short link',
   description: 'Update the alias of the short link.',
 
@@ -91,7 +91,7 @@ export const updateShortLink = {
 
 export const deleteShortLink = {
   operationId: 'deleteAlias',
-  tags: ['shortLink'],
+  tags: ['short-link'],
   summary: 'Delete alias',
   description: "Delete short link's alias.",
 
