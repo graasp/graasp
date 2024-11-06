@@ -71,15 +71,18 @@ export class ItemMembershipService {
     return await itemMembershipRepository.getByAccountAndItem(accountId, itemId);
   }
 
-  async getForManyItems(actor: Actor, repositories: Repositories, itemIds: string[]) {
-    // get memberships, containing item
-
+  /**
+   * Get inherited item memberships for item
+   * @param actor user requesting memberships
+   * @param repositories
+   * @param itemId item to get memberships for
+   * @returns item memberships
+   */
+  async getForItem(actor: Actor, repositories: Repositories, itemId: UUID) {
     const { itemMembershipRepository } = repositories;
 
-    const items = await this.itemService.getMany(actor, repositories, itemIds);
-    const result = await itemMembershipRepository.getForManyItems(Object.values(items.data));
-
-    return { data: result.data, errors: [...items.errors, ...result.errors] };
+    const item = await this.itemService.get(actor, repositories, itemId);
+    return await itemMembershipRepository.getForItem(item);
   }
 
   private async _create(

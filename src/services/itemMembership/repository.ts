@@ -373,6 +373,15 @@ export class ItemMembershipRepository extends MutableRepository<
     });
   }
 
+  async getForItem(item: Item): Promise<ItemMembership[]> {
+    const query = this.repository
+      .createQueryBuilder('item_membership')
+      .leftJoinAndSelect('item_membership.item', 'item', 'item.path @> :path', { path: item.path })
+      .leftJoinAndSelect('item_membership.account', 'account');
+
+    return await query.getMany();
+  }
+
   async getForManyItems(
     items: Item[],
     {
