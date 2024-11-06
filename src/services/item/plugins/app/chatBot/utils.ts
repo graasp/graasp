@@ -11,9 +11,13 @@ import {
 import { FinishReason } from './interfaces/finishReason';
 import { openAICompletion } from './openAICompletion';
 
-export const fetchOpenAI = async (body: ChatBotMessage[], gptVersion: GPTVersion) => {
+export const fetchOpenAI = async (
+  body: ChatBotMessage[],
+  gptVersion: GPTVersion,
+  temperature: number,
+) => {
   try {
-    const completion = await openAICompletion(body, gptVersion);
+    const completion = await openAICompletion(body, gptVersion, temperature);
     const choice = completion.choices[0];
 
     return computeResult(choice, gptVersion);

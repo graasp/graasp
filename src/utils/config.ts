@@ -414,6 +414,10 @@ export const OPENAI_GPT_VERSION = getGptVersion();
 export const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 export const OPENAI_ORG_ID = process.env.OPENAI_ORG_ID;
 
+export const OPENAI_MAX_TEMP = 2;
+export const OPENAI_MIN_TEMP = 0;
+export const OPENAI_DEFAULT_TEMPERATURE = 1;
+
 /**
  * mapping from language code and postgres full text search supported language
  */
