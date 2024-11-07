@@ -150,6 +150,20 @@ describe('Chat Bot Tests', () => {
         expect(response.json().model).toBe(gptVersion);
       });
 
+      it('Success post chat with temperature', async () => {
+        const temperature = 0.8;
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/${CHAT_PATH}?temperature=${temperature}`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          payload: DOCKER_MOCKED_BODY,
+        });
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        expect(response.json().completion).toBe(DOCKER_MOCKED_RESPONSE);
+      });
+
       it('Bad request if post chat without body', async () => {
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -165,6 +179,18 @@ describe('Chat Bot Tests', () => {
         const response = await app.inject({
           method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/${CHAT_PATH}?gptVersion=INVALID`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          payload: DOCKER_MOCKED_BODY,
+        });
+        expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
+      });
+
+      it('Bad request if post chat with invalid temperature', async () => {
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/${CHAT_PATH}?temperature=100`,
           headers: {
             Authorization: `Bearer ${token}`,
           },
