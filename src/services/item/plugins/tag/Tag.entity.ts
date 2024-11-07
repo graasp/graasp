@@ -4,7 +4,7 @@ import { v4 } from 'uuid';
 import { TagCategory } from '@graasp/sdk';
 
 @Entity()
-@Unique('tag-name-category', ['name', 'category'])
+@Unique('UQ_tag_name_category', ['name', 'category'])
 export class Tag extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string = v4();

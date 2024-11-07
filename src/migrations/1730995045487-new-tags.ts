@@ -8,7 +8,7 @@ export class Migrations1730995045487 implements MigrationInterface {
       `CREATE TYPE "public"."tag_category_enum" AS ENUM('level', 'discipline', 'resource-type')`,
     );
     await queryRunner.query(
-      `CREATE TABLE "tag" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying NOT NULL, "category" "public"."tag_category_enum" NOT NULL, CONSTRAINT "tag-name-category" UNIQUE ("name", "category"), CONSTRAINT "PK_8e4052373c579afc1471f526760" PRIMARY KEY ("id"))`,
+      `CREATE TABLE "tag" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying NOT NULL, "category" "public"."tag_category_enum" NOT NULL, CONSTRAINT "UQ_tag_name_category" UNIQUE ("name", "category"), CONSTRAINT "PK_8e4052373c579afc1471f526760" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
       `CREATE TABLE "item_tag" ("tag_id" uuid NOT NULL, "item_id" uuid NOT NULL, CONSTRAINT "UQ_item_tag" UNIQUE ("item_id", "tag_id"), CONSTRAINT "PK_a04bb2298e37d95233a0c92347e" PRIMARY KEY ("tag_id", "item_id"))`,
