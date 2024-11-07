@@ -9,7 +9,7 @@ import { OPENAI_GPT_VERSION } from '../../../../../utils/config';
 
 export const create = {
   operationId: 'createChatbotCompletionPrompt',
-  tags: ['app', 'chatbot'],
+  tags: ['app', 'app-chatbot'],
   summary: 'Get a prompt completion from a chatbot',
   description: 'Given a prompt, it returns a completion from a chatbot.',
 
