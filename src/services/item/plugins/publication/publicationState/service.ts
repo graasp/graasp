@@ -33,14 +33,18 @@ export class PublicationService {
 
   public async computeStateForItem(member: Account, repositores: Repositories, itemId: string) {
     const item = await this.itemService.get(member, repositores, itemId, PermissionLevel.Admin);
-    const publicTag = await this.itemVisibilityRepository.getType(
+    const publicVisibility = await this.itemVisibilityRepository.getType(
       item.path,
       ItemVisibilityType.Public,
       {
         shouldThrow: false,
       },
     );
-    const packedItem = new ItemWrapper(item, undefined, publicTag ? [publicTag] : []).packed();
+    const packedItem = new ItemWrapper(
+      item,
+      undefined,
+      publicVisibility ? [publicVisibility] : [],
+    ).packed();
     const validationGroup = await this.validationRepository.getLastForItem(itemId);
     const publishedEntry = (await this.publishedRepository.getForItem(item)) ?? undefined;
     const isValidationInProgress = await this.validationQueue.isInProgress(item.path);

@@ -36,7 +36,7 @@ describe('ItemWrapper', () => {
   });
 
   describe('createPackedItems', () => {
-    it('Return highest visibilities for child item', async () => {
+    it('Return the most restrictive visibilities for child item', async () => {
       const repositories = buildRepositories();
       const itemThumbnailService = new ItemThumbnailService(
         {} as unknown as ItemService,
@@ -49,7 +49,7 @@ describe('ItemWrapper', () => {
       const { item: parentItem } = await testUtils.saveItemAndMembership({});
       const { item } = await testUtils.saveItemAndMembership({ parentItem });
 
-      const hiddenTag = await rawItemTagRepository.save(
+      const hiddenVisibility = await rawItemTagRepository.save(
         await createTag({ item, type: ItemVisibilityType.Hidden }),
       );
       const parentPublicTag = await setItemPublic(parentItem);
@@ -63,27 +63,27 @@ describe('ItemWrapper', () => {
       );
       expect(packedItem.public!.id).toEqual(parentPublicTag.id);
       // should return parent visibility, not item visibility
-      expect(packedItem.hidden!.id).toEqual(hiddenTag.id);
+      expect(packedItem.hidden!.id).toEqual(hiddenVisibility.id);
     });
   });
 
   describe('packed', () => {
-    it('Return highest visibilities for child item', async () => {
+    it('Return the most restrictive visibility for child item', async () => {
       const parentItem = testUtils.createItem();
       const item = testUtils.createItem({ parentItem });
 
-      const publicTag = await createTag({ item, type: ItemVisibilityType.Public });
+      const publicVisibility = await createTag({ item, type: ItemVisibilityType.Public });
       const parentHiddenTag = await createTag({
         item: parentItem,
         type: ItemVisibilityType.Hidden,
       });
-      const hiddenTag = await createTag({ item, type: ItemVisibilityType.Hidden });
+      const hiddenVisibility = await createTag({ item, type: ItemVisibilityType.Hidden });
       // unordered visibilities
-      const visibilities = [hiddenTag, publicTag, parentHiddenTag];
+      const visibilities = [hiddenVisibility, publicVisibility, parentHiddenTag];
       const itemWrapper = new ItemWrapper(item, undefined, visibilities);
 
       const packedItem = itemWrapper.packed();
-      expect(packedItem.public!.id).toEqual(publicTag.id);
+      expect(packedItem.public!.id).toEqual(publicVisibility.id);
       // should return parent visibility, not item visibility
       expect(packedItem.hidden!.id).toEqual(parentHiddenTag.id);
     });

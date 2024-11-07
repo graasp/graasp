@@ -44,10 +44,10 @@ describe('migrations1689666251815', () => {
 
     await new Migrations1689666251815().up(app.db.createQueryRunner());
 
-    const [publicTag] = await app.db.query(
+    const [publicVisibility] = await app.db.query(
       buildSelectQuery('item_tag', { id: migrationData.item_tag[0].id }),
     );
-    expect(publicTag.type).toEqual(ItemVisibilityType.Public);
+    expect(publicVisibility.type).toEqual(ItemVisibilityType.Public);
 
     const publishedTag = await app.db.query(
       buildSelectQuery('item_tag', { id: migrationData.item_tag[1].id }),
@@ -59,10 +59,10 @@ describe('migrations1689666251815', () => {
     );
     expect(itemLoginTag).toHaveLength(0);
 
-    const [hiddenTag] = await app.db.query(
+    const [hiddenVisibility] = await app.db.query(
       buildSelectQuery('item_tag', { id: migrationData.item_tag[3].id }),
     );
-    expect(hiddenTag.type).toEqual(ItemVisibilityType.Hidden);
+    expect(hiddenVisibility.type).toEqual(ItemVisibilityType.Hidden);
 
     const [remainingPublicTag] = await app.db.query(
       buildSelectQuery('item_tag', { id: migrationData.item_tag[4].id }),

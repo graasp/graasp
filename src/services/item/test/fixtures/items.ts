@@ -125,11 +125,11 @@ export class ItemTestUtils {
   }) => {
     const value = this.createItem({ ...item, creator: member, parentItem });
     const newItem = await this.rawItemRepository.save(value);
-    const publicTag = await setItemPublic(newItem, member);
+    const publicVisibility = await setItemPublic(newItem, member);
     return {
       item: newItem,
-      packedItem: new ItemWrapper(newItem, undefined, [publicTag]).packed(),
-      publicTag,
+      packedItem: new ItemWrapper(newItem, undefined, [publicVisibility]).packed(),
+      publicVisibility,
     };
   };
 
@@ -205,9 +205,9 @@ export class ItemTestUtils {
     for (let i = 0; i < 3; i++) {
       const { item, itemMembership } = await this.saveItemAndMembership({ member });
       items.push(item);
-      const publicTag = await setItemPublic(item, member);
-      packedItems.push(new ItemWrapper(item, itemMembership, [publicTag]).packed());
-      visibilities.push(publicTag);
+      const publicVisibility = await setItemPublic(item, member);
+      packedItems.push(new ItemWrapper(item, itemMembership, [publicVisibility]).packed());
+      visibilities.push(publicVisibility);
       await this.rawItemPublishedRepository.save({ item, creator: member });
     }
     return { items, packedItems, visibilities };
@@ -300,17 +300,17 @@ export const expectPackedItem = (
 
   expect(newItem!.permission).toEqual(correctItem?.permission);
 
-  const pTag = visibilities?.find((t) => t.type === ItemVisibilityType.Public);
-  if (pTag) {
-    expect(newItem!.public!.type).toEqual(pTag.type);
-    expect(newItem!.public!.id).toEqual(pTag.id);
-    expect(newItem!.public!.item!.id).toEqual(pTag.item.id);
+  const pVisibility = visibilities?.find((t) => t.type === ItemVisibilityType.Public);
+  if (pVisibility) {
+    expect(newItem!.public!.type).toEqual(pVisibility.type);
+    expect(newItem!.public!.id).toEqual(pVisibility.id);
+    expect(newItem!.public!.item!.id).toEqual(pVisibility.item.id);
   }
-  const hTag = visibilities?.find((t) => t.type === ItemVisibilityType.Hidden);
-  if (hTag) {
-    expect(newItem!.hidden!.type).toEqual(hTag.type);
-    expect(newItem!.hidden!.id).toEqual(hTag.id);
-    expect(newItem!.hidden!.item!.id).toEqual(hTag.item.id);
+  const hVisibility = visibilities?.find((t) => t.type === ItemVisibilityType.Hidden);
+  if (hVisibility) {
+    expect(newItem!.hidden!.type).toEqual(hVisibility.type);
+    expect(newItem!.hidden!.id).toEqual(hVisibility.id);
+    expect(newItem!.hidden!.item!.id).toEqual(hVisibility.item.id);
   }
 };
 
@@ -346,8 +346,8 @@ export const expectManyPackedItems = (
   items.forEach(({ id }) => {
     const item = items.find(({ id: thisId }) => thisId === id);
     const correctItem = correctItems.find(({ id: thisId }) => thisId === id);
-    const tTags = visibilities?.filter((t) => t.item.id === id);
-    expectPackedItem(item, correctItem, creator, parent, tTags);
+    const tVisibilities = visibilities?.filter((t) => t.item.id === id);
+    expectPackedItem(item, correctItem, creator, parent, tVisibilities);
   });
 };
 

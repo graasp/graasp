@@ -16,37 +16,38 @@ import {
   ItemVisibilityNotFound,
 } from './errors';
 
-/**
- * Database's first layer of abstraction for Item Tags and (exceptionally) for Tags (at the bottom)
- */
 export class ItemVisibilityRepository extends AbstractRepository<ItemVisibility> {
   constructor(manager?: EntityManager) {
     super(ItemVisibility, manager);
   }
 
-  async getType(itemPath: Item['path'], tagType: ItemVisibilityType, { shouldThrow = false } = {}) {
-    const hasTag = await this.repository
+  async getType(
+    itemPath: Item['path'],
+    visibilityType: ItemVisibilityType,
+    { shouldThrow = false } = {},
+  ) {
+    const hasVisibility = await this.repository
       .createQueryBuilder('itemVisibility')
       .leftJoinAndSelect('itemVisibility.item', 'item')
       .where('item.path @> :path', { path: itemPath })
-      .andWhere('itemVisibility.type = :type', { type: tagType })
+      .andWhere('itemVisibility.type = :type', { type: visibilityType })
       .getOne();
 
-    if (shouldThrow && !hasTag) {
-      throw new ItemVisibilityNotFound(tagType);
+    if (shouldThrow && !hasVisibility) {
+      throw new ItemVisibilityNotFound(visibilityType);
     }
 
-    return hasTag;
+    return hasVisibility;
   }
 
   /**
-   * return whether item has item visibility types
+   * return the item's visibilities
    * @param item
    * @param visibilityTypes
    * @returns map type => whether item has this visibility type
    */
   async hasMany(item: Item, visibilityTypes: ItemVisibilityType[]) {
-    const hasTags = await this.repository
+    const hasVisibilities = await this.repository
       .createQueryBuilder('itemVisibility')
       .leftJoinAndSelect('itemVisibility.item', 'item')
       .where('itemVisibility.item @> :path', { path: item.path })
@@ -55,15 +56,16 @@ export class ItemVisibilityRepository extends AbstractRepository<ItemVisibility>
 
     return mapById({
       keys: visibilityTypes,
-      findElement: (type) => Boolean(hasTags.find(({ type: thisType }) => type === thisType)),
+      findElement: (type) =>
+        Boolean(hasVisibilities.find(({ type: thisType }) => type === thisType)),
     });
   }
 
-  private async getManyTagsForTypes(
+  private async getManyVisibilitiesForTypes(
     items: Item[],
     visibilityTypes: ItemVisibilityType[],
   ): Promise<ItemVisibility[]> {
-    // we expect to query visibilities for defined items, if the items array is empty we will return
+    // we expect to query visibilities for defined items, if the items array is empty we will return an empty array.
     if (!items.length) {
       return [];
     }
@@ -81,17 +83,17 @@ export class ItemVisibilityRepository extends AbstractRepository<ItemVisibility>
       }),
     );
 
-    const hasTags: ItemVisibility[] = await query
+    const hasVisibilities: ItemVisibility[] = await query
       .andWhere('itemVisibility.type IN (:...types)', { types: visibilityTypes })
       .getMany();
-    return hasTags;
+    return hasVisibilities;
   }
 
   async getManyForMany(
     items: Item[],
     visibilityTypes: ItemVisibilityType[],
   ): Promise<ResultOf<ItemVisibility[]>> {
-    const visibilities = await this.getManyTagsForTypes(items, visibilityTypes);
+    const visibilities = await this.getManyVisibilitiesForTypes(items, visibilityTypes);
 
     const mapByPath = mapById({
       keys: items.map(({ path }) => path),
@@ -108,20 +110,20 @@ export class ItemVisibilityRepository extends AbstractRepository<ItemVisibility>
   }
 
   /**
-   * return item visibility with given for all items below given item, including item's
-   * @param item item use to refer to its descendants
+   * return visibility for all items below the given item, including the itself
+   * @param parent item used to refer to its descendants
    * @param visibilityTypes visibility types to retrieve
    * @returns visibility array
    */
   async getManyBelowAndSelf(
-    item: Item,
+    parent: Item,
     visibilityTypes: ItemVisibilityType[],
   ): Promise<ItemVisibility[]> {
     const query = this.repository
       .createQueryBuilder('itemVisibility')
       .leftJoinAndSelect('itemVisibility.item', 'item');
 
-    query.where(`item.path <@ :path`, { path: item.path });
+    query.where(`item.path <@ :path`, { path: parent.path });
 
     const visibilities: ItemVisibility[] = await query
       .andWhere('itemVisibility.type IN (:...types)', { types: visibilityTypes })
@@ -130,7 +132,7 @@ export class ItemVisibilityRepository extends AbstractRepository<ItemVisibility>
     return visibilities;
   }
 
-  async hasForMany(items: Item[], tagType: ItemVisibilityType): Promise<ResultOf<boolean>> {
+  async hasForMany(items: Item[], visibilityType: ItemVisibilityType): Promise<ResultOf<boolean>> {
     const query = this.repository
       .createQueryBuilder('itemVisibility')
       .leftJoinAndSelect('itemVisibility.item', 'item');
@@ -144,14 +146,14 @@ export class ItemVisibilityRepository extends AbstractRepository<ItemVisibility>
       }),
     );
 
-    const haveTag = await query
-      .andWhere('itemVisibility.type = :type', { type: tagType })
+    const haveVisibility = await query
+      .andWhere('itemVisibility.type = :type', { type: visibilityType })
       .getMany();
 
     const mapByPath = mapById({
       keys: items.map(({ path }) => path),
       findElement: (path) =>
-        Boolean(haveTag.find((itemVisibility) => path.includes(itemVisibility.item.path))),
+        Boolean(haveVisibility.find((itemVisibility) => path.includes(itemVisibility.item.path))),
     });
 
     // use id as key

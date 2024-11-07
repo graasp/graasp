@@ -362,7 +362,7 @@ export const filterOutPackedDescendants = async (
 };
 
 /**
- * Filter out children based on visibilities only.
+ * Filter out children based on hidden visibilities only.
  * It does not show hidden for admin as well, which is useful for published items
  *  */
 export const filterOutHiddenItems = async (repositories: Repositories, items: Item[]) => {

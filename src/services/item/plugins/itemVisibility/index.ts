@@ -17,7 +17,7 @@ import { ItemVisibilityService } from './service';
 /**
  * Item Visibility plugin
  * Dynamic visibility behavior for simple cases
- * - public:
+ * - public
  * - hidden
  *
  * The feature should be stackable and be inherited (a parent public and an item public is allowed)
@@ -30,10 +30,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const itemService = resolveDependency(ItemService);
   const itemVisibilityService = resolveDependency(ItemVisibilityService);
 
-  // TODO: where should we define this???
-  // TODO: STRING
   // copy visibilities alongside item
-  // TODO: AUTOMATIZE WITH OWN CLASS
   const hook = async (actor, repositories, { original, copy }: { original: Item; copy: Item }) => {
     await repositories.itemVisibilityRepository.copyAll(actor, original, copy, [
       ItemVisibilityType.Public,

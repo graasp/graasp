@@ -58,7 +58,10 @@ const datas: {
     ItemGeolocation,
     { [K in keyof Omit<ItemGeolocation, defaultOmitedKeys>] }
   >;
-  itemTags?: TableType<ItemVisibility, { [K in keyof Omit<ItemVisibility, defaultOmitedKeys>] }>;
+  itemVisibilities?: TableType<
+    ItemVisibility,
+    { [K in keyof Omit<ItemVisibility, defaultOmitedKeys>] }
+  >;
   itemValidationGroups?: TableType<
     ItemValidationGroup,
     { [K in keyof Omit<ItemValidationGroup, defaultOmitedKeys | 'itemValidations'>] }
@@ -181,7 +184,7 @@ const datas: {
     ],
   },
 
-  itemTags: {
+  itemVisibilities: {
     constructor: ItemVisibility,
     entities: [
       {

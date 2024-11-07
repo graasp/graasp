@@ -3218,19 +3218,22 @@ describe('filterOutPackedDescendants', () => {
     FolderItemFactory({ parentItem: item }) as unknown as Item,
     FolderItemFactory({ parentItem: item }) as unknown as Item,
   ];
-  const hiddenTag = { type: ItemVisibilityType.Hidden, item: descendants[2] } as ItemVisibility;
+  const hiddenVisibility = {
+    type: ItemVisibilityType.Hidden,
+    item: descendants[2],
+  } as ItemVisibility;
 
   /** build packed descendants for checking returned values
    * types don't play nicely because factory does not use the same types as the backend
    */
-  const buildPackedDescendants = (permission, hiddenTag): PackedItem[] => {
+  const buildPackedDescendants = (permission, hiddenVisibility): PackedItem[] => {
     const arr = descendants.map((descendant) =>
       PackedFolderItemFactory(descendant as never, {
         permission,
       }),
     );
-    const idx = arr.findIndex(({ id }) => id === hiddenTag.item.id);
-    arr[idx].hidden = hiddenTag;
+    const idx = arr.findIndex(({ id }) => id === hiddenVisibility.item.id);
+    arr[idx].hidden = hiddenVisibility;
     return arr as unknown as PackedItem[];
   };
 
@@ -3243,14 +3246,14 @@ describe('filterOutPackedDescendants', () => {
     const memberships = [{ item, member: OWNER, permission: PermissionLevel.Admin }];
     // packed descendants for expect
     // one item is hidden but this item should be returned
-    const packedDescendants = buildPackedDescendants(memberships[0].permission, hiddenTag);
+    const packedDescendants = buildPackedDescendants(memberships[0].permission, hiddenVisibility);
 
     repositories = {
       itemMembershipRepository: {
         getAllBelow: jest.fn(async () => memberships),
       },
       itemVisibilityRepository: {
-        getManyBelowAndSelf: jest.fn(async () => [hiddenTag]),
+        getManyBelowAndSelf: jest.fn(async () => [hiddenVisibility]),
       },
     };
 
@@ -3267,14 +3270,14 @@ describe('filterOutPackedDescendants', () => {
     const memberships = [{ item, member: OWNER, permission: PermissionLevel.Write }];
     // packed descendants for expect
     // one item is hidden but this item should be returned
-    const packedDescendants = buildPackedDescendants(memberships[0].permission, hiddenTag);
+    const packedDescendants = buildPackedDescendants(memberships[0].permission, hiddenVisibility);
 
     repositories = {
       itemMembershipRepository: {
         getAllBelow: jest.fn(async () => memberships),
       },
       itemVisibilityRepository: {
-        getManyBelowAndSelf: jest.fn(async () => [hiddenTag]),
+        getManyBelowAndSelf: jest.fn(async () => [hiddenVisibility]),
       },
     };
 
@@ -3291,14 +3294,14 @@ describe('filterOutPackedDescendants', () => {
     const memberships = [{ item, member: OWNER, permission: PermissionLevel.Read }];
     // packed descendants for expect
     // one item is hidden, this item should not be returned!
-    const packedDescendants = buildPackedDescendants(memberships[0].permission, hiddenTag);
+    const packedDescendants = buildPackedDescendants(memberships[0].permission, hiddenVisibility);
 
     repositories = {
       itemMembershipRepository: {
         getAllBelow: jest.fn(async () => memberships),
       },
       itemVisibilityRepository: {
-        getManyBelowAndSelf: jest.fn(async () => [hiddenTag]),
+        getManyBelowAndSelf: jest.fn(async () => [hiddenVisibility]),
       },
     };
 
@@ -3314,14 +3317,14 @@ describe('filterOutPackedDescendants', () => {
   it('No membership does not return hidden', async () => {
     // packed descendants for expect
     // one item is hidden, this item should not be returned!
-    const packedDescendants = buildPackedDescendants(null, hiddenTag);
+    const packedDescendants = buildPackedDescendants(null, hiddenVisibility);
 
     repositories = {
       itemMembershipRepository: {
         getAllBelow: jest.fn(async () => []),
       },
       itemVisibilityRepository: {
-        getManyBelowAndSelf: jest.fn(async () => [hiddenTag]),
+        getManyBelowAndSelf: jest.fn(async () => [hiddenVisibility]),
       },
     };
 

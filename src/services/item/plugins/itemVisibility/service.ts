@@ -14,15 +14,24 @@ export class ItemVisibilityService {
     this.itemService = itemService;
   }
 
-  async has({ itemVisibilityRepository }: Repositories, path: string, tagType: ItemVisibilityType) {
-    return await itemVisibilityRepository.getType(path, tagType);
+  async has(
+    { itemVisibilityRepository }: Repositories,
+    path: string,
+    visibilityType: ItemVisibilityType,
+  ) {
+    return await itemVisibilityRepository.getType(path, visibilityType);
   }
 
-  async post(member: Member, repositories: Repositories, id: string, tagType: ItemVisibilityType) {
+  async post(
+    member: Member,
+    repositories: Repositories,
+    id: string,
+    visibilityType: ItemVisibilityType,
+  ) {
     const { itemVisibilityRepository } = repositories;
     const item = await this.itemService.get(member, repositories, id, PermissionLevel.Admin);
     return {
-      ...(await itemVisibilityRepository.post(member, item, tagType)),
+      ...(await itemVisibilityRepository.post(member, item, visibilityType)),
       item: { path: item.path },
     };
   }
@@ -31,12 +40,12 @@ export class ItemVisibilityService {
     member: Member,
     repositories: Repositories,
     id: string,
-    tagType: ItemVisibilityType,
+    visibilityType: ItemVisibilityType,
   ) {
     const { itemVisibilityRepository } = repositories;
     const item = await this.itemService.get(member, repositories, id, PermissionLevel.Admin);
 
-    await itemVisibilityRepository.deleteOne(item, tagType);
+    await itemVisibilityRepository.deleteOne(item, visibilityType);
     return { item: { path: item.path } };
   }
 }

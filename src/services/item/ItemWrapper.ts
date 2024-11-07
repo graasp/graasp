@@ -27,8 +27,8 @@ type GraaspItem = Pick<
 export type PackedItem = GraaspItem & {
   // permission can be undefined because the item is public
   permission: ItemMembership['permission'] | null;
-  hidden: ItemVisibility | undefined;
-  public: ItemVisibility | undefined;
+  hidden?: ItemVisibility;
+  public?: ItemVisibility;
   thumbnails?: ThumbnailsBySize;
 };
 
@@ -68,7 +68,7 @@ export class ItemWrapper {
       const { permission = null } = memberships.data[i.id] ?? {};
       const thumbnails = itemsThumbnails?.[i.id];
 
-      // sort visibilities to retrieve most relevant (highest) visibility first
+      // sort visibilities to retrieve the most restrictive (highest) visibility first
       const itemVisibilities = visibilities?.data?.[i.id];
       if (itemVisibilities) {
         itemVisibilities.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
@@ -104,7 +104,7 @@ export class ItemWrapper {
       const { permission = null } = memberships.data[i.id] ?? {};
       const thumbnails = itemsThumbnails?.[i.id];
 
-      // sort visibilities to retrieve most relevant (highest) visibility first
+      // sort visibilities to retrieve the most restrictive (highest) visibility first
       const itemVisibilities = visibilities?.data?.[i.id];
       if (itemVisibilities) {
         itemVisibilities.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
@@ -149,7 +149,7 @@ export class ItemWrapper {
       const permission = m.data[item.id][0]?.permission;
       const thumbnails = itemsThumbnails[item.id];
 
-      // sort visibilities to retrieve most relevant (highest) visibility first
+      // sort visibilities to retrieve the most restrictive (highest) visibility first
       const itemVisibilities = visibilities?.data?.[item.id] ?? [];
       if (itemVisibilities) {
         itemVisibilities.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
@@ -170,7 +170,7 @@ export class ItemWrapper {
    * @returns item unit with permission
    */
   packed(): PackedItem {
-    // sort visibilities to retrieve most relevant (highest) visibility first
+    // sort visibilities to retrieve the most restrictive (highest) visibility first
     if (this.visibilities) {
       this.visibilities.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
     }
