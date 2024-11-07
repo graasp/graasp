@@ -13,9 +13,8 @@ import { itemSchemaRef } from '../item/schemas';
 export const itemMembershipSchemaRef = registerSchemaAsRef(
   'itemMembership',
   'Item Membership',
-  Type.Object(
+  customType.StrictObject(
     {
-      // Object Definition
       id: customType.UUID(),
       account: augmentedAccountSchemaRef,
       item: itemSchemaRef,
@@ -25,63 +24,69 @@ export const itemMembershipSchemaRef = registerSchemaAsRef(
       updatedAt: customType.DateTime(),
     },
     {
-      // Schema Options
-      additionalProperties: false,
+      description: 'Define the permission access between account and item',
     },
   ),
 );
 
-export const createItemMembershipSchema = Type.Object(
-  {
-    accountId: customType.UUID(),
-    permission: Type.Enum(PermissionLevel),
-  },
-  {
-    additionalProperties: false,
-  },
-);
+export const createItemMembershipSchema = customType.StrictObject({
+  accountId: customType.UUID(),
+  permission: Type.Enum(PermissionLevel),
+});
 
 // schema for creating an item membership
 export const create = {
+  operationId: 'createItemMembership',
+  tags: ['item-membership'],
+  summary: 'Create access to item for account',
+  description: 'Create access to item for account, given permission',
+
   querystring: customType.StrictObject({
     itemId: customType.UUID(),
   }),
   body: createItemMembershipSchema,
   response: {
     [StatusCodes.OK]: itemMembershipSchemaRef,
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
 // schema for creating many item memberships
 export const createMany = {
+  operationId: 'createManyItemMemberships',
+  tags: ['item-membership'],
+  summary: 'Create access to item for many accounts',
+  description: 'Create access to item for many account, given permissions',
+
   params: customType.StrictObject({
     itemId: customType.UUID(),
   }),
-  body: Type.Object(
-    { memberships: Type.Array(createItemMembershipSchema) },
-    { additionalProperties: false },
-  ),
+  body: customType.StrictObject({ memberships: Type.Array(createItemMembershipSchema) }),
   response: {
-    [StatusCodes.ACCEPTED]: {},
+    [StatusCodes.OK]: Type.Array(itemMembershipSchemaRef),
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
 // schema for getting many item's memberships
-export const getItems = {
-  querystring: Type.Object(
-    { itemId: Type.Array(customType.UUID()) },
-    { additionalProperties: false },
-  ),
+export const getManyItemMemberships = {
+  querystring: customType.StrictObject({ itemId: Type.Array(customType.UUID()) }),
   response: {
-    [StatusCodes.OK]: Type.Object({
+    [StatusCodes.OK]: customType.StrictObject({
       data: Type.Record(Type.String({ format: 'uuid' }), Type.Array(itemMembershipSchemaRef)),
       errors: Type.Array(errorSchemaRef),
     }),
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
 // schema for updating an item membership
 export const updateOne = {
+  operationId: 'updateItemMembership',
+  tags: ['item-membership'],
+  summary: 'Update permission for item membership',
+  description: 'Update permission for item membership',
+
   params: customType.StrictObject({
     id: customType.UUID(),
   }),
@@ -90,24 +95,23 @@ export const updateOne = {
   }),
   response: {
     [StatusCodes.OK]: itemMembershipSchemaRef,
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
 // schema for deleting an item membership
 export const deleteOne = {
+  operationId: 'deleteItemMembership',
+  tags: ['item-membership'],
+  summary: 'Delete access to item for account',
+  description: 'Delete access to item for account',
+
   params: customType.StrictObject({
     id: customType.UUID(),
   }),
-  querystring: Type.Object(
-    { purgeBelow: Type.Optional(Type.Boolean()) },
-    { additionalProperties: false },
-  ),
+  querystring: customType.StrictObject({ purgeBelow: Type.Optional(Type.Boolean()) }),
   response: {
     [StatusCodes.OK]: itemMembershipSchemaRef,
+    '4xx': errorSchemaRef,
   },
-} as const satisfies FastifySchema;
-
-// schema for deleting all item's tree item memberships
-export const deleteAll = {
-  querystring: Type.Object({ itemId: customType.UUID() }, { additionalProperties: false }),
 } as const satisfies FastifySchema;
