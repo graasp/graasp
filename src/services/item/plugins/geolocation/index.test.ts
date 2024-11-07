@@ -232,25 +232,25 @@ describe('Item Geolocation', () => {
 
       it('Get public item geolocations within public item', async () => {
         const member = await saveMember();
-        const { item: parentItem, publicTag } = await testUtils.savePublicItem({ member });
+        const { item: parentItem, publicVisibility } = await testUtils.savePublicItem({ member });
 
         const item1 = await testUtils.saveItem({ actor: member, parentItem });
         const { packed: geoloc1 } = await saveGeolocation({
-          item: new ItemWrapper(item1, null, [publicTag]).packed(),
+          item: new ItemWrapper(item1, null, [publicVisibility]).packed(),
           lat: 1,
           lng: 2,
           country: 'de',
         });
         const item2 = await testUtils.saveItem({ actor: member, parentItem });
         const { packed: geoloc2 } = await saveGeolocation({
-          item: new ItemWrapper(item2, null, [publicTag]).packed(),
+          item: new ItemWrapper(item2, null, [publicVisibility]).packed(),
           lat: 1,
           lng: 2,
           country: 'it',
         });
         const item3 = await testUtils.saveItem({ actor: member, parentItem });
         const { packed: geoloc3 } = await saveGeolocation({
-          item: new ItemWrapper(item3, null, [publicTag]).packed(),
+          item: new ItemWrapper(item3, null, [publicVisibility]).packed(),
           lat: 1,
           lng: 2,
           country: 'fr',

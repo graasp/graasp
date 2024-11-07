@@ -29,7 +29,7 @@ import graaspCategoryPlugin from './plugins/itemCategory';
 import graaspFavoritePlugin from './plugins/itemFavorite';
 import graaspItemFlags from './plugins/itemFlag';
 import graaspItemLikes from './plugins/itemLike';
-import graaspItemTags from './plugins/itemTag';
+import graaspItemVisibility from './plugins/itemVisibility';
 import graaspItemPublicationState from './plugins/publication/publicationState';
 import graaspItemPublish from './plugins/publication/published';
 import graaspValidationPlugin from './plugins/publication/validation';
@@ -73,7 +73,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       fastify.register(graaspFileItem, {});
 
-      fastify.register(graaspItemTags);
+      fastify.register(graaspItemVisibility);
 
       fastify.register(ShortLinkService, {
         prefix: SHORT_LINKS_ROUTE_PREFIX,

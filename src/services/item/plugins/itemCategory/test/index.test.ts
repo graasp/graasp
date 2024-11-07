@@ -12,7 +12,7 @@ import { MemberCannotAccess } from '../../../../../utils/errors';
 import { Item } from '../../../../item/entities/Item';
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemTestUtils } from '../../../test/fixtures/items';
-import { setItemPublic } from '../../itemTag/test/fixtures';
+import { setItemPublic } from '../../itemVisibility/test/fixtures';
 import { Category } from '../entities/Category';
 import { ItemCategory } from '../entities/ItemCategory';
 import { DuplicateItemCategoryError } from '../errors';

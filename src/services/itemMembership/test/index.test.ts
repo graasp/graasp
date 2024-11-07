@@ -21,7 +21,7 @@ import {
   MemberCannotAdminItem,
   ModifyExistingMembership,
 } from '../../../utils/errors';
-import { setItemPublic } from '../../item/plugins/itemTag/test/fixtures';
+import { setItemPublic } from '../../item/plugins/itemVisibility/test/fixtures';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
 import { saveItemLoginSchema } from '../../itemLogin/test/index.test';
 import { Member } from '../../member/entities/member';

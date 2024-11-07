@@ -19,7 +19,7 @@ import { ItemCategory } from '../services/item/plugins/itemCategory/entities/Ite
 import { ItemFavorite } from '../services/item/plugins/itemFavorite/entities/ItemFavorite';
 import { ItemFlag } from '../services/item/plugins/itemFlag/itemFlag';
 import { ItemLike } from '../services/item/plugins/itemLike/itemLike';
-import { ItemTag } from '../services/item/plugins/itemTag/ItemTag';
+import { ItemVisibility } from '../services/item/plugins/itemVisibility/ItemVisibility';
 import { ItemPublished } from '../services/item/plugins/publication/published/entities/itemPublished';
 import { ItemValidation } from '../services/item/plugins/publication/validation/entities/ItemValidation';
 import { ItemValidationGroup } from '../services/item/plugins/publication/validation/entities/ItemValidationGroup';
@@ -92,7 +92,7 @@ export const AppDataSource = new DataSource({
     ItemPublished,
     RecycledItemData,
     ItemLike,
-    ItemTag,
+    ItemVisibility,
     Category,
     ItemFavorite,
     ItemCategory,

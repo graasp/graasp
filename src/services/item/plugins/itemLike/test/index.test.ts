@@ -14,7 +14,7 @@ import { MemberCannotAccess } from '../../../../../utils/errors';
 import { Member } from '../../../../member/entities/member';
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemTestUtils, expectManyPackedItems } from '../../../test/fixtures/items';
-import { setItemPublic } from '../../itemTag/test/fixtures';
+import { setItemPublic } from '../../itemVisibility/test/fixtures';
 import { ItemLikeNotFound } from '../errors';
 import { ItemLike } from '../itemLike';
 import { ItemLikeRepository } from '../repository';

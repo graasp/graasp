@@ -18,7 +18,7 @@ import { ItemCategoryRepository } from '../services/item/plugins/itemCategory/re
 import { FavoriteRepository } from '../services/item/plugins/itemFavorite/repositories/favorite';
 import { ItemFlagRepository } from '../services/item/plugins/itemFlag/repository';
 import { ItemLikeRepository } from '../services/item/plugins/itemLike/repository';
-import { ItemTagRepository } from '../services/item/plugins/itemTag/repository';
+import { ItemVisibilityRepository } from '../services/item/plugins/itemVisibility/repository';
 import { ItemPublishedRepository } from '../services/item/plugins/publication/published/repositories/itemPublished';
 import { ItemValidationGroupRepository } from '../services/item/plugins/publication/validation/repositories/ItemValidationGroup';
 import { ItemValidationRepository } from '../services/item/plugins/publication/validation/repositories/itemValidation';
@@ -54,7 +54,7 @@ export type Repositories = {
   membershipRequestRepository: MembershipRequestRepository;
   itemPublishedRepository: ItemPublishedRepository;
   itemRepository: ItemRepository;
-  itemTagRepository: ItemTagRepository;
+  itemVisibilityRepository: ItemVisibilityRepository;
   itemValidationGroupRepository: ItemValidationGroupRepository;
   itemValidationRepository: ItemValidationRepository;
   itemValidationReviewRepository: ItemValidationReviewRepository;
@@ -69,7 +69,7 @@ export type Repositories = {
   itemGeolocationRepository: ItemGeolocationRepository;
   accountRepository: AccountRepository;
 };
-// public: exists in item tag
+// public: exists in item visibility
 
 export const buildRepositories = (manager?: EntityManager): Repositories => ({
   itemRepository: new ItemRepository(manager),
@@ -96,7 +96,7 @@ export const buildRepositories = (manager?: EntityManager): Repositories => ({
   itemCategoryRepository: new ItemCategoryRepository(manager),
   itemFavoriteRepository: new FavoriteRepository(manager),
   categoryRepository: new CategoryRepository(manager),
-  itemTagRepository: new ItemTagRepository(manager),
+  itemVisibilityRepository: new ItemVisibilityRepository(manager),
   itemValidationRepository: new ItemValidationRepository(manager),
   itemValidationReviewRepository: new ItemValidationReviewRepository(manager),
   itemValidationGroupRepository: new ItemValidationGroupRepository(manager),

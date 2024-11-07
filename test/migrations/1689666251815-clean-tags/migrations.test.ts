@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 
-import { ItemTagType } from '@graasp/sdk';
+import { ItemVisibilityType } from '@graasp/sdk';
 
 import { migrations1679669193720 } from '../../../src/migrations/1679669193720-migrations';
 import { Migrations1679669193721 } from '../../../src/migrations/1679669193721-migrations';
@@ -44,10 +44,10 @@ describe('migrations1689666251815', () => {
 
     await new Migrations1689666251815().up(app.db.createQueryRunner());
 
-    const [publicTag] = await app.db.query(
+    const [publicVisibility] = await app.db.query(
       buildSelectQuery('item_tag', { id: migrationData.item_tag[0].id }),
     );
-    expect(publicTag.type).toEqual(ItemTagType.Public);
+    expect(publicVisibility.type).toEqual(ItemVisibilityType.Public);
 
     const publishedTag = await app.db.query(
       buildSelectQuery('item_tag', { id: migrationData.item_tag[1].id }),
@@ -59,15 +59,15 @@ describe('migrations1689666251815', () => {
     );
     expect(itemLoginTag).toHaveLength(0);
 
-    const [hiddenTag] = await app.db.query(
+    const [hiddenVisibility] = await app.db.query(
       buildSelectQuery('item_tag', { id: migrationData.item_tag[3].id }),
     );
-    expect(hiddenTag.type).toEqual(ItemTagType.Hidden);
+    expect(hiddenVisibility.type).toEqual(ItemVisibilityType.Hidden);
 
     const [remainingPublicTag] = await app.db.query(
       buildSelectQuery('item_tag', { id: migrationData.item_tag[4].id }),
     );
-    expect(remainingPublicTag.type).toEqual(ItemTagType.Public);
+    expect(remainingPublicTag.type).toEqual(ItemVisibilityType.Public);
 
     const duplicateTag = await app.db.query(
       buildSelectQuery('item_tag', { id: migrationData.item_tag[5].id }),

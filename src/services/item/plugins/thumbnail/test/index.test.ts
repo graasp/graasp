@@ -17,7 +17,7 @@ import { ITEMS_ROUTE_PREFIX, THUMBNAILS_ROUTE_PREFIX } from '../../../../../util
 import { MemberCannotAccess } from '../../../../../utils/errors';
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemTestUtils } from '../../../test/fixtures/items';
-import { setItemPublic } from '../../itemTag/test/fixtures';
+import { setItemPublic } from '../../itemVisibility/test/fixtures';
 import { UploadFileNotImageError } from '../utils/errors';
 
 const filepath = path.resolve(__dirname, './fixtures/image.png');

@@ -3,7 +3,13 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemTagType, ItemType, MemberFactory, PermissionLevel } from '@graasp/sdk';
+import {
+  HttpMethod,
+  ItemType,
+  ItemVisibilityType,
+  MemberFactory,
+  PermissionLevel,
+} from '@graasp/sdk';
 
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
 import { AppDataSource } from '../../../plugins/datasource';
@@ -11,7 +17,7 @@ import { ItemNotFound, MemberCannotAccess } from '../../../utils/errors';
 import { saveMember } from '../../member/test/fixtures/members';
 import { PackedItem } from '../ItemWrapper';
 import { Item } from '../entities/Item';
-import { ItemTag } from '../plugins/itemTag/ItemTag';
+import { ItemVisibility } from '../plugins/itemVisibility/ItemVisibility';
 import { Ordering, SortBy } from '../types';
 import {
   ItemTestUtils,
@@ -21,7 +27,7 @@ import {
   expectThumbnails,
 } from './fixtures/items';
 
-const rawRepository = AppDataSource.getRepository(ItemTag);
+const rawRepository = AppDataSource.getRepository(ItemVisibility);
 const testUtils = new ItemTestUtils();
 
 // Mock S3 libraries
@@ -169,7 +175,7 @@ describe('Item routes tests', () => {
     describe('Public', () => {
       it('Returns successfully', async () => {
         const member = await saveMember();
-        const { item, publicTag } = await testUtils.savePublicItem({ member });
+        const { item, publicVisibility } = await testUtils.savePublicItem({ member });
 
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -178,14 +184,14 @@ describe('Item routes tests', () => {
 
         const returnedItem = response.json();
         expectPackedItem(returnedItem, { ...item, permission: null }, actor, undefined, [
-          publicTag,
+          publicVisibility,
         ]);
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
       it('Returns successfully for write right', async () => {
         actor = await saveMember();
         mockAuthenticate(actor);
-        const { item, publicTag } = await testUtils.savePublicItem({ member: actor });
+        const { item, publicVisibility } = await testUtils.savePublicItem({ member: actor });
         await testUtils.saveMembership({ item, account: actor, permission: PermissionLevel.Write });
 
         const response = await app.inject({
@@ -199,7 +205,7 @@ describe('Item routes tests', () => {
           { ...item, permission: PermissionLevel.Write },
           actor,
           undefined,
-          [publicTag],
+          [publicVisibility],
         );
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
@@ -337,11 +343,11 @@ describe('Item routes tests', () => {
       it('Returns successfully', async () => {
         const member = await saveMember();
         const items: Item[] = [];
-        const publicTags: ItemTag[] = [];
+        const publicVisibilities: ItemVisibility[] = [];
         for (let i = 0; i < 3; i++) {
-          const { item, publicTag } = await testUtils.savePublicItem({ member });
+          const { item, publicVisibility } = await testUtils.savePublicItem({ member });
           items.push(item);
-          publicTags.push(publicTag);
+          publicVisibilities.push(publicVisibility);
         }
 
         const response = await app.inject({
@@ -362,7 +368,7 @@ describe('Item routes tests', () => {
             },
             member,
             undefined,
-            [publicTags[idx]],
+            [publicVisibilities[idx]],
           );
         });
       });
@@ -1182,7 +1188,7 @@ describe('Item routes tests', () => {
           member,
           parentItem: parent,
         });
-        await rawRepository.save({ item: child1, creator: actor, type: ItemTagType.Hidden });
+        await rawRepository.save({ item: child1, creator: actor, type: ItemVisibilityType.Hidden });
 
         const children = [child2];
 
@@ -1339,7 +1345,9 @@ describe('Item routes tests', () => {
     describe('Public', () => {
       it('Returns successfully', async () => {
         const actor = await saveMember();
-        const { item: parent, publicTag } = await testUtils.savePublicItem({ member: actor });
+        const { item: parent, publicVisibility } = await testUtils.savePublicItem({
+          member: actor,
+        });
         const { item: child1 } = await testUtils.savePublicItem({
           member: actor,
           parentItem: parent,
@@ -1367,7 +1375,7 @@ describe('Item routes tests', () => {
             actor,
             undefined,
             // inheritance
-            [publicTag],
+            [publicVisibility],
           );
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -1476,7 +1484,11 @@ describe('Item routes tests', () => {
           member,
           parentItem: parent,
         });
-        await rawRepository.save({ item: child1, creator: member, type: ItemTagType.Hidden });
+        await rawRepository.save({
+          item: child1,
+          creator: member,
+          type: ItemVisibilityType.Hidden,
+        });
 
         await testUtils.saveItemAndMembership({
           member,
@@ -1549,7 +1561,9 @@ describe('Item routes tests', () => {
     describe('Public', () => {
       it('Returns successfully', async () => {
         const actor = await saveMember();
-        const { item: parent, publicTag } = await testUtils.savePublicItem({ member: actor });
+        const { item: parent, publicVisibility } = await testUtils.savePublicItem({
+          member: actor,
+        });
         const { item: child1 } = await testUtils.savePublicItem({
           item: { name: 'child1' },
           member: actor,
@@ -1582,7 +1596,7 @@ describe('Item routes tests', () => {
             actor,
             undefined,
             // inheritance
-            [publicTag],
+            [publicVisibility],
           );
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -1725,7 +1739,7 @@ describe('Item routes tests', () => {
 
     describe('Public', () => {
       it('Returns successfully', async () => {
-        const { item: parent, publicTag } = await testUtils.savePublicItem({ member: null });
+        const { item: parent, publicVisibility } = await testUtils.savePublicItem({ member: null });
         const { item: child1 } = await testUtils.savePublicItem({
           item: { name: 'child1' },
           member: null,
@@ -1756,7 +1770,7 @@ describe('Item routes tests', () => {
         expect(data).toHaveLength(parents.length);
         data.forEach((p, idx) => {
           expectPackedItem(p, { ...parents[idx], permission: null }, undefined, undefined, [
-            publicTag,
+            publicVisibility,
           ]);
         });
         expect(response.statusCode).toBe(StatusCodes.OK);

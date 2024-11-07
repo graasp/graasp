@@ -2,7 +2,7 @@ import { describe } from 'node:test';
 
 import { FastifyInstance } from 'fastify';
 
-import { ItemTagType } from '@graasp/sdk';
+import { ItemVisibilityType } from '@graasp/sdk';
 
 import build, { MOCK_LOGGER, clearDatabase } from '../../../test/app';
 import { AppDataSource } from '../../plugins/datasource';
@@ -10,14 +10,14 @@ import { buildRepositories } from '../../utils/repositories';
 import { saveMember } from '../member/test/fixtures/members';
 import { ThumbnailService } from '../thumbnail/service';
 import { ItemWrapper } from './ItemWrapper';
-import { ItemTag } from './plugins/itemTag/ItemTag';
-import { createTag, setItemPublic } from './plugins/itemTag/test/fixtures';
+import { ItemVisibility } from './plugins/itemVisibility/ItemVisibility';
+import { createTag, setItemPublic } from './plugins/itemVisibility/test/fixtures';
 import { ItemThumbnailService } from './plugins/thumbnail/service';
 import { ItemService } from './service';
 import { ItemTestUtils } from './test/fixtures/items';
 
 const testUtils = new ItemTestUtils();
-const rawItemTagRepository = AppDataSource.getRepository(ItemTag);
+const rawItemTagRepository = AppDataSource.getRepository(ItemVisibility);
 
 describe('ItemWrapper', () => {
   let app: FastifyInstance;
@@ -36,7 +36,7 @@ describe('ItemWrapper', () => {
   });
 
   describe('createPackedItems', () => {
-    it('Return highest tags for child item', async () => {
+    it('Return the most restrictive visibilities for child item', async () => {
       const repositories = buildRepositories();
       const itemThumbnailService = new ItemThumbnailService(
         {} as unknown as ItemService,
@@ -49,8 +49,8 @@ describe('ItemWrapper', () => {
       const { item: parentItem } = await testUtils.saveItemAndMembership({});
       const { item } = await testUtils.saveItemAndMembership({ parentItem });
 
-      const hiddenTag = await rawItemTagRepository.save(
-        await createTag({ item, type: ItemTagType.Hidden }),
+      const hiddenVisibility = await rawItemTagRepository.save(
+        await createTag({ item, type: ItemVisibilityType.Hidden }),
       );
       const parentPublicTag = await setItemPublic(parentItem);
       await setItemPublic(item);
@@ -62,26 +62,29 @@ describe('ItemWrapper', () => {
         [item],
       );
       expect(packedItem.public!.id).toEqual(parentPublicTag.id);
-      // should return parent tag, not item tag
-      expect(packedItem.hidden!.id).toEqual(hiddenTag.id);
+      // should return parent visibility, not item visibility
+      expect(packedItem.hidden!.id).toEqual(hiddenVisibility.id);
     });
   });
 
   describe('packed', () => {
-    it('Return highest tags for child item', async () => {
+    it('Return the most restrictive visibility for child item', async () => {
       const parentItem = testUtils.createItem();
       const item = testUtils.createItem({ parentItem });
 
-      const publicTag = await createTag({ item, type: ItemTagType.Public });
-      const parentHiddenTag = await createTag({ item: parentItem, type: ItemTagType.Hidden });
-      const hiddenTag = await createTag({ item, type: ItemTagType.Hidden });
-      // unordered tags
-      const tags = [hiddenTag, publicTag, parentHiddenTag];
-      const itemWrapper = new ItemWrapper(item, undefined, tags);
+      const publicVisibility = await createTag({ item, type: ItemVisibilityType.Public });
+      const parentHiddenTag = await createTag({
+        item: parentItem,
+        type: ItemVisibilityType.Hidden,
+      });
+      const hiddenVisibility = await createTag({ item, type: ItemVisibilityType.Hidden });
+      // unordered visibilities
+      const visibilities = [hiddenVisibility, publicVisibility, parentHiddenTag];
+      const itemWrapper = new ItemWrapper(item, undefined, visibilities);
 
       const packedItem = itemWrapper.packed();
-      expect(packedItem.public!.id).toEqual(publicTag.id);
-      // should return parent tag, not item tag
+      expect(packedItem.public!.id).toEqual(publicVisibility.id);
+      // should return parent visibility, not item visibility
       expect(packedItem.hidden!.id).toEqual(parentHiddenTag.id);
     });
   });

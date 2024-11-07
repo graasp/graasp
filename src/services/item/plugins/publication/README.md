@@ -6,7 +6,7 @@ This document outlines the publication process for items, covering all relevant 
 
 The `PublicationService` computes the current publication status of an item. This information is crucial for other services to determine appropriate actions, such as rejecting queries or returning status details.
 
-This service uses the `Item`, `ItemTag`, `ItemValidationGroup` and `ItemPublished` entities to compute the `PublicationStatus` (item's state), defined in the SDK, for each item. That means the `PublicationService` doesn't store anything new in the database (it doesn't have a dedicated Entity). Indeed, `ItemTag` determines public visibility, `ItemValidationGroup` indicates validation requirements, and `ItemPublished` defines the item's publication state, which collectively influence the final PublicationStatus.
+This service uses the `Item`, `ItemVisibility`, `ItemValidationGroup` and `ItemPublished` entities to compute the `PublicationStatus` (item's state), defined in the SDK, for each item. That means the `PublicationService` doesn't store anything new in the database (it doesn't have a dedicated Entity). Indeed, `ItemVisibility` determines public visibility, `ItemValidationGroup` indicates validation requirements, and `ItemPublished` defines the item's publication state, which collectively influence the final PublicationStatus.
 
 Below is a description of the possible statuses:
 

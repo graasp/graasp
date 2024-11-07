@@ -107,7 +107,7 @@ describe('MeilisearchWrapper', () => {
     itemMembershipRepository: {
       getInherited: jest.fn(() => ({ permission: 'anything' })),
     } as unknown as jest.Mocked<typeof ItemMembershipRepository>,
-    itemTagRepository: testUtils.itemTagRepository,
+    itemVisibilityRepository: testUtils.itemVisibilityRepository,
     itemRepository: testUtils.itemRepository,
     itemPublishedRepository: itemPublishedRepositoryMock,
     itemCategoryRepository: itemCategoryRepositoryMock,
@@ -142,7 +142,7 @@ describe('MeilisearchWrapper', () => {
         item: { id: item.id } as Item,
       } as ItemPublished);
       jest
-        .spyOn(testUtils.itemTagRepository, 'hasForMany')
+        .spyOn(testUtils.itemVisibilityRepository, 'hasForMany')
         .mockResolvedValue({ data: {}, errors: [] });
 
       const addDocumentSpy = jest.spyOn(mockIndex, 'addDocuments');
@@ -173,7 +173,7 @@ describe('MeilisearchWrapper', () => {
       itemPublishedRepositoryMock.getForItem.mockResolvedValue({
         item: { id: item.id } as Item,
       } as ItemPublished);
-      jest.spyOn(testUtils.itemTagRepository, 'hasForMany').mockResolvedValue({
+      jest.spyOn(testUtils.itemVisibilityRepository, 'hasForMany').mockResolvedValue({
         data: { [descendant.id]: true },
         errors: [],
       });
@@ -238,7 +238,7 @@ describe('MeilisearchWrapper', () => {
         item: { id: item.id } as Item,
       } as ItemPublished);
       jest
-        .spyOn(testUtils.itemTagRepository, 'hasForMany')
+        .spyOn(testUtils.itemVisibilityRepository, 'hasForMany')
         .mockResolvedValue({ data: {}, errors: [] });
 
       const addDocumentSpy = jest.spyOn(mockIndex, 'addDocuments');
@@ -309,7 +309,7 @@ describe('MeilisearchWrapper', () => {
       itemPublishedRepositoryMock.getForItem.mockImplementation((i) =>
         Promise.resolve(published[i.id]),
       );
-      jest.spyOn(testUtils.itemTagRepository, 'hasForMany').mockResolvedValue({
+      jest.spyOn(testUtils.itemVisibilityRepository, 'hasForMany').mockResolvedValue({
         data: { [descendant.id]: true },
         errors: [],
       });
@@ -374,7 +374,7 @@ describe('MeilisearchWrapper', () => {
         item: { id: item.id } as Item,
       } as ItemPublished);
       jest
-        .spyOn(testUtils.itemTagRepository, 'hasForMany')
+        .spyOn(testUtils.itemVisibilityRepository, 'hasForMany')
         .mockResolvedValue({ data: {}, errors: [] });
 
       const addDocumentSpy = jest.spyOn(mockIndex, 'addDocuments');

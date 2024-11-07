@@ -13,8 +13,8 @@ import {
   DocumentItemExtra,
   INDEX_NAME,
   IndexItem,
-  ItemTagType,
   ItemType,
+  ItemVisibilityType,
   LocalFileItemExtra,
   MimeTypes,
   S3FileItemExtra,
@@ -223,11 +223,11 @@ export class MeiliSearchWrapper {
         )),
       );
 
-      // Parse all the item into indexable items (containing published state, tag, content...)
+      // Parse all the item into indexable items (containing published state, visibility, content...)
 
-      const isHidden = await repositories.itemTagRepository.hasForMany(
+      const isHidden = await repositories.itemVisibilityRepository.hasForMany(
         itemsToIndex,
-        ItemTagType.Hidden,
+        ItemVisibilityType.Hidden,
       );
 
       const documents = await Promise.all(

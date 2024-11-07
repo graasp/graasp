@@ -6,8 +6,8 @@ import { FastifyInstance } from 'fastify';
 import {
   AppItemFactory,
   FolderItemFactory,
-  ItemTagType,
   ItemType,
+  ItemVisibilityType,
   PermissionLevel,
   buildPathFromIds,
 } from '@graasp/sdk';
@@ -18,7 +18,7 @@ import '../../plugins/datasource';
 import { ItemMembership } from '../itemMembership/entities/ItemMembership';
 import { Actor } from '../member/entities/member';
 import { Item } from './entities/Item';
-import { ItemTag } from './plugins/itemTag/ItemTag';
+import { ItemVisibility } from './plugins/itemVisibility/ItemVisibility';
 
 describe('Item controller', () => {
   let app: FastifyInstance;
@@ -77,15 +77,15 @@ describe('Item controller', () => {
             },
           ],
         },
-        itemTags: {
-          constructor: ItemTag,
+        itemVisibilities: {
+          constructor: ItemVisibility,
           entities: [
             {
-              type: ItemTagType.Hidden,
+              type: ItemVisibilityType.Hidden,
               item: buildPathFromIds(rootUUID, hiddenUUID),
             },
             {
-              type: ItemTagType.Public,
+              type: ItemVisibilityType.Public,
               item: buildPathFromIds(rootUUID, publicUUID),
             },
           ],
