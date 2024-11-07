@@ -12,7 +12,6 @@ import { matchOne } from '../../../authorization';
 import { assertIsMember } from '../../../member/entities/member';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { Item } from '../../entities/Item';
-import { ItemService } from '../../service';
 import { getPostItemPayloadFromFormData } from '../../utils';
 import { ActionItemService } from '../action/service';
 import { createFolder, createFolderWithThumbnail, updateFolder } from './schemas';
@@ -20,12 +19,11 @@ import { FolderItemService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db } = fastify;
-  const itemService = resolveDependency(ItemService);
-  const folderService = resolveDependency(FolderItemService);
+  const folderItemService = resolveDependency(FolderItemService);
   const actionItemService = resolveDependency(ActionItemService);
 
   fastify.post(
-    '/folder',
+    '/folders',
     {
       schema: createFolder,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
@@ -41,7 +39,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
       const item = await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
-        const item = await itemService.post(member, repositories, {
+        const item = await folderItemService.post(member, repositories, {
           // Because of an incoherence between the service and the schema, we need to cast the data to the correct type
           // This need to be fixed in issue #1288 https://github.com/graasp/graasp/issues/1288
           item: { ...data, type: ItemType.FOLDER } as Partial<Item> & Pick<Item, 'name' | 'type'>,
@@ -58,12 +56,12 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       await actionItemService.postPostAction(request, buildRepositories(), item);
       await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
-        await itemService.rescaleOrderForParent(member, repositories, item);
+        await folderItemService.rescaleOrderForParent(member, repositories, item);
       });
     },
   );
 
-  // isolate inside a register because of the mutlipart
+  // isolate inside a register because of the multipart
   fastify.register(async (fastify: FastifyInstanceTypebox) => {
     fastify.register(fastifyMultipart, {
       limits: {
@@ -76,7 +74,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       },
     });
     fastify.post(
-      'folder/with-thumbnail',
+      'folders-with-thumbnail',
       {
         schema: createFolderWithThumbnail,
         preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
@@ -99,7 +97,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
         return await db.transaction(async (manager) => {
           const repositories = buildRepositories(manager);
-          const item = await itemService.post(member, repositories, {
+          const item = await folderItemService.post(member, repositories, {
             item: itemPayload,
             parentId,
             geolocation,
@@ -113,7 +111,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   });
 
   fastify.patch(
-    '/folder/:id',
+    '/folders/:id',
     {
       schema: updateFolder,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
@@ -128,7 +126,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       assertIsMember(member);
       return await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
-        const item = await folderService.patchFolder(member, repositories, id, body);
+        const item = await folderItemService.patch(member, repositories, id, body);
         await actionItemService.postPatchAction(request, repositories, item);
         return item;
       });

@@ -21,7 +21,7 @@ export class FolderItemService extends ItemService {
     super(thumbnailService, itemThumbnailService, log);
   }
 
-  async patchFolder(
+  async patch(
     member: Member,
     repositories: Repositories,
     itemId: UUID,
@@ -36,6 +36,6 @@ export class FolderItemService extends ItemService {
       throw new WrongItemTypeError(item.type);
     }
 
-    return await super._patch(member, repositories, item, { ...body, type: ItemType.FOLDER });
+    return await super.patch(member, repositories, item.id, body);
   }
 }

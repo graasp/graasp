@@ -476,13 +476,11 @@ export class ItemService {
     return ItemWrapper.merge(items, itemMemberships, visibilities, thumbnails);
   }
 
-  protected async _patch(
-    member: Member,
-    repositories: Repositories,
-    item: Item,
-    body: DeepPartial<Item>,
-  ) {
+  async patch(member: Member, repositories: Repositories, itemId: UUID, body: DeepPartial<Item>) {
     const { itemRepository } = repositories;
+
+    // check memberships
+    const item = await itemRepository.getOneOrThrow(itemId);
 
     await validatePermission(repositories, PermissionLevel.Write, member, item);
 
@@ -495,15 +493,6 @@ export class ItemService {
     await this.hooks.runPostHooks('update', member, repositories, { item: updated });
 
     return updated;
-  }
-
-  async patch(member: Member, repositories: Repositories, itemId: UUID, body: DeepPartial<Item>) {
-    const { itemRepository } = repositories;
-
-    // check memberships
-    const item = await itemRepository.getOneOrThrow(itemId);
-
-    return this._patch(member, repositories, item, body);
   }
 
   // QUESTION? DELETE BY PATH???
