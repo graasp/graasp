@@ -28,7 +28,7 @@ export const simpleMembershipRequestSchemaRef = registerSchemaAsRef(
 );
 
 export const getAllByItem = {
-  tags: ['membershipRequest'],
+  tags: ['membership-request'],
   summary: 'Get all membership requests for an item',
   description: 'Get all membership requests with member information for an item by its ID',
   params: customType.StrictObject({
@@ -40,7 +40,7 @@ export const getAllByItem = {
 } as const satisfies FastifySchema;
 
 export const createOne = {
-  tags: ['membershipRequest'],
+  tags: ['membership-request'],
   summary: 'Create a membership request',
   description: `Create a membership request for an item with the authenticated member. 
   The member should not have any permission on the item.
@@ -54,7 +54,7 @@ export const createOne = {
 } as const satisfies FastifySchema;
 
 export const getOwn = {
-  tags: ['membershipRequest'],
+  tags: ['membership-request'],
   summary: 'Get the status of the membership request for the authenticated member',
   description:
     'Get the status of the membership request for the authenticated member for an item by its ID',
@@ -67,7 +67,7 @@ export const getOwn = {
 } as const satisfies FastifySchema;
 
 export const deleteOne = {
-  tags: ['membershipRequest'],
+  tags: ['membership-request'],
   summary: 'Delete a membership request',
   description: 'Delete a membership request from a member id and an item id.',
   params: customType.StrictObject({
