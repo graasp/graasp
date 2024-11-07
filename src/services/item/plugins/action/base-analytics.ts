@@ -10,7 +10,22 @@ import { Item } from '../../entities/Item';
 import { AppAction } from '../app/appAction/appAction';
 import { AppData } from '../app/appData/appData';
 import { AppSetting } from '../app/appSetting/appSettings';
-import { memberSchema, memberSchemaForAnalytics } from './schemas';
+
+// copy of member's schema
+const memberSchema = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    id: { type: 'string' },
+    name: { type: 'string' },
+    email: { type: 'string' },
+    extra: {
+      type: 'object',
+      additionalProperties: false,
+      properties: { lang: { type: 'string' } },
+    },
+  },
+};
 
 export class BaseAnalytics {
   readonly actions: Action[];
@@ -56,7 +71,10 @@ export class BaseAnalytics {
     const ajv = new Ajv({ removeAdditional: 'all' });
 
     const validateMember = ajv.compile(memberSchema);
-    const validateMembers = ajv.compile(memberSchemaForAnalytics);
+    const validateMembers = ajv.compile({
+      type: 'array',
+      items: memberSchema,
+    });
     validateMembers(args.members);
 
     validateMember(args.item.creator);

@@ -22,7 +22,7 @@ import { ItemService } from '../../service';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
 import { CannotPostAction } from './errors';
 import { ActionRequestExportService } from './requestExport/service';
-import { exportAction, getAggregateActions, getItemActions, postAction } from './schemas';
+import { exportActions, getAggregateActions, getItemActions, postAction } from './schemas';
 import { ActionItemService } from './service';
 
 export interface GraaspActionsOptions {
@@ -90,7 +90,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
       schema: postAction,
       preHandler: optionalIsAuthenticated,
     },
-    async (request) => {
+    async (request, reply) => {
       const {
         user,
         params: { id: itemId },
@@ -106,7 +106,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
         throw new CannotPostAction(request.headers.origin);
       }
 
-      return db.transaction(async (manager) => {
+      await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
         const item = await itemService.get(member, repositories, itemId);
         await actionService.postMany(member, repositories, request, [
@@ -117,6 +117,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
           },
         ]);
       });
+      reply.status(StatusCodes.NO_CONTENT);
     },
   );
 
@@ -124,7 +125,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
   fastify.post(
     '/:id/actions/export',
     {
-      schema: exportAction,
+      schema: exportActions,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
     async (request, reply) => {

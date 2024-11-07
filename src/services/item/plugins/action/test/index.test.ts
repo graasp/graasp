@@ -121,7 +121,7 @@ describe('Action Plugin Tests', () => {
           },
         });
 
-        expect(response.statusCode).toEqual(StatusCodes.OK);
+        expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
         const actions = await rawActionRepository.find({
           where: body,
           relations: { item: true, account: true },
@@ -154,7 +154,7 @@ describe('Action Plugin Tests', () => {
             Origin: BUILDER_HOST.url.origin,
           },
         });
-        expect(response.statusCode).toEqual(StatusCodes.OK);
+        expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
         const actions = await rawActionRepository.find({
           where: body,
           relations: { item: true, account: true },
@@ -178,7 +178,7 @@ describe('Action Plugin Tests', () => {
           },
         });
 
-        expect(response.statusCode).toEqual(StatusCodes.OK);
+        expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
         const actions = await rawActionRepository.find({
           where: body,
           relations: { item: true, account: true },
