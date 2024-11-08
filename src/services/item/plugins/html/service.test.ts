@@ -1,6 +1,7 @@
 import { ItemType } from '@graasp/sdk';
 
 import { BaseLogger } from '../../../../logger';
+import { StorageService } from '../../../member/plugins/storage/service';
 import { HtmlService } from './service';
 import { HtmlValidator } from './validator';
 
@@ -18,6 +19,7 @@ class MockValidator implements HtmlValidator {
 }
 
 class MockHtmlService extends HtmlService {}
+class MockStorageService extends StorageService {}
 
 const validator = new MockValidator();
 
@@ -34,6 +36,7 @@ describe('Html Service', () => {
       config: { s3: MOCK_S3_CONFIG },
       type: ItemType.S3_FILE,
     },
+    new MockStorageService(ItemType.LOCAL_FILE),
     'prefix',
     'mimetype',
     'ext',

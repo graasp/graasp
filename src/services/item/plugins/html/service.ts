@@ -14,9 +14,11 @@ import { FileItemType } from '@graasp/sdk';
 
 import { BaseLogger } from '../../../../logger';
 import { TMP_FOLDER } from '../../../../utils/config';
+import { Repositories } from '../../../../utils/repositories';
 import FileService, { FileServiceConfig } from '../../../file/service';
 import { fileRepositoryFactory } from '../../../file/utils/factory';
 import { Member } from '../../../member/entities/member';
+import { StorageService } from '../../../member/plugins/storage/service';
 import { Item } from '../../entities/Item';
 import { GraaspHtmlError, HtmlImportError } from './errors';
 import { DEFAULT_MIME_TYPE } from './h5p/constants';
@@ -27,6 +29,7 @@ import { HtmlValidator } from './validator';
  */
 export abstract class HtmlService {
   public readonly fileService: FileService;
+  protected readonly storageService: StorageService;
   protected readonly validator: HtmlValidator;
   protected readonly mimetype: string;
   protected readonly extension: string;
@@ -43,6 +46,7 @@ export abstract class HtmlService {
       config: FileServiceConfig;
       type: FileItemType;
     },
+    storageService: StorageService,
     pathPrefix: string,
     mimetype: string,
     extension: string,
@@ -55,6 +59,7 @@ export abstract class HtmlService {
     this.logger = log;
     this.extension = extension;
     this.fileService = new FileService(fileRepositoryFactory(type, config), this.logger);
+    this.storageService = storageService;
     this.mimetype = mimetype;
     this.pathPrefix = pathPrefix;
     this.validator = validator;
@@ -153,10 +158,12 @@ export abstract class HtmlService {
 
   async createItem(
     actor: Member,
+    repositories: Repositories,
     filename: string,
     stream: Readable,
     onComplete: (
       actor: Member,
+      repositories: Repositories,
       baseName: string,
       contentId: string,
       parentId?: Item['id'],
@@ -167,6 +174,9 @@ export abstract class HtmlService {
     previousItemId?: Item['id'],
     log?: FastifyBaseLogger,
   ): Promise<Item> {
+    // check member storage limit
+    await this.storageService.checkRemainingStorage(actor, repositories);
+
     const contentId = v4();
     const tmpDir = await dir({ tmpdir: this.tempDir, unsafeCleanup: true });
     const targetFolder = path.join(tmpDir.path, contentId);
@@ -191,7 +201,15 @@ export abstract class HtmlService {
       try {
         // upload whole folder to public storage
         await this.upload(actor, targetFolder, remoteRootPath, log);
-        const item = await onComplete(actor, baseName, contentId, parentId, previousItemId, log);
+        const item = await onComplete(
+          actor,
+          repositories,
+          baseName,
+          contentId,
+          parentId,
+          previousItemId,
+          log,
+        );
         return item;
       } catch (error) {
         // delete storage folder of this html package if upload or creation fails

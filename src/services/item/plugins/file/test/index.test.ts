@@ -253,6 +253,37 @@ describe('File Item routes tests', () => {
           expect(membership).toBeNull();
         });
 
+        it('Upload several files with one H5P file', async () => {
+          const form = createFormData();
+          form.append(
+            'H5PFile',
+            fs.createReadStream(path.resolve(__dirname, './fixtures/dummy.h5p')),
+          );
+
+          const response = await app.inject({
+            method: HttpMethod.Post,
+            url: `${ITEMS_ROUTE_PREFIX}/upload`,
+            payload: form,
+            headers: form.getHeaders(),
+          });
+
+          // check the response value
+          const newItems = Object.values(response.json().data) as Item[];
+          expect(response.statusCode).toBe(StatusCodes.OK);
+          expect(newItems.length).toBe(2);
+
+          // check that both items exist in db and that their types are correctly interpreted
+          const imageItem = await testUtils.rawItemRepository.findOneBy({ id: newItems[0].id });
+          expectItem(imageItem, newItems[0]);
+          expect(
+            imageItem?.type === ItemType.LOCAL_FILE || imageItem?.type === ItemType.S3_FILE,
+          ).toBeTruthy();
+
+          const h5pItem = await testUtils.rawItemRepository.findOneBy({ id: newItems[1].id });
+          expectItem(h5pItem, newItems[1]);
+          expect(h5pItem?.type).toBe(ItemType.H5P);
+        });
+
         it('Cannot upload in parent with read rights', async () => {
           const member = await saveMember();
           const { item: parentItem } = await testUtils.saveItemAndMembership({

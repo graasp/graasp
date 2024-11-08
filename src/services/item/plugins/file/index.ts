@@ -1,7 +1,7 @@
 import { fastifyMultipart } from '@fastify/multipart';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { FileItemProperties, PermissionLevel } from '@graasp/sdk';
+import { FileItemProperties, PermissionLevel, getFileExtension } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
 import { asDefined } from '../../../../utils/assertions';
@@ -14,6 +14,8 @@ import { StorageService } from '../../../member/plugins/storage/service';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { Item } from '../../entities/Item';
 import { ItemService } from '../../service';
+import { H5PService } from '../html/h5p/service';
+import { H5P_FILE_EXTENSION } from '../importExport/constants';
 import { download, upload } from './schema';
 import FileItemService from './service';
 import { DEFAULT_MAX_FILE_SIZE, MAX_NUMBER_OF_FILES_UPLOAD } from './utils/constants';
@@ -34,6 +36,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
   const itemService = resolveDependency(ItemService);
   const storageService = resolveDependency(StorageService);
   const fileItemService = resolveDependency(FileItemService);
+  const h5pService = resolveDependency(H5PService);
 
   fastify.register(fastifyMultipart, {
     limits: {
@@ -134,14 +137,30 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
           const repositories = buildRepositories(manager);
 
           try {
-            const i = await fileItemService.upload(member, repositories, {
-              parentId,
-              filename,
-              mimetype,
-              stream,
-              previousItemId,
-            });
-            items.push(i);
+            // if the file is an H5P file, we treat it apporpriately
+            // othwerwise, we save it as a generic file
+            let item: Item;
+            if (getFileExtension(filename) === H5P_FILE_EXTENSION) {
+              item = await h5pService.createH5PItem(
+                member,
+                repositories,
+                filename,
+                stream,
+                parentId,
+                previousItemId,
+                log,
+              );
+            } else {
+              item = await fileItemService.upload(member, repositories, {
+                parentId,
+                filename,
+                mimetype,
+                stream,
+                previousItemId,
+              });
+            }
+
+            items.push(item);
           } catch (e) {
             // ignore errors
             log.error(e);
