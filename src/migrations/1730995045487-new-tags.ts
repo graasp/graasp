@@ -13,6 +13,12 @@ export class Migrations1730995045487 implements MigrationInterface {
     await queryRunner.query(
       `CREATE TABLE "item_tag" ("tag_id" uuid NOT NULL, "item_id" uuid NOT NULL, CONSTRAINT "UQ_item_tag" UNIQUE ("item_id", "tag_id"), CONSTRAINT "PK_a04bb2298e37d95233a0c92347e" PRIMARY KEY ("tag_id", "item_id"))`,
     );
+    await queryRunner.query(
+      `ALTER TABLE "item_tag" ADD CONSTRAINT "FK_16ab8afb42f763f7cbaa4bff66a" FOREIGN KEY ("tag_id") REFERENCES "tag"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "item_tag" ADD CONSTRAINT "FK_39b492fda03c7ac846afe164b58" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+    );
     await queryRunner.query(`CREATE INDEX "IDX_item_tag_item" ON "item_tag" ("item_id") `);
   }
 

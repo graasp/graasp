@@ -15,11 +15,11 @@ export class ItemTag extends BaseEntity {
   @PrimaryColumn({ name: 'item_id' })
   itemId: UUID;
 
-  @OneToOne(() => Tag, (t) => t.id)
+  @OneToOne(() => Tag, (t) => t.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'tag_id' })
   tag: Tag;
 
-  @OneToOne(() => Item, (item) => item.id)
+  @OneToOne(() => Item, (item) => item.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'item_id' })
   item: Item;
 }
