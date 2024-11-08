@@ -26,6 +26,8 @@ import { ItemValidationGroup } from '../services/item/plugins/publication/valida
 import { ItemValidationReview } from '../services/item/plugins/publication/validation/entities/itemValidationReview';
 import { RecycledItemData } from '../services/item/plugins/recycled/RecycledItemData';
 import { ShortLink } from '../services/item/plugins/shortLink/entities/ShortLink';
+import { ItemTag } from '../services/item/plugins/tag/ItemTag.entity';
+import { Tag } from '../services/item/plugins/tag/Tag.entity';
 import { Guest } from '../services/itemLogin/entities/guest';
 import { GuestPassword } from '../services/itemLogin/entities/guestPassword';
 import { ItemLoginSchema } from '../services/itemLogin/entities/itemLoginSchema';
@@ -106,6 +108,8 @@ export const AppDataSource = new DataSource({
     MemberProfile,
     ShortLink,
     ItemGeolocation,
+    Tag,
+    ItemTag,
   ],
   // refer to built files in js because it cannot run ts files
   migrations: ['dist/migrations/*.js'],
