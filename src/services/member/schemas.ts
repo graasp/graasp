@@ -3,8 +3,6 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifySchema } from 'fastify';
 
-import { MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
-
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 import { errorSchemaRef } from '../../schemas/global';
 import { accountTypeGuestRef, accountTypeIndividualRef } from '../account/schemas';
@@ -30,16 +28,14 @@ import { FILE_METADATA_DEFAULT_PAGE_SIZE, FILE_METADATA_MIN_PAGE } from './const
  */
 export const EMAIL_REGEX = '^[.-\\w]+@[.-\\w]+.[-\\w]{2,63}$';
 
-const memberSchema = Type.Object(
+const memberSchema = customType.StrictObject(
   {
-    // Object definition
     id: customType.UUID(),
     name: customType.Username(),
     email: Type.String({ format: 'email' }),
   },
   {
-    // Schema options
-    additionalProperties: false,
+    description: 'Member sharable information',
   },
 );
 
@@ -51,27 +47,19 @@ export const nullableMemberSchemaRef = registerSchemaAsRef(
   customType.Nullable(memberSchema),
 );
 
-const currentAccountSchema = Type.Object(
-  {
-    // Object Definition
-    id: customType.UUID(),
-    name: customType.Username(),
-    createdAt: customType.DateTime(),
-    updatedAt: customType.DateTime(),
-    // for legacy issue we support null
-    // but on login last authenticatedAt should always be updated
-    lastAuthenticatedAt: Type.Union([Type.Null(), customType.DateTime()]),
-  },
-  {
-    // Schema Options
-    additionalProperties: false,
-  },
-);
+const currentAccountSchema = customType.StrictObject({
+  id: customType.UUID(),
+  name: customType.Username(),
+  createdAt: customType.DateTime(),
+  updatedAt: customType.DateTime(),
+  // for legacy issue we support null
+  // but on login last authenticatedAt should always be updated
+  lastAuthenticatedAt: Type.Union([Type.Null(), customType.DateTime()]),
+});
 
-// Current Member
 const compositeCurrentMemberSchema = Type.Composite([
   currentAccountSchema, // Base properties from minimal current account
-  Type.Object(
+  customType.StrictObject(
     {
       email: Type.Optional(Type.String({ format: 'email' })),
       type: accountTypeIndividualRef,
@@ -80,18 +68,18 @@ const compositeCurrentMemberSchema = Type.Composite([
       enableSaveActions: Type.Boolean(),
       extra: Type.Object({}, { additionalProperties: true }),
     },
-    { additionalProperties: false },
+    { description: 'Current member information' },
   ),
 ]);
-// Current Guest
+
 const compositeCurrentGuestSchema = Type.Composite([
   currentAccountSchema, // Base properties from minimal current account
-  Type.Object(
+  customType.StrictObject(
     {
       type: accountTypeGuestRef,
       extra: Type.Object({}, { additionalProperties: true }),
     },
-    { additionalProperties: false },
+    { description: 'Current guest information' },
   ),
 ]);
 
@@ -106,6 +94,7 @@ export const currentAccountSchemaRef = registerSchemaAsRef(
     ],
     {
       discriminator: { propertyName: 'type' },
+      description: 'Current authenticated account, that can be a member or a guest',
     },
   ),
 );
@@ -121,18 +110,9 @@ export const nullableCurrentAccountSchemaRef = registerSchemaAsRef(
     ],
     {
       discriminator: { propertyName: 'type' },
+      description: 'Current authenticated account, that can be a member or a guest, or null',
     },
   ),
-);
-
-const updateMemberRequiredOneSchema = Type.Object(
-  {
-    // Object definition
-    name: Type.Optional(customType.Username()),
-    enableSaveActions: Type.Optional(Type.Boolean()),
-    extra: Type.Optional(Type.Object({}, { additionalProperties: true })),
-  },
-  { additionalProperties: false, minProperties: 1 },
 );
 
 export const fileItemMetadata = customType.StrictObject(
@@ -154,35 +134,49 @@ export const fileItemMetadata = customType.StrictObject(
   },
 );
 
-// schema for getting current member
 export const getCurrent = {
+  operationId: 'getCurrentAccount',
+  tags: ['current', 'member', 'guest'],
+  summary: 'Get information of current authenticated account',
+  description: 'Get information of current authenticated account, that can be a member or a guest.',
+
   response: {
     [StatusCodes.OK]: nullableCurrentAccountSchemaRef,
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
 // schema for getting current member's storage limits
 export const getStorage = {
+  operationId: 'getStorage',
+  tags: ['current', 'member', 'storage'],
+  summary: 'Get storage values',
+  description: 'Get amount of stockage used for current member, and its maximum stockage value.',
+
   response: {
-    [StatusCodes.OK]: Type.Object(
+    [StatusCodes.OK]: customType.StrictObject(
       {
-        current: Type.Integer(),
-        maximum: Type.Integer(),
+        current: Type.Integer({ description: 'Current amount of storage used' }),
+        maximum: Type.Integer({ description: 'Maximum amount of storage available' }),
       },
-      {
-        additionalProperties: false,
-      },
+      { description: 'Successful Response' },
     ),
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
 export const getStorageFiles = {
+  operationId: 'getStorageFiles',
+  tags: ['current', 'member', 'storage'],
+  summary: 'Get storage files data',
+  description: 'Get files data counted in storage of current member.',
+
   querystring: customType.Pagination({
     page: Type.Integer({ minimum: FILE_METADATA_MIN_PAGE, default: FILE_METADATA_MIN_PAGE }),
     pageSize: Type.Integer({ default: FILE_METADATA_DEFAULT_PAGE_SIZE }),
   }),
   response: {
-    [StatusCodes.OK]: Type.Object(
+    [StatusCodes.OK]: customType.StrictObject(
       {
         data: Type.Array(fileItemMetadata),
         totalCount: Type.Integer(),
@@ -194,7 +188,7 @@ export const getStorageFiles = {
           pageSize: { default: FILE_METADATA_DEFAULT_PAGE_SIZE },
         }),
       },
-      { additionalProperties: false },
+      { description: 'Successful Response' },
     ),
     '4xx': errorSchemaRef,
   },
@@ -202,121 +196,102 @@ export const getStorageFiles = {
 
 // schema for getting a member
 export const getOne = {
+  operationId: 'getOneMember',
+  tags: ['member'],
+  summary: 'Get member by id',
+  description: 'Get member by id.',
+
   params: customType.StrictObject({
     id: customType.UUID(),
   }),
   response: {
     [StatusCodes.OK]: memberSchemaRef,
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
-// schema for getting >1 members
-export const getMany = {
-  querystring: Type.Object(
-    {
-      id: Type.Array(customType.UUID(), {
-        uniqueItems: true,
-        minItems: 1,
-        maxItems: MAX_TARGETS_FOR_READ_REQUEST,
-      }),
-    },
-    { additionalProperties: false },
-  ),
-
-  response: {
-    [StatusCodes.OK]: Type.Object({
-      data: Type.Record(
-        Type.String({ format: 'uuid' }),
-        Type.Object({
-          id: customType.UUID(),
-          name: customType.Username(),
-          email: Type.String(),
-        }),
-      ),
-      errors: Type.Array(errorSchemaRef),
-    }),
-  },
-} as const satisfies FastifySchema;
-
-// schema for getting members by
-export const getManyBy = {
-  querystring: Type.Object(
-    { email: Type.Array(Type.String({ format: 'email' }), { uniqueItems: true, minItems: 1 }) },
-    { additionalProperties: false },
-  ),
-  response: {
-    [StatusCodes.OK]: Type.Object(
-      {
-        data: Type.Record(
-          Type.String({ pattern: EMAIL_REGEX }),
-          Type.Object(
-            {
-              id: customType.UUID(),
-              name: customType.Username(),
-              email: Type.String({ format: 'email' }),
-            },
-            { additionalProperties: false },
-          ),
-        ),
-        errors: Type.Array(errorSchemaRef),
-      },
-      { additionalProperties: false },
-    ),
-  },
-} as const satisfies FastifySchema;
-
-// schema for updating a member
+/**
+ * @deprecated
+ * Cannot remove yet because of mobile
+ */
 export const updateOne = {
   deprecated: true,
   params: customType.StrictObject({
     id: customType.UUID(),
   }),
-  body: updateMemberRequiredOneSchema,
+  body: customType.StrictObject(
+    {
+      name: Type.Optional(customType.Username()),
+      enableSaveActions: Type.Optional(Type.Boolean()),
+      extra: Type.Optional(Type.Object({}, { additionalProperties: true })),
+    },
+    { minProperties: 1 },
+  ),
   response: {
     [StatusCodes.OK]: currentAccountSchemaRef,
     [StatusCodes.FORBIDDEN]: errorSchemaRef,
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
-// schema for updating the current member
 export const updateCurrent = {
-  body: updateMemberRequiredOneSchema,
+  operationId: 'updateCurrentAccount',
+  tags: ['member', 'guest'],
+  summary: 'Update autenticated account',
+  description: 'Update autenticated account, such as name or language.',
+
+  body: customType.StrictObject(
+    {
+      name: Type.Optional(customType.Username()),
+      enableSaveActions: Type.Optional(Type.Boolean()),
+      extra: Type.Optional(Type.Object({}, { additionalProperties: true })),
+    },
+    { minProperties: 1 },
+  ),
   response: {
     [StatusCodes.OK]: currentAccountSchemaRef,
     [StatusCodes.FORBIDDEN]: errorSchemaRef,
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
-// schema for deleting a member
-export const deleteOne = {
-  params: customType.StrictObject({
-    id: customType.UUID(),
-  }),
-  response: {
-    [StatusCodes.NO_CONTENT]: {},
-  },
-} as const satisfies FastifySchema;
-
-// schema for deleting the current member
 export const deleteCurrent = {
+  operationId: 'deleteCurrentAccount',
+  tags: ['member', 'guest'],
+  summary: 'Delete autenticated account',
+  description: 'Delete autenticated account. This action is not reversible!',
+
   response: {
-    [StatusCodes.NO_CONTENT]: Type.Null(),
+    [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
 export const postChangeEmail = {
-  body: Type.Object({ email: Type.String({ format: 'email' }) }, { additionalProperties: false }),
+  operationId: 'postChangeEmail',
+  tags: ['member', 'email'],
+  summary: 'Request to change email',
+  description: 'Request to change email for current authenticated member.',
+
+  body: customType.StrictObject({ email: Type.String({ format: 'email' }) }),
   response: {
-    [StatusCodes.NO_CONTENT]: {},
+    [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
     [StatusCodes.CONFLICT]: errorSchemaRef,
     [StatusCodes.UNAUTHORIZED]: errorSchemaRef,
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
 export const patchChangeEmail = {
+  operationId: 'postChangeEmail',
+  tags: ['member', 'email'],
+  summary: 'Change email',
+  description: 'Change email for current authenticated member.',
+
   response: {
-    [StatusCodes.NO_CONTENT]: {},
+    [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
     [StatusCodes.CONFLICT]: errorSchemaRef,
     [StatusCodes.UNAUTHORIZED]: errorSchemaRef,
+    '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;

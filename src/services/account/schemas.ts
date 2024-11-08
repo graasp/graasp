@@ -4,15 +4,13 @@ import { AccountType } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 
-const accountSchema = Type.Object(
+const accountSchema = customType.StrictObject(
   {
-    // Object Definition
     id: customType.UUID(),
     name: customType.Username(),
   },
   {
-    // Schema Options
-    additionalProperties: false,
+    description: 'Minimal sharable account properties',
   },
 );
 
@@ -40,41 +38,31 @@ export const accountTypeGuestRef = registerSchemaAsRef(
 
 const compositeMemberAccountSchema = Type.Composite([
   accountSchema, // Base properties from minimal account
-  Type.Object(
+  customType.StrictObject(
     {
       type: accountTypeIndividualRef,
       email: Type.String({ format: 'email' }),
     },
-    { additionalProperties: false },
+    { description: 'Member sharable information' },
   ),
 ]);
-const compositeGuestAccountSchema = Type.Composite(
-  // Guest Account
-  [
-    accountSchema, // Base properties from minimal account
-    Type.Object(
-      {
-        type: accountTypeGuestRef,
-      },
-      { additionalProperties: false },
-    ),
-  ],
-);
+const compositeGuestAccountSchema = Type.Composite([
+  accountSchema, // Base properties from minimal account
+  customType.StrictObject(
+    {
+      type: accountTypeGuestRef,
+    },
+    { description: 'Guest sharable information' },
+  ),
+]);
 
 export const augmentedAccountSchemaRef = registerSchemaAsRef(
   'augmentedAccount',
   'Augmented Account',
-  Type.Union(
-    [
-      // The augmented account can either be an individual or a guest
-      compositeMemberAccountSchema,
-      compositeGuestAccountSchema,
-    ],
-    {
-      // Schema Options
-      discriminator: { propertyName: 'type' },
-    },
-  ),
+  Type.Union([compositeMemberAccountSchema, compositeGuestAccountSchema], {
+    discriminator: { propertyName: 'type' },
+    description: 'The augmented account can either be an individual or a guest',
+  }),
 );
 
 export const nullableAugmentedAccountSchemaRef = registerSchemaAsRef(
@@ -88,6 +76,7 @@ export const nullableAugmentedAccountSchemaRef = registerSchemaAsRef(
     ],
     {
       discriminator: { propertyName: 'type' },
+      description: 'The augmented account can either be an individual or a guest, or null',
     },
   ),
 );
