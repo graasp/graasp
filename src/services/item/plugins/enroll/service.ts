@@ -24,13 +24,7 @@ export class EnrollService {
   }
 
   async enroll(member: Member, repositories: Repositories, itemId: UUID) {
-    const item = await this.itemService.get(
-      member,
-      repositories,
-      itemId,
-      PermissionLevel.Read,
-      false,
-    );
+    const item = await repositories.itemRepository.getOneOrThrow(itemId);
 
     const itemLoginSchema = await this.itemLoginService.getByItemPath(repositories, item.path);
     if (!itemLoginSchema || itemLoginSchema.status === ItemLoginSchemaStatus.Disabled) {
