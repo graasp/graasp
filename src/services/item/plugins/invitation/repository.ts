@@ -2,7 +2,6 @@ import { EntityManager, FindOptionsRelations } from 'typeorm';
 
 import { MutableRepository } from '../../../../repositories/MutableRepository';
 import { DEFAULT_PRIMARY_KEY } from '../../../../repositories/const';
-import { EntryNotFoundBeforeDeleteException } from '../../../../repositories/errors';
 import { AncestorOf } from '../../../../utils/typeorm/treeOperators';
 import { Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
@@ -146,13 +145,9 @@ export class InvitationRepository extends MutableRepository<Invitation, UpdateIn
     return [];
   }
 
-  async deleteByEmail(email: Email) {
+  async deleteManyByEmail(email: Email) {
     this.throwsIfParamIsInvalid('email', email);
 
-    const entity = await this.repository.findOne({ where: { email } });
-    if (!entity) {
-      throw new EntryNotFoundBeforeDeleteException(this.entity);
-    }
-    await this.delete(entity.id);
+    await this.repository.delete({ email });
   }
 }

@@ -14,14 +14,12 @@ import {
   EMAIL_CHANGE_JWT_SECRET,
 } from '../../utils/config';
 import { MemberAlreadySignedUp } from '../../utils/errors';
-import HookManager from '../../utils/hook';
 import { Repositories } from '../../utils/repositories';
 import { NEW_EMAIL_PARAM, SHORT_TOKEN_PARAM } from '../auth/plugins/passport';
 import { Actor, Member } from './entities/member';
 
 @singleton()
 export class MemberService {
-  hooks = new HookManager();
   private readonly mailerService: MailerService;
   private readonly log: BaseLogger;
 
@@ -71,9 +69,6 @@ export class MemberService {
       };
 
       const member = await memberRepository.post(newMember);
-
-      // post hook
-      await this.hooks.runPostHooks('create', actor, repositories, { member });
 
       return member;
     } else {

@@ -145,7 +145,6 @@ export class InvitationService {
   }
 
   async createToMemberships(
-    actor: Actor,
     { invitationRepository, itemMembershipRepository }: Repositories,
     member: Member,
   ) {
@@ -157,6 +156,7 @@ export class InvitationService {
       permission,
     }));
     await itemMembershipRepository.addMany(memberships);
+    await invitationRepository.deleteManyByEmail(member.email);
   }
 
   async _partitionExistingUsersAndNewUsers(

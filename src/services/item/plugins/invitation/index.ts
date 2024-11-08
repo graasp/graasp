@@ -6,14 +6,12 @@ import fp from 'fastify-plugin';
 
 import { resolveDependency } from '../../../../di/utils';
 import { FastifyInstanceTypebox } from '../../../../plugins/typebox';
-import { EntryNotFoundBeforeDeleteException } from '../../../../repositories/errors';
 import { isNonEmptyArray } from '../../../../types';
 import { asDefined } from '../../../../utils/assertions';
-import { Repositories, buildRepositories } from '../../../../utils/repositories';
+import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
-import { Actor, Member, assertIsMember } from '../../../member/entities/member';
-import { MemberService } from '../../../member/service';
+import { assertIsMember } from '../../../member/entities/member';
 import { memberAccountRole } from '../../../member/strategies/memberAccountRole';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { MAX_FILE_SIZE } from './constants';
@@ -32,24 +30,9 @@ import { InvitationService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db } = fastify;
-  const memberService = resolveDependency(MemberService);
   const invitationService = resolveDependency(InvitationService);
 
   // register multipart plugin for use in the invitations API
-
-  // post hook: remove invitations on member creation
-  const hook = async (actor: Actor, repositories: Repositories, args: { member: Member }) => {
-    const { email } = args.member;
-    await invitationService.createToMemberships(actor, repositories, args.member);
-    try {
-      await repositories.invitationRepository.deleteByEmail(email);
-    } catch (e) {
-      if (!(e instanceof EntryNotFoundBeforeDeleteException)) {
-        throw e;
-      }
-    }
-  };
-  memberService.hooks.setPostHook('create', hook);
 
   // get an invitation by id
   // does not require authentication
