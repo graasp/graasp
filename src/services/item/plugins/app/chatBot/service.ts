@@ -12,6 +12,7 @@ export class ChatBotService {
     itemId: string,
     body: Array<ChatBotMessage>,
     gptVersion: GPTVersion,
+    temperature: number,
   ) {
     const { itemRepository } = repositories;
     const item = await itemRepository.getOneOrThrow(itemId);
@@ -19,6 +20,6 @@ export class ChatBotService {
     // check that the member can read the item to be allowed to interact with the chat
     await validatePermission(repositories, PermissionLevel.Read, account, item);
 
-    return fetchOpenAI(body, gptVersion);
+    return fetchOpenAI(body, gptVersion, temperature);
   }
 }
