@@ -423,13 +423,6 @@ export class OpenAIBadVersion extends OpenAIBaseError {
   }
 }
 
-export class OpenAIBadTemperature extends OpenAIBaseError {
-  constructor(temperature: number, maxTemperature: number, minTemperature: number) {
-    const message = `The temperature must be between ${minTemperature} and ${maxTemperature}. You set ${temperature}.`;
-    super({ code: 'GERR1006', message: message, statusCode: StatusCodes.BAD_REQUEST });
-  }
-}
-
 export class InvalidJWTItem extends CoreError {
   constructor(jwtItemId: string, itemId: string) {
     const message = `The JWT item id '${jwtItemId}' does not correspond with the accessed item ${itemId}.`;
