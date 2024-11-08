@@ -5,7 +5,11 @@ import { ChatbotRole, GPTVersion } from '@graasp/sdk';
 
 import { customType } from '../../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../../schemas/global';
-import { OPENAI_GPT_VERSION, OPENAI_MAX_TEMP, OPENAI_MIN_TEMP } from '../../../../../utils/config';
+import {
+  OPENAI_GPT_VERSION,
+  OPENAI_MAX_TEMPERATURE,
+  OPENAI_MIN_TEMPERATURE,
+} from '../../../../../utils/config';
 
 export const create = {
   operationId: 'createChatbotCompletionPrompt',
@@ -32,7 +36,9 @@ export const create = {
     gptVersion: Type.Optional(
       Type.Enum(GPTVersion, { description: 'Model to use', default: OPENAI_GPT_VERSION }),
     ),
-    temperature: Type.Optional(Type.Number({ maximum: OPENAI_MAX_TEMP, minimum: OPENAI_MIN_TEMP })),
+    temperature: Type.Optional(
+      Type.Number({ maximum: OPENAI_MAX_TEMPERATURE, minimum: OPENAI_MIN_TEMPERATURE }),
+    ),
   }),
   response: {
     [StatusCodes.OK]: Type.Object(
