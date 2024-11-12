@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.57.0](https://github.com/graasp/graasp/compare/v1.56.1...v1.57.0) (2024-11-12)
+
+
+### Features
+
+* add tag and item to tag entities ([#1611](https://github.com/graasp/graasp/issues/1611)) ([1981576](https://github.com/graasp/graasp/commit/1981576d1473e0b6833fa7c84c78b3a91f6aa526))
+* add temperature in query params for chatbot API ([#1628](https://github.com/graasp/graasp/issues/1628)) ([6adf661](https://github.com/graasp/graasp/commit/6adf661211c617d32e97526ba993c739637a7855))
+* get item tags ([#1632](https://github.com/graasp/graasp/issues/1632)) ([33a9cb2](https://github.com/graasp/graasp/commit/33a9cb2fd9480755d51ef28db5ab0822e04bdd57))
+* **refactor:** simplify the short links by using new SDK types ([#1612](https://github.com/graasp/graasp/issues/1612)) ([4a9c365](https://github.com/graasp/graasp/commit/4a9c365b6c2b2c68bb10ed7cdae9a129389178be))
+* rename item tag to item visibility ([#1615](https://github.com/graasp/graasp/issues/1615)) ([91439c2](https://github.com/graasp/graasp/commit/91439c2a25674487c3bc4ace4ca5d92a9fe4ce18))
+
+
+### Bug Fixes
+
+* fix password reset email content ([#1619](https://github.com/graasp/graasp/issues/1619)) ([7c6ab79](https://github.com/graasp/graasp/commit/7c6ab7974060dd3fd3e1ba81f8607a355fe2fa92))
+
 ## [1.56.1](https://github.com/graasp/graasp/compare/v1.56.0...v1.56.1) (2024-11-04)
 
 
