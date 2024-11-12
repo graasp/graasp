@@ -71,7 +71,6 @@ describe('Tag Endpoints', () => {
           method: HttpMethod.Get,
           url: `/items/${item.id}/tags`,
         });
-        console.log(response);
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(response.json()).toEqual(tags);
       });
