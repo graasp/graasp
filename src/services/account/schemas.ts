@@ -43,7 +43,10 @@ const compositeMemberAccountSchema = Type.Composite([
       type: accountTypeIndividualRef,
       email: Type.String({ format: 'email' }),
     },
-    { description: 'Member sharable information' },
+    {
+      description:
+        'Member information that are not public. These information are only shared with people you collaborate with.',
+    },
   ),
 ]);
 const compositeGuestAccountSchema = Type.Composite([

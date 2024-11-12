@@ -151,7 +151,7 @@ export const getStorage = {
   operationId: 'getStorage',
   tags: ['current', 'member', 'storage'],
   summary: 'Get storage values',
-  description: 'Get amount of stockage used for current member, and its maximum stockage value.',
+  description: 'Get amount of storage used for current member, and its maximum storage value.',
 
   response: {
     [StatusCodes.OK]: customType.StrictObject(
@@ -237,8 +237,8 @@ export const updateOne = {
 export const updateCurrent = {
   operationId: 'updateCurrentAccount',
   tags: ['member', 'guest'],
-  summary: 'Update autenticated account',
-  description: 'Update autenticated account, such as name or language.',
+  summary: 'Update authenticated account',
+  description: 'Update authenticated account, such as name or language.',
 
   body: customType.StrictObject(
     {
@@ -258,8 +258,8 @@ export const updateCurrent = {
 export const deleteCurrent = {
   operationId: 'deleteCurrentAccount',
   tags: ['member', 'guest'],
-  summary: 'Delete autenticated account',
-  description: 'Delete autenticated account. This action is not reversible!',
+  summary: 'Delete authenticated account',
+  description: 'Delete authenticated account. This action is irreversible!',
 
   response: {
     [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
