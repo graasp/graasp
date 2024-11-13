@@ -29,7 +29,9 @@ describe('Tag Repository', () => {
 
   describe('get', () => {
     it('throw for invalid id', async () => {
-      expect(() => repository.get(undefined!)).rejects.toBeInstanceOf(IllegalArgumentException);
+      await expect(() => repository.get(undefined!)).rejects.toBeInstanceOf(
+        IllegalArgumentException,
+      );
     });
     it('Return null for non-existing tag', async () => {
       expect(await repository.get(v4())).toBeNull();
@@ -52,7 +54,7 @@ describe('Tag Repository', () => {
 
   describe('addOne', () => {
     it('throw for invalid category', async () => {
-      expect(() =>
+      await expect(() =>
         repository.addOneIfDoesNotExist(TagFactory({ category: 'category' as never })),
       ).rejects.toThrow();
     });
@@ -68,7 +70,7 @@ describe('Tag Repository', () => {
 
   describe('addOneIfDoesNotExist', () => {
     it('throw for invalid category', async () => {
-      expect(() =>
+      await expect(() =>
         repository.addOneIfDoesNotExist(TagFactory({ category: 'category' as never })),
       ).rejects.toThrow();
     });

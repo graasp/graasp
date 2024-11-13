@@ -36,12 +36,12 @@ describe('ItemTag Repository', () => {
 
   describe('getForItem', () => {
     it('throw for invalid item id', async () => {
-      expect(() => repository.getForItem(undefined!)).rejects.toBeInstanceOf(
+      await expect(() => repository.getForItem(undefined!)).rejects.toBeInstanceOf(
         IllegalArgumentException,
       );
     });
     it('throw for non-existing item', async () => {
-      expect(() => repository.getForItem(v4())).rejects.toThrow();
+      await expect(() => repository.getForItem(v4())).rejects.toThrow();
     });
     it('get empty tags for item', async () => {
       const item = await itemRawRepository.save(FolderItemFactory({ creator: null }));
@@ -71,21 +71,21 @@ describe('ItemTag Repository', () => {
   describe('createForItem', () => {
     it('throw for invalid item id', async () => {
       const tag = await tagRawRepository.save(TagFactory());
-      expect(() => repository.createForItem(undefined!, tag.id)).rejects.toThrow();
+      await expect(() => repository.createForItem(undefined!, tag.id)).rejects.toThrow();
     });
     it('throw for invalid tag id', async () => {
       const item = await itemRawRepository.save(FolderItemFactory({ creator: null }));
 
-      expect(() => repository.createForItem(item.id, undefined!)).rejects.toThrow();
+      await expect(() => repository.createForItem(item.id, undefined!)).rejects.toThrow();
     });
     it('throw for non-existing item', async () => {
       const tag = await tagRawRepository.save(TagFactory());
-      expect(() => repository.createForItem(v4(), tag.id)).rejects.toThrow();
+      await expect(() => repository.createForItem(v4(), tag.id)).rejects.toThrow();
     });
     it('throw for non-existing tag', async () => {
       const item = await itemRawRepository.save(FolderItemFactory({ creator: null }));
 
-      expect(() => repository.createForItem(item.id, v4())).rejects.toThrow();
+      await expect(() => repository.createForItem(item.id, v4())).rejects.toThrow();
     });
     it('create tag for item', async () => {
       const tag = await tagRawRepository.save(TagFactory());
@@ -101,7 +101,7 @@ describe('ItemTag Repository', () => {
       const item = await itemRawRepository.save(FolderItemFactory({ creator: null }));
       await itemTagRawRepository.save({ tag, item });
 
-      expect(() => repository.createForItem(item.id, tag.id)).rejects.toBeInstanceOf(
+      await expect(() => repository.createForItem(item.id, tag.id)).rejects.toBeInstanceOf(
         ItemTagAlreadyExists,
       );
     });
