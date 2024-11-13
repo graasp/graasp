@@ -40,8 +40,8 @@ describe('ItemTag Repository', () => {
         IllegalArgumentException,
       );
     });
-    it('throw for non-existing item', async () => {
-      await expect(() => repository.getForItem(v4())).rejects.toThrow();
+    it('return empty tags for non-existing item', async () => {
+      expect(await repository.getForItem(v4())).toHaveLength(0);
     });
     it('get empty tags for item', async () => {
       const item = await itemRawRepository.save(FolderItemFactory({ creator: null }));
