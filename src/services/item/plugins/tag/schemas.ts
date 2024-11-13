@@ -8,11 +8,14 @@ import { TagCategory } from '@graasp/sdk';
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
 
-const tagSchema = customType.StrictObject({
-  id: customType.UUID(),
-  name: Type.String(),
-  category: Type.Enum(TagCategory),
-});
+const tagSchema = customType.StrictObject(
+  {
+    id: customType.UUID(),
+    name: Type.String(),
+    category: Type.Enum(TagCategory),
+  },
+  { description: 'Manual tag, representing a theme or subject' },
+);
 
 const tagSchemaRef = registerSchemaAsRef('tag', 'Tag', tagSchema);
 
