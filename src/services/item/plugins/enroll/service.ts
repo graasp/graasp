@@ -11,15 +11,12 @@ import {
 import { ItemLoginService } from '../../../itemLogin/service';
 import { ItemMembershipAlreadyExists } from '../../../itemMembership/plugins/MembershipRequest/error';
 import { Member } from '../../../member/entities/member';
-import { ItemService } from '../../service';
 
 @singleton()
 export class EnrollService {
-  private itemService: ItemService;
   private itemLoginService: ItemLoginService;
 
-  constructor(itemService: ItemService, itemLoginService: ItemLoginService) {
-    this.itemService = itemService;
+  constructor(itemLoginService: ItemLoginService) {
     this.itemLoginService = itemLoginService;
   }
 
