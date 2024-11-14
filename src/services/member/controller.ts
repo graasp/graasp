@@ -24,8 +24,6 @@ import { StorageService } from './plugins/storage/service';
 import {
   deleteCurrent,
   getCurrent,
-  getMany,
-  getManyBy,
   getOne,
   getStorage,
   getStorageFiles,
@@ -93,32 +91,6 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
     { schema: getOne, preHandler: optionalIsAuthenticated },
     async ({ params: { id } }) => {
       return memberService.get(buildRepositories(), id);
-    },
-  );
-
-  // get members
-  // PUBLIC ENDPOINT
-  fastify.get(
-    '/',
-    {
-      schema: getMany,
-      preHandler: optionalIsAuthenticated,
-    },
-    async ({ query: { id: ids } }) => {
-      return memberService.getMany(buildRepositories(), ids);
-    },
-  );
-
-  // get members by
-  // PUBLIC ENDPOINT
-  fastify.get(
-    '/search',
-    {
-      schema: getManyBy,
-      preHandler: optionalIsAuthenticated,
-    },
-    async ({ query: { email: emails } }) => {
-      return memberService.getManyByEmail(buildRepositories(), emails);
     },
   );
 

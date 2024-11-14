@@ -22,6 +22,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
         { name: 'chat', description: 'Endpoints related to chats' },
         { name: 'app-chatbot', description: 'Endpoints related to chatbots in apps' },
         { name: 'current', description: 'Endpoints related to current user' },
+        { name: 'email', description: 'Endpoints related to management of emails' },
         { name: 'etherpad', description: 'Endpoints related to etherpad' },
         { name: 'export', description: 'Endpoints related to exporting and downloading items' },
         { name: 'favorite', description: 'Endpoints related to bookmarked items' },
@@ -29,6 +30,10 @@ export default async function (instance: FastifyInstance): Promise<void> {
         {
           name: 'flag',
           description: 'Endpoints related to flagged items (report items to graasp admins)',
+        },
+        {
+          name: 'guest',
+          description: 'Endpoints related to guests',
         },
         { name: 'h5p', description: 'Endpoints related to H5P items' },
         { name: 'invitation', description: 'Endpoints related to invitations in items' },
@@ -65,7 +70,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
         },
         { name: 'recycled', description: 'Endpoints related to recycled items' },
         { name: 'short-link', description: 'Endpoints related to short links to item' },
-        { name: 'tag', description: 'Endpoints related to visibility tags' },
+        { name: 'visibility', description: 'Endpoints related to item visibility' },
         { name: 'thumbnail', description: 'Endpoints related to item thumbnails' },
       ],
     },
