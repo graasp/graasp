@@ -14,7 +14,7 @@ export class ItemTagService {
     this.itemService = itemService;
   }
 
-  async createForItem(
+  async create(
     actor: Actor,
     repositories: Repositories,
     itemId: UUID,
@@ -28,15 +28,15 @@ export class ItemTagService {
     // create tag if does not exist
     const tag = await tagRepository.addOneIfDoesNotExist(tagInfo);
 
-    return await itemTagRepository.createForItem(itemId, tag.id);
+    return await itemTagRepository.create(itemId, tag.id);
   }
 
-  async getForItem(actor: Actor, repositories: Repositories, itemId: UUID) {
+  async getByItemId(actor: Actor, repositories: Repositories, itemId: UUID) {
     const { itemTagRepository } = repositories;
 
     // Get item and check permission
     await this.itemService.get(actor, repositories, itemId, PermissionLevel.Read);
 
-    return await itemTagRepository.getForItem(itemId);
+    return await itemTagRepository.getByItemId(itemId);
   }
 }

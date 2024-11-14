@@ -22,7 +22,7 @@ export class TagRepository extends MutableRepository<Tag, UpdateTagBody> {
   }
 
   async addOne(tag: { name: string; category: TagCategory }): Promise<Tag> {
-    return await super.insert(tag);
+    return await super.insert({ name: tag.name.trim(), category: tag.category });
   }
 
   async addOneIfDoesNotExist(tagInfo: { name: string; category: TagCategory }): Promise<Tag> {

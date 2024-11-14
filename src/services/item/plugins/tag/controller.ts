@@ -22,7 +22,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       return await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
 
-        return await itemToTagService.getForItem(user?.account, repositories, itemId);
+        return await itemToTagService.getByItemId(user?.account, repositories, itemId);
       });
     },
   );
@@ -37,7 +37,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
 
-        await itemToTagService.createForItem(user?.account, repositories, itemId, body);
+        await itemToTagService.create(user?.account, repositories, itemId, body);
       });
       reply.status(StatusCodes.NO_CONTENT);
     },

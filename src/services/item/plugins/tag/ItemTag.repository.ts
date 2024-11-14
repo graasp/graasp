@@ -14,7 +14,7 @@ export class ItemTagRepository extends AbstractRepository<ItemTag> {
     super(ItemTag, manager);
   }
 
-  async getForItem(itemId: UUID): Promise<Tag[]> {
+  async getByItemId(itemId: UUID): Promise<Tag[]> {
     if (!itemId) {
       throw new IllegalArgumentException(`The given 'itemId' is undefined!`);
     }
@@ -23,7 +23,7 @@ export class ItemTagRepository extends AbstractRepository<ItemTag> {
     return itemTags.map(({ tag }) => tag);
   }
 
-  async createForItem(itemId: UUID, tagId: Tag['id']): Promise<void> {
+  async create(itemId: UUID, tagId: Tag['id']): Promise<void> {
     try {
       await this.repository.insert({ itemId, tagId });
     } catch (e) {

@@ -1,13 +1,12 @@
 import { DataSource } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { TagCategory } from '@graasp/sdk';
+import { TagCategory, TagFactory } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../plugins/datasource';
 import { IllegalArgumentException } from '../../../../repositories/errors';
 import { Tag } from './Tag.entity';
 import { TagRepository } from './Tag.repository';
-import { TagFactory } from './test/fixtures';
 
 describe('Tag Repository', () => {
   let db: DataSource;

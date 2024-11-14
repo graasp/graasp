@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifySchema } from 'fastify';
 
-import { TagCategory } from '@graasp/sdk';
+import { TAG_NAME_MAX_LENGTH, TAG_NAME_PATTERN, TagCategory } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
@@ -14,7 +14,7 @@ const tagSchema = customType.StrictObject(
     name: Type.String(),
     category: Type.Enum(TagCategory),
   },
-  { description: 'Manual tag, representing a theme or subject' },
+  { description: 'User provided tag, representing a theme or subject' },
 );
 
 const tagSchemaRef = registerSchemaAsRef('tag', 'Tag', tagSchema);
@@ -39,12 +39,19 @@ export const createTagForItem = {
   operationId: 'createTagForItem',
   tags: ['tag'],
   summary: 'Create tag for item',
-  description: `Create tag for item. This tag can already exists in the list of tags, or be a new one to be added in the list.`,
+  description: `Create tag for the item. The tag will be associated with the given item. If the tag does not already exist in the common list of tags, it will be added and other users will see it in their suggestions.`,
 
   params: customType.StrictObject({
     itemId: customType.UUID(),
   }),
-  body: Type.Pick(tagSchema, ['name', 'category']),
+  body: customType.StrictObject({
+    name: Type.String({
+      minLength: 1,
+      maxLength: TAG_NAME_MAX_LENGTH,
+      pattern: TAG_NAME_PATTERN.toString().slice(1, -1),
+    }),
+    category: Type.Enum(TagCategory),
+  }),
   response: {
     [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
     '4xx': errorSchemaRef,

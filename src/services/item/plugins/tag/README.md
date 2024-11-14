@@ -1,7 +1,7 @@
 # Tag
 
-Tags are manually entered by the admins, and are linked to one or many items.
-They are saved a separated table to allow returning suggestions.
+Tags are manually entered by the users with admin permission, and are linked to one or many items.
+They are saved as a separate table to allow returning suggestions.
 
 ## Properties
 

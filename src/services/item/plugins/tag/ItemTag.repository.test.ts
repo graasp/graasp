@@ -1,7 +1,7 @@
 import { DataSource } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { FolderItemFactory } from '@graasp/sdk';
+import { FolderItemFactory, TagFactory } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../plugins/datasource';
 import { IllegalArgumentException } from '../../../../repositories/errors';
@@ -10,7 +10,6 @@ import { ItemTag } from './ItemTag.entity';
 import { ItemTagRepository } from './ItemTag.repository';
 import { Tag } from './Tag.entity';
 import { ItemTagAlreadyExists } from './errors';
-import { TagFactory } from './test/fixtures';
 
 describe('ItemTag Repository', () => {
   let db: DataSource;
@@ -36,17 +35,17 @@ describe('ItemTag Repository', () => {
 
   describe('getForItem', () => {
     it('throw for invalid item id', async () => {
-      await expect(() => repository.getForItem(undefined!)).rejects.toBeInstanceOf(
+      await expect(() => repository.getByItemId(undefined!)).rejects.toBeInstanceOf(
         IllegalArgumentException,
       );
     });
     it('return empty tags for non-existing item', async () => {
-      expect(await repository.getForItem(v4())).toHaveLength(0);
+      expect(await repository.getByItemId(v4())).toHaveLength(0);
     });
     it('get empty tags for item', async () => {
       const item = await itemRawRepository.save(FolderItemFactory({ creator: null }));
 
-      const tags = await repository.getForItem(item.id);
+      const tags = await repository.getByItemId(item.id);
       expect(tags).toHaveLength(0);
     });
 
@@ -63,7 +62,7 @@ describe('ItemTag Repository', () => {
       const anotherItem = await itemRawRepository.save(FolderItemFactory({ creator: null }));
       await itemTagRawRepository.save({ item: anotherItem, tag: anotherTag });
 
-      const tags = await repository.getForItem(item.id);
+      const tags = await repository.getByItemId(item.id);
       expect(tags).toEqual([tag1, tag2]);
     });
   });
@@ -71,27 +70,27 @@ describe('ItemTag Repository', () => {
   describe('createForItem', () => {
     it('throw for invalid item id', async () => {
       const tag = await tagRawRepository.save(TagFactory());
-      await expect(() => repository.createForItem(undefined!, tag.id)).rejects.toThrow();
+      await expect(() => repository.create(undefined!, tag.id)).rejects.toThrow();
     });
     it('throw for invalid tag id', async () => {
       const item = await itemRawRepository.save(FolderItemFactory({ creator: null }));
 
-      await expect(() => repository.createForItem(item.id, undefined!)).rejects.toThrow();
+      await expect(() => repository.create(item.id, undefined!)).rejects.toThrow();
     });
     it('throw for non-existing item', async () => {
       const tag = await tagRawRepository.save(TagFactory());
-      await expect(() => repository.createForItem(v4(), tag.id)).rejects.toThrow();
+      await expect(() => repository.create(v4(), tag.id)).rejects.toThrow();
     });
     it('throw for non-existing tag', async () => {
       const item = await itemRawRepository.save(FolderItemFactory({ creator: null }));
 
-      await expect(() => repository.createForItem(item.id, v4())).rejects.toThrow();
+      await expect(() => repository.create(item.id, v4())).rejects.toThrow();
     });
     it('create tag for item', async () => {
       const tag = await tagRawRepository.save(TagFactory());
       const item = await itemRawRepository.save(FolderItemFactory({ creator: null }));
 
-      await repository.createForItem(item.id, tag.id);
+      await repository.create(item.id, tag.id);
 
       const result = await itemTagRawRepository.findOneBy({ itemId: item.id, tagId: tag.id });
       expect(result).toBeDefined();
@@ -101,7 +100,7 @@ describe('ItemTag Repository', () => {
       const item = await itemRawRepository.save(FolderItemFactory({ creator: null }));
       await itemTagRawRepository.save({ tag, item });
 
-      await expect(() => repository.createForItem(item.id, tag.id)).rejects.toBeInstanceOf(
+      await expect(() => repository.create(item.id, tag.id)).rejects.toBeInstanceOf(
         ItemTagAlreadyExists,
       );
     });
