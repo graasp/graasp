@@ -2096,7 +2096,7 @@ __metadata:
 
 "@graasp/sdk@github:graasp/graasp-sdk#tag-constraints":
   version: 5.2.1
-  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=0402bcb714e4ae5b9a55bb3a11e9fffc610ee9a1"
+  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=6959c64354cde384e0fcb403b837ee91de708d1b"
   dependencies:
     "@faker-js/faker": "npm:9.2.0"
     filesize: "npm:10.1.6"
@@ -2104,7 +2104,7 @@ __metadata:
   peerDependencies:
     date-fns: ^3 || ^4.0.0
     uuid: ^9 || ^10 || ^11.0.0
-  checksum: 10/dab1e6e818c2921de202c25697b5166052c51ee905668af03e502488b8a1ed0a49b0fea2decd8fe2104063caf6695dcd6fb110a3dd93dbbfb2e8e4456650b87d
+  checksum: 10/5cdc13e9a20692fb86a5b92ab55b1c42f315e98661d3085472481a1309a0525a9a1ff9f58e09fbb98d187b0374b0df7fbb77e9fda5083474bcac5e8d01e79838
   languageName: node
   linkType: hard
 

@@ -65,6 +65,13 @@ describe('Tag Repository', () => {
       expect(result!.name).toEqual(tag.name);
       expect(result!.category).toEqual(tag.category);
     });
+    it('cannot insert tag with sanitized name', async () => {
+      const tag = TagFactory({ name: 'my name', category: TagCategory.Discipline });
+      await tagRawRepository.save(tag);
+
+      const tagToAdd = TagFactory({ name: 'my     name', category: TagCategory.Discipline });
+      await expect(() => repository.addOne(tagToAdd)).rejects.toThrow();
+    });
   });
 
   describe('addOneIfDoesNotExist', () => {
@@ -86,6 +93,16 @@ describe('Tag Repository', () => {
 
       const result = await repository.addOneIfDoesNotExist(tagInfo);
 
+      expect(result.id).toEqual(tag.id);
+      expect(result.name).toEqual(tag.name);
+      expect(result.category).toEqual(tag.category);
+    });
+    it('return tag with sanitized name', async () => {
+      const tag = TagFactory({ name: 'my name', category: TagCategory.Discipline });
+      await tagRawRepository.save(tag);
+      const tagNotSanitized = TagFactory({ name: 'my     name', category: TagCategory.Discipline });
+
+      const result = await repository.addOneIfDoesNotExist(tagNotSanitized);
       expect(result.id).toEqual(tag.id);
       expect(result.name).toEqual(tag.name);
       expect(result.category).toEqual(tag.category);

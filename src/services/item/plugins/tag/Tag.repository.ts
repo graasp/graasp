@@ -15,6 +15,11 @@ export class TagRepository extends MutableRepository<Tag, UpdateTagBody> {
     super(DEFAULT_PRIMARY_KEY, Tag, manager);
   }
 
+  private sanitizeName(name: string) {
+    // remove useless spacing
+    return name.trim().replace(/ +(?= )/g, '');
+  }
+
   async get(tagId: Tag['id']): Promise<Tag | null> {
     this.throwsIfPKIsInvalid(tagId);
 
@@ -22,11 +27,14 @@ export class TagRepository extends MutableRepository<Tag, UpdateTagBody> {
   }
 
   async addOne(tag: { name: string; category: TagCategory }): Promise<Tag> {
-    return await super.insert({ name: tag.name.trim(), category: tag.category });
+    return await super.insert({ name: this.sanitizeName(tag.name), category: tag.category });
   }
 
   async addOneIfDoesNotExist(tagInfo: { name: string; category: TagCategory }): Promise<Tag> {
-    const tag = await this.repository.findOneBy(tagInfo);
+    const tag = await this.repository.findOneBy({
+      name: this.sanitizeName(tagInfo.name),
+      category: tagInfo.category,
+    });
 
     if (tag) {
       return tag;
