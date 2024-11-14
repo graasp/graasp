@@ -206,7 +206,7 @@ describe('Action Plugin Tests', () => {
 
       it('Throw for missing type', async () => {
         const body = {
-          extra: { foo: faker.word.sample() },
+          extra: { prop: faker.word.sample() },
         };
         const response = await app.inject({
           method: HttpMethod.Post,
