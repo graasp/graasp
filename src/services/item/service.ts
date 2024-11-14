@@ -206,7 +206,7 @@ export class ItemService {
    * @param permission
    * @returns
    */
-  async _get(
+  private async _get(
     actor: Actor,
     repositories: Repositories,
     id: string,
@@ -286,7 +286,7 @@ export class ItemService {
    * @param ids
    * @returns result of items given ids
    */
-  async _getMany(
+  private async _getMany(
     actor: Actor,
     repositories: Repositories,
     ids: string[],
@@ -383,7 +383,7 @@ export class ItemService {
     return filterOutItems(member, repositories, items);
   }
 
-  async _getChildren(
+  private async _getChildren(
     actor: Actor,
     repositories: Repositories,
     itemId: string,
