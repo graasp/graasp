@@ -16,7 +16,6 @@ import {
   ItemType,
   MAX_NUMBER_OF_CHILDREN,
   MAX_TARGETS_FOR_MODIFY_REQUEST,
-  MAX_TREE_LEVELS,
   PermissionLevel,
   buildPathFromIds,
 } from '@graasp/sdk';
@@ -41,6 +40,7 @@ import { ActionItemService } from '../plugins/action/service';
 import { ItemGeolocation } from '../plugins/geolocation/ItemGeolocation';
 import { ItemService } from '../service';
 import { ItemTestUtils, expectItem } from './fixtures/items';
+import { saveUntilMaxDescendants } from './utils';
 
 const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
 const testUtils = new ItemTestUtils();
@@ -78,21 +78,6 @@ jest.mock('@aws-sdk/lib-storage', () => {
     }),
   };
 });
-
-const saveUntilMaxDescendants = async (parent: Item, actor: Member) => {
-  // save maximum depth
-  // TODO: DYNAMIC
-  let currentParent = parent;
-  for (let i = 0; i < MAX_TREE_LEVELS - 1; i++) {
-    const newCurrentParent = await testUtils.saveItem({
-      actor,
-      parentItem: currentParent,
-    });
-    currentParent = newCurrentParent;
-  }
-  // return last child
-  return currentParent;
-};
 
 const saveNbOfItems = async ({
   nb,
