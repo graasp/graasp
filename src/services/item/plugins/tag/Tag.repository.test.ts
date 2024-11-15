@@ -1,0 +1,111 @@
+import { DataSource } from 'typeorm';
+import { v4 } from 'uuid';
+
+import { TagCategory, TagFactory } from '@graasp/sdk';
+
+import { AppDataSource } from '../../../../plugins/datasource';
+import { IllegalArgumentException } from '../../../../repositories/errors';
+import { Tag } from './Tag.entity';
+import { TagRepository } from './Tag.repository';
+
+describe('Tag Repository', () => {
+  let db: DataSource;
+
+  let repository: TagRepository;
+  let tagRawRepository;
+
+  beforeAll(async () => {
+    db = await AppDataSource.initialize();
+    await db.runMigrations();
+    repository = new TagRepository(db.manager);
+    tagRawRepository = db.getRepository(Tag);
+  });
+
+  afterAll(async () => {
+    await db.dropDatabase();
+    await db.destroy();
+  });
+
+  describe('get', () => {
+    it('throw for invalid id', async () => {
+      await expect(() => repository.get(undefined!)).rejects.toBeInstanceOf(
+        IllegalArgumentException,
+      );
+    });
+    it('Return null for non-existing tag', async () => {
+      expect(await repository.get(v4())).toBeNull();
+    });
+    it('get tag', async () => {
+      // noise
+      await tagRawRepository.save(TagFactory({ category: TagCategory.Discipline }));
+
+      const tag = await tagRawRepository.save(TagFactory({ category: TagCategory.Discipline }));
+
+      // noise
+      await tagRawRepository.save(TagFactory({ category: TagCategory.ResourceType }));
+
+      const result = await repository.get(tag.id);
+      expect(result!.id).toEqual(tag.id);
+      expect(result!.name).toEqual(tag.name);
+      expect(result!.category).toEqual(tag.category);
+    });
+  });
+
+  describe('addOne', () => {
+    it('throw for invalid category', async () => {
+      await expect(() =>
+        repository.addOneIfDoesNotExist(TagFactory({ category: 'category' as never })),
+      ).rejects.toThrow();
+    });
+    it('insert tag', async () => {
+      const tag = TagFactory();
+      await repository.addOne(tag);
+
+      const result = await tagRawRepository.findOneBy(tag);
+      expect(result!.name).toEqual(tag.name);
+      expect(result!.category).toEqual(tag.category);
+    });
+    it('cannot insert tag with sanitized name', async () => {
+      const tag = TagFactory({ name: 'my name', category: TagCategory.Discipline });
+      await tagRawRepository.save(tag);
+
+      const tagToAdd = TagFactory({ name: 'my     name', category: TagCategory.Discipline });
+      await expect(() => repository.addOne(tagToAdd)).rejects.toThrow();
+    });
+  });
+
+  describe('addOneIfDoesNotExist', () => {
+    it('throw for invalid category', async () => {
+      await expect(() =>
+        repository.addOneIfDoesNotExist(TagFactory({ category: 'category' as never })),
+      ).rejects.toThrow();
+    });
+    it('insert tag and return', async () => {
+      const tag = TagFactory();
+      const result = await repository.addOneIfDoesNotExist(tag);
+
+      expect(result.name).toEqual(tag.name);
+      expect(result.category).toEqual(tag.category);
+    });
+    it('return existing tag', async () => {
+      const tagInfo = TagFactory();
+      const tag = await tagRawRepository.save(tagInfo);
+
+      const result = await repository.addOneIfDoesNotExist(tagInfo);
+
+      expect(result.id).toEqual(tag.id);
+      expect(result.name).toEqual(tag.name);
+      expect(result.category).toEqual(tag.category);
+    });
+    it('return tag with sanitized name', async () => {
+      const tag = TagFactory({ name: 'my name', category: TagCategory.Discipline });
+      await tagRawRepository.save(tag);
+      const tagNotSanitized = TagFactory({ name: 'my     name', category: TagCategory.Discipline });
+
+      const result = await repository.addOneIfDoesNotExist(tagNotSanitized);
+      expect(result.id).toEqual(tag.id);
+      expect(result.name).toEqual(tag.name);
+      expect(result.category).toEqual(tag.category);
+    });
+  });
+});
