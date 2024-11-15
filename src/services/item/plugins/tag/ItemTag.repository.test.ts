@@ -105,4 +105,54 @@ describe('ItemTag Repository', () => {
       );
     });
   });
+  describe('delete', () => {
+    it('throw for invalid item id', async () => {
+      const tag = await tagRawRepository.save(TagFactory());
+      await expect(() => repository.delete(undefined!, tag.id)).rejects.toThrow();
+    });
+    it('throw for invalid tag id', async () => {
+      const item = await itemRawRepository.save(FolderItemFactory({ creator: null }));
+
+      await expect(() => repository.delete(item.id, undefined!)).rejects.toThrow();
+    });
+    it('does not throw for non-existing item', async () => {
+      const tag = await tagRawRepository.save(TagFactory());
+      expect(await repository.delete(v4(), tag.id)).toBeUndefined();
+    });
+    it('does not throw for non-existing tag', async () => {
+      const item = await itemRawRepository.save(FolderItemFactory({ creator: null }));
+
+      expect(await repository.delete(item.id, v4())).toBeUndefined();
+    });
+    it('delete tag for item', async () => {
+      const tag = await tagRawRepository.save(TagFactory());
+      const item = await itemRawRepository.save(FolderItemFactory({ creator: null }));
+      await itemTagRawRepository.save({ tag, item });
+
+      // noise
+      const tag1 = await tagRawRepository.save(TagFactory());
+      await itemTagRawRepository.save({ tag: tag1, item });
+      const preResult = await itemTagRawRepository.findOneBy({ itemId: item.id, tagId: tag.id });
+      expect(preResult).not.toBeNull();
+
+      await repository.delete(item.id, tag.id);
+
+      const result = await itemTagRawRepository.findOneBy({ itemId: item.id, tagId: tag.id });
+      expect(result).toBeNull();
+
+      // noise still exists
+      const result1 = await itemTagRawRepository.findOne({
+        where: { itemId: item.id, tagId: tag1.id },
+        relations: { tag: true },
+      });
+      expect(result1.tag.id).toEqual(tag1.id);
+    });
+    it('does not throw if tag is not associated with item', async () => {
+      const tag = await tagRawRepository.save(TagFactory());
+      const item = await itemRawRepository.save(FolderItemFactory({ creator: null }));
+      await itemTagRawRepository.save({ tag, item });
+
+      expect(await repository.delete(item.id, tag.id)).toBeUndefined();
+    });
+  });
 });

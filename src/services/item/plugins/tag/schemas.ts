@@ -58,3 +58,20 @@ export const createTagForItem = {
     '5xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
+
+export const deleteTagForItem = {
+  operationId: 'deleteTagForItem',
+  tags: ['tag'],
+  summary: 'Delete tag for item',
+  description: `Delete tag for item.`,
+
+  params: customType.StrictObject({
+    itemId: customType.UUID(),
+    tagId: customType.UUID(),
+  }),
+  response: {
+    [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
+    '4xx': errorSchemaRef,
+    '5xx': errorSchemaRef,
+  },
+} as const satisfies FastifySchema;

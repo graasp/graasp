@@ -7,13 +7,13 @@ import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { createTagForItem, getTagsForItem } from './schemas';
+import { createTagForItem, deleteTagForItem, getTagsForItem } from './schemas';
 import { ItemTagService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db } = fastify;
 
-  const itemToTagService = resolveDependency(ItemTagService);
+  const itemTagService = resolveDependency(ItemTagService);
 
   fastify.get(
     '/:itemId/tags',
@@ -22,7 +22,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       return await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
 
-        return await itemToTagService.getByItemId(user?.account, repositories, itemId);
+        return await itemTagService.getByItemId(user?.account, repositories, itemId);
       });
     },
   );
@@ -37,7 +37,23 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
 
-        await itemToTagService.create(user?.account, repositories, itemId, body);
+        await itemTagService.create(user?.account, repositories, itemId, body);
+      });
+      reply.status(StatusCodes.NO_CONTENT);
+    },
+  );
+
+  fastify.delete(
+    '/:itemId/tags/:tagId',
+    {
+      schema: deleteTagForItem,
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
+    },
+    async ({ user, params: { itemId, tagId } }, reply) => {
+      await db.transaction(async (manager) => {
+        const repositories = buildRepositories(manager);
+
+        await itemTagService.delete(user?.account, repositories, itemId, tagId);
       });
       reply.status(StatusCodes.NO_CONTENT);
     },

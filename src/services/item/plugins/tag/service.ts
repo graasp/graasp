@@ -39,4 +39,13 @@ export class ItemTagService {
 
     return await itemTagRepository.getByItemId(itemId);
   }
+
+  async delete(actor: Actor, repositories: Repositories, itemId: UUID, tagId: UUID) {
+    const { itemTagRepository } = repositories;
+
+    // Get item and check permission
+    await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
+
+    return await itemTagRepository.delete(itemId, tagId);
+  }
 }
