@@ -2094,9 +2094,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@github:graasp/graasp-sdk#tag-constraints":
-  version: 5.2.1
-  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=6959c64354cde384e0fcb403b837ee91de708d1b"
+"@graasp/sdk@npm:5.3.0":
+  version: 5.3.0
+  resolution: "@graasp/sdk@npm:5.3.0"
   dependencies:
     "@faker-js/faker": "npm:9.2.0"
     filesize: "npm:10.1.6"
@@ -2104,16 +2104,16 @@ __metadata:
   peerDependencies:
     date-fns: ^3 || ^4.0.0
     uuid: ^9 || ^10 || ^11.0.0
-  checksum: 10/5cdc13e9a20692fb86a5b92ab55b1c42f315e98661d3085472481a1309a0525a9a1ff9f58e09fbb98d187b0374b0df7fbb77e9fda5083474bcac5e8d01e79838
+  checksum: 10/abd215fb0ae4a80ff8ae1237cbcb3f4b14f8fc912258a64f0b0971d606dbd5723937c940b94c2f722ee254f90eb1d9edf911258f6bea0e2e0ee6af32934e3e5a
   languageName: node
   linkType: hard
 
-"@graasp/translations@github:graasp/graasp-translations#item-tag-error":
-  version: 1.41.0
-  resolution: "@graasp/translations@https://github.com/graasp/graasp-translations.git#commit=cb16aac6c21c862a1c5bdee8d56412e28518f8b8"
+"@graasp/translations@npm:1.42.0":
+  version: 1.42.0
+  resolution: "@graasp/translations@npm:1.42.0"
   peerDependencies:
     i18next: ^23.8.1
-  checksum: 10/6263ab900d4bf8b32b067833deccf8678d5fd3ae8cf2cfcaef598adf91ca17ac1c2571ccf74039129a06d76c28a5f8eae2b6f9f6774cefea8a8cc81ec1c4a432
+  checksum: 10/5f09f7facfdd6c6fa434285493a2a3736e305064223df45f9c3203533b429b1c65e167cf2fac054e4fb53ed3aabcd70e31309addd58952edaeae61cbc29e8020
   languageName: node
   linkType: hard
 
@@ -7454,8 +7454,8 @@ __metadata:
     "@fastify/type-provider-typebox": "npm:4.1.0"
     "@fastify/websocket": "npm:7.2.0"
     "@graasp/etherpad-api": "npm:2.1.1"
-    "@graasp/sdk": "github:graasp/graasp-sdk#tag-constraints"
-    "@graasp/translations": "github:graasp/graasp-translations#item-tag-error"
+    "@graasp/sdk": "npm:5.3.0"
+    "@graasp/translations": "npm:1.42.0"
     "@jest/globals": "npm:29.7.0"
     "@quobix/vacuum": "npm:0.13.6"
     "@rapideditor/country-coder": "npm:5.2.2"
