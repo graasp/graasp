@@ -161,7 +161,11 @@ export class ItemService {
     }
 
     this.log.debug(`create item ${item.name}`);
-    const createdItem = await itemRepository.addOne({ item, creator: member, parentItem });
+    const createdItem = await itemRepository.addOne({
+      item,
+      creator: member,
+      parentItem,
+    });
     this.log.debug(`item ${item.name} is created: ${createdItem}`);
 
     // create membership if inherited is less than admin

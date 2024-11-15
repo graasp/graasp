@@ -1,8 +1,6 @@
 import { fastifyMultipart } from '@fastify/multipart';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { ItemType } from '@graasp/sdk';
-
 import { resolveDependency } from '../../../../di/utils';
 import { FastifyInstanceTypebox } from '../../../../plugins/typebox';
 import { asDefined } from '../../../../utils/assertions';
@@ -11,7 +9,6 @@ import { isAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
 import { assertIsMember } from '../../../member/entities/member';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { Item } from '../../entities/Item';
 import { getPostItemPayloadFromFormData } from '../../utils';
 import { ActionItemService } from '../action/service';
 import { createFolder, createFolderWithThumbnail, updateFolder } from './schemas';
@@ -42,7 +39,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         const item = await folderItemService.post(member, repositories, {
           // Because of an incoherence between the service and the schema, we need to cast the data to the correct type
           // This need to be fixed in issue #1288 https://github.com/graasp/graasp/issues/1288
-          item: { ...data, type: ItemType.FOLDER } as Partial<Item> & Pick<Item, 'name' | 'type'>,
+          item: data,
           previousItemId,
           parentId,
           geolocation: data.geolocation,
@@ -74,7 +71,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       },
     });
     fastify.post(
-      'folders-with-thumbnail',
+      '/folders-with-thumbnail',
       {
         schema: createFolderWithThumbnail,
         preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
