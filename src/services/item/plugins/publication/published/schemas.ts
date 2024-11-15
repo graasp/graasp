@@ -35,7 +35,7 @@ export const getRecentCollections = {
     limit: Type.Number({
       maximum: GET_MOST_RECENT_ITEMS_MAXIMUM,
       minimum: 1,
-      default: GET_MOST_RECENT_ITEMS_MAXIMUM,
+      default: 24,
     }),
   }),
 
@@ -55,7 +55,7 @@ export const getMostLikedItems = {
     limit: Type.Number({
       maximum: GET_MOST_LIKED_ITEMS_MAXIMUM,
       minimum: 1,
-      default: GET_MOST_LIKED_ITEMS_MAXIMUM,
+      default: 24,
     }),
   }),
   response: {
