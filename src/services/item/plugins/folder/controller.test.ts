@@ -14,10 +14,7 @@ import {
   HttpMethod,
   ItemType,
   MAX_NUMBER_OF_CHILDREN,
-  MAX_TARGETS_FOR_MODIFY_REQUEST,
-  MAX_TREE_LEVELS,
   PermissionLevel,
-  buildPathFromIds,
 } from '@graasp/sdk';
 
 import build, {
@@ -30,7 +27,6 @@ import { AppDataSource } from '../../../../plugins/datasource';
 import {
   HierarchyTooDeep,
   ItemNotFolder,
-  ItemNotFound,
   MemberCannotAccess,
   MemberCannotWriteItem,
   TooManyChildren,
@@ -38,11 +34,11 @@ import {
 import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
 import { saveMember } from '../../../member/test/fixtures/members';
 import { Item } from '../../entities/Item';
-import { ItemService } from '../../service';
 import { ItemTestUtils, expectItem } from '../../test/fixtures/items';
 import { saveUntilMaxDescendants } from '../../test/utils';
 import { ActionItemService } from '../action/service';
 import { ItemGeolocation } from '../geolocation/ItemGeolocation';
+import { FolderItemService } from './service';
 
 const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
 const testUtils = new ItemTestUtils();
@@ -99,12 +95,12 @@ describe('Folder routes tests', () => {
     unmockAuthenticate();
     actor = null;
   });
-  describe('POST /items', () => {
+  describe('POST /items/folders', () => {
     it('Throws if signed out', async () => {
       const payload = FolderItemFactory();
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: '/items',
+        url: '/items/folders',
         payload,
       });
 
@@ -117,10 +113,10 @@ describe('Folder routes tests', () => {
         actor = await saveMember();
         mockAuthenticate(actor);
 
-        const itemService = resolveDependency(ItemService);
+        const folderService = resolveDependency(FolderItemService);
         const actionItemService = resolveDependency(ActionItemService);
 
-        const itemServiceRescaleOrderForParent = jest.spyOn(itemService, 'rescaleOrderForParent');
+        const itemServiceRescaleOrderForParent = jest.spyOn(folderService, 'rescaleOrderForParent');
         const actionItemServicePostPostAction = jest.spyOn(actionItemService, 'postPostAction');
 
         // The API's is still working with the database after responding to an item post request,
@@ -145,6 +141,7 @@ describe('Folder routes tests', () => {
 
         // check response value
         const newItem = response.json();
+        console.log(newItem, payload);
         expectItem(newItem, payload);
         await waitForPostCreation();
 
@@ -453,24 +450,12 @@ describe('Folder routes tests', () => {
         expect(response1.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
 
-      it('Bad request if type is invalid', async () => {
-        // by default the item creator use an invalid item type
-        const newItem = FolderItemFactory();
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: '/items/folders',
-          payload: { ...newItem, type: 'invalid-type' },
-        });
-        expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
-        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-      });
-
       it('Bad request if parentId id is invalid', async () => {
         const payload = FolderItemFactory();
         const parentId = 'invalid-id';
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `/items?parentId=${parentId}`,
+          url: `/items/folders?parentId=${parentId}`,
           payload,
         });
 
@@ -580,7 +565,7 @@ describe('Folder routes tests', () => {
     });
   });
 
-  describe('POST /items/with-thumbnail', () => {
+  describe('POST /items/folders-with-thumbnail', () => {
     beforeEach(async () => {
       actor = await saveMember();
       mockAuthenticate(actor);
@@ -619,7 +604,7 @@ describe('Folder routes tests', () => {
     });
   });
 
-  describe('PATCH /items/:id', () => {
+  describe('PATCH /items/folders/:id', () => {
     it('Throws if signed out', async () => {
       const member = await saveMember();
       const { item } = await testUtils.saveItemAndMembership({ member });
@@ -642,11 +627,9 @@ describe('Folder routes tests', () => {
       it('Update successfully', async () => {
         const { item } = await testUtils.saveItemAndMembership({
           item: {
-            type: ItemType.DOCUMENT,
+            type: ItemType.FOLDER,
             extra: {
-              [ItemType.DOCUMENT]: {
-                content: 'content',
-              },
+              [ItemType.FOLDER]: {},
             },
           },
           member: actor,
@@ -654,9 +637,7 @@ describe('Folder routes tests', () => {
         const payload = {
           name: 'new name',
           extra: {
-            [ItemType.DOCUMENT]: {
-              content: 'new content',
-            },
+            [ItemType.FOLDER]: {},
           },
           settings: {
             hasThumbnail: true,
@@ -675,12 +656,8 @@ describe('Folder routes tests', () => {
         expectItem(response.json(), {
           ...item,
           ...payload,
-          // BUG: folder extra should not contain extra
           extra: {
-            document: {
-              ...item.extra[item.type],
-              ...payload.extra[item.type],
-            },
+            folder: {},
           },
         });
       });
@@ -738,56 +715,6 @@ describe('Folder routes tests', () => {
         expect(newItem.settings.hasThumbnail).toBeFalsy();
       });
 
-      it('Update successfully link settings', async () => {
-        const { item } = await testUtils.saveItemAndMembership({
-          member: actor,
-        });
-        const payload = {
-          settings: {
-            showLinkButton: false,
-            showLinkIframe: true,
-          },
-        };
-
-        const response = await app.inject({
-          method: HttpMethod.Patch,
-          url: `/items/folders/${item.id}`,
-          payload,
-        });
-
-        expect(response.statusCode).toBe(StatusCodes.OK);
-
-        const newItem = response.json();
-
-        expectItem(newItem, {
-          ...item,
-          ...payload,
-        });
-        expect(newItem.settings.showLinkButton).toBe(false);
-        expect(newItem.settings.showLinkIframe).toBe(true);
-        expect(newItem.settings.hasThumbnail).toBeFalsy();
-      });
-
-      it('Update successfully with empty display name', async () => {
-        const { item } = await testUtils.saveItemAndMembership({
-          member: actor,
-          item: { displayName: 'Not empty' },
-        });
-
-        const payload = { displayName: '' };
-
-        const response = await app.inject({
-          method: HttpMethod.Patch,
-          url: `/items/folders/${item.id}`,
-          payload,
-        });
-
-        expect(response.statusCode).toBe(StatusCodes.OK);
-
-        const newItem = response.json();
-        expect(newItem.displayName).toEqual('');
-      });
-
       it('Filter out bad setting when updating', async () => {
         const BAD_SETTING = { INVALID: 'Not a valid setting' };
         const VALID_SETTING = { descriptionPlacement: DescriptionPlacement.ABOVE };
@@ -836,35 +763,7 @@ describe('Folder routes tests', () => {
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
-      it('Bad Request if extra is invalid', async () => {
-        const payload = {
-          name: 'new name',
-          extra: { key: 'false' },
-        };
-        const response = await app.inject({
-          method: HttpMethod.Patch,
-          url: `/items/folders/${uuidv4()}`,
-          payload,
-        });
 
-        expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
-        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-      });
-
-      it('Cannot update not found item given id', async () => {
-        const payload = {
-          name: 'new name',
-        };
-        const id = uuidv4();
-        const response = await app.inject({
-          method: HttpMethod.Patch,
-          url: `/items/folders/${id}`,
-          payload,
-        });
-
-        expect(response.json()).toEqual(new ItemNotFound(id));
-        expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
-      });
       it('Cannot update item if does not have membership', async () => {
         const payload = {
           name: 'new name',
