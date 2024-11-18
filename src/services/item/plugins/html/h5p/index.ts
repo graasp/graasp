@@ -107,6 +107,9 @@ const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
           await validatePermission(repositories, PermissionLevel.Write, member, item);
         }
 
+        // WARNING: cannot destructure { file } = request, which triggers an undefined TypeError internally
+        // (maybe getter performs side-effect on promise handler?)
+        // so use request.file notation instead
         const h5pFile = await request.file();
 
         if (!h5pFile) {

@@ -137,7 +137,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
           const repositories = buildRepositories(manager);
 
           try {
-            // if the file is an H5P file, we treat it apporpriately
+            // if the file is an H5P file, we treat it appropriately
             // othwerwise, we save it as a generic file
             let item: Item;
             if (getFileExtension(filename) === H5P_FILE_EXTENSION) {
