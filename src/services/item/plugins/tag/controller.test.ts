@@ -1,8 +1,9 @@
 import { StatusCodes } from 'http-status-codes';
+import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, TagCategory } from '@graasp/sdk';
+import { HttpMethod, PermissionLevel, TagCategory } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -20,10 +21,12 @@ const testUtils = new ItemTestUtils();
 const tagRawRepository = AppDataSource.getRepository(Tag);
 const itemTagRawRepository = AppDataSource.getRepository(ItemTag);
 
-const createTagsForItem = async (item: Item, tags: Tag[]) => {
+const createTagsForItem = async (item: Item, tags: Tag[]): Promise<ItemTag[]> => {
+  const itemTags: ItemTag[] = [];
   for (const t of tags) {
-    await itemTagRawRepository.save({ item, tag: t });
+    itemTags.push(await itemTagRawRepository.save({ item, tag: t }));
   }
+  return itemTags;
 };
 
 describe('Tag Endpoints', () => {
@@ -141,6 +144,7 @@ describe('Tag Endpoints', () => {
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/items/invalid/tags`,
+        payload: { name: 'name', category: TagCategory.Discipline },
       });
       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
     });
@@ -201,6 +205,69 @@ describe('Tag Endpoints', () => {
           method: HttpMethod.Post,
           url: `/items/${item.id}/tags`,
           payload: { name: 'name', category: TagCategory.Discipline },
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
+      });
+    });
+  });
+  describe('DELETE /:itemId/tags/:tagId', () => {
+    describe('Input schema validation', () => {
+      it('Throw for invalid item id', async () => {
+        const response = await app.inject({
+          method: HttpMethod.Delete,
+          url: `/items/invalid/tags/${v4()}`,
+        });
+        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      });
+      it('Throw for invalid tag id', async () => {
+        const response = await app.inject({
+          method: HttpMethod.Delete,
+          url: `/items/${v4()}/tags/invalid}`,
+        });
+        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      });
+    });
+
+    describe('Signed out', () => {
+      it('Cannot delete tag', async () => {
+        const response = await app.inject({
+          method: HttpMethod.Delete,
+          url: `/items/${v4()}/tags/${v4()}`,
+        });
+        expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+      });
+    });
+
+    describe('Signed In', () => {
+      beforeEach(async () => {
+        actor = await saveMember();
+        mockAuthenticate(actor);
+      });
+
+      it('Delete tag for private item', async () => {
+        const member = await saveMember();
+        const { item } = await testUtils.saveItemAndMembership({ member: actor, creator: member });
+        const itemTags = await createTagsForItem(item, tags);
+        const response = await app.inject({
+          method: HttpMethod.Delete,
+          url: `/items/${item.id}/tags/${itemTags[0].tagId}`,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
+      });
+
+      it('Cannot delete tag for item with write access', async () => {
+        const member = await saveMember();
+        const { item } = await testUtils.saveItemAndMembership({
+          member: actor,
+          creator: member,
+          permission: PermissionLevel.Write,
+        });
+        const itemTags = await createTagsForItem(item, tags);
+        const response = await app.inject({
+          method: HttpMethod.Delete,
+          url: `/items/${item.id}/tags/${itemTags[0].tagId}`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
