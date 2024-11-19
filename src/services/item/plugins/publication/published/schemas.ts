@@ -29,7 +29,7 @@ export const getRecentCollections = {
   operationId: 'getRecentCollections',
   tags: ['collection'],
   summary: 'Get most recent published items',
-  description: 'Get most recent published items (collections)',
+  description: 'Get most recently published items (collections)',
 
   querystring: customType.StrictObject({
     limit: Type.Number({
@@ -84,7 +84,7 @@ export const publishItem = {
   operationId: 'publishItem',
   tags: ['collection'],
   summary: 'Publish an item',
-  description: 'Publish an item, that will become listed in the Library.',
+  description: 'Publish an item. It will become listed in the Library.',
 
   params: customType.StrictObject({
     itemId: customType.UUID(),
@@ -99,7 +99,7 @@ export const unpublishItem = {
   operationId: 'unpublishItem',
   tags: ['collection'],
   summary: 'Unpublish an item',
-  description: 'Unpublish an item, that will not be available anymore on the Library.',
+  description: 'Unpublish an item. It will stop being available in the Library.',
 
   params: customType.StrictObject({
     itemId: customType.UUID(),
