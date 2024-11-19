@@ -3,11 +3,11 @@ import fs from 'fs';
 import { lstat, mkdir, readdir } from 'fs/promises';
 import mime from 'mime';
 import path from 'path';
+import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
 import { dir } from 'tmp-promise';
 import { v4 } from 'uuid';
 
-import { MultipartFile } from '@fastify/multipart';
 import { FastifyBaseLogger } from 'fastify';
 
 import { FileItemType } from '@graasp/sdk';
@@ -18,6 +18,7 @@ import { Repositories } from '../../../../utils/repositories';
 import FileService, { FileServiceConfig } from '../../../file/service';
 import { fileRepositoryFactory } from '../../../file/utils/factory';
 import { Member } from '../../../member/entities/member';
+import { StorageService } from '../../../member/plugins/storage/service';
 import { Item } from '../../entities/Item';
 import { GraaspHtmlError, HtmlImportError } from './errors';
 import { DEFAULT_MIME_TYPE } from './h5p/constants';
@@ -28,6 +29,7 @@ import { HtmlValidator } from './validator';
  */
 export abstract class HtmlService {
   public readonly fileService: FileService;
+  protected readonly storageService: StorageService;
   protected readonly validator: HtmlValidator;
   protected readonly mimetype: string;
   protected readonly extension: string;
@@ -44,6 +46,7 @@ export abstract class HtmlService {
       config: FileServiceConfig;
       type: FileItemType;
     },
+    storageService: StorageService,
     pathPrefix: string,
     mimetype: string,
     extension: string,
@@ -56,6 +59,7 @@ export abstract class HtmlService {
     this.logger = log;
     this.extension = extension;
     this.fileService = new FileService(fileRepositoryFactory(type, config), this.logger);
+    this.storageService = storageService;
     this.mimetype = mimetype;
     this.pathPrefix = pathPrefix;
     this.validator = validator;
@@ -155,9 +159,11 @@ export abstract class HtmlService {
   async createItem(
     actor: Member,
     repositories: Repositories,
-    htmlFile: MultipartFile,
+    filename: string,
+    stream: Readable,
     onComplete: (
       actor: Member,
+      repositories: Repositories,
       baseName: string,
       contentId: string,
       parentId?: Item['id'],
@@ -168,13 +174,16 @@ export abstract class HtmlService {
     previousItemId?: Item['id'],
     log?: FastifyBaseLogger,
   ): Promise<Item> {
+    // check member storage limit
+    await this.storageService.checkRemainingStorage(actor, repositories);
+
     const contentId = v4();
     const tmpDir = await dir({ tmpdir: this.tempDir, unsafeCleanup: true });
     const targetFolder = path.join(tmpDir.path, contentId);
     const remoteRootPath = this.buildRootPath(this.pathPrefix, contentId);
 
     await mkdir(targetFolder, { recursive: true });
-    const baseName = path.basename(htmlFile.filename, `.${this.extension}`);
+    const baseName = path.basename(filename, `.${this.extension}`);
 
     // try-catch block for local storage cleanup
     try {
@@ -182,7 +191,7 @@ export abstract class HtmlService {
       const contentFolder = this.buildContentPath(targetFolder);
 
       // save html file
-      await pipeline(htmlFile.file, fs.createWriteStream(savePath));
+      await pipeline(stream, fs.createWriteStream(savePath));
       await extract(savePath, { dir: contentFolder });
 
       // validate package before saving it
@@ -192,7 +201,15 @@ export abstract class HtmlService {
       try {
         // upload whole folder to public storage
         await this.upload(actor, targetFolder, remoteRootPath, log);
-        const item = await onComplete(actor, baseName, contentId, parentId, previousItemId, log);
+        const item = await onComplete(
+          actor,
+          repositories,
+          baseName,
+          contentId,
+          parentId,
+          previousItemId,
+          log,
+        );
         return item;
       } catch (error) {
         // delete storage folder of this html package if upload or creation fails

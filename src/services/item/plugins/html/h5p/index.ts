@@ -13,9 +13,9 @@ import { CLIENT_HOSTS } from '../../../../../utils/config';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { isAuthenticated } from '../../../../auth/plugins/passport';
 import { matchOne, validatePermission } from '../../../../authorization';
-import { Member, assertIsMember, isMember } from '../../../../member/entities/member';
+import { assertIsMember, isMember } from '../../../../member/entities/member';
 import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
-import { Item, isItemType } from '../../../entities/Item';
+import { isItemType } from '../../../entities/Item';
 import { ItemService } from '../../../service';
 import { FastifyStaticReply } from '../types';
 import {
@@ -36,35 +36,6 @@ const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
 
   const itemService = resolveDependency(ItemService);
   const h5pService = resolveDependency(H5PService);
-
-  /**
-   * Creates a Graasp item for the uploaded H5P package
-   * @param filename Name of the original H5P file WITHOUT EXTENSION
-   * @param contentId Storage ID of the remote content
-   * @param remoteRootPath Root path on the remote storage
-   * @param member Actor member
-   * @param parentId Optional parent id of the newly created item
-   */
-  async function createH5PItem(
-    member: Member,
-    filename: string,
-    contentId: string,
-    parentId?: string,
-    previousItemId?: string,
-  ): Promise<Item> {
-    const metadata = {
-      name: h5pService.buildH5PPath('', filename),
-      type: ItemType.H5P,
-      extra: h5pService.buildH5PExtra(contentId, filename),
-    };
-    return db.transaction(async (manager) => {
-      return itemService.post(member, buildRepositories(manager), {
-        item: metadata,
-        parentId,
-        previousItemId,
-      });
-    });
-  }
 
   /**
    * In local storage mode, proxy serve h5p files
@@ -126,6 +97,7 @@ const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
       } = request;
       const member = asDefined(user?.account);
       assertIsMember(member);
+
       return db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
 
@@ -138,18 +110,19 @@ const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
         // WARNING: cannot destructure { file } = request, which triggers an undefined TypeError internally
         // (maybe getter performs side-effect on promise handler?)
         // so use request.file notation instead
-        // const h5pFiles = await request.files();
         const h5pFile = await request.file();
 
         if (!h5pFile) {
           throw new H5PInvalidFileError(h5pFile);
         }
 
-        return await h5pService.createItem(
+        const { filename, file: stream } = h5pFile;
+
+        return await h5pService.createH5PItem(
           member,
           repositories,
-          h5pFile,
-          createH5PItem,
+          filename,
+          stream,
           parentId,
           previousItemId,
           log,

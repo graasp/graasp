@@ -16,7 +16,11 @@ import build, {
 } from '../../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants';
 import { AppDataSource } from '../../../../../plugins/datasource';
-import { FILE_ITEM_TYPE, ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
+import {
+  FILE_ITEM_TYPE,
+  ITEMS_ROUTE_PREFIX,
+  S3_FILE_ITEM_PLUGIN,
+} from '../../../../../utils/config';
 import { MemberCannotAccess, MemberCannotWriteItem } from '../../../../../utils/errors';
 import {
   DownloadFileInvalidParameterError,
@@ -251,6 +255,39 @@ describe('File Item routes tests', () => {
             item: { id: newItem.id },
           });
           expect(membership).toBeNull();
+        });
+
+        it('Upload several files with one H5P file', async () => {
+          const form = createFormData();
+          form.append(
+            'H5PFile',
+            fs.createReadStream(path.resolve(__dirname, './fixtures/dummy.h5p')),
+          );
+
+          const response = await app.inject({
+            method: HttpMethod.Post,
+            url: `${ITEMS_ROUTE_PREFIX}/upload`,
+            payload: form,
+            headers: form.getHeaders(),
+          });
+
+          // check the response value
+          expect(response.statusCode).toBe(StatusCodes.OK);
+          const newItems = Object.values(response.json().data) as Item[];
+          expect(newItems.length).toBe(2);
+
+          // check that both items exist in db and that their types are correctly interpreted
+          const imageItem = await testUtils.rawItemRepository.findOneBy({ id: newItems[0].id });
+          expectItem(imageItem, newItems[0]);
+          if (S3_FILE_ITEM_PLUGIN) {
+            expect(imageItem?.type).toEqual(ItemType.S3_FILE);
+          } else {
+            expect(imageItem?.type).toEqual(ItemType.LOCAL_FILE);
+          }
+
+          const h5pItem = await testUtils.rawItemRepository.findOneBy({ id: newItems[1].id });
+          expectItem(h5pItem, newItems[1]);
+          expect(h5pItem?.type).toBe(ItemType.H5P);
         });
 
         it('Cannot upload in parent with read rights', async () => {

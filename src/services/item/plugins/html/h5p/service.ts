@@ -1,6 +1,9 @@
 import path from 'path';
+import { Readable } from 'stream';
 import { singleton } from 'tsyringe';
 import { v4 } from 'uuid';
+
+import { FastifyBaseLogger } from 'fastify';
 
 import { H5PItemExtra, ItemType } from '@graasp/sdk';
 
@@ -12,7 +15,9 @@ import {
 } from '../../../../../utils/config';
 import { Repositories } from '../../../../../utils/repositories';
 import { Member } from '../../../../member/entities/member';
+import { StorageService } from '../../../../member/plugins/storage/service';
 import { Item } from '../../../entities/Item';
+import { ItemService } from '../../../service';
 import { HtmlService } from '../service';
 import { H5P_FILE_DOT_EXTENSION, H5P_FILE_MIME_TYPE } from './constants';
 import { H5P } from './validation/h5p';
@@ -23,17 +28,22 @@ import { H5PValidator } from './validation/h5p-validator';
  */
 @singleton()
 export class H5PService extends HtmlService {
-  constructor(log: BaseLogger) {
+  private readonly itemService: ItemService;
+
+  constructor(itemService: ItemService, storageService: StorageService, log: BaseLogger) {
     const h5pValidator = new H5PValidator();
 
     super(
       { config: H5P_FILE_STORAGE_CONFIG, type: H5P_FILE_STORAGE_TYPE },
+      storageService,
       H5P_PATH_PREFIX,
       H5P_FILE_MIME_TYPE,
       'h5p',
       h5pValidator,
       log,
     );
+
+    this.itemService = itemService;
   }
 
   /**
@@ -96,4 +106,53 @@ export class H5PService extends HtmlService {
       extra: { h5p: this.buildH5PExtra(newContentId, newName).h5p },
     });
   }
+
+  async createH5PItem(
+    actor: Member,
+    repositories: Repositories,
+    filename: string,
+    stream: Readable,
+    parentId?: Item['id'],
+    previousItemId?: Item['id'],
+    log?: FastifyBaseLogger,
+  ): Promise<Item> {
+    return super.createItem(
+      actor,
+      repositories,
+      filename,
+      stream,
+      this.createItemForH5PFile,
+      parentId,
+      previousItemId,
+      log,
+    );
+  }
+
+  /**
+   * Creates a Graasp item for the uploaded H5P package
+   * @param filename Name of the original H5P file WITHOUT EXTENSION
+   * @param contentId Storage ID of the remote content
+   * @param remoteRootPath Root path on the remote storage
+   * @param member Actor member
+   * @param parentId Optional parent id of the newly created item
+   */
+  private createItemForH5PFile = async (
+    member: Member,
+    repositories: Repositories,
+    filename: string,
+    contentId: string,
+    parentId?: string,
+    previousItemId?: string,
+  ): Promise<Item> => {
+    const metadata = {
+      name: this.buildH5PPath('', filename),
+      type: ItemType.H5P,
+      extra: this.buildH5PExtra(contentId, filename),
+    };
+    return this.itemService.post(member, repositories, {
+      item: metadata,
+      parentId,
+      previousItemId,
+    });
+  };
 }
