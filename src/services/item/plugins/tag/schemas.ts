@@ -5,19 +5,9 @@ import { FastifySchema } from 'fastify';
 
 import { TAG_NAME_MAX_LENGTH, TAG_NAME_PATTERN, TagCategory } from '@graasp/sdk';
 
-import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
+import { customType } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
-
-const tagSchema = customType.StrictObject(
-  {
-    id: customType.UUID(),
-    name: Type.String(),
-    category: Type.Enum(TagCategory),
-  },
-  { description: 'User provided tag, representing a theme or subject' },
-);
-
-const tagSchemaRef = registerSchemaAsRef('tag', 'Tag', tagSchema);
+import { tagSchemaRef } from '../../../tag/schemas';
 
 export const getTagsForItem = {
   operationId: 'getTagsForItem',

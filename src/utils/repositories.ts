@@ -26,7 +26,6 @@ import { ItemValidationReviewRepository } from '../services/item/plugins/publica
 import { RecycledItemDataRepository } from '../services/item/plugins/recycled/repository';
 import { ShortLinkRepository } from '../services/item/plugins/shortLink/repository';
 import { ItemTagRepository } from '../services/item/plugins/tag/ItemTag.repository';
-import { TagRepository } from '../services/item/plugins/tag/Tag.repository';
 import { ItemRepository } from '../services/item/repository';
 import { GuestRepository } from '../services/itemLogin/repositories/guest';
 import { GuestPasswordRepository } from '../services/itemLogin/repositories/guestPassword';
@@ -35,6 +34,7 @@ import { MembershipRequestRepository } from '../services/itemMembership/plugins/
 import { ItemMembershipRepository } from '../services/itemMembership/repository';
 import MemberProfileRepository from '../services/member/plugins/profile/repository';
 import { MemberRepository } from '../services/member/repository';
+import { TagRepository } from '../services/tag/Tag.repository';
 
 export type Repositories = {
   actionRepository: ActionRepository;

@@ -3,8 +3,8 @@ import { v4 } from 'uuid';
 
 import { TagCategory, TagFactory } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../../plugins/datasource';
-import { IllegalArgumentException } from '../../../../repositories/errors';
+import { AppDataSource } from '../../plugins/datasource';
+import { IllegalArgumentException } from '../../repositories/errors';
 import { Tag } from './Tag.entity';
 import { TagRepository } from './Tag.repository';
 

@@ -2,8 +2,8 @@ import { EntityManager } from 'typeorm';
 
 import { TagCategory } from '@graasp/sdk';
 
-import { MutableRepository } from '../../../../repositories/MutableRepository';
-import { DEFAULT_PRIMARY_KEY } from '../../../../repositories/const';
+import { MutableRepository } from '../../repositories/MutableRepository';
+import { DEFAULT_PRIMARY_KEY } from '../../repositories/const';
 import { Tag } from './Tag.entity';
 
 type UpdateTagBody = {

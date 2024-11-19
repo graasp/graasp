@@ -27,7 +27,6 @@ import { ItemValidationReview } from '../services/item/plugins/publication/valid
 import { RecycledItemData } from '../services/item/plugins/recycled/RecycledItemData';
 import { ShortLink } from '../services/item/plugins/shortLink/entities/ShortLink';
 import { ItemTag } from '../services/item/plugins/tag/ItemTag.entity';
-import { Tag } from '../services/item/plugins/tag/Tag.entity';
 import { Guest } from '../services/itemLogin/entities/guest';
 import { GuestPassword } from '../services/itemLogin/entities/guestPassword';
 import { ItemLoginSchema } from '../services/itemLogin/entities/itemLoginSchema';
@@ -35,6 +34,7 @@ import { ItemMembership } from '../services/itemMembership/entities/ItemMembersh
 import { MembershipRequest } from '../services/itemMembership/plugins/MembershipRequest/entities/MembershipRequest';
 import { Member } from '../services/member/entities/member';
 import { MemberProfile } from '../services/member/plugins/profile/entities/profile';
+import { Tag } from '../services/tag/Tag.entity';
 import {
   AUTO_RUN_MIGRATIONS,
   DB_CONNECTION_POOL_SIZE,

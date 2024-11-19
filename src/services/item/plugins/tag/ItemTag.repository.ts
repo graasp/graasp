@@ -5,9 +5,9 @@ import { UUID } from '@graasp/sdk';
 import { AbstractRepository } from '../../../../repositories/AbstractRepository';
 import { IllegalArgumentException } from '../../../../repositories/errors';
 import { isDuplicateEntryError } from '../../../../utils/typeormError';
+import { Tag } from '../../../tag/Tag.entity';
 import { Item } from '../../entities/Item';
 import { ItemTag } from './ItemTag.entity';
-import { Tag } from './Tag.entity';
 import { ItemTagAlreadyExists } from './errors';
 
 export class ItemTagRepository extends AbstractRepository<ItemTag> {
