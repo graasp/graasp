@@ -5,10 +5,10 @@ import { FolderItemFactory, TagFactory } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../plugins/datasource';
 import { IllegalArgumentException } from '../../../../repositories/errors';
+import { Tag } from '../../../tag/Tag.entity';
 import { Item } from '../../entities/Item';
 import { ItemTag } from './ItemTag.entity';
 import { ItemTagRepository } from './ItemTag.repository';
-import { Tag } from './Tag.entity';
 import { ItemTagAlreadyExists } from './errors';
 
 describe('ItemTag Repository', () => {

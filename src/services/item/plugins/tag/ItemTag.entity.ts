@@ -2,8 +2,8 @@ import { BaseEntity, Entity, Index, JoinColumn, OneToOne, PrimaryColumn, Unique 
 
 import { UUID } from '@graasp/sdk';
 
+import { Tag } from '../../../tag/Tag.entity';
 import { Item } from '../../entities/Item';
-import { Tag } from './Tag.entity';
 
 @Entity()
 @Unique('UQ_item_tag', ['itemId', 'tagId'])

@@ -12,10 +12,10 @@ import build, {
 } from '../../../../../test/app';
 import { AppDataSource } from '../../../../plugins/datasource';
 import { saveMember } from '../../../member/test/fixtures/members';
+import { Tag } from '../../../tag/Tag.entity';
 import { Item } from '../../entities/Item';
 import { ItemTestUtils } from '../../test/fixtures/items';
 import { ItemTag } from './ItemTag.entity';
-import { Tag } from './Tag.entity';
 
 const testUtils = new ItemTestUtils();
 const tagRawRepository = AppDataSource.getRepository(Tag);
