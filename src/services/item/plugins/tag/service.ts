@@ -15,7 +15,7 @@ export class ItemTagService {
   }
 
   async create(
-    actor: Actor,
+    actor: Member,
     repositories: Repositories,
     itemId: UUID,
     tagInfo: { name: string; category: TagCategory },

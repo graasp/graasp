@@ -212,19 +212,21 @@ describe('Tag Endpoints', () => {
     });
   });
   describe('DELETE /:itemId/tags/:tagId', () => {
-    it('Throw for invalid item id', async () => {
-      const response = await app.inject({
-        method: HttpMethod.Delete,
-        url: `/items/invalid/tags/${v4()}`,
+    describe('Input schema validation', () => {
+      it('Throw for invalid item id', async () => {
+        const response = await app.inject({
+          method: HttpMethod.Delete,
+          url: `/items/invalid/tags/${v4()}`,
+        });
+        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
-      expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-    });
-    it('Throw for invalid tag id', async () => {
-      const response = await app.inject({
-        method: HttpMethod.Delete,
-        url: `/items/${v4()}/tags/invalid}`,
+      it('Throw for invalid tag id', async () => {
+        const response = await app.inject({
+          method: HttpMethod.Delete,
+          url: `/items/${v4()}/tags/invalid}`,
+        });
+        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
-      expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
     });
 
     describe('Signed out', () => {
