@@ -21,7 +21,7 @@ const testUtils = new ItemTestUtils();
 const tagRawRepository = AppDataSource.getRepository(Tag);
 const itemTagRawRepository = AppDataSource.getRepository(ItemTag);
 
-const createTagsForItem = async (item: Item, tags: Tag[]) => {
+const createTagsForItem = async (item: Item, tags: Tag[]): Promise<ItemTag[]> => {
   const itemTags: ItemTag[] = [];
   for (const t of tags) {
     itemTags.push(await itemTagRawRepository.save({ item, tag: t }));

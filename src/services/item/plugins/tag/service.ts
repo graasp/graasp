@@ -3,7 +3,7 @@ import { singleton } from 'tsyringe';
 import { PermissionLevel, TagCategory, UUID } from '@graasp/sdk';
 
 import { Repositories } from '../../../../utils/repositories';
-import { Actor } from '../../../member/entities/member';
+import { Actor, Member } from '../../../member/entities/member';
 import { ItemService } from '../../service';
 
 @singleton()
@@ -40,7 +40,7 @@ export class ItemTagService {
     return await itemTagRepository.getByItemId(itemId);
   }
 
-  async delete(actor: Actor, repositories: Repositories, itemId: UUID, tagId: UUID) {
+  async delete(actor: Member, repositories: Repositories, itemId: UUID, tagId: UUID) {
     const { itemTagRepository } = repositories;
 
     // Get item and check permission

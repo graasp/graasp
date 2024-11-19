@@ -124,6 +124,12 @@ describe('ItemTag Repository', () => {
 
       expect(await repository.delete(item.id, v4())).toBeUndefined();
     });
+    it('does not throw if tag is not associated with item', async () => {
+      const tag = await tagRawRepository.save(TagFactory());
+      const item = await itemRawRepository.save(FolderItemFactory({ creator: null }));
+
+      expect(await repository.delete(item.id, tag.id)).toBeUndefined();
+    });
     it('delete tag for item', async () => {
       const tag = await tagRawRepository.save(TagFactory());
       const item = await itemRawRepository.save(FolderItemFactory({ creator: null }));
@@ -146,13 +152,6 @@ describe('ItemTag Repository', () => {
         relations: { tag: true },
       });
       expect(result1.tag.id).toEqual(tag1.id);
-    });
-    it('does not throw if tag is not associated with item', async () => {
-      const tag = await tagRawRepository.save(TagFactory());
-      const item = await itemRawRepository.save(FolderItemFactory({ creator: null }));
-      await itemTagRawRepository.save({ tag, item });
-
-      expect(await repository.delete(item.id, tag.id)).toBeUndefined();
     });
   });
 });

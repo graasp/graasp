@@ -62,8 +62,9 @@ export const createTagForItem = {
 export const deleteTagForItem = {
   operationId: 'deleteTagForItem',
   tags: ['tag'],
-  summary: 'Delete tag for item',
-  description: `Delete tag for item.`,
+  summary: 'Delete tag associated with item',
+  description:
+    'Delete tag associated with item. It does not throw if the specified tag is not originally associated with the item.',
 
   params: customType.StrictObject({
     itemId: customType.UUID(),

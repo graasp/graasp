@@ -6,6 +6,7 @@ import { resolveDependency } from '../../../../di/utils';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
+import { assertIsMember } from '../../../member/entities/member';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { createTagForItem, deleteTagForItem, getTagsForItem } from './schemas';
 import { ItemTagService } from './service';
@@ -52,8 +53,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user, params: { itemId, tagId } }, reply) => {
       await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
-
-        await itemTagService.delete(user?.account, repositories, itemId, tagId);
+        assertIsMember(user?.account);
+        await itemTagService.delete(user.account, repositories, itemId, tagId);
       });
       reply.status(StatusCodes.NO_CONTENT);
     },
