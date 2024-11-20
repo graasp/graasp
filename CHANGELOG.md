@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.58.0](https://github.com/graasp/graasp/compare/v1.57.0...v1.58.0) (2024-11-20)
+
+
+### Features
+
+* add delete tag for item ([#1645](https://github.com/graasp/graasp/issues/1645)) ([e96c358](https://github.com/graasp/graasp/commit/e96c35833aa05e053932f21792724d0807259990))
+* **file-upload:** identify and treat the H5P files in the general file upload ([#1631](https://github.com/graasp/graasp/issues/1631)) ([212bf92](https://github.com/graasp/graasp/commit/212bf92f92883046dc8a9365f88842ce47b266e8))
+* implement create tag for item ([#1641](https://github.com/graasp/graasp/issues/1641)) ([24a9eb2](https://github.com/graasp/graasp/commit/24a9eb2b466d41fecbd4039fdbb10d50baf34bea))
+
+
+### Bug Fixes
+
+* add documentation and details to published schemas ([#1642](https://github.com/graasp/graasp/issues/1642)) ([6c9433a](https://github.com/graasp/graasp/commit/6c9433aae7abb719618d3b87a1db93724aed145a))
+* fix tests ([#1646](https://github.com/graasp/graasp/issues/1646)) ([e7dc5b5](https://github.com/graasp/graasp/commit/e7dc5b5e4a89e2939e9c82a6e959ca674d264553))
+
 ## [1.57.0](https://github.com/graasp/graasp/compare/v1.56.1...v1.57.0) (2024-11-12)
 
 
