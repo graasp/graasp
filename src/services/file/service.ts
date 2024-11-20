@@ -4,13 +4,14 @@ import { Readable } from 'stream';
 
 import { FastifyReply } from 'fastify';
 
-import { Account, Member } from '@graasp/sdk';
+import { Account, Member, MimeTypes } from '@graasp/sdk';
 
 import { BaseLogger } from '../../logger';
 import { CachingService } from '../caching/service';
 import { Actor } from '../member/entities/member';
 import { LocalFileConfiguration, S3FileConfiguration } from './interfaces/configuration';
 import { FileRepository } from './interfaces/fileRepository';
+import { createSanitizedFile, sanitizeHtml, sanitizeSvg } from './sanitize';
 import {
   CopyFileInvalidPathError,
   CopyFolderInvalidPathError,
@@ -52,9 +53,11 @@ class FileService {
       });
     }
 
+    const sanitizedFile = await this.sanitizeFile({ file, mimetype });
+
     try {
       await this.repository.uploadFile({
-        fileStream: file,
+        fileStream: sanitizedFile,
         filepath,
         memberId: account.id,
         mimetype,
@@ -68,6 +71,27 @@ class FileService {
     }
 
     return data;
+  }
+
+  /**
+   * Sanitize file content. Return readable file with updated content.
+   * Filter out tags that are not in our white list for SVG
+   * @param file file to be sanitized
+   * @param mimetype mimetype of the file
+   * @returns sanitized stream
+   */
+  async sanitizeFile({ file, mimetype }: { file: Readable; mimetype?: string }): Promise<Readable> {
+    // sanitize content of svg
+    switch (mimetype) {
+      case MimeTypes.Image.SVG: {
+        return await createSanitizedFile(file, sanitizeSvg);
+      }
+      case 'text/html': {
+        return await createSanitizedFile(file, sanitizeHtml);
+      }
+    }
+
+    return file;
   }
 
   async getFile(_actor: Actor, data): Promise<Readable> {
