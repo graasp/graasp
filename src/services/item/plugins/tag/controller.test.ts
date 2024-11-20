@@ -29,7 +29,7 @@ const createTagsForItem = async (item: Item, tags: Tag[]): Promise<ItemTag[]> =>
   return itemTags;
 };
 
-describe('Tag Endpoints', () => {
+describe('Item Tag Endpoints', () => {
   let app: FastifyInstance;
   let actor;
   let tags: Tag[];

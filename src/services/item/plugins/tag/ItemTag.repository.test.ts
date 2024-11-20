@@ -1,7 +1,7 @@
 import { DataSource } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { FolderItemFactory, TagFactory } from '@graasp/sdk';
+import { FolderItemFactory, TagCategory, TagFactory } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../plugins/datasource';
 import { IllegalArgumentException } from '../../../../repositories/errors';
@@ -31,6 +31,68 @@ describe('ItemTag Repository', () => {
   afterAll(async () => {
     await db.dropDatabase();
     await db.destroy();
+  });
+
+  describe('getCountBy', () => {
+    it('throw for empty search', async () => {
+      await expect(() =>
+        repository.getCountBy({
+          search: '',
+          category: TagCategory.Discipline,
+        }),
+      ).rejects.toBeInstanceOf(IllegalArgumentException);
+    });
+    it('return empty count for empty set', async () => {
+      expect(
+        await repository.getCountBy({
+          search: 'search',
+          category: TagCategory.Discipline,
+        }),
+      ).toHaveLength(0);
+    });
+    it('get count for tags given search and category', async () => {
+      const category = TagCategory.Discipline;
+      const tag = await tagRawRepository.save(TagFactory({ category }));
+      const item = await itemRawRepository.save(FolderItemFactory({ creator: null }));
+      await itemTagRawRepository.save({ item, tag });
+      const tag1 = await tagRawRepository.save(
+        TagFactory({ name: tag.name + ' second', category }),
+      );
+      const item1 = await itemRawRepository.save(FolderItemFactory({ creator: null }));
+      await itemTagRawRepository.save({ item: item1, tag: tag1 });
+      await itemTagRawRepository.save({ item, tag: tag1 });
+
+      // noise
+      const tag2 = await tagRawRepository.save(
+        TagFactory({ name: tag.name + ' second', category: TagCategory.Level }),
+      );
+      await itemTagRawRepository.save({ item: item1, tag: tag2 });
+
+      const tags = await repository.getCountBy({
+        search: tag.name,
+        category,
+      });
+      expect(tags).toHaveLength(2);
+      expect(tags.find(({ name }) => tag.name === name)!.count).toEqual(1);
+      expect(tags.find(({ name }) => tag1.name === name)!.count).toEqual(2);
+    });
+
+    it('get count for tags given search without category', async () => {
+      const tag = await tagRawRepository.save(TagFactory());
+      const item = await itemRawRepository.save(FolderItemFactory({ creator: null }));
+      await itemTagRawRepository.save({ item, tag });
+      const tag1 = await tagRawRepository.save(TagFactory({ name: tag.name + ' second' }));
+      const item1 = await itemRawRepository.save(FolderItemFactory({ creator: null }));
+      await itemTagRawRepository.save({ item: item1, tag: tag1 });
+      await itemTagRawRepository.save({ item, tag: tag1 });
+
+      const tags = await repository.getCountBy({
+        search: tag.name,
+      });
+      expect(tags).toHaveLength(2);
+      expect(tags.find(({ name }) => tag.name === name)!.count).toEqual(1);
+      expect(tags.find(({ name }) => tag1.name === name)!.count).toEqual(2);
+    });
   });
 
   describe('getForItem', () => {
