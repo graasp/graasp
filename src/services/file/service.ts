@@ -11,6 +11,7 @@ import { CachingService } from '../caching/service';
 import { Actor } from '../member/entities/member';
 import { LocalFileConfiguration, S3FileConfiguration } from './interfaces/configuration';
 import { FileRepository } from './interfaces/fileRepository';
+import { createSanitizedFile, sanitizeHtml } from './sanitize';
 import {
   CopyFileInvalidPathError,
   CopyFolderInvalidPathError,
@@ -52,9 +53,11 @@ class FileService {
       });
     }
 
+    const sanitizedFile = await this.sanitizeFile({ file, mimetype });
+
     try {
       await this.repository.uploadFile({
-        fileStream: file,
+        fileStream: sanitizedFile,
         filepath,
         memberId: account.id,
         mimetype,
@@ -68,6 +71,22 @@ class FileService {
     }
 
     return data;
+  }
+
+  /**
+   * Sanitize file content. Return readable file with updated content.
+   * Filter out tags for HTML
+   * @param file file to be sanitized
+   * @param mimetype mimetype of the file
+   * @returns sanitized stream
+   */
+  async sanitizeFile({ file, mimetype }: { file: Readable; mimetype?: string }): Promise<Readable> {
+    // sanitize content of html
+    if (mimetype === 'text/html') {
+      return await createSanitizedFile(file, sanitizeHtml);
+    }
+
+    return file;
   }
 
   async getFile(_actor: Actor, data): Promise<Readable> {

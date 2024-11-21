@@ -1,8 +1,10 @@
 import { faker } from '@faker-js/faker';
-import { ReadStream } from 'fs';
+import { ReadStream, createReadStream } from 'fs';
 import { Redis } from 'ioredis';
+import path from 'path';
+import { Readable } from 'stream';
 
-import { ItemType } from '@graasp/sdk';
+import { ItemType, MimeTypes } from '@graasp/sdk';
 
 import { BaseLogger } from '../../logger';
 import { CachingService } from '../caching/service';
@@ -251,6 +253,28 @@ describe('FileService', () => {
       await expect(
         s3FileService.copyFolder({ ...copyPayload, newFolderPath: '' }),
       ).rejects.toMatchObject(new CopyFolderInvalidPathError(expect.anything()));
+    });
+  });
+
+  describe('sanitize', () => {
+    it('sanitize html', async () => {
+      const filepath = path.join(__dirname, './fixtures/htmlWithScript.html');
+      const file = createReadStream(filepath);
+      const f = await s3FileService.sanitizeFile({ mimetype: 'text/html', file });
+
+      // return stream
+      expect(f).toBeDefined();
+
+      // should contain svg tag, but not script tag
+      const content = (await f.toArray()).join('');
+      expect(content).toMatch(/h1/i);
+      expect(content).not.toMatch(/script/i);
+    });
+    it('does not sanitize for non-svg', async () => {
+      const file = Readable.from('hello');
+      const f = await s3FileService.sanitizeFile({ mimetype: MimeTypes.Image.PNG, file });
+      // returns same file as the one passed in the function
+      expect(f).toEqual(file);
     });
   });
 });
