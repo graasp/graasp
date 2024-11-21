@@ -1,5 +1,7 @@
 import { Ajv } from 'ajv';
 
+import { MemberConstants } from '@graasp/sdk';
+
 export default function plugin(ajv: Ajv) {
   // JSON Web Token format
   ajv.addFormat('jwt', /^(?:[\w-]*\.){2}[\w-]*$/);
@@ -11,5 +13,5 @@ export default function plugin(ajv: Ajv) {
   ajv.addFormat('strongPassword', /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/);
 
   // No special characters and no Unicode control characters in the username
-  ajv.addFormat('username', /^[^"<>^%\\\u{0000}-\u{001F}\u{007F}-\u{009F}]+$/u);
+  ajv.addFormat('username', MemberConstants.USERNAME_FORMAT_REGEX);
 }
