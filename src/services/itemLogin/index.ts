@@ -3,6 +3,7 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { ItemLoginSchemaStatus, PermissionLevel } from '@graasp/sdk';
 
 import { resolveDependency } from '../../di/utils';
+import { EntryNotFoundBeforeDeleteException } from '../../repositories/errors';
 import { asDefined } from '../../utils/assertions';
 import { ItemNotFound } from '../../utils/errors';
 import { buildRepositories } from '../../utils/repositories';
@@ -15,6 +16,7 @@ import { assertIsMember } from '../member/entities/member';
 import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
 import { ItemLoginSchemaNotFound, ValidMemberSession } from './errors';
 import {
+  deleteLoginSchema,
   getItemLoginSchema,
   getLoginSchemaType,
   loginOrRegisterAsGuest,
@@ -139,6 +141,33 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         } else {
           // If not exists, then create a new one
           return await itemLoginService.create(repositories, item.path, type);
+        }
+      });
+    },
+  );
+
+  fastify.delete<{ Params: { id: string } }>(
+    '/:id/login-schema',
+    {
+      schema: deleteLoginSchema,
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
+    },
+    async ({ user, params: { id: itemId } }) => {
+      const member = asDefined(user?.account);
+      assertIsMember(member);
+      return db.transaction(async (manager) => {
+        try {
+          const repositories = buildRepositories(manager);
+
+          // Validate permission
+          await itemService.get(member, repositories, itemId, PermissionLevel.Admin);
+
+          return (await itemLoginService.delete(member, repositories, itemId)).id;
+        } catch (e: unknown) {
+          if (e instanceof EntryNotFoundBeforeDeleteException) {
+            throw new ItemLoginSchemaNotFound({ itemId });
+          }
+          throw e;
         }
       });
     },

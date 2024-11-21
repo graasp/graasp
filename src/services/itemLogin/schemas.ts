@@ -106,3 +106,19 @@ export const updateLoginSchema = {
     '5xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
+
+export const deleteLoginSchema = {
+  operationId: 'deleteItemLoginSchema',
+  tags: ['item-login'],
+  summary: 'Delete item login schema',
+  description: `Delete item login data and all related users.`,
+
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
+  response: {
+    [StatusCodes.OK]: itemLoginSchemaSchemaRef,
+    '4xx': errorSchemaRef,
+    '5xx': errorSchemaRef,
+  },
+} as const satisfies FastifySchema;
