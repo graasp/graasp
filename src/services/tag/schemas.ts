@@ -7,6 +7,7 @@ import { TagCategory } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 import { errorSchemaRef } from '../../schemas/global';
+import { TAG_COUNT_MAX_RESULTS } from '../item/plugins/tag/constants';
 
 const tagSchema = customType.StrictObject(
   {
@@ -34,14 +35,14 @@ export const getCountForTags = {
   operationId: 'getCountForTags',
   tags: ['tag'],
   summary: 'Get count for tags',
-  description: `Get how many times a tag is associated with items, filtered by string search. It can be filtered by category.`,
+  description: `Get how many times a tag is associated with items, filtered by string search. It can be filtered by category. Get maximum the ${TAG_COUNT_MAX_RESULTS} most used tags.`,
 
   querystring: customType.StrictObject({
     search: Type.String({ minLength: 1 }),
     category: Type.Optional(Type.Enum(TagCategory)),
   }),
   response: {
-    [StatusCodes.OK]: Type.Array(tagCount),
+    [StatusCodes.OK]: Type.Array(tagCount, { maxItems: TAG_COUNT_MAX_RESULTS }),
     '4xx': errorSchemaRef,
     '5xx': errorSchemaRef,
   },

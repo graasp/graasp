@@ -9,6 +9,7 @@ import { Tag } from '../../../tag/Tag.entity';
 import { TagCount } from '../../../tag/schemas';
 import { Item } from '../../entities/Item';
 import { ItemTag } from './ItemTag.entity';
+import { TAG_COUNT_MAX_RESULTS } from './constants';
 import { ItemTagAlreadyExists } from './errors';
 
 export class ItemTagRepository extends AbstractRepository<ItemTag> {
@@ -38,8 +39,8 @@ export class ItemTagRepository extends AbstractRepository<ItemTag> {
 
     const q = this.repository
       .createQueryBuilder('itemTag')
-      .select(['t.name AS name', 't.category AS category', 'count(t.id) as count'])
-      .leftJoinAndSelect('tag', 't', 't.id = itemTag.tag_id AND t.name ILIKE :search', {
+      .select(['t.name AS name', 't.category AS category', 'count(t.id)::integer as count'])
+      .innerJoinAndSelect('tag', 't', 't.id = itemTag.tag_id AND t.name ILIKE :search', {
         search: `%${search}%`,
       });
 
@@ -47,14 +48,13 @@ export class ItemTagRepository extends AbstractRepository<ItemTag> {
       q.where('category = :category', { category });
     }
 
-    const res = await q.groupBy('t.id').orderBy('count', 'DESC').getRawMany<{
-      name: Tag['name'];
-      category: Tag['category'];
-      count: string; // sql returns string by default
-    }>();
+    const result = await q
+      .groupBy('t.id')
+      .orderBy('count', 'DESC')
+      .limit(TAG_COUNT_MAX_RESULTS)
+      .getRawMany<TagCount>();
 
-    // transform into integer
-    return res.map((value) => ({ ...value, count: parseInt(value.count) }));
+    return result;
   }
 
   async create(itemId: UUID, tagId: Tag['id']): Promise<void> {

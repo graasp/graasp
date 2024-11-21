@@ -9,6 +9,7 @@ import { Tag } from '../../../tag/Tag.entity';
 import { Item } from '../../entities/Item';
 import { ItemTag } from './ItemTag.entity';
 import { ItemTagRepository } from './ItemTag.repository';
+import { TAG_COUNT_MAX_RESULTS } from './constants';
 import { ItemTagAlreadyExists } from './errors';
 
 describe('ItemTag Repository', () => {
@@ -92,6 +93,32 @@ describe('ItemTag Repository', () => {
       expect(tags).toHaveLength(2);
       expect(tags.find(({ name }) => tag.name === name)!.count).toEqual(1);
       expect(tags.find(({ name }) => tag1.name === name)!.count).toEqual(2);
+    });
+
+    it(`get max ${TAG_COUNT_MAX_RESULTS} counts for tags`, async () => {
+      const category = TagCategory.Discipline;
+      // create more tags and association than limit
+      const promises = Array.from({ length: TAG_COUNT_MAX_RESULTS + 13 }, async (_, idx) => {
+        const tag = await tagRawRepository.save(TagFactory({ name: 'tag' + idx, category }));
+        for (let i = 0; i < idx; i++) {
+          const item = await itemRawRepository.save(FolderItemFactory({ creator: null }));
+          await itemTagRawRepository.save({ item, tag });
+        }
+        return tag;
+      });
+      const tags = await Promise.all(promises);
+
+      const result = await repository.getCountBy({
+        search: 'tag',
+        category,
+      });
+      // should have only max number of counts
+      expect(result).toHaveLength(TAG_COUNT_MAX_RESULTS);
+
+      // last tags in the array are the most used
+      for (const t of tags.slice(-TAG_COUNT_MAX_RESULTS)) {
+        expect(result.find(({ name }) => t.name === name)!.count).toBeGreaterThan(1);
+      }
     });
   });
 

@@ -42,8 +42,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
     .register(fp(metaPlugin))
     .register(fp(passportPlugin))
     // need to be defined before member and item for auth check
-    .register(fp(authPlugin))
-    .register(tagPlugin);
+    .register(fp(authPlugin));
 
   instance.register(async (instance) => {
     // core API modules
@@ -64,7 +63,8 @@ export default async function (instance: FastifyInstance): Promise<void> {
       })
       .register(fp(MemberServiceApi))
       .register(fp(ItemServiceApi))
-      .register(fp(ItemMembershipServiceApi));
+      .register(fp(ItemMembershipServiceApi))
+      .register(tagPlugin);
   });
 }
 
