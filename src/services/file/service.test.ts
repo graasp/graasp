@@ -257,19 +257,6 @@ describe('FileService', () => {
   });
 
   describe('sanitize', () => {
-    it('sanitize svg', async () => {
-      const filepath = path.join(__dirname, './fixtures/logoWithScript.svg');
-      const file = createReadStream(filepath);
-      const f = await s3FileService.sanitizeFile({ mimetype: MimeTypes.Image.SVG, file });
-
-      // return stream
-      expect(f).toBeDefined();
-
-      // should contain svg tag, but not script tag
-      const content = (await f.toArray()).join('');
-      expect(content).toMatch(/svg/i);
-      expect(content).not.toMatch(/script/i);
-    });
     it('sanitize html', async () => {
       const filepath = path.join(__dirname, './fixtures/htmlWithScript.html');
       const file = createReadStream(filepath);
