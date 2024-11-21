@@ -21,11 +21,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     '/:itemId/tags',
     { schema: getTagsForItem, preHandler: optionalIsAuthenticated },
     async ({ user, params: { itemId } }) => {
-      return await db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
+      const repositories = buildRepositories();
 
-        return await itemTagService.getByItemId(user?.account, repositories, itemId);
-      });
+      return await itemTagService.getByItemId(user?.account, repositories, itemId);
     },
   );
 

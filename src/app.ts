@@ -15,6 +15,7 @@ import { plugin as passportPlugin } from './services/auth/plugins/passport';
 import ItemServiceApi from './services/item';
 import ItemMembershipServiceApi from './services/itemMembership';
 import MemberServiceApi from './services/member';
+import tagPlugin from './services/tag/controller';
 import websocketsPlugin from './services/websockets';
 import {
   DATABASE_LOGS,
@@ -62,7 +63,8 @@ export default async function (instance: FastifyInstance): Promise<void> {
       })
       .register(fp(MemberServiceApi))
       .register(fp(ItemServiceApi))
-      .register(fp(ItemMembershipServiceApi));
+      .register(fp(ItemMembershipServiceApi))
+      .register(tagPlugin);
   });
 }
 
