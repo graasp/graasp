@@ -4,14 +4,14 @@ import { Readable } from 'stream';
 
 import { FastifyReply } from 'fastify';
 
-import { Account, Member, MimeTypes } from '@graasp/sdk';
+import { Account, Member } from '@graasp/sdk';
 
 import { BaseLogger } from '../../logger';
 import { CachingService } from '../caching/service';
 import { Actor } from '../member/entities/member';
 import { LocalFileConfiguration, S3FileConfiguration } from './interfaces/configuration';
 import { FileRepository } from './interfaces/fileRepository';
-import { createSanitizedFile, sanitizeHtml, sanitizeSvg } from './sanitize';
+import { createSanitizedFile, sanitizeHtml } from './sanitize';
 import {
   CopyFileInvalidPathError,
   CopyFolderInvalidPathError,
@@ -83,9 +83,6 @@ class FileService {
   async sanitizeFile({ file, mimetype }: { file: Readable; mimetype?: string }): Promise<Readable> {
     // sanitize content of svg
     switch (mimetype) {
-      case MimeTypes.Image.SVG: {
-        return await createSanitizedFile(file, sanitizeSvg);
-      }
       case 'text/html': {
         return await createSanitizedFile(file, sanitizeHtml);
       }
