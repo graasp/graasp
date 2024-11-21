@@ -75,17 +75,15 @@ class FileService {
 
   /**
    * Sanitize file content. Return readable file with updated content.
-   * Filter out tags that are not in our white list for SVG
+   * Filter out tags for HTML
    * @param file file to be sanitized
    * @param mimetype mimetype of the file
    * @returns sanitized stream
    */
   async sanitizeFile({ file, mimetype }: { file: Readable; mimetype?: string }): Promise<Readable> {
-    // sanitize content of svg
-    switch (mimetype) {
-      case 'text/html': {
-        return await createSanitizedFile(file, sanitizeHtml);
-      }
+    // sanitize content of html
+    if (mimetype === 'text/html') {
+      return await createSanitizedFile(file, sanitizeHtml);
     }
 
     return file;
