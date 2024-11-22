@@ -162,7 +162,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           // Validate permission
           await itemService.get(member, repositories, itemId, PermissionLevel.Admin);
 
-          return (await itemLoginService.delete(member, repositories, itemId)).id;
+          const { id } = await itemLoginService.delete(member, repositories, itemId);
+          return id;
         } catch (e: unknown) {
           if (e instanceof EntryNotFoundBeforeDeleteException) {
             throw new ItemLoginSchemaNotFound({ itemId });
