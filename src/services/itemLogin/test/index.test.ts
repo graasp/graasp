@@ -904,4 +904,82 @@ describe('Item Login Tests', () => {
       });
     });
   });
+  describe('DELETE /:id/login-schema', () => {
+    describe('Schema Validation', () => {
+      it('Throws if id is invalid', async () => {
+        const res = await app.inject({
+          method: HttpMethod.Delete,
+          url: `${ITEMS_ROUTE_PREFIX}/invalid-id/login-schema`,
+        });
+
+        expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      });
+    });
+
+    it('Throws if signed out', async () => {
+      const member = await saveMember();
+      ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member }));
+
+      const res = await app.inject({
+        method: HttpMethod.Delete,
+        url: `${ITEMS_ROUTE_PREFIX}/${anotherItem.id}/login-schema`,
+      });
+
+      expect(res.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    });
+
+    describe('Signed In', () => {
+      beforeEach(async () => {
+        actor = await saveMember();
+        mockAuthenticate(actor);
+        ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member: actor }));
+        await saveItemLoginSchema({ item: anotherItem as unknown as DiscriminatedItem });
+      });
+
+      it('Successfully delete item login schema', async () => {
+        assertIsDefined(actor);
+        const memberName = faker.internet.userName();
+        ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member: actor }));
+        await saveItemLoginSchema({
+          item: anotherItem as unknown as DiscriminatedItem,
+          status: ItemLoginSchemaStatus.Freeze,
+          memberName,
+        });
+        expect(await rawItemLoginRepository.findOneBy({ name: memberName })).toBeDefined();
+
+        const res = await app.inject({
+          method: HttpMethod.Delete,
+          url: `${ITEMS_ROUTE_PREFIX}/${anotherItem.id}/login-schema`,
+        });
+        expect(res.statusCode).toBe(StatusCodes.OK);
+
+        // item login schema should not exist anymore
+        const itemLoginSchema = await rawItemLoginSchemaRepository.findOneBy({
+          item: { id: anotherItem.id },
+        });
+        expect(itemLoginSchema).toBeNull();
+
+        // related item login should be deleted
+        expect(await rawItemLoginRepository.findOneBy({ name: memberName })).toBeNull();
+      });
+      it('Cannot delete item login schema if have write permission', async () => {
+        assertIsDefined(actor);
+        // save new item with wanted memberships
+        const { item: item1 } = await testUtils.saveItemAndMembership({
+          member: actor,
+          creator: await saveMember(),
+          permission: PermissionLevel.Write,
+        });
+
+        await saveItemLoginSchema({ item: item1 as unknown as DiscriminatedItem });
+
+        const res = await app.inject({
+          method: HttpMethod.Delete,
+          url: `${ITEMS_ROUTE_PREFIX}/${item1.id}/login-schema`,
+        });
+
+        expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
+      });
+    });
+  });
 });

@@ -6,7 +6,7 @@ import { asDefined, assertIsDefined } from '../../utils/assertions';
 import { InvalidPassword } from '../../utils/errors';
 import { Repositories } from '../../utils/repositories';
 import { verifyCurrentPassword } from '../auth/plugins/password/utils';
-import { Actor } from '../member/entities/member';
+import { Actor, Member } from '../member/entities/member';
 import { Guest } from './entities/guest';
 import { ItemLoginSchema } from './entities/itemLoginSchema';
 import {
@@ -154,6 +154,12 @@ export class ItemLoginService {
 
   async getOneByItem(repositories: Repositories, itemId: string) {
     const { itemLoginSchemaRepository } = repositories;
-    return await itemLoginSchemaRepository.getOneByItem(itemId);
+    return await itemLoginSchemaRepository.getOneByItemId(itemId);
+  }
+
+  async delete(member: Member, repositories: Repositories, itemId: string) {
+    const { itemLoginSchemaRepository } = repositories;
+
+    return itemLoginSchemaRepository.deleteOneByItemId(itemId);
   }
 }
