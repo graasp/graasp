@@ -12,6 +12,7 @@ import { asDefined } from '../../../../utils/assertions';
 import { AUTH_CLIENT_HOST } from '../../../../utils/config';
 import { MemberAlreadySignedUp } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
+import { InvitationService } from '../../../item/plugins/invitation/service';
 import { isMember } from '../../../member/entities/member';
 import { MemberService } from '../../../member/service';
 import { getRedirectionUrl } from '../../utils';
@@ -29,6 +30,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
   const memberService = resolveDependency(MemberService);
   const magicLinkService = resolveDependency(MagicLinkService);
+  const invitationService = resolveDependency(InvitationService);
 
   // register
   fastify.post(
@@ -43,20 +45,14 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
       return db.transaction(async (manager) => {
         try {
+          const repositories = buildRepositories(manager);
           // we use member service to allow post hook for invitation
-          const member = await memberService.post(
-            undefined,
-            buildRepositories(manager),
-            body,
-            lang,
-          );
+          const member = await memberService.post(undefined, repositories, body, lang);
+          await magicLinkService.sendRegisterMail(undefined, repositories, member, url);
 
-          await magicLinkService.sendRegisterMail(
-            undefined,
-            buildRepositories(manager),
-            member,
-            url,
-          );
+          // transform memberships from existing invitations
+          await invitationService.createToMemberships(repositories, member);
+
           reply.status(StatusCodes.NO_CONTENT);
         } catch (e) {
           if (!(e instanceof MemberAlreadySignedUp)) {

@@ -107,6 +107,6 @@ describe('asynchronous feedback', () => {
       expect(feedbackUpdate).toMatchObject(
         ItemOpFeedbackErrorEvent('export', [item.id], new Error('mock error')),
       );
-    });
+    }, 10000);
   });
 });

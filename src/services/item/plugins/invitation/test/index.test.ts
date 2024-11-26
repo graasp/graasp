@@ -1,4 +1,3 @@
-import { faker } from '@faker-js/faker';
 import FormData from 'form-data';
 import fs from 'fs';
 import { StatusCodes } from 'http-status-codes';
@@ -21,13 +20,13 @@ import { AppDataSource } from '../../../../../plugins/datasource';
 import { MailerService } from '../../../../../plugins/mailer/service';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { MOCK_CAPTCHA } from '../../../../auth/plugins/captcha/test/utils';
-import { Item } from '../../../../item/entities/Item';
 import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
 import { Member } from '../../../../member/entities/member';
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemTestUtils } from '../../../test/fixtures/items';
 import { Invitation } from '../entity';
 import { MissingGroupColumnInCSVError } from '../errors';
+import { createInvitations, saveInvitations } from './utils';
 
 const testUtils = new ItemTestUtils();
 const invitationRawRepository = AppDataSource.getRepository(Invitation);
@@ -65,27 +64,6 @@ const expectInvitations = (invitations: Invitation[], correctInvitations: Invita
     expect(inv.permission).toEqual(correctInv!.permission);
     expect(inv.email).toEqual(correctInv!.email);
   }
-};
-
-const createInvitations = async ({ member, parentItem }: { member: Member; parentItem?: Item }) => {
-  const { item } = await testUtils.saveItemAndMembership({ member, parentItem });
-  const invitations = Array.from({ length: 3 }, () =>
-    invitationRawRepository.create({
-      item,
-      creator: member,
-      permission: PermissionLevel.Read,
-      email: faker.internet.email().toLowerCase(),
-    }),
-  );
-  return { item, invitations };
-};
-
-const saveInvitations = async ({ member }) => {
-  const { item, invitations } = await createInvitations({ member });
-  for (const inv of invitations) {
-    await invitationRawRepository.save(inv);
-  }
-  return { item, invitations };
 };
 
 describe('Invitation Plugin', () => {
