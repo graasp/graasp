@@ -92,10 +92,7 @@ class FileService {
   async getFile(_actor: Actor, data): Promise<Readable> {
     const { id, path: filepath } = data;
     if (!filepath || !id) {
-      throw new DownloadFileInvalidParameterError({
-        filepath,
-        id,
-      });
+      throw new DownloadFileInvalidParameterError();
     }
 
     return this.repository.getFile(
@@ -107,13 +104,10 @@ class FileService {
     );
   }
 
-  async getUrl(data: { expiration?: number; id?: string; path?: string }): Promise<string> {
-    const { expiration, id, path: filepath } = data;
-    if (!filepath || !id) {
-      throw new DownloadFileInvalidParameterError({
-        filepath,
-        id,
-      });
+  async getUrl(data: { expiration?: number; path?: string }): Promise<string> {
+    const { expiration, path: filepath } = data;
+    if (!filepath) {
+      throw new DownloadFileInvalidParameterError();
     }
 
     const getUrl = () =>
@@ -121,7 +115,6 @@ class FileService {
         {
           expiration,
           filepath,
-          id,
         },
         this.logger,
       );
