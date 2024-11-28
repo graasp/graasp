@@ -162,7 +162,8 @@ export const reorder = {
   body: customType.StrictObject({
     previousItemId: Type.Optional(
       customType.UUID({
-        description: 'Item which the item defined in params should go after',
+        description:
+          'Item which the item defined in params should go after. If not defined, the item will become the first child of its parent.',
       }),
     ),
   }),
