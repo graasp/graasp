@@ -43,14 +43,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
   fastify.get('/collections/search/rebuild', async ({ headers }, reply) => {
     // TODO: in the future, lock this behind admin permission and maybe add a button to the frontend admin panel
-    const headerRebuildSecret = headers['meilisearch-rebuild'];
-
-    if (MEILISEARCH_REBUILD_SECRET && MEILISEARCH_REBUILD_SECRET === headerRebuildSecret) {
-      searchService.rebuildIndex();
-      reply.status(StatusCodes.ACCEPTED);
-    } else {
-      reply.status(StatusCodes.UNAUTHORIZED);
-    }
+    searchService.rebuildIndex();
+    reply.status(StatusCodes.ACCEPTED);
   });
 };
 
