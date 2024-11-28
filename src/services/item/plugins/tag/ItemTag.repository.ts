@@ -39,7 +39,12 @@ export class ItemTagRepository extends AbstractRepository<ItemTag> {
 
     const q = this.repository
       .createQueryBuilder('itemTag')
-      .select(['t.name AS name', 't.category AS category', 'count(t.id)::integer as count'])
+      .select([
+        't.id AS id',
+        't.name AS name',
+        't.category AS category',
+        'count(t.id)::integer as count',
+      ])
       .innerJoinAndSelect('tag', 't', 't.id = itemTag.tag_id AND t.name ILIKE :search', {
         search: `%${search}%`,
       });

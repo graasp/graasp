@@ -18,12 +18,14 @@ import {
   LocalFileItemExtra,
   MimeTypes,
   S3FileItemExtra,
+  TagCategory,
 } from '@graasp/sdk';
 
 import { BaseLogger } from '../../../../../../../logger';
 import { MEILISEARCH_STORE_LEGACY_PDF_CONTENT } from '../../../../../../../utils/config';
 import { Repositories, buildRepositories } from '../../../../../../../utils/repositories';
 import FileService from '../../../../../../file/service';
+import { Tag } from '../../../../../../tag/Tag.entity';
 import { Item, isItemType } from '../../../../../entities/Item';
 import { readPdfContent } from '../../../../../utils';
 import { stripHtml } from '../../../validation/utils';
@@ -35,9 +37,18 @@ const ROTATING_INDEX = `${INDEX_NAME}_tmp`; // Used when reindexing
 type ALLOWED_INDICES = typeof ACTIVE_INDEX | typeof ROTATING_INDEX;
 
 // Make index configuration typesafe
-const SEARCHABLE_ATTRIBUTES: (keyof IndexItem)[] = ['name', 'description', 'content', 'creator'];
+const SEARCHABLE_ATTRIBUTES: (keyof any)[] = [
+  'name',
+  'description',
+  'content',
+  'creator',
+  'tags',
+  'disciplines',
+  'levels',
+  'resourceTypes',
+];
 const SORT_ATTRIBUTES: (keyof IndexItem)[] = ['name', 'updatedAt', 'createdAt'];
-const DISPLAY_ATTRIBUTES: (keyof IndexItem)[] = [
+const DISPLAY_ATTRIBUTES: (keyof any)[] = [
   'id',
   'name',
   'creator',
@@ -50,12 +61,17 @@ const DISPLAY_ATTRIBUTES: (keyof IndexItem)[] = [
   'isPublishedRoot',
   'isHidden',
   'lang',
+  'disciplines',
+  'levels',
+  'resourceTypes',
 ];
 const FILTERABLE_ATTRIBUTES: (keyof IndexItem)[] = [
-  'categories',
   'isPublishedRoot',
   'isHidden',
   'lang',
+  'disciplines',
+  'levels',
+  'resourceTypes',
 ];
 const TYPO_TOLERANCE: TypoTolerance = {
   enabled: true,
@@ -151,7 +167,7 @@ export class MeiliSearchWrapper {
 
   private async parseItem(
     item: Item,
-    categories: string[],
+    tags: Tag[],
     isPublishedRoot: boolean,
     isHidden: boolean,
   ): Promise<IndexItem> {
@@ -164,7 +180,6 @@ export class MeiliSearchWrapper {
       },
       description: this.removeHTMLTags(item.description),
       type: item.type,
-      categories: categories,
       content: await this.getContent(item),
       isPublishedRoot: isPublishedRoot,
       isHidden: isHidden,
@@ -172,6 +187,13 @@ export class MeiliSearchWrapper {
       createdAt: item.createdAt.toISOString(),
       updatedAt: item.updatedAt.toISOString(),
       lang: item.lang,
+      disciplines: tags
+        .filter(({ category }) => category === TagCategory.Discipline)
+        .map(({ name }) => name),
+      levels: tags.filter(({ category }) => category === TagCategory.Level).map(({ name }) => name),
+      resourceTypes: tags
+        .filter(({ category }) => category === TagCategory.ResourceType)
+        .map(({ name }) => name),
     };
   }
 
@@ -239,13 +261,12 @@ export class MeiliSearchWrapper {
           if (!publishedRoot) {
             throw new ItemPublishedNotFound(i.id);
           }
-          const categories = (await repositories.itemCategoryRepository.getForItemOrParent(i)).map(
-            (ic) => ic.category.id,
-          );
+
+          const tags = await repositories.itemTagRepository.getByItemId(i.id);
 
           return await this.parseItem(
             i,
-            Array.from(new Set(categories)),
+            tags,
             publishedRoot.item.id === i.id,
             isHidden.data[i.id] ?? false,
           );
