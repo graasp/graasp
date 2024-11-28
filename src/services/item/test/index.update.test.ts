@@ -1735,7 +1735,6 @@ describe('Item routes tests', () => {
     });
   });
 
-  // copy many items
   describe('PATCH /items/id/reorder', () => {
     it('Throws if signed out', async () => {
       const member = await saveMember();
@@ -1765,7 +1764,7 @@ describe('Item routes tests', () => {
         actor = await saveMember();
         mockAuthenticate(actor);
       });
-      it('reorder at beginning', async () => {
+      it('reorder at same place', async () => {
         const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
         const toReorder = await testUtils.saveItem({
           actor,
@@ -1788,6 +1787,29 @@ describe('Item routes tests', () => {
 
         expect(response.statusCode).toBe(StatusCodes.OK);
         await testUtils.expectOrder(toReorder.id, previousItem.id);
+      });
+      it('reorder at beginning', async () => {
+        const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
+        const toReorder = await testUtils.saveItem({
+          actor,
+          parentItem,
+          item: { order: 10 },
+        });
+        await testUtils.saveItem({
+          actor,
+          parentItem,
+          item: { order: 5 },
+        });
+
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `/items/${toReorder.id}/reorder`,
+          payload: {},
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        // should have order smaller than first item
+        expect(await testUtils.getOrderForItemId(toReorder.id)).toBeLessThan(5);
       });
 
       it('reorder at end', async () => {
