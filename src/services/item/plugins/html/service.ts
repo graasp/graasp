@@ -102,7 +102,6 @@ export abstract class HtmlService {
    */
   protected async _getUrl(id: Item['id'], packagePath: string) {
     return this.fileService.getUrl({
-      id,
       path: path.join(this.pathPrefix, packagePath),
     });
   }

@@ -200,7 +200,6 @@ export class RequestDataExportService {
   private async _sendExportLinkInMail(actor: Member, exportId: string, archiveDate: Date) {
     const filepath = buildUploadedExportFilePath(this.ROOT_EXPORT_FOLDER, exportId, archiveDate);
     const link = await this.fileService.getUrl({
-      id: exportId,
       path: filepath,
       expiration: EXPORT_FILE_EXPIRATION,
     });

@@ -512,9 +512,7 @@ describe('File Item routes tests', () => {
             url: `${ITEMS_ROUTE_PREFIX}/${someItem.id}/download`,
           });
 
-          expect(response.json()).toMatchObject(
-            new DownloadFileInvalidParameterError(expect.anything()),
-          );
+          expect(response.json()).toMatchObject(new DownloadFileInvalidParameterError());
         });
       });
 
