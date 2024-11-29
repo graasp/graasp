@@ -1,6 +1,8 @@
 import { MultiSearchParams } from 'meilisearch';
 import { singleton } from 'tsyringe';
 
+import { INDEX_NAME } from '@graasp/sdk';
+
 import { BaseLogger } from '../../../../../../../logger';
 import { Repositories } from '../../../../../../../utils/repositories';
 import { Actor } from '../../../../../../member/entities/member';
@@ -22,13 +24,12 @@ export class SearchService {
   constructor(
     itemService: ItemService,
     itemPublishedService: ItemPublishedService,
-    itemCategoryService: ItemCategoryService,
     meilisearchClient: MeiliSearchWrapper,
     logger: BaseLogger,
   ) {
     this.meilisearchClient = meilisearchClient;
     this.logger = logger;
-    this.registerSearchHooks(itemService, itemPublishedService, itemCategoryService);
+    this.registerSearchHooks(itemService, itemPublishedService);
   }
 
   private removeHTMLTags(s: string): string {
@@ -58,6 +59,16 @@ export class SearchService {
     return searchResult;
   }
 
+  async getFacets(
+    _actor: Actor,
+    _repositories: Repositories,
+    body: { facetName: string; facetQuery: string },
+  ) {
+    const searchResult = await this.meilisearchClient.getFacets(body);
+
+    return searchResult;
+  }
+
   async rebuildIndex() {
     this.meilisearchClient.rebuildIndex();
   }
@@ -67,7 +78,6 @@ export class SearchService {
   private registerSearchHooks(
     itemService: ItemService,
     itemPublishedService: ItemPublishedService,
-    ItemCategoryService: ItemCategoryService,
   ) {
     // Update index when itemPublished changes ------------------------------------------
 
@@ -163,49 +173,5 @@ export class SearchService {
         this.logger.error('Error during indexation, Meilisearch may be down');
       }
     });
-
-    // Update index when categories changes ------------------------------------------
-
-    ItemCategoryService.hooks.setPostHook(
-      'create',
-      async (member, repositories, { itemCategory }) => {
-        try {
-          // Check if the item is published (or has published parent)
-          const published = await repositories.itemPublishedRepository.getForItem(
-            itemCategory.item,
-          );
-
-          if (!published) {
-            return;
-          }
-
-          // update item and its children
-          await this.meilisearchClient.indexOne(published.item, repositories);
-        } catch (e) {
-          this.logger.error('Error during indexation, Meilisearch may be down');
-        }
-      },
-    );
-
-    ItemCategoryService.hooks.setPostHook(
-      'delete',
-      async (member, repositories, { itemCategory }) => {
-        try {
-          // Check if the item is published (or has published parent)
-          const published = await repositories.itemPublishedRepository.getForItem(
-            itemCategory.item,
-          );
-
-          if (!published) {
-            return;
-          }
-
-          // update item and its children
-          await this.meilisearchClient.indexOne(published.item, repositories);
-        } catch (e) {
-          this.logger.error('Error during indexation, Meilisearch may be down');
-        }
-      },
-    );
   }
 }

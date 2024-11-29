@@ -22,7 +22,11 @@ export class ItemTagRepository extends AbstractRepository<ItemTag> {
       throw new IllegalArgumentException(`The given 'itemId' is undefined!`);
     }
 
-    const itemTags = await this.repository.find({ where: { itemId }, relations: { tag: true } });
+    const itemTags = await this.repository.find({
+      where: { itemId },
+      relations: { tag: true },
+      order: { tag: { category: 'ASC', name: 'ASC' } },
+    });
     return itemTags.map(({ tag }) => tag);
   }
 
