@@ -37,18 +37,15 @@ const ROTATING_INDEX = `${INDEX_NAME}_tmp`; // Used when reindexing
 type ALLOWED_INDICES = typeof ACTIVE_INDEX | typeof ROTATING_INDEX;
 
 // Make index configuration typesafe
-const SEARCHABLE_ATTRIBUTES: (keyof any)[] = [
+const SEARCHABLE_ATTRIBUTES: (keyof IndexItem)[] = [
   'name',
   'description',
   'content',
   'creator',
-  'tags',
-  'disciplines',
-  'levels',
-  'resourceTypes',
+  ...Object.values(TagCategory),
 ];
 const SORT_ATTRIBUTES: (keyof IndexItem)[] = ['name', 'updatedAt', 'createdAt'];
-const DISPLAY_ATTRIBUTES: (keyof any)[] = [
+const DISPLAY_ATTRIBUTES: (keyof IndexItem)[] = [
   'id',
   'name',
   'creator',
@@ -57,21 +54,16 @@ const DISPLAY_ATTRIBUTES: (keyof any)[] = [
   'content',
   'createdAt',
   'updatedAt',
-  'categories',
   'isPublishedRoot',
   'isHidden',
   'lang',
-  'disciplines',
-  'levels',
-  'resourceTypes',
+  ...Object.values(TagCategory),
 ];
 const FILTERABLE_ATTRIBUTES: (keyof IndexItem)[] = [
   'isPublishedRoot',
   'isHidden',
   'lang',
-  'disciplines',
-  'levels',
-  'resourceTypes',
+  ...Object.values(TagCategory),
 ];
 const TYPO_TOLERANCE: TypoTolerance = {
   enabled: true,
@@ -104,7 +96,13 @@ export class MeiliSearchWrapper {
     this.logger = logger;
 
     // create index in the background if it doesn't exist
-    this.getIndex();
+    this.getIndex().then(() => {
+      // set facetting order to count for tag categories
+      this.meilisearchClient.index(INDEX_NAME).updateFaceting({
+        maxValuesPerFacet: 10,
+        sortFacetValuesBy: Object.fromEntries(Object.values(TagCategory).map((c) => [c, 'count'])),
+      });
+    });
   }
 
   private removeHTMLTags(s?: string | null): string {
@@ -165,12 +163,24 @@ export class MeiliSearchWrapper {
     return searchResult;
   }
 
+  async getFacets(args: { facetQuery: string; facetName: string }) {
+    const result = await this.meilisearchClient.index(INDEX_NAME).searchForFacetValues(args);
+
+    return result;
+  }
+
   private async parseItem(
     item: Item,
     tags: Tag[],
     isPublishedRoot: boolean,
     isHidden: boolean,
   ): Promise<IndexItem> {
+    const tagsByCategory = Object.fromEntries(
+      Object.values(TagCategory).map((c) => {
+        return [c, tags.filter(({ category }) => category === c).map(({ name }) => name)];
+      }),
+    ) as { [key in TagCategory]: string[] };
+
     return {
       id: item.id,
       name: item.name,
@@ -187,13 +197,7 @@ export class MeiliSearchWrapper {
       createdAt: item.createdAt.toISOString(),
       updatedAt: item.updatedAt.toISOString(),
       lang: item.lang,
-      disciplines: tags
-        .filter(({ category }) => category === TagCategory.Discipline)
-        .map(({ name }) => name),
-      levels: tags.filter(({ category }) => category === TagCategory.Level).map(({ name }) => name),
-      resourceTypes: tags
-        .filter(({ category }) => category === TagCategory.ResourceType)
-        .map(({ name }) => name),
+      ...tagsByCategory,
     };
   }
 
