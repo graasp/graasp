@@ -52,7 +52,10 @@ export class ItemTagService {
     const { itemTagRepository } = repositories;
 
     // Get item and check permission
-    await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
+    const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
+
+    // TODO !!!! Check is published
+    await this.meilisearchClient.indexOne(item, repositories);
 
     return await itemTagRepository.delete(itemId, tagId);
   }

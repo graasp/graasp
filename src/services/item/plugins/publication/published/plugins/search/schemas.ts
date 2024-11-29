@@ -31,7 +31,7 @@ export const search = {
                   highlightPostTag: Type.String(),
                 },
                 {
-                  additionalProperties: false,
+                  additionalProperties: true,
                 },
               ),
             ),
@@ -39,6 +39,17 @@ export const search = {
           { additionalProperties: false },
         ),
       ),
+    },
+    { additionalProperties: false },
+  ),
+  response: {},
+} as const satisfies FastifySchema;
+
+export const getFacets = {
+  querystring: Type.Object(
+    {
+      facetName: Type.String(),
+      facetQuery: Type.Optional(Type.String()),
     },
     { additionalProperties: false },
   ),
