@@ -8,7 +8,7 @@ import { EtherpadItemExtra, ItemType, PermissionLevel } from '@graasp/sdk';
 import { ETHERPAD_NAME_FACTORY_DI_KEY } from '../../../../di/constants';
 import { BaseLogger } from '../../../../logger';
 import { MemberCannotWriteItem } from '../../../../utils/errors';
-import { buildRepositories } from '../../../../utils/repositories';
+import { Repositories, buildRepositories } from '../../../../utils/repositories';
 import { Account } from '../../../account/entities/account';
 import { validatePermission } from '../../../authorization';
 import { Member } from '../../../member/entities/member';
@@ -93,6 +93,7 @@ export class EtherpadItemService {
    */
   public async createEtherpadItem(
     member: Member,
+    repositories: Repositories,
     name: string,
     parentId?: string,
     initHtml?: string,
@@ -100,7 +101,7 @@ export class EtherpadItemService {
     const { groupID, padName } = await this.createPad({ action: 'create', initHtml });
 
     try {
-      return this.itemService.post(member, buildRepositories(), {
+      return this.itemService.post(member, repositories, {
         item: {
           name,
           type: ItemType.ETHERPAD,
