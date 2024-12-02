@@ -38,7 +38,6 @@ export class ImageValidationStrategy implements ValidationStrategy {
 
     // return url
     const url = await this.fileService.getUrl({
-      id: item?.id,
       path: filepath,
     });
 

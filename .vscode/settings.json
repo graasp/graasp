@@ -62,6 +62,17 @@
       "database": "etherpad",
       "username": "etherpad",
       "password": "etherpad"
+    },
+    {
+      "previewLimit": 50,
+      "server": "db",
+      "port": 5432,
+      "driver": "PostgreSQL",
+      "name": "test-db",
+      "group": "graasp",
+      "database": "test",
+      "username": "test",
+      "password": "test"
     }
   ],
 }

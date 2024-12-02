@@ -328,7 +328,6 @@ export class MeiliSearchWrapper {
         // }
         try {
           const url = await this.fileService.getUrl({
-            id: item.id,
             path: s3extra.path,
           });
           const content = await readPdfContent(url);

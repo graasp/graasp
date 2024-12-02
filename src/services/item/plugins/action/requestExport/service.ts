@@ -108,7 +108,6 @@ export class ActionRequestExportService {
   ) {
     const filepath = buildActionFilePath(item.id, archiveDate);
     const link = await this.fileService.getUrl({
-      id: item.id,
       path: filepath,
       expiration: EXPORT_FILE_EXPIRATION,
     });

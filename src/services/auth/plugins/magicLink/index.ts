@@ -42,7 +42,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         query: { lang = DEFAULT_LANG },
       } = request;
       const { url } = body;
-
       return db.transaction(async (manager) => {
         try {
           const repositories = buildRepositories(manager);

@@ -29,8 +29,6 @@ export interface FileRepository {
       filepath: string;
       // used by s3 to set an expiry link on signed url
       expiration?: number;
-      // used by local to log
-      id?: string;
     },
     log?: FastifyBaseLogger,
   ): Promise<string>;
