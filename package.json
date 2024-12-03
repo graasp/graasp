@@ -97,7 +97,7 @@
     "lodash.groupby": "4.6.0",
     "lodash.partition": "4.6.0",
     "lodash.uniqby": "4.7.0",
-    "meilisearch": "0.41.0",
+    "meilisearch": "0.46.0",
     "mime": "3.0.0",
     "mmmagic": "0.5.3",
     "node-fetch": "2",
