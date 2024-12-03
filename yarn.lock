@@ -1881,13 +1881,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/cors@npm:9.0.1":
-  version: 9.0.1
-  resolution: "@fastify/cors@npm:9.0.1"
+"@fastify/cors@npm:10.0.1":
+  version: 10.0.1
+  resolution: "@fastify/cors@npm:10.0.1"
   dependencies:
-    fastify-plugin: "npm:^4.0.0"
-    mnemonist: "npm:0.39.6"
-  checksum: 10/a50ac000927e2a39eab70de4b2cb0da00a53a84c23c37f0defbca375769a0e01061f042dc9f7dbb4a96751046c8c45efd6519d5a252629c4e6631d8fa6815e47
+    fastify-plugin: "npm:^5.0.0"
+    mnemonist: "npm:0.39.8"
+  checksum: 10/3e57ac32ac1dc57c747bc3d3f05e462c5b4c1f0c1534871ccd791b9c9b06a83dd76e3427e31c880018b6fa974bd93678983f6b0191f00989d6485d5961653b60
   languageName: node
   linkType: hard
 
@@ -7442,7 +7442,7 @@ __metadata:
     "@commitlint/config-conventional": "npm:19.2.2"
     "@faker-js/faker": "npm:9.0.3"
     "@fastify/busboy": "npm:3.0.0"
-    "@fastify/cors": "npm:9.0.1"
+    "@fastify/cors": "npm:10.0.1"
     "@fastify/forwarded": "npm:3.0.0"
     "@fastify/helmet": "npm:11.1.1"
     "@fastify/multipart": "npm:8.3.0"
@@ -9768,12 +9768,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mnemonist@npm:0.39.6":
-  version: 0.39.6
-  resolution: "mnemonist@npm:0.39.6"
+"mnemonist@npm:0.39.8":
+  version: 0.39.8
+  resolution: "mnemonist@npm:0.39.8"
   dependencies:
     obliterator: "npm:^2.0.1"
-  checksum: 10/d7b8a85767072389502e8235e251ddb3be7fcd173f41b20f6d848e21a0d569f0c2ca0992b20f204fc23b112a4dd3fcc25c00de65406214912a62a1000c21fab9
+  checksum: 10/7ef951abab440ba45a32e9501e3723164ef2d2e35b9152b258ea3d0d7fa790d1a5c05e1c576c158a70631e3bfbeba95cce2fef2f0e1de219c1d0bfeaef5a223e
   languageName: node
   linkType: hard
 
