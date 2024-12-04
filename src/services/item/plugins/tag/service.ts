@@ -33,6 +33,7 @@ export class ItemTagService {
 
     const result = await itemTagRepository.create(itemId, tag.id);
 
+    // update index if item is published
     const isPublished = await itemPublishedRepository.getForItem(item);
     if (isPublished) {
       await this.meilisearchClient.indexOne(item, repositories);
@@ -56,6 +57,7 @@ export class ItemTagService {
     // Get item and check permission
     const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
 
+    // update index if item is published
     const isPublished = await itemPublishedRepository.getForItem(item);
     if (isPublished) {
       await this.meilisearchClient.indexOne(item, repositories);
