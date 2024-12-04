@@ -1,13 +1,10 @@
 import { MultiSearchParams } from 'meilisearch';
 import { singleton } from 'tsyringe';
 
-import { INDEX_NAME } from '@graasp/sdk';
-
 import { BaseLogger } from '../../../../../../../logger';
 import { Repositories } from '../../../../../../../utils/repositories';
 import { Actor } from '../../../../../../member/entities/member';
 import { ItemService } from '../../../../../service';
-import { ItemCategoryService } from '../../../../itemCategory/services/itemCategory';
 import { stripHtml } from '../../../validation/utils';
 import { ItemPublishedService } from '../../service';
 import { MeiliSearchWrapper } from './meilisearch';
@@ -62,7 +59,7 @@ export class SearchService {
   async getFacets(
     _actor: Actor,
     _repositories: Repositories,
-    body: { facetName: string; facetQuery: string },
+    body: { facetName: string; facetQuery?: string },
   ) {
     const searchResult = await this.meilisearchClient.getFacets(body);
 

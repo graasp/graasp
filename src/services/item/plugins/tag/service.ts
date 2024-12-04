@@ -23,7 +23,7 @@ export class ItemTagService {
     itemId: UUID,
     tagInfo: { name: string; category: TagCategory },
   ) {
-    const { itemTagRepository, tagRepository } = repositories;
+    const { itemTagRepository, tagRepository, itemPublishedRepository } = repositories;
 
     // Get item and check permission
     const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
@@ -33,8 +33,10 @@ export class ItemTagService {
 
     const result = await itemTagRepository.create(itemId, tag.id);
 
-    // TODO !!!! Check is published
-    await this.meilisearchClient.indexOne(item, repositories);
+    const isPublished = await itemPublishedRepository.getForItem(item);
+    if (isPublished) {
+      await this.meilisearchClient.indexOne(item, repositories);
+    }
 
     return result;
   }
@@ -49,13 +51,15 @@ export class ItemTagService {
   }
 
   async delete(actor: Member, repositories: Repositories, itemId: UUID, tagId: UUID) {
-    const { itemTagRepository } = repositories;
+    const { itemTagRepository, itemPublishedRepository } = repositories;
 
     // Get item and check permission
     const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
 
-    // TODO !!!! Check is published
-    await this.meilisearchClient.indexOne(item, repositories);
+    const isPublished = await itemPublishedRepository.getForItem(item);
+    if (isPublished) {
+      await this.meilisearchClient.indexOne(item, repositories);
+    }
 
     return await itemTagRepository.delete(itemId, tagId);
   }
