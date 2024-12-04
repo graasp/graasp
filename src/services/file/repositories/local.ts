@@ -61,25 +61,25 @@ export class LocalFileRepository implements FileRepository {
     await rm(this.buildFullPath(folderPath), { recursive: true });
   }
 
-  private async _validateFile({ id, filepath }: { id?: string; filepath: string }) {
+  private async _validateFile({ filepath }: { filepath: string }) {
     // ensure the file exists, if not throw error
     try {
       await access(this.buildFullPath(filepath));
     } catch (e) {
       if (e.code === 'ENOENT') {
-        throw new LocalFileNotFound({ id, filepath });
+        throw new LocalFileNotFound({ filepath });
       }
       throw e;
     }
   }
 
-  async getFile({ filepath, id }) {
-    await this._validateFile({ filepath, id });
+  async getFile({ filepath }: { filepath: string }) {
+    await this._validateFile({ filepath });
     return fs.createReadStream(this.buildFullPath(filepath));
   }
 
-  async getUrl({ filepath, id }) {
-    await this._validateFile({ filepath, id });
+  async getUrl({ filepath }) {
+    await this._validateFile({ filepath });
     const localUrl = new URL(filepath, this.options.localFilesHost);
     return localUrl.toString();
   }

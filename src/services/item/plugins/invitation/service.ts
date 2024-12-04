@@ -22,6 +22,7 @@ import { EMAIL_COLUMN_NAME, GROUP_COL_NAME, buildInvitationLink } from './consta
 import { Invitation } from './entity';
 import {
   CantCreateStructureInNoFolderItem,
+  InvitationNotFound,
   MissingEmailColumnInCSVError,
   MissingEmailInRowError,
   MissingGroupColumnInCSVError,
@@ -85,7 +86,11 @@ export class InvitationService {
         actor.id,
       );
     } else {
-      return repositories.invitationRepository.getOneOrThrow(invitationId);
+      return repositories.invitationRepository.getOneOrThrow(
+        invitationId,
+        undefined,
+        new InvitationNotFound({ invitationId }),
+      );
     }
   }
 

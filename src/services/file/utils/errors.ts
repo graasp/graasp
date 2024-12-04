@@ -73,15 +73,13 @@ export class DeleteFolderInvalidPathError extends GraaspFileError {
 }
 
 export class DownloadFileInvalidParameterError extends GraaspFileError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GPFERR005',
-        statusCode: StatusCodes.BAD_REQUEST,
-        message: FAILURE_MESSAGES.INVALID_DOWNLOAD_PARAMETERS,
-      },
-      data,
-    );
+  constructor() {
+    super({
+      code: 'GPFERR005',
+      statusCode: StatusCodes.BAD_REQUEST,
+      // todo: change message to indicate the the filepath did not exist
+      message: FAILURE_MESSAGES.INVALID_DOWNLOAD_PARAMETERS,
+    });
   }
 }
 

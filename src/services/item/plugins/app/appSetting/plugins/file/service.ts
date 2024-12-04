@@ -16,6 +16,12 @@ import { AppSetting } from '../../appSettings';
 import { NotAppSettingFile } from '../../errors';
 import { AppSettingService } from '../../service';
 
+type AppSettingFileProperties = {
+  path: string;
+  name: string;
+  mimetype: string;
+};
+
 @singleton()
 class AppSettingFileService {
   private readonly appSettingService: AppSettingService;
@@ -53,7 +59,7 @@ class AppSettingFileService {
       name = fileBody?.name?.substring(0, MAX_ITEM_NAME_LENGTH) ?? 'file';
     }
 
-    const fileProperties = await this.fileService
+    const fileProperties = (await this.fileService
       .upload(member, {
         file: stream,
         filepath,
@@ -64,7 +70,7 @@ class AppSettingFileService {
       })
       .catch((e) => {
         throw e;
-      });
+      })) satisfies AppSettingFileProperties;
 
     const appSetting = await repositories.appSettingRepository.addOne({
       itemId: item.id,
@@ -93,7 +99,7 @@ class AppSettingFileService {
       item.id,
       appSettingId,
     );
-    const fileProp = appSetting.data[this.fileService.fileType];
+    const fileProp = appSetting.data[this.fileService.fileType] as AppSettingFileProperties;
     if (!fileProp) {
       throw new NotAppSettingFile(appSetting);
     }
@@ -101,8 +107,7 @@ class AppSettingFileService {
     // always return the url because redirection uses bearer token automatically
     // and s3 prevent multiple auth methods
     const result = await this.fileService.getUrl({
-      id: appSetting.id,
-      ...fileProp,
+      path: fileProp.path,
     });
 
     return result;
@@ -118,14 +123,13 @@ class AppSettingFileService {
       // create file data object
       const itemId = appSetting.item.id;
       const newFilePath = this.buildFilePath(itemId, appSetting.id);
-      const originalFileExtra = appSetting.data[fileItemType] as FileItemProperties;
+      const originalFileExtra = appSetting.data[fileItemType] as AppSettingFileProperties;
       const newFileData = {
         [fileItemType]: {
-          filepath: newFilePath,
-          filename: originalFileExtra.name,
-          size: originalFileExtra.size,
+          path: newFilePath,
+          name: originalFileExtra.name,
           mimetype: originalFileExtra.mimetype,
-        },
+        } satisfies AppSettingFileProperties,
       };
 
       // run copy task

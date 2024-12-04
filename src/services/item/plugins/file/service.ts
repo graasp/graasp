@@ -16,10 +16,14 @@ import {
 } from '@graasp/sdk';
 
 import { asDefined } from '../../../../utils/assertions';
+import { FILE_ITEM_TYPE } from '../../../../utils/config';
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import FileService from '../../../file/service';
-import { UploadEmptyFileError } from '../../../file/utils/errors';
+import {
+  DownloadFileInvalidParameterError,
+  UploadEmptyFileError,
+} from '../../../file/utils/errors';
 import { Actor, Member } from '../../../member/entities/member';
 import { StorageService } from '../../../member/plugins/storage/service';
 import { randomHexOf4 } from '../../../utils';
@@ -195,10 +199,10 @@ class FileItemService {
     // check rights
     const item = await repositories.itemRepository.getOneOrThrow(itemId);
     await validatePermission(repositories, PermissionLevel.Read, actor, item);
-    const extraData = item.extra[this.fileService.fileType] as FileItemProperties;
+    const extraData = item.extra[this.fileService.fileType] as FileItemProperties | undefined;
+
     const result = await this.fileService.getUrl({
-      id: itemId,
-      ...extraData,
+      path: extraData?.path,
     });
 
     return result;

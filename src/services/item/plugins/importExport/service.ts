@@ -222,9 +222,7 @@ export class ImportExportService {
         const url = await this.fileItemService.getUrl(actor, repositories, {
           itemId: item.id,
         });
-
         const res = await fetch(url);
-
         const filename = getFilenameFromItem(item);
         return {
           name: filename,

@@ -513,7 +513,7 @@ describe('File Item routes tests', () => {
           });
 
           expect(response.json()).toMatchObject(
-            new DownloadFileInvalidParameterError(expect.anything()),
+            JSON.parse(JSON.stringify(new DownloadFileInvalidParameterError())),
           );
         });
       });

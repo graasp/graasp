@@ -60,7 +60,6 @@ export class ThumbnailService {
   async getUrl({ id, size }: { size: string; id: string }) {
     const result = await this._fileService.getUrl({
       path: this.buildFilePath(id, size),
-      id,
     });
 
     return result;
@@ -68,7 +67,6 @@ export class ThumbnailService {
   async getFile(actor: Actor, { id, size }: { size: string; id: string }) {
     const result = await this._fileService.getFile(actor, {
       path: this.buildFilePath(id, size),
-      id,
     });
 
     return result;
