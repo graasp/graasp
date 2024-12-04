@@ -9,19 +9,22 @@ export class Migrations1733308052981 implements MigrationInterface {
         insert into tag (name, category)
         select DISTINCT(
             trim(
+                -- replace faulty breaking lines into spaces
                 replace(
                     unnest(
+                        -- break comma-separated tags into multiple tags 
                         string_to_array(
+                            -- remove resulting quotes (") 
                             substr(
                                 jsonb_array_elements(settings::jsonb->'tags')::text,
                                 2,
                                 length(jsonb_array_elements( settings::jsonb->'tags' )::text) - 2
-                                ),','
-                            )
-                        ),'\n',' '
-                    )
+                            ),','
+                        )
+                    ),'\n',' '
                 )
-            ), 'discipline'::tag_category_enum from item
+            )
+        ), 'discipline'::tag_category_enum from item
 
         where settings::jsonb->'tags' is not null 
         `);
@@ -30,6 +33,7 @@ export class Migrations1733308052981 implements MigrationInterface {
     await queryRunner.query(`
         insert into item_tag (tag_id, item_id)
         select  tag.id, iid from (
+        -- get all items and their corresponding tag entries
         select item.id as iid,  trim(
                 replace(
                     unnest(
@@ -93,9 +97,11 @@ export class Migrations1733308052981 implements MigrationInterface {
       ],
     ]) {
       for (const tag of tags) {
+        // add tag in another category
         await queryRunner.query(`
             INSERT INTO tag (name, category) values ('${tag}', '${category}'::tag_category_enum)`);
 
+        // update item tag entry with new tag
         await queryRunner.query(`
             update item_tag 
             set tag_id = (select id from tag where tag.name = '${tag}' and tag.category = '${category}')
