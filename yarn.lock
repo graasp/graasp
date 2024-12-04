@@ -2094,9 +2094,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@npm:5.3.1":
+"@graasp/sdk@github:graasp/graasp-sdk#tag-type-search":
   version: 5.3.1
-  resolution: "@graasp/sdk@npm:5.3.1"
+  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=4d3c97537eaf90dc8bccc24ce4d96919f3a01986"
   dependencies:
     "@faker-js/faker": "npm:9.2.0"
     filesize: "npm:10.1.6"
@@ -2104,7 +2104,7 @@ __metadata:
   peerDependencies:
     date-fns: ^3 || ^4.0.0
     uuid: ^9 || ^10 || ^11.0.0
-  checksum: 10/9c414a3763c049e0360d78ce2c9f584621fdd829826e08c1c6416cdc02e1bbeefc7e55fedba6a09a86f5515a13c726d7c1b8558842e137fe04abc4ca8f172564
+  checksum: 10/3bf6899a7efaa595e7b4aadc2a5674469b0cc1333adad47d88fb303308cdc100b435566738b1f8c92eac9f839a486fc7658a8ccb34bd8f5e12e2897303f334cc
   languageName: node
   linkType: hard
 
@@ -7454,7 +7454,7 @@ __metadata:
     "@fastify/type-provider-typebox": "npm:4.1.0"
     "@fastify/websocket": "npm:7.2.0"
     "@graasp/etherpad-api": "npm:2.1.1"
-    "@graasp/sdk": "npm:5.3.1"
+    "@graasp/sdk": "github:graasp/graasp-sdk#tag-type-search"
     "@graasp/translations": "npm:1.42.0"
     "@jest/globals": "npm:29.7.0"
     "@quobix/vacuum": "npm:0.13.6"
