@@ -1,3 +1,4 @@
+import { Static } from '@sinclair/typebox';
 import {
   EnqueuedTask,
   Index,
@@ -30,6 +31,7 @@ import { Item, isItemType } from '../../../../../entities/Item';
 import { readPdfContent } from '../../../../../utils';
 import { stripHtml } from '../../../validation/utils';
 import { ItemPublishedNotFound } from '../../errors';
+import { search } from './schemas';
 
 const ACTIVE_INDEX = INDEX_NAME;
 const ROTATING_INDEX = `${INDEX_NAME}_tmp`; // Used when reindexing
@@ -158,7 +160,11 @@ export class MeiliSearchWrapper {
 
   // WORKS ONLY FOR PUBLISHED ITEMS
   async search(queries: MultiSearchParams) {
-    const searchResult = await this.meilisearchClient.multiSearch(queries);
+    // type should match schema
+    const searchResult =
+      await this.meilisearchClient.multiSearch<
+        Static<(typeof search)['response']['200']>['results'][0]['hits'][0]
+      >(queries);
 
     return searchResult;
   }
