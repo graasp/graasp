@@ -40,15 +40,19 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       return searchResults;
     },
   );
-  fastify.get(
+  fastify.post(
     '/collections/facets',
     { preHandler: optionalIsAuthenticated, schema: getFacets },
     async (request) => {
-      const { user, query } = request;
+      const { user, body, query } = request;
       const repositories = buildRepositories();
       const member = user?.account;
-      const searchResults = await searchService.getFacets(member, repositories, query);
-
+      const searchResults = await searchService.getFacets(
+        member,
+        repositories,
+        query.facetName,
+        body,
+      );
       return searchResults;
     },
   );

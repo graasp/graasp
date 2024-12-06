@@ -101,7 +101,7 @@ export class MeiliSearchWrapper {
     this.getIndex().then(async () => {
       // set facetting order to count for tag categories
       await this.meilisearchClient.index(INDEX_NAME).updateFaceting({
-        maxValuesPerFacet: 10,
+        maxValuesPerFacet: 50,
         sortFacetValuesBy: Object.fromEntries(Object.values(TagCategory).map((c) => [c, 'count'])),
       });
     });
@@ -165,14 +165,7 @@ export class MeiliSearchWrapper {
       await this.meilisearchClient.multiSearch<
         Static<(typeof search)['response']['200']>['results'][0]['hits'][0]
       >(queries);
-
     return searchResult;
-  }
-
-  async getFacets(args: { facetQuery?: string; facetName: string }) {
-    const result = await this.meilisearchClient.index(INDEX_NAME).searchForFacetValues(args);
-
-    return result;
   }
 
   private async parseItem(

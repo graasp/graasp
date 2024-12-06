@@ -13,6 +13,7 @@ import { ItemPublishedService } from '../../service';
 import { MeiliSearchWrapper } from './meilisearch';
 
 type SearchFilters = Partial<{
+  query?: string;
   tags: Partial<{ [key in TagCategory]: Tag['name'][] }>;
   langs: string[];
   isPublishedRoot: boolean;
@@ -74,9 +75,9 @@ export class SearchService {
   async search(
     _actor: Actor,
     _repositories: Repositories,
-    query: Omit<MultiSearchQuery, 'filter' | 'indexUid'> & SearchFilters,
+    body: Omit<MultiSearchQuery, 'filter' | 'indexUid' | 'q'> & SearchFilters,
   ) {
-    const { tags, langs, isPublishedRoot, ...q } = query;
+    const { tags, langs, isPublishedRoot, query, ...q } = body;
     const filters = this.buildFilters({ tags, langs, isPublishedRoot });
 
     // User input needs escaping? Or safe to send to meilisearch? WARNING: search currently done with master key, but search is only exposed endpoint
@@ -86,24 +87,42 @@ export class SearchService {
           indexUid: INDEX_NAME,
           attributesToHighlight: ['*'],
           ...q,
+          q: query,
           filter: filters,
         },
       ],
     };
 
     const searchResult = await this.meilisearchClient.search(updatedQueries);
-
-    return searchResult;
+    return searchResult.results[0];
   }
 
   async getFacets(
     _actor: Actor,
     _repositories: Repositories,
-    body: { facetName: string; facetQuery?: string },
+    facetName: string,
+    body: SearchFilters & Pick<MultiSearchQuery, 'facets'>,
   ) {
-    const searchResult = await this.meilisearchClient.getFacets(body);
+    const { langs, isPublishedRoot, query, tags } = body;
+    const filters = this.buildFilters({
+      tags,
+      langs,
+      isPublishedRoot,
+    });
+    // User input needs escaping? Or safe to send to meilisearch? WARNING: search currently done with master key, but search is only exposed endpoint
+    const updatedQueries = {
+      queries: [
+        {
+          indexUid: INDEX_NAME,
+          facets: [facetName],
+          q: query,
+          filter: filters,
+        },
+      ],
+    };
 
-    return searchResult;
+    const searchResult = await this.meilisearchClient.search(updatedQueries);
+    return searchResult.results[0].facetDistribution?.[facetName] ?? {};
   }
 
   async rebuildIndex() {

@@ -20,7 +20,7 @@ export const search = {
       attributesToHighlight: Type.Array(Type.String()),
       attributesToCrop: Type.Array(Type.String()),
       cropLength: Type.Number(),
-      q: Type.String(),
+      query: Type.String(),
       page: Type.Number(),
       limit: Type.Number(),
       sort: Type.Array(Type.String()),
@@ -34,50 +34,46 @@ export const search = {
   ),
   response: {
     [StatusCodes.OK]: customType.StrictObject({
-      results: Type.Array(
+      totalHits: Type.Optional(Type.Number()),
+      estimatedTotalHits: Type.Optional(Type.Number()),
+      hits: Type.Array(
         customType.StrictObject({
-          totalHits: Type.Optional(Type.Number()),
-          estimatedTotalHits: Type.Optional(Type.Number()),
-          hits: Type.Array(
-            customType.StrictObject({
-              name: Type.String(),
-              description: Type.String(),
-              content: Type.String(),
-              creator: customType.StrictObject({
-                id: customType.UUID(),
-                name: Type.String(),
-              }),
-              level: Type.Array(Type.String()),
-              discipline: Type.Array(Type.String()),
-              'resource-type': Type.Array(Type.String()),
+          name: Type.String(),
+          description: Type.String(),
+          content: Type.String(),
+          creator: customType.StrictObject({
+            id: customType.UUID(),
+            name: Type.String(),
+          }),
+          level: Type.Array(Type.String()),
+          discipline: Type.Array(Type.String()),
+          'resource-type': Type.Array(Type.String()),
+          id: customType.UUID(),
+          type: Type.Enum(ItemType),
+          isPublishedRoot: Type.Boolean(),
+          isHidden: Type.Boolean(),
+          createdAt: customType.DateTime(),
+          updatedAt: customType.DateTime(),
+          lang: Type.String(),
+          _formatted: customType.StrictObject({
+            name: Type.String(),
+            description: Type.String(),
+            content: Type.String(),
+            creator: customType.StrictObject({
               id: customType.UUID(),
-              type: Type.Enum(ItemType),
-              isPublishedRoot: Type.Boolean(),
-              isHidden: Type.Boolean(),
-              createdAt: customType.DateTime(),
-              updatedAt: customType.DateTime(),
-              lang: Type.String(),
-              _formatted: customType.StrictObject({
-                name: Type.String(),
-                description: Type.String(),
-                content: Type.String(),
-                creator: customType.StrictObject({
-                  id: customType.UUID(),
-                  name: Type.String(),
-                }),
-                level: Type.Array(Type.String()),
-                discipline: Type.Array(Type.String()),
-                'resource-type': Type.Array(Type.String()),
-                id: customType.UUID(),
-                type: Type.Enum(ItemType),
-                isPublishedRoot: Type.Boolean(),
-                isHidden: Type.Boolean(),
-                createdAt: customType.DateTime(),
-                updatedAt: customType.DateTime(),
-                lang: Type.String(),
-              }),
+              name: Type.String(),
             }),
-          ),
+            level: Type.Array(Type.String()),
+            discipline: Type.Array(Type.String()),
+            'resource-type': Type.Array(Type.String()),
+            id: customType.UUID(),
+            type: Type.String(),
+            isPublishedRoot: Type.Boolean(),
+            isHidden: Type.Boolean(),
+            createdAt: customType.DateTime(),
+            updatedAt: customType.DateTime(),
+            lang: Type.String(),
+          }),
         }),
       ),
     }),
@@ -86,29 +82,26 @@ export const search = {
 } as const satisfies FastifySchema;
 
 export const getFacets = {
-  operationId: 'getCollectionFacets',
+  operationId: 'getFacetsForName',
   tags: ['collection', 'search'],
-  summary: 'Get collections facets',
-  description: 'Get how many collections are tagged with given facets.',
+  summary: 'Get facets for a given facet name',
+  description:
+    'Get list of facets and how many collections are tagged with those given a facet name.',
 
   querystring: customType.StrictObject({
-    facetName: Type.String({ description: 'Name of the facet' }),
-    facetQuery: Type.Optional(Type.String({ description: 'Query to filter facets' })),
+    facetName: Type.String(),
   }),
+  body: Type.Partial(
+    customType.StrictObject({
+      query: Type.String(),
+      langs: Type.Array(Type.String()),
+      isPublishedRoot: Type.Boolean(),
+      facets: Type.Array(Type.String()),
+      tags: Type.Partial(Type.Record(Type.Enum(TagCategory), Type.Array(Type.String()))),
+    }),
+  ),
   response: {
-    [StatusCodes.OK]: customType.StrictObject(
-      {
-        facetHits: Type.Array(
-          customType.StrictObject({
-            value: Type.String(),
-            count: Type.Number(),
-          }),
-        ),
-        facetQuery: customType.Nullable(Type.String()),
-        processingTimeMs: Type.Number(),
-      },
-      { description: 'Successful Response' },
-    ),
+    [StatusCodes.OK]: Type.Record(Type.String(), Type.Number()),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
