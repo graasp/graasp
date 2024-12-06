@@ -76,7 +76,7 @@
     "archiver": "7.0.1",
     "bad-words": "3.0.4",
     "bcrypt": "5.1.1",
-    "bullmq": "5.18.0",
+    "bullmq": "5.31.2",
     "content-disposition": "0.5.4",
     "date-fns": "3.6.0",
     "dotenv": "16.4.5",
