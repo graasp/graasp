@@ -5,13 +5,16 @@ import { PermissionLevel, TagCategory, UUID } from '@graasp/sdk';
 import { Repositories } from '../../../../utils/repositories';
 import { Actor, Member } from '../../../member/entities/member';
 import { ItemService } from '../../service';
+import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
 
 @singleton()
 export class ItemTagService {
   private readonly itemService: ItemService;
+  private readonly meilisearchClient: MeiliSearchWrapper;
 
-  constructor(itemService: ItemService) {
+  constructor(itemService: ItemService, meilisearchClient: MeiliSearchWrapper) {
     this.itemService = itemService;
+    this.meilisearchClient = meilisearchClient;
   }
 
   async create(
@@ -20,15 +23,23 @@ export class ItemTagService {
     itemId: UUID,
     tagInfo: { name: string; category: TagCategory },
   ) {
-    const { itemTagRepository, tagRepository } = repositories;
+    const { itemTagRepository, tagRepository, itemPublishedRepository } = repositories;
 
     // Get item and check permission
-    await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
+    const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
 
     // create tag if does not exist
     const tag = await tagRepository.addOneIfDoesNotExist(tagInfo);
 
-    return await itemTagRepository.create(itemId, tag.id);
+    const result = await itemTagRepository.create(itemId, tag.id);
+
+    // update index if item is published
+    const isPublished = await itemPublishedRepository.getForItem(item);
+    if (isPublished) {
+      await this.meilisearchClient.indexOne(item, repositories);
+    }
+
+    return result;
   }
 
   async getByItemId(actor: Actor, repositories: Repositories, itemId: UUID) {
@@ -41,10 +52,16 @@ export class ItemTagService {
   }
 
   async delete(actor: Member, repositories: Repositories, itemId: UUID, tagId: UUID) {
-    const { itemTagRepository } = repositories;
+    const { itemTagRepository, itemPublishedRepository } = repositories;
 
     // Get item and check permission
-    await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
+    const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
+
+    // update index if item is published
+    const isPublished = await itemPublishedRepository.getForItem(item);
+    if (isPublished) {
+      await this.meilisearchClient.indexOne(item, repositories);
+    }
 
     return await itemTagRepository.delete(itemId, tagId);
   }

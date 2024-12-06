@@ -25,7 +25,10 @@ export const settingsSchema = Type.Partial(
     {
       lang: Type.String({ deprecated: true }),
       isPinned: Type.Boolean(),
-      tags: Type.Array(Type.String()),
+      /**
+       * @deprecated use entities tags and item tags instead
+       */
+      tags: Type.Array(Type.String(), { deprecated: true }),
       showChatbox: Type.Boolean(),
       isResizable: Type.Boolean(),
       hasThumbnail: Type.Boolean(),
