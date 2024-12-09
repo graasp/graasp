@@ -13,7 +13,7 @@ import { itemSchema, itemSchemaRef, settingsSchema } from './schemas';
 const baseItemCreateSchema = Type.Composite(
   [
     Type.Pick(itemSchema, ['name']),
-    Type.Partial(Type.Pick(itemSchema, ['displayName', 'description', 'settings', 'lang'])),
+    Type.Partial(Type.Pick(itemSchema, ['description', 'settings', 'lang'])),
     customType.StrictObject({
       geolocation: Type.Optional(geoCoordinateSchemaRef),
     }),

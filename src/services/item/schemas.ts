@@ -8,7 +8,6 @@ import {
   CCLicenseAdaptions,
   DescriptionPlacement,
   DocumentItemExtraFlavor,
-  MAX_ITEM_NAME_LENGTH,
   MAX_TARGETS_FOR_MODIFY_REQUEST,
   MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE,
   MaxWidth,
@@ -55,7 +54,6 @@ export const itemSchema = customType.StrictObject(
   {
     id: customType.UUID(),
     name: customType.ItemName(),
-    displayName: Type.String({ maxLength: MAX_ITEM_NAME_LENGTH }),
     description: Type.Optional(customType.Nullable(Type.String())),
     type: Type.String(),
     path: Type.String(),
@@ -77,7 +75,7 @@ export const itemSchemaRef = registerSchemaAsRef('item', 'Item', itemSchema);
 export const itemUpdateSchema = Type.Partial(
   Type.Composite(
     [
-      Type.Pick(itemSchema, ['name', 'displayName', 'description', 'lang']),
+      Type.Pick(itemSchema, ['name', 'description', 'lang']),
       customType.StrictObject({
         settings: Type.Optional(settingsSchema),
         extra: Type.Union([

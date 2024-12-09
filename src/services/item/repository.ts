@@ -93,7 +93,6 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
    */
   createOne(args: {
     name: Item['name'];
-    displayName?: Item['displayName'];
     description?: Item['description'];
     type?: Item['type'];
     extra?: Item['extra'];
@@ -105,7 +104,6 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
   }) {
     const {
       name,
-      displayName = '',
       description = null,
       parent,
       type = ItemType.FOLDER,
@@ -133,7 +131,6 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
     const item = this.repository.create({
       id,
       name,
-      displayName,
       description,
       type,
       extra: parsedExtra,

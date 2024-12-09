@@ -362,23 +362,6 @@ describe('Item routes tests', () => {
         expect(Object.keys(newItem.settings)).not.toContain(Object.keys(BAD_SETTING)[0]);
       });
 
-      it('Create successfully with empty display name', async () => {
-        const payload = FolderItemFactory({ displayName: '' });
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items`,
-          payload: { ...payload },
-        });
-
-        const newItem = response.json();
-        expectItem(newItem, payload, actor);
-        expect(newItem.displayName).toEqual('');
-        expect(response.statusCode).toBe(StatusCodes.OK);
-        await waitForPostCreation();
-
-        expect(await AppDataSource.getRepository(Item).countBy({ id: newItem.id })).toEqual(1);
-      });
-
       it('Create successfully with between children', async () => {
         const payload = FolderItemFactory();
         const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
@@ -804,26 +787,6 @@ describe('Item routes tests', () => {
         expect(newItem.settings.showLinkButton).toBe(false);
         expect(newItem.settings.showLinkIframe).toBe(true);
         expect(newItem.settings.hasThumbnail).toBeFalsy();
-      });
-
-      it('Update successfully with empty display name', async () => {
-        const { item } = await testUtils.saveItemAndMembership({
-          member: actor,
-          item: { displayName: 'Not empty' },
-        });
-
-        const payload = { displayName: '' };
-
-        const response = await app.inject({
-          method: HttpMethod.Patch,
-          url: `/items/${item.id}`,
-          payload,
-        });
-
-        expect(response.statusCode).toBe(StatusCodes.OK);
-
-        const newItem = response.json();
-        expect(newItem.displayName).toEqual('');
       });
 
       it('Filter out bad setting when updating', async () => {

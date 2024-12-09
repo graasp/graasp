@@ -99,7 +99,6 @@ export const getPostItemPayloadFromFormData = (
 
   // non-mandatory fields
   const description = getFieldFromMultipartForm(formData.fields, 'description');
-  const displayName = getFieldFromMultipartForm(formData.fields, 'displayName');
 
   // nested objects that we need to deeply validate
   const settingsRaw = getFieldFromMultipartForm(formData.fields, 'settings');
@@ -125,7 +124,6 @@ export const getPostItemPayloadFromFormData = (
       name,
       type,
       description,
-      displayName,
       settings,
       extra,
     },

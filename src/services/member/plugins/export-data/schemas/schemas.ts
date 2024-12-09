@@ -21,7 +21,6 @@ export const exportMemberData = {
 export const externalItemSchema = buildObjectSchema({
   id: STRING_TYPE,
   name: STRING_TYPE,
-  displayName: STRING_TYPE,
 });
 
 export const externalMemberSchema = (nullable: boolean = false) =>
@@ -110,7 +109,6 @@ export const itemSchema = buildObjectSchema({
   extra: OBJECT_TYPE,
   settings: OBJECT_TYPE,
   lang: STRING_TYPE,
-  displayName: STRING_TYPE,
   createdAt: DATE_TYPE,
   updatedAt: DATE_TYPE,
   deletedAt: ONE_OF([...DATE_TYPE.oneOf, NULL_TYPE]),
