@@ -16,14 +16,10 @@ import {
 } from '@graasp/sdk';
 
 import { asDefined } from '../../../../utils/assertions';
-import { FILE_ITEM_TYPE } from '../../../../utils/config';
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import FileService from '../../../file/service';
-import {
-  DownloadFileInvalidParameterError,
-  UploadEmptyFileError,
-} from '../../../file/utils/errors';
+import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { Actor, Member } from '../../../member/entities/member';
 import { StorageService } from '../../../member/plugins/storage/service';
 import { randomHexOf4 } from '../../../utils';

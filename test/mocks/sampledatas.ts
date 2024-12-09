@@ -101,7 +101,6 @@ const datas: {
       {
         id: sharedIds.publicRootFolder,
         name: 'public_root_folder',
-        displayName: 'Public Root Folder',
         type: ItemType.FOLDER,
         description: faker.lorem.text(),
         path: buildPathFromIds(sharedIds.publicRootFolder),
@@ -115,7 +114,6 @@ const datas: {
       {
         id: sharedIds.publicChildGeolocDocument,
         name: 'public_child_geoloc_document',
-        displayName: 'Public Child Geoloc Document',
         type: ItemType.DOCUMENT,
         description: undefined,
         path: buildPathFromIds(sharedIds.publicRootFolder, sharedIds.publicChildGeolocDocument),
@@ -129,7 +127,6 @@ const datas: {
       {
         id: sharedIds.hiddenChildItem,
         name: 'hidden_child_document',
-        displayName: 'Hidden Child Document',
         type: ItemType.DOCUMENT,
         description: undefined,
         path: buildPathFromIds(sharedIds.publicRootFolder, sharedIds.hiddenChildItem),
@@ -143,7 +140,6 @@ const datas: {
       {
         id: sharedIds.publicChildChatboxItem,
         name: 'public_child_chatbox_document',
-        displayName: 'Public Child Chatbox Document',
         type: ItemType.DOCUMENT,
         description: undefined,
         path: buildPathFromIds(sharedIds.publicRootFolder, sharedIds.publicChildChatboxItem),
