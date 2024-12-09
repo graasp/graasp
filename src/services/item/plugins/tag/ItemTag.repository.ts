@@ -22,7 +22,11 @@ export class ItemTagRepository extends AbstractRepository<ItemTag> {
       throw new IllegalArgumentException(`The given 'itemId' is undefined!`);
     }
 
-    const itemTags = await this.repository.find({ where: { itemId }, relations: { tag: true } });
+    const itemTags = await this.repository.find({
+      where: { itemId },
+      relations: { tag: true },
+      order: { tag: { category: 'ASC', name: 'ASC' } },
+    });
     return itemTags.map(({ tag }) => tag);
   }
 
@@ -39,7 +43,12 @@ export class ItemTagRepository extends AbstractRepository<ItemTag> {
 
     const q = this.repository
       .createQueryBuilder('itemTag')
-      .select(['t.name AS name', 't.category AS category', 'count(t.id)::integer as count'])
+      .select([
+        't.id AS id',
+        't.name AS name',
+        't.category AS category',
+        'count(t.id)::integer as count',
+      ])
       .innerJoinAndSelect('tag', 't', 't.id = itemTag.tag_id AND t.name ILIKE :search', {
         search: `%${search}%`,
       });

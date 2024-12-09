@@ -14,8 +14,12 @@ export class ItemPublishedRepository extends AbstractRepository<ItemPublished> {
     super(ItemPublished, manager);
   }
 
+  /**
+   * Returns inherited published entry for given item
+   * @param item
+   * @returns published entry if the item is published, null otherwise
+   */
   async getForItem(item: Item): Promise<ItemPublished | null> {
-    // this returns the root published item when querying a child item
     const entry = await this.repository
       .createQueryBuilder('pi')
       .innerJoinAndSelect('pi.item', 'item', 'pi.item @> :itemPath', { itemPath: item.path })
