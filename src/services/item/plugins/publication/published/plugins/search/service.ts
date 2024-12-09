@@ -1,11 +1,9 @@
 import { MultiSearchQuery } from 'meilisearch';
 import { singleton } from 'tsyringe';
 
-import { INDEX_NAME, TagCategory } from '@graasp/sdk';
+import { TagCategory } from '@graasp/sdk';
 
 import { BaseLogger } from '../../../../../../../logger';
-import { Repositories } from '../../../../../../../utils/repositories';
-import { Actor } from '../../../../../../member/entities/member';
 import { Tag } from '../../../../../../tag/Tag.entity';
 import { ItemService } from '../../../../../service';
 import { stripHtml } from '../../../validation/utils';
@@ -72,11 +70,7 @@ export class SearchService {
   }
 
   // WORKS ONLY FOR PUBLISHED ITEMS
-  async search(
-    _actor: Actor,
-    _repositories: Repositories,
-    body: Omit<MultiSearchQuery, 'filter' | 'indexUid' | 'q'> & SearchFilters,
-  ) {
+  async search(body: Omit<MultiSearchQuery, 'filter' | 'indexUid' | 'q'> & SearchFilters) {
     const { tags, langs, isPublishedRoot, query, ...q } = body;
     const filters = this.buildFilters({ tags, langs, isPublishedRoot });
 
@@ -84,7 +78,7 @@ export class SearchService {
     const updatedQueries = {
       queries: [
         {
-          indexUid: INDEX_NAME,
+          indexUid: this.meilisearchClient.getActiveIndexName(),
           attributesToHighlight: ['*'],
           ...q,
           q: query,
@@ -97,12 +91,7 @@ export class SearchService {
     return searchResult.results[0];
   }
 
-  async getFacets(
-    _actor: Actor,
-    _repositories: Repositories,
-    facetName: string,
-    body: SearchFilters & Pick<MultiSearchQuery, 'facets'>,
-  ) {
+  async getFacets(facetName: string, body: SearchFilters & Pick<MultiSearchQuery, 'facets'>) {
     const { langs, isPublishedRoot, query, tags } = body;
     const filters = this.buildFilters({
       tags,
@@ -113,7 +102,7 @@ export class SearchService {
     const updatedQueries = {
       queries: [
         {
-          indexUid: INDEX_NAME,
+          indexUid: this.meilisearchClient.getActiveIndexName(),
           facets: [facetName],
           q: query,
           filter: filters,

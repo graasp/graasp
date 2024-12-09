@@ -24,6 +24,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const searchService = resolveDependency(SearchService);
   const actionService = resolveDependency(ActionService);
 
+  // use post to allow complex body
   fastify.post(
     '/collections/search',
     { preHandler: optionalIsAuthenticated, schema: search },
@@ -31,7 +32,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const { user, body } = request;
       const repositories = buildRepositories();
       const member = user?.account;
-      const searchResults = await searchService.search(member, repositories, body);
+      const searchResults = await searchService.search(body);
       const action = {
         type: ActionTriggers.ItemSearch,
         extra: body,
@@ -40,19 +41,14 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       return searchResults;
     },
   );
+
+  // use post to allow complex body
   fastify.post(
     '/collections/facets',
     { preHandler: optionalIsAuthenticated, schema: getFacets },
     async (request) => {
-      const { user, body, query } = request;
-      const repositories = buildRepositories();
-      const member = user?.account;
-      const searchResults = await searchService.getFacets(
-        member,
-        repositories,
-        query.facetName,
-        body,
-      );
+      const { body, query } = request;
+      const searchResults = await searchService.getFacets(query.facetName, body);
       return searchResults;
     },
   );

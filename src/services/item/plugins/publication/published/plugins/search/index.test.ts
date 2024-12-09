@@ -342,9 +342,9 @@ describe('Collection Search endpoints', () => {
   describe('GET /collections/facets', () => {
     it('throw if facet name is not provided', async () => {
       const res = await app.inject({
-        method: HttpMethod.Get,
+        method: HttpMethod.Post,
         url: `${ITEMS_ROUTE_PREFIX}/collections/facets`,
-        query: {},
+        body: {},
       });
 
       expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -353,49 +353,67 @@ describe('Collection Search endpoints', () => {
     it('get facets', async () => {
       // Meilisearch is mocked so format of API doesn't matter, we just want it to proxy MultiSearchParams;
       const fakeResponse = {
-        facetHits: [
+        results: [
           {
-            value: 'fiction',
-            count: 7,
+            indexUid: 'index',
+            facetDistribution: {
+              discipline: {
+                fiction: 6,
+              },
+              level: {
+                secondary: 3,
+              },
+            },
+            hits: [{} as never],
+            processingTimeMs: 123,
+            query: '',
           },
         ],
-        facetQuery: 'fiction',
-        processingTimeMs: 0,
       };
-      jest.spyOn(MeiliSearchWrapper.prototype, 'getFacets').mockResolvedValue(fakeResponse);
+      jest.spyOn(MeiliSearchWrapper.prototype, 'search').mockResolvedValue(fakeResponse);
 
       const res = await app.inject({
-        method: HttpMethod.Get,
+        method: HttpMethod.Post,
         url: `${ITEMS_ROUTE_PREFIX}/collections/facets`,
         query: { facetName: 'discipline' },
+        body: {},
       });
-
+      console.log(res);
       expect(res.statusCode).toBe(StatusCodes.OK);
-      expect(res.json()).toEqual(fakeResponse);
+      expect(res.json()).toEqual(fakeResponse.results[0].facetDistribution.discipline);
     });
 
     it('get facets with facet query', async () => {
       // Meilisearch is mocked so format of API doesn't matter, we just want it to proxy MultiSearchParams;
       const fakeResponse = {
-        facetHits: [
+        results: [
           {
-            value: 'fiction',
-            count: 7,
+            indexUid: 'index',
+            facetDistribution: {
+              discipline: {
+                fiction: 6,
+              },
+              level: {
+                secondary: 3,
+              },
+            },
+            hits: [{} as never],
+            processingTimeMs: 123,
+            query: 'fiction',
           },
         ],
-        facetQuery: 'fiction',
-        processingTimeMs: 0,
       };
-      jest.spyOn(MeiliSearchWrapper.prototype, 'getFacets').mockResolvedValue(fakeResponse);
+      jest.spyOn(MeiliSearchWrapper.prototype, 'search').mockResolvedValue(fakeResponse);
 
       const res = await app.inject({
-        method: HttpMethod.Get,
+        method: HttpMethod.Post,
         url: `${ITEMS_ROUTE_PREFIX}/collections/facets`,
-        query: { facetName: 'discipline', facetQuery: 'fiction' },
+        query: { facetName: 'discipline' },
+        body: { query: 'fiction' },
       });
 
       expect(res.statusCode).toBe(StatusCodes.OK);
-      expect(res.json()).toEqual(fakeResponse);
+      expect(res.json()).toEqual(fakeResponse.results[0].facetDistribution.discipline);
     });
   });
 });
