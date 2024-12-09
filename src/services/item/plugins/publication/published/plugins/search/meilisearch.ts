@@ -12,7 +12,6 @@ import { DataSource } from 'typeorm';
 
 import {
   DocumentItemExtra,
-  INDEX_NAME,
   IndexItem,
   ItemType,
   ItemVisibilityType,
@@ -33,8 +32,8 @@ import { stripHtml } from '../../../validation/utils';
 import { ItemPublishedNotFound } from '../../errors';
 import { search } from './schemas';
 
-const ACTIVE_INDEX = INDEX_NAME;
-const ROTATING_INDEX = `${INDEX_NAME}_tmp`; // Used when reindexing
+const ACTIVE_INDEX = 'itemIndex';
+const ROTATING_INDEX = 'itemIndex_tmp'; // Used when reindexing
 
 type ALLOWED_INDICES = typeof ACTIVE_INDEX | typeof ROTATING_INDEX;
 
@@ -100,7 +99,7 @@ export class MeiliSearchWrapper {
     // create index in the background if it doesn't exist
     this.getIndex().then(async () => {
       // set facetting order to count for tag categories
-      await this.meilisearchClient.index(INDEX_NAME).updateFaceting({
+      await this.meilisearchClient.index(ACTIVE_INDEX).updateFaceting({
         maxValuesPerFacet: 50,
         sortFacetValuesBy: Object.fromEntries(Object.values(TagCategory).map((c) => [c, 'count'])),
       });
@@ -123,6 +122,10 @@ export class MeiliSearchWrapper {
     } catch (e) {
       // catch timeout while waiting
     }
+  }
+
+  public getActiveIndexName() {
+    return ACTIVE_INDEX;
   }
 
   /* Lazily create or get the index at first request and cache it in the dictionary
@@ -163,7 +166,7 @@ export class MeiliSearchWrapper {
     // type should match schema
     const searchResult =
       await this.meilisearchClient.multiSearch<
-        Static<(typeof search)['response']['200']>['results'][0]['hits'][0]
+        Static<(typeof search)['response']['200']>['hits'][0]
       >(queries);
     return searchResult;
   }
