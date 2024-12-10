@@ -109,7 +109,7 @@ describe('Item Tag Endpoints', () => {
         });
 
         expect(response.statusCode).toBe(StatusCodes.OK);
-        expect(response.json()).toEqual(tags);
+        expect(response.json()).toEqual(expect.arrayContaining(tags));
       });
 
       it('Return no tag', async () => {

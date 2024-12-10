@@ -4,7 +4,13 @@ import waitForExpect from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType, ItemVisibilityType, PermissionLevel } from '@graasp/sdk';
+import {
+  HttpMethod,
+  ItemType,
+  ItemVisibilityType,
+  PermissionLevel,
+  TagCategory,
+} from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -28,11 +34,17 @@ jest.mock('./meilisearch');
 const rawRepository = AppDataSource.getRepository(ItemVisibility);
 const itemPublishedRawRepository = AppDataSource.getRepository(ItemPublished);
 
+const MOCK_INDEX = 'mock-index';
+
 describe('Collection Search endpoints', () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
     ({ app } = await build({ member: null }));
+  });
+
+  beforeEach(() => {
+    jest.spyOn(MeiliSearchWrapper.prototype, 'getActiveIndexName').mockReturnValue(MOCK_INDEX);
   });
 
   afterAll(async () => {
@@ -75,42 +87,45 @@ describe('Collection Search endpoints', () => {
       actor = await saveMember();
       mockAuthenticate(actor);
 
-      // Meilisearch is mocked so format of API doesn't matter, we just want it to proxy
-      const fakePayload = { queries: [] } as MultiSearchParams;
-      const fakeResponse = { results: [] };
-      const searchSpy = jest
-        .spyOn(MeiliSearchWrapper.prototype, 'search')
-        .mockResolvedValue(fakeResponse);
+      const fakeResponse = {
+        results: [
+          {
+            hits: [],
+            indexUid: 'index',
+            estimatedTotalHits: 0,
+            totalHits: 0,
+            processingTimeMs: 10,
+            query: '',
+          },
+        ],
+      };
+      jest.spyOn(MeiliSearchWrapper.prototype, 'search').mockResolvedValue(fakeResponse);
 
       const res = await app.inject({
         method: HttpMethod.Post,
         url: `${ITEMS_ROUTE_PREFIX}/collections/search`,
-        payload: fakePayload,
+        payload: {},
       });
 
-      // Check that the body is just proxied
-      expect(searchSpy).toHaveBeenCalledWith(fakePayload);
       // Expect result from spied meilisearch
       expect(res.statusCode).toBe(StatusCodes.OK);
-      expect(res.json()).toEqual(fakeResponse);
+      expect(res.json().hits).toEqual(fakeResponse.results[0].hits);
+      expect(res.json().totalHits).toEqual(fakeResponse.results[0].totalHits);
     });
 
-    it('search is delegated to meilisearch SDK with a forced filter', async () => {
+    it('search with tags', async () => {
       actor = await saveMember();
       mockAuthenticate(actor);
 
       const searchSpy = jest.spyOn(MeiliSearchWrapper.prototype, 'search');
 
-      const userQuery: MultiSearchParams = {
-        queries: [{ q: 'random query', filter: 'random filter', indexUid: 'index' }],
-      };
       const expectedQuery: MultiSearchParams = {
         queries: [
           {
             attributesToHighlight: ['*'],
             q: 'random query',
-            filter: '(random filter) AND isHidden = false',
-            indexUid: 'index',
+            filter: "discipline IN ['random filter'] AND isHidden = false",
+            indexUid: MOCK_INDEX,
           },
         ],
       };
@@ -118,7 +133,10 @@ describe('Collection Search endpoints', () => {
       await app.inject({
         method: HttpMethod.Post,
         url: `${ITEMS_ROUTE_PREFIX}/collections/search`,
-        payload: userQuery,
+        payload: {
+          query: 'random query',
+          tags: { [TagCategory.Discipline]: ['random filter'] },
+        },
       });
 
       expect(searchSpy).toHaveBeenCalledWith(expectedQuery);
@@ -130,16 +148,13 @@ describe('Collection Search endpoints', () => {
 
       const searchSpy = jest.spyOn(MeiliSearchWrapper.prototype, 'search');
 
-      const userQuery: MultiSearchParams = {
-        queries: [{ q: 'random query', indexUid: 'index' }],
-      };
       const expectedQuery: MultiSearchParams = {
         queries: [
           {
             attributesToHighlight: ['*'],
             q: 'random query',
             filter: 'isHidden = false',
-            indexUid: 'index',
+            indexUid: MOCK_INDEX,
           },
         ],
       };
@@ -147,7 +162,7 @@ describe('Collection Search endpoints', () => {
       await app.inject({
         method: HttpMethod.Post,
         url: `${ITEMS_ROUTE_PREFIX}/collections/search`,
-        payload: userQuery,
+        payload: { query: 'random query' },
       });
 
       expect(searchSpy).toHaveBeenCalledWith(expectedQuery);
@@ -378,7 +393,6 @@ describe('Collection Search endpoints', () => {
         query: { facetName: 'discipline' },
         body: {},
       });
-      console.log(res);
       expect(res.statusCode).toBe(StatusCodes.OK);
       expect(res.json()).toEqual(fakeResponse.results[0].facetDistribution.discipline);
     });

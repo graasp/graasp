@@ -36,6 +36,8 @@ export const search = {
     [StatusCodes.OK]: customType.StrictObject({
       totalHits: Type.Optional(Type.Number()),
       estimatedTotalHits: Type.Optional(Type.Number()),
+      processingTimeMs: Type.Number(),
+      query: Type.String(),
       hits: Type.Array(
         customType.StrictObject({
           name: Type.String(),
