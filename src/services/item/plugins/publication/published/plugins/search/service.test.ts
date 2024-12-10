@@ -9,6 +9,7 @@ const meilisearchClient = {
   search: jest.fn(async () => {
     return {} as never;
   }),
+  getActiveIndexName: jest.fn(() => 'indexname'),
 } as unknown as MeiliSearchWrapper;
 
 const searchService = new SearchService(
