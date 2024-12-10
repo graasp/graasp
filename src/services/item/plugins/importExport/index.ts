@@ -132,15 +132,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       }
 
       // generate archive stream
-      const archiveStream = await importExportService.export(
-        member,
-        repositories,
-        {
-          item,
-          reply,
-        },
-        log,
-      );
+      const archiveStream = await importExportService.export(member, repositories, item);
 
       try {
         reply.raw.setHeader('Content-Disposition', `filename="${encodeFilename(item.name)}.zip"`);

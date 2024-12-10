@@ -7,11 +7,10 @@ import sanitize from 'sanitize-html';
 import { Readable } from 'stream';
 import { DataSource } from 'typeorm';
 import util from 'util';
+import { v4 } from 'uuid';
 import { ZipFile } from 'yazl';
 
-import { FastifyReply } from 'fastify';
-
-import { ItemType, getMimetype } from '@graasp/sdk';
+import { ItemSettings, ItemType, ItemTypeUnion, getMimetype } from '@graasp/sdk';
 
 import { BaseLogger } from '../../../../logger';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
@@ -25,6 +24,7 @@ import { H5PService } from '../html/h5p/service';
 import {
   DESCRIPTION_EXTENSION,
   GRAASP_DOCUMENT_EXTENSION,
+  GRAASP_MANIFEST_FILENAME,
   HTML_EXTENSION,
   LINK_EXTENSION,
   TXT_EXTENSION,
@@ -32,6 +32,16 @@ import {
 } from './constants';
 import { UnexpectedExportError } from './errors';
 import { buildTextContent, getFilenameFromItem } from './utils';
+
+export type ExportManifestItem = {
+  id: string;
+  name: string;
+  type: ItemTypeUnion;
+  description: string | null;
+  settings: ItemSettings;
+  thumbnailFilename?: string;
+  children?: ExportManifestItem[];
+};
 
 const magic = new Magic(MAGIC_MIME_TYPE);
 const asyncDetectFile = util.promisify(magic.detectFile.bind(magic));
@@ -281,14 +291,12 @@ export class ImportExportService {
     actor: Actor,
     repositories: Repositories,
     args: {
-      reply;
       item: Item;
       archiveRootPath: string;
       archive: ZipFile;
     },
-    logger: BaseLogger,
   ) {
-    const { item, archiveRootPath, archive, reply } = args;
+    const { item, archiveRootPath, archive } = args;
 
     // save description in file
     if (item.description) {
@@ -304,17 +312,11 @@ export class ImportExportService {
       const children = await this.itemService.getChildren(actor, repositories, item.id);
       const result = await Promise.all(
         children.map((child) =>
-          this._addItemToZip(
-            actor,
-            repositories,
-            {
-              item: child,
-              archiveRootPath: folderPath,
-              archive,
-              reply,
-            },
-            logger,
-          ),
+          this._addItemToZip(actor, repositories, {
+            item: child,
+            archiveRootPath: folderPath,
+            archive,
+          }),
         ),
       );
       // add empty folder
@@ -329,12 +331,66 @@ export class ImportExportService {
     return archive.addReadStream(stream, path.join(archiveRootPath, name));
   }
 
-  async export(
+  private async addItemToGraaspExport(
     actor: Actor,
     repositories: Repositories,
-    { item, reply }: { item: Item; reply: FastifyReply },
-    logger: BaseLogger,
+    args: {
+      item: Item;
+      archive: ZipFile;
+      itemManifest: ExportManifestItem[];
+    },
   ) {
+    const { item, archive, itemManifest } = args;
+
+    // assign the uuid to the exported items
+    const exportItemId = v4();
+    const itemPath = path.join(path.dirname('./'), exportItemId);
+
+    // ignore the shortcuts
+    if (isItemType(item, ItemType.SHORTCUT)) {
+      return itemManifest;
+    }
+
+    // treat folder items recursively
+    const childrenManifest: ExportManifestItem[] = [];
+    if (isItemType(item, ItemType.FOLDER)) {
+      const childrenItems = await this.itemService.getChildren(actor, repositories, item.id);
+      await Promise.all(
+        childrenItems.map((child) =>
+          this.addItemToGraaspExport(actor, repositories, {
+            item: child,
+            archive,
+            itemManifest: childrenManifest,
+          }),
+        ),
+      );
+
+      itemManifest.push({
+        id: exportItemId,
+        name: item.name,
+        description: item.description,
+        type: item.type,
+        settings: item.settings,
+        children: childrenManifest,
+      });
+      return itemManifest;
+    }
+
+    // treat single items
+    const { stream, name } = await this.fetchItemData(actor, repositories, item);
+
+    itemManifest.push({
+      id: exportItemId,
+      name,
+      description: item.description,
+      type: item.type,
+      settings: item.settings,
+    });
+    archive.addReadStream(stream, itemPath);
+    return itemManifest;
+  }
+
+  async export(actor: Actor, repositories: Repositories, item: Item) {
     // init archive
     const archive = new ZipFile();
     archive.outputStream.on('error', function (err) {
@@ -344,20 +400,29 @@ export class ImportExportService {
     // path used to index files in archive
     const rootPath = path.dirname('./');
 
-    // import items in zip recursively
-    await this._addItemToZip(
-      actor,
-      repositories,
-      {
+    if (true) {
+      const manifest = await this.addItemToGraaspExport(actor, repositories, {
         item,
-        reply,
+        archive,
+        itemManifest: [],
+      }).catch((error) => {
+        throw new UnexpectedExportError(error);
+      });
+
+      archive.addReadStream(
+        Readable.from(JSON.stringify(manifest)),
+        path.join(rootPath, GRAASP_MANIFEST_FILENAME),
+      );
+    } else {
+      // import items in zip recursively
+      await this._addItemToZip(actor, repositories, {
+        item,
         archiveRootPath: rootPath,
         archive,
-      },
-      logger,
-    ).catch((error) => {
-      throw new UnexpectedExportError(error);
-    });
+      }).catch((error) => {
+        throw new UnexpectedExportError(error);
+      });
+    }
 
     archive.end();
     return archive;
