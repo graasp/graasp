@@ -11,7 +11,6 @@ import {
   MAX_TARGETS_FOR_MODIFY_REQUEST,
   MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE,
   MaxWidth,
-  OldCCLicenseAdaptations,
   PermissionLevel,
 } from '@graasp/sdk';
 
@@ -31,10 +30,9 @@ export const settingsSchema = Type.Partial(
       showChatbox: Type.Boolean(),
       isResizable: Type.Boolean(),
       hasThumbnail: Type.Boolean(),
-      ccLicenseAdaption: Type.Union([
-        customType.Nullable(customType.EnumString(Object.values(CCLicenseAdaptions))),
-        customType.EnumString(Object.values(OldCCLicenseAdaptations), { deprecated: true }),
-      ]),
+      ccLicenseAdaption: customType.Nullable(
+        customType.EnumString(Object.values(CCLicenseAdaptions)),
+      ),
       displayCoEditors: Type.Boolean(),
       descriptionPlacement: customType.EnumString(Object.values(DescriptionPlacement)),
       isCollapsible: Type.Boolean(),
