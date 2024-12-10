@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class Migrations1733308052981 implements MigrationInterface {
-  name = 'item-tags-to-tag-1733308052981';
+export class Migrations1733808052981 implements MigrationInterface {
+  name = 'item-tags-to-tag-1733808052981';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // insert distinct tags
