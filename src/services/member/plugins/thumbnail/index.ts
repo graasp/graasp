@@ -91,7 +91,11 @@ const plugin: FastifyPluginAsyncTypebox<GraaspThumbnailsOptions> = async (fastif
         size,
       });
 
-      fileService.setHeaders({ reply, replyUrl, url, id: memberId });
+      if (!url) {
+        reply.status(StatusCodes.NO_CONTENT);
+      } else {
+        fileService.setHeaders({ reply, replyUrl, url, id: memberId });
+      }
     },
   );
 };
