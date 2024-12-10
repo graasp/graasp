@@ -26,6 +26,9 @@ const searchService = new SearchService(
 );
 
 describe('search', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
   it('filter by tags', async () => {
     const MOCK_RESULT = { hits: [] } as never;
     const spy = jest
@@ -91,6 +94,9 @@ describe('search', () => {
 });
 
 describe('getFacets', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
   it('filter by tags', async () => {
     const MOCK_RESULT = {
       indexUid: 'index',
