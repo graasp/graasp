@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.59.0](https://github.com/graasp/graasp/compare/v1.58.0...v1.59.0) (2024-12-10)
+
+
+### Features
+
+* add delete item login schema ([#1658](https://github.com/graasp/graasp/issues/1658)) ([fef252b](https://github.com/graasp/graasp/commit/fef252b3a4afb5a83a6711262a435e3e409899e2))
+* add tag count search ([#1651](https://github.com/graasp/graasp/issues/1651)) ([ffc51e1](https://github.com/graasp/graasp/commit/ffc51e14f2ac7d52c9f71c8a8268a5caf140d53a))
+* remove display name ([#1674](https://github.com/graasp/graasp/issues/1674)) ([7173c0c](https://github.com/graasp/graasp/commit/7173c0cffd5f57d4d3b4119f5363ce53c6b2a6fc))
+
+
+### Bug Fixes
+
+* add transaction around the createEtherPadItem to fix error 500 ([#1667](https://github.com/graasp/graasp/issues/1667)) ([b4cda5e](https://github.com/graasp/graasp/commit/b4cda5e5d1c9f132184ec0191c657948ade4a879))
+* allow undefined `previousItemId` ([#1660](https://github.com/graasp/graasp/issues/1660)) ([3659cba](https://github.com/graasp/graasp/commit/3659cba1b0e9ff4beea29d30e6a6dd27d1f7bab9))
+* file id error ([#1663](https://github.com/graasp/graasp/issues/1663)) ([54287a2](https://github.com/graasp/graasp/commit/54287a27d39457fbb2707d01e9043bc76e83dc61))
+* sanitize html on upload and import ([#1653](https://github.com/graasp/graasp/issues/1653)) ([46abaa6](https://github.com/graasp/graasp/commit/46abaa65a3de20437fd50108a87f418496af6b14))
+* use lower limit for consecutive exports ([#1664](https://github.com/graasp/graasp/issues/1664)) ([35fe733](https://github.com/graasp/graasp/commit/35fe7334f49bf2c8766d36aac045e62515d99277))
+* use member username format from sdk ([#1656](https://github.com/graasp/graasp/issues/1656)) ([0a615af](https://github.com/graasp/graasp/commit/0a615afacc37e08bf478bc7a8b3d37dd3d90b359))
+
 ## [1.58.0](https://github.com/graasp/graasp/compare/v1.57.0...v1.58.0) (2024-11-20)
 
 
