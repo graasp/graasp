@@ -36,6 +36,9 @@ const repositories = {
 } as Repositories;
 
 describe('Item Tag create', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
   it('does not index item if it is not published', async () => {
     jest.spyOn(itemService, 'get').mockResolvedValue({} as Item);
     jest.spyOn(repositories.itemTagRepository, 'create').mockResolvedValue();
@@ -66,6 +69,9 @@ describe('Item Tag create', () => {
 });
 
 describe('Item Tag delete', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
   it('does not index item if it is not published', async () => {
     jest.spyOn(itemService, 'get').mockResolvedValue({} as Item);
     jest.spyOn(repositories.itemTagRepository, 'delete').mockResolvedValue();
