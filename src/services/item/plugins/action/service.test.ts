@@ -9,6 +9,7 @@ import {
   AggregateMetric,
   Context,
   CountGroupBy,
+  ItemType,
   PermissionLevel,
 } from '@graasp/sdk';
 
@@ -30,7 +31,8 @@ import { MemberService } from '../../../member/service';
 import { saveMember } from '../../../member/test/fixtures/members';
 import { ThumbnailService } from '../../../thumbnail/service';
 import { ItemService } from '../../service';
-import { ItemTestUtils } from '../../test/fixtures/items';
+import { ItemTestUtils, expectItem } from '../../test/fixtures/items';
+import { saveAppActions } from '../app/appAction/test/fixtures';
 import { ItemThumbnailService } from '../thumbnail/service';
 import { ActionItemService } from './service';
 import { ItemActionType } from './utils';
@@ -415,6 +417,7 @@ describe('ActionItemService', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       item = i as any;
     });
+
     it('throw if no access to item', async () => {
       const bob = await saveMember();
       const { item: itemNoMembership } = await testUtils.saveItemAndMembership({ member: bob });
@@ -518,6 +521,23 @@ describe('ActionItemService', () => {
       });
       expect(baseAnalytics.actions).toHaveLength(1);
       expect(baseAnalytics.item.id).toEqual(item.id);
+    });
+
+    it('get item data for app actions', async () => {
+      const { item } = await testUtils.saveItemAndMembership({
+        item: { type: ItemType.APP },
+        member: actor,
+      });
+
+      // app actions
+      await saveAppActions({ item, member: actor });
+
+      const baseAnalytics = await service.getBaseAnalyticsForItem(actor, buildRepositories(), {
+        itemId: item.id,
+      });
+      for (const appAction of baseAnalytics.apps[item.id].actions) {
+        expectItem(appAction.item, item);
+      }
     });
   });
 
