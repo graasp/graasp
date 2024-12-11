@@ -27,7 +27,7 @@ export const download = {
     replyUrl: Type.Boolean({ default: false }),
   }),
   response: {
-    [StatusCodes.OK]: {},
+    [StatusCodes.OK]: Type.String({ description: 'Url string of the avatar if replyUrl is true' }),
     [StatusCodes.NO_CONTENT]: Type.Null({ description: 'No avatar' }),
     '4xx': errorSchemaRef,
     [StatusCodes.INTERNAL_SERVER_ERROR]: errorSchemaRef,

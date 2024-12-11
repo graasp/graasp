@@ -1,13 +1,18 @@
+import * as S3 from '@aws-sdk/s3-request-presigner';
+import { faker } from '@faker-js/faker';
 import FormData from 'form-data';
 import { createReadStream } from 'fs';
 import { StatusCodes } from 'http-status-codes';
 import path from 'path';
+import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ThumbnailSize } from '@graasp/sdk';
+import { DiscriminatedItem, HttpMethod, MemberFactory, ThumbnailSize } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
+import { ItemTestUtils } from '../../../../item/test/fixtures/items';
+import { saveItemLoginSchema } from '../../../../itemLogin/test/index.test';
 import { saveMember } from '../../../test/fixtures/members';
 import { UploadFileNotImageError } from '../utils/errors';
 
@@ -20,6 +25,7 @@ const headObjectMock = jest.fn(async () => ({ ContentLength: 10 }));
 const uploadDoneMock = jest.fn(async () => console.debug('aws s3 storage upload'));
 
 const MOCK_SIGNED_URL = 'signed-url';
+
 jest.mock('@aws-sdk/client-s3', () => {
   return {
     GetObjectCommand: jest.fn(),
@@ -50,87 +56,133 @@ jest.mock('@aws-sdk/lib-storage', () => {
 
 describe('Thumbnail Plugin Tests', () => {
   let app: FastifyInstance;
-  let actor;
 
   afterEach(async () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
-    actor = null;
     app.close();
   });
 
   describe('GET /:id/avatar/:size', () => {
-    it('Get member avatar', async () => {
+    beforeEach(async () => {
       ({ app } = await build({ member: null }));
-      const member = await saveMember();
+    });
+
+    it('Get member avatar', async () => {
+      const member = await saveMember(MemberFactory({ extra: { hasAvatar: true } }));
 
       const response = await app.inject({
         method: HttpMethod.Get,
         url: `members/${member.id}/avatar/${ThumbnailSize.Small}`,
       });
-
+      console.log(response);
       expect(response.statusCode).toBe(StatusCodes.MOVED_TEMPORARILY);
       expect(response.headers.location).toBe(MOCK_SIGNED_URL);
     });
 
-    describe('Public', () => {
-      beforeEach(async () => {
-        ({ app } = await build({ member: null }));
-      });
-
-      it('Successfully redirect to thumbnails of all different sizes', async () => {
-        const member = await saveMember();
-        for (const size of Object.values(ThumbnailSize)) {
-          const response = await app.inject({
-            method: HttpMethod.Get,
-            url: `members/${member.id}/avatar/${size}`,
-          });
-          expect(response.statusCode).toBe(StatusCodes.MOVED_TEMPORARILY);
-          expect(response.headers.location).toBe(MOCK_SIGNED_URL);
-        }
-      });
+    it('Successfully redirect to thumbnails of all different sizes', async () => {
+      const member = await saveMember(MemberFactory({ extra: { hasAvatar: true } }));
+      for (const size of Object.values(ThumbnailSize)) {
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: `members/${member.id}/avatar/${size}`,
+        });
+        expect(response.statusCode).toBe(StatusCodes.MOVED_TEMPORARILY);
+        expect(response.headers.location).toBe(MOCK_SIGNED_URL);
+      }
     });
 
-    describe('Signed In', () => {
-      beforeEach(async () => {
-        ({ app, actor } = await build());
+    it('Successfully redirect to thumbnails of all different sizes', async () => {
+      const member = await saveMember(MemberFactory({ extra: { hasAvatar: true } }));
+      for (const size of Object.values(ThumbnailSize)) {
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: `members/${member.id}/avatar/${size}`,
+        });
+        expect(response.statusCode).toBe(StatusCodes.MOVED_TEMPORARILY);
+        expect(response.headers.location).toBe(MOCK_SIGNED_URL);
+      }
+    });
+
+    it('Successfully redirect to thumbnails of all different sizes for other member', async () => {
+      const member = await saveMember(MemberFactory({ extra: { hasAvatar: true } }));
+      for (const size of Object.values(ThumbnailSize)) {
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: `members/${member.id}/avatar/${size}`,
+        });
+        expect(response.statusCode).toBe(StatusCodes.MOVED_TEMPORARILY);
+        expect(response.headers.location).toBe(MOCK_SIGNED_URL);
+      }
+    });
+
+    it('Return avatar urls of member', async () => {
+      const member = await saveMember(MemberFactory({ extra: { hasAvatar: true } }));
+      for (const size of Object.values(ThumbnailSize)) {
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: `members/${member.id}/avatar/${size}?replyUrl=true`,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        expect(response.body).toBe(MOCK_SIGNED_URL);
+      }
+    });
+
+    it('Return empty response for member that do not have an avatar', async () => {
+      const member = await saveMember(MemberFactory({ extra: { hasAvatar: false } }));
+      for (const size of Object.values(ThumbnailSize)) {
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: `members/${member.id}/avatar/${size}?replyUrl=true`,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
+      }
+    });
+
+    it('Return empty response for guest', async () => {
+      const { item } = await new ItemTestUtils().saveItemAndMembership({});
+      const { guest } = await saveItemLoginSchema({
+        item: item as unknown as DiscriminatedItem,
+        memberName: faker.person.firstName(),
+      });
+      for (const size of Object.values(ThumbnailSize)) {
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: `members/${guest!.id}/avatar/${size}?replyUrl=true`,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
+      }
+    });
+
+    it('Throw if member does not exist', async () => {
+      for (const size of Object.values(ThumbnailSize)) {
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: `members/${v4()}/avatar/${size}?replyUrl=true`,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+      }
+    });
+
+    it('Throw if cannot find avatar even if member has an avatar', async () => {
+      const member = await saveMember(MemberFactory({ extra: { hasAvatar: true } }));
+
+      jest.spyOn(S3, 'getSignedUrl').mockImplementation(async () => {
+        throw new Error('Not Found');
       });
 
-      it('Successfully redirect to thumbnails of all different sizes', async () => {
-        for (const size of Object.values(ThumbnailSize)) {
-          const response = await app.inject({
-            method: HttpMethod.Get,
-            url: `members/${actor.id}/avatar/${size}`,
-          });
-          expect(response.statusCode).toBe(StatusCodes.MOVED_TEMPORARILY);
-          expect(response.headers.location).toBe(MOCK_SIGNED_URL);
-        }
-      });
+      for (const size of Object.values(ThumbnailSize)) {
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: `members/${member.id}/avatar/${size}?replyUrl=true`,
+        });
 
-      it('Successfully redirect to thumbnails of all different sizes for other member', async () => {
-        const member = await saveMember();
-        for (const size of Object.values(ThumbnailSize)) {
-          const response = await app.inject({
-            method: HttpMethod.Get,
-            url: `members/${member.id}/avatar/${size}`,
-          });
-          expect(response.statusCode).toBe(StatusCodes.MOVED_TEMPORARILY);
-          expect(response.headers.location).toBe(MOCK_SIGNED_URL);
-        }
-      });
-
-      it('Return avatar urls of member', async () => {
-        const member = await saveMember();
-        for (const size of Object.values(ThumbnailSize)) {
-          const response = await app.inject({
-            method: HttpMethod.Get,
-            url: `members/${member.id}/avatar/${size}?replyUrl=true`,
-          });
-
-          expect(response.statusCode).toBe(StatusCodes.OK);
-          expect(response.body).toBe(MOCK_SIGNED_URL);
-        }
-      });
+        expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
+      }
     });
   });
 
@@ -154,7 +206,7 @@ describe('Thumbnail Plugin Tests', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        ({ app } = await build());
       });
 
       it('Successfully upload thumbnail', async () => {
