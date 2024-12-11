@@ -100,7 +100,7 @@ export class MeiliSearchWrapper {
       // set facetting order to count for tag categories
       await this.meilisearchClient.index(ACTIVE_INDEX).updateFaceting({
         // return max 50 values per facet for facet distribution
-        // it is interesting to receive lots of facets when listing them
+        // it is interesting to receive a lot of values for listing
         maxValuesPerFacet: 50,
         sortFacetValuesBy: Object.fromEntries(Object.values(TagCategory).map((c) => [c, 'count'])),
       });
