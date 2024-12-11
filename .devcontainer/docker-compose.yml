@@ -119,8 +119,8 @@ services:
       - MEILI_LOG_LEVEL
     # uncomment below to develop on the meilisearch interface from your local machine
     # by default ports do not need to be exposed as all queries are proxied by the backend
-    ports:
-      - 7700:7700
+    # ports:
+    #   - 7700:7700
     volumes:
       - ./meilisearch_data:/meili_data
 
