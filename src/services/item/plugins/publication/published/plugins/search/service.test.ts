@@ -38,7 +38,7 @@ describe('search', () => {
     const results = await searchService.search({
       tags: {
         discipline: ['fiction', 'hello'],
-        level: ['secondary school'],
+        level: ['secondary school', "tag:'hello'"],
         'resource-type': ['type'],
       },
     });
@@ -46,7 +46,7 @@ describe('search', () => {
 
     const { filter } = spy.mock.calls[0][0].queries[0];
     expect(filter).toContain("discipline IN ['fiction','hello']");
-    expect(filter).toContain("level IN ['secondary school']");
+    expect(filter).toContain("level IN ['secondary school','tag:\\'hello\\'']");
     expect(filter).toContain("resource-type IN ['type']");
   });
   it('filter by langs', async () => {
@@ -112,7 +112,7 @@ describe('getFacets', () => {
     const results = await searchService.getFacets('lang', {
       tags: {
         discipline: ['fiction', 'hello'],
-        level: ['secondary school'],
+        level: ['secondary school', "aujourd'hui"],
         'resource-type': ['type'],
       },
     });
@@ -120,7 +120,7 @@ describe('getFacets', () => {
 
     const { filter } = spy.mock.calls[0][0].queries[0];
     expect(filter).toContain("discipline IN ['fiction','hello']");
-    expect(filter).toContain("level IN ['secondary school']");
+    expect(filter).toContain("level IN ['secondary school','aujourd\\'hui']");
     expect(filter).toContain("resource-type IN ['type']");
   });
   it('filter by langs', async () => {

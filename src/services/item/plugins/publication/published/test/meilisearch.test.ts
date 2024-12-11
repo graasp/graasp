@@ -340,24 +340,6 @@ describe('MeilisearchWrapper', () => {
             isPublishedRoot: true,
             isHidden: false,
           }),
-          // expect.objectContaining({
-          //   id: descendant.id,
-          //   discipline: [],
-          //   level: [],
-          //   'resource-type': [tags[descendant.id][0].name],
-          //   content: '',
-          //   isPublishedRoot: false,
-          //   isHidden: true,
-          // }),
-          // expect.objectContaining({
-          //   id: descendant2.id,
-          //   discipline: [],
-          //   level: [],
-          //   'resource-type': [],
-          //   content: '',
-          //   isPublishedRoot: true,
-          //   isHidden: false,
-          // }),
         ]),
       );
     });

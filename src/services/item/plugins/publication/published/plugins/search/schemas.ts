@@ -1,4 +1,4 @@
-import { Type } from '@sinclair/typebox';
+import { Static, Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
 import { FastifySchema } from 'fastify';
@@ -82,6 +82,8 @@ export const search = {
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
+
+export type Hit = Static<(typeof search)['response']['200']>['hits'][0];
 
 export const getFacets = {
   operationId: 'getFacetsForName',

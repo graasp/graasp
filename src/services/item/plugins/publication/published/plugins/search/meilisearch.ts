@@ -1,4 +1,3 @@
-import { Static } from '@sinclair/typebox';
 import {
   EnqueuedTask,
   Index,
@@ -30,7 +29,7 @@ import { Item, isItemType } from '../../../../../entities/Item';
 import { readPdfContent } from '../../../../../utils';
 import { stripHtml } from '../../../validation/utils';
 import { ItemPublishedNotFound } from '../../errors';
-import { search } from './schemas';
+import { Hit } from './schemas';
 
 const ACTIVE_INDEX = 'itemIndex';
 const ROTATING_INDEX = 'itemIndex_tmp'; // Used when reindexing
@@ -100,6 +99,8 @@ export class MeiliSearchWrapper {
     this.getIndex().then(async () => {
       // set facetting order to count for tag categories
       await this.meilisearchClient.index(ACTIVE_INDEX).updateFaceting({
+        // return max 50 values per facet for facet distribution
+        // it is interesting to receive lots of facets when listing them
         maxValuesPerFacet: 50,
         sortFacetValuesBy: Object.fromEntries(Object.values(TagCategory).map((c) => [c, 'count'])),
       });
@@ -164,10 +165,7 @@ export class MeiliSearchWrapper {
   // WORKS ONLY FOR PUBLISHED ITEMS
   async search(queries: MultiSearchParams) {
     // type should match schema
-    const searchResult =
-      await this.meilisearchClient.multiSearch<
-        Static<(typeof search)['response']['200']>['hits'][0]
-      >(queries);
+    const searchResult = await this.meilisearchClient.multiSearch<Hit>(queries);
     return searchResult;
   }
 

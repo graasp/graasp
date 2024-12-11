@@ -52,7 +52,7 @@ export class SearchService {
     const tagCategoryFilters = Object.values(TagCategory).map((c) => {
       // escape quotes used for building the filter
       return tags?.[c]?.length
-        ? `${c} IN [${tags?.[c].map((t) => `'${t.replaceAll("'", "\\'")}'`).join(',')}]`
+        ? `${c} IN [${tags?.[c].map((t) => `'${t.replace(/'/g, "\\'")}'`).join(',')}]`
         : '';
     });
 
