@@ -60,8 +60,18 @@ describe('Collection Search endpoints', () => {
   describe('Signed Out', () => {
     it('Returns search results', async () => {
       // Meilisearch is mocked so format of API doesn't matter, we just want it to proxy
-      const fakePayload = { queries: [] } as MultiSearchParams;
-      const fakeResponse = { results: [] };
+      const fakeResponse = {
+        results: [
+          {
+            hits: [],
+            indexUid: MOCK_INDEX,
+            estimatedTotalHits: 0,
+            totalHits: 0,
+            processingTimeMs: 10,
+            query: '',
+          },
+        ],
+      };
       const searchSpy = jest
         .spyOn(MeiliSearchWrapper.prototype, 'search')
         .mockResolvedValue(fakeResponse);
@@ -69,14 +79,25 @@ describe('Collection Search endpoints', () => {
       const res = await app.inject({
         method: HttpMethod.Post,
         url: `${ITEMS_ROUTE_PREFIX}/collections/search`,
-        payload: fakePayload,
+        payload: {},
       });
 
       // Check that the body is just proxied
-      expect(searchSpy).toHaveBeenCalledWith(fakePayload);
+      expect(searchSpy).toHaveBeenCalledWith({
+        queries: [
+          {
+            attributesToHighlight: ['*'],
+            filter: 'isHidden = false',
+            indexUid: MOCK_INDEX,
+            q: undefined,
+          },
+        ],
+      });
       // Expect result from spied meilisearch
       expect(res.statusCode).toBe(StatusCodes.OK);
-      expect(res.json()).toEqual(fakeResponse);
+      console.log(res.json());
+      expect(res.json().hits).toEqual(fakeResponse.results[0].hits);
+      expect(res.json().totalHits).toEqual(fakeResponse.results[0].totalHits);
     });
   });
 
@@ -91,7 +112,7 @@ describe('Collection Search endpoints', () => {
         results: [
           {
             hits: [],
-            indexUid: 'index',
+            indexUid: MOCK_INDEX,
             estimatedTotalHits: 0,
             totalHits: 0,
             processingTimeMs: 10,
