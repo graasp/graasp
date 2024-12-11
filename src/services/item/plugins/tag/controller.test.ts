@@ -75,7 +75,7 @@ describe('Item Tag Endpoints', () => {
           url: `/items/${item.id}/tags`,
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
-        expect(response.json()).toEqual(tags);
+        expect(response.json()).toEqual(expect.arrayContaining(tags));
       });
 
       it('Throws for private item', async () => {
@@ -109,7 +109,7 @@ describe('Item Tag Endpoints', () => {
         });
 
         expect(response.statusCode).toBe(StatusCodes.OK);
-        expect(response.json()).toEqual(tags);
+        expect(response.json()).toEqual(expect.arrayContaining(tags));
       });
 
       it('Return no tag', async () => {

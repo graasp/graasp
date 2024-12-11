@@ -1,14 +1,21 @@
-import { MultiSearchParams } from 'meilisearch';
+import { MultiSearchQuery } from 'meilisearch';
 import { singleton } from 'tsyringe';
 
+import { TagCategory } from '@graasp/sdk';
+
 import { BaseLogger } from '../../../../../../../logger';
-import { Repositories } from '../../../../../../../utils/repositories';
-import { Actor } from '../../../../../../member/entities/member';
+import { Tag } from '../../../../../../tag/Tag.entity';
 import { ItemService } from '../../../../../service';
-import { ItemCategoryService } from '../../../../itemCategory/services/itemCategory';
 import { stripHtml } from '../../../validation/utils';
 import { ItemPublishedService } from '../../service';
 import { MeiliSearchWrapper } from './meilisearch';
+
+type SearchFilters = Partial<{
+  query?: string;
+  tags: Partial<{ [key in TagCategory]: Tag['name'][] }>;
+  langs: string[];
+  isPublishedRoot: boolean;
+}>;
 
 /*
  * Handle search index business logic with Meilisearch
@@ -22,13 +29,12 @@ export class SearchService {
   constructor(
     itemService: ItemService,
     itemPublishedService: ItemPublishedService,
-    itemCategoryService: ItemCategoryService,
     meilisearchClient: MeiliSearchWrapper,
     logger: BaseLogger,
   ) {
     this.meilisearchClient = meilisearchClient;
     this.logger = logger;
-    this.registerSearchHooks(itemService, itemPublishedService, itemCategoryService);
+    this.registerSearchHooks(itemService, itemPublishedService);
   }
 
   private removeHTMLTags(s: string): string {
@@ -40,22 +46,72 @@ export class SearchService {
     return this.meilisearchClient.getHealth();
   }
 
+  // User input needs escaping? Or safe to send to meilisearch? WARNING: search currently done with master key, but search is only exposed endpoint
+  private buildFilters({ tags, langs, isPublishedRoot }: SearchFilters) {
+    // tags
+    const tagCategoryFilters = Object.values(TagCategory).map((c) => {
+      // escape quotes used for building the filter
+      return tags?.[c]?.length
+        ? `${c} IN [${tags?.[c].map((t) => `'${t.replace(/'/g, "\\'")}'`).join(',')}]`
+        : '';
+    });
+
+    // is published root
+    const isPublishedFilter = isPublishedRoot ? `isPublishedRoot = ${isPublishedRoot}` : '';
+
+    // langs
+    const langsFilter = langs?.length ? `lang IN [${langs.join(',')}]` : '';
+
+    const filters = [...tagCategoryFilters, isPublishedFilter, langsFilter, 'isHidden = false']
+      .filter(Boolean)
+      .join(' AND ');
+
+    return filters;
+  }
+
   // WORKS ONLY FOR PUBLISHED ITEMS
-  async search(_actor: Actor, _repositories: Repositories, queries: MultiSearchParams) {
-    const forcedFilter = 'isHidden = false';
+  async search(body: Omit<MultiSearchQuery, 'filter' | 'indexUid' | 'q'> & SearchFilters) {
+    const { tags, langs, isPublishedRoot, query, ...q } = body;
+    const filters = this.buildFilters({ tags, langs, isPublishedRoot });
+
     // User input needs escaping? Or safe to send to meilisearch? WARNING: search currently done with master key, but search is only exposed endpoint
     const updatedQueries = {
-      ...queries,
-      queries: queries.queries.map((q) => ({
-        attributesToHighlight: ['*'],
-        ...q,
-        filter: q.filter ? `(${q.filter}) AND ${forcedFilter}` : forcedFilter,
-      })),
+      queries: [
+        {
+          indexUid: this.meilisearchClient.getActiveIndexName(),
+          attributesToHighlight: ['*'],
+          ...q,
+          q: query,
+          filter: filters,
+        },
+      ],
     };
 
     const searchResult = await this.meilisearchClient.search(updatedQueries);
+    return searchResult.results[0];
+  }
 
-    return searchResult;
+  async getFacets(facetName: string, body: SearchFilters & Pick<MultiSearchQuery, 'facets'>) {
+    const { langs, isPublishedRoot, query, tags } = body;
+    const filters = this.buildFilters({
+      tags,
+      langs,
+      isPublishedRoot,
+    });
+    // User input needs escaping? Or safe to send to meilisearch? WARNING: search currently done with master key, but search is only exposed endpoint
+    const updatedQueries = {
+      queries: [
+        {
+          indexUid: this.meilisearchClient.getActiveIndexName(),
+          facets: [facetName],
+          q: query,
+          filter: filters,
+        },
+      ],
+    };
+
+    const searchResult = await this.meilisearchClient.search(updatedQueries);
+    return searchResult.results[0].facetDistribution?.[facetName] ?? {};
   }
 
   async rebuildIndex() {
@@ -67,7 +123,6 @@ export class SearchService {
   private registerSearchHooks(
     itemService: ItemService,
     itemPublishedService: ItemPublishedService,
-    ItemCategoryService: ItemCategoryService,
   ) {
     // Update index when itemPublished changes ------------------------------------------
 
@@ -163,49 +218,5 @@ export class SearchService {
         this.logger.error('Error during indexation, Meilisearch may be down');
       }
     });
-
-    // Update index when categories changes ------------------------------------------
-
-    ItemCategoryService.hooks.setPostHook(
-      'create',
-      async (member, repositories, { itemCategory }) => {
-        try {
-          // Check if the item is published (or has published parent)
-          const published = await repositories.itemPublishedRepository.getForItem(
-            itemCategory.item,
-          );
-
-          if (!published) {
-            return;
-          }
-
-          // update item and its children
-          await this.meilisearchClient.indexOne(published.item, repositories);
-        } catch (e) {
-          this.logger.error('Error during indexation, Meilisearch may be down');
-        }
-      },
-    );
-
-    ItemCategoryService.hooks.setPostHook(
-      'delete',
-      async (member, repositories, { itemCategory }) => {
-        try {
-          // Check if the item is published (or has published parent)
-          const published = await repositories.itemPublishedRepository.getForItem(
-            itemCategory.item,
-          );
-
-          if (!published) {
-            return;
-          }
-
-          // update item and its children
-          await this.meilisearchClient.indexOne(published.item, repositories);
-        } catch (e) {
-          this.logger.error('Error during indexation, Meilisearch may be down');
-        }
-      },
-    );
   }
 }
