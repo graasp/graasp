@@ -1,6 +1,7 @@
 import { Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
+import { errorSchemaRef } from '../../../../../schemas/global';
 import {
   DATE_TYPE,
   NULLABLE_TYPE,
@@ -13,8 +14,15 @@ import {
 } from '../utils/schema.utils';
 
 export const exportMemberData = {
+  operationId: 'exportMemberData',
+  tags: ['member'],
+  summary: 'Request all related data of authenticated member',
+  description:
+    'Request a download link to have access to all data related to the authenticated user. The link is valid for one week.',
+
   response: {
     [StatusCodes.NO_CONTENT]: Type.Null(),
+    '4xx': errorSchemaRef,
   },
 };
 
