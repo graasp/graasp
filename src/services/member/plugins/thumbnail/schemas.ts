@@ -13,21 +13,22 @@ export const upload = {
 } as const satisfies FastifySchema;
 
 export const download = {
-  params: Type.Object(
-    {
-      id: customType.UUID(),
-      size: Type.Enum(ThumbnailSize, { default: ThumbnailSize.Medium }),
-    },
-    { additionalProperties: false },
-  ),
-  querystring: Type.Object(
-    {
-      replyUrl: Type.Boolean({ default: false }),
-    },
-    { additionalProperties: false },
-  ),
+  operationId: 'downloadAvatar',
+  tags: ['member', 'avatar'],
+  summary: "Get a member's avatar",
+  description:
+    "Get a member's avatar. The return value is empty if the member did not previously uploaded an avatar. Since guests don't have avatars, the return value will also be empty.",
+
+  params: customType.StrictObject({
+    id: customType.UUID(),
+    size: Type.Enum(ThumbnailSize, { default: ThumbnailSize.Medium }),
+  }),
+  querystring: customType.StrictObject({
+    replyUrl: Type.Boolean({ default: false }),
+  }),
   response: {
-    [StatusCodes.OK]: errorSchemaRef,
+    [StatusCodes.OK]: Type.String({ description: 'Url string of the avatar if replyUrl is true' }),
+    [StatusCodes.NO_CONTENT]: Type.Null({ description: 'No avatar' }),
     '4xx': errorSchemaRef,
     [StatusCodes.INTERNAL_SERVER_ERROR]: errorSchemaRef,
   },

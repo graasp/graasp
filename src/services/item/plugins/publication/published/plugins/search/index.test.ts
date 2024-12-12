@@ -95,7 +95,6 @@ describe('Collection Search endpoints', () => {
       });
       // Expect result from spied meilisearch
       expect(res.statusCode).toBe(StatusCodes.OK);
-      console.log(res.json());
       expect(res.json().hits).toEqual(fakeResponse.results[0].hits);
       expect(res.json().totalHits).toEqual(fakeResponse.results[0].totalHits);
     });
