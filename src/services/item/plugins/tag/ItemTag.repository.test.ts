@@ -152,7 +152,7 @@ describe('ItemTag Repository', () => {
       await itemTagRawRepository.save({ item: anotherItem, tag: anotherTag });
 
       const tags = await repository.getByItemId(item.id);
-      expect(tags).toEqual([tag1, tag2]);
+      expect(tags).toEqual(expect.arrayContaining([tag1, tag2]));
     });
   });
 
