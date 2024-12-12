@@ -101,7 +101,7 @@
     "mime": "3.0.0",
     "mmmagic": "0.5.3",
     "node-fetch": "2",
-    "nodemailer": "6.9.14",
+    "nodemailer": "6.9.16",
     "openai": "4.67.3",
     "papaparse": "^5.4.1",
     "passport-custom": "1.1.1",
