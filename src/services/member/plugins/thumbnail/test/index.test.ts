@@ -75,7 +75,6 @@ describe('Thumbnail Plugin Tests', () => {
         method: HttpMethod.Get,
         url: `members/${member.id}/avatar/${ThumbnailSize.Small}`,
       });
-      console.log(response);
       expect(response.statusCode).toBe(StatusCodes.MOVED_TEMPORARILY);
       expect(response.headers.location).toBe(MOCK_SIGNED_URL);
     });
