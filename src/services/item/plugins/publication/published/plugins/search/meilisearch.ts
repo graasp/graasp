@@ -11,31 +11,39 @@ import { DataSource } from 'typeorm';
 
 import {
   DocumentItemExtra,
-  INDEX_NAME,
   IndexItem,
   ItemType,
   ItemVisibilityType,
   LocalFileItemExtra,
   MimeTypes,
   S3FileItemExtra,
+  TagCategory,
 } from '@graasp/sdk';
 
 import { BaseLogger } from '../../../../../../../logger';
 import { MEILISEARCH_STORE_LEGACY_PDF_CONTENT } from '../../../../../../../utils/config';
 import { Repositories, buildRepositories } from '../../../../../../../utils/repositories';
 import FileService from '../../../../../../file/service';
+import { Tag } from '../../../../../../tag/Tag.entity';
 import { Item, isItemType } from '../../../../../entities/Item';
 import { readPdfContent } from '../../../../../utils';
 import { stripHtml } from '../../../validation/utils';
 import { ItemPublishedNotFound } from '../../errors';
+import { Hit } from './schemas';
 
-const ACTIVE_INDEX = INDEX_NAME;
-const ROTATING_INDEX = `${INDEX_NAME}_tmp`; // Used when reindexing
+const ACTIVE_INDEX = 'itemIndex';
+const ROTATING_INDEX = 'itemIndex_tmp'; // Used when reindexing
 
 type ALLOWED_INDICES = typeof ACTIVE_INDEX | typeof ROTATING_INDEX;
 
 // Make index configuration typesafe
-const SEARCHABLE_ATTRIBUTES: (keyof IndexItem)[] = ['name', 'description', 'content', 'creator'];
+const SEARCHABLE_ATTRIBUTES: (keyof IndexItem)[] = [
+  'name',
+  'description',
+  'content',
+  'creator',
+  ...Object.values(TagCategory),
+];
 const SORT_ATTRIBUTES: (keyof IndexItem)[] = ['name', 'updatedAt', 'createdAt'];
 const DISPLAY_ATTRIBUTES: (keyof IndexItem)[] = [
   'id',
@@ -46,16 +54,16 @@ const DISPLAY_ATTRIBUTES: (keyof IndexItem)[] = [
   'content',
   'createdAt',
   'updatedAt',
-  'categories',
   'isPublishedRoot',
   'isHidden',
   'lang',
+  ...Object.values(TagCategory),
 ];
 const FILTERABLE_ATTRIBUTES: (keyof IndexItem)[] = [
-  'categories',
   'isPublishedRoot',
   'isHidden',
   'lang',
+  ...Object.values(TagCategory),
 ];
 const TYPO_TOLERANCE: TypoTolerance = {
   enabled: true,
@@ -88,7 +96,15 @@ export class MeiliSearchWrapper {
     this.logger = logger;
 
     // create index in the background if it doesn't exist
-    this.getIndex();
+    this.getIndex().then(async () => {
+      // set facetting order to count for tag categories
+      await this.meilisearchClient.index(ACTIVE_INDEX).updateFaceting({
+        // return max 50 values per facet for facet distribution
+        // it is interesting to receive a lot of values for listing
+        maxValuesPerFacet: 50,
+        sortFacetValuesBy: Object.fromEntries(Object.values(TagCategory).map((c) => [c, 'count'])),
+      });
+    });
   }
 
   private removeHTMLTags(s?: string | null): string {
@@ -107,6 +123,10 @@ export class MeiliSearchWrapper {
     } catch (e) {
       // catch timeout while waiting
     }
+  }
+
+  public getActiveIndexName() {
+    return ACTIVE_INDEX;
   }
 
   /* Lazily create or get the index at first request and cache it in the dictionary
@@ -144,17 +164,23 @@ export class MeiliSearchWrapper {
 
   // WORKS ONLY FOR PUBLISHED ITEMS
   async search(queries: MultiSearchParams) {
-    const searchResult = await this.meilisearchClient.multiSearch(queries);
-
+    // type should match schema
+    const searchResult = await this.meilisearchClient.multiSearch<Hit>(queries);
     return searchResult;
   }
 
   private async parseItem(
     item: Item,
-    categories: string[],
+    tags: Tag[],
     isPublishedRoot: boolean,
     isHidden: boolean,
   ): Promise<IndexItem> {
+    const tagsByCategory = Object.fromEntries(
+      Object.values(TagCategory).map((c) => {
+        return [c, tags.filter(({ category }) => category === c).map(({ name }) => name)];
+      }),
+    ) as { [key in TagCategory]: string[] };
+
     return {
       id: item.id,
       name: item.name,
@@ -164,7 +190,6 @@ export class MeiliSearchWrapper {
       },
       description: this.removeHTMLTags(item.description),
       type: item.type,
-      categories: categories,
       content: await this.getContent(item),
       isPublishedRoot: isPublishedRoot,
       isHidden: isHidden,
@@ -172,6 +197,7 @@ export class MeiliSearchWrapper {
       createdAt: item.createdAt.toISOString(),
       updatedAt: item.updatedAt.toISOString(),
       lang: item.lang,
+      ...tagsByCategory,
     };
   }
 
@@ -239,13 +265,12 @@ export class MeiliSearchWrapper {
           if (!publishedRoot) {
             throw new ItemPublishedNotFound(i.id);
           }
-          const categories = (await repositories.itemCategoryRepository.getForItemOrParent(i)).map(
-            (ic) => ic.category.id,
-          );
+
+          const tags = await repositories.itemTagRepository.getByItemId(i.id);
 
           return await this.parseItem(
             i,
-            Array.from(new Set(categories)),
+            tags,
             publishedRoot.item.id === i.id,
             isHidden.data[i.id] ?? false,
           );

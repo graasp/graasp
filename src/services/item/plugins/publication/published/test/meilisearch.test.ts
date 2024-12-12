@@ -9,17 +9,18 @@ import {
   TaskStatus,
 } from 'meilisearch';
 import { DataSource, EntityManager } from 'typeorm';
+import { v4 } from 'uuid';
 
-import { IndexItem, ItemType, MimeTypes, S3FileItemExtra } from '@graasp/sdk';
+import { IndexItem, ItemType, MimeTypes, S3FileItemExtra, TagCategory, UUID } from '@graasp/sdk';
 
 import { BaseLogger } from '../../../../../../logger';
 import * as repositoriesModule from '../../../../../../utils/repositories';
 import FileService from '../../../../../file/service';
 import { ItemMembershipRepository } from '../../../../../itemMembership/repository';
+import { Tag } from '../../../../../tag/Tag.entity';
 import { Item } from '../../../../entities/Item';
 import { ItemTestUtils } from '../../../../test/fixtures/items';
-import { ItemCategory } from '../../../itemCategory/entities/ItemCategory';
-import { ItemCategoryRepository } from '../../../itemCategory/repositories/itemCategory';
+import { ItemTagRepository } from '../../../tag/ItemTag.repository';
 import { ItemPublished } from '../entities/itemPublished';
 import { MeiliSearchWrapper } from '../plugins/search/meilisearch';
 import { ItemPublishedRepository } from '../repositories/itemPublished';
@@ -85,6 +86,11 @@ describe('MeilisearchWrapper', () => {
   });
 
   jest.spyOn(fakeClient, 'getIndex').mockResolvedValue(mockIndex);
+  jest.spyOn(fakeClient, 'index').mockReturnValue({
+    updateFaceting: jest.fn(async () => {
+      return { taskUid: '1' } as unknown as EnqueuedTask;
+    }),
+  } as never);
   jest
     .spyOn(fakeClient, 'swapIndexes')
     .mockResolvedValue({ taskUid: '1' } as unknown as EnqueuedTask);
@@ -99,9 +105,9 @@ describe('MeilisearchWrapper', () => {
     getPaginatedItems: jest.fn(),
   } as unknown as jest.Mocked<ItemPublishedRepository>;
 
-  const itemCategoryRepositoryMock = {
-    getForItemOrParent: jest.fn(),
-  } as unknown as jest.Mocked<ItemCategoryRepository>;
+  const itemTagRepositoryMock = {
+    getByItemId: jest.fn(),
+  } as unknown as jest.Mocked<ItemTagRepository>;
 
   const repositories = {
     itemMembershipRepository: {
@@ -110,7 +116,7 @@ describe('MeilisearchWrapper', () => {
     itemVisibilityRepository: testUtils.itemVisibilityRepository,
     itemRepository: testUtils.itemRepository,
     itemPublishedRepository: itemPublishedRepositoryMock,
-    itemCategoryRepository: itemCategoryRepositoryMock,
+    itemTagRepository: itemTagRepositoryMock,
   } as unknown as jest.Mocked<repositoriesModule.Repositories>;
 
   describe('search', () => {
@@ -137,7 +143,7 @@ describe('MeilisearchWrapper', () => {
 
       // Given
       jest.spyOn(testUtils.itemRepository, 'getManyDescendants').mockResolvedValue([]);
-      itemCategoryRepositoryMock.getForItemOrParent.mockResolvedValue([]);
+      itemTagRepositoryMock.getByItemId.mockResolvedValue([]);
       itemPublishedRepositoryMock.getForItem.mockResolvedValue({
         item: { id: item.id } as Item,
       } as ItemPublished);
@@ -154,7 +160,9 @@ describe('MeilisearchWrapper', () => {
       expect(addDocumentSpy).toHaveBeenCalledTimes(1);
       expect(addDocumentSpy.mock.calls[0][0][0]).toMatchObject({
         id: item.id,
-        categories: [],
+        level: [],
+        discipline: [],
+        'resource-type': [],
         content: '',
         isPublishedRoot: true,
         isHidden: false,
@@ -169,7 +177,7 @@ describe('MeilisearchWrapper', () => {
       jest
         .spyOn(testUtils.itemRepository, 'getManyDescendants')
         .mockResolvedValue([descendant, descendant2]);
-      itemCategoryRepositoryMock.getForItemOrParent.mockResolvedValue([]);
+      itemTagRepositoryMock.getByItemId.mockResolvedValue([]);
       itemPublishedRepositoryMock.getForItem.mockResolvedValue({
         item: { id: item.id } as Item,
       } as ItemPublished);
@@ -190,21 +198,27 @@ describe('MeilisearchWrapper', () => {
         expect.arrayContaining([
           expect.objectContaining({
             id: item.id,
-            categories: [],
+            level: [],
+            discipline: [],
+            'resource-type': [],
             content: '',
             isPublishedRoot: true,
             isHidden: false,
           }),
           expect.objectContaining({
             id: descendant.id,
-            categories: [],
+            level: [],
+            discipline: [],
+            'resource-type': [],
             content: '',
             isPublishedRoot: false,
             isHidden: true,
           }),
           expect.objectContaining({
             id: descendant2.id,
-            categories: [],
+            level: [],
+            discipline: [],
+            'resource-type': [],
             content: '',
             isPublishedRoot: false,
             isHidden: false,
@@ -233,7 +247,7 @@ describe('MeilisearchWrapper', () => {
         }
         return Promise.resolve(result);
       });
-      itemCategoryRepositoryMock.getForItemOrParent.mockResolvedValue([]);
+      itemTagRepositoryMock.getByItemId.mockResolvedValue([]);
       itemPublishedRepositoryMock.getForItem.mockResolvedValue({
         item: { id: item.id } as Item,
       } as ItemPublished);
@@ -273,26 +287,19 @@ describe('MeilisearchWrapper', () => {
       const item = testUtils.createItem();
       const descendant = testUtils.createItem();
       const descendant2 = testUtils.createItem();
-      // Given
-      const mockItemCategory = (id) => {
-        return {
-          category: {
-            id: id,
-          },
-        } as ItemCategory;
-      };
+
       const mockItemPublished = (id) => {
         return { item: { id: id } as Item } as ItemPublished;
       };
-      const categories = {
+      const tags = {
         [item.id]: [
-          mockItemCategory('category1'),
-          mockItemCategory('category2'),
-          mockItemCategory('category2'),
-        ], // duplicates should be removed
-        [descendant.id]: [mockItemCategory('category2')],
+          { name: 'tag1', id: v4(), category: TagCategory.Discipline },
+          { name: 'tag2', id: v4(), category: TagCategory.Level },
+          { name: 'tag3', id: v4(), category: TagCategory.Level },
+        ],
+        [descendant.id]: [{ name: 'tag3', id: v4(), category: TagCategory.ResourceType }],
         [descendant2.id]: [],
-      } satisfies Record<string, ItemCategory[]>;
+      };
 
       const published = {
         [item.id]: mockItemPublished(item.id),
@@ -303,8 +310,8 @@ describe('MeilisearchWrapper', () => {
       jest
         .spyOn(testUtils.itemRepository, 'getManyDescendants')
         .mockResolvedValue([descendant, descendant2]);
-      itemCategoryRepositoryMock.getForItemOrParent.mockImplementation((i) =>
-        Promise.resolve(categories[i.id]),
+      itemTagRepositoryMock.getByItemId.mockImplementation(
+        jest.fn(async (id: UUID) => tags[id] as Tag[]),
       );
       itemPublishedRepositoryMock.getForItem.mockImplementation((i) =>
         Promise.resolve(published[i.id]),
@@ -326,21 +333,9 @@ describe('MeilisearchWrapper', () => {
         expect.arrayContaining([
           expect.objectContaining({
             id: item.id,
-            categories: ['category1', 'category2'],
-            content: '',
-            isPublishedRoot: true,
-            isHidden: false,
-          }),
-          expect.objectContaining({
-            id: descendant.id,
-            categories: ['category2'],
-            content: '',
-            isPublishedRoot: false,
-            isHidden: true,
-          }),
-          expect.objectContaining({
-            id: descendant2.id,
-            categories: [],
+            discipline: [tags[item.id][0].name],
+            level: [tags[item.id][1].name, tags[item.id][2].name],
+            'resource-type': [],
             content: '',
             isPublishedRoot: true,
             isHidden: false,
@@ -369,7 +364,7 @@ describe('MeilisearchWrapper', () => {
       jest
         .spyOn(testUtils.itemRepository, 'getManyDescendants')
         .mockResolvedValue([descendant, descendant2]);
-      itemCategoryRepositoryMock.getForItemOrParent.mockResolvedValue([]);
+      itemTagRepositoryMock.getByItemId.mockResolvedValue([]);
       itemPublishedRepositoryMock.getForItem.mockResolvedValue({
         item: { id: item.id } as Item,
       } as ItemPublished);

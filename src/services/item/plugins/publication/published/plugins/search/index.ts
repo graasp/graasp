@@ -9,7 +9,7 @@ import { MEILISEARCH_REBUILD_SECRET } from '../../../../../../../utils/config';
 import { buildRepositories } from '../../../../../../../utils/repositories';
 import { ActionService } from '../../../../../../action/services/action';
 import { optionalIsAuthenticated } from '../../../../../../auth/plugins/passport';
-import { search } from './schemas';
+import { getFacets, search } from './schemas';
 import { SearchService } from './service';
 
 export type SearchFields = {
@@ -24,6 +24,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const searchService = resolveDependency(SearchService);
   const actionService = resolveDependency(ActionService);
 
+  // use post to allow complex body
   fastify.post(
     '/collections/search',
     { preHandler: optionalIsAuthenticated, schema: search },
@@ -31,12 +32,23 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const { user, body } = request;
       const repositories = buildRepositories();
       const member = user?.account;
-      const searchResults = await searchService.search(member, repositories, body);
+      const searchResults = await searchService.search(body);
       const action = {
         type: ActionTriggers.ItemSearch,
         extra: body,
       };
       await actionService.postMany(member, repositories, request, [action]);
+      return searchResults;
+    },
+  );
+
+  // use post to allow complex body
+  fastify.post(
+    '/collections/facets',
+    { preHandler: optionalIsAuthenticated, schema: getFacets },
+    async (request) => {
+      const { body, query } = request;
+      const searchResults = await searchService.getFacets(query.facetName, body);
       return searchResults;
     },
   );

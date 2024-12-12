@@ -22,6 +22,7 @@ export const tagSchemaRef = registerSchemaAsRef('tag', 'Tag', tagSchema);
 
 export const tagCount = customType.StrictObject(
   {
+    id: customType.UUID(),
     name: Type.String(),
     category: Type.Enum(TagCategory),
     count: Type.Number(),
