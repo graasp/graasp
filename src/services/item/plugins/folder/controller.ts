@@ -62,12 +62,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.register(async (fastify: FastifyInstanceTypebox) => {
     fastify.register(fastifyMultipart, {
       limits: {
-        // fieldNameSize: 0,             // Max field name size in bytes (Default: 100 bytes).
-        // fieldSize: 1000000,           // Max field value size in bytes (Default: 1MB).
-        // fields: 5, // Max number of non-file fields (Default: Infinity).
         fileSize: 1024 * 1024 * 10, // 10Mb For multipart forms, the max file size (Default: Infinity).
         files: 1, // Max number of file fields (Default: Infinity).
-        // headerPairs: 2000             // Max number of header key=>value pairs (Default: 2000 - same as node's http).
       },
     });
     fastify.post(

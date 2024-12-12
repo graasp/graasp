@@ -320,7 +320,7 @@ describe('Folder routes tests', () => {
       });
 
       it('Create successfully with empty display name', async () => {
-        const payload = FolderItemFactory({ displayName: '' });
+        const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
           url: `/items/folders`,
