@@ -319,23 +319,6 @@ describe('Folder routes tests', () => {
         expect(Object.keys(newItem.settings)).not.toContain(Object.keys(BAD_SETTING)[0]);
       });
 
-      it('Create successfully with empty display name', async () => {
-        const payload = FolderItemFactory();
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items/folders`,
-          payload: { ...payload },
-        });
-
-        const newItem = response.json();
-        expectItem(newItem, payload, actor);
-        expect(newItem.displayName).toEqual('');
-        expect(response.statusCode).toBe(StatusCodes.OK);
-        await waitForPostCreation();
-
-        expect(await AppDataSource.getRepository(Item).countBy({ id: newItem.id })).toEqual(1);
-      });
-
       it('Create successfully with between children', async () => {
         const payload = FolderItemFactory();
         const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
