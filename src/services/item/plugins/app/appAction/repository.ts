@@ -44,7 +44,7 @@ export class AppActionRepository extends MutableRepository<AppAction, UpdateAppA
     const { accountId } = filters;
     return await this.repository.find({
       where: { item: { id: itemId }, account: { id: accountId } },
-      relations: { account: true },
+      relations: { account: true, item: true },
     });
   }
 
