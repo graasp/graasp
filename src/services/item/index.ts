@@ -21,6 +21,7 @@ import { PREFIX_EMBEDDED_LINK } from './plugins/embeddedLink/service';
 import graaspEnrollPlugin from './plugins/enroll';
 import graaspEtherpadPlugin from './plugins/etherpad/controller';
 import graaspFileItem from './plugins/file';
+import graaspFolderItem from './plugins/folder/controller';
 import itemGeolocationPlugin from './plugins/geolocation/index';
 import graaspH5PPlugin from './plugins/html/h5p';
 import graaspZipPlugin from './plugins/importExport';
@@ -75,6 +76,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       fastify.register(graaspFileItem, {});
 
       fastify.register(graaspItemVisibility);
+
+      fastify.register(graaspFolderItem);
 
       fastify.register(ShortLinkService, {
         prefix: SHORT_LINKS_ROUTE_PREFIX,
