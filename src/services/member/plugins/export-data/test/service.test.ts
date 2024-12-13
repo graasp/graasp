@@ -11,10 +11,6 @@ import { saveChatMessages } from '../../../../chat/test/fixtures';
 import { saveAppActions } from '../../../../item/plugins/app/appAction/test/fixtures';
 import { saveAppData } from '../../../../item/plugins/app/appData/test/fixtures';
 import { saveAppSettings } from '../../../../item/plugins/app/appSetting/test/fixtures';
-import {
-  saveCategories,
-  saveItemCategories,
-} from '../../../../item/plugins/itemCategory/test/fixtures';
 import { saveItemFavorites } from '../../../../item/plugins/itemFavorite/test/fixtures';
 import { saveItemLikes } from '../../../../item/plugins/itemLike/test/utils';
 import { ItemTestUtils } from '../../../../item/test/fixtures/items';
@@ -191,19 +187,6 @@ describe('DataMember Export', () => {
         await itemTestUtils.saveItem({ actor: randomUser });
 
         const results = await service.getItems(exportingActor, buildRepositories());
-        checkNoMemberIdLeaks({ results, exportingActor, randomUser });
-      });
-    });
-
-    describe('ItemCategories', () => {
-      it('member id is not leak', async () => {
-        await saveItemCategories({
-          item,
-          categories: await saveCategories(),
-          creator: exportingActor,
-        });
-
-        const results = await service.getItemCategories(exportingActor, buildRepositories());
         checkNoMemberIdLeaks({ results, exportingActor, randomUser });
       });
     });

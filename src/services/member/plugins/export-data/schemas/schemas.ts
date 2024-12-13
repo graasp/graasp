@@ -123,20 +123,6 @@ export const itemSchema = buildObjectSchema({
 });
 export const itemArraySchema = buildArraySchema(itemSchema);
 
-const categorySchema = buildObjectSchema({
-  id: STRING_TYPE,
-  name: STRING_TYPE,
-  type: STRING_TYPE,
-});
-
-export const itemCategorySchema = buildObjectSchema({
-  id: STRING_TYPE,
-  item: externalItemSchema,
-  category: categorySchema,
-  createdAt: DATE_TYPE,
-});
-export const itemCategoryArraySchema = buildArraySchema(itemCategorySchema);
-
 export const itemFavoriteSchema = buildObjectSchema({
   id: STRING_TYPE,
   item: externalItemSchema,
