@@ -75,7 +75,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
   );
 
-  // isolate inside a register because of the mutlipart
+  // isolate inside a register because of the multipart
   fastify.register(async (fastify: FastifyInstanceTypebox) => {
     fastify.register(fastifyMultipart, {
       limits: {

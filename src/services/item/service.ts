@@ -161,7 +161,11 @@ export class ItemService {
     }
 
     this.log.debug(`create item ${item.name}`);
-    const createdItem = await itemRepository.addOne({ item, creator: member, parentItem });
+    const createdItem = await itemRepository.addOne({
+      item,
+      creator: member,
+      parentItem,
+    });
     this.log.debug(`item ${item.name} is created: ${createdItem}`);
 
     // create membership if inherited is less than admin
@@ -481,13 +485,14 @@ export class ItemService {
 
     // check memberships
     const item = await itemRepository.getOneOrThrow(itemId);
+
     await validatePermission(repositories, PermissionLevel.Write, member, item);
 
     // TODO: if updating a link item, fetch the new informations
 
     await this.hooks.runPreHooks('update', member, repositories, { item: item });
 
-    const updated = await itemRepository.updateOne(itemId, body);
+    const updated = await itemRepository.updateOne(item.id, body);
 
     await this.hooks.runPostHooks('update', member, repositories, { item: updated });
 
