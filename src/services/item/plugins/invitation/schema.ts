@@ -13,7 +13,7 @@ import { itemSchemaRef } from '../../schemas';
 export const invitationSchemaRef = registerSchemaAsRef(
   'invitation',
   'Invitation',
-  Type.Object(
+  customType.StrictObject(
     {
       id: customType.UUID(),
       email: Type.String({ format: 'email' }),
@@ -26,7 +26,6 @@ export const invitationSchemaRef = registerSchemaAsRef(
     {
       description:
         'Invitation for a non-registered user to access an item. The user is identified by email.',
-      additionalProperties: false,
     },
   ),
 );
