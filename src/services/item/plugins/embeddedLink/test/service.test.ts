@@ -1,6 +1,9 @@
 import fetch, { Response } from 'node-fetch';
 
+import { BaseLogger } from '../../../../../logger';
 import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN } from '../../../../../utils/config';
+import { ThumbnailService } from '../../../../thumbnail/service';
+import { ItemThumbnailService } from '../../thumbnail/service';
 import { EmbeddedLinkService } from '../service';
 import { FAKE_URL, FETCH_RESULT, expectedResult } from './fixtures';
 
@@ -18,16 +21,18 @@ export const mockHeaderResponse = (headers: { [key: string]: string }) => {
   );
 };
 
-const embeddedLinkService = new EmbeddedLinkService();
+const embeddedLinkService = new EmbeddedLinkService(
+  {} as ThumbnailService,
+  {} as ItemThumbnailService,
+  {} as BaseLogger,
+  EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
+);
 
 describe('Test EmbeddedLinkService', () => {
   describe('Tests retrieving link metadata', () => {
     it('Retrieve all metadata from URL', async () => {
       mockResponse({ json: async () => FETCH_RESULT } as Response);
-      const metadata = await embeddedLinkService.getLinkMetadata(
-        EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
-        FAKE_URL,
-      );
+      const metadata = await embeddedLinkService.getLinkMetadata(FAKE_URL);
       expect(metadata).toEqual(expectedResult);
     });
   });

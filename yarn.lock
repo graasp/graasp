@@ -3826,6 +3826,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/lodash.merge@npm:4.6.9":
+  version: 4.6.9
+  resolution: "@types/lodash.merge@npm:4.6.9"
+  dependencies:
+    "@types/lodash": "npm:*"
+  checksum: 10/d0dd6654547c9d8d905184d14aa5c2a37a1ed1c3204f5ab20b7d591a05f34859ef09d3b72c065e94ca1989abf9109eb8230f67c4d64a5768b1d65b9ed8baf8e7
+  languageName: node
+  linkType: hard
+
 "@types/lodash.partition@npm:^4":
   version: 4.6.9
   resolution: "@types/lodash.partition@npm:4.6.9"
@@ -7487,6 +7496,7 @@ __metadata:
     "@types/jest": "npm:29.5.12"
     "@types/jsonwebtoken": "npm:9.0.6"
     "@types/lodash.groupby": "npm:4.6.9"
+    "@types/lodash.merge": "npm:4.6.9"
     "@types/lodash.partition": "npm:^4"
     "@types/mime": "npm:3.0.4"
     "@types/mmmagic": "npm:0.4.33"
@@ -7535,6 +7545,7 @@ __metadata:
     jest: "npm:29.7.0"
     jsonwebtoken: "npm:9.0.2"
     lodash.groupby: "npm:4.6.0"
+    lodash.merge: "npm:4.6.2"
     lodash.partition: "npm:4.6.0"
     lodash.uniqby: "npm:4.7.0"
     meilisearch: "npm:0.41.0"
@@ -9334,7 +9345,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash.merge@npm:^4.6.2":
+"lodash.merge@npm:4.6.2, lodash.merge@npm:^4.6.2":
   version: 4.6.2
   resolution: "lodash.merge@npm:4.6.2"
   checksum: 10/d0ea2dd0097e6201be083865d50c3fb54fbfbdb247d9cc5950e086c991f448b7ab0cdab0d57eacccb43473d3f2acd21e134db39f22dac2d6c9ba6bf26978e3d6
