@@ -6,7 +6,6 @@ import {
   APPS_JWT_SECRET,
   APPS_PUBLISHER_ID,
   APP_ITEMS_PREFIX,
-  EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
   FILE_ITEM_PLUGIN_OPTIONS,
   ITEMS_ROUTE_PREFIX,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
@@ -93,9 +92,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         fastify.register(graaspZipPlugin);
 
-        // 'await' necessary because internally it uses 'extendCreateSchema'
-        await fastify.register(graaspEmbeddedLinkItem, {
-          iframelyHrefOrigin: EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
+        fastify.register(graaspEmbeddedLinkItem, {
           prefix: PREFIX_EMBEDDED_LINK,
         });
 
