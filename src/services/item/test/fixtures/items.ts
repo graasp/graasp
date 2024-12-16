@@ -160,7 +160,7 @@ export class ItemTestUtils {
   };
 
   saveItemAndMembership = async (options: {
-    member?: Member;
+    member?: Member | Guest;
     item?: Partial<Item>;
     permission?: PermissionLevel;
     creator?: Member;
@@ -171,7 +171,7 @@ export class ItemTestUtils {
     packedItem: PackedItem;
   }> => {
     const { item, permission, creator, parentItem } = options;
-    let member = options.member;
+    let member = options.member instanceof Member ? options.member : null;
     const newItem = await this.saveItem({
       item,
       actor: creator ?? member,
@@ -180,7 +180,8 @@ export class ItemTestUtils {
     if (!member) {
       member = await saveMember();
     }
-    const im = await this.saveMembership({ item: newItem, account: member, permission });
+    const account: Member | Guest = member;
+    const im = await this.saveMembership({ item: newItem, account, permission });
     return {
       item: newItem,
       itemMembership: im,
@@ -198,7 +199,7 @@ export class ItemTestUtils {
     return { item };
   };
 
-  saveCollections = async (member) => {
+  saveCollections = async (member: Member) => {
     const items: Item[] = [];
     const packedItems: PackedItem[] = [];
     const visibilities: ItemVisibility[] = [];

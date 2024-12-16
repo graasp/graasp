@@ -8,7 +8,7 @@ import waitForExpect from 'wait-for-expect';
 
 import { FastifyInstance, LightMyRequestResponse } from 'fastify';
 
-import { HttpMethod, MemberFactory, RecaptchaAction } from '@graasp/sdk';
+import { HttpMethod, MemberFactory, RecaptchaAction, UUID } from '@graasp/sdk';
 import { FAILURE_MESSAGES } from '@graasp/translations';
 
 import build, {
@@ -214,8 +214,8 @@ describe('Reset Password', () => {
   let app: FastifyInstance;
   let entities: { id: string; email: string; password?: string }[];
   let mailerService: MailerService;
-  let mockSendEmail;
-  let mockRedisSetEx;
+  let mockSendEmail: jest.SpyInstance;
+  let mockRedisSetEx: jest.SpyInstance;
 
   beforeAll(async () => {
     ({ app } = await build());
@@ -509,7 +509,7 @@ describe('Reset Password', () => {
 
 describe('Set Password', () => {
   let app: FastifyInstance;
-  let entities;
+  let entities: { id: UUID; password?: string; email: string }[];
   beforeAll(async () => {
     ({ app } = await build());
   });
@@ -622,7 +622,7 @@ describe('Set Password', () => {
 
 describe('Update Password', () => {
   let app: FastifyInstance;
-  let entities;
+  let entities: { id: UUID; password?: string; email: string }[];
   beforeAll(async () => {
     ({ app } = await build());
   });

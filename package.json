@@ -134,6 +134,7 @@
     "@types/archiver": "6.0.2",
     "@types/bad-words": "3.0.3",
     "@types/bcrypt": "5.0.2",
+    "@types/checksum": "0.1.35",
     "@types/content-disposition": "0.5.8",
     "@types/fs-extra": "^11",
     "@types/geoip-lite": "1.4.4",

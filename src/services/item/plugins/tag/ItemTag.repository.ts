@@ -4,6 +4,7 @@ import { TagCategory, UUID } from '@graasp/sdk';
 
 import { AbstractRepository } from '../../../../repositories/AbstractRepository';
 import { IllegalArgumentException } from '../../../../repositories/errors';
+import { assertIsError } from '../../../../utils/assertions';
 import { isDuplicateEntryError } from '../../../../utils/typeormError';
 import { Tag } from '../../../tag/Tag.entity';
 import { TagCount } from '../../../tag/schemas';
@@ -70,6 +71,7 @@ export class ItemTagRepository extends AbstractRepository<ItemTag> {
     try {
       await this.repository.insert({ itemId, tagId });
     } catch (e) {
+      assertIsError(e);
       if (isDuplicateEntryError(e)) {
         throw new ItemTagAlreadyExists({ itemId, tagId });
       }

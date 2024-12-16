@@ -5,6 +5,7 @@ import { ResultOf } from '@graasp/sdk';
 import { MutableRepository } from '../../repositories/MutableRepository';
 import { DEFAULT_PRIMARY_KEY } from '../../repositories/const';
 import { DeleteException, EntryNotFoundBeforeDeleteException } from '../../repositories/errors';
+import { assertIsError } from '../../utils/assertions';
 import { Guest } from '../itemLogin/entities/guest';
 import { Member } from '../member/entities/member';
 import { messageSchema } from '../member/plugins/export-data/schemas/schemas';
@@ -111,7 +112,8 @@ export class ChatMessageRepository extends MutableRepository<ChatMessage, ChatMe
       await this.repository.delete({ item: { id: itemId } });
       return chats;
     } catch (e) {
-      throw new DeleteException(e);
+      assertIsError(e);
+      throw new DeleteException(e.message);
     }
   }
 }

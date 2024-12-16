@@ -204,6 +204,8 @@ describe('Short links routes tests', () => {
         });
 
         it('Bad request if post short links with empty body', async () => {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-expect-error
           const response = await injectPost(app, {});
           expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
         });
@@ -337,7 +339,9 @@ describe('Short links routes tests', () => {
         const response = await injectGet(app, MOCK_ALIAS);
 
         expect(response.statusCode).toEqual(StatusCodes.MOVED_TEMPORARILY);
-        expect(response.headers.location).toEqual(getRedirection(payload.itemId, payload.platform));
+        expect(response.headers.location).toEqual(
+          getRedirection(payload.itemId, payload.platform as Context),
+        );
       });
       it('Success when admin', async () => {
         const { item } = await testUtils.mockItemAndMemberships({
@@ -354,7 +358,9 @@ describe('Short links routes tests', () => {
 
         const response = await injectGet(app, MOCK_ALIAS);
         expect(response.statusCode).toEqual(StatusCodes.MOVED_TEMPORARILY);
-        expect(response.headers.location).toEqual(getRedirection(payload.itemId, payload.platform));
+        expect(response.headers.location).toEqual(
+          getRedirection(payload.itemId, payload.platform as Context),
+        );
       });
     });
 
@@ -483,6 +489,8 @@ describe('Short links routes tests', () => {
           });
           expect(post.statusCode).toEqual(StatusCodes.OK);
 
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-expect-error
           const response = await injectPatch(app, MOCK_ALIAS, {});
           expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
         });
@@ -509,6 +517,8 @@ describe('Short links routes tests', () => {
           });
           expect(post.statusCode).toEqual(StatusCodes.OK);
 
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-expect-error
           const response = await injectPatch(app, MOCK_ALIAS, { not_valid: 0 });
           expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
         });
@@ -522,6 +532,8 @@ describe('Short links routes tests', () => {
           });
           expect(post.statusCode).toEqual(StatusCodes.OK);
 
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-expect-error
           const response = await injectPatch(app, MOCK_ALIAS, { itemId: MOCK_ITEM_ID });
           expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
         });
@@ -536,6 +548,8 @@ describe('Short links routes tests', () => {
           expect(post.statusCode).toEqual(StatusCodes.OK);
 
           const response = await injectPatch(app, MOCK_ALIAS, {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-expect-error
             platform: ShortLinkPlatform.Builder,
           });
           expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);

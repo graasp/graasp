@@ -20,6 +20,7 @@ import { AppDataSource } from '../../../plugins/datasource';
 import { assertIsDefined } from '../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
 import { MemberCannotAdminItem } from '../../../utils/errors';
+import { Account } from '../../account/entities/account';
 import { encryptPassword } from '../../auth/plugins/password/utils';
 import { Item } from '../../item/entities/Item';
 import { ItemVisibility } from '../../item/plugins/itemVisibility/ItemVisibility';
@@ -79,7 +80,7 @@ export async function saveItemLoginSchema({
   return { itemLoginSchema: rawItemLoginSchema, guest };
 }
 
-const expectItemLogin = (member, m) => {
+const expectItemLogin = (member: Account, m: Account) => {
   expectAccount(member, m);
 };
 
@@ -446,6 +447,7 @@ describe('Item Login Tests', () => {
         });
 
         const member = res.json();
+        assertIsDefined(m);
         expectItemLogin(member, m);
         expect(res.statusCode).toBe(StatusCodes.OK);
       });
@@ -612,6 +614,7 @@ describe('Item Login Tests', () => {
             });
 
             const member = res.json();
+            assertIsDefined(m);
             expectItemLogin(member, m);
 
             expect(res.statusCode).toBe(StatusCodes.OK);
@@ -675,6 +678,7 @@ describe('Item Login Tests', () => {
               payload,
             });
 
+            assertIsDefined(m);
             expectItemLogin(res.json(), m);
             expect(res.statusCode).toBe(StatusCodes.OK);
           });

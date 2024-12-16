@@ -1,5 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 
+import { FastifyInstance } from 'fastify';
+
 import { HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
@@ -8,7 +10,7 @@ import { getDateBeforeOrAfterNow, saveActionsWithItems } from './utils';
 const GET_URL = '/members/actions';
 
 describe('Get member actions', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
 
   afterEach(async () => {
