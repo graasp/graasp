@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.60.0](https://github.com/graasp/graasp/compare/v1.59.0...v1.60.0) (2024-12-13)
+
+
+### Features
+
+* add post and patch item folder ([#1625](https://github.com/graasp/graasp/issues/1625)) ([8ade6e8](https://github.com/graasp/graasp/commit/8ade6e819806e1f12a1f752c960f76c6a195bb30))
+* integrate tags to meilisearch, remove categories, migration ([#1665](https://github.com/graasp/graasp/issues/1665)) ([c0c978b](https://github.com/graasp/graasp/commit/c0c978b5e566e2d944854557f9a0f8f710dda778))
+
+
+### Bug Fixes
+
+* add item in app action ([#1681](https://github.com/graasp/graasp/issues/1681)) ([d726491](https://github.com/graasp/graasp/commit/d726491f7b690a440939a525e7468c7527062dce))
+* remove deprecated values for cc licenses ([#1678](https://github.com/graasp/graasp/issues/1678)) ([6d61341](https://github.com/graasp/graasp/commit/6d6134123f069d58e00e2c6eff3c70e78fb2929a))
+* return no content for no avatar ([#1679](https://github.com/graasp/graasp/issues/1679)) ([baafaa5](https://github.com/graasp/graasp/commit/baafaa552892bef0fc4b92939b97b01a4b8654ff))
+
 ## [1.59.0](https://github.com/graasp/graasp/compare/v1.58.0...v1.59.0) (2024-12-10)
 
 
