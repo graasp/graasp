@@ -16,7 +16,7 @@ import graaspItemLogin from '../itemLogin';
 import itemController from './controller';
 import actionItemPlugin from './plugins/action';
 import graaspApps from './plugins/app';
-import graaspEmbeddedLinkItem from './plugins/embeddedLink';
+import graaspEmbeddedLinkItem from './plugins/embeddedLink/controller';
 import { PREFIX_EMBEDDED_LINK } from './plugins/embeddedLink/service';
 import graaspEnrollPlugin from './plugins/enroll';
 import graaspEtherpadPlugin from './plugins/etherpad/controller';
