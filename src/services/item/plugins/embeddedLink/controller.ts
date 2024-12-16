@@ -13,23 +13,10 @@ import { createLink, getLinkMetadata, updateLink } from './schemas';
 import { EmbeddedLinkService } from './service';
 import { ensureProtocol } from './utils';
 
-interface GraaspEmbeddedLinkItemOptions {
-  /** \<protocol\>://\<hostname\>:\<port\> */
-  iframelyHrefOrigin: string;
-}
-
-const plugin: FastifyPluginAsyncTypebox<GraaspEmbeddedLinkItemOptions> = async (
-  fastify,
-  options,
-) => {
-  const { iframelyHrefOrigin } = options;
+const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db, log } = fastify;
   const embeddedLinkService = resolveDependency(EmbeddedLinkService);
   const actionItemService = resolveDependency(ActionItemService);
-
-  if (!iframelyHrefOrigin) {
-    throw new Error('graasp-embedded-link-item: mandatory options missing');
-  }
 
   fastify.get(
     '/metadata',
@@ -68,8 +55,6 @@ const plugin: FastifyPluginAsyncTypebox<GraaspEmbeddedLinkItemOptions> = async (
       const item = await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
         const item = await embeddedLinkService.postWithOptions(member, repositories, {
-          // Because of an incoherence between the service and the schema, we need to cast the data to the correct type
-          // This need to be fixed in issue #1288 https://github.com/graasp/graasp/issues/1288
           ...data,
           previousItemId,
           parentId,
