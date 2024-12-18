@@ -72,9 +72,9 @@ export class BaseAnalytics {
       type: 'array',
       items: memberSchema,
     });
-    console.log('before validation members', args.members);
+
     validateMembers(args.members);
-    console.log('validate members', args.members);
+
     validateMember(args.item.creator);
 
     args.descendants.forEach((i) => validateMember(i.creator));
