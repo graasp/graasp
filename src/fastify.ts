@@ -61,6 +61,7 @@ const start = async () => {
     instance.log.info('App is running version %s in %s mode', APP_VERSION, ENVIRONMENT);
     if (DEV) {
       // greet the world
+      // eslint-disable-next-line no-console
       console.log(`${GREETING}`);
     }
   } catch (err) {

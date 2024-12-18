@@ -49,7 +49,8 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
       preHandler: isAuthenticated,
     },
     async ({ user, params: { id }, query }) => {
-      const res = await actionItemService.getBaseAnalyticsForItem(
+      // remove itemMemberships from return
+      const { itemMemberships: _, ...result } = await actionItemService.getBaseAnalyticsForItem(
         user?.account,
         buildRepositories(),
         {
@@ -60,7 +61,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
           endDate: query.endDate,
         },
       );
-      return res;
+      return result;
     },
   );
 
@@ -72,25 +73,20 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
       preHandler: isAuthenticated,
     },
     async ({ user, params: { id }, query }) => {
-      const res = await actionItemService.getAnalyticsAggregation(
-        user?.account,
-        buildRepositories(),
-        {
-          sampleSize: query.requestedSampleSize,
-          itemId: id,
-          view: query.view?.toLowerCase(),
-          type: query.type,
-          countGroupBy: query.countGroupBy,
-          aggregationParams: {
-            aggregateFunction: query.aggregateFunction,
-            aggregateMetric: query.aggregateMetric,
-            aggregateBy: query.aggregateBy,
-          },
-          startDate: query.startDate,
-          endDate: query.endDate,
+      return actionItemService.getAnalyticsAggregation(user?.account, buildRepositories(), {
+        sampleSize: query.requestedSampleSize,
+        itemId: id,
+        view: query.view?.toLowerCase(),
+        type: query.type,
+        countGroupBy: query.countGroupBy,
+        aggregationParams: {
+          aggregateFunction: query.aggregateFunction,
+          aggregateMetric: query.aggregateMetric,
+          aggregateBy: query.aggregateBy,
         },
-      );
-      return res;
+        startDate: query.startDate,
+        endDate: query.endDate,
+      });
     },
   );
 

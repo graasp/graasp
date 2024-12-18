@@ -33,5 +33,6 @@ export const printFilledSQL = <T extends ObjectLiteral>(query: QueryBuilder<T>) 
     }
   });
 
+  // eslint-disable-next-line no-console
   console.log(`SQLPRINT: ${sql}`);
 };
