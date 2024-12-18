@@ -24,6 +24,7 @@ import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../.
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../test/constants';
 import { resolveDependency } from '../../../di/utils';
 import { AppDataSource } from '../../../plugins/datasource';
+import { assertIsDefined } from '../../../utils/assertions';
 import {
   HierarchyTooDeep,
   ItemNotFolder,
@@ -107,7 +108,6 @@ const saveNbOfItems = async ({
 
 describe('Item routes tests', () => {
   let app: FastifyInstance;
-  let actor;
 
   beforeAll(async () => {
     ({ app } = await build({ member: null }));
@@ -121,7 +121,6 @@ describe('Item routes tests', () => {
   afterEach(async () => {
     jest.clearAllMocks();
     unmockAuthenticate();
-    actor = null;
   });
 
   describe('POST /items', () => {
@@ -136,286 +135,7 @@ describe('Item routes tests', () => {
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
     });
 
-    describe('Signed In', () => {
-      let waitForPostCreation: () => Promise<unknown>;
-      beforeEach(async () => {
-        actor = await saveMember();
-        mockAuthenticate(actor);
-
-        const itemService = resolveDependency(ItemService);
-        const actionItemService = resolveDependency(ActionItemService);
-
-        const itemServiceRescaleOrderForParent = jest.spyOn(itemService, 'rescaleOrderForParent');
-        const actionItemServicePostPostAction = jest.spyOn(actionItemService, 'postPostAction');
-
-        // The API's is still working with the database after responding to an item post request,
-        // so we need to wait for the work to be done so we don't have flacky deadlock exceptions.
-        waitForPostCreation = async () => {
-          return await waitForExpect(async () => {
-            expect(itemServiceRescaleOrderForParent).toHaveBeenCalled();
-            expect(actionItemServicePostPostAction).toHaveBeenCalled();
-          });
-        };
-      });
-
-      it('Create successfully', async () => {
-        const payload = FolderItemFactory();
-
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: '/items',
-          payload,
-        });
-        expect(response.statusCode).toBe(StatusCodes.OK);
-
-        // check response value
-        const newItem = response.json();
-        expectItem(newItem, payload);
-        await waitForPostCreation();
-
-        // check item exists in db
-        const item = await testUtils.itemRepository.getOne(newItem.id);
-        expect(item?.id).toEqual(newItem.id);
-
-        // a membership is created for this item
-        const membership = await itemMembershipRawRepository.findOneBy({
-          item: { id: newItem.id },
-        });
-        expect(membership?.permission).toEqual(PermissionLevel.Admin);
-        // check some creator properties are not leaked
-        expect(newItem.creator.id).toBeTruthy();
-        expect(newItem.creator.createdAt).toBeFalsy();
-
-        // order is null for root
-        expect(await testUtils.getOrderForItemId(newItem.id)).toBeNull();
-      });
-
-      it('Create successfully in parent item', async () => {
-        const { item: parent } = await testUtils.saveItemAndMembership({
-          member: actor,
-        });
-        // child
-        const child = await testUtils.saveItem({
-          actor,
-          parentItem: parent,
-        });
-        const payload = FolderItemFactory();
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items?parentId=${parent.id}`,
-          payload,
-        });
-        const newItem = response.json();
-
-        expectItem(newItem, payload, actor, parent);
-        expect(response.statusCode).toBe(StatusCodes.OK);
-        await waitForPostCreation();
-
-        // a membership does not need to be created for item with admin rights
-        const nbItemMemberships = await itemMembershipRawRepository.countBy({
-          item: { id: newItem.id },
-        });
-        expect(nbItemMemberships).toEqual(0);
-
-        // add at beginning
-        await testUtils.expectOrder(newItem.id, undefined, child.id);
-      });
-
-      it('Create successfully in shared parent item', async () => {
-        const member = await saveMember();
-        const { item: parent } = await testUtils.saveItemAndMembership({ member });
-        await testUtils.saveMembership({
-          account: actor,
-          item: parent,
-          permission: PermissionLevel.Write,
-        });
-        const payload = FolderItemFactory();
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items?parentId=${parent.id}`,
-          payload,
-        });
-
-        const newItem = response.json();
-        expectItem(newItem, payload, actor, parent);
-        expect(response.statusCode).toBe(StatusCodes.OK);
-        await waitForPostCreation();
-
-        // a membership is created for this item
-        // one membership for the owner
-        // one membership for sharing
-        // admin for the new item
-        expect(
-          await itemMembershipRawRepository.countBy({
-            permission: PermissionLevel.Admin,
-            item: { id: newItem.id },
-            account: { id: actor.id },
-          }),
-        ).toEqual(1);
-      });
-
-      it('Create successfully with geolocation', async () => {
-        const payload = FolderItemFactory();
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items`,
-          payload: { ...payload, geolocation: { lat: 1, lng: 2 } },
-        });
-
-        const newItem = response.json();
-        expectItem(newItem, payload, actor);
-        expect(response.statusCode).toBe(StatusCodes.OK);
-        await waitForPostCreation();
-
-        expect(
-          await AppDataSource.getRepository(ItemGeolocation).countBy({ item: { id: newItem.id } }),
-        ).toEqual(1);
-      });
-
-      it('Create successfully with language', async () => {
-        const payload = FolderItemFactory({ lang: 'fr' });
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items`,
-          payload,
-        });
-
-        const newItem = response.json();
-        expectItem(newItem, payload, actor);
-        expect(response.statusCode).toBe(StatusCodes.OK);
-        await waitForPostCreation();
-      });
-
-      it('Create successfully with parent language', async () => {
-        const lang = 'es';
-        const { item: parentItem } = await testUtils.saveItemAndMembership({
-          member: actor,
-          item: { lang },
-        });
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items`,
-          payload: { name: faker.word.adverb(), type: ItemType.FOLDER },
-          query: { parentId: parentItem.id },
-        });
-
-        expect(response.statusCode).toBe(StatusCodes.OK);
-        const newItem = response.json();
-        expect(newItem.lang).toEqual(lang);
-        await waitForPostCreation();
-      });
-
-      it('Create successfully with description placement above and should not erase default thumbnail', async () => {
-        const payload = FolderItemFactory({
-          settings: { descriptionPlacement: DescriptionPlacement.ABOVE },
-        });
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items`,
-          payload,
-        });
-
-        const newItem = response.json();
-        expectItem(newItem, payload, actor);
-        expect(response.statusCode).toBe(StatusCodes.OK);
-        await waitForPostCreation();
-        expect(newItem.settings.descriptionPlacement).toBe(DescriptionPlacement.ABOVE);
-        expect(newItem.settings.hasThumbnail).toBe(false);
-      });
-
-      it('Filter out bad setting when creating', async () => {
-        const BAD_SETTING = { INVALID: 'Not a valid setting' };
-        const VALID_SETTING = { descriptionPlacement: DescriptionPlacement.ABOVE };
-
-        const payload = FolderItemFactory({
-          settings: {
-            ...BAD_SETTING,
-            ...VALID_SETTING,
-          },
-        });
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items`,
-          payload,
-        });
-
-        const newItem = response.json();
-        expectItem(newItem, { ...payload, settings: VALID_SETTING }, actor);
-        expect(response.statusCode).toBe(StatusCodes.OK);
-        await waitForPostCreation();
-        expect(newItem.settings.descriptionPlacement).toBe(VALID_SETTING.descriptionPlacement);
-        expect(Object.keys(newItem.settings)).not.toContain(Object.keys(BAD_SETTING)[0]);
-      });
-
-      it('Create successfully with between children', async () => {
-        const payload = FolderItemFactory();
-        const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
-        const previousItem = await testUtils.saveItem({ parentItem, item: { order: 1 } });
-        const afterItem = await testUtils.saveItem({ parentItem, item: { order: 2 } });
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items`,
-          query: { parentId: parentItem.id, previousItemId: previousItem.id },
-          payload,
-        });
-
-        const newItem = response.json();
-        expectItem(newItem, payload, actor);
-        expect(response.statusCode).toBe(StatusCodes.OK);
-        await waitForPostCreation();
-
-        await testUtils.expectOrder(newItem.id, previousItem.id, afterItem.id);
-      });
-
-      it('Create successfully at end', async () => {
-        const payload = FolderItemFactory();
-        const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
-        // first item noise
-        await testUtils.saveItem({ parentItem, item: { order: 1 } });
-        const previousItem = await testUtils.saveItem({ parentItem, item: { order: 40 } });
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items`,
-          query: { parentId: parentItem.id, previousItemId: previousItem.id },
-          payload,
-        });
-
-        const newItem = response.json();
-        expectItem(newItem, payload, actor);
-        expect(response.statusCode).toBe(StatusCodes.OK);
-        await waitForPostCreation();
-
-        await testUtils.expectOrder(newItem.id, previousItem.id);
-      });
-
-      it('Create successfully after invalid child adds at end', async () => {
-        const payload = FolderItemFactory();
-        const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
-        const child = await testUtils.saveItem({ parentItem, item: { order: 30 } });
-
-        // noise, child in another parent
-        const { item: otherParent } = await testUtils.saveItemAndMembership({ member: actor });
-        const anotherChild = await testUtils.saveItem({
-          parentItem: otherParent,
-          item: { order: 100 },
-        });
-
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items`,
-          query: { parentId: parentItem.id, previousItemId: anotherChild.id },
-          payload,
-        });
-
-        const newItem = response.json();
-        expectItem(newItem, payload, actor);
-        expect(response.statusCode).toBe(StatusCodes.OK);
-        await waitForPostCreation();
-
-        // should be after child, since another child is not valid
-        await testUtils.expectOrder(newItem.id, child.id, anotherChild.id);
-      });
-
+    describe('Schema validation', () => {
       it('Throw if geolocation is partial', async () => {
         const payload = FolderItemFactory();
         const response = await app.inject({
@@ -485,7 +205,311 @@ describe('Item routes tests', () => {
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
+    });
+
+    describe('Signed In', () => {
+      let waitForPostCreation: () => Promise<unknown>;
+      beforeEach(async () => {
+        const itemService = resolveDependency(ItemService);
+        const actionItemService = resolveDependency(ActionItemService);
+
+        const itemServiceRescaleOrderForParent = jest.spyOn(itemService, 'rescaleOrderForParent');
+        const actionItemServicePostPostAction = jest.spyOn(actionItemService, 'postPostAction');
+
+        // The API's is still working with the database after responding to an item post request,
+        // so we need to wait for the work to be done so we don't have flacky deadlock exceptions.
+        waitForPostCreation = async () => {
+          return await waitForExpect(async () => {
+            expect(itemServiceRescaleOrderForParent).toHaveBeenCalled();
+            expect(actionItemServicePostPostAction).toHaveBeenCalled();
+          });
+        };
+      });
+
+      it('Create successfully', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
+
+        const payload = FolderItemFactory();
+
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: '/items',
+          payload,
+        });
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        // check response value
+        const newItem = response.json();
+        expectItem(newItem, payload);
+        await waitForPostCreation();
+
+        // check item exists in db
+        const item = await testUtils.itemRepository.getOne(newItem.id);
+        expect(item?.id).toEqual(newItem.id);
+
+        // a membership is created for this item
+        const membership = await itemMembershipRawRepository.findOneBy({
+          item: { id: newItem.id },
+        });
+        expect(membership?.permission).toEqual(PermissionLevel.Admin);
+        // check some creator properties are not leaked
+        expect(newItem.creator.id).toBeTruthy();
+        expect(newItem.creator.createdAt).toBeFalsy();
+
+        // order is null for root
+        expect(await testUtils.getOrderForItemId(newItem.id)).toBeNull();
+      });
+
+      it('Create successfully in parent item', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
+        const { item: parent } = await testUtils.saveItemAndMembership({
+          member: actor,
+        });
+        // child
+        const child = await testUtils.saveItem({
+          actor,
+          parentItem: parent,
+        });
+        const payload = FolderItemFactory();
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `/items?parentId=${parent.id}`,
+          payload,
+        });
+        const newItem = response.json();
+
+        expectItem(newItem, payload, actor, parent);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        await waitForPostCreation();
+
+        // a membership does not need to be created for item with admin rights
+        const nbItemMemberships = await itemMembershipRawRepository.countBy({
+          item: { id: newItem.id },
+        });
+        expect(nbItemMemberships).toEqual(0);
+
+        // add at beginning
+        await testUtils.expectOrder(newItem.id, undefined, child.id);
+      });
+
+      it('Create successfully in shared parent item', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
+        const member = await saveMember();
+        const { item: parent } = await testUtils.saveItemAndMembership({ member });
+        await testUtils.saveMembership({
+          account: actor,
+          item: parent,
+          permission: PermissionLevel.Write,
+        });
+        const payload = FolderItemFactory();
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `/items?parentId=${parent.id}`,
+          payload,
+        });
+
+        const newItem = response.json();
+        expectItem(newItem, payload, actor, parent);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        await waitForPostCreation();
+
+        // a membership is created for this item
+        // one membership for the owner
+        // one membership for sharing
+        // admin for the new item
+        expect(
+          await itemMembershipRawRepository.countBy({
+            permission: PermissionLevel.Admin,
+            item: { id: newItem.id },
+            account: { id: actor.id },
+          }),
+        ).toEqual(1);
+      });
+
+      it('Create successfully with geolocation', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
+        const payload = FolderItemFactory();
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `/items`,
+          payload: { ...payload, geolocation: { lat: 1, lng: 2 } },
+        });
+
+        const newItem = response.json();
+        expectItem(newItem, payload, actor);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        await waitForPostCreation();
+
+        expect(
+          await AppDataSource.getRepository(ItemGeolocation).countBy({ item: { id: newItem.id } }),
+        ).toEqual(1);
+      });
+
+      it('Create successfully with language', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
+        const payload = FolderItemFactory({ lang: 'fr' });
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `/items`,
+          payload,
+        });
+
+        const newItem = response.json();
+        expectItem(newItem, payload, actor);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        await waitForPostCreation();
+      });
+
+      it('Create successfully with parent language', async () => {
+        const lang = 'es';
+        const actor = await saveMember();
+        mockAuthenticate(actor);
+        const { item: parentItem } = await testUtils.saveItemAndMembership({
+          member: actor,
+          item: { lang },
+        });
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `/items`,
+          payload: { name: faker.word.adverb(), type: ItemType.FOLDER },
+          query: { parentId: parentItem.id },
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        const newItem = response.json();
+        expect(newItem.lang).toEqual(lang);
+        await waitForPostCreation();
+      });
+
+      it('Create successfully with description placement above and should not erase default thumbnail', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
+        const payload = FolderItemFactory({
+          settings: { descriptionPlacement: DescriptionPlacement.ABOVE },
+        });
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `/items`,
+          payload,
+        });
+
+        const newItem = response.json();
+        expectItem(newItem, payload, actor);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        await waitForPostCreation();
+        expect(newItem.settings.descriptionPlacement).toBe(DescriptionPlacement.ABOVE);
+        expect(newItem.settings.hasThumbnail).toBe(false);
+      });
+
+      it('Filter out bad setting when creating', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
+        const BAD_SETTING = { INVALID: 'Not a valid setting' };
+        const VALID_SETTING = { descriptionPlacement: DescriptionPlacement.ABOVE };
+
+        const payload = FolderItemFactory({
+          settings: {
+            ...BAD_SETTING,
+            ...VALID_SETTING,
+          },
+        });
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `/items`,
+          payload,
+        });
+
+        const newItem = response.json();
+        expectItem(newItem, { ...payload, settings: VALID_SETTING }, actor);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        await waitForPostCreation();
+        expect(newItem.settings.descriptionPlacement).toBe(VALID_SETTING.descriptionPlacement);
+        expect(Object.keys(newItem.settings)).not.toContain(Object.keys(BAD_SETTING)[0]);
+      });
+
+      it('Create successfully with between children', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
+        const payload = FolderItemFactory();
+        const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
+        const previousItem = await testUtils.saveItem({ parentItem, item: { order: 1 } });
+        const afterItem = await testUtils.saveItem({ parentItem, item: { order: 2 } });
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `/items`,
+          query: { parentId: parentItem.id, previousItemId: previousItem.id },
+          payload,
+        });
+
+        const newItem = response.json();
+        expectItem(newItem, payload, actor);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        await waitForPostCreation();
+
+        await testUtils.expectOrder(newItem.id, previousItem.id, afterItem.id);
+      });
+
+      it('Create successfully at end', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
+        const payload = FolderItemFactory();
+        const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
+        // first item noise
+        await testUtils.saveItem({ parentItem, item: { order: 1 } });
+        const previousItem = await testUtils.saveItem({ parentItem, item: { order: 40 } });
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `/items`,
+          query: { parentId: parentItem.id, previousItemId: previousItem.id },
+          payload,
+        });
+
+        const newItem = response.json();
+        expectItem(newItem, payload, actor);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        await waitForPostCreation();
+
+        await testUtils.expectOrder(newItem.id, previousItem.id);
+      });
+
+      it('Create successfully after invalid child adds at end', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
+        const payload = FolderItemFactory();
+        const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
+        const child = await testUtils.saveItem({ parentItem, item: { order: 30 } });
+
+        // noise, child in another parent
+        const { item: otherParent } = await testUtils.saveItemAndMembership({ member: actor });
+        const anotherChild = await testUtils.saveItem({
+          parentItem: otherParent,
+          item: { order: 100 },
+        });
+
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `/items`,
+          query: { parentId: parentItem.id, previousItemId: anotherChild.id },
+          payload,
+        });
+
+        const newItem = response.json();
+        expectItem(newItem, payload, actor);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        await waitForPostCreation();
+
+        // should be after child, since another child is not valid
+        await testUtils.expectOrder(newItem.id, child.id, anotherChild.id);
+      });
+
       it('Cannot create item in non-existing parent', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const payload = FolderItemFactory();
         const parentId = uuidv4();
         const response = await app.inject({
@@ -499,6 +523,8 @@ describe('Item routes tests', () => {
       });
 
       it('Cannot create item if member does not have membership on parent', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const member = await saveMember();
         const { item: parent } = await testUtils.saveItemAndMembership({ member });
         const payload = FolderItemFactory();
@@ -513,6 +539,8 @@ describe('Item routes tests', () => {
       });
 
       it('Cannot create item if member can only read parent', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const owner = await saveMember();
         const { item: parent } = await testUtils.saveItemAndMembership({
           member: actor,
@@ -531,6 +559,8 @@ describe('Item routes tests', () => {
       });
 
       it('Cannot create item if parent item has too many children', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const { item: parent } = await testUtils.saveItemAndMembership({
           member: actor,
         });
@@ -554,6 +584,8 @@ describe('Item routes tests', () => {
       });
 
       it('Cannot create item if parent is too deep in hierarchy', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const payload = FolderItemFactory();
         const { item: parent } = await testUtils.saveItemAndMembership({
           member: actor,
@@ -571,6 +603,8 @@ describe('Item routes tests', () => {
       });
 
       it('Cannot create inside non-folder item', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const { item: parent } = await testUtils.saveItemAndMembership({
           member: actor,
           item: { type: ItemType.DOCUMENT },
@@ -589,11 +623,9 @@ describe('Item routes tests', () => {
   });
 
   describe('POST /items/with-thumbnail', () => {
-    beforeEach(async () => {
-      actor = await saveMember();
-      mockAuthenticate(actor);
-    });
     it('Post item with thumbnail', async () => {
+      const actor = await saveMember();
+      mockAuthenticate(actor);
       const imageStream = fs.createReadStream(path.resolve(__dirname, './fixtures/image.png'));
       const itemName = 'Test Item';
       const payload = new FormData();
@@ -640,12 +672,9 @@ describe('Item routes tests', () => {
     });
 
     describe('Signed In', () => {
-      beforeEach(async () => {
-        actor = await saveMember();
-        mockAuthenticate(actor);
-      });
-
       it('Update successfully', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const { item } = await testUtils.saveItemAndMembership({
           item: {
             type: ItemType.DOCUMENT,
@@ -692,6 +721,8 @@ describe('Item routes tests', () => {
       });
 
       it('Update successfully new language', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const { item } = await testUtils.saveItemAndMembership({
           member: actor,
         });
@@ -715,6 +746,8 @@ describe('Item routes tests', () => {
       });
 
       it('Update successfully description placement above', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const { item } = await testUtils.saveItemAndMembership({
           member: actor,
         });
@@ -745,6 +778,8 @@ describe('Item routes tests', () => {
       });
 
       it('Update successfully link settings', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const { item } = await testUtils.saveItemAndMembership({
           member: actor,
         });
@@ -775,6 +810,8 @@ describe('Item routes tests', () => {
       });
 
       it('Filter out bad setting when updating', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const BAD_SETTING = { INVALID: 'Not a valid setting' };
         const VALID_SETTING = { descriptionPlacement: DescriptionPlacement.ABOVE };
 
@@ -868,6 +905,8 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
       });
       it('Cannot update item if has only read membership', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const payload = {
           name: 'new name',
         };
@@ -902,11 +941,9 @@ describe('Item routes tests', () => {
     });
 
     describe('Signed In', () => {
-      beforeEach(async () => {
-        actor = await saveMember();
-        mockAuthenticate(actor);
-      });
       it('Delete successfully', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const { item: item1 } = await testUtils.saveItemAndMembership({ member: actor });
         const { item: item2 } = await testUtils.saveItemAndMembership({ member: actor });
         await testUtils.saveItemAndMembership({ member: actor, parentItem: item1 });
@@ -934,6 +971,8 @@ describe('Item routes tests', () => {
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
       it('Delete successfully one item', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const { item: item1 } = await testUtils.saveItemAndMembership({ member: actor });
         await testUtils.saveItemAndMembership({ member: actor, parentItem: item1 });
         const response = await app.inject({
@@ -957,6 +996,8 @@ describe('Item routes tests', () => {
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
       it('Delete successfully one item in parent, with children and memberships', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         // root with membership for two members
         const { item: root } = await testUtils.saveItemAndMembership({ member: actor });
         const member = await saveMember();
@@ -992,6 +1033,8 @@ describe('Item routes tests', () => {
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
       it('Bad request if one id is invalid', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const { item: item1 } = await testUtils.saveItemAndMembership({ member: actor });
         const { item: item2 } = await testUtils.saveItemAndMembership({ member: actor });
         await testUtils.saveItemAndMembership({ member: actor, parentItem: item1 });
@@ -1007,6 +1050,8 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
       it('Does not delete items if item does not exist', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const missingId = uuidv4();
         const { item: item1 } = await testUtils.saveItemAndMembership({ member: actor });
         const { item: item2 } = await testUtils.saveItemAndMembership({ member: actor });
@@ -1055,12 +1100,9 @@ describe('Item routes tests', () => {
     });
 
     describe('Signed In', () => {
-      beforeEach(async () => {
-        actor = await saveMember();
-        mockAuthenticate(actor);
-      });
-
       it('Move successfully root item to parent', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const items = await saveNbOfItems({ nb: 3, actor });
         const { item: parent } = await testUtils.saveItemAndMembership({ member: actor });
 
@@ -1102,6 +1144,8 @@ describe('Item routes tests', () => {
       });
 
       it('Move successfully items to root', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
         const items = await saveNbOfItems({ nb: 3, actor, parentItem });
 
@@ -1130,6 +1174,8 @@ describe('Item routes tests', () => {
       });
 
       it('Move successfully item to root and create new membership', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
         // manually save item that doesn't need a membership because of inheritance
         const item = await testUtils.saveItem({ parentItem, actor });
@@ -1162,6 +1208,8 @@ describe('Item routes tests', () => {
       });
 
       it('Move successfully item to child and delete same membership', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
         const { item } = await testUtils.saveItemAndMembership({ member: actor });
 
@@ -1191,6 +1239,8 @@ describe('Item routes tests', () => {
       });
 
       it('Move successfully items to another parent', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const { item: originalParent } = await testUtils.saveItemAndMembership({ member: actor });
         const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
         const items = await saveNbOfItems({ nb: 3, actor, parentItem: originalParent });
@@ -1218,6 +1268,8 @@ describe('Item routes tests', () => {
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
       it('Bad request if one id is invalid', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
         const items = await saveNbOfItems({ nb: 3, actor, parentItem });
         const response = await app.inject({
@@ -1231,6 +1283,8 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
       it('Fail to move items if one item does not exist', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
         const items = await saveNbOfItems({ nb: 3, actor });
 
@@ -1256,6 +1310,8 @@ describe('Item routes tests', () => {
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
       it('Move lots of items', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
         const items = await saveNbOfItems({ nb: MAX_TARGETS_FOR_MODIFY_REQUEST, actor });
 
@@ -1301,12 +1357,10 @@ describe('Item routes tests', () => {
     });
 
     describe('Signed In', () => {
-      beforeEach(async () => {
-        actor = await saveMember();
-        mockAuthenticate(actor);
-      });
-
       it('Copy successfully from root to root', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
+        assertIsDefined(actor);
         const settings = { hasThumbnail: false, isResizable: true, isCollapsible: true };
         const creator = await saveMember();
         const items = await saveNbOfItems({
@@ -1373,6 +1427,8 @@ describe('Item routes tests', () => {
       });
 
       it('Copy successfully from root to item with admin rights', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const { item: targetItem } = await testUtils.saveItemAndMembership({ member: actor });
         const items = await saveNbOfItems({ nb: 3, actor });
 
@@ -1414,6 +1470,8 @@ describe('Item routes tests', () => {
       });
 
       it('Copy successfully from root to item with write rights', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const member = await saveMember();
         const { item: targetItem } = await testUtils.saveItemAndMembership({
           member: actor,
@@ -1452,6 +1510,8 @@ describe('Item routes tests', () => {
       });
 
       it('Copy successfully shared root item to home', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const member = await saveMember();
         const { item } = await testUtils.saveItemAndMembership({
           member: actor,
@@ -1516,6 +1576,8 @@ describe('Item routes tests', () => {
       });
 
       it('Copy successfully from item to root', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
         const items = await saveNbOfItems({ nb: 3, actor, parentItem });
 
@@ -1547,6 +1609,8 @@ describe('Item routes tests', () => {
       });
 
       it('Bad request if one id is invalid', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const items = await saveNbOfItems({ nb: 3, actor });
 
         const response = await app.inject({
@@ -1561,6 +1625,8 @@ describe('Item routes tests', () => {
       });
 
       it('Fail to copy if one item does not exist', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const items = await saveNbOfItems({ nb: 3, actor });
         const missingId = uuidv4();
 
@@ -1590,6 +1656,8 @@ describe('Item routes tests', () => {
       });
 
       it('Fail to copy if parent item is not a folder', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const { item } = await testUtils.saveItemAndMembership({
           member: actor,
           item: { type: ItemType.DOCUMENT },
@@ -1624,6 +1692,8 @@ describe('Item routes tests', () => {
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
       it('Copy lots of items', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const items = await saveNbOfItems({ nb: MAX_TARGETS_FOR_MODIFY_REQUEST, actor });
         const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
 
@@ -1651,6 +1721,8 @@ describe('Item routes tests', () => {
       });
 
       it('Copy attached geolocation', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
         const itemGeolocationRepository = AppDataSource.getRepository(ItemGeolocation);
         const { item } = await testUtils.saveItemAndMembership({ member: actor });
@@ -1708,11 +1780,9 @@ describe('Item routes tests', () => {
     });
 
     describe('Signed In', () => {
-      beforeEach(async () => {
-        actor = await saveMember();
-        mockAuthenticate(actor);
-      });
       it('reorder at same place', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
         const toReorder = await testUtils.saveItem({
           actor,
@@ -1737,6 +1807,8 @@ describe('Item routes tests', () => {
         await testUtils.expectOrder(toReorder.id, previousItem.id);
       });
       it('reorder at beginning', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
         const toReorder = await testUtils.saveItem({
           actor,
@@ -1761,6 +1833,8 @@ describe('Item routes tests', () => {
       });
 
       it('reorder at end', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
         const toReorder = await testUtils.saveItem({
           actor,
@@ -1792,6 +1866,8 @@ describe('Item routes tests', () => {
       });
 
       it('reorder in between', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
         const toReorder = await testUtils.saveItem({
           actor,
@@ -1822,6 +1898,8 @@ describe('Item routes tests', () => {
       });
 
       it('reorder in root throws', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const { item: toReorder } = await testUtils.saveItemAndMembership({
           member: actor,
         });

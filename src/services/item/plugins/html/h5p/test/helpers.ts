@@ -1,4 +1,4 @@
-import cs from 'checksum';
+import { file } from 'checksum';
 import FormData from 'form-data';
 import fs from 'fs';
 import fsp from 'fs/promises';
@@ -10,7 +10,7 @@ import { FastifyInstance } from 'fastify';
 import { H5P_PACKAGES } from './fixtures';
 
 const checksum = {
-  file: util.promisify(cs.file),
+  file: util.promisify(file),
 };
 
 /**

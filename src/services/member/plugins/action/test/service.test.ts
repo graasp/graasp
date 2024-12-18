@@ -7,7 +7,7 @@ import { Action } from '../../../../action/entities/action';
 import { ActionService } from '../../../../action/services/action';
 import { getMemberActions } from '../../../../action/test/fixtures/actions';
 import { ItemService } from '../../../../item/service';
-import { Actor, assertIsMember } from '../../../entities/member';
+import { Member } from '../../../entities/member';
 import { MemberService } from '../../../service';
 import { ActionMemberService } from '../service';
 import { saveActionsWithItems } from './utils';
@@ -26,7 +26,7 @@ const getActionMemberService = () => {
 
 describe('Action member service', () => {
   let app;
-  let actor: Actor;
+  let actor: Member | undefined;
 
   afterEach(async () => {
     jest.clearAllMocks();
@@ -38,8 +38,7 @@ describe('Action member service', () => {
     it('get filtered actions by start and end date for auth member ', async () => {
       ({ app, actor } = await build());
       const member = asDefined(actor);
-      assertIsMember(member);
-      await saveActionsWithItems(actor);
+      await saveActionsWithItems(member);
       const result = await getActionMemberService().getFilteredActions(
         member,
         buildRepositories(),
@@ -51,8 +50,7 @@ describe('Action member service', () => {
     it("get filtered actions by start and end date for auth member shouldn't contain actions for items with no permisson", async () => {
       ({ app, actor } = await build());
       const member = asDefined(actor);
-      assertIsMember(member);
-      await saveActionsWithItems(actor, { saveActionForNotOwnedItem: true });
+      await saveActionsWithItems(member, { saveActionForNotOwnedItem: true });
       const result = await getActionMemberService().getFilteredActions(
         member,
         buildRepositories(),

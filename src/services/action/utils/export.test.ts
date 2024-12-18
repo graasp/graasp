@@ -10,6 +10,7 @@ import build, { clearDatabase } from '../../../../test/app';
 import { AppDataSource } from '../../../plugins/datasource';
 import { TMP_FOLDER } from '../../../utils/config';
 import { ChatMessage } from '../../chat/chatMessage';
+import { Item } from '../../item/entities/Item';
 import { BaseAnalytics } from '../../item/plugins/action/base-analytics';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
 import { Member } from '../../member/entities/member';
@@ -22,7 +23,15 @@ const testUtils = new ItemTestUtils();
 const rawActionRepository = AppDataSource.getRepository(Action);
 const rawChatMessageRepository = AppDataSource.getRepository(ChatMessage);
 
-const createDummyAction = async ({ item, member, view }): Promise<Action> => {
+const createDummyAction = async ({
+  item,
+  member,
+  view,
+}: {
+  item: Item;
+  member: Member;
+  view: Context;
+}): Promise<Action> => {
   return rawActionRepository.save({
     id: v4(),
     item,
@@ -33,7 +42,7 @@ const createDummyAction = async ({ item, member, view }): Promise<Action> => {
   });
 };
 
-const setUpActions = async (app, member: Member) => {
+const setUpActions = async (app: FastifyInstance, member: Member) => {
   const itemId = v4();
   const views = Object.values(Context);
   const { item, itemMembership } = await testUtils.saveItemAndMembership({

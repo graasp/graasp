@@ -3668,6 +3668,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/checksum@npm:0.1.35":
+  version: 0.1.35
+  resolution: "@types/checksum@npm:0.1.35"
+  checksum: 10/70941128ca2cd9f317c058917eb6a07ad59402358e34c7ceb8bdfa1ac6613de6e69b8a9fb37c11d672874083b894c65ff2871cf3925197997ab385a935e5ab74
+  languageName: node
+  linkType: hard
+
 "@types/connect@npm:*":
   version: 3.4.38
   resolution: "@types/connect@npm:3.4.38"
@@ -7473,6 +7480,7 @@ __metadata:
     "@types/archiver": "npm:6.0.2"
     "@types/bad-words": "npm:3.0.3"
     "@types/bcrypt": "npm:5.0.2"
+    "@types/checksum": "npm:0.1.35"
     "@types/content-disposition": "npm:0.5.8"
     "@types/fs-extra": "npm:^11"
     "@types/geoip-lite": "npm:1.4.4"

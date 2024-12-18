@@ -18,31 +18,59 @@ export class BaseLogger implements FastifyBaseLogger {
     return this.logger.child(bindings, options);
   }
 
-  fatal(message: string, ...args: unknown[]) {
-    this.logger.fatal(message, ...args);
+  fatal(message: unknown, ...args: unknown[]) {
+    if (typeof message === 'string') {
+      this.logger.fatal(message, ...args);
+    } else {
+      console.error(message);
+    }
   }
 
-  warn(message: string, ...args: unknown[]) {
-    this.logger.warn(message, ...args);
+  warn(message: unknown, ...args: unknown[]) {
+    if (typeof message === 'string') {
+      this.logger.warn(message, ...args);
+    } else {
+      console.error(message);
+    }
   }
 
-  debug(message: string, ...args: unknown[]) {
-    this.logger.debug(message, ...args);
+  debug(message: unknown, ...args: unknown[]) {
+    if (typeof message === 'string') {
+      this.logger.debug(message, ...args);
+    } else {
+      console.error(message);
+    }
   }
 
-  trace(message: string, ...args: unknown[]) {
-    this.logger.trace(message, ...args);
+  trace(message: unknown, ...args: unknown[]) {
+    if (typeof message === 'string') {
+      this.logger.trace(message, ...args);
+    } else {
+      console.error(message);
+    }
   }
 
-  silent(message: string, ...args: unknown[]) {
-    this.logger.silent(message, ...args);
+  silent(message: unknown, ...args: unknown[]) {
+    if (typeof message === 'string') {
+      this.logger.silent(message, ...args);
+    } else {
+      console.error(message);
+    }
   }
 
-  info(message: string, ...args: unknown[]) {
-    this.logger.info(message, ...args);
+  info(message: unknown, ...args: unknown[]) {
+    if (typeof message === 'string') {
+      this.logger.info(message, ...args);
+    } else {
+      console.error(message);
+    }
   }
 
-  error(message: string, ...args: unknown[]) {
-    this.logger.error(message, ...args);
+  error(message: unknown, ...args: unknown[]) {
+    if (typeof message === 'string') {
+      this.logger.error(message, ...args);
+    } else {
+      console.error(message);
+    }
   }
 }

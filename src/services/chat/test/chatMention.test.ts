@@ -9,7 +9,9 @@ import { HttpMethod, MentionStatus } from '@graasp/sdk';
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
 import { AppDataSource } from '../../../plugins/datasource';
 import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
+import { Actor, Member } from '../../member/entities/member';
 import { saveMember } from '../../member/test/fixtures/members';
+import { ChatMessage } from '../chatMessage';
 import { ChatMentionNotFound, MemberCannotAccessMention } from '../errors';
 import { ChatMention } from '../plugins/mentions/chatMention';
 import { saveItemWithChatMessages } from './chatMessage.test';
@@ -18,7 +20,7 @@ const adminRepository = AppDataSource.getRepository(ChatMention);
 
 // create item, chat messages from another member and members
 // as well as mentions of actor
-const saveItemWithChatMessagesAndMentions = async (actor) => {
+const saveItemWithChatMessagesAndMentions = async (actor: Actor) => {
   const otherActor = await saveMember();
   const { item, chatMessages, members } = await saveItemWithChatMessages(otherActor);
   const chatMentions: ChatMention[] = [];
@@ -70,7 +72,6 @@ export const expectChatMentions = (
 
 describe('Chat Mention tests', () => {
   let app: FastifyInstance;
-  let actor;
 
   beforeAll(async () => {
     ({ app } = await build({ member: null }));
@@ -84,7 +85,6 @@ describe('Chat Mention tests', () => {
   afterEach(async () => {
     jest.clearAllMocks();
     unmockAuthenticate();
-    actor = null;
   });
 
   describe('GET /mentions', () => {
@@ -100,12 +100,9 @@ describe('Chat Mention tests', () => {
     // TODO: public?
 
     describe('Signed In', () => {
-      beforeEach(async () => {
-        actor = await saveMember();
-        mockAuthenticate(actor);
-      });
-
       it('Get successfully', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const { chatMentions } = await saveItemWithChatMessagesAndMentions(actor);
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -133,11 +130,12 @@ describe('Chat Mention tests', () => {
     });
 
     describe('Signed In', () => {
-      let chatMessages, chatMentions;
+      let chatMessages: ChatMessage[];
+      let chatMentions: ChatMention[];
       const payload = { status: MentionStatus.Read };
 
       beforeEach(async () => {
-        actor = await saveMember();
+        const actor = await saveMember();
         mockAuthenticate(actor);
         ({ chatMessages, chatMentions } = await saveItemWithChatMessagesAndMentions(actor));
       });
@@ -207,10 +205,12 @@ describe('Chat Mention tests', () => {
     });
 
     describe('Signed In', () => {
-      let chatMentions, chatMessages, members;
+      let chatMentions: ChatMention[];
+      let chatMessages: ChatMessage[];
+      let members: Member[];
 
       beforeEach(async () => {
-        actor = await saveMember();
+        const actor = await saveMember();
         mockAuthenticate(actor);
         ({ chatMessages, chatMentions, members } =
           await saveItemWithChatMessagesAndMentions(actor));
@@ -222,7 +222,7 @@ describe('Chat Mention tests', () => {
           url: `${ITEMS_ROUTE_PREFIX}/mentions/${chatMentions[0].id}`,
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
-        expect(response.json().body).toEqual(chatMentions[0].body);
+        expect(response.json().message.body).toEqual(chatMentions[0].message.body);
 
         expect(await adminRepository.countBy({ id: In(chatMentions.map(({ id }) => id)) })).toEqual(
           chatMentions.length - 1,
@@ -276,10 +276,12 @@ describe('Chat Mention tests', () => {
     });
 
     describe('Signed In', () => {
-      let chatMessages, chatMentions, members;
+      let chatMentions: ChatMention[];
+      let chatMessages: ChatMessage[];
+      let members: Member[];
 
       beforeEach(async () => {
-        actor = await saveMember();
+        const actor = await saveMember();
         mockAuthenticate(actor);
         ({ chatMessages, members, chatMentions } =
           await saveItemWithChatMessagesAndMentions(actor));

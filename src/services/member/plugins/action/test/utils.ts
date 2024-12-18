@@ -4,18 +4,22 @@ import { AppDataSource } from '../../../../../plugins/datasource';
 import { Action } from '../../../../action/entities/action';
 import { saveActions } from '../../../../action/test/fixtures/actions';
 import { ItemTestUtils } from '../../../../item/test/fixtures/items';
+import { Member } from '../../../entities/member';
 import { saveMember } from '../../../test/fixtures/members';
 
 const testUtils = new ItemTestUtils();
 const rawRepository = AppDataSource.getRepository(Action);
 
-export const getDateBeforeOrAfterNow = (dateDiff) => {
+export const getDateBeforeOrAfterNow = (dateDiff: number) => {
   const date = new Date(); // Today's date
   date.setDate(date.getDate() + dateDiff);
   return date.toISOString();
 };
 
-export const saveActionsWithItems = async (member, { saveActionForNotOwnedItem = false } = {}) => {
+export const saveActionsWithItems = async (
+  member: Member,
+  { saveActionForNotOwnedItem = false } = {},
+) => {
   const item = await testUtils.saveItem({ actor: member });
   const actions = [
     ActionFactory({

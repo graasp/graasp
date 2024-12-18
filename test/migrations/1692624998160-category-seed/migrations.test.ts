@@ -36,7 +36,7 @@ describe('Migrations1692624998160', () => {
   it('Up', async () => {
     await new Migrations1692624998160().up(app.db.createQueryRunner());
 
-    const categories = await app.db.query('select * from category');
+    const categories = await app.db.query<{ name: string }[]>('select * from category');
     const names = categories.map((c) => c.name);
     expect(names).toContain('arts');
     expect(names).toContain('language');

@@ -9,6 +9,7 @@ import { UnionOfConst } from '@graasp/sdk';
 
 import { resolveDependency } from '../di/utils';
 import { SearchService } from '../services/item/plugins/publication/published/plugins/search/service';
+import { assertIsError } from '../utils/assertions';
 import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN, ETHERPAD_URL } from '../utils/config';
 
 const Status = {
@@ -116,7 +117,8 @@ const getDBStatusCheck = async (manager: EntityManager): Promise<ServiceStatus> 
     }
     return new UnHealthyStatus('Database');
   } catch (err) {
-    if (err.code === 'ENOTFOUND') {
+    assertIsError(err);
+    if ('code' in err && err.code === 'ENOTFOUND') {
       return new UnreachableStatus();
     }
     return new UnexpectedErrorStatus(err);
@@ -133,7 +135,8 @@ const getEtherpadStatusCheck = async (): Promise<ServiceStatus> => {
     }
     return new UnHealthyStatus('Etherpad');
   } catch (err) {
-    if (err.code === 'ENOTFOUND') {
+    assertIsError(err);
+    if ('code' in err && err.code === 'ENOTFOUND') {
       return new UnreachableStatus();
     }
     return new UnexpectedErrorStatus(err);
@@ -150,7 +153,8 @@ const getIframelyStatusCheck = async (): Promise<ServiceStatus> => {
     }
     return new UnHealthyStatus('Iframely');
   } catch (err) {
-    if (err.code === 'ENOTFOUND') {
+    assertIsError(err);
+    if ('code' in err && err.code === 'ENOTFOUND') {
       return new UnreachableStatus();
     }
     return new UnexpectedErrorStatus(err);
@@ -165,7 +169,8 @@ const getSearchStatusCheck = async (search: SearchService): Promise<ServiceStatu
     }
     return new UnHealthyStatus('Meilisearch');
   } catch (err) {
-    if (err.code === 'ENOTFOUND') {
+    assertIsError(err);
+    if ('code' in err && err.code === 'ENOTFOUND') {
       return new UnreachableStatus();
     }
     return new UnexpectedErrorStatus(err);

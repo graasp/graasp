@@ -61,3 +61,9 @@ export function assertIsMemberOrGuest<Err extends Error, Args extends unknown[]>
     }
   }
 }
+
+export function assertIsError(error: unknown): asserts error is Error {
+  if (!(error instanceof Error)) {
+    throw error;
+  }
+}

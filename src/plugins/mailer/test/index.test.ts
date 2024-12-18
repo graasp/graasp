@@ -12,7 +12,7 @@ import { MailerService } from '../service';
 describe('Mailer', () => {
   let app: FastifyInstance;
   let mailerService: MailerService;
-  let mockSendEmail;
+  let mockSendEmail: jest.SpyInstance;
 
   beforeAll(async () => {
     ({ app } = await build());
