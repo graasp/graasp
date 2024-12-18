@@ -18,11 +18,6 @@ import { AppDataRepository } from '../../../../item/plugins/app/appData/reposito
 import { saveAppData } from '../../../../item/plugins/app/appData/test/fixtures';
 import { AppSettingRepository } from '../../../../item/plugins/app/appSetting/repository';
 import { saveAppSettings } from '../../../../item/plugins/app/appSetting/test/fixtures';
-import { ItemCategoryRepository } from '../../../../item/plugins/itemCategory/repositories/itemCategory';
-import {
-  saveCategories,
-  saveItemCategories,
-} from '../../../../item/plugins/itemCategory/test/fixtures';
 import { FavoriteRepository } from '../../../../item/plugins/itemFavorite/repositories/favorite';
 import { saveItemFavorites } from '../../../../item/plugins/itemFavorite/test/fixtures';
 import { ItemLikeRepository } from '../../../../item/plugins/itemLike/repository';
@@ -37,7 +32,6 @@ import {
   appActionSchema,
   appDataSchema,
   appSettingSchema,
-  itemCategorySchema,
   itemFavoriteSchema,
   itemLikeSchema,
   itemMembershipSchema,
@@ -212,21 +206,6 @@ describe('DataMember Export', () => {
 
       const results = await new ItemRepository().getForMemberExport(exportingActor.id);
       expectNoLeaksAndEquality(results, items, itemSchema);
-    });
-
-    it('get all Item Categories for the member', async () => {
-      const categories = await saveCategories();
-      const itemCategories = await saveItemCategories({
-        item,
-        categories,
-        creator: exportingActor,
-      });
-
-      // noise
-      await saveItemCategories({ item: itemOfRandomUser, categories, creator: randomUser });
-
-      const results = await new ItemCategoryRepository().getForMemberExport(exportingActor.id);
-      expectNoLeaksAndEquality(results, itemCategories, itemCategorySchema);
     });
 
     it('get all Item Favorites for the member', async () => {

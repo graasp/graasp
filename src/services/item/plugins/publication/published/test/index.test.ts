@@ -24,7 +24,6 @@ import {
   expectManyItems,
   expectManyPackedItems,
 } from '../../../../test/fixtures/items';
-import { saveCategories } from '../../../itemCategory/test/fixtures';
 import { ItemLike } from '../../../itemLike/itemLike';
 import { saveItemLikes } from '../../../itemLike/test/utils';
 import { ItemVisibility } from '../../../itemVisibility/ItemVisibility';
@@ -247,7 +246,6 @@ describe('Item Published', () => {
       it('Returns published collections for member', async () => {
         const member = await saveMember();
         const { packedItems: items, visibilities } = await testUtils.saveCollections(member);
-        await saveCategories();
 
         const res = await app.inject({
           method: HttpMethod.Get,

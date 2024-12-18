@@ -26,7 +26,6 @@ import itemGeolocationPlugin from './plugins/geolocation/index';
 import graaspH5PPlugin from './plugins/html/h5p';
 import graaspZipPlugin from './plugins/importExport';
 import graaspInvitationsPlugin from './plugins/invitation';
-import graaspCategoryPlugin from './plugins/itemCategory';
 import graaspFavoritePlugin from './plugins/itemFavorite';
 import graaspItemFlags from './plugins/itemFlag';
 import graaspItemLikes from './plugins/itemLike';
@@ -64,8 +63,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       // // plugins that don't require authentication
       fastify.register(graaspItemLogin);
-
-      fastify.register(graaspCategoryPlugin);
 
       fastify.register(graaspFavoritePlugin);
 

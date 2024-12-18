@@ -9,7 +9,6 @@ import {
   appDataArraySchema,
   appSettingArraySchema,
   itemArraySchema,
-  itemCategoryArraySchema,
   itemFavoriteArraySchema,
   itemLikeArraySchema,
   itemMembershipArraySchema,
@@ -53,7 +52,6 @@ export class ExportMemberDataService {
     const chatMessages = await this.getChatMessages(actor, repositories);
 
     const items = await this.getItems(actor, repositories);
-    const itemCategories = await this.getItemCategories(actor, repositories);
     const itemFavorites = await this.getItemFavorites(actor, repositories);
     const itemLikes = await this.getItemLikes(actor, repositories);
     const itemMemberShips = await this.getItemsMemberShips(actor, repositories);
@@ -66,7 +64,6 @@ export class ExportMemberDataService {
       chatMentions,
       chatMessages,
       items,
-      itemCategories,
       itemFavorites,
       itemLikes,
       itemMemberShips,
@@ -117,11 +114,6 @@ export class ExportMemberDataService {
   async getItems(actor: Member, { itemRepository }: Repositories) {
     const results = await itemRepository.getForMemberExport(actor.id);
     return getFilteredData(results, itemArraySchema);
-  }
-
-  async getItemCategories(actor: Member, { itemCategoryRepository }: Repositories) {
-    const results = await itemCategoryRepository.getForMemberExport(actor.id);
-    return getFilteredData(results, itemCategoryArraySchema);
   }
 
   async getItemFavorites(actor: Member, { itemFavoriteRepository }: Repositories) {

@@ -13,8 +13,6 @@ import { PublisherRepository } from '../services/item/plugins/app/publisherRepos
 import { AppRepository } from '../services/item/plugins/app/repository';
 import { ItemGeolocationRepository } from '../services/item/plugins/geolocation/repository';
 import { InvitationRepository } from '../services/item/plugins/invitation/repository';
-import { CategoryRepository } from '../services/item/plugins/itemCategory/repositories/category';
-import { ItemCategoryRepository } from '../services/item/plugins/itemCategory/repositories/itemCategory';
 import { FavoriteRepository } from '../services/item/plugins/itemFavorite/repositories/favorite';
 import { ItemFlagRepository } from '../services/item/plugins/itemFlag/repository';
 import { ItemLikeRepository } from '../services/item/plugins/itemLike/repository';
@@ -43,10 +41,8 @@ export type Repositories = {
   appDataRepository: AppDataRepository;
   appRepository: AppRepository;
   appSettingRepository: AppSettingRepository;
-  categoryRepository: CategoryRepository;
   chatMessageRepository: ChatMessageRepository;
   invitationRepository: InvitationRepository;
-  itemCategoryRepository: ItemCategoryRepository;
   itemFavoriteRepository: FavoriteRepository;
   itemFlagRepository: ItemFlagRepository;
   itemLikeRepository: ItemLikeRepository;
@@ -97,9 +93,7 @@ export const buildRepositories = (manager?: EntityManager): Repositories => ({
   invitationRepository: new InvitationRepository(manager),
   chatMessageRepository: new ChatMessageRepository(manager),
   mentionRepository: new ChatMentionRepository(manager),
-  itemCategoryRepository: new ItemCategoryRepository(manager),
   itemFavoriteRepository: new FavoriteRepository(manager),
-  categoryRepository: new CategoryRepository(manager),
   itemVisibilityRepository: new ItemVisibilityRepository(manager),
   itemValidationRepository: new ItemValidationRepository(manager),
   itemValidationReviewRepository: new ItemValidationReviewRepository(manager),

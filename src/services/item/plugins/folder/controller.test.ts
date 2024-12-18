@@ -33,7 +33,6 @@ import {
 } from '../../../../utils/errors';
 import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
 import { saveMember } from '../../../member/test/fixtures/members';
-import { Item } from '../../entities/Item';
 import { ItemTestUtils, expectItem } from '../../test/fixtures/items';
 import { saveUntilMaxDescendants } from '../../test/utils';
 import { ActionItemService } from '../action/service';
