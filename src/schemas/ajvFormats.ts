@@ -1,4 +1,4 @@
-import { Ajv } from 'ajv';
+import type { Ajv } from 'ajv';
 
 import { MemberConstants } from '@graasp/sdk';
 

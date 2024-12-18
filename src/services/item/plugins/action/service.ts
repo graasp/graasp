@@ -141,7 +141,7 @@ export class ActionItemService {
       startDate?: string;
       endDate?: string;
     },
-  ): Promise<BaseAnalytics> {
+  ): Promise<Omit<BaseAnalytics, 'itemMemberships'>> {
     // prevent access from unautorized members
     if (!actor) {
       throw new UnauthorizedMember();
@@ -172,6 +172,7 @@ export class ActionItemService {
       startDate: payload.startDate,
       endDate: payload.endDate,
     });
+    console.log('actions', actions);
 
     // get memberships
     const inheritedMemberships =
@@ -181,7 +182,7 @@ export class ActionItemService {
     // get members
     const members =
       permission === PermissionLevel.Admin ? allMemberships.map(({ account }) => account) : [actor];
-
+    console.log('members', members);
     // get descendants items
     const descendants = await this.itemService.getFilteredDescendants(
       actor,
@@ -222,9 +223,10 @@ export class ActionItemService {
 
       apps[appId] = { data: appData, actions: appActions, settings: appSettings };
     }
-
+    console.log(allMemberships);
     // set all data in last task's result
-    return new BaseAnalytics({
+    // remove the itemMemberships
+    const { itemMemberships: _, ...result } = new BaseAnalytics({
       item,
       descendants,
       actions,
@@ -237,6 +239,7 @@ export class ActionItemService {
         requestedSampleSize: payload.sampleSize ?? MAX_ACTIONS_SAMPLE_SIZE,
       },
     });
+    return result;
   }
 
   async postPostAction(request: FastifyRequest, repositories: Repositories, item: Item) {

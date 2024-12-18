@@ -1,6 +1,6 @@
 import { Ajv } from 'ajv';
 
-import { UUID } from '@graasp/sdk';
+import { MemberConstants, UUID } from '@graasp/sdk';
 
 import { Account } from '../../../account/entities/account';
 import { Action } from '../../../action/entities/action';
@@ -18,18 +18,12 @@ const memberSchema = {
   properties: {
     id: { type: 'string' },
     name: { type: 'string' },
-    email: { type: 'string' },
-    extra: {
-      type: 'object',
-      additionalProperties: false,
-      properties: { lang: { type: 'string' } },
-    },
   },
 };
 
 export class BaseAnalytics {
   readonly actions: Action[];
-  readonly members: Account[];
+  readonly members: { id: string; name: string }[];
   readonly itemMemberships: ItemMembership[];
   readonly descendants: Item[];
   readonly item: Item;
@@ -68,15 +62,19 @@ export class BaseAnalytics {
     // TODO: all other schemas
 
     // validate and remove additional properties from member
-    const ajv = new Ajv({ removeAdditional: 'all' });
+    const ajv = new Ajv({ removeAdditional: 'all' }).addFormat(
+      'username',
+      MemberConstants.USERNAME_FORMAT_REGEX,
+    );
 
     const validateMember = ajv.compile(memberSchema);
     const validateMembers = ajv.compile({
       type: 'array',
       items: memberSchema,
     });
+    console.log('before validation members', args.members);
     validateMembers(args.members);
-
+    console.log('validate members', args.members);
     validateMember(args.item.creator);
 
     args.descendants.forEach((i) => validateMember(i.creator));

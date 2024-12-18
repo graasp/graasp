@@ -49,13 +49,18 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
       preHandler: isAuthenticated,
     },
     async ({ user, params: { id }, query }) => {
-      return actionItemService.getBaseAnalyticsForItem(user?.account, buildRepositories(), {
-        sampleSize: query.requestedSampleSize,
-        itemId: id,
-        view: query.view?.toLowerCase(),
-        startDate: query.startDate,
-        endDate: query.endDate,
-      });
+      const res = await actionItemService.getBaseAnalyticsForItem(
+        user?.account,
+        buildRepositories(),
+        {
+          sampleSize: query.requestedSampleSize,
+          itemId: id,
+          view: query.view?.toLowerCase(),
+          startDate: query.startDate,
+          endDate: query.endDate,
+        },
+      );
+      return res;
     },
   );
 
@@ -67,20 +72,25 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
       preHandler: isAuthenticated,
     },
     async ({ user, params: { id }, query }) => {
-      return actionItemService.getAnalyticsAggregation(user?.account, buildRepositories(), {
-        sampleSize: query.requestedSampleSize,
-        itemId: id,
-        view: query.view?.toLowerCase(),
-        type: query.type,
-        countGroupBy: query.countGroupBy,
-        aggregationParams: {
-          aggregateFunction: query.aggregateFunction,
-          aggregateMetric: query.aggregateMetric,
-          aggregateBy: query.aggregateBy,
+      const res = await actionItemService.getAnalyticsAggregation(
+        user?.account,
+        buildRepositories(),
+        {
+          sampleSize: query.requestedSampleSize,
+          itemId: id,
+          view: query.view?.toLowerCase(),
+          type: query.type,
+          countGroupBy: query.countGroupBy,
+          aggregationParams: {
+            aggregateFunction: query.aggregateFunction,
+            aggregateMetric: query.aggregateMetric,
+            aggregateBy: query.aggregateBy,
+          },
+          startDate: query.startDate,
+          endDate: query.endDate,
         },
-        startDate: query.startDate,
-        endDate: query.endDate,
-      });
+      );
+      return res;
     },
   );
 
