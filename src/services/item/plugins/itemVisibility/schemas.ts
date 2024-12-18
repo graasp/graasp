@@ -11,7 +11,7 @@ import { itemSchemaRef } from '../../schemas';
 export const itemVisibilitySchemaRef = registerSchemaAsRef(
   'itemVisibility',
   'Item Visibility',
-  Type.Object(
+  customType.StrictObject(
     {
       id: customType.UUID(),
       type: Type.Enum(ItemVisibilityType),
@@ -21,7 +21,6 @@ export const itemVisibilitySchemaRef = registerSchemaAsRef(
     },
     {
       description: 'Visibility attached to an item and its descendants.',
-      additionalProperties: false,
     },
   ),
 );
@@ -34,15 +33,12 @@ const create = {
   description:
     'Create visibility on item with given visibility that will apply on itself and its descendants.',
 
-  params: Type.Object(
-    {
-      itemId: customType.UUID(),
-      type: Type.Enum(ItemVisibilityType),
-    },
-    { additionalProperties: false },
-  ),
+  params: customType.StrictObject({
+    itemId: customType.UUID(),
+    type: Type.Enum(ItemVisibilityType),
+  }),
   response: {
-    [StatusCodes.CREATED]: Type.Object(
+    [StatusCodes.CREATED]: customType.StrictObject(
       {
         id: customType.UUID(),
         type: Type.Enum(ItemVisibilityType),
@@ -52,7 +48,6 @@ const create = {
       },
       {
         description: 'Successful Response',
-        additionalProperties: false,
       },
     ),
     '4xx': errorSchemaRef,
@@ -66,13 +61,10 @@ const deleteOne = {
   summary: 'Delete visibility of item',
   description: 'Delete visibility of item with given type.',
 
-  params: Type.Object(
-    {
-      itemId: customType.UUID(),
-      type: Type.Enum(ItemVisibilityType),
-    },
-    { additionalProperties: false },
-  ),
+  params: customType.StrictObject({
+    itemId: customType.UUID(),
+    type: Type.Enum(ItemVisibilityType),
+  }),
   response: {
     [StatusCodes.OK]: Type.Object(
       { item: Type.Object({ path: Type.String() }) },

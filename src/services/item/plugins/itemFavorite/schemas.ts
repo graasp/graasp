@@ -11,16 +11,14 @@ import { packedItemSchemaRef } from '../../schemas.packed';
 const favoriteSchemaRef = registerSchemaAsRef(
   'favorite',
   'Favorite',
-  Type.Object(
+  customType.StrictObject(
     {
-      // Object definition
       id: customType.UUID(),
       item: itemSchemaRef,
       createdAt: customType.DateTime(),
     },
     {
       description: 'Bookmark instance for member of a given item.',
-      additionalProperties: false,
     },
   ),
 );
@@ -28,7 +26,7 @@ const favoriteSchemaRef = registerSchemaAsRef(
 const packedFavoriteSchemaRef = registerSchemaAsRef(
   'packedFavorite',
   'Packed Favorite',
-  Type.Object(
+  customType.StrictObject(
     {
       // Object definition
       id: customType.UUID(),
@@ -37,7 +35,6 @@ const packedFavoriteSchemaRef = registerSchemaAsRef(
     },
     {
       description: 'Bookmark instance for member of a given packed item.',
-      additionalProperties: false,
     },
   ),
 );

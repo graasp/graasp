@@ -11,9 +11,8 @@ import { itemSchemaRef } from '../../schemas';
 export const itemFlagSchemaRef = registerSchemaAsRef(
   'itemFlag',
   'Item Flag',
-  Type.Object(
+  customType.StrictObject(
     {
-      // Object definition
       id: customType.UUID(),
       item: itemSchemaRef,
       type: Type.Enum(FlagType),
@@ -21,9 +20,7 @@ export const itemFlagSchemaRef = registerSchemaAsRef(
       createdAt: customType.DateTime(),
     },
     {
-      // Schema options
       description: 'Flag object of an item.',
-      additionalProperties: false,
     },
   ),
 );
@@ -38,16 +35,9 @@ const create = {
   params: customType.StrictObject({
     itemId: customType.UUID(),
   }),
-  body: Type.Object(
-    {
-      // Object definition
-      type: Type.Enum(FlagType),
-    },
-    {
-      // Schema options
-      additionalProperties: false,
-    },
-  ),
+  body: customType.StrictObject({
+    type: Type.Enum(FlagType),
+  }),
   response: {
     [StatusCodes.CREATED]: itemFlagSchemaRef,
     '4xx': errorSchemaRef,

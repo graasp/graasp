@@ -2,14 +2,13 @@
 import { Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
-import { registerSchemaAsRef } from '../plugins/typebox';
+import { customType, registerSchemaAsRef } from '../plugins/typebox';
 
 export const errorSchemaRef = registerSchemaAsRef(
   'error',
   'Error',
-  Type.Object(
+  customType.StrictObject(
     {
-      // Object Definition
       name: Type.Optional(Type.String()),
       code: Type.Optional(
         Type.Union([
@@ -27,8 +26,8 @@ export const errorSchemaRef = registerSchemaAsRef(
       origin: Type.Optional(Type.String()),
     },
     {
-      // Schema Options
-      additionalProperties: false,
+      description:
+        'Error object with useful information about the unexpected behavior that occured',
     },
   ),
 );

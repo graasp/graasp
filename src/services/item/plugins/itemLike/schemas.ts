@@ -9,15 +9,13 @@ import { packedItemSchemaRef } from '../../schemas.packed';
 export const itemLikeSchemaRef = registerSchemaAsRef(
   'itemLike',
   'Item Like',
-  Type.Object(
+  customType.StrictObject(
     {
-      // Object Definition
       id: customType.UUID(),
       item: itemSchemaRef,
     },
     {
       description: 'Like object of an item when a member likes it.',
-      additionalProperties: false,
     },
   ),
 );
@@ -25,16 +23,13 @@ export const itemLikeSchemaRef = registerSchemaAsRef(
 export const packedItemLikeSchemaRef = registerSchemaAsRef(
   'packedItemLike',
   'Packed Item Like',
-  Type.Object(
+  customType.StrictObject(
     {
-      // Object Definition
       id: Type.Optional(customType.UUID()),
       item: packedItemSchemaRef,
     },
     {
-      // Schema Options
       description: 'Like object of an item when a member likes it. Item property is a packed item',
-      additionalProperties: false,
     },
   ),
 );

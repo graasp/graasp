@@ -10,9 +10,8 @@ import { accountSchemaRef } from '../../../../account/schemas';
 export const appActionSchemaRef = registerSchemaAsRef(
   'appAction',
   'App Action',
-  Type.Object(
+  customType.StrictObject(
     {
-      // Object Definition
       id: customType.UUID(),
       account: accountSchemaRef,
       member: Type.Ref(accountSchemaRef.$ref, { deprecated: true }),
@@ -22,7 +21,6 @@ export const appActionSchemaRef = registerSchemaAsRef(
     },
     {
       description: 'Activity trace saved by an app.',
-      additionalProperties: false,
     },
   ),
 );
@@ -56,18 +54,15 @@ export const getForOne = {
     itemId: customType.UUID(),
   }),
   querystring: Type.Union([
-    Type.Object(
+    customType.StrictObject(
       {
         memberId: customType.UUID(),
       },
-      { additionalProperties: false, deprecated: true },
+      { deprecated: true },
     ),
-    Type.Object(
-      {
-        accountId: customType.UUID(),
-      },
-      { additionalProperties: false },
-    ),
+    customType.StrictObject({
+      accountId: customType.UUID(),
+    }),
     Type.Object({}, { additionalProperties: false }),
   ]),
   response: {

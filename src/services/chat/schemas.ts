@@ -16,9 +16,8 @@ import { itemSchemaRef } from '../item/schemas';
 export const chatMessageSchemaRef = registerSchemaAsRef(
   'chatMessage',
   'Chat Message',
-  Type.Object(
+  customType.StrictObject(
     {
-      // Object Definition
       id: customType.UUID(),
       creator: nullableAccountSchemaRef,
       createdAt: customType.DateTime(),
@@ -27,9 +26,7 @@ export const chatMessageSchemaRef = registerSchemaAsRef(
       item: itemSchemaRef,
     },
     {
-      // Schema Options
       description: 'Message from a member in a chat of an item.',
-      additionalProperties: false,
     },
   ),
 );
@@ -37,16 +34,13 @@ export const chatMessageSchemaRef = registerSchemaAsRef(
 export const chatSchemaRef = registerSchemaAsRef(
   'chat',
   'Chat',
-  Type.Object(
+  customType.StrictObject(
     {
-      // Object Definition
       id: customType.UUID(),
       messages: Type.Array(chatMessageSchemaRef),
     },
     {
-      // Schema Options
       description: 'Chat object of an item with its messages.',
-      additionalProperties: false,
     },
   ),
 );
@@ -81,17 +75,10 @@ export const createChatMessage = {
   params: customType.StrictObject({
     itemId: customType.UUID(),
   }),
-  body: Type.Object(
-    {
-      // Object Definition
-      body: Type.String(),
-      mentions: Type.Optional(Type.Array(Type.String())),
-    },
-    {
-      // Schema Options
-      additionalProperties: false,
-    },
-  ),
+  body: customType.StrictObject({
+    body: Type.String(),
+    mentions: Type.Optional(Type.Array(Type.String())),
+  }),
   response: {
     [StatusCodes.CREATED]: chatMessageSchemaRef,
     '4xx': errorSchemaRef,
@@ -107,18 +94,11 @@ export const patchMessage = {
   summary: 'Edit message in chat',
   description: 'Edit message in chat for given item.',
 
-  params: Type.Object(
-    {
-      // Object Definition
-      itemId: customType.UUID(),
-      messageId: customType.UUID(),
-    },
-    {
-      // Schema Options
-      additionalProperties: false,
-    },
-  ),
-  body: Type.Object({
+  params: customType.StrictObject({
+    itemId: customType.UUID(),
+    messageId: customType.UUID(),
+  }),
+  body: customType.StrictObject({
     body: Type.String(),
   }),
   response: {
@@ -136,17 +116,10 @@ export const deleteMessage = {
   summary: 'Delete message in chat',
   description: 'Delete message in chat for given item.',
 
-  params: Type.Object(
-    {
-      // Object Definition
-      itemId: customType.UUID(),
-      messageId: customType.UUID(),
-    },
-    {
-      // Schema Options
-      additionalProperties: false,
-    },
-  ),
+  params: customType.StrictObject({
+    itemId: customType.UUID(),
+    messageId: customType.UUID(),
+  }),
   response: {
     [StatusCodes.OK]: chatMessageSchemaRef,
     '4xx': errorSchemaRef,

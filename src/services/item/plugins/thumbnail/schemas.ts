@@ -13,25 +13,14 @@ export const upload = {
 } as const satisfies FastifySchema;
 
 export const download = {
-  params: Type.Object(
-    {
-      // Object Definition
-      id: customType.UUID(),
-      size: Type.Enum(ThumbnailSize, { default: ThumbnailSize.Medium }),
-    },
-    {
-      // Schema Options
-      additionalProperties: false,
-    },
-  ),
-  querystring: Type.Object(
-    {
-      replyUrl: Type.Boolean({ default: false }),
-    },
-    {
-      additionalProperties: false,
-    },
-  ),
+  params: customType.StrictObject({
+    // Object Definition
+    id: customType.UUID(),
+    size: Type.Enum(ThumbnailSize, { default: ThumbnailSize.Medium }),
+  }),
+  querystring: customType.StrictObject({
+    replyUrl: Type.Boolean({ default: false }),
+  }),
 } as const satisfies FastifySchema;
 
 export const deleteSchema = {

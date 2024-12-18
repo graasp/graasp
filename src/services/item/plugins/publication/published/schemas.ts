@@ -128,24 +128,16 @@ export const getInformations = {
 };
 
 export const getManyInformations = {
-  querystring: Type.Object(
-    {
-      itemId: Type.Array(customType.UUID(), {
-        uniqueItems: true,
-        maxItems: MAX_TARGETS_FOR_READ_REQUEST,
-      }),
-    },
-    {
-      additionalProperties: false,
-    },
-  ),
+  querystring: customType.StrictObject({
+    itemId: Type.Array(customType.UUID(), {
+      uniqueItems: true,
+      maxItems: MAX_TARGETS_FOR_READ_REQUEST,
+    }),
+  }),
   response: {
-    [StatusCodes.OK]: Type.Object(
-      {
-        data: Type.Record(Type.String({ format: 'uuid' }), publishEntry),
-        errors: Type.Array(errorSchemaRef),
-      },
-      { additionalProperties: false },
-    ),
+    [StatusCodes.OK]: customType.StrictObject({
+      data: Type.Record(Type.String({ format: 'uuid' }), publishEntry),
+      errors: Type.Array(errorSchemaRef),
+    }),
   },
 };
