@@ -85,7 +85,6 @@ describe('Chat Mention tests', () => {
   afterEach(async () => {
     jest.clearAllMocks();
     unmockAuthenticate();
-    actor = null;
   });
 
   describe('GET /mentions', () => {
