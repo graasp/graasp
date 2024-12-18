@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "lib": ["es5", "es6", "esnext.asynciterable"],
+    "lib": ["es2021", "es6", "esnext.asynciterable"],
     "target": "es6",
     "module": "Node16",
     // "strict": true, // TODO: enable
