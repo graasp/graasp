@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifySchema } from 'fastify';
 
 import {
+  ActionTriggers,
   AggregateBy,
   AggregateFunction,
   AggregateMetric,
@@ -14,14 +15,11 @@ import {
 
 import { customType } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
-import { accountSchemaRef } from '../../../account/schemas';
+import { accountSchemaRef, nullableAccountSchemaRef } from '../../../account/schemas';
 import {
   MAX_ACTIONS_SAMPLE_SIZE,
   MIN_ACTIONS_SAMPLE_SIZE,
 } from '../../../action/constants/constants';
-import { chatMessageSchemaRef } from '../../../chat/schemas';
-import { itemMembershipSchemaRef } from '../../../itemMembership/schemas';
-import { memberSchemaRef } from '../../../member/schemas';
 import { itemSchema, itemSchemaRef } from '../../schemas';
 import { appActionSchemaRef } from '../app/appAction/schemas';
 import { appDataSchemaRef } from '../app/appData/schemas';
@@ -30,8 +28,8 @@ import { ItemActionType } from './utils';
 
 const actionSchema = customType.StrictObject({
   id: customType.UUID(),
-  account: Type.Optional(accountSchemaRef),
-  item: Type.Optional(customType.Nullable(itemSchema)),
+  account: Type.Optional(nullableAccountSchemaRef),
+  item: Type.Optional(customType.Nullable(Type.Omit(itemSchema, ['creator']))),
   view: Type.Enum(Context),
   type: Type.String(),
   extra: Type.Object({}),
@@ -61,26 +59,30 @@ export const getItemActions = {
     endDate: Type.Optional(Type.String({ format: 'date-time' })),
   }),
   response: {
-    [StatusCodes.OK]: {
+    [StatusCodes.OK]: customType.StrictObject({
       actions: Type.Array(actionSchema),
-      members: Type.Array(memberSchemaRef),
-      itemMemberships: Type.Array(itemMembershipSchemaRef),
+      members: Type.Array(accountSchemaRef),
       descendants: Type.Array(itemSchemaRef),
       item: itemSchemaRef,
       apps: Type.Record(
         customType.UUID(),
         customType.StrictObject({
-          data: Type.Array(appDataSchemaRef),
+          data: Type.Array(
+            // remove deprecated member property from the schema
+            Type.Omit(appDataSchemaRef, ['member']),
+          ),
           settings: Type.Array(appSettingSchemaRef),
-          actions: Type.Array(appActionSchemaRef),
+          actions: Type.Array(
+            // remove deprecated `member` prop
+            Type.Omit(appActionSchemaRef, ['member']),
+          ),
         }),
       ),
-      chatMessages: Type.Array(chatMessageSchemaRef),
       metadata: customType.StrictObject({
         numActionsRetrieved: Type.Number(),
         requestedSampleSize: Type.Number(),
       }),
-    },
+    }),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
@@ -119,7 +121,9 @@ export const getAggregateActions = {
       customType.StrictObject({
         aggregateResult: Type.Number(),
         createdTimeOfDay: Type.Optional(Type.String()),
-        actionType: Type.Optional(Type.Enum(ItemActionType)),
+        actionType: Type.Optional(
+          Type.Union([Type.Enum(ItemActionType), Type.Enum(ActionTriggers)]),
+        ),
         createdDay: Type.Optional(customType.DateTime()),
       }),
     ),

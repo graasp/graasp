@@ -140,7 +140,7 @@ describe('Folder routes tests', () => {
 
         // check response value
         const newItem = response.json();
-        console.log(newItem, payload);
+
         expectItem(newItem, payload);
         await waitForPostCreation();
 

@@ -17,6 +17,7 @@ const output = 'openapi.json';
   await writeFile(output, schema, { flag: 'w+' });
 
   instance.close(() => {
+    // eslint-disable-next-line no-console
     console.log(`OpenAPI schema generated at ${output}`);
     process.exit(1);
   });
