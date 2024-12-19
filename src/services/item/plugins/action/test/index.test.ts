@@ -5,7 +5,14 @@ import waitForExpect from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
 
-import { Context, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
+import {
+  ActionTriggers,
+  Context,
+  DiscriminatedItem,
+  HttpMethod,
+  ItemType,
+  PermissionLevel,
+} from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -17,6 +24,7 @@ import { AppDataSource } from '../../../../../plugins/datasource';
 import { MailerService } from '../../../../../plugins/mailer/service';
 import { BUILDER_HOST, ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { Action } from '../../../../action/entities/action';
+import { saveItemLoginSchema } from '../../../../itemLogin/test/index.test';
 import { saveMember, saveMembers } from '../../../../member/test/fixtures/members';
 import { ItemTestUtils } from '../../../test/fixtures/items';
 import { saveAppActions } from '../../app/appAction/test/fixtures';
@@ -25,7 +33,11 @@ import { saveAppSettings } from '../../app/appSetting/test/fixtures';
 import { CannotPostAction } from '../errors';
 import { ActionRequestExportRepository } from '../requestExport/repository';
 import { ItemActionType } from '../utils';
-import { saveActions } from './fixtures/actions';
+import { getDummyAction, saveActions } from './fixtures/actions';
+
+function ActionArrayFrom(length: number, actionTemplate: Partial<Action>) {
+  return Array.from({ length }, () => actionTemplate);
+}
 
 const actionRequestExportRepository = new ActionRequestExportRepository();
 const rawActionRepository = AppDataSource.getRepository(Action);
@@ -605,6 +617,48 @@ describe('Action Plugin Tests', () => {
       });
 
       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+    });
+  });
+
+  describe('GET /:id/actions', () => {
+    beforeEach(async () => {
+      actor = await saveMember();
+      mockAuthenticate(actor);
+    });
+
+    it('Succeed if the user has READ permission', async () => {
+      const members = await saveMembers();
+      const { item } = await testUtils.saveItemAndMembership({ member: members[0] });
+      await testUtils.saveMembership({
+        item,
+        account: actor,
+        permission: PermissionLevel.Read,
+      });
+      const { guest } = await saveItemLoginSchema({
+        item: item as unknown as DiscriminatedItem,
+        memberName: faker.internet.userName(),
+      });
+
+      expect(guest).toBeDefined();
+
+      await saveActions(item, members);
+      await rawActionRepository.save(
+        getDummyAction(Context.Player, ActionTriggers.CollapseItem, new Date(), guest!, item),
+      );
+
+      const parameters = {
+        requestedSampleSize: '5000',
+        view: Context.Player,
+        startDate: '2024-12-16T03:24:00',
+        endDate: '2024-12-20T03:24:00',
+      };
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: `items/${item.id}/actions`,
+        query: parameters,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.OK);
     });
   });
 });
