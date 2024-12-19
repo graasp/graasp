@@ -35,10 +35,6 @@ import { ActionRequestExportRepository } from '../requestExport/repository';
 import { ItemActionType } from '../utils';
 import { getDummyAction, saveActions } from './fixtures/actions';
 
-function ActionArrayFrom(length: number, actionTemplate: Partial<Action>) {
-  return Array.from({ length }, () => actionTemplate);
-}
-
 const actionRequestExportRepository = new ActionRequestExportRepository();
 const rawActionRepository = AppDataSource.getRepository(Action);
 const testUtils = new ItemTestUtils();
