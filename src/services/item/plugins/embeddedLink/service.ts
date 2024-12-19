@@ -42,8 +42,8 @@ type LinkMetadata = {
   title?: string;
   description?: string;
   html?: string;
-  thumbnails?: string[];
-  icons?: string[];
+  thumbnails: string[];
+  icons: string[];
 };
 
 export const PREFIX_EMBEDDED_LINK = 'embedded-links';
@@ -102,7 +102,7 @@ export class EmbeddedLinkItemService extends ItemService {
       // send error to sentry
       captureException(e);
       console.error(e);
-      return {};
+      return { icons: [], thumbnails: [], description: '', title: '', html: '' };
     }
   }
 
@@ -117,7 +117,7 @@ export class EmbeddedLinkItemService extends ItemService {
     itemExtra?: LinkItemExtraProperties,
   ): Promise<LinkItemExtraProperties> {
     // get metadata for empty extra or new url
-    let metadata: LinkMetadata = {};
+    let metadata = {};
     if (!itemExtra || url !== itemExtra.url) {
       metadata = await this.getLinkMetadata(url);
     }
