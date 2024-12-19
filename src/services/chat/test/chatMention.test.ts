@@ -222,7 +222,7 @@ describe('Chat Mention tests', () => {
           url: `${ITEMS_ROUTE_PREFIX}/mentions/${chatMentions[0].id}`,
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
-        expect(response.json().message.body).toEqual(chatMentions[0].message.body);
+        expect(response.json().id).toEqual(chatMentions[0].id);
 
         expect(await adminRepository.countBy({ id: In(chatMentions.map(({ id }) => id)) })).toEqual(
           chatMentions.length - 1,
