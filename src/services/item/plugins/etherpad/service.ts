@@ -12,7 +12,7 @@ import { Repositories, buildRepositories } from '../../../../utils/repositories'
 import { Account } from '../../../account/entities/account';
 import { validatePermission } from '../../../authorization';
 import { Member } from '../../../member/entities/member';
-import { Item, isItemType } from '../../entities/Item';
+import { EtherpadItem, Item, isItemType } from '../../entities/Item';
 import { ItemService } from '../../service';
 import { MAX_SESSIONS_IN_COOKIE, PLUGIN_NAME } from './constants';
 import { EtherpadServerError, ItemMissingExtraError } from './errors';
@@ -125,27 +125,41 @@ export class EtherpadItemService {
    * Helper to determine the final viewing mode of an etherpad
    */
   private async checkMode(
+    repositories: Repositories,
     requestedMode: 'read' | 'write',
     account: Account,
-    item: Item,
+    item: EtherpadItem,
   ): Promise<'read' | 'write'> {
     // no specific check if read mode was requested
     if (requestedMode === 'read') {
       return 'read';
     }
-    // if mode was write, check that permission is at least write
-    try {
-      // validatePermission will throw if user does not have write rights
-      await validatePermission(buildRepositories(), PermissionLevel.Write, account, item);
+    // if mode was write,
+    // check that permission is at least write
+
+    const membership = await repositories.itemMembershipRepository.getInherited(
+      item.path,
+      account.id,
+      true,
+    );
+    // allow write for admin, writers, and readers if setting is enabled
+    if (
+      membership &&
+      (membership.permission == 'write' ||
+        membership.permission == 'admin' ||
+        (membership.permission == 'read' && item.extra.etherpad.allowReadersToWrite))
+    ) {
       return 'write';
-    } catch (error) {
-      // something else failed in the authorization
-      if (!(error instanceof MemberCannotWriteItem)) {
-        throw error;
-      }
-      // the user simply does not have write permission, so fallback to read
-      return 'read';
     }
+    return 'read';
+  }
+  catch(error) {
+    // something else failed in the authorization
+    if (!(error instanceof MemberCannotWriteItem)) {
+      throw error;
+    }
+    // the user simply does not have write permission, so fallback to read
+    return 'read';
   }
 
   /**
@@ -156,11 +170,12 @@ export class EtherpadItemService {
     const repos = buildRepositories();
     const item = await this.itemService.get(account, repos, itemId);
 
-    const checkedMode = await this.checkMode(mode, account, item);
-
     if (!isItemType(item, ItemType.ETHERPAD) || !item.extra?.etherpad) {
       throw new ItemMissingExtraError(item?.id);
     }
+
+    const checkedMode = await this.checkMode(repos, mode, account, item);
+
     const { padID, groupID } = item.extra.etherpad;
 
     let padUrl: string;
