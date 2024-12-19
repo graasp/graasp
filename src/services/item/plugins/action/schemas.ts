@@ -67,15 +67,9 @@ export const getItemActions = {
       apps: Type.Record(
         customType.UUID(),
         customType.StrictObject({
-          data: Type.Array(
-            // remove deprecated member property from the schema
-            Type.Omit(appDataSchemaRef, ['member']),
-          ),
+          data: Type.Array(appDataSchemaRef),
           settings: Type.Array(appSettingSchemaRef),
-          actions: Type.Array(
-            // remove deprecated `member` prop
-            Type.Omit(appActionSchemaRef, ['member']),
-          ),
+          actions: Type.Array(appActionSchemaRef),
         }),
       ),
       metadata: customType.StrictObject({
