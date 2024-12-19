@@ -4,7 +4,7 @@ import { BaseLogger } from '../../../../../logger';
 import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN } from '../../../../../utils/config';
 import { ThumbnailService } from '../../../../thumbnail/service';
 import { ItemThumbnailService } from '../../thumbnail/service';
-import { EmbeddedLinkService } from '../service';
+import { EmbeddedLinkItemService } from '../service';
 import { FAKE_URL, FETCH_RESULT, expectedResult } from './fixtures';
 
 jest.mock('node-fetch');
@@ -21,14 +21,14 @@ export const mockHeaderResponse = (headers: { [key: string]: string }) => {
   );
 };
 
-const embeddedLinkService = new EmbeddedLinkService(
+const embeddedLinkService = new EmbeddedLinkItemService(
   {} as ThumbnailService,
   {} as ItemThumbnailService,
   {} as BaseLogger,
   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
 );
 
-describe('Test EmbeddedLinkService', () => {
+describe('Test EmbeddedLinkItemService', () => {
   describe('Tests retrieving link metadata', () => {
     it('Retrieve all metadata from URL', async () => {
       mockResponse({ json: async () => FETCH_RESULT } as Response);
