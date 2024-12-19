@@ -488,8 +488,6 @@ export class ItemService {
 
     await validatePermission(repositories, PermissionLevel.Write, member, item);
 
-    // TODO: if updating a link item, fetch the new informations
-
     await this.hooks.runPreHooks('update', member, repositories, { item: item });
 
     const updated = await itemRepository.updateOne(item.id, body);

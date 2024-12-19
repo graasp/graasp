@@ -3,6 +3,8 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifySchema } from 'fastify';
 
+import { PermissionLevel } from '@graasp/sdk';
+
 import { customType } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
 import { itemSchemaRef } from '../../schemas';
@@ -47,3 +49,21 @@ export const getEtherpadFromItem = {
     '4xx': errorSchemaRef,
   },
 };
+
+export const updateEtherpad = {
+  operationId: 'updateEtherpad',
+  tags: ['item'],
+  summary: 'Update etherpad',
+  description: 'Update etherpad permission of readers.',
+
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
+  body: customType.StrictObject({
+    readerPermission: Type.Union([
+      Type.Literal(PermissionLevel.Read),
+      Type.Literal(PermissionLevel.Write),
+    ]),
+  }),
+  response: { [StatusCodes.NO_CONTENT]: Type.Null(), '4xx': errorSchemaRef },
+} as const satisfies FastifySchema;

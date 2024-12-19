@@ -10,7 +10,6 @@ import { BaseLogger } from '../../../../logger';
 import { MemberCannotWriteItem } from '../../../../utils/errors';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
 import { Account } from '../../../account/entities/account';
-import { validatePermission } from '../../../authorization';
 import { Member } from '../../../member/entities/member';
 import { EtherpadItem, Item, isItemType } from '../../entities/Item';
 import { ItemService } from '../../service';
@@ -131,7 +130,7 @@ export class EtherpadItemService {
     item: EtherpadItem,
   ): Promise<'read' | 'write'> {
     // no specific check if read mode was requested
-    if (requestedMode === 'read') {
+    if (requestedMode === PermissionLevel.Read) {
       return 'read';
     }
     // if mode was write,
@@ -145,9 +144,10 @@ export class EtherpadItemService {
     // allow write for admin, writers, and readers if setting is enabled
     if (
       membership &&
-      (membership.permission == 'write' ||
-        membership.permission == 'admin' ||
-        (membership.permission == 'read' && item.extra.etherpad.allowReadersToWrite))
+      (membership.permission == PermissionLevel.Write ||
+        membership.permission == PermissionLevel.Admin ||
+        (membership.permission == PermissionLevel.Read &&
+          item.extra.etherpad.readerPermission == PermissionLevel.Write))
     ) {
       return 'write';
     }
