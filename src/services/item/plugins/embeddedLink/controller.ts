@@ -10,12 +10,12 @@ import { validatedMemberAccountRole } from '../../../member/strategies/validated
 import { ActionItemService } from '../action/service';
 import { LinkQueryParameterIsRequired } from './errors';
 import { createLink, getLinkMetadata, updateLink } from './schemas';
-import { EmbeddedLinkService } from './service';
+import { EmbeddedLinkItemService } from './service';
 import { ensureProtocol } from './utils';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db, log } = fastify;
-  const embeddedLinkService = resolveDependency(EmbeddedLinkService);
+  const embeddedLinkService = resolveDependency(EmbeddedLinkItemService);
   const actionItemService = resolveDependency(ActionItemService);
 
   fastify.get(
@@ -38,7 +38,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   );
 
   fastify.post(
-    '/links',
+    '/',
     {
       schema: createLink,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
@@ -74,7 +74,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   );
 
   fastify.patch(
-    '/links/:id',
+    '/:id',
     {
       schema: updateLink,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],

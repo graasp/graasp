@@ -1,4 +1,4 @@
-import merge from 'lodash.merge';
+import { captureException } from '@sentry/node';
 import fetch from 'node-fetch';
 import { inject, singleton } from 'tsyringe';
 
@@ -58,7 +58,7 @@ const CSP_FRAME_NONE = ["frame-ancestors 'none'", "frame-ancestors 'self'"];
 const X_FRAME_DISABLED = ['sameorigin', 'deny'];
 
 @singleton()
-export class EmbeddedLinkService extends ItemService {
+export class EmbeddedLinkItemService extends ItemService {
   private readonly iframelyHrefOrigin: string;
 
   constructor(
@@ -79,21 +79,31 @@ export class EmbeddedLinkService extends ItemService {
 
   async getLinkMetadata(url: string): Promise<LinkMetadata> {
     this.assertUrlIsValid(url);
+    try {
+      const response = await fetch(
+        `${this.iframelyHrefOrigin}/iframely?uri=${encodeURIComponent(url)}`,
+      );
 
-    const response = await fetch(
-      `${this.iframelyHrefOrigin}/iframely?uri=${encodeURIComponent(url)}`,
-    );
-    // better clues on how to extract the metadata here: https://iframely.com/docs/links
-    const { meta = {}, html, links = [] } = (await response.json()) as IframelyResponse;
-    const { title, description } = meta;
+      // better clues on how to extract the metadata here: https://iframely.com/docs/links
+      const { meta = {}, html, links = [] } = (await response.json()) as IframelyResponse;
+      const { title, description } = meta;
 
-    return {
-      title: title?.trim(),
-      description: description?.trim(),
-      html,
-      thumbnails: links.filter(({ rel }) => hasThumbnailRel(rel)).map(({ href }) => href),
-      icons: links.filter(({ rel }: { rel: string[] }) => hasIconRel(rel)).map(({ href }) => href),
-    };
+      return {
+        title: title?.trim(),
+        description: description?.trim(),
+        html,
+        thumbnails: links.filter(({ rel }) => hasThumbnailRel(rel)).map(({ href }) => href),
+        icons: links
+          .filter(({ rel }: { rel: string[] }) => hasIconRel(rel))
+          .map(({ href }) => href),
+      };
+    } catch (e) {
+      // do not fail on iframely error
+      // send error to sentry
+      captureException(e);
+      console.error(e);
+      return {};
+    }
   }
 
   /**
@@ -111,7 +121,11 @@ export class EmbeddedLinkService extends ItemService {
     if (!itemExtra || url !== itemExtra.url) {
       metadata = await this.getLinkMetadata(url);
     }
-    return merge(itemExtra, metadata, { url });
+    return {
+      ...itemExtra,
+      ...metadata,
+      url,
+    };
   }
 
   /**
@@ -122,8 +136,7 @@ export class EmbeddedLinkService extends ItemService {
    */
   private async createLink(
     item: Partial<EmbeddedLinkItem> & Pick<EmbeddedLinkItem, 'name'>,
-    data: {
-      url: string;
+    settings: {
       showLinkIframe?: boolean;
       showLinkButton?: boolean;
     },
@@ -136,8 +149,8 @@ export class EmbeddedLinkService extends ItemService {
       settings: {
         ...(item.settings ?? {}),
         // default settings
-        showLinkButton: data.showLinkButton ?? true,
-        showLinkIframe: data.showLinkIframe ?? false,
+        showLinkButton: settings.showLinkButton ?? true,
+        showLinkIframe: settings.showLinkIframe ?? false,
       },
     };
   }
@@ -181,11 +194,15 @@ export class EmbeddedLinkService extends ItemService {
         previousItemId?: Item['id'];
       },
   ): Promise<EmbeddedLinkItem> {
-    const { name, description, lang, ...options } = args;
+    const { name, description, lang, url, showLinkIframe, showLinkButton, ...options } = args;
 
-    const embeddedLink = await this.createExtra(args.url);
+    const embeddedLink = await this.createExtra(url);
 
-    const newItem = await this.createLink({ name, description, lang }, options, { embeddedLink });
+    const newItem = await this.createLink(
+      { name, description, lang },
+      { showLinkButton, showLinkIframe },
+      { embeddedLink },
+    );
     return (await this.post(member, repositories, {
       item: newItem,
       ...options,
@@ -211,19 +228,20 @@ export class EmbeddedLinkService extends ItemService {
       throw new WrongItemTypeError(item.type);
     }
 
-    const { name, description, lang, ...options } = args;
+    const { name, description, lang, showLinkIframe, showLinkButton, url } = args;
 
     // compute new extra if link is different
     let { embeddedLink } = item.extra;
-    if (args.url && args.url !== item.extra.embeddedLink.url) {
-      embeddedLink = await this.createExtra(args.url, item.extra?.embeddedLink);
+    if (url && url !== item.extra.embeddedLink.url) {
+      embeddedLink = await this.createExtra(url, item.extra?.embeddedLink);
     }
 
     const newItem = await this.createLink(
-      merge(item, { name, description, lang }),
+      // replace name if provided
+      { name: name ?? item.name, description, lang },
       {
-        ...options,
-        url: options.url ?? item.extra.embeddedLink.url,
+        showLinkIframe,
+        showLinkButton,
       },
       {
         embeddedLink,
