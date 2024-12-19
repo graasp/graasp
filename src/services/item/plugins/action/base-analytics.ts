@@ -1,6 +1,6 @@
 import { Ajv } from 'ajv';
 
-import { MemberConstants, UUID } from '@graasp/sdk';
+import { UUID } from '@graasp/sdk';
 
 import { Account } from '../../../account/entities/account';
 import { Action } from '../../../action/entities/action';
@@ -62,10 +62,7 @@ export class BaseAnalytics {
     // TODO: all other schemas
 
     // validate and remove additional properties from member
-    const ajv = new Ajv({ removeAdditional: 'all' }).addFormat(
-      'username',
-      MemberConstants.USERNAME_FORMAT_REGEX,
-    );
+    const ajv = new Ajv({ removeAdditional: 'all' });
 
     const validateMember = ajv.compile(memberSchema);
     const validateMembers = ajv.compile({

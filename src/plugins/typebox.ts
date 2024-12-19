@@ -70,7 +70,7 @@ export const customType = {
   Username: (options?: StringOptions) =>
     Type.String({
       ...options,
-      format: 'username',
+      format: 'graaspUsername',
       minLength: MIN_USERNAME_LENGTH,
       maxLength: MAX_USERNAME_LENGTH,
     }),
@@ -81,7 +81,7 @@ export const customType = {
     }),
   EnumString: <T extends string[]>(values: [...T], options?: SchemaOptions) =>
     Object.assign(
-      /* 
+      /*
       Object Assign is used so the return type contains the intersection with `{ type: 'string' }`,
       and so can be used in combination with `customType.Nullable(...)`
        */
