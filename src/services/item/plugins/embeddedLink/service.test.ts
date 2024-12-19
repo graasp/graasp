@@ -71,7 +71,7 @@ describe('Link Service', () => {
 
       const args = {
         name: 'name',
-        url: 'http://another-url.com',
+        url: 'https://another-url.com',
       };
       await linkService.postWithOptions(MOCK_MEMBER, repositories, args);
 
@@ -89,6 +89,11 @@ describe('Link Service', () => {
           extra: {
             [ItemType.LINK]: {
               url: args.url,
+              icons: [],
+              thumbnails: [],
+              description: '',
+              title: '',
+              html: '',
             },
           },
           settings: { showLinkButton: true, showLinkIframe: false },
@@ -212,7 +217,7 @@ describe('Link Service', () => {
       expect(MOCK_ITEM.extra.embeddedLink.url).toBeDefined();
 
       const args = {
-        url: 'http://another-url.com',
+        url: 'https://another-url.com',
       };
       await linkService.patchWithOptions(MOCK_MEMBER, repositories, MOCK_ITEM.id, args);
 
@@ -228,7 +233,11 @@ describe('Link Service', () => {
         lang: undefined,
         extra: {
           [ItemType.LINK]: {
-            ...MOCK_ITEM.extra.embeddedLink,
+            icons: [],
+            thumbnails: [],
+            description: '',
+            title: '',
+            html: '',
             url: args.url,
           },
         },
@@ -258,7 +267,7 @@ describe('Link Service', () => {
         expect(MOCK_ITEM.extra.embeddedLink.url).toBeDefined();
 
         const args = {
-          url: 'http://another-url.com',
+          url: 'https://another-url.com',
         };
         await linkService.patchWithOptions(MOCK_MEMBER, repositories, MOCK_ITEM.id, args);
 
