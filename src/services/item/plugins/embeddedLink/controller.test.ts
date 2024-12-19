@@ -22,6 +22,7 @@ jest.mock('node-fetch');
 
 const rawGuestRepository = AppDataSource.getRepository(Guest);
 const itemTestUtils = new ItemTestUtils();
+const MOCK_URL = 'https://url.com';
 
 const iframelyResult = {
   meta: {
@@ -145,7 +146,7 @@ describe('Tests Embedded Link Controller', () => {
         const response = await app.inject({
           method: HttpMethod.Post,
           url: '/items/embedded-links',
-          payload: { url: 'http://url.com' },
+          payload: { url: MOCK_URL },
         });
 
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -154,7 +155,7 @@ describe('Tests Embedded Link Controller', () => {
         const response = await app.inject({
           method: HttpMethod.Post,
           url: '/items/embedded-links',
-          payload: { name: '', url: 'http://url.com' },
+          payload: { name: '', url: MOCK_URL },
         });
 
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -184,7 +185,7 @@ describe('Tests Embedded Link Controller', () => {
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/items/embedded-links`,
-        payload: { name: 'name', url: 'http://url.com' },
+        payload: { name: 'name', url: MOCK_URL },
       });
 
       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
@@ -195,7 +196,7 @@ describe('Tests Embedded Link Controller', () => {
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/items/embedded-links`,
-        payload: { name: 'name', url: 'http://url.com' },
+        payload: { name: 'name', url: MOCK_URL },
       });
 
       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
@@ -204,7 +205,7 @@ describe('Tests Embedded Link Controller', () => {
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/items/embedded-links',
-        payload: { name: 'name', url: 'http://url.com' },
+        payload: { name: 'name', url: MOCK_URL },
       });
 
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -216,7 +217,7 @@ describe('Tests Embedded Link Controller', () => {
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/items/embedded-links',
-        payload: { name: 'name', url: 'http://url.com' },
+        payload: { name: 'name', url: MOCK_URL },
       });
       expect(response.statusCode).toBe(StatusCodes.OK);
     });
@@ -234,7 +235,7 @@ describe('Tests Embedded Link Controller', () => {
         const response = await app.inject({
           method: HttpMethod.Post,
           url: '/items/embedded-links',
-          payload: { name: 'name', url: 'http://url.com' },
+          payload: { name: 'name', url: MOCK_URL },
         });
 
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -259,7 +260,7 @@ describe('Tests Embedded Link Controller', () => {
           payload: {
             geolocation: { lat: 1, lng: 1 },
             name: 'name',
-            url: 'http://url.com',
+            url: MOCK_URL,
             showLinkIframe: true,
             showLinkButton: true,
           },
@@ -304,7 +305,7 @@ describe('Tests Embedded Link Controller', () => {
       const response = await app.inject({
         method: HttpMethod.Patch,
         url: `/items/embedded-links/${v4()}`,
-        payload: { name: 'name', url: 'http://url.com' },
+        payload: { name: 'name', url: MOCK_URL },
       });
 
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -315,7 +316,7 @@ describe('Tests Embedded Link Controller', () => {
       const response = await app.inject({
         method: HttpMethod.Patch,
         url: `/items/embedded-links/${v4()}`,
-        payload: { name: 'name', url: 'http://url.com' },
+        payload: { name: 'name', url: MOCK_URL },
       });
 
       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
@@ -326,7 +327,7 @@ describe('Tests Embedded Link Controller', () => {
       const response = await app.inject({
         method: HttpMethod.Patch,
         url: `/items/embedded-links/${v4()}`,
-        payload: { name: 'name', url: 'http://url.com' },
+        payload: { name: 'name', url: MOCK_URL },
       });
 
       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
@@ -343,7 +344,7 @@ describe('Tests Embedded Link Controller', () => {
       const response = await app.inject({
         method: HttpMethod.Patch,
         url: `/items/embedded-links/${item.id}`,
-        payload: { name: 'name', url: 'http://url.com' },
+        payload: { name: 'name', url: MOCK_URL },
       });
       expect(response.statusCode).toBe(StatusCodes.OK);
     });
@@ -365,7 +366,7 @@ describe('Tests Embedded Link Controller', () => {
         const response = await app.inject({
           method: HttpMethod.Patch,
           url: `/items/embedded-links/${item.id}`,
-          payload: { name: 'name', url: 'http://url.com' },
+          payload: { name: 'name', url: MOCK_URL },
         });
 
         expect(response.statusCode).toBe(StatusCodes.OK);
