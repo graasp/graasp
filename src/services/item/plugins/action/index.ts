@@ -49,13 +49,19 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
       preHandler: isAuthenticated,
     },
     async ({ user, params: { id }, query }) => {
-      return actionItemService.getBaseAnalyticsForItem(user?.account, buildRepositories(), {
-        sampleSize: query.requestedSampleSize,
-        itemId: id,
-        view: query.view?.toLowerCase(),
-        startDate: query.startDate,
-        endDate: query.endDate,
-      });
+      // remove itemMemberships from return
+      const { itemMemberships: _, ...result } = await actionItemService.getBaseAnalyticsForItem(
+        user?.account,
+        buildRepositories(),
+        {
+          sampleSize: query.requestedSampleSize,
+          itemId: id,
+          view: query.view?.toLowerCase(),
+          startDate: query.startDate,
+          endDate: query.endDate,
+        },
+      );
+      return result;
     },
   );
 

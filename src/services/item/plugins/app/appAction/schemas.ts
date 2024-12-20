@@ -7,20 +7,43 @@ import { customType, registerSchemaAsRef } from '../../../../../plugins/typebox'
 import { errorSchemaRef } from '../../../../../schemas/global';
 import { accountSchemaRef } from '../../../../account/schemas';
 
-export const appActionSchemaRef = registerSchemaAsRef(
-  'appAction',
-  'App Action',
-  customType.StrictObject(
+export const appActionSchema = customType.StrictObject(
+  {
+    id: customType.UUID(),
+    account: accountSchemaRef,
+    data: Type.Object({}, { additionalProperties: true }),
+    type: Type.String(),
+    createdAt: customType.DateTime(),
+  },
+  {
+    description: 'Activity trace saved by an app.',
+    additionalProperties: false,
+  },
+);
+
+export const appActionSchemaRef = registerSchemaAsRef('appAction', 'App Action', appActionSchema);
+
+const appActionLegacySchemaRef = registerSchemaAsRef(
+  'appActionLegacy',
+  'App Action (legacy)',
+  Type.Composite(
+    [
+      appActionSchema,
+      Type.Object(
+        {
+          member: Type.Ref(accountSchemaRef.$ref, {
+            deprecated: true,
+            description:
+              'Legacy property provided for convenience. Please migrate to using the `account` prop instead.',
+          }),
+        },
+        {},
+      ),
+    ],
     {
-      id: customType.UUID(),
-      account: accountSchemaRef,
-      member: Type.Ref(accountSchemaRef.$ref, { deprecated: true }),
-      data: Type.Object({}, { additionalProperties: true }),
-      type: Type.String(),
-      createdAt: customType.DateTime(),
-    },
-    {
-      description: 'Activity trace saved by an app.',
+      additionalProperties: false,
+      description:
+        'App Action supporting legacy apps relying on the presence of the `member` property. It is provided for convenience.',
     },
   ),
 );
@@ -39,7 +62,7 @@ export const create = {
     type: Type.String({ minLength: 3, maxLength: 25 }),
   }),
   response: {
-    [StatusCodes.OK]: appActionSchemaRef,
+    [StatusCodes.OK]: appActionLegacySchemaRef,
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
@@ -66,7 +89,7 @@ export const getForOne = {
     Type.Object({}, { additionalProperties: false }),
   ]),
   response: {
-    [StatusCodes.OK]: Type.Array(appActionSchemaRef),
+    [StatusCodes.OK]: Type.Array(appActionLegacySchemaRef),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;

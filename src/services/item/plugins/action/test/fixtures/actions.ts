@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 
-import { Context } from '@graasp/sdk';
+import { ActionTriggers, Context } from '@graasp/sdk';
 
 import { Account } from '../../../../../account/entities/account';
 import { Action } from '../../../../../action/entities/action';
@@ -9,9 +9,9 @@ import { Member } from '../../../../../member/entities/member';
 import { Item } from '../../../../entities/Item';
 import { ItemActionType } from '../../utils';
 
-const getDummyAction = (
+export const getDummyAction = (
   view: Context,
-  type: ItemActionType,
+  type: ItemActionType | ActionTriggers,
   createdAt: Date,
   account: Account,
   item: Item,
@@ -62,6 +62,20 @@ const buildActions = (item: Item, member: Member[]) => {
     getDummyAction(
       Context.Builder,
       ItemActionType.Update,
+      new Date('2023-05-21T03:46:52.939Z'),
+      member[2],
+      item,
+    ),
+    getDummyAction(
+      Context.Player,
+      ItemActionType.Update,
+      new Date('2023-05-21T03:46:52.939Z'),
+      member[2],
+      item,
+    ),
+    getDummyAction(
+      Context.Builder,
+      ActionTriggers.CollectionView,
       new Date('2023-05-21T03:46:52.939Z'),
       member[2],
       item,
