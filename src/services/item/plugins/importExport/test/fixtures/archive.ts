@@ -14,7 +14,7 @@ export const childContent = {
   extra: { s3File: { name: 'img2.png', mimetype: 'image/png', size: 4616 } },
 };
 export const link = {
-  name: 'Graasp',
+  name: 'link',
   type: ItemType.LINK,
   description: 'link.url\n',
   extra: { embeddedLink: { url: 'https://graasp.org', description: 'Graasp description' } },
