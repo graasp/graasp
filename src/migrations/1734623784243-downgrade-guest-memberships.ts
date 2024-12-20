@@ -1,6 +1,8 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class Migrations1734623784243 implements MigrationInterface {
+  name = 'downgrade-guest-memberships-1734623784243';
+
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
         UPDATE item_membership 
@@ -14,12 +16,11 @@ export class Migrations1734623784243 implements MigrationInterface {
             WHERE 
                 permission = 'write' 
                 OR permission = 'admin' 
-            ORDER BY account.updated_at DESC
         )
-            `);
+    `);
   }
 
   public async down(_: QueryRunner): Promise<void> {
-    // impossible to down
+    // impossible to revert
   }
 }
