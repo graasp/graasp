@@ -9,6 +9,7 @@ import {
   PermissionLevel,
   ShortLinkPlatform,
   UUID,
+  UnionOfConst,
 } from '@graasp/sdk';
 
 import { Member } from '../../../../member/entities/member';
@@ -19,7 +20,6 @@ import { createShortLink, updateShortLink } from '../schemas';
 import { SHORT_LINKS_FULL_PREFIX, SHORT_LINKS_LIST_ROUTE } from '../service';
 
 export const MOCK_ALIAS = 'mocked-alias';
-export const MOCK_PLATFORM = ShortLinkPlatform.Player;
 export const MOCK_ITEM_ID = '1c21f7f8-1917-4dfc-82b6-21d7136812e8';
 
 type MemberWithPermission = {
@@ -111,8 +111,8 @@ export const injectDelete = async (app: FastifyInstance, alias: string) => {
   return app.inject({ method: HttpMethod.Delete, url: shortLinkUrl(alias) });
 };
 
-export function getRedirection(itemId: string, platform: Context) {
+export function getRedirection(itemId: string, platform: UnionOfConst<typeof ShortLinkPlatform>) {
   const clientHostManager = ClientHostManager.getInstance();
 
-  return clientHostManager.getItemLink(platform, itemId);
+  return clientHostManager.getItemLink(platform as Context, itemId);
 }

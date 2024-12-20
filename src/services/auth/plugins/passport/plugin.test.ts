@@ -77,7 +77,7 @@ describe('Passport Plugin', () => {
   let member: Member;
   let handler: jest.Mock;
   let preHandler: jest.Mock;
-  beforeEach(async () => {
+  beforeAll(async () => {
     ({ app } = await build({ member: null }));
     handler = jest.fn();
     preHandler = jest.fn();
@@ -87,10 +87,13 @@ describe('Passport Plugin', () => {
     member = await saveMember();
   });
 
-  afterEach(async () => {
-    handler.mockClear();
+  afterAll(async () => {
     await clearDatabase(app.db);
     app.close();
+  });
+
+  afterEach(async () => {
+    handler.mockClear();
   });
 
   describe('Optional Authenticated', () => {
