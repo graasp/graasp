@@ -80,7 +80,7 @@ describe('Link Item tests', () => {
         });
 
         const expectedItem = {
-          name: iframelyMeta.title,
+          name: payload.name,
           type: ItemType.LINK,
           extra: {
             [ItemType.LINK]: {
