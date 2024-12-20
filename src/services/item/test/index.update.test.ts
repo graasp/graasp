@@ -875,6 +875,9 @@ describe('Item routes tests', () => {
       });
 
       it('Cannot update not found item given id', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
+
         const payload = {
           name: 'new name',
         };
@@ -894,6 +897,9 @@ describe('Item routes tests', () => {
         };
         const member = await saveMember();
         const { item } = await testUtils.saveItemAndMembership({ member });
+
+        const actor = await saveMember();
+        mockAuthenticate(actor);
 
         const response = await app.inject({
           method: HttpMethod.Patch,

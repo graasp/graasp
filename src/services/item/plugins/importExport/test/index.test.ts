@@ -233,6 +233,7 @@ describe('ZIP routes tests', () => {
     });
     it('Import archive in folder with empty folder', async () => {
       const actor = await saveMember();
+      mockAuthenticate(actor);
       const form = createFormData('empty.zip');
       const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
 
