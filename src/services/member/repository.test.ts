@@ -1,15 +1,14 @@
+import { faker } from '@faker-js/faker';
+import { DataSource, Repository } from 'typeorm';
 import { v4 } from 'uuid';
-
-import { FastifyInstance } from 'fastify';
 
 import { EmailFrequency, MemberFactory } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../test/app';
+import { AppDataSource } from '../../plugins/datasource';
 import { MemberNotFound } from '../../utils/errors';
+import { Member } from './entities/member';
 import { MemberRepository } from './repository';
-import { expectMember, saveMember, saveMembers } from './test/fixtures/members';
-
-const memberRepository = new MemberRepository();
+import { expectMember } from './test/fixtures/members';
 
 const expectMembersById = (members, expectedMembers) => {
   for (const m of members) {
@@ -22,60 +21,76 @@ const expectMembersById = (members, expectedMembers) => {
 };
 
 describe('MemberRepository', () => {
-  let app: FastifyInstance;
+  let db: DataSource;
 
-  beforeEach(async () => {
-    ({ app } = await build());
+  let repository: MemberRepository;
+  let rawRepository: Repository<Member>;
+
+  beforeAll(async () => {
+    db = await AppDataSource.initialize();
+    await db.runMigrations();
+    repository = new MemberRepository(db.manager);
+    rawRepository = db.getRepository(Member);
   });
+
+  afterAll(async () => {
+    await db.dropDatabase();
+    await db.destroy();
+  });
+
   afterEach(async () => {
     jest.clearAllMocks();
-    await clearDatabase(app.db);
-    app.close();
   });
 
   describe('deleteOne', () => {
     it('delete member', async () => {
-      const member = await saveMember();
-      expect(await memberRepository.get(member.id)).toBeDefined();
+      const member = await rawRepository.save(MemberFactory());
+      expect(await repository.get(member.id)).toBeDefined();
 
-      await memberRepository.deleteOne(member.id);
-      expect(memberRepository.get(member.id)).rejects.toBeInstanceOf(MemberNotFound);
+      await repository.deleteOne(member.id);
+      expect(repository.get(member.id)).rejects.toBeInstanceOf(MemberNotFound);
     });
     it('silent error if member does not exist', async () => {
-      await memberRepository.deleteOne(v4());
+      await repository.deleteOne(v4());
     });
   });
 
   describe('get', () => {
     it('get member', async () => {
-      const member = await saveMember();
+      const member = await rawRepository.save(MemberFactory());
 
-      const m = await memberRepository.get(member.id);
+      const m = await repository.get(member.id);
       expectMember(m, member);
     });
 
     it('throw for undefined id', async () => {
-      expect(memberRepository.get(undefined!)).rejects.toBeInstanceOf(MemberNotFound);
+      expect(repository.get(undefined!)).rejects.toBeInstanceOf(MemberNotFound);
     });
 
     it('throw for member does not exist', async () => {
-      expect(memberRepository.get(v4())).rejects.toBeInstanceOf(MemberNotFound);
+      expect(repository.get(v4())).rejects.toBeInstanceOf(MemberNotFound);
     });
   });
 
   describe('getMany', () => {
     it('get members', async () => {
-      const members = await saveMembers();
+      const members = [
+        await rawRepository.save(MemberFactory()),
+        await rawRepository.save(MemberFactory()),
+      ];
 
-      const ms = await memberRepository.getMany(members.map((m) => m.id));
+      const ms = await repository.getMany(members.map((m) => m.id));
       expectMembersById(members, ms.data);
     });
     it('get members with errors', async () => {
-      const members = await saveMembers();
+      const members = [
+        await rawRepository.save(MemberFactory()),
+        await rawRepository.save(MemberFactory()),
+      ];
 
       const errorMemberId = v4();
       const ids = [...members.map((m) => m.id), errorMemberId];
-      const ms = await memberRepository.getMany(ids);
+      const ms = await repository.getMany(ids);
 
       expectMembersById(members, ms.data);
       expect(ms.errors[0]).toBeInstanceOf(MemberNotFound);
@@ -84,32 +99,37 @@ describe('MemberRepository', () => {
 
   describe('getByEmail', () => {
     it('get member by email', async () => {
-      const member = await saveMember();
+      const member = await rawRepository.save(
+        MemberFactory({ email: faker.internet.email().toLowerCase() }),
+      );
 
-      const m = await memberRepository.getByEmail(member.email);
+      const m = await repository.getByEmail(member.email);
       expectMember(m, member);
     });
 
     it('throw for undefined email', async () => {
-      expect(memberRepository.getByEmail(undefined!)).rejects.toThrow();
+      expect(repository.getByEmail(undefined!)).rejects.toThrow();
     });
 
     it('return null for unexisting email', async () => {
-      expect(await memberRepository.getByEmail('email@email.com')).toBeNull();
+      expect(await repository.getByEmail('email@email.com')).toBeNull();
     });
 
     it('throw for unexisting email and shouldExist=true', async () => {
       expect(
-        memberRepository.getByEmail('email@email.com', { shouldExist: true }),
+        repository.getByEmail('email@email.com', { shouldExist: true }),
       ).rejects.toBeInstanceOf(MemberNotFound);
     });
   });
 
   describe('getManyByEmail', () => {
     it('get members by email', async () => {
-      const members = await saveMembers();
+      const members = [
+        await rawRepository.save(MemberFactory()),
+        await rawRepository.save(MemberFactory()),
+      ];
 
-      const ms = await memberRepository.getManyByEmail(members.map((m) => m.email));
+      const ms = await repository.getManyByEmail(members.map((m) => m.email));
 
       for (const m of members) {
         const expectM = ms.data[m.email];
@@ -121,11 +141,14 @@ describe('MemberRepository', () => {
     });
 
     it('return error for unexisting email', async () => {
-      const members = await saveMembers();
+      const members = [
+        await rawRepository.save(MemberFactory()),
+        await rawRepository.save(MemberFactory()),
+      ];
       const errorMemberMail = 'email@email.com';
 
       const emails = [...members.map((m) => m.email), errorMemberMail];
-      const ms = await memberRepository.getManyByEmail(emails);
+      const ms = await repository.getManyByEmail(emails);
 
       for (const m of members) {
         const expectM = ms.data[m.email];
@@ -140,17 +163,19 @@ describe('MemberRepository', () => {
 
   describe('patch', () => {
     it('patch member', async () => {
-      const member = await saveMember();
-      const newMember = { name: 'newname', email: 'newemail@email.com' };
-      const newM = await memberRepository.patch(member.id, newMember);
+      const member = await rawRepository.save(MemberFactory());
+      const newMember = { name: 'newname', email: faker.internet.email().toLowerCase() };
+      const newM = await repository.patch(member.id, newMember);
 
       expectMember(newM, { ...member, ...newMember });
     });
 
     it('patch extra', async () => {
-      const member = await saveMember(MemberFactory({ extra: { hasAvatar: true, lang: 'en' } }));
+      const member = await rawRepository.save(
+        MemberFactory({ extra: { hasAvatar: true, lang: 'en' } }),
+      );
       const extra = { lang: 'fr', emailFreq: EmailFrequency.Never };
-      const newM = await memberRepository.patch(member.id, { extra });
+      const newM = await repository.patch(member.id, { extra });
 
       // keep previous extra
       expect(newM.extra.hasAvatar).toBe(true);
@@ -161,16 +186,16 @@ describe('MemberRepository', () => {
     });
 
     it('patch enableSaveActions', async () => {
-      const member = await saveMember();
+      const member = await rawRepository.save(MemberFactory());
       const newMember = { enableSaveActions: false };
-      const newM = await memberRepository.patch(member.id, newMember);
+      const newM = await repository.patch(member.id, newMember);
 
       expect(newM.enableSaveActions).toBe(false);
     });
 
     it('does not update for empty new data', async () => {
-      const member = await saveMember();
-      const newM = await memberRepository.patch(member.id, {});
+      const member = await rawRepository.save(MemberFactory());
+      const newM = await repository.patch(member.id, {});
 
       expectMember(newM, member);
     });
@@ -178,14 +203,14 @@ describe('MemberRepository', () => {
     it('update unexisting member', async () => {
       const newMember = { enableSaveActions: false };
 
-      expect(memberRepository.patch(v4(), newMember)).rejects.toBeInstanceOf(MemberNotFound);
+      expect(repository.patch(v4(), newMember)).rejects.toBeInstanceOf(MemberNotFound);
     });
   });
 
   describe('post', () => {
     it('post member', async () => {
-      const newMember = { name: 'newname', email: 'newemail@email.com' };
-      const newM = await memberRepository.post(newMember);
+      const newMember = { name: 'newname', email: faker.internet.email().toLowerCase() };
+      const newM = await repository.post(newMember);
 
       expect(newM.name).toEqual(newMember.name);
       expect(newM.email).toEqual(newMember.email);
@@ -193,8 +218,8 @@ describe('MemberRepository', () => {
     });
 
     it('throw if email already exists', async () => {
-      const member = await saveMember();
-      expect(memberRepository.post(member)).rejects.toMatchObject({ code: '23505' });
+      const member = await rawRepository.save(MemberFactory());
+      expect(repository.post(member)).rejects.toMatchObject({ code: '23505' });
     });
   });
 });

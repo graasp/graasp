@@ -1,43 +1,48 @@
+import { DataSource } from 'typeorm';
 import { v4 as uuidV4 } from 'uuid';
 
-import { FastifyInstance } from 'fastify';
+import { MemberFactory } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../test/app';
-import { saveMember } from '../member/test/fixtures/members';
+import { AppDataSource } from '../../plugins/datasource';
+import { Account } from './entities/account';
 import { AccountRepository } from './repository';
 
-const accountRepository = new AccountRepository();
-
 describe('AccountRepository', () => {
-  let app: FastifyInstance;
+  let db: DataSource;
 
-  beforeEach(async () => {
-    ({ app } = await build());
+  let repository: AccountRepository;
+  let accountRawRepository;
+
+  beforeAll(async () => {
+    db = await AppDataSource.initialize();
+    await db.runMigrations();
+    repository = new AccountRepository(db.manager);
+    accountRawRepository = db.getRepository(Account);
   });
-  afterEach(async () => {
-    jest.clearAllMocks();
-    await clearDatabase(app.db);
-    app.close();
+
+  afterAll(async () => {
+    await db.dropDatabase();
+    await db.destroy();
   });
 
   describe('get', () => {
-    it('get member', async () => {
-      const member = await saveMember();
+    it('get account', async () => {
+      const member = await accountRawRepository.save(MemberFactory());
 
-      const rawAccount = await accountRepository.get(member.id);
+      const rawAccount = await repository.get(member.id);
       expect(rawAccount).toEqual(member);
     });
 
     it('return null for undefined id', async () => {
-      const rawAccount = await accountRepository.get(undefined!);
+      const rawAccount = await repository.get(undefined!);
       expect(rawAccount).toBeUndefined();
 
-      const rawAccount2 = await accountRepository.get(null!);
+      const rawAccount2 = await repository.get(null!);
       expect(rawAccount2).toBeUndefined();
     });
 
     it('return null for unknown id', async () => {
-      const rawAccount = await accountRepository.get(uuidV4());
+      const rawAccount = await repository.get(uuidV4());
       expect(rawAccount).toBeUndefined();
     });
   });

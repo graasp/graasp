@@ -1,4 +1,4 @@
-import { DataSource } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { v4 } from 'uuid';
 
 import { TagCategory, TagFactory } from '@graasp/sdk';
@@ -13,7 +13,7 @@ describe('Tag Repository', () => {
   let db: DataSource;
 
   let repository: TagRepository;
-  let tagRawRepository;
+  let tagRawRepository: Repository<Tag>;
 
   beforeAll(async () => {
     db = await AppDataSource.initialize();
