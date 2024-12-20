@@ -1,12 +1,16 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
+import { ItemType } from '@graasp/sdk';
+
 import { resolveDependency } from '../../../../di/utils';
 import { asDefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
+import { Repositories, buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
-import { assertIsMember } from '../../../member/entities/member';
+import { Actor, assertIsMember } from '../../../member/entities/member';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
+import { Item } from '../../entities/Item';
+import { ItemService } from '../../service';
 import { ActionItemService } from '../action/service';
 import { LinkQueryParameterIsRequired } from './errors';
 import { createLink, getLinkMetadata, updateLink } from './schemas';
@@ -15,6 +19,7 @@ import { ensureProtocol } from './utils';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db, log } = fastify;
+  const itemService = resolveDependency(ItemService);
   const embeddedLinkService = resolveDependency(EmbeddedLinkItemService);
   const actionItemService = resolveDependency(ActionItemService);
 
@@ -95,6 +100,39 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       });
     },
   );
+
+  // necessary for legacy POST /items to work with links
+  // register pre create handler to pre fetch link metadata
+  const hook = async (_actor: Actor, _repos: Repositories, { item }: { item: Partial<Item> }) => {
+    // if the extra is undefined or it does not contain the embedded link extra key, exit
+    if (!item.extra || !(ItemType.LINK in item.extra)) {
+      return;
+    }
+    const { embeddedLink } = item.extra;
+
+    const { url } = embeddedLink;
+    const { description, html, thumbnails, icons } = await embeddedLinkService.getLinkMetadata(url);
+
+    if (description) {
+      embeddedLink.description = description;
+    }
+    if (html) {
+      embeddedLink.html = html;
+    }
+
+    embeddedLink.thumbnails = thumbnails;
+    embeddedLink.icons = icons;
+
+    // default settings
+    item.settings = {
+      showLinkButton: true,
+      showLinkIframe: false,
+      ...(item.settings ?? {}),
+    };
+  };
+
+  itemService.hooks.setPreHook('create', hook);
+  itemService.hooks.setPreHook('update', hook);
 };
 
 export default plugin;
