@@ -35,12 +35,12 @@ describe('ChatMentionRepository', () => {
   let mentionRawRepository: Repository<ChatMention>;
 
   beforeAll(async () => {
-    if (!AppDataSource.isInitialized) {
-      db = await AppDataSource.initialize();
-      await db.runMigrations();
-    } else {
-      db = AppDataSource;
+    if (AppDataSource.isInitialized) {
+      await db.dropDatabase();
+      await db.destroy();
     }
+    db = await AppDataSource.initialize();
+    await db.runMigrations();
     repository = new ChatMentionRepository(db.manager);
     mentionRawRepository = db.getRepository(ChatMention);
     memberRawRepository = db.getRepository(Member);
