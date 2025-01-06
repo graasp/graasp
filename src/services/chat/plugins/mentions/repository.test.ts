@@ -36,8 +36,8 @@ describe('ChatMentionRepository', () => {
 
   beforeAll(async () => {
     if (AppDataSource.isInitialized) {
-      await db.dropDatabase();
-      await db.destroy();
+      await AppDataSource.dropDatabase();
+      await AppDataSource.destroy();
     }
     db = await AppDataSource.initialize();
     await db.runMigrations();
