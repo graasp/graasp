@@ -12,7 +12,7 @@ import {
   UUID,
 } from '@graasp/sdk';
 
-import { IFRAMELY_API_HOST_DI_KEY } from '../../../../di/constants';
+import { IFRAMELY_API_DI_KEY } from '../../../../di/constants';
 import { BaseLogger } from '../../../../logger';
 import { Repositories } from '../../../../utils/repositories';
 import { Member } from '../../../member/entities/member';
@@ -65,7 +65,7 @@ export class EmbeddedLinkItemService extends ItemService {
     thumbnailService: ThumbnailService,
     itemThumbnailService: ItemThumbnailService,
     log: BaseLogger,
-    @inject(IFRAMELY_API_HOST_DI_KEY) iframelyHrefOrigin: string,
+    @inject(IFRAMELY_API_DI_KEY) iframelyHrefOrigin: string,
   ) {
     super(thumbnailService, itemThumbnailService, log);
     this.iframelyHrefOrigin = iframelyHrefOrigin;
@@ -102,7 +102,7 @@ export class EmbeddedLinkItemService extends ItemService {
       // send error to sentry
       captureException(e);
       console.error(e);
-      return { icons: [], thumbnails: [], description: '', title: '', html: '' };
+      return { icons: [], thumbnails: [] };
     }
   }
 
@@ -147,7 +147,7 @@ export class EmbeddedLinkItemService extends ItemService {
       type: ItemType.LINK,
       extra,
       settings: {
-        ...(item.settings ?? {}),
+        ...item.settings,
         // default settings
         showLinkButton: settings.showLinkButton ?? true,
         showLinkIframe: settings.showLinkIframe ?? false,

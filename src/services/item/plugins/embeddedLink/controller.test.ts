@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { StatusCodes } from 'http-status-codes';
-import fetch, { Response } from 'node-fetch';
+import nock from 'nock';
 import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
@@ -13,12 +13,11 @@ import build, {
   unmockAuthenticate,
 } from '../../../../../test/app';
 import { AppDataSource } from '../../../../plugins/datasource';
+import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN } from '../../../../utils/config';
 import { Guest } from '../../../itemLogin/entities/guest';
 import { saveMember } from '../../../member/test/fixtures/members';
 import { ItemTestUtils } from '../../test/fixtures/items';
 import { FETCH_RESULT, METADATA } from './test/fixtures';
-
-jest.mock('node-fetch');
 
 const rawGuestRepository = AppDataSource.getRepository(Guest);
 const itemTestUtils = new ItemTestUtils();
@@ -56,12 +55,12 @@ describe('Tests Embedded Link Controller', () => {
 
   describe('GET /items/embedded-links/metadata', () => {
     const URL = '/items/embedded-links/metadata';
-    const QUERY_PARAM = 'link';
 
     it('Throws if signed out', async () => {
       const response = await app.inject({
         method: HttpMethod.Get,
         url: URL,
+        query: { link: MOCK_URL },
       });
 
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -80,63 +79,63 @@ describe('Tests Embedded Link Controller', () => {
     it('Throws if URL is not valid', async () => {
       const actor = await saveMember(MemberFactory({ isValidated: false }));
       mockAuthenticate(actor);
-      const invalidUrl = encodeURI('https://invalid');
-      const url = `${URL}?${QUERY_PARAM}=${invalidUrl}`;
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url,
+        url: URL,
+        query: { link: encodeURI('https://invalid') },
       });
 
       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
     });
 
     it('Returns 200 Ok when a valid URL is set', async () => {
-      (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
-        return { json: async () => FETCH_RESULT } as Response;
-      });
-
-      ({ app } = await build());
-
       const validUrl = encodeURI('https://valid-url.ch:5050/myPage');
-      const url = `${URL}?${QUERY_PARAM}=${validUrl}`;
+
+      nock(EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN)
+        .get(`/iframely`)
+        .query({ uri: validUrl })
+        .reply(200, FETCH_RESULT);
+
+      const actor = await saveMember(MemberFactory({ isValidated: false }));
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url,
+        url: URL,
+        query: { link: validUrl },
       });
 
       expect(response.statusCode).toBe(StatusCodes.OK);
     });
 
     it('Returns 200 Ok when a valid URL without html', async () => {
-      (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
-        return {
-          json: async () => ({
-            meta: METADATA,
-            links: [
-              {
-                rel: ['thumbnail'],
-                href: faker.internet.url(),
-              },
-              {
-                rel: ['icon'],
-                href: faker.internet.url(),
-              },
-            ],
-          }),
-        } as Response;
-      });
+      const validUrl = encodeURI('https://valid-url.ch:5050/myPage');
+
+      nock(EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN)
+        .get(`/iframely`)
+        .query({ uri: validUrl })
+        .reply(200, {
+          meta: METADATA,
+          links: [
+            {
+              rel: ['thumbnail'],
+              href: faker.internet.url(),
+            },
+            {
+              rel: ['icon'],
+              href: faker.internet.url(),
+            },
+          ],
+        });
 
       const actor = await saveMember();
       mockAuthenticate(actor);
 
-      const validUrl = encodeURI('https://valid-url.ch:5050/myPage');
-      const url = `${URL}?${QUERY_PARAM}=${validUrl}`;
-
       const response = await app.inject({
         method: HttpMethod.Get,
-        url,
+        url: URL,
+        query: { link: validUrl },
       });
 
       expect(response.statusCode).toBe(StatusCodes.OK);
@@ -226,10 +225,7 @@ describe('Tests Embedded Link Controller', () => {
     });
     describe('mock iframely', () => {
       beforeEach(() => {
-        (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          return { json: async () => iframelyResult } as any;
-        });
+        nock(EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN).get(`/iframely`).reply(200, iframelyResult);
       });
       it('Create link', async () => {
         const actor = await saveMember();
@@ -353,10 +349,7 @@ describe('Tests Embedded Link Controller', () => {
     });
     describe('mock iframely', () => {
       beforeEach(() => {
-        (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          return { json: async () => iframelyResult } as any;
-        });
+        nock(EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN).get(`/iframely`).reply(200, iframelyResult);
       });
       it('Update link', async () => {
         const actor = await saveMember();

@@ -12,7 +12,6 @@ import { validatedMemberAccountRole } from '../../../member/strategies/validated
 import { Item } from '../../entities/Item';
 import { ItemService } from '../../service';
 import { ActionItemService } from '../action/service';
-import { LinkQueryParameterIsRequired } from './errors';
 import { createLink, getLinkMetadata, updateLink } from './schemas';
 import { EmbeddedLinkItemService } from './service';
 import { ensureProtocol } from './utils';
@@ -27,10 +26,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     '/metadata',
     { schema: getLinkMetadata, preHandler: isAuthenticated },
     async ({ query: { link } }) => {
-      if (!link) {
-        throw new LinkQueryParameterIsRequired();
-      }
-
       const url = ensureProtocol(link);
       const metadata = await embeddedLinkService.getLinkMetadata(url);
       const isEmbeddingAllowed = await embeddedLinkService.checkEmbeddingAllowed(url, log);
@@ -102,6 +97,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   );
 
   // necessary for legacy POST /items to work with links
+  // remove when POST /items is removed
   // register pre create handler to pre fetch link metadata
   const hook = async (_actor: Actor, _repos: Repositories, { item }: { item: Partial<Item> }) => {
     // if the extra is undefined or it does not contain the embedded link extra key, exit

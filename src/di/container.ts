@@ -52,7 +52,7 @@ import {
   FILE_ITEM_TYPE_DI_KEY,
   FILE_SERVICE_URLS_CACHING_DI_KEY,
   GEOLOCATION_API_KEY_DI_KEY,
-  IFRAMELY_API_HOST_DI_KEY,
+  IFRAMELY_API_DI_KEY,
   IMAGE_CLASSIFIER_API_DI_KEY,
 } from './constants';
 import { registerValue, resolveDependency } from './utils';
@@ -70,7 +70,7 @@ export const registerDependencies = (instance: FastifyInstance) => {
   registerValue(IMAGE_CLASSIFIER_API_DI_KEY, IMAGE_CLASSIFIER_API);
 
   // register iframely api host for the embeddedlink service.
-  registerValue(IFRAMELY_API_HOST_DI_KEY, EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN);
+  registerValue(IFRAMELY_API_DI_KEY, EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN);
 
   // register geolocation key for the ItemGeolocationService.
   registerValue(GEOLOCATION_API_KEY_DI_KEY, GEOLOCATION_API_KEY);

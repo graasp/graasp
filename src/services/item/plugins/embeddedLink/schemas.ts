@@ -42,9 +42,8 @@ export const getLinkMetadata = {
   summary: 'Get metadata information from iframely for given url',
   description: 'Get metadata information from iframely for given url.',
 
-  querystring: Type.Partial(
-    customType.StrictObject({ link: Type.String({ format: 'uri-reference' }) }),
-  ),
+  querystring: customType.StrictObject({ link: Type.String({ format: 'uri-reference' }) }),
+
   response: {
     [StatusCodes.OK]: customType.StrictObject({
       title: Type.Optional(Type.String()),
@@ -72,6 +71,7 @@ export const createLink = {
     Type.Partial(Type.Pick(itemSchema, ['description', 'lang', 'settings'])),
 
     // link flat config
+    // uri is stricter than uri-reference
     customType.StrictObject({ url: Type.String({ format: 'uri' }) }),
     linkSettingsSchema,
 
