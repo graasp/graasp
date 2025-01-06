@@ -18,18 +18,12 @@ const memberSchema = {
   properties: {
     id: { type: 'string' },
     name: { type: 'string' },
-    email: { type: 'string' },
-    extra: {
-      type: 'object',
-      additionalProperties: false,
-      properties: { lang: { type: 'string' } },
-    },
   },
 };
 
 export class BaseAnalytics {
   readonly actions: Action[];
-  readonly members: Account[];
+  readonly members: { id: string; name: string }[];
   readonly itemMemberships: ItemMembership[];
   readonly descendants: Item[];
   readonly item: Item;
@@ -75,6 +69,7 @@ export class BaseAnalytics {
       type: 'array',
       items: memberSchema,
     });
+
     validateMembers(args.members);
 
     validateMember(args.item.creator);

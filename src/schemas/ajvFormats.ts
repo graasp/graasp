@@ -1,4 +1,4 @@
-import { Ajv } from 'ajv';
+import type { Ajv } from 'ajv';
 
 import { MemberConstants } from '@graasp/sdk';
 
@@ -13,5 +13,5 @@ export default function plugin(ajv: Ajv) {
   ajv.addFormat('strongPassword', /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/);
 
   // No special characters and no Unicode control characters in the username
-  ajv.addFormat('username', MemberConstants.USERNAME_FORMAT_REGEX);
+  ajv.addFormat('graaspUsername', MemberConstants.USERNAME_FORMAT_REGEX);
 }
