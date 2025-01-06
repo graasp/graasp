@@ -427,15 +427,25 @@ describe('Action Plugin Tests', () => {
         query: parameters,
       });
 
-      expect(response.json()).toHaveProperty([0, 'actionType'], ItemActionType.Create);
-      expect(response.json()).toHaveProperty([0, 'aggregateResult']);
-      expect(parseFloat(response.json()[0]['aggregateResult'])).toBeCloseTo(1);
-      expect(response.json()).toHaveProperty([0, 'createdDay'], '2023-05-20T00:00:00.000Z');
+      expect(response.statusCode).toEqual(StatusCodes.OK);
+      const result = await response.json();
 
-      expect(response.json()).toHaveProperty([1, 'actionType'], ItemActionType.Update);
-      expect(response.json()).toHaveProperty([1, 'aggregateResult']);
-      expect(parseFloat(response.json()[1]['aggregateResult'])).toBeCloseTo(1.33);
-      expect(response.json()).toHaveProperty([1, 'createdDay'], '2023-05-21T00:00:00.000Z');
+      const expectCreate = result.find((r) => r.actionType === ItemActionType.Create);
+      expect(expectCreate).toBeDefined();
+      expect(parseFloat(expectCreate['aggregateResult'])).toBeCloseTo(1);
+      expect(expectCreate['createdDay']).toEqual('2023-05-20T00:00:00.000Z');
+
+      const expectUpdate = result.find((r) => r.actionType === ItemActionType.Update);
+      expect(expectUpdate).toBeDefined();
+      expect(parseFloat(expectUpdate['aggregateResult'])).toBeCloseTo(1.33);
+      expect(expectUpdate['createdDay']).toEqual('2023-05-21T00:00:00.000Z');
+
+      const expectCollectionView = result.find(
+        (r) => r.actionType === ActionTriggers.CollectionView,
+      );
+      expect(expectCollectionView).toBeDefined();
+      expect(parseFloat(expectCollectionView['aggregateResult'])).toBeCloseTo(1);
+      expect(expectCollectionView['createdDay']).toEqual('2023-05-21T00:00:00.000Z');
     });
 
     it('Successfully get the number of active user by day', async () => {
@@ -489,13 +499,22 @@ describe('Action Plugin Tests', () => {
         query: parameters,
       });
 
-      expect(response.json()).toHaveProperty([0, 'actionType'], ItemActionType.Create);
-      expect(response.json()).toHaveProperty([0, 'aggregateResult']);
-      expect(parseFloat(response.json()[0]['aggregateResult'])).toBeCloseTo(1);
+      expect(response.statusCode).toEqual(StatusCodes.OK);
+      const result = await response.json();
 
-      expect(response.json()).toHaveProperty([1, 'actionType'], ItemActionType.Update);
-      expect(response.json()).toHaveProperty([1, 'aggregateResult']);
-      expect(parseFloat(response.json()[1]['aggregateResult'])).toBeCloseTo(4);
+      const expectCreate = result.find((r) => r.actionType === ItemActionType.Create);
+      expect(expectCreate).toBeDefined();
+      expect(parseFloat(expectCreate['aggregateResult'])).toBeCloseTo(1);
+
+      const expectUpdate = result.find((r) => r.actionType === ItemActionType.Update);
+      expect(expectUpdate).toBeDefined();
+      expect(parseFloat(expectUpdate['aggregateResult'])).toBeCloseTo(4);
+
+      const expectCollectionView = result.find(
+        (r) => r.actionType === ActionTriggers.CollectionView,
+      );
+      expect(expectCollectionView).toBeDefined();
+      expect(parseFloat(expectCollectionView['aggregateResult'])).toBeCloseTo(1);
     });
 
     it('Successfully get the total action count within specific period', async () => {
@@ -519,10 +538,17 @@ describe('Action Plugin Tests', () => {
         url: `items/${item.id}/actions/aggregation`,
         query: parameters,
       });
+      const result = await response.json();
 
-      expect(response.json()).toHaveProperty([0, 'actionType'], ItemActionType.Update);
-      expect(response.json()).toHaveProperty([0, 'aggregateResult']);
-      expect(parseFloat(response.json()[0]['aggregateResult'])).toBeCloseTo(4);
+      const expectUpdate = result.find((r) => r.actionType === ItemActionType.Update);
+      expect(expectUpdate).toBeDefined();
+      expect(expectUpdate['aggregateResult']).toBeCloseTo(4);
+
+      const expectCollectionView = result.find(
+        (r) => r.actionType === ActionTriggers.CollectionView,
+      );
+      expect(expectCollectionView).toBeDefined();
+      expect(expectCollectionView['aggregateResult']).toBeCloseTo(1);
     });
 
     it('Successfully get the total action count aggregated by time of day', async () => {
@@ -546,13 +572,15 @@ describe('Action Plugin Tests', () => {
         query: parameters,
       });
 
-      expect(response.json()).toHaveProperty([0, 'createdTimeOfDay'], '3');
-      expect(response.json()).toHaveProperty([0, 'aggregateResult']);
-      expect(parseFloat(response.json()[0]['aggregateResult'])).toBeCloseTo(1);
+      const result = await response.json();
 
-      expect(response.json()).toHaveProperty([1, 'createdTimeOfDay'], '8');
-      expect(response.json()).toHaveProperty([1, 'aggregateResult']);
-      expect(parseFloat(response.json()[1]['aggregateResult'])).toBeCloseTo(4);
+      const expectCreatedAt3 = result.find((r) => r.createdTimeOfDay === '3');
+      expect(expectCreatedAt3).toBeDefined();
+      expect(parseFloat(expectCreatedAt3['aggregateResult'])).toBeCloseTo(2);
+
+      const expectCreatedAt8 = result.find((r) => r.createdTimeOfDay === '8');
+      expect(expectCreatedAt8).toBeDefined();
+      expect(parseFloat(expectCreatedAt8['aggregateResult'])).toBeCloseTo(4);
     });
 
     it('Bad request if query parameters are invalid (aggregated by user)', async () => {
