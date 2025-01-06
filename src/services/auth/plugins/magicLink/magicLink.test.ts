@@ -35,15 +35,16 @@ describe('Auth routes tests', () => {
   let app: FastifyInstance;
   let mailerService: MailerService;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     ({ app } = await build({ member: null }));
     mailerService = resolveDependency(MailerService);
   });
-
-  afterEach(async () => {
-    jest.clearAllMocks();
+  afterAll(async () => {
     await clearDatabase(app.db);
     app.close();
+  });
+  afterEach(async () => {
+    jest.clearAllMocks();
   });
 
   describe('POST /login', () => {
@@ -92,7 +93,6 @@ describe('Auth routes tests', () => {
 
       expect(mockSendEmail).not.toHaveBeenCalled();
       expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
-      app.close();
     });
 
     it('Bad request for invalid email', async () => {
