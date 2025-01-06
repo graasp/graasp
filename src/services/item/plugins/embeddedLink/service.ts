@@ -102,7 +102,8 @@ export class EmbeddedLinkItemService extends ItemService {
       // send error to sentry
       captureException(e);
       console.error(e);
-      return { icons: [], thumbnails: [] };
+      // return empty values to reset fields
+      return { icons: [], thumbnails: [], title: '', html: '', description: '' };
     }
   }
 
