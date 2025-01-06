@@ -5,7 +5,7 @@ import { FolderItemFactory, TagCategory } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../plugins/datasource';
 import { IllegalArgumentException } from '../../../../repositories/errors';
-import { saveTag } from '../../../tag/fixtures/utils';
+import { TagRepositoryForTest } from '../../../tag/fixtures/utils';
 import { Item } from '../../entities/Item';
 import { ItemTag } from './ItemTag.entity';
 import { ItemTagRepository } from './ItemTag.repository';
@@ -16,6 +16,7 @@ describe('ItemTag Repository', () => {
   let db: DataSource;
   let repository: ItemTagRepository;
 
+  let tagRawRepository;
   let itemTagRawRepository;
   let itemRawRepository;
 
@@ -25,6 +26,7 @@ describe('ItemTag Repository', () => {
     repository = new ItemTagRepository(db.manager);
     itemTagRawRepository = db.getRepository(ItemTag);
     itemRawRepository = db.getRepository(Item);
+    tagRawRepository = db.manager.withRepository(TagRepositoryForTest);
   });
 
   afterAll(async () => {
@@ -51,16 +53,19 @@ describe('ItemTag Repository', () => {
     });
     it('get count for tags given search and category', async () => {
       const category = TagCategory.Discipline;
-      const tag = await saveTag({ category });
+      const tag = await tagRawRepository.saveTag({ category });
       const item = await itemRawRepository.save(FolderItemFactory({ creator: null }));
       await itemTagRawRepository.save({ item, tag });
-      const tag1 = await saveTag({ name: tag.name + ' second', category });
+      const tag1 = await tagRawRepository.saveTag({ name: tag.name + ' second', category });
       const item1 = await itemRawRepository.save(FolderItemFactory({ creator: null }));
       await itemTagRawRepository.save({ item: item1, tag: tag1 });
       await itemTagRawRepository.save({ item, tag: tag1 });
 
       // noise
-      const tag2 = await saveTag({ name: tag.name + ' second', category: TagCategory.Level });
+      const tag2 = await tagRawRepository.saveTag({
+        name: tag.name + ' second',
+        category: TagCategory.Level,
+      });
       await itemTagRawRepository.save({ item: item1, tag: tag2 });
 
       const tags = await repository.getCountBy({
@@ -73,10 +78,10 @@ describe('ItemTag Repository', () => {
     });
 
     it('get count for tags given search without category', async () => {
-      const tag = await saveTag();
+      const tag = await tagRawRepository.saveTag();
       const item = await itemRawRepository.save(FolderItemFactory({ creator: null }));
       await itemTagRawRepository.save({ item, tag });
-      const tag1 = await saveTag({ name: tag.name + ' second' });
+      const tag1 = await tagRawRepository.saveTag({ name: tag.name + ' second' });
       const item1 = await itemRawRepository.save(FolderItemFactory({ creator: null }));
       await itemTagRawRepository.save({ item: item1, tag: tag1 });
       await itemTagRawRepository.save({ item, tag: tag1 });
@@ -93,7 +98,7 @@ describe('ItemTag Repository', () => {
       const category = TagCategory.Discipline;
       // create more tags and association than limit
       const promises = Array.from({ length: TAG_COUNT_MAX_RESULTS + 13 }, async (_, idx) => {
-        const tag = await saveTag({ name: 'tag' + idx, category });
+        const tag = await tagRawRepository.saveTag({ name: 'tag' + idx, category });
         for (let i = 0; i < idx; i++) {
           const item = await itemRawRepository.save(FolderItemFactory({ creator: null }));
           await itemTagRawRepository.save({ item, tag });
@@ -135,13 +140,13 @@ describe('ItemTag Repository', () => {
     it('get tags for item', async () => {
       // save item with tags
       const item = await itemRawRepository.save(FolderItemFactory({ creator: null }));
-      const tag1 = await saveTag();
-      const tag2 = await saveTag();
+      const tag1 = await tagRawRepository.saveTag();
+      const tag2 = await tagRawRepository.saveTag();
       await itemTagRawRepository.save({ item, tag: tag1 });
       await itemTagRawRepository.save({ item, tag: tag2 });
 
       // noise
-      const anotherTag = await saveTag();
+      const anotherTag = await tagRawRepository.saveTag();
       const anotherItem = await itemRawRepository.save(FolderItemFactory({ creator: null }));
       await itemTagRawRepository.save({ item: anotherItem, tag: anotherTag });
 
@@ -152,7 +157,7 @@ describe('ItemTag Repository', () => {
 
   describe('createForItem', () => {
     it('throw for invalid item id', async () => {
-      const tag = await saveTag();
+      const tag = await tagRawRepository.saveTag();
       await expect(() => repository.create(undefined!, tag.id)).rejects.toThrow();
     });
     it('throw for invalid tag id', async () => {
@@ -161,7 +166,7 @@ describe('ItemTag Repository', () => {
       await expect(() => repository.create(item.id, undefined!)).rejects.toThrow();
     });
     it('throw for non-existing item', async () => {
-      const tag = await saveTag();
+      const tag = await tagRawRepository.saveTag();
       await expect(() => repository.create(v4(), tag.id)).rejects.toThrow();
     });
     it('throw for non-existing tag', async () => {
@@ -170,7 +175,7 @@ describe('ItemTag Repository', () => {
       await expect(() => repository.create(item.id, v4())).rejects.toThrow();
     });
     it('create tag for item', async () => {
-      const tag = await saveTag();
+      const tag = await tagRawRepository.saveTag();
       const item = await itemRawRepository.save(FolderItemFactory({ creator: null }));
 
       await repository.create(item.id, tag.id);
@@ -179,7 +184,7 @@ describe('ItemTag Repository', () => {
       expect(result).toBeDefined();
     });
     it('throw if tag already exists for item', async () => {
-      const tag = await saveTag();
+      const tag = await tagRawRepository.saveTag();
       const item = await itemRawRepository.save(FolderItemFactory({ creator: null }));
       await itemTagRawRepository.save({ tag, item });
 
@@ -190,7 +195,7 @@ describe('ItemTag Repository', () => {
   });
   describe('delete', () => {
     it('throw for invalid item id', async () => {
-      const tag = await saveTag();
+      const tag = await tagRawRepository.saveTag();
       await expect(() => repository.delete(undefined!, tag.id)).rejects.toThrow();
     });
     it('throw for invalid tag id', async () => {
@@ -199,7 +204,7 @@ describe('ItemTag Repository', () => {
       await expect(() => repository.delete(item.id, undefined!)).rejects.toThrow();
     });
     it('does not throw for non-existing item', async () => {
-      const tag = await saveTag();
+      const tag = await tagRawRepository.saveTag();
       expect(await repository.delete(v4(), tag.id)).toBeUndefined();
     });
     it('does not throw for non-existing tag', async () => {
@@ -208,18 +213,18 @@ describe('ItemTag Repository', () => {
       expect(await repository.delete(item.id, v4())).toBeUndefined();
     });
     it('does not throw if tag is not associated with item', async () => {
-      const tag = await saveTag();
+      const tag = await tagRawRepository.saveTag();
       const item = await itemRawRepository.save(FolderItemFactory({ creator: null }));
 
       expect(await repository.delete(item.id, tag.id)).toBeUndefined();
     });
     it('delete tag for item', async () => {
-      const tag = await saveTag();
+      const tag = await tagRawRepository.saveTag();
       const item = await itemRawRepository.save(FolderItemFactory({ creator: null }));
       await itemTagRawRepository.save({ tag, item });
 
       // noise
-      const tag1 = await saveTag();
+      const tag1 = await tagRawRepository.saveTag();
       await itemTagRawRepository.save({ tag: tag1, item });
       const preResult = await itemTagRawRepository.findOneBy({ itemId: item.id, tagId: tag.id });
       expect(preResult).not.toBeNull();
