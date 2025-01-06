@@ -1,7 +1,7 @@
 import fetch from 'node-fetch';
 import { v4 } from 'uuid';
 
-import { ItemType, LinkItemFactory } from '@graasp/sdk';
+import { FolderItemFactory, ItemType, LinkItemFactory } from '@graasp/sdk';
 
 import { MOCK_LOGGER } from '../../../../../test/app';
 import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN } from '../../../../utils/config';
@@ -9,6 +9,7 @@ import { Repositories } from '../../../../utils/repositories';
 import { Member } from '../../../member/entities/member';
 import { ThumbnailService } from '../../../thumbnail/service';
 import { EmbeddedLinkItem, Item } from '../../entities/Item';
+import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
 import { ItemThumbnailService } from '../thumbnail/service';
@@ -253,9 +254,21 @@ describe('Link Service', () => {
       });
 
       it('throw if item is not a link', async () => {
+        const FOLDER_ITEM = FolderItemFactory();
         await expect(() =>
-          linkService.patchWithOptions(MOCK_MEMBER, repositories, MOCK_ITEM.id, { name: 'name' }),
-        ).rejects.toThrow();
+          linkService.patchWithOptions(
+            MOCK_MEMBER,
+            {
+              itemRepository: {
+                getOneOrThrow: async () => {
+                  return FOLDER_ITEM;
+                },
+              } as unknown as ItemRepository,
+            } as Repositories,
+            FOLDER_ITEM.id,
+            { name: 'name' },
+          ),
+        ).rejects.toBeInstanceOf(WrongItemTypeError);
       });
       it('patch url changes link extra', async () => {
         const itemServicePatchMock = jest

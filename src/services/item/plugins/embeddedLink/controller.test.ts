@@ -68,15 +68,18 @@ describe('Tests Embedded Link Controller', () => {
     });
 
     it('Throws if link parameter is not set', async () => {
+      const actor = await saveMember(MemberFactory({ isValidated: false }));
+      mockAuthenticate(actor);
       const response = await app.inject({
         method: HttpMethod.Get,
         url: URL,
       });
-
       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
     });
 
     it('Throws if URL is not valid', async () => {
+      const actor = await saveMember(MemberFactory({ isValidated: false }));
+      mockAuthenticate(actor);
       const invalidUrl = encodeURI('https://invalid');
       const url = `${URL}?${QUERY_PARAM}=${invalidUrl}`;
 
