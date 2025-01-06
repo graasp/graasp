@@ -42,7 +42,7 @@ export class Action extends BaseEntity {
     nullable: false,
     enum: Object.values(Context),
   })
-  view: Context | 'Unknown';
+  view: Context;
 
   @Column({
     nullable: false,
