@@ -15,6 +15,8 @@ import graaspItemLogin from '../itemLogin';
 import itemController from './controller';
 import actionItemPlugin from './plugins/action';
 import graaspApps from './plugins/app';
+import graaspDocumentItem from './plugins/document/controller';
+import { PREFIX_DOCUMENT } from './plugins/document/service';
 import graaspEmbeddedLinkItem from './plugins/embeddedLink/controller';
 import { PREFIX_EMBEDDED_LINK } from './plugins/embeddedLink/service';
 import graaspEnrollPlugin from './plugins/enroll';
@@ -95,6 +97,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.register(graaspEmbeddedLinkItem, {
           prefix: PREFIX_EMBEDDED_LINK,
         });
+
+        fastify.register(graaspDocumentItem, { prefix: PREFIX_DOCUMENT });
 
         fastify.register(graaspInvitationsPlugin);
 
