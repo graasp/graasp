@@ -1,0 +1,355 @@
+import fetch from 'node-fetch';
+import { v4 } from 'uuid';
+
+import { FolderItemFactory, ItemType, LinkItemFactory } from '@graasp/sdk';
+
+import { MOCK_LOGGER } from '../../../../../test/app';
+import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN } from '../../../../utils/config';
+import { Repositories } from '../../../../utils/repositories';
+import { Member } from '../../../member/entities/member';
+import { ThumbnailService } from '../../../thumbnail/service';
+import { EmbeddedLinkItem, Item } from '../../entities/Item';
+import { WrongItemTypeError } from '../../errors';
+import { ItemRepository } from '../../repository';
+import { ItemService } from '../../service';
+import { ItemThumbnailService } from '../thumbnail/service';
+import { EmbeddedLinkItemService } from './service';
+
+jest.mock('node-fetch');
+
+const linkService = new EmbeddedLinkItemService(
+  {} as unknown as ThumbnailService,
+  {} as unknown as ItemThumbnailService,
+  MOCK_LOGGER,
+  EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
+);
+const id = v4();
+const MOCK_ITEM = LinkItemFactory({ id }) as unknown as EmbeddedLinkItem;
+const MOCK_URL = 'http://example.com';
+
+const iframelyResult = {
+  meta: {
+    title: 'title-patch',
+    description: 'description-patch',
+  },
+  html: 'html-patch',
+  links: [
+    { rel: ['icon'], href: 'icon' },
+    { rel: ['thumbnail'], href: 'thumbnail' },
+  ],
+  // used for test
+  icons: ['icon'],
+  thumbnails: ['thumbnail'],
+};
+
+const MOCK_MEMBER = {} as Member;
+const repositories = {
+  itemRepository: {
+    getOneOrThrow: async () => {
+      return MOCK_ITEM;
+    },
+  } as unknown as ItemRepository,
+} as Repositories;
+
+describe('Link Service', () => {
+  let fetchMock: jest.SpyInstance;
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('postWithOptions', () => {
+    it('do not throw if iframely is unresponsive', async () => {
+      fetchMock = (fetch as jest.MockedFunction<typeof fetch>).mockRejectedValue(new Error());
+
+      const itemServicePostMock = jest
+        .spyOn(ItemService.prototype, 'post')
+        .mockImplementation(async () => {
+          return MOCK_ITEM;
+        });
+
+      expect(MOCK_ITEM.extra.embeddedLink.url).toBeDefined();
+
+      const args = {
+        name: 'name',
+        url: 'https://another-url.com',
+      };
+      await linkService.postWithOptions(MOCK_MEMBER, repositories, args);
+
+      // call to iframely
+      expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining(encodeURIComponent(args.url)));
+
+      // call to item service with initial item name
+      expect(itemServicePostMock).toHaveBeenCalledWith(MOCK_MEMBER, repositories, {
+        item: {
+          name: args.name,
+          type: ItemType.LINK,
+          // not defined in args
+          description: undefined,
+          lang: undefined,
+          extra: {
+            [ItemType.LINK]: {
+              url: args.url,
+              icons: [],
+              thumbnails: [],
+              description: '',
+              title: '',
+              html: '',
+            },
+          },
+          settings: { showLinkButton: true, showLinkIframe: false },
+        },
+      });
+    });
+    describe('mock iframely', () => {
+      beforeEach(() => {
+        fetchMock = (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          return { json: async () => iframelyResult } as any;
+        });
+      });
+
+      it('set correct default values for type, extra and settings', async () => {
+        const itemServicePostMock = jest
+          .spyOn(ItemService.prototype, 'post')
+          .mockImplementation(async () => {
+            return {} as Item;
+          });
+
+        await linkService.postWithOptions(MOCK_MEMBER, repositories, {
+          name: 'name',
+          url: MOCK_URL,
+        });
+
+        // call to iframely
+        expect(fetchMock).toHaveBeenCalledWith(
+          expect.stringContaining(encodeURIComponent(MOCK_URL)),
+        );
+
+        // call to item service
+        expect(itemServicePostMock).toHaveBeenCalledWith(MOCK_MEMBER, repositories, {
+          item: {
+            name: 'name',
+            description: undefined,
+            extra: {
+              [ItemType.LINK]: {
+                url: MOCK_URL,
+                description: iframelyResult.meta.description,
+                title: iframelyResult.meta.title,
+                html: iframelyResult.html,
+                icons: iframelyResult.icons,
+                thumbnails: iframelyResult.thumbnails,
+              },
+            },
+            type: ItemType.LINK,
+            settings: {
+              showLinkIframe: false,
+              showLinkButton: true,
+            },
+            lang: undefined,
+          },
+          // lang is defined by super service
+        });
+      });
+      it('set defined values', async () => {
+        const itemServicePostMock = jest
+          .spyOn(ItemService.prototype, 'post')
+          .mockImplementation(async () => {
+            return {} as Item;
+          });
+
+        const args = {
+          name: 'name',
+          description: 'my description',
+          url: MOCK_URL,
+          showLinkIframe: true,
+          showLinkButton: false,
+          lang: 'fr',
+          parentId: v4(),
+          geolocation: { lat: 1, lng: 1 },
+          previousItemId: v4(),
+        };
+        await linkService.postWithOptions(MOCK_MEMBER, repositories, args);
+
+        // call to iframely
+        expect(fetchMock).toHaveBeenCalledWith(
+          expect.stringContaining(encodeURIComponent(MOCK_URL)),
+        );
+
+        // call to item service
+        expect(itemServicePostMock).toHaveBeenCalledWith(MOCK_MEMBER, repositories, {
+          item: {
+            name: args.name,
+            description: args.description,
+            extra: {
+              [ItemType.LINK]: {
+                url: MOCK_URL,
+                description: iframelyResult.meta.description,
+                title: iframelyResult.meta.title,
+                html: iframelyResult.html,
+                icons: iframelyResult.icons,
+                thumbnails: iframelyResult.thumbnails,
+              },
+            },
+            type: ItemType.LINK,
+            settings: {
+              showLinkIframe: args.showLinkIframe,
+              showLinkButton: args.showLinkButton,
+            },
+            lang: args.lang,
+          },
+          parentId: args.parentId,
+          geolocation: args.geolocation,
+          previousItemId: args.previousItemId,
+        });
+      });
+    });
+  });
+  describe('patchWithOptions', () => {
+    it('do not throw if iframely is unresponsive', async () => {
+      fetchMock = (fetch as jest.MockedFunction<typeof fetch>).mockRejectedValue(new Error());
+
+      const itemServicePatchMock = jest
+        .spyOn(ItemService.prototype, 'patch')
+        .mockImplementation(async () => {
+          return MOCK_ITEM;
+        });
+
+      expect(MOCK_ITEM.extra.embeddedLink.url).toBeDefined();
+
+      const args = {
+        url: 'https://another-url.com',
+      };
+      await linkService.patchWithOptions(MOCK_MEMBER, repositories, MOCK_ITEM.id, args);
+
+      // call to iframely
+      expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining(encodeURIComponent(args.url)));
+
+      // call to item service with initial item name
+      expect(itemServicePatchMock).toHaveBeenCalledWith(MOCK_MEMBER, repositories, MOCK_ITEM.id, {
+        name: MOCK_ITEM.name,
+        type: ItemType.LINK,
+        // not defined in args
+        description: undefined,
+        lang: undefined,
+        extra: {
+          [ItemType.LINK]: {
+            icons: [],
+            thumbnails: [],
+            description: '',
+            title: '',
+            html: '',
+            url: args.url,
+          },
+        },
+        settings: { showLinkButton: true, showLinkIframe: false },
+      });
+    });
+    describe('mock iframely', () => {
+      beforeEach(() => {
+        fetchMock = (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          return { json: async () => iframelyResult } as any;
+        });
+      });
+
+      it('throw if item is not a link', async () => {
+        const FOLDER_ITEM = FolderItemFactory();
+        await expect(() =>
+          linkService.patchWithOptions(
+            MOCK_MEMBER,
+            {
+              itemRepository: {
+                getOneOrThrow: async () => {
+                  return FOLDER_ITEM;
+                },
+              } as unknown as ItemRepository,
+            } as Repositories,
+            FOLDER_ITEM.id,
+            { name: 'name' },
+          ),
+        ).rejects.toBeInstanceOf(WrongItemTypeError);
+      });
+      it('patch url changes link extra', async () => {
+        const itemServicePatchMock = jest
+          .spyOn(ItemService.prototype, 'patch')
+          .mockImplementation(async () => {
+            return MOCK_ITEM;
+          });
+
+        expect(MOCK_ITEM.extra.embeddedLink.url).toBeDefined();
+
+        const args = {
+          url: 'https://another-url.com',
+        };
+        await linkService.patchWithOptions(MOCK_MEMBER, repositories, MOCK_ITEM.id, args);
+
+        // call to iframely
+        expect(fetchMock).toHaveBeenCalledWith(
+          expect.stringContaining(encodeURIComponent(args.url)),
+        );
+
+        // call to item service with initial item name
+        expect(itemServicePatchMock).toHaveBeenCalledWith(MOCK_MEMBER, repositories, MOCK_ITEM.id, {
+          name: MOCK_ITEM.name,
+          type: ItemType.LINK,
+          // not defined in args
+          description: undefined,
+          lang: undefined,
+          extra: {
+            [ItemType.LINK]: {
+              url: args.url,
+              description: iframelyResult.meta.description,
+              title: iframelyResult.meta.title,
+              html: iframelyResult.html,
+              icons: iframelyResult.icons,
+              thumbnails: iframelyResult.thumbnails,
+            },
+          },
+          settings: { showLinkButton: true, showLinkIframe: false },
+        });
+      });
+      it('patch many properties without changing url', async () => {
+        const itemServicePatchMock = jest
+          .spyOn(ItemService.prototype, 'patch')
+          .mockImplementation(async () => {
+            return MOCK_ITEM;
+          });
+
+        expect(MOCK_ITEM.extra.embeddedLink.url).toBeDefined();
+
+        const args = {
+          name: 'newname',
+          description: 'newdescription',
+          lang: 'de',
+          showLinkButton: false,
+          showLinkIframe: true,
+        };
+        await linkService.patchWithOptions(MOCK_MEMBER, repositories, MOCK_ITEM.id, args);
+
+        // do not call iframely
+        expect(fetchMock).not.toHaveBeenCalled();
+
+        // call to item service with initial item name
+        expect(itemServicePatchMock).toHaveBeenCalledWith(MOCK_MEMBER, repositories, MOCK_ITEM.id, {
+          name: args.name,
+          type: ItemType.LINK,
+          description: args.description,
+          lang: args.lang,
+          extra: MOCK_ITEM.extra,
+          settings: { showLinkButton: false, showLinkIframe: true },
+        });
+      });
+
+      it('Cannot update not found item given id', async () => {
+        jest.spyOn(repositories.itemRepository, 'getOneOrThrow').mockImplementation(() => {
+          throw new Error();
+        });
+
+        await expect(() =>
+          linkService.patchWithOptions(MOCK_MEMBER, repositories, v4(), { name: 'name' }),
+        ).rejects.toThrow();
+      });
+    });
+  });
+});

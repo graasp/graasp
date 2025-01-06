@@ -26,6 +26,7 @@ import { SearchService } from '../services/item/plugins/publication/published/pl
 import { ValidationQueue } from '../services/item/plugins/publication/validation/validationQueue';
 import { ItemService } from '../services/item/service';
 import {
+  EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
   FILE_ITEM_PLUGIN_OPTIONS,
   FILE_ITEM_TYPE,
   GEOLOCATION_API_KEY,
@@ -51,6 +52,7 @@ import {
   FILE_ITEM_TYPE_DI_KEY,
   FILE_SERVICE_URLS_CACHING_DI_KEY,
   GEOLOCATION_API_KEY_DI_KEY,
+  IFRAMELY_API_DI_KEY,
   IMAGE_CLASSIFIER_API_DI_KEY,
 } from './constants';
 import { registerValue, resolveDependency } from './utils';
@@ -66,6 +68,9 @@ export const registerDependencies = (instance: FastifyInstance) => {
 
   // register classifier key for the ValidationService.
   registerValue(IMAGE_CLASSIFIER_API_DI_KEY, IMAGE_CLASSIFIER_API);
+
+  // register iframely api host for the embeddedlink service.
+  registerValue(IFRAMELY_API_DI_KEY, EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN);
 
   // register geolocation key for the ItemGeolocationService.
   registerValue(GEOLOCATION_API_KEY_DI_KEY, GEOLOCATION_API_KEY);
