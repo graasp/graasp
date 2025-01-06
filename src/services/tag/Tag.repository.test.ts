@@ -5,20 +5,21 @@ import { TagCategory, TagFactory } from '@graasp/sdk';
 
 import { AppDataSource } from '../../plugins/datasource';
 import { IllegalArgumentException } from '../../repositories/errors';
+import { Tag } from './Tag.entity';
 import { TagRepository } from './Tag.repository';
-import { TagRepositoryForTest } from './fixtures/utils';
+import { saveTag } from './fixtures/utils';
 
 describe('Tag Repository', () => {
   let db: DataSource;
 
   let repository: TagRepository;
-  let tagRawRepository: typeof TagRepositoryForTest;
+  let tagRawRepository;
 
   beforeAll(async () => {
     db = await AppDataSource.initialize();
     await db.runMigrations();
     repository = new TagRepository(db.manager);
-    tagRawRepository = db.manager.withRepository(TagRepositoryForTest);
+    tagRawRepository = db.getRepository(Tag);
   });
 
   afterAll(async () => {
@@ -37,12 +38,12 @@ describe('Tag Repository', () => {
     });
     it('get tag', async () => {
       // noise
-      await tagRawRepository.saveTag({ category: TagCategory.Discipline });
+      await saveTag({ category: TagCategory.Discipline });
 
-      const tag = await tagRawRepository.saveTag({ category: TagCategory.Discipline });
+      const tag = await saveTag({ category: TagCategory.Discipline });
 
       // noise
-      await tagRawRepository.saveTag({ category: TagCategory.ResourceType });
+      await saveTag({ category: TagCategory.ResourceType });
 
       const result = await repository.get(tag.id);
       expect(result!.id).toEqual(tag.id);
@@ -67,7 +68,7 @@ describe('Tag Repository', () => {
     });
     it('cannot insert tag with sanitized name', async () => {
       const tag = TagFactory({ name: 'my name1', category: TagCategory.Discipline });
-      await tagRawRepository.saveTag(tag);
+      await saveTag(tag);
 
       const tagToAdd = TagFactory({ name: 'my     name1', category: TagCategory.Discipline });
       await expect(() => repository.addOne(tagToAdd)).rejects.toThrow();
@@ -89,7 +90,7 @@ describe('Tag Repository', () => {
     });
     it('return existing tag', async () => {
       const tagInfo = TagFactory();
-      const tag = await tagRawRepository.saveTag(tagInfo);
+      const tag = await saveTag(tagInfo);
 
       const result = await repository.addOneIfDoesNotExist(tagInfo);
 
@@ -98,10 +99,7 @@ describe('Tag Repository', () => {
       expect(result.category).toEqual(tag.category);
     });
     it('return tag with sanitized name', async () => {
-      const tag = await tagRawRepository.saveTag({
-        name: 'my name2',
-        category: TagCategory.Discipline,
-      });
+      const tag = await saveTag({ name: 'my name2', category: TagCategory.Discipline });
       const tagNotSanitized = {
         name: 'my     name2',
         category: TagCategory.Discipline,
