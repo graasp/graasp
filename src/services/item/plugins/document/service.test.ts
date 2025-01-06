@@ -18,7 +18,7 @@ import { ItemService } from '../../service';
 import { ItemThumbnailService } from '../thumbnail/service';
 import { DocumentItemService } from './service';
 
-const linkService = new DocumentItemService(
+const documentService = new DocumentItemService(
   {} as unknown as ThumbnailService,
   {} as unknown as ItemThumbnailService,
   MOCK_LOGGER,
@@ -48,7 +48,7 @@ describe('Document Service', () => {
           return {} as Item;
         });
 
-      await linkService.postWithOptions(MOCK_MEMBER, repositories, {
+      await documentService.postWithOptions(MOCK_MEMBER, repositories, {
         name: 'name',
         content: 'text',
       });
@@ -76,7 +76,7 @@ describe('Document Service', () => {
           return {} as Item;
         });
 
-      await linkService.postWithOptions(MOCK_MEMBER, repositories, {
+      await documentService.postWithOptions(MOCK_MEMBER, repositories, {
         name: 'name',
         content: 'mycontent<script>text</script>',
       });
@@ -115,7 +115,7 @@ describe('Document Service', () => {
         geolocation: { lat: 1, lng: 1 },
         previousItemId: v4(),
       };
-      await linkService.postWithOptions(MOCK_MEMBER, repositories, args);
+      await documentService.postWithOptions(MOCK_MEMBER, repositories, args);
 
       // call to item service
       expect(itemServicePostMock).toHaveBeenCalledWith(MOCK_MEMBER, repositories, {
@@ -142,7 +142,7 @@ describe('Document Service', () => {
     it('throw if item is not a document', async () => {
       const FOLDER_ITEM = FolderItemFactory();
       await expect(() =>
-        linkService.patchWithOptions(
+        documentService.patchWithOptions(
           MOCK_MEMBER,
           {
             itemRepository: {
@@ -168,7 +168,7 @@ describe('Document Service', () => {
       const args = {
         content: 'mycontent<script>script</script>',
       };
-      await linkService.patchWithOptions(MOCK_MEMBER, repositories, MOCK_ITEM.id, args);
+      await documentService.patchWithOptions(MOCK_MEMBER, repositories, MOCK_ITEM.id, args);
 
       // call to item service with initial item name
       expect(itemServicePatchMock).toHaveBeenCalledWith(MOCK_MEMBER, repositories, MOCK_ITEM.id, {
@@ -199,7 +199,7 @@ describe('Document Service', () => {
         isRaw: true,
         flavor: DocumentItemExtraFlavor.Error,
       };
-      await linkService.patchWithOptions(MOCK_MEMBER, repositories, MOCK_ITEM.id, args);
+      await documentService.patchWithOptions(MOCK_MEMBER, repositories, MOCK_ITEM.id, args);
 
       // call to item service with initial item name
       expect(itemServicePatchMock).toHaveBeenCalledWith(MOCK_MEMBER, repositories, MOCK_ITEM.id, {
@@ -223,7 +223,7 @@ describe('Document Service', () => {
       });
 
       await expect(() =>
-        linkService.patchWithOptions(MOCK_MEMBER, repositories, v4(), { name: 'name' }),
+        documentService.patchWithOptions(MOCK_MEMBER, repositories, v4(), { name: 'name' }),
       ).rejects.toThrow();
     });
   });

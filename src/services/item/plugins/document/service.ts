@@ -27,7 +27,7 @@ export class DocumentItemService extends ItemService {
   /**
    * Create document extra object given url and initial data
    * @param extra text extra to save
-   * @param itemExtra initial link extra
+   * @param itemExtra initial document extra
    * @returns valid document extra object
    */
   private createExtra(
@@ -97,7 +97,7 @@ export class DocumentItemService extends ItemService {
 
     const item = await itemRepository.getOneOrThrow(itemId);
 
-    // check item is link
+    // check item is document
     if (!isItemType(item, ItemType.DOCUMENT)) {
       throw new WrongItemTypeError(item.type);
     }
