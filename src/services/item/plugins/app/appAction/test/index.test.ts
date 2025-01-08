@@ -5,7 +5,7 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../../test/app';
+import build, { clearDatabase, mockAuthenticate } from '../../../../../../../test/app';
 import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
 import { Member } from '../../../../../member/entities/member';
 import { saveMember } from '../../../../../member/test/fixtures/members';
@@ -37,20 +37,24 @@ const setUpForAppActions = async (
 
 describe('App Actions Tests', () => {
   let app: FastifyInstance;
-  let actor;
   let item, token;
   let appActions;
   let member;
 
+  beforeAll(async () => {
+    ({ app } = await build({ member: null }));
+  });
+  afterAll(async () => {
+    await clearDatabase(app.db);
+    app.close();
+  });
+
   afterEach(async () => {
     jest.clearAllMocks();
-    await clearDatabase(app.db);
-    actor = null;
     member = null;
     item = null;
     token = null;
     appActions = null;
-    app.close();
   });
 
   // TODO test different payload
@@ -58,8 +62,8 @@ describe('App Actions Tests', () => {
   describe('GET /:itemId/app-action', () => {
     describe('Sign Out', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
-
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         ({ item, token, appActions } = await setUpForAppActions(app, actor, actor));
         // logout after getting token and setting up
         await app.inject({
@@ -82,7 +86,8 @@ describe('App Actions Tests', () => {
     describe('Sign In', () => {
       describe('Admin', () => {
         beforeEach(async () => {
-          ({ app, actor } = await build());
+          const actor = await saveMember();
+          mockAuthenticate(actor);
           ({ item, appActions, token } = await setUpForAppActions(app, actor, actor));
         });
 
@@ -122,7 +127,8 @@ describe('App Actions Tests', () => {
 
       describe('Read', () => {
         beforeEach(async () => {
-          ({ app, actor } = await build());
+          const actor = await saveMember();
+          mockAuthenticate(actor);
           member = await saveMember();
           ({ item, appActions, token } = await setUpForAppActions(
             app,
@@ -162,7 +168,8 @@ describe('App Actions Tests', () => {
 
     describe('Sign Out', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        const actor = await saveMember();
+        mockAuthenticate(actor);
 
         ({ item, token, appActions } = await setUpForAppActions(app, actor, actor));
         // logout after getting token and setting up
@@ -201,7 +208,8 @@ describe('App Actions Tests', () => {
 
     describe('Sign In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         ({ item, token } = await setUpForAppActions(app, actor, actor));
       });
 

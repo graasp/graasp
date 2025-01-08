@@ -17,7 +17,6 @@ import { saveItemValidation } from '../../publication/validation/test/utils';
 import {
   MOCK_ALIAS,
   MOCK_ITEM_ID,
-  MOCK_PLATFORM,
   ShortLinkTestUtils,
   getRedirection,
   injectDelete,
@@ -28,6 +27,7 @@ import {
   injectPost,
 } from './fixtures';
 
+const MOCK_PLATFORM = ShortLinkPlatform.Builder;
 const MOCK_FAKE_ALIAS = 'fake-alias';
 const testUtils = new ShortLinkTestUtils();
 
@@ -339,9 +339,7 @@ describe('Short links routes tests', () => {
         const response = await injectGet(app, MOCK_ALIAS);
 
         expect(response.statusCode).toEqual(StatusCodes.MOVED_TEMPORARILY);
-        expect(response.headers.location).toEqual(
-          getRedirection(payload.itemId, payload.platform as Context),
-        );
+        expect(response.headers.location).toEqual(getRedirection(payload.itemId, payload.platform));
       });
       it('Success when admin', async () => {
         const { item } = await testUtils.mockItemAndMemberships({
@@ -358,9 +356,7 @@ describe('Short links routes tests', () => {
 
         const response = await injectGet(app, MOCK_ALIAS);
         expect(response.statusCode).toEqual(StatusCodes.MOVED_TEMPORARILY);
-        expect(response.headers.location).toEqual(
-          getRedirection(payload.itemId, payload.platform as Context),
-        );
+        expect(response.headers.location).toEqual(getRedirection(payload.itemId, payload.platform));
       });
     });
 

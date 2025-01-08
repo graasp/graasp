@@ -8,9 +8,14 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../../test/app';
+import build, {
+  clearDatabase,
+  mockAuthenticate,
+  unmockAuthenticate,
+} from '../../../../../../../test/app';
 import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
 import { Member } from '../../../../../member/entities/member';
+import { saveMember } from '../../../../../member/test/fixtures/members';
 import { AppTestUtils } from '../../test/fixtures';
 import { saveAppActions } from './fixtures';
 
@@ -33,18 +38,30 @@ describe('App Actions Tests', () => {
   let actor;
   let item, token;
 
+  beforeAll(async () => {
+    ({ app } = await build({ member: null }));
+  });
+
+  afterAll(async () => {
+    await clearDatabase(app.db);
+    app.close();
+  });
+
   afterEach(async () => {
     jest.clearAllMocks();
-    await clearDatabase(app.db);
     actor = null;
+    unmockAuthenticate();
+  });
+
+  afterEach(async () => {
     item = null;
     token = null;
-    app.close();
   });
 
   describe('GET /:itemId/app-action', () => {
     beforeEach(async () => {
-      ({ app, actor } = await build());
+      actor = await saveMember();
+      mockAuthenticate(actor);
       ({ item, token } = await setUpForAppActions(app, actor, actor));
     });
 
@@ -68,7 +85,8 @@ describe('App Actions Tests', () => {
     const payload = { data: { some: 'data' }, type: 'some-type' };
 
     beforeEach(async () => {
-      ({ app, actor } = await build());
+      actor = await saveMember();
+      mockAuthenticate(actor);
       ({ item, token } = await setUpForAppActions(app, actor, actor));
     });
 

@@ -45,15 +45,18 @@ describe('Mobile Endpoints', () => {
   let app: FastifyInstance;
   let mailerService: MailerService;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     ({ app } = await build({ member: null }));
     mailerService = resolveDependency(MailerService);
   });
 
-  afterEach(async () => {
-    jest.clearAllMocks();
+  afterAll(async () => {
     await clearDatabase(app.db);
     app.close();
+  });
+
+  afterEach(async () => {
+    jest.clearAllMocks();
   });
 
   describe('POST /m/register', () => {
@@ -63,7 +66,7 @@ describe('Mobile Endpoints', () => {
     });
 
     it('Sign Up successfully', async () => {
-      const email = 'someemail@email.com';
+      const email = faker.internet.email().toLowerCase();
       const name = 'anna';
 
       const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
@@ -85,7 +88,7 @@ describe('Mobile Endpoints', () => {
     });
 
     it('Sign Up successfully with given lang', async () => {
-      const email = 'someemail@email.com';
+      const email = faker.internet.email().toLowerCase();
       const name = 'anna';
       const lang = 'fr';
       const member = { email, name, extra: { lang } };
@@ -108,7 +111,7 @@ describe('Mobile Endpoints', () => {
     });
 
     it('Save actions are disabled when explicitly asked', async () => {
-      const email = 'someemail@email.com';
+      const email = faker.internet.email().toLowerCase();
       const name = 'anna';
       const enableSaveActions = false;
 
@@ -133,7 +136,7 @@ describe('Mobile Endpoints', () => {
     });
 
     it('Enable save actions when explicitly asked', async () => {
-      const email = 'someemail@email.com';
+      const email = faker.internet.email().toLowerCase();
       const name = 'anna';
       const enableSaveActions = true;
 
@@ -236,7 +239,7 @@ describe('Mobile Endpoints', () => {
     });
 
     it('Sign In does send not found error for non-existing email', async () => {
-      const email = 'some@email.com';
+      const email = faker.internet.email();
 
       const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
       const response = await app.inject({
