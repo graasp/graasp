@@ -25,16 +25,15 @@ const mockCaptchaValidation = (action: RecaptchaActionType) => {
 describe('Password routes tests', () => {
   let app: FastifyInstance;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     ({ app } = await build({ member: null }));
   });
 
-  afterAll(async () => {
-    await clearDatabase(app.db);
-    app.close();
-  });
-  afterEach(() => {
+  afterEach(async () => {
     jest.clearAllMocks();
+    await clearDatabase(app.db);
+
+    app.close();
   });
 
   describe('POST /login-password', () => {
