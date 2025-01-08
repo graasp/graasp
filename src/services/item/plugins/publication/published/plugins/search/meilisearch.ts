@@ -96,15 +96,7 @@ export class MeiliSearchWrapper {
     this.logger = logger;
 
     // create index in the background if it doesn't exist
-    this.getIndex().then(async () => {
-      // set facetting order to count for tag categories
-      await this.meilisearchClient.index(ACTIVE_INDEX).updateFaceting({
-        // return max 50 values per facet for facet distribution
-        // it is interesting to receive a lot of values for listing
-        maxValuesPerFacet: 50,
-        sortFacetValuesBy: Object.fromEntries(Object.values(TagCategory).map((c) => [c, 'count'])),
-      });
-    });
+    this.getIndex();
   }
 
   private removeHTMLTags(s?: string | null): string {
@@ -370,6 +362,19 @@ export class MeiliSearchWrapper {
     this.logger.info('PDF BACKFILL: Finished adding content to PDFs');
   }
 
+  /**
+   * Update facet settings for active index
+   */
+  async updateFacetSettings() {
+    // set facetting order to count for tag categories
+    await this.meilisearchClient.index(ACTIVE_INDEX).updateFaceting({
+      // return max 50 values per facet for facet distribution
+      // it is interesting to receive a lot of values for listing
+      maxValuesPerFacet: 50,
+      sortFacetValuesBy: Object.fromEntries(Object.values(TagCategory).map((c) => [c, 'count'])),
+    });
+  }
+
   // to be executed by async job runner when desired
   async rebuildIndex(pageSize: number = 10) {
     if (MEILISEARCH_STORE_LEGACY_PDF_CONTENT) {
@@ -461,6 +466,8 @@ export class MeiliSearchWrapper {
     await this.meilisearchClient.waitForTask(swapTask.taskUid);
 
     this.logger.info(`REBUILD INDEX: Index rebuild successful!`);
+
+    await this.updateFacetSettings();
 
     // Retry if the rebuild fail? Or let retry by a Bull task
   }
