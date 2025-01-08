@@ -38,7 +38,7 @@ export const createDocument = {
   operationId: 'createDocument',
   tags: ['item', 'document'],
   summary: 'Create document',
-  description: 'Create document.',
+  description: 'Create document with given payload. The content will be sanitized.',
 
   querystring: Type.Partial(
     customType.StrictObject({ parentId: customType.UUID(), previousItemId: customType.UUID() }),
@@ -66,7 +66,7 @@ export const updateDocument = {
   operationId: 'updateDocument',
   tags: ['item'],
   summary: 'Update document',
-  description: 'Update document given body.',
+  description: 'Update document given payload. The content will be sanitized.',
 
   params: customType.StrictObject({
     id: customType.UUID(),

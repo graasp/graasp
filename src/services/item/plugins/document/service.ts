@@ -25,7 +25,7 @@ export class DocumentItemService extends ItemService {
   }
 
   /**
-   * Create document extra object given url and initial data
+   * Create document extra object given content and initial data
    * @param extra text extra to save
    * @param itemExtra initial document extra
    * @returns valid document extra object
@@ -61,14 +61,15 @@ export class DocumentItemService extends ItemService {
   async postWithOptions(
     member: Member,
     repositories: Repositories,
-    args: Partial<Pick<Item, 'description' | 'lang'>> &
-      Pick<Item, 'name'> &
-      Partial<DocumentItemExtraProperties> &
-      Pick<DocumentItemExtraProperties, 'content'> & {
-        parentId?: string;
-        geolocation?: Pick<ItemGeolocation, 'lat' | 'lng'>;
-        previousItemId?: Item['id'];
-      },
+    args: {
+      name: Item['name'];
+      content: DocumentItemExtraProperties['content'];
+      description?: Item['description'];
+      lang?: Item['lang'];
+      parentId?: string;
+      geolocation?: Pick<ItemGeolocation, 'lat' | 'lng'>;
+      previousItemId?: Item['id'];
+    } & Partial<DocumentItemExtraProperties>,
   ): Promise<DocumentItem> {
     const { name, description, lang, content, isRaw, flavor, ...options } = args;
 
