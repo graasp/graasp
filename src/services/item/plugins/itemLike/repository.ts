@@ -75,6 +75,20 @@ export class ItemLikeRepository extends MutableRepository<ItemLike, never> {
   }
 
   /**
+   * Get likes count for item
+   * @param itemId
+   * @returns number of likes for item
+   */
+  async getCountForItemId(itemId: ItemId): Promise<number> {
+    this.throwsIfParamIsInvalid('itemId', itemId);
+    return await this.repository
+      .createQueryBuilder('itemLike')
+      .innerJoinAndSelect('itemLike.item', 'item')
+      .where('itemLike.item = :itemId', { itemId })
+      .getCount();
+  }
+
+  /**
    * delete an item like
    * @param creatorId user's id
    * @param itemId item's id

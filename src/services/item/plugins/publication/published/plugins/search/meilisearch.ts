@@ -57,12 +57,14 @@ const DISPLAY_ATTRIBUTES: (keyof IndexItem)[] = [
   'isPublishedRoot',
   'isHidden',
   'lang',
+  'likes',
   ...Object.values(TagCategory),
 ];
 const FILTERABLE_ATTRIBUTES: (keyof IndexItem)[] = [
   'isPublishedRoot',
   'isHidden',
   'lang',
+  'likes',
   ...Object.values(TagCategory),
 ];
 const TYPO_TOLERANCE: TypoTolerance = {
@@ -166,6 +168,7 @@ export class MeiliSearchWrapper {
     tags: Tag[],
     isPublishedRoot: boolean,
     isHidden: boolean,
+    likesCount: number,
   ): Promise<IndexItem> {
     const tagsByCategory = Object.fromEntries(
       Object.values(TagCategory).map((c) => {
@@ -189,6 +192,7 @@ export class MeiliSearchWrapper {
       createdAt: item.createdAt.toISOString(),
       updatedAt: item.updatedAt.toISOString(),
       lang: item.lang,
+      likes: likesCount,
       ...tagsByCategory,
     };
   }
@@ -260,11 +264,14 @@ export class MeiliSearchWrapper {
 
           const tags = await repositories.itemTagRepository.getByItemId(i.id);
 
+          const likesCount = await repositories.itemLikeRepository.getCountForItemId(i.id);
+
           return await this.parseItem(
             i,
             tags,
             publishedRoot.item.id === i.id,
             isHidden.data[i.id] ?? false,
+            likesCount,
           );
         }),
       );
@@ -360,6 +367,15 @@ export class MeiliSearchWrapper {
     }
 
     this.logger.info('PDF BACKFILL: Finished adding content to PDFs');
+  }
+
+  async updateItem(id: string, properties: Partial<IndexItem>) {
+    await this.meilisearchClient.index(ACTIVE_INDEX).updateDocuments([
+      {
+        id,
+        ...properties,
+      },
+    ]);
   }
 
   /**
