@@ -52,6 +52,38 @@ const endpoints: FastifyPluginAsyncTypebox = async (fastify) => {
   );
 
   /**
+   * Etherpad update
+   */
+  fastify.patch(
+    '/:id',
+    {
+      schema: updateEtherpad,
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
+    },
+    async (request, reply) => {
+      const {
+        user,
+        params,
+        body: { readerPermission },
+      } = request;
+      const member = asDefined(user?.account);
+      assertIsMember(member);
+
+      await db.transaction(async (manager) => {
+        return await etherpadItemService.patchWithOptions(
+          member,
+          buildRepositories(manager),
+          params.id,
+          {
+            readerPermission,
+          },
+        );
+      });
+      reply.status(StatusCodes.NO_CONTENT);
+    },
+  );
+
+  /**
    * Etherpad view in given mode (read or write)
    * Access should be granted if and only if the user has at least write
    * access to the item. If user only has read permission, then the pad

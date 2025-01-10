@@ -12,6 +12,7 @@ import { Repositories, buildRepositories } from '../../../../utils/repositories'
 import { Account } from '../../../account/entities/account';
 import { Member } from '../../../member/entities/member';
 import { EtherpadItem, Item, isItemType } from '../../entities/Item';
+import { WrongItemTypeError } from '../../errors';
 import { ItemService } from '../../service';
 import { MAX_SESSIONS_IN_COOKIE, PLUGIN_NAME } from './constants';
 import { EtherpadServerError, ItemMissingExtraError } from './errors';
@@ -118,6 +119,29 @@ export class EtherpadItemService {
         );
       throw error;
     }
+  }
+
+  /**
+   * Updates Etherpad item
+   */
+  public async patchWithOptions(
+    member: Member,
+    repositories: Repositories,
+    itemId: Item['id'],
+    { readerPermission }: { readerPermission: PermissionLevel.Read | PermissionLevel.Write },
+  ) {
+    const { itemRepository } = repositories;
+
+    const item = await itemRepository.getOneOrThrow(itemId);
+
+    // check item is link
+    if (!isItemType(item, ItemType.ETHERPAD)) {
+      throw new WrongItemTypeError(item.type);
+    }
+
+    return this.itemService.patch(member, repositories, itemId, {
+      extra: { [ItemType.ETHERPAD]: { readerPermission } },
+    });
   }
 
   /**
