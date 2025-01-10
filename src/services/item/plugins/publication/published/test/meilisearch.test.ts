@@ -20,6 +20,7 @@ import { ItemMembershipRepository } from '../../../../../itemMembership/reposito
 import { Tag } from '../../../../../tag/Tag.entity';
 import { Item } from '../../../../entities/Item';
 import { ItemTestUtils } from '../../../../test/fixtures/items';
+import { ItemLikeRepository } from '../../../itemLike/repository';
 import { ItemTagRepository } from '../../../tag/ItemTag.repository';
 import { ItemPublished } from '../entities/itemPublished';
 import { MeiliSearchWrapper } from '../plugins/search/meilisearch';
@@ -109,6 +110,10 @@ describe('MeilisearchWrapper', () => {
     getByItemId: jest.fn(),
   } as unknown as jest.Mocked<ItemTagRepository>;
 
+  const itemLikeRepositoryMock = {
+    getCountByItemId: jest.fn(),
+  } as unknown as jest.Mocked<ItemLikeRepository>;
+
   const repositories = {
     itemMembershipRepository: {
       getInherited: jest.fn(() => ({ permission: 'anything' })),
@@ -117,6 +122,7 @@ describe('MeilisearchWrapper', () => {
     itemRepository: testUtils.itemRepository,
     itemPublishedRepository: itemPublishedRepositoryMock,
     itemTagRepository: itemTagRepositoryMock,
+    itemLikeRepository: itemLikeRepositoryMock,
   } as unknown as jest.Mocked<repositoriesModule.Repositories>;
 
   describe('search', () => {
@@ -283,7 +289,7 @@ describe('MeilisearchWrapper', () => {
       );
     });
 
-    it('index correct categories and published state', async () => {
+    it('index correct tags and published state', async () => {
       const item = testUtils.createItem();
       const descendant = testUtils.createItem();
       const descendant2 = testUtils.createItem();
@@ -336,6 +342,57 @@ describe('MeilisearchWrapper', () => {
             discipline: [tags[item.id][0].name],
             level: [tags[item.id][1].name, tags[item.id][2].name],
             'resource-type': [],
+            content: '',
+            isPublishedRoot: true,
+            isHidden: false,
+          }),
+        ]),
+      );
+    });
+
+    it('index likes', async () => {
+      const item = testUtils.createItem();
+      const descendant = testUtils.createItem();
+      const descendant2 = testUtils.createItem();
+
+      const mockItemPublished = (id) => {
+        return { item: { id: id } as Item } as ItemPublished;
+      };
+
+      const published = {
+        [item.id]: mockItemPublished(item.id),
+        [descendant.id]: mockItemPublished(item.id),
+        [descendant2.id]: mockItemPublished(descendant2.id),
+      } satisfies Record<string, ItemPublished>;
+
+      jest
+        .spyOn(testUtils.itemRepository, 'getManyDescendants')
+        .mockResolvedValue([descendant, descendant2]);
+      itemTagRepositoryMock.getByItemId.mockResolvedValue([]);
+      itemPublishedRepositoryMock.getForItem.mockImplementation((i) =>
+        Promise.resolve(published[i.id]),
+      );
+
+      jest.spyOn(testUtils.itemVisibilityRepository, 'hasForMany').mockResolvedValue({
+        data: { [descendant.id]: true },
+        errors: [],
+      });
+
+      itemLikeRepositoryMock.getCountByItemId.mockResolvedValue(2);
+
+      const addDocumentSpy = jest.spyOn(mockIndex, 'addDocuments');
+
+      // When
+      await meilisearch.indexOne(item, repositories);
+
+      // Then
+      expect(addDocumentSpy).toHaveBeenCalledTimes(1);
+      expect(addDocumentSpy.mock.calls[0][0]).toHaveLength(3);
+      expect(addDocumentSpy.mock.calls[0][0]).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: item.id,
+            likes: 2,
             content: '',
             isPublishedRoot: true,
             isHidden: false,

@@ -65,13 +65,26 @@ export class ItemLikeRepository extends MutableRepository<ItemLike, never> {
    * Get likes for item
    * @param itemId
    */
-  async getByItem(itemId: ItemId): Promise<ItemLike[]> {
+  async getByItemId(itemId: ItemId): Promise<ItemLike[]> {
     this.throwsIfParamIsInvalid('itemId', itemId);
     return await this.repository
       .createQueryBuilder('itemLike')
       .innerJoinAndSelect('itemLike.item', 'item')
       .where('itemLike.item = :itemId', { itemId })
       .getMany();
+  }
+
+  /**
+   * Get likes count for item
+   * @param itemId
+   * @returns number of likes for item
+   */
+  async getCountByItemId(itemId: ItemId): Promise<number> {
+    this.throwsIfParamIsInvalid('itemId', itemId);
+    return await this.repository
+      .createQueryBuilder('itemLike')
+      .where('itemLike.item_id = :itemId', { itemId })
+      .getCount();
   }
 
   /**

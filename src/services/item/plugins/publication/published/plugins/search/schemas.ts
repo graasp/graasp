@@ -57,6 +57,7 @@ export const search = {
           createdAt: customType.DateTime(),
           updatedAt: customType.DateTime(),
           lang: Type.String(),
+          likes: Type.Number(),
           _formatted: customType.StrictObject({
             name: Type.String(),
             description: Type.String(),
@@ -75,6 +76,7 @@ export const search = {
             createdAt: customType.DateTime(),
             updatedAt: customType.DateTime(),
             lang: Type.String(),
+            likes: Type.Number(),
           }),
         }),
       ),

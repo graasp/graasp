@@ -19,7 +19,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db } = fastify;
 
   const itemService = resolveDependency(ItemService);
-  const itemLikeService = new ItemLikeService(itemService);
+  const itemLikeService = resolveDependency(ItemLikeService);
   const actionService = resolveDependency(ActionService);
 
   //get liked entry for member
