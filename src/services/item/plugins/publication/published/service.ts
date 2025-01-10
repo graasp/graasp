@@ -235,12 +235,6 @@ export class ItemPublishedService {
     return ItemWrapper.createPackedItems(actor, repositories, this.itemThumbnailService, items);
   }
 
-  async getLikedItems(actor: Actor, repositories: Repositories, limit?: number) {
-    const { itemPublishedRepository } = repositories;
-    const items = await itemPublishedRepository.getLikedItems(limit);
-    return filterOutHiddenItems(repositories, items);
-  }
-
   async getRecentItems(actor: Actor, repositories: Repositories, limit?: number) {
     const { itemPublishedRepository } = repositories;
     const items = await itemPublishedRepository.getRecentItems(limit);

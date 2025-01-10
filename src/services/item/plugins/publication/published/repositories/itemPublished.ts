@@ -126,20 +126,4 @@ export class ItemPublishedRepository extends AbstractRepository<ItemPublished> {
 
     return publishedInfos.map(({ item }) => item);
   }
-
-  // return public items sorted by most liked
-  // bug: does not take into account child items
-  async getLikedItems(limit: number = 10): Promise<Item[]> {
-    const itemPublished = await this.repository
-      .createQueryBuilder('item_published')
-      .innerJoinAndSelect('item_published.item', 'item')
-      .innerJoinAndSelect('item.creator', 'member')
-      .innerJoin('item_like', 'il', 'il.item_id = item.id')
-      .groupBy('item.id, member.id, item_published.id')
-      .orderBy('COUNT(il.id)', 'DESC')
-      .limit(limit)
-      .getMany();
-
-    return itemPublished.map(({ item }) => item);
-  }
 }

@@ -7,6 +7,56 @@ import { ItemType, TagCategory } from '@graasp/sdk';
 
 import { customType } from '../../../../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../../../../schemas/global';
+import { GET_MOST_LIKED_ITEMS_MAXIMUM } from '../../../../../../../utils/config';
+
+const meilisearchSearchResponseSchema = customType.StrictObject({
+  totalHits: Type.Optional(Type.Number()),
+  estimatedTotalHits: Type.Optional(Type.Number()),
+  processingTimeMs: Type.Number(),
+  query: Type.String(),
+  hits: Type.Array(
+    customType.StrictObject({
+      name: Type.String(),
+      description: Type.String(),
+      content: Type.String(),
+      creator: customType.StrictObject({
+        id: customType.UUID(),
+        name: Type.String(),
+      }),
+      level: Type.Array(Type.String()),
+      discipline: Type.Array(Type.String()),
+      'resource-type': Type.Array(Type.String()),
+      id: customType.UUID(),
+      type: Type.Enum(ItemType),
+      isPublishedRoot: Type.Boolean(),
+      isHidden: Type.Boolean(),
+      createdAt: customType.DateTime(),
+      updatedAt: customType.DateTime(),
+      lang: Type.String(),
+      likes: Type.Number(),
+      _formatted: customType.StrictObject({
+        name: Type.String(),
+        description: Type.String(),
+        content: Type.String(),
+        creator: customType.StrictObject({
+          id: customType.UUID(),
+          name: Type.String(),
+        }),
+        level: Type.Array(Type.String()),
+        discipline: Type.Array(Type.String()),
+        'resource-type': Type.Array(Type.String()),
+        id: customType.UUID(),
+        type: Type.String(),
+        isPublishedRoot: Type.Boolean(),
+        isHidden: Type.Boolean(),
+        createdAt: customType.DateTime(),
+        updatedAt: customType.DateTime(),
+        lang: Type.String(),
+        likes: Type.Number(),
+      }),
+    }),
+  ),
+});
 
 export const search = {
   operationId: 'collectionSearch',
@@ -33,54 +83,24 @@ export const search = {
     }),
   ),
   response: {
-    [StatusCodes.OK]: customType.StrictObject({
-      totalHits: Type.Optional(Type.Number()),
-      estimatedTotalHits: Type.Optional(Type.Number()),
-      processingTimeMs: Type.Number(),
-      query: Type.String(),
-      hits: Type.Array(
-        customType.StrictObject({
-          name: Type.String(),
-          description: Type.String(),
-          content: Type.String(),
-          creator: customType.StrictObject({
-            id: customType.UUID(),
-            name: Type.String(),
-          }),
-          level: Type.Array(Type.String()),
-          discipline: Type.Array(Type.String()),
-          'resource-type': Type.Array(Type.String()),
-          id: customType.UUID(),
-          type: Type.Enum(ItemType),
-          isPublishedRoot: Type.Boolean(),
-          isHidden: Type.Boolean(),
-          createdAt: customType.DateTime(),
-          updatedAt: customType.DateTime(),
-          lang: Type.String(),
-          likes: Type.Number(),
-          _formatted: customType.StrictObject({
-            name: Type.String(),
-            description: Type.String(),
-            content: Type.String(),
-            creator: customType.StrictObject({
-              id: customType.UUID(),
-              name: Type.String(),
-            }),
-            level: Type.Array(Type.String()),
-            discipline: Type.Array(Type.String()),
-            'resource-type': Type.Array(Type.String()),
-            id: customType.UUID(),
-            type: Type.String(),
-            isPublishedRoot: Type.Boolean(),
-            isHidden: Type.Boolean(),
-            createdAt: customType.DateTime(),
-            updatedAt: customType.DateTime(),
-            lang: Type.String(),
-            likes: Type.Number(),
-          }),
-        }),
-      ),
-    }),
+    [StatusCodes.OK]: meilisearchSearchResponseSchema,
+    '4xx': errorSchemaRef,
+  },
+} as const satisfies FastifySchema;
+
+export const getMostLiked = {
+  operationId: 'getMostLikedCollections',
+  tags: ['collection', 'like'],
+  summary: 'Get most liked collections',
+  description: 'Get most liked collections.',
+
+  querystring: customType.StrictObject({
+    limit: Type.Optional(
+      Type.Number({ minimum: 1, maximum: GET_MOST_LIKED_ITEMS_MAXIMUM, default: 12 }),
+    ),
+  }),
+  response: {
+    [StatusCodes.OK]: meilisearchSearchResponseSchema,
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;

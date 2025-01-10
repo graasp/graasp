@@ -9,7 +9,7 @@ import { MEILISEARCH_REBUILD_SECRET } from '../../../../../../../utils/config';
 import { buildRepositories } from '../../../../../../../utils/repositories';
 import { ActionService } from '../../../../../../action/services/action';
 import { optionalIsAuthenticated } from '../../../../../../auth/plugins/passport';
-import { getFacets, search } from './schemas';
+import { getFacets, getMostLiked, search } from './schemas';
 import { SearchService } from './service';
 
 export type SearchFields = {
@@ -53,8 +53,18 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
   );
 
+  fastify.get(
+    '/collections/liked',
+    { preHandler: optionalIsAuthenticated, schema: getMostLiked },
+    async ({ query }) => {
+      const searchResults = await searchService.getMostLiked(query.limit);
+      return searchResults;
+    },
+  );
+
   fastify.get('/collections/search/rebuild', async ({ headers }, reply) => {
     // TODO: in the future, lock this behind admin permission and maybe add a button to the frontend admin panel
+    searchService.rebuildIndex();
     const headerRebuildSecret = headers['meilisearch-rebuild'];
 
     if (MEILISEARCH_REBUILD_SECRET && MEILISEARCH_REBUILD_SECRET === headerRebuildSecret) {
