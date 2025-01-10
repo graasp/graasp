@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.61.0](https://github.com/graasp/graasp/compare/v1.60.0...v1.61.0) (2025-01-08)
+
+
+### Features
+
+* add document endpoints ([#1711](https://github.com/graasp/graasp/issues/1711)) ([6d73b60](https://github.com/graasp/graasp/commit/6d73b6028097e2e614a3b608161a51627f1188b7))
+* add post and patch links ([#1696](https://github.com/graasp/graasp/issues/1696)) ([13a67d5](https://github.com/graasp/graasp/commit/13a67d529e579b75e0c55d17d32df0d57e8c0298))
+* update dependencies ([#1687](https://github.com/graasp/graasp/issues/1687)) ([c0df107](https://github.com/graasp/graasp/commit/c0df10728d97fbe01dcd7035a5d23a2fbbf0734a))
+* update schemas, remove most additionalProperties false ([#1690](https://github.com/graasp/graasp/issues/1690)) ([89e39a2](https://github.com/graasp/graasp/commit/89e39a2c1e42472e757ea9392d853bc88ff2fabb))
+
+
+### Bug Fixes
+
+* add migration for downgrading guest memberships ([#1707](https://github.com/graasp/graasp/issues/1707)) ([5d3e48d](https://github.com/graasp/graasp/commit/5d3e48d78ce31db7ab0a919a903ea76e38fd00d3))
+* analytics query schema error ([#1703](https://github.com/graasp/graasp/issues/1703)) ([7729fc6](https://github.com/graasp/graasp/commit/7729fc6c00057d20f73ebeccd4262c853c65eaa1))
+* fix tests ([#1705](https://github.com/graasp/graasp/issues/1705)) ([bcb20d0](https://github.com/graasp/graasp/commit/bcb20d09dca3aeb7a0f5d43be9e4076471d4fbc8))
+* update facet settings after rebuild ([#1712](https://github.com/graasp/graasp/issues/1712)) ([cd50e7f](https://github.com/graasp/graasp/commit/cd50e7fd51a775e7e896d5e8334b1f8eecfa80c3))
+
 ## [1.60.0](https://github.com/graasp/graasp/compare/v1.59.0...v1.60.0) (2024-12-13)
 
 
