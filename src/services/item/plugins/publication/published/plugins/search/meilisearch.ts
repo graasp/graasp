@@ -264,7 +264,7 @@ export class MeiliSearchWrapper {
 
           const tags = await repositories.itemTagRepository.getByItemId(i.id);
 
-          const likesCount = await repositories.itemLikeRepository.getCountForItemId(i.id);
+          const likesCount = await repositories.itemLikeRepository.getCountByItemId(i.id);
 
           return await this.parseItem(
             i,

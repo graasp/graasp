@@ -26,7 +26,7 @@ const repositories = {
   itemLikeRepository: {
     addOne: jest.fn() as ItemLikeRepository['addOne'],
     deleteOneByCreatorAndItem: jest.fn() as ItemLikeRepository['deleteOneByCreatorAndItem'],
-    getCountForItemId: jest.fn() as ItemLikeRepository['getCountForItemId'],
+    getCountByItemId: jest.fn() as ItemLikeRepository['getCountByItemId'],
   } as ItemLikeRepository,
   tagRepository: {
     addOneIfDoesNotExist: jest.fn(async () => TagFactory() as Tag),

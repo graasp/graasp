@@ -2,6 +2,7 @@ import {
   BaseEntity,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -25,6 +26,7 @@ export class ItemLike extends BaseEntity {
   @JoinColumn({ name: 'creator_id' })
   creator: Member;
 
+  @Index('IDX_item_like_item')
   @ManyToOne(() => Item, (item) => item.id, {
     onDelete: 'CASCADE',
     nullable: false,

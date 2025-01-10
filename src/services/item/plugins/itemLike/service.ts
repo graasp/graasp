@@ -41,7 +41,7 @@ export class ItemLikeService {
 
     await this.itemService.get(actor, repositories, itemId);
 
-    return itemLikeRepository.getByItem(itemId);
+    return itemLikeRepository.getByItemId(itemId);
   }
 
   async removeOne(member: Member, repositories: Repositories, itemId: string) {
@@ -55,7 +55,7 @@ export class ItemLikeService {
     // update index if item is published
     const isPublished = await itemPublishedRepository.getForItem(item);
     if (isPublished) {
-      const likes = await itemLikeRepository.getCountForItemId(item.id);
+      const likes = await itemLikeRepository.getCountByItemId(item.id);
       await this.meilisearchClient.updateItem(item.id, { likes });
     }
 
@@ -72,7 +72,7 @@ export class ItemLikeService {
     // update index if item is published
     const isPublished = await itemPublishedRepository.getForItem(item);
     if (isPublished) {
-      const likes = await itemLikeRepository.getCountForItemId(item.id);
+      const likes = await itemLikeRepository.getCountByItemId(item.id);
       await this.meilisearchClient.updateItem(item.id, { likes });
     }
 
