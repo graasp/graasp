@@ -82,13 +82,18 @@ describe('Item Service', () => {
   describe('Copy', () => {
     it('Should copy hidden visiblity on item copy', async () => {
       const actor = await saveMember();
-      const visibilityCopyAllMock = jest.spyOn(ItemVisibilityRepository.prototype, 'copyAll');
-
-      const { item } = await testUtils.saveItemAndMembership({
+      const { item, itemMembership } = await testUtils.saveItemAndMembership({
         member: actor,
         item: { settings: { hasThumbnail: true } },
       });
-      await app.db.getRepository(ItemVisibility).save({ item, type: ItemVisibilityType.Hidden });
+      const iv = await app.db
+        .getRepository(ItemVisibility)
+        .save({ item, type: ItemVisibilityType.Hidden });
+      const visibilityCopyAllMock = jest.spyOn(ItemVisibilityRepository.prototype, 'copyAll');
+      jest
+        .spyOn(authorization, 'validatePermission')
+        .mockResolvedValue({ itemMembership, visibilities: [iv] });
+
       await service.copy(actor, buildRepositories(), item.id);
       expect(visibilityCopyAllMock).toHaveBeenCalled();
     });
@@ -121,18 +126,22 @@ describe('Item Service', () => {
       const indexMock = jest.spyOn(meilisearchWrapper, 'indexOne');
       const actor = await saveMember();
 
-      const { item: unpublishedItem } = await testUtils.saveItemAndMembership({
+      const { item: unpublishedItem, itemMembership } = await testUtils.saveItemAndMembership({
         member: actor,
         item: { name: 'unpublishedItem' },
       });
 
       const { item: publishedFolder } = await testUtils.saveItemAndMembership({ member: actor });
-      await app.db.getRepository(ItemVisibility).save({
+      const iv = await app.db.getRepository(ItemVisibility).save({
         item: publishedFolder,
         type: ItemVisibilityType.Public,
         creator: actor,
       });
       await app.db.getRepository(ItemPublished).save({ item: publishedFolder, creator: actor });
+
+      jest
+        .spyOn(authorization, 'validatePermission')
+        .mockResolvedValue({ itemMembership, visibilities: [iv] });
 
       await service.copy(
         actor,

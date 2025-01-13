@@ -12,6 +12,7 @@ import { EmbeddedLinkItem, Item } from '../../entities/Item';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
+import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../thumbnail/service';
 import { EmbeddedLinkItemService } from './service';
 
@@ -20,6 +21,7 @@ jest.mock('node-fetch');
 const linkService = new EmbeddedLinkItemService(
   {} as unknown as ThumbnailService,
   {} as unknown as ItemThumbnailService,
+  {} as MeiliSearchWrapper,
   MOCK_LOGGER,
   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
 );

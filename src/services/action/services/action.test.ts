@@ -7,6 +7,7 @@ import { BaseLogger } from '../../../logger';
 import { AppDataSource } from '../../../plugins/datasource';
 import { MailerService } from '../../../plugins/mailer/service';
 import { buildRepositories } from '../../../utils/repositories';
+import { MeiliSearchWrapper } from '../../item/plugins/publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../../item/plugins/thumbnail/service';
 import { ItemService } from '../../item/service';
 import { MemberService } from '../../member/service';
@@ -16,7 +17,12 @@ import { Action } from '../entities/action';
 import { ActionService } from './action';
 
 const service = new ActionService(
-  new ItemService({} as ThumbnailService, {} as ItemThumbnailService, {} as BaseLogger),
+  new ItemService(
+    {} as ThumbnailService,
+    {} as ItemThumbnailService,
+    {} as MeiliSearchWrapper,
+    {} as BaseLogger,
+  ),
   new MemberService({} as MailerService, {} as BaseLogger),
 );
 const rawRepository = AppDataSource.getRepository(Action);
