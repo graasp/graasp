@@ -16,7 +16,7 @@ import { AppDataSource } from '../../../../../../plugins/datasource';
 import { MailerService } from '../../../../../../plugins/mailer/service';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../../utils/config';
 import { ItemNotFound, MemberCannotAdminItem } from '../../../../../../utils/errors';
-import { saveMember, saveMembers } from '../../../../../member/test/fixtures/members';
+import { saveMember } from '../../../../../member/test/fixtures/members';
 import { Item } from '../../../../entities/Item';
 import {
   ItemTestUtils,
@@ -24,8 +24,6 @@ import {
   expectManyItems,
   expectManyPackedItems,
 } from '../../../../test/fixtures/items';
-import { ItemLike } from '../../../itemLike/itemLike';
-import { saveItemLikes } from '../../../itemLike/test/utils';
 import { ItemVisibility } from '../../../itemVisibility/ItemVisibility';
 import { ItemVisibilityNotFound } from '../../../itemVisibility/errors';
 import { saveItemValidation } from '../../validation/test/utils';

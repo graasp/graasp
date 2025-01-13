@@ -88,7 +88,7 @@ describe('Collection Search endpoints', () => {
         queries: [
           {
             attributesToHighlight: ['*'],
-            filter: 'isHidden = false',
+            filter: 'isPublishedRoot = true AND isHidden = false',
             indexUid: MOCK_INDEX,
             q: undefined,
           },
@@ -145,7 +145,8 @@ describe('Collection Search endpoints', () => {
           {
             attributesToHighlight: ['*'],
             q: 'random query',
-            filter: "discipline IN ['random filter'] AND isHidden = false",
+            filter:
+              "discipline IN ['random filter'] AND isPublishedRoot = true AND isHidden = false",
             indexUid: MOCK_INDEX,
           },
         ],
@@ -174,7 +175,7 @@ describe('Collection Search endpoints', () => {
           {
             attributesToHighlight: ['*'],
             q: 'random query',
-            filter: 'isHidden = false',
+            filter: 'isPublishedRoot = true AND isHidden = false',
             indexUid: MOCK_INDEX,
           },
         ],
