@@ -4,8 +4,6 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
-import { ItemType } from '@graasp/sdk';
-
 import { resolveDependency } from '../../../../di/utils';
 import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
@@ -63,21 +61,16 @@ const endpoints: FastifyPluginAsyncTypebox = async (fastify) => {
     async (request, reply) => {
       const {
         user,
-        params,
+        params: { id },
         body: { readerPermission },
       } = request;
       const member = asDefined(user?.account);
       assertIsMember(member);
 
       await db.transaction(async (manager) => {
-        return await etherpadItemService.patchWithOptions(
-          member,
-          buildRepositories(manager),
-          params.id,
-          {
-            readerPermission,
-          },
-        );
+        return await etherpadItemService.patchWithOptions(member, buildRepositories(manager), id, {
+          readerPermission,
+        });
       });
       reply.status(StatusCodes.NO_CONTENT);
     },
@@ -108,33 +101,6 @@ const endpoints: FastifyPluginAsyncTypebox = async (fastify) => {
 
       reply.setCookie(cookie.name, cookie.value, cookie.options);
       return { padUrl };
-    },
-  );
-
-  /**
-   * Update etherpad permission for reader
-   */
-  fastify.patch(
-    '/:id',
-    {
-      schema: updateEtherpad,
-      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
-    },
-    async (request, reply) => {
-      const {
-        user,
-        params: { id },
-        body: { readerPermission },
-      } = request;
-      const member = asDefined(user?.account);
-      assertIsMember(member);
-      return await db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-        await itemService.patch(member, repositories, id, {
-          extra: { [ItemType.ETHERPAD]: { readerPermission } },
-        });
-        reply.status(StatusCodes.NO_CONTENT);
-      });
     },
   );
 
