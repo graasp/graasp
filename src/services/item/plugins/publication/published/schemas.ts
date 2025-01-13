@@ -5,10 +5,7 @@ import { MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
 import { customType } from '../../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../../schemas/global';
-import {
-  GET_MOST_LIKED_ITEMS_MAXIMUM,
-  GET_MOST_RECENT_ITEMS_MAXIMUM,
-} from '../../../../../utils/config';
+import { GET_MOST_RECENT_ITEMS_MAXIMUM } from '../../../../../utils/config';
 import { nullableMemberSchemaRef } from '../../../../member/schemas';
 import { itemSchemaRef } from '../../../schemas';
 import { packedItemSchemaRef } from '../../../schemas.packed';
@@ -39,25 +36,6 @@ export const getRecentCollections = {
     }),
   }),
 
-  response: {
-    [StatusCodes.OK]: Type.Array(itemSchemaRef),
-    '4xx': errorSchemaRef,
-  },
-};
-
-export const getMostLikedItems = {
-  operationId: 'getMostLikedCollections',
-  tags: ['collection'],
-  summary: 'Get most liked items',
-  description: 'Get most liked items (collections)',
-
-  querystring: customType.StrictObject({
-    limit: Type.Number({
-      maximum: GET_MOST_LIKED_ITEMS_MAXIMUM,
-      minimum: 1,
-      default: 24,
-    }),
-  }),
   response: {
     [StatusCodes.OK]: Type.Array(itemSchemaRef),
     '4xx': errorSchemaRef,
