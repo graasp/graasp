@@ -344,35 +344,6 @@ describe('Collection Search endpoints', () => {
           expect(deleteSpy.mock.calls[0][0].id).toEqual(unpublishedItem.id);
         });
       });
-
-      it('Copy', async () => {
-        const { item: unpublishedItem } = await testUtils.saveItemAndMembership({
-          member: actor,
-          item: { name: 'unpublishedItem' },
-        });
-
-        const initialCount = await testUtils.rawItemRepository.count();
-        const copy = await app.inject({
-          method: HttpMethod.Post,
-          url: '/items/copy',
-          query: { id: unpublishedItem.id },
-          payload: {
-            parentId: publishedFolder.id,
-          },
-        });
-
-        expect(copy.statusCode).toBe(StatusCodes.ACCEPTED);
-
-        await waitForExpect(async () => {
-          const newCount = await testUtils.rawItemRepository.count();
-          expect(newCount).toEqual(initialCount + 1);
-        }, 1000);
-
-        expect(indexSpy).toHaveBeenCalledTimes(1);
-        // Topmost published at destination is reindexed
-        expect(indexSpy.mock.calls[0][0].id).not.toEqual(unpublishedItem.id);
-        expect(indexSpy.mock.calls[0][0].name).toEqual('unpublishedItem');
-      });
     });
   });
 

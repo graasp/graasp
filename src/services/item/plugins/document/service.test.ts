@@ -15,12 +15,14 @@ import { DocumentItem, Item } from '../../entities/Item';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
+import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../thumbnail/service';
 import { DocumentItemService } from './service';
 
 const documentService = new DocumentItemService(
   {} as unknown as ThumbnailService,
   {} as unknown as ItemThumbnailService,
+  {} as unknown as MeiliSearchWrapper,
   MOCK_LOGGER,
 );
 const id = v4();
