@@ -48,6 +48,7 @@ describe('search', () => {
     expect(filter).toContain("discipline IN ['fiction','hello']");
     expect(filter).toContain("level IN ['secondary school','tag:\\'hello\\'']");
     expect(filter).toContain("resource-type IN ['type']");
+    expect(filter).toContain('isHidden = false');
   });
   it('filter by langs', async () => {
     const MOCK_RESULT = { hits: [] } as never;
@@ -62,6 +63,7 @@ describe('search', () => {
 
     const { filter } = spy.mock.calls[0][0].queries[0];
     expect(filter).toContain('lang IN [fr,en]');
+    expect(filter).toContain('isHidden = false');
   });
   it('filter by published root', async () => {
     const MOCK_RESULT = { hits: [] } as never;
@@ -76,6 +78,7 @@ describe('search', () => {
 
     const { filter } = spy.mock.calls[0][0].queries[0];
     expect(filter).toContain('isPublishedRoot = true');
+    expect(filter).toContain('isHidden = false');
   });
   it('filter by query', async () => {
     const MOCK_RESULT = { hits: [] } as never;
@@ -90,6 +93,39 @@ describe('search', () => {
 
     const { q } = spy.mock.calls[0][0].queries[0];
     expect(q).toEqual('hello');
+  });
+  it('apply sort', async () => {
+    const MOCK_RESULT = { hits: [] } as never;
+    const spy = jest
+      .spyOn(meilisearchClient, 'search')
+      .mockResolvedValue({ results: [MOCK_RESULT] });
+
+    const results = await searchService.search({
+      sort: ['likes:desc'],
+    });
+    expect(results).toEqual(MOCK_RESULT);
+
+    const { sort } = spy.mock.calls[0][0].queries[0];
+    expect(sort).toEqual(['likes:desc']);
+  });
+});
+
+describe('getMostLiked', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+  it('apply sort by likes', async () => {
+    const MOCK_RESULT = { hits: [] } as never;
+    const spy = jest
+      .spyOn(meilisearchClient, 'search')
+      .mockResolvedValue({ results: [MOCK_RESULT] });
+
+    const results = await searchService.getMostLiked(4);
+    expect(results).toEqual(MOCK_RESULT);
+
+    const { sort, limit } = spy.mock.calls[0][0].queries[0];
+    expect(sort).toEqual(['likes:desc']);
+    expect(limit).toEqual(4);
   });
 });
 
