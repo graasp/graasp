@@ -41,6 +41,7 @@ export type ExportManifestItem = {
   settings: ItemSettings;
   thumbnailFilename?: string;
   children?: ExportManifestItem[];
+  mimetype?: string;
 };
 
 const magic = new Magic(MAGIC_MIME_TYPE);
@@ -221,6 +222,85 @@ export class ImportExportService {
     }
   }
 
+  async importGraaspFile(
+    actor: Member,
+    repositories: Repositories,
+    options: {
+      folderPath: string;
+      parent?: Item;
+    },
+  ) {
+    const { folderPath, parent } = options;
+
+    const manifestFilePath = path.join(folderPath, GRAASP_MANIFEST_FILENAME);
+    const graaspManifestFile = await readFile(manifestFilePath, {
+      encoding: 'utf8',
+      flag: 'r',
+    });
+
+    const graaspManifestItems = JSON.parse(graaspManifestFile) as ExportManifestItem[];
+
+    for (const item of graaspManifestItems) {
+      await this.importManifestFile(actor, repositories, { item, folderPath, parent });
+    }
+  }
+
+  async importManifestFile(
+    actor: Member,
+    repositories: Repositories,
+    options: {
+      item: ExportManifestItem;
+      folderPath: string;
+      parent?: Item;
+    },
+  ) {
+    const { item, folderPath, parent } = options;
+
+    const filePath = path.join(folderPath, item.id);
+
+    // treat individual files based on their type
+    switch (item.type) {
+      // treat folder items recursively
+      case ItemType.FOLDER: {
+        const folderItem = await this.itemService.post(actor, repositories, {
+          item: {
+            name: item.name,
+            type: item.type,
+            description: item.description ? sanitize(item.description) : null,
+            settings: item.settings,
+          },
+          parentId: parent?.id,
+        });
+        console.log('FOLDER ITEM DONE');
+
+        const childrenItems = item.children;
+        if (childrenItems) {
+          for (const child of childrenItems) {
+            await this.importManifestFile(actor, repositories, {
+              item: child,
+              folderPath,
+              parent: folderItem,
+            });
+          }
+        }
+
+        return folderItem;
+      }
+
+      default: {
+        const file = fs.createReadStream(filePath);
+        console.log(filePath);
+        return await this.fileItemService.upload(actor, repositories, {
+          filename: item.name,
+          mimetype: item.mimetype!,
+          description: item.description ? sanitize(item.description) : undefined,
+          stream: file,
+          parentId: parent ? parent.id : undefined,
+        });
+      }
+    }
+  }
+
   async fetchItemData(
     actor,
     repositories,
@@ -354,16 +434,16 @@ export class ImportExportService {
     // treat folder items recursively
     const childrenManifest: ExportManifestItem[] = [];
     if (isItemType(item, ItemType.FOLDER)) {
-      const childrenItems = await this.itemService.getChildren(actor, repositories, item.id);
-      await Promise.all(
-        childrenItems.map((child) =>
-          this.addItemToGraaspExport(actor, repositories, {
-            item: child,
-            archive,
-            itemManifest: childrenManifest,
-          }),
-        ),
-      );
+      const childrenItems = await this.itemService.getChildren(actor, repositories, item.id, {
+        ordered: true,
+      });
+      for (const child of childrenItems) {
+        await this.addItemToGraaspExport(actor, repositories, {
+          item: child,
+          archive,
+          itemManifest: childrenManifest,
+        });
+      }
 
       itemManifest.push({
         id: exportItemId,
@@ -377,7 +457,7 @@ export class ImportExportService {
     }
 
     // treat single items
-    const { stream, name } = await this.fetchItemData(actor, repositories, item);
+    const { stream, name, mimetype } = await this.fetchItemData(actor, repositories, item);
 
     itemManifest.push({
       id: exportItemId,
@@ -385,6 +465,7 @@ export class ImportExportService {
       description: item.description,
       type: item.type,
       settings: item.settings,
+      mimetype,
     });
     archive.addReadStream(stream, itemPath);
     return itemManifest;
@@ -442,45 +523,62 @@ export class ImportExportService {
   ) {
     const filenames = fs.readdirSync(folderPath);
 
-    const items: Item[] = [];
-    for (const filename of filenames) {
-      // import item from file excluding descriptions
-      // descriptions are handled alongside the corresponding file
-      if (!filename.endsWith(DESCRIPTION_EXTENSION)) {
+    if (true) {
+      if (filenames.includes(GRAASP_MANIFEST_FILENAME)) {
         try {
-          // transaction is necessary since we are adding data
-          // we don't add it at the very top to allow partial zip to be updated
           await this.db.transaction(async (manager) => {
-            const item = await this._saveItemFromFilename(actor, buildRepositories(manager), {
-              filename,
+            await this.importGraaspFile(actor, buildRepositories(manager), {
               folderPath,
               parent,
             });
-            if (item) {
-              items.push(item);
-            }
+            console.log('IMPORT DONE');
           });
         } catch (e) {
-          if (e instanceof UploadEmptyFileError) {
-            // ignore empty files
-            this.log.debug(`ignore ${filename} because it is empty`);
-          } else {
-            // improvement: return a list of failed imports
-            this.log.error(e);
-            throw e;
+          this.log.error(e);
+          throw e;
+        }
+      }
+    } else {
+      const items: Item[] = [];
+      for (const filename of filenames) {
+        // import item from file excluding descriptions
+        // descriptions are handled alongside the corresponding file
+        if (!filename.endsWith(DESCRIPTION_EXTENSION)) {
+          try {
+            // transaction is necessary since we are adding data
+            // we don't add it at the very top to allow partial zip to be updated
+            await this.db.transaction(async (manager) => {
+              const item = await this._saveItemFromFilename(actor, buildRepositories(manager), {
+                filename,
+                folderPath,
+                parent,
+              });
+              if (item) {
+                items.push(item);
+              }
+            });
+          } catch (e) {
+            if (e instanceof UploadEmptyFileError) {
+              // ignore empty files
+              this.log.debug(`ignore ${filename} because it is empty`);
+            } else {
+              // improvement: return a list of failed imports
+              this.log.error(e);
+              throw e;
+            }
           }
         }
       }
-    }
 
-    // recursively create children in folders
-    for (const newItem of items) {
-      const { type, name } = newItem;
-      if (type === ItemType.FOLDER) {
-        await this._import(actor, repositories, {
-          folderPath: path.join(folderPath, name),
-          parent: newItem,
-        });
+      // recursively create children in folders
+      for (const newItem of items) {
+        const { type, name } = newItem;
+        if (type === ItemType.FOLDER) {
+          await this._import(actor, repositories, {
+            folderPath: path.join(folderPath, name),
+            parent: newItem,
+          });
+        }
       }
     }
   }
@@ -501,6 +599,7 @@ export class ImportExportService {
     }
 
     await this._import(actor, repositories, { parent, folderPath });
+    console.log('_IMPORT DONE');
 
     // delete zip and content
     fs.rmSync(targetFolder, { recursive: true });
