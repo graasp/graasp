@@ -8,6 +8,7 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
   Unique,
+  UpdateDateColumn,
 } from 'typeorm';
 import { v4 } from 'uuid';
 
@@ -31,6 +32,9 @@ export class ItemPublished extends BaseEntity {
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
+
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt: Date;
 
   @OneToOne(() => Item, (item) => item.path, {
     onUpdate: 'CASCADE',

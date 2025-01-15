@@ -28,6 +28,7 @@ import { Tag } from '../../../../../../tag/Tag.entity';
 import { Item, isItemType } from '../../../../../entities/Item';
 import { readPdfContent } from '../../../../../utils';
 import { stripHtml } from '../../../validation/utils';
+import { ItemPublished } from '../../entities/itemPublished';
 import { ItemPublishedNotFound } from '../../errors';
 import { Hit } from './schemas';
 
@@ -44,7 +45,13 @@ const SEARCHABLE_ATTRIBUTES: (keyof IndexItem)[] = [
   'creator',
   ...Object.values(TagCategory),
 ];
-const SORT_ATTRIBUTES: (keyof IndexItem)[] = ['name', 'updatedAt', 'createdAt', 'likes'];
+const SORT_ATTRIBUTES: (keyof IndexItem)[] = [
+  'name',
+  'updatedAt',
+  'createdAt',
+  'publishedUpdatedAt',
+  'likes',
+];
 const DISPLAY_ATTRIBUTES: (keyof IndexItem)[] = [
   'id',
   'name',
@@ -54,6 +61,8 @@ const DISPLAY_ATTRIBUTES: (keyof IndexItem)[] = [
   'content',
   'createdAt',
   'updatedAt',
+  'publishedCreatedAt',
+  'publishedUpdatedAt',
   'isPublishedRoot',
   'isHidden',
   'lang',
@@ -170,7 +179,7 @@ export class MeiliSearchWrapper {
     isPublishedRoot: boolean,
     isHidden: boolean,
     likesCount: number,
-  ): Promise<IndexItem> {
+  ): Promise<Omit<IndexItem, 'publishedCreatedAt' | 'publishedUpdatedAt'>> {
     const tagsByCategory = Object.fromEntries(
       Object.values(TagCategory).map((c) => {
         return [c, tags.filter(({ category }) => category === c).map(({ name }) => name)];
@@ -225,24 +234,24 @@ export class MeiliSearchWrapper {
   }
 
   async indexOne(
-    item: Item,
+    itemPublished: ItemPublished,
     repositories: Repositories,
     targetIndex: ALLOWED_INDICES = ACTIVE_INDEX,
   ): Promise<EnqueuedTask> {
-    return this.index([item], repositories, targetIndex);
+    return this.index([itemPublished], repositories, targetIndex);
   }
 
   async index(
-    items: Item[],
+    itemPublisheds: ItemPublished[],
     repositories: Repositories,
     targetIndex: ALLOWED_INDICES = ACTIVE_INDEX,
   ): Promise<EnqueuedTask> {
     try {
       // Get all descendants from the input items
-      const itemsToIndex: Item[] = [...items];
+      const itemsToIndex: Item[] = [...itemPublisheds.map((p) => p.item)];
       itemsToIndex.push(
         ...(await repositories.itemRepository.getManyDescendants(
-          items.filter((i) => i.type === ItemType.FOLDER),
+          itemsToIndex.filter((i) => i.type === ItemType.FOLDER),
         )),
       );
 
@@ -253,8 +262,8 @@ export class MeiliSearchWrapper {
         ItemVisibilityType.Hidden,
       );
 
-      const documents = await Promise.all(
-        itemsToIndex.map(async (i) => {
+      const documents: IndexItem[] = await Promise.all(
+        itemPublisheds.map(async ({ createdAt, updatedAt, item: i }) => {
           // Publishing and categories are implicit/inherited on children, we are forced to query the database to check these
           // More efficient way to get this info? Do the db query for all item at once ?
           // This part might slow the app when we index many items or an item with many children.
@@ -267,13 +276,17 @@ export class MeiliSearchWrapper {
 
           const likesCount = await repositories.itemLikeRepository.getCountByItemId(i.id);
 
-          return await this.parseItem(
-            i,
-            tags,
-            publishedRoot.item.id === i.id,
-            isHidden.data[i.id] ?? false,
-            likesCount,
-          );
+          return {
+            ...(await this.parseItem(
+              i,
+              tags,
+              publishedRoot.item.id === i.id,
+              isHidden.data[i.id] ?? false,
+              likesCount,
+            )),
+            publishedCreatedAt: createdAt.toISOString(),
+            publishedUpdatedAt: updatedAt.toISOString(),
+          };
         }),
       );
 
@@ -283,7 +296,7 @@ export class MeiliSearchWrapper {
       const indexingTask = await index.addDocuments(documents);
       this.logTaskCompletion(
         indexingTask,
-        items
+        itemsToIndex
           .slice(0, 30) // Avoid logging too many items
           .map((i) => i.name)
           .join(';'),
@@ -441,11 +454,7 @@ export class MeiliSearchWrapper {
 
         // Index items (1 task per page)
         try {
-          const task = await this.index(
-            published.map((p) => p.item),
-            buildRepositories(manager),
-            ROTATING_INDEX,
-          );
+          const task = await this.index(published, buildRepositories(manager), ROTATING_INDEX);
           this.logger.info(
             `REBUILD INDEX: Pushing indexing task ${task.taskUid} (page ${currentPage})`,
           );

@@ -16,7 +16,6 @@ import {
   getCollectionsForMember,
   getInformations,
   getManyInformations,
-  getRecentCollections,
   publishItem,
   unpublishItem,
 } from './schemas';
@@ -100,17 +99,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       return db.transaction(async (manager) => {
         return itemPublishedService.delete(member, buildRepositories(manager), params.itemId);
       });
-    },
-  );
-
-  fastify.get(
-    '/collections/recent',
-    {
-      preHandler: optionalIsAuthenticated,
-      schema: getRecentCollections,
-    },
-    async ({ user, query: { limit } }) => {
-      return itemPublishedService.getRecentItems(user?.account, buildRepositories(), limit);
     },
   );
 };

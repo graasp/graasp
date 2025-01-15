@@ -7,7 +7,10 @@ import { ItemType, TagCategory } from '@graasp/sdk';
 
 import { customType } from '../../../../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../../../../schemas/global';
-import { GET_MOST_LIKED_ITEMS_MAXIMUM } from '../../../../../../../utils/config';
+import {
+  GET_MOST_LIKED_ITEMS_MAXIMUM,
+  GET_MOST_RECENT_ITEMS_MAXIMUM,
+} from '../../../../../../../utils/config';
 
 const meilisearchSearchResponseSchema = customType.StrictObject({
   totalHits: Type.Optional(Type.Number()),
@@ -32,6 +35,8 @@ const meilisearchSearchResponseSchema = customType.StrictObject({
       isHidden: Type.Boolean(),
       createdAt: customType.DateTime(),
       updatedAt: customType.DateTime(),
+      publishedCreatedAt: customType.DateTime(),
+      publishedUpdatedAt: customType.DateTime(),
       lang: Type.String(),
       likes: Type.Number(),
       _formatted: customType.StrictObject({
@@ -98,6 +103,23 @@ export const getMostLiked = {
   querystring: customType.StrictObject({
     limit: Type.Optional(
       Type.Number({ minimum: 1, maximum: GET_MOST_LIKED_ITEMS_MAXIMUM, default: 12 }),
+    ),
+  }),
+  response: {
+    [StatusCodes.OK]: meilisearchSearchResponseSchema,
+    '4xx': errorSchemaRef,
+  },
+} as const satisfies FastifySchema;
+
+export const getMostRecent = {
+  operationId: 'getMostRecentCollections',
+  tags: ['collection'],
+  summary: 'Get most recent collections',
+  description: 'Get most recently published and modified collections',
+
+  querystring: customType.StrictObject({
+    limit: Type.Optional(
+      Type.Number({ minimum: 1, maximum: GET_MOST_RECENT_ITEMS_MAXIMUM, default: 12 }),
     ),
   }),
   response: {

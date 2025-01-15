@@ -36,7 +36,7 @@ export class ItemTagService {
     // update index if item is published
     const isPublished = await itemPublishedRepository.getForItem(item);
     if (isPublished) {
-      await this.meilisearchClient.indexOne(item, repositories);
+      await this.meilisearchClient.indexOne(isPublished, repositories);
     }
 
     return result;
@@ -60,7 +60,7 @@ export class ItemTagService {
     // update index if item is published
     const isPublished = await itemPublishedRepository.getForItem(item);
     if (isPublished) {
-      await this.meilisearchClient.indexOne(item, repositories);
+      await this.meilisearchClient.indexOne(isPublished, repositories);
     }
 
     return await itemTagRepository.delete(itemId, tagId);

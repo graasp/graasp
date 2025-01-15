@@ -5,7 +5,6 @@ import { MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
 import { customType } from '../../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../../schemas/global';
-import { GET_MOST_RECENT_ITEMS_MAXIMUM } from '../../../../../utils/config';
 import { nullableMemberSchemaRef } from '../../../../member/schemas';
 import { itemSchemaRef } from '../../../schemas';
 import { packedItemSchemaRef } from '../../../schemas.packed';
@@ -21,26 +20,6 @@ const publishEntry = customType.StrictObject(
     description: 'Information of a published item',
   },
 );
-
-export const getRecentCollections = {
-  operationId: 'getRecentCollections',
-  tags: ['collection'],
-  summary: 'Get most recent published items',
-  description: 'Get most recently published items (collections)',
-
-  querystring: customType.StrictObject({
-    limit: Type.Number({
-      maximum: GET_MOST_RECENT_ITEMS_MAXIMUM,
-      minimum: 1,
-      default: 24,
-    }),
-  }),
-
-  response: {
-    [StatusCodes.OK]: Type.Array(itemSchemaRef),
-    '4xx': errorSchemaRef,
-  },
-};
 
 export const getCollectionsForMember = {
   operationId: 'getCollectionsForMember',
