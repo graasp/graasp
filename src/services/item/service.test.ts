@@ -26,16 +26,20 @@ describe('Item Service', () => {
   let app: FastifyInstance;
   let actor;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     ({ app, actor } = await build());
   });
 
-  afterEach(async () => {
-    jest.clearAllMocks();
+  afterAll(async () => {
     await clearDatabase(app.db);
-    actor = null;
     app.close();
   });
+  afterEach(async () => {
+    jest.clearAllMocks();
+    jest.resetAllMocks();
+    actor = null;
+  });
+
   describe('get', () => {
     it('return item if exists and pass validation', async () => {
       const item = FolderItemFactory() as unknown as Item;
