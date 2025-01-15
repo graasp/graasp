@@ -9,7 +9,7 @@ import { MEILISEARCH_REBUILD_SECRET } from '../../../../../../../utils/config';
 import { buildRepositories } from '../../../../../../../utils/repositories';
 import { ActionService } from '../../../../../../action/services/action';
 import { optionalIsAuthenticated } from '../../../../../../auth/plugins/passport';
-import { getFacets, search } from './schemas';
+import { getFacets, getMostLiked, search } from './schemas';
 import { SearchService } from './service';
 
 export type SearchFields = {
@@ -49,6 +49,15 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async (request) => {
       const { body, query } = request;
       const searchResults = await searchService.getFacets(query.facetName, body);
+      return searchResults;
+    },
+  );
+
+  fastify.get(
+    '/collections/liked',
+    { preHandler: optionalIsAuthenticated, schema: getMostLiked },
+    async ({ query }) => {
+      const searchResults = await searchService.getMostLiked(query.limit);
       return searchResults;
     },
   );

@@ -4,9 +4,9 @@ import { singleton } from 'tsyringe';
 import { TagCategory } from '@graasp/sdk';
 
 import { BaseLogger } from '../../../../../../../logger';
+import { GET_MOST_LIKED_ITEMS_MAXIMUM } from '../../../../../../../utils/config';
 import { Tag } from '../../../../../../tag/Tag.entity';
 import { ItemService } from '../../../../../service';
-import { stripHtml } from '../../../validation/utils';
 import { ItemPublishedService } from '../../service';
 import { MeiliSearchWrapper } from './meilisearch';
 
@@ -37,17 +37,12 @@ export class SearchService {
     this.registerSearchHooks(itemService, itemPublishedService);
   }
 
-  private removeHTMLTags(s: string): string {
-    if (s === null) return '';
-    return stripHtml(s);
-  }
-
   async getHealth() {
     return this.meilisearchClient.getHealth();
   }
 
   // User input needs escaping? Or safe to send to meilisearch? WARNING: search currently done with master key, but search is only exposed endpoint
-  private buildFilters({ tags, langs, isPublishedRoot }: SearchFilters) {
+  private buildFilters({ tags, langs = [], isPublishedRoot = true }: SearchFilters) {
     // tags
     const tagCategoryFilters = Object.values(TagCategory).map((c) => {
       // escape quotes used for building the filter
@@ -60,7 +55,7 @@ export class SearchService {
     const isPublishedFilter = isPublishedRoot ? `isPublishedRoot = ${isPublishedRoot}` : '';
 
     // langs
-    const langsFilter = langs?.length ? `lang IN [${langs.join(',')}]` : '';
+    const langsFilter = langs.length ? `lang IN [${langs.join(',')}]` : '';
 
     const filters = [...tagCategoryFilters, isPublishedFilter, langsFilter, 'isHidden = false']
       .filter(Boolean)
@@ -69,7 +64,10 @@ export class SearchService {
     return filters;
   }
 
-  // WORKS ONLY FOR PUBLISHED ITEMS
+  async getMostLiked(limit: number = GET_MOST_LIKED_ITEMS_MAXIMUM) {
+    return await this.search({ sort: ['likes:desc'], limit });
+  }
+
   async search(body: Omit<MultiSearchQuery, 'filter' | 'indexUid' | 'q'> & SearchFilters) {
     const { tags, langs, isPublishedRoot, query, ...q } = body;
     const filters = this.buildFilters({ tags, langs, isPublishedRoot });

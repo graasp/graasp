@@ -44,7 +44,7 @@ const SEARCHABLE_ATTRIBUTES: (keyof IndexItem)[] = [
   'creator',
   ...Object.values(TagCategory),
 ];
-const SORT_ATTRIBUTES: (keyof IndexItem)[] = ['name', 'updatedAt', 'createdAt'];
+const SORT_ATTRIBUTES: (keyof IndexItem)[] = ['name', 'updatedAt', 'createdAt', 'likes'];
 const DISPLAY_ATTRIBUTES: (keyof IndexItem)[] = [
   'id',
   'name',

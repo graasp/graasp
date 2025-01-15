@@ -16,7 +16,6 @@ import {
   getCollectionsForMember,
   getInformations,
   getManyInformations,
-  getMostLikedItems,
   getRecentCollections,
   publishItem,
   unpublishItem,
@@ -61,17 +60,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async ({ user, query: { itemId } }) => {
       return itemPublishedService.getMany(user?.account, buildRepositories(), itemId);
-    },
-  );
-
-  fastify.get(
-    '/collections/liked',
-    {
-      preHandler: optionalIsAuthenticated,
-      schema: getMostLikedItems,
-    },
-    async ({ user, query: { limit } }) => {
-      return itemPublishedService.getLikedItems(user?.account, buildRepositories(), limit);
     },
   );
 

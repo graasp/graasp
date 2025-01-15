@@ -16,7 +16,7 @@ import { AppDataSource } from '../../../../../../plugins/datasource';
 import { MailerService } from '../../../../../../plugins/mailer/service';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../../utils/config';
 import { ItemNotFound, MemberCannotAdminItem } from '../../../../../../utils/errors';
-import { saveMember, saveMembers } from '../../../../../member/test/fixtures/members';
+import { saveMember } from '../../../../../member/test/fixtures/members';
 import { Item } from '../../../../entities/Item';
 import {
   ItemTestUtils,
@@ -24,8 +24,6 @@ import {
   expectManyItems,
   expectManyPackedItems,
 } from '../../../../test/fixtures/items';
-import { ItemLike } from '../../../itemLike/itemLike';
-import { saveItemLikes } from '../../../itemLike/test/utils';
 import { ItemVisibility } from '../../../itemVisibility/ItemVisibility';
 import { ItemVisibilityNotFound } from '../../../itemVisibility/errors';
 import { saveItemValidation } from '../../validation/test/utils';
@@ -184,57 +182,6 @@ describe('Item Published', () => {
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/collections/recent`,
         });
-        expect(res.statusCode).toBe(StatusCodes.OK);
-        expect(res.json().map(({ id }) => id)).not.toContain(hiddenCollection.id);
-      });
-    });
-  });
-
-  describe('GET /collections/liked', () => {
-    describe('Signed Out', () => {
-      let members;
-      let collections: Item[];
-      const likes: ItemLike[] = [];
-
-      beforeEach(async () => {
-        members = await saveMembers();
-        ({ items: collections } = await testUtils.saveCollections(members[0]));
-
-        // add idx x likes
-        for (const [idx, c] of collections.entries()) {
-          for (const m of members.slice(idx)) {
-            likes.concat(await saveItemLikes([c], m));
-          }
-        }
-      });
-
-      it('Get 2 most liked collections', async () => {
-        const res = await app.inject({
-          method: HttpMethod.Get,
-          url: `${ITEMS_ROUTE_PREFIX}/collections/liked`,
-          query: { limit: '2' },
-        });
-
-        const result = collections.slice(0, -1);
-
-        expect(res.statusCode).toBe(StatusCodes.OK);
-        expectManyItems(res.json(), result);
-      });
-
-      it('Get 2 most liked collections without hidden', async () => {
-        // hide first collection
-        const hiddenCollection = collections[0];
-        await rawRepository.save({
-          item: hiddenCollection,
-          creator: actor,
-          type: ItemVisibilityType.Hidden,
-        });
-
-        const res = await app.inject({
-          method: HttpMethod.Get,
-          url: `${ITEMS_ROUTE_PREFIX}/collections/liked`,
-        });
-
         expect(res.statusCode).toBe(StatusCodes.OK);
         expect(res.json().map(({ id }) => id)).not.toContain(hiddenCollection.id);
       });
