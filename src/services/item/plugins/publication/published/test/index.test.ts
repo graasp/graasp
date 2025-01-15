@@ -275,7 +275,7 @@ describe('Item Published', () => {
 
         // Publishing an item triggers an indexing
         expect(indexSpy).toHaveBeenCalledTimes(1);
-        expectItem(indexSpy.mock.calls[0][0], item);
+        expectItem(indexSpy.mock.calls[0][0].item, item);
       });
 
       it('Publish item with admin rights and send notification', async () => {
