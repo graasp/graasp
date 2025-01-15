@@ -199,8 +199,12 @@ export class MeiliSearchWrapper {
       isPublishedRoot: isPublishedRoot,
       isHidden: isHidden,
       // todo: fix these types
-      createdAt: item.createdAt.toISOString(),
-      updatedAt: item.updatedAt.toISOString(),
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      createdAt: item.createdAt,
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      updatedAt: item.updatedAt,
       lang: item.lang,
       likes: likesCount,
       ...tagsByCategory,
@@ -248,22 +252,42 @@ export class MeiliSearchWrapper {
   ): Promise<EnqueuedTask> {
     try {
       // Get all descendants from the input items
-      const itemsToIndex: Item[] = [...itemPublisheds.map((p) => p.item)];
-      itemsToIndex.push(
-        ...(await repositories.itemRepository.getManyDescendants(
-          itemsToIndex.filter((i) => i.type === ItemType.FOLDER),
-        )),
-      );
+      let itemsToIndex: {
+        isHidden: boolean;
+        publishedCreatedAt: string;
+        publishedUpdatedAt: string;
+        item: Item;
+      }[] = [];
+      for (const p of itemPublisheds) {
+        const isHidden = await repositories.itemVisibilityRepository.getManyBelowAndSelf(p.item, [
+          ItemVisibilityType.Hidden,
+        ]);
+
+        itemsToIndex.push({
+          publishedCreatedAt: p.createdAt.toISOString(),
+          publishedUpdatedAt: p.updatedAt.toISOString(),
+          item: p.item,
+          isHidden: Boolean(isHidden.find((ih) => p.item.path.includes(ih.item.path))),
+        });
+
+        const descendants = isItemType(p.item, ItemType.FOLDER)
+          ? await repositories.itemRepository.getDescendants(p.item)
+          : [];
+
+        itemsToIndex = itemsToIndex.concat(
+          descendants.map((d) => ({
+            item: d,
+            publishedCreatedAt: p.createdAt.toISOString(),
+            publishedUpdatedAt: p.updatedAt.toISOString(),
+            isHidden: Boolean(isHidden.find((ih) => d.path.includes(ih.item.path))),
+          })),
+        );
+      }
 
       // Parse all the item into indexable items (containing published state, visibility, content...)
 
-      const isHidden = await repositories.itemVisibilityRepository.hasForMany(
-        itemsToIndex,
-        ItemVisibilityType.Hidden,
-      );
-
       const documents: IndexItem[] = await Promise.all(
-        itemPublisheds.map(async ({ createdAt, updatedAt, item: i }) => {
+        itemsToIndex.map(async ({ isHidden, publishedUpdatedAt, publishedCreatedAt, item: i }) => {
           // Publishing and categories are implicit/inherited on children, we are forced to query the database to check these
           // More efficient way to get this info? Do the db query for all item at once ?
           // This part might slow the app when we index many items or an item with many children.
@@ -281,15 +305,14 @@ export class MeiliSearchWrapper {
               i,
               tags,
               publishedRoot.item.id === i.id,
-              isHidden.data[i.id] ?? false,
+              isHidden,
               likesCount,
             )),
-            publishedCreatedAt: createdAt.toISOString(),
-            publishedUpdatedAt: updatedAt.toISOString(),
+            publishedCreatedAt,
+            publishedUpdatedAt,
           };
         }),
       );
-
       // Index the resulting documents
 
       const index = await this.getIndex(targetIndex);
@@ -298,7 +321,7 @@ export class MeiliSearchWrapper {
         indexingTask,
         itemsToIndex
           .slice(0, 30) // Avoid logging too many items
-          .map((i) => i.name)
+          .map((i) => i.item.name)
           .join(';'),
       );
 
