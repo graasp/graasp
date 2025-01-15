@@ -88,13 +88,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           return reply.send({ status: MembershipRequestStatus.Approved });
         }
 
-        const item = await itemService.get(
-          member,
-          repositories,
-          itemId,
-          PermissionLevel.Read,
-          false,
-        );
+        const item = await repositories.itemRepository.getOneOrThrow(itemId);
         if (item) {
           return reply.send({ status: MembershipRequestStatus.NotSubmittedOrDeleted });
         }
@@ -127,13 +121,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           throw new MembershipRequestAlreadyExists();
         }
 
-        const item = await itemService.get(
-          member,
-          repositories,
-          itemId,
-          PermissionLevel.Read,
-          false,
-        );
+        const item = await repositories.itemRepository.getOneOrThrow(itemId);
 
         const itemLoginSchema = await itemLoginService.getByItemPath(repositories, item.path);
         if (itemLoginSchema) {

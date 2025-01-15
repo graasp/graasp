@@ -1,9 +1,13 @@
 import { FastifyInstance } from 'fastify';
 
+import { FolderItemFactory } from '@graasp/sdk';
+
 import build, { clearDatabase } from '../../../test/app';
 import { BaseLogger } from '../../logger';
 import { buildRepositories } from '../../utils/repositories';
+import * as authorization from '../authorization';
 import { ThumbnailService } from '../thumbnail/service';
+import { Item } from './entities/Item';
 import { ItemThumbnailService } from './plugins/thumbnail/service';
 import { ItemService } from './service';
 import { ItemTestUtils } from './test/fixtures/items';
@@ -31,6 +35,34 @@ describe('Item Service', () => {
     await clearDatabase(app.db);
     actor = null;
     app.close();
+  });
+  describe('get', () => {
+    it('return item if exists and pass validation', async () => {
+      const item = FolderItemFactory() as unknown as Item;
+      const repositories = buildRepositories();
+      jest.spyOn(repositories.itemRepository, 'getOneOrThrow').mockResolvedValue(item);
+      jest
+        .spyOn(authorization, 'validatePermission')
+        .mockResolvedValue({ itemMembership: null, visibilities: [] });
+
+      const result = await service.get(actor, repositories, item.id);
+      expect(result).toEqual(item);
+    });
+    it('throw if item does not exists', async () => {
+      const item = FolderItemFactory() as unknown as Item;
+      const repositories = buildRepositories();
+      jest.spyOn(repositories.itemRepository, 'getOneOrThrow').mockRejectedValue(new Error());
+
+      await expect(() => service.get(actor, repositories, item.id)).rejects.toThrow();
+    });
+    it('throw if validation does not pass', async () => {
+      const item = FolderItemFactory() as unknown as Item;
+      const repositories = buildRepositories();
+      jest.spyOn(repositories.itemRepository, 'getOneOrThrow').mockResolvedValue(item);
+      jest.spyOn(authorization, 'validatePermission').mockRejectedValue(new Error());
+
+      await expect(() => service.get(actor, repositories, item.id)).rejects.toThrow();
+    });
   });
   describe('Copy', () => {
     it('Should copy thumbnails on item copy if original has thumbnails', async () => {
