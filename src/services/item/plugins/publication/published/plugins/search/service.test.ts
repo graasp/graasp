@@ -1,3 +1,5 @@
+import { v4 } from 'uuid';
+
 import { MOCK_LOGGER } from '../../../../../../../../test/app';
 import HookManager from '../../../../../../../utils/hook';
 import { ItemService } from '../../../../../service';
@@ -93,6 +95,21 @@ describe('search', () => {
 
     const { q } = spy.mock.calls[0][0].queries[0];
     expect(q).toEqual('hello');
+  });
+  it('filter by creator id', async () => {
+    const MOCK_RESULT = { hits: [] } as never;
+    const spy = jest
+      .spyOn(meilisearchClient, 'search')
+      .mockResolvedValue({ results: [MOCK_RESULT] });
+
+    const creatorId = v4();
+    const results = await searchService.search({
+      creatorId,
+    });
+    expect(results).toEqual(MOCK_RESULT);
+
+    const { filter } = spy.mock.calls[0][0].queries[0];
+    expect(filter).toContain(`creator.id = '${creatorId}'`);
   });
   it('apply sort', async () => {
     const MOCK_RESULT = { hits: [] } as never;

@@ -46,7 +46,7 @@ export const getCollectionsForMember = {
   operationId: 'getCollectionsForMember',
   tags: ['collection'],
   summary: 'Get collections for member',
-  description: 'Get collections for member.',
+  description: 'Get packed collections for member, used in the builder view of the member.',
 
   params: customType.StrictObject({
     memberId: customType.UUID(),

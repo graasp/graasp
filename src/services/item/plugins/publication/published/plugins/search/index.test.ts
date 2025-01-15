@@ -164,6 +164,35 @@ describe('Collection Search endpoints', () => {
       expect(searchSpy).toHaveBeenCalledWith(expectedQuery);
     });
 
+    it('search with creator id', async () => {
+      actor = await saveMember();
+      mockAuthenticate(actor);
+
+      const searchSpy = jest.spyOn(MeiliSearchWrapper.prototype, 'search');
+      const creatorId = v4();
+      const expectedQuery: MultiSearchParams = {
+        queries: [
+          {
+            attributesToHighlight: ['*'],
+            q: 'random query',
+            filter: `isPublishedRoot = true AND creator.id = '${creatorId}' AND isHidden = false`,
+            indexUid: MOCK_INDEX,
+          },
+        ],
+      };
+
+      await app.inject({
+        method: HttpMethod.Post,
+        url: `${ITEMS_ROUTE_PREFIX}/collections/search`,
+        payload: {
+          query: 'random query',
+          creatorId,
+        },
+      });
+
+      expect(searchSpy).toHaveBeenCalledWith(expectedQuery);
+    });
+
     it('works with empty filters', async () => {
       actor = await saveMember();
       mockAuthenticate(actor);

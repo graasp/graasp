@@ -65,6 +65,7 @@ const FILTERABLE_ATTRIBUTES: (keyof IndexItem)[] = [
   'isHidden',
   'lang',
   'likes',
+  'creator',
   ...Object.values(TagCategory),
 ];
 const TYPO_TOLERANCE: TypoTolerance = {

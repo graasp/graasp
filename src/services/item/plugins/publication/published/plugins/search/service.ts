@@ -1,7 +1,7 @@
 import { MultiSearchQuery } from 'meilisearch';
 import { singleton } from 'tsyringe';
 
-import { TagCategory } from '@graasp/sdk';
+import { TagCategory, UUID } from '@graasp/sdk';
 
 import { BaseLogger } from '../../../../../../../logger';
 import { GET_MOST_LIKED_ITEMS_MAXIMUM } from '../../../../../../../utils/config';
@@ -15,6 +15,7 @@ type SearchFilters = Partial<{
   tags: Partial<{ [key in TagCategory]: Tag['name'][] }>;
   langs: string[];
   isPublishedRoot: boolean;
+  creatorId?: UUID;
 }>;
 
 /*
@@ -42,7 +43,7 @@ export class SearchService {
   }
 
   // User input needs escaping? Or safe to send to meilisearch? WARNING: search currently done with master key, but search is only exposed endpoint
-  private buildFilters({ tags, langs = [], isPublishedRoot = true }: SearchFilters) {
+  private buildFilters({ tags, langs = [], isPublishedRoot = true, creatorId }: SearchFilters) {
     // tags
     const tagCategoryFilters = Object.values(TagCategory).map((c) => {
       // escape quotes used for building the filter
@@ -54,10 +55,19 @@ export class SearchService {
     // is published root
     const isPublishedFilter = isPublishedRoot ? `isPublishedRoot = ${isPublishedRoot}` : '';
 
+    // creator id
+    const creatorIdFilter = creatorId ? `creator.id = '${creatorId}'` : '';
+
     // langs
     const langsFilter = langs.length ? `lang IN [${langs.join(',')}]` : '';
 
-    const filters = [...tagCategoryFilters, isPublishedFilter, langsFilter, 'isHidden = false']
+    const filters = [
+      ...tagCategoryFilters,
+      isPublishedFilter,
+      langsFilter,
+      creatorIdFilter,
+      'isHidden = false',
+    ]
       .filter(Boolean)
       .join(' AND ');
 
@@ -69,8 +79,8 @@ export class SearchService {
   }
 
   async search(body: Omit<MultiSearchQuery, 'filter' | 'indexUid' | 'q'> & SearchFilters) {
-    const { tags, langs, isPublishedRoot, query, ...q } = body;
-    const filters = this.buildFilters({ tags, langs, isPublishedRoot });
+    const { tags, langs, isPublishedRoot, query, creatorId, ...q } = body;
+    const filters = this.buildFilters({ creatorId, tags, langs, isPublishedRoot });
 
     // User input needs escaping? Or safe to send to meilisearch? WARNING: search currently done with master key, but search is only exposed endpoint
     const updatedQueries = {
