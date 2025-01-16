@@ -58,7 +58,6 @@ describe('Item Published', () => {
 
   afterEach(async () => {
     jest.clearAllMocks();
-    actor = null;
     unmockAuthenticate();
   });
 
