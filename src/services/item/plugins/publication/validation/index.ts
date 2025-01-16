@@ -19,7 +19,7 @@ import {
   memberItemsTopic,
 } from '../../../ws/events';
 import { ItemPublishedService } from '../published/service';
-import { getLatestItemValidation, getItemValidationGroup } from './schemas';
+import { getItemValidationGroup, getLatestItemValidationGroup, validateItem } from './schemas';
 import { ItemValidationService } from './service';
 import { assertItemIsFolder } from './utils';
 
@@ -34,8 +34,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.get(
     '/:itemId/validations/latest',
     {
-      schema: getLatestItemValidation,
-
+      schema: getLatestItemValidationGroup,
       preHandler: [isAuthenticated, matchOne(memberAccountRole)],
     },
     async ({ user, params: { itemId } }) => {
@@ -68,7 +67,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.post(
     '/:itemId/validate',
     {
-      schema: itemValidation,
+      schema: validateItem,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
     async (request, reply) => {
