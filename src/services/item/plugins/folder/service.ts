@@ -1,13 +1,13 @@
 import { Readable } from 'node:stream';
 import { singleton } from 'tsyringe';
 
-import { ItemGeolocation, ItemType, UUID } from '@graasp/sdk';
+import { ItemGeolocation, ItemType, PermissionLevel, UUID } from '@graasp/sdk';
 
 import { BaseLogger } from '../../../../logger';
 import { Repositories } from '../../../../utils/repositories';
 import { Member } from '../../../member/entities/member';
 import { ThumbnailService } from '../../../thumbnail/service';
-import { FolderItem, Item } from '../../entities/Item';
+import { FolderItem, Item, isItemType } from '../../entities/Item';
 import { WrongItemTypeError } from '../../errors';
 import { ItemService } from '../../service';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
@@ -22,6 +22,19 @@ export class FolderItemService extends ItemService {
     log: BaseLogger,
   ) {
     super(thumbnailService, itemThumbnailService, meilisearchWrapper, log);
+  }
+
+  async get(
+    member: Member,
+    repositories: Repositories,
+    itemId: Item['id'],
+    permission?: PermissionLevel,
+  ): Promise<FolderItem> {
+    const item = await super.get(member, repositories, itemId, permission);
+    if (!isItemType(item, ItemType.FOLDER)) {
+      throw new WrongItemTypeError(item.type);
+    }
+    return item;
   }
 
   async post(

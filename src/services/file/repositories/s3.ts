@@ -18,6 +18,7 @@ import { FastifyBaseLogger } from 'fastify';
 
 import { ItemType, UUID } from '@graasp/sdk';
 
+import { assertIsError } from '../../../utils/assertions';
 import { S3_FILE_ITEM_HOST, TMP_FOLDER } from '../../../utils/config';
 import { S3FileConfiguration } from '../interfaces/configuration';
 import { FileRepository } from '../interfaces/fileRepository';
@@ -174,7 +175,10 @@ export class S3FileRepository implements FileRepository {
     }
   }
 
-  private async _downloadS3File({ url, filepath, id }, log: FastifyBaseLogger) {
+  private async _downloadS3File(
+    { url, filepath, id }: { url: string; filepath: string; id: string },
+    log: FastifyBaseLogger,
+  ) {
     try {
       // return readstream of the file saved at given filepath
       // fetch and save file in temporary path
@@ -199,7 +203,7 @@ export class S3FileRepository implements FileRepository {
 
       return file;
     } catch (e) {
-      if (e.statusCode === StatusCodes.NOT_FOUND) {
+      if (e?.statusCode === StatusCodes.NOT_FOUND) {
         throw new S3FileNotFound({ filepath, id });
       }
 
@@ -212,7 +216,7 @@ export class S3FileRepository implements FileRepository {
    * @param
    * @returns temporary file content
    */
-  async getFile({ filepath, id }, log: FastifyBaseLogger) {
+  async getFile({ filepath, id }: { filepath: string; id: string }, log: FastifyBaseLogger) {
     const { s3Bucket: bucket } = this.options;
     try {
       // check whether file exists
@@ -264,6 +268,7 @@ export class S3FileRepository implements FileRepository {
 
       return url;
     } catch (e) {
+      assertIsError(e);
       if (e.name === 'NotFound') {
         throw new S3FileNotFound({ filepath });
       }
