@@ -1,3 +1,5 @@
+import { StatusCodes } from 'http-status-codes';
+
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
@@ -10,7 +12,7 @@ import { matchOne } from '../../../authorization';
 import { assertIsMember } from '../../../member/entities/member';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { ItemService } from '../../service';
-import { createEtherpad, getEtherpadFromItem } from './schemas';
+import { createEtherpad, getEtherpadFromItem, updateEtherpad } from './schemas';
 import { EtherpadItemService } from './service';
 
 const endpoints: FastifyPluginAsyncTypebox = async (fastify) => {
@@ -44,6 +46,33 @@ const endpoints: FastifyPluginAsyncTypebox = async (fastify) => {
           parentId,
         );
       });
+    },
+  );
+
+  /**
+   * Etherpad update
+   */
+  fastify.patch(
+    '/:id',
+    {
+      schema: updateEtherpad,
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
+    },
+    async (request, reply) => {
+      const {
+        user,
+        params: { id },
+        body: { readerPermission },
+      } = request;
+      const member = asDefined(user?.account);
+      assertIsMember(member);
+
+      await db.transaction(async (manager) => {
+        return await etherpadItemService.patchWithOptions(member, buildRepositories(manager), id, {
+          readerPermission,
+        });
+      });
+      reply.status(StatusCodes.NO_CONTENT);
     },
   );
 
