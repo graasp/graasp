@@ -35,8 +35,7 @@ const meilisearchSearchResponseSchema = customType.StrictObject({
       isHidden: Type.Boolean(),
       createdAt: customType.DateTime(),
       updatedAt: customType.DateTime(),
-      publishedCreatedAt: customType.DateTime(),
-      publishedUpdatedAt: customType.DateTime(),
+      publicationUpdatedAt: customType.DateTime(),
       lang: Type.String(),
       likes: Type.Number(),
       _formatted: customType.StrictObject({
@@ -53,6 +52,7 @@ const meilisearchSearchResponseSchema = customType.StrictObject({
         id: customType.UUID(),
         type: Type.String(),
         isPublishedRoot: Type.Boolean(),
+        publicationUpdatedAt: customType.DateTime(),
         isHidden: Type.Boolean(),
         createdAt: customType.DateTime(),
         updatedAt: customType.DateTime(),

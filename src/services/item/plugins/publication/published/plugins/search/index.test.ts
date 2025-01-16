@@ -476,6 +476,7 @@ describe('Collection Search endpoints', () => {
                 type: 'folder',
                 isPublishedRoot: true,
                 isHidden: false,
+                publicationUpdatedAt: '2021-10-20T13:03:42.712Z',
                 createdAt: '2021-10-20T13:12:47.821Z',
                 updatedAt: '2021-10-23T09:25:39.798Z',
                 lang: 'en',
@@ -495,6 +496,7 @@ describe('Collection Search endpoints', () => {
                   type: 'folder',
                   isPublishedRoot: true,
                   isHidden: false,
+                  publicationUpdatedAt: '2021-10-20T13:03:42.712Z',
                   createdAt: '2021-10-20T13:12:47.821Z',
                   updatedAt: '2021-10-23T09:25:39.798Z',
                   lang: 'en',
@@ -516,6 +518,7 @@ describe('Collection Search endpoints', () => {
                 type: 'folder',
                 isPublishedRoot: true,
                 isHidden: false,
+                publicationUpdatedAt: '2021-10-20T13:03:42.712Z',
                 createdAt: '2021-10-20T13:03:42.712Z',
                 updatedAt: '2021-11-10T10:49:39.296Z',
                 lang: 'en',
@@ -535,6 +538,7 @@ describe('Collection Search endpoints', () => {
                   type: 'folder',
                   isPublishedRoot: true,
                   isHidden: false,
+                  publicationUpdatedAt: '2021-10-20T13:03:42.712Z',
                   createdAt: '2021-10-20T13:03:42.712Z',
                   updatedAt: '2021-11-10T10:49:39.296Z',
                   lang: 'en',
@@ -558,6 +562,117 @@ describe('Collection Search endpoints', () => {
       // should return the likes property
       res.json().hits.forEach(({ likes }) => {
         expect(likes).toBeGreaterThanOrEqual(0);
+      });
+    });
+  });
+  describe('GET /collections/recent', () => {
+    describe('Signed Out', () => {
+      it('Get 2 most recent collections', async () => {
+        // Meilisearch is mocked so format of API doesn't matter, we just want it to proxy MultiSearchParams;
+        const fakeResponse = {
+          results: [
+            {
+              indexUid: 'index',
+              hits: [
+                {
+                  name: 'Geogebra',
+                  description: 'Interactive tools from geogebra for mathematics.',
+                  content: '',
+                  creator: {
+                    id: v4(),
+                    name: 'Graasper',
+                  },
+                  level: [],
+                  discipline: [],
+                  'resource-type': [],
+                  id: v4(),
+                  type: 'folder',
+                  isPublishedRoot: true,
+                  isHidden: false,
+                  publicationUpdatedAt: '2021-10-20T13:03:42.712Z',
+                  createdAt: '2021-10-20T13:12:47.821Z',
+                  updatedAt: '2021-10-23T09:25:39.798Z',
+                  lang: 'en',
+                  likes: 9,
+                  _formatted: {
+                    name: 'Geogebra',
+                    description: 'Interactive tools from geogebra for mathematics.',
+                    content: '',
+                    creator: {
+                      id: v4(),
+                      name: 'Graasper',
+                    },
+                    level: [],
+                    discipline: [],
+                    'resource-type': [],
+                    id: v4(),
+                    type: 'folder',
+                    isPublishedRoot: true,
+                    isHidden: false,
+                    publicationUpdatedAt: '2021-10-20T13:03:42.712Z',
+                    createdAt: '2021-10-20T13:12:47.821Z',
+                    updatedAt: '2021-10-23T09:25:39.798Z',
+                    lang: 'en',
+                    likes: 9,
+                  },
+                },
+                {
+                  name: 'PhET',
+                  content: '',
+                  description: '',
+                  creator: {
+                    id: v4(),
+                    name: 'Graasper',
+                  },
+                  level: [],
+                  discipline: [],
+                  'resource-type': [],
+                  id: v4(),
+                  type: 'folder',
+                  isPublishedRoot: true,
+                  isHidden: false,
+                  publicationUpdatedAt: '2021-10-20T13:03:42.712Z',
+                  createdAt: '2021-10-20T13:03:42.712Z',
+                  updatedAt: '2021-11-10T10:49:39.296Z',
+                  lang: 'en',
+                  likes: 7,
+                  _formatted: {
+                    name: 'PhET',
+                    description: '',
+                    content: '',
+                    creator: {
+                      id: v4(),
+                      name: 'Graasper',
+                    },
+                    level: [],
+                    discipline: [],
+                    'resource-type': [],
+                    id: v4(),
+                    type: 'folder',
+                    isPublishedRoot: true,
+                    publicationUpdatedAt: '2021-10-20T13:03:42.712Z',
+                    isHidden: false,
+                    createdAt: '2021-10-20T13:03:42.712Z',
+                    updatedAt: '2021-11-10T10:49:39.296Z',
+                    lang: 'en',
+                    likes: 7,
+                  },
+                },
+              ] as never[],
+              processingTimeMs: 123,
+              query: '',
+            },
+          ],
+        };
+        jest.spyOn(MeiliSearchWrapper.prototype, 'search').mockResolvedValue(fakeResponse);
+
+        const res = await app.inject({
+          method: HttpMethod.Get,
+          url: `${ITEMS_ROUTE_PREFIX}/collections/recent?limit=2`,
+        });
+        expect(res.statusCode).toBe(StatusCodes.OK);
+
+        expect(res.json().hits).toHaveLength(2);
       });
     });
   });
