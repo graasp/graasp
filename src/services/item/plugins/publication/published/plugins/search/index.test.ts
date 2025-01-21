@@ -375,7 +375,7 @@ describe('Collection Search endpoints', () => {
           await waitForExpect(moveDone(unpublishedItem.id, unpublishedFolder), 300);
           expect(deleteSpy).toHaveBeenCalledTimes(1);
           // item is deleted from index
-          expect(deleteSpy.mock.calls[0][0].item.id).toEqual(unpublishedItem.id);
+          expect(deleteSpy.mock.calls[0][0].id).toEqual(unpublishedItem.id);
         });
       });
     });
