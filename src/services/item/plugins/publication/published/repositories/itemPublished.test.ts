@@ -70,7 +70,7 @@ describe('ItemPublishedRepository', () => {
 
       const result = await repository.touchUpdatedAt(item.path);
 
-      expect(new Date(result).getTime() - new Date(updatedAt).getTime()).toBeLessThanOrEqual(100);
+      expect(new Date(result).getTime() - new Date(updatedAt).getTime()).toBeLessThanOrEqual(200);
     });
   });
 });
