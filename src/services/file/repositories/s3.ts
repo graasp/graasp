@@ -18,7 +18,6 @@ import { FastifyBaseLogger } from 'fastify';
 
 import { ItemType, UUID } from '@graasp/sdk';
 
-import { assertIsError } from '../../../utils/assertions';
 import { S3_FILE_ITEM_HOST, TMP_FOLDER } from '../../../utils/config';
 import { S3FileConfiguration } from '../interfaces/configuration';
 import { FileRepository } from '../interfaces/fileRepository';
@@ -268,8 +267,7 @@ export class S3FileRepository implements FileRepository {
 
       return url;
     } catch (e) {
-      assertIsError(e);
-      if (e.name === 'NotFound') {
+      if (e && 'name' in e && e.name === 'NotFound') {
         throw new S3FileNotFound({ filepath });
       }
       if (!(e instanceof DownloadFileUnexpectedError)) {

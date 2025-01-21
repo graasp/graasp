@@ -26,13 +26,13 @@ import { resolveDependency } from '../../../../di/utils';
 import { AppDataSource } from '../../../../plugins/datasource';
 import {
   HierarchyTooDeep,
-  ItemNotFolder,
   MemberCannotAccess,
   MemberCannotWriteItem,
   TooManyChildren,
 } from '../../../../utils/errors';
 import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
 import { saveMember } from '../../../member/test/fixtures/members';
+import { WrongItemTypeError } from '../../errors';
 import { ItemTestUtils, expectItem } from '../../test/fixtures/items';
 import { saveUntilMaxDescendants } from '../../test/utils';
 import { ActionItemService } from '../action/service';
@@ -541,7 +541,7 @@ describe('Folder routes tests', () => {
         });
 
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-        expect(response.json()).toMatchObject(new ItemNotFolder({ id: parent.id }));
+        expect(response.json()).toMatchObject(new WrongItemTypeError(ItemType.DOCUMENT));
       });
     });
   });

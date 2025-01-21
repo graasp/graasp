@@ -4,7 +4,7 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { FileItemProperties, PermissionLevel, getFileExtension } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
-import { asDefined, assertIsError } from '../../../../utils/assertions';
+import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne, validatePermission } from '../../../authorization';
@@ -162,7 +162,6 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
 
             items.push(item);
           } catch (e) {
-            assertIsError(e);
             // ignore errors
             log.error(e);
             errors.push(e);
