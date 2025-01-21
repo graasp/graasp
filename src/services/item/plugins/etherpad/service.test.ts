@@ -14,6 +14,7 @@ import { EtherpadItem } from '../../entities/Item';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
+import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../thumbnail/service';
 import { EtherpadItemService } from './service';
 import { EtherpadServiceConfig } from './serviceConfig';
@@ -26,6 +27,7 @@ const etherPadConfig = resolveDependency(EtherpadServiceConfig);
 const itemService = new ItemService(
   {} as ThumbnailService,
   {} as ItemThumbnailService,
+  {} as MeiliSearchWrapper,
   MOCK_LOGGER,
 );
 const etherpad = {

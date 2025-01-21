@@ -16,6 +16,7 @@ import { ThumbnailService } from '../../../thumbnail/service';
 import { ItemWrapper } from '../../ItemWrapper';
 import { ItemService } from '../../service';
 import { ItemTestUtils } from '../../test/fixtures/items';
+import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
 import { StubItemThumbnailService } from '../thumbnail/test/fixtures/itemThumbnailService';
 import { ItemGeolocation } from './ItemGeolocation';
 import { ItemGeolocationService } from './service';
@@ -25,7 +26,12 @@ const testUtils = new ItemTestUtils();
 const stubItemThumbnailService = StubItemThumbnailService();
 
 const service = new ItemGeolocationService(
-  new ItemService({} as ThumbnailService, stubItemThumbnailService, {} as BaseLogger),
+  new ItemService(
+    {} as ThumbnailService,
+    stubItemThumbnailService,
+    {} as MeiliSearchWrapper,
+    {} as BaseLogger,
+  ),
   stubItemThumbnailService,
   'geolocation-key',
 );

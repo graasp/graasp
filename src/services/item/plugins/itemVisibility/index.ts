@@ -1,7 +1,5 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { ItemVisibilityType } from '@graasp/sdk';
-
 import { resolveDependency } from '../../../../di/utils';
 import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
@@ -9,8 +7,6 @@ import { isAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
 import { assertIsMember } from '../../../member/entities/member';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { Item } from '../../entities/Item';
-import { ItemService } from '../../service';
 import { create, deleteOne } from './schemas';
 import { ItemVisibilityService } from './service';
 
@@ -27,16 +23,7 @@ import { ItemVisibilityService } from './service';
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db } = fastify;
 
-  const itemService = resolveDependency(ItemService);
   const itemVisibilityService = resolveDependency(ItemVisibilityService);
-
-  // copy visibilities alongside item
-  const hook = async (actor, repositories, { original, copy }: { original: Item; copy: Item }) => {
-    await repositories.itemVisibilityRepository.copyAll(actor, original, copy, [
-      ItemVisibilityType.Public,
-    ]);
-  };
-  itemService.hooks.setPostHook('copy', hook);
 
   fastify.post(
     '/:itemId/visibilities/:type',

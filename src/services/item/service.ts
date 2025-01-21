@@ -4,6 +4,7 @@ import { DeepPartial } from 'typeorm';
 
 import {
   ItemType,
+  ItemVisibilityType,
   MAX_DESCENDANTS_FOR_COPY,
   MAX_DESCENDANTS_FOR_DELETE,
   MAX_DESCENDANTS_FOR_MOVE,
@@ -50,6 +51,7 @@ import { FolderItem, Item, isItemType } from './entities/Item';
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
 import { PartialItemGeolocation } from './plugins/geolocation/errors';
 import { ItemVisibility } from './plugins/itemVisibility/ItemVisibility';
+import { MeiliSearchWrapper } from './plugins/publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from './plugins/thumbnail/service';
 import { ItemChildrenParams, ItemSearchParams } from './types';
 
@@ -57,6 +59,7 @@ import { ItemChildrenParams, ItemSearchParams } from './types';
 export class ItemService {
   private readonly log: BaseLogger;
   private readonly thumbnailService: ThumbnailService;
+  private readonly meilisearchWrapper: MeiliSearchWrapper;
   private readonly itemThumbnailService: ItemThumbnailService;
 
   hooks = new HookManager<{
@@ -85,10 +88,12 @@ export class ItemService {
   constructor(
     thumbnailService: ThumbnailService,
     itemThumbnailService: ItemThumbnailService,
+    meilisearchWrapper: MeiliSearchWrapper,
     log: BaseLogger,
   ) {
     this.thumbnailService = thumbnailService;
     this.itemThumbnailService = itemThumbnailService;
+    this.meilisearchWrapper = meilisearchWrapper;
     this.log = log;
   }
 
@@ -718,6 +723,12 @@ export class ItemService {
     // post hook
     for (const { original, copy } of treeCopyMap.values()) {
       await this.hooks.runPostHooks('copy', member, repositories, { original, copy });
+
+      // copy hidden visibility
+      await repositories.itemVisibilityRepository.copyAll(member, original, copy, [
+        ItemVisibilityType.Public,
+      ]);
+
       // copy geolocation
       await itemGeolocationRepository.copy(original, copy);
       // copy thumbnails if original has setting to true
@@ -731,6 +742,14 @@ export class ItemService {
         } catch {
           this.log.error(`On item copy, thumbnail for ${original.id} could not be found.`);
         }
+      }
+    }
+
+    // index copied root if copied in a published item
+    if (parentItem) {
+      const published = await repositories.itemPublishedRepository.getForItem(parentItem);
+      if (published) {
+        await this.meilisearchWrapper.indexOne(copyRoot, repositories);
       }
     }
 
