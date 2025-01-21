@@ -43,13 +43,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         const repositories = buildRepositories(manager);
 
         // Get item to have the path
-        const item = await itemService.get(
-          user?.account,
-          repositories,
-          itemId,
-          PermissionLevel.Read,
-          false,
-        );
+        const item = await repositories.itemRepository.getOneOrThrow(itemId);
 
         // If item is not visible, throw NOT_FOUND
         const isVisible = await isItemVisible(

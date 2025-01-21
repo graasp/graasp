@@ -215,21 +215,16 @@ export class ItemService {
     repositories: Repositories,
     id: string,
     permission: PermissionLevel = PermissionLevel.Read,
-    throwOnForbiddenPermission: boolean = true,
   ) {
     const item = await repositories.itemRepository.getOneOrThrow(id);
 
-    if (throwOnForbiddenPermission) {
-      const { itemMembership, visibilities } = await validatePermission(
-        repositories,
-        permission,
-        actor,
-        item,
-      );
-      return { item, itemMembership, visibilities };
-    }
-
-    return { item, itemMembership: null, visibilities: [] };
+    const { itemMembership, visibilities } = await validatePermission(
+      repositories,
+      permission,
+      actor,
+      item,
+    );
+    return { item, itemMembership, visibilities };
   }
 
   /**
@@ -245,15 +240,8 @@ export class ItemService {
     repositories: Repositories,
     id: string,
     permission: PermissionLevel = PermissionLevel.Read,
-    throwOnForbiddenPermission?: boolean,
   ) {
-    const { item } = await this._get(
-      actor,
-      repositories,
-      id,
-      permission,
-      throwOnForbiddenPermission,
-    );
+    const { item } = await this._get(actor, repositories, id, permission);
 
     return item;
   }
