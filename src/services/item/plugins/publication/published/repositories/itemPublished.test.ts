@@ -1,8 +1,10 @@
-import { DataSource, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
+
+import { FastifyInstance } from 'fastify';
 
 import { FolderItemFactory, MemberFactory, PermissionLevel } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../../../../plugins/datasource';
+import build from '../../../../../../../test/app';
 import { ItemMembership } from '../../../../../itemMembership/entities/ItemMembership';
 import { Member } from '../../../../../member/entities/member';
 import { Item } from '../../../../entities/Item';
@@ -11,7 +13,7 @@ import { ItemPublished } from '../entities/itemPublished';
 import { ItemPublishedRepository } from './itemPublished';
 
 describe('ItemPublishedRepository', () => {
-  let db: DataSource;
+  let app: FastifyInstance;
   let repository: ItemPublishedRepository;
   let rawRepository: Repository<ItemPublished>;
   let itemRawRepository: Repository<Item>;
@@ -19,8 +21,10 @@ describe('ItemPublishedRepository', () => {
   let itemMembershipRawRepository: Repository<ItemMembership>;
 
   beforeAll(async () => {
-    db = await AppDataSource.initialize();
-    await db.runMigrations();
+    // bug: necessary for test to work
+    ({ app } = await build());
+    const { db } = app;
+
     repository = new ItemPublishedRepository(db.manager);
     rawRepository = db.getRepository(ItemPublished);
     itemRawRepository = db.getRepository(Item);
@@ -29,8 +33,7 @@ describe('ItemPublishedRepository', () => {
   });
 
   afterAll(async () => {
-    await db.dropDatabase();
-    await db.destroy();
+    await app.close();
   });
 
   describe('getForMember', () => {
