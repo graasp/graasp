@@ -7,7 +7,7 @@ import { ItemValidationProcess, ItemValidationStatus } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../../schemas/global';
-import { itemSchema } from '../../../schemas';
+import { itemSchemaRef } from '../../../schemas';
 
 export const itemValidationGroupSchemaRef = registerSchemaAsRef(
   'itemValidationGroup',
@@ -15,12 +15,12 @@ export const itemValidationGroupSchemaRef = registerSchemaAsRef(
   customType.StrictObject(
     {
       id: customType.UUID(),
-      item: itemSchema,
+      item: itemSchemaRef,
       createdAt: customType.DateTime(),
       itemValidations: Type.Array(
         customType.StrictObject({
           id: customType.UUID(),
-          item: itemSchema,
+          item: itemSchemaRef,
           process: customType.EnumString(Object.values(ItemValidationProcess)),
           status: customType.EnumString(Object.values(ItemValidationStatus)),
           result: Type.String(),
