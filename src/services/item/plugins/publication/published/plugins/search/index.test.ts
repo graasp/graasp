@@ -91,6 +91,7 @@ describe('Collection Search endpoints', () => {
             filter: 'isPublishedRoot = true AND isHidden = false',
             indexUid: MOCK_INDEX,
             q: undefined,
+            sort: ['publishedUpdatedAt:desc'],
           },
         ],
       });
@@ -148,6 +149,7 @@ describe('Collection Search endpoints', () => {
             filter:
               "discipline IN ['random filter'] AND isPublishedRoot = true AND isHidden = false",
             indexUid: MOCK_INDEX,
+            sort: ['publishedUpdatedAt:desc'],
           },
         ],
       };
@@ -206,6 +208,7 @@ describe('Collection Search endpoints', () => {
             q: 'random query',
             filter: 'isPublishedRoot = true AND isHidden = false',
             indexUid: MOCK_INDEX,
+            sort: ['publishedUpdatedAt:desc'],
           },
         ],
       };
@@ -274,7 +277,7 @@ describe('Collection Search endpoints', () => {
 
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(indexSpy).toHaveBeenCalledTimes(1);
-        expect(indexSpy.mock.calls[0][0]).toMatchObject(payload);
+        expect(indexSpy.mock.calls[0][0].item).toMatchObject(payload);
       });
 
       describe('Move', () => {
@@ -308,8 +311,10 @@ describe('Collection Search endpoints', () => {
           await waitForExpect(moveDone(item.id, unpublishedFolder), 300);
           expect(indexSpy).toHaveBeenCalledTimes(1);
           // Path update is sent to index
-          expect(indexSpy.mock.calls[0][0].id).toEqual(item.id);
-          expect(indexSpy.mock.calls[0][0].path.startsWith(unpublishedFolder.path)).toBeTruthy();
+          expect(indexSpy.mock.calls[0][0].item.id).toEqual(item.id);
+          expect(
+            indexSpy.mock.calls[0][0].item.path.startsWith(unpublishedFolder.path),
+          ).toBeTruthy();
         });
 
         it('Move published into published folder should be indexed', async () => {
@@ -327,7 +332,7 @@ describe('Collection Search endpoints', () => {
           await waitForExpect(moveDone(item.id, publishedFolder), 300);
           expect(indexSpy).toHaveBeenCalledTimes(1);
           // Closest published at destination is reindexed
-          expect(indexSpy.mock.calls[0][0].id).toEqual(item.id);
+          expect(indexSpy.mock.calls[0][0].item.id).toEqual(item.id);
         });
 
         it('Move unpublished into published folder should be indexed', async () => {
@@ -348,7 +353,7 @@ describe('Collection Search endpoints', () => {
           await waitForExpect(moveDone(unpublishedItem.id, publishedFolder), 300);
           expect(indexSpy).toHaveBeenCalledTimes(1);
           // Topmost published at destination is reindexed
-          expect(indexSpy.mock.calls[0][0].id).toEqual(publishedFolder.id);
+          expect(indexSpy.mock.calls[0][0].item.id).toEqual(publishedFolder.id);
         });
 
         it(' Move unpublished nested inside published into unpublished should be deleted from index', async () => {
@@ -370,7 +375,7 @@ describe('Collection Search endpoints', () => {
           await waitForExpect(moveDone(unpublishedItem.id, unpublishedFolder), 300);
           expect(deleteSpy).toHaveBeenCalledTimes(1);
           // item is deleted from index
-          expect(deleteSpy.mock.calls[0][0].id).toEqual(unpublishedItem.id);
+          expect(deleteSpy.mock.calls[0][0].item.id).toEqual(unpublishedItem.id);
         });
       });
     });
