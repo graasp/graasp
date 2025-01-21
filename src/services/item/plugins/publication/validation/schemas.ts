@@ -5,34 +5,46 @@ import { FastifySchema } from 'fastify';
 
 import { ItemValidationProcess, ItemValidationStatus } from '@graasp/sdk';
 
-import { customType, registerSchemaAsRef } from '../../../../../plugins/typebox';
+import { customType } from '../../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../../schemas/global';
 import { itemSchemaRef } from '../../../schemas';
 
-export const itemValidationGroupSchemaRef = registerSchemaAsRef(
-  'itemValidationGroup',
-  'Item Validation Group',
-  customType.StrictObject(
-    {
-      id: customType.UUID(),
-      item: itemSchemaRef,
-      createdAt: customType.DateTime(),
+const itemValidationGroupSchema = customType.StrictObject(
+  {
+    id: customType.UUID(),
+    item: itemSchemaRef,
+    createdAt: customType.DateTime(),
+    itemValidations: Type.Array(
+      customType.StrictObject({
+        id: customType.UUID(),
+        process: customType.EnumString(Object.values(ItemValidationProcess)),
+        status: customType.EnumString(Object.values(ItemValidationStatus)),
+        result: Type.String(),
+        createdAt: customType.DateTime(),
+        updatedAt: customType.DateTime(),
+      }),
+    ),
+  },
+  {
+    description: 'Group of validations for an item, without nested item',
+  },
+);
+
+const itemValidationGroupWithItemSchema = Type.Intersect(
+  [
+    itemValidationGroupSchema,
+    Type.Object({
       itemValidations: Type.Array(
         customType.StrictObject({
-          id: customType.UUID(),
           item: itemSchemaRef,
-          process: customType.EnumString(Object.values(ItemValidationProcess)),
-          status: customType.EnumString(Object.values(ItemValidationStatus)),
-          result: Type.String(),
-          createdAt: customType.DateTime(),
-          updatedAt: customType.DateTime(),
         }),
       ),
-    },
-    {
-      description: 'Group of validations for an item',
-    },
-  ),
+    }),
+  ],
+  {
+    additionalProperties: false,
+    description: 'Group of validations for an item, with nested items',
+  },
 );
 
 export const getLatestItemValidationGroup = {
@@ -45,7 +57,7 @@ export const getLatestItemValidationGroup = {
     itemId: customType.UUID(),
   }),
   response: {
-    [StatusCodes.OK]: Type.Union([itemValidationGroupSchemaRef, Type.Null()]),
+    [StatusCodes.OK]: customType.Nullable(itemValidationGroupSchema),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
@@ -61,7 +73,7 @@ export const getItemValidationGroup = {
     itemValidationGroupId: customType.UUID(),
   }),
   response: {
-    [StatusCodes.OK]: itemValidationGroupSchemaRef,
+    [StatusCodes.OK]: itemValidationGroupWithItemSchema,
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
@@ -74,7 +86,6 @@ export const validateItem = {
 
   params: customType.StrictObject({
     itemId: customType.UUID(),
-    itemValidationGroupId: customType.UUID(),
   }),
   response: {
     [StatusCodes.ACCEPTED]: customType.UUID({ description: 'Item being validated' }),

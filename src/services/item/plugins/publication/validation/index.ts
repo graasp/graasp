@@ -41,7 +41,11 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
       const item = await itemService.get(member, buildRepositories(), itemId);
-      return validationService.getLastItemValidationGroupForItem(member, buildRepositories(), item);
+      return await validationService.getLastItemValidationGroupForItem(
+        member,
+        buildRepositories(),
+        item,
+      );
     },
   );
 
@@ -55,7 +59,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user, params: { itemValidationGroupId } }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return validationService.getItemValidationGroup(
+      return await validationService.getItemValidationGroup(
         member,
         buildRepositories(),
         itemValidationGroupId,
