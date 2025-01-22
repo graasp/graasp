@@ -80,6 +80,7 @@ export const search = {
       tags: Type.Partial(Type.Record(Type.Enum(TagCategory), Type.Array(Type.String()))),
       langs: Type.Array(Type.String()),
       isPublishedRoot: Type.Boolean(),
+      creatorId: customType.UUID(),
     }),
   ),
   response: {
