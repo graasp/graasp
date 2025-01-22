@@ -2,9 +2,9 @@ import { TFunction } from 'i18next';
 
 import { DEFAULT_LANG } from '@graasp/translations';
 
+import i18next from '../../i18n';
+import { TRANSLATIONS } from '../../langs/constants';
 import { GRAASP_LANDING_PAGE_ORIGIN } from '../../utils/constants';
-import i18next from './i18n';
-import { MAIL } from './langs/constants';
 import { Mail } from './service';
 
 type CssStyles = { [key: string]: string };
@@ -34,7 +34,7 @@ export class MailBuilder {
     lang,
   }: {
     subject: {
-      text: (typeof MAIL)[keyof typeof MAIL];
+      text: (typeof TRANSLATIONS)[keyof typeof TRANSLATIONS];
       translationVariables?: { [key: string]: string };
     };
     lang?: string;
@@ -53,7 +53,7 @@ export class MailBuilder {
   }
 
   public addText(
-    mailTextId: (typeof MAIL)[keyof typeof MAIL],
+    mailTextId: (typeof TRANSLATIONS)[keyof typeof TRANSLATIONS],
     translationVariables?: { [key: string]: string },
   ): MailBuilder {
     const unescapedText = this.translate(mailTextId, {
@@ -69,7 +69,7 @@ export class MailBuilder {
   }
 
   public addButton(
-    mailButtonTextId: (typeof MAIL)[keyof typeof MAIL],
+    mailButtonTextId: (typeof TRANSLATIONS)[keyof typeof TRANSLATIONS],
     callToActionLink: string,
     translationVariables?: { [key: string]: string },
   ): MailBuilder {
@@ -87,13 +87,13 @@ export class MailBuilder {
    * This function add the user agreement usually placed at the end of the e-mail.
    */
   public addUserAgreement(): MailBuilder {
-    const unescapedText = this.translate(MAIL.USER_AGREEMENTS_MAIL_TEXT, {
+    const unescapedText = this.translate(TRANSLATIONS.USER_AGREEMENTS_MAIL_TEXT, {
       graaspLandingPageOrigin: GRAASP_LANDING_PAGE_ORIGIN,
       interpolation: { escapeValue: false },
     });
     this.plainText += `\n${unescapedText}\n`;
 
-    const escapedText = this.translate(MAIL.USER_AGREEMENTS_MAIL_TEXT, {
+    const escapedText = this.translate(TRANSLATIONS.USER_AGREEMENTS_MAIL_TEXT, {
       graaspLandingPageOrigin: GRAASP_LANDING_PAGE_ORIGIN,
     });
     this.htmlText += this.buildText(
@@ -106,7 +106,7 @@ export class MailBuilder {
   }
 
   public addIgnoreEmailIfNotRequestedNotice(): MailBuilder {
-    return this.addText(MAIL.IGNORE_EMAIL_IF_NOT_REQUESTED);
+    return this.addText(TRANSLATIONS.IGNORE_EMAIL_IF_NOT_REQUESTED);
   }
 
   public build(): Mail {

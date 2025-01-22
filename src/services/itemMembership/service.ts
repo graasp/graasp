@@ -2,8 +2,8 @@ import { singleton } from 'tsyringe';
 
 import { PermissionLevel, UUID } from '@graasp/sdk';
 
+import { TRANSLATIONS } from '../../langs/constants';
 import { MailBuilder } from '../../plugins/mailer/builder';
-import { MAIL } from '../../plugins/mailer/langs/constants';
 import { MailerService } from '../../plugins/mailer/service';
 import { PLAYER_HOST } from '../../utils/config';
 import {
@@ -41,7 +41,7 @@ export class ItemMembershipService {
 
     const mail = new MailBuilder({
       subject: {
-        text: MAIL.SHARE_ITEM_TITLE,
+        text: TRANSLATIONS.SHARE_ITEM_TITLE,
         translationVariables: {
           creatorName: account.name,
           itemName: item.name,
@@ -49,8 +49,8 @@ export class ItemMembershipService {
       },
       lang: member.lang,
     })
-      .addText(MAIL.SHARE_ITEM_TEXT, { itemName: item.name })
-      .addButton(MAIL.SHARE_ITEM_BUTTON, link)
+      .addText(TRANSLATIONS.SHARE_ITEM_TEXT, { itemName: item.name })
+      .addButton(TRANSLATIONS.SHARE_ITEM_BUTTON, link)
       .build();
 
     await this.mailerService

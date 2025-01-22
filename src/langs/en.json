@@ -43,5 +43,6 @@
 
   "MEMBERSHIP_REQUEST_TITLE": "{{memberName}} requested you an access to {{itemName}}",
   "MEMBERSHIP_REQUEST_TEXT": "You've been requested to grant access to {{itemName}} to {{memberName}}. Click on the following button to accept or reject the request.",
-  "MEMBERSHIP_REQUEST_BUTTON_TEXT": "View Memberships of {{itemName}}"
+  "MEMBERSHIP_REQUEST_BUTTON_TEXT": "View Memberships of {{itemName}}",
+  "DEFAULT_SHORTCUT_NAME": "Shortcut to {{name}}"
 }

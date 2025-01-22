@@ -5,8 +5,8 @@ import { singleton } from 'tsyringe';
 
 import { DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS } from '@graasp/sdk';
 
+import { TRANSLATIONS } from '../../../../../langs/constants';
 import { MailBuilder } from '../../../../../plugins/mailer/builder';
-import { MAIL } from '../../../../../plugins/mailer/langs/constants';
 import { MailerService } from '../../../../../plugins/mailer/service';
 import { TMP_FOLDER } from '../../../../../utils/config';
 import { EXPORT_FILE_EXPIRATION, ZIP_MIMETYPE } from '../../../../action/constants/constants';
@@ -205,13 +205,13 @@ export class RequestDataExportService {
     });
 
     const mail = new MailBuilder({
-      subject: { text: MAIL.EXPORT_MEMBER_DATA_TITLE },
+      subject: { text: TRANSLATIONS.EXPORT_MEMBER_DATA_TITLE },
       lang: actor.lang,
     })
-      .addText(MAIL.EXPORT_MEMBER_DATA_TEXT, {
+      .addText(TRANSLATIONS.EXPORT_MEMBER_DATA_TEXT, {
         days: DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS.toString(),
       })
-      .addButton(MAIL.EXPORT_MEMBER_DATA_BUTTON_TEXT, link)
+      .addButton(TRANSLATIONS.EXPORT_MEMBER_DATA_BUTTON_TEXT, link)
       .build();
 
     this.mailerService.send(mail, actor.email).catch((err) => {

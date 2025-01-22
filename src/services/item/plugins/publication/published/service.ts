@@ -3,9 +3,9 @@ import { singleton } from 'tsyringe';
 
 import { ItemVisibilityType, PermissionLevel, PublicationStatus, UUID } from '@graasp/sdk';
 
+import { TRANSLATIONS } from '../../../../../langs/constants';
 import { BaseLogger } from '../../../../../logger';
 import { MailBuilder } from '../../../../../plugins/mailer/builder';
-import { MAIL } from '../../../../../plugins/mailer/langs/constants';
 import { MailerService } from '../../../../../plugins/mailer/service';
 import { resultOfToList } from '../../../../../services/utils';
 import HookManager from '../../../../../utils/hook';
@@ -72,13 +72,13 @@ export class ItemPublishedService {
       if (isMember(member)) {
         const mail = new MailBuilder({
           subject: {
-            text: MAIL.PUBLISH_ITEM_TITLE,
+            text: TRANSLATIONS.PUBLISH_ITEM_TITLE,
             translationVariables: { itemName: item.name },
           },
           lang: member.lang,
         })
-          .addText(MAIL.PUBLISH_ITEM_TEXT, { itemName: item.name })
-          .addButton(MAIL.PUBLISH_ITEM_BUTTON_TEXT, link, {
+          .addText(TRANSLATIONS.PUBLISH_ITEM_TEXT, { itemName: item.name })
+          .addButton(TRANSLATIONS.PUBLISH_ITEM_BUTTON_TEXT, link, {
             itemName: item.name,
           })
           .build();
