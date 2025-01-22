@@ -4,7 +4,11 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, MemberFactory } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
+import build, {
+  clearDatabase,
+  mockAuthenticate,
+  unmockAuthenticate,
+} from '../../../../../../test/app';
 import { MEMBER_PROFILE_ROUTE_PREFIX } from '../../../../../utils/config';
 import { saveMember } from '../../../test/fixtures/members';
 import {
@@ -17,17 +21,25 @@ import {
 
 describe('Profile Member routes tests', () => {
   let app: FastifyInstance;
-  let actor;
 
-  afterEach(async () => {
-    jest.clearAllMocks();
+  beforeAll(async () => {
+    ({ app } = await build({ member: null }));
+  });
+
+  afterAll(async () => {
     await clearDatabase(app.db);
     app.close();
   });
 
+  afterEach(async () => {
+    jest.clearAllMocks();
+    unmockAuthenticate();
+  });
+
   describe('GET /members/profile/own', () => {
     it('Returns successfully if signed in and profile not posted', async () => {
-      ({ app, actor } = await build());
+      const actor = await saveMember();
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -38,7 +50,8 @@ describe('Profile Member routes tests', () => {
     });
 
     it('Returns successfully if signed in and profile posted', async () => {
-      ({ app, actor } = await build());
+      const actor = await saveMember();
+      mockAuthenticate(actor);
       await saveMemberProfile(actor, ANNA_PROFILE);
 
       const response = await app.inject({
@@ -51,7 +64,8 @@ describe('Profile Member routes tests', () => {
     });
 
     it('Returns successfully if signed in and profile not visible', async () => {
-      ({ app, actor } = await build());
+      const actor = await saveMember();
+      mockAuthenticate(actor);
       const profile = { ...ANNA_PROFILE, visibility: false };
       await saveMemberProfile(actor, profile);
 
@@ -66,8 +80,6 @@ describe('Profile Member routes tests', () => {
     });
 
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
-
       const response = await app.inject({
         method: HttpMethod.Get,
         url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}/own`,
@@ -79,8 +91,6 @@ describe('Profile Member routes tests', () => {
 
   describe('POST /members/profile', () => {
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
-
       const payload = getDummyProfile({ bio: 'Random Bio' });
       const response = await app.inject({
         method: HttpMethod.Post,
@@ -92,11 +102,10 @@ describe('Profile Member routes tests', () => {
     });
 
     describe('Signed In', () => {
-      beforeEach(async () => {
-        ({ app, actor } = await build());
-      });
-
       it('Create successfully', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
+
         const payload = getDummyProfile({ bio: 'Random Bio' });
 
         const response = await app.inject({
@@ -112,6 +121,8 @@ describe('Profile Member routes tests', () => {
       });
 
       it('Create Profile twice should respond with server error', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
         const payload = getDummyProfile({ bio: 'Random Bio' });
         await saveMemberProfile(actor, ANNA_PROFILE);
 
@@ -128,7 +139,8 @@ describe('Profile Member routes tests', () => {
 
   describe('GET /members/profile/:id', () => {
     it('Returns OK and null data if visibilty set to false', async () => {
-      ({ app, actor } = await build());
+      const actor = await saveMember();
+      mockAuthenticate(actor);
       const member = await saveMemberProfile(MemberFactory(), {
         ...ANNA_PROFILE,
         visibility: false,
@@ -144,7 +156,8 @@ describe('Profile Member routes tests', () => {
     });
 
     it('Returns OK and null data if no profile for this member', async () => {
-      ({ app, actor } = await build());
+      const actor = await saveMember();
+      mockAuthenticate(actor);
       const member = await saveMember();
 
       const response = await app.inject({
@@ -156,7 +169,8 @@ describe('Profile Member routes tests', () => {
     });
 
     it('Returns member if visibilty set to true', async () => {
-      ({ app, actor } = await build());
+      const actor = await saveMember();
+      mockAuthenticate(actor);
       const memberProfile = await saveMemberProfile(MemberFactory(), BOB_PROFILE);
 
       const memberId = memberProfile?.member?.id;
@@ -177,8 +191,6 @@ describe('Profile Member routes tests', () => {
 
   describe('PATCH /members/profile', () => {
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
-
       const payload = getDummyProfile({ bio: 'Random Bio' });
       const response = await app.inject({
         method: HttpMethod.Patch,
@@ -190,11 +202,10 @@ describe('Profile Member routes tests', () => {
     });
 
     describe('Signed In', () => {
-      beforeEach(async () => {
-        ({ app, actor } = await build());
-      });
-
       it('updated successfully', async () => {
+        const actor = await saveMember();
+        mockAuthenticate(actor);
+
         const memberProfile = await saveMemberProfile(actor, ANNA_PROFILE);
         const payload = { bio: 'Random Bio' };
 

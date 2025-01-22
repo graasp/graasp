@@ -1,12 +1,13 @@
 import { v4 } from 'uuid';
 
-import { ItemType } from '@graasp/sdk';
+import { AppItemFactory, FolderItemFactory, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { MOCK_LOGGER } from '../../../../../test/app';
 import { Repositories } from '../../../../utils/repositories';
 import { Member } from '../../../member/entities/member';
 import { ThumbnailService } from '../../../thumbnail/service';
 import { Item } from '../../entities/Item';
+import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
@@ -34,6 +35,58 @@ const repositories = {
 describe('Folder Service', () => {
   afterEach(() => {
     jest.clearAllMocks();
+  });
+
+  describe('get', () => {
+    it('return folder', async () => {
+      const folderItem = FolderItemFactory() as unknown as Item;
+      const itemServicePostMock = jest
+        .spyOn(ItemService.prototype, 'get')
+        .mockImplementation(async () => {
+          return folderItem;
+        });
+
+      expect(await folderService.get(MOCK_MEMBER, repositories, folderItem.id)).toEqual(folderItem);
+
+      expect(itemServicePostMock).toHaveBeenCalledWith(
+        MOCK_MEMBER,
+        repositories,
+        folderItem.id,
+        undefined,
+      );
+    });
+
+    it('return folder for permission', async () => {
+      const permission = PermissionLevel.Write;
+      const folderItem = FolderItemFactory() as unknown as Item;
+      const itemServicePostMock = jest
+        .spyOn(ItemService.prototype, 'get')
+        .mockImplementation(async () => {
+          return folderItem;
+        });
+
+      expect(await folderService.get(MOCK_MEMBER, repositories, folderItem.id, permission)).toEqual(
+        folderItem,
+      );
+
+      expect(itemServicePostMock).toHaveBeenCalledWith(
+        MOCK_MEMBER,
+        repositories,
+        folderItem.id,
+        permission,
+      );
+    });
+
+    it('throw if item is not a folder', async () => {
+      const appItem = AppItemFactory() as unknown as Item;
+      jest.spyOn(ItemService.prototype, 'get').mockImplementation(async () => {
+        return appItem;
+      });
+
+      await expect(() =>
+        folderService.get(MOCK_MEMBER, repositories, appItem.id),
+      ).rejects.toBeInstanceOf(WrongItemTypeError);
+    });
   });
 
   describe('post', () => {

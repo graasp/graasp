@@ -18,10 +18,10 @@ import {
   ItemOpFeedbackEvent,
   memberItemsTopic,
 } from '../../../ws/events';
+import { FolderItemService } from '../../folder/service';
 import { ItemPublishedService } from '../published/service';
 import { getItemValidationGroup, getLatestItemValidationGroup, validateItem } from './schemas';
 import { ItemValidationService } from './service';
-import { assertItemIsFolder } from './utils';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db, websockets } = fastify;
@@ -29,6 +29,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const validationService = resolveDependency(ItemValidationService);
   const publishService = resolveDependency(ItemPublishedService);
   const itemService = resolveDependency(ItemService);
+  const folderItemService = resolveDependency(FolderItemService);
 
   // get validation status of given itemId
   fastify.get(
@@ -86,7 +87,13 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
         // get item and check permission
-        const item = await itemService.get(member, repositories, itemId, PermissionLevel.Admin);
+        // only folder items are allowed as root for validation
+        const item = await folderItemService.get(
+          member,
+          repositories,
+          itemId,
+          PermissionLevel.Admin,
+        );
 
         const notifyOnValidationChanges = () => {
           websockets.publish(
@@ -98,7 +105,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
         const hasValidationSucceeded = await validationService.post(
           repositories,
-          assertItemIsFolder(item),
+          item,
           notifyOnValidationChanges,
         );
 
