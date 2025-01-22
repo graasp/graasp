@@ -87,6 +87,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
         // get item and check permission
+        // only folder items are allowed as root for validation
         const item = await folderItemService.get(
           member,
           repositories,
