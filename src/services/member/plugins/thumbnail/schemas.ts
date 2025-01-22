@@ -17,7 +17,7 @@ export const download = {
   tags: ['member', 'avatar'],
   summary: "Get a member's avatar",
   description:
-    "Get a member's avatar. The return value is empty if the member did not previously uploaded an avatar. Since guests don't have avatars, the return value will also be empty.",
+    "Get a member's avatar at given size. The return value is empty if the member did not previously uploaded an avatar. Since guests don't have avatars, the return value will also be empty.",
 
   params: customType.StrictObject({
     id: customType.UUID(),
