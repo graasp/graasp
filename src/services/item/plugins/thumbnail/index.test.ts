@@ -6,22 +6,22 @@ import path from 'path';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ThumbnailSize } from '@graasp/sdk';
+import { FolderItemFactory, HttpMethod, ThumbnailSize } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../../test/app';
-import { ITEMS_ROUTE_PREFIX, THUMBNAILS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { MemberCannotAccess } from '../../../../../utils/errors';
-import { saveMember } from '../../../../member/test/fixtures/members';
-import { ItemTestUtils } from '../../../test/fixtures/items';
-import { setItemPublic } from '../../itemVisibility/test/fixtures';
-import { UploadFileNotImageError } from '../utils/errors';
+} from '../../../../../test/app';
+import { ITEMS_ROUTE_PREFIX, THUMBNAILS_ROUTE_PREFIX } from '../../../../utils/config';
+import { MemberCannotAccess } from '../../../../utils/errors';
+import { saveMember } from '../../../member/test/fixtures/members';
+import { ItemTestUtils } from '../../test/fixtures/items';
+import { setItemPublic } from '../itemVisibility/test/fixtures';
+import { UploadFileNotImageError } from './utils/errors';
 
-const filepath = path.resolve(__dirname, './fixtures/image.png');
-const textPath = path.resolve(__dirname, './fixtures/emptyFile');
+const filepath = path.resolve(__dirname, './test/fixtures/image.png');
+const textPath = path.resolve(__dirname, './test/fixtures/emptyFile');
 
 const testUtils = new ItemTestUtils();
 
@@ -156,6 +156,22 @@ describe('Thumbnail Plugin Tests', () => {
           });
 
           expect(response.json()).toMatchObject(new MemberCannotAccess(expect.anything()));
+        }
+      });
+
+      it('Return no content if no thumbnail was uploaded', async () => {
+        const { item: someItem } = await testUtils.saveItemAndMembership({
+          member: actor,
+          item: { settings: { hasThumbnail: false } },
+        });
+
+        for (const size of Object.values(ThumbnailSize)) {
+          const response = await app.inject({
+            method: HttpMethod.Get,
+            url: `${ITEMS_ROUTE_PREFIX}/${someItem.id}${THUMBNAILS_ROUTE_PREFIX}/${size}`,
+          });
+
+          expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
         }
       });
     });

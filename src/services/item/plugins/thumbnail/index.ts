@@ -98,7 +98,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspThumbnailsOptions> = async (fastif
       if (!url) {
         reply.status(StatusCodes.NO_CONTENT);
       } else {
-        fileService.setHeaders({ reply, url, id: itemId });
+        fileService.setHeaders({ reply, url, id: itemId, replyUrl: true });
       }
     },
   );
