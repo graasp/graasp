@@ -15,6 +15,7 @@ import graaspItemLogin from '../itemLogin';
 import itemController from './controller';
 import actionItemPlugin from './plugins/action';
 import graaspApps from './plugins/app';
+import { plugin as graaspAppItem } from './plugins/app/controller';
 import graaspDocumentItem from './plugins/document/controller';
 import { PREFIX_DOCUMENT } from './plugins/document/service';
 import graaspEmbeddedLinkItem from './plugins/embeddedLink/controller';
@@ -76,6 +77,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       fastify.register(graaspItemVisibility);
 
       fastify.register(graaspFolderItem);
+
+      fastify.register(graaspAppItem);
 
       fastify.register(ShortLinkService, {
         prefix: SHORT_LINKS_ROUTE_PREFIX,

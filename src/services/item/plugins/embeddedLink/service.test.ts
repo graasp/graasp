@@ -311,6 +311,31 @@ describe('Link Service', () => {
           settings: { showLinkButton: true, showLinkIframe: false },
         });
       });
+      it('patch item settings', async () => {
+        const itemServicePatchMock = jest
+          .spyOn(ItemService.prototype, 'patch')
+          .mockImplementation(async () => {
+            return MOCK_ITEM;
+          });
+
+        expect(MOCK_ITEM.extra.embeddedLink.url).toBeDefined();
+
+        const args = {
+          settings: { isPinned: true },
+        };
+        await linkService.patchWithOptions(MOCK_MEMBER, repositories, MOCK_ITEM.id, args);
+
+        // call to item service with initial item name
+        expect(itemServicePatchMock).toHaveBeenCalledWith(MOCK_MEMBER, repositories, MOCK_ITEM.id, {
+          name: MOCK_ITEM.name,
+          type: ItemType.LINK,
+          // not defined in args
+          description: undefined,
+          lang: undefined,
+          extra: MOCK_ITEM.extra,
+          settings: { ...args.settings, showLinkButton: true, showLinkIframe: false },
+        });
+      });
       it('patch many properties without changing url', async () => {
         const itemServicePatchMock = jest
           .spyOn(ItemService.prototype, 'patch')

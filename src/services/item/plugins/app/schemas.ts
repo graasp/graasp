@@ -6,7 +6,8 @@ import { FastifySchema } from 'fastify';
 import { customType } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
 import { accountSchemaRef } from '../../../account/schemas';
-import { itemSchemaRef } from '../../schemas';
+import { itemSchema, itemSchemaRef } from '../../schemas';
+import { geoCoordinateSchemaRef } from '../geolocation/schemas';
 
 export const generateToken = {
   operationId: 'generateAppToken',
@@ -94,4 +95,59 @@ export const getOwnMostUsedApps = {
     ),
     '4xx': errorSchemaRef,
   },
+} as const satisfies FastifySchema;
+
+export const appItemSchema = Type.Composite(
+  [
+    itemSchema,
+    customType.StrictObject({
+      extra: customType.StrictObject({
+        app: customType.StrictObject({
+          url: Type.String({ format: 'uri' }),
+        }),
+      }),
+    }),
+  ],
+  {
+    title: 'App Item',
+    description:
+      'Item of type app, represents an interactive application that can access to the app API.',
+  },
+);
+
+export const createApp = {
+  operationId: 'createApp',
+  tags: ['item', 'app'],
+  summary: 'Create app',
+  description: 'Create app.',
+
+  querystring: Type.Partial(
+    customType.StrictObject({ parentId: customType.UUID(), previousItemId: customType.UUID() }),
+  ),
+  body: Type.Composite([
+    Type.Pick(itemSchema, ['name']),
+    Type.Partial(Type.Pick(itemSchema, ['description', 'lang', 'settings'])),
+    customType.StrictObject({ url: Type.String({ format: 'uri' }) }),
+
+    customType.StrictObject({
+      geolocation: Type.Optional(geoCoordinateSchemaRef),
+    }),
+  ]),
+  response: { [StatusCodes.OK]: appItemSchema, '4xx': errorSchemaRef },
+} as const satisfies FastifySchema;
+
+export const updateApp = {
+  operationId: 'updateApp',
+  tags: ['item', 'app'],
+  summary: 'Update app',
+  description: 'Update app given body.',
+
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
+  body: Type.Partial(
+    Type.Composite([Type.Pick(appItemSchema, ['name', 'description', 'lang', 'settings'])]),
+    { minProperties: 1 },
+  ),
+  response: { [StatusCodes.OK]: appItemSchema, '4xx': errorSchemaRef },
 } as const satisfies FastifySchema;

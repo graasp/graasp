@@ -206,7 +206,7 @@ export class EmbeddedLinkItemService extends ItemService {
       { showLinkButton, showLinkIframe },
       { embeddedLink },
     );
-    return (await this.post(member, repositories, {
+    return (await super.post(member, repositories, {
       item: newItem,
       ...options,
     })) as EmbeddedLinkItem;
@@ -216,7 +216,7 @@ export class EmbeddedLinkItemService extends ItemService {
     member: Member,
     repositories: Repositories,
     itemId: UUID,
-    args: Partial<Pick<Item, 'name' | 'description' | 'lang'>> & {
+    args: Partial<Pick<Item, 'name' | 'description' | 'lang' | 'settings'>> & {
       url?: string;
       showLinkIframe?: boolean;
       showLinkButton?: boolean;
@@ -231,7 +231,7 @@ export class EmbeddedLinkItemService extends ItemService {
       throw new WrongItemTypeError(item.type);
     }
 
-    const { name, description, lang, showLinkIframe, showLinkButton, url } = args;
+    const { name, description, lang, showLinkIframe, showLinkButton, url, settings } = args;
 
     // compute new extra if link is different
     let { embeddedLink } = item.extra;
@@ -241,7 +241,7 @@ export class EmbeddedLinkItemService extends ItemService {
 
     const newItem = await this.createLink(
       // replace name if provided
-      { name: name ?? item.name, description, lang },
+      { name: name ?? item.name, description, lang, settings },
       {
         showLinkIframe,
         showLinkButton,
@@ -250,6 +250,6 @@ export class EmbeddedLinkItemService extends ItemService {
         embeddedLink,
       },
     );
-    return (await this.patch(member, repositories, itemId, newItem)) as EmbeddedLinkItem;
+    return (await super.patch(member, repositories, itemId, newItem)) as EmbeddedLinkItem;
   }
 }
