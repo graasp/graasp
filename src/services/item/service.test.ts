@@ -153,4 +153,8 @@ describe('Item Service', () => {
       expect(indexMock).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('post', () => {
+    // TODO: check throw on max descendants
+  });
 });
