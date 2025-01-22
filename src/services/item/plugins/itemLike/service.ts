@@ -53,8 +53,8 @@ export class ItemLikeService {
     const result = await itemLikeRepository.deleteOneByCreatorAndItem(member.id, item.id);
 
     // update index if item is published
-    const isPublished = await itemPublishedRepository.getForItem(item);
-    if (isPublished) {
+    const publishedItem = await itemPublishedRepository.getForItem(item);
+    if (publishedItem) {
       const likes = await itemLikeRepository.getCountByItemId(item.id);
       await this.meilisearchClient.updateItem(item.id, { likes });
     }
@@ -70,8 +70,8 @@ export class ItemLikeService {
     const result = await itemLikeRepository.addOne({ creatorId: member.id, itemId: item.id });
 
     // update index if item is published
-    const isPublished = await itemPublishedRepository.getForItem(item);
-    if (isPublished) {
+    const publishedItem = await itemPublishedRepository.getForItem(item);
+    if (publishedItem) {
       const likes = await itemLikeRepository.getCountByItemId(item.id);
       await this.meilisearchClient.updateItem(item.id, { likes });
     }

@@ -11,7 +11,15 @@ import {
 import { DataSource, EntityManager } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { IndexItem, ItemType, MimeTypes, S3FileItemExtra, TagCategory, UUID } from '@graasp/sdk';
+import {
+  IndexItem,
+  ItemType,
+  ItemVisibilityType,
+  MimeTypes,
+  S3FileItemExtra,
+  TagCategory,
+  UUID,
+} from '@graasp/sdk';
 
 import { BaseLogger } from '../../../../../../logger';
 import * as repositoriesModule from '../../../../../../utils/repositories';
@@ -21,6 +29,7 @@ import { Tag } from '../../../../../tag/Tag.entity';
 import { Item } from '../../../../entities/Item';
 import { ItemTestUtils } from '../../../../test/fixtures/items';
 import { ItemLikeRepository } from '../../../itemLike/repository';
+import { ItemVisibility } from '../../../itemVisibility/ItemVisibility';
 import { ItemTagRepository } from '../../../tag/ItemTag.repository';
 import { ItemPublished } from '../entities/itemPublished';
 import { MeiliSearchWrapper } from '../plugins/search/meilisearch';
@@ -29,6 +38,20 @@ import { ItemPublishedRepository } from '../repositories/itemPublished';
 jest.unmock('../plugins/search/meilisearch');
 
 const testUtils = new ItemTestUtils();
+
+const mockItemPublished = ({ id, path }: { id: string; path: string }) => {
+  return {
+    item: {
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      type: ItemType.FOLDER,
+      path,
+    } as unknown as Item,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  } as unknown as ItemPublished;
+};
 
 describe('MeilisearchWrapper', () => {
   afterEach(() => {
@@ -148,19 +171,16 @@ describe('MeilisearchWrapper', () => {
       const item = testUtils.createItem();
 
       // Given
-      jest.spyOn(testUtils.itemRepository, 'getManyDescendants').mockResolvedValue([]);
+      jest.spyOn(testUtils.itemRepository, 'getDescendants').mockResolvedValue([]);
       itemTagRepositoryMock.getByItemId.mockResolvedValue([]);
-      itemPublishedRepositoryMock.getForItem.mockResolvedValue({
-        item: { id: item.id } as Item,
-      } as ItemPublished);
-      jest
-        .spyOn(testUtils.itemVisibilityRepository, 'hasForMany')
-        .mockResolvedValue({ data: {}, errors: [] });
+      const itemPublished = mockItemPublished(item);
+      itemPublishedRepositoryMock.getForItem.mockResolvedValue(itemPublished);
+      jest.spyOn(testUtils.itemVisibilityRepository, 'getManyBelowAndSelf').mockResolvedValue([]);
 
       const addDocumentSpy = jest.spyOn(mockIndex, 'addDocuments');
 
       // When
-      await meilisearch.indexOne(item, repositories);
+      await meilisearch.indexOne(itemPublished, repositories);
 
       // Then
       expect(addDocumentSpy).toHaveBeenCalledTimes(1);
@@ -181,21 +201,22 @@ describe('MeilisearchWrapper', () => {
       const descendant2 = testUtils.createItem();
       // Given
       jest
-        .spyOn(testUtils.itemRepository, 'getManyDescendants')
+        .spyOn(testUtils.itemRepository, 'getDescendants')
         .mockResolvedValue([descendant, descendant2]);
       itemTagRepositoryMock.getByItemId.mockResolvedValue([]);
-      itemPublishedRepositoryMock.getForItem.mockResolvedValue({
-        item: { id: item.id } as Item,
-      } as ItemPublished);
-      jest.spyOn(testUtils.itemVisibilityRepository, 'hasForMany').mockResolvedValue({
-        data: { [descendant.id]: true },
-        errors: [],
-      });
+      const itemPublished = mockItemPublished(item);
+      itemPublishedRepositoryMock.getForItem.mockResolvedValue(itemPublished);
+      jest.spyOn(testUtils.itemVisibilityRepository, 'getManyBelowAndSelf').mockResolvedValue([
+        {
+          type: ItemVisibilityType.Hidden,
+          item: { id: descendant.id, path: descendant.path } as Item,
+        } as ItemVisibility,
+      ]);
 
       const addDocumentSpy = jest.spyOn(mockIndex, 'addDocuments');
 
       // When
-      await meilisearch.indexOne(item, repositories);
+      await meilisearch.indexOne(itemPublished, repositories);
 
       // Then
       expect(addDocumentSpy).toHaveBeenCalledTimes(1);
@@ -246,25 +267,20 @@ describe('MeilisearchWrapper', () => {
       } satisfies Record<string, Item[]>;
 
       // Given
-      jest.spyOn(testUtils.itemRepository, 'getManyDescendants').mockImplementation((items) => {
-        const result: Item[] = [];
-        for (const i of items) {
-          result.push(...descendants[i.id]);
-        }
-        return Promise.resolve(result);
-      });
-      itemTagRepositoryMock.getByItemId.mockResolvedValue([]);
-      itemPublishedRepositoryMock.getForItem.mockResolvedValue({
-        item: { id: item.id } as Item,
-      } as ItemPublished);
       jest
-        .spyOn(testUtils.itemVisibilityRepository, 'hasForMany')
-        .mockResolvedValue({ data: {}, errors: [] });
+        .spyOn(testUtils.itemRepository, 'getDescendants')
+        .mockImplementation(async (item) => descendants[item.id]);
+      itemTagRepositoryMock.getByItemId.mockResolvedValue([]);
+      const itemPublished1 = mockItemPublished(item);
+      itemPublishedRepositoryMock.getForItem.mockResolvedValue(itemPublished1);
+      const itemPublished2 = mockItemPublished(item2);
+      itemPublishedRepositoryMock.getForItem.mockResolvedValue(itemPublished2);
+      jest.spyOn(testUtils.itemVisibilityRepository, 'getManyBelowAndSelf').mockResolvedValue([]);
 
       const addDocumentSpy = jest.spyOn(mockIndex, 'addDocuments');
 
       // When
-      await meilisearch.index([item, item2], repositories);
+      await meilisearch.index([itemPublished1, itemPublished2], repositories);
 
       // Then
       expect(addDocumentSpy).toHaveBeenCalledTimes(1);
@@ -294,9 +310,6 @@ describe('MeilisearchWrapper', () => {
       const descendant = testUtils.createItem();
       const descendant2 = testUtils.createItem();
 
-      const mockItemPublished = (id) => {
-        return { item: { id: id } as Item } as ItemPublished;
-      };
       const tags = {
         [item.id]: [
           { name: 'tag1', id: v4(), category: TagCategory.Discipline },
@@ -308,13 +321,13 @@ describe('MeilisearchWrapper', () => {
       };
 
       const published = {
-        [item.id]: mockItemPublished(item.id),
-        [descendant.id]: mockItemPublished(item.id),
-        [descendant2.id]: mockItemPublished(descendant2.id),
+        [item.id]: mockItemPublished(item),
+        [descendant.id]: mockItemPublished(item),
+        [descendant2.id]: mockItemPublished(descendant2),
       } satisfies Record<string, ItemPublished>;
 
       jest
-        .spyOn(testUtils.itemRepository, 'getManyDescendants')
+        .spyOn(testUtils.itemRepository, 'getDescendants')
         .mockResolvedValue([descendant, descendant2]);
       itemTagRepositoryMock.getByItemId.mockImplementation(
         jest.fn(async (id: UUID) => tags[id] as Tag[]),
@@ -322,15 +335,17 @@ describe('MeilisearchWrapper', () => {
       itemPublishedRepositoryMock.getForItem.mockImplementation((i) =>
         Promise.resolve(published[i.id]),
       );
-      jest.spyOn(testUtils.itemVisibilityRepository, 'hasForMany').mockResolvedValue({
-        data: { [descendant.id]: true },
-        errors: [],
-      });
+      jest.spyOn(testUtils.itemVisibilityRepository, 'getManyBelowAndSelf').mockResolvedValue([
+        {
+          type: ItemVisibilityType.Hidden,
+          item: { id: descendant.id } as unknown as Item,
+        } as ItemVisibility,
+      ]);
 
       const addDocumentSpy = jest.spyOn(mockIndex, 'addDocuments');
 
       // When
-      await meilisearch.indexOne(item, repositories);
+      await meilisearch.indexOne(published[item.id], repositories);
 
       // Then
       expect(addDocumentSpy).toHaveBeenCalledTimes(1);
@@ -355,35 +370,33 @@ describe('MeilisearchWrapper', () => {
       const descendant = testUtils.createItem();
       const descendant2 = testUtils.createItem();
 
-      const mockItemPublished = (id) => {
-        return { item: { id: id } as Item } as ItemPublished;
-      };
-
       const published = {
-        [item.id]: mockItemPublished(item.id),
-        [descendant.id]: mockItemPublished(item.id),
-        [descendant2.id]: mockItemPublished(descendant2.id),
+        [item.id]: mockItemPublished(item),
+        [descendant.id]: mockItemPublished(item),
+        [descendant2.id]: mockItemPublished(descendant2),
       } satisfies Record<string, ItemPublished>;
 
       jest
-        .spyOn(testUtils.itemRepository, 'getManyDescendants')
+        .spyOn(testUtils.itemRepository, 'getDescendants')
         .mockResolvedValue([descendant, descendant2]);
       itemTagRepositoryMock.getByItemId.mockResolvedValue([]);
       itemPublishedRepositoryMock.getForItem.mockImplementation((i) =>
         Promise.resolve(published[i.id]),
       );
 
-      jest.spyOn(testUtils.itemVisibilityRepository, 'hasForMany').mockResolvedValue({
-        data: { [descendant.id]: true },
-        errors: [],
-      });
+      jest.spyOn(testUtils.itemVisibilityRepository, 'getManyBelowAndSelf').mockResolvedValue([
+        {
+          type: ItemVisibilityType.Hidden,
+          item: { id: descendant.id } as Item,
+        } as ItemVisibility,
+      ]);
 
       itemLikeRepositoryMock.getCountByItemId.mockResolvedValue(2);
 
       const addDocumentSpy = jest.spyOn(mockIndex, 'addDocuments');
 
       // When
-      await meilisearch.indexOne(item, repositories);
+      await meilisearch.indexOne(published[item.id], repositories);
 
       // Then
       expect(addDocumentSpy).toHaveBeenCalledTimes(1);
@@ -419,20 +432,17 @@ describe('MeilisearchWrapper', () => {
       // Given
 
       jest
-        .spyOn(testUtils.itemRepository, 'getManyDescendants')
+        .spyOn(testUtils.itemRepository, 'getDescendants')
         .mockResolvedValue([descendant, descendant2]);
       itemTagRepositoryMock.getByItemId.mockResolvedValue([]);
-      itemPublishedRepositoryMock.getForItem.mockResolvedValue({
-        item: { id: item.id } as Item,
-      } as ItemPublished);
-      jest
-        .spyOn(testUtils.itemVisibilityRepository, 'hasForMany')
-        .mockResolvedValue({ data: {}, errors: [] });
+      const itemPublished = mockItemPublished(item);
+      itemPublishedRepositoryMock.getForItem.mockResolvedValue(itemPublished);
+      jest.spyOn(testUtils.itemVisibilityRepository, 'getManyBelowAndSelf').mockResolvedValue([]);
 
       const addDocumentSpy = jest.spyOn(mockIndex, 'addDocuments');
 
       // When
-      await meilisearch.indexOne(item, repositories);
+      await meilisearch.indexOne(itemPublished, repositories);
 
       // Then
       expect(addDocumentSpy).toHaveBeenCalledTimes(1);
@@ -481,14 +491,11 @@ describe('MeilisearchWrapper', () => {
   describe('rebuilds index', () => {
     it('reindex all items', async () => {
       const publishedItemsInDb = Array.from({ length: 13 }, (_, index) => {
-        return { item: { id: index.toString() } as Item } as ItemPublished;
+        return mockItemPublished({ id: index.toString(), path: index.toString() });
       });
-
       jest.spyOn(repositoriesModule, 'buildRepositories').mockReturnValue(repositories);
-
       // prevent finding any PDFs to store because this part is temporary
       jest.spyOn(testUtils.itemRepository, 'findAndCount').mockResolvedValue([[], 0]);
-
       // fake pagination
       itemPublishedRepositoryMock.getPaginatedItems.mockImplementation((page, _) => {
         if (page === 1) {
@@ -502,14 +509,10 @@ describe('MeilisearchWrapper', () => {
       const indexSpy = jest
         .spyOn(MeiliSearchWrapper.prototype, 'index')
         .mockResolvedValue({ taskUid: '1' } as unknown as EnqueuedTask);
-
       await meilisearch.rebuildIndex(10);
-
       expect(indexSpy).toHaveBeenCalledTimes(2);
-      expect(indexSpy.mock.calls[0][0]).toEqual(
-        publishedItemsInDb.slice(0, 10).map((pi) => pi.item),
-      );
-      expect(indexSpy.mock.calls[1][0]).toEqual(publishedItemsInDb.slice(10).map((pi) => pi.item));
+      expect(indexSpy.mock.calls[0][0]).toEqual(publishedItemsInDb.slice(0, 10));
+      expect(indexSpy.mock.calls[1][0]).toEqual(publishedItemsInDb.slice(10));
     });
   });
 });

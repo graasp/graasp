@@ -10,20 +10,24 @@ import { Repositories } from '../../../../../utils/repositories';
 import { validatePermission } from '../../../../authorization';
 import { Member } from '../../../../member/entities/member';
 import { FolderItem, Item } from '../../../entities/Item';
+import { ItemPublishedService } from '../published/service';
 import { ItemValidationModerator } from './moderators/itemValidationModerator';
 import { ValidationQueue } from './validationQueue';
 
 @singleton()
 export class ItemValidationService {
+  private readonly itemPublishedService: ItemPublishedService;
   private readonly contentModerator: ItemValidationModerator;
   private readonly validationQueue: ValidationQueue;
   private readonly logger: BaseLogger;
 
   constructor(
+    itemPublishedService: ItemPublishedService,
     contentModerator: ItemValidationModerator,
     validationQueue: ValidationQueue,
     logger: BaseLogger,
   ) {
+    this.itemPublishedService = itemPublishedService;
     this.contentModerator = contentModerator;
     this.validationQueue = validationQueue;
     this.logger = logger;
@@ -94,6 +98,13 @@ export class ItemValidationService {
 
     await this.validationQueue.removeInProgress(item.id);
 
-    return results.every((v) => v);
+    const operationResult = results.every((v) => v);
+
+    // update publication date
+    if (operationResult) {
+      await this.itemPublishedService.touchUpdatedAt(repositories, item);
+    }
+
+    return operationResult;
   }
 }

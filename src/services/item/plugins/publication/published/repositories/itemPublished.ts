@@ -126,4 +126,10 @@ export class ItemPublishedRepository extends AbstractRepository<ItemPublished> {
 
     return publishedInfos.map(({ item }) => item);
   }
+
+  async touchUpdatedAt(path: Item['path']): Promise<string> {
+    const updatedAt = new Date().toISOString();
+    await this.repository.update({ item: { path } }, { updatedAt });
+    return updatedAt;
+  }
 }

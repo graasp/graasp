@@ -749,7 +749,7 @@ export class ItemService {
     if (parentItem) {
       const published = await repositories.itemPublishedRepository.getForItem(parentItem);
       if (published) {
-        await this.meilisearchWrapper.indexOne(copyRoot, repositories);
+        await this.meilisearchWrapper.indexOne(published, repositories);
       }
     }
 

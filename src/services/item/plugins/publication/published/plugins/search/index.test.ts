@@ -91,6 +91,7 @@ describe('Collection Search endpoints', () => {
             filter: 'isPublishedRoot = true AND isHidden = false',
             indexUid: MOCK_INDEX,
             q: undefined,
+            sort: ['publicationUpdatedAt:desc'],
           },
         ],
       });
@@ -148,6 +149,7 @@ describe('Collection Search endpoints', () => {
             filter:
               "discipline IN ['random filter'] AND isPublishedRoot = true AND isHidden = false",
             indexUid: MOCK_INDEX,
+            sort: ['publicationUpdatedAt:desc'],
           },
         ],
       };
@@ -206,6 +208,7 @@ describe('Collection Search endpoints', () => {
             q: 'random query',
             filter: 'isPublishedRoot = true AND isHidden = false',
             indexUid: MOCK_INDEX,
+            sort: ['publicationUpdatedAt:desc'],
           },
         ],
       };
@@ -274,7 +277,7 @@ describe('Collection Search endpoints', () => {
 
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(indexSpy).toHaveBeenCalledTimes(1);
-        expect(indexSpy.mock.calls[0][0]).toMatchObject(payload);
+        expect(indexSpy.mock.calls[0][0].item).toMatchObject(payload);
       });
 
       describe('Move', () => {
@@ -308,8 +311,10 @@ describe('Collection Search endpoints', () => {
           await waitForExpect(moveDone(item.id, unpublishedFolder), 300);
           expect(indexSpy).toHaveBeenCalledTimes(1);
           // Path update is sent to index
-          expect(indexSpy.mock.calls[0][0].id).toEqual(item.id);
-          expect(indexSpy.mock.calls[0][0].path.startsWith(unpublishedFolder.path)).toBeTruthy();
+          expect(indexSpy.mock.calls[0][0].item.id).toEqual(item.id);
+          expect(
+            indexSpy.mock.calls[0][0].item.path.startsWith(unpublishedFolder.path),
+          ).toBeTruthy();
         });
 
         it('Move published into published folder should be indexed', async () => {
@@ -327,7 +332,7 @@ describe('Collection Search endpoints', () => {
           await waitForExpect(moveDone(item.id, publishedFolder), 300);
           expect(indexSpy).toHaveBeenCalledTimes(1);
           // Closest published at destination is reindexed
-          expect(indexSpy.mock.calls[0][0].id).toEqual(item.id);
+          expect(indexSpy.mock.calls[0][0].item.id).toEqual(item.id);
         });
 
         it('Move unpublished into published folder should be indexed', async () => {
@@ -348,7 +353,7 @@ describe('Collection Search endpoints', () => {
           await waitForExpect(moveDone(unpublishedItem.id, publishedFolder), 300);
           expect(indexSpy).toHaveBeenCalledTimes(1);
           // Topmost published at destination is reindexed
-          expect(indexSpy.mock.calls[0][0].id).toEqual(publishedFolder.id);
+          expect(indexSpy.mock.calls[0][0].item.id).toEqual(publishedFolder.id);
         });
 
         it(' Move unpublished nested inside published into unpublished should be deleted from index', async () => {
@@ -476,6 +481,7 @@ describe('Collection Search endpoints', () => {
                 type: 'folder',
                 isPublishedRoot: true,
                 isHidden: false,
+                publicationUpdatedAt: '2021-10-20T13:03:42.712Z',
                 createdAt: '2021-10-20T13:12:47.821Z',
                 updatedAt: '2021-10-23T09:25:39.798Z',
                 lang: 'en',
@@ -495,6 +501,7 @@ describe('Collection Search endpoints', () => {
                   type: 'folder',
                   isPublishedRoot: true,
                   isHidden: false,
+                  publicationUpdatedAt: '2021-10-20T13:03:42.712Z',
                   createdAt: '2021-10-20T13:12:47.821Z',
                   updatedAt: '2021-10-23T09:25:39.798Z',
                   lang: 'en',
@@ -516,6 +523,7 @@ describe('Collection Search endpoints', () => {
                 type: 'folder',
                 isPublishedRoot: true,
                 isHidden: false,
+                publicationUpdatedAt: '2021-10-20T13:03:42.712Z',
                 createdAt: '2021-10-20T13:03:42.712Z',
                 updatedAt: '2021-11-10T10:49:39.296Z',
                 lang: 'en',
@@ -535,6 +543,7 @@ describe('Collection Search endpoints', () => {
                   type: 'folder',
                   isPublishedRoot: true,
                   isHidden: false,
+                  publicationUpdatedAt: '2021-10-20T13:03:42.712Z',
                   createdAt: '2021-10-20T13:03:42.712Z',
                   updatedAt: '2021-11-10T10:49:39.296Z',
                   lang: 'en',
@@ -558,6 +567,117 @@ describe('Collection Search endpoints', () => {
       // should return the likes property
       res.json().hits.forEach(({ likes }) => {
         expect(likes).toBeGreaterThanOrEqual(0);
+      });
+    });
+  });
+  describe('GET /collections/recent', () => {
+    describe('Signed Out', () => {
+      it('Get 2 most recent collections', async () => {
+        // Meilisearch is mocked so format of API doesn't matter, we just want it to proxy MultiSearchParams;
+        const fakeResponse = {
+          results: [
+            {
+              indexUid: 'index',
+              hits: [
+                {
+                  name: 'Geogebra',
+                  description: 'Interactive tools from geogebra for mathematics.',
+                  content: '',
+                  creator: {
+                    id: v4(),
+                    name: 'Graasper',
+                  },
+                  level: [],
+                  discipline: [],
+                  'resource-type': [],
+                  id: v4(),
+                  type: 'folder',
+                  isPublishedRoot: true,
+                  isHidden: false,
+                  publicationUpdatedAt: '2021-10-20T13:03:42.712Z',
+                  createdAt: '2021-10-20T13:12:47.821Z',
+                  updatedAt: '2021-10-23T09:25:39.798Z',
+                  lang: 'en',
+                  likes: 9,
+                  _formatted: {
+                    name: 'Geogebra',
+                    description: 'Interactive tools from geogebra for mathematics.',
+                    content: '',
+                    creator: {
+                      id: v4(),
+                      name: 'Graasper',
+                    },
+                    level: [],
+                    discipline: [],
+                    'resource-type': [],
+                    id: v4(),
+                    type: 'folder',
+                    isPublishedRoot: true,
+                    isHidden: false,
+                    publicationUpdatedAt: '2021-10-20T13:03:42.712Z',
+                    createdAt: '2021-10-20T13:12:47.821Z',
+                    updatedAt: '2021-10-23T09:25:39.798Z',
+                    lang: 'en',
+                    likes: 9,
+                  },
+                },
+                {
+                  name: 'PhET',
+                  content: '',
+                  description: '',
+                  creator: {
+                    id: v4(),
+                    name: 'Graasper',
+                  },
+                  level: [],
+                  discipline: [],
+                  'resource-type': [],
+                  id: v4(),
+                  type: 'folder',
+                  isPublishedRoot: true,
+                  isHidden: false,
+                  publicationUpdatedAt: '2021-10-20T13:03:42.712Z',
+                  createdAt: '2021-10-20T13:03:42.712Z',
+                  updatedAt: '2021-11-10T10:49:39.296Z',
+                  lang: 'en',
+                  likes: 7,
+                  _formatted: {
+                    name: 'PhET',
+                    description: '',
+                    content: '',
+                    creator: {
+                      id: v4(),
+                      name: 'Graasper',
+                    },
+                    level: [],
+                    discipline: [],
+                    'resource-type': [],
+                    id: v4(),
+                    type: 'folder',
+                    isPublishedRoot: true,
+                    publicationUpdatedAt: '2021-10-20T13:03:42.712Z',
+                    isHidden: false,
+                    createdAt: '2021-10-20T13:03:42.712Z',
+                    updatedAt: '2021-11-10T10:49:39.296Z',
+                    lang: 'en',
+                    likes: 7,
+                  },
+                },
+              ] as never[],
+              processingTimeMs: 123,
+              query: '',
+            },
+          ],
+        };
+        jest.spyOn(MeiliSearchWrapper.prototype, 'search').mockResolvedValue(fakeResponse);
+
+        const res = await app.inject({
+          method: HttpMethod.Get,
+          url: `${ITEMS_ROUTE_PREFIX}/collections/recent?limit=2`,
+        });
+        expect(res.statusCode).toBe(StatusCodes.OK);
+
+        expect(res.json().hits).toHaveLength(2);
       });
     });
   });

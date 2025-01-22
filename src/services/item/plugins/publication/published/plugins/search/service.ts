@@ -78,6 +78,10 @@ export class SearchService {
     return await this.search({ sort: ['likes:desc'], limit });
   }
 
+  async getMostRecent(limit: number = GET_MOST_LIKED_ITEMS_MAXIMUM) {
+    return await this.search({ sort: ['publicationUpdatedAt:desc'], limit });
+  }
+
   async search(body: Omit<MultiSearchQuery, 'filter' | 'indexUid' | 'q'> & SearchFilters) {
     const { tags, langs, isPublishedRoot, query, creatorId, ...q } = body;
     const filters = this.buildFilters({ creatorId, tags, langs, isPublishedRoot });
@@ -88,6 +92,7 @@ export class SearchService {
         {
           indexUid: this.meilisearchClient.getActiveIndexName(),
           attributesToHighlight: ['*'],
+          sort: ['publicationUpdatedAt:desc'],
           ...q,
           q: query,
           filter: filters,
@@ -134,14 +139,6 @@ export class SearchService {
   ) {
     // Update index when itemPublished changes ------------------------------------------
 
-    itemPublishedService.hooks.setPostHook('create', async (member, repositories, { item }) => {
-      try {
-        await this.meilisearchClient.indexOne(item, repositories);
-      } catch {
-        this.logger.error('Error during indexation, Meilisearch may be down');
-      }
-    });
-
     itemPublishedService.hooks.setPostHook('delete', async (member, repositories, { item }) => {
       try {
         await this.meilisearchClient.deleteOne(item, repositories);
@@ -164,7 +161,7 @@ export class SearchService {
         }
 
         // update index
-        await this.meilisearchClient.indexOne(item, repositories);
+        await this.meilisearchClient.indexOne(published, repositories);
       } catch (e) {
         this.logger.error('Error during indexation, Meilisearch may be down');
       }
@@ -187,7 +184,7 @@ export class SearchService {
           return;
         }
         // update index
-        await this.meilisearchClient.indexOne(item, repositories);
+        await this.meilisearchClient.indexOne(published, repositories);
       } catch (e) {
         this.logger.error('Error during indexation, Meilisearch may be down');
       }
@@ -201,7 +198,7 @@ export class SearchService {
         if (published) {
           // destination or moved item is published, we must update the index
           // update index from published
-          await this.meilisearchClient.indexOne(published.item, repositories);
+          await this.meilisearchClient.indexOne(published, repositories);
         } else {
           // nothing published, we must delete if it exists in index
           await this.meilisearchClient.deleteOne(destination, repositories);

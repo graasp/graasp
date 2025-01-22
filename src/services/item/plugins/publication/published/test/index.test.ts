@@ -45,7 +45,6 @@ const expectPublishedEntry = (value, expectedValue) => {
 
 describe('Item Published', () => {
   let app: FastifyInstance;
-  let actor;
   const itemPublishedRawRepository = AppDataSource.getRepository(ItemPublished);
 
   beforeAll(async () => {
@@ -59,7 +58,6 @@ describe('Item Published', () => {
 
   afterEach(async () => {
     jest.clearAllMocks();
-    actor = null;
     unmockAuthenticate();
   });
 
@@ -146,44 +144,6 @@ describe('Item Published', () => {
           query: { categoryId: 'invalid-id' },
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
-      });
-    });
-  });
-
-  describe('GET /collections/recent', () => {
-    describe('Signed Out', () => {
-      let member;
-      let collections: Item[];
-
-      beforeEach(async () => {
-        member = await saveMember();
-        ({ items: collections } = await testUtils.saveCollections(member));
-      });
-
-      it('Get 2 most recent collections', async () => {
-        const res = await app.inject({
-          method: HttpMethod.Get,
-          url: `${ITEMS_ROUTE_PREFIX}/collections/recent`,
-          query: { limit: '2' },
-        });
-        expect(res.statusCode).toBe(StatusCodes.OK);
-
-        expect(res.json()).toHaveLength(2);
-      });
-
-      it('Get recent published collections without hidden', async () => {
-        const hiddenCollection = collections[0];
-        await rawRepository.save({
-          item: hiddenCollection,
-          creator: actor,
-          type: ItemVisibilityType.Hidden,
-        });
-        const res = await app.inject({
-          method: HttpMethod.Get,
-          url: `${ITEMS_ROUTE_PREFIX}/collections/recent`,
-        });
-        expect(res.statusCode).toBe(StatusCodes.OK);
-        expect(res.json().map(({ id }) => id)).not.toContain(hiddenCollection.id);
       });
     });
   });
@@ -275,7 +235,7 @@ describe('Item Published', () => {
 
         // Publishing an item triggers an indexing
         expect(indexSpy).toHaveBeenCalledTimes(1);
-        expectItem(indexSpy.mock.calls[0][0], item);
+        expectItem(indexSpy.mock.calls[0][0].item, item);
       });
 
       it('Publish item with admin rights and send notification', async () => {
