@@ -197,13 +197,9 @@ export class MeiliSearchWrapper {
       content: await this.getContent(item),
       isPublishedRoot: isPublishedRoot,
       isHidden: isHidden,
-      // todo: fix these types
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      createdAt: item.createdAt,
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      updatedAt: item.updatedAt,
+      // todo: fix typings
+      createdAt: item.createdAt.toISOString(),
+      updatedAt: item.updatedAt.toISOString(),
       lang: item.lang,
       likes: likesCount,
       ...tagsByCategory,
@@ -245,7 +241,7 @@ export class MeiliSearchWrapper {
   }
 
   async index(
-    itemPublisheds: ItemPublished[],
+    manyItemPublished: ItemPublished[],
     repositories: Repositories,
     targetIndex: ALLOWED_INDICES = ACTIVE_INDEX,
   ): Promise<EnqueuedTask> {
@@ -256,7 +252,7 @@ export class MeiliSearchWrapper {
         publicationUpdatedAt: string;
         item: Item;
       }[] = [];
-      for (const p of itemPublisheds) {
+      for (const p of manyItemPublished) {
         const isHidden = await repositories.itemVisibilityRepository.getManyBelowAndSelf(p.item, [
           ItemVisibilityType.Hidden,
         ]);

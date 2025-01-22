@@ -43,14 +43,14 @@ const mockItemPublished = ({ id, path }: { id: string; path: string }) => {
   return {
     item: {
       id,
-      createdAt: Date(),
-      updatedAt: Date(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
       type: ItemType.FOLDER,
       path,
     } as unknown as Item,
     createdAt: new Date(),
     updatedAt: new Date(),
-  } as ItemPublished;
+  } as unknown as ItemPublished;
 };
 
 describe('MeilisearchWrapper', () => {
@@ -489,32 +489,30 @@ describe('MeilisearchWrapper', () => {
   });
 
   describe('rebuilds index', () => {
-    // it('reindex all items', async () => {
-    //   const publishedItemsInDb = Array.from({ length: 13 }, (_, index) => {
-    //     return mockItemPublished(index.toString());
-    //   });
-    //   jest.spyOn(repositoriesModule, 'buildRepositories').mockReturnValue(repositories);
-    //   // prevent finding any PDFs to store because this part is temporary
-    //   jest.spyOn(testUtils.itemRepository, 'findAndCount').mockResolvedValue([[], 0]);
-    //   // fake pagination
-    //   itemPublishedRepositoryMock.getPaginatedItems.mockImplementation((page, _) => {
-    //     if (page === 1) {
-    //       return Promise.resolve([publishedItemsInDb.slice(0, 10), publishedItemsInDb.length]);
-    //     } else if (page === 2) {
-    //       return Promise.resolve([publishedItemsInDb.slice(10), publishedItemsInDb.length]);
-    //     } else {
-    //       throw new Error();
-    //     }
-    //   });
-    //   const indexSpy = jest
-    //     .spyOn(MeiliSearchWrapper.prototype, 'index')
-    //     .mockResolvedValue({ taskUid: '1' } as unknown as EnqueuedTask);
-    //   await meilisearch.rebuildIndex(10);
-    //   expect(indexSpy).toHaveBeenCalledTimes(2);
-    //   expect(indexSpy.mock.calls[0][0]).toEqual(
-    //     publishedItemsInDb.slice(0, 10).map((pi) => pi.item),
-    //   );
-    //   expect(indexSpy.mock.calls[1][0]).toEqual(publishedItemsInDb.slice(10).map((pi) => pi.item));
-    // });
+    it('reindex all items', async () => {
+      const publishedItemsInDb = Array.from({ length: 13 }, (_, index) => {
+        return mockItemPublished({ id: index.toString(), path: index.toString() });
+      });
+      jest.spyOn(repositoriesModule, 'buildRepositories').mockReturnValue(repositories);
+      // prevent finding any PDFs to store because this part is temporary
+      jest.spyOn(testUtils.itemRepository, 'findAndCount').mockResolvedValue([[], 0]);
+      // fake pagination
+      itemPublishedRepositoryMock.getPaginatedItems.mockImplementation((page, _) => {
+        if (page === 1) {
+          return Promise.resolve([publishedItemsInDb.slice(0, 10), publishedItemsInDb.length]);
+        } else if (page === 2) {
+          return Promise.resolve([publishedItemsInDb.slice(10), publishedItemsInDb.length]);
+        } else {
+          throw new Error();
+        }
+      });
+      const indexSpy = jest
+        .spyOn(MeiliSearchWrapper.prototype, 'index')
+        .mockResolvedValue({ taskUid: '1' } as unknown as EnqueuedTask);
+      await meilisearch.rebuildIndex(10);
+      expect(indexSpy).toHaveBeenCalledTimes(2);
+      expect(indexSpy.mock.calls[0][0]).toEqual(publishedItemsInDb.slice(0, 10));
+      expect(indexSpy.mock.calls[1][0]).toEqual(publishedItemsInDb.slice(10));
+    });
   });
 });

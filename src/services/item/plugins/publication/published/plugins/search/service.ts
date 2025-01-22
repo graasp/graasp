@@ -79,7 +79,7 @@ export class SearchService {
   }
 
   async getMostRecent(limit: number = GET_MOST_LIKED_ITEMS_MAXIMUM) {
-    return await this.search({ sort: ['publishedUpdatedAt:desc'], limit });
+    return await this.search({ sort: ['publicationUpdatedAt:desc'], limit });
   }
 
   async search(body: Omit<MultiSearchQuery, 'filter' | 'indexUid' | 'q'> & SearchFilters) {
@@ -92,7 +92,7 @@ export class SearchService {
         {
           indexUid: this.meilisearchClient.getActiveIndexName(),
           attributesToHighlight: ['*'],
-          sort: ['publishedUpdatedAt:desc'],
+          sort: ['publicationUpdatedAt:desc'],
           ...q,
           q: query,
           filter: filters,
