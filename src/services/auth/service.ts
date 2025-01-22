@@ -1,9 +1,9 @@
 import { sign } from 'jsonwebtoken';
 import { singleton } from 'tsyringe';
 
+import { TRANSLATIONS } from '../../langs/constants';
 import { BaseLogger } from '../../logger';
 import { MailBuilder } from '../../plugins/mailer/builder';
-import { MAIL } from '../../plugins/mailer/langs/constants';
 import { MailerService } from '../../plugins/mailer/service';
 import {
   JWT_SECRET,
@@ -46,12 +46,12 @@ export class AuthService {
     const link = destination.toString();
 
     const mail = new MailBuilder({
-      subject: { text: MAIL.SIGN_UP_TITLE },
+      subject: { text: TRANSLATIONS.SIGN_UP_TITLE },
       lang: member.lang,
     })
-      .addText(MAIL.GREETINGS)
-      .addText(MAIL.SIGN_UP_TEXT)
-      .addButton(MAIL.SIGN_UP_BUTTON_TEXT, link)
+      .addText(TRANSLATIONS.GREETINGS)
+      .addText(TRANSLATIONS.SIGN_UP_TEXT)
+      .addButton(TRANSLATIONS.SIGN_UP_BUTTON_TEXT, link)
       .addUserAgreement()
       .addIgnoreEmailIfNotRequestedNotice()
       .build();
@@ -81,11 +81,11 @@ export class AuthService {
     const link = destination.toString();
 
     const mail = new MailBuilder({
-      subject: { text: MAIL.SIGN_IN_TITLE },
+      subject: { text: TRANSLATIONS.SIGN_IN_TITLE },
       lang: member.lang,
     })
-      .addText(MAIL.SIGN_IN_TEXT)
-      .addButton(MAIL.SIGN_IN_BUTTON_TEXT, link)
+      .addText(TRANSLATIONS.SIGN_IN_TEXT)
+      .addButton(TRANSLATIONS.SIGN_IN_BUTTON_TEXT, link)
       .addIgnoreEmailIfNotRequestedNotice()
       .build();
 

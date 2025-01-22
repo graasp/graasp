@@ -2,8 +2,8 @@ import { singleton } from 'tsyringe';
 
 import { MentionStatus, PermissionLevel, buildItemLinkForBuilder } from '@graasp/sdk';
 
+import { TRANSLATIONS } from '../../../../langs/constants';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
-import { MAIL } from '../../../../plugins/mailer/langs/constants';
 import { MailerService } from '../../../../plugins/mailer/service';
 import { BUILDER_HOST } from '../../../../utils/config';
 import HookManager from '../../../../utils/hook';
@@ -41,7 +41,7 @@ export class MentionService {
 
     const mail = new MailBuilder({
       subject: {
-        text: MAIL.CHAT_MENTION_TITLE,
+        text: TRANSLATIONS.CHAT_MENTION_TITLE,
         translationVariables: {
           creatorName: creator.name,
           itemName: item.name,
@@ -49,11 +49,11 @@ export class MentionService {
       },
       lang: member.lang,
     })
-      .addText(MAIL.CHAT_MENTION_TEXT, {
+      .addText(TRANSLATIONS.CHAT_MENTION_TEXT, {
         creatorName: creator.name,
         itemName: item.name,
       })
-      .addButton(MAIL.CHAT_MENTION_BUTTON_TEXT, itemLink)
+      .addButton(TRANSLATIONS.CHAT_MENTION_BUTTON_TEXT, itemLink)
       .build();
 
     this.mailerService.send(mail, member.email).catch((err) => {

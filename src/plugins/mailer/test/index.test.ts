@@ -4,9 +4,9 @@ import { FastifyInstance } from 'fastify';
 
 import build, { clearDatabase } from '../../../../test/app';
 import { resolveDependency } from '../../../di/utils';
+import { TRANSLATIONS } from '../../../langs/constants';
+import enTranslations from '../../../langs/en.json';
 import { MailBuilder } from '../builder';
-import { MAIL } from '../langs/constants';
-import enTranslations from '../langs/en.json';
 import { MailerService } from '../service';
 
 describe('Mailer', () => {
@@ -40,10 +40,10 @@ describe('Mailer', () => {
 
     it('addButton generates button given link and text', () => {
       const link = 'mylink';
-      const text = MAIL.GREETINGS;
+      const text = TRANSLATIONS.GREETINGS;
 
       const mail = new MailBuilder({
-        subject: { text: MAIL.SIGN_UP_TITLE },
+        subject: { text: TRANSLATIONS.SIGN_UP_TITLE },
       })
         .addButton(text, link)
         .build();
@@ -54,10 +54,10 @@ describe('Mailer', () => {
     });
 
     it('addText generates text paragraph', () => {
-      const text = MAIL.GREETINGS;
+      const text = TRANSLATIONS.GREETINGS;
 
       const mail = new MailBuilder({
-        subject: { text: MAIL.SIGN_UP_TITLE },
+        subject: { text: TRANSLATIONS.SIGN_UP_TITLE },
       })
         .addText(text)
         .build();
@@ -69,13 +69,13 @@ describe('Mailer', () => {
     it('builds mail', async () => {
       const mail = new MailBuilder({
         subject: {
-          text: MAIL.MEMBERSHIP_REQUEST_TITLE,
+          text: TRANSLATIONS.MEMBERSHIP_REQUEST_TITLE,
           translationVariables: { itemName, memberName },
         },
         lang,
       })
-        .addText(MAIL.MEMBERSHIP_REQUEST_TEXT, { itemName, memberName })
-        .addButton(MAIL.MEMBERSHIP_REQUEST_BUTTON_TEXT, link, { itemName })
+        .addText(TRANSLATIONS.MEMBERSHIP_REQUEST_TEXT, { itemName, memberName })
+        .addButton(TRANSLATIONS.MEMBERSHIP_REQUEST_BUTTON_TEXT, link, { itemName })
         .build();
 
       await mailerService.send(mail, email);
@@ -96,13 +96,13 @@ describe('Mailer', () => {
 
       const mail = new MailBuilder({
         subject: {
-          text: MAIL.MEMBERSHIP_REQUEST_TITLE,
+          text: TRANSLATIONS.MEMBERSHIP_REQUEST_TITLE,
           translationVariables: { itemName, memberName },
         },
         lang: lang,
       })
-        .addText(MAIL.MEMBERSHIP_REQUEST_TEXT, { itemName, memberName })
-        .addButton(MAIL.MEMBERSHIP_REQUEST_BUTTON_TEXT, link, { itemName })
+        .addText(TRANSLATIONS.MEMBERSHIP_REQUEST_TEXT, { itemName, memberName })
+        .addButton(TRANSLATIONS.MEMBERSHIP_REQUEST_BUTTON_TEXT, link, { itemName })
         .build();
 
       await mailerService.send(mail, email);
@@ -120,12 +120,12 @@ describe('Mailer', () => {
     it('user agreement and sign up not requested blocks are generated', async () => {
       const mail = new MailBuilder({
         subject: {
-          text: MAIL.MEMBERSHIP_REQUEST_TITLE,
+          text: TRANSLATIONS.MEMBERSHIP_REQUEST_TITLE,
           translationVariables: { itemName, memberName },
         },
       })
-        .addText(MAIL.MEMBERSHIP_REQUEST_TEXT, { itemName, memberName })
-        .addButton(MAIL.MEMBERSHIP_REQUEST_BUTTON_TEXT, link, { itemName })
+        .addText(TRANSLATIONS.MEMBERSHIP_REQUEST_TEXT, { itemName, memberName })
+        .addButton(TRANSLATIONS.MEMBERSHIP_REQUEST_BUTTON_TEXT, link, { itemName })
         .addUserAgreement()
         .addIgnoreEmailIfNotRequestedNotice()
         .build();
