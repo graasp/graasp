@@ -19,7 +19,7 @@ import {
   memberItemsTopic,
 } from '../../../ws/events';
 import { ItemPublishedService } from '../published/service';
-import { itemValidation, itemValidationGroup } from './schemas';
+import { getItemValidationGroup, getLatestItemValidationGroup, validateItem } from './schemas';
 import { ItemValidationService } from './service';
 import { assertItemIsFolder } from './utils';
 
@@ -34,15 +34,18 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.get(
     '/:itemId/validations/latest',
     {
-      schema: itemValidation,
-
+      schema: getLatestItemValidationGroup,
       preHandler: [isAuthenticated, matchOne(memberAccountRole)],
     },
     async ({ user, params: { itemId } }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
       const item = await itemService.get(member, buildRepositories(), itemId);
-      return validationService.getLastItemValidationGroupForItem(member, buildRepositories(), item);
+      return await validationService.getLastItemValidationGroupForItem(
+        member,
+        buildRepositories(),
+        item,
+      );
     },
   );
 
@@ -50,13 +53,13 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.get(
     '/:itemId/validations/:itemValidationGroupId',
     {
-      schema: itemValidationGroup,
+      schema: getItemValidationGroup,
       preHandler: [isAuthenticated, matchOne(memberAccountRole)],
     },
     async ({ user, params: { itemValidationGroupId } }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return validationService.getItemValidationGroup(
+      return await validationService.getItemValidationGroup(
         member,
         buildRepositories(),
         itemValidationGroupId,
@@ -68,7 +71,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.post(
     '/:itemId/validate',
     {
-      schema: itemValidation,
+      schema: validateItem,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
     async (request, reply) => {
