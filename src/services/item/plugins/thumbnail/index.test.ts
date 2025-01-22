@@ -6,7 +6,7 @@ import path from 'path';
 
 import { FastifyInstance } from 'fastify';
 
-import { FolderItemFactory, HttpMethod, ThumbnailSize } from '@graasp/sdk';
+import { HttpMethod, ThumbnailSize } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
