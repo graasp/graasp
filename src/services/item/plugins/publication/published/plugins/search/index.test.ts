@@ -91,7 +91,6 @@ describe('Collection Search endpoints', () => {
             filter: 'isPublishedRoot = true AND isHidden = false',
             indexUid: MOCK_INDEX,
             q: undefined,
-            sort: ['publicationUpdatedAt:desc'],
           },
         ],
       });
@@ -149,7 +148,6 @@ describe('Collection Search endpoints', () => {
             filter:
               "discipline IN ['random filter'] AND isPublishedRoot = true AND isHidden = false",
             indexUid: MOCK_INDEX,
-            sort: ['publicationUpdatedAt:desc'],
           },
         ],
       };
@@ -208,7 +206,6 @@ describe('Collection Search endpoints', () => {
             q: 'random query',
             filter: 'isPublishedRoot = true AND isHidden = false',
             indexUid: MOCK_INDEX,
-            sort: ['publicationUpdatedAt:desc'],
           },
         ],
       };
