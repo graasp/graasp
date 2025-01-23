@@ -67,7 +67,7 @@ export const create = {
 } as const satisfies FastifySchema;
 
 export const deleteOne = {
-  operationId: 'getOwnFavorite',
+  operationId: 'deleteFavorite',
   tags: ['favorite'],
   summary: 'Remove item from bookmarks',
   description: 'Remove item from bookmarks',

@@ -283,7 +283,7 @@ export const postChangeEmail = {
 } as const satisfies FastifySchema;
 
 export const patchChangeEmail = {
-  operationId: 'postChangeEmail',
+  operationId: 'patchChangeEmail',
   tags: ['member', 'email'],
   summary: 'Change email',
   description: 'Change email for current authenticated member.',
