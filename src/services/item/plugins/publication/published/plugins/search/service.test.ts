@@ -146,6 +146,25 @@ describe('getMostLiked', () => {
   });
 });
 
+describe('getMostRecent', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+  it('apply sort by publication updatedAt', async () => {
+    const MOCK_RESULT = { hits: [] } as never;
+    const spy = jest
+      .spyOn(meilisearchClient, 'search')
+      .mockResolvedValue({ results: [MOCK_RESULT] });
+
+    const results = await searchService.getMostRecent(4);
+    expect(results).toEqual(MOCK_RESULT);
+
+    const { sort, limit } = spy.mock.calls[0][0].queries[0];
+    expect(sort).toEqual(['publicationUpdatedAt:desc']);
+    expect(limit).toEqual(4);
+  });
+});
+
 describe('getFacets', () => {
   afterEach(() => {
     jest.clearAllMocks();

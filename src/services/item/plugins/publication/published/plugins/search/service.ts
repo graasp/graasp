@@ -4,7 +4,10 @@ import { singleton } from 'tsyringe';
 import { TagCategory, UUID } from '@graasp/sdk';
 
 import { BaseLogger } from '../../../../../../../logger';
-import { GET_MOST_LIKED_ITEMS_MAXIMUM } from '../../../../../../../utils/config';
+import {
+  GET_MOST_LIKED_ITEMS_MAXIMUM,
+  GET_MOST_RECENT_ITEMS_MAXIMUM,
+} from '../../../../../../../utils/config';
 import { Tag } from '../../../../../../tag/Tag.entity';
 import { ItemService } from '../../../../../service';
 import { ItemPublishedService } from '../../service';
@@ -78,7 +81,7 @@ export class SearchService {
     return await this.search({ sort: ['likes:desc'], limit });
   }
 
-  async getMostRecent(limit: number = GET_MOST_LIKED_ITEMS_MAXIMUM) {
+  async getMostRecent(limit: number = GET_MOST_RECENT_ITEMS_MAXIMUM) {
     return await this.search({ sort: ['publicationUpdatedAt:desc'], limit });
   }
 
@@ -92,7 +95,6 @@ export class SearchService {
         {
           indexUid: this.meilisearchClient.getActiveIndexName(),
           attributesToHighlight: ['*'],
-          sort: ['publicationUpdatedAt:desc'],
           ...q,
           q: query,
           filter: filters,
