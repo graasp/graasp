@@ -50,6 +50,7 @@ import { IS_COPY_REGEX, MAX_COPY_SUFFIX_LENGTH } from './constants';
 import { FolderItem, Item, isItemType } from './entities/Item';
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
 import { PartialItemGeolocation } from './plugins/geolocation/errors';
+import { ItemGeolocationRepository } from './plugins/geolocation/repository';
 import { ItemVisibility } from './plugins/itemVisibility/ItemVisibility';
 import { MeiliSearchWrapper } from './plugins/publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from './plugins/thumbnail/service';
@@ -108,62 +109,120 @@ export class ItemService {
       previousItemId?: Item['id'];
     },
   ): Promise<Item> {
-    const { itemRepository, itemMembershipRepository, itemGeolocationRepository } = repositories;
+    const { itemGeolocationRepository } = repositories;
 
-    const { item, parentId, geolocation, thumbnail } = args;
+    const { item, parentId, previousItemId, geolocation, thumbnail } = args;
 
+    // item
+    const createdItem = await this.createItem(member, repositories, item, parentId, previousItemId);
+    const createdItemId = createdItem.id;
+
+    // geolocation
+    if (geolocation) {
+      await this.registerGeolocations(itemGeolocationRepository, { [createdItemId]: geolocation });
+    }
+
+    // thumbnail
+    if (thumbnail) {
+      await this.uploadThumbnails(member, repositories, { [createdItemId]: thumbnail });
+    }
+
+    return createdItem;
+  }
+
+  private async createItem(
+    member: Member,
+    repositories: Repositories,
+    item: Partial<Item> & Pick<Item, 'name' | 'type'>,
+    parentId?: string,
+    previousItemId?: string,
+  ) {
     // name and type should exist
     if (!item.name || !item.type) {
       throw new MissingNameOrTypeForItemError(item);
     }
 
-    // lat and lng should exist together
-    const { lat, lng } = geolocation || {};
-    if ((lat && !lng) || (lng && !lat)) {
-      throw new PartialItemGeolocation({ lat, lng });
-    }
-
     this.log.debug(`run prehook for ${item.name}`);
     await this.hooks.runPreHooks('create', member, repositories, { item }, this.log);
 
-    let inheritedMembership;
-    let parentItem: Item | undefined = undefined;
-    // TODO: HOOK?
-    // check permission over parent
+    let createdItem: Item;
     if (parentId) {
-      this.log.debug(`verify parent ${parentId} exists and has permission over it`);
-      parentItem = await this.get(member, repositories, parentId, PermissionLevel.Write);
-      inheritedMembership = await itemMembershipRepository.getInherited(
-        parentItem.path,
-        member.id,
-        true,
+      createdItem = await this.createItemWithParent(
+        member,
+        repositories,
+        item,
+        parentId,
+        previousItemId,
       );
-
-      // quick check, necessary for ts
-      if (!isItemType(parentItem, ItemType.FOLDER)) {
-        throw new ItemNotFolder(parentItem);
-      }
-
-      itemRepository.checkHierarchyDepth(parentItem);
-
-      // check if there's too many children under the same parent
-      const descendants = await itemRepository.getChildren(member, parentItem);
-      if (descendants.length + 1 > MAX_NUMBER_OF_CHILDREN) {
-        throw new TooManyChildren();
-      }
-
-      // no previous item adds at the beginning
-      if (!args.previousItemId) {
-        item.order = await repositories.itemRepository.getFirstOrderValue(parentItem.path);
-      }
-      // define order, from given previous item id if exists
-      else {
-        item.order = await repositories.itemRepository.getNextOrderCount(
-          parentItem.path,
-          args.previousItemId,
-        );
-      }
+    } else {
+      createdItem = await this.createItemAndMemberships(member, repositories, item, null);
     }
+
+    this.log.debug(`run posthook for ${createdItem.id}`);
+    await this.hooks.runPostHooks('create', member, repositories, { item: createdItem }, this.log);
+
+    return createdItem;
+  }
+
+  private async createItemWithParent(
+    member: Member,
+    repositories: Repositories,
+    item: Partial<Item> & Pick<Item, 'name' | 'type'>,
+    parentId: string,
+    previousItemId?: string,
+  ) {
+    const { itemRepository, itemMembershipRepository } = repositories;
+
+    this.log.debug(`verify parent ${parentId} exists and has permission over it`);
+    const parentItem = await this.get(member, repositories, parentId, PermissionLevel.Write);
+    const inheritedMembership = await itemMembershipRepository.getInherited(
+      parentItem.path,
+      member.id,
+      true,
+    );
+
+    // quick check, necessary for ts
+    if (!isItemType(parentItem, ItemType.FOLDER)) {
+      throw new ItemNotFolder(parentItem);
+    }
+
+    itemRepository.checkHierarchyDepth(parentItem);
+
+    // check if there's too many children under the same parent
+    const descendants = await itemRepository.getChildren(member, parentItem);
+    if (descendants.length + 1 > MAX_NUMBER_OF_CHILDREN) {
+      throw new TooManyChildren();
+    }
+
+    // no previous item adds at the beginning
+    if (!previousItemId) {
+      item.order = await repositories.itemRepository.getFirstOrderValue(parentItem.path);
+    }
+    // define order, from given previous item id if exists
+    else {
+      item.order = await repositories.itemRepository.getNextOrderCount(
+        parentItem.path,
+        previousItemId,
+      );
+    }
+
+    return this.createItemAndMemberships(
+      member,
+      repositories,
+      item,
+      inheritedMembership,
+      parentItem,
+    );
+  }
+
+  private async createItemAndMemberships(
+    member: Member,
+    repositories: Repositories,
+    item: Partial<Item> & Pick<Item, 'name' | 'type'>,
+    inheritedMembership: ItemMembership | null,
+    parentItem?: Item,
+  ) {
+    const { itemRepository, itemMembershipRepository } = repositories;
 
     this.log.debug(`create item ${item.name}`);
     const createdItem = await itemRepository.addOne({
@@ -187,24 +246,43 @@ export class ItemService {
       });
     }
 
-    this.log.debug(`run posthook for ${createdItem.id}`);
-    await this.hooks.runPostHooks('create', member, repositories, { item: createdItem }, this.log);
-
-    // geolocation
-    if (geolocation) {
-      await itemGeolocationRepository.put(createdItem.path, geolocation);
-    }
-
-    // thumbnail
-    if (thumbnail) {
-      await this.thumbnailService.upload(member, createdItem.id, thumbnail);
-      await this.patch(member, repositories, createdItem.id, {
-        settings: { hasThumbnail: true },
-      });
-      // set in the item
-      createdItem.settings = { hasThumbnail: true };
-    }
     return createdItem;
+  }
+
+  private async registerGeolocations(
+    itemGeolocationRepository: ItemGeolocationRepository,
+    geolocations: { [key: string]: Pick<ItemGeolocation, 'lat' | 'lng'> },
+  ) {
+    return Promise.all(
+      Object.keys(geolocations).map(async (itemPath) => {
+        const geolocation = geolocations[itemPath];
+
+        // lat and lng should exist together
+        const { lat, lng } = geolocation || {};
+        if ((lat && !lng) || (lng && !lat)) {
+          throw new PartialItemGeolocation({ lat, lng });
+        }
+        return await itemGeolocationRepository.put(itemPath, geolocation);
+      }),
+    );
+  }
+
+  private async uploadThumbnails(
+    member: Member,
+    repositories: Repositories,
+    thumbnails: { [key: string]: Readable | undefined },
+  ) {
+    return Promise.all(
+      Object.keys(thumbnails).map(async (itemId) => {
+        const thumbnail = thumbnails[itemId];
+        if (thumbnail) {
+          await this.thumbnailService.upload(member, itemId, thumbnail);
+          return this.patch(member, repositories, itemId, {
+            settings: { hasThumbnail: true },
+          });
+        }
+      }),
+    );
   }
 
   /**
