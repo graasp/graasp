@@ -13,7 +13,7 @@ import {
 } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../test/app';
-import seed from '../../../test/mocks';
+import seed from '../../../test/mocks/seed';
 import '../../plugins/datasource';
 import { ItemMembership } from '../itemMembership/entities/ItemMembership';
 import { Actor } from '../member/entities/member';
