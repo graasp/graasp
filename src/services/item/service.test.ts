@@ -2,7 +2,7 @@ import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
-import { FolderItemFactory, ItemType, ItemVisibilityType, buildPathFromIds } from '@graasp/sdk';
+import { FolderItemFactory, ItemType, ItemVisibilityType } from '@graasp/sdk';
 
 import build, { MOCK_LOGGER, clearDatabase, mockAuthenticate } from '../../../test/app';
 import { seedFromJson } from '../../../test/mocks/seed';

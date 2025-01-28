@@ -73,7 +73,7 @@ const replaceActorInItems = (createdActor?: Actor, items?: DataType['items']) =>
     return [];
   }
 
-  return items?.map((i) => ({
+  return items.map((i) => ({
     ...i,
     creator: i.creator === 'actor' ? createdActor : null,
     memberships: i.memberships?.map((m) => ({

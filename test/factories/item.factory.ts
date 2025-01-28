@@ -14,7 +14,7 @@ export const ItemFactory = (item: Partial<Item>) => ({
   type: ItemType.FOLDER,
   order: null,
   name: faker.word.words(2),
-  description: item.description ?? faker.lorem.text(),
+  description: faker.lorem.text(),
   extra: { folder: {} },
   settings:
     item.settings ??
@@ -27,7 +27,6 @@ export const ItemFactory = (item: Partial<Item>) => ({
         isResizable: faker.datatype.boolean(),
         isCollapsible: faker.datatype.boolean(),
         enableSaveActions: faker.datatype.boolean(),
-        tags: faker.lorem.words({ min: 1, max: 10 }).split(' '),
         displayCoEditors: faker.datatype.boolean(),
         ccLicenseAdaption: faker.helpers.enumValue(CCLicenseAdaptions),
       },
