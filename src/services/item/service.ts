@@ -142,9 +142,6 @@ export class ItemService {
       throw new MissingNameOrTypeForItemError(item);
     }
 
-    this.log.debug(`run prehook for ${item.name}`);
-    await this.hooks.runPreHooks('create', member, repositories, { item }, this.log);
-
     let createdItem: Item;
     if (parentId) {
       createdItem = await this.createItemWithParent(
@@ -158,8 +155,7 @@ export class ItemService {
       createdItem = await this.createItemAndMemberships(member, repositories, item, null);
     }
 
-    this.log.debug(`run posthook for ${createdItem.id}`);
-    await this.hooks.runPostHooks('create', member, repositories, { item: createdItem }, this.log);
+    this.indexItem(createdItem, repositories);
 
     return createdItem;
   }
@@ -283,6 +279,22 @@ export class ItemService {
         }
       }),
     );
+  }
+
+  private async indexItem(item: Item, repositories: Repositories) {
+    try {
+      // Check if the item is published (or has published parent)
+      const published = await repositories.itemPublishedRepository.getForItem(item);
+
+      if (!published) {
+        return;
+      }
+
+      // update index
+      await this.meilisearchWrapper.indexOne(published, repositories);
+    } catch (e) {
+      this.log.error('Error during indexation, Meilisearch may be down');
+    }
   }
 
   /**
