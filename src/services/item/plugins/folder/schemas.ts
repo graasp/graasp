@@ -45,10 +45,10 @@ export const createFolder = {
 } as const satisfies FastifySchema;
 
 export const createFolderWithThumbnail = {
-  operationId: 'createItemWithThumbnail',
+  operationId: 'createFolderWithThumbnail',
   tags: ['item', 'thumbnail'],
-  summary: 'Create an item with a thumbnail',
-  description: 'Create an item with a thumbnail. The data is sent using a form-data.',
+  summary: 'Create a folder with a thumbnail',
+  description: 'Create a folder with a thumbnail. The data is sent using a form-data.',
 
   querystring: Type.Partial(customType.StrictObject({ parentId: customType.UUID() })),
   response: { [StatusCodes.OK]: folderSchema, '4xx': errorSchemaRef },
