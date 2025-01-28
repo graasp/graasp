@@ -98,6 +98,28 @@ export class ItemService {
     this.log = log;
   }
 
+  async postMany(
+    member: Member,
+    repositories: Repositories,
+    items: Partial<Item> & Pick<Item, 'id' | 'name' | 'type'>[],
+    geolocations: { [key: string]: Pick<ItemGeolocation, 'lat' | 'lng'> },
+    thumbnails: { [key: string]: Readable },
+    parentId?: string,
+  ): Promise<Item[]> {
+    const { itemGeolocationRepository } = repositories;
+
+    // create items
+    const createdItems = await this.createItems(member, repositories, items, parentId);
+
+    // register geolocations
+    await this.registerGeolocations(itemGeolocationRepository, geolocations);
+
+    // upload thumbnails
+    await this.uploadThumbnails(member, repositories, thumbnails);
+
+    return createdItems;
+  }
+
   async post(
     member: Member,
     repositories: Repositories,
@@ -114,7 +136,13 @@ export class ItemService {
     const { item, parentId, previousItemId, geolocation, thumbnail } = args;
 
     // item
-    const createdItem = await this.createItem(member, repositories, item, parentId, previousItemId);
+    const createdItem = await this.createItems(
+      member,
+      repositories,
+      [item],
+      parentId,
+      previousItemId,
+    )[0];
     const createdItemId = createdItem.id;
 
     // geolocation
@@ -130,46 +158,48 @@ export class ItemService {
     return createdItem;
   }
 
-  private async createItem(
+  private async createItems(
     member: Member,
     repositories: Repositories,
-    item: Partial<Item> & Pick<Item, 'name' | 'type'>,
+    items: (Partial<Item> & Pick<Item, 'name' | 'type'>)[],
     parentId?: string,
     previousItemId?: string,
   ) {
     // name and type should exist
-    if (!item.name || !item.type) {
-      throw new MissingNameOrTypeForItemError(item);
+    for (const item of items) {
+      if (!item.name || !item.type) {
+        throw new MissingNameOrTypeForItemError(item);
+      }
     }
 
-    let createdItem: Item;
+    let createdItems: Item[];
     if (parentId) {
-      createdItem = await this.createItemWithParent(
+      createdItems = await this.createItemsWithParent(
         member,
         repositories,
-        item,
+        items,
         parentId,
         previousItemId,
-      );
+      )[0];
     } else {
-      createdItem = await this.createItemAndMemberships(member, repositories, item, null);
+      createdItems = await this.createItemsAndMemberships(member, repositories, items, null)[0];
     }
 
-    this.indexItem(createdItem, repositories);
+    this.indexItems(createdItems, repositories);
 
-    return createdItem;
+    return createdItems;
   }
 
-  private async createItemWithParent(
+  private async createItemsWithParent(
     member: Member,
     repositories: Repositories,
-    item: Partial<Item> & Pick<Item, 'name' | 'type'>,
+    items: (Partial<Item> & Pick<Item, 'name' | 'type'>)[],
     parentId: string,
     previousItemId?: string,
   ) {
     const { itemRepository, itemMembershipRepository } = repositories;
 
-    this.log.debug(`verify parent ${parentId} exists and has permission over it`);
+    this.log.debug(`verify parent ${parentId} exists and the member has permission over it`);
     const parentItem = await this.get(member, repositories, parentId, PermissionLevel.Write);
     const inheritedMembership = await itemMembershipRepository.getInherited(
       parentItem.path,
@@ -186,63 +216,77 @@ export class ItemService {
 
     // check if there's too many children under the same parent
     const descendants = await itemRepository.getChildren(member, parentItem);
-    if (descendants.length + 1 > MAX_NUMBER_OF_CHILDREN) {
+    if (descendants.length + items.length > MAX_NUMBER_OF_CHILDREN) {
       throw new TooManyChildren();
     }
 
-    // no previous item adds at the beginning
-    if (!previousItemId) {
-      item.order = await repositories.itemRepository.getFirstOrderValue(parentItem.path);
-    }
-    // define order, from given previous item id if exists
-    else {
-      item.order = await repositories.itemRepository.getNextOrderCount(
-        parentItem.path,
-        previousItemId,
-      );
+    if (items.length === 1) {
+      // no previous item adds at the beginning
+      if (!previousItemId) {
+        items[0].order = await repositories.itemRepository.getFirstOrderValue(parentItem.path);
+      }
+      // define order, from given previous item id if exists
+      else {
+        items[0].order = await repositories.itemRepository.getNextOrderCount(
+          parentItem.path,
+          previousItemId,
+        );
+      }
+    } else {
+      let index = 0;
+      for (let item of items) {
+        item = { ...item, order: index++ };
+      }
     }
 
-    return this.createItemAndMemberships(
+    return this.createItemsAndMemberships(
       member,
       repositories,
-      item,
+      items,
       inheritedMembership,
       parentItem,
     );
   }
 
-  private async createItemAndMemberships(
+  private async createItemsAndMemberships(
     member: Member,
     repositories: Repositories,
-    item: Partial<Item> & Pick<Item, 'name' | 'type'>,
+    items: (Partial<Item> & Pick<Item, 'name' | 'type'>)[],
     inheritedMembership: ItemMembership | null,
     parentItem?: Item,
   ) {
     const { itemRepository, itemMembershipRepository } = repositories;
 
-    this.log.debug(`create item ${item.name}`);
-    const createdItem = await itemRepository.addOne({
-      item,
-      creator: member,
-      parentItem,
-    });
-    this.log.debug(`item ${item.name} is created: ${createdItem}`);
+    this.log.debug(`create items ${items.map((item) => item.name)}`);
+    const createdItems = await Promise.all(
+      items.map((item) => {
+        return itemRepository.addOne({
+          item,
+          creator: member,
+          parentItem,
+        });
+      }),
+    );
+    this.log.debug(`items ${items.map((item) => item.name)} are created: ${createdItems}`);
 
     // create membership if inherited is less than admin
     if (
       !inheritedMembership ||
       PermissionLevelCompare.lt(inheritedMembership?.permission, PermissionLevel.Admin)
     ) {
-      this.log.debug(`create membership for ${createdItem.id}`);
-      await itemMembershipRepository.addOne({
-        itemPath: createdItem.path,
-        accountId: member.id,
-        creatorId: member.id,
-        permission: PermissionLevel.Admin,
+      this.log.debug(`create membership for ${createdItems.map((item) => item.id)}`);
+      const memberships = createdItems.map((item) => {
+        return {
+          itemPath: item.path,
+          accountId: member.id,
+          creatorId: member.id,
+          permission: PermissionLevel.Admin,
+        };
       });
+      await itemMembershipRepository.addMany(memberships);
     }
 
-    return createdItem;
+    return createdItems;
   }
 
   private async registerGeolocations(
@@ -281,17 +325,17 @@ export class ItemService {
     );
   }
 
-  private async indexItem(item: Item, repositories: Repositories) {
+  private async indexItems(items: Item[], repositories: Repositories) {
     try {
       // Check if the item is published (or has published parent)
-      const published = await repositories.itemPublishedRepository.getForItem(item);
+      const { data: publishedInfo } = await repositories.itemPublishedRepository.getForItems(items);
 
-      if (!published) {
+      if (publishedInfo.length) {
         return;
       }
 
       // update index
-      await this.meilisearchWrapper.indexOne(published, repositories);
+      await this.meilisearchWrapper.index(Object.values(publishedInfo), repositories);
     } catch (e) {
       this.log.error('Error during indexation, Meilisearch may be down');
     }
