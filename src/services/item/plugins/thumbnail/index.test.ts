@@ -95,18 +95,21 @@ describe('Thumbnail Plugin Tests', () => {
 
       beforeEach(async () => {
         const member = await saveMember();
-        ({ item } = await testUtils.saveItemAndMembership({ member }));
+        ({ item } = await testUtils.saveItemAndMembership({
+          member,
+          item: { settings: { hasThumbnail: true } },
+        }));
         await setItemPublic(item, member);
       });
 
-      it('Successfully redirect to thumbnails of all different sizes', async () => {
+      it('Successfully return thumbnail url for all different sizes', async () => {
         for (const size of Object.values(ThumbnailSize)) {
           const response = await app.inject({
             method: HttpMethod.Get,
             url: `${ITEMS_ROUTE_PREFIX}/${item.id}${THUMBNAILS_ROUTE_PREFIX}/${size}`,
           });
-          expect(response.statusCode).toBe(StatusCodes.MOVED_TEMPORARILY);
-          expect(response.headers.location).toBe(MOCK_SIGNED_URL);
+          expect(response.statusCode).toBe(StatusCodes.OK);
+          expect(response.body).toBe(MOCK_SIGNED_URL);
         }
       });
     });
@@ -117,25 +120,17 @@ describe('Thumbnail Plugin Tests', () => {
       beforeEach(async () => {
         actor = await saveMember();
         mockAuthenticate(actor);
-        ({ item } = await testUtils.saveItemAndMembership({ member: actor }));
-      });
-
-      it('Successfully redirect to thumbnails of all different sizes', async () => {
-        for (const size of Object.values(ThumbnailSize)) {
-          const response = await app.inject({
-            method: HttpMethod.Get,
-            url: `${ITEMS_ROUTE_PREFIX}/${item.id}${THUMBNAILS_ROUTE_PREFIX}/${size}`,
-          });
-          expect(response.statusCode).toBe(StatusCodes.MOVED_TEMPORARILY);
-          expect(response.headers.location).toBe(MOCK_SIGNED_URL);
-        }
+        ({ item } = await testUtils.saveItemAndMembership({
+          member: actor,
+          item: { settings: { hasThumbnail: true } },
+        }));
       });
 
       it('Return thumbnail urls of item', async () => {
         for (const size of Object.values(ThumbnailSize)) {
           const response = await app.inject({
             method: HttpMethod.Get,
-            url: `${ITEMS_ROUTE_PREFIX}/${item.id}${THUMBNAILS_ROUTE_PREFIX}/${size}?replyUrl=true`,
+            url: `${ITEMS_ROUTE_PREFIX}/${item.id}${THUMBNAILS_ROUTE_PREFIX}/${size}`,
           });
 
           expect(response.statusCode).toBe(StatusCodes.OK);
