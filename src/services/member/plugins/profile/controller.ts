@@ -17,29 +17,23 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
   const memberProfileService = new MemberProfileService();
 
-  fastify.get(
-    '/own',
-    { schema: getOwnProfile, preHandler: isAuthenticated },
-    async ({ user }, reply) => {
-      const member = asDefined(user?.account);
-      assertIsMember(member);
-      const profile = await memberProfileService.getOwn(member, buildRepositories());
-      if (!profile) {
-        reply.status(StatusCodes.NO_CONTENT);
-        return;
-      }
-      return profile;
-    },
-  );
+  fastify.get('/own', { schema: getOwnProfile, preHandler: isAuthenticated }, async ({ user }) => {
+    const member = asDefined(user?.account);
+    assertIsMember(member);
+    const profile = await memberProfileService.getOwn(member, buildRepositories());
+    if (!profile) {
+      return null;
+    }
+    return profile;
+  });
 
   fastify.get(
     '/:memberId',
     { schema: getProfileForMember, preHandler: optionalIsAuthenticated },
-    async ({ params: { memberId } }, reply) => {
+    async ({ params: { memberId } }) => {
       const profile = await memberProfileService.get(buildRepositories(), memberId);
       if (!profile) {
-        reply.status(StatusCodes.NO_CONTENT);
-        return;
+        return null;
       }
       return profile;
     },

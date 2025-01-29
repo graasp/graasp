@@ -2,18 +2,13 @@ import { faker } from '@faker-js/faker';
 import { BaseEntity, DataSource } from 'typeorm';
 import { v4 } from 'uuid';
 
-import {
-  CompleteMember,
-  ItemType,
-  MemberFactory,
-  PermissionLevel,
-  buildPathFromIds,
-} from '@graasp/sdk';
+import { ItemType, MemberFactory, PermissionLevel, buildPathFromIds } from '@graasp/sdk';
 
 import { AppDataSource } from '../../src/plugins/datasource';
 import { Item } from '../../src/services/item/entities/Item';
 import { ItemMembership } from '../../src/services/itemMembership/entities/ItemMembership';
 import { Actor, Member } from '../../src/services/member/entities/member';
+import { MemberProfile } from '../../src/services/member/plugins/profile/entities/profile';
 import { ItemFactory } from '../factories/item.factory';
 import defaultDatas from './sampledatas';
 
@@ -62,10 +57,10 @@ export default async function seed(
   return result;
 }
 
-type SeedActor = 'actor' | Partial<CompleteMember>;
+type SeedActor = 'actor' | (Partial<Member> & { profile: Partial<MemberProfile> });
 type DataType = {
   actor?: SeedActor | null;
-  members?: Partial<Member>[];
+  members?: (Partial<Member> & { profile?: Partial<MemberProfile> })[];
   items?: ((Partial<Item> | { creator: SeedActor }) & {
     children?: (Partial<Item> | { creator: SeedActor })[];
     memberships?: (
@@ -100,6 +95,7 @@ const replaceActorInItems = (createdActor?: Actor, items?: DataType['items']) =>
 const processActor = async ({ actor, items, members }: DataType) => {
   // create actor if not null
   let createdActor;
+  let memberProfiles;
   if (actor !== null) {
     // replace actor data with default values if actor is undefined or 'actor'
     const actorData = typeof actor === 'string' || !actor ? {} : actor;
@@ -112,12 +108,24 @@ const processActor = async ({ actor, items, members }: DataType) => {
         },
       })
     ).actor[0];
+
+    // a profile is defined
+    if (actor !== 'actor' && actor?.profile) {
+      memberProfiles = (
+        await seed({
+          memberProfiles: {
+            constructor: MemberProfile,
+            entities: [{ ...actor.profile, member: { id: createdActor.id } }],
+          },
+        })
+      ).memberProfiles[0];
+    }
   }
 
   // replace 'actor' in entities
   const processedItems = replaceActorInItems(createdActor, items);
 
-  return { actor: createdActor, items: processedItems, members };
+  return { actor: createdActor, items: processedItems, members, memberProfiles };
 };
 
 /**
@@ -165,6 +173,18 @@ const processItemMemberships = (items: DataType['items'] = []) => {
 };
 
 /**
+ * Generate ids for members, necessary to further references (for example when creating profiles)
+ * @param members
+ * @returns
+ */
+function generateIdForMembers(members?: DataType['members']) {
+  return members?.map((m) => {
+    const id = v4();
+    return { id, ...m, profile: { ...m.profile, member: { id } } };
+  });
+}
+
+/**
  * Given seed object, save them in the database for initialization of a test
  * @param data
  * - actor: if not null, will create an actor with defined values, or a random actor if null
@@ -178,28 +198,35 @@ export async function seedFromJson(data: DataType = {}) {
     items: Item[];
     itemMemberships: ItemMembership[];
     members: Member[];
+    memberProfiles: MemberProfile[];
   } = {
     items: [],
     actor: undefined,
     itemMemberships: [],
     members: [],
+    memberProfiles: [],
   };
 
-  const { items, actor, members } = await processActor(data);
+  const { items, actor, members, memberProfiles } = await processActor(data);
   result.actor = actor;
+  result.memberProfiles = memberProfiles;
 
   // save members
-  const membersEntity = members?.map((m) => m);
-  if (membersEntity) {
-    result.members = (
-      await seed({
-        members: {
-          factory: MemberFactory,
-          constructor: Member,
-          entities: membersEntity,
-        },
-      })
-    ).members as Member[];
+  const membersEntities = generateIdForMembers(members);
+  if (membersEntities) {
+    const membersAndProfiles = await seed({
+      members: {
+        factory: MemberFactory,
+        constructor: Member,
+        entities: membersEntities,
+      },
+      memberProfiles: {
+        constructor: MemberProfile,
+        entities: membersEntities.map((m) => m.profile).filter(Boolean),
+      },
+    });
+    result.members = membersAndProfiles.members as Member[];
+    result.memberProfiles = membersAndProfiles.memberProfiles as MemberProfile[];
   }
 
   // save items

@@ -14,20 +14,33 @@ const inputPublicProfileMemberSchema = customType.StrictObject({
   visibility: Type.Boolean(),
 });
 
+const profileMemberSchemaForIntersect = [
+  inputPublicProfileMemberSchema,
+  customType.StrictObject({
+    id: customType.UUID(),
+    createdAt: customType.DateTime(),
+    updatedAt: customType.DateTime(),
+  }),
+];
+
 export const profileMemberSchemaRef = registerSchemaAsRef(
   'profile',
   'Profile',
-  Type.Intersect(
-    [
-      inputPublicProfileMemberSchema,
-      customType.StrictObject({
-        id: customType.UUID(),
-        createdAt: customType.DateTime(),
-        updatedAt: customType.DateTime(),
-      }),
-    ],
-    { description: 'Profile of a member', additionalProperties: false },
-  ),
+  Type.Intersect(profileMemberSchemaForIntersect, {
+    description: 'Profile of a member',
+    additionalProperties: false,
+    nullable: true,
+  }),
+);
+
+export const nullableProfileMemberSchemaRef = registerSchemaAsRef(
+  'nullableProfile',
+  'Nullable Profile',
+  Type.Intersect(profileMemberSchemaForIntersect, {
+    description: 'Profile of a member, null if it does not exist',
+    additionalProperties: false,
+    nullable: true,
+  }),
 );
 
 export const createOwnProfile = {
@@ -52,9 +65,7 @@ export const getProfileForMember = {
 
   params: customType.StrictObject({ memberId: customType.UUID() }),
   response: {
-    [StatusCodes.OK]: profileMemberSchemaRef,
-    // Status NO CONTENT is used instead of NOT FOUND, so it doesn't trigger an error in the Frontend
-    [StatusCodes.NO_CONTENT]: Type.Null(),
+    [StatusCodes.OK]: nullableProfileMemberSchemaRef,
     [StatusCodes.UNAUTHORIZED]: errorSchemaRef,
     '4xx': errorSchemaRef,
   },
@@ -67,9 +78,7 @@ export const getOwnProfile = {
   description: 'Get profile of current member',
 
   response: {
-    [StatusCodes.OK]: profileMemberSchemaRef,
-    // Status NO CONTENT is used instead of NOT FOUND, so it doesn't trigger an error in the Frontend
-    [StatusCodes.NO_CONTENT]: Type.Null(),
+    [StatusCodes.OK]: nullableProfileMemberSchemaRef,
     [StatusCodes.UNAUTHORIZED]: errorSchemaRef,
     '4xx': errorSchemaRef,
   },
