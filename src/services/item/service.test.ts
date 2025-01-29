@@ -2,13 +2,13 @@ import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
-import { FolderItemFactory, ItemVisibilityType } from '@graasp/sdk';
+import { FolderItemFactory, ItemType, ItemVisibilityType } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../test/app';
-import { BaseLogger } from '../../logger';
+import build, { MOCK_LOGGER, clearDatabase, mockAuthenticate } from '../../../test/app';
+import { seedFromJson } from '../../../test/mocks/seed';
 import { buildRepositories } from '../../utils/repositories';
 import * as authorization from '../authorization';
-import { Actor } from '../member/entities/member';
+import { Actor, assertIsMember } from '../member/entities/member';
 import { saveMember } from '../member/test/fixtures/members';
 import { ThumbnailService } from '../thumbnail/service';
 import { FolderItem } from './entities/Item';
@@ -29,7 +29,7 @@ const service = new ItemService(
   mockedThumbnailService,
   {} as ItemThumbnailService,
   meilisearchWrapper,
-  {} as BaseLogger,
+  MOCK_LOGGER,
 );
 
 describe('Item Service', () => {
@@ -151,6 +151,34 @@ describe('Item Service', () => {
       );
 
       expect(indexMock).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('post', () => {
+    it('throw if reached maximum tree depth', async () => {
+      // GIVEN
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [{ memberships: [{ account: 'actor' }] }],
+      });
+      mockAuthenticate(actor);
+      assertIsMember(actor!);
+      const repositories = buildRepositories();
+
+      // WHEN
+      jest.spyOn(repositories.itemRepository, 'checkHierarchyDepth').mockImplementation(() => {
+        throw new Error('is too deep');
+      });
+
+      // SHOULD
+      await expect(() =>
+        service.post(actor, repositories, {
+          parentId: item.id,
+          item: { name: 'item', type: ItemType.FOLDER },
+        }),
+      ).rejects.toThrow();
     });
   });
 });

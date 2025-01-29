@@ -16,7 +16,7 @@ import build, {
   mockAuthenticate,
   unmockAuthenticate,
 } from '../../../../../test/app';
-import seed from '../../../../../test/mocks';
+import seed from '../../../../../test/mocks/seed';
 import { TOKEN_REGEX, mockCaptchaValidationOnce } from '../../../../../test/utils';
 import { resolveDependency } from '../../../../di/utils';
 import { MailerService } from '../../../../plugins/mailer/service';

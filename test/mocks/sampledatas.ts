@@ -12,7 +12,6 @@ import {
   buildPathFromIds,
 } from '@graasp/sdk';
 
-import { TableType } from '.';
 import { Item } from '../../src/services/item/entities/Item';
 import { App } from '../../src/services/item/plugins/app/entities/app';
 import { Publisher } from '../../src/services/item/plugins/app/entities/publisher';
@@ -23,6 +22,7 @@ import { ItemValidation } from '../../src/services/item/plugins/publication/vali
 import { ItemValidationGroup } from '../../src/services/item/plugins/publication/validation/entities/ItemValidationGroup';
 import { ItemMembership } from '../../src/services/itemMembership/entities/ItemMembership';
 import { Member } from '../../src/services/member/entities/member';
+import { TableType } from './seed';
 
 type defaultOmitedKeys = keyof BaseEntity | 'createdAt' | 'updatedAt';
 
