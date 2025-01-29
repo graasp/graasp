@@ -34,9 +34,10 @@ export class ShortcutItemService extends ItemService {
       previousItemId?: Item['id'];
     },
   ): Promise<ShortcutItem> {
-    const { description, name: definedName } = args.item;
+    const { target, item, ...properties } = args;
+    const { description, name: definedName } = item;
 
-    const targetItem = await super.get(member, repositories, args.target);
+    const targetItem = await super.get(member, repositories, target);
 
     // generate name from target item if not defined
     const name =
@@ -44,12 +45,12 @@ export class ShortcutItemService extends ItemService {
       i18next.t('DEFAULT_SHORTCUT_NAME', { name: targetItem.name, lng: member.lang });
 
     return (await super.post(member, repositories, {
-      ...args,
+      ...properties,
       item: {
         name,
         description,
         type: ItemType.SHORTCUT,
-        extra: { shortcut: { target: args.target } },
+        extra: { shortcut: { target } },
       },
     })) as ShortcutItem;
   }
