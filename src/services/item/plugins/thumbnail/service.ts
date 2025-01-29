@@ -60,15 +60,18 @@ export class ItemThumbnailService {
 
     return result;
   }
+
   async getUrl(
     actor: Actor,
     repositories: Repositories,
     { size, itemId }: { size: string; itemId: string },
   ) {
-    // prehook: get item and input in download call ?
-    // check rights
-    const item = await repositories.itemRepository.getOneOrThrow(itemId);
-    await validatePermission(repositories, PermissionLevel.Read, actor, item);
+    const item = await this.itemService.get(actor, repositories, itemId);
+
+    // item does not have thumbnail
+    if (!item.settings.hasThumbnail) {
+      return null;
+    }
 
     const result = await this.thumbnailService.getUrl({
       size,

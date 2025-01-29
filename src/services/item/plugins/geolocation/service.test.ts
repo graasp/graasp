@@ -17,22 +17,25 @@ import { ItemWrapper } from '../../ItemWrapper';
 import { ItemService } from '../../service';
 import { ItemTestUtils } from '../../test/fixtures/items';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
-import { StubItemThumbnailService } from '../thumbnail/test/fixtures/itemThumbnailService';
+import { ItemThumbnailService } from '../thumbnail/service';
 import { ItemGeolocation } from './ItemGeolocation';
 import { ItemGeolocationService } from './service';
 import { expectPackedItemGeolocations, saveGeolocation } from './test/utils';
 
 const testUtils = new ItemTestUtils();
-const stubItemThumbnailService = StubItemThumbnailService();
+
+const itemThumbnailService = {
+  getUrlsByItems: jest.fn(() => ({ small: 'url' })),
+} as unknown as ItemThumbnailService;
 
 const service = new ItemGeolocationService(
   new ItemService(
     {} as ThumbnailService,
-    stubItemThumbnailService,
+    itemThumbnailService,
     {} as MeiliSearchWrapper,
     {} as BaseLogger,
   ),
-  stubItemThumbnailService,
+  itemThumbnailService,
   'geolocation-key',
 );
 const rawRepository = AppDataSource.getRepository(ItemGeolocation);

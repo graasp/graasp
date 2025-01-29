@@ -89,13 +89,17 @@ const plugin: FastifyPluginAsyncTypebox<GraaspThumbnailsOptions> = async (fastif
       schema: download,
       preHandler: optionalIsAuthenticated,
     },
-    async ({ user, params: { size, id: itemId }, query: { replyUrl } }, reply) => {
+    async ({ user, params: { size, id: itemId } }, reply) => {
       const url = await itemThumbnailService.getUrl(user?.account, buildRepositories(), {
         itemId,
         size,
       });
 
-      fileService.setHeaders({ reply, replyUrl, url, id: itemId });
+      if (!url) {
+        return null;
+      } else {
+        fileService.setHeaders({ reply, url, id: itemId, replyUrl: true });
+      }
     },
   );
 

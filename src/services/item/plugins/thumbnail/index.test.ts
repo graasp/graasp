@@ -12,16 +12,16 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../../test/app';
-import { ITEMS_ROUTE_PREFIX, THUMBNAILS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { MemberCannotAccess } from '../../../../../utils/errors';
-import { saveMember } from '../../../../member/test/fixtures/members';
-import { ItemTestUtils } from '../../../test/fixtures/items';
-import { setItemPublic } from '../../itemVisibility/test/fixtures';
-import { UploadFileNotImageError } from '../utils/errors';
+} from '../../../../../test/app';
+import { ITEMS_ROUTE_PREFIX, THUMBNAILS_ROUTE_PREFIX } from '../../../../utils/config';
+import { MemberCannotAccess } from '../../../../utils/errors';
+import { saveMember } from '../../../member/test/fixtures/members';
+import { ItemTestUtils } from '../../test/fixtures/items';
+import { setItemPublic } from '../itemVisibility/test/fixtures';
+import { UploadFileNotImageError } from './utils/errors';
 
-const filepath = path.resolve(__dirname, './fixtures/image.png');
-const textPath = path.resolve(__dirname, './fixtures/emptyFile');
+const filepath = path.resolve(__dirname, './test/fixtures/image.png');
+const textPath = path.resolve(__dirname, './test/fixtures/emptyFile');
 
 const testUtils = new ItemTestUtils();
 
@@ -95,18 +95,21 @@ describe('Thumbnail Plugin Tests', () => {
 
       beforeEach(async () => {
         const member = await saveMember();
-        ({ item } = await testUtils.saveItemAndMembership({ member }));
+        ({ item } = await testUtils.saveItemAndMembership({
+          member,
+          item: { settings: { hasThumbnail: true } },
+        }));
         await setItemPublic(item, member);
       });
 
-      it('Successfully redirect to thumbnails of all different sizes', async () => {
+      it('Successfully return thumbnail url for all different sizes', async () => {
         for (const size of Object.values(ThumbnailSize)) {
           const response = await app.inject({
             method: HttpMethod.Get,
             url: `${ITEMS_ROUTE_PREFIX}/${item.id}${THUMBNAILS_ROUTE_PREFIX}/${size}`,
           });
-          expect(response.statusCode).toBe(StatusCodes.MOVED_TEMPORARILY);
-          expect(response.headers.location).toBe(MOCK_SIGNED_URL);
+          expect(response.statusCode).toBe(StatusCodes.OK);
+          expect(response.body).toBe(MOCK_SIGNED_URL);
         }
       });
     });
@@ -117,25 +120,17 @@ describe('Thumbnail Plugin Tests', () => {
       beforeEach(async () => {
         actor = await saveMember();
         mockAuthenticate(actor);
-        ({ item } = await testUtils.saveItemAndMembership({ member: actor }));
-      });
-
-      it('Successfully redirect to thumbnails of all different sizes', async () => {
-        for (const size of Object.values(ThumbnailSize)) {
-          const response = await app.inject({
-            method: HttpMethod.Get,
-            url: `${ITEMS_ROUTE_PREFIX}/${item.id}${THUMBNAILS_ROUTE_PREFIX}/${size}`,
-          });
-          expect(response.statusCode).toBe(StatusCodes.MOVED_TEMPORARILY);
-          expect(response.headers.location).toBe(MOCK_SIGNED_URL);
-        }
+        ({ item } = await testUtils.saveItemAndMembership({
+          member: actor,
+          item: { settings: { hasThumbnail: true } },
+        }));
       });
 
       it('Return thumbnail urls of item', async () => {
         for (const size of Object.values(ThumbnailSize)) {
           const response = await app.inject({
             method: HttpMethod.Get,
-            url: `${ITEMS_ROUTE_PREFIX}/${item.id}${THUMBNAILS_ROUTE_PREFIX}/${size}?replyUrl=true`,
+            url: `${ITEMS_ROUTE_PREFIX}/${item.id}${THUMBNAILS_ROUTE_PREFIX}/${size}`,
           });
 
           expect(response.statusCode).toBe(StatusCodes.OK);
@@ -156,6 +151,23 @@ describe('Thumbnail Plugin Tests', () => {
           });
 
           expect(response.json()).toMatchObject(new MemberCannotAccess(expect.anything()));
+        }
+      });
+
+      it('Return no content if no thumbnail was uploaded', async () => {
+        const { item: someItem } = await testUtils.saveItemAndMembership({
+          member: actor,
+          item: { settings: { hasThumbnail: false } },
+        });
+
+        for (const size of Object.values(ThumbnailSize)) {
+          const response = await app.inject({
+            method: HttpMethod.Get,
+            url: `${ITEMS_ROUTE_PREFIX}/${someItem.id}${THUMBNAILS_ROUTE_PREFIX}/${size}`,
+          });
+
+          expect(response.statusCode).toEqual(StatusCodes.OK);
+          expect(response.json()).toBeNull();
         }
       });
     });
