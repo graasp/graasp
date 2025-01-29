@@ -166,7 +166,8 @@ describe('Thumbnail Plugin Tests', () => {
             url: `${ITEMS_ROUTE_PREFIX}/${someItem.id}${THUMBNAILS_ROUTE_PREFIX}/${size}`,
           });
 
-          expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
+          expect(response.statusCode).toEqual(StatusCodes.OK);
+          expect(response.json()).toBeNull();
         }
       });
     });

@@ -19,15 +19,16 @@ export const download = {
   tags: ['item', 'thumbnail'],
   summary: "Get an item's thumbnail",
   description:
-    "Get an item's thumbnail at given size. The return value is empty if the item did not previously have a thumbnail.",
+    "Get an item's thumbnail at given size. The return value is null if the item did not previously have a thumbnail.",
 
   params: customType.StrictObject({
     id: customType.UUID(),
     size: Type.Enum(ThumbnailSize, { default: ThumbnailSize.Medium }),
   }),
   response: {
-    [StatusCodes.OK]: Type.String({ description: 'Url string of the thumbnail' }),
-    [StatusCodes.NO_CONTENT]: Type.Null({ description: 'No thumbnail' }),
+    [StatusCodes.OK]: customType.Nullable(
+      Type.String({ description: 'Url string of the thumbnail, null if it does not exist' }),
+    ),
     '4xx': errorSchemaRef,
     [StatusCodes.INTERNAL_SERVER_ERROR]: errorSchemaRef,
   },
