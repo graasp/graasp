@@ -5,9 +5,9 @@ import { MultipartFile } from '@fastify/multipart';
 
 import { ItemType, PermissionLevel } from '@graasp/sdk';
 
+import { TRANSLATIONS } from '../../../../langs/constants';
 import { BaseLogger } from '../../../../logger';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
-import { MAIL } from '../../../../plugins/mailer/langs/constants';
 import { MailerService } from '../../../../plugins/mailer/service';
 import { NonEmptyArray } from '../../../../types';
 import { Repositories } from '../../../../utils/repositories';
@@ -61,16 +61,16 @@ export class InvitationService {
     const link = buildInvitationLink(invitation);
     const mail = new MailBuilder({
       subject: {
-        text: MAIL.INVITATION_TITLE,
+        text: TRANSLATIONS.INVITATION_TITLE,
         translationVariables: { itemName: item.name },
       },
       lang: member.lang,
     })
-      .addText(MAIL.INVITATION_TEXT, {
+      .addText(TRANSLATIONS.INVITATION_TEXT, {
         itemName: item.name,
         creatorName: member.name,
       })
-      .addButton(MAIL.SIGN_UP_BUTTON_TEXT, link)
+      .addButton(TRANSLATIONS.SIGN_UP_BUTTON_TEXT, link)
       .addUserAgreement()
       .build();
 

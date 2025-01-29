@@ -9,8 +9,8 @@ import {
   UUID,
 } from '@graasp/sdk';
 
+import { TRANSLATIONS } from '../../../../../langs/constants';
 import { MailBuilder } from '../../../../../plugins/mailer/builder';
-import { MAIL } from '../../../../../plugins/mailer/langs/constants';
 import { MailerService } from '../../../../../plugins/mailer/service';
 import { Repositories } from '../../../../../utils/repositories';
 import { EXPORT_FILE_EXPIRATION, ZIP_MIMETYPE } from '../../../../action/constants/constants';
@@ -114,19 +114,19 @@ export class ActionRequestExportService {
 
     const mail = new MailBuilder({
       subject: {
-        text: MAIL.EXPORT_ACTIONS_TITLE,
+        text: TRANSLATIONS.EXPORT_ACTIONS_TITLE,
         translationVariables: {
           itemName: item.name,
         },
       },
       lang: actor.lang,
     })
-      .addText(MAIL.EXPORT_ACTIONS_TEXT, {
+      .addText(TRANSLATIONS.EXPORT_ACTIONS_TEXT, {
         itemName: item.name,
         days: DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS.toString(),
         exportFormat: format,
       })
-      .addButton(MAIL.EXPORT_ACTIONS_BUTTON_TEXT, link)
+      .addButton(TRANSLATIONS.EXPORT_ACTIONS_BUTTON_TEXT, link)
       .build();
 
     this.mailerService.send(mail, actor.email).catch((err) => {

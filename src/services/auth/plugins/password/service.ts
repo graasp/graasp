@@ -3,9 +3,9 @@ import { sign } from 'jsonwebtoken';
 import { singleton } from 'tsyringe';
 import { v4 as uuid } from 'uuid';
 
+import { TRANSLATIONS } from '../../../../langs/constants';
 import { BaseLogger } from '../../../../logger';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
-import { MAIL } from '../../../../plugins/mailer/langs/constants';
 import { MailerService } from '../../../../plugins/mailer/service';
 import {
   AUTH_CLIENT_HOST,
@@ -153,11 +153,11 @@ export class MemberPasswordService {
     const link = destination.toString();
 
     const mail = new MailBuilder({
-      subject: { text: MAIL.RESET_PASSWORD_TITLE },
+      subject: { text: TRANSLATIONS.RESET_PASSWORD_TITLE },
       lang,
     })
-      .addText(MAIL.RESET_PASSWORD_TEXT)
-      .addButton(MAIL.RESET_PASSWORD_BUTTON_TEXT, link)
+      .addText(TRANSLATIONS.RESET_PASSWORD_TEXT)
+      .addButton(TRANSLATIONS.RESET_PASSWORD_BUTTON_TEXT, link)
       .addIgnoreEmailIfNotRequestedNotice()
       .build();
 

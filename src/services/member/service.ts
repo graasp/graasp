@@ -4,9 +4,9 @@ import { singleton } from 'tsyringe';
 import { UUID } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
+import { TRANSLATIONS } from '../../langs/constants';
 import { BaseLogger } from '../../logger';
 import { MailBuilder } from '../../plugins/mailer/builder';
-import { MAIL } from '../../plugins/mailer/langs/constants';
 import { MailerService } from '../../plugins/mailer/service';
 import {
   ACCOUNT_HOST,
@@ -130,11 +130,11 @@ export class MemberService {
     const link = destination.toString();
 
     const mail = new MailBuilder({
-      subject: { text: MAIL.CHANGE_EMAIL_TITLE },
+      subject: { text: TRANSLATIONS.CHANGE_EMAIL_TITLE },
       lang: lang,
     })
-      .addText(MAIL.CHANGE_EMAIL_TEXT)
-      .addButton(MAIL.CHANGE_EMAIL_BUTTON_TEXT, link)
+      .addText(TRANSLATIONS.CHANGE_EMAIL_TEXT)
+      .addButton(TRANSLATIONS.CHANGE_EMAIL_BUTTON_TEXT, link)
       .addIgnoreEmailIfNotRequestedNotice()
       .build();
 
@@ -146,10 +146,10 @@ export class MemberService {
 
   mailConfirmEmailChangeRequest(oldEmail: string, newEmail: string, lang: string) {
     const mail = new MailBuilder({
-      subject: { text: MAIL.CONFIRM_CHANGE_EMAIL_TITLE },
+      subject: { text: TRANSLATIONS.CONFIRM_CHANGE_EMAIL_TITLE },
       lang: lang,
     })
-      .addText(MAIL.CONFIRM_CHANGE_EMAIL_TEXT, { newEmail })
+      .addText(TRANSLATIONS.CONFIRM_CHANGE_EMAIL_TEXT, { newEmail })
       .build();
 
     // don't wait for mailer's response; log error and link if it fails.
