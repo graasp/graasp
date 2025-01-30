@@ -3,7 +3,7 @@ import { Static } from '@sinclair/typebox';
 import { FastifyInstance } from 'fastify';
 
 import {
-  ClientHostManager,
+  ClientManager,
   Context,
   HttpMethod,
   PermissionLevel,
@@ -112,7 +112,7 @@ export const injectDelete = async (app: FastifyInstance, alias: string) => {
 };
 
 export function getRedirection(itemId: string, platform: Context) {
-  const clientHostManager = ClientHostManager.getInstance();
+  const clientHostManager = ClientManager.getInstance();
 
   return clientHostManager.getItemLink(platform, itemId);
 }

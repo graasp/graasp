@@ -3,12 +3,13 @@ import { sign } from 'jsonwebtoken';
 import { singleton } from 'tsyringe';
 import { v4 as uuid } from 'uuid';
 
+import { ClientManager, Context } from '@graasp/sdk';
+
 import { TRANSLATIONS } from '../../../../langs/constants';
 import { BaseLogger } from '../../../../logger';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../plugins/mailer/service';
 import {
-  AUTH_CLIENT_HOST,
   JWT_SECRET,
   PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES,
   PASSWORD_RESET_JWT_SECRET,
@@ -147,7 +148,7 @@ export class MemberPasswordService {
    */
   mailResetPasswordRequest(email: string, token: string, lang: string): void {
     // auth.graasp.org/reset-password?t=<token>
-    const domain = AUTH_CLIENT_HOST;
+    const domain = ClientManager.getInstance().getLinkByContext(Context.Auth);
     const destination = new URL('/reset-password', domain);
     destination.searchParams.set(SHORT_TOKEN_PARAM, token);
     const link = destination.toString();

@@ -1,13 +1,8 @@
 import { type Lookup, lookup } from 'geoip-lite';
 
-import { AggregateFunction, AggregateMetric, Context } from '@graasp/sdk';
-
-import { CLIENT_HOSTS } from '../../../utils/config';
+import { AggregateFunction, AggregateMetric } from '@graasp/sdk';
 
 export const getGeolocationIp = (ip: string | number): Lookup | null => lookup(ip);
-
-export const getView = (headers: { origin?: string | string[] }): Context =>
-  CLIENT_HOSTS.find(({ url }) => headers?.origin?.includes(url.hostname))?.name ?? Context.Unknown;
 
 export const aggregateExpressionNames = {
   user: 'action.account_id',

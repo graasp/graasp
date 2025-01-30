@@ -4,12 +4,11 @@ import fastifyPassport from '@fastify/passport';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { PassportUser } from 'fastify';
 
-import { RecaptchaAction } from '@graasp/sdk';
+import { ClientManager, Context, RecaptchaAction } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
 import { resolveDependency } from '../../../../di/utils';
 import { asDefined } from '../../../../utils/assertions';
-import { AUTH_CLIENT_HOST } from '../../../../utils/config';
 import { MemberAlreadySignedUp } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { InvitationService } from '../../../item/plugins/invitation/service';
@@ -93,7 +92,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           // It is necessary, so we match the behavior of the original implementation.
           if (!user || err) {
             // Authentication failed
-            const target = new URL('/', AUTH_CLIENT_HOST);
+            const target = ClientManager.getInstance().getURLByContext(Context.Auth);
             target.searchParams.set(ERROR_SEARCH_PARAM, ERROR_SEARCH_PARAM_HAS_ERROR);
             reply.redirect(StatusCodes.SEE_OTHER, target.toString());
           } else {

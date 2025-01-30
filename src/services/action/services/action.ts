@@ -3,12 +3,14 @@ import { singleton } from 'tsyringe';
 import { forwarded } from '@fastify/forwarded';
 import { FastifyRequest } from 'fastify';
 
+import { ClientManager, Context } from '@graasp/sdk';
+
 import { Repositories } from '../../../utils/repositories';
 import { ItemService } from '../../item/service';
 import { Actor, isMember } from '../../member/entities/member';
 import { MemberService } from '../../member/service';
 import { Action } from '../entities/action';
-import { getGeolocationIp, getView } from '../utils/actions';
+import { getGeolocationIp } from '../utils/actions';
 
 @singleton()
 export class ActionService {
@@ -39,7 +41,9 @@ export class ActionService {
       return;
     }
 
-    const view = getView(headers);
+    const view = headers?.origin
+      ? ClientManager.getInstance().getContextByLink(headers?.origin)
+      : Context.Unknown;
     // warning: addresses might contained spoofed ips
     const addresses = forwarded(request.raw);
     const ip = addresses.pop();

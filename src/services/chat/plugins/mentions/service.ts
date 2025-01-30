@@ -1,11 +1,10 @@
 import { singleton } from 'tsyringe';
 
-import { MentionStatus, PermissionLevel, buildItemLinkForBuilder } from '@graasp/sdk';
+import { ClientManager, Context, MentionStatus, PermissionLevel } from '@graasp/sdk';
 
 import { TRANSLATIONS } from '../../../../langs/constants';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../plugins/mailer/service';
-import { BUILDER_HOST } from '../../../../utils/config';
 import HookManager from '../../../../utils/hook';
 import { Repositories } from '../../../../utils/repositories';
 import { Account } from '../../../account/entities/account';
@@ -33,9 +32,7 @@ export class MentionService {
     member: Member;
     creator: Account;
   }) {
-    const itemLink = buildItemLinkForBuilder({
-      origin: BUILDER_HOST.url.origin,
-      itemId: item.id,
+    const itemLink = ClientManager.getInstance().getItemLink(Context.Builder, item.id, {
       chatOpen: true,
     });
 

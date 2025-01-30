@@ -1,16 +1,7 @@
 import { config } from 'dotenv';
 import os from 'os';
 
-import {
-  BUILDER_ITEMS_PREFIX,
-  ClientHostManager,
-  Context,
-  FileItemType,
-  GPTVersion,
-  ItemType,
-  LIBRARY_ITEMS_PREFIX,
-  PLAYER_ITEMS_PREFIX,
-} from '@graasp/sdk';
+import { ClientManager, Context, FileItemType, GPTVersion, ItemType } from '@graasp/sdk';
 
 import {
   LocalFileConfiguration,
@@ -56,43 +47,17 @@ export const TEST = ENVIRONMENT === Environment.test;
 
 export const APP_VERSION = process.env.APP_VERSION;
 
-const DEFAULT_HOST = 'http://localhost:3000';
-
-export const BUILDER_HOST = {
-  name: Context.Builder,
-  url: new URL(process.env.BUILDER_CLIENT_HOST ?? DEFAULT_HOST),
-};
-
-export const PLAYER_HOST = {
-  name: Context.Player,
-  url: new URL(process.env.PLAYER_CLIENT_HOST ?? DEFAULT_HOST),
-};
+export const CLIENT_HOST = process.env.CLIENT_HOST ?? 'http://localhost:3000';
 
 export const LIBRARY_HOST = {
   name: Context.Library,
-  url: new URL(process.env.LIBRARY_CLIENT_HOST ?? DEFAULT_HOST),
+  url: new URL(process.env.LIBRARY_CLIENT_HOST ?? CLIENT_HOST),
 };
-
-export const ACCOUNT_HOST = {
-  name: Context.Account,
-  url: new URL(process.env.ACCOUNT_CLIENT_HOST ?? DEFAULT_HOST),
-};
-
-export const ANALYTICS_HOST = {
-  name: Context.Analytics,
-  url: new URL(process.env.ANALYTICS_CLIENT_HOST ?? DEFAULT_HOST),
-};
-
-export const CLIENT_HOSTS = [BUILDER_HOST, PLAYER_HOST, LIBRARY_HOST, ACCOUNT_HOST, ANALYTICS_HOST];
 
 // Add the hosts of the different clients
-ClientHostManager.getInstance()
-  .addPrefix(Context.Builder, BUILDER_ITEMS_PREFIX)
-  .addPrefix(Context.Library, LIBRARY_ITEMS_PREFIX)
-  .addPrefix(Context.Player, PLAYER_ITEMS_PREFIX)
-  .addHost(Context.Builder, BUILDER_HOST.url)
-  .addHost(Context.Library, LIBRARY_HOST.url)
-  .addHost(Context.Player, PLAYER_HOST.url);
+ClientManager.getInstance()
+  .setHost(new URL(CLIENT_HOST))
+  .addHost(Context.Library, LIBRARY_HOST.url);
 
 export const PROTOCOL = process.env.PROTOCOL || 'http';
 export const HOSTNAME = process.env.HOSTNAME || 'localhost';
@@ -106,16 +71,6 @@ if (!process.env.COOKIE_DOMAIN) {
 
 export const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN;
 export const CORS_ORIGIN_REGEX = process.env.CORS_ORIGIN_REGEX;
-
-if (!process.env.AUTH_CLIENT_HOST) {
-  throw new Error('Auth client host env var is not defined!');
-}
-export const AUTH_CLIENT_HOST = new URL(
-  // legacy fallback if the env var does not have the protocol prefix
-  process.env.AUTH_CLIENT_HOST.match(/^https?:\/\/.*/)
-    ? process.env.AUTH_CLIENT_HOST
-    : `${PROTOCOL}://${process.env.AUTH_CLIENT_HOST}`,
-);
 
 /*
  * Warning for PUBLIC_URL:

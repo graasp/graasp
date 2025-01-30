@@ -1,7 +1,7 @@
 import { singleton } from 'tsyringe';
 
 import {
-  ClientHostManager,
+  ClientManager,
   Context,
   PermissionLevel,
   ShortLink,
@@ -84,7 +84,7 @@ export class ShortLinkService {
 
   async getRedirection(repositories: Repositories, alias: string) {
     const shortLink = await this.getOne(repositories, alias);
-    const clientHostManager = ClientHostManager.getInstance();
+    const clientHostManager = ClientManager.getInstance();
 
     return clientHostManager.getItemLink(shortLink.platform as Context, shortLink.itemId);
   }
