@@ -9,7 +9,6 @@ import { ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../di/utils';
 import { asDefined } from '../../../../../utils/assertions';
-import { CLIENT_HOSTS } from '../../../../../utils/config';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { isAuthenticated } from '../../../../auth/plugins/passport';
 import { matchOne, validatePermission } from '../../../../authorization';
@@ -54,7 +53,8 @@ const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
       const html = renderHtml(
         DEFAULT_H5P_ASSETS_ROUTE,
         DEFAULT_H5P_CONTENT_ROUTE,
-        CLIENT_HOSTS.map(({ url }) => url.hostname) ?? ['localhost'],
+        // todo: temporary value
+        [],
       );
       res.send(html);
     });

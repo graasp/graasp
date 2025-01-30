@@ -7,7 +7,7 @@ import { ExportActionsFormatting, FileItemType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
 import { asDefined } from '../../../../utils/assertions';
-import { CLIENT_HOSTS } from '../../../../utils/config';
+import { CLIENT_HOST, LIBRARY_HOST } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
 import { ActionService } from '../../../action/services/action';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
@@ -39,7 +39,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
   const actionItemService = resolveDependency(ActionItemService);
   const requestExportService = resolveDependency(ActionRequestExportService);
 
-  const allowedOrigins = Object.values(CLIENT_HOSTS).map(({ url }) => url.origin);
+  const allowedOrigins = [CLIENT_HOST, LIBRARY_HOST];
 
   // get actions and more data matching the given `id`
   fastify.get(

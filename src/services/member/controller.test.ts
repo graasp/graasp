@@ -11,7 +11,7 @@ import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../.
 import { resolveDependency } from '../../di/utils';
 import { AppDataSource } from '../../plugins/datasource';
 import { MailerService } from '../../plugins/mailer/service';
-import { ACCOUNT_HOST, EMAIL_CHANGE_JWT_SECRET } from '../../utils/config';
+import { EMAIL_CHANGE_JWT_SECRET } from '../../utils/config';
 import { Item } from '../item/entities/Item';
 import { ItemTestUtils } from '../item/test/fixtures/items';
 import {
@@ -128,7 +128,7 @@ describe('Member Controller', () => {
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
       expect(mockSendEmail).toHaveBeenCalledTimes(1);
       expect(mockSendEmail.mock.calls[0][1]).toBe(email);
-      expect(mockSendEmail.mock.calls[0][2]).toContain(`${ACCOUNT_HOST.url}email/change?t=`);
+      expect(mockSendEmail.mock.calls[0][2]).toContain('email/change?t=');
       // Email didn't change
       const rawMember = await memberRawRepository.findOneBy({ id: member.id });
       expect(rawMember?.email).toEqual(member.email);
