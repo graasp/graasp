@@ -29,7 +29,6 @@ export const profileMemberSchemaRef = registerSchemaAsRef(
   Type.Intersect(profileMemberSchemaForIntersect, {
     description: 'Profile of a member',
     additionalProperties: false,
-    nullable: true,
   }),
 );
 

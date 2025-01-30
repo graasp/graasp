@@ -2,7 +2,13 @@ import { faker } from '@faker-js/faker';
 import { BaseEntity, DataSource } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { ItemType, MemberFactory, PermissionLevel, buildPathFromIds } from '@graasp/sdk';
+import {
+  CompleteMember,
+  ItemType,
+  MemberFactory,
+  PermissionLevel,
+  buildPathFromIds,
+} from '@graasp/sdk';
 
 import { AppDataSource } from '../../src/plugins/datasource';
 import { Item } from '../../src/services/item/entities/Item';
@@ -30,6 +36,7 @@ export type TableType<C extends BaseEntity, E> = {
  * Use the constructors and the datas given in parameter to build BaseEntity object and save them on the Postgresql Database.
  * Integrity constraints are checked on the database, and will throw an exception if needed.
  * @param datas Datas to be pushed. Should contains constructor to build BaseEntity objects and sometimes Factory function to have default data.
+ * @returns saved instances
  */
 export default async function seed(
   datas: { [K in string]: TableType<BaseEntity, object> } = defaultDatas,
@@ -57,7 +64,7 @@ export default async function seed(
   return result;
 }
 
-type SeedActor = 'actor' | (Partial<Member> & { profile: Partial<MemberProfile> });
+type SeedActor = 'actor' | (Partial<CompleteMember> & { profile?: Partial<MemberProfile> });
 type DataType = {
   actor?: SeedActor | null;
   members?: (Partial<Member> & { profile?: Partial<MemberProfile> })[];
@@ -95,7 +102,7 @@ const replaceActorInItems = (createdActor?: Actor, items?: DataType['items']) =>
 const processActor = async ({ actor, items, members }: DataType) => {
   // create actor if not null
   let createdActor;
-  let memberProfiles;
+  let actorProfile;
   if (actor !== null) {
     // replace actor data with default values if actor is undefined or 'actor'
     const actorData = typeof actor === 'string' || !actor ? {} : actor;
@@ -111,28 +118,28 @@ const processActor = async ({ actor, items, members }: DataType) => {
 
     // a profile is defined
     if (actor !== 'actor' && actor?.profile) {
-      memberProfiles = (
+      actorProfile = (
         await seed({
-          memberProfiles: {
+          actorProfile: {
             constructor: MemberProfile,
             entities: [{ ...actor.profile, member: { id: createdActor.id } }],
           },
         })
-      ).memberProfiles[0];
+      ).actorProfile[0];
     }
   }
 
   // replace 'actor' in entities
   const processedItems = replaceActorInItems(createdActor, items);
 
-  return { actor: createdActor, items: processedItems, members, memberProfiles };
+  return { actor: createdActor, items: processedItems, members, actorProfile };
 };
 
 /**
  * Generate id and path for all items in the tree (item and its children) and return a flat array
  * This is necessary to defined these as soon as possible so they can be used later by nested properties
- * @param items
- * @param parent
+ * @param items items' data, that might contain membesrhips
+ * @param parent id/path of the item in which items should be created in
  * @returns flat array of all items
  */
 const generateIdAndPathForItems = (
@@ -175,7 +182,7 @@ const processItemMemberships = (items: DataType['items'] = []) => {
 /**
  * Generate ids for members, necessary to further references (for example when creating profiles)
  * @param members
- * @returns
+ * @returns members' data with generated id
  */
 function generateIdForMembers(members?: DataType['members']) {
   return members?.map((m) => {
@@ -189,8 +196,8 @@ function generateIdForMembers(members?: DataType['members']) {
  * @param data
  * - actor: if not null, will create an actor with defined values, or a random actor if null
  * - items: if memberships is not defined, set default permission to admin. Can specify 'actor' in member. Nested properties can be defined, such as children and memberships.
- * - members
- * @returns
+ * - members: member and their profiles
+ * @returns all created instances given input
  */
 export async function seedFromJson(data: DataType = {}) {
   const result: {
@@ -207,9 +214,9 @@ export async function seedFromJson(data: DataType = {}) {
     memberProfiles: [],
   };
 
-  const { items, actor, members, memberProfiles } = await processActor(data);
+  const { items, actor, members, actorProfile } = await processActor(data);
   result.actor = actor;
-  result.memberProfiles = memberProfiles;
+  result.memberProfiles = actorProfile ? [actorProfile] : [];
 
   // save members
   const membersEntities = generateIdForMembers(members);
@@ -259,6 +266,11 @@ export async function seedFromJson(data: DataType = {}) {
   return result;
 }
 
+/**
+ * Generate a file item data structure
+ * @param member creator of the file
+ * @returns file item structure
+ */
 export function buildFile(member: SeedActor) {
   return {
     type: ItemType.S3_FILE,
