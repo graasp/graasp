@@ -7,6 +7,7 @@ import { FastifyInstance } from 'fastify';
 
 import {
   ActionTriggers,
+  ClientManager,
   Context,
   DiscriminatedItem,
   HttpMethod,
@@ -22,7 +23,7 @@ import build, {
 import { resolveDependency } from '../../../../../di/utils';
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { MailerService } from '../../../../../plugins/mailer/service';
-import { BUILDER_HOST, ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
+import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { Action } from '../../../../action/entities/action';
 import { saveItemLoginSchema } from '../../../../itemLogin/test/index.test';
 import { saveMember, saveMembers } from '../../../../member/test/fixtures/members';
@@ -34,6 +35,8 @@ import { CannotPostAction } from '../errors';
 import { ActionRequestExportRepository } from '../requestExport/repository';
 import { ItemActionType } from '../utils';
 import { getDummyAction, saveActions } from './fixtures/actions';
+
+const BUILDER_HOST = ClientManager.getInstance().getURLByContext(Context.Builder);
 
 const actionRequestExportRepository = new ActionRequestExportRepository();
 const rawActionRepository = AppDataSource.getRepository(Action);
@@ -105,7 +108,7 @@ describe('Action Plugin Tests', () => {
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions`,
           body,
           headers: {
-            Origin: BUILDER_HOST.url.toString(),
+            Origin: BUILDER_HOST.toString(),
           },
         });
 
@@ -125,7 +128,7 @@ describe('Action Plugin Tests', () => {
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions`,
           body,
           headers: {
-            Origin: BUILDER_HOST.url.origin,
+            Origin: BUILDER_HOST.origin,
           },
         });
 
@@ -159,7 +162,7 @@ describe('Action Plugin Tests', () => {
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions`,
           body,
           headers: {
-            Origin: BUILDER_HOST.url.origin,
+            Origin: BUILDER_HOST.origin,
           },
         });
         expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
@@ -182,7 +185,7 @@ describe('Action Plugin Tests', () => {
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions`,
           body,
           headers: {
-            Origin: BUILDER_HOST.url.origin,
+            Origin: BUILDER_HOST.origin,
           },
         });
 
@@ -221,7 +224,7 @@ describe('Action Plugin Tests', () => {
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions`,
           body,
           headers: {
-            Origin: BUILDER_HOST.url.toString(),
+            Origin: BUILDER_HOST.toString(),
           },
         });
 

@@ -14,7 +14,7 @@ import {
 import { buildRepositories } from '../../../../utils/repositories';
 import { isMember } from '../../../member/entities/member';
 import { MemberService } from '../../../member/service';
-import { generateAuthTokensPair, getRedirectionUrl } from '../../utils';
+import { generateAuthTokensPair, getRedirectionLink } from '../../utils';
 import captchaPreHandler from '../captcha';
 import {
   SHORT_TOKEN_PARAM,
@@ -144,7 +144,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       preHandler: authenticateMobileMagicLink,
     },
     async ({ query }, reply) => {
-      const redirectionUrl = getRedirectionUrl(
+      const redirectionUrl = getRedirectionLink(
         log,
         query.url ? decodeURIComponent(query.url) : undefined,
       );
