@@ -14,6 +14,7 @@ import {
 } from '@graasp/sdk';
 
 import build, {
+  MOCK_LOGGER,
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
@@ -45,7 +46,10 @@ const itemService = new ItemService(
   {} as BaseLogger,
 );
 const memberService = new MemberService({} as MailerService, {} as BaseLogger);
-const service = new ActionItemService(new ActionService(itemService, memberService), itemService);
+const service = new ActionItemService(
+  new ActionService(itemService, memberService, MOCK_LOGGER),
+  itemService,
+);
 const rawRepository = AppDataSource.getRepository(Action);
 const testUtils = new ItemTestUtils();
 
