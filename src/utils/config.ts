@@ -49,15 +49,12 @@ export const APP_VERSION = process.env.APP_VERSION;
 
 export const CLIENT_HOST = process.env.CLIENT_HOST ?? 'http://localhost:3000';
 
-export const LIBRARY_HOST = {
-  name: Context.Library,
-  url: new URL(process.env.LIBRARY_CLIENT_HOST ?? CLIENT_HOST),
-};
+export const LIBRARY_HOST = process.env.LIBRARY_CLIENT_HOST ?? CLIENT_HOST;
+
+export const ALLOWED_ORIGINS = [new URL(CLIENT_HOST).origin, new URL(LIBRARY_HOST).origin];
 
 // Add the hosts of the different clients
-ClientManager.getInstance()
-  .setHost(new URL(CLIENT_HOST))
-  .addHost(Context.Library, LIBRARY_HOST.url);
+ClientManager.getInstance().setHost(CLIENT_HOST).addHost(Context.Library, LIBRARY_HOST);
 
 export const PROTOCOL = process.env.PROTOCOL || 'http';
 export const HOSTNAME = process.env.HOSTNAME || 'localhost';
