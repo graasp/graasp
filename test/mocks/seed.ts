@@ -1,7 +1,7 @@
 import { BaseEntity, DataSource } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { MemberFactory, PermissionLevel, buildPathFromIds } from '@graasp/sdk';
+import { CompleteMember, MemberFactory, PermissionLevel, buildPathFromIds } from '@graasp/sdk';
 
 import { AppDataSource } from '../../src/plugins/datasource';
 import { Item } from '../../src/services/item/entities/Item';
@@ -55,7 +55,7 @@ export default async function seed(
   return result;
 }
 
-type SeedActor = 'actor' | Partial<Member>;
+type SeedActor = 'actor' | Partial<CompleteMember>;
 type DataType = {
   actor?: SeedActor | null;
   members?: Partial<Member>[];
