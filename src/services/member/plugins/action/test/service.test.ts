@@ -1,4 +1,4 @@
-import build, { clearDatabase } from '../../../../../../test/app';
+import build, { MOCK_LOGGER, clearDatabase } from '../../../../../../test/app';
 import { resolveDependency } from '../../../../../di/utils';
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { asDefined } from '../../../../../utils/assertions';
@@ -18,7 +18,7 @@ const getActionMemberService = () => {
   const itemService = resolveDependency(ItemService);
   const memberService = resolveDependency(MemberService);
 
-  const actionService = new ActionService(itemService, memberService);
+  const actionService = new ActionService(itemService, memberService, MOCK_LOGGER);
   const actionMemberService = new ActionMemberService(actionService);
 
   return actionMemberService;

@@ -5,6 +5,7 @@ import { FastifyRequest } from 'fastify';
 
 import { ClientManager, Context } from '@graasp/sdk';
 
+import { BaseLogger } from '../../../logger';
 import { Repositories } from '../../../utils/repositories';
 import { ItemService } from '../../item/service';
 import { Actor, isMember } from '../../member/entities/member';
@@ -16,10 +17,12 @@ import { getGeolocationIp } from '../utils/actions';
 export class ActionService {
   itemService: ItemService;
   memberService: MemberService;
+  logger: BaseLogger;
 
-  constructor(itemService: ItemService, memberService: MemberService) {
+  constructor(itemService: ItemService, memberService: MemberService, logger: BaseLogger) {
     this.itemService = itemService;
     this.memberService = memberService;
+    this.logger = logger;
   }
 
   async postMany(
@@ -41,9 +44,16 @@ export class ActionService {
       return;
     }
 
-    const view = headers?.origin
-      ? ClientManager.getInstance().getContextByLink(headers?.origin)
-      : Context.Unknown;
+    let view = Context.Unknown;
+    try {
+      if (headers?.origin) {
+        view = ClientManager.getInstance().getContextByLink(headers?.origin);
+      }
+    } catch (e) {
+      // do nothing
+      this.logger.error(e);
+      // view will default to unknown
+    }
     // warning: addresses might contained spoofed ips
     const addresses = forwarded(request.raw);
     const ip = addresses.pop();
