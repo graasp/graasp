@@ -15,7 +15,7 @@ import {
 import { Repositories } from '../../utils/repositories';
 import { Member } from '../member/entities/member';
 import { SHORT_TOKEN_PARAM } from './plugins/passport';
-import { getRedirectionUrl } from './utils';
+import { getRedirectionLink } from './utils';
 
 @singleton()
 export class AuthService {
@@ -38,7 +38,7 @@ export class AuthService {
       expiresIn: `${REGISTER_TOKEN_EXPIRATION_IN_MINUTES}m`,
     });
 
-    const redirectionUrl = getRedirectionUrl(this.log, url);
+    const redirectionUrl = getRedirectionLink(this.log, url);
     const domain = challenge ? MOBILE_AUTH_URL : PUBLIC_URL;
     const destination = new URL('/auth', domain);
     destination.searchParams.set(SHORT_TOKEN_PARAM, token);
@@ -73,7 +73,7 @@ export class AuthService {
       expiresIn: `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
     });
 
-    const redirectionUrl = getRedirectionUrl(this.log, url);
+    const redirectionUrl = getRedirectionLink(this.log, url);
     const domain = challenge ? MOBILE_AUTH_URL : PUBLIC_URL;
     const destination = new URL('/auth', domain);
     destination.searchParams.set(SHORT_TOKEN_PARAM, token);

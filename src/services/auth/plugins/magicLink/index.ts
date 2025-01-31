@@ -14,7 +14,7 @@ import { buildRepositories } from '../../../../utils/repositories';
 import { InvitationService } from '../../../item/plugins/invitation/service';
 import { isMember } from '../../../member/entities/member';
 import { MemberService } from '../../../member/service';
-import { getRedirectionUrl } from '../../utils';
+import { getRedirectionLink } from '../../utils';
 import captchaPreHandler from '../captcha';
 import { PassportStrategy } from '../passport/strategies';
 import { PassportInfo } from '../passport/types';
@@ -110,7 +110,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         log,
       } = request;
       const member = asDefined(user?.account);
-      const redirectionUrl = getRedirectionUrl(log, url ? decodeURIComponent(url) : undefined);
+      const redirectionLink = getRedirectionLink(log, url ? decodeURIComponent(url) : undefined);
       await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
         await memberService.refreshLastAuthenticatedAt(member.id, repositories);
@@ -119,7 +119,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           await memberService.validate(member.id, repositories);
         }
       });
-      reply.redirect(StatusCodes.SEE_OTHER, redirectionUrl);
+      reply.redirect(StatusCodes.SEE_OTHER, redirectionLink);
     },
   );
 
