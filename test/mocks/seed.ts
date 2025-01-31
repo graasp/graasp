@@ -1,7 +1,14 @@
+import { faker } from '@faker-js/faker';
 import { BaseEntity, DataSource } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { CompleteMember, MemberFactory, PermissionLevel, buildPathFromIds } from '@graasp/sdk';
+import {
+  CompleteMember,
+  ItemType,
+  MemberFactory,
+  PermissionLevel,
+  buildPathFromIds,
+} from '@graasp/sdk';
 
 import { AppDataSource } from '../../src/plugins/datasource';
 import { Item } from '../../src/services/item/entities/Item';
@@ -60,7 +67,7 @@ type DataType = {
   actor?: SeedActor | null;
   members?: Partial<Member>[];
   items?: ((Partial<Item> | { creator: SeedActor }) & {
-    children?: Partial<Item>[];
+    children?: (Partial<Item> | { creator: SeedActor })[];
     memberships?: (
       | Partial<ItemMembership>
       | { account?: SeedActor; creator?: SeedActor; permission?: PermissionLevel }
@@ -75,7 +82,7 @@ const replaceActorInItems = (createdActor?: Actor, items?: DataType['items']) =>
 
   return items.map((i) => ({
     ...i,
-    creator: i.creator === 'actor' ? createdActor : null,
+    creator: i.creator === 'actor' ? createdActor : (i.creator ?? null),
     memberships: i.memberships?.map((m) => ({
       ...m,
       account: m.account === 'actor' ? createdActor : m.account,
@@ -223,4 +230,21 @@ export async function seedFromJson(data: DataType = {}) {
   }
 
   return result;
+}
+
+export function buildFile(member: SeedActor) {
+  return {
+    type: ItemType.S3_FILE,
+    extra: {
+      [ItemType.S3_FILE]: {
+        size: faker.number.int({ min: 1, max: 1000 }),
+        content: 'content',
+        mimetype: 'image/png',
+        name: faker.system.fileName(),
+        path: faker.system.filePath(),
+      },
+    },
+    creator: member,
+    memberships: [{ account: member }],
+  };
 }

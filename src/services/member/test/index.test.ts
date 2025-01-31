@@ -9,6 +9,7 @@ import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../.
 import { seedFromJson } from '../../../../test/mocks/seed';
 import { AppDataSource } from '../../../plugins/datasource';
 import { DEFAULT_MAX_STORAGE } from '../../../services/item/plugins/file/utils/constants';
+import { assertIsDefined } from '../../../utils/assertions';
 import { FILE_ITEM_TYPE } from '../../../utils/config';
 import { MemberNotFound } from '../../../utils/errors';
 import { Member, assertIsMember } from '../entities/member';
@@ -45,7 +46,8 @@ describe('Member routes tests', () => {
 
       // mock authentication because the cookie is not set inbetween inject
       mockAuthenticate(actor);
-      assertIsMember(actor!);
+      assertIsDefined(actor);
+      assertIsMember(actor);
 
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -286,7 +288,8 @@ describe('Member routes tests', () => {
       it('Returns successfully', async () => {
         const { actor } = await seedFromJson();
         mockAuthenticate(actor);
-        assertIsMember(actor!);
+        assertIsDefined(actor);
+        assertIsMember(actor);
 
         const newName = 'new name';
         const newExtra = {
@@ -315,7 +318,8 @@ describe('Member routes tests', () => {
       it('New name too short throws', async () => {
         const { actor } = await seedFromJson();
         mockAuthenticate(actor);
-        assertIsMember(actor!);
+        assertIsDefined(actor);
+        assertIsMember(actor);
 
         const newName = 'n';
 
@@ -336,7 +340,8 @@ describe('Member routes tests', () => {
       it('New name too long throws', async () => {
         const { actor } = await seedFromJson();
         mockAuthenticate(actor);
-        assertIsMember(actor!);
+        assertIsDefined(actor);
+        assertIsMember(actor);
 
         const newName = Array(MAX_USERNAME_LENGTH + 1).fill(() => 'a');
 
@@ -357,7 +362,8 @@ describe('Member routes tests', () => {
       it('Enable save actions successfully', async () => {
         const { actor } = await seedFromJson();
         mockAuthenticate(actor);
-        assertIsMember(actor!);
+        assertIsDefined(actor);
+        assertIsMember(actor);
 
         const enableSaveActions = true;
         const response = await app.inject({
@@ -376,7 +382,8 @@ describe('Member routes tests', () => {
       it('Disable save actions successfully', async () => {
         const { actor } = await seedFromJson();
         mockAuthenticate(actor);
-        assertIsMember(actor!);
+        assertIsDefined(actor);
+        assertIsMember(actor);
 
         // Start by enabling save actions
         await app.inject({
@@ -417,7 +424,8 @@ describe('Member routes tests', () => {
       it('Returns successfully', async () => {
         const { actor } = await seedFromJson();
         mockAuthenticate(actor);
-        assertIsMember(actor!);
+        assertIsDefined(actor);
+        assertIsMember(actor);
 
         const response = await app.inject({
           method: HttpMethod.Delete,

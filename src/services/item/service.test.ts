@@ -6,6 +6,7 @@ import { FolderItemFactory, ItemType, ItemVisibilityType } from '@graasp/sdk';
 
 import build, { MOCK_LOGGER, clearDatabase, mockAuthenticate } from '../../../test/app';
 import { seedFromJson } from '../../../test/mocks/seed';
+import { assertIsDefined } from '../../utils/assertions';
 import { buildRepositories } from '../../utils/repositories';
 import * as authorization from '../authorization';
 import { Actor, assertIsMember } from '../member/entities/member';
@@ -164,7 +165,8 @@ describe('Item Service', () => {
         items: [{ memberships: [{ account: 'actor' }] }],
       });
       mockAuthenticate(actor);
-      assertIsMember(actor!);
+      assertIsDefined(actor);
+      assertIsMember(actor);
       const repositories = buildRepositories();
 
       // WHEN

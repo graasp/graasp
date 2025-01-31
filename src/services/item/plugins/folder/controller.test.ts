@@ -25,6 +25,7 @@ import build, {
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { resolveDependency } from '../../../../di/utils';
 import { AppDataSource } from '../../../../plugins/datasource';
+import { assertIsDefined } from '../../../../utils/assertions';
 import {
   MemberCannotAccess,
   MemberCannotWriteItem,
@@ -165,7 +166,8 @@ describe('Folder routes tests', () => {
         });
         const [parent, child] = items;
         mockAuthenticate(actor);
-        assertIsMember(actor!);
+        assertIsDefined(actor);
+        assertIsMember(actor);
 
         const payload = FolderItemFactory();
         const response = await app.inject({
@@ -196,7 +198,8 @@ describe('Folder routes tests', () => {
           items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Write }] }],
         });
         mockAuthenticate(actor);
-        assertIsMember(actor!);
+        assertIsDefined(actor);
+        assertIsMember(actor);
 
         const payload = FolderItemFactory();
         const response = await app.inject({
@@ -226,7 +229,9 @@ describe('Folder routes tests', () => {
       it('Create successfully with geolocation', async () => {
         const { actor } = await seedFromJson();
         mockAuthenticate(actor);
-        assertIsMember(actor!);
+
+        assertIsDefined(actor);
+        assertIsMember(actor);
 
         const payload = FolderItemFactory();
         const response = await app.inject({
@@ -248,7 +253,8 @@ describe('Folder routes tests', () => {
       it('Create successfully with language', async () => {
         const { actor } = await seedFromJson();
         mockAuthenticate(actor);
-        assertIsMember(actor!);
+        assertIsDefined(actor);
+        assertIsMember(actor);
 
         const payload = FolderItemFactory({ lang: 'fr' });
         const response = await app.inject({
@@ -272,7 +278,8 @@ describe('Folder routes tests', () => {
           items: [{ lang, memberships: [{ account: 'actor' }] }],
         });
         mockAuthenticate(actor);
-        assertIsMember(actor!);
+        assertIsDefined(actor);
+        assertIsMember(actor);
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -290,7 +297,8 @@ describe('Folder routes tests', () => {
       it('Create successfully with description placement above and should not erase default thumbnail', async () => {
         const { actor } = await seedFromJson();
         mockAuthenticate(actor);
-        assertIsMember(actor!);
+        assertIsDefined(actor);
+        assertIsMember(actor);
 
         const payload = FolderItemFactory({
           settings: { descriptionPlacement: DescriptionPlacement.ABOVE },
@@ -312,7 +320,8 @@ describe('Folder routes tests', () => {
       it('Filter out bad setting when creating', async () => {
         const { actor } = await seedFromJson();
         mockAuthenticate(actor);
-        assertIsMember(actor!);
+        assertIsDefined(actor);
+        assertIsMember(actor);
 
         const BAD_SETTING = { INVALID: 'Not a valid setting' };
         const VALID_SETTING = { descriptionPlacement: DescriptionPlacement.ABOVE };
@@ -345,7 +354,8 @@ describe('Folder routes tests', () => {
           items: [{ memberships: [{ account: 'actor' }], children: [{ order: 1 }, { order: 2 }] }],
         });
         mockAuthenticate(actor);
-        assertIsMember(actor!);
+        assertIsDefined(actor);
+        assertIsMember(actor);
 
         const payload = FolderItemFactory();
         const response = await app.inject({
@@ -371,7 +381,8 @@ describe('Folder routes tests', () => {
           items: [{ memberships: [{ account: 'actor' }], children: [{ order: 1 }, { order: 40 }] }],
         });
         mockAuthenticate(actor);
-        assertIsMember(actor!);
+        assertIsDefined(actor);
+        assertIsMember(actor);
 
         const payload = FolderItemFactory();
         const response = await app.inject({
@@ -401,7 +412,8 @@ describe('Folder routes tests', () => {
           ],
         });
         mockAuthenticate(actor);
-        assertIsMember(actor!);
+        assertIsDefined(actor);
+        assertIsMember(actor);
 
         const payload = FolderItemFactory();
         const response = await app.inject({
