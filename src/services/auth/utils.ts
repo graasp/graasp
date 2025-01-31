@@ -13,13 +13,12 @@ import {
   REFRESH_TOKEN_JWT_SECRET,
 } from '../../utils/config';
 
-const defaultClientHostOrigin = ClientManager.getInstance().getURLByContext(Context.Builder).origin;
-
+const defaultClientHost = ClientManager.getInstance().getLinkByContext(Context.Builder);
 const validOrigins = [CLIENT_HOST, LIBRARY_HOST];
 
-export const getRedirectionUrl = (log: FastifyBaseLogger, target?: string) => {
+export const getRedirectionLink = (log: FastifyBaseLogger, target?: string) => {
   if (!target) {
-    return defaultClientHostOrigin;
+    return defaultClientHost;
   }
 
   try {
@@ -28,10 +27,10 @@ export const getRedirectionUrl = (log: FastifyBaseLogger, target?: string) => {
       log.error(
         `redirection-url-util: Attempted to use a non valid origin  (url: ${targetUrl.toString()})`,
       );
-      return defaultClientHostOrigin;
+      return defaultClientHost;
     }
   } catch {
-    return defaultClientHostOrigin;
+    return defaultClientHost;
   }
 
   return target;

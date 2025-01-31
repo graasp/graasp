@@ -10,10 +10,11 @@ export const PLUGIN_NAME = 'graasp-plugin-invitations';
  * @returns
  */
 export const buildInvitationLink = (invitation: Invitation) => {
-  const url = ClientManager.getInstance().getURLByContext(Context.Auth, 'signup');
-  url.searchParams.set('invitationId', invitation.id);
   const destination = ClientManager.getInstance().getItemLink(Context.Player, invitation.item.id);
-  url.searchParams.set('url', encodeURIComponent(destination.toString()));
+  const url = ClientManager.getInstance().getURLByContext(Context.Auth, 'register', {
+    invitationId: invitation.id,
+    url: destination.toString(),
+  });
   return url.toString();
 };
 

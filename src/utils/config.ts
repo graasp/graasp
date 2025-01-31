@@ -72,7 +72,8 @@ if (!process.env.COOKIE_DOMAIN) {
 export const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN;
 export const CORS_ORIGIN_REGEX = process.env.CORS_ORIGIN_REGEX;
 
-/*
+/**
+ * Public url is the url where the server is hosted. Mostly used to set the cookie on the right domain
  * Warning for PUBLIC_URL:
  * make sure that process.env.PUBLIC_URL / HOST have the format ${PROTOCOL}://${HOSTNAME}:${PORT}
  * See the following example where the format is only ${HOSTNAME}:${PORT} in which case

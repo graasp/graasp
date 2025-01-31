@@ -14,9 +14,7 @@ services:
         USER_GID: 1000
     environment:
       # sane default to allow the server to bind to any interface in the container
-      HOSTNAME: 0.0.0.0
-      # the generated links should open the browser locally
-      PUBLIC_URL: http://localhost:3000
+      HOSTNAME: 0.0.0.0 
       # temporary storage for files inside the container
       FILE_STORAGE_ROOT_PATH: /tmp/graasp-file-item-storage
       # the localfile config host points to the static file server defined below
