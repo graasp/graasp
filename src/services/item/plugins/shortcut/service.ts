@@ -70,6 +70,11 @@ export class ShortcutItemService extends ItemService {
       throw new WrongItemTypeError(item.type);
     }
 
-    return (await super.patch(member, repositories, item.id, body)) as ShortcutItem;
+    const { name, description } = body;
+
+    return (await super.patch(member, repositories, item.id, {
+      name,
+      description,
+    })) as ShortcutItem;
   }
 }
