@@ -3,6 +3,7 @@ import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity
 
 import { KeysOfString } from '../types';
 import { assertIsError } from '../utils/assertions';
+import { isDuplicateEntryError } from '../utils/typeormError';
 import { AbstractRepository, Entity } from './AbstractRepository';
 import {
   EntityNotFound,
@@ -158,6 +159,9 @@ export abstract class ImmutableRepository<T extends BaseEntity> extends Abstract
         throw e;
       }
       assertIsError(e);
+      if (isDuplicateEntryError(e)) {
+        throw e;
+      }
       throw new InsertionException(e.message);
     }
   }

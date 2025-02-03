@@ -12,6 +12,7 @@ import {
   EntryNotFoundAfterUpdateException,
   UpdateException,
 } from '../../../../repositories/errors';
+import { assertIsError } from '../../../../utils/assertions';
 import {
   ShortLinkDuplication,
   ShortLinkLimitExceed,
@@ -38,7 +39,8 @@ export class ShortLinkRepository extends MutableRepository<ShortLink, UpdateShor
     try {
       return await super.insert({ alias, platform, item: { id: itemId } });
     } catch (e) {
-      if (isDuplicateEntryError(e.message)) {
+      assertIsError(e);
+      if (isDuplicateEntryError(e)) {
         throw new ShortLinkDuplication(alias);
       }
       throw e;
