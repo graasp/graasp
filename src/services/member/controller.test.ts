@@ -5,70 +5,50 @@ import { sign as jwtSign } from 'jsonwebtoken';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType } from '@graasp/sdk';
+import { HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../test/app';
+import { buildFile, seedFromJson } from '../../../test/mocks/seed';
 import { resolveDependency } from '../../di/utils';
 import { AppDataSource } from '../../plugins/datasource';
 import { MailerService } from '../../plugins/mailer/service';
+import { assertIsDefined } from '../../utils/assertions';
 import { ACCOUNT_HOST, EMAIL_CHANGE_JWT_SECRET } from '../../utils/config';
 import { Item } from '../item/entities/Item';
-import { ItemTestUtils } from '../item/test/fixtures/items';
 import {
   FILE_METADATA_MAX_PAGE_SIZE,
   FILE_METADATA_MIN_PAGE,
   FILE_METADATA_MIN_PAGE_SIZE,
 } from './constants';
-import { Member } from './entities/member';
-import { saveMember } from './test/fixtures/members';
+import { Member, assertIsMember } from './entities/member';
 
 jest.mock('node-fetch');
 const memberRawRepository = AppDataSource.getRepository(Member);
-const testUtils = new ItemTestUtils();
-
-async function saveFile(member: Member, parentItem?: Item) {
-  return await testUtils.saveItemAndMembership({
-    item: {
-      creator: member,
-      type: ItemType.S3_FILE,
-      extra: {
-        [ItemType.S3_FILE]: {
-          size: faker.number.int({ min: 1, max: 1000 }),
-          content: 'content',
-          mimetype: 'image/png',
-          name: faker.system.fileName(),
-          path: faker.system.filePath(),
-        },
-      },
-    },
-    member: member,
-    parentItem,
-  });
-}
 
 describe('Member Controller', () => {
-  let member: Member;
   let app: FastifyInstance;
   let mockSendEmail: jest.SpyInstance;
+
   beforeAll(async () => {
     ({ app } = await build({ member: null }));
   });
   beforeEach(async () => {
-    member = await saveMember();
-    mockAuthenticate(member);
     mockSendEmail = jest.spyOn(resolveDependency(MailerService), 'sendRaw');
   });
   afterEach(async () => {
-    await clearDatabase(app.db);
+    unmockAuthenticate();
     jest.clearAllMocks();
   });
   afterAll(async () => {
+    await clearDatabase(app.db);
     app.close();
   });
 
   describe('POST /members/current/email/change', () => {
     it('Unauthenticated', async () => {
-      unmockAuthenticate();
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
+      assertIsMember(actor);
       const response = await app.inject({
         method: 'POST',
         url: '/members/current/email/change',
@@ -77,11 +57,16 @@ describe('Member Controller', () => {
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
       expect(mockSendEmail).not.toHaveBeenCalled();
       // Email didn't changed
-      const rawMember = await memberRawRepository.findOneBy({ id: member.id });
-      expect(rawMember?.email).toEqual(member.email);
+      const rawMember = await memberRawRepository.findOneBy({ id: actor.id });
+      expect(rawMember?.email).toEqual(actor.email);
     });
 
     it('No email provided', async () => {
+      const { actor } = await seedFromJson();
+      mockAuthenticate(actor);
+      assertIsDefined(actor);
+      assertIsMember(actor);
+
       const response = await app.inject({
         method: 'POST',
         url: '/members/current/email/change',
@@ -89,10 +74,15 @@ describe('Member Controller', () => {
       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       expect(mockSendEmail).not.toHaveBeenCalled();
       // Email didn't changed
-      const rawMember = await memberRawRepository.findOneBy({ id: member.id });
-      expect(rawMember?.email).toEqual(member.email);
+      const rawMember = await memberRawRepository.findOneBy({ id: actor.id });
+      expect(rawMember?.email).toEqual(actor.email);
     });
     it('Invalid email provided', async () => {
+      const { actor } = await seedFromJson();
+      mockAuthenticate(actor);
+      assertIsDefined(actor);
+      assertIsMember(actor);
+
       const response = await app.inject({
         method: 'POST',
         url: '/members/current/email/change',
@@ -101,24 +91,39 @@ describe('Member Controller', () => {
       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       expect(mockSendEmail).not.toHaveBeenCalled();
       // Email didn't changed
-      const rawMember = await memberRawRepository.findOneBy({ id: member.id });
-      expect(rawMember?.email).toEqual(member.email);
+      const rawMember = await memberRawRepository.findOneBy({ id: actor.id });
+      expect(rawMember?.email).toEqual(actor.email);
     });
 
     it('Already taken email', async () => {
+      const email = 'randomemail@email.com';
+      const {
+        actor,
+        members: [member],
+      } = await seedFromJson({ members: [{ email }] });
+      mockAuthenticate(actor);
+      assertIsDefined(actor);
+      assertIsMember(actor);
+
       const response = await app.inject({
         method: 'POST',
         url: '/members/current/email/change',
         body: { email: member.email },
       });
+
       expect(response.statusCode).toBe(StatusCodes.CONFLICT);
       expect(mockSendEmail).not.toHaveBeenCalled();
       // Email didn't change
-      const rawMember = await memberRawRepository.findOneBy({ id: member.id });
-      expect(rawMember?.email).toEqual(member.email);
+      const rawMember = await memberRawRepository.findOneBy({ id: actor.id });
+      expect(rawMember?.email).toEqual(actor.email);
     });
 
     it('Change email', async () => {
+      const { actor } = await seedFromJson();
+      mockAuthenticate(actor);
+      assertIsDefined(actor);
+      assertIsMember(actor);
+
       const email = faker.internet.email();
       const response = await app.inject({
         method: 'POST',
@@ -130,8 +135,8 @@ describe('Member Controller', () => {
       expect(mockSendEmail.mock.calls[0][1]).toBe(email);
       expect(mockSendEmail.mock.calls[0][2]).toContain(`${ACCOUNT_HOST.url}email/change?t=`);
       // Email didn't change
-      const rawMember = await memberRawRepository.findOneBy({ id: member.id });
-      expect(rawMember?.email).toEqual(member.email);
+      const rawMember = await memberRawRepository.findOneBy({ id: actor.id });
+      expect(rawMember?.email).toEqual(actor.email);
     });
   });
 
@@ -141,18 +146,27 @@ describe('Member Controller', () => {
       newEmail = faker.internet.email().toLowerCase();
     });
     it('No JWT', async () => {
+      const { actor } = await seedFromJson();
+      mockAuthenticate(actor);
+      assertIsDefined(actor);
+      assertIsMember(actor);
+
       const response = await app.inject({
         method: HttpMethod.Patch,
         url: '/members/current/email/change',
       });
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
       // Email didn't change
-      const rawMember = await memberRawRepository.findOneBy({ id: member.id });
-      expect(rawMember?.email).toEqual(member.email);
+      const rawMember = await memberRawRepository.findOneBy({ id: actor.id });
+      expect(rawMember?.email).toEqual(actor.email);
       expect(mockSendEmail).not.toHaveBeenCalled();
     });
     it('Invalid JWT', async () => {
-      const token = jwtSign({ uuid: member.id, oldEmail: member.email, newEmail }, 'invalid');
+      const { actor } = await seedFromJson();
+      mockAuthenticate(actor);
+      assertIsDefined(actor);
+      assertIsMember(actor);
+      const token = jwtSign({ uuid: actor.id, oldEmail: actor.email, newEmail }, 'invalid');
 
       const response = await app.inject({
         method: HttpMethod.Patch,
@@ -161,14 +175,20 @@ describe('Member Controller', () => {
       });
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
       // Email didn't changed
-      const rawMember = await memberRawRepository.findOneBy({ id: member.id });
-      expect(rawMember?.email).toEqual(member.email);
+      const rawMember = await memberRawRepository.findOneBy({ id: actor.id });
+      expect(rawMember?.email).toEqual(actor.email);
       expect(mockSendEmail).not.toHaveBeenCalled();
     });
     it('Already taken email', async () => {
-      const anotherMember = await saveMember();
+      const {
+        actor,
+        members: [anotherMember],
+      } = await seedFromJson({ members: [{ email: 'anotheremail@email.com' }] });
+      mockAuthenticate(actor);
+      assertIsDefined(actor);
+      assertIsMember(actor);
       const token = jwtSign(
-        { uuid: member.id, oldEmail: member.email, newEmail: anotherMember.email },
+        { uuid: actor.id, oldEmail: actor.email, newEmail: anotherMember.email },
         EMAIL_CHANGE_JWT_SECRET,
       );
 
@@ -179,13 +199,18 @@ describe('Member Controller', () => {
       });
       expect(response.statusCode).toBe(StatusCodes.CONFLICT);
       // Email didn't changed
-      const rawMember = await memberRawRepository.findOneBy({ id: member.id });
-      expect(rawMember?.email).toEqual(member.email);
+      const rawMember = await memberRawRepository.findOneBy({ id: actor.id });
+      expect(rawMember?.email).toEqual(actor.email);
       expect(mockSendEmail).not.toHaveBeenCalled();
     });
     it('Change email', async () => {
+      const { actor } = await seedFromJson();
+      mockAuthenticate(actor);
+      assertIsDefined(actor);
+      assertIsMember(actor);
+
       const token = jwtSign(
-        { uuid: member.id, oldEmail: member.email, newEmail },
+        { uuid: actor.id, oldEmail: actor.email, newEmail },
         EMAIL_CHANGE_JWT_SECRET,
       );
 
@@ -196,10 +221,10 @@ describe('Member Controller', () => {
       });
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
       // Email changed
-      const rawMember = await memberRawRepository.findOneBy({ id: member.id });
+      const rawMember = await memberRawRepository.findOneBy({ id: actor.id });
       expect(rawMember?.email).toEqual(newEmail);
       expect(mockSendEmail).toHaveBeenCalledTimes(1);
-      expect(mockSendEmail.mock.calls[0][1]).toBe(member.email);
+      expect(mockSendEmail.mock.calls[0][1]).toBe(actor.email);
       mockSendEmail.mockClear();
 
       // JWT is invalidated
@@ -214,6 +239,11 @@ describe('Member Controller', () => {
   });
   describe('GET /members/current/storage/files', () => {
     it('returns ok', async () => {
+      const { actor } = await seedFromJson();
+      mockAuthenticate(actor);
+      assertIsDefined(actor);
+      assertIsMember(actor);
+
       const response = await app.inject({
         method: HttpMethod.Get,
         url: '/members/current/storage/files',
@@ -221,6 +251,11 @@ describe('Member Controller', () => {
       expect(response.statusCode).toBe(StatusCodes.OK);
     });
     it('returns bad request when page is lower than 1', async () => {
+      const { actor } = await seedFromJson();
+      mockAuthenticate(actor);
+      assertIsDefined(actor);
+      assertIsMember(actor);
+
       const response = await app.inject({
         method: HttpMethod.Get,
         url: '/members/current/storage/files',
@@ -229,6 +264,11 @@ describe('Member Controller', () => {
       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
     });
     it('returns bad request when page size is lower than 1', async () => {
+      const { actor } = await seedFromJson();
+      mockAuthenticate(actor);
+      assertIsDefined(actor);
+      assertIsMember(actor);
+
       const response = await app.inject({
         method: HttpMethod.Get,
         url: '/members/current/storage/files',
@@ -237,6 +277,11 @@ describe('Member Controller', () => {
       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
     });
     it('returns bad request when page size is greater than the maximum', async () => {
+      const { actor } = await seedFromJson();
+      mockAuthenticate(actor);
+      assertIsDefined(actor);
+      assertIsMember(actor);
+
       const response = await app.inject({
         method: HttpMethod.Get,
         url: '/members/current/storage/files',
@@ -246,7 +291,10 @@ describe('Member Controller', () => {
     });
 
     it('parent undefined when file is root', async () => {
-      await saveFile(member);
+      const { actor } = await seedFromJson({ items: [buildFile('actor')] });
+      mockAuthenticate(actor);
+      assertIsDefined(actor);
+      assertIsMember(actor);
 
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -270,17 +318,26 @@ describe('Member Controller', () => {
     describe('pagination', () => {
       const totalFiles = 23;
       let rootFile: Item;
+
       beforeEach(async () => {
-        const anotherMember = await saveMember();
-        rootFile = (await saveFile(anotherMember)).item;
+        // create members
+        const {
+          actor,
+          members: [anotherMember],
+        } = await seedFromJson({ members: [{}] });
+        assertIsDefined(actor);
+        assertIsMember(actor);
 
-        for (let i = 0; i < totalFiles; i++) {
-          await saveFile(member, rootFile);
-        }
-
-        for (let i = 0; i < 5; i++) {
-          await saveFile(anotherMember);
-        }
+        // create items
+        const { items } = await seedFromJson({
+          actor: null,
+          items: [
+            { children: Array.from({ length: totalFiles }, () => buildFile({ id: actor.id })) },
+            ...Array.from({ length: 5 }, () => buildFile({ id: anotherMember.id })),
+          ],
+        });
+        rootFile = items[0];
+        mockAuthenticate(actor);
       });
 
       it('default parameters when not specified', async () => {
@@ -462,11 +519,16 @@ describe('Member Controller', () => {
 
   describe('PATCH /members/:id', () => {
     it('username can not contain special characters', async () => {
+      const { actor } = await seedFromJson();
+      mockAuthenticate(actor);
+      assertIsDefined(actor);
+      assertIsMember(actor);
+
       const invalidName = '<divvy>%$^&';
 
       const response = await app.inject({
         method: HttpMethod.Patch,
-        url: `members/${member.id}`,
+        url: `members/${actor.id}`,
         body: { name: invalidName },
       });
 
