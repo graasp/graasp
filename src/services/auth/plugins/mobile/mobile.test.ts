@@ -7,13 +7,15 @@ import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, MemberFactory, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
+import { HttpMethod, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
+import { seedFromJson } from '../../../../../test/mocks/seed';
 import { TOKEN_REGEX } from '../../../../../test/utils';
 import { resolveDependency } from '../../../../di/utils';
 import { AppDataSource } from '../../../../plugins/datasource';
 import { MailerService } from '../../../../plugins/mailer/service';
+import { assertIsDefined } from '../../../../utils/assertions';
 import {
   AUTH_TOKEN_JWT_SECRET,
   JWT_SECRET,
@@ -21,11 +23,11 @@ import {
   REFRESH_TOKEN_JWT_SECRET,
 } from '../../../../utils/config';
 import { MemberNotFound } from '../../../../utils/errors';
-import { Member } from '../../../member/entities/member';
+import { Member, assertIsMember } from '../../../member/entities/member';
 import { expectMember, saveMember } from '../../../member/test/fixtures/members';
 import { MOCK_CAPTCHA } from '../captcha/test/utils';
 import { SHORT_TOKEN_PARAM } from '../passport';
-import { MOCK_PASSWORD, saveMemberAndPassword } from '../password/test/fixtures/password';
+import { MOCK_PASSWORD } from '../password/test/fixtures/password';
 
 jest.mock('node-fetch');
 const memberRawRepository = AppDataSource.getRepository(Member);
@@ -268,14 +270,15 @@ describe('Mobile Endpoints', () => {
       mockCaptchaValidation(RecaptchaAction.SignInWithPasswordMobile);
     });
     it('Sign In successfully', async () => {
-      const member = MemberFactory();
-      await saveMemberAndPassword(member, MOCK_PASSWORD);
+      const { actor } = await seedFromJson({ actor: { password: await MOCK_PASSWORD.hashed } });
+      assertIsDefined(actor);
+      assertIsMember(actor);
 
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/m/login-password',
         payload: {
-          email: member.email,
+          email: actor.email,
           challenge,
           password: MOCK_PASSWORD.password,
           captcha: MOCK_CAPTCHA,
@@ -299,14 +302,15 @@ describe('Mobile Endpoints', () => {
           }),
         } as Response;
       });
-      const member = MemberFactory();
-      await saveMemberAndPassword(member, MOCK_PASSWORD);
+      const { actor } = await seedFromJson({ actor: { password: await MOCK_PASSWORD.hashed } });
+      assertIsDefined(actor);
+      assertIsMember(actor);
 
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/m/login-password',
         payload: {
-          email: member.email,
+          email: actor.email,
           challenge,
           password: MOCK_PASSWORD.password,
           captcha: MOCK_CAPTCHA,
@@ -330,14 +334,15 @@ describe('Mobile Endpoints', () => {
           }),
         } as Response;
       });
-      const member = MemberFactory();
-      await saveMemberAndPassword(member, MOCK_PASSWORD);
+      const { actor } = await seedFromJson({ actor: { password: await MOCK_PASSWORD.hashed } });
+      assertIsDefined(actor);
+      assertIsMember(actor);
 
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/m/login-password',
         payload: {
-          email: member.email,
+          email: actor.email,
           challenge,
           password: MOCK_PASSWORD.password,
           captcha: MOCK_CAPTCHA,
@@ -352,15 +357,16 @@ describe('Mobile Endpoints', () => {
     });
 
     it('Sign In does send unauthorized error for wrong password', async () => {
-      const member = MemberFactory();
       const wrongPassword = '1234';
-      await saveMemberAndPassword(member, MOCK_PASSWORD);
+      const { actor } = await seedFromJson({ actor: { password: await MOCK_PASSWORD.hashed } });
+      assertIsDefined(actor);
+      assertIsMember(actor);
 
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/m/login-password',
         payload: {
-          email: member.email,
+          email: actor.email,
           challenge,
           password: wrongPassword,
           captcha: MOCK_CAPTCHA,
@@ -643,16 +649,17 @@ describe('Mobile Endpoints', () => {
     it('Password', async () => {
       mockCaptchaValidation(RecaptchaAction.SignInWithPasswordMobile);
 
-      const member = await saveMemberAndPassword(
-        MemberFactory({ isValidated: false }),
-        MOCK_PASSWORD,
-      );
+      const { actor } = await seedFromJson({
+        actor: { isValidated: false, password: await MOCK_PASSWORD.hashed },
+      });
+      assertIsDefined(actor);
+      assertIsMember(actor);
 
       const responseLogin = await app.inject({
         method: HttpMethod.Post,
         url: '/m/login-password',
         payload: {
-          email: member.email,
+          email: actor.email,
           challenge,
           password: MOCK_PASSWORD.password,
           captcha: MOCK_CAPTCHA,
@@ -662,7 +669,7 @@ describe('Mobile Endpoints', () => {
       const responseLoginBody = responseLogin.json();
       const authUrl = new URL(responseLoginBody.resource);
 
-      let m = await memberRawRepository.findOneBy({ email: member.email });
+      let m = await memberRawRepository.findOneBy({ email: actor.email });
       expect(m?.lastAuthenticatedAt).toBeNull();
       expect(m?.isValidated).toBeFalsy();
       const responseAuth = await app.inject({
@@ -676,7 +683,7 @@ describe('Mobile Endpoints', () => {
 
       expect(responseAuth.statusCode).toBe(StatusCodes.OK);
 
-      m = await memberRawRepository.findOneBy({ email: member.email });
+      m = await memberRawRepository.findOneBy({ email: actor.email });
       expect(m?.lastAuthenticatedAt).toBeDefined();
       expect(m?.isValidated).toBeFalsy();
 
@@ -695,8 +702,8 @@ describe('Mobile Endpoints', () => {
       expect(responseCheck.statusCode).toBe(StatusCodes.OK);
       const responseCheckBody = responseCheck.json();
       expect(responseCheckBody).toHaveProperty('id');
-      expect(responseCheckBody.email).toBe(member.email);
-      expect(responseCheckBody.name).toBe(member.name);
+      expect(responseCheckBody.email).toBe(actor.email);
+      expect(responseCheckBody.name).toBe(actor.name);
     });
   });
 });
