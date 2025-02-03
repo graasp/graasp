@@ -11820,13 +11820,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sodium-native@npm:4.2.0":
-  version: 4.2.0
-  resolution: "sodium-native@npm:4.2.0"
+"sodium-native@npm:4.3.1":
+  version: 4.3.1
+  resolution: "sodium-native@npm:4.3.1"
   dependencies:
-    node-gyp: "npm:latest"
     node-gyp-build: "npm:^4.8.0"
-  checksum: 10/fa08f69a009f09657a0d9177b3febaea5f28947996bff3dd6489a4341d9eeee74b7399130af089cc261ab9995669ade85a83c38e2c7702987b920ddc0f4fb307
+  checksum: 10/d08c7a68b458fa0dfd63a14dca1a114e855f4b857c3999e3e19e975434b3843335929d0539b03ca7f9796007f0560b629b33186e9b1fd6e7781199b32c48d23c
   languageName: node
   linkType: hard
 
