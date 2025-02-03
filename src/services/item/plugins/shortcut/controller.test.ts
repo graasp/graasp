@@ -199,9 +199,6 @@ describe('Shortcut routes tests', () => {
         });
         const payload = {
           name: 'new name',
-          settings: {
-            hasThumbnail: true,
-          },
         };
 
         const response = await app.inject({
@@ -216,6 +213,34 @@ describe('Shortcut routes tests', () => {
           ...item,
           ...payload,
         });
+      });
+
+      it('Does not apply update for settings', async () => {
+        const { item } = await testUtils.saveItemAndMembership({
+          item: {
+            type: ItemType.SHORTCUT,
+            extra: {
+              [ItemType.SHORTCUT]: { target: v4() },
+            },
+            settings: { isCollapsible: false },
+          },
+          member: actor,
+        });
+        const payload = {
+          settings: { isCollapsible: true },
+        };
+
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `/items/shortcuts/${item.id}`,
+          payload,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        const newItem = response.json();
+        expect(newItem.settings.isCollapsible).toBe(false);
+        expectItem(newItem, item);
       });
 
       it('Bad request if id is invalid', async () => {
