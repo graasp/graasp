@@ -22,7 +22,7 @@ export class MagicLinkService {
     await this.authService.generateRegisterLinkAndEmailIt(member, { url });
   }
 
-  async login(actor: Actor, repositories: Repositories, body, url?: string) {
+  async login(actor: Actor, repositories: Repositories, body: { email: string }, url?: string) {
     const { memberRepository, actionRepository } = repositories;
     const { email } = body;
     const member = await memberRepository.getByEmail(email);

@@ -89,7 +89,7 @@ class FileService {
     return file;
   }
 
-  async getFile(_actor: Actor, data): Promise<Readable> {
+  async getFile(_actor: Actor, data: { id?: string; path?: string }): Promise<Readable> {
     const { id, path: filepath } = data;
     if (!filepath || !id) {
       throw new DownloadFileInvalidParameterError();

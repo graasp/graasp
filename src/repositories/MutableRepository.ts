@@ -2,6 +2,7 @@ import { BaseEntity, DeepPartial, EntityManager, FindOptionsWhere } from 'typeor
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
 
 import { KeysOfString } from '../types';
+import { assertIsError } from '../utils/assertions';
 import { Entity } from './AbstractRepository';
 import { ImmutableRepository } from './ImmutableRepository';
 import {
@@ -62,7 +63,8 @@ export abstract class MutableRepository<
       if (e instanceof EntryNotFoundAfterUpdateException) {
         throw e;
       }
-      throw new UpdateException(e);
+      assertIsError(e);
+      throw new UpdateException(e.message);
     }
   }
 
