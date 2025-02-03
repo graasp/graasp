@@ -67,7 +67,11 @@ export class H5PValidator implements HtmlValidator {
       mainLibrary: string;
     };
     // The 'preloadedDependencies' field must at least contain the main library of the package
-    if (!manifest.preloadedDependencies.find((dep) => dep.machineName === manifest.mainLibrary)) {
+    if (
+      !manifest.preloadedDependencies.find(
+        (dep: { machineName: string }) => dep.machineName === manifest.mainLibrary,
+      )
+    ) {
       throw new H5PInvalidManifestError('main library not found in preloaded dependencies');
     }
 

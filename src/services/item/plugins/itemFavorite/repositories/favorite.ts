@@ -1,7 +1,8 @@
 import { EntityManager } from 'typeorm';
 
 import { AbstractRepository } from '../../../../../repositories/AbstractRepository';
-import { DUPLICATE_ENTRY_ERROR_CODE } from '../../../../../utils/typeormError';
+import { assertIsError } from '../../../../../utils/assertions';
+import { isDuplicateEntryError } from '../../../../../utils/typeormError';
 import { MemberIdentifierNotFound } from '../../../../itemLogin/errors';
 import { itemFavoriteSchema } from '../../../../member/plugins/export-data/schemas/schemas';
 import { schemaToSelectMapper } from '../../../../member/plugins/export-data/utils/selection.utils';
@@ -74,7 +75,8 @@ export class FavoriteRepository extends AbstractRepository<ItemFavorite> {
 
       return this.get(created.identifiers[0].id);
     } catch (e) {
-      if (e.code === DUPLICATE_ENTRY_ERROR_CODE) {
+      assertIsError(e);
+      if (isDuplicateEntryError(e)) {
         throw new DuplicateFavoriteError({ itemId, memberId });
       }
       throw e;

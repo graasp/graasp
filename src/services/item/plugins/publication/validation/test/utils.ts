@@ -9,7 +9,7 @@ import { ItemValidationGroup } from '../entities/ItemValidationGroup';
 import { ItemValidationModerator } from '../moderators/itemValidationModerator';
 import { StrategyExecutorFactory } from '../moderators/strategyExecutorFactory';
 
-export const saveItemValidation = async ({ item }) => {
+export const saveItemValidation = async ({ item }: { item: Item }) => {
   const itemValidationGroupRawRepository = AppDataSource.getRepository(ItemValidationGroup);
   const itemValidationRawRepository = AppDataSource.getRepository(ItemValidation);
   const group = await itemValidationGroupRawRepository.save({ item });

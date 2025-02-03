@@ -1,6 +1,8 @@
 import { StatusCodes } from 'http-status-codes';
 import waitForExpect from 'wait-for-expect';
 
+import { FastifyInstance } from 'fastify';
+
 import { HttpMethod, ItemOpFeedbackEvent as ItemOpFeedbackEventType } from '@graasp/sdk';
 
 import { clearDatabase } from '../../../../../../../test/app';
@@ -21,7 +23,8 @@ import { saveItemValidation } from './utils';
 const testUtils = new ItemTestUtils();
 
 describe('asynchronous feedback', () => {
-  let app, actor, address;
+  let app: FastifyInstance;
+  let actor, address;
   let ws: TestWsClient;
 
   beforeEach(async () => {

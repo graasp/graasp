@@ -241,7 +241,7 @@ export class ItemPublishedService {
     await this.meilisearchWrapper.updateItem(item.id, { updatedAt });
   }
 
-  async getItemsForMember(actor: Actor, repositories, memberId: UUID) {
+  async getItemsForMember(actor: Actor, repositories: Repositories, memberId: UUID) {
     const { itemRepository } = repositories;
     const items = await itemRepository.getPublishedItemsForMember(memberId);
 

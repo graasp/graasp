@@ -10,10 +10,6 @@ export const ROOT_PATH = './';
 
 export const DESCRIPTION_EXTENSION = '.description.html';
 
-export const buildSettings = (hasThumbnail) => ({
-  hasThumbnail,
-});
-
 export const GRAASP_DOCUMENT_EXTENSION = '.graasp';
 export const LINK_EXTENSION = '.url';
 export const HTML_EXTENSION = '.html';
