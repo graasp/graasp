@@ -72,7 +72,7 @@ export class ItemPublishedService {
       )
       .map(({ account }) => account);
 
-    const link = ClientManager.getInstance().getItemLink(Context.Builder, item.id);
+    const link = ClientManager.getInstance().getItemLink(Context.Library, item.id);
 
     for (const member of contributors) {
       if (isMember(member)) {

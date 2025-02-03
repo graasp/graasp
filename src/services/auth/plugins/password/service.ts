@@ -148,24 +148,27 @@ export class MemberPasswordService {
    */
   mailResetPasswordRequest(email: string, token: string, lang: string): void {
     // auth.graasp.org/reset-password?t=<token>
-    const domain = ClientManager.getInstance().getLinkByContext(Context.Auth);
-    const destination = new URL('/reset-password', domain);
-    destination.searchParams.set(SHORT_TOKEN_PARAM, token);
-    const link = destination.toString();
+    const destinationUrl = ClientManager.getInstance().getLinkByContext(
+      Context.Auth,
+      'reset-password',
+      {
+        [SHORT_TOKEN_PARAM]: token,
+      },
+    );
 
     const mail = new MailBuilder({
       subject: { text: TRANSLATIONS.RESET_PASSWORD_TITLE },
       lang,
     })
       .addText(TRANSLATIONS.RESET_PASSWORD_TEXT)
-      .addButton(TRANSLATIONS.RESET_PASSWORD_BUTTON_TEXT, link)
+      .addButton(TRANSLATIONS.RESET_PASSWORD_BUTTON_TEXT, destinationUrl)
       .addIgnoreEmailIfNotRequestedNotice()
       .build();
 
     // don't wait for mailerService's response; log error and link if it fails.
     this.mailerService
       .send(mail, email)
-      .catch((err) => this.log.warn(err, `mailerService failed. link: ${link}`));
+      .catch((err) => this.log.warn(err, `mailerService failed. link: ${destinationUrl}`));
   }
 
   /**
