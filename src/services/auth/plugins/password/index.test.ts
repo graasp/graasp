@@ -8,7 +8,7 @@ import waitForExpect from 'wait-for-expect';
 
 import { FastifyInstance, LightMyRequestResponse } from 'fastify';
 
-import { HttpMethod, MemberFactory, RecaptchaAction, UUID } from '@graasp/sdk';
+import { HttpMethod, RecaptchaAction, UUID } from '@graasp/sdk';
 import { FAILURE_MESSAGES } from '@graasp/translations';
 
 import build, {
@@ -16,10 +16,12 @@ import build, {
   mockAuthenticate,
   unmockAuthenticate,
 } from '../../../../../test/app';
-import seed from '../../../../../test/mocks/seed';
+import { MemberFactory } from '../../../../../test/factories/member.factory';
+import seed, { seedFromJson } from '../../../../../test/mocks/seed';
 import { TOKEN_REGEX, mockCaptchaValidationOnce } from '../../../../../test/utils';
 import { resolveDependency } from '../../../../di/utils';
 import { MailerService } from '../../../../plugins/mailer/service';
+import { assertIsDefined } from '../../../../utils/assertions';
 import {
   PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES,
   REDIS_HOST,
@@ -27,11 +29,10 @@ import {
   REDIS_PORT,
   REDIS_USERNAME,
 } from '../../../../utils/config';
-import { Member } from '../../../member/entities/member';
-import { saveMember } from '../../../member/test/fixtures/members';
+import { Member, assertIsMember } from '../../../member/entities/member';
 import { MOCK_CAPTCHA } from '../captcha/test/utils';
 import { MemberPassword } from './entities/password';
-import { MOCK_PASSWORD, saveMemberAndPassword } from './test/fixtures/password';
+import { MOCK_PASSWORD } from './test/fixtures/password';
 import { encryptPassword } from './utils';
 
 async function login(
@@ -55,7 +56,7 @@ describe('Login with password', () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
-    ({ app } = await build());
+    ({ app } = await build({ member: null }));
   });
 
   beforeEach(() => {
@@ -64,16 +65,17 @@ describe('Login with password', () => {
   });
 
   it('Sign In successfully', async () => {
-    const m = MemberFactory();
     const pwd = MOCK_PASSWORD;
 
-    const member = await saveMemberAndPassword(m, pwd);
+    const { actor } = await seedFromJson({ actor: { password: await pwd.hashed } });
+    assertIsDefined(actor);
+    assertIsMember(actor);
 
     const response = await app.inject({
       method: HttpMethod.Post,
       url: '/login-password',
       payload: {
-        email: member.email,
+        email: actor.email,
         password: pwd.password,
         captcha: MOCK_CAPTCHA,
       },
@@ -83,19 +85,20 @@ describe('Login with password', () => {
   });
 
   it('Sign In successfully with weak password', async () => {
-    const m = MemberFactory();
     const pwd = {
       password: 'weakpassword',
       hashed: encryptPassword('weakpassword'),
     };
 
-    const member = await saveMemberAndPassword(m, pwd);
+    const { actor } = await seedFromJson({ actor: { password: await pwd.hashed } });
+    assertIsDefined(actor);
+    assertIsMember(actor);
 
     const response = await app.inject({
       method: HttpMethod.Post,
       url: '/login-password',
       payload: {
-        email: member.email,
+        email: actor.email,
         password: pwd.password,
         captcha: MOCK_CAPTCHA,
       },
@@ -110,16 +113,17 @@ describe('Login with password', () => {
       action: RecaptchaAction.SignInWithPassword,
       score: 0,
     });
-    const m = MemberFactory();
     const pwd = MOCK_PASSWORD;
 
-    const member = await saveMemberAndPassword(m, pwd);
+    const { actor } = await seedFromJson({ actor: { password: await pwd.hashed } });
+    assertIsDefined(actor);
+    assertIsMember(actor);
 
     const response = await app.inject({
       method: HttpMethod.Post,
       url: '/login-password',
       payload: {
-        email: member.email,
+        email: actor.email,
         password: pwd.password,
         captcha: MOCK_CAPTCHA,
       },
@@ -134,16 +138,17 @@ describe('Login with password', () => {
       action: RecaptchaAction.SignInWithPassword,
       score: 0.3,
     });
-    const m = MemberFactory();
     const pwd = MOCK_PASSWORD;
 
-    const member = await saveMemberAndPassword(m, pwd);
+    const { actor } = await seedFromJson({ actor: { password: await pwd.hashed } });
+    assertIsDefined(actor);
+    assertIsMember(actor);
 
     const response = await app.inject({
       method: HttpMethod.Post,
       url: '/login-password',
       payload: {
-        email: member.email,
+        email: actor.email,
         password: pwd.password,
         captcha: MOCK_CAPTCHA,
       },
@@ -153,18 +158,15 @@ describe('Login with password', () => {
   });
 
   it('Sign In does send unauthorized error for wrong password', async () => {
-    const member = MemberFactory();
     const wrongPassword = faker.internet.password({ prefix: '!1Aa' });
-    await saveMemberAndPassword(member, MOCK_PASSWORD);
+    const { actor } = await seedFromJson({ actor: { password: 'somepassword' } });
+    assertIsDefined(actor);
+    assertIsMember(actor);
 
     const response = await app.inject({
       method: HttpMethod.Post,
       url: '/login-password',
-      payload: {
-        email: member.email,
-        password: wrongPassword,
-        captcha: MOCK_CAPTCHA,
-      },
+      payload: { email: actor.email, password: wrongPassword, captcha: MOCK_CAPTCHA },
     });
     expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
     expect(response.statusMessage).toEqual(ReasonPhrases.UNAUTHORIZED);
@@ -172,11 +174,14 @@ describe('Login with password', () => {
 
   it('Sign In does send not acceptable error when member does not have password', async () => {
     const password = faker.internet.password({ prefix: '!1Aa' });
-    const member = await saveMember();
+    const { actor } = await seedFromJson();
+    assertIsDefined(actor);
+    assertIsMember(actor);
+
     const response = await app.inject({
       method: HttpMethod.Post,
       url: '/login-password',
-      payload: { email: member.email, password, captcha: MOCK_CAPTCHA },
+      payload: { email: actor.email, password, captcha: MOCK_CAPTCHA },
     });
     expect(response.statusCode).toEqual(StatusCodes.NOT_ACCEPTABLE);
     expect(response.statusMessage).toEqual(ReasonPhrases.NOT_ACCEPTABLE);
@@ -218,7 +223,7 @@ describe('Reset Password', () => {
   let mockRedisSetEx: jest.SpyInstance;
 
   beforeAll(async () => {
-    ({ app } = await build());
+    ({ app } = await build({ member: null }));
     mailerService = resolveDependency(MailerService);
     mockSendEmail = jest
       .spyOn(mailerService, 'sendRaw')
@@ -226,7 +231,7 @@ describe('Reset Password', () => {
     mockRedisSetEx = jest.spyOn(Redis.prototype, 'setex');
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     await clearDatabase(app.db);
   });
 
@@ -511,10 +516,10 @@ describe('Set Password', () => {
   let app: FastifyInstance;
   let entities: { id: UUID; password?: string; email: string }[];
   beforeAll(async () => {
-    ({ app } = await build());
+    ({ app } = await build({ member: null }));
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     await clearDatabase(app.db);
   });
 
@@ -624,11 +629,15 @@ describe('Update Password', () => {
   let app: FastifyInstance;
   let entities: { id: UUID; password?: string; email: string }[];
   beforeAll(async () => {
-    ({ app } = await build());
+    ({ app } = await build({ member: null }));
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     await clearDatabase(app.db);
+  });
+
+  afterEach(() => {
+    unmockAuthenticate();
   });
 
   beforeEach(async () => {
@@ -670,7 +679,6 @@ describe('Update Password', () => {
   it('Throws when signed out', async () => {
     const newPassword = faker.internet.password({ prefix: '!1Aa' });
     const currentPassword = faker.internet.password({ prefix: '!1Aa' });
-    unmockAuthenticate();
     const response = await app.inject({
       method: HttpMethod.Patch,
       url: '/password',
@@ -771,7 +779,7 @@ describe('GET members current password status', () => {
   });
 
   afterEach(async () => {
-    await clearDatabase(app.db);
+    unmockAuthenticate();
   });
 
   afterAll(async () => {
@@ -779,7 +787,6 @@ describe('GET members current password status', () => {
   });
 
   it('Throws when signed out', async () => {
-    unmockAuthenticate();
     const response = await app.inject({
       method: HttpMethod.Get,
       url: '/members/current/password/status',
@@ -788,8 +795,11 @@ describe('GET members current password status', () => {
   });
 
   it('Get password status for member without password', async () => {
-    const currentMember = await saveMember();
-    mockAuthenticate(currentMember);
+    const { actor } = await seedFromJson();
+    assertIsDefined(actor);
+    assertIsMember(actor);
+    mockAuthenticate(actor);
+
     const response = await app.inject({
       method: HttpMethod.Get,
       url: '/members/current/password/status',
@@ -799,8 +809,10 @@ describe('GET members current password status', () => {
   });
 
   it('Get password status for member with password', async () => {
-    const currentMember = await saveMemberAndPassword(MemberFactory(), MOCK_PASSWORD);
-    mockAuthenticate(currentMember);
+    const { actor } = await seedFromJson({ actor: { password: await MOCK_PASSWORD.hashed } });
+    assertIsDefined(actor);
+    assertIsMember(actor);
+    mockAuthenticate(actor);
     const response = await app.inject({
       method: HttpMethod.Get,
       url: '/members/current/password/status',
@@ -817,11 +829,8 @@ describe('Flow tests', () => {
     ({ app } = await build({ member: null }));
   });
 
-  afterEach(async () => {
-    await clearDatabase(app.db);
-  });
-
   afterAll(async () => {
+    await clearDatabase(app.db);
     app.close();
   });
 
@@ -829,15 +838,17 @@ describe('Flow tests', () => {
     // mock captcha validation
     mockCaptchaValidationOnce(RecaptchaAction.SignInWithPassword);
 
-    const m = MemberFactory();
     const pwd = MOCK_PASSWORD;
-    const member = await saveMemberAndPassword(m, pwd);
+    const { actor } = await seedFromJson({ actor: { password: await MOCK_PASSWORD.hashed } });
+    assertIsDefined(actor);
+    assertIsMember(actor);
+    mockAuthenticate(actor);
 
     // login
     const loginResponse = await app.inject({
       method: HttpMethod.Post,
       url: '/login-password',
-      payload: { email: member.email, password: pwd.password, captcha: MOCK_CAPTCHA },
+      payload: { email: actor.email, password: pwd.password, captcha: MOCK_CAPTCHA },
     });
 
     expect(loginResponse.statusCode).toEqual(StatusCodes.SEE_OTHER);

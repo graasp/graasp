@@ -2,20 +2,16 @@ import { faker } from '@faker-js/faker';
 import { BaseEntity, DataSource } from 'typeorm';
 import { v4 } from 'uuid';
 
-import {
-  CompleteMember,
-  ItemType,
-  MemberFactory,
-  PermissionLevel,
-  buildPathFromIds,
-} from '@graasp/sdk';
+import { CompleteMember, ItemType, PermissionLevel, buildPathFromIds } from '@graasp/sdk';
 
 import { AppDataSource } from '../../src/plugins/datasource';
+import { MemberPassword } from '../../src/services/auth/plugins/password/entities/password';
 import { Item } from '../../src/services/item/entities/Item';
 import { ItemMembership } from '../../src/services/itemMembership/entities/ItemMembership';
 import { Actor, Member } from '../../src/services/member/entities/member';
 import { MemberProfile } from '../../src/services/member/plugins/profile/entities/profile';
 import { ItemFactory } from '../factories/item.factory';
+import { MemberFactory } from '../factories/member.factory';
 import defaultDatas from './sampledatas';
 
 export type TableType<C extends BaseEntity, E> = {
@@ -64,7 +60,9 @@ export default async function seed(
   return result;
 }
 
-type SeedActor = 'actor' | (Partial<CompleteMember> & { profile?: Partial<MemberProfile> });
+type SeedActor =
+  | 'actor'
+  | (Partial<CompleteMember> & { profile?: Partial<MemberProfile>; password?: string });
 type DataType = {
   actor?: SeedActor | null;
   members?: (Partial<Member> & { profile?: Partial<MemberProfile> })[];
@@ -117,15 +115,25 @@ const processActor = async ({ actor, items, members }: DataType) => {
     ).actor[0];
 
     // a profile is defined
-    if (actor !== 'actor' && actor?.profile) {
-      actorProfile = (
+    if (actor && actor !== 'actor') {
+      if (actor.profile) {
+        actorProfile = (
+          await seed({
+            actorProfile: {
+              constructor: MemberProfile,
+              entities: [{ ...actor.profile, member: { id: createdActor.id } }],
+            },
+          })
+        ).actorProfile[0];
+      }
+      if (actor.password) {
         await seed({
-          actorProfile: {
-            constructor: MemberProfile,
-            entities: [{ ...actor.profile, member: { id: createdActor.id } }],
+          actorPassword: {
+            constructor: MemberPassword,
+            entities: [{ password: actor.password, member: { id: createdActor.id } }],
           },
-        })
-      ).actorProfile[0];
+        });
+      }
     }
   }
 
