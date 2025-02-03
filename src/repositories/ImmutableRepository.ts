@@ -2,6 +2,7 @@ import { BaseEntity, DeepPartial, EntityManager, FindOneOptions, FindOptionsWher
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
 
 import { KeysOfString } from '../types';
+import { assertIsError } from '../utils/assertions';
 import { AbstractRepository, Entity } from './AbstractRepository';
 import {
   EntityNotFound,
@@ -156,7 +157,8 @@ export abstract class ImmutableRepository<T extends BaseEntity> extends Abstract
       if (e instanceof EntryNotFoundAfterInsertException) {
         throw e;
       }
-      throw new InsertionException(e);
+      assertIsError(e);
+      throw new InsertionException(e.message);
     }
   }
 }

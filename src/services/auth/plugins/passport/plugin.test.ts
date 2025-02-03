@@ -70,7 +70,7 @@ async function logIn(app: FastifyInstance, member: Member) {
 }
 
 const shouldNotBeCalled = () => fail('Should not be called');
-const shouldBeNull = ({ user }) => expect(user).toBeNull();
+const shouldBeNull = ({ user }: { user: unknown }) => expect(user).toBeNull();
 
 describe('Passport Plugin', () => {
   let app: FastifyInstance;

@@ -202,7 +202,13 @@ export class S3FileRepository implements FileRepository {
 
       return file;
     } catch (e) {
-      if (e?.statusCode === StatusCodes.NOT_FOUND) {
+      log.error(e);
+      if (
+        e &&
+        typeof e === 'object' &&
+        'statusCode' in e &&
+        e.statusCode === StatusCodes.NOT_FOUND
+      ) {
         throw new S3FileNotFound({ filepath, id });
       }
 
