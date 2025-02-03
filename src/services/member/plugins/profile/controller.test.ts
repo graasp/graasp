@@ -2,22 +2,23 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, MemberFactory } from '@graasp/sdk';
+import { HttpMethod } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../../test/app';
-import { MEMBER_PROFILE_ROUTE_PREFIX } from '../../../../../utils/config';
-import { saveMember } from '../../../test/fixtures/members';
+} from '../../../../../test/app';
+import { seedFromJson } from '../../../../../test/mocks/seed';
+import { MEMBER_PROFILE_ROUTE_PREFIX } from '../../../../utils/config';
+import { saveMember } from '../../test/fixtures/members';
 import {
   ANNA_PROFILE,
   BOB_PROFILE,
   getDummyProfile,
   getMemberProfile,
   saveMemberProfile,
-} from './fixtures/profile';
+} from './test/fixtures/profile';
 
 describe('Profile Member routes tests', () => {
   let app: FastifyInstance;
@@ -38,7 +39,7 @@ describe('Profile Member routes tests', () => {
 
   describe('GET /members/profile/own', () => {
     it('Returns successfully if signed in and profile not posted', async () => {
-      const actor = await saveMember();
+      const { actor } = await seedFromJson();
       mockAuthenticate(actor);
 
       const response = await app.inject({
@@ -46,13 +47,13 @@ describe('Profile Member routes tests', () => {
         url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}/own`,
       });
 
-      expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
+      expect(response.statusCode).toEqual(StatusCodes.OK);
+      expect(response.json()).toBeNull();
     });
 
     it('Returns successfully if signed in and profile posted', async () => {
-      const actor = await saveMember();
+      const { actor } = await seedFromJson({ actor: { profile: ANNA_PROFILE } });
       mockAuthenticate(actor);
-      await saveMemberProfile(actor, ANNA_PROFILE);
 
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -64,10 +65,9 @@ describe('Profile Member routes tests', () => {
     });
 
     it('Returns successfully if signed in and profile not visible', async () => {
-      const actor = await saveMember();
-      mockAuthenticate(actor);
       const profile = { ...ANNA_PROFILE, visibility: false };
-      await saveMemberProfile(actor, profile);
+      const { actor } = await seedFromJson({ actor: { profile } });
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -77,6 +77,20 @@ describe('Profile Member routes tests', () => {
       expect(response.statusCode).toEqual(StatusCodes.OK);
       const ownProfile = await response.json();
       expect(ownProfile).toMatchObject(profile);
+    });
+
+    it('Returns null if not set up', async () => {
+      const { actor } = await seedFromJson();
+      mockAuthenticate(actor);
+
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}/own`,
+      });
+
+      expect(response.statusCode).toEqual(StatusCodes.OK);
+      const ownProfile = await response.json();
+      expect(ownProfile).toBeNull();
     });
 
     it('Throws if signed out', async () => {
@@ -103,7 +117,7 @@ describe('Profile Member routes tests', () => {
 
     describe('Signed In', () => {
       it('Create successfully', async () => {
-        const actor = await saveMember();
+        const { actor } = await seedFromJson();
         mockAuthenticate(actor);
 
         const payload = getDummyProfile({ bio: 'Random Bio' });
@@ -121,10 +135,9 @@ describe('Profile Member routes tests', () => {
       });
 
       it('Create Profile twice should respond with server error', async () => {
-        const actor = await saveMember();
+        const { actor } = await seedFromJson({ actor: { profile: ANNA_PROFILE } });
         mockAuthenticate(actor);
         const payload = getDummyProfile({ bio: 'Random Bio' });
-        await saveMemberProfile(actor, ANNA_PROFILE);
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -139,12 +152,20 @@ describe('Profile Member routes tests', () => {
 
   describe('GET /members/profile/:id', () => {
     it('Returns OK and null data if visibilty set to false', async () => {
-      const actor = await saveMember();
-      mockAuthenticate(actor);
-      const member = await saveMemberProfile(MemberFactory(), {
-        ...ANNA_PROFILE,
-        visibility: false,
+      const {
+        actor,
+        members: [member],
+      } = await seedFromJson({
+        members: [
+          {
+            profile: {
+              ...ANNA_PROFILE,
+              visibility: false,
+            },
+          },
+        ],
       });
+      mockAuthenticate(actor);
       const memberId = member.id;
 
       const response = await app.inject({
@@ -152,32 +173,36 @@ describe('Profile Member routes tests', () => {
         url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}/${memberId}`,
       });
 
-      expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
+      expect(response.statusCode).toEqual(StatusCodes.OK);
+      expect(response.json()).toBeNull();
     });
 
     it('Returns OK and null data if no profile for this member', async () => {
-      const actor = await saveMember();
+      const {
+        actor,
+        members: [member],
+      } = await seedFromJson({ members: [{}] });
       mockAuthenticate(actor);
-      const member = await saveMember();
 
       const response = await app.inject({
         method: HttpMethod.Get,
         url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}/${member.id}`,
       });
 
-      expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
+      expect(response.statusCode).toEqual(StatusCodes.OK);
+      expect(response.json()).toBeNull();
     });
 
-    it('Returns member if visibilty set to true', async () => {
-      const actor = await saveMember();
+    it('Returns profile if visibilty is true', async () => {
+      const {
+        actor,
+        members: [member],
+      } = await seedFromJson({ members: [{ profile: BOB_PROFILE }] });
       mockAuthenticate(actor);
-      const memberProfile = await saveMemberProfile(MemberFactory(), BOB_PROFILE);
-
-      const memberId = memberProfile?.member?.id;
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}/${memberId}`,
+        url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}/${member.id}`,
       });
 
       expect(response.statusCode).toEqual(StatusCodes.OK);

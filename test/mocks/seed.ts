@@ -14,6 +14,7 @@ import { AppDataSource } from '../../src/plugins/datasource';
 import { Item } from '../../src/services/item/entities/Item';
 import { ItemMembership } from '../../src/services/itemMembership/entities/ItemMembership';
 import { Actor, Member } from '../../src/services/member/entities/member';
+import { MemberProfile } from '../../src/services/member/plugins/profile/entities/profile';
 import { ItemFactory } from '../factories/item.factory';
 import defaultDatas from './sampledatas';
 
@@ -35,6 +36,7 @@ export type TableType<C extends BaseEntity, E> = {
  * Use the constructors and the datas given in parameter to build BaseEntity object and save them on the Postgresql Database.
  * Integrity constraints are checked on the database, and will throw an exception if needed.
  * @param datas Datas to be pushed. Should contains constructor to build BaseEntity objects and sometimes Factory function to have default data.
+ * @returns saved instances
  */
 export default async function seed(
   datas: { [K in string]: TableType<BaseEntity, object> } = defaultDatas,
@@ -62,10 +64,10 @@ export default async function seed(
   return result;
 }
 
-type SeedActor = 'actor' | Partial<CompleteMember>;
+type SeedActor = 'actor' | (Partial<CompleteMember> & { profile?: Partial<MemberProfile> });
 type DataType = {
   actor?: SeedActor | null;
-  members?: Partial<Member>[];
+  members?: (Partial<Member> & { profile?: Partial<MemberProfile> })[];
   items?: ((Partial<Item> | { creator: SeedActor }) & {
     children?: (Partial<Item> | { creator: SeedActor })[];
     memberships?: (
@@ -100,6 +102,7 @@ const replaceActorInItems = (createdActor?: Actor, items?: DataType['items']) =>
 const processActor = async ({ actor, items, members }: DataType) => {
   // create actor if not null
   let createdActor;
+  let actorProfile;
   if (actor !== null) {
     // replace actor data with default values if actor is undefined or 'actor'
     const actorData = typeof actor === 'string' || !actor ? {} : actor;
@@ -112,19 +115,31 @@ const processActor = async ({ actor, items, members }: DataType) => {
         },
       })
     ).actor[0];
+
+    // a profile is defined
+    if (actor !== 'actor' && actor?.profile) {
+      actorProfile = (
+        await seed({
+          actorProfile: {
+            constructor: MemberProfile,
+            entities: [{ ...actor.profile, member: { id: createdActor.id } }],
+          },
+        })
+      ).actorProfile[0];
+    }
   }
 
   // replace 'actor' in entities
   const processedItems = replaceActorInItems(createdActor, items);
 
-  return { actor: createdActor, items: processedItems, members };
+  return { actor: createdActor, items: processedItems, members, actorProfile };
 };
 
 /**
  * Generate id and path for all items in the tree (item and its children) and return a flat array
  * This is necessary to defined these as soon as possible so they can be used later by nested properties
- * @param items
- * @param parent
+ * @param items items' data, that might contain membesrhips
+ * @param parent id/path of the item in which items should be created in
  * @returns flat array of all items
  */
 const generateIdAndPathForItems = (
@@ -165,12 +180,24 @@ const processItemMemberships = (items: DataType['items'] = []) => {
 };
 
 /**
+ * Generate ids for members, necessary to further references (for example when creating profiles)
+ * @param members
+ * @returns members' data with generated id
+ */
+function generateIdForMembers(members?: DataType['members']) {
+  return members?.map((m) => {
+    const id = v4();
+    return { id, ...m, profile: { ...m.profile, member: { id } } };
+  });
+}
+
+/**
  * Given seed object, save them in the database for initialization of a test
  * @param data
  * - actor: if not null, will create an actor with defined values, or a random actor if null
  * - items: if memberships is not defined, set default permission to admin. Can specify 'actor' in member. Nested properties can be defined, such as children and memberships.
- * - members
- * @returns
+ * - members: member and their profiles
+ * @returns all created instances given input
  */
 export async function seedFromJson(data: DataType = {}) {
   const result: {
@@ -178,28 +205,35 @@ export async function seedFromJson(data: DataType = {}) {
     items: Item[];
     itemMemberships: ItemMembership[];
     members: Member[];
+    memberProfiles: MemberProfile[];
   } = {
     items: [],
     actor: undefined,
     itemMemberships: [],
     members: [],
+    memberProfiles: [],
   };
 
-  const { items, actor, members } = await processActor(data);
+  const { items, actor, members, actorProfile } = await processActor(data);
   result.actor = actor;
+  result.memberProfiles = actorProfile ? [actorProfile] : [];
 
   // save members
-  const membersEntity = members?.map((m) => m);
-  if (membersEntity) {
-    result.members = (
-      await seed({
-        members: {
-          factory: MemberFactory,
-          constructor: Member,
-          entities: membersEntity,
-        },
-      })
-    ).members as Member[];
+  const membersEntities = generateIdForMembers(members);
+  if (membersEntities) {
+    const membersAndProfiles = await seed({
+      members: {
+        factory: MemberFactory,
+        constructor: Member,
+        entities: membersEntities,
+      },
+      memberProfiles: {
+        constructor: MemberProfile,
+        entities: membersEntities.map((m) => m.profile).filter(Boolean),
+      },
+    });
+    result.members = membersAndProfiles.members as Member[];
+    result.memberProfiles = membersAndProfiles.memberProfiles as MemberProfile[];
   }
 
   // save items
@@ -232,6 +266,11 @@ export async function seedFromJson(data: DataType = {}) {
   return result;
 }
 
+/**
+ * Generate a file item data structure
+ * @param member creator of the file
+ * @returns file item structure
+ */
 export function buildFile(member: SeedActor) {
   return {
     type: ItemType.S3_FILE,
