@@ -209,12 +209,8 @@ APPS_PUBLISHER_ID=<id>
 SAVE_ACTIONS=true
 
 # Client hosts
-BUILDER_CLIENT_HOST=http://localhost:3111
-PLAYER_CLIENT_HOST=http://localhost:3112
+CLIENT_HOST=http://localhost:3114
 LIBRARY_CLIENT_HOST=http://localhost:3005
-AUTH_CLIENT_HOST=http://localhost:3001
-ACCOUNT_CLIENT_HOST=http://localhost:3114
-ANALYTICS_CLIENT_HOST=http://localhost:3113
 GRAASP_MOBILE_BUILDER=graasp-mobile-builder
 
 # This is already set in the docker-compose file, un-comment below if you want to override it

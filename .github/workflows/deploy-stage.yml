@@ -101,6 +101,7 @@ jobs:
             APPS_PUBLISHER_ID=${{ secrets.APPS_PUBLISHER_ID }}
             AUTH_TOKEN_EXPIRATION_IN_MINUTES=${{ secrets.AUTH_TOKEN_EXPIRATION_IN_MINUTES }}
             AUTH_TOKEN_JWT_SECRET=${{ secrets.AUTH_TOKEN_JWT_SECRET }}
+            CLIENT_HOST=${{ vars.CLIENT_HOST }}
             COOKIE_DOMAIN=${{ vars.COOKIE_DOMAIN }}
             CORS_ORIGIN_REGEX=${{ secrets.CORS_ORIGIN_REGEX }}
             DB_HOST=${{ secrets.DB_HOST }}
