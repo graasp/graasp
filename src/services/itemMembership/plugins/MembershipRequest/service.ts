@@ -2,9 +2,9 @@ import { singleton } from 'tsyringe';
 
 import { Member, PermissionLevel } from '@graasp/sdk';
 
+import { TRANSLATIONS } from '../../../../langs/constants';
 import { BaseLogger } from '../../../../logger';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
-import { MAIL } from '../../../../plugins/mailer/langs/constants';
 import { MailerService } from '../../../../plugins/mailer/service';
 import { BUILDER_HOST } from '../../../../utils/config';
 import { Repositories } from '../../../../utils/repositories';
@@ -49,7 +49,7 @@ export class MembershipRequestService {
 
       const mail = new MailBuilder({
         subject: {
-          text: MAIL.MEMBERSHIP_REQUEST_TITLE,
+          text: TRANSLATIONS.MEMBERSHIP_REQUEST_TITLE,
           translationVariables: {
             memberName: member.name,
             itemName: item.name,
@@ -57,11 +57,11 @@ export class MembershipRequestService {
         },
         lang: admin.lang,
       })
-        .addText(MAIL.MEMBERSHIP_REQUEST_TEXT, {
+        .addText(TRANSLATIONS.MEMBERSHIP_REQUEST_TEXT, {
           memberName: member.name,
           itemName: item.name,
         })
-        .addButton(MAIL.MEMBERSHIP_REQUEST_BUTTON_TEXT, link, {
+        .addButton(TRANSLATIONS.MEMBERSHIP_REQUEST_BUTTON_TEXT, link, {
           itemName: item.name,
         })
         .build();
