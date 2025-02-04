@@ -60,6 +60,29 @@ describe('Link Service', () => {
     jest.clearAllMocks();
   });
 
+  describe('getLinkMetadata', () => {
+    it('replace all non-breaking spaces by normal spaces', async () => {
+      fetchMock = (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return {
+          json: async () => ({
+            meta: {
+              title: 'title with non breaking spaces',
+              description: 'description-patch',
+            },
+          }),
+        } as any;
+      });
+
+      const result = await linkService.getLinkMetadata(MOCK_URL);
+
+      // should not have non breaking spaces
+      expect(result.title).not.toContain(' ');
+      // should contain normal spaces
+      expect(result.title).toContain(' ');
+    });
+  });
+
   describe('postWithOptions', () => {
     it('do not throw if iframely is unresponsive', async () => {
       fetchMock = (fetch as jest.MockedFunction<typeof fetch>).mockRejectedValue(new Error());

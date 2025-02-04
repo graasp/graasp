@@ -79,7 +79,7 @@ export class EmbeddedLinkItemService extends ItemService {
     }
   }
 
-  async getLinkMetadata(url: string): Promise<LinkMetadata> {
+  public async getLinkMetadata(url: string): Promise<LinkMetadata> {
     this.assertUrlIsValid(url);
     try {
       const response = await fetch(
@@ -91,7 +91,8 @@ export class EmbeddedLinkItemService extends ItemService {
       const { title, description } = meta;
 
       return {
-        title: title?.trim(),
+        // fix non-breaking spaces
+        title: title?.trim()?.replaceAll(' ', ' '),
         description: description?.trim(),
         html,
         thumbnails: links.filter(({ rel }) => hasThumbnailRel(rel)).map(({ href }) => href),
