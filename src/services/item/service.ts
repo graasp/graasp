@@ -180,9 +180,9 @@ export class ItemService {
         items,
         parentId,
         previousItemId,
-      )[0];
+      );
     } else {
-      createdItems = await this.createItemsAndMemberships(member, repositories, items, null)[0];
+      createdItems = await this.createItemsAndMemberships(member, repositories, items, null);
     }
 
     this.indexItems(createdItems, repositories);
@@ -258,15 +258,7 @@ export class ItemService {
     const { itemRepository, itemMembershipRepository } = repositories;
 
     this.log.debug(`create items ${items.map((item) => item.name)}`);
-    const createdItems = await Promise.all(
-      items.map((item) => {
-        return itemRepository.addOne({
-          item,
-          creator: member,
-          parentItem,
-        });
-      }),
-    );
+    const createdItems = await itemRepository.addMany(items, member, parentItem);
     this.log.debug(`items ${items.map((item) => item.name)} are created: ${createdItems}`);
 
     // create membership if inherited is less than admin

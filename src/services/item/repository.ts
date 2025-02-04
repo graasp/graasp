@@ -492,6 +492,22 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
     return await super.insert(newItem);
   }
 
+  public async addMany(
+    items: (Partial<Item> & Pick<Item, 'name' | 'type'>)[],
+    creator: Member,
+    parent?: Item,
+  ) {
+    const newItems = items.map((item) =>
+      this.createOne({
+        ...item,
+        creator,
+        parent,
+      }),
+    );
+
+    return await super.insertMany(newItems);
+  }
+
   /////// -------- COPY
   async copy(
     item: Item,

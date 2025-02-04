@@ -1,4 +1,12 @@
-import { BaseEntity, DeepPartial, EntityManager, FindOneOptions, FindOptionsWhere } from 'typeorm';
+import {
+  BaseEntity,
+  DeepPartial,
+  EntityManager,
+  FindManyOptions,
+  FindOneOptions,
+  FindOptionsWhere,
+  In,
+} from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
 
 import { KeysOfString } from '../types';
@@ -81,6 +89,20 @@ export abstract class ImmutableRepository<T extends BaseEntity> extends Abstract
     return entity;
   }
 
+  public async getMultiple(
+    pkValues: string[],
+    options: Pick<FindManyOptions<T>, 'withDeleted'> = { withDeleted: false },
+  ): Promise<T[]> {
+    this.throwsIfPKIsInvalid(pkValues);
+
+    return await this.repository.find({
+      where: {
+        [this.primaryKeyName]: In(pkValues),
+      } as FindOptionsWhere<T>,
+      ...options,
+    });
+  }
+
   /********************************** Subclass Methods **********************************/
   /**
    * Throws an IllegalArgumentException if the given primary key is undefined or an empty array.
@@ -152,6 +174,28 @@ export abstract class ImmutableRepository<T extends BaseEntity> extends Abstract
       }
 
       return insertedEntity;
+    } catch (e) {
+      if (e instanceof EntryNotFoundAfterInsertException) {
+        throw e;
+      }
+      throw new InsertionException(e);
+    }
+  }
+
+  protected async insertMany(entities: DeepPartial<T>[]): Promise<T[]> {
+    try {
+      const insertResults = await this.repository.insert(entities as QueryDeepPartialEntity<T>[]);
+      const insertedKeys = insertResults.identifiers.map(
+        (identifier) => identifier[this.primaryKeyName],
+      ) as string[];
+      const insertedEntites = await this.getMultiple(insertedKeys);
+
+      // Should never happen, if an error occurs, it should throw during the insert.
+      if (!insertedEntites || insertedEntites.length !== insertResults.identifiers.length) {
+        throw new EntryNotFoundAfterInsertException(this.entity);
+      }
+
+      return insertedEntites;
     } catch (e) {
       if (e instanceof EntryNotFoundAfterInsertException) {
         throw e;
