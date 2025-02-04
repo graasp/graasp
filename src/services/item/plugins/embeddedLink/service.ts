@@ -90,9 +90,12 @@ export class EmbeddedLinkItemService extends ItemService {
       const { meta = {}, html, links = [] } = (await response.json()) as IframelyResponse;
       const { title, description } = meta;
 
+      // does not accept weird unicode characters, non-breaking spaces, tabs, breaking lines
+      const r = new RegExp('[ \t\u{0000}-\u{001F}\u{007F}-\u{009F}]', 'gu');
+
       return {
         // fix non-breaking spaces
-        title: title?.trim()?.replace(/[ \n\t]/g, ' '),
+        title: title?.trim()?.replaceAll(r, ' '),
         description: description?.trim(),
         html,
         thumbnails: links.filter(({ rel }) => hasThumbnailRel(rel)).map(({ href }) => href),
