@@ -92,7 +92,7 @@ export class EmbeddedLinkItemService extends ItemService {
 
       return {
         // fix non-breaking spaces
-        title: title?.trim()?.replaceAll(' ', ' '),
+        title: title?.trim()?.replace(/[ \n\t]/g, ' '),
         description: description?.trim(),
         html,
         thumbnails: links.filter(({ rel }) => hasThumbnailRel(rel)).map(({ href }) => href),

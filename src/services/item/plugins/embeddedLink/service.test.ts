@@ -62,15 +62,26 @@ describe('Link Service', () => {
 
   describe('getLinkMetadata', () => {
     it('replace all non-breaking spaces by normal spaces', async () => {
+      // ASSERTIONS
+      const title = 'ti\ntle\nwith special \t\t spaces';
+      // should have non breaking spaces
+      expect(title).toContain(' ');
+      // should have tab spaces
+      expect(title).toContain('\t');
+      // should have breaking spaces
+      expect(title).toContain('\n');
+      // should not contain normal spaces
+      expect(title).not.toContain(' ');
+
       fetchMock = (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return {
           json: async () => ({
             meta: {
-              title: 'title with non breaking spaces',
+              title,
               description: 'description-patch',
             },
           }),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any;
       });
 
@@ -78,6 +89,10 @@ describe('Link Service', () => {
 
       // should not have non breaking spaces
       expect(result.title).not.toContain(' ');
+      // should not have tab spaces
+      expect(result.title).not.toContain('\t');
+      // should not have breaking spaces
+      expect(result.title).not.toContain('\n');
       // should contain normal spaces
       expect(result.title).toContain(' ');
     });
