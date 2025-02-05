@@ -20,6 +20,7 @@ env:
   APPS_PUBLISHER_ID: 9c9cea73-f3b7-48a3-aa6e-ead82c0685e7 # mock uuid
   AUTH_TOKEN_JWT_SECRET: ${{ vars.MOCK_AUTH_TOKEN_JWT_SECRET }}
   COOKIE_DOMAIN: localhost
+  CLIENT_HOST: http://localhost:3114
   DB_PASSWORD: docker
   DB_USERNAME: docker
   DB_NAME: docker

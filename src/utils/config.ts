@@ -47,7 +47,7 @@ export const TEST = ENVIRONMENT === Environment.test;
 
 export const APP_VERSION = process.env.APP_VERSION;
 
-export const CLIENT_HOST = process.env.CLIENT_HOST ?? 'http://localhost:3000';
+export const CLIENT_HOST = process.env.CLIENT_HOST ?? 'http://localhost:3114';
 
 export const LIBRARY_HOST = process.env.LIBRARY_CLIENT_HOST ?? CLIENT_HOST;
 
