@@ -27,7 +27,6 @@ import { expectItem } from '../../../item/test/fixtures/items';
 import { Member, assertIsMember } from '../../../member/entities/member';
 import { expectMember } from '../../../member/test/fixtures/members';
 import { MemberPasswordService } from '../password/service';
-import { encryptPassword } from '../password/utils';
 import {
   authenticateAppsJWT,
   authenticateEmailChange,
@@ -249,7 +248,7 @@ describe('Passport Plugin', () => {
       password = faker.internet.password({ prefix: '!1Aa' });
       const { actor } = await seedFromJson({
         actor: {
-          password: await encryptPassword(password),
+          password,
         },
       });
       assertIsDefined(actor);
@@ -400,7 +399,7 @@ describe('Passport Plugin', () => {
       preHandler.mockImplementation(authenticatePasswordReset);
       password = faker.internet.password({ prefix: '!1Aa' });
       const { actor } = await seedFromJson({
-        actor: { password: await encryptPassword(password) },
+        actor: { password },
       });
       assertIsDefined(actor);
       assertIsMember(actor);

@@ -6,6 +6,7 @@ import { CompleteMember, ItemType, PermissionLevel, buildPathFromIds } from '@gr
 
 import { AppDataSource } from '../../src/plugins/datasource';
 import { MemberPassword } from '../../src/services/auth/plugins/password/entities/password';
+import { encryptPassword } from '../../src/services/auth/plugins/password/utils';
 import { Item } from '../../src/services/item/entities/Item';
 import { ItemMembership } from '../../src/services/itemMembership/entities/ItemMembership';
 import { Actor, Member } from '../../src/services/member/entities/member';
@@ -130,7 +131,9 @@ const processActor = async ({ actor, items, members }: DataType) => {
         await seed({
           actorPassword: {
             constructor: MemberPassword,
-            entities: [{ password: actor.password, member: { id: createdActor.id } }],
+            entities: [
+              { password: await encryptPassword(actor.password), member: { id: createdActor.id } },
+            ],
           },
         });
       }

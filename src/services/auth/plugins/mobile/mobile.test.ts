@@ -27,7 +27,6 @@ import { Member, assertIsMember } from '../../../member/entities/member';
 import { expectMember, saveMember } from '../../../member/test/fixtures/members';
 import { MOCK_CAPTCHA } from '../captcha/test/utils';
 import { SHORT_TOKEN_PARAM } from '../passport';
-import { MOCK_PASSWORD } from '../password/test/fixtures/password';
 
 jest.mock('node-fetch');
 const memberRawRepository = AppDataSource.getRepository(Member);
@@ -270,7 +269,8 @@ describe('Mobile Endpoints', () => {
       mockCaptchaValidation(RecaptchaAction.SignInWithPasswordMobile);
     });
     it('Sign In successfully', async () => {
-      const { actor } = await seedFromJson({ actor: { password: await MOCK_PASSWORD.hashed } });
+      const password = 'password';
+      const { actor } = await seedFromJson({ actor: { password } });
       assertIsDefined(actor);
       assertIsMember(actor);
 
@@ -280,7 +280,7 @@ describe('Mobile Endpoints', () => {
         payload: {
           email: actor.email,
           challenge,
-          password: MOCK_PASSWORD.password,
+          password,
           captcha: MOCK_CAPTCHA,
         },
       });
@@ -302,7 +302,8 @@ describe('Mobile Endpoints', () => {
           }),
         } as Response;
       });
-      const { actor } = await seedFromJson({ actor: { password: await MOCK_PASSWORD.hashed } });
+      const password = 'password';
+      const { actor } = await seedFromJson({ actor: { password } });
       assertIsDefined(actor);
       assertIsMember(actor);
 
@@ -312,7 +313,7 @@ describe('Mobile Endpoints', () => {
         payload: {
           email: actor.email,
           challenge,
-          password: MOCK_PASSWORD.password,
+          password,
           captcha: MOCK_CAPTCHA,
         },
       });
@@ -334,7 +335,8 @@ describe('Mobile Endpoints', () => {
           }),
         } as Response;
       });
-      const { actor } = await seedFromJson({ actor: { password: await MOCK_PASSWORD.hashed } });
+      const password = 'password';
+      const { actor } = await seedFromJson({ actor: { password } });
       assertIsDefined(actor);
       assertIsMember(actor);
 
@@ -344,7 +346,7 @@ describe('Mobile Endpoints', () => {
         payload: {
           email: actor.email,
           challenge,
-          password: MOCK_PASSWORD.password,
+          password,
           captcha: MOCK_CAPTCHA,
         },
       });
@@ -358,7 +360,7 @@ describe('Mobile Endpoints', () => {
 
     it('Sign In does send unauthorized error for wrong password', async () => {
       const wrongPassword = '1234';
-      const { actor } = await seedFromJson({ actor: { password: await MOCK_PASSWORD.hashed } });
+      const { actor } = await seedFromJson({ actor: { password: 'somestring' } });
       assertIsDefined(actor);
       assertIsMember(actor);
 
@@ -649,8 +651,9 @@ describe('Mobile Endpoints', () => {
     it('Password', async () => {
       mockCaptchaValidation(RecaptchaAction.SignInWithPasswordMobile);
 
+      const password = 'password';
       const { actor } = await seedFromJson({
-        actor: { isValidated: false, password: await MOCK_PASSWORD.hashed },
+        actor: { isValidated: false, password },
       });
       assertIsDefined(actor);
       assertIsMember(actor);
@@ -661,7 +664,7 @@ describe('Mobile Endpoints', () => {
         payload: {
           email: actor.email,
           challenge,
-          password: MOCK_PASSWORD.password,
+          password,
           captcha: MOCK_CAPTCHA,
         },
       });

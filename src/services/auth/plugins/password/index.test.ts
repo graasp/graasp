@@ -32,7 +32,6 @@ import {
 import { Member, assertIsMember } from '../../../member/entities/member';
 import { MOCK_CAPTCHA } from '../captcha/test/utils';
 import { MemberPassword } from './entities/password';
-import { MOCK_PASSWORD } from './test/fixtures/password';
 import { encryptPassword } from './utils';
 
 async function login(
@@ -65,9 +64,9 @@ describe('Login with password', () => {
   });
 
   it('Sign In successfully', async () => {
-    const pwd = MOCK_PASSWORD;
+    const pwd = 'myPassword';
 
-    const { actor } = await seedFromJson({ actor: { password: await pwd.hashed } });
+    const { actor } = await seedFromJson({ actor: { password: pwd } });
     assertIsDefined(actor);
     assertIsMember(actor);
 
@@ -76,7 +75,7 @@ describe('Login with password', () => {
       url: '/login-password',
       payload: {
         email: actor.email,
-        password: pwd.password,
+        password: pwd,
         captcha: MOCK_CAPTCHA,
       },
     });
@@ -85,12 +84,9 @@ describe('Login with password', () => {
   });
 
   it('Sign In successfully with weak password', async () => {
-    const pwd = {
-      password: 'weakpassword',
-      hashed: encryptPassword('weakpassword'),
-    };
+    const pwd = 'weakpassword';
 
-    const { actor } = await seedFromJson({ actor: { password: await pwd.hashed } });
+    const { actor } = await seedFromJson({ actor: { password: pwd } });
     assertIsDefined(actor);
     assertIsMember(actor);
 
@@ -99,7 +95,7 @@ describe('Login with password', () => {
       url: '/login-password',
       payload: {
         email: actor.email,
-        password: pwd.password,
+        password: pwd,
         captcha: MOCK_CAPTCHA,
       },
     });
@@ -113,9 +109,9 @@ describe('Login with password', () => {
       action: RecaptchaAction.SignInWithPassword,
       score: 0,
     });
-    const pwd = MOCK_PASSWORD;
+    const pwd = 'MOCK_PASSWORD';
 
-    const { actor } = await seedFromJson({ actor: { password: await pwd.hashed } });
+    const { actor } = await seedFromJson({ actor: { password: await pwd } });
     assertIsDefined(actor);
     assertIsMember(actor);
 
@@ -124,7 +120,7 @@ describe('Login with password', () => {
       url: '/login-password',
       payload: {
         email: actor.email,
-        password: pwd.password,
+        password: pwd,
         captcha: MOCK_CAPTCHA,
       },
     });
@@ -138,9 +134,9 @@ describe('Login with password', () => {
       action: RecaptchaAction.SignInWithPassword,
       score: 0.3,
     });
-    const pwd = MOCK_PASSWORD;
+    const pwd = 'MOCK_PASSWORD';
 
-    const { actor } = await seedFromJson({ actor: { password: await pwd.hashed } });
+    const { actor } = await seedFromJson({ actor: { password: await pwd } });
     assertIsDefined(actor);
     assertIsMember(actor);
 
@@ -149,7 +145,7 @@ describe('Login with password', () => {
       url: '/login-password',
       payload: {
         email: actor.email,
-        password: pwd.password,
+        password: pwd,
         captcha: MOCK_CAPTCHA,
       },
     });
@@ -809,7 +805,7 @@ describe('GET members current password status', () => {
   });
 
   it('Get password status for member with password', async () => {
-    const { actor } = await seedFromJson({ actor: { password: await MOCK_PASSWORD.hashed } });
+    const { actor } = await seedFromJson({ actor: { password: 'MOCK_PASSWORD' } });
     assertIsDefined(actor);
     assertIsMember(actor);
     mockAuthenticate(actor);
@@ -838,8 +834,8 @@ describe('Flow tests', () => {
     // mock captcha validation
     mockCaptchaValidationOnce(RecaptchaAction.SignInWithPassword);
 
-    const pwd = MOCK_PASSWORD;
-    const { actor } = await seedFromJson({ actor: { password: await MOCK_PASSWORD.hashed } });
+    const pwd = 'MOCK_PASSWORD';
+    const { actor } = await seedFromJson({ actor: { password: pwd } });
     assertIsDefined(actor);
     assertIsMember(actor);
     mockAuthenticate(actor);
@@ -848,7 +844,7 @@ describe('Flow tests', () => {
     const loginResponse = await app.inject({
       method: HttpMethod.Post,
       url: '/login-password',
-      payload: { email: actor.email, password: pwd.password, captcha: MOCK_CAPTCHA },
+      payload: { email: actor.email, password: pwd, captcha: MOCK_CAPTCHA },
     });
 
     expect(loginResponse.statusCode).toEqual(StatusCodes.SEE_OTHER);
