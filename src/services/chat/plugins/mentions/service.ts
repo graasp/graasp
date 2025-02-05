@@ -5,18 +5,16 @@ import { ClientManager, Context, MentionStatus, PermissionLevel } from '@graasp/
 import { TRANSLATIONS } from '../../../../langs/constants';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../plugins/mailer/service';
-import HookManager from '../../../../utils/hook';
 import { Repositories } from '../../../../utils/repositories';
 import { Account } from '../../../account/entities/account';
 import { validatePermission } from '../../../authorization';
 import { Item } from '../../../item/entities/Item';
-import { Member } from '../../../member/entities/member';
+import { Member, isMember } from '../../../member/entities/member';
 import { ChatMessage } from '../../chatMessage';
 import { MemberCannotAccessMention } from '../../errors';
 
 @singleton()
 export class MentionService {
-  hooks = new HookManager();
   private readonly mailerService: MailerService;
 
   constructor(mailerService: MailerService) {
@@ -71,14 +69,16 @@ export class MentionService {
     await validatePermission(repositories, PermissionLevel.Read, account, item);
 
     // TODO: optimize ? suppose same item - validate multiple times
-    const results = await mentionRepository.postMany(mentionedMembers, message.id);
+    const mentions = await mentionRepository.postMany(mentionedMembers, message.id);
 
-    this.hooks.runPostHooks('createMany', account, repositories, {
-      mentions: results,
-      item,
+    mentions.forEach((mention) => {
+      const member = mention.account;
+      if (isMember(member)) {
+        this.sendMentionNotificationEmail({ item, member, creator: account });
+      }
     });
 
-    return results;
+    return mentions;
   }
 
   async getForAccount(account: Account, repositories: Repositories) {
