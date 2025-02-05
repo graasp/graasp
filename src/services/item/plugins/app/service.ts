@@ -97,7 +97,7 @@ export class AppService {
     // get members only without duplicate
     return uniqBy(
       memberships.data[item.id].map(({ account }) => account),
-      ({ id }) => id,
+      ({ id }: { id: string }) => id,
     );
   }
 }

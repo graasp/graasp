@@ -269,10 +269,11 @@ export class ItemMembershipRepository extends MutableRepository<
 
           // search by member lang
           const memberLang = isMember(account) ? account.lang : DEFAULT_LANG;
-          if (memberLang != DEFAULT_LANG && ALLOWED_SEARCH_LANGS[memberLang]) {
+          const memberLangKey = memberLang as keyof typeof ALLOWED_SEARCH_LANGS;
+          if (memberLang != DEFAULT_LANG && ALLOWED_SEARCH_LANGS[memberLangKey]) {
             q.orWhere('item.search_document @@ plainto_tsquery(:lang, :keywords)', {
               keywords: keywordsString,
-              lang: ALLOWED_SEARCH_LANGS[memberLang],
+              lang: ALLOWED_SEARCH_LANGS[memberLangKey],
             });
           }
         }),
