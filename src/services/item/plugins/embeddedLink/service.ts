@@ -94,7 +94,6 @@ export class EmbeddedLinkItemService extends ItemService {
       const r = new RegExp('[ \t\u{0000}-\u{001F}\u{007F}-\u{009F}]', 'gu');
 
       return {
-        // fix non-breaking spaces
         title: title?.trim()?.replaceAll(r, ' '),
         description: description?.trim(),
         html,
