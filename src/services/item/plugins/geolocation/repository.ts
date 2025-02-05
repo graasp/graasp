@@ -132,12 +132,16 @@ export class ItemGeolocationRepository extends AbstractRepository<ItemGeolocatio
             });
           });
 
-          // search by member lang
-          if (memberLang && memberLang != 'en' && ALLOWED_SEARCH_LANGS[memberLang]) {
-            q.orWhere('item.search_document @@ plainto_tsquery(:lang, :keywords)', {
-              keywords: keywordsString,
-              lang: ALLOWED_SEARCH_LANGS[memberLang],
-            });
+          // search by member lang if defined and not english
+          if (memberLang && memberLang != 'en') {
+            const memberLangKey = memberLang as keyof typeof ALLOWED_SEARCH_LANGS;
+
+            if (ALLOWED_SEARCH_LANGS[memberLangKey]) {
+              q.orWhere('item.search_document @@ plainto_tsquery(:lang, :keywords)', {
+                keywords: keywordsString,
+                lang: ALLOWED_SEARCH_LANGS[memberLangKey],
+              });
+            }
           }
         }),
       );

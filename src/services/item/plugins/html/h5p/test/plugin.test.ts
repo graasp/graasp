@@ -157,7 +157,7 @@ describe('Service plugin', () => {
         expect(h5pFolders.includes(contentId));
       }, 5000);
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const otherId = h5pFolders.find((e) => e !== contentId)!; // the above line ensures exists
+      const otherId = h5pFolders!.find((e: string) => e !== contentId)!; // the above line ensures exists
 
       // expected name of the copy
       const H5P_ACCORDION_COPY_FILENAME = `${path.basename(
