@@ -273,7 +273,7 @@ export class S3FileRepository implements FileRepository {
 
       return url;
     } catch (e) {
-      if (e && 'name' in e && e.name === 'NotFound') {
+      if (e && typeof e === 'object' && 'name' in e && e.name === 'NotFound') {
         throw new S3FileNotFound({ filepath });
       }
       if (!(e instanceof DownloadFileUnexpectedError)) {

@@ -31,7 +31,7 @@ export const createInvitations = async ({
   return { item, invitations };
 };
 
-export const saveInvitations = async ({ member }) => {
+export const saveInvitations = async ({ member }: { member: Member }) => {
   const { item, invitations } = await createInvitations({ member });
   for (const inv of invitations) {
     await invitationRawRepository.save(inv);

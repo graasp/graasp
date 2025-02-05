@@ -37,7 +37,7 @@ export class PartialItemGeolocation extends GraaspItemGeolocationError {
 }
 
 export class MissingGeolocationSearchParams extends GraaspItemGeolocationError {
-  constructor(data?) {
+  constructor(data?: unknown) {
     super(
       {
         code: 'GIGEOERR003',
@@ -50,7 +50,7 @@ export class MissingGeolocationSearchParams extends GraaspItemGeolocationError {
 }
 
 export class MissingGeolocationApiKey extends GraaspItemGeolocationError {
-  constructor(data?) {
+  constructor(data?: unknown) {
     super(
       {
         code: 'GIGEOERR004',

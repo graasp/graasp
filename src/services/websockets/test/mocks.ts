@@ -5,21 +5,13 @@
  */
 import { FastifyReply, FastifyRequest } from 'fastify';
 
-import { Member } from '../../member/entities/member';
+import { MemberFactory } from '@graasp/sdk';
 
-export const createMockMember = (extra?) => ({
-  name: 'mockMemberName',
-  email: 'mockMemberEmail',
-  id: 'mockMemberId',
-  type: 'individual',
-  extra,
-  createdAt: 'mockMemberCreatedAt',
-  updatedAt: 'mockMemberUpdatedAt',
-});
+import { Member } from '../../member/entities/member';
 
 // mock preHandler to be injected in test fastify instance to simulate authentication
 export const mockSessionPreHandler = async (request: FastifyRequest, _reply: FastifyReply) => {
-  request.user = { account: createMockMember() as unknown as Member };
+  request.user = { account: MemberFactory() as unknown as Member };
 };
 
 // Signature of @types/graasp/plugins/auth/interfaces/auth.d.ts is wrong! Force return of Promise
