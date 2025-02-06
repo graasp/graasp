@@ -188,6 +188,7 @@ export class ItemService {
       createdItems = await this.createItemsAndMemberships(member, repositories, items, null);
     }
 
+    // index the items for search
     this.indexItems(createdItems, repositories);
 
     return createdItems;
@@ -242,13 +243,20 @@ export class ItemService {
       }
     }
 
-    return this.createItemsAndMemberships(
+    const createdItems = await this.createItemsAndMemberships(
       member,
       repositories,
       items,
       inheritedMembership,
       parentItem,
     );
+
+    // rescale the item ordering, id there's more than one item
+    if (items.length > 1) {
+      repositories.itemRepository.rescaleOrder(member, parentItem);
+    }
+
+    return createdItems;
   }
 
   private async createItemsAndMemberships(

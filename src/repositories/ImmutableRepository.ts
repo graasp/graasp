@@ -89,13 +89,13 @@ export abstract class ImmutableRepository<T extends BaseEntity> extends Abstract
     return entity;
   }
 
-  public async getMultiple(
+  public getMultiple(
     pkValues: string[],
     options: Pick<FindManyOptions<T>, 'withDeleted'> = { withDeleted: false },
   ): Promise<T[]> {
     this.throwsIfPKIsInvalid(pkValues);
 
-    return await this.repository.find({
+    return this.repository.find({
       where: {
         [this.primaryKeyName]: In(pkValues),
       } as FindOptionsWhere<T>,
