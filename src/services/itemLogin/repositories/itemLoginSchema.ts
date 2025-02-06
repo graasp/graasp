@@ -9,6 +9,7 @@ import {
   EntityNotFound,
   EntryNotFoundBeforeDeleteException,
 } from '../../../repositories/errors';
+import { assertIsError } from '../../../utils/assertions';
 import { AncestorOf } from '../../../utils/typeorm/treeOperators';
 import { Item } from '../../item/entities/Item';
 import { ItemLoginSchema } from '../entities/itemLoginSchema';
@@ -87,7 +88,8 @@ export class ItemLoginSchemaRepository extends MutableRepository<
       await this.repository.delete(entity.id);
       return entity;
     } catch (e) {
-      throw new DeleteException(e);
+      assertIsError(e);
+      throw new DeleteException(e.message);
     }
   }
 }

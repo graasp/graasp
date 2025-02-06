@@ -610,9 +610,14 @@ export class ItemService {
 
   // TODO: optimize
   async moveMany(member: Member, repositories: Repositories, itemIds: string[], toItemId?: string) {
-    let parentItem;
+    let parentItem: FolderItem | undefined = undefined;
     if (toItemId) {
-      parentItem = await this.get(member, repositories, toItemId, PermissionLevel.Write);
+      parentItem = (await this.get(
+        member,
+        repositories,
+        toItemId,
+        PermissionLevel.Write,
+      )) as FolderItem;
     }
 
     const results = await Promise.all(
@@ -765,9 +770,14 @@ export class ItemService {
   ) {
     const { itemRepository } = repositories;
 
-    let parentItem;
+    let parentItem: FolderItem | undefined;
     if (args.parentId) {
-      parentItem = await this.get(member, repositories, args.parentId, PermissionLevel.Write);
+      parentItem = (await this.get(
+        member,
+        repositories,
+        args.parentId,
+        PermissionLevel.Write,
+      )) as FolderItem;
     }
 
     const results = await Promise.all(

@@ -6,12 +6,18 @@ import { EmailFrequency, MemberFactory } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../test/app';
 import { MemberNotFound } from '../../utils/errors';
+import { Member } from './entities/member';
 import { MemberRepository } from './repository';
 import { expectMember, saveMember, saveMembers } from './test/fixtures/members';
 
 const memberRepository = new MemberRepository();
 
-const expectMembersById = (members, expectedMembers) => {
+const expectMembersById = (
+  members: Member[],
+  expectedMembers: {
+    [key: string]: Member;
+  },
+) => {
   for (const m of members) {
     const expectM = expectedMembers[m.id];
     if (!expectM) {

@@ -177,7 +177,7 @@ export class EtherpadItemService {
     }
     return 'read';
   }
-  catch(error) {
+  catch(error: unknown) {
     // something else failed in the authorization
     if (!(error instanceof MemberCannotWriteItem)) {
       throw error;

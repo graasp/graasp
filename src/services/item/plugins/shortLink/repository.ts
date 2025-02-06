@@ -109,13 +109,14 @@ export class ShortLinkRepository extends MutableRepository<ShortLink, UpdateShor
 
       return updatedEntity;
     } catch (e) {
+      assertIsError(e);
       if (isDuplicateEntryError(e)) {
         throw new ShortLinkDuplication(alias);
       }
       if (e instanceof EntryNotFoundAfterUpdateException) {
         throw e;
       }
-      throw new UpdateException(e);
+      throw new UpdateException(e.message);
     }
   }
 }

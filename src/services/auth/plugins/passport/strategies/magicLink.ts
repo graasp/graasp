@@ -37,7 +37,7 @@ export default (
           }
         } catch (err) {
           // Exception occurred while fetching member
-          return done(options?.propagateError ? err : new UnauthorizedMember(), false);
+          return done(options?.propagateError ? (err as Error) : new UnauthorizedMember(), false);
         }
       },
     ),

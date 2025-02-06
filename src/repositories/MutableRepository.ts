@@ -80,7 +80,8 @@ export abstract class MutableRepository<
     try {
       await this.repository.delete(pkValue);
     } catch (e) {
-      throw new DeleteException(e);
+      assertIsError(e);
+      throw new DeleteException(e.message);
     }
   }
 
@@ -104,7 +105,8 @@ export abstract class MutableRepository<
       await this.repository.delete(pkValue);
       return entity;
     } catch (e) {
-      throw new DeleteException(e);
+      assertIsError(e);
+      throw new DeleteException(e.message);
     }
   }
 }

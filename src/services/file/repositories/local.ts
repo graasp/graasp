@@ -2,6 +2,7 @@ import fs from 'fs';
 import { copy as fseCopy } from 'fs-extra';
 import { access, copyFile, mkdir, rm } from 'fs/promises';
 import path from 'path';
+import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
 
 import { ItemType } from '@graasp/sdk';
@@ -29,7 +30,7 @@ export class LocalFileRepository implements FileRepository {
   }
 
   // copy
-  async copyFile({ originalPath, newFilePath }) {
+  async copyFile({ originalPath, newFilePath }: { originalPath: string; newFilePath: string }) {
     const originalFullPath = this.buildFullPath(originalPath);
     const newFileFullPath = this.buildFullPath(newFilePath);
 
@@ -40,7 +41,13 @@ export class LocalFileRepository implements FileRepository {
     return newFilePath;
   }
 
-  async copyFolder({ originalFolderPath, newFolderPath }): Promise<string> {
+  async copyFolder({
+    originalFolderPath,
+    newFolderPath,
+  }: {
+    originalFolderPath: string;
+    newFolderPath: string;
+  }): Promise<string> {
     const originalFullPath = this.buildFullPath(originalFolderPath);
     const newFullPath = this.buildFullPath(newFolderPath);
 
@@ -53,11 +60,11 @@ export class LocalFileRepository implements FileRepository {
   }
 
   // delete
-  async deleteFile({ filepath }): Promise<void> {
+  async deleteFile({ filepath }: { filepath: string }): Promise<void> {
     await rm(this.buildFullPath(filepath));
   }
   // delete
-  async deleteFolder({ folderPath }): Promise<void> {
+  async deleteFolder({ folderPath }: { folderPath: string }): Promise<void> {
     await rm(this.buildFullPath(folderPath), { recursive: true });
   }
 
@@ -78,14 +85,20 @@ export class LocalFileRepository implements FileRepository {
     return fs.createReadStream(this.buildFullPath(filepath));
   }
 
-  async getUrl({ filepath }) {
+  async getUrl({ filepath }: { filepath: string }) {
     await this._validateFile({ filepath });
     const localUrl = new URL(filepath, this.options.localFilesHost);
     return localUrl.toString();
   }
 
   // upload
-  async uploadFile({ fileStream, filepath }): Promise<void> {
+  async uploadFile({
+    fileStream,
+    filepath,
+  }: {
+    fileStream: Readable;
+    filepath: string;
+  }): Promise<void> {
     const folderPath = path.dirname(this.buildFullPath(filepath));
     // create folder
     await mkdir(folderPath, {

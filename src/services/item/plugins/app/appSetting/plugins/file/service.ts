@@ -9,7 +9,7 @@ import { FileItemProperties, MAX_ITEM_NAME_LENGTH, UUID } from '@graasp/sdk';
 import { Repositories } from '../../../../../../../utils/repositories';
 import { Account } from '../../../../../../account/entities/account';
 import FileService from '../../../../../../file/service';
-import { Member } from '../../../../../../member/entities/member';
+import { Actor, Member } from '../../../../../../member/entities/member';
 import { Item } from '../../../../../entities/Item';
 import { ItemService } from '../../../../../service';
 import { AppSetting } from '../../appSettings';
@@ -145,7 +145,7 @@ class AppSettingFileService {
     }
   }
 
-  async deleteOne(actor, repositories: Repositories, appSetting: AppSetting) {
+  async deleteOne(actor: Actor, repositories: Repositories, appSetting: AppSetting) {
     // TODO: check rights? but only use in posthook
     try {
       // delete file only if type is the current file type

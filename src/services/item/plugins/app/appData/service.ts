@@ -21,7 +21,7 @@ const ownAppDataAbility = (appData: AppData, actor: Actor) => {
 };
 
 const itemVisibilityAppDataAbility = (
-  appData,
+  appData: AppData,
   permission: PermissionLevel,
   memberPermission?: PermissionLevel,
 ) => {

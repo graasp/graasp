@@ -82,7 +82,10 @@ export function initSentry(instance: FastifyInstance): {
       if (
         transaction &&
         transaction in IGNORED_TRANSACTIONS &&
-        event.exception?.values?.some(({ value }) => value === IGNORED_TRANSACTIONS[transaction])
+        event.exception?.values?.some(
+          ({ value }) =>
+            value === IGNORED_TRANSACTIONS[transaction as keyof typeof IGNORED_TRANSACTIONS],
+        )
       ) {
         return null;
       }
