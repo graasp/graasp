@@ -136,13 +136,16 @@ export class ItemService {
     const { item, parentId, previousItemId, geolocation, thumbnail } = args;
 
     // item
-    const createdItem = await this.createItems(
+    const createdItems = await this.createItems(
       member,
       repositories,
       [item],
       parentId,
       previousItemId,
-    )[0];
+    );
+
+    // take the first and (must be) the only item
+    const createdItem = createdItems[0];
     const createdItemId = createdItem.id;
 
     // geolocation
