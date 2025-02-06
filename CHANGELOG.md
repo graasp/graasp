@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.62.0](https://github.com/graasp/graasp/compare/v1.61.0...v1.62.0) (2025-02-06)
+
+
+### Features
+
+* add app endpoints ([#1730](https://github.com/graasp/graasp/issues/1730)) ([909df1a](https://github.com/graasp/graasp/commit/909df1aa64c8501c40cf43e620b3e6439a9976a1))
+* add endpoints for shortcut ([#1732](https://github.com/graasp/graasp/issues/1732)) ([5208eb0](https://github.com/graasp/graasp/commit/5208eb01391ab48003b3d2afc0852d98684ab7a2))
+* add likes in meilisearch ([#1715](https://github.com/graasp/graasp/issues/1715)) ([6148bfa](https://github.com/graasp/graasp/commit/6148bfaa24ff0ecfb6073fecbef1df08ed415ced))
+* allow readers to edit etherpad ([#1713](https://github.com/graasp/graasp/issues/1713)) ([09c0d64](https://github.com/graasp/graasp/commit/09c0d644e1d917a7b772317c36d64a770fea335c))
+* improve schemas for item validation ([#1724](https://github.com/graasp/graasp/issues/1724)) ([b975671](https://github.com/graasp/graasp/commit/b97567176f4b9c5789cc1c3780dd0f221448593f))
+* **published-search:** allow creator id filter ([#1720](https://github.com/graasp/graasp/issues/1720)) ([9097c82](https://github.com/graasp/graasp/commit/9097c8253c774cfe113a457f31dd79beecd3536d))
+* remove unnecessary host variables ([#1738](https://github.com/graasp/graasp/issues/1738)) ([4ab71b7](https://github.com/graasp/graasp/commit/4ab71b72bf6eb5a5ae07cd502bde574b72d56afd))
+* return null for no thumbnail items ([#1727](https://github.com/graasp/graasp/issues/1727)) ([b7c8036](https://github.com/graasp/graasp/commit/b7c8036849f7d4a5682007ac07a3e4130f56b65b))
+* update get liked collections with meilisearch ([#1717](https://github.com/graasp/graasp/issues/1717)) ([58bd1f2](https://github.com/graasp/graasp/commit/58bd1f2c09a83a66e909cdb6bfbff73f60a237f0))
+* update recent endpoint to use meilisearch ([#1722](https://github.com/graasp/graasp/issues/1722)) ([eb76b1b](https://github.com/graasp/graasp/commit/eb76b1b546b08a8b1576a3560cb4d284c36b9719))
+
+
+### Bug Fixes
+
+* apply rightsizing recomandations ([#1741](https://github.com/graasp/graasp/issues/1741)) ([a12a6ef](https://github.com/graasp/graasp/commit/a12a6ef37deb275cd727ae4a5d7f319a7bfc0ebc))
+* fix schema typos ([#1734](https://github.com/graasp/graasp/issues/1734)) ([afedc3a](https://github.com/graasp/graasp/commit/afedc3af2f79a5f121439988387f5ea294ed06bd))
+* remove default sorting for search ([#1733](https://github.com/graasp/graasp/issues/1733)) ([d96f7e0](https://github.com/graasp/graasp/commit/d96f7e08089d3c927ff2f0b7d6822666c13ae93d))
+* replace non breaking spaces from link metadata title ([#1745](https://github.com/graasp/graasp/issues/1745)) ([be6ed25](https://github.com/graasp/graasp/commit/be6ed25c55415dcb9ce6777fb855686064b688aa))
+* return 200 and null for empty member profile ([#1736](https://github.com/graasp/graasp/issues/1736)) ([5674cb7](https://github.com/graasp/graasp/commit/5674cb7942e5688217f0d7e0033199134331ed94))
+* **seed:** seed from json data ([#1728](https://github.com/graasp/graasp/issues/1728)) ([ae674e2](https://github.com/graasp/graasp/commit/ae674e24dfb75cf83a6fd5fe7981e1dee36b1025))
+
 ## [1.61.0](https://github.com/graasp/graasp/compare/v1.60.0...v1.61.0) (2025-01-08)
 
 
