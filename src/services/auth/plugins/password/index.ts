@@ -11,7 +11,7 @@ import { buildRepositories } from '../../../../utils/repositories';
 import { ActionService } from '../../../action/services/action';
 import { matchOne } from '../../../authorization';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { getRedirectionUrl } from '../../utils';
+import { getRedirectionLink } from '../../utils';
 import captchaPreHandler from '../captcha';
 import {
   SHORT_TOKEN_PARAM,
@@ -57,7 +57,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         { sub: member.id },
         `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
       );
-      const redirectionUrl = getRedirectionUrl(log, url);
+      const redirectionUrl = getRedirectionLink(log, url);
 
       const target = new URL(AUTHENTICATION_FALLBACK_ROUTE, PUBLIC_URL);
       target.searchParams.set(SHORT_TOKEN_PARAM, token);

@@ -2,34 +2,33 @@ import { sign } from 'jsonwebtoken';
 
 import { FastifyBaseLogger } from 'fastify';
 
+import { ClientManager, Context } from '@graasp/sdk';
+
 import {
+  ALLOWED_ORIGINS,
   AUTH_TOKEN_EXPIRATION_IN_MINUTES,
   AUTH_TOKEN_JWT_SECRET,
-  BUILDER_HOST,
-  CLIENT_HOSTS,
   REFRESH_TOKEN_EXPIRATION_IN_MINUTES,
   REFRESH_TOKEN_JWT_SECRET,
 } from '../../utils/config';
 
-const defaultClientHost = BUILDER_HOST;
+const defaultClientHost = ClientManager.getInstance().getLinkByContext(Context.Builder);
 
-const validOrigins = CLIENT_HOSTS.map((c) => c.url.origin);
-
-export const getRedirectionUrl = (log: FastifyBaseLogger, target?: string) => {
+export const getRedirectionLink = (log: FastifyBaseLogger, target?: string) => {
   if (!target) {
-    return defaultClientHost.url.origin;
+    return defaultClientHost;
   }
 
   try {
     const targetUrl = new URL(target);
-    if (!validOrigins.includes(targetUrl.origin)) {
+    if (!ALLOWED_ORIGINS.includes(targetUrl.origin)) {
       log.error(
         `redirection-url-util: Attempted to use a non valid origin  (url: ${targetUrl.toString()})`,
       );
-      return defaultClientHost.url.origin;
+      return defaultClientHost;
     }
   } catch {
-    return defaultClientHost.url.origin;
+    return defaultClientHost;
   }
 
   return target;

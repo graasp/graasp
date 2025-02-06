@@ -92,15 +92,12 @@ jobs:
           image: ${{ needs.build.outputs.image_url }}
           environment-variables: |
             DATABASE_LOGS=${{ vars.DATABASE_LOGS }}
-            DB_CONNECTION_POOL_SIZE=${{ vars.DB_CONNECTION_POOL_SIZE }}
-            ANALYTICS_CLIENT_HOST=${{ vars.ANALYTICS_CLIENT_HOST }}
-            ACCOUNT_CLIENT_HOST=${{ vars.ACCOUNT_CLIENT_HOST }}
+            DB_CONNECTION_POOL_SIZE=${{ vars.DB_CONNECTION_POOL_SIZE }} 
             APPS_JWT_SECRET=${{ secrets.APPS_JWT_SECRET }}
             APPS_PUBLISHER_ID=${{ secrets.APPS_PUBLISHER_ID }}
-            AUTH_CLIENT_HOST=${{ vars.AUTH_CLIENT_HOST }}
             AUTH_TOKEN_EXPIRATION_IN_MINUTES=${{ secrets.AUTH_TOKEN_EXPIRATION_IN_MINUTES }}
             AUTH_TOKEN_JWT_SECRET=${{ secrets.AUTH_TOKEN_JWT_SECRET }}
-            BUILDER_CLIENT_HOST=${{ vars.BUILDER_CLIENT_HOST }}
+            CLIENT_HOST=${{ vars.CLIENT_HOST }}
             COOKIE_DOMAIN=${{ vars.COOKIE_DOMAIN }}
             CORS_ORIGIN_REGEX=${{ secrets.CORS_ORIGIN_REGEX }}
             DB_HOST=${{ secrets.DB_HOST }}
@@ -136,7 +133,6 @@ jobs:
             MEILISEARCH_REBUILD_SECRET=${{ secrets.MEILISEARCH_REBUILD_SECRET }}
             MEILISEARCH_URL=${{ secrets.MEILISEARCH_URL }}
             NODE_ENV=${{ vars.NODE_ENV }}
-            PLAYER_CLIENT_HOST=${{ vars.PLAYER_CLIENT_HOST }}
             PORT=${{ vars.PORT }}
             PUBLIC_URL=${{ secrets.PUBLIC_URL }}
             RECAPTCHA_SECRET_ACCESS_KEY=${{ secrets.RECAPTCHA_SECRET_ACCESS_KEY }}

@@ -1,12 +1,11 @@
 import { singleton } from 'tsyringe';
 
-import { Member, PermissionLevel } from '@graasp/sdk';
+import { ClientManager, Context, Member, PermissionLevel } from '@graasp/sdk';
 
 import { TRANSLATIONS } from '../../../../langs/constants';
 import { BaseLogger } from '../../../../logger';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../plugins/mailer/service';
-import { BUILDER_HOST } from '../../../../utils/config';
 import { Repositories } from '../../../../utils/repositories';
 import { Item } from '../../../item/entities/Item';
 import { isMember } from '../../../member/entities/member';
@@ -39,7 +38,10 @@ export class MembershipRequestService {
       PermissionLevel.Admin,
     );
 
-    const link = new URL(`/items/${item.id}/share`, BUILDER_HOST.url).toString();
+    const link = ClientManager.getInstance().getLinkByContext(
+      Context.Builder,
+      `/items/${item.id}/share`,
+    );
 
     for (const adminMembership of adminMemberships) {
       const admin = adminMembership.account;

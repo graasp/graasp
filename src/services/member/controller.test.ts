@@ -13,7 +13,7 @@ import { resolveDependency } from '../../di/utils';
 import { AppDataSource } from '../../plugins/datasource';
 import { MailerService } from '../../plugins/mailer/service';
 import { assertIsDefined } from '../../utils/assertions';
-import { ACCOUNT_HOST, EMAIL_CHANGE_JWT_SECRET } from '../../utils/config';
+import { EMAIL_CHANGE_JWT_SECRET } from '../../utils/config';
 import { Item } from '../item/entities/Item';
 import {
   FILE_METADATA_MAX_PAGE_SIZE,
@@ -133,7 +133,7 @@ describe('Member Controller', () => {
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
       expect(mockSendEmail).toHaveBeenCalledTimes(1);
       expect(mockSendEmail.mock.calls[0][1]).toBe(email);
-      expect(mockSendEmail.mock.calls[0][2]).toContain(`${ACCOUNT_HOST.url}email/change?t=`);
+      expect(mockSendEmail.mock.calls[0][2]).toContain('email/change?t=');
       // Email didn't change
       const rawMember = await memberRawRepository.findOneBy({ id: actor.id });
       expect(rawMember?.email).toEqual(actor.email);

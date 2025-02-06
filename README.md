@@ -64,13 +64,14 @@ Then install the required npm packages with `yarn install`. You should run this 
 > If the process is killed during the installation of the packages, you'll need to increase the memory limit for docker.  
 > To increase the memory limit, go to `Docker > Preferences > Resources` and change the memory from default (2 GB) to 8GB.
 
-Once the packages are installed we need to bootstrap the database. Run this line in the terminal of the DevContainer. It will connect to the Postgres Engine running in the `db` container with the `docker` user and run the `bootstrapDB.sql` file. You will be asked for a password. Enter `docker`. 
+Once the packages are installed we need to bootstrap the database. Run this line in the terminal of the DevContainer. It will connect to the Postgres Engine running in the `db` container with the `docker` user and run the `bootstrapDB.sql` file. You will be asked for a password. Enter `docker`.
 
 ```sh
-psql -h db -U docker -f bootstrapDB.sql 
+psql -h db -U docker -f bootstrapDB.sql
 ```
 
 It will create 4 roles with their associated database for the services that need them:
+
 - Graasp: the db for the backend
 - Umami: google analytics replacement
 - Etherpad: realtime documents
@@ -106,8 +107,6 @@ To configure the application, you'll need to change the values in `.env.developm
 # The hostname is set by ./.devcontainer/docker-compose.yml
 # HOSTNAME=0.0.0.0
 PORT=3000
-# The public URL is set by ./.devcontainer/docker-compose.yml
-# PUBLIC_URL=
 COOKIE_DOMAIN=localhost
 CORS_ORIGIN_REGEX=^http?:\/\/(localhost)?:[0-9]{4}$
 
@@ -210,12 +209,8 @@ APPS_PUBLISHER_ID=<id>
 SAVE_ACTIONS=true
 
 # Client hosts
-BUILDER_CLIENT_HOST=http://localhost:3111
-PLAYER_CLIENT_HOST=http://localhost:3112
+CLIENT_HOST=http://localhost:3114
 LIBRARY_CLIENT_HOST=http://localhost:3005
-AUTH_CLIENT_HOST=http://localhost:3001
-ACCOUNT_CLIENT_HOST=http://localhost:3114
-ANALYTICS_CLIENT_HOST=http://localhost:3113
 GRAASP_MOBILE_BUILDER=graasp-mobile-builder
 
 # This is already set in the docker-compose file, un-comment below if you want to override it
@@ -245,7 +240,6 @@ To log into umami in your local instance:
 https://umami.is/docs/login
 
 The first time you log in use username: `admin` and password: `umami`. It is recommended to change these.
-
 
 ## Running
 

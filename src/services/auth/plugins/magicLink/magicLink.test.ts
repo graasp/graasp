@@ -6,7 +6,14 @@ import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, MemberFactory, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
+import {
+  ClientManager,
+  Context,
+  HttpMethod,
+  MemberFactory,
+  RecaptchaAction,
+  RecaptchaActionType,
+} from '@graasp/sdk';
 import { FAILURE_MESSAGES } from '@graasp/translations';
 
 import build, { clearDatabase } from '../../../../../test/app';
@@ -14,7 +21,7 @@ import { URL_REGEX } from '../../../../../test/utils';
 import { resolveDependency } from '../../../../di/utils';
 import { AppDataSource } from '../../../../plugins/datasource';
 import { MailerService } from '../../../../plugins/mailer/service';
-import { AUTH_CLIENT_HOST, JWT_SECRET } from '../../../../utils/config';
+import { JWT_SECRET } from '../../../../utils/config';
 import { Member } from '../../../member/entities/member';
 import { saveMember } from '../../../member/test/fixtures/members';
 import { MOCK_CAPTCHA } from '../captcha/test/utils';
@@ -30,6 +37,8 @@ export const mockCaptchaValidation = (action: RecaptchaActionType) => {
     return { json: async () => ({ success: true, action, score: 1 }) } as any;
   });
 };
+
+const AUTH_CLIENT_HOST = ClientManager.getInstance().getURLByContext(Context.Auth);
 
 describe('Auth routes tests', () => {
   let app: FastifyInstance;
@@ -160,7 +169,7 @@ describe('Auth routes tests', () => {
         url: `/auth?t=${t}`,
       });
       expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
-      const url = new URL('/', AUTH_CLIENT_HOST);
+      const url = AUTH_CLIENT_HOST;
       url.searchParams.set('error', 'true');
       expect(response.headers.location).toEqual(url.toString());
     });
@@ -172,7 +181,7 @@ describe('Auth routes tests', () => {
         url: `/auth?t=${t}`,
       });
       expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
-      const url = new URL('/', AUTH_CLIENT_HOST);
+      const url = AUTH_CLIENT_HOST;
       url.searchParams.set('error', 'true');
       expect(response.headers.location).toEqual(url.toString());
     });
@@ -186,7 +195,7 @@ describe('Auth routes tests', () => {
       });
 
       expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
-      const url = new URL('/', AUTH_CLIENT_HOST);
+      const url = AUTH_CLIENT_HOST;
       url.searchParams.set('error', 'true');
       expect(response.headers.location).toEqual(url.toString());
     });

@@ -7,7 +7,7 @@ import { ExportActionsFormatting, FileItemType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
 import { asDefined } from '../../../../utils/assertions';
-import { CLIENT_HOSTS } from '../../../../utils/config';
+import { ALLOWED_ORIGINS } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
 import { ActionService } from '../../../action/services/action';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
@@ -38,8 +38,6 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
   const actionService = resolveDependency(ActionService);
   const actionItemService = resolveDependency(ActionItemService);
   const requestExportService = resolveDependency(ActionRequestExportService);
-
-  const allowedOrigins = Object.values(CLIENT_HOSTS).map(({ url }) => url.origin);
 
   // get actions and more data matching the given `id`
   fastify.get(
@@ -108,7 +106,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
       if (!request.headers.origin) {
         throw new CannotPostAction();
       }
-      if (!allowedOrigins.includes(request.headers.origin)) {
+      if (!ALLOWED_ORIGINS.includes(request.headers.origin)) {
         throw new CannotPostAction(request.headers.origin);
       }
 

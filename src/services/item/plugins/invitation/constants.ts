@@ -1,13 +1,20 @@
-import { AUTH_CLIENT_HOST, PLAYER_HOST } from '../../../../utils/config';
+import { ClientManager, Context } from '@graasp/sdk';
+
 import { Invitation } from './entity';
 
 export const PLUGIN_NAME = 'graasp-plugin-invitations';
 
+/**
+ * Build redirection url to player, where the user is redirected to once the user has signed up
+ * @param invitation
+ * @returns
+ */
 export const buildInvitationLink = (invitation: Invitation) => {
-  const url = new URL('signup', AUTH_CLIENT_HOST);
-  url.searchParams.set('invitationId', invitation.id);
-  const destination = new URL(invitation.item.id, PLAYER_HOST.url);
-  url.searchParams.set('url', encodeURIComponent(destination.toString()));
+  const destination = ClientManager.getInstance().getItemLink(Context.Player, invitation.item.id);
+  const url = ClientManager.getInstance().getURLByContext(Context.Auth, 'register', {
+    invitationId: invitation.id,
+    url: destination.toString(),
+  });
   return url.toString();
 };
 

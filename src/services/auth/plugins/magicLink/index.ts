@@ -4,18 +4,17 @@ import fastifyPassport from '@fastify/passport';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { PassportUser } from 'fastify';
 
-import { RecaptchaAction } from '@graasp/sdk';
+import { ClientManager, Context, RecaptchaAction } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
 import { resolveDependency } from '../../../../di/utils';
 import { asDefined } from '../../../../utils/assertions';
-import { AUTH_CLIENT_HOST } from '../../../../utils/config';
 import { MemberAlreadySignedUp } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { InvitationService } from '../../../item/plugins/invitation/service';
 import { isMember } from '../../../member/entities/member';
 import { MemberService } from '../../../member/service';
-import { getRedirectionUrl } from '../../utils';
+import { getRedirectionLink } from '../../utils';
 import captchaPreHandler from '../captcha';
 import { PassportStrategy } from '../passport/strategies';
 import { PassportInfo } from '../passport/types';
@@ -93,7 +92,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           // It is necessary, so we match the behavior of the original implementation.
           if (!user || err) {
             // Authentication failed
-            const target = new URL('/', AUTH_CLIENT_HOST);
+            const target = ClientManager.getInstance().getURLByContext(Context.Auth);
             target.searchParams.set(ERROR_SEARCH_PARAM, ERROR_SEARCH_PARAM_HAS_ERROR);
             reply.redirect(StatusCodes.SEE_OTHER, target.toString());
           } else {
@@ -111,7 +110,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         log,
       } = request;
       const member = asDefined(user?.account);
-      const redirectionUrl = getRedirectionUrl(log, url ? decodeURIComponent(url) : undefined);
+      const redirectionLink = getRedirectionLink(log, url ? decodeURIComponent(url) : undefined);
       await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
         await memberService.refreshLastAuthenticatedAt(member.id, repositories);
@@ -120,7 +119,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           await memberService.validate(member.id, repositories);
         }
       });
-      reply.redirect(StatusCodes.SEE_OTHER, redirectionUrl);
+      reply.redirect(StatusCodes.SEE_OTHER, redirectionLink);
     },
   );
 

@@ -1,7 +1,14 @@
 import { formatISO } from 'date-fns';
 import { singleton } from 'tsyringe';
 
-import { ItemVisibilityType, PermissionLevel, PublicationStatus, UUID } from '@graasp/sdk';
+import {
+  ClientManager,
+  Context,
+  ItemVisibilityType,
+  PermissionLevel,
+  PublicationStatus,
+  UUID,
+} from '@graasp/sdk';
 
 import { TRANSLATIONS } from '../../../../../langs/constants';
 import { BaseLogger } from '../../../../../logger';
@@ -16,7 +23,6 @@ import { ItemWrapper } from '../../../ItemWrapper';
 import { Item } from '../../../entities/Item';
 import { ItemService } from '../../../service';
 import { ItemThumbnailService } from '../../thumbnail/service';
-import { buildPublishedItemLink } from './constants';
 import { ItemPublished } from './entities/itemPublished';
 import {
   ItemIsNotValidated,
@@ -66,7 +72,7 @@ export class ItemPublishedService {
       )
       .map(({ account }) => account);
 
-    const link = buildPublishedItemLink(item);
+    const link = ClientManager.getInstance().getItemLink(Context.Library, item.id);
 
     for (const member of contributors) {
       if (isMember(member)) {
