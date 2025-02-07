@@ -53,6 +53,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const { body, log, user } = request;
       const { url } = body;
       const member = asDefined(user?.account);
+
       const token = await memberPasswordService.generateToken(
         { sub: member.id },
         `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
