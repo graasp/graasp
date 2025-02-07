@@ -5,17 +5,19 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, ItemType, LinkItemFactory, PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
+import build, {
+  clearDatabase,
+  mockAuthenticate,
+  unmockAuthenticate,
+} from '../../../../../../test/app';
+import { ItemFactory } from '../../../../../../test/factories/item.factory';
+import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
-import { Member } from '../../../../member/entities/member';
-import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemRepository } from '../../../repository';
-import { ItemTestUtils, expectItem } from '../../../test/fixtures/items';
+import { expectItem } from '../../../test/fixtures/items';
 
 jest.mock('node-fetch');
-
-const testUtils = new ItemTestUtils();
 
 const itemRepository = new ItemRepository();
 const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
@@ -36,7 +38,15 @@ const iframelyResult = {
 
 describe('Link Item tests', () => {
   let app: FastifyInstance;
-  let actor: Member | undefined;
+
+  beforeAll(async () => {
+    ({ app } = await build({ member: null }));
+  });
+
+  afterAll(async () => {
+    await clearDatabase(app.db);
+    app.close();
+  });
 
   beforeEach(() => {
     (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
@@ -47,15 +57,11 @@ describe('Link Item tests', () => {
 
   afterEach(async () => {
     jest.clearAllMocks();
-    await clearDatabase(app.db);
-    actor = undefined;
-    app.close();
+    unmockAuthenticate();
   });
 
   describe('POST /items', () => {
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
-
       const payload = LinkItemFactory();
       const response = await app.inject({
         method: HttpMethod.Post,
@@ -68,7 +74,8 @@ describe('Link Item tests', () => {
 
     describe('Signed In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        const { actor } = await seedFromJson();
+        mockAuthenticate(actor);
       });
 
       it('Create successfully', async () => {
@@ -174,9 +181,9 @@ describe('Link Item tests', () => {
   // cannot update a link
   describe('PATCH /items/:id', () => {
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
-      const member = await saveMember();
-      const { item } = await testUtils.saveItemAndMembership({ member });
+      const {
+        items: [item],
+      } = await seedFromJson({ items: [ItemFactory({ type: ItemType.LINK })] });
 
       const response = await app.inject({
         method: HttpMethod.Patch,
@@ -188,18 +195,20 @@ describe('Link Item tests', () => {
     });
 
     describe('Signed In', () => {
-      beforeEach(async () => {
-        ({ app, actor } = await build());
-      });
-
       it('Allow to edit link url', async () => {
-        const { item } = await testUtils.saveItemAndMembership({
-          item: {
-            name: 'link item',
-            type: ItemType.LINK,
-          },
-          member: actor,
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            {
+              ...ItemFactory({ name: 'link item', type: ItemType.LINK }),
+              memberships: [{ account: 'actor' }],
+            },
+          ],
         });
+        mockAuthenticate(actor);
+
         const payload = {
           name: 'new name',
           extra: {
@@ -224,13 +233,14 @@ describe('Link Item tests', () => {
       });
 
       it('Disallow editing html in extra', async () => {
-        const { item } = await testUtils.saveItemAndMembership({
-          item: {
-            name: 'link item',
-            type: ItemType.LINK,
-          },
-          member: actor,
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [ItemFactory({ name: 'link item', type: ItemType.LINK })],
         });
+        mockAuthenticate(actor);
+
         const payload = {
           name: 'new name',
           extra: {

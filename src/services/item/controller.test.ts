@@ -23,11 +23,11 @@ import { ItemVisibility } from './plugins/itemVisibility/ItemVisibility';
 describe('Item controller', () => {
   let app: FastifyInstance;
   let actor: Actor;
-  beforeEach(async () => {
+  beforeAll(async () => {
     ({ app, actor } = await build());
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     await clearDatabase(app.db);
     app.close();
   });
