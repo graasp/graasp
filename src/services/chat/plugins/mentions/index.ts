@@ -6,8 +6,6 @@ import { resolveDependency } from '../../../../di/utils';
 import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
-import { isMember } from '../../../member/entities/member';
-import { ChatMention } from './chatMention';
 import { clearAllMentions, deleteMention, getOwnMentions, patchMention } from './schemas';
 import { MentionService } from './service';
 
@@ -17,22 +15,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const mentionService = resolveDependency(MentionService);
 
   // TODO: MEMBERSHIP POSTHOOK: REMOVE MENTION TO AVOID PROVIDING ITEM INFO through message
-
-  // send email on mention creation
-  mentionService.hooks.setPostHook(
-    'createMany',
-    async (creator, _repositories, { mentions, item }) => {
-      if (!creator) {
-        return;
-      }
-      mentions.forEach((mention) => {
-        const member = (mention as ChatMention).account;
-        if (isMember(member)) {
-          mentionService.sendMentionNotificationEmail({ item, member, creator });
-        }
-      });
-    },
-  );
 
   // mentions
   fastify.get(
