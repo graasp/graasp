@@ -9,6 +9,18 @@ export class Migrations1739199074756 implements MigrationInterface {
         extra = CONCAT('{"file":', extra::jsonb->>'s3File', '}')
         WHERE type = 's3File' 
     `);
+
+    await queryRunner.query(` 
+        UPDATE app_data
+        SET data = CONCAT('{"file":', data::jsonb->>'s3File', '}')
+        WHERE type = 'file' 
+    `);
+
+    await queryRunner.query(` 
+        UPDATE app_setting
+        SET data = CONCAT('{"file":', data::jsonb->>'s3File', '}')
+        WHERE data::jsonb->>'s3File' IS NOT NULL
+    `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
@@ -18,6 +30,18 @@ export class Migrations1739199074756 implements MigrationInterface {
         SET type = 's3File',
         extra = CONCAT('{"s3File":', extra::jsonb->>'file', '}')
         WHERE type = 'file' 
+    `);
+
+    await queryRunner.query(` 
+        UPDATE app_data
+        SET data = CONCAT('{"s3file":', data::jsonb->>'file', '}')
+        WHERE type = 'file' 
+    `);
+
+    await queryRunner.query(` 
+        UPDATE app_setting
+        SET data = CONCAT('{"s3file":', data::jsonb->>'file', '}')
+        WHERE data::jsonb->>'file' IS NOT NULL
     `);
   }
 }

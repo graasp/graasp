@@ -4,7 +4,7 @@ import { Redis } from 'ioredis';
 import path from 'path';
 import { Readable } from 'stream';
 
-import { ItemType, MimeTypes } from '@graasp/sdk';
+import { MimeTypes } from '@graasp/sdk';
 
 import { BaseLogger } from '../../logger';
 import { CachingService } from '../caching/service';
@@ -12,6 +12,7 @@ import { Member } from '../member/entities/member';
 import { LocalFileRepository } from './repositories/local';
 import { S3FileRepository } from './repositories/s3';
 import FileService from './service';
+import { FileStorage } from './types';
 import {
   CopyFileInvalidPathError,
   CopyFolderInvalidPathError,
@@ -39,7 +40,7 @@ const MOCK_S3_CONFIG = {
 
 const member = new Member();
 
-const s3Repository = fileRepositoryFactory(ItemType.FILE, { s3: MOCK_S3_CONFIG });
+const s3Repository = fileRepositoryFactory(FileStorage.S3, { s3: MOCK_S3_CONFIG });
 
 const s3FileService = new FileService(
   s3Repository,
@@ -58,16 +59,16 @@ describe('FileService', () => {
       expect(s3Repository).toBeInstanceOf(S3FileRepository);
     });
     it('use local repository', () => {
-      const repository = fileRepositoryFactory(ItemType.FILE, { local: MOCK_LOCAL_CONFIG });
+      const repository = fileRepositoryFactory(FileStorage.Local, { local: MOCK_LOCAL_CONFIG });
       expect(repository).toBeInstanceOf(LocalFileRepository);
     });
     it('throws for conflicting settings', () => {
       expect(() => {
-        fileRepositoryFactory(ItemType.FILE, { s3: MOCK_S3_CONFIG });
+        fileRepositoryFactory(FileStorage.S3, { s3: MOCK_S3_CONFIG });
       }).toThrow(MalformedFileConfigError);
 
       expect(() => {
-        fileRepositoryFactory(ItemType.FILE, { local: MOCK_LOCAL_CONFIG });
+        fileRepositoryFactory(FileStorage.Local, { local: MOCK_LOCAL_CONFIG });
       }).toThrow(MalformedFileConfigError);
     });
   });

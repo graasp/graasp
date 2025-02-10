@@ -11,9 +11,10 @@ import { v4 } from 'uuid';
 import { FastifyBaseLogger } from 'fastify';
 
 import { BaseLogger } from '../../../../logger';
-import { FileStorageType, TMP_FOLDER } from '../../../../utils/config';
+import { TMP_FOLDER } from '../../../../utils/config';
 import { Repositories } from '../../../../utils/repositories';
 import FileService, { FileServiceConfig } from '../../../file/service';
+import { FileStorageType } from '../../../file/types';
 import { fileRepositoryFactory } from '../../../file/utils/factory';
 import { Member } from '../../../member/entities/member';
 import { StorageService } from '../../../member/plugins/storage/service';

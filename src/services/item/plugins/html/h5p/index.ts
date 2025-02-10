@@ -9,10 +9,11 @@ import { ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../di/utils';
 import { asDefined } from '../../../../../utils/assertions';
-import { FileStorage } from '../../../../../utils/config';
+import { H5P_FILE_STORAGE_TYPE } from '../../../../../utils/config';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { isAuthenticated } from '../../../../auth/plugins/passport';
 import { matchOne, validatePermission } from '../../../../authorization';
+import { FileStorage } from '../../../../file/types';
 import { assertIsMember, isMember } from '../../../../member/entities/member';
 import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
 import { isItemType } from '../../../entities/Item';
@@ -42,7 +43,7 @@ const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
    * In the future, consider refactoring the fileService so that it can be grabbed from the
    * core instance and can serve the files directly (with an option to use or not auth)
    */
-  if (h5pService.fileService.getFileStorageType() === FileStorage.Local) {
+  if (H5P_FILE_STORAGE_TYPE === FileStorage.Local) {
     /** Helper to set CORS headers policy */
     const setHeaders = (response: FastifyStaticReply) => {
       response.setHeader('Cross-Origin-Resource-Policy', 'same-site');

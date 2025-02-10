@@ -82,8 +82,12 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
     const { id, type } = item; // full copy with new `id`
 
     // copy file only if type is the current file type
-    if (!id || type !== ItemType.FILE) return;
-    const size = item.extra[ItemType.FILE]?.size;
+    if (!id || type !== ItemType.FILE) {
+      return;
+    }
+
+    // warning: some legacy files don't have sizes
+    const size = item.extra[ItemType.FILE].size ?? 0;
 
     await storageService.checkRemainingStorage(actor, repositories, size);
   });

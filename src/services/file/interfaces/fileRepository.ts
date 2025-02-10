@@ -2,11 +2,7 @@ import { Readable } from 'stream';
 
 import { FastifyBaseLogger } from 'fastify';
 
-import { FileStorageType } from '../../../utils/config';
-
 export interface FileRepository {
-  fileStorageType: FileStorageType;
-
   getFileSize(filepath: string): Promise<number | undefined>;
 
   copyFile(args: {

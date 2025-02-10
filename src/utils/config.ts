@@ -1,12 +1,13 @@
 import { config } from 'dotenv';
 import os from 'os';
 
-import { ClientManager, Context, GPTVersion, UnionOfConst } from '@graasp/sdk';
+import { ClientManager, Context, GPTVersion } from '@graasp/sdk';
 
 import {
   LocalFileConfiguration,
   S3FileConfiguration,
 } from '../services/file/interfaces/configuration';
+import { FileStorage } from '../services/file/types';
 import { API_KEY_FORMAT } from '../services/item/plugins/etherpad/serviceConfig';
 import { asDefined } from './assertions';
 import { ExpectedEnvVariable } from './errors';
@@ -199,12 +200,6 @@ export const MAILER_CONFIG_FROM_EMAIL =
 // TODO: should this be here?
 export const FILE_STORAGE_ROOT_PATH = process.env.FILE_STORAGE_ROOT_PATH || process.env.TMPDIR;
 export const FILE_STORAGE_HOST = process.env.FILE_STORAGE_HOST;
-
-export const FileStorage = {
-  Local: 'local',
-  S3: 's3',
-};
-export type FileStorageType = UnionOfConst<typeof FileStorage>;
 
 export const FILE_STORAGE_TYPE = process.env.FILE_STORAGE_TYPE ?? FileStorage.Local;
 if (!Object.values(FileStorage).includes(FILE_STORAGE_TYPE)) {

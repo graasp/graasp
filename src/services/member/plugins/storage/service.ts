@@ -1,9 +1,7 @@
-import { inject, singleton } from 'tsyringe';
+import { singleton } from 'tsyringe';
 
 import { MemberStorage, Pagination } from '@graasp/sdk';
 
-import { FILE_STORAGE_TYPE_DI_KEY } from '../../../../di/constants';
-import { FileStorageType } from '../../../../utils/config';
 import { Repositories } from '../../../../utils/repositories';
 import { DEFAULT_MAX_STORAGE } from '../../../item/plugins/file/utils/constants';
 import { StorageExceeded } from '../../../item/plugins/file/utils/errors';
@@ -11,12 +9,6 @@ import { Member } from '../../entities/member';
 
 @singleton()
 export class StorageService {
-  private fileStorageType: FileStorageType;
-
-  constructor(@inject(FILE_STORAGE_TYPE_DI_KEY) fileStorageType: FileStorageType) {
-    this.fileStorageType = fileStorageType;
-  }
-
   async getMaximumStorageSize(_actor: Member): Promise<number> {
     // todo: depends on user/group
     return DEFAULT_MAX_STORAGE;

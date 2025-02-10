@@ -5,9 +5,9 @@ import path from 'path';
 import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
 
-import { FileStorage, FileStorageType } from '../../../utils/config';
 import { LocalFileConfiguration } from '../interfaces/configuration';
 import { FileRepository } from '../interfaces/fileRepository';
+import { FileStorageType } from '../types';
 import { LocalFileNotFound } from '../utils/errors';
 
 export class LocalFileRepository implements FileRepository {
@@ -16,7 +16,6 @@ export class LocalFileRepository implements FileRepository {
 
   constructor(options: LocalFileConfiguration) {
     this.options = options;
-    this.fileStorageType = FileStorage.Local;
   }
 
   buildFullPath = (filepath: string) => path.join(this.options.storageRootPath, filepath);
