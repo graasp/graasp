@@ -1,7 +1,8 @@
-import { singleton } from 'tsyringe';
+import { inject, singleton } from 'tsyringe';
 
-import { AppDataVisibility, PermissionLevel, UUID } from '@graasp/sdk';
+import { AppDataVisibility, FileItemType, PermissionLevel, UUID } from '@graasp/sdk';
 
+import { FILE_ITEM_TYPE_DI_KEY } from '../../../../../di/constants';
 import HookManager from '../../../../../utils/hook';
 import { Repositories } from '../../../../../utils/repositories';
 import { Account } from '../../../../account/entities/account';
@@ -10,7 +11,12 @@ import { ItemMembership } from '../../../../itemMembership/entities/ItemMembersh
 import { Actor } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 import { AppData } from './appData';
-import { AppDataNotAccessible, AppDataNotFound, PreventUpdateOtherAppData } from './errors';
+import {
+  AppDataNotAccessible,
+  AppDataNotFound,
+  PreventUpdateAppDataFile,
+  PreventUpdateOtherAppData,
+} from './errors';
 import { InputAppData } from './interfaces/app-data';
 
 const ownAppDataAbility = (appData: AppData, actor: Actor) => {
@@ -51,6 +57,8 @@ const permissionMapping = {
 
 @singleton()
 export class AppDataService {
+  private fileItemType: FileItemType;
+
   hooks = new HookManager<{
     post: {
       pre: { appData: Partial<InputAppData>; itemId: string };
@@ -65,6 +73,10 @@ export class AppDataService {
       post: { appData: AppData; itemId: string };
     };
   }>();
+
+  constructor(@inject(FILE_ITEM_TYPE_DI_KEY) fileItemType: FileItemType) {
+    this.fileItemType = fileItemType;
+  }
 
   async post(
     account: Account,
@@ -128,6 +140,11 @@ export class AppDataService {
 
     if (!currentAppData) {
       throw new AppDataNotFound(appDataId);
+    }
+
+    // prevent patch on app data file
+    if (currentAppData?.data && currentAppData.data[this.fileItemType]) {
+      throw new PreventUpdateAppDataFile(currentAppData.id);
     }
 
     // patch own or is admin

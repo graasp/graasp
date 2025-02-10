@@ -7,16 +7,14 @@ import { resolveDependency } from '../../../../../../../di/utils';
 import { asDefined } from '../../../../../../../utils/assertions';
 import { Repositories, buildRepositories } from '../../../../../../../utils/repositories';
 import { guestAuthenticateAppsJWT } from '../../../../../../auth/plugins/passport';
-import FileService from '../../../../../../file/service';
 import {
   DownloadFileUnexpectedError,
   UploadEmptyFileError,
   UploadFileUnexpectedError,
 } from '../../../../../../file/utils/errors';
-import { Actor, Member } from '../../../../../../member/entities/member';
+import { Member } from '../../../../../../member/entities/member';
 import { addMemberInAppData } from '../../../legacy';
 import { AppData } from '../../appData';
-import { PreventUpdateAppDataFile } from '../../errors';
 import { AppDataService } from '../../service';
 import { download, upload } from './schema';
 import AppDataFileService from './service';
@@ -37,8 +35,6 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
   } = options;
 
   const { db } = fastify;
-
-  const fileService = resolveDependency(FileService);
 
   const appDataFileService = resolveDependency(AppDataFileService);
 
@@ -63,19 +59,6 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
     await appDataFileService.deleteOne(args.appData);
   };
   appDataService.hooks.setPostHook('delete', deleteHook);
-
-  // prevent patch on app data file
-  const patchPreHook = async (
-    _actor: Actor,
-    _repositories: Repositories,
-    args: { appData: Partial<AppData> },
-  ) => {
-    const { appData } = args;
-    if (appData?.data && appData.data[fileService.fileType]) {
-      throw new PreventUpdateAppDataFile(appData.id);
-    }
-  };
-  appDataService.hooks.setPreHook('patch', patchPreHook);
 
   fastify.route({
     method: HttpMethod.Post,
