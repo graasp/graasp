@@ -217,7 +217,7 @@ export class ImportExportService {
     item,
   ): Promise<{ name: string; stream: NodeJS.ReadableStream; mimetype: string }> {
     switch (true) {
-      case isItemType(item, ItemType.LOCAL_FILE) || isItemType(item, ItemType.S3_FILE): {
+      case isItemType(item, ItemType.FILE): {
         const mimetype = getMimetype(item.extra) || 'application/octet-stream';
         const url = await this.fileItemService.getUrl(actor, repositories, {
           itemId: item.id,

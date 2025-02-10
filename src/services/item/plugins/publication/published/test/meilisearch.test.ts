@@ -11,15 +11,7 @@ import {
 import { DataSource, EntityManager } from 'typeorm';
 import { v4 } from 'uuid';
 
-import {
-  IndexItem,
-  ItemType,
-  ItemVisibilityType,
-  MimeTypes,
-  S3FileItemExtra,
-  TagCategory,
-  UUID,
-} from '@graasp/sdk';
+import { IndexItem, ItemType, ItemVisibilityType, MimeTypes, TagCategory, UUID } from '@graasp/sdk';
 
 import { BaseLogger } from '../../../../../../logger';
 import * as repositoriesModule from '../../../../../../utils/repositories';
@@ -416,13 +408,18 @@ describe('MeilisearchWrapper', () => {
 
     it('content is indexed', async () => {
       const item = testUtils.createItem();
-      const extraS3 = {
-        [ItemType.S3_FILE]: {
-          mimetype: MimeTypes.PDF,
-          content: 's3 content',
+      const descendant = testUtils.createItem({
+        type: ItemType.FILE,
+        extra: {
+          [ItemType.FILE]: {
+            mimetype: MimeTypes.PDF,
+            content: 's3 content',
+            name: 'name',
+            path: 'path',
+            size: 4,
+          },
         },
-      } as S3FileItemExtra;
-      const descendant = testUtils.createItem({ type: ItemType.S3_FILE, extra: extraS3 });
+      });
       const extra = {
         [ItemType.DOCUMENT]: {
           content: 'my text is here',

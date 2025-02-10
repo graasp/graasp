@@ -28,7 +28,7 @@ import { ItemService } from '../services/item/service';
 import {
   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
   FILE_ITEM_PLUGIN_OPTIONS,
-  FILE_ITEM_TYPE,
+  FILE_STORAGE_TYPE,
   GEOLOCATION_API_KEY,
   IMAGE_CLASSIFIER_API,
   MAILER_CONFIG_FROM_EMAIL,
@@ -49,8 +49,8 @@ import { buildRepositories } from '../utils/repositories';
 import {
   ETHERPAD_NAME_FACTORY_DI_KEY,
   FASTIFY_LOGGER_DI_KEY,
-  FILE_ITEM_TYPE_DI_KEY,
   FILE_SERVICE_URLS_CACHING_DI_KEY,
+  FILE_STORAGE_TYPE_DI_KEY,
   GEOLOCATION_API_KEY_DI_KEY,
   IFRAMELY_API_DI_KEY,
   IMAGE_CLASSIFIER_API_DI_KEY,
@@ -64,7 +64,7 @@ export const registerDependencies = (instance: FastifyInstance) => {
   registerValue(FASTIFY_LOGGER_DI_KEY, log);
 
   // register file type for the StorageService.
-  registerValue(FILE_ITEM_TYPE_DI_KEY, FILE_ITEM_TYPE);
+  registerValue(FILE_STORAGE_TYPE_DI_KEY, FILE_STORAGE_TYPE);
 
   // register classifier key for the ValidationService.
   registerValue(IMAGE_CLASSIFIER_API_DI_KEY, IMAGE_CLASSIFIER_API);
@@ -103,7 +103,7 @@ export const registerDependencies = (instance: FastifyInstance) => {
     new CachingService(resolveDependency(Redis), 'file_service_url_caching'),
   );
   // Register the FileService to inject the CacheService.
-  const fileRepository = fileRepositoryFactory(FILE_ITEM_TYPE, {
+  const fileRepository = fileRepositoryFactory(FILE_STORAGE_TYPE, {
     s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
     local: FILE_ITEM_PLUGIN_OPTIONS,
   });

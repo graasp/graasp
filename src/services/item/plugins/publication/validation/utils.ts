@@ -12,10 +12,10 @@ export const buildStoragePath = (itemId: string): string =>
   path.join(TMP_FOLDER, 'validations', itemId);
 
 export const isFileType = (item: Item) => {
-  return isItemType(item, ItemType.S3_FILE) || isItemType(item, ItemType.LOCAL_FILE);
+  return isItemType(item, ItemType.FILE);
 };
 
-export const isImage = (item: Item): item is Item<'s3File'> | Item<'file'> => {
+export const isImage = (item: Item): item is Item<'file'> => {
   if (!isFileType(item)) {
     return false;
   }

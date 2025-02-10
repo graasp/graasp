@@ -1,7 +1,7 @@
 import { fastifyMultipart } from '@fastify/multipart';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { HttpMethod } from '@graasp/sdk';
+import { HttpMethod, ItemType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../../../di/utils';
 import { asDefined } from '../../../../../../../utils/assertions';
@@ -10,7 +10,6 @@ import {
   authenticateAppsJWT,
   guestAuthenticateAppsJWT,
 } from '../../../../../../auth/plugins/passport';
-import FileService from '../../../../../../file/service';
 import {
   DownloadFileUnexpectedError,
   UploadEmptyFileError,
@@ -34,7 +33,6 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
 
   const { db } = fastify;
 
-  const fileService = resolveDependency(FileService);
   const appSettingFileService = resolveDependency(AppSettingFileService);
 
   fastify.register(fastifyMultipart, {
@@ -66,7 +64,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
     { appSettings }: { appSettings: AppSetting[]; originalItemId: string; copyItemId: string },
   ) => {
     // copy file only if content is a file
-    const isFileSetting = (a: AppSetting) => a.data[fileService.fileType];
+    const isFileSetting = (a: AppSetting) => a.data[ItemType.FILE];
     const toCopy = appSettings.filter(isFileSetting);
     if (toCopy.length) {
       await appSettingFileService.copyMany(actor, repositories, toCopy);
@@ -81,7 +79,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
     { appSetting }: { appSetting: Partial<AppSetting> },
   ) => {
     if (appSetting?.data) {
-      if (appSetting.data[fileService.fileType]) {
+      if (appSetting.data[ItemType.FILE]) {
         throw new PreventUpdateAppSettingFile(appSetting);
       }
     }

@@ -92,9 +92,9 @@ describe('ZIP routes tests', () => {
       const { item } = await testUtils.saveItemAndMembership({
         member: actor,
         item: {
-          type: ItemType.LOCAL_FILE,
+          type: ItemType.FILE,
           extra: {
-            [ItemType.LOCAL_FILE]: {
+            [ItemType.FILE]: {
               mimetype: 'image/png',
               name: 'name',
               path: 'path',

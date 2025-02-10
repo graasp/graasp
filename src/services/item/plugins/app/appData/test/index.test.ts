@@ -449,7 +449,7 @@ describe('App Data Tests', () => {
           account: actor,
           data: {
             name: 'name',
-            type: ItemType.S3_FILE,
+            type: ItemType.FILE,
             filename: 'filename',
             filepath: 'filepath',
             size: 120,

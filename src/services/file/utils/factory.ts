@@ -1,5 +1,4 @@
-import { FileItemType, ItemType } from '@graasp/sdk';
-
+import { FileStorage, FileStorageType } from '../../../utils/config';
 import { LocalFileConfiguration, S3FileConfiguration } from '../interfaces/configuration';
 import { LocalFileRepository } from '../repositories/local';
 import { S3FileRepository } from '../repositories/s3';
@@ -37,13 +36,16 @@ const verifyS3Config = (config?: S3FileConfiguration) => {
   return config;
 };
 
-export const fileRepositoryFactory = (fileItemType: FileItemType, config: FileServiceConfig) => {
-  switch (fileItemType) {
-    case ItemType.S3_FILE: {
+export const fileRepositoryFactory = (
+  fileStorageType: FileStorageType,
+  config: FileServiceConfig,
+) => {
+  switch (fileStorageType) {
+    case FileStorage.S3: {
       const s3Config = verifyS3Config(config.s3);
       return new S3FileRepository(s3Config);
     }
-    case ItemType.LOCAL_FILE:
+    case FileStorage.Local:
     default: {
       const localConfig = verifyLocalConfig(config.local);
       return new LocalFileRepository(localConfig);

@@ -1,5 +1,5 @@
 export const FASTIFY_LOGGER_DI_KEY = 'FastifyBaseLogger';
-export const FILE_ITEM_TYPE_DI_KEY = 'FileItemType';
+export const FILE_STORAGE_TYPE_DI_KEY = 'FileStorageType';
 export const IMAGE_CLASSIFIER_API_DI_KEY = 'ImageClassifierAPI';
 export const GEOLOCATION_API_KEY_DI_KEY = 'GeolocationAPIKey';
 export const IFRAMELY_API_DI_KEY = 'IframelyAPI';

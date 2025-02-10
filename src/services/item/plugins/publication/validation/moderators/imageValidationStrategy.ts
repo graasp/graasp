@@ -1,6 +1,6 @@
 import { inject, singleton } from 'tsyringe';
 
-import { ItemType, ItemValidationProcess, ItemValidationStatus, getMimetype } from '@graasp/sdk';
+import { ItemValidationProcess, ItemValidationStatus, getMimetype } from '@graasp/sdk';
 
 import { IMAGE_CLASSIFIER_API_DI_KEY } from '../../../../../../di/constants';
 import FileService from '../../../../../file/service';
@@ -34,7 +34,7 @@ export class ImageValidationStrategy implements ValidationStrategy {
       throw new InvalidFileItemError(item);
     }
 
-    const { path: filepath } = item.type === ItemType.S3_FILE ? item.extra.s3File : item.extra.file;
+    const { path: filepath } = item.extra.file;
 
     // return url
     const url = await this.fileService.getUrl({

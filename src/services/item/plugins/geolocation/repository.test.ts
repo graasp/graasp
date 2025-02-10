@@ -393,9 +393,9 @@ describe('ItemGeolocationRepository', () => {
       });
       const { item: item1 } = await testUtils.saveItemAndMembership({
         item: {
-          type: ItemType.LOCAL_FILE,
+          type: ItemType.FILE,
           extra: {
-            [ItemType.LOCAL_FILE]: {
+            [ItemType.FILE]: {
               content: 'public',
               name: 'name',
               path: 'path',
@@ -414,9 +414,9 @@ describe('ItemGeolocationRepository', () => {
       await testUtils.saveItemAndMembership({ member: actor, parentItem });
       const { item: item2 } = await testUtils.saveItemAndMembership({
         item: {
-          type: ItemType.LOCAL_FILE,
+          type: ItemType.FILE,
           extra: {
-            [ItemType.LOCAL_FILE]: {
+            [ItemType.FILE]: {
               content: 'private',
               name: 'name',
               path: 'path',
@@ -447,9 +447,9 @@ describe('ItemGeolocationRepository', () => {
       });
       const { item: item1 } = await testUtils.saveItemAndMembership({
         item: {
-          type: ItemType.S3_FILE,
+          type: ItemType.FILE,
           extra: {
-            [ItemType.S3_FILE]: {
+            [ItemType.FILE]: {
               content: 'public',
               name: 'name',
               path: 'path',
@@ -467,9 +467,9 @@ describe('ItemGeolocationRepository', () => {
       await testUtils.saveItemAndMembership({ member: actor, parentItem });
       const { item: item2 } = await testUtils.saveItemAndMembership({
         item: {
-          type: ItemType.S3_FILE,
+          type: ItemType.FILE,
           extra: {
-            [ItemType.S3_FILE]: {
+            [ItemType.FILE]: {
               content: 'private',
               name: 'name',
               path: 'path',

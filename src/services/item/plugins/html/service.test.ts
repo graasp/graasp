@@ -34,9 +34,9 @@ describe('Html Service', () => {
   const htmlService = new MockHtmlService(
     {
       config: { s3: MOCK_S3_CONFIG },
-      type: ItemType.S3_FILE,
+      type: ItemType.FILE,
     },
-    new MockStorageService(ItemType.LOCAL_FILE),
+    new MockStorageService(ItemType.FILE),
     'prefix',
     'mimetype',
     'ext',

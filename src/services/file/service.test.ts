@@ -39,7 +39,7 @@ const MOCK_S3_CONFIG = {
 
 const member = new Member();
 
-const s3Repository = fileRepositoryFactory(ItemType.S3_FILE, { s3: MOCK_S3_CONFIG });
+const s3Repository = fileRepositoryFactory(ItemType.FILE, { s3: MOCK_S3_CONFIG });
 
 const s3FileService = new FileService(
   s3Repository,
@@ -58,16 +58,16 @@ describe('FileService', () => {
       expect(s3Repository).toBeInstanceOf(S3FileRepository);
     });
     it('use local repository', () => {
-      const repository = fileRepositoryFactory(ItemType.LOCAL_FILE, { local: MOCK_LOCAL_CONFIG });
+      const repository = fileRepositoryFactory(ItemType.FILE, { local: MOCK_LOCAL_CONFIG });
       expect(repository).toBeInstanceOf(LocalFileRepository);
     });
     it('throws for conflicting settings', () => {
       expect(() => {
-        fileRepositoryFactory(ItemType.LOCAL_FILE, { s3: MOCK_S3_CONFIG });
+        fileRepositoryFactory(ItemType.FILE, { s3: MOCK_S3_CONFIG });
       }).toThrow(MalformedFileConfigError);
 
       expect(() => {
-        fileRepositoryFactory(ItemType.S3_FILE, { local: MOCK_LOCAL_CONFIG });
+        fileRepositoryFactory(ItemType.FILE, { local: MOCK_LOCAL_CONFIG });
       }).toThrow(MalformedFileConfigError);
     });
   });

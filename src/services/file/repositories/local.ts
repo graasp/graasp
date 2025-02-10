@@ -5,21 +5,18 @@ import path from 'path';
 import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
 
-import { ItemType } from '@graasp/sdk';
-
+import { FileStorage, FileStorageType } from '../../../utils/config';
 import { LocalFileConfiguration } from '../interfaces/configuration';
 import { FileRepository } from '../interfaces/fileRepository';
 import { LocalFileNotFound } from '../utils/errors';
 
 export class LocalFileRepository implements FileRepository {
   private readonly options: LocalFileConfiguration;
+  readonly fileStorageType: FileStorageType;
 
   constructor(options: LocalFileConfiguration) {
     this.options = options;
-  }
-
-  get fileType() {
-    return ItemType.LOCAL_FILE;
+    this.fileStorageType = FileStorage.Local;
   }
 
   buildFullPath = (filepath: string) => path.join(this.options.storageRootPath, filepath);

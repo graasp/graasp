@@ -87,11 +87,6 @@ export const itemUpdateSchema = Type.Partial(
             app: Type.Object({}),
           }),
           customType.StrictObject({
-            s3File: Type.Object({
-              altText: Type.String(),
-            }),
-          }),
-          customType.StrictObject({
             file: Type.Object({
               altText: Type.String(),
             }),

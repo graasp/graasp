@@ -145,9 +145,9 @@ describe('ZIP routes tests', () => {
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           expect(item.creator!.id).toEqual(actor.id);
 
-          if (item.type === ItemType.S3_FILE) {
-            expect((item.extra[ItemType.S3_FILE] as { name: string }).name).toEqual(
-              (file.extra[ItemType.S3_FILE] as { name: string }).name,
+          if (item.type === ItemType.FILE) {
+            expect((item.extra[ItemType.FILE] as { name: string }).name).toEqual(
+              (file.extra[ItemType.FILE] as { name: string }).name,
             );
           } else if (item.type === ItemType.LINK) {
             expect((item.extra[ItemType.LINK] as { url: string }).url).toEqual(
@@ -205,9 +205,9 @@ describe('ZIP routes tests', () => {
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           expect(item.creator!.id).toEqual(actor.id);
 
-          if (item.type === ItemType.S3_FILE) {
-            expect((item.extra[ItemType.S3_FILE] as { name: string }).name).toEqual(
-              (file.extra[ItemType.S3_FILE] as { name: string }).name,
+          if (item.type === ItemType.FILE) {
+            expect((item.extra[ItemType.FILE] as { name: string }).name).toEqual(
+              (file.extra[ItemType.FILE] as { name: string }).name,
             );
           } else if (item.type === ItemType.LINK) {
             expect((item.extra[ItemType.LINK] as { url: string }).url).toEqual(

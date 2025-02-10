@@ -47,7 +47,7 @@ class FileItemService {
     this.itemThumbnailService = itemThumbnailService;
   }
 
-  public buildFilePath(extension?: string) {
+  public buildFilePath(extension: string = '') {
     // TODO: CHANGE ??
     const filepath = `${randomHexOf4()}/${randomHexOf4()}/${randomHexOf4()}-${Date.now()}${extension}`;
     return path.join('files', filepath);
@@ -114,12 +114,9 @@ class FileItemService {
       const item = {
         name,
         description,
-        type: this.fileService.fileType,
+        type: ItemType.FILE,
         extra: {
-          // this is needed because if we directly use `this.fileService.type` then TS widens the type to `string` which we do not want
-          ...(this.fileService.fileType === ItemType.LOCAL_FILE
-            ? { [ItemType.LOCAL_FILE]: fileProperties }
-            : { [ItemType.S3_FILE]: fileProperties }),
+          [ItemType.FILE]: fileProperties,
         },
         creator: actor,
       };
@@ -173,7 +170,7 @@ class FileItemService {
     // check rights
     const item = await repositories.itemRepository.getOneOrThrow(itemId);
     await validatePermission(repositories, PermissionLevel.Read, actor, item);
-    const extraData = item.extra[this.fileService.fileType] as FileItemProperties;
+    const extraData = item.extra[ItemType.FILE];
     const result = await this.fileService.getFile(actor, {
       id: itemId,
       ...extraData,
@@ -195,7 +192,7 @@ class FileItemService {
     // check rights
     const item = await repositories.itemRepository.getOneOrThrow(itemId);
     await validatePermission(repositories, PermissionLevel.Read, actor, item);
-    const extraData = item.extra[this.fileService.fileType] as FileItemProperties | undefined;
+    const extraData = item.extra[ItemType.FILE];
 
     const result = await this.fileService.getUrl({
       path: extraData?.path,
@@ -206,7 +203,7 @@ class FileItemService {
 
   async copy(member: Member, repositories: Repositories, { copy }: { original; copy }) {
     const { id, extra } = copy; // full copy with new `id`
-    const { path: originalPath, mimetype } = extra[this.fileService.fileType];
+    const { path: originalPath, mimetype } = extra[ItemType.FILE];
     // filenames are not used
     const newFilePath = this.buildFilePath();
 
@@ -225,15 +222,9 @@ class FileItemService {
     const filepath = await this.fileService.copy(member, data);
 
     // update item copy's 'extra'
-    if (this.fileService.fileType === ItemType.S3_FILE) {
-      await repositories.itemRepository.updateOne(copy.id, {
-        extra: { s3File: { ...extra.s3File, path: filepath } },
-      });
-    } else {
-      await repositories.itemRepository.updateOne(copy.id, {
-        extra: { file: { ...extra.s3File, path: filepath } },
-      });
-    }
+    await repositories.itemRepository.updateOne(copy.id, {
+      extra: { file: { ...extra.s3File, path: filepath } },
+    });
   }
 }
 
