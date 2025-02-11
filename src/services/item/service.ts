@@ -238,8 +238,8 @@ export class ItemService {
       }
     } else {
       let index = 0;
-      for (let item of items) {
-        item = { ...item, order: index++ };
+      for (let i = 0; i < items.length; i++) {
+        items[i] = { ...items[i], order: index++ };
       }
     }
 
@@ -251,7 +251,7 @@ export class ItemService {
       parentItem,
     );
 
-    // rescale the item ordering, id there's more than one item
+    // rescale the item ordering, if there's more than one item
     if (items.length > 1) {
       repositories.itemRepository.rescaleOrder(member, parentItem);
     }

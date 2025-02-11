@@ -188,14 +188,14 @@ export abstract class ImmutableRepository<T extends BaseEntity> extends Abstract
       const insertedKeys = insertResults.identifiers.map(
         (identifier) => identifier[this.primaryKeyName],
       ) as string[];
-      const insertedEntites = await this.getMultiple(insertedKeys);
+      const insertedEntities = await this.getMultiple(insertedKeys);
 
       // Should never happen, if an error occurs, it should throw during the insert.
-      if (!insertedEntites || insertedEntites.length !== insertResults.identifiers.length) {
+      if (!insertedEntities || insertedEntities.length !== insertResults.identifiers.length) {
         throw new EntryNotFoundAfterInsertException(this.entity);
       }
 
-      return insertedEntites;
+      return insertedEntities;
     } catch (e) {
       if (e instanceof EntryNotFoundAfterInsertException) {
         throw e;

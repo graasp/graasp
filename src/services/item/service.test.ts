@@ -1,8 +1,9 @@
+import { In } from 'typeorm';
 import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
-import { FolderItemFactory, ItemVisibilityType } from '@graasp/sdk';
+import { FolderItemFactory, ItemType, ItemVisibilityType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../test/app';
 import { BaseLogger } from '../../logger';
@@ -11,7 +12,7 @@ import * as authorization from '../authorization';
 import { Actor } from '../member/entities/member';
 import { saveMember } from '../member/test/fixtures/members';
 import { ThumbnailService } from '../thumbnail/service';
-import { FolderItem } from './entities/Item';
+import { FolderItem, Item } from './entities/Item';
 import { ItemVisibility } from './plugins/itemVisibility/ItemVisibility';
 import { ItemVisibilityRepository } from './plugins/itemVisibility/repository';
 import { ItemPublished } from './plugins/publication/published/entities/itemPublished';
@@ -25,11 +26,11 @@ const mockedThumbnailService = {
   copyFolder: jest.fn(),
 } as unknown as jest.Mocked<ThumbnailService>;
 const meilisearchWrapper = { indexOne: async () => {} } as unknown as MeiliSearchWrapper;
-const service = new ItemService(
+const itemService = new ItemService(
   mockedThumbnailService,
   {} as ItemThumbnailService,
   meilisearchWrapper,
-  {} as BaseLogger,
+  console as unknown as BaseLogger,
 );
 
 describe('Item Service', () => {
@@ -58,7 +59,7 @@ describe('Item Service', () => {
         .spyOn(authorization, 'validatePermission')
         .mockResolvedValue({ itemMembership: null, visibilities: [] });
 
-      const result = await service.get(actor, repositories, item.id);
+      const result = await itemService.get(actor, repositories, item.id);
       expect(result).toEqual(item);
     });
     it('throw if item does not exists', async () => {
@@ -67,7 +68,7 @@ describe('Item Service', () => {
       const repositories = buildRepositories();
       jest.spyOn(repositories.itemRepository, 'getOneOrThrow').mockRejectedValue(new Error());
 
-      await expect(() => service.get(actor, repositories, item.id)).rejects.toThrow();
+      await expect(() => itemService.get(actor, repositories, item.id)).rejects.toThrow();
     });
     it('throw if validation does not pass', async () => {
       const actor = { id: v4() } as Actor;
@@ -76,7 +77,86 @@ describe('Item Service', () => {
       jest.spyOn(repositories.itemRepository, 'getOneOrThrow').mockResolvedValue(item);
       jest.spyOn(authorization, 'validatePermission').mockRejectedValue(new Error());
 
-      await expect(() => service.get(actor, repositories, item.id)).rejects.toThrow();
+      await expect(() => itemService.get(actor, repositories, item.id)).rejects.toThrow();
+    });
+  });
+  describe('Post', () => {
+    it('Post with parent assigns correct order to the item', async () => {
+      const actor = await saveMember();
+      const repositories = buildRepositories();
+      const parentItem = await itemService.post(actor, repositories, {
+        item: { name: 'parentItem', type: ItemType.FOLDER },
+      });
+      await itemService.post(actor, repositories, {
+        item: { name: 'item1', type: ItemType.FOLDER },
+        parentId: parentItem.id,
+      });
+      await itemService.post(actor, repositories, {
+        item: { name: 'item2', type: ItemType.FOLDER },
+        parentId: parentItem.id,
+      });
+
+      const itemsInDB = await testUtils.itemRepository.getChildren(
+        actor,
+        parentItem,
+        { ordered: true },
+        { withOrder: true },
+      );
+
+      expect(itemsInDB[0].name).toEqual('item2');
+      expect(itemsInDB[1].name).toEqual('item1');
+    });
+    it('Post with parent assigns correct order to the item', async () => {
+      const actor = await saveMember();
+      const repositories = buildRepositories();
+      const parentItem = await itemService.post(actor, repositories, {
+        item: { name: 'parentItem', type: ItemType.FOLDER },
+      });
+      const item1 = await itemService.post(actor, repositories, {
+        item: { name: 'item1', type: ItemType.FOLDER },
+        parentId: parentItem.id,
+      });
+      await itemService.post(actor, repositories, {
+        item: { name: 'item2', type: ItemType.FOLDER },
+        parentId: parentItem.id,
+        previousItemId: item1.id,
+      });
+
+      const itemsInDB = await testUtils.itemRepository.getChildren(
+        actor,
+        parentItem,
+        { ordered: true },
+        { withOrder: true },
+      );
+
+      expect(itemsInDB[0].name).toEqual('item1');
+      expect(itemsInDB[1].name).toEqual('item2');
+    });
+  });
+  describe('Post many', () => {
+    it('Creates objects in the assigned order', async () => {
+      const actor = await saveMember();
+      const repositories = buildRepositories();
+      const parentItem = await itemService.post(actor, repositories, {
+        item: { name: 'parentItem', type: ItemType.FOLDER },
+      });
+      const items: Item[] = [];
+      for (let i = 0; i < 15; i++) {
+        items.push({ name: `item${i}`, type: ItemType.FOLDER } as Item);
+      }
+      const itemNames = items.map((i) => i.name);
+
+      await itemService.postMany(actor, repositories, items, {}, {}, parentItem.id);
+
+      const itemsInDB = await testUtils.itemRepository.getChildren(
+        actor,
+        parentItem,
+        { ordered: true },
+        { withOrder: true },
+      );
+      const namesInDB = itemsInDB.map((i) => i.name);
+
+      expect(namesInDB).toEqual(itemNames);
     });
   });
   describe('Copy', () => {
@@ -94,7 +174,7 @@ describe('Item Service', () => {
         .spyOn(authorization, 'validatePermission')
         .mockResolvedValue({ itemMembership, visibilities: [iv] });
 
-      await service.copy(actor, buildRepositories(), item.id);
+      await itemService.copy(actor, buildRepositories(), item.id);
       expect(visibilityCopyAllMock).toHaveBeenCalled();
     });
     it('Should copy thumbnails on item copy if original has thumbnails', async () => {
@@ -106,7 +186,7 @@ describe('Item Service', () => {
       jest
         .spyOn(authorization, 'validatePermission')
         .mockResolvedValue({ itemMembership: null, visibilities: [] });
-      await service.copy(actor, buildRepositories(), item.id);
+      await itemService.copy(actor, buildRepositories(), item.id);
       expect(mockedThumbnailService.copyFolder).toHaveBeenCalled();
     });
     it('Should not copy thumbnails on item copy if original has no thumbnails', async () => {
@@ -118,7 +198,7 @@ describe('Item Service', () => {
       jest
         .spyOn(authorization, 'validatePermission')
         .mockResolvedValue({ itemMembership: null, visibilities: [] });
-      await service.copy(actor, buildRepositories(), item.id);
+      await itemService.copy(actor, buildRepositories(), item.id);
       expect(mockedThumbnailService.copyFolder).not.toHaveBeenCalled();
     });
 
@@ -143,7 +223,7 @@ describe('Item Service', () => {
         .spyOn(authorization, 'validatePermission')
         .mockResolvedValue({ itemMembership, visibilities: [iv] });
 
-      await service.copy(
+      await itemService.copy(
         actor,
         buildRepositories(),
         unpublishedItem.id,
