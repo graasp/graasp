@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker';
 import { BaseEntity, DataSource } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { CompleteMember, ItemType, PermissionLevel, buildPathFromIds } from '@graasp/sdk';
+import { ItemType, PermissionLevel, buildPathFromIds, getIdsFromPath } from '@graasp/sdk';
 
 import { AppDataSource } from '../../src/plugins/datasource';
 import { Account } from '../../src/services/account/entities/account';
@@ -62,45 +62,40 @@ export default async function seed(
   return result;
 }
 
+const ACTOR_STRING = 'actor';
 type SeedActor =
   | 'actor'
-  | (Partial<CompleteMember> & { profile?: Partial<MemberProfile>; password?: string });
-type SeedMember = SeedActor | (Partial<Member> & { profile?: Partial<MemberProfile> });
-type SeedMembership =
-  | Partial<ItemMembership>
-  | {
-      account?: SeedMember;
-      creator?: SeedMember;
-      permission?: PermissionLevel;
-    };
-type SeedItem = (Partial<Item> | { creator: SeedActor }) & {
-  children?: SeedItem[];
-  memberships?: SeedMembership[];
+  | (Partial<Member> & { profile?: Partial<MemberProfile>; password?: string });
+type SeedMember = Partial<Member> & { profile?: Partial<MemberProfile> };
+type SeedMembership<M = SeedMember> = Partial<Omit<ItemMembership, 'creator' | 'account'>> & {
+  account?: M;
+  creator?: M;
+  permission?: PermissionLevel;
+};
+type SeedItem<M = SeedMember> = (Partial<Omit<Item, 'creator'>> & { creator?: M | null }) & {
+  children?: SeedItem<M>[];
+  memberships?: SeedMembership<M>[];
 };
 type DataType = {
   actor?: SeedActor | null;
   members?: SeedMember[];
-  items?: SeedItem[];
+  items?: SeedItem<SeedActor | SeedMember>[];
 };
 
-const replaceActorInItems = (
-  nameString: string,
-  createdActor?: Actor,
-  items?: DataType['items'],
-) => {
+const replaceActorInItems = (createdActor?: Member, items?: DataType['items']): SeedItem[] => {
   if (!items?.length) {
     return [];
   }
 
   return items.map((i) => ({
     ...i,
-    creator: i.creator === nameString ? createdActor : (i.creator ?? null),
+    creator: i.creator === ACTOR_STRING ? createdActor : (i.creator ?? null),
     memberships: i.memberships?.map((m) => ({
       ...m,
-      account: m.account === nameString ? createdActor : m.account,
-      creator: m.creator === nameString ? createdActor : m.creator,
+      account: m.account === ACTOR_STRING ? createdActor : m.account,
+      creator: m.creator === ACTOR_STRING ? createdActor : m.creator,
     })),
-    children: replaceActorInItems(nameString, createdActor, i.children),
+    children: replaceActorInItems(createdActor, i.children),
   }));
 };
 
@@ -111,7 +106,7 @@ function getNameIfExists(i?: object | null | string) {
   return null;
 }
 
-const replaceAccountInItems = (createdAccount: Account, items?: DataType['items']) => {
+function replaceAccountInItems(createdAccount: Account, items?: DataType['items']) {
   if (!items?.length) {
     return [];
   }
@@ -133,7 +128,7 @@ const replaceAccountInItems = (createdAccount: Account, items?: DataType['items'
       children: replaceAccountInItems(createdAccount, i.children),
     };
   });
-};
+}
 
 /**
  * Generate actor given properties or a random actor. Replace the created actor in the data for further reference.
@@ -183,7 +178,7 @@ const processActor = async ({ actor, items, members }: DataType) => {
   }
 
   // replace 'actor' in entities
-  const processedItems = replaceActorInItems('actor', createdActor, items);
+  const processedItems = replaceActorInItems(createdActor, items);
 
   return { actor: createdActor, items: processedItems, members, actorProfile };
 };
@@ -205,15 +200,16 @@ const generateIdAndPathForItems = (
 
   return items.flatMap((i) => {
     const id = v4();
-    const path = (parent?.path ? parent?.path + '.' : '') + buildPathFromIds(id);
+    const ids = parent ? [...getIdsFromPath(parent.path), id] : [id];
+    const path = buildPathFromIds(...ids);
     const { children, ...allprops } = i;
 
-    const fullParent = {
+    const currentFullItem = {
       id,
       path,
       ...allprops,
     };
-    return [fullParent, ...generateIdAndPathForItems(children, fullParent)];
+    return [currentFullItem, ...generateIdAndPathForItems(children, currentFullItem)];
   });
 };
 
@@ -236,14 +232,30 @@ const processItemMemberships = (items: DataType['items'] = []) => {
  * Generate ids for members, necessary to further references (for example when creating profiles)
  * Only unique accounts will be created based on their name
  * @param members standalone members to be created
- * @param items items whose creator and memberships' accounts should be created
+ * @param items items whose creator and memberships' accounts should be created.
  * @returns members' data with generated id
  */
-function generateIdForMembers({ members = [], items = [] }: any) {
+function generateIdForMembers({
+  members = [],
+  items = [],
+}: {
+  items?: SeedItem[];
+  members?: SeedMember[];
+}) {
   // get all unique members
   const allMembers = [
     ...members,
-    ...items.flatMap((i) => [i.creator ?? null, ...(i.memberships ?? [])?.map((m) => m.account)]),
+    ...items.flatMap((i) => {
+      // get all account from all memberships
+      const accountsFromMemberships = (i.memberships ?? [])?.reduce((acc, m) => {
+        if (!m.account) {
+          return acc;
+        }
+        return [...acc, m.account];
+      }, []);
+      // get creator of membership
+      return i.creator ? accountsFromMemberships.concat([i.creator]) : accountsFromMemberships;
+    }),
   ].filter((m, index, array) => {
     // return unique member by name
     if (m && 'name' in m) {
@@ -253,11 +265,16 @@ function generateIdForMembers({ members = [], items = [] }: any) {
     if (m) {
       return true;
     }
+    return false;
   });
 
   const d = allMembers.map((m) => {
     const id = v4();
-    return { id, ...m, profile: m.profile ? { ...m.profile, member: { id } } : undefined };
+    return {
+      id,
+      ...m,
+      profile: 'profile' in m ? { ...m.profile, member: { id } } : undefined,
+    };
   });
   return d;
 }
@@ -274,7 +291,7 @@ async function processMembers({
   members = [],
 }: {
   actor?: Actor;
-  items?: Item[];
+  items?: SeedItem[];
   members?: SeedMember[];
 }) {
   const membersWithIds = generateIdForMembers({ items, members })
@@ -290,15 +307,12 @@ async function processMembers({
       },
       memberProfiles: {
         constructor: MemberProfile,
-        entities: membersWithIds.map((m) => m.profile).filter(Boolean),
+        entities: membersWithIds.map((m) => m.profile).filter(Boolean) as Partial<MemberProfile>[],
       },
     });
     const resultMembers = membersAndProfiles.members as Member[];
     const memberProfiles = membersAndProfiles.memberProfiles as MemberProfile[];
-    const processedItems = resultMembers.reduce(
-      (acc, m) => replaceAccountInItems(m, acc) as any,
-      items,
-    );
+    const processedItems = resultMembers.reduce((acc, m) => replaceAccountInItems(m, acc), items);
     return { resultMembers, memberProfiles, items: processedItems };
   }
   return { resultMembers: [], memberProfiles: [], items: [] };
