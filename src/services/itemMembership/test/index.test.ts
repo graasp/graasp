@@ -179,6 +179,7 @@ describe('Membership routes tests', () => {
                 },
               ],
             },
+            // actor cannot access
             { name: '2', memberships: [{ account: { name: 'bob' } }] },
           ],
         });
@@ -188,7 +189,6 @@ describe('Membership routes tests', () => {
         const memberships1 = [im1, im2];
         const memberships2 = [im3];
         const memberships3 = [im4, im5];
-
         const response = await app.inject({
           method: HttpMethod.Get,
           url: `/item-memberships?itemId=${item2.id}&itemId=${itemB.id}&itemId=${itemD.id}&itemId=${itemE.id}`,
