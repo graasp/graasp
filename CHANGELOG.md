@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.62.1](https://github.com/graasp/graasp/compare/v1.62.0...v1.62.1) (2025-02-12)
+
+
+### Bug Fixes
+
+* add inclusive text for french ([#1753](https://github.com/graasp/graasp/issues/1753)) ([cbdfcf3](https://github.com/graasp/graasp/commit/cbdfcf32f6d58ceb2c5c375511e27677995b71ba))
+
 ## [1.62.0](https://github.com/graasp/graasp/compare/v1.61.0...v1.62.0) (2025-02-06)
 
 
