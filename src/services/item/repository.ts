@@ -4,7 +4,6 @@ import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity
 import { v4 } from 'uuid';
 
 import {
-  FileItemType,
   ItemSettings,
   ItemType,
   MAX_ITEM_NAME_LENGTH,
@@ -660,17 +659,16 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
 
   /**
    * @param memberId member to get the storage for
-   * @param itemType file item type
    * @returns total storage used by file items
    */
-  async getItemSumSize(memberId: string, itemType: FileItemType): Promise<number> {
+  async getItemSumSize(memberId: string): Promise<number> {
     return parseInt(
       (
         await this.repository
           .createQueryBuilder('item')
-          .select(`SUM(((item.extra::jsonb->'${itemType}')::jsonb->'size')::bigint)`, 'total')
+          .select(`SUM(((item.extra::jsonb->'${ItemType.FILE}')::jsonb->'size')::bigint)`, 'total')
           .where('item.creator.id = :memberId', { memberId })
-          .andWhere('item.type = :type', { type: itemType })
+          .andWhere('item.type = :type', { type: ItemType.FILE })
           .getRawOne()
       ).total ?? 0,
     );
@@ -678,7 +676,6 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
 
   async getFilesMetadata(
     memberId: string,
-    itemType: FileItemType,
     { page = FILE_METADATA_MIN_PAGE, pageSize = FILE_METADATA_DEFAULT_PAGE_SIZE }: Pagination,
   ) {
     const limit = Math.min(pageSize, FILE_METADATA_MAX_PAGE_SIZE);
@@ -691,7 +688,7 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
         'parent.path = subpath(item.path, 0, nlevel(item.path) - 1)',
       )
       .where('item.creator_id = :memberId', { memberId })
-      .andWhere('item.type = :type', { type: itemType })
+      .andWhere('item.type = :type', { type: ItemType.FILE })
       .offset(skip)
       .limit(limit);
 
@@ -703,8 +700,8 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
       id: item.item_id,
       name: item.item_name,
       updatedAt: item.item_updated_at,
-      size: JSON.parse(item.item_extra)[itemType].size,
-      path: JSON.parse(item.item_extra)[itemType].path,
+      size: JSON.parse(item.item_extra)[ItemType.FILE].size,
+      path: JSON.parse(item.item_extra)[ItemType.FILE].path,
       parent: item.parent_id
         ? {
             id: item.parent_id,

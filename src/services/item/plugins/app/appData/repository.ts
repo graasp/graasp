@@ -1,6 +1,6 @@
 import { Brackets, DeepPartial, EntityManager } from 'typeorm';
 
-import { AppDataVisibility, FileItemType, ItemType, PermissionLevel } from '@graasp/sdk';
+import { AppDataVisibility, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { MutableRepository } from '../../../../../repositories/MutableRepository';
 import { DEFAULT_PRIMARY_KEY } from '../../../../../repositories/const';
@@ -38,8 +38,8 @@ export class AppDataRepository extends MutableRepository<AppData, UpdateAppDataB
       throw new AppDataNotFound(appDataId);
     }
 
-    const dataType = originalData.data?.type as FileItemType;
-    if ([ItemType.LOCAL_FILE, ItemType.S3_FILE].includes(dataType)) {
+    const dataType = originalData.data?.type;
+    if (dataType === ItemType.FILE) {
       throw new PreventUpdateAppDataFile(originalData.id);
     }
 

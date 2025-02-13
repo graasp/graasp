@@ -10,12 +10,11 @@ import { v4 } from 'uuid';
 
 import { FastifyBaseLogger } from 'fastify';
 
-import { FileItemType } from '@graasp/sdk';
-
 import { BaseLogger } from '../../../../logger';
 import { TMP_FOLDER } from '../../../../utils/config';
 import { Repositories } from '../../../../utils/repositories';
 import FileService, { FileServiceConfig } from '../../../file/service';
+import { FileStorageType } from '../../../file/types';
 import { fileRepositoryFactory } from '../../../file/utils/factory';
 import { Member } from '../../../member/entities/member';
 import { StorageService } from '../../../member/plugins/storage/service';
@@ -44,7 +43,7 @@ export abstract class HtmlService {
       type,
     }: {
       config: FileServiceConfig;
-      type: FileItemType;
+      type: FileStorageType;
     },
     storageService: StorageService,
     pathPrefix: string,

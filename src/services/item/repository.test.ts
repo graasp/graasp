@@ -6,8 +6,8 @@ import { v4 } from 'uuid';
 import { FastifyInstance } from 'fastify';
 
 import {
+  FileItemFactory,
   ItemType,
-  LocalFileItemFactory,
   MAX_ITEM_NAME_LENGTH,
   MAX_TREE_LEVELS,
   MemberFactory,
@@ -613,9 +613,9 @@ describe('ItemRepository', () => {
       const item = await testUtils.saveItem({
         actor,
         item: {
-          type: ItemType.S3_FILE,
+          type: ItemType.FILE,
           extra: {
-            [ItemType.S3_FILE]: {
+            [ItemType.FILE]: {
               content: 'prop',
               name: 'name',
               path: 'path',
@@ -627,7 +627,7 @@ describe('ItemRepository', () => {
       });
       const newData = {
         // correct data
-        [ItemType.S3_FILE]: {
+        [ItemType.FILE]: {
           content: 'hello',
         },
         // incorrect data
@@ -637,7 +637,7 @@ describe('ItemRepository', () => {
       expectItem(newItem, {
         ...item,
         extra: {
-          [ItemType.S3_FILE]: {
+          [ItemType.FILE]: {
             content: 'hello',
             name: 'name',
             path: 'path',
@@ -649,7 +649,7 @@ describe('ItemRepository', () => {
       expectItem(await testUtils.rawItemRepository.findOneBy({ id: item.id }), {
         ...item,
         extra: {
-          [ItemType.S3_FILE]: {
+          [ItemType.FILE]: {
             content: 'hello',
             name: 'name',
             path: 'path',
@@ -690,7 +690,7 @@ describe('ItemRepository', () => {
     });
     it('post successfully with parent item', async () => {
       const parentItem = await testUtils.saveItem({ actor });
-      const data = { name: 'name-1', type: ItemType.S3_FILE };
+      const data = { name: 'name-1', type: ItemType.FILE };
 
       await itemRepository.addOne({ item: data, creator: actor, parentItem });
       const newItem = await testUtils.rawItemRepository.findOne({
@@ -819,23 +819,22 @@ describe('ItemRepository', () => {
     });
   });
   describe('getItemSumSize', () => {
-    const itemType = ItemType.LOCAL_FILE;
     it('get sum for no item', async () => {
-      const result = await itemRepository.getItemSumSize(actor.id, itemType);
+      const result = await itemRepository.getItemSumSize(actor.id);
       expect(result).toEqual(0);
     });
     it('get sum for many items', async () => {
       const item1 = await testUtils.saveItem({
         actor,
-        item: LocalFileItemFactory() as unknown as Item,
+        item: FileItemFactory() as unknown as Item,
       });
       const item2 = await testUtils.saveItem({
         actor,
-        item: LocalFileItemFactory() as unknown as Item,
+        item: FileItemFactory() as unknown as Item,
       });
       const item3 = await testUtils.saveItem({
         actor,
-        item: LocalFileItemFactory() as unknown as Item,
+        item: FileItemFactory() as unknown as Item,
       });
 
       // noise
@@ -843,9 +842,11 @@ describe('ItemRepository', () => {
         actor,
       });
 
-      const result = await itemRepository.getItemSumSize(actor.id, itemType);
+      const result = await itemRepository.getItemSumSize(actor.id);
       expect(result).toEqual(
-        item1.extra[itemType].size + item2.extra[itemType].size + item3.extra[itemType].size,
+        item1.extra[ItemType.FILE].size +
+          item2.extra[ItemType.FILE].size +
+          item3.extra[ItemType.FILE].size,
       );
     });
   });

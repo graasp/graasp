@@ -2,11 +2,7 @@ import { Readable } from 'stream';
 
 import { FastifyBaseLogger } from 'fastify';
 
-import { FileItemType } from '@graasp/sdk';
-
 export interface FileRepository {
-  get fileType(): FileItemType;
-
   getFileSize(filepath: string): Promise<number | undefined>;
 
   copyFile(args: {

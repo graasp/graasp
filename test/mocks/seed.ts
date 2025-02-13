@@ -284,9 +284,9 @@ export async function seedFromJson(data: DataType = {}) {
  */
 export function buildFile(member: SeedActor) {
   return {
-    type: ItemType.S3_FILE,
+    type: ItemType.FILE,
     extra: {
-      [ItemType.S3_FILE]: {
+      [ItemType.FILE]: {
         size: faker.number.int({ min: 1, max: 1000 }),
         content: 'content',
         mimetype: 'image/png',

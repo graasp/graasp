@@ -35,10 +35,6 @@ class FileService {
     this.logger = log;
   }
 
-  public get fileType() {
-    return this.repository.fileType;
-  }
-
   async getFileSize(actor: Actor, filepath: string) {
     return this.repository.getFileSize(filepath);
   }

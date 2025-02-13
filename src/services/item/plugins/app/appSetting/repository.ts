@@ -1,6 +1,6 @@
 import { EntityManager } from 'typeorm';
 
-import { FileItemType, ItemType } from '@graasp/sdk';
+import { ItemType } from '@graasp/sdk';
 
 import { MutableRepository } from '../../../../../repositories/MutableRepository';
 import { DEFAULT_PRIMARY_KEY } from '../../../../../repositories/const';
@@ -40,8 +40,8 @@ export class AppSettingRepository extends MutableRepository<AppSetting, UpdateAp
       throw new AppSettingNotFound(appSettingId);
     }
 
-    const dataType = originalData.data?.type as FileItemType;
-    if ([ItemType.LOCAL_FILE, ItemType.S3_FILE].includes(dataType)) {
+    const dataType = originalData.data?.type;
+    if (dataType === ItemType.FILE) {
       throw new PreventUpdateAppSettingFile(originalData);
     }
 

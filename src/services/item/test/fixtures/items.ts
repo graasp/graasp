@@ -4,14 +4,13 @@ import {
   AppItemFactory,
   DocumentItemFactory,
   EtherpadItemFactory,
+  FileItemFactory,
   FolderItemFactory,
   H5PItemFactory,
   ItemType,
   ItemVisibilityType,
   LinkItemFactory,
-  LocalFileItemFactory,
   PermissionLevel,
-  S3FileItemFactory,
   ShortcutItemFactory,
   ThumbnailSize,
   buildPathFromIds,
@@ -69,11 +68,8 @@ export class ItemTestUtils {
       case ItemType.DOCUMENT:
         item = DocumentItemFactory(castedArgs);
         break;
-      case ItemType.LOCAL_FILE:
-        item = LocalFileItemFactory(castedArgs);
-        break;
-      case ItemType.S3_FILE:
-        item = S3FileItemFactory(castedArgs);
+      case ItemType.FILE:
+        item = FileItemFactory(castedArgs);
         break;
       case ItemType.H5P:
         item = H5PItemFactory(castedArgs);

@@ -1,13 +1,12 @@
 import { fastifyMultipart } from '@fastify/multipart';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { HttpMethod } from '@graasp/sdk';
+import { HttpMethod, ItemType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../../../di/utils';
 import { asDefined } from '../../../../../../../utils/assertions';
 import { Repositories, buildRepositories } from '../../../../../../../utils/repositories';
 import { guestAuthenticateAppsJWT } from '../../../../../../auth/plugins/passport';
-import FileService from '../../../../../../file/service';
 import {
   DownloadFileUnexpectedError,
   UploadEmptyFileError,
@@ -37,8 +36,6 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
   } = options;
 
   const { db } = fastify;
-
-  const fileService = resolveDependency(FileService);
 
   const appDataFileService = resolveDependency(AppDataFileService);
 
@@ -71,7 +68,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
     args: { appData: Partial<AppData> },
   ) => {
     const { appData } = args;
-    if (appData?.data && appData.data[fileService.fileType]) {
+    if (appData?.data && appData.data[ItemType.FILE]) {
       throw new PreventUpdateAppDataFile(appData.id);
     }
   };

@@ -1,5 +1,7 @@
 import { singleton } from 'tsyringe';
 
+import { ItemType } from '@graasp/sdk';
+
 import FileService from '../../../../../file/service';
 import { Item } from '../../../../entities/Item';
 import { isImage } from '../utils';
@@ -36,7 +38,7 @@ export class StrategyExecutorFactory {
   }
 
   private isSameTypeAsFileService(item: Item) {
-    return item.type === this.fileService.fileType;
+    return item.type === ItemType.FILE;
   }
 
   /**

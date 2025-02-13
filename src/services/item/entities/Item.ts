@@ -25,7 +25,6 @@ import {
   LinkItemSettings,
   LocalFileItemExtra,
   MAX_ITEM_NAME_LENGTH,
-  S3FileItemExtra,
   ShortcutItemExtra,
 } from '@graasp/sdk';
 
@@ -40,8 +39,7 @@ export type ItemExtraMap = {
   [ItemType.FOLDER]: FolderItemExtra;
   [ItemType.H5P]: H5PItemExtra;
   [ItemType.LINK]: LinkItemExtra;
-  [ItemType.LOCAL_FILE]: LocalFileItemExtra;
-  [ItemType.S3_FILE]: S3FileItemExtra;
+  [ItemType.FILE]: LocalFileItemExtra;
   [ItemType.SHORTCUT]: ShortcutItemExtra;
 };
 
@@ -53,8 +51,7 @@ export type ItemSettingsMap = {
   [ItemType.FOLDER]: ItemSettings;
   [ItemType.H5P]: ItemSettings;
   [ItemType.LINK]: LinkItemSettings;
-  [ItemType.LOCAL_FILE]: ItemSettings;
-  [ItemType.S3_FILE]: ItemSettings;
+  [ItemType.FILE]: ItemSettings;
   [ItemType.SHORTCUT]: ItemSettings;
 };
 
@@ -216,8 +213,7 @@ export type EtherpadItem = Item<typeof ItemType.ETHERPAD>;
 export type FolderItem = Item<typeof ItemType.FOLDER>;
 export type H5PItem = Item<typeof ItemType.H5P>;
 export type EmbeddedLinkItem = Item<typeof ItemType.LINK>;
-export type LocalFileItem = Item<typeof ItemType.LOCAL_FILE>;
-export type S3FileItem = Item<typeof ItemType.S3_FILE>;
+export type LocalFileItem = Item<typeof ItemType.FILE>;
 export type ShortcutItem = Item<typeof ItemType.SHORTCUT>;
 
 // Typeguard definitons that help to narrow the type of an item to one of the specific item types

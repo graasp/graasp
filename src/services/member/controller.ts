@@ -12,7 +12,6 @@ import {
   optionalIsAuthenticated,
 } from '../auth/plugins/passport';
 import { matchOne } from '../authorization';
-import FileService from '../file/service';
 import {
   FILE_METADATA_MAX_PAGE_SIZE,
   FILE_METADATA_MIN_PAGE,
@@ -37,7 +36,6 @@ import { memberAccountRole } from './strategies/memberAccountRole';
 
 const controller: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db } = fastify;
-  const fileService = resolveDependency(FileService);
   const memberService = resolveDependency(MemberService);
   const storageService = resolveDependency(StorageService);
 
@@ -53,7 +51,7 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return storageService.getStorageLimits(member, fileService.fileType, buildRepositories());
+      return storageService.getStorageLimits(member, buildRepositories());
     },
   );
 
@@ -74,7 +72,6 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
       const storageFilesMetadata = await storageService.getStorageFilesMetadata(
         member,
         buildRepositories(),
-        fileService.fileType,
         { page, pageSize },
       );
       return {
