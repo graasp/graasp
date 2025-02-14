@@ -11,8 +11,9 @@ import { Item } from '../../../entities/Item';
 import { APP_DATA_TYPE_FILE } from '../constants';
 import { AppData } from './appData';
 import { NotAppDataFile } from './errors';
+import { AppDataFileService } from './interfaces/appDataFileService';
 
-export class AppDataFileRepository {
+export class AppDataFileServiceAdapter implements AppDataFileService {
   private readonly fileService: FileService;
 
   buildFilePath(itemId: UUID, appDataId: UUID) {

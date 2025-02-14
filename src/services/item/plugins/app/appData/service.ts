@@ -14,7 +14,7 @@ import { ItemMembership } from '../../../../itemMembership/entities/ItemMembersh
 import { Actor } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 import { AppData } from './appData';
-import { AppDataFileRepository } from './appDataFileRepository';
+import { AppDataFileServiceAdapter } from './appDataFileServiceAdapter';
 import {
   AppDataNotAccessible,
   AppDataNotFound,
@@ -22,6 +22,7 @@ import {
   PreventUpdateOtherAppData,
 } from './errors';
 import { InputAppData } from './interfaces/app-data';
+import { AppDataFileService } from './interfaces/appDataFileService';
 
 const ownAppDataAbility = (appData: AppData, actor: Actor) => {
   if (!appData.creator || !actor) {
@@ -62,7 +63,7 @@ const permissionMapping = {
 @singleton()
 export class AppDataService {
   private fileItemType: FileItemType;
-  private appDataFileRepository: AppDataFileRepository;
+  private appDataFileService: AppDataFileService;
 
   hooks = new HookManager<{
     post: {
@@ -81,7 +82,7 @@ export class AppDataService {
 
   constructor(@inject(FILE_ITEM_TYPE_DI_KEY) fileItemType: FileItemType, fileService: FileService) {
     this.fileItemType = fileItemType;
-    this.appDataFileRepository = new AppDataFileRepository(fileService);
+    this.appDataFileService = new AppDataFileServiceAdapter(fileService);
   }
 
   async post(
@@ -214,7 +215,7 @@ export class AppDataService {
     await this.hooks.runPostHooks('delete', account, repositories, { appData, itemId });
 
     // delete related app file data
-    await this.appDataFileRepository.deleteOne(appData);
+    await this.appDataFileService.deleteOne(appData);
 
     return result;
   }
@@ -289,7 +290,7 @@ export class AppDataService {
   }
 
   async upload(account: Account, repositories: Repositories, file: MultipartFile, item: Item) {
-    const appData = await this.appDataFileRepository.upload(account, file, item);
+    const appData = await this.appDataFileService.upload(account, file, item);
 
     return await repositories.appDataRepository.addOne({
       itemId: item.id,
@@ -304,6 +305,6 @@ export class AppDataService {
     { item, appDataId }: { item: Item; appDataId: AppData['id'] },
   ) {
     const appData = await this.get(account, repositories, item, appDataId);
-    return await this.appDataFileRepository.download(appData);
+    return await this.appDataFileService.download(appData);
   }
 }
