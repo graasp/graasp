@@ -1,14 +1,20 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
+import { HttpMethod } from '@graasp/sdk';
+
 import { resolveDependency } from '../../../../../di/utils';
 import { FastifyInstanceTypebox } from '../../../../../plugins/typebox';
 import { asDefined } from '../../../../../utils/assertions';
 import { buildRepositories } from '../../../../../utils/repositories';
-import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
+import { authenticateAppsJWT, guestAuthenticateAppsJWT } from '../../../../auth/plugins/passport';
+import {
+  DownloadFileUnexpectedError,
+  UploadEmptyFileError,
+  UploadFileUnexpectedError,
+} from '../../../../file/utils/errors';
 import { addMemberInAppData } from '../legacy';
 import { appDataWsHooks } from '../ws/hooks';
-import appDataFilePlugin from './plugins/file';
-import { create, deleteOne, getForOne, updateOne } from './schemas';
+import { create, deleteOne, download, getForOne, updateOne, upload } from './schemas';
 import { AppDataService } from './service';
 
 const appDataPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
@@ -21,7 +27,6 @@ const appDataPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
     // TODO: allow CORS but only the origins in the table from approved publishers - get all
     // origins from the publishers table an build a rule with that.
 
-    fastify.register(appDataFilePlugin, { appDataService });
     fastify.register(appDataWsHooks, { appDataService });
 
     // create app data
@@ -82,6 +87,69 @@ const appDataPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
         return (
           await appDataService.getForItem(member, buildRepositories(), itemId, query.type)
         ).map(addMemberInAppData);
+      },
+    );
+
+    fastify.route({
+      method: HttpMethod.Post,
+      url: '/app-data/upload',
+      schema: upload,
+      preHandler: guestAuthenticateAppsJWT,
+      handler: async (request) => {
+        const { user } = request;
+        const member = asDefined(user?.account);
+        const app = asDefined(user?.app);
+
+        return db
+          .transaction(async (manager) => {
+            const repositories = buildRepositories(manager);
+
+            // files are saved in temporary folder in disk, they are removed when the response ends
+            // necessary to get file size -> can use stream busboy only otherwise
+            // only one file is uploaded
+            const file = await request.file();
+            if (!file) {
+              throw new UploadEmptyFileError();
+            }
+            return addMemberInAppData(
+              await appDataService.upload(member, repositories, file, app.item),
+            );
+          })
+          .catch((e) => {
+            console.error(e);
+
+            // TODO rollback uploaded file
+
+            if (e.code) {
+              throw e;
+            }
+            throw new UploadFileUnexpectedError(e);
+          });
+      },
+    });
+
+    fastify.get(
+      '/app-data/:id/download',
+      {
+        schema: download,
+        preHandler: guestAuthenticateAppsJWT,
+      },
+      async (request) => {
+        const {
+          user,
+          params: { id: appDataId },
+        } = request;
+        const member = asDefined(user?.account);
+        const app = asDefined(user?.app);
+
+        return appDataService
+          .download(member, buildRepositories(), { item: app.item, appDataId })
+          .catch((e) => {
+            if (e.code) {
+              throw e;
+            }
+            throw new DownloadFileUnexpectedError(e);
+          });
       },
     );
   });
