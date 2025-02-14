@@ -1,5 +1,7 @@
 import { singleton } from 'tsyringe';
 
+import { MultipartFile } from '@fastify/multipart';
+
 import {
   AppDataVisibility,
   ItemType,
@@ -12,16 +14,17 @@ import {
 import { type DBConnection } from '../../../../../drizzle/db';
 import type { AppDataRaw, ItemMembershipRaw, ItemRaw } from '../../../../../drizzle/types';
 import type { AuthenticatedUser, MaybeUser } from '../../../../../types';
-import HookManager from '../../../../../utils/hook';
 import { AuthorizedItemService } from '../../../../authorizedItem.service';
+import FileService from '../../../../file/file.service';
 import { AppDataRepository } from './appData.repository';
+import { AppDataFileServiceAdapter } from './appDataFileServiceAdapter';
 import {
   AppDataNotAccessible,
   AppDataNotFound,
   PreventUpdateAppDataFile,
   PreventUpdateOtherAppData,
 } from './errors';
-import type { InputAppData } from './interfaces/app-data';
+import { AppDataFileService } from './interfaces/appDataFileService';
 
 const ownAppDataAbility = (appData: AppDataRaw, actor: MaybeUser) => {
   if (!actor) {
@@ -56,32 +59,33 @@ const itemVisibilityAppDataAbility = (
 export class AppDataService {
   private readonly appDataRepository: AppDataRepository;
   private readonly authorizedItemService: AuthorizedItemService;
+  private readonly appDataFileService: AppDataFileService;
 
-  hooks = new HookManager<{
-    post: {
-      pre: { appData: InputAppData; itemId: string };
-      post: { appData: AppDataRaw; itemId: string };
-    };
-    patch: {
-      pre: { appData: Partial<AppDataRaw>; itemId: string };
-      post: { appData: AppDataRaw; itemId: string };
-    };
-    delete: {
-      pre: { appDataId: string; itemId: string };
-      post: { appData: AppDataRaw; itemId: string };
-    };
-  }>();
-
-  constructor(authorizedItemService: AuthorizedItemService, appDataRepository: AppDataRepository) {
+  constructor(
+    authorizedItemService: AuthorizedItemService,
+    appDataRepository: AppDataRepository,
+    fileService: FileService,
+  ) {
     this.authorizedItemService = authorizedItemService;
     this.appDataRepository = appDataRepository;
+    this.appDataFileService = new AppDataFileServiceAdapter(fileService);
   }
 
   async post(
     dbConnection: DBConnection,
     account: AuthenticatedUser,
     itemId: string,
-    body: InputAppData,
+    body: {
+      id?: UUID;
+      data: { [key: string]: unknown };
+      type: string;
+      visibility?: AppDataVisibility;
+      accountId?: string;
+      /**
+       * @deprecated use accountId - legacy to work with old apps
+       */
+      memberId?: string;
+    },
   ) {
     // posting an app data is allowed to readers
     await this.authorizedItemService.assertAccessForItemId(dbConnection, {
@@ -103,11 +107,6 @@ export class AppDataService {
       },
     );
 
-    await this.hooks.runPreHooks('post', account, dbConnection, {
-      appData: body,
-      itemId,
-    });
-
     const { id: appDataId } = await this.appDataRepository.addOne(dbConnection, {
       appData: completeData,
       itemId,
@@ -119,10 +118,7 @@ export class AppDataService {
     if (!appData) {
       throw new AppDataNotFound(appDataId);
     }
-    await this.hooks.runPostHooks('post', account, dbConnection, {
-      appData,
-      itemId,
-    });
+
     return appData;
   }
 
@@ -163,11 +159,6 @@ export class AppDataService {
       throw new PreventUpdateOtherAppData(appDataId);
     }
 
-    await this.hooks.runPreHooks('patch', account, dbConnection, {
-      appData: { ...body, id: appDataId },
-      itemId,
-    });
-
     await this.appDataRepository.updateOne(dbConnection, appDataId, body);
 
     // get relations
@@ -175,10 +166,7 @@ export class AppDataService {
     if (!appData) {
       throw new AppDataNotFound(appDataId);
     }
-    await this.hooks.runPostHooks('patch', account, dbConnection, {
-      appData,
-      itemId,
-    });
+
     return appData;
   }
 
@@ -211,17 +199,10 @@ export class AppDataService {
       inheritedMembership,
     );
 
-    await this.hooks.runPreHooks('delete', account, dbConnection, {
-      appDataId,
-      itemId,
-    });
-
     await this.appDataRepository.deleteOne(dbConnection, appDataId);
 
-    await this.hooks.runPostHooks('delete', account, dbConnection, {
-      appData,
-      itemId,
-    });
+    // delete related app file data
+    await this.appDataFileService.deleteOne(appData);
 
     return appData;
   }
@@ -284,5 +265,37 @@ export class AppDataService {
         PermissionLevelCompare.gte(inheritedMembership.permission, permission));
 
     return isValid;
+  }
+
+  async upload(
+    dbConnection: DBConnection,
+    account: AuthenticatedUser,
+    file: MultipartFile,
+    item: ItemRaw,
+  ) {
+    const appDataValue = await this.appDataFileService.upload(account, file, item);
+
+    const { id: appDataId } = await this.appDataRepository.addOne(dbConnection, {
+      itemId: item.id,
+      actorId: account.id,
+      appData: appDataValue,
+    });
+
+    // get relations
+    const appData = await this.appDataRepository.getOne(dbConnection, appDataId);
+    if (!appData) {
+      throw new AppDataNotFound(appDataId);
+    }
+
+    return appData;
+  }
+
+  async download(
+    dbConnection: DBConnection,
+    account: AuthenticatedUser,
+    { item, appDataId }: { item: ItemRaw; appDataId: AppDataRaw['id'] },
+  ) {
+    const appData = await this.get(dbConnection, account, item, appDataId);
+    return await this.appDataFileService.download(appData);
   }
 }

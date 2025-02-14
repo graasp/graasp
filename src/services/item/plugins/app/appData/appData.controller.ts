@@ -1,19 +1,23 @@
 import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { AppDataVisibility } from '@graasp/sdk';
+import { AppDataVisibility, HttpMethod } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../di/utils';
 import { db } from '../../../../../drizzle/db';
 import type { FastifyInstanceTypebox } from '../../../../../plugins/typebox';
 import { asDefined } from '../../../../../utils/assertions';
-import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
+import { authenticateAppsJWT, guestAuthenticateAppsJWT } from '../../../../auth/plugins/passport';
 import { AuthorizedItemService } from '../../../../authorizedItem.service';
+import {
+  DownloadFileUnexpectedError,
+  UploadEmptyFileError,
+  UploadFileUnexpectedError,
+} from '../../../../file/utils/errors';
 import { addMemberInAppData } from '../legacy';
 import { AppDataEvent, appDataTopic } from '../ws/events';
 import { checkItemIsApp } from '../ws/utils';
-import { create, deleteOne, getForOne, updateOne } from './appData.schemas';
+import { create, deleteOne, download, getForOne, updateOne, upload } from './appData.schemas';
 import { AppDataService } from './appData.service';
-import appDataFilePlugin from './plugins/file/appData.file.controller';
 
 const appDataPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const appDataService = resolveDependency(AppDataService);
@@ -36,8 +40,6 @@ const appDataPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
       });
       checkItemIsApp(item);
     });
-
-    fastify.register(appDataFilePlugin, { appDataService });
 
     // create app data
     fastify.post(
@@ -102,6 +104,63 @@ const appDataPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
         const member = asDefined(user?.account);
         const appData = await appDataService.getForItem(db, member, itemId, query.type);
         return appData.map(addMemberInAppData);
+      },
+    );
+
+    fastify.route({
+      method: HttpMethod.Post,
+      url: '/app-data/upload',
+      schema: upload,
+      preHandler: guestAuthenticateAppsJWT,
+      handler: async (request) => {
+        const { user } = request;
+        const member = asDefined(user?.account);
+        const app = asDefined(user?.app);
+
+        return db
+          .transaction(async (tx) => {
+            // files are saved in temporary folder in disk, they are removed when the response ends
+            // necessary to get file size -> can use stream busboy only otherwise
+            // only one file is uploaded
+            const file = await request.file();
+            if (!file) {
+              throw new UploadEmptyFileError();
+            }
+            return addMemberInAppData(await appDataService.upload(tx, member, file, app.item));
+          })
+          .catch((e) => {
+            console.error(e);
+
+            // TODO rollback uploaded file
+
+            if (e.code) {
+              throw e;
+            }
+            throw new UploadFileUnexpectedError(e);
+          });
+      },
+    });
+
+    fastify.get(
+      '/app-data/:id/download',
+      {
+        schema: download,
+        preHandler: guestAuthenticateAppsJWT,
+      },
+      async (request) => {
+        const {
+          user,
+          params: { id: appDataId },
+        } = request;
+        const member = asDefined(user?.account);
+        const app = asDefined(user?.app);
+
+        return appDataService.download(db, member, { item: app.item, appDataId }).catch((e) => {
+          if (e.code) {
+            throw e;
+          }
+          throw new DownloadFileUnexpectedError(e);
+        });
       },
     );
   });

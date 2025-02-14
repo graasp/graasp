@@ -5,6 +5,4 @@ export const THUMBNAILS_ROUTE = '/thumbnails';
 
 export const PATH_PREFIX = 'apps/';
 
-export const APP_DATA_TYPE_FILE = 'file';
-
 export const PLUGIN_NAME = 'graasp-plugin-apps';

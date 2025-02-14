@@ -3,16 +3,15 @@ import { v4 } from 'uuid';
 
 import { MultipartFile } from '@fastify/multipart';
 
-import { AppDataVisibility, FileItemProperties, UUID } from '@graasp/sdk';
+import { AppDataVisibility, FileItemProperties, ItemType, UUID } from '@graasp/sdk';
 
-import { Account } from '../../../../account/entities/account';
-import FileService from '../../../../file/service';
-import { Item } from '../../../entities/Item';
-import { APP_DATA_TYPE_FILE } from '../constants';
-import { AppData } from './appData';
+import { AppDataRaw, ItemRaw } from '../../../../../drizzle/types';
+import { AuthenticatedUser } from '../../../../../types';
+import FileService from '../../../../file/file.service';
 import { NotAppDataFile } from './errors';
+import { AppDataFileService } from './interfaces/appDataFileService';
 
-export class AppDataFileRepository {
+export class AppDataFileServiceAdapter implements AppDataFileService {
   private readonly fileService: FileService;
 
   buildFilePath(itemId: UUID, appDataId: UUID) {
@@ -23,7 +22,7 @@ export class AppDataFileRepository {
     this.fileService = fileService;
   }
 
-  async upload(account: Account, file: MultipartFile, item: Item) {
+  async upload(account: AuthenticatedUser, file: MultipartFile, item: ItemRaw) {
     const { filename, mimetype, file: stream } = file;
     const appDataId = v4();
     const filepath = this.buildFilePath(item.id, appDataId); // parentId, filename
@@ -43,18 +42,18 @@ export class AppDataFileRepository {
 
     return {
       id: appDataId,
-      type: APP_DATA_TYPE_FILE,
+      type: ItemType.FILE,
       visibility: AppDataVisibility.Member,
       data: {
-        [this.fileService.fileType]: fileProperties,
+        [ItemType.FILE]: fileProperties,
       },
     };
   }
 
-  async download(appData: AppData) {
+  async download(appData: AppDataRaw) {
     // check app data is a file
     // const appData = await this.appDataService.get(account, repositories, item, appDataId);
-    const fileProp = appData.data[this.fileService.fileType] as FileItemProperties;
+    const fileProp = appData.data[ItemType.FILE] as FileItemProperties;
     if (!fileProp) {
       throw new NotAppDataFile(appData);
     }
@@ -68,11 +67,11 @@ export class AppDataFileRepository {
     return result;
   }
 
-  async deleteOne(appData: AppData) {
+  async deleteOne(appData: AppDataRaw) {
     // TODO: check rights? but only use in posthook
     try {
       // delete file only if type is the current file type
-      const fileProp = appData?.data?.[this.fileService.fileType] as FileItemProperties;
+      const fileProp = appData?.data?.[ItemType.FILE] as FileItemProperties;
       if (!fileProp) {
         return;
       }

@@ -9,7 +9,6 @@ import { customType, registerSchemaAsRef } from '../../../../../plugins/typebox'
 import { errorSchemaRef } from '../../../../../schemas/global';
 import { accountSchemaRef, nullableAccountSchemaRef } from '../../../../account/account.schemas';
 import { itemSchemaRef } from '../../../item.schemas';
-import { APP_DATA_TYPE_FILE } from '../constants';
 
 const appDataSchema = customType.StrictObject(
   {
@@ -137,7 +136,7 @@ export const upload = {
   operationId: 'createAppDataFile',
   tags: ['app', 'app-data', 'file'],
   summary: 'Create app data file',
-  description: `Upload a file to create a corresponding app data. The created app data will be "${APP_DATA_TYPE_FILE}" and visibility ${AppDataVisibility.Member}. The data property will contain the file properties.`,
+  description: `Upload a file to create a corresponding app data. The created app data will have a type file and visibility ${AppDataVisibility.Member}. The data property will contain the file properties.`,
 
   response: {
     [StatusCodes.OK]: appDataWithLegacyPropsSchemaRef,
