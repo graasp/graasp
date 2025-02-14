@@ -12,7 +12,7 @@ import {
   REFRESH_TOKEN_JWT_SECRET,
 } from '../../utils/config';
 
-const defaultClientHost = ClientManager.getInstance().getLinkByContext(Context.Builder);
+const defaultClientHost = ClientManager.getInstance().getLinkByContext(Context.Home);
 
 export const getRedirectionLink = (log: FastifyBaseLogger, target?: string) => {
   if (!target) {
