@@ -16,14 +16,19 @@ import type {
   MinimalAccount,
 } from '../../../../../drizzle/types';
 import { AppDataNotFound, PreventUpdateAppDataFile } from './errors';
-import type { InputAppData } from './interfaces/app-data';
-
-type CreateAppDataBody = { appData: InputAppData; itemId: string; actorId: MinimalAccount['id'] };
 
 export class AppDataRepository {
   async addOne(
     dbConnection: DBConnection,
-    { itemId, actorId, appData }: CreateAppDataBody,
+    {
+      itemId,
+      actorId,
+      appData,
+    }: {
+      appData: Pick<AppDataRaw, 'data' | 'type'> & Partial<AppDataRaw>;
+      itemId: string;
+      actorId: MinimalAccount['id'];
+    },
   ): Promise<AppDataRaw> {
     const savedValue = await dbConnection
       .insert(appDataTable)

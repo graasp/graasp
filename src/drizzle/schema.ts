@@ -410,8 +410,6 @@ export const appDataTable = pgTable(
   ],
 );
 
-export type AppDataInsertRaw = typeof appDataTable.$inferInsert;
-
 export const appActionsTable = pgTable(
   'app_action',
   {
