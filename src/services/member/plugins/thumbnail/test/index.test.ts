@@ -75,8 +75,8 @@ describe('Thumbnail Plugin Tests', () => {
         method: HttpMethod.Get,
         url: `members/${member.id}/avatar/${ThumbnailSize.Small}`,
       });
-      expect(response.statusCode).toBe(StatusCodes.MOVED_TEMPORARILY);
-      expect(response.headers.location).toBe(MOCK_SIGNED_URL);
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      expect(response.body).toBe(MOCK_SIGNED_URL);
     });
 
     it('Successfully redirect to thumbnails of all different sizes', async () => {
@@ -86,8 +86,8 @@ describe('Thumbnail Plugin Tests', () => {
           method: HttpMethod.Get,
           url: `members/${member.id}/avatar/${size}`,
         });
-        expect(response.statusCode).toBe(StatusCodes.MOVED_TEMPORARILY);
-        expect(response.headers.location).toBe(MOCK_SIGNED_URL);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        expect(response.body).toBe(MOCK_SIGNED_URL);
       }
     });
 
@@ -98,8 +98,8 @@ describe('Thumbnail Plugin Tests', () => {
           method: HttpMethod.Get,
           url: `members/${member.id}/avatar/${size}`,
         });
-        expect(response.statusCode).toBe(StatusCodes.MOVED_TEMPORARILY);
-        expect(response.headers.location).toBe(MOCK_SIGNED_URL);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        expect(response.body).toBe(MOCK_SIGNED_URL);
       }
     });
 
@@ -110,8 +110,8 @@ describe('Thumbnail Plugin Tests', () => {
           method: HttpMethod.Get,
           url: `members/${member.id}/avatar/${size}`,
         });
-        expect(response.statusCode).toBe(StatusCodes.MOVED_TEMPORARILY);
-        expect(response.headers.location).toBe(MOCK_SIGNED_URL);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        expect(response.body).toBe(MOCK_SIGNED_URL);
       }
     });
 
@@ -120,7 +120,7 @@ describe('Thumbnail Plugin Tests', () => {
       for (const size of Object.values(ThumbnailSize)) {
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `members/${member.id}/avatar/${size}?replyUrl=true`,
+          url: `members/${member.id}/avatar/${size}`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -133,7 +133,7 @@ describe('Thumbnail Plugin Tests', () => {
       for (const size of Object.values(ThumbnailSize)) {
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `members/${member.id}/avatar/${size}?replyUrl=true`,
+          url: `members/${member.id}/avatar/${size}`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
@@ -149,7 +149,7 @@ describe('Thumbnail Plugin Tests', () => {
       for (const size of Object.values(ThumbnailSize)) {
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `members/${guest!.id}/avatar/${size}?replyUrl=true`,
+          url: `members/${guest!.id}/avatar/${size}`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
@@ -160,7 +160,7 @@ describe('Thumbnail Plugin Tests', () => {
       for (const size of Object.values(ThumbnailSize)) {
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `members/${v4()}/avatar/${size}?replyUrl=true`,
+          url: `members/${v4()}/avatar/${size}`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
@@ -177,7 +177,7 @@ describe('Thumbnail Plugin Tests', () => {
       for (const size of Object.values(ThumbnailSize)) {
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `members/${member.id}/avatar/${size}?replyUrl=true`,
+          url: `members/${member.id}/avatar/${size}`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
