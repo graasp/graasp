@@ -39,7 +39,9 @@ export const download = {
   params: customType.StrictObject({
     id: customType.UUID(),
   }),
-  querystring: customType.StrictObject({ replyUrl: Type.Boolean({ default: false }) }),
+  querystring: customType.StrictObject({
+    replyUrl: Type.Boolean({ default: true, deprecated: true }),
+  }),
   response: {
     [StatusCodes.OK]: Type.String({ format: 'uri' }),
     '4xx': errorSchemaRef,

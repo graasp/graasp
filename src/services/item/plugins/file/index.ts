@@ -1,3 +1,5 @@
+import { StatusCodes } from 'http-status-codes';
+
 import { fastifyMultipart } from '@fastify/multipart';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
@@ -195,13 +197,13 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
       const {
         user,
         params: { id: itemId },
-        query: { replyUrl },
       } = request;
 
       const url = await fileItemService.getUrl(user?.account, buildRepositories(), {
         itemId,
       });
-      fileService.setHeaders({ url, reply, replyUrl, id: itemId });
+
+      reply.status(StatusCodes.OK).send(url);
     },
   );
 };
