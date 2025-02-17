@@ -10,7 +10,6 @@ import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
-import FileService from '../../../file/service';
 import { UploadEmptyFileError, UploadFileUnexpectedError } from '../../../file/utils/errors';
 import { assertIsMember } from '../../entities/member';
 import { validatedMemberAccountRole } from '../../strategies/validatedMemberAccountRole';
@@ -26,7 +25,6 @@ type GraaspThumbnailsOptions = {
 const plugin: FastifyPluginAsyncTypebox<GraaspThumbnailsOptions> = async (fastify, options) => {
   const { maxFileSize = MAX_THUMBNAIL_SIZE } = options;
   const { db } = fastify;
-  const fileService = resolveDependency(FileService);
   const thumbnailService = resolveDependency(MemberThumbnailService);
 
   fastify.register(fastifyMultipart, {
@@ -85,7 +83,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspThumbnailsOptions> = async (fastif
       schema: download,
       preHandler: optionalIsAuthenticated,
     },
-    async ({ user, params: { size, id: memberId }, query: { replyUrl } }, reply) => {
+    async ({ user, params: { size, id: memberId } }, reply) => {
       const url = await thumbnailService.getUrl(user?.account, buildRepositories(), {
         memberId,
         size,
@@ -94,7 +92,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspThumbnailsOptions> = async (fastif
       if (!url) {
         reply.status(StatusCodes.NO_CONTENT);
       } else {
-        fileService.setHeaders({ reply, replyUrl, url, id: memberId });
+        reply.status(StatusCodes.OK).send(url);
       }
     },
   );

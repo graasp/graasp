@@ -24,7 +24,7 @@ export const download = {
     size: Type.Enum(ThumbnailSize, { default: ThumbnailSize.Medium }),
   }),
   querystring: customType.StrictObject({
-    replyUrl: Type.Boolean({ default: false }),
+    replyUrl: Type.Boolean({ default: true, deprecated: true }),
   }),
   response: {
     [StatusCodes.OK]: Type.String({ description: 'Url string of the avatar if replyUrl is true' }),
