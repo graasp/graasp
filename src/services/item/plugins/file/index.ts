@@ -1,3 +1,5 @@
+import { StatusCodes } from 'http-status-codes';
+
 import { fastifyMultipart } from '@fastify/multipart';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
@@ -16,7 +18,7 @@ import { Item } from '../../entities/Item';
 import { ItemService } from '../../service';
 import { H5PService } from '../html/h5p/service';
 import { H5P_FILE_EXTENSION } from '../importExport/constants';
-import { download, upload } from './schema';
+import { download, updateFile, upload } from './schema';
 import FileItemService from './service';
 import { DEFAULT_MAX_FILE_SIZE, MAX_NUMBER_OF_FILES_UPLOAD } from './utils/constants';
 
@@ -100,7 +102,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
     if (!id || type !== fileService.fileType) {
       return;
     }
-    await fileItemService.copy(actor, repositories, { original, copy });
+    await fileItemService.copyFile(actor, repositories, { original, copy });
   });
 
   fastify.post('/upload', {
@@ -202,6 +204,25 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
       });
 
       return url;
+    },
+  );
+
+  fastify.patch(
+    '/files/:id',
+    {
+      schema: updateFile,
+      preHandler: isAuthenticated,
+    },
+    async (request, reply) => {
+      const {
+        user,
+        params: { id: itemId },
+        body,
+      } = request;
+
+      await fileItemService.update(user?.account, buildRepositories(), itemId, body);
+
+      reply.status(StatusCodes.NO_CONTENT);
     },
   );
 };

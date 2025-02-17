@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { customType } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
-import { itemSchemaRef } from '../../schemas';
+import { itemSchema, itemSchemaRef } from '../../schemas';
 
 export const upload = {
   operationId: 'uploadFile',
@@ -47,6 +47,24 @@ export const download = {
   }),
   response: {
     [StatusCodes.OK]: Type.String({ format: 'uri' }),
+    '4xx': errorSchemaRef,
+  },
+};
+
+export const updateFile = {
+  operationId: 'updateFile',
+  tags: ['item', 'file'],
+  summary: 'Update file',
+  description: 'Update file.',
+
+  params: customType.StrictObject({
+    id: customType.UUID(),
+  }),
+  body: Type.Partial(Type.Pick(itemSchema, ['name', 'description', 'lang', 'settings']), {
+    minProperties: 1,
+  }),
+  response: {
+    [StatusCodes.OK]: Type.Null({ description: 'Successful Response' }),
     '4xx': errorSchemaRef,
   },
 };

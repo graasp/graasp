@@ -60,7 +60,7 @@ export class ItemService {
   private readonly log: BaseLogger;
   private readonly thumbnailService: ThumbnailService;
   private readonly meilisearchWrapper: MeiliSearchWrapper;
-  private readonly itemThumbnailService: ItemThumbnailService;
+  protected readonly itemThumbnailService: ItemThumbnailService;
 
   hooks = new HookManager<{
     create: { pre: { item: Partial<Item> }; post: { item: Item } };
