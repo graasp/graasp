@@ -15,6 +15,7 @@ import {
   getFileExtension,
 } from '@graasp/sdk';
 
+import { BaseLogger } from '../../../../logger';
 import { asDefined } from '../../../../utils/assertions';
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
@@ -22,29 +23,31 @@ import FileService from '../../../file/service';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { Actor, Member } from '../../../member/entities/member';
 import { StorageService } from '../../../member/plugins/storage/service';
+import { ThumbnailService } from '../../../thumbnail/service';
 import { randomHexOf4 } from '../../../utils';
 import { Item } from '../../entities/Item';
+import { WrongItemTypeError } from '../../errors';
 import { ItemService } from '../../service';
 import { readPdfContent } from '../../utils';
+import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../thumbnail/service';
 
 @singleton()
-class FileItemService {
+class FileItemService extends ItemService {
   private readonly fileService: FileService;
-  private readonly itemService: ItemService;
   private readonly storageService: StorageService;
-  private readonly itemThumbnailService: ItemThumbnailService;
 
   constructor(
+    thumbnailService: ThumbnailService,
     fileService: FileService,
-    itemService: ItemService,
     storageService: StorageService,
+    meilisearchWrapper: MeiliSearchWrapper,
     itemThumbnailService: ItemThumbnailService,
+    log: BaseLogger,
   ) {
+    super(thumbnailService, itemThumbnailService, meilisearchWrapper, log);
     this.fileService = fileService;
-    this.itemService = itemService;
     this.storageService = storageService;
-    this.itemThumbnailService = itemThumbnailService;
   }
 
   public buildFilePath(extension?: string) {
@@ -124,7 +127,7 @@ class FileItemService {
         creator: actor,
       };
 
-      const newItem = await this.itemService.post(actor, repositories, {
+      const newItem = await super.post(actor, repositories, {
         item,
         parentId,
         previousItemId,
@@ -204,7 +207,7 @@ class FileItemService {
     return result;
   }
 
-  async copy(member: Member, repositories: Repositories, { copy }: { original; copy }) {
+  async copyFile(member: Member, repositories: Repositories, { copy }: { original; copy }) {
     const { id, extra } = copy; // full copy with new `id`
     const { path: originalPath, mimetype } = extra[this.fileService.fileType];
     // filenames are not used
@@ -234,6 +237,23 @@ class FileItemService {
         extra: { file: { ...extra.s3File, path: filepath } },
       });
     }
+  }
+
+  async update(
+    member: Member,
+    repositories: Repositories,
+    itemId: Item['id'],
+    body: Partial<Pick<Item, 'name' | 'description' | 'settings' | 'lang'>>,
+  ) {
+    const { itemRepository } = repositories;
+    const item = await itemRepository.getOneOrThrow(itemId);
+
+    // check item is file
+    if (!([ItemType.LOCAL_FILE, ItemType.S3_FILE] as Item['type'][]).includes(item.type)) {
+      throw new WrongItemTypeError(item.type);
+    }
+
+    await super.patch(member, repositories, item.id, body);
   }
 }
 
