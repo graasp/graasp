@@ -1,7 +1,9 @@
 import { AppDataSource } from '../../../../../../plugins/datasource';
+import { type Member } from '../../../../../member/entities/member';
+import { type Item } from '../../../../entities/Item';
 import { AppSetting } from '../appSettings';
 
-export const saveAppSettings = async ({ item, creator }) => {
+export const saveAppSettings = async ({ item, creator }: { item: Item; creator: Member }) => {
   const defaultData = { name: 'setting-name', data: { setting: 'value' } };
   const rawAppSettingRepository = AppDataSource.getRepository(AppSetting);
   const s1 = await rawAppSettingRepository.save({ item, creator, ...defaultData });

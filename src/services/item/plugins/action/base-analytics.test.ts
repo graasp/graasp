@@ -5,7 +5,9 @@ import { FolderItemFactory } from '@graasp/sdk';
 import build, { clearDatabase } from '../../../../../test/app';
 import { AppDataSource } from '../../../../plugins/datasource';
 import { Account } from '../../../account/entities/account';
+import { Action } from '../../../action/entities/action';
 import { ChatMessage } from '../../../chat/chatMessage';
+import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
 import { Member } from '../../../member/entities/member';
 import { saveMembers } from '../../../member/test/fixtures/members';
 import { Item } from '../../entities/Item';
@@ -17,9 +19,9 @@ import { BaseAnalytics } from './base-analytics';
 const rawItemRepository = AppDataSource.getRepository(Item);
 const rawChatMessageRepository = AppDataSource.getRepository(ChatMessage);
 
-const descendants = [];
-const actions = [];
-const itemMemberships = [];
+const descendants: Item[] = [];
+const actions: Action[] = [];
+const itemMemberships: ItemMembership[] = [];
 const metadata = {
   numActionsRetrieved: 0,
   requestedSampleSize: 0,

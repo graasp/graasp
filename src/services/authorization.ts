@@ -220,7 +220,7 @@ export const validatePermission = async (
  *  */
 const _filterOutItems = async (
   actor: Actor,
-  repositories: Repositories,
+  repositories: Pick<Repositories, 'itemMembershipRepository' | 'itemVisibilityRepository'>,
   items: Item[],
   options?: { showHidden?: boolean },
 ) => {
@@ -306,7 +306,7 @@ export const filterOutPackedItems = async (
  *  */
 export const filterOutPackedDescendants = async (
   actor: Actor,
-  repositories: Repositories,
+  repositories: Pick<Repositories, 'itemMembershipRepository' | 'itemVisibilityRepository'>,
   item: Item,
   descendants: Item[],
   itemsThumbnails?: ItemsThumbnails,
