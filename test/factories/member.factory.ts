@@ -19,14 +19,20 @@ function BaseAccountFactory<T extends AccountType>(baseAccount: Partial<Account>
   };
 }
 
-export const MemberFactory = (m: Partial<Member> = {}) => ({
-  email: faker.internet.email().toLowerCase(),
-  extra: faker.helpers.arrayElement([{ lang: faker.helpers.arrayElement(['en', 'fr', 'de']) }, {}]),
-  enableSaveActions: m.enableSaveActions ?? true,
-  isValidated: m.isValidated ?? true,
-  ...BaseAccountFactory({ type: AccountType.Individual }),
-  ...m,
-});
+export const MemberFactory = (m: Partial<Member> = {}): Member =>
+  ({
+    email: faker.internet.email().toLowerCase(),
+    extra: faker.helpers.arrayElement([
+      { lang: faker.helpers.arrayElement(['en', 'fr', 'de']) },
+      {},
+    ]),
+    enableSaveActions: m.enableSaveActions ?? true,
+    isValidated: m.isValidated ?? true,
+    lastAuthenticatedAt: m.lastAuthenticatedAt ?? faker.date.anytime(),
+    userAgreementsDate: m.userAgreementsDate ?? faker.date.anytime(),
+    ...BaseAccountFactory({ type: AccountType.Individual }),
+    ...m,
+  }) as Member;
 
 export const GuestFactory = (g: Partial<Guest> & Pick<Guest, 'itemLoginSchema'>) => ({
   ...BaseAccountFactory({ type: AccountType.Guest }),

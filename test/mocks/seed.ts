@@ -299,8 +299,8 @@ async function processMembers({
     .filter((m) => (actor ? m.id !== actor.id : true));
 
   if (membersWithIds) {
-    const membersAndProfiles = await seed({
-      members: {
+    const { memberProfiles, savedMembers } = await seed({
+      savedMembers: {
         factory: MemberFactory,
         constructor: Member,
         entities: membersWithIds,
@@ -310,12 +310,17 @@ async function processMembers({
         entities: membersWithIds.map((m) => m.profile).filter(Boolean) as Partial<MemberProfile>[],
       },
     });
-    const resultMembers = membersAndProfiles.members as Member[];
-    const memberProfiles = membersAndProfiles.memberProfiles as MemberProfile[];
-    const processedItems = resultMembers.reduce((acc, m) => replaceAccountInItems(m, acc), items);
-    return { resultMembers, memberProfiles, items: processedItems };
+    const processedItems = (savedMembers as Member[]).reduce(
+      (acc, m) => replaceAccountInItems(m, acc),
+      items,
+    );
+    return {
+      members: savedMembers as Member[],
+      memberProfiles: memberProfiles as MemberProfile[],
+      items: processedItems,
+    };
   }
-  return { resultMembers: [], memberProfiles: [], items: [] };
+  return { members: [], memberProfiles: [], items: [] };
 }
 
 /**
@@ -347,7 +352,7 @@ export async function seedFromJson(data: DataType = {}) {
 
   // save members and their relations
   const {
-    resultMembers,
+    members: membersWithIds,
     memberProfiles,
     items: itemsWithAccounts,
   } = await processMembers({
@@ -355,7 +360,7 @@ export async function seedFromJson(data: DataType = {}) {
     members,
     actor,
   });
-  result.members = resultMembers;
+  result.members = membersWithIds;
   result.memberProfiles = result.memberProfiles.concat(memberProfiles);
 
   // save items
