@@ -121,6 +121,7 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
     // TODO: extra
     // folder's extra can be empty
     let parsedExtra: ItemExtraUnion = extra ? JSON.parse(JSON.stringify(extra)) : {};
+    console.log(parsedExtra);
     const id = v4();
 
     // if item is a folder and the extra is empty
@@ -144,6 +145,7 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
       order,
     });
     item.path = parent ? `${parent.path}.${buildPathFromIds(id)}` : buildPathFromIds(id);
+    console.log(item);
 
     return item;
   }
