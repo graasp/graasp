@@ -33,7 +33,7 @@ export const MemberFactory = (m: Partial<Member> = {}): Member => {
     userAgreementsDate: m.userAgreementsDate ?? faker.date.anytime(),
     ...BaseAccountFactory({ type: AccountType.Individual }),
     ...m,
-  } as Member;
+  } as Member; // necessary cast because typeORM requires more properties
 };
 
 export const GuestFactory = (g: Partial<Guest> & Pick<Guest, 'itemLoginSchema'>) => ({

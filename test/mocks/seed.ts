@@ -63,9 +63,8 @@ export default async function seed(
 }
 
 const ACTOR_STRING = 'actor';
-type SeedActor =
-  | 'actor'
-  | (Partial<Member> & { profile?: Partial<MemberProfile>; password?: string });
+type SeedActor = Partial<Member> & { profile?: Partial<MemberProfile>; password?: string };
+type ReferencedSeedActor = 'actor' | SeedActor;
 type SeedMember = Partial<Member> & { profile?: Partial<MemberProfile> };
 type SeedMembership<M = SeedMember> = Partial<Omit<ItemMembership, 'creator' | 'account'>> & {
   account?: M;
@@ -79,7 +78,7 @@ type SeedItem<M = SeedMember> = (Partial<Omit<Item, 'creator'>> & { creator?: M 
 type DataType = {
   actor?: SeedActor | null;
   members?: SeedMember[];
-  items?: SeedItem<SeedActor | SeedMember>[];
+  items?: SeedItem<ReferencedSeedActor | SeedMember>[];
 };
 
 const replaceActorInItems = (createdActor?: Member, items?: DataType['items']): SeedItem[] => {
@@ -141,7 +140,7 @@ const processActor = async ({ actor, items, members }: DataType) => {
   let actorProfile;
   if (actor !== null) {
     // replace actor data with default values if actor is undefined or 'actor'
-    const actorData = typeof actor === 'string' || !actor ? {} : actor;
+    const actorData = !actor ? {} : actor;
     createdActor = (
       await seed({
         actor: {
@@ -153,7 +152,7 @@ const processActor = async ({ actor, items, members }: DataType) => {
     ).actor[0];
 
     // a profile is defined
-    if (actor && actor !== 'actor') {
+    if (actor) {
       if (actor.profile) {
         actorProfile = (
           await seed({
