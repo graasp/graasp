@@ -397,7 +397,7 @@ export async function seedFromJson(data: DataType = {}) {
  * @param member creator of the file
  * @returns file item structure
  */
-export function buildFile(member: SeedActor) {
+export function buildFile(member: ReferencedSeedActor) {
   return {
     type: ItemType.S3_FILE,
     extra: {
