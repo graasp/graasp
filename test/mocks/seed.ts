@@ -2,9 +2,10 @@ import { faker } from '@faker-js/faker';
 import { BaseEntity, DataSource } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { CompleteMember, ItemType, PermissionLevel, buildPathFromIds } from '@graasp/sdk';
+import { ItemType, PermissionLevel, buildPathFromIds, getIdsFromPath } from '@graasp/sdk';
 
 import { AppDataSource } from '../../src/plugins/datasource';
+import { Account } from '../../src/services/account/entities/account';
 import { MemberPassword } from '../../src/services/auth/plugins/password/entities/password';
 import { encryptPassword } from '../../src/services/auth/plugins/password/utils';
 import { Item } from '../../src/services/item/entities/Item';
@@ -61,37 +62,72 @@ export default async function seed(
   return result;
 }
 
-type SeedActor =
-  | 'actor'
-  | (Partial<CompleteMember> & { profile?: Partial<MemberProfile>; password?: string });
+const ACTOR_STRING = 'actor';
+type SeedActor = Partial<Member> & { profile?: Partial<MemberProfile>; password?: string };
+type ReferencedSeedActor = 'actor' | SeedActor;
+type SeedMember = Partial<Member> & { profile?: Partial<MemberProfile> };
+type SeedMembership<M = SeedMember> = Partial<Omit<ItemMembership, 'creator' | 'account'>> & {
+  account?: M;
+  creator?: M;
+  permission?: PermissionLevel;
+};
+type SeedItem<M = SeedMember> = (Partial<Omit<Item, 'creator'>> & { creator?: M | null }) & {
+  children?: SeedItem<M>[];
+  memberships?: SeedMembership<M>[];
+};
 type DataType = {
   actor?: SeedActor | null;
-  members?: (Partial<Member> & { profile?: Partial<MemberProfile> })[];
-  items?: ((Partial<Item> | { creator: SeedActor }) & {
-    children?: (Partial<Item> | { creator: SeedActor })[];
-    memberships?: (
-      | Partial<ItemMembership>
-      | { account?: SeedActor; creator?: SeedActor; permission?: PermissionLevel }
-    )[];
-  })[];
+  members?: SeedMember[];
+  items?: SeedItem<ReferencedSeedActor | SeedMember>[];
 };
 
-const replaceActorInItems = (createdActor?: Actor, items?: DataType['items']) => {
+const replaceActorInItems = (createdActor?: Member, items?: DataType['items']): SeedItem[] => {
   if (!items?.length) {
     return [];
   }
 
   return items.map((i) => ({
     ...i,
-    creator: i.creator === 'actor' ? createdActor : (i.creator ?? null),
+    creator: i.creator === ACTOR_STRING ? createdActor : (i.creator ?? null),
     memberships: i.memberships?.map((m) => ({
       ...m,
-      account: m.account === 'actor' ? createdActor : m.account,
-      creator: m.creator === 'actor' ? createdActor : m.creator,
+      account: m.account === ACTOR_STRING ? createdActor : m.account,
+      creator: m.creator === ACTOR_STRING ? createdActor : m.creator,
     })),
     children: replaceActorInItems(createdActor, i.children),
   }));
 };
+
+function getNameIfExists(i?: object | null | string) {
+  if (i && typeof i == 'object' && 'name' in i) {
+    return i.name;
+  }
+  return null;
+}
+
+function replaceAccountInItems(createdAccount: Account, items?: DataType['items']) {
+  if (!items?.length) {
+    return [];
+  }
+
+  return items.map((i) => {
+    const memberships = i.memberships?.map((m) => {
+      return {
+        ...m,
+        account: getNameIfExists(m.account) === createdAccount.name ? createdAccount : m.account,
+        creator: getNameIfExists(m.creator) === createdAccount.name ? createdAccount : m.creator,
+      };
+    });
+
+    return {
+      ...i,
+      creator:
+        getNameIfExists(i.creator) === createdAccount.name ? createdAccount : (i.creator ?? null),
+      memberships,
+      children: replaceAccountInItems(createdAccount, i.children),
+    };
+  });
+}
 
 /**
  * Generate actor given properties or a random actor. Replace the created actor in the data for further reference.
@@ -104,7 +140,7 @@ const processActor = async ({ actor, items, members }: DataType) => {
   let actorProfile;
   if (actor !== null) {
     // replace actor data with default values if actor is undefined or 'actor'
-    const actorData = typeof actor === 'string' || !actor ? {} : actor;
+    const actorData = !actor ? {} : actor;
     createdActor = (
       await seed({
         actor: {
@@ -116,7 +152,7 @@ const processActor = async ({ actor, items, members }: DataType) => {
     ).actor[0];
 
     // a profile is defined
-    if (actor && actor !== 'actor') {
+    if (actor) {
       if (actor.profile) {
         actorProfile = (
           await seed({
@@ -163,15 +199,16 @@ const generateIdAndPathForItems = (
 
   return items.flatMap((i) => {
     const id = v4();
-    const path = buildPathFromIds(...([parent?.id, id].filter(Boolean) as string[]));
+    const ids = parent ? [...getIdsFromPath(parent.path), id] : [id];
+    const path = buildPathFromIds(...ids);
     const { children, ...allprops } = i;
 
-    const fullParent = {
+    const currentFullItem = {
       id,
       path,
       ...allprops,
     };
-    return [fullParent, ...generateIdAndPathForItems(children, fullParent)];
+    return [currentFullItem, ...generateIdAndPathForItems(children, currentFullItem)];
   });
 };
 
@@ -192,14 +229,97 @@ const processItemMemberships = (items: DataType['items'] = []) => {
 
 /**
  * Generate ids for members, necessary to further references (for example when creating profiles)
- * @param members
+ * Only unique accounts will be created based on their name
+ * @param members standalone members to be created
+ * @param items items whose creator and memberships' accounts should be created.
  * @returns members' data with generated id
  */
-function generateIdForMembers(members?: DataType['members']) {
-  return members?.map((m) => {
-    const id = v4();
-    return { id, ...m, profile: { ...m.profile, member: { id } } };
+function generateIdForMembers({
+  members = [],
+  items = [],
+}: {
+  items?: SeedItem[];
+  members?: SeedMember[];
+}) {
+  // get all unique members
+  const allMembers = [
+    ...members,
+    ...items.flatMap((i) => {
+      // get all account from all memberships
+      const accountsFromMemberships = (i.memberships ?? [])?.reduce((acc, m) => {
+        if (!m.account) {
+          return acc;
+        }
+        return [...acc, m.account];
+      }, []);
+      // get creator of membership
+      return i.creator ? accountsFromMemberships.concat([i.creator]) : accountsFromMemberships;
+    }),
+  ].filter((m, index, array) => {
+    // return unique member by name
+    if (m && 'name' in m) {
+      return array.findIndex((a) => a && 'name' in a && a?.name === m.name) === index;
+    }
+    // member should be created
+    if (m) {
+      return true;
+    }
+    return false;
   });
+
+  const d = allMembers.map((m) => {
+    const id = v4();
+    return {
+      id,
+      ...m,
+      profile: 'profile' in m ? { ...m.profile, member: { id } } : undefined,
+    };
+  });
+  return d;
+}
+
+/**
+ * Given data, save needed and unique members and their related entities (eg. profile)
+ * @param members standalone members to be created
+ * @param items items whose creator and memberships' accounts should be created
+ * @returns members, memberProfiles and items filled with related account's data
+ */
+async function processMembers({
+  actor,
+  items = [],
+  members = [],
+}: {
+  actor?: Actor;
+  items?: SeedItem[];
+  members?: SeedMember[];
+}) {
+  const membersWithIds = generateIdForMembers({ items, members })
+    // ignore actor if it is defined
+    .filter((m) => (actor ? m.id !== actor.id : true));
+
+  if (membersWithIds) {
+    const { memberProfiles, savedMembers } = await seed({
+      savedMembers: {
+        factory: MemberFactory,
+        constructor: Member,
+        entities: membersWithIds,
+      },
+      memberProfiles: {
+        constructor: MemberProfile,
+        entities: membersWithIds.map((m) => m.profile).filter(Boolean) as Partial<MemberProfile>[],
+      },
+    });
+    const processedItems = (savedMembers as Member[]).reduce(
+      (acc, m) => replaceAccountInItems(m, acc),
+      items,
+    );
+    return {
+      members: savedMembers as Member[],
+      memberProfiles: memberProfiles as MemberProfile[],
+      items: processedItems,
+    };
+  }
+  return { members: [], memberProfiles: [], items: [] };
 }
 
 /**
@@ -225,30 +345,25 @@ export async function seedFromJson(data: DataType = {}) {
     memberProfiles: [],
   };
 
-  const { items, actor, members, actorProfile } = await processActor(data);
+  const { items: itemsWithActor, actor, members, actorProfile } = await processActor(data);
   result.actor = actor;
   result.memberProfiles = actorProfile ? [actorProfile] : [];
 
-  // save members
-  const membersEntities = generateIdForMembers(members);
-  if (membersEntities) {
-    const membersAndProfiles = await seed({
-      members: {
-        factory: MemberFactory,
-        constructor: Member,
-        entities: membersEntities,
-      },
-      memberProfiles: {
-        constructor: MemberProfile,
-        entities: membersEntities.map((m) => m.profile).filter(Boolean),
-      },
-    });
-    result.members = membersAndProfiles.members as Member[];
-    result.memberProfiles = membersAndProfiles.memberProfiles as MemberProfile[];
-  }
+  // save members and their relations
+  const {
+    members: membersWithIds,
+    memberProfiles,
+    items: itemsWithAccounts,
+  } = await processMembers({
+    items: itemsWithActor,
+    members,
+    actor,
+  });
+  result.members = membersWithIds;
+  result.memberProfiles = result.memberProfiles.concat(memberProfiles);
 
   // save items
-  const processedItems = generateIdAndPathForItems(items);
+  const processedItems = generateIdAndPathForItems(itemsWithAccounts);
   if (processedItems) {
     result.items = (
       await seed({
@@ -262,13 +377,13 @@ export async function seedFromJson(data: DataType = {}) {
   }
 
   // save item memberships
-  const itemMembershipsEntity = processItemMemberships(processedItems);
-  if (itemMembershipsEntity) {
+  const itemMembershipsEntities = processItemMemberships(processedItems);
+  if (itemMembershipsEntities) {
     result.itemMemberships = (
       await seed({
         itemMemberships: {
           constructor: ItemMembership,
-          entities: itemMembershipsEntity,
+          entities: itemMembershipsEntities,
         },
       })
     ).itemMemberships as ItemMembership[];
@@ -282,7 +397,7 @@ export async function seedFromJson(data: DataType = {}) {
  * @param member creator of the file
  * @returns file item structure
  */
-export function buildFile(member: SeedActor) {
+export function buildFile(member: ReferencedSeedActor) {
   return {
     type: ItemType.S3_FILE,
     extra: {
