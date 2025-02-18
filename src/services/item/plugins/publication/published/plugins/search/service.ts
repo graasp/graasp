@@ -153,22 +153,6 @@ export class SearchService {
 
     // Update index when item changes ------------------------------------------
 
-    itemService.hooks.setPostHook('create', async (member, repositories, { item }) => {
-      try {
-        // Check if the item is published (or has published parent)
-        const published = await repositories.itemPublishedRepository.getForItem(item);
-
-        if (!published) {
-          return;
-        }
-
-        // update index
-        await this.meilisearchClient.indexOne(published, repositories);
-      } catch (e) {
-        this.logger.error('Error during indexation, Meilisearch may be down');
-      }
-    });
-
     itemService.hooks.setPostHook('delete', async (member, repositories, { item }) => {
       try {
         await this.meilisearchClient.deleteOne(item, repositories);
