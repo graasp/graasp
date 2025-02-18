@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, PassportUser } from 'fastify';
 
 import {
   FolderItemFactory,
@@ -13,6 +13,7 @@ import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../.
 import { ItemMembershipRepository } from '../services/itemMembership/repository';
 import { asDefined } from '../utils/assertions';
 import { MemberCannotAccess, MemberCannotAdminItem, MemberCannotWriteItem } from '../utils/errors';
+import { type Repositories } from '../utils/repositories';
 import { Account } from './account/entities/account';
 import { isAuthenticated } from './auth/plugins/passport';
 import {
@@ -49,7 +50,10 @@ const MOCK_ITEM_VISIBILITY_HIDDEN = { type: ItemVisibilityType.Hidden } as ItemV
 const returnDummyArray = async () => [];
 
 describe('validatePermission', () => {
-  let repositories;
+  let repositories: {
+    itemMembershipRepository: ItemMembershipRepository;
+    itemVisibilityRepository: ItemVisibilityRepository;
+  };
 
   afterEach(() => {
     jest.restoreAllMocks();
@@ -1442,7 +1446,10 @@ describe('validatePermissionMany for no items', () => {
 });
 
 describe('validatePermissionMany for one item', () => {
-  let repositories;
+  let repositories: {
+    itemMembershipRepository: ItemMembershipRepository;
+    itemVisibilityRepository: ItemVisibilityRepository;
+  };
 
   afterEach(() => {
     jest.restoreAllMocks();
@@ -3207,7 +3214,7 @@ describe('validatePermissionMany for many items', () => {
 });
 
 describe('filterOutPackedDescendants', () => {
-  let repositories;
+  let repositories: Pick<Repositories, 'itemMembershipRepository' | 'itemVisibilityRepository'>;
   const item = FolderItemFactory() as unknown as Item;
 
   // raw descendants to pass to function
@@ -3226,13 +3233,18 @@ describe('filterOutPackedDescendants', () => {
   /** build packed descendants for checking returned values
    * types don't play nicely because factory does not use the same types as the backend
    */
-  const buildPackedDescendants = (permission, hiddenVisibility): PackedItem[] => {
+  const buildPackedDescendants = (
+    permission: PermissionLevel | null,
+    hiddenVisibility: ItemVisibility,
+  ): PackedItem[] => {
     const arr = descendants.map((descendant) =>
       PackedFolderItemFactory(descendant as never, {
         permission,
       }),
     );
     const idx = arr.findIndex(({ id }) => id === hiddenVisibility.item.id);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     arr[idx].hidden = hiddenVisibility;
     return arr as unknown as PackedItem[];
   };
@@ -3251,10 +3263,10 @@ describe('filterOutPackedDescendants', () => {
     repositories = {
       itemMembershipRepository: {
         getAllBelow: jest.fn(async () => memberships),
-      },
+      } as unknown as ItemMembershipRepository,
       itemVisibilityRepository: {
         getManyBelowAndSelf: jest.fn(async () => [hiddenVisibility]),
-      },
+      } as unknown as ItemVisibilityRepository,
     };
 
     const result = await filterOutPackedDescendants(OWNER, repositories, item, descendants);
@@ -3275,10 +3287,10 @@ describe('filterOutPackedDescendants', () => {
     repositories = {
       itemMembershipRepository: {
         getAllBelow: jest.fn(async () => memberships),
-      },
+      } as unknown as ItemMembershipRepository,
       itemVisibilityRepository: {
         getManyBelowAndSelf: jest.fn(async () => [hiddenVisibility]),
-      },
+      } as unknown as ItemVisibilityRepository,
     };
 
     const result = await filterOutPackedDescendants(OWNER, repositories, item, descendants);
@@ -3299,10 +3311,10 @@ describe('filterOutPackedDescendants', () => {
     repositories = {
       itemMembershipRepository: {
         getAllBelow: jest.fn(async () => memberships),
-      },
+      } as unknown as ItemMembershipRepository,
       itemVisibilityRepository: {
         getManyBelowAndSelf: jest.fn(async () => [hiddenVisibility]),
-      },
+      } as unknown as ItemVisibilityRepository,
     };
 
     const result = await filterOutPackedDescendants(OWNER, repositories, item, descendants);
@@ -3322,10 +3334,10 @@ describe('filterOutPackedDescendants', () => {
     repositories = {
       itemMembershipRepository: {
         getAllBelow: jest.fn(async () => []),
-      },
+      } as unknown as ItemMembershipRepository,
       itemVisibilityRepository: {
         getManyBelowAndSelf: jest.fn(async () => [hiddenVisibility]),
-      },
+      } as unknown as ItemVisibilityRepository,
     };
 
     const result = await filterOutPackedDescendants(OWNER, repositories, item, descendants);
@@ -3349,7 +3361,7 @@ describe('Passport Plugin', () => {
     return () => fail('Should not be called');
   }
   function shouldBeActor(actor: Member) {
-    return ({ user }) => expect(user.account).toEqual(actor);
+    return ({ user }: { user: PassportUser }) => expect(user.account).toEqual(actor);
   }
 
   beforeAll(async () => {
