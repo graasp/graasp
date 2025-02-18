@@ -45,17 +45,6 @@
       "previewLimit": 50,
       "server": "db",
       "port": 5432,
-      "name": "backend",
-      "driver": "PostgreSQL",
-      "database": "docker",
-      "username": "docker",
-      "password": "docker",
-      "group": "graasp"
-    },
-    {
-      "previewLimit": 50,
-      "server": "db",
-      "port": 5432,
       "driver": "PostgreSQL",
       "name": "etherpad",
       "group": "graasp",
@@ -73,6 +62,17 @@
       "database": "test",
       "username": "test",
       "password": "test"
+    },
+    {
+      "previewLimit": 50,
+      "server": "db",
+      "port": 5432,
+      "name": "backend",
+      "driver": "PostgreSQL",
+      "database": "graasp",
+      "username": "graasper",
+      "password": "graasper",
+      "group": "graasp"
     }
   ],
 }
