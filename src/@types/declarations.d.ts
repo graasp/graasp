@@ -23,10 +23,6 @@ import { WebsocketService } from '../services/websockets/ws-service';
 
 declare module 'fastify' {
   interface FastifyInstance {
-    db: DataSource;
-    // remove once fastify-polyglot has types
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    i18n: any;
     websockets: WebsocketService;
     corsPluginOptions: any;
   }

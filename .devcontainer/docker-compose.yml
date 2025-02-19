@@ -28,6 +28,7 @@ services:
       DB_NAME: graasp
       DB_USERNAME: graasper
       DB_PASSWORD: graasper
+      DB_PORT: 5432
       # the Etherpad config is set by the "etherpad" service below
       ETHERPAD_URL: http://etherpad:9001
       ETHERPAD_PUBLIC_URL: http://localhost:9001

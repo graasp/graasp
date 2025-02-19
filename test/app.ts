@@ -8,6 +8,7 @@ import { CompleteMember } from '@graasp/sdk';
 
 import registerAppPlugins from '../src/app';
 import { resetDependencies } from '../src/di/utils';
+import { db } from '../src/drizzle/db';
 import { BaseLogger } from '../src/logger';
 import ajvFormats from '../src/schemas/ajvFormats';
 import { Account } from '../src/services/account/entities/account';
@@ -69,8 +70,9 @@ const build = async ({ member }: { member?: CompleteMember | null } = {}) => {
 
   await registerAppPlugins(app);
 
+  // TODO: find out how to clear the DB in drizzle
   // drop all the database and synchronize schemas
-  await app.db.synchronize(true);
+  // await db.(true);
 
   const savedMember: Member | undefined = member !== null ? await saveMember(member) : undefined;
   if (savedMember) {

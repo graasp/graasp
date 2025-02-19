@@ -106,8 +106,6 @@ export const MOBILE_DEEP_LINK_PROTOCOL = new URL(
   `${process.env.MOBILE_DEEP_LINK_PROTOCOL || 'graasp-mobile'}://graasp.org`,
 ).protocol; // we only use the protocol anyway
 
-export const DATABASE_LOGS = process.env.DATABASE_LOGS === 'true';
-
 // Graasp constants
 /**
  * Session cookie key
