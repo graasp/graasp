@@ -25,7 +25,7 @@ export const download = {
   }),
   querystring: customType.StrictObject({
     /**
-     * @deprecated we don't use this parameter anymore. This should be removed in a March 2025.
+     * @deprecated we don't use this parameter anymore. This should be removed once the mobile app is deprecated.
      */
     replyUrl: Type.Boolean({ default: true, deprecated: true }),
   }),
