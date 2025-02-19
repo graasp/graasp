@@ -1,5 +1,7 @@
 import { inject, singleton } from 'tsyringe';
 
+import { MultipartFile } from '@fastify/multipart';
+
 import { AppDataVisibility, FileItemType, PermissionLevel, UUID } from '@graasp/sdk';
 
 import { FILE_ITEM_TYPE_DI_KEY } from '../../../../../di/constants';
@@ -7,10 +9,12 @@ import HookManager from '../../../../../utils/hook';
 import { Repositories } from '../../../../../utils/repositories';
 import { Account } from '../../../../account/entities/account';
 import { validatePermission } from '../../../../authorization';
+import FileService from '../../../../file/service';
 import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
 import { Actor } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 import { AppData } from './appData';
+import { AppDataFileServiceAdapter } from './appDataFileServiceAdapter';
 import {
   AppDataNotAccessible,
   AppDataNotFound,
@@ -18,6 +22,7 @@ import {
   PreventUpdateOtherAppData,
 } from './errors';
 import { InputAppData } from './interfaces/app-data';
+import { AppDataFileService } from './interfaces/appDataFileService';
 
 const ownAppDataAbility = (appData: AppData, actor: Actor) => {
   if (!appData.creator || !actor) {
@@ -58,6 +63,7 @@ const permissionMapping = {
 @singleton()
 export class AppDataService {
   private fileItemType: FileItemType;
+  private appDataFileService: AppDataFileService;
 
   hooks = new HookManager<{
     post: {
@@ -74,8 +80,9 @@ export class AppDataService {
     };
   }>();
 
-  constructor(@inject(FILE_ITEM_TYPE_DI_KEY) fileItemType: FileItemType) {
+  constructor(@inject(FILE_ITEM_TYPE_DI_KEY) fileItemType: FileItemType, fileService: FileService) {
     this.fileItemType = fileItemType;
+    this.appDataFileService = new AppDataFileServiceAdapter(fileService);
   }
 
   async post(
@@ -207,6 +214,9 @@ export class AppDataService {
 
     await this.hooks.runPostHooks('delete', account, repositories, { appData, itemId });
 
+    // delete related app file data
+    await this.appDataFileService.deleteOne(appData);
+
     return result;
   }
 
@@ -277,5 +287,24 @@ export class AppDataService {
         permissionMapping[inheritedMembership.permission].includes(permission));
 
     return isValid;
+  }
+
+  async upload(account: Account, repositories: Repositories, file: MultipartFile, item: Item) {
+    const appData = await this.appDataFileService.upload(account, file, item);
+
+    return await repositories.appDataRepository.addOne({
+      itemId: item.id,
+      actorId: account.id,
+      appData,
+    });
+  }
+
+  async download(
+    account: Account,
+    repositories: Repositories,
+    { item, appDataId }: { item: Item; appDataId: AppData['id'] },
+  ) {
+    const appData = await this.get(account, repositories, item, appDataId);
+    return await this.appDataFileService.download(appData);
   }
 }
