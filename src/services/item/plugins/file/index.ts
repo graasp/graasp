@@ -191,17 +191,17 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
       schema: download,
       preHandler: optionalIsAuthenticated,
     },
-    async (request, reply) => {
+    async (request) => {
       const {
         user,
         params: { id: itemId },
-        query: { replyUrl },
       } = request;
 
       const url = await fileItemService.getUrl(user?.account, buildRepositories(), {
         itemId,
       });
-      fileService.setHeaders({ url, reply, replyUrl, id: itemId });
+
+      return url;
     },
   );
 };

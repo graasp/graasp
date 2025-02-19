@@ -451,8 +451,8 @@ describe('File Item routes tests', () => {
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/download`,
         });
 
-        expect(response.statusCode).toBe(StatusCodes.MOVED_TEMPORARILY);
-        expect(response.headers.location).toBe(MOCK_SIGNED_URL);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        expect(response.body).toBe(MOCK_SIGNED_URL);
       });
     });
 
@@ -468,20 +468,10 @@ describe('File Item routes tests', () => {
         }));
       });
       describe('Without error', () => {
-        it('Redirect to file item', async () => {
-          const response = await app.inject({
-            method: HttpMethod.Get,
-            url: `${ITEMS_ROUTE_PREFIX}/${item.id}/download`,
-          });
-
-          expect(response.statusCode).toBe(StatusCodes.MOVED_TEMPORARILY);
-          expect(response.headers.location).toBe(MOCK_SIGNED_URL);
-        });
-
         it('Return file url of item', async () => {
           const response = await app.inject({
             method: HttpMethod.Get,
-            url: `${ITEMS_ROUTE_PREFIX}/${item.id}/download?replyUrl=true`,
+            url: `${ITEMS_ROUTE_PREFIX}/${item.id}/download`,
           });
 
           expect(response.statusCode).toBe(StatusCodes.OK);
