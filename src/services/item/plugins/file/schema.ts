@@ -40,6 +40,9 @@ export const download = {
     id: customType.UUID(),
   }),
   querystring: customType.StrictObject({
+    /**
+     * @deprecated we don't use this parameter anymore. This should be removed in a March 2025.
+     */
     replyUrl: Type.Boolean({ default: true, deprecated: true }),
   }),
   response: {
