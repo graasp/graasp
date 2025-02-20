@@ -12,3 +12,4 @@ export const client = new Client({
 });
 // { schema } is used for relational queries
 export const db = drizzle({ client, schema });
+export type DBConnection = typeof db;

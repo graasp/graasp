@@ -23,6 +23,11 @@ import { WebsocketService } from '../services/websockets/ws-service';
 
 declare module 'fastify' {
   interface FastifyInstance {
+    // TODO: remove once we have migrated to Drizzle
+    /**
+     * @deprecated Use the Drizzle databse instance instead
+     */
+    db: DataSource;
     websockets: WebsocketService;
     corsPluginOptions: any;
   }

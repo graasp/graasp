@@ -4,6 +4,7 @@ import { singleton } from 'tsyringe';
 import { ClientManager, Context, UUID } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
+import { DBConnection } from '../../drizzle/db';
 import { TRANSLATIONS } from '../../langs/constants';
 import { BaseLogger } from '../../logger';
 import { MailBuilder } from '../../plugins/mailer/builder';
@@ -15,7 +16,7 @@ import {
 import { MemberAlreadySignedUp } from '../../utils/errors';
 import { Repositories } from '../../utils/repositories';
 import { NEW_EMAIL_PARAM, SHORT_TOKEN_PARAM } from '../auth/plugins/passport';
-import { Actor, Member } from './entities/member';
+import { Member } from './entities/member';
 
 @singleton()
 export class MemberService {
@@ -43,16 +44,7 @@ export class MemberService {
     return memberRepository.getManyByEmail(emails.map((email) => email.trim().toLowerCase()));
   }
 
-  async post(
-    actor: Actor,
-    repositories: Repositories,
-    body: Pick<Member, 'email'>,
-    lang = DEFAULT_LANG,
-  ) {
-    // actor may not exist on register
-
-    const { memberRepository } = repositories;
-
+  async post(db: DBConnection, body: Pick<Member, 'email'>, lang = DEFAULT_LANG) {
     // The email is lowercased when the user registers
     // To every subsequents call, it is to the client to ensure the email is sent in lowercase
     // the servers always do a 1:1 match to retrieve the member by email.

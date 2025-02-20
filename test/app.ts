@@ -8,7 +8,6 @@ import { CompleteMember } from '@graasp/sdk';
 
 import registerAppPlugins from '../src/app';
 import { resetDependencies } from '../src/di/utils';
-import { db } from '../src/drizzle/db';
 import { BaseLogger } from '../src/logger';
 import ajvFormats from '../src/schemas/ajvFormats';
 import { Account } from '../src/services/account/entities/account';

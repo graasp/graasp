@@ -8,6 +8,7 @@ import { ClientManager, Context, RecaptchaAction } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import { MemberAlreadySignedUp } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
@@ -25,8 +26,6 @@ const ERROR_SEARCH_PARAM = 'error';
 const ERROR_SEARCH_PARAM_HAS_ERROR = 'true';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { db } = fastify;
-
   const memberService = resolveDependency(MemberService);
   const magicLinkService = resolveDependency(MagicLinkService);
   const invitationService = resolveDependency(InvitationService);
@@ -41,11 +40,11 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         query: { lang = DEFAULT_LANG },
       } = request;
       const { url } = body;
-      return db.transaction(async (manager) => {
+      return db.transaction(async (tx) => {
         try {
-          const repositories = buildRepositories(manager);
+          // const repositories = buildRepositories(manager);
           // we use member service to allow post hook for invitation
-          const member = await memberService.post(undefined, repositories, body, lang);
+          const member = await memberService.post(tx, body, lang);
           await magicLinkService.sendRegisterMail(undefined, repositories, member, url);
 
           // transform memberships from existing invitations
