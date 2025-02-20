@@ -3,7 +3,7 @@ import fetch from 'node-fetch';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType, LinkItemFactory, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, ItemType } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -12,15 +12,8 @@ import build, {
 } from '../../../../../../test/app';
 import { ItemFactory } from '../../../../../../test/factories/item.factory';
 import { seedFromJson } from '../../../../../../test/mocks/seed';
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
-import { ItemRepository } from '../../../repository';
-import { expectItem } from '../../../test/fixtures/items';
 
 jest.mock('node-fetch');
-
-const itemRepository = new ItemRepository();
-const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
 
 const iframelyMeta = {
   title: 'title',
