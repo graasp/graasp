@@ -1,6 +1,7 @@
 // This import is necessary so we only download needed langage. eslint can't find the import because it's dynamic.
 // eslint-disable-next-line import/no-unresolved
 import { faker } from '@faker-js/faker/locale/en';
+import { In } from 'typeorm';
 import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
@@ -727,6 +728,69 @@ describe('ItemRepository', () => {
         await testUtils.saveItem({ actor, parentItem, item: { order: 25 } });
         expect(await itemRepository.getNextOrderCount(parentItem.path)).toEqual(45);
       });
+    });
+  });
+  describe('postMany', () => {
+    it('post many', async () => {
+      const items: Item[] = [];
+      for (let i = 0; i < 15; i++) {
+        const newItem = itemRepository.createOne({
+          name: `item${i}`,
+          type: ItemType.FOLDER,
+          creator: actor,
+        });
+        items.push(newItem);
+      }
+
+      const insertedItems = await itemRepository.addMany(items, actor);
+      const insertedItemNames = insertedItems.map((i) => i.name);
+      const insertedItemTypes = insertedItems.map((i) => i.type);
+      const insertedItemCreatorIds = insertedItems.map((i) => i.creator?.id);
+
+      const itemsInDB = await testUtils.rawItemRepository.find({
+        where: { name: In(insertedItemNames) },
+        relations: { creator: true },
+      });
+      const itemNamesInDB = itemsInDB.map((i) => i.name);
+      const itemTypesInDB = insertedItems.map((i) => i.type);
+      const itemCreatorIdsInDB = insertedItems.map((i) => i.creator?.id);
+
+      expect(itemNamesInDB.sort()).toEqual(insertedItemNames.sort());
+      expect(itemTypesInDB.sort()).toEqual(insertedItemTypes.sort());
+      expect(itemCreatorIdsInDB.sort()).toEqual(insertedItemCreatorIds.sort());
+    });
+    it('post many with parent item', async () => {
+      const parentItem = await testUtils.saveItem({ actor });
+
+      const items: Item[] = [];
+      for (let i = 0; i < 15; i++) {
+        const newItem = itemRepository.createOne({
+          name: `item${i}`,
+          type: ItemType.FOLDER,
+          creator: actor,
+        });
+        items.push(newItem);
+      }
+
+      const insertedItems = await itemRepository.addMany(items, actor, parentItem);
+      const insertedItemNames = insertedItems.map((i) => i.name);
+      const insertedItemTypes = insertedItems.map((i) => i.type);
+      const insertedItemCreatorIds = insertedItems.map((i) => i.creator?.id);
+      const insertedItemPaths = insertedItems.map((i) => i.path);
+
+      const itemsInDB = await testUtils.rawItemRepository.find({
+        where: { name: In(insertedItemNames) },
+        relations: { creator: true },
+      });
+      const itemNamesInDB = itemsInDB.map((i) => i.name);
+      const itemTypesInDB = insertedItems.map((i) => i.type);
+      const itemCreatorIdsInDB = insertedItems.map((i) => i.creator?.id);
+      const itemPathsInDB = insertedItems.map((i) => i.path);
+
+      expect(itemNamesInDB.sort()).toEqual(insertedItemNames.sort());
+      expect(itemTypesInDB.sort()).toEqual(insertedItemTypes.sort());
+      expect(itemCreatorIdsInDB.sort()).toEqual(insertedItemCreatorIds.sort());
+      expect(itemPathsInDB.sort()).toEqual(insertedItemPaths.sort());
     });
   });
   describe('copy', () => {
