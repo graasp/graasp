@@ -13,7 +13,6 @@ import {
 import HookManager from '../../utils/hook';
 import { Repositories } from '../../utils/repositories';
 import { Account } from '../account/entities/account';
-import { validatePermission } from '../authorization';
 import { Item } from '../item/entities/Item';
 import { ItemService } from '../item/service';
 import { isGuest } from '../itemLogin/entities/guest';
@@ -150,20 +149,16 @@ export class ItemMembershipService {
   async patch(
     actor: Account,
     repositories: Repositories,
-    itemMembershipId: string,
+    membership: ItemMembership,
     data: { permission: PermissionLevel },
   ) {
     const { itemMembershipRepository } = repositories;
-    // check memberships
-    const membership = await itemMembershipRepository.get(itemMembershipId);
+
     if (isGuest(membership.account)) {
       throw new CannotModifyGuestItemMembership();
     }
-    await validatePermission(repositories, PermissionLevel.Admin, actor, membership.item);
 
-    await this.hooks.runPreHooks('update', actor, repositories, membership);
-
-    const result = await itemMembershipRepository.updateOne(itemMembershipId, data);
+    const result = await itemMembershipRepository.updateOne(membership.id, data);
 
     await this.hooks.runPostHooks('update', actor, repositories, result);
 
@@ -173,14 +168,12 @@ export class ItemMembershipService {
   async deleteOne(
     actor: Account,
     repositories: Repositories,
-    itemMembershipId: string,
+    membership: ItemMembership,
     args: { purgeBelow?: boolean } = { purgeBelow: false },
   ) {
     const { itemMembershipRepository } = repositories;
-    // check memberships
-    const membership = await itemMembershipRepository.get(itemMembershipId);
     const { item } = membership;
-    await validatePermission(repositories, PermissionLevel.Admin, actor, item);
+    const { id: itemMembershipId } = membership;
 
     // check if last admin, in which case prevent deletion
     const { data: itemIdToMemberships } = await itemMembershipRepository.getForManyItems([item]);

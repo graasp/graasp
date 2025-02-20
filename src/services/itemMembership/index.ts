@@ -1,12 +1,14 @@
 import { fastifyCors } from '@fastify/cors';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
+import { PermissionLevel } from '@graasp/sdk';
+
 import { resolveDependency } from '../../di/utils';
 import { FastifyInstanceTypebox } from '../../plugins/typebox';
 import { asDefined } from '../../utils/assertions';
 import { buildRepositories } from '../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
-import { matchOne } from '../authorization';
+import { matchOne, validatePermission } from '../authorization';
 import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
 import MembershipRequestAPI from './plugins/MembershipRequest';
 import { create, createMany, deleteOne, getManyItemMemberships, updateOne } from './schemas';
@@ -87,8 +89,13 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         },
         async ({ user, params: { id }, body }) => {
           const account = asDefined(user?.account);
-          return db.transaction((manager) => {
-            return itemMembershipService.patch(account, buildRepositories(manager), id, body);
+          return db.transaction(async (manager) => {
+            const repositories = buildRepositories(manager);
+
+            const membership = await repositories.itemMembershipRepository.get(id);
+            await validatePermission(repositories, PermissionLevel.Admin, account, membership.item);
+
+            return itemMembershipService.patch(account, repositories, membership, body);
           });
         },
       );
@@ -97,10 +104,18 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       fastify.delete(
         '/:id',
         { schema: deleteOne, preHandler: isAuthenticated },
-        async ({ user, params: { id }, query: { purgeBelow } }) => {
+        async ({ user, params: { id: itemMembershipId }, query: { purgeBelow } }) => {
           const account = asDefined(user?.account);
-          return db.transaction((manager) => {
-            return itemMembershipService.deleteOne(account, buildRepositories(manager), id, {
+          return db.transaction(async (manager) => {
+            const repositories = buildRepositories(manager);
+
+            const { itemMembershipRepository } = repositories;
+            // check memberships
+            const membership = await itemMembershipRepository.get(itemMembershipId);
+            const { item } = membership;
+            await validatePermission(repositories, PermissionLevel.Admin, account, item);
+
+            return itemMembershipService.deleteOne(account, repositories, membership, {
               purgeBelow,
             });
           });

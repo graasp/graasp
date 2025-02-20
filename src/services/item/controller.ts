@@ -3,6 +3,8 @@ import { StatusCodes } from 'http-status-codes';
 import { fastifyMultipart } from '@fastify/multipart';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
+import { PermissionLevel } from '@graasp/sdk';
+
 import { resolveDependency } from '../../di/utils';
 import { FastifyInstanceTypebox } from '../../plugins/typebox';
 import { asDefined } from '../../utils/assertions';
@@ -53,14 +55,26 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
       const item = await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
-        const item = await itemService.post(member, repositories, {
-          // Because of an incoherence between the service and the schema, we need to cast the data to the correct type
-          // This need to be fixed in issue #1288 https://github.com/graasp/graasp/issues/1288
-          item: data as Partial<Item> & Pick<Item, 'name' | 'type'>,
-          previousItemId,
-          parentId,
-          geolocation: data.geolocation,
-        });
+
+        // check parent id
+        let parentItem: Item | undefined = undefined;
+        if (parentId) {
+          parentItem = await itemService.get(member, repositories, parentId, PermissionLevel.Write);
+        }
+
+        const item = await itemService.post(
+          member,
+          repositories,
+          {
+            // Because of an incoherence between the service and the schema, we need to cast the data to the correct type
+            // This need to be fixed in issue #1288 https://github.com/graasp/graasp/issues/1288
+            item: data as Partial<Item> & Pick<Item, 'name' | 'type'>,
+            previousItemId,
+            parentId,
+            geolocation: data.geolocation,
+          },
+          parentItem,
+        );
         return item;
       });
 

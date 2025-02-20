@@ -107,6 +107,7 @@ export class ItemService {
       thumbnail?: Readable;
       previousItemId?: Item['id'];
     },
+    parentItem?: Item,
   ): Promise<Item> {
     const { itemRepository, itemMembershipRepository, itemGeolocationRepository } = repositories;
 
@@ -127,12 +128,12 @@ export class ItemService {
     await this.hooks.runPreHooks('create', member, repositories, { item }, this.log);
 
     let inheritedMembership;
-    let parentItem: Item | undefined = undefined;
+    // let parentItem: Item | undefined = undefined;
     // TODO: HOOK?
     // check permission over parent
-    if (parentId) {
+    if (parentItem) {
       this.log.debug(`verify parent ${parentId} exists and has permission over it`);
-      parentItem = await this.get(member, repositories, parentId, PermissionLevel.Write);
+      // parentItem = await this.get(member, repositories, parentId, PermissionLevel.Write);
       inheritedMembership = await itemMembershipRepository.getInherited(
         parentItem.path,
         member.id,
