@@ -4,7 +4,7 @@ import { ActionTriggers, Context } from '@graasp/sdk';
 
 import { Account } from '../../../../../account/entities/account';
 import { Action } from '../../../../../action/entities/action';
-import { ActionRepository } from '../../../../../action/repositories/action';
+import { ActionRepository } from '../../../../../action/repositories/action.repository';
 import { Member } from '../../../../../member/entities/member';
 import { Item } from '../../../../entities/Item';
 import { ItemActionType } from '../../utils';

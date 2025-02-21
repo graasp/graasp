@@ -1,8 +1,10 @@
 import { singleton } from 'tsyringe';
 
+import { DBConnection } from '../../../../drizzle/db';
 import { Repositories } from '../../../../utils/repositories';
 import { Item } from '../../../item/entities/Item';
 import { Member } from '../../entities/member';
+import { ExportDataRepository } from './repository';
 import {
   actionArraySchema,
   appActionArraySchema,
@@ -25,24 +27,32 @@ import { RequestDataExportService } from './utils/export.utils';
 @singleton()
 export class ExportMemberDataService {
   private readonly requestDataExportService: RequestDataExportService;
+  private readonly exportDataRepository: ExportDataRepository;
 
-  constructor(requestDataExportService: RequestDataExportService) {
+  constructor(
+    requestDataExportService: RequestDataExportService,
+    exportDataRepository: ExportDataRepository,
+  ) {
     this.requestDataExportService = requestDataExportService;
+    this.exportDataRepository = exportDataRepository;
   }
 
-  async requestDataExport({
-    member,
-    repositories,
-  }: {
-    member: Member;
-    repositories: Repositories;
-  }) {
+  async requestDataExport(
+    db: DBConnection,
+    {
+      member,
+      repositories,
+    }: {
+      member: Member;
+      repositories: Repositories;
+    },
+  ) {
     // get the data to export
-    const dataRetriever = async () => await this.getAllData(member, repositories);
+    const dataRetriever = async () => await this.getAllData(db, member, repositories);
     await this.requestDataExportService.requestExport(member, member.id, dataRetriever);
   }
 
-  async getAllData(actor: Member, repositories: Repositories) {
+  async getAllData(db: DBConnection, actor: Member, repositories: Repositories) {
     // TODO: export more data
     const actions = await this.getActions(actor, repositories);
     const appActions = await this.getAppActions(actor, repositories);
@@ -52,7 +62,7 @@ export class ExportMemberDataService {
     const chatMessages = await this.getChatMessages(actor, repositories);
 
     const items = await this.getItems(actor, repositories);
-    const itemFavorites = await this.getItemFavorites(actor, repositories);
+    const itemFavorites = await this.getItemFavorites(db, actor, repositories);
     const itemLikes = await this.getItemLikes(actor, repositories);
     const itemMemberShips = await this.getItemsMemberShips(actor, repositories);
 
@@ -111,13 +121,17 @@ export class ExportMemberDataService {
     return memberItemsOwner.map((item) => item.id);
   }
 
-  async getItems(actor: Member, { itemRepository }: Repositories) {
-    const results = await itemRepository.getForMemberExport(actor.id);
+  async getItems(actor: Member) {
+    const results = await this.exportDataRepository.getForMemberExport(actor.id);
     return getFilteredData(results, itemArraySchema);
   }
 
-  async getItemFavorites(actor: Member, { itemFavoriteRepository }: Repositories) {
-    const results = await itemFavoriteRepository.getForMemberExport(actor.id);
+  async getItemFavorites(
+    db: DBConnection,
+    actor: Member,
+    { itemFavoriteRepository }: Repositories,
+  ) {
+    const results = await itemFavoriteRepository.getForMemberExport(db, actor.id);
     return getFilteredData(results, itemFavoriteArraySchema);
   }
 

@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm/sql';
 import { EntityManager } from 'typeorm';
 
 import { db } from '../../drizzle/db';
-import { account } from '../../drizzle/schema';
+import { accounts } from '../../drizzle/schema';
 import { AbstractRepository } from '../../repositories/AbstractRepository';
 import { Account } from './entities/account';
 
@@ -15,8 +15,8 @@ export class AccountRepository extends AbstractRepository<Account> {
     if (!id) {
       return undefined;
     }
-    const result = await db.query.account.findFirst({
-      where: eq(account.id, id),
+    const result = await db.query.accounts.findFirst({
+      where: eq(accounts.id, id),
     });
     if (result === null) {
       return undefined;

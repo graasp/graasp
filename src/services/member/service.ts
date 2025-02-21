@@ -5,6 +5,7 @@ import { ClientManager, Context, UUID } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
 import { DBConnection } from '../../drizzle/db';
+import { MemberCreationDTO } from '../../drizzle/schema';
 import { TRANSLATIONS } from '../../langs/constants';
 import { BaseLogger } from '../../logger';
 import { MailBuilder } from '../../plugins/mailer/builder';
@@ -48,7 +49,11 @@ export class MemberService {
     );
   }
 
-  async post(db: DBConnection, body: Pick<Member, 'email'>, lang = DEFAULT_LANG) {
+  async post(
+    db: DBConnection,
+    body: Partial<MemberCreationDTO> & Pick<MemberCreationDTO, 'email' | 'name'>,
+    lang = DEFAULT_LANG,
+  ) {
     // The email is lowercased when the user registers
     // To every subsequents call, it is to the client to ensure the email is sent in lowercase
     // the servers always do a 1:1 match to retrieve the member by email.
@@ -60,7 +65,7 @@ export class MemberService {
     if (!member) {
       const newMember = {
         ...body,
-        extra: { lang },
+        extra: JSON.stringify({ lang }),
       };
 
       const member = await this.memberRepository.post(db, newMember);
@@ -69,8 +74,6 @@ export class MemberService {
     } else {
       throw new MemberAlreadySignedUp({ email });
     }
-
-    // TODO: refactor
   }
 
   async patch(

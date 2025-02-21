@@ -14,15 +14,15 @@ import {
   Action as GraaspAction,
 } from '@graasp/sdk';
 
-import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
-import { AppDataSource } from '../../../plugins/datasource';
-import { ItemTestUtils } from '../../item/test/fixtures/items';
-import { getPreviousMonthFromNow } from '../../member/plugins/action/service';
-import { saveMember } from '../../member/test/fixtures/members';
-import { DEFAULT_ACTIONS_SAMPLE_SIZE } from '../constants/constants';
-import { Action } from '../entities/action';
-import { expectActions, saveActions } from '../test/fixtures/actions';
-import { ActionRepository } from './action';
+import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../test/app';
+import { AppDataSource } from '../../plugins/datasource';
+import { ItemTestUtils } from '../item/test/fixtures/items';
+import { getPreviousMonthFromNow } from '../member/plugins/action/service';
+import { saveMember } from '../member/test/fixtures/members';
+import { ActionRepository } from './action.repository';
+import { DEFAULT_ACTIONS_SAMPLE_SIZE } from './constants/constants';
+import { Action } from './entities/action';
+import { expectActions, saveActions } from './test/fixtures/actions';
 
 const rawRepository = AppDataSource.getRepository(Action);
 const testUtils = new ItemTestUtils();

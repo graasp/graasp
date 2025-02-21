@@ -2,131 +2,131 @@ import { relations } from 'drizzle-orm/relations';
 
 import {
   accounts,
-  action,
-  actionRequestExport,
-  app,
-  appAction,
-  appData,
-  appSetting,
-  category,
-  chatMention,
-  chatMessage,
+  actionRequestExports,
+  actions,
+  appActions,
+  appDatas,
+  appSettings,
+  apps,
+  categories,
+  chatMentions,
+  chatMessages,
   guestPasswords,
-  invitation,
-  itemCategory,
-  itemFavorite,
-  itemFlag,
-  itemGeolocation,
-  itemLike,
-  itemLoginSchema,
-  itemMembership,
-  itemPublished,
-  itemRaw,
-  itemTag,
-  itemValidation,
-  itemValidationGroup,
-  itemValidationReview,
-  itemVisibility,
+  invitations,
+  itemBookmarks,
+  itemCategories,
+  itemFlags,
+  itemGeolocations,
+  itemLikes,
+  itemLoginSchemas,
+  itemMemberships,
+  itemPublisheds,
+  itemTags,
+  itemValidationGroups,
+  itemValidationReviews,
+  itemValidations,
+  itemVisibilities,
+  itemsRaw,
   memberPasswords,
   memberProfiles,
-  membershipRequest,
-  publisher,
-  recycledItemData,
-  shortLink,
-  tag,
+  membershipRequests,
+  publishers,
+  recycledItemDatas,
+  shortLinks,
+  tags,
 } from './schema';
 
-export const itemPublishedRelations = relations(itemPublished, ({ one }) => ({
+export const itemPublishedRelations = relations(itemPublisheds, ({ one }) => ({
   account: one(accounts, {
-    fields: [itemPublished.creatorId],
+    fields: [itemPublisheds.creatorId],
     references: [accounts.id],
   }),
-  item: one(itemRaw, {
-    fields: [itemPublished.itemPath],
-    references: [itemRaw.path],
+  item: one(itemsRaw, {
+    fields: [itemPublisheds.itemPath],
+    references: [itemsRaw.path],
   }),
 }));
 
 export const accountRelations = relations(accounts, ({ one, many }) => ({
-  itemPublisheds: many(itemPublished),
-  itemMemberships_creatorId: many(itemMembership, {
+  itemPublisheds: many(itemPublisheds),
+  itemMemberships_creatorId: many(itemMemberships, {
     relationName: 'itemMembership_creatorId_account_id',
   }),
-  itemMemberships_accountId: many(itemMembership, {
+  itemMemberships_accountId: many(itemMemberships, {
     relationName: 'itemMembership_accountId_account_id',
   }),
   memberPasswords: many(memberPasswords),
-  recycledItemData: many(recycledItemData),
-  itemLikes: many(itemLike),
-  itemFlags: many(itemFlag),
-  itemCategories: many(itemCategory),
-  chatMessages: many(chatMessage),
-  chatMentions: many(chatMention),
-  appData_creatorId: many(appData, {
+  recycledItemData: many(recycledItemDatas),
+  itemLikes: many(itemLikes),
+  itemFlags: many(itemFlags),
+  itemCategories: many(itemCategories),
+  chatMessages: many(chatMessages),
+  chatMentions: many(chatMentions),
+  appData_creatorId: many(appDatas, {
     relationName: 'appData_creatorId_account_id',
   }),
-  appData_accountId: many(appData, {
+  appData_accountId: many(appDatas, {
     relationName: 'appData_accountId_account_id',
   }),
-  appActions: many(appAction),
-  appSettings: many(appSetting),
-  invitations: many(invitation),
-  itemValidationReviews: many(itemValidationReview),
-  itemFavorites: many(itemFavorite),
+  appActions: many(appActions),
+  appSettings: many(appSettings),
+  invitationss: many(invitations),
+  itemValidationReviews: many(itemValidationReviews),
+  itemBookmarks: many(itemBookmarks),
   memberProfiles: many(memberProfiles),
-  actions: many(action),
-  actionRequestExports: many(actionRequestExport),
-  items: many(itemRaw),
-  membershipRequests: many(membershipRequest),
-  itemLoginSchema: one(itemLoginSchema, {
+  actions: many(actions),
+  actionRequestExports: many(actionRequestExports),
+  items: many(itemsRaw),
+  membershipRequests: many(membershipRequests),
+  itemLoginSchema: one(itemLoginSchemas, {
     fields: [accounts.itemLoginSchemaId],
-    references: [itemLoginSchema.id],
+    references: [itemLoginSchemas.id],
   }),
   guestPasswords: many(guestPasswords),
-  itemVisibilities: many(itemVisibility),
+  itemVisibilities: many(itemVisibilities),
 }));
 
-export const itemRelations = relations(itemRaw, ({ one, many }) => ({
-  itemPublisheds: many(itemPublished),
-  itemMemberships: many(itemMembership),
-  recycledItemData: many(recycledItemData),
-  itemLikes: many(itemLike),
-  itemFlags: many(itemFlag),
-  itemCategories: many(itemCategory),
-  chatMessages: many(chatMessage),
-  appData: many(appData),
-  appActions: many(appAction),
-  appSettings: many(appSetting),
-  invitations: many(invitation),
-  itemValidationGroups: many(itemValidationGroup),
-  itemValidations: many(itemValidation),
-  itemFavorites: many(itemFavorite),
-  shortLinks: many(shortLink),
-  actions: many(action),
-  itemGeolocations: many(itemGeolocation),
-  actionRequestExports: many(actionRequestExport),
+export const itemRelations = relations(itemsRaw, ({ one, many }) => ({
+  itemPublisheds: many(itemPublisheds),
+  itemMemberships: many(itemMemberships),
+  recycledItemData: many(recycledItemDatas),
+  itemLikes: many(itemLikes),
+  itemFlags: many(itemFlags),
+  itemCategories: many(itemCategories),
+  chatMessages: many(chatMessages),
+  appData: many(appDatas),
+  appActions: many(appActions),
+  appSettings: many(appSettings),
+  invitationss: many(invitations),
+  itemValidationGroups: many(itemValidationGroups),
+  itemValidations: many(itemValidations),
+  itemBookmarks: many(itemBookmarks),
+  shortLinks: many(shortLinks),
+  actions: many(actions),
+  itemGeolocations: many(itemGeolocations),
+  actionRequestExports: many(actionRequestExports),
   account: one(accounts, {
-    fields: [itemRaw.creatorId],
+    fields: [itemsRaw.creatorId],
     references: [accounts.id],
   }),
-  membershipRequests: many(membershipRequest),
-  itemLoginSchemas: many(itemLoginSchema),
-  itemVisibilities: many(itemVisibility),
-  itemTags: many(itemTag),
+  membershipRequests: many(membershipRequests),
+  itemLoginSchemas: many(itemLoginSchemas),
+  itemVisibilities: many(itemVisibilities),
+  itemTags: many(itemTags),
 }));
 
-export const itemMembershipRelations = relations(itemMembership, ({ one }) => ({
+export const itemMembershipRelations = relations(itemMemberships, ({ one }) => ({
   creator: one(accounts, {
-    fields: [itemMembership.creatorId],
+    fields: [itemMemberships.creatorId],
     references: [accounts.id],
     relationName: 'itemMembership_creatorId_account_id',
   }),
-  item: one(itemRaw, {
-    fields: [itemMembership.itemPath],
-    references: [itemRaw.path],
+  item: one(itemsRaw, {
+    fields: [itemMemberships.itemPath],
+    references: [itemsRaw.path],
   }),
   account: one(accounts, {
-    fields: [itemMembership.accountId],
+    fields: [itemMemberships.accountId],
     references: [accounts.id],
     relationName: 'itemMembership_accountId_account_id',
   }),
@@ -139,181 +139,181 @@ export const memberPasswordRelations = relations(memberPasswords, ({ one }) => (
   }),
 }));
 
-export const recycledItemDataRelations = relations(recycledItemData, ({ one }) => ({
+export const recycledItemDataRelations = relations(recycledItemDatas, ({ one }) => ({
   account: one(accounts, {
-    fields: [recycledItemData.creatorId],
+    fields: [recycledItemDatas.creatorId],
     references: [accounts.id],
   }),
-  item: one(itemRaw, {
-    fields: [recycledItemData.itemPath],
-    references: [itemRaw.path],
+  item: one(itemsRaw, {
+    fields: [recycledItemDatas.itemPath],
+    references: [itemsRaw.path],
   }),
 }));
 
-export const itemLikeRelations = relations(itemLike, ({ one }) => ({
+export const itemLikeRelations = relations(itemLikes, ({ one }) => ({
   account: one(accounts, {
-    fields: [itemLike.creatorId],
+    fields: [itemLikes.creatorId],
     references: [accounts.id],
   }),
-  item: one(itemRaw, {
-    fields: [itemLike.itemId],
-    references: [itemRaw.id],
+  item: one(itemsRaw, {
+    fields: [itemLikes.itemId],
+    references: [itemsRaw.id],
   }),
 }));
 
-export const itemFlagRelations = relations(itemFlag, ({ one }) => ({
-  item: one(itemRaw, {
-    fields: [itemFlag.itemId],
-    references: [itemRaw.id],
+export const itemFlagRelations = relations(itemFlags, ({ one }) => ({
+  item: one(itemsRaw, {
+    fields: [itemFlags.itemId],
+    references: [itemsRaw.id],
   }),
   account: one(accounts, {
-    fields: [itemFlag.creatorId],
-    references: [accounts.id],
-  }),
-}));
-
-export const itemCategoryRelations = relations(itemCategory, ({ one }) => ({
-  category: one(category, {
-    fields: [itemCategory.categoryId],
-    references: [category.id],
-  }),
-  account: one(accounts, {
-    fields: [itemCategory.creatorId],
-    references: [accounts.id],
-  }),
-  item: one(itemRaw, {
-    fields: [itemCategory.itemPath],
-    references: [itemRaw.path],
-  }),
-}));
-
-export const categoryRelations = relations(category, ({ many }) => ({
-  itemCategories: many(itemCategory),
-}));
-
-export const chatMessageRelations = relations(chatMessage, ({ one, many }) => ({
-  item: one(itemRaw, {
-    fields: [chatMessage.itemId],
-    references: [itemRaw.id],
-  }),
-  account: one(accounts, {
-    fields: [chatMessage.creatorId],
-    references: [accounts.id],
-  }),
-  chatMentions: many(chatMention),
-}));
-
-export const chatMentionRelations = relations(chatMention, ({ one }) => ({
-  chatMessage: one(chatMessage, {
-    fields: [chatMention.messageId],
-    references: [chatMessage.id],
-  }),
-  account: one(accounts, {
-    fields: [chatMention.accountId],
+    fields: [itemFlags.creatorId],
     references: [accounts.id],
   }),
 }));
 
-export const appDataRelations = relations(appData, ({ one }) => ({
-  item: one(itemRaw, {
-    fields: [appData.itemId],
-    references: [itemRaw.id],
+export const itemCategoriesRelations = relations(itemCategories, ({ one }) => ({
+  categories: one(categories, {
+    fields: [itemCategories.categoryId],
+    references: [categories.id],
+  }),
+  account: one(accounts, {
+    fields: [itemCategories.creatorId],
+    references: [accounts.id],
+  }),
+  item: one(itemsRaw, {
+    fields: [itemCategories.itemPath],
+    references: [itemsRaw.path],
+  }),
+}));
+
+export const categoriesRelations = relations(categories, ({ many }) => ({
+  itemCategories: many(itemCategories),
+}));
+
+export const chatMessageRelations = relations(chatMessages, ({ one, many }) => ({
+  item: one(itemsRaw, {
+    fields: [chatMessages.itemId],
+    references: [itemsRaw.id],
+  }),
+  account: one(accounts, {
+    fields: [chatMessages.creatorId],
+    references: [accounts.id],
+  }),
+  chatMentions: many(chatMentions),
+}));
+
+export const chatMentionRelations = relations(chatMentions, ({ one }) => ({
+  chatMessage: one(chatMessages, {
+    fields: [chatMentions.messageId],
+    references: [chatMessages.id],
+  }),
+  account: one(accounts, {
+    fields: [chatMentions.accountId],
+    references: [accounts.id],
+  }),
+}));
+
+export const appDataRelations = relations(appDatas, ({ one }) => ({
+  item: one(itemsRaw, {
+    fields: [appDatas.itemId],
+    references: [itemsRaw.id],
   }),
   account_creatorId: one(accounts, {
-    fields: [appData.creatorId],
+    fields: [appDatas.creatorId],
     references: [accounts.id],
     relationName: 'appData_creatorId_account_id',
   }),
   account_accountId: one(accounts, {
-    fields: [appData.accountId],
+    fields: [appDatas.accountId],
     references: [accounts.id],
     relationName: 'appData_accountId_account_id',
   }),
 }));
 
-export const appActionRelations = relations(appAction, ({ one }) => ({
-  item: one(itemRaw, {
-    fields: [appAction.itemId],
-    references: [itemRaw.id],
+export const appActionRelations = relations(appActions, ({ one }) => ({
+  item: one(itemsRaw, {
+    fields: [appActions.itemId],
+    references: [itemsRaw.id],
   }),
   account: one(accounts, {
-    fields: [appAction.accountId],
+    fields: [appActions.accountId],
     references: [accounts.id],
   }),
 }));
 
-export const appSettingRelations = relations(appSetting, ({ one }) => ({
-  item: one(itemRaw, {
-    fields: [appSetting.itemId],
-    references: [itemRaw.id],
+export const appSettingRelations = relations(appSettings, ({ one }) => ({
+  item: one(itemsRaw, {
+    fields: [appSettings.itemId],
+    references: [itemsRaw.id],
   }),
   account: one(accounts, {
-    fields: [appSetting.creatorId],
+    fields: [appSettings.creatorId],
     references: [accounts.id],
   }),
 }));
 
-export const invitationRelations = relations(invitation, ({ one }) => ({
+export const invitationsRelations = relations(invitations, ({ one }) => ({
   account: one(accounts, {
-    fields: [invitation.creatorId],
+    fields: [invitations.creatorId],
     references: [accounts.id],
   }),
-  item: one(itemRaw, {
-    fields: [invitation.itemPath],
-    references: [itemRaw.path],
+  item: one(itemsRaw, {
+    fields: [invitations.itemPath],
+    references: [itemsRaw.path],
   }),
 }));
 
-export const appRelations = relations(app, ({ one }) => ({
-  publisher: one(publisher, {
-    fields: [app.publisherId],
-    references: [publisher.id],
+export const appRelations = relations(apps, ({ one }) => ({
+  publisher: one(publishers, {
+    fields: [apps.publisherId],
+    references: [publishers.id],
   }),
 }));
 
-export const publisherRelations = relations(publisher, ({ many }) => ({
-  apps: many(app),
+export const publisherRelations = relations(publishers, ({ many }) => ({
+  apps: many(apps),
 }));
 
-export const itemValidationGroupRelations = relations(itemValidationGroup, ({ one, many }) => ({
-  item: one(itemRaw, {
-    fields: [itemValidationGroup.itemId],
-    references: [itemRaw.id],
+export const itemValidationGroupRelations = relations(itemValidationGroups, ({ one, many }) => ({
+  item: one(itemsRaw, {
+    fields: [itemValidationGroups.itemId],
+    references: [itemsRaw.id],
   }),
-  itemValidations: many(itemValidation),
+  itemValidations: many(itemValidations),
 }));
 
-export const itemValidationRelations = relations(itemValidation, ({ one, many }) => ({
-  item: one(itemRaw, {
-    fields: [itemValidation.itemId],
-    references: [itemRaw.id],
+export const itemValidationRelations = relations(itemValidations, ({ one, many }) => ({
+  item: one(itemsRaw, {
+    fields: [itemValidations.itemId],
+    references: [itemsRaw.id],
   }),
-  itemValidationGroup: one(itemValidationGroup, {
-    fields: [itemValidation.itemValidationGroupId],
-    references: [itemValidationGroup.id],
+  itemValidationGroup: one(itemValidationGroups, {
+    fields: [itemValidations.itemValidationGroupId],
+    references: [itemValidationGroups.id],
   }),
-  itemValidationReviews: many(itemValidationReview),
+  itemValidationReviews: many(itemValidationReviews),
 }));
 
-export const itemValidationReviewRelations = relations(itemValidationReview, ({ one }) => ({
-  itemValidation: one(itemValidation, {
-    fields: [itemValidationReview.itemValidationId],
-    references: [itemValidation.id],
+export const itemValidationReviewRelations = relations(itemValidationReviews, ({ one }) => ({
+  itemValidation: one(itemValidations, {
+    fields: [itemValidationReviews.itemValidationId],
+    references: [itemValidations.id],
   }),
   account: one(accounts, {
-    fields: [itemValidationReview.reviewerId],
+    fields: [itemValidationReviews.reviewerId],
     references: [accounts.id],
   }),
 }));
 
-export const itemFavoriteRelations = relations(itemFavorite, ({ one }) => ({
+export const itemBookmarkRelations = relations(itemBookmarks, ({ one }) => ({
   account: one(accounts, {
-    fields: [itemFavorite.memberId],
+    fields: [itemBookmarks.memberId],
     references: [accounts.id],
   }),
-  item: one(itemRaw, {
-    fields: [itemFavorite.itemId],
-    references: [itemRaw.id],
+  item: one(itemsRaw, {
+    fields: [itemBookmarks.itemId],
+    references: [itemsRaw.id],
   }),
 }));
 
@@ -324,58 +324,58 @@ export const memberProfileRelations = relations(memberProfiles, ({ one }) => ({
   }),
 }));
 
-export const shortLinkRelations = relations(shortLink, ({ one }) => ({
-  item: one(itemRaw, {
-    fields: [shortLink.itemId],
-    references: [itemRaw.id],
+export const shortLinkRelations = relations(shortLinks, ({ one }) => ({
+  item: one(itemsRaw, {
+    fields: [shortLinks.itemId],
+    references: [itemsRaw.id],
   }),
 }));
 
-export const actionRelations = relations(action, ({ one }) => ({
-  item: one(itemRaw, {
-    fields: [action.itemId],
-    references: [itemRaw.id],
+export const actionRelations = relations(actions, ({ one }) => ({
+  item: one(itemsRaw, {
+    fields: [actions.itemId],
+    references: [itemsRaw.id],
   }),
   account: one(accounts, {
-    fields: [action.accountId],
+    fields: [actions.accountId],
     references: [accounts.id],
   }),
 }));
 
-export const itemGeolocationRelations = relations(itemGeolocation, ({ one }) => ({
-  item: one(itemRaw, {
-    fields: [itemGeolocation.itemPath],
-    references: [itemRaw.path],
+export const itemGeolocationRelations = relations(itemGeolocations, ({ one }) => ({
+  item: one(itemsRaw, {
+    fields: [itemGeolocations.itemPath],
+    references: [itemsRaw.path],
   }),
 }));
 
-export const actionRequestExportRelations = relations(actionRequestExport, ({ one }) => ({
-  item: one(itemRaw, {
-    fields: [actionRequestExport.itemPath],
-    references: [itemRaw.path],
+export const actionRequestExportRelations = relations(actionRequestExports, ({ one }) => ({
+  item: one(itemsRaw, {
+    fields: [actionRequestExports.itemPath],
+    references: [itemsRaw.path],
   }),
   account: one(accounts, {
-    fields: [actionRequestExport.memberId],
+    fields: [actionRequestExports.memberId],
     references: [accounts.id],
   }),
 }));
 
-export const membershipRequestRelations = relations(membershipRequest, ({ one }) => ({
+export const membershipRequestRelations = relations(membershipRequests, ({ one }) => ({
   account: one(accounts, {
-    fields: [membershipRequest.memberId],
+    fields: [membershipRequests.memberId],
     references: [accounts.id],
   }),
-  item: one(itemRaw, {
-    fields: [membershipRequest.itemId],
-    references: [itemRaw.id],
+  item: one(itemsRaw, {
+    fields: [membershipRequests.itemId],
+    references: [itemsRaw.id],
   }),
 }));
 
-export const itemLoginSchemaRelations = relations(itemLoginSchema, ({ one, many }) => ({
+export const itemLoginSchemaRelations = relations(itemLoginSchemas, ({ one, many }) => ({
   accounts: many(accounts),
-  item: one(itemRaw, {
-    fields: [itemLoginSchema.itemPath],
-    references: [itemRaw.path],
+  item: one(itemsRaw, {
+    fields: [itemLoginSchemas.itemPath],
+    references: [itemsRaw.path],
   }),
 }));
 
@@ -386,28 +386,28 @@ export const guestPasswordRelations = relations(guestPasswords, ({ one }) => ({
   }),
 }));
 
-export const itemVisibilityRelations = relations(itemVisibility, ({ one }) => ({
+export const itemVisibilitiesRelations = relations(itemVisibilities, ({ one }) => ({
   account: one(accounts, {
-    fields: [itemVisibility.creatorId],
+    fields: [itemVisibilities.creatorId],
     references: [accounts.id],
   }),
-  item: one(itemRaw, {
-    fields: [itemVisibility.itemPath],
-    references: [itemRaw.path],
+  item: one(itemsRaw, {
+    fields: [itemVisibilities.itemPath],
+    references: [itemsRaw.path],
   }),
 }));
 
-export const itemTagRelations = relations(itemTag, ({ one }) => ({
-  tag: one(tag, {
-    fields: [itemTag.tagId],
-    references: [tag.id],
+export const itemTagRelations = relations(itemTags, ({ one }) => ({
+  tag: one(tags, {
+    fields: [itemTags.tagId],
+    references: [tags.id],
   }),
-  item: one(itemRaw, {
-    fields: [itemTag.itemId],
-    references: [itemRaw.id],
+  item: one(itemsRaw, {
+    fields: [itemTags.itemId],
+    references: [itemsRaw.id],
   }),
 }));
 
-export const tagRelations = relations(tag, ({ many }) => ({
-  itemTags: many(itemTag),
+export const tagRelations = relations(tags, ({ many }) => ({
+  itemTags: many(itemTags),
 }));

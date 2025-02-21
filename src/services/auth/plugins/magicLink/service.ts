@@ -5,6 +5,7 @@ import { ActionTriggers, Context } from '@graasp/sdk';
 import { DBConnection } from '../../../../drizzle/db';
 import { BaseLogger } from '../../../../logger';
 import { MemberNotSignedUp } from '../../../../utils/errors';
+import { ActionRepository } from '../../../action/action.repository';
 import { Member } from '../../../member/entities/member';
 import { MemberRepository } from '../../../member/repository';
 import { AuthService } from '../../service';
@@ -14,6 +15,7 @@ export class MagicLinkService {
   private readonly log: BaseLogger;
   private readonly authService: AuthService;
   private readonly memberRepository: MemberRepository;
+  private readonly actionRepository: ActionRepository;
 
   constructor(authService: AuthService, log: BaseLogger, memberRepository: MemberRepository) {
     this.authService = authService;
@@ -27,7 +29,7 @@ export class MagicLinkService {
 
   async login(db: DBConnection, body: { email: string }, url?: string) {
     const { email } = body;
-    const member = await this.memberRepository.getByEmail(email);
+    const member = await this.memberRepository.getByEmail(db, email);
 
     if (member) {
       await this.authService.generateLoginLinkAndEmailIt(member, { url });
@@ -39,7 +41,7 @@ export class MagicLinkService {
           extra: { type: 'email' },
         },
       ];
-      await actionRepository.postMany(actions);
+      await this.actionRepository.postMany(actions);
     } else {
       this.log.warn(`Login attempt with non-existent email '${email}'`);
       throw new MemberNotSignedUp({ email });

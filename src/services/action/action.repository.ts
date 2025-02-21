@@ -3,15 +3,15 @@ import { Between, EntityManager } from 'typeorm';
 
 import { AggregateBy, AggregateFunction, AggregateMetric, CountGroupBy, UUID } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../plugins/datasource';
-import { AbstractRepository } from '../../../repositories/AbstractRepository';
-import { MemberIdentifierNotFound } from '../../itemLogin/errors';
-import { actionSchema } from '../../member/plugins/export-data/schemas/schemas';
-import { schemaToSelectMapper } from '../../member/plugins/export-data/utils/selection.utils';
-import { DEFAULT_ACTIONS_SAMPLE_SIZE } from '../constants/constants';
-import { Action } from '../entities/action';
-import { aggregateExpressionNames, buildAggregateExpression } from '../utils/actions';
-import { validateAggregationParameters } from '../utils/utils';
+import { AppDataSource } from '../../plugins/datasource';
+import { AbstractRepository } from '../../repositories/AbstractRepository';
+import { MemberIdentifierNotFound } from '../itemLogin/errors';
+import { actionSchema } from '../member/plugins/export-data/schemas/schemas';
+import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils';
+import { DEFAULT_ACTIONS_SAMPLE_SIZE } from './constants/constants';
+import { Action } from './entities/action';
+import { aggregateExpressionNames, buildAggregateExpression } from './utils/actions';
+import { validateAggregationParameters } from './utils/utils';
 
 export class ActionRepository extends AbstractRepository<Action> {
   constructor(manager?: EntityManager) {

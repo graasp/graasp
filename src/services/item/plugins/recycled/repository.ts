@@ -1,7 +1,11 @@
+import { type Static } from '@sinclair/typebox';
+import { and, asc, count, eq, ilike, inArray, isNotNull, ne, or, sql } from 'drizzle-orm/sql';
 import { EntityManager, In } from 'typeorm';
 
 import { Paginated, Pagination, PermissionLevel } from '@graasp/sdk';
 
+import { DBConnection } from '../../../../drizzle/db';
+import { accounts, items, itemsRaw } from '../../../../drizzle/schema';
 import { MutableRepository } from '../../../../repositories/MutableRepository';
 import { DEFAULT_PRIMARY_KEY } from '../../../../repositories/const';
 import { Account } from '../../../account/entities/account';
@@ -81,5 +85,37 @@ export class RecycledItemDataRepository extends MutableRepository<RecycledItemDa
       item: { path: In(itemsPath) },
     });
     await this.delete(entries.map(({ id }) => id));
+  }
+
+  /**
+   * Return tree below item with deleted = true
+   * @param {Item} item item to get descendant tree from
+   * @param {boolean} [options.ordered=false] whether the descendants should be ordered by path, guarantees to iterate on parent before children
+   * @param {string[]} [options.types] filter out the items by type. If undefined or empty, all types are returned.
+   * @returns {Item[]}
+   */
+  async getDeletedDescendants(db: DBConnection, item: FolderItem) {
+    // TODO: no need with drizzle
+    // need order column to further sort in this function or afterwards
+    // if (ordered || selectOrder) {
+    //   query.addSelect('item.order');
+    // }
+    // if (!ordered) {
+    //   return query.getMany();
+    // }
+
+    return await db
+      .select()
+      .from(itemsRaw)
+      .where(
+        and(
+          and(
+            sql`item.path <@ ${itemsRaw.path}`,
+            ne(itemsRaw.id, item.id),
+            isNotNull(itemsRaw.deletedAt),
+          ),
+        ),
+      )
+      .orderBy(asc(itemsRaw.path));
   }
 }

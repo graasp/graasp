@@ -116,10 +116,13 @@ export class MemberRepository {
     // The frontend avoids sending agreement data to prevent manipulation of the agreement date.
     // The agreements links are included in the registration email as a reminder.
     const userAgreementsDate = new Date().toISOString();
-    return await db.insert(accounts).values({
-      ...data,
-      email,
-      userAgreementsDate,
-    });
+    return await db
+      .insert(accounts)
+      .values({
+        ...data,
+        email,
+        userAgreementsDate,
+      })
+      .returning();
   }
 }

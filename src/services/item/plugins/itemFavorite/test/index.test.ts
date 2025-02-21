@@ -15,7 +15,7 @@ import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemTestUtils } from '../../../test/fixtures/items';
 import { ItemFavorite } from '../entities/ItemFavorite';
 import { DuplicateFavoriteError } from '../errors';
-import { FavoriteRepository } from '../repositories/favorite';
+import { FavoriteRepository } from '../itemBookmark.repository';
 
 const rawRepository = AppDataSource.getRepository(ItemFavorite);
 const testUtils = new ItemTestUtils();

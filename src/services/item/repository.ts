@@ -1,6 +1,9 @@
 import { type Static } from '@sinclair/typebox';
-import { Brackets, DeepPartial, EntityManager, FindManyOptions, FindOneOptions, In } from 'typeorm';
-import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
+import { DBConnection } from '../../drizzle/db';
+import { items, itemsRaw, accounts , itemMemberships} from '../../drizzle/schema';
+import { and, eq, asc, ne,count , or,sql, isNotNull, ilike, inArray, desc} from 'drizzle-orm/sql';
+import { singleton } from 'tsyringe';
+
 import { v4 } from 'uuid';
 
 import {
@@ -60,10 +63,8 @@ type CreateItemBody = {
 
 type UpdateItemBody = DeepPartial<Item>;
 
-export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
-  constructor(manager?: EntityManager) {
-    super(DEFAULT_PRIMARY_KEY, Item, manager);
-  }
+@singleton()
+export class ItemRepository   {
 
   checkHierarchyDepth(item: Item, additionalNbLevel = 1) {
     // check if hierarchy it too deep
@@ -74,13 +75,11 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
     }
   }
 
-  async checkNumberOfDescendants(item: Item, maximum: number) {
+  async checkNumberOfDescendants(db:DBConnection, item: Item, maximum: number) {
     // check how "big the tree is" below the item
 
-    const numberOfDescendants = await this.repository
-      .createQueryBuilder('item')
-      .where('item.path <@ :path', { path: item.path })
-      .getCount();
+    const [{count:numberOfDescendants}] = await db.select({ count: count() }).from(items)
+      .where(sql`${items.path} <@ ${item.path}`)
 
     if (numberOfDescendants > maximum) {
       throw new TooManyDescendants(item.id);
@@ -128,8 +127,9 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
       parsedExtra = { folder: {} };
     }
 
-    const item = this.repository.create({
+    const item =  ({
       id,
+      path = parent ? `${parent.path}.${buildPathFromIds(id)}` : buildPathFromIds(id),
       name,
       description,
       type,
@@ -143,126 +143,162 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
       creator,
       order,
     });
-    item.path = parent ? `${parent.path}.${buildPathFromIds(id)}` : buildPathFromIds(id);
 
     return item;
   }
 
-  async getOne(id: string, options = { withDeleted: false }) {
-    return await super.findOne(id, {
-      relations: {
-        creator: true,
-      },
-      ...options,
-    });
+  // TODO: note: removed , options = { withDeleted: false }
+  async getOne(db: DBConnection, id: string) {
+
+const result = await db.select().from(items)
+.leftJoin(accounts, eq(items.creatorId, accounts.id))
+.where(eq(items.id, id)).limit(1)
+
+return result.map(({ account, item_view }) => ({
+  ...item_view,
+  creator:account,
+}));
+
   }
 
+  // TODO: note: removed  options: Pick<FindOneOptions<Item>, 'withDeleted'> = { withDeleted: false },
   async getOneOrThrow(
-    pkValue: string,
-    options: Pick<FindOneOptions<Item>, 'withDeleted'> = { withDeleted: false },
+    db: DBConnection,
+    id: string,
   ) {
-    return await super.getOneOrThrow(pkValue, options, new ItemNotFound(pkValue));
+
+const item = await db.select().from(items)
+.leftJoin(accounts, eq(items.creatorId, accounts.id))
+.where(eq(items.id, id)).limit(1)
+
+if(!item.length) {
+  throw new ItemNotFound(id)
+}
+return result.map(({ account, item_view }) => ({
+  ...item_view,
+  creator:account,
+}));
+  }
+
+  // TODO: note: removed  options: Pick<FindOneOptions<Item>, 'withDeleted'> = { withDeleted: false },
+  async getDeletedById(
+    db: DBConnection,
+    id: string,
+  ) {
+
+const item = await db.select().from(itemsRaw)
+.where(and(eq(itemsRaw.id, id), isNotNull(itemsRaw.deletedAt))).limit(1)
+
+if(!item) {
+  throw new ItemNotFound(id)
+}
+
+    return item
   }
 
   /**
    * options.includeCreator {boolean} if true, return full creator
    * options.types {boolean} if defined, filter out the items
    * */
-  async getAncestors(item: Item): Promise<Item[]> {
+  async getAncestors(db: DBConnection, item: Item)  {
     if (!item.path.includes('.')) {
       return [];
     }
 
-    return this.repository
-      .createQueryBuilder('item')
-      .leftJoinAndSelect('item.creator', 'creator')
-      .where('item.path @> :path', { path: item.path })
-      .andWhere('item.id != :id', { id: item.id })
-      .orderBy('path', 'ASC')
-      .getMany();
+    const result = await db.select().from(items).leftJoin(accounts, eq(items.creatorId, accounts.id)).where(and(sql`${items.path} @> ${ item.path }`, ne(items.id,item.id))).orderBy(asc(items.path) )
+
+return result.map(({ account, item_view }) => ({
+  ...item_view,
+  creator:account,
+}));
   }
 
   async getChildren(
+    db: DBConnection,
     actor: Actor,
     parent: Item,
     params?: ItemChildrenParams,
     options: { withOrder?: boolean } = {},
-  ): Promise<Item[]> {
+  )  {
     if (!isItemType(parent, ItemType.FOLDER)) {
       throw new ItemNotFolder({ id: parent.id });
     }
 
-    const query = this.repository
-      .createQueryBuilder('item')
-      .leftJoinAndSelect('item.creator', 'creator')
-      .where('path ~ :path', { path: `${parent.path}.*{1}` });
+    // reunite where conditions
+    // is direct child
+    const andConditions = [sql`${items.path} ~ ${`${parent.path}.*{1}`}`]
+
+      // .where('path ~ ${${parent.path}.*{1}}', { path: `${parent.path}.*{1}` });
 
     if (params?.types) {
       const types = params.types;
-      query.andWhere('item.type IN (:...types)', { types });
+      andConditions.push(inArray(items.type, types));
     }
 
     const allKeywords = params?.keywords?.filter((s) => s && s.length);
     if (allKeywords?.length) {
       const keywordsString = allKeywords.join(' ');
-      query.andWhere(
-        new Brackets((q) => {
+
           // search in english by default
-          q.where("item.search_document @@ plainto_tsquery('english', :keywords)", {
-            keywords: keywordsString,
-          });
+          const matchEnglishSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery('english', ${keywordsString})`
+
 
           // no dictionary
-          q.orWhere("item.search_document @@ plainto_tsquery('simple', :keywords)", {
-            keywords: keywordsString,
-          });
+          const matchSimpleSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery('simple', ${keywordsString})`
+
 
           // raw words search
-          allKeywords.forEach((k, idx) => {
-            q.orWhere(`item.name ILIKE :k_${idx}`, {
-              [`k_${idx}`]: `%${k}%`,
-            });
-          });
+          const matchRawWordSearchConditions = allKeywords.map(k =>  ilike(items.name, `%${k}%`)  )
+
+          const searchConditions =  [matchEnglishSearchCondition, matchSimpleSearchCondition, ...matchRawWordSearchConditions ]
 
           // search by member lang
           const memberLang = actor && isMember(actor) ? actor?.lang : DEFAULT_LANG;
+          let matchMemberLangSearchCondition =null
           if (memberLang && ALLOWED_SEARCH_LANGS[memberLang]) {
-            q.orWhere('item.search_document @@ plainto_tsquery(:lang, :keywords)', {
-              keywords: keywordsString,
-              lang: ALLOWED_SEARCH_LANGS[memberLang],
-            });
+          const matchMemberLangSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery(${ ALLOWED_SEARCH_LANGS[memberLang]}, ${keywordsString})`
+searchConditions.push(matchMemberLangSearchCondition)
           }
-        }),
-      );
-    }
 
+
+
+       andConditions.push(or(...searchConditions))
+        }
+
+        // use createdAt for ordering by default
+        // or use order for ordering
+       let orderByValues = [asc(items.createdAt)]
     if (params?.ordered) {
-      query
-        .orderBy('item.order', 'ASC')
-        // backup order by in case two items has same ordering
-        .addOrderBy('item.created_at', 'ASC');
-    } else {
-      query.orderBy('item.createdAt', 'ASC');
+      // backup order by in case two items has same ordering
+      orderByValues = [asc(items.order), asc(items.createdAt)]
     }
 
-    if (options.withOrder) {
-      query.addSelect('item.order');
-    }
+    // normally no need anymore with typeorm
+    // if (options.withOrder) {
+    //   query.addSelect('item.order');
+    // }
 
-    return query.getMany();
+    return  db.select().from(items)
+    .leftJoin(accounts, eq(items.creatorId, accounts.id))
+    .where( andConditions)
+    .orderBy(orderByValues)
   }
 
-  async getChildrenNames(parent: Item, { startWith }: { startWith?: string }): Promise<string[]> {
-    let query = this.repository
-      .createQueryBuilder('item')
-      .where('path ~ :path', { path: `${parent.path}.*{1}` });
+  async getChildrenNames(
+    db: DBConnection,
+    parent: Item,
+    { startWith }: { startWith?: string },
+  ): Promise<string[]> {
+const whereConditions = [sql`${items.path} ~ ${parent.path}.*{1}`]
+
 
     if (startWith) {
-      query = query.andWhere('item.name ILIKE :startWith', { startWith: `${startWith}%` });
+      whereConditions.push(ilike(items.name,`${startWith}%`))
     }
 
-    const raw = await query.getRawMany();
-    return raw.map(({ item_name }) => item_name);
+    const itemNames = await db.select({name:items.name}).from(itemsRaw)
+    .where(and(...whereConditions))
+    return itemNames.map(({ name }) => name);
   }
 
   /**
@@ -273,124 +309,87 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
    * @returns {Item[]}
    */
   async getDescendants(
+    db: DBConnection,
     item: FolderItem,
-    options?: { ordered?: boolean; types?: string[]; selectOrder?: boolean },
+    options?: { ordered?: boolean; types?: string[];   },
   ): Promise<Item[]> {
     // TODO: LEVEL depth
-    const { ordered = true, types, selectOrder } = options ?? {};
+    const { ordered = true, types } = options ?? {};
 
-    const query = this.repository
-      .createQueryBuilder('item')
-      .leftJoinAndSelect('item.creator', 'creator')
-      .where('item.path <@ :path', { path: item.path })
-      .andWhere('item.id != :id', { id: item.id });
-
+const whereConditions =[sql`${items.path} <@ ${item.path}`, ne(items.id,item.id)]
     if (types && types.length > 0) {
-      query.andWhere('item.type IN (:...types)', { types });
+      whereConditions.push(inArray(items.type, types))
     }
 
+    // TODO: no need with drizzle
     // need order column to further sort in this function or afterwards
-    if (ordered || selectOrder) {
-      query.addSelect('item.order');
-    }
+    // if (ordered || selectOrder) {
+    //   query.addSelect('item.order');
+    // }
+    // if (!ordered) {
+    //   return query.getMany();
+    // }
 
-    if (!ordered) {
-      return query.getMany();
-    }
+    const result = await db.select().from(items).leftJoin(accounts, eq(items.creatorId, accounts.id)).where(and(whereConditions)).orderBy(asc(items.path) )
 
-    const descendants = await query.getMany();
+    const descendants= result.map(({ account, item_view }) => ({
+      ...item_view,
+      creator:account,
+    }));
+
     return sortChildrenForTreeWith(descendants, item);
   }
 
-  async getManyDescendants(
-    items: Item[],
-    { withDeleted = false }: { withDeleted?: boolean } = {},
-  ): Promise<Item[]> {
-    // TODO: LEVEL depth
-    if (items.length === 0) {
-      return [];
-    }
-    const query = this.repository.createQueryBuilder('item');
-
-    if (withDeleted) {
-      query.withDeleted();
-    }
-
-    query.leftJoinAndSelect('item.creator', 'creator').where('item.id NOT IN(:...ids)', {
-      ids: items.map(({ id }) => id),
-    });
-
-    query.andWhere(
-      new Brackets((q) => {
-        items.forEach((item) => {
-          const key = `path_${item.path}`;
-          q.orWhere(`item.path <@ :${key}`, { [key]: item.path });
-        });
-      }),
-    );
-
-    return query.getMany();
-  }
-
-  async getMany(ids: string[], args: { throwOnError?: boolean; withDeleted?: boolean } = {}) {
+  async getMany(
+    db: DBConnection,
+    ids: string[],
+    args: { throwOnError?: boolean; withDeleted?: boolean } = {},
+  ) {
     if (!ids.length) {
       return { data: {}, errors: [] };
     }
 
     const { throwOnError = false } = args;
-    const items = await this.repository.find({
-      where: { id: In(ids) },
-      relations: { creator: true },
-      withDeleted: Boolean(args.withDeleted),
-    });
-    const result = mapById<Item>({
+
+    const result = (await db.select().from(items).leftJoin(accounts, eq(items.creatorId, accounts.id)).where(inArray(items.id, ids))).map(({ account, item_view }) => ({
+      ...item_view,
+      creator:account,
+    }));
+
+    const mappedResult = mapById({
       keys: ids,
-      findElement: (id) => items.find(({ id: thisId }) => thisId === id),
+      findElement: (id) => result.find(({ id: thisId }) => thisId === id),
       buildError: (id) => new ItemNotFound(id),
     });
 
-    if (throwOnError && result.errors.length) {
-      throw result.errors[0];
+    if (throwOnError && mappedResult.errors.length) {
+      throw mappedResult.errors[0];
     }
 
-    return result;
+    return mappedResult;
   }
 
-  async getNumberOfLevelsToFarthestChild(item: Item): Promise<number> {
-    const farthestItem = await this.repository
-      .createQueryBuilder('item')
-      .addSelect(`nlevel(path) - nlevel('${item.path}')`)
-      .where('item.path <@ :path', { path: item.path })
-      .andWhere('id != :id', { id: item.id })
-      .orderBy('nlevel(path)', 'DESC')
-      .limit(1)
-      .getOne();
-    return farthestItem?.path?.split('.')?.length ?? 0;
+  async getNumberOfLevelsToFarthestChild(db: DBConnection, item: Item): Promise<number> {
+    const farthestItem = await db.select({path:items.path}).from(items)
+    .where(and(sql`${items.path} <@ ${item.path}`, ne(items.id, item.id)))
+    .orderBy(desc(sql`nlevel(path)`))
+    .limit(1)
+    // await this.repository
+    //   .createQueryBuilder('item')
+    //   .addSelect(`nlevel(path) - nlevel('${item.path}')`)
+    //   .where('item.path <@ :path', { path: item.path })
+    //   .andWhere('id != :id', { id: item.id })
+    //   .orderBy('nlevel(path)', 'DESC')
+    //   .limit(1)
+    //   .getOne();
+    return farthestItem?.[0]?.path?.split('.')?.length ?? 0;
   }
 
-  /**
-   * Return all the items where the creator is the given actor.
-   * It even returns the item if the actor is the creator but without permissions on it !
-   *
-   * @param memberId The creator of the items.
-   * @returns an array of items created by the actor.
-   */
-  async getForMemberExport(memberId: string): Promise<Item[]> {
-    if (!memberId) {
-      throw new MemberIdentifierNotFound();
-    }
+  async getOwn(db: DBConnection, memberId: string): Promise<Item[]> {
 
-    return this.repository.find({
-      select: schemaToSelectMapper(itemSchema),
-      where: { creator: { id: memberId } },
-      order: { updatedAt: 'DESC' },
-      relations: {
-        creator: true,
-      },
-    });
-  }
+    db.select().from(items).leftJoin(accounts, eq(items.creatorId, accounts.id))
+    .innerJoin(itemMemberships, sql`${itemMemberships.itemPath} @> ${items.path}`)
 
-  async getOwn(memberId: string): Promise<Item[]> {
     return this.repository
       .createQueryBuilder('item')
       .leftJoinAndSelect('item.creator', 'creator')
@@ -402,7 +401,7 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
       .getMany();
   }
 
-  async move(item: Item, parentItem?: Item): Promise<Item> {
+  async move(db: DBConnection, item: Item, parentItem?: Item): Promise<Item> {
     if (parentItem) {
       // attaching tree to new parent item
       const { id: parentItemId, path: parentItemPath } = parentItem;
@@ -450,7 +449,7 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
     return await this.getOneOrThrow(item.id);
   }
 
-  async updateOne(id: string, data: UpdateItemBody) {
+  async updateOne(db: DBConnection, id: string, data: UpdateItemBody) {
     // update only if data is not empty
     if (!Object.keys(data).length) {
       throw new IllegalArgumentException("The item's body cannot be empty!");
@@ -482,7 +481,7 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
     return await super.updateOne(id, newData);
   }
 
-  public async addOne({ item, creator, parentItem }: CreateItemBody) {
+  public async addOne(db: DBConnection, { item, creator, parentItem }: CreateItemBody) {
     const newItem = this.createOne({
       ...item,
       creator,
@@ -493,7 +492,7 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
   }
 
   /////// -------- COPY
-  async copy(
+  async copy(db: DBConnection,
     item: Item,
     creator: Member,
     siblingsName: string[],
@@ -529,7 +528,7 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
    * @param siblings Siblings that the copied item will have
    * @param parentItem Parent item whose path will 'prefix' all paths
    */
-  private async _copy(original: Item, creator: Member, siblingsName: string[], parentItem?: Item) {
+  private async _copy(db: DBConnection, original: Item, creator: Member, siblingsName: string[], parentItem?: Item) {
     const old2New = new Map<string, { copy: Item; original: Item }>();
 
     // get next order value
@@ -557,7 +556,7 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
    * @param original
    * @param old2New mapping from original item to copied data, in-place updates
    */
-  private async copyDescendants(
+  private async copyDescendants(db: DBConnection,
     original: FolderItem,
     creator: Member,
     old2New: Map<string, { copy: Item; original: Item }>,
@@ -663,7 +662,7 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
    * @param itemType file item type
    * @returns total storage used by file items
    */
-  async getItemSumSize(memberId: string, itemType: FileItemType): Promise<number> {
+  async getItemSumSize(db: DBConnection, memberId: string, itemType: FileItemType): Promise<number> {
     return parseInt(
       (
         await this.repository
@@ -676,7 +675,7 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
     );
   }
 
-  async getFilesMetadata(
+  async getFilesMetadata(db: DBConnection,
     memberId: string,
     itemType: FileItemType,
     { page = FILE_METADATA_MIN_PAGE, pageSize = FILE_METADATA_DEFAULT_PAGE_SIZE }: Pagination,
@@ -717,7 +716,7 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
   }
 
   // to remove: unused
-  async getAllPublishedItems(): Promise<Item[]> {
+  async getAllPublishedItems(db: DBConnection): Promise<Item[]> {
     const publishedRows = await this.repository
       .createQueryBuilder('item')
       .leftJoinAndSelect('item.creator', 'creator')
@@ -732,7 +731,7 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
    * @param memberId
    * @returns published items for given member
    */
-  async getPublishedItemsForMember(memberId: Member['id']): Promise<Item[]> {
+  async getPublishedItemsForMember(db: DBConnection, memberId: Member['id']): Promise<Item[]> {
     // get for membership write and admin -> createquerybuilder
     const result = await this.repository
       .createQueryBuilder('item')
@@ -748,13 +747,13 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
     return result;
   }
 
-  async findAndCount(args: FindManyOptions<Item>) {
+  async findAndCount(db: DBConnection, args: FindManyOptions<Item>) {
     return this.repository.findAndCount(args);
   }
-  async softRemove(args: Item[]) {
+  async softRemove(db: DBConnection, args: Item[]) {
     return this.repository.softRemove(args);
   }
-  async recover(args: Item[]) {
+  async recover(db: DBConnection, args: Item[]) {
     return this.repository.recover(args);
   }
 
@@ -766,7 +765,7 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
    * @param previousItemId id of the item whose order will be smaller than the returned order
    * @returns {number|null} next valid order value
    */
-  async getNextOrderCount(
+  async getNextOrderCount(db: DBConnection,
     parentPath?: Item['path'],
     previousItemId?: Item['id'],
   ): Promise<number | null> {
@@ -821,7 +820,7 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
    * @param parentPath scope of the order
    * @returns {number|null} first valid order value, can be `null` for root
    */
-  async getFirstOrderValue(parentPath?: Item['path']) {
+  async getFirstOrderValue(db: DBConnection, parentPath?: Item['path']) {
     // no order for root
     if (!parentPath) {
       return null;
@@ -841,7 +840,7 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
     return DEFAULT_ORDER;
   }
 
-  async reorder(item: Item, parentPath: Item['path'], previousItemId?: string) {
+  async reorder(db: DBConnection, item: Item, parentPath: Item['path'], previousItemId?: string) {
     // no defined previous item is set at beginning
     let order;
     if (!previousItemId) {
@@ -853,10 +852,10 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
     await this.repository.update(item.id, { order });
 
     // TODO: optimize
-    return await this.getOneOrThrow(item.id);
+    return await this.getOneOrThrow(db: DBConnection, item.id);
   }
 
-  async rescaleOrder(actor: Actor, parentItem: Item) {
+  async rescaleOrder(db: DBConnection, actor: Actor, parentItem: Item) {
     const children = await this.getChildren(
       actor,
       parentItem,

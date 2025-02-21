@@ -2,13 +2,13 @@ import { singleton } from 'tsyringe';
 
 import { PermissionLevel } from '@graasp/sdk';
 
-import { db } from '../../../../../drizzle/db';
-import { Repositories } from '../../../../../utils/repositories';
-import { filterOutPackedItems } from '../../../../authorization';
-import { Member } from '../../../../member/entities/member';
-import { ItemService } from '../../../service';
-import { PackedItemFavorite } from '../entities/ItemFavorite';
-import { ItemBookmarkRepository } from '../repositories/favorite';
+import { db } from '../../../../drizzle/db';
+import { Repositories } from '../../../../utils/repositories';
+import { filterOutPackedItems } from '../../../authorization';
+import { Member } from '../../../member/entities/member';
+import { ItemService } from '../../service';
+import { PackedItemFavorite } from './entities/ItemFavorite';
+import { ItemBookmarkRepository } from './itemBookmark.repository';
 
 @singleton()
 export class FavoriteService {

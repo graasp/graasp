@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
@@ -13,7 +14,7 @@ import { exportMemberData } from './schemas/schemas';
 import { ExportMemberDataService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { db } = fastify;
+  const { db: typeormDB } = fastify;
   const exportMemberDataService = resolveDependency(ExportMemberDataService);
 
   // download all related data to the given user
@@ -26,11 +27,14 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user }, reply) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      db.transaction(async (manager) => {
+      // HACK: Remove once all queries inside use drizzle
+      typeormDB.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
-        await exportMemberDataService.requestDataExport({
-          member,
-          repositories,
+        db.transaction(async (tx) => {
+          await exportMemberDataService.requestDataExport(tx, {
+            member,
+            repositories,
+          });
         });
       });
 

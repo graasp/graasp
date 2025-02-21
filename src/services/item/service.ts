@@ -499,7 +499,7 @@ export class ItemService {
   async delete(actor: Member, repositories: Repositories, itemId: UUID) {
     const { itemRepository } = repositories;
     // check memberships
-    const item = await itemRepository.getOneOrThrow(itemId, { withDeleted: true });
+    const item = await itemRepository.getDeletedById(itemId);
     await validatePermission(repositories, PermissionLevel.Admin, actor, item);
 
     // check how "big the tree is" below the item

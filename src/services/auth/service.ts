@@ -1,6 +1,7 @@
 import { sign } from 'jsonwebtoken';
 import { singleton } from 'tsyringe';
 
+import { MemberDTO } from '../../drizzle/schema';
 import { TRANSLATIONS } from '../../langs/constants';
 import { BaseLogger } from '../../logger';
 import { MailBuilder } from '../../plugins/mailer/builder';
@@ -63,7 +64,7 @@ export class AuthService {
   };
 
   generateLoginLinkAndEmailIt = async (
-    member: Member,
+    member: MemberDTO,
     options: { challenge?: string; url?: string } = {},
   ): Promise<void> => {
     const { challenge, url } = options;

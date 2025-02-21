@@ -1,25 +1,21 @@
 import { v4 } from 'uuid';
 
-import { FastifyInstance } from 'fastify';
-
-import build, { clearDatabase } from '../../../../../../test/app';
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { saveMember } from '../../../../member/test/fixtures/members';
-import { ItemTestUtils } from '../../../test/fixtures/items';
-import { ItemFavorite } from '../entities/ItemFavorite';
-import { DuplicateFavoriteError, ItemFavoriteNotFound } from '../errors';
-import { FavoriteRepository } from './favorite';
+import { clearDatabase } from '../../../../../test/app';
+import { AppDataSource } from '../../../../plugins/datasource';
+import { saveMember } from '../../../member/test/fixtures/members';
+import { ItemTestUtils } from '../../test/fixtures/items';
+import { ItemFavorite } from './entities/ItemFavorite';
+import { DuplicateBookmarkError, ItemBookmarkNotFound } from './errors';
+import { ItemBookmarkRepository } from './itemBookmark.repository';
 
 const testUtils = new ItemTestUtils();
 
 describe('FavoriteRepository', () => {
-  let app: FastifyInstance;
   let actor;
   let favorites: ItemFavorite[];
 
   beforeEach(async () => {
-    ({ app, actor } = await build());
-    const r = new FavoriteRepository();
+    const r = new ItemBookmarkRepository();
     const rawRepository = AppDataSource.getRepository(ItemFavorite);
     const item1 = await testUtils.saveItem({ actor });
     const item2 = await testUtils.saveItem({ actor });
@@ -43,7 +39,7 @@ describe('FavoriteRepository', () => {
 
   describe('get', () => {
     it('returns favorite by id', async () => {
-      const r = new FavoriteRepository();
+      const r = new ItemBookmarkRepository();
       const f = favorites[0];
       const result = await r.get(f.id);
       expect(result).toMatchObject({
@@ -52,22 +48,22 @@ describe('FavoriteRepository', () => {
     });
 
     it('throws if id is undefined', async () => {
-      const r = new FavoriteRepository();
+      const r = new ItemBookmarkRepository();
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      await expect(r.get(undefined!)).rejects.toMatchObject(new ItemFavoriteNotFound(undefined));
+      await expect(r.get(undefined!)).rejects.toMatchObject(new ItemBookmarkRepository());
     });
 
     it('throws if favorite does not exist', async () => {
-      const r = new FavoriteRepository();
+      const r = new ItemBookmarkRepository();
       const id = v4();
-      await expect(r.get(id)).rejects.toMatchObject(new ItemFavoriteNotFound(id));
+      await expect(r.get(id)).rejects.toMatchObject(new ItemBookmarkRepository(id));
     });
   });
 
   describe('getFavoriteForMember', () => {
     it('returns all favorites for member', async () => {
-      const r = new FavoriteRepository();
+      const r = new ItemBookmarkRepository();
 
       const result = await r.getFavoriteForMember(actor.id);
       expect(result).toHaveLength(favorites.length);
@@ -84,7 +80,7 @@ describe('FavoriteRepository', () => {
     });
 
     it('returns empty array if no favorite', async () => {
-      const r = new FavoriteRepository();
+      const r = new ItemBookmarkRepository();
 
       const result = await r.getFavoriteForMember(v4());
       expect(result).toHaveLength(0);
@@ -93,7 +89,7 @@ describe('FavoriteRepository', () => {
 
   describe('post', () => {
     it('save and return favorite', async () => {
-      const r = new FavoriteRepository();
+      const r = new ItemBookmarkRepository();
       const item = await testUtils.saveItem({ actor });
 
       // returned value
@@ -109,10 +105,10 @@ describe('FavoriteRepository', () => {
     });
 
     it('throws if duplicate', async () => {
-      const r = new FavoriteRepository();
+      const r = new ItemBookmarkRepository();
 
       await expect(r.post(favorites[0].item.id, favorites[0].member.id)).rejects.toMatchObject(
-        new DuplicateFavoriteError({
+        new DuplicateBookmarkError({
           itemId: favorites[0].item.id,
           memberId: favorites[0].member.id,
         }),
@@ -122,18 +118,18 @@ describe('FavoriteRepository', () => {
 
   describe('deleteOne', () => {
     it('delete favorite', async () => {
-      const r = new FavoriteRepository();
+      const r = new ItemBookmarkRepository();
       const f = favorites[0];
       // returned value
       const result = await r.deleteOne(f.item.id, f.member.id);
       expect(result).toEqual(f.item.id);
 
       // saved value
-      await expect(r.get(f.id)).rejects.toMatchObject(new ItemFavoriteNotFound(f.id));
+      await expect(r.get(f.id)).rejects.toMatchObject(new ItemBookmarkNotFound(f.id));
     });
 
     it('do nothing if no favorite exists', async () => {
-      const r = new FavoriteRepository();
+      const r = new ItemBookmarkRepository();
       const item = await testUtils.saveItem({ actor });
 
       // returned value

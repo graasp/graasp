@@ -10,6 +10,8 @@ import { buildRepositories } from '../../../utils/repositories';
 import { MeiliSearchWrapper } from '../../item/plugins/publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../../item/plugins/thumbnail/service';
 import { ItemService } from '../../item/service';
+import { ItemMembershipRepository } from '../../itemMembership/repository';
+import { MemberRepository } from '../../member/repository';
 import { MemberService } from '../../member/service';
 import { saveMember } from '../../member/test/fixtures/members';
 import { ThumbnailService } from '../../thumbnail/service';
@@ -20,10 +22,11 @@ const service = new ActionService(
   new ItemService(
     {} as ThumbnailService,
     {} as ItemThumbnailService,
+    {} as ItemMembershipRepository,
     {} as MeiliSearchWrapper,
     {} as BaseLogger,
   ),
-  new MemberService({} as MailerService, {} as BaseLogger),
+  new MemberService({} as MailerService, {} as MemberRepository, {} as BaseLogger),
   {} as BaseLogger,
 );
 const rawRepository = AppDataSource.getRepository(Action);
