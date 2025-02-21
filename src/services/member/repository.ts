@@ -1,35 +1,36 @@
-import { EntityManager, In } from 'typeorm';
+import { and, eq, inArray } from 'drizzle-orm/sql';
+import { singleton } from 'tsyringe';
 
-import { UUID } from '@graasp/sdk';
+import { AccountType, UUID } from '@graasp/sdk';
 
-import { AbstractRepository } from '../../repositories/AbstractRepository';
+import { DBConnection } from '../../drizzle/db';
+import { AccountCreationDTO, MemberCreationDTO, accounts, membersView } from '../../drizzle/schema';
 import { MemberNotFound } from '../../utils/errors';
 import { mapById } from '../utils';
-import { Member } from './entities/member';
 
-export class MemberRepository extends AbstractRepository<Member> {
-  constructor(manager?: EntityManager) {
-    super(Member, manager);
-  }
-  async deleteOne(id: string) {
-    return this.repository.delete(id);
+@singleton()
+export class MemberRepository {
+  async deleteOne(db: DBConnection, id: string) {
+    return db
+      .delete(accounts)
+      .where(and(eq(accounts.id, id), eq(accounts.type, AccountType.Individual)));
   }
 
-  async get(id: string): Promise<Member> {
+  async get(db: DBConnection, id: string) {
     // additional check that id is not null
     // o/w empty parameter to findOneBy return the first entry
     if (!id) {
       throw new MemberNotFound({ id });
     }
-    const m = await this.repository.findOneBy({ id });
-    if (!m) {
+    const m = await db.select().from(membersView).where(eq(membersView.id, id)).limit(1);
+    if (!m.length) {
       throw new MemberNotFound({ id });
     }
-    return m;
+    return m[0];
   }
 
-  async getMany(ids: string[]) {
-    const members = await this.repository.find({ where: { id: In(ids) } });
+  async getMany(db: DBConnection, ids: string[]) {
+    const members = await db.select().from(membersView).where(inArray(accounts.id, ids));
     return mapById({
       keys: ids,
       findElement: (id) => members.find(({ id: thisId }) => thisId === id),
@@ -37,9 +38,9 @@ export class MemberRepository extends AbstractRepository<Member> {
     });
   }
 
-  async getByEmail(emailString: string, args: { shouldExist?: boolean } = {}) {
+  async getByEmail(db: DBConnection, emailString: string, args: { shouldExist?: boolean } = {}) {
     const email = emailString.toLowerCase();
-    const member = await this.repository.findOneBy({ email });
+    const member = await db.select().from(membersView).where(eq(accounts.email, email));
 
     if (args.shouldExist) {
       if (!member) {
@@ -49,8 +50,8 @@ export class MemberRepository extends AbstractRepository<Member> {
     return member;
   }
 
-  async getManyByEmail(emails: string[]) {
-    const members = await this.repository.find({ where: { email: In(emails) } });
+  async getManyByEmails(db: DBConnection, emails: string[]) {
+    const members = await db.select().from(membersView).where(inArray(accounts.email, emails));
     return mapById({
       keys: emails,
       findElement: (email) => members.find(({ email: thisEmail }) => thisEmail === email),
@@ -59,15 +60,16 @@ export class MemberRepository extends AbstractRepository<Member> {
   }
 
   async patch(
+    db: DBConnection,
     id: UUID,
     body: Partial<
       Pick<
-        Member,
+        AccountCreationDTO,
         'extra' | 'email' | 'name' | 'enableSaveActions' | 'lastAuthenticatedAt' | 'isValidated'
       >
     >,
   ) {
-    const newData: Partial<Member> = {};
+    const newData: Partial<AccountCreationDTO> = {};
 
     if (body.name) {
       newData.name = body.name;
@@ -78,8 +80,8 @@ export class MemberRepository extends AbstractRepository<Member> {
     }
 
     if (body.extra) {
-      const member = await this.get(id);
-      newData.extra = Object.assign({}, member.extra, body?.extra);
+      const member = await this.get(db, id);
+      newData.extra = Object.assign({}, JSON.parse(member.extra), body?.extra);
     }
 
     if (typeof body.enableSaveActions === 'boolean') {
@@ -97,28 +99,27 @@ export class MemberRepository extends AbstractRepository<Member> {
     // update if newData is not empty
     if (Object.keys(newData).length) {
       // TODO: check member exists
-      await this.repository.update(id, newData);
+      return await db.update(accounts).set(newData).where(eq(accounts.id, id));
     }
     // todo: optimize?
-    return this.get(id);
+    return this.get(db, id);
   }
 
-  async post(data: Partial<Member> & Pick<Member, 'email'>): Promise<Member> {
+  async post(
+    db: DBConnection,
+    data: Partial<MemberCreationDTO> & Pick<MemberCreationDTO, 'email' | 'name'>,
+  ) {
     const email = data.email.toLowerCase();
 
     // The backend assumes user agrees to terms by creating an account.
     // The auth frontend only blocks the user to create an account without checking the boxes.
     // The frontend avoids sending agreement data to prevent manipulation of the agreement date.
     // The agreements links are included in the registration email as a reminder.
-    const userAgreementsDate = new Date();
-    const createdMember = await this.repository.insert({
+    const userAgreementsDate = new Date().toISOString();
+    return await db.insert(accounts).values({
       ...data,
       email,
       userAgreementsDate,
     });
-
-    // TODO: better solution?
-    // query builder returns creator as id and extra as string
-    return this.get(createdMember.identifiers[0].id);
   }
 }

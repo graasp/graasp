@@ -115,7 +115,7 @@ describe('MemberRepository', () => {
     it('get members by email', async () => {
       const members = await saveMembers();
 
-      const ms = await memberRepository.getManyByEmail(members.map((m) => m.email));
+      const ms = await memberRepository.getManyByEmails(members.map((m) => m.email));
 
       for (const m of members) {
         const expectM = ms.data[m.email];
@@ -131,7 +131,7 @@ describe('MemberRepository', () => {
       const errorMemberMail = 'email@email.com';
 
       const emails = [...members.map((m) => m.email), errorMemberMail];
-      const ms = await memberRepository.getManyByEmail(emails);
+      const ms = await memberRepository.getManyByEmails(emails);
 
       for (const m of members) {
         const expectM = ms.data[m.email];

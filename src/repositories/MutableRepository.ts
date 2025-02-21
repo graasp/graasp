@@ -1,6 +1,7 @@
 import { BaseEntity, DeepPartial, EntityManager, FindOptionsWhere } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
 
+import { DBConnection } from '../drizzle/db';
 import { KeysOfString } from '../types';
 import { assertIsError } from '../utils/assertions';
 import { Entity } from './AbstractRepository';
@@ -40,7 +41,7 @@ export abstract class MutableRepository<
    * @param entity The partial entity data containing the updated properties.
    * @throws IllegalArgumentException if the given PK is undefined or empty.
    */
-  public async updateOne(pkValue: string, entity: UpdateBody): Promise<T> {
+  public async updateOne(db: DBConnection, pkValue: string, entity: UpdateBody): Promise<T> {
     this.throwsIfPKIsInvalid(pkValue);
 
     try {

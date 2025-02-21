@@ -21,6 +21,7 @@ import {
   getParentFromPath,
 } from '@graasp/sdk';
 
+import { DBConnection } from '../../drizzle/db';
 import { BaseLogger } from '../../logger';
 import {
   CannotReorderRootItem,
@@ -42,6 +43,7 @@ import {
   validatePermissionMany,
 } from '../authorization';
 import { ItemMembership } from '../itemMembership/entities/ItemMembership';
+import { ItemMembershipRepository } from '../itemMembership/repository';
 import { Actor, Member } from '../member/entities/member';
 import { ThumbnailService } from '../thumbnail/service';
 import { mapById } from '../utils';
@@ -61,6 +63,7 @@ export class ItemService {
   private readonly thumbnailService: ThumbnailService;
   private readonly meilisearchWrapper: MeiliSearchWrapper;
   private readonly itemThumbnailService: ItemThumbnailService;
+  private readonly itemMembershipRepository: ItemMembershipRepository;
 
   hooks = new HookManager<{
     create: { pre: { item: Partial<Item> }; post: { item: Item } };
@@ -88,11 +91,13 @@ export class ItemService {
   constructor(
     thumbnailService: ThumbnailService,
     itemThumbnailService: ItemThumbnailService,
+    itemMembershipRepository: ItemMembershipRepository,
     meilisearchWrapper: MeiliSearchWrapper,
     log: BaseLogger,
   ) {
     this.thumbnailService = thumbnailService;
     this.itemThumbnailService = itemThumbnailService;
+    this.itemMembershipRepository = itemMembershipRepository;
     this.meilisearchWrapper = meilisearchWrapper;
     this.log = log;
   }
@@ -348,7 +353,7 @@ export class ItemService {
     pagination: Pagination,
   ): Promise<Paginated<PackedItem>> {
     const { data: memberships, totalCount } =
-      await repositories.itemMembershipRepository.getAccessibleItems(member, params, pagination);
+      await this.itemMembershipRepository.getAccessibleItems(member, params, pagination);
 
     const items = memberships.map(({ item }) => item);
     const resultOfMembership = mapById<ItemMembership[]>({
@@ -643,11 +648,17 @@ export class ItemService {
    * * `inserts`' `itemPath`s already have the expected paths for the destination;
    * * `deletes`' `itemPath`s have the path changes after `this.itemService.move()`.
    */
-  async _move(actor: Member, repositories: Repositories, item: Item, parentItem?: Item) {
-    const { itemRepository, itemMembershipRepository } = repositories;
+  async _move(
+    db: DBConnection,
+    actor: Member,
+    repositories: Repositories,
+    item: Item,
+    parentItem?: Item,
+  ) {
+    const { itemRepository } = repositories;
     // identify all the necessary adjustments to memberships
     // TODO: maybe this whole 'magic' should happen in a db procedure?
-    const { inserts, deletes } = await itemMembershipRepository.moveHousekeeping(
+    const { inserts, deletes } = await this.itemMembershipRepository.moveHousekeeping(
       item,
       actor,
       parentItem,
@@ -657,10 +668,10 @@ export class ItemService {
 
     // adjust memberships to keep the constraints
     if (inserts.length) {
-      await itemMembershipRepository.addMany(inserts);
+      await this.itemMembershipRepository.addMany(db, inserts);
     }
     if (deletes.length) {
-      await itemMembershipRepository.deleteManyByItemPathAndAccount(deletes);
+      await this.itemMembershipRepository.deleteManyByItemPathAndAccount(db, deletes);
     }
 
     return result;

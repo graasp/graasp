@@ -1,6 +1,7 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Client } from 'pg';
 
+import * as relations from './relations';
 import * as schema from './schema';
 
 export const client = new Client({
@@ -11,5 +12,5 @@ export const client = new Client({
   database: process.env.DB_NAME!,
 });
 // { schema } is used for relational queries
-export const db = drizzle({ client, schema });
-export type DBConnection = typeof db;
+export const db = drizzle({ client, schema: { ...schema, ...relations } });
+export type DBConnection = Omit<typeof db, '$client'>;

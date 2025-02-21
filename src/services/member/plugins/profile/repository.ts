@@ -1,58 +1,46 @@
-import { EntityManager } from 'typeorm';
+import { and, eq, inArray } from 'drizzle-orm/sql';
 import { v4 } from 'uuid';
 
-import { Member } from '@graasp/sdk';
-
-import { AbstractRepository } from '../../../../repositories/AbstractRepository';
+import { DBConnection } from '../../../../drizzle/db';
+import { memberProfiles } from '../../../../drizzle/schema';
 import { MemberNotFound } from '../../../../utils/errors';
-import { MemberProfile } from './entities/profile';
 import { IMemberProfile } from './types';
 
-class MemberProfileRepository extends AbstractRepository<MemberProfile> {
-  constructor(manager?: EntityManager) {
-    super(MemberProfile, manager);
-  }
+class MemberProfileRepository {
+  async createOne(db: DBConnection, memberId: string, payload: IMemberProfile) {
+    const {
+      bio,
+      visibility = false,
+      facebookID: facebookId,
+      linkedinID: linkedinId,
+      twitterID: twitterId,
+    } = payload;
 
-  async createOne(member: Member, payload: IMemberProfile): Promise<MemberProfile> {
-    const { bio, visibility = false, facebookID, linkedinID, twitterID } = payload;
-
-    const id = v4();
-
-    const memberProfile = this.repository.create({
-      id,
+    const memberProfile = await db.insert(memberProfiles).values({
       bio,
       visibility,
-      facebookID,
-      linkedinID,
-      twitterID,
-      member,
+      facebookId,
+      linkedinId,
+      twitterId,
+      memberId,
     });
-    await this.repository.insert(memberProfile);
     return memberProfile;
   }
 
-  async getByMemberId(
-    memberId: string,
-    filter?: {
-      visibility?: boolean;
-    },
-  ): Promise<MemberProfile | null> {
+  async getByMemberId(db: DBConnection, memberId: string, visibility: boolean) {
     if (!memberId) {
       throw new MemberNotFound({ id: memberId });
     }
-    const memberProfile = await this.repository.findOne({
-      where: { member: { id: memberId }, visibility: filter?.visibility },
-      relations: ['member'],
+    const memberProfile = await db.query.memberProfiles.findFirst({
+      where: and(eq(memberProfiles.memberId, memberId), eq(memberProfiles.visibility, visibility)),
+      with: { member: true },
     });
 
     return memberProfile;
   }
 
-  async patch(memberId: string, data: Partial<IMemberProfile>): Promise<MemberProfile | null> {
-    await this.repository.update({ member: { id: memberId } }, data);
-    const profile = await this.repository.findOneByOrFail({ member: { id: memberId } });
-
-    return profile;
+  async patch(db: DBConnection, memberId: string, data: Partial<IMemberProfile>) {
+    return db.update(memberProfiles).set(data).where(eq(memberProfiles.memberId, memberId));
   }
 }
 

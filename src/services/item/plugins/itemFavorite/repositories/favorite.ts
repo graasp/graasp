@@ -1,31 +1,29 @@
-import { EntityManager } from 'typeorm';
+import { eq } from 'drizzle-orm/sql';
+import { singleton } from 'tsyringe';
 
-import { AbstractRepository } from '../../../../../repositories/AbstractRepository';
+import { DBConnection } from '../../../../../drizzle/db';
+import { ItemBookmark, item, itemBookmark } from '../../../../../drizzle/schema';
 import { assertIsError } from '../../../../../utils/assertions';
 import { isDuplicateEntryError } from '../../../../../utils/typeormError';
 import { MemberIdentifierNotFound } from '../../../../itemLogin/errors';
 import { itemFavoriteSchema } from '../../../../member/plugins/export-data/schemas/schemas';
 import { schemaToSelectMapper } from '../../../../member/plugins/export-data/utils/selection.utils';
 import { Item } from '../../../entities/Item';
-import { ItemFavorite } from '../entities/ItemFavorite';
-import { DuplicateFavoriteError, ItemFavoriteNotFound } from '../errors';
+import { DuplicateBookmarkError, ItemBookmarkNotFound } from '../errors';
 
-export class FavoriteRepository extends AbstractRepository<ItemFavorite> {
-  constructor(manager?: EntityManager) {
-    super(ItemFavorite, manager);
-  }
-
-  async get(favoriteId: string): Promise<ItemFavorite> {
-    if (!favoriteId) {
-      throw new ItemFavoriteNotFound(favoriteId);
+@singleton()
+export class ItemBookmarkRepository {
+  async get(db: DBConnection, bookmarkId: string): Promise<ItemBookmark> {
+    if (!bookmarkId) {
+      throw new ItemBookmarkNotFound(bookmarkId);
     }
-    const favorite = await this.repository.findOne({
-      where: { id: favoriteId },
-      relations: { item: true, member: true },
+    const favorite = await db.query.itemBookmark.findFirst({
+      where: eq(itemBookmark.id, bookmarkId),
+      with: { item: true, account: true },
     });
 
     if (!favorite) {
-      throw new ItemFavoriteNotFound(favoriteId);
+      throw new ItemBookmarkNotFound(bookmarkId);
     }
     return favorite;
   }
@@ -34,16 +32,17 @@ export class FavoriteRepository extends AbstractRepository<ItemFavorite> {
    * Get favorite items by given memberId.
    * @param memberId user's id
    */
-  async getFavoriteForMember(memberId: string): Promise<ItemFavorite[]> {
-    // alias item_favorite table to favorite
-    const favorites = await this.repository
-      .createQueryBuilder('favorite')
-      // add relation to item, but use innerJoin to remove item that have been soft-deleted
-      .innerJoinAndSelect('favorite.item', 'item')
-      .innerJoinAndSelect('item.creator', 'member')
-      .where('favorite.member_id = :memberId', { memberId })
-      .getMany();
-    return favorites;
+  async getFavoriteForMember(db: DBConnection, memberId: string): Promise<(ItemBookmark & Item)[]> {
+    const bookmarks = await db
+      .select()
+      .from(itemBookmark)
+      .innerJoin(item, eq(itemBookmark.itemId, item.id))
+      .where(eq(itemBookmark.memberId, memberId));
+    const bookmarksResult = bookmarks.map(({ item_favorite, item_view }) => ({
+      ...item_favorite,
+      item: item_view,
+    }));
+    return bookmarksResult;
   }
 
   /**
@@ -77,7 +76,7 @@ export class FavoriteRepository extends AbstractRepository<ItemFavorite> {
     } catch (e) {
       assertIsError(e);
       if (isDuplicateEntryError(e)) {
-        throw new DuplicateFavoriteError({ itemId, memberId });
+        throw new DuplicateBookmarkError({ itemId, memberId });
       }
       throw e;
     }

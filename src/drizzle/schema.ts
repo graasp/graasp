@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm';
+import { getTableColumns, sql } from 'drizzle-orm';
 import {
   AnyPgColumn,
   bigint,
@@ -10,6 +10,7 @@ import {
   numeric,
   pgEnum,
   pgTable,
+  pgView,
   primaryKey,
   serial,
   text,
@@ -18,6 +19,9 @@ import {
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
+import { eq, isNull } from 'drizzle-orm/sql';
+
+import { AccountType } from '@graasp/sdk';
 
 import { ltree } from './customTypes';
 
@@ -61,10 +65,10 @@ export const itemPublished = pgTable(
       .primaryKey()
       .notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    creatorId: uuid('creator_id').references(() => account.id, { onDelete: 'set null' }),
+    creatorId: uuid('creator_id').references(() => accounts.id, { onDelete: 'set null' }),
     itemPath: ltree('item_path')
       .notNull()
-      .references(() => item.path, { onUpdate: 'cascade', onDelete: 'cascade' }),
+      .references(() => itemRaw.path, { onUpdate: 'cascade', onDelete: 'cascade' }),
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
   },
   (table) => [
@@ -76,6 +80,7 @@ export const itemPublished = pgTable(
   ],
 );
 
+export const permissionEnum = pgEnum('permission', ['read', 'write', 'admin']);
 export const itemMembership = pgTable(
   'item_membership',
   {
@@ -83,14 +88,14 @@ export const itemMembership = pgTable(
       .default(sql`uuid_generate_v4()`)
       .primaryKey()
       .notNull(),
-    permission: varchar({ length: 100 }).notNull(),
+    permission: permissionEnum().notNull(),
     itemPath: ltree('item_path')
       .notNull()
-      .references(() => item.path, { onUpdate: 'cascade', onDelete: 'cascade' }),
-    creatorId: uuid('creator_id').references(() => account.id, { onDelete: 'set null' }),
+      .references(() => itemRaw.path, { onUpdate: 'cascade', onDelete: 'cascade' }),
+    creatorId: uuid('creator_id').references(() => accounts.id, { onDelete: 'set null' }),
     accountId: uuid('account_id')
       .notNull()
-      .references(() => account.id, { onDelete: 'cascade' }),
+      .references(() => accounts.id, { onDelete: 'cascade' }),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
   },
@@ -119,8 +124,9 @@ export const itemMembership = pgTable(
     unique('item_membership-item-member').on(table.itemPath, table.accountId),
   ],
 );
+export type ItemMembership = typeof itemMembership.$inferSelect;
 
-export const memberPassword = pgTable(
+export const memberPasswords = pgTable(
   'member_password',
   {
     id: uuid()
@@ -130,7 +136,7 @@ export const memberPassword = pgTable(
     password: varchar({ length: 100 }).notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
-    memberId: uuid('member_id').references(() => account.id, { onDelete: 'cascade' }),
+    memberId: uuid('member_id').references(() => accounts.id, { onDelete: 'cascade' }),
   },
   (table) => [unique('member-password').on(table.memberId)],
 );
@@ -149,12 +155,12 @@ export const recycledItemData = pgTable(
   (table) => [
     foreignKey({
       columns: [table.creatorId],
-      foreignColumns: [account.id],
+      foreignColumns: [accounts.id],
       name: 'FK_3e3650ebd5c49843013429d510a',
     }).onDelete('set null'),
     foreignKey({
       columns: [table.itemPath],
-      foreignColumns: [item.path],
+      foreignColumns: [itemRaw.path],
       name: 'FK_f8a4db4476e3d81e18de5d63c42',
     })
       .onUpdate('cascade')
@@ -178,12 +184,12 @@ export const itemLike = pgTable(
     index('IDX_item_like_item').using('btree', table.itemId.asc().nullsLast().op('uuid_ops')),
     foreignKey({
       columns: [table.creatorId],
-      foreignColumns: [account.id],
+      foreignColumns: [accounts.id],
       name: 'FK_4a56eba1ce30dc93f118a51ff26',
     }).onDelete('cascade'),
     foreignKey({
       columns: [table.itemId],
-      foreignColumns: [item.id],
+      foreignColumns: [itemRaw.id],
       name: 'FK_159827eb667d019dc71372d7463',
     }).onDelete('cascade'),
     unique('id').on(table.creatorId, table.itemId),
@@ -205,12 +211,12 @@ export const itemFlag = pgTable(
   (table) => [
     foreignKey({
       columns: [table.itemId],
-      foreignColumns: [item.id],
+      foreignColumns: [itemRaw.id],
       name: 'FK_b04d0adf4b73d82537c92fa55ea',
     }).onDelete('cascade'),
     foreignKey({
       columns: [table.creatorId],
-      foreignColumns: [account.id],
+      foreignColumns: [accounts.id],
       name: 'FK_bde9b9ab1da1483a71c9b916dd2',
     }).onDelete('set null'),
     unique('item-flag-creator').on(table.type, table.creatorId, table.itemId),
@@ -237,12 +243,12 @@ export const itemCategory = pgTable(
     }).onDelete('cascade'),
     foreignKey({
       columns: [table.creatorId],
-      foreignColumns: [account.id],
+      foreignColumns: [accounts.id],
       name: 'FK_9a34a079b5b24f4396462546d26',
     }).onDelete('set null'),
     foreignKey({
       columns: [table.itemPath],
-      foreignColumns: [item.path],
+      foreignColumns: [itemRaw.path],
       name: 'FK_5681d1785eea699e9cae8818fe0',
     })
       .onUpdate('cascade')
@@ -280,12 +286,12 @@ export const chatMessage = pgTable(
   (table) => [
     foreignKey({
       columns: [table.itemId],
-      foreignColumns: [item.id],
+      foreignColumns: [itemRaw.id],
       name: 'FK_b31e627ea7a4787672e265a1579',
     }).onDelete('cascade'),
     foreignKey({
       columns: [table.creatorId],
-      foreignColumns: [account.id],
+      foreignColumns: [accounts.id],
       name: 'FK_71fdcb9038eca1b903102bdfd17',
     }).onDelete('set null'),
   ],
@@ -312,7 +318,7 @@ export const chatMention = pgTable(
     }).onDelete('cascade'),
     foreignKey({
       columns: [table.accountId],
-      foreignColumns: [account.id],
+      foreignColumns: [accounts.id],
       name: 'FK_chat_mention_account_id',
     }).onDelete('cascade'),
   ],
@@ -341,17 +347,17 @@ export const appData = pgTable(
     ),
     foreignKey({
       columns: [table.itemId],
-      foreignColumns: [item.id],
+      foreignColumns: [itemRaw.id],
       name: 'FK_8c3e2463c67d9865658941c9e2d',
     }).onDelete('cascade'),
     foreignKey({
       columns: [table.creatorId],
-      foreignColumns: [account.id],
+      foreignColumns: [accounts.id],
       name: 'FK_27cb180cb3f372e4cf55302644a',
     }).onDelete('set null'),
     foreignKey({
       columns: [table.accountId],
-      foreignColumns: [account.id],
+      foreignColumns: [accounts.id],
       name: 'FK_app_data_account_id',
     }).onDelete('cascade'),
   ],
@@ -373,12 +379,12 @@ export const appAction = pgTable(
   (table) => [
     foreignKey({
       columns: [table.itemId],
-      foreignColumns: [item.id],
+      foreignColumns: [itemRaw.id],
       name: 'FK_c415fc186dda51fa260d338d776',
     }).onDelete('cascade'),
     foreignKey({
       columns: [table.accountId],
-      foreignColumns: [account.id],
+      foreignColumns: [accounts.id],
       name: 'FK_app_action_account_id',
     }).onDelete('cascade'),
   ],
@@ -406,12 +412,12 @@ export const appSetting = pgTable(
     ),
     foreignKey({
       columns: [table.itemId],
-      foreignColumns: [item.id],
+      foreignColumns: [itemRaw.id],
       name: 'FK_f5922b885e2680beab8add96008',
     }).onDelete('cascade'),
     foreignKey({
       columns: [table.creatorId],
-      foreignColumns: [account.id],
+      foreignColumns: [accounts.id],
       name: 'FK_22d3d051ee6f94932c1373a3d09',
     }).onDelete('set null'),
   ],
@@ -425,7 +431,9 @@ export const invitation = pgTable(
       .primaryKey()
       .notNull(),
     creatorId: uuid('creator_id'),
-    itemPath: ltree('item_path').notNull(),
+    itemPath: ltree('item_path')
+      .notNull()
+      .references(() => itemRaw.path),
     name: varchar({ length: 100 }),
     email: varchar({ length: 100 }).notNull(),
     permission: varchar().notNull(),
@@ -435,12 +443,12 @@ export const invitation = pgTable(
   (table) => [
     foreignKey({
       columns: [table.creatorId],
-      foreignColumns: [account.id],
+      foreignColumns: [accounts.id],
       name: 'FK_7ad4a490d5b9f79a677827b641c',
     }).onDelete('set null'),
     foreignKey({
       columns: [table.itemPath],
-      foreignColumns: [item.path],
+      foreignColumns: [itemRaw.path],
       name: 'FK_dc1d92accde1c2fbb7e729e4dcc',
     })
       .onUpdate('cascade')
@@ -507,7 +515,7 @@ export const itemValidationGroup = pgTable(
   (table) => [
     foreignKey({
       columns: [table.itemId],
-      foreignColumns: [item.id],
+      foreignColumns: [itemRaw.id],
       name: 'FK_a9e83cf5f53c026b774b53d3c60',
     }).onDelete('cascade'),
   ],
@@ -531,7 +539,7 @@ export const itemValidation = pgTable(
   (table) => [
     foreignKey({
       columns: [table.itemId],
-      foreignColumns: [item.id],
+      foreignColumns: [itemRaw.id],
       name: 'FK_d60969d5e478e7c844532ac4e7f',
     }).onDelete('cascade'),
     foreignKey({
@@ -564,13 +572,13 @@ export const itemValidationReview = pgTable(
     }).onDelete('cascade'),
     foreignKey({
       columns: [table.reviewerId],
-      foreignColumns: [account.id],
+      foreignColumns: [accounts.id],
       name: 'FK_44bf14fee580ae08702d70e622e',
     }).onDelete('set null'),
   ],
 );
 
-export const itemFavorite = pgTable(
+export const itemBookmark = pgTable(
   'item_favorite',
   {
     id: uuid()
@@ -584,12 +592,12 @@ export const itemFavorite = pgTable(
   (table) => [
     foreignKey({
       columns: [table.memberId],
-      foreignColumns: [account.id],
+      foreignColumns: [accounts.id],
       name: 'FK_a169d350392956511697f7e7d38',
     }).onDelete('cascade'),
     foreignKey({
       columns: [table.itemId],
-      foreignColumns: [item.id],
+      foreignColumns: [itemRaw.id],
       name: 'FK_10ea93bde287762010695378f94',
     })
       .onUpdate('cascade')
@@ -597,8 +605,9 @@ export const itemFavorite = pgTable(
     unique('favorite_key').on(table.memberId, table.itemId),
   ],
 );
+export type ItemBookmark = typeof itemBookmark.$inferSelect;
 
-export const memberProfile = pgTable(
+export const memberProfiles = pgTable(
   'member_profile',
   {
     id: uuid()
@@ -622,7 +631,7 @@ export const memberProfile = pgTable(
     ),
     foreignKey({
       columns: [table.memberId],
-      foreignColumns: [account.id],
+      foreignColumns: [accounts.id],
       name: 'FK_91fa43bc5482dc6b00892baf016',
     }).onDelete('cascade'),
     unique('member-profile').on(table.memberId),
@@ -644,7 +653,7 @@ export const shortLink = pgTable(
     ),
     foreignKey({
       columns: [table.itemId],
-      foreignColumns: [item.id],
+      foreignColumns: [itemRaw.id],
       name: 'FK_43c8a0471d5e58f99fc9c36b991',
     })
       .onUpdate('cascade')
@@ -680,12 +689,12 @@ export const action = pgTable(
     index('IDX_action_account_id').using('btree', table.accountId.asc().nullsLast().op('uuid_ops')),
     foreignKey({
       columns: [table.itemId],
-      foreignColumns: [item.id],
+      foreignColumns: [itemRaw.id],
       name: 'FK_1214f6f4d832c402751617361c0',
     }).onDelete('set null'),
     foreignKey({
       columns: [table.accountId],
-      foreignColumns: [account.id],
+      foreignColumns: [accounts.id],
       name: 'FK_action_account_id',
     }).onDelete('set null'),
   ],
@@ -710,7 +719,7 @@ export const itemGeolocation = pgTable(
   (table) => [
     foreignKey({
       columns: [table.itemPath],
-      foreignColumns: [item.path],
+      foreignColumns: [itemRaw.path],
       name: 'FK_66d4b13df4e7765068c8268d719',
     })
       .onUpdate('cascade')
@@ -734,20 +743,20 @@ export const actionRequestExport = pgTable(
   (table) => [
     foreignKey({
       columns: [table.itemPath],
-      foreignColumns: [item.path],
+      foreignColumns: [itemRaw.path],
       name: 'FK_fea823c4374f507a68cf8f926a4',
     })
       .onUpdate('cascade')
       .onDelete('cascade'),
     foreignKey({
       columns: [table.memberId],
-      foreignColumns: [account.id],
+      foreignColumns: [accounts.id],
       name: 'FK_bc85ef3298df8c7974b33081b47',
     }).onDelete('cascade'),
   ],
 );
 
-export const item = pgTable(
+export const itemRaw = pgTable(
   'item',
   {
     id: uuid().primaryKey().notNull(),
@@ -760,7 +769,7 @@ export const item = pgTable(
     settings: text().notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
-    deletedAt: timestamp('deleted_at', { mode: 'string' }),
+    deletedAt: timestamp('deleted_at', { mode: 'string' }), // HACK: the softdeletion mechanism relies on the deletedAt being null or having a date
     lang: varchar().default('en').notNull(),
     // TODO: failed to parse database type 'tsvector'
     //     searchDocument: unknown('search_document').notNull()
@@ -815,12 +824,20 @@ export const item = pgTable(
     index('IDX_gist_item_path').using('gist', table.path.asc().nullsLast().op('gist_ltree_ops')),
     foreignKey({
       columns: [table.creatorId],
-      foreignColumns: [account.id],
+      foreignColumns: [accounts.id],
       name: 'FK_bdc46717fadc2f04f3093e51fd5',
     }).onDelete('set null'),
     unique('item_path_key1').on(table.path),
   ],
 );
+
+// TODO: materialized?? check
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const { deletedAt, ...itemColumns } = getTableColumns(itemRaw);
+export const item = pgView('item_view').as((qb) =>
+  qb.select(itemColumns).from(itemRaw).where(isNull(itemRaw.deletedAt)),
+);
+export type Item = typeof item.$inferSelect;
 
 export const membershipRequest = pgTable(
   'membership_request',
@@ -836,19 +853,19 @@ export const membershipRequest = pgTable(
   (table) => [
     foreignKey({
       columns: [table.memberId],
-      foreignColumns: [account.id],
+      foreignColumns: [accounts.id],
       name: 'FK_membership_request_member_id',
     }).onDelete('cascade'),
     foreignKey({
       columns: [table.itemId],
-      foreignColumns: [item.id],
+      foreignColumns: [itemRaw.id],
       name: 'FK_membership_request_item_id',
     }).onDelete('cascade'),
     unique('UQ_membership_request_item-member').on(table.memberId, table.itemId),
   ],
 );
 
-export const account = pgTable(
+export const accounts = pgTable(
   'account',
   {
     id: uuid()
@@ -857,7 +874,8 @@ export const account = pgTable(
       .notNull(),
     name: varchar({ length: 100 }).notNull(),
     email: varchar({ length: 150 }),
-    extra: text().default('{}'),
+    // TODO: notNull added - check for migrations, and db status
+    extra: text().default('{}').notNull(),
     type: varchar().default('individual').notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
@@ -889,10 +907,17 @@ export const account = pgTable(
   ],
 );
 
-export const Account = account.$inferSelect;
-export const AccountCreationDTO = account.$inferInsert;
+export type Account = typeof accounts.$inferSelect;
+export type AccountCreationDTO = typeof accounts.$inferInsert;
 
-export const guestPassword = pgTable(
+// TODO: materialized?? check
+const { itemLoginSchemaId, ...membersColumns } = getTableColumns(accounts);
+export const membersView = pgView('members_view').as((qb) =>
+  qb.select(membersColumns).from(accounts).where(eq(accounts.type, AccountType.Individual)),
+);
+export type MemberCreationDTO = typeof membersView.$inferSelect & { email: string };
+
+export const guestPasswords = pgTable(
   'guest_password',
   {
     id: uuid()
@@ -907,7 +932,7 @@ export const guestPassword = pgTable(
   (table) => [
     foreignKey({
       columns: [table.guestId],
-      foreignColumns: [account.id],
+      foreignColumns: [accounts.id],
       name: 'FK_guest_password_guest_id',
     }).onDelete('cascade'),
     unique('UQ_guest_password_guest_id').on(table.guestId),
@@ -926,7 +951,7 @@ export const itemLoginSchema = pgTable(
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
     itemPath: ltree('item_path')
       .notNull()
-      .references(() => item.path, { onUpdate: 'cascade', onDelete: 'cascade' }),
+      .references(() => itemRaw.path, { onUpdate: 'cascade', onDelete: 'cascade' }),
     status: varchar({ length: 100 }).default('active').notNull(),
   },
   (table) => [unique('item-login-schema').on(table.itemPath)],
@@ -951,12 +976,12 @@ export const itemVisibility = pgTable(
     ),
     foreignKey({
       columns: [table.creatorId],
-      foreignColumns: [account.id],
+      foreignColumns: [accounts.id],
       name: 'FK_item_visibility_creator',
     }).onDelete('set null'),
     foreignKey({
       columns: [table.itemPath],
-      foreignColumns: [item.path],
+      foreignColumns: [itemRaw.path],
       name: 'FK_item_visibility_item',
     })
       .onUpdate('cascade')
@@ -993,7 +1018,7 @@ export const itemTag = pgTable(
     }).onDelete('cascade'),
     foreignKey({
       columns: [table.itemId],
-      foreignColumns: [item.id],
+      foreignColumns: [itemRaw.id],
       name: 'FK_39b492fda03c7ac846afe164b58',
     }).onDelete('cascade'),
     primaryKey({ columns: [table.tagId, table.itemId], name: 'PK_a04bb2298e37d95233a0c92347e' }),

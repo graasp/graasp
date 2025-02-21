@@ -6,7 +6,7 @@ import { IMemberProfile } from './types';
 
 export class MemberProfileService {
   async post(member: Member, { memberProfileRepository }: Repositories, data: IMemberProfile) {
-    const profile = await memberProfileRepository.createOne(member, data);
+    const profile = await memberProfileRepository.createOne(member.id, data);
     return profile;
   }
 

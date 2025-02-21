@@ -5,6 +5,7 @@ import { MultipartFile } from '@fastify/multipart';
 
 import { ItemType, PermissionLevel } from '@graasp/sdk';
 
+import { DBConnection } from '../../../../drizzle/db';
 import { TRANSLATIONS } from '../../../../langs/constants';
 import { BaseLogger } from '../../../../logger';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
@@ -15,6 +16,7 @@ import { validatePermission } from '../../../authorization';
 import { Item, isItemType } from '../../../item/entities/Item';
 import { ItemService } from '../../../item/service';
 import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
+import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { ItemMembershipService } from '../../../itemMembership/service';
 import { Actor, Member } from '../../../member/entities/member';
 import { MemberService } from '../../../member/service';
@@ -30,6 +32,7 @@ import {
   NoDataInFile,
   TemplateItemDoesNotExist,
 } from './errors';
+import { InvitationRepository } from './repository';
 import { CSVInvite, parseCSV, verifyCSVFileFormat } from './utils';
 
 @singleton()
@@ -39,6 +42,7 @@ export class InvitationService {
   private readonly itemService: ItemService;
   private readonly memberService: MemberService;
   private readonly itemMembershipService: ItemMembershipService;
+  private readonly invitationRepository: InvitationRepository;
 
   constructor(
     log: BaseLogger,
@@ -46,12 +50,14 @@ export class InvitationService {
     itemService: ItemService,
     memberService: MemberService,
     itemMembershipService: ItemMembershipService,
+    invitationRepository: InvitationRepository,
   ) {
     this.log = log;
     this.mailerService = mailerService;
     this.itemService = itemService;
     this.memberService = memberService;
     this.itemMembershipService = itemMembershipService;
+    this.invitationRepository = invitationRepository;
   }
 
   async sendInvitationEmail({ member, invitation }: { member: Member; invitation: Invitation }) {
@@ -149,19 +155,16 @@ export class InvitationService {
     this.sendInvitationEmail({ invitation, member });
   }
 
-  async createToMemberships(
-    { invitationRepository, itemMembershipRepository }: Repositories,
-    member: Member,
-  ) {
+  async createToMemberships(db: DBConnection, member: Member) {
     // invitations to memberships is triggered on register: no actor available
-    const invitations = await invitationRepository.getManyByEmail(member.email);
+    const invitations = await this.invitationRepository.getManyByEmail(db, member.email);
     const memberships = invitations.map(({ permission, item }) => ({
       itemPath: item.path,
       accountId: member.id,
       permission,
     }));
-    await itemMembershipRepository.addMany(memberships);
-    await invitationRepository.deleteManyByEmail(member.email);
+    await new ItemMembershipRepository().addMany(memberships);
+    await this.invitationRepository.deleteManyByEmail(member.email);
   }
 
   async _partitionExistingUsersAndNewUsers(
@@ -169,7 +172,7 @@ export class InvitationService {
     repositories: Repositories,
     emailList: string[],
   ): Promise<{ existingAccounts: Member[]; newAccounts: string[] }> {
-    const { data: accounts } = await this.memberService.getManyByEmail(repositories, emailList);
+    const { data: accounts } = await this.memberService.getManyByEmails(repositories, emailList);
     const existingAccounts = Object.values(accounts);
     const existingAccountsEmails = Object.keys(accounts);
     const newAccounts = emailList.filter((email) => !existingAccountsEmails.includes(email));

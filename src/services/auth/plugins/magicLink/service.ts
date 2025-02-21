@@ -2,30 +2,32 @@ import { singleton } from 'tsyringe';
 
 import { ActionTriggers, Context } from '@graasp/sdk';
 
+import { DBConnection } from '../../../../drizzle/db';
 import { BaseLogger } from '../../../../logger';
 import { MemberNotSignedUp } from '../../../../utils/errors';
-import { Repositories } from '../../../../utils/repositories';
-import { Actor, Member } from '../../../member/entities/member';
+import { Member } from '../../../member/entities/member';
+import { MemberRepository } from '../../../member/repository';
 import { AuthService } from '../../service';
 
 @singleton()
 export class MagicLinkService {
   private readonly log: BaseLogger;
   private readonly authService: AuthService;
+  private readonly memberRepository: MemberRepository;
 
-  constructor(authService: AuthService, log: BaseLogger) {
+  constructor(authService: AuthService, log: BaseLogger, memberRepository: MemberRepository) {
     this.authService = authService;
+    this.memberRepository = memberRepository;
     this.log = log;
   }
 
-  async sendRegisterMail(actor: Actor, repositories: Repositories, member: Member, url?: string) {
+  async sendRegisterMail(member: Member, url?: string) {
     await this.authService.generateRegisterLinkAndEmailIt(member, { url });
   }
 
-  async login(actor: Actor, repositories: Repositories, body: { email: string }, url?: string) {
-    const { memberRepository, actionRepository } = repositories;
+  async login(db: DBConnection, body: { email: string }, url?: string) {
     const { email } = body;
-    const member = await memberRepository.getByEmail(email);
+    const member = await this.memberRepository.getByEmail(email);
 
     if (member) {
       await this.authService.generateLoginLinkAndEmailIt(member, { url });

@@ -22,7 +22,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return favoriteService.getOwn(member, buildRepositories());
+      return favoriteService.getOwn(member);
     },
   );
 

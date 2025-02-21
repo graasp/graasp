@@ -1,36 +1,34 @@
-import { EntityManager } from 'typeorm';
+import { eq } from 'drizzle-orm/sql';
 
 import { UUID } from '@graasp/sdk';
 
-import { AbstractRepository } from '../../../repositories/AbstractRepository';
+import { DBConnection } from '../../../drizzle/db';
+import { guestPasswords } from '../../../drizzle/schema';
 import { encryptPassword } from '../../auth/plugins/password/utils';
-import { GuestPassword } from '../entities/guestPassword';
 
-export class GuestPasswordRepository extends AbstractRepository<GuestPassword> {
-  constructor(manager?: EntityManager) {
-    super(GuestPassword, manager);
+export class GuestPasswordRepository {
+  async getForGuestId(db: DBConnection, guestId: string) {
+    const password = await db.query.guestPasswords.findFirst({
+      where: eq(guestPasswords.guestId, guestId),
+    });
+    return password;
   }
-
-  async getForGuestId(guestId: string) {
-    const memberPassword = await this.repository.findOneBy({ guest: { id: guestId } });
-    return memberPassword;
-  }
-  async patch(guestId: UUID, newPassword: string) {
+  async patch(db: DBConnection, guestId: UUID, newPassword: string) {
     // auto-generate a salt and a hash
     const hash = await encryptPassword(newPassword);
 
-    const previousPassword = await this.getForGuestId(guestId);
-
-    if (previousPassword) {
-      await this.repository.update(previousPassword.id, {
-        guest: { id: guestId },
+    await db
+      .insert(guestPasswords)
+      .values({
+        guestId,
         password: hash,
+      })
+      .onConflictDoUpdate({
+        target: guestPasswords.guestId,
+        set: {
+          guestId,
+          password: hash,
+        },
       });
-    } else {
-      await this.repository.insert({
-        guest: { id: guestId },
-        password: hash,
-      });
-    }
   }
 }

@@ -45,10 +45,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           // const repositories = buildRepositories(manager);
           // we use member service to allow post hook for invitation
           const member = await memberService.post(tx, body, lang);
-          await magicLinkService.sendRegisterMail(undefined, repositories, member, url);
+          await magicLinkService.sendRegisterMail(member, url);
 
           // transform memberships from existing invitations
-          await invitationService.createToMemberships(repositories, member);
+          await invitationService.createToMemberships(tx, member);
 
           reply.status(StatusCodes.NO_CONTENT);
         } catch (e) {

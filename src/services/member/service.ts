@@ -14,34 +14,38 @@ import {
   EMAIL_CHANGE_JWT_SECRET,
 } from '../../utils/config';
 import { MemberAlreadySignedUp } from '../../utils/errors';
-import { Repositories } from '../../utils/repositories';
 import { NEW_EMAIL_PARAM, SHORT_TOKEN_PARAM } from '../auth/plugins/passport';
 import { Member } from './entities/member';
+import { type MemberRepository } from './repository';
 
 @singleton()
 export class MemberService {
   private readonly mailerService: MailerService;
   private readonly log: BaseLogger;
+  private readonly memberRepository: MemberRepository;
 
-  constructor(mailerService: MailerService, log: BaseLogger) {
+  constructor(mailerService: MailerService, memberRepository: MemberRepository, log: BaseLogger) {
     this.mailerService = mailerService;
     this.log = log;
   }
 
-  async get({ memberRepository }: Repositories, id: string) {
-    return memberRepository.get(id);
+  async get(db: DBConnection, id: string) {
+    return this.memberRepository.get(db, id);
   }
 
-  async getByEmail({ memberRepository }: Repositories, email: string) {
-    return await memberRepository.getByEmail(email);
+  async getByEmail(db: DBConnection, email: string) {
+    return await this.memberRepository.getByEmail(db, email);
   }
 
-  async getMany({ memberRepository }: Repositories, ids: string[]) {
-    return memberRepository.getMany(ids);
+  async getMany(db: DBConnection, ids: string[]) {
+    return this.memberRepository.getMany(db, ids);
   }
 
-  async getManyByEmail({ memberRepository }: Repositories, emails: string[]) {
-    return memberRepository.getManyByEmail(emails.map((email) => email.trim().toLowerCase()));
+  async getManyByEmails(db: DBConnection, emails: string[]) {
+    return this.memberRepository.getManyByEmails(
+      db,
+      emails.map((email) => email.trim().toLowerCase()),
+    );
   }
 
   async post(db: DBConnection, body: Pick<Member, 'email'>, lang = DEFAULT_LANG) {
@@ -51,7 +55,7 @@ export class MemberService {
     const email = body.email.toLowerCase();
 
     // check if member w/ email already exists
-    const member = await memberRepository.getByEmail(email);
+    const member = await this.memberRepository.getByEmail(db, email);
 
     if (!member) {
       const newMember = {
@@ -59,7 +63,7 @@ export class MemberService {
         extra: { lang },
       };
 
-      const member = await memberRepository.post(newMember);
+      const member = await this.memberRepository.post(db, newMember);
 
       return member;
     } else {
@@ -70,11 +74,11 @@ export class MemberService {
   }
 
   async patch(
-    { memberRepository }: Repositories,
+    db: DBConnection,
     id: UUID,
     body: Partial<Pick<Member, 'extra' | 'email' | 'name' | 'enableSaveActions'>>,
   ) {
-    return memberRepository.patch(id, {
+    return this.memberRepository.patch(db, id, {
       name: body.name,
       email: body.email,
       extra: body?.extra,
@@ -82,21 +86,21 @@ export class MemberService {
     });
   }
 
-  async deleteCurrent(memberId: string, { memberRepository }: Repositories) {
-    return memberRepository.deleteOne(memberId);
+  async deleteCurrent(memberId: string, db: DBConnection) {
+    return this.memberRepository.deleteOne(db, memberId);
   }
 
-  async deleteOne({ memberRepository }: Repositories, id: UUID) {
-    return memberRepository.deleteOne(id);
+  async deleteOne(db: DBConnection, id: UUID) {
+    return this.memberRepository.deleteOne(db, id);
   }
 
-  async refreshLastAuthenticatedAt(id: UUID, { memberRepository }: Repositories) {
-    return await memberRepository.patch(id, {
+  async refreshLastAuthenticatedAt(id: UUID, db: DBConnection) {
+    return await this.memberRepository.patch(db, id, {
       lastAuthenticatedAt: new Date(),
     });
   }
-  async validate(id: UUID, { memberRepository }: Repositories) {
-    return await memberRepository.patch(id, { isValidated: true });
+  async validate(id: UUID, db: DBConnection) {
+    return await this.memberRepository.patch(db, id, { isValidated: true });
   }
 
   createEmailChangeRequest(member: Member, newEmail: string) {

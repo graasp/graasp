@@ -14,6 +14,7 @@ import {
   UUID,
 } from '@graasp/sdk';
 
+import { db } from '../../../../drizzle/db';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
 import {
@@ -176,7 +177,11 @@ export class ActionItemService {
     // get memberships
     const inheritedMemberships =
       (await repositories.itemMembershipRepository.getForManyItems([item])).data?.[item.id] ?? [];
-    const itemMemberships = await repositories.itemMembershipRepository.getAllBelow(item.path);
+    // TODO: use db argument passed from the transaction
+    const itemMemberships = await repositories.itemMembershipRepository.getAllBellowItemPath(
+      db,
+      item.path,
+    );
     const allMemberships = [...inheritedMemberships, ...itemMemberships];
     // get members
     const members =

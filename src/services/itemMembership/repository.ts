@@ -1,4 +1,6 @@
-import { Brackets, EntityManager, In, Not } from 'typeorm';
+import { and, eq, sql } from 'drizzle-orm/sql';
+import { singleton } from 'tsyringe';
+import { Brackets, In, Not } from 'typeorm';
 
 import {
   Paginated,
@@ -11,8 +13,8 @@ import {
 } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import { MutableRepository } from '../../repositories/MutableRepository';
-import { DEFAULT_PRIMARY_KEY } from '../../repositories/const';
+import { DBConnection } from '../../drizzle/db';
+import { ItemMembership, itemMembership as itemMembershipTable } from '../../drizzle/schema';
 import { ALLOWED_SEARCH_LANGS } from '../../utils/config';
 import {
   InvalidMembership,
@@ -32,7 +34,6 @@ import { isMember } from '../member/entities/member';
 import { itemMembershipSchema } from '../member/plugins/export-data/schemas/schemas';
 import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils';
 import { mapById } from '../utils';
-import { ItemMembership } from './entities/ItemMembership';
 import { PermissionType, getPermissionsAtItemSql } from './utils';
 
 type ItemPath = Item['path'];
@@ -43,7 +44,7 @@ type CreateItemMembershipBody = {
   itemPath: ItemPath;
   accountId: AccountId;
   creatorId?: CreatorId;
-  permission: PermissionLevel;
+  permission: `${PermissionLevel}`;
 };
 type UpdateItemMembershipBody = { permission: PermissionLevel };
 type KeyCompositionItemMembership = { itemPath: ItemPath; accountId: AccountId };
@@ -62,55 +63,60 @@ type MoveHousekeepingType = DetachedMoveHousekeepingType & {
   action2IgnoreInherited: boolean;
 };
 
-export class ItemMembershipRepository extends MutableRepository<
-  ItemMembership,
-  UpdateItemMembershipBody
-> {
-  constructor(manager?: EntityManager) {
-    super(DEFAULT_PRIMARY_KEY, ItemMembership, manager);
-  }
-
-  async getOne(id: string): Promise<ItemMembership | null> {
-    return await super.findOne(id, {
-      relations: {
-        creator: true,
-        account: true,
-        item: true,
-      },
+@singleton()
+export class ItemMembershipRepository {
+  async getOne(db: DBConnection, id: string): Promise<ItemMembership | undefined> {
+    const res = await db.query.itemMembership.findFirst({
+      where: eq(itemMembershipTable.id, id),
+      with: { creator: true, item: true, account: true },
     });
+    return res;
   }
 
   /**
    * Create multiple memberships given an array of partial membership objects.
    * @param memberships Array of objects with properties: `memberId`, `itemPath`, `permission`, `creator`
    */
-  async addMany(memberships: CreateItemMembershipBody[]): Promise<ItemMembership[]> {
-    const itemsMemberships = memberships.map((m) =>
-      this.repository.create({
-        permission: m.permission,
-        item: { id: getChildFromPath(m.itemPath), path: m.itemPath },
-        account: { id: m.accountId },
-        creator: { id: m.creatorId },
-      }),
-    );
-    await this.repository.insert(itemsMemberships);
+  async addMany(db: DBConnection, memberships: CreateItemMembershipBody[]) {
+    const itemsMemberships = await db
+      .insert(itemMembershipTable)
+      .values(
+        memberships.map((m) => ({
+          permission: m.permission,
+          itemPath: m.itemPath,
+          accountId: m.accountId,
+          creatorId: m.creatorId,
+        })),
+      )
+      .returning();
+
     return itemsMemberships;
   }
 
   async deleteOne(
+    db: DBConnection,
     itemMembershipId: string,
     args: { purgeBelow?: boolean } = { purgeBelow: true },
   ): Promise<ItemMembership> {
-    const itemMembership = await this.get(itemMembershipId);
+    const itemMembership = await db.query.itemMembership.findFirst({
+      where: eq(itemMembershipTable.id, itemMembershipId),
+    });
+    if (!itemMembership) {
+      throw new ItemMembershipNotFound();
+    }
 
     if (args.purgeBelow) {
-      const { item, account } = itemMembership;
-      const itemMembershipsBelow = await this.getAllBelow(item.path, account.id);
+      const { itemPath, accountId } = itemMembership;
+      const itemMembershipsBelow = await this.getAllBellowItemPathForAccount(
+        db,
+        itemPath,
+        accountId,
+      );
 
       if (itemMembershipsBelow.length > 0) {
         // return list of subtasks for task manager to execute and
         // delete all memberships in the (sub)tree, one by one, in reverse order (bottom > top)
-        await this.delete(itemMembershipsBelow.map(({ id }) => id));
+        await db.delete(itemMembershipTable).where(itemMembershipsBelow.map(({ id }) => id));
       }
     }
 
@@ -134,10 +140,10 @@ export class ItemMembershipRepository extends MutableRepository<
     }
   }
 
-  async get(id: string): Promise<ItemMembership> {
-    const item = await this.repository.findOne({
-      where: { id },
-      relations: ['account', 'item', 'item.creator'],
+  async get(db: DBConnection, id: string): Promise<ItemMembership> {
+    const item = await db.query.itemMembership.findFirst({
+      where: eq(itemMembershipTable.id, id),
+      with: { account: true, item: { with: { account: true } } },
     });
 
     if (!item) {
@@ -166,6 +172,25 @@ export class ItemMembershipRepository extends MutableRepository<
     });
   }
 
+  async getAllBellowItemPath(db: DBConnection, itemPath: ItemPath) {
+    const membershipsBelowItemPath = db.query.itemMembership.findMany({
+      where: sql`${itemMembershipTable.itemPath} <@ ${itemPath}`,
+      with: { account: true },
+    });
+    return membershipsBelowItemPath;
+  }
+
+  async getAllBellowItemPathForAccount(db: DBConnection, itemPath: ItemPath, accountId: string) {
+    const membershipsBelowItemPath = db.query.itemMembership.findMany({
+      where: and(
+        sql`${itemMembershipTable.itemPath} <@ ${itemPath}`,
+        eq(itemMembershipTable.accountId, accountId),
+      ),
+      with: { account: true },
+    });
+    return membershipsBelowItemPath;
+  }
+
   /**
    * Return membership under given item (without self memberships)
    * @param item
@@ -173,6 +198,7 @@ export class ItemMembershipRepository extends MutableRepository<
    * @returns
    */
   async getAllBelow(
+    db: DBConnection,
     itemPath: ItemPath,
     accountId?: string,
     {
@@ -582,6 +608,7 @@ export class ItemMembershipRepository extends MutableRepository<
   }
 
   async updateOne(
+    db: DBConnection,
     itemMembershipId: string,
     data: UpdateItemMembershipBody,
   ): Promise<ItemMembership> {
@@ -606,7 +633,11 @@ export class ItemMembershipRepository extends MutableRepository<
     }
 
     // check existing memberships lower in the tree
-    const membershipsBelow = await this.getAllBelow(item.path, memberOfMembership.id);
+    const membershipsBelow = await this.getAllBellowItemPathForAccount(
+      db,
+      item.path,
+      memberOfMembership.id,
+    );
     let tasks: Promise<unknown>[] = [];
     if (membershipsBelow.length > 0) {
       // check if any have the same or a worse permission level

@@ -1,5 +1,9 @@
-import { EntityManager, FindOptionsRelations } from 'typeorm';
+import { eq } from 'drizzle-orm/expressions';
+import { singleton } from 'tsyringe';
+import { EntityManager } from 'typeorm';
 
+import { DBConnection } from '../../../../drizzle/db';
+import { invitation } from '../../../../drizzle/schema';
 import { MutableRepository } from '../../../../repositories/MutableRepository';
 import { DEFAULT_PRIMARY_KEY } from '../../../../repositories/const';
 import { AncestorOf } from '../../../../utils/typeorm/treeOperators';
@@ -11,7 +15,6 @@ import { InvitationNotFound } from './errors';
 type CreatorId = Member['id'];
 type ItemPath = Item['path'];
 type Email = Invitation['email'];
-const BASIC_RELATIONS: FindOptionsRelations<Invitation> = { item: true };
 
 type CreateInvitationBody = {
   partialInvitations: Partial<Invitation>[];
@@ -23,6 +26,7 @@ type UpdateInvitationBody = Partial<Invitation>;
 /**
  * Database's first layer of abstraction for Invitations
  */
+@singleton()
 export class InvitationRepository extends MutableRepository<Invitation, UpdateInvitationBody> {
   constructor(manager?: EntityManager) {
     super(DEFAULT_PRIMARY_KEY, Invitation, manager);
@@ -84,14 +88,16 @@ export class InvitationRepository extends MutableRepository<Invitation, UpdateIn
     });
   }
 
-  async getManyByEmail(email: Email) {
+  async getManyByEmail(db: DBConnection, email: Email) {
     this.throwsIfParamIsInvalid('email', email);
     const lowercaseEmail = email.toLowerCase();
 
-    return await this.repository.find({
-      where: { email: lowercaseEmail },
-      relations: BASIC_RELATIONS,
+    const res = await db.query.invitation.findMany({
+      where: eq(invitation.email, lowercaseEmail),
+      with: { item: true },
     });
+
+    return res;
   }
 
   /**

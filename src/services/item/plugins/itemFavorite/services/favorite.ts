@@ -2,24 +2,26 @@ import { singleton } from 'tsyringe';
 
 import { PermissionLevel } from '@graasp/sdk';
 
+import { db } from '../../../../../drizzle/db';
 import { Repositories } from '../../../../../utils/repositories';
 import { filterOutPackedItems } from '../../../../authorization';
 import { Member } from '../../../../member/entities/member';
 import { ItemService } from '../../../service';
 import { PackedItemFavorite } from '../entities/ItemFavorite';
+import { ItemBookmarkRepository } from '../repositories/favorite';
 
 @singleton()
 export class FavoriteService {
   private itemService: ItemService;
+  private itemBookmarkRepository: ItemBookmarkRepository;
 
-  constructor(itemService: ItemService) {
+  constructor(itemService: ItemService, itemBookmarkRepository: ItemBookmarkRepository) {
     this.itemService = itemService;
+    this.itemBookmarkRepository = itemBookmarkRepository;
   }
 
-  async getOwn(member: Member, repositories: Repositories): Promise<PackedItemFavorite[]> {
-    const { itemFavoriteRepository } = repositories;
-
-    const favorites = await itemFavoriteRepository.getFavoriteForMember(member.id);
+  async getOwn(member: Member): Promise<PackedItemFavorite[]> {
+    const favorites = await this.itemBookmarkRepository.getFavoriteForMember(db, member.id);
 
     // filter out items user might not have access to
     // and packed item
