@@ -1,46 +1,57 @@
-import { EntityManager } from 'typeorm';
+import { and, eq } from 'drizzle-orm/sql';
+import { singleton } from 'tsyringe';
 
-import { MutableRepository } from '../../../../repositories/MutableRepository';
-import { DEFAULT_PRIMARY_KEY } from '../../../../repositories/const';
+import { DBConnection } from '../../../../drizzle/db';
+import { Account, Item, ItemLike, itemLikes } from '../../../../drizzle/schema';
 import { itemLikeSchema } from '../../../member/plugins/export-data/schemas/schemas';
 import { schemaToSelectMapper } from '../../../member/plugins/export-data/utils/selection.utils';
 import { ItemLikeNotFound } from './errors';
-import { ItemLike } from './itemLike';
 
-type CreatorId = ItemLike['creator']['id'];
-type ItemId = ItemLike['item']['id'];
+type CreatorId = ItemLike['creatorId'];
+type ItemId = ItemLike['itemId'];
 type CreateItemLikeBody = { creatorId: CreatorId; itemId: ItemId };
 
-export class ItemLikeRepository extends MutableRepository<ItemLike, never> {
-  constructor(manager?: EntityManager) {
-    super(DEFAULT_PRIMARY_KEY, ItemLike, manager);
-  }
+type ItemLikeWithRelations = ItemLike & { item: Item; creator: Account };
 
+@singleton()
+export class ItemLikeRepository {
   /**
    * create an item like
    * @param memberId user's id
    * @param itemId item's id
    */
-  async addOne({ creatorId, itemId }: CreateItemLikeBody): Promise<ItemLike> {
-    return await super.insert({ item: { id: itemId }, creator: { id: creatorId } });
+  async addOne(db: DBConnection, { creatorId, itemId }: CreateItemLikeBody): Promise<ItemLike> {
+    const result = await db.insert(itemLikes).values({ itemId, creatorId }).returning();
+    if (result.length != 1) {
+      throw new Error('Expected to receive, created item, but did not get it.');
+    }
+    return result[0];
   }
 
-  async getOne(id: string) {
-    return await super.findOne(id, { relations: { item: true, creator: true } });
+  async getOne(db: DBConnection, id: string): Promise<ItemLikeWithRelations> {
+    const result = await db.query.itemLikes.findFirst({
+      where: eq(itemLikes.id, id),
+      with: { item: true, creator: true },
+    });
+    if (!result) {
+      throw new Error('Could not find expected item like');
+    }
+    return result;
   }
 
   /**
    * Get item likes by given memberId.
    * @param creatorId user's id
    */
-  async getByCreator(creatorId: CreatorId): Promise<ItemLike[]> {
-    this.throwsIfParamIsInvalid('creatorId', creatorId);
-    return await this.repository
-      .createQueryBuilder('itemLike')
-      .innerJoinAndSelect('itemLike.item', 'item')
-      .innerJoinAndSelect('item.creator', 'member')
-      .where('itemLike.creator = :creatorId', { creatorId })
-      .getMany();
+  async getByCreator(db: DBConnection, creatorId: CreatorId): Promise<ItemLikeWithRelations[]> {
+    if (!creatorId) {
+      throw new Error('creator Id is not defined');
+    }
+    const result = await db.query.itemLikes.findMany({
+      where: eq(itemLikes.creatorId, creatorId),
+      with: { item: true, creator: true },
+    });
+    return result;
   }
 
   /**
@@ -92,23 +103,20 @@ export class ItemLikeRepository extends MutableRepository<ItemLike, never> {
    * @param creatorId user's id
    * @param itemId item's id
    */
-  async deleteOneByCreatorAndItem(creatorId: CreatorId, itemId: ItemId): Promise<ItemLike> {
-    this.throwsIfParamIsInvalid('creatorId', creatorId);
-    this.throwsIfParamIsInvalid('itemId', itemId);
+  async deleteOneByCreatorAndItem(
+    db: DBConnection,
+    creatorId: CreatorId,
+    itemId: ItemId,
+  ): Promise<ItemLike> {
+    const result = await db
+      .delete(itemLikes)
+      .where(and(eq(itemLikes.itemId, itemId), eq(itemLikes.creatorId, creatorId)))
+      .returning();
 
-    const entity = await this.repository.findOne({
-      where: {
-        item: { id: itemId },
-        creator: { id: creatorId },
-      },
-    });
-
-    if (!entity) {
+    if (result.length != 1) {
       throw new ItemLikeNotFound({ creatorId, itemId });
     }
 
-    await super.delete(entity.id);
-
-    return entity;
+    return result[0];
   }
 }

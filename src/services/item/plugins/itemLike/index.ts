@@ -3,6 +3,7 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { ActionTriggers } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { ActionService } from '../../../action/services/action';
@@ -16,7 +17,7 @@ import { create, deleteOne, getLikesForCurrentMember, getLikesForItem } from './
 import { ItemLikeService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { db } = fastify;
+  const { db: typeormDB } = fastify;
 
   const itemService = resolveDependency(ItemService);
   const itemLikeService = resolveDependency(ItemLikeService);
@@ -58,8 +59,13 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       } = request;
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return db.transaction(async (manager) => {
-        const newItemLike = await itemLikeService.post(member, buildRepositories(manager), itemId);
+      return typeormDB.transaction(async (manager) => {
+        const newItemLike = await itemLikeService.post(
+          db,
+          member,
+          buildRepositories(manager),
+          itemId,
+        );
         // action like item
         const item = await itemService.get(member, buildRepositories(manager), itemId);
         const action = {
@@ -87,12 +93,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
 
-      return db.transaction(async (manager) => {
-        const newItemLike = await itemLikeService.removeOne(
-          member,
-          buildRepositories(manager),
-          itemId,
-        );
+      return db.transaction(async (tx) => {
+        const newItemLike = await itemLikeService.removeOne(tx, member, itemId);
         // action unlike item
         const item = await itemService.get(member, buildRepositories(manager), itemId);
 

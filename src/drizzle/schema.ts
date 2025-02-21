@@ -7,7 +7,6 @@ import {
   doublePrecision,
   foreignKey,
   index,
-  numeric,
   pgEnum,
   pgTable,
   pgView,
@@ -21,9 +20,9 @@ import {
 } from 'drizzle-orm/pg-core';
 import { eq, isNull } from 'drizzle-orm/sql';
 
-import { AccountType } from '@graasp/sdk';
+import { AccountType, CompleteMember, type ItemSettings } from '@graasp/sdk';
 
-import { ltree } from './customTypes';
+import { customJsonb, customNumeric, ltree } from './customTypes';
 
 export const actionRequestExportFormatEnum = pgEnum('action_request_export_format_enum', [
   'json',
@@ -195,6 +194,7 @@ export const itemLikes = pgTable(
     unique('id').on(table.creatorId, table.itemId),
   ],
 );
+export type ItemLike = typeof itemLikes.$inferSelect;
 
 export const itemFlags = pgTable(
   'item_flag',
@@ -767,8 +767,9 @@ export const itemsRaw = pgTable(
     description: varchar({ length: 5000 }),
     path: ltree('path').notNull(),
     creatorId: uuid('creator_id'),
-    extra: text().notNull(),
-    settings: text().notNull(),
+    // TODO: fix type
+    extra: customJsonb<object>('extra').notNull(),
+    settings: customJsonb<ItemSettings>('settings').notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
     deletedAt: timestamp('deleted_at', { mode: 'string' }), // HACK: the softdeletion mechanism relies on the deletedAt being null or having a date
@@ -812,7 +813,7 @@ export const itemsRaw = pgTable(
     //     WHEN ((lang)::text = 'es'::text) THEN setweight(to_tsvector('spanish'::regconfig, COALESCE((((replace(extra, '\u0000'::text, ''::text))::jsonb -> 's3File'::text) -> 'content'::text), '{}'::jsonb)), 'D'::"char")
     //     ELSE ''::tsvector
     // END)`),
-    order: numeric(),
+    order: customNumeric('order'),
   },
   (table) => [
     index('IDX_bdc46717fadc2f04f3093e51fd').using(
@@ -877,7 +878,8 @@ export const accounts = pgTable(
     name: varchar({ length: 100 }).notNull(),
     email: varchar({ length: 150 }),
     // TODO: notNull added - check for migrations, and db status
-    extra: text().default('{}').notNull(),
+    //, '{}', true
+    extra: customJsonb<CompleteMember['extra']>('extra').default({}).notNull(),
     type: varchar().default('individual').notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
@@ -911,6 +913,7 @@ export const accounts = pgTable(
 
 export type Account = typeof accounts.$inferSelect;
 export type AccountCreationDTO = typeof accounts.$inferInsert;
+export type Actor = Account | undefined;
 
 // TODO: materialized?? check
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -923,7 +926,7 @@ export const membersView = pgView('members_view').as((qb) =>
 );
 // HACK: Using inferSelect isnce this is a PGView and it does not allow to insert on the view
 export type MemberCreationDTO = typeof membersView.$inferSelect & { email: string };
-export type MemberDTO = typeof membersView.$inferSelect;
+export type Member = typeof membersView.$inferSelect;
 
 export const guestPasswords = pgTable(
   'guest_password',
@@ -965,6 +968,7 @@ export const itemLoginSchemas = pgTable(
   (table) => [unique('item-login-schema').on(table.itemPath)],
 );
 
+export const itemVisibilityEnum = pgEnum('item_visibility_type', ['public', 'hidden']);
 export const itemVisibilities = pgTable(
   'item_visibility',
   {
@@ -972,7 +976,7 @@ export const itemVisibilities = pgTable(
       .default(sql`uuid_generate_v4()`)
       .primaryKey()
       .notNull(),
-    type: varchar().notNull(),
+    type: itemVisibilityEnum().notNull(),
     itemPath: ltree('item_path').notNull(),
     creatorId: uuid('creator_id'),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),

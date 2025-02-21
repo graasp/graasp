@@ -1,10 +1,13 @@
-import { Brackets, EntityManager } from 'typeorm';
+import { and, eq } from 'drizzle-orm/sql';
+import { singleton } from 'tsyringe';
+import { Brackets } from 'typeorm';
 
-import { ItemVisibilityType, ResultOf, getChildFromPath } from '@graasp/sdk';
+import { ItemVisibilityOptionsType, ResultOf, getChildFromPath } from '@graasp/sdk';
 
-import { AbstractRepository } from '../../../../repositories/AbstractRepository';
+import { DBConnection } from '../../../../drizzle/db';
+import { isAncestorOrSelf } from '../../../../drizzle/operations';
+import { itemVisibilities, items } from '../../../../drizzle/schema';
 import { EntryNotFoundAfterInsertException } from '../../../../repositories/errors';
-import { AncestorOf } from '../../../../utils/typeorm/treeOperators';
 import { Member } from '../../../member/entities/member';
 import { mapById } from '../../../utils';
 import { Item } from '../../entities/Item';
@@ -16,28 +19,29 @@ import {
   ItemVisibilityNotFound,
 } from './errors';
 
-export class ItemVisibilityRepository extends AbstractRepository<ItemVisibility> {
-  constructor(manager?: EntityManager) {
-    super(ItemVisibility, manager);
-  }
-
+@singleton()
+export class ItemVisibilityRepository {
   async getType(
+    db: DBConnection,
     itemPath: Item['path'],
-    visibilityType: ItemVisibilityType,
+    visibilityType: ItemVisibilityOptionsType,
     { shouldThrow = false } = {},
   ) {
-    const hasVisibility = await this.repository
-      .createQueryBuilder('itemVisibility')
-      .leftJoinAndSelect('itemVisibility.item', 'item')
-      .where('item.path @> :path', { path: itemPath })
-      .andWhere('itemVisibility.type = :type', { type: visibilityType })
-      .getOne();
+    const result = await db
+      .select()
+      .from(itemVisibilities)
+      .innerJoin(items, eq(items.path, itemVisibilities.itemPath))
+      .where(and(eq(itemVisibilities.type, visibilityType), isAncestorOrSelf(items.path, itemPath)))
+      .limit(1);
 
-    if (shouldThrow && !hasVisibility) {
+    if (shouldThrow && result.length != 1) {
       throw new ItemVisibilityNotFound(visibilityType);
     }
 
-    return hasVisibility;
+    return result.map(({ item_view, item_visibility }) => ({
+      ...item_visibility,
+      item: item_view,
+    }))[0];
   }
 
   /**
@@ -46,7 +50,7 @@ export class ItemVisibilityRepository extends AbstractRepository<ItemVisibility>
    * @param visibilityTypes
    * @returns map type => whether item has this visibility type
    */
-  async hasMany(item: Item, visibilityTypes: ItemVisibilityType[]) {
+  async hasMany(item: Item, visibilityTypes: ItemVisibilityOptionsType[]) {
     const hasVisibilities = await this.repository
       .createQueryBuilder('itemVisibility')
       .leftJoinAndSelect('itemVisibility.item', 'item')
@@ -63,7 +67,7 @@ export class ItemVisibilityRepository extends AbstractRepository<ItemVisibility>
 
   private async getManyVisibilitiesForTypes(
     items: Item[],
-    visibilityTypes: ItemVisibilityType[],
+    visibilityTypes: ItemVisibilityOptionsType[],
   ): Promise<ItemVisibility[]> {
     // we expect to query visibilities for defined items, if the items array is empty we will return an empty array.
     if (!items.length) {
@@ -91,7 +95,7 @@ export class ItemVisibilityRepository extends AbstractRepository<ItemVisibility>
 
   async getManyForMany(
     items: Item[],
-    visibilityTypes: ItemVisibilityType[],
+    visibilityTypes: ItemVisibilityOptionsType[],
   ): Promise<ResultOf<ItemVisibility[]>> {
     const visibilities = await this.getManyVisibilitiesForTypes(items, visibilityTypes);
 
@@ -117,7 +121,7 @@ export class ItemVisibilityRepository extends AbstractRepository<ItemVisibility>
    */
   async getManyBelowAndSelf(
     parent: Item,
-    visibilityTypes: ItemVisibilityType[],
+    visibilityTypes: ItemVisibilityOptionsType[],
   ): Promise<ItemVisibility[]> {
     const query = this.repository
       .createQueryBuilder('itemVisibility')
@@ -132,7 +136,10 @@ export class ItemVisibilityRepository extends AbstractRepository<ItemVisibility>
     return visibilities;
   }
 
-  async hasForMany(items: Item[], visibilityType: ItemVisibilityType): Promise<ResultOf<boolean>> {
+  async hasForMany(
+    items: Item[],
+    visibilityType: ItemVisibilityOptionsType,
+  ): Promise<ResultOf<boolean>> {
     const query = this.repository
       .createQueryBuilder('itemVisibility')
       .leftJoinAndSelect('itemVisibility.item', 'item');
@@ -169,31 +176,37 @@ export class ItemVisibilityRepository extends AbstractRepository<ItemVisibility>
    * Throws if a visibility already exists for parent
    * @param  {Member} creator
    * @param  {Item} item
-   * @param  {ItemVisibilityType} type
+   * @param  {ItemVisibilityOptionsType} type
    */
-  async post(creator: Member, item: Item, type: ItemVisibilityType) {
-    const existingVisibility = await this.getType(item.path, type);
+  async post(
+    db: DBConnection,
+    creatorId: string,
+    itemPath: string,
+    type: ItemVisibilityOptionsType,
+  ) {
+    const existingVisibility = await this.getType(db, itemPath, type);
     if (existingVisibility) {
-      throw new ConflictingVisibilitiesInTheHierarchy({ item, type });
+      throw new ConflictingVisibilitiesInTheHierarchy({ itemPath, type });
     }
 
-    const entry = { item: { path: item.path }, type, creator };
-    const created = await this.repository.insert(entry);
-    const result = await this.repository.findOneBy({ id: created.identifiers[0].id });
-    if (!result) {
+    const result = await db
+      .insert(itemVisibilities)
+      .values({ itemPath: itemPath, type, creatorId: creatorId })
+      .returning();
+    if (result.length != 1) {
       throw new EntryNotFoundAfterInsertException(ItemVisibility);
     }
-    return result;
+    return result[0];
   }
 
   /**
    * Delete one visibility item given the item and type
    * @param  {Item} item
-   * @param  {ItemVisibilityType} type
+   * @param  {ItemVisibilityOptionsType} type
    */
-  async deleteOne(item: Item, type: ItemVisibilityType) {
+  async deleteOne(db: DBConnection, item: Item, type: ItemVisibilityOptionsType) {
     // delete from parent only
-    await this.isNotInherited(item, type);
+    await this.isNotInherited(db, item, type);
 
     // delete item visibility
     // we delete descendants visibilities, they happen on copy, move, or if you had on ancestor
@@ -214,8 +227,13 @@ export class ItemVisibilityRepository extends AbstractRepository<ItemVisibility>
     await this.repository.delete(ids);
   }
 
-  async isNotInherited(item: Item, type: ItemVisibilityType, { shouldThrow = true } = {}) {
-    const entry = await this.getType(item.path, type);
+  async isNotInherited(
+    db: DBConnection,
+    item: Item,
+    type: ItemVisibilityOptionsType,
+    { shouldThrow = true } = {},
+  ) {
+    const entry = await this.getType(db, item.path, type);
     if (entry && entry.item.path !== item.path && shouldThrow) {
       throw new CannotModifyParentVisibility(entry);
     }
@@ -225,11 +243,12 @@ export class ItemVisibilityRepository extends AbstractRepository<ItemVisibility>
    * Get all visibilities for one item
    * @param  {Item} item
    */
-  async getByItemPath(itemPath: string) {
-    return this.repository.find({
-      where: { item: { path: AncestorOf(itemPath) } },
-      relations: { item: true },
+  async getByItemPath(db: DBConnection, itemPath: string) {
+    const res = await db.query.itemVisibilities.findMany({
+      where: isAncestorOrSelf(itemVisibilities.itemPath, itemPath),
+      with: { item: true },
     });
+    return res;
   }
 
   /**
@@ -279,17 +298,29 @@ export class ItemVisibilityRepository extends AbstractRepository<ItemVisibility>
    * @param  {Member} creator
    * @param  {Item} original
    * @param  {Item} copy
-   * @param  {object} excludeTypes
+   * @param  {ItemVisibilityOptionsType[] | undefined} excludeTypes
    */
-  async copyAll(creator: Member, original: Item, copy: Item, excludeTypes?: ItemVisibilityType[]) {
-    // delete from parent only
-    const itemVisibilitys = await this.getByItemPath(original.path);
-    if (itemVisibilitys) {
-      await this.repository.insert(
-        itemVisibilitys
-          .filter((visibility) => !excludeTypes?.includes(visibility.type))
-          .map(({ type }) => ({ item: { path: copy.path }, type, creator })),
-      );
+  async copyAll(
+    db: DBConnection,
+    creator: Member,
+    original: Item,
+    copy: Item,
+    excludeTypes?: ItemVisibilityOptionsType[],
+  ) {
+    const originalVisibilities = await this.getByItemPath(db, original.path);
+    if (originalVisibilities) {
+      await db
+        .insert(itemVisibilities)
+        .values(
+          itemVisibilities
+            .filter((visibility) => !excludeTypes?.includes(visibility.type))
+            .map(({ type }) => ({ itemPath: copy.path, type, creator })),
+        );
+      // await this.repository.insert(
+      //   itemVisibilities
+      //     .filter((visibility) => !excludeTypes?.includes(visibility.type))
+      //     .map(({ type }) => ({ item: { path: copy.path }, type, creator })),
+      // );
     }
   }
 }

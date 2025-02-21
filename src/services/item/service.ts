@@ -103,6 +103,7 @@ export class ItemService {
   }
 
   async post(
+    db: DbConnection,
     member: Member,
     repositories: Repositories,
     args: {
@@ -112,7 +113,7 @@ export class ItemService {
       thumbnail?: Readable;
       previousItemId?: Item['id'];
     },
-  ): Promise<Item> {
+  ) {
     const { itemRepository, itemMembershipRepository, itemGeolocationRepository } = repositories;
 
     const { item, parentId, geolocation, thumbnail } = args;
@@ -152,7 +153,7 @@ export class ItemService {
       itemRepository.checkHierarchyDepth(parentItem);
 
       // check if there's too many children under the same parent
-      const descendants = await itemRepository.getChildren(member, parentItem);
+      const descendants = await itemRepository.getChildren(db, member, parentItem);
       if (descendants.length + 1 > MAX_NUMBER_OF_CHILDREN) {
         throw new TooManyChildren();
       }

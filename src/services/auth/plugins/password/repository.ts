@@ -1,4 +1,4 @@
-import { and, eq, inArray } from 'drizzle-orm/sql';
+import { eq } from 'drizzle-orm/sql';
 
 import { UUID, isPasswordStrong } from '@graasp/sdk';
 

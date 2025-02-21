@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm/sql';
+import { and, eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
 import { TagCategory } from '@graasp/sdk';
@@ -33,16 +33,17 @@ export class TagRepository {
     db: DBConnection,
     tagInfo: { name: string; category: TagCategory },
   ): Promise<Tag> {
-    const tag = db.query.tags.findFirst({where: })
-    const tag = await this.repository.findOneBy({
-      name: this.sanitizeName(tagInfo.name),
-      category: tagInfo.category,
+    const tag = await db.query.tags.findFirst({
+      where: and(
+        eq(tags.name, this.sanitizeName(tagInfo.name)),
+        eq(tags.category, tagInfo.category),
+      ),
     });
 
     if (tag) {
       return tag;
     }
 
-    return await this.addOne(tagInfo);
+    return await this.addOne(db, tagInfo);
   }
 }

@@ -1,13 +1,8 @@
 import { FastifyRequest, RouteGenericInterface, RouteHandlerMethod } from 'fastify';
 
-import {
-  ItemVisibilityType,
-  PermissionLevel,
-  PermissionLevelCompare,
-  ResultOf,
-  getChildFromPath,
-} from '@graasp/sdk';
+import { ItemVisibilityType, PermissionLevel, PermissionLevelCompare, ResultOf } from '@graasp/sdk';
 
+import { Actor, Item, ItemMembership } from '../drizzle/schema';
 import {
   InsufficientPermission,
   MemberCannotAccess,
@@ -17,15 +12,12 @@ import {
 } from '../utils/errors';
 import { Repositories } from '../utils/repositories';
 import { ItemWrapper, PackedItem } from './item/ItemWrapper';
-import { Item } from './item/entities/Item';
 import { ItemVisibility } from './item/plugins/itemVisibility/ItemVisibility';
 import { ItemVisibilityRepository } from './item/plugins/itemVisibility/repository';
 import { ItemVisibilityService } from './item/plugins/itemVisibility/service';
 import { ItemsThumbnails } from './item/plugins/thumbnail/types';
-import { ItemMembership } from './itemMembership/entities/ItemMembership';
 import { ItemMembershipRepository } from './itemMembership/repository';
 import { ItemMembershipService } from './itemMembership/service';
-import { Actor } from './member/entities/member';
 
 const permissionMapping = {
   [PermissionLevel.Read]: [PermissionLevel.Read],
@@ -407,38 +399,3 @@ export type RessourceAuthorizationStrategy<
   test: (req: FastifyRequest<R>) => boolean;
   error?: new () => Error;
 };
-
-export async function isItemVisible(
-  actor: Actor,
-  repositories: Repositories,
-  {
-    itemVisibilityService,
-    itemMembershipService,
-  }: { itemVisibilityService: ItemVisibilityService; itemMembershipService: ItemMembershipService },
-  itemPath: Item['path'],
-) {
-  const isHidden = await itemVisibilityService.has(
-    repositories,
-    itemPath,
-    ItemVisibilityType.Hidden,
-  );
-  // If the item is hidden AND there is no membership with the user, then throw an error
-  if (isHidden) {
-    if (!actor) {
-      // If actor is not provided, then there is no membership
-      return false;
-    }
-
-    // Check if the actor has at least write permission
-    const membership = await itemMembershipService.getByAccountAndItem(
-      repositories,
-      actor?.id,
-      getChildFromPath(itemPath),
-    );
-    if (!membership || PermissionLevelCompare.lt(membership.permission, PermissionLevel.Write)) {
-      return false;
-    }
-  }
-
-  return true;
-}

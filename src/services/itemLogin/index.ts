@@ -23,6 +23,43 @@ import {
   updateLoginSchema,
 } from './schemas';
 import { ItemLoginService } from './service';
+import { DBConnection } from '../../drizzle/db';
+
+
+// TODO: This is only used here but should probably be put in a better place than the plugin file
+export async function isItemVisible(
+  db: DBConnection,
+  services: {itemVisibilityService: ItemVisibilityService, }
+  actor: Actor,
+  itemPath: Item['path'],
+) {
+  const {itemVisibilityService} = services;
+  const isHidden = await itemVisibilityService.has(
+    repositories,
+    itemPath,
+    ItemVisibilityType.Hidden,
+  );
+  // If the item is hidden AND there is no membership with the user, then throw an error
+  if (isHidden) {
+    if (!actor) {
+      // If actor is not provided, then there is no membership
+      return false;
+    }
+
+    // Check if the actor has at least write permission
+    const membership = await itemMembershipService.getByAccountAndItemPath(
+      repositories,
+      actor?.id,
+      itemPath,
+    );
+    if (!membership || PermissionLevelCompare.lt(membership.permission, PermissionLevel.Write)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db } = fastify;
@@ -47,8 +84,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
         // If item is not visible, throw NOT_FOUND
         const isVisible = await isItemVisible(
+          tx,
           user?.account,
-          repositories,
           { itemVisibilityService, itemMembershipService },
           item.path,
         );

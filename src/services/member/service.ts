@@ -65,7 +65,7 @@ export class MemberService {
     if (!member) {
       const newMember = {
         ...body,
-        extra: JSON.stringify({ lang }),
+        extra: { lang },
       };
 
       const member = await this.memberRepository.post(db, newMember);
@@ -99,7 +99,7 @@ export class MemberService {
 
   async refreshLastAuthenticatedAt(id: UUID, db: DBConnection) {
     return await this.memberRepository.patch(db, id, {
-      lastAuthenticatedAt: new Date(),
+      lastAuthenticatedAt: new Date().toISOString(),
     });
   }
   async validate(id: UUID, db: DBConnection) {

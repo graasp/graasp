@@ -1,9 +1,19 @@
-import { type Static } from '@sinclair/typebox';
-import { DBConnection } from '../../drizzle/db';
-import { items, itemsRaw, accounts , itemMemberships} from '../../drizzle/schema';
-import { and, eq, asc, ne,count , or,sql, isNotNull, ilike, inArray, desc} from 'drizzle-orm/sql';
+import { alias } from 'drizzle-orm/pg-core';
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  gte,
+  ilike,
+  inArray,
+  isNotNull,
+  ne,
+  or,
+  sql,
+} from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
-
 import { v4 } from 'uuid';
 
 import {
@@ -20,8 +30,17 @@ import {
 } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import { MutableRepository } from '../../repositories/MutableRepository';
-import { DEFAULT_PRIMARY_KEY } from '../../repositories/const';
+import { DBConnection } from '../../drizzle/db';
+import { isAncestorOrSelf, isDescendantOrSelf, isDirectChild } from '../../drizzle/operations';
+import {
+  Account,
+  Item,
+  accounts,
+  itemMemberships,
+  itemPublisheds,
+  items,
+  itemsRaw,
+} from '../../drizzle/schema';
 import { IllegalArgumentException } from '../../repositories/errors';
 import { ALLOWED_SEARCH_LANGS } from '../../utils/config';
 import {
@@ -32,19 +51,15 @@ import {
   TooManyDescendants,
   UnexpectedError,
 } from '../../utils/errors';
-import { MemberIdentifierNotFound } from '../itemLogin/errors';
 import {
   FILE_METADATA_DEFAULT_PAGE_SIZE,
   FILE_METADATA_MAX_PAGE_SIZE,
   FILE_METADATA_MIN_PAGE,
 } from '../member/constants';
-import { Actor, Member, isMember } from '../member/entities/member';
-import { itemSchema } from '../member/plugins/export-data/schemas/schemas';
-import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils';
-import { fileItemMetadata } from '../member/schemas';
+import { Actor, isMember } from '../member/entities/member';
 import { mapById } from '../utils';
 import { IS_COPY_REGEX } from './constants';
-import { DEFAULT_ORDER, FolderItem, Item, ItemExtraUnion, isItemType } from './entities/Item';
+import { DEFAULT_ORDER, FolderItem, ItemExtraUnion, isItemType } from './entities/Item';
 import { ItemChildrenParams } from './types';
 import { sortChildrenForTreeWith } from './utils';
 
@@ -64,8 +79,7 @@ type CreateItemBody = {
 type UpdateItemBody = DeepPartial<Item>;
 
 @singleton()
-export class ItemRepository   {
-
+export class ItemRepository {
   checkHierarchyDepth(item: Item, additionalNbLevel = 1) {
     // check if hierarchy it too deep
     // adds nb of items to be created
@@ -75,11 +89,13 @@ export class ItemRepository   {
     }
   }
 
-  async checkNumberOfDescendants(db:DBConnection, item: Item, maximum: number) {
+  async checkNumberOfDescendants(db: DBConnection, item: Item, maximum: number) {
     // check how "big the tree is" below the item
 
-    const [{count:numberOfDescendants}] = await db.select({ count: count() }).from(items)
-      .where(sql`${items.path} <@ ${item.path}`)
+    const [{ count: numberOfDescendants }] = await db
+      .select({ count: count() })
+      .from(items)
+      .where(isDescendantOrSelf(items.path, item.path));
 
     if (numberOfDescendants > maximum) {
       throw new TooManyDescendants(item.id);
@@ -96,7 +112,7 @@ export class ItemRepository   {
     type?: Item['type'];
     extra?: Item['extra'];
     settings?: Item['settings'];
-    creator: Item['creator'];
+    creator: Account;
     lang?: Item['lang'];
     parent?: Item;
     order?: Item['order'];
@@ -113,7 +129,7 @@ export class ItemRepository   {
       order,
     } = args;
 
-    if (parent && !isItemType(parent, ItemType.FOLDER)) {
+    if (parent && parent.type !== ItemType.FOLDER) {
       throw new ItemNotFolder({ id: parent.id });
     }
 
@@ -127,9 +143,9 @@ export class ItemRepository   {
       parsedExtra = { folder: {} };
     }
 
-    const item =  ({
+    const item = {
       id,
-      path = parent ? `${parent.path}.${buildPathFromIds(id)}` : buildPathFromIds(id),
+      path: parent ? `${parent.path}.${buildPathFromIds(id)}` : buildPathFromIds(id),
       name,
       description,
       type,
@@ -139,96 +155,94 @@ export class ItemRepository   {
         ...settings,
       },
       // set lang from user lang
-      lang: lang ?? parent?.lang ?? creator?.lang ?? DEFAULT_LANG,
-      creator,
+      lang: lang ?? parent?.lang ?? creator?.extra?.lang ?? DEFAULT_LANG,
+      creatorId: creator.id,
       order,
-    });
+    };
 
     return item;
   }
 
   // TODO: note: removed , options = { withDeleted: false }
   async getOne(db: DBConnection, id: string) {
+    const result = await db
+      .select()
+      .from(items)
+      .leftJoin(accounts, eq(items.creatorId, accounts.id))
+      .where(eq(items.id, id))
+      .limit(1);
 
-const result = await db.select().from(items)
-.leftJoin(accounts, eq(items.creatorId, accounts.id))
-.where(eq(items.id, id)).limit(1)
-
-return result.map(({ account, item_view }) => ({
-  ...item_view,
-  creator:account,
-}));
-
+    return result.map(({ account, item_view }) => ({
+      ...item_view,
+      creator: account,
+    }));
   }
 
   // TODO: note: removed  options: Pick<FindOneOptions<Item>, 'withDeleted'> = { withDeleted: false },
-  async getOneOrThrow(
-    db: DBConnection,
-    id: string,
-  ) {
+  async getOneOrThrow(db: DBConnection, id: string) {
+    const result = await db
+      .select()
+      .from(items)
+      .leftJoin(accounts, eq(items.creatorId, accounts.id))
+      .where(eq(items.id, id))
+      .limit(1);
 
-const item = await db.select().from(items)
-.leftJoin(accounts, eq(items.creatorId, accounts.id))
-.where(eq(items.id, id)).limit(1)
-
-if(!item.length) {
-  throw new ItemNotFound(id)
-}
-return result.map(({ account, item_view }) => ({
-  ...item_view,
-  creator:account,
-}));
+    if (!result.length) {
+      throw new ItemNotFound(id);
+    }
+    return {
+      ...result[0].item_view,
+      creator: result[0].account,
+    };
   }
 
   // TODO: note: removed  options: Pick<FindOneOptions<Item>, 'withDeleted'> = { withDeleted: false },
-  async getDeletedById(
-    db: DBConnection,
-    id: string,
-  ) {
+  async getDeletedById(db: DBConnection, id: string) {
+    const item = await db
+      .select()
+      .from(itemsRaw)
+      .where(and(eq(itemsRaw.id, id), isNotNull(itemsRaw.deletedAt)))
+      .limit(1);
 
-const item = await db.select().from(itemsRaw)
-.where(and(eq(itemsRaw.id, id), isNotNull(itemsRaw.deletedAt))).limit(1)
+    if (!item) {
+      throw new ItemNotFound(id);
+    }
 
-if(!item) {
-  throw new ItemNotFound(id)
-}
-
-    return item
+    return item;
   }
 
   /**
    * options.includeCreator {boolean} if true, return full creator
    * options.types {boolean} if defined, filter out the items
    * */
-  async getAncestors(db: DBConnection, item: Item)  {
+  async getAncestors(db: DBConnection, item: Item) {
     if (!item.path.includes('.')) {
       return [];
     }
 
-    const result = await db.select().from(items).leftJoin(accounts, eq(items.creatorId, accounts.id)).where(and(sql`${items.path} @> ${ item.path }`, ne(items.id,item.id))).orderBy(asc(items.path) )
+    const result = await db
+      .select()
+      .from(items)
+      .leftJoin(accounts, eq(items.creatorId, accounts.id))
+      .where(and(isAncestorOrSelf(items.path, item.path), ne(items.id, item.id)))
+      .orderBy(asc(items.path));
 
-return result.map(({ account, item_view }) => ({
-  ...item_view,
-  creator:account,
-}));
+    return result.map(({ account, item_view }) => ({
+      ...item_view,
+      creator: account,
+    }));
   }
 
-  async getChildren(
-    db: DBConnection,
-    actor: Actor,
-    parent: Item,
-    params?: ItemChildrenParams,
-    options: { withOrder?: boolean } = {},
-  )  {
-    if (!isItemType(parent, ItemType.FOLDER)) {
+  async getChildren(db: DBConnection, actor: Actor, parent: Item, params?: ItemChildrenParams) {
+    if (parent.type !== ItemType.FOLDER) {
       throw new ItemNotFolder({ id: parent.id });
     }
 
     // reunite where conditions
     // is direct child
-    const andConditions = [sql`${items.path} ~ ${`${parent.path}.*{1}`}`]
+    const andConditions = [isDirectChild(items.path, parent.path)];
 
-      // .where('path ~ ${${parent.path}.*{1}}', { path: `${parent.path}.*{1}` });
+    // .where('path ~ ${${parent.path}.*{1}}', { path: `${parent.path}.*{1}` });
 
     if (params?.types) {
       const types = params.types;
@@ -239,38 +253,38 @@ return result.map(({ account, item_view }) => ({
     if (allKeywords?.length) {
       const keywordsString = allKeywords.join(' ');
 
-          // search in english by default
-          const matchEnglishSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery('english', ${keywordsString})`
+      // search in english by default
+      const matchEnglishSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery('english', ${keywordsString})`;
 
+      // no dictionary
+      const matchSimpleSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery('simple', ${keywordsString})`;
 
-          // no dictionary
-          const matchSimpleSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery('simple', ${keywordsString})`
+      // raw words search
+      const matchRawWordSearchConditions = allKeywords.map((k) => ilike(items.name, `%${k}%`));
 
+      const searchConditions = [
+        matchEnglishSearchCondition,
+        matchSimpleSearchCondition,
+        ...matchRawWordSearchConditions,
+      ];
 
-          // raw words search
-          const matchRawWordSearchConditions = allKeywords.map(k =>  ilike(items.name, `%${k}%`)  )
+      // search by member lang
+      const memberLang = actor && isMember(actor) ? actor?.lang : DEFAULT_LANG;
+      const matchMemberLangSearchCondition = null;
+      if (memberLang && ALLOWED_SEARCH_LANGS[memberLang]) {
+        const matchMemberLangSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery(${ALLOWED_SEARCH_LANGS[memberLang]}, ${keywordsString})`;
+        searchConditions.push(matchMemberLangSearchCondition);
+      }
 
-          const searchConditions =  [matchEnglishSearchCondition, matchSimpleSearchCondition, ...matchRawWordSearchConditions ]
+      andConditions.push(or(...searchConditions));
+    }
 
-          // search by member lang
-          const memberLang = actor && isMember(actor) ? actor?.lang : DEFAULT_LANG;
-          let matchMemberLangSearchCondition =null
-          if (memberLang && ALLOWED_SEARCH_LANGS[memberLang]) {
-          const matchMemberLangSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery(${ ALLOWED_SEARCH_LANGS[memberLang]}, ${keywordsString})`
-searchConditions.push(matchMemberLangSearchCondition)
-          }
-
-
-
-       andConditions.push(or(...searchConditions))
-        }
-
-        // use createdAt for ordering by default
-        // or use order for ordering
-       let orderByValues = [asc(items.createdAt)]
+    // use createdAt for ordering by default
+    // or use order for ordering
+    let orderByValues = [asc(items.createdAt)];
     if (params?.ordered) {
       // backup order by in case two items has same ordering
-      orderByValues = [asc(items.order), asc(items.createdAt)]
+      orderByValues = [asc(items.order), asc(items.createdAt)];
     }
 
     // normally no need anymore with typeorm
@@ -278,10 +292,14 @@ searchConditions.push(matchMemberLangSearchCondition)
     //   query.addSelect('item.order');
     // }
 
-    return  db.select().from(items)
-    .leftJoin(accounts, eq(items.creatorId, accounts.id))
-    .where( andConditions)
-    .orderBy(orderByValues)
+    const result = await db
+      .select()
+      .from(items)
+      .leftJoin(accounts, eq(items.creatorId, accounts.id))
+      .where(andConditions)
+      .orderBy(orderByValues);
+
+    return result.map(({ item_view, account }) => ({ ...item_view, creator: account }));
   }
 
   async getChildrenNames(
@@ -289,15 +307,16 @@ searchConditions.push(matchMemberLangSearchCondition)
     parent: Item,
     { startWith }: { startWith?: string },
   ): Promise<string[]> {
-const whereConditions = [sql`${items.path} ~ ${parent.path}.*{1}`]
-
+    const whereConditions = [isDirectChild(items.path, parent.path)];
 
     if (startWith) {
-      whereConditions.push(ilike(items.name,`${startWith}%`))
+      whereConditions.push(ilike(items.name, `${startWith}%`));
     }
 
-    const itemNames = await db.select({name:items.name}).from(itemsRaw)
-    .where(and(...whereConditions))
+    const itemNames = await db
+      .select({ name: items.name })
+      .from(itemsRaw)
+      .where(and(...whereConditions));
     return itemNames.map(({ name }) => name);
   }
 
@@ -311,14 +330,14 @@ const whereConditions = [sql`${items.path} ~ ${parent.path}.*{1}`]
   async getDescendants(
     db: DBConnection,
     item: FolderItem,
-    options?: { ordered?: boolean; types?: string[];   },
+    options?: { ordered?: boolean; types?: string[] },
   ): Promise<Item[]> {
     // TODO: LEVEL depth
     const { ordered = true, types } = options ?? {};
 
-const whereConditions =[sql`${items.path} <@ ${item.path}`, ne(items.id,item.id)]
+    const whereConditions = [isDescendantOrSelf(items.path, item.path), ne(items.id, item.id)];
     if (types && types.length > 0) {
-      whereConditions.push(inArray(items.type, types))
+      whereConditions.push(inArray(items.type, types));
     }
 
     // TODO: no need with drizzle
@@ -330,11 +349,16 @@ const whereConditions =[sql`${items.path} <@ ${item.path}`, ne(items.id,item.id)
     //   return query.getMany();
     // }
 
-    const result = await db.select().from(items).leftJoin(accounts, eq(items.creatorId, accounts.id)).where(and(whereConditions)).orderBy(asc(items.path) )
+    const result = await db
+      .select()
+      .from(items)
+      .leftJoin(accounts, eq(items.creatorId, accounts.id))
+      .where(and(whereConditions))
+      .orderBy(asc(items.path));
 
-    const descendants= result.map(({ account, item_view }) => ({
+    const descendants = result.map(({ account, item_view }) => ({
       ...item_view,
-      creator:account,
+      creator: account,
     }));
 
     return sortChildrenForTreeWith(descendants, item);
@@ -351,9 +375,15 @@ const whereConditions =[sql`${items.path} <@ ${item.path}`, ne(items.id,item.id)
 
     const { throwOnError = false } = args;
 
-    const result = (await db.select().from(items).leftJoin(accounts, eq(items.creatorId, accounts.id)).where(inArray(items.id, ids))).map(({ account, item_view }) => ({
+    const result = (
+      await db
+        .select()
+        .from(items)
+        .leftJoin(accounts, eq(items.creatorId, accounts.id))
+        .where(inArray(items.id, ids))
+    ).map(({ account, item_view }) => ({
       ...item_view,
-      creator:account,
+      creator: account,
     }));
 
     const mappedResult = mapById({
@@ -370,10 +400,12 @@ const whereConditions =[sql`${items.path} <@ ${item.path}`, ne(items.id,item.id)
   }
 
   async getNumberOfLevelsToFarthestChild(db: DBConnection, item: Item): Promise<number> {
-    const farthestItem = await db.select({path:items.path}).from(items)
-    .where(and(sql`${items.path} <@ ${item.path}`, ne(items.id, item.id)))
-    .orderBy(desc(sql`nlevel(path)`))
-    .limit(1)
+    const farthestItem = await db
+      .select({ path: items.path })
+      .from(items)
+      .where(and(isDescendantOrSelf(items.path, item.path), ne(items.id, item.id)))
+      .orderBy(desc(sql`nlevel(path)`))
+      .limit(1);
     // await this.repository
     //   .createQueryBuilder('item')
     //   .addSelect(`nlevel(path) - nlevel('${item.path}')`)
@@ -385,29 +417,44 @@ const whereConditions =[sql`${items.path} <@ ${item.path}`, ne(items.id,item.id)
     return farthestItem?.[0]?.path?.split('.')?.length ?? 0;
   }
 
-  async getOwn(db: DBConnection, memberId: string): Promise<Item[]> {
+  async getOwn(db: DBConnection, memberId: string) {
+    const result = await db
+      .select()
+      .from(items)
+      .leftJoin(accounts, eq(items.creatorId, accounts.id))
+      .innerJoin(itemMemberships, isDescendantOrSelf(itemMemberships.itemPath, items.path))
+      .where(
+        and(
+          eq(items.creatorId, memberId),
+          eq(itemMemberships.permission, PermissionLevel.Admin),
+          eq(sql`nlevel(${items.path})`, 1),
+        ),
+      )
+      .orderBy(desc(items.updatedAt));
 
-    db.select().from(items).leftJoin(accounts, eq(items.creatorId, accounts.id))
-    .innerJoin(itemMemberships, sql`${itemMemberships.itemPath} @> ${items.path}`)
+    return result.map(({ account, item_view }) => ({
+      ...item_view,
+      creator: account,
+    }));
 
-    return this.repository
-      .createQueryBuilder('item')
-      .leftJoinAndSelect('item.creator', 'creator')
-      .innerJoin('item_membership', 'im', 'im.item_path @> item.path')
-      .where('creator.id = :id', { id: memberId })
-      .andWhere('im.permission = :permission', { permission: PermissionLevel.Admin })
-      .andWhere('nlevel(item.path) = 1')
-      .orderBy('item.updatedAt', 'DESC')
-      .getMany();
+    // return this.repository
+    //   .createQueryBuilder('item')
+    //   .leftJoinAndSelect('item.creator', 'creator')
+    //   .innerJoin('item_membership', 'im', 'im.item_path @> item.path')
+    //   .where('creator.id = :id', { id: memberId })
+    //   .andWhere('im.permission = :permission', { permission: PermissionLevel.Admin })
+    //   .andWhere('nlevel(item.path) = 1')
+    //   .orderBy('item.updatedAt', 'DESC')
+    //   .getMany();
   }
 
-  async move(db: DBConnection, item: Item, parentItem?: Item): Promise<Item> {
+  async move(db: DBConnection, item: Item, parentItem?: Item) {
     if (parentItem) {
       // attaching tree to new parent item
       const { id: parentItemId, path: parentItemPath } = parentItem;
 
       // cannot move inside non folder item
-      if (!isItemType(parentItem, ItemType.FOLDER)) {
+      if (parentItem.type !== ItemType.FOLDER) {
         throw new ItemNotFolder({ id: parentItemId });
       }
 
@@ -436,17 +483,19 @@ const whereConditions =[sql`${items.path} <@ ${item.path}`, ne(items.id,item.id)
       : `subpath(path, nlevel('${item.path}') - 1)`;
 
     // get new order value
-    const order = await this.getNextOrderCount(parentItem?.path);
+    const order = await this.getNextOrderCount(db, parentItem?.path);
 
-    await this.repository
-      .createQueryBuilder('item')
-      .update()
-      .set({ path: () => pathSql, order })
-      .where('item.path <@ :path', { path: item.path })
-      .execute();
-
-    // TODO: is there a better way?
-    return await this.getOneOrThrow(item.id);
+    return await db
+      .update(itemsRaw)
+      .set({ path: pathSql, order })
+      .where(isDescendantOrSelf(items.path, item.path))
+      .returning();
+    // this.repository
+    //   .createQueryBuilder('item')
+    //   .update()
+    //   .set({ path: () => pathSql, order })
+    //   .where('item.path <@ :path', { path: item.path })
+    //   .execute();
   }
 
   async updateOne(db: DBConnection, id: string, data: UpdateItemBody) {
@@ -456,7 +505,7 @@ const whereConditions =[sql`${items.path} <@ ${item.path}`, ne(items.id,item.id)
     }
 
     // TODO: extra + settings
-    const item = await this.getOneOrThrow(id);
+    const item = await this.getOneOrThrow(db, id);
 
     // only allow for item type specific changes in extra
     const newData = data;
@@ -476,9 +525,7 @@ const whereConditions =[sql`${items.path} <@ ${item.path}`, ne(items.id,item.id)
       }
     }
 
-    // TODO: check schema
-
-    return await super.updateOne(id, newData);
+    return await db.update(itemsRaw).set(newData).where(eq(itemsRaw.id, id)).returning();
   }
 
   public async addOne(db: DBConnection, { item, creator, parentItem }: CreateItemBody) {
@@ -488,27 +535,28 @@ const whereConditions =[sql`${items.path} <@ ${item.path}`, ne(items.id,item.id)
       parent: parentItem,
     });
 
-    return await super.insert(newItem);
+    return await db.insert(itemsRaw).values(newItem).returning();
   }
 
   /////// -------- COPY
-  async copy(db: DBConnection,
+  async copy(
+    db: DBConnection,
     item: Item,
     creator: Member,
     siblingsName: string[],
     parentItem?: Item,
   ): Promise<{ copyRoot: Item; treeCopyMap: Map<string, { original: Item; copy: Item }> }> {
     // cannot copy inside non folder item
-    if (parentItem && !isItemType(parentItem, ItemType.FOLDER)) {
+    if (parentItem && parentItem.type !== ItemType.FOLDER) {
       throw new ItemNotFolder({ id: parentItem.id });
     }
 
     // copy (memberships from origin are not copied/kept)
-    const treeItemsCopy = await this._copy(item, creator, siblingsName, parentItem);
+    const treeItemsCopy = await this._copy(db, item, creator, siblingsName, parentItem);
 
     // return copy item + all descendants
     const newItems = [...treeItemsCopy.values()].map(({ copy }) => copy);
-    const createdOp = await this.repository.insert(newItems as QueryDeepPartialEntity<Item>);
+    const createdOp = await db.insert(itemsRaw).values(newItems).returning();
 
     const newItemRef = createdOp?.identifiers?.[0];
     if (!newItemRef) {
@@ -516,7 +564,7 @@ const whereConditions =[sql`${items.path} <@ ${item.path}`, ne(items.id,item.id)
     }
 
     return {
-      copyRoot: await this.getOneOrThrow(newItemRef.id),
+      copyRoot: await this.getOneOrThrow(db, newItemRef.id),
       treeCopyMap: treeItemsCopy,
     };
   }
@@ -528,11 +576,17 @@ const whereConditions =[sql`${items.path} <@ ${item.path}`, ne(items.id,item.id)
    * @param siblings Siblings that the copied item will have
    * @param parentItem Parent item whose path will 'prefix' all paths
    */
-  private async _copy(db: DBConnection, original: Item, creator: Member, siblingsName: string[], parentItem?: Item) {
+  private async _copy(
+    db: DBConnection,
+    original: Item,
+    creator: Member,
+    siblingsName: string[],
+    parentItem?: Item,
+  ) {
     const old2New = new Map<string, { copy: Item; original: Item }>();
 
     // get next order value
-    const order = await this.getNextOrderCount(parentItem?.path);
+    const order = await this.getNextOrderCount(db, parentItem?.path);
     // copy target parent
     const copiedItem = this.createOne({
       ...original,
@@ -545,7 +599,7 @@ const whereConditions =[sql`${items.path} <@ ${item.path}`, ne(items.id,item.id)
 
     // handle descendants - change path
     if (isItemType(original, ItemType.FOLDER)) {
-      await this.copyDescendants(original, creator, old2New);
+      await this.copyDescendants(db, original, creator, old2New);
     }
 
     return old2New;
@@ -556,14 +610,14 @@ const whereConditions =[sql`${items.path} <@ ${item.path}`, ne(items.id,item.id)
    * @param original
    * @param old2New mapping from original item to copied data, in-place updates
    */
-  private async copyDescendants(db: DBConnection,
+  private async copyDescendants(
+    db: DBConnection,
     original: FolderItem,
     creator: Member,
     old2New: Map<string, { copy: Item; original: Item }>,
   ): Promise<void> {
-    const descendants = await this.getDescendants(original, {
+    const descendants = await this.getDescendants(db, original, {
       ordered: true,
-      selectOrder: true,
     });
     for (let i = 0; i < descendants.length; i++) {
       const original = descendants[i];
@@ -662,68 +716,66 @@ const whereConditions =[sql`${items.path} <@ ${item.path}`, ne(items.id,item.id)
    * @param itemType file item type
    * @returns total storage used by file items
    */
-  async getItemSumSize(db: DBConnection, memberId: string, itemType: FileItemType): Promise<number> {
-    return parseInt(
-      (
-        await this.repository
-          .createQueryBuilder('item')
-          .select(`SUM(((item.extra::jsonb->'${itemType}')::jsonb->'size')::bigint)`, 'total')
-          .where('item.creator.id = :memberId', { memberId })
-          .andWhere('item.type = :type', { type: itemType })
-          .getRawOne()
-      ).total ?? 0,
-    );
+  async getItemSumSize(
+    db: DBConnection,
+    memberId: string,
+    itemType: FileItemType,
+  ): Promise<number> {
+    const result = await db
+      .select({
+        total: sql<string>`SUM(((item.extra::jsonb->'${itemType}')::jsonb->'size')::bigint)`,
+      })
+      .from(items)
+      .where(and(eq(items.creatorId, memberId), eq(items.type, itemType)));
+    const [{ total }] = result;
+    return parseInt(total);
   }
 
-  async getFilesMetadata(db: DBConnection,
+  async getFilesMetadata(
+    db: DBConnection,
     memberId: string,
     itemType: FileItemType,
     { page = FILE_METADATA_MIN_PAGE, pageSize = FILE_METADATA_DEFAULT_PAGE_SIZE }: Pagination,
   ) {
     const limit = Math.min(pageSize, FILE_METADATA_MAX_PAGE_SIZE);
     const skip = (page - 1) * limit;
-    const query = this.repository
-      .createQueryBuilder('item')
-      .leftJoinAndSelect(
-        'item',
-        'parent',
-        'parent.path = subpath(item.path, 0, nlevel(item.path) - 1)',
-      )
-      .where('item.creator_id = :memberId', { memberId })
-      .andWhere('item.type = :type', { type: itemType })
+
+    const parent = alias(items, 'parent');
+    const result = await db
+      .select()
+      .from(items)
+      .leftJoin(parent, eq(parent.path, sql`subpath(${items.path}, 0, nlevel(${items.path}) - 1)`))
+      // .leftJoinAndSelect(
+      //   'item',
+      //   'parent',
+      //   'parent.path = subpath(item.path, 0, nlevel(item.path) - 1)',
+      // )
+      .where(and(eq(items.creatorId, memberId), eq(items.type, itemType)))
       .offset(skip)
+      // order by size
+      // .orderBy(desc(sql`(${items.extra}::json -> :type ->> 'size')::decimal`))
       .limit(limit);
 
-    // order by size
-    const rawEntities = await query
-      .orderBy("(item.extra::json -> :type ->> 'size')::decimal", 'DESC')
-      .getRawMany();
-    const entities: Static<typeof fileItemMetadata>[] = rawEntities.map((item) => ({
-      id: item.item_id,
-      name: item.item_name,
-      updatedAt: item.item_updated_at,
-      size: JSON.parse(item.item_extra)[itemType].size,
-      path: JSON.parse(item.item_extra)[itemType].path,
-      parent: item.parent_id
+    const entities = result.map(({ item_view, parent }) => ({
+      id: item_view.id,
+      name: item_view.name,
+      updatedAt: item_view.updatedAt,
+      size: item_view.extra[itemType].size,
+      path: item_view.extra[itemType].path,
+      parent: parent
         ? {
-            id: item.parent_id,
-            name: item.parent_name,
+            id: parent.id,
+            name: parent.name,
           }
         : undefined,
     }));
 
-    return { data: entities, totalCount: await query.getCount() };
-  }
+    const [{ totalCount }] = await db
+      .select({ totalCount: count() })
+      .from(items)
+      .where(and(eq(items.creatorId, memberId), eq(items.type, itemType)));
 
-  // to remove: unused
-  async getAllPublishedItems(db: DBConnection): Promise<Item[]> {
-    const publishedRows = await this.repository
-      .createQueryBuilder('item')
-      .leftJoinAndSelect('item.creator', 'creator')
-      .innerJoin('item_published', 'ip', 'ip.item_path = item.path')
-      .getMany();
-
-    return publishedRows;
+    return { data: entities, totalCount: totalCount };
   }
 
   /**
@@ -731,30 +783,49 @@ const whereConditions =[sql`${items.path} <@ ${item.path}`, ne(items.id,item.id)
    * @param memberId
    * @returns published items for given member
    */
-  async getPublishedItemsForMember(db: DBConnection, memberId: Member['id']): Promise<Item[]> {
+  async getPublishedItemsForMember(db: DBConnection, memberId: Member['id']) {
     // get for membership write and admin -> createquerybuilder
-    const result = await this.repository
-      .createQueryBuilder('item')
-      .innerJoin('item_published', 'pi', 'pi.item_path = item.path')
-      .innerJoin('item_membership', 'im', 'im.item_path @> item.path')
-      .innerJoinAndSelect('item.creator', 'member')
-      .where('im.account_id = :accountId', { accountId: memberId })
-      .andWhere('im.permission IN (:...permissions)', {
-        permissions: [PermissionLevel.Admin, PermissionLevel.Write],
-      })
-      .getMany();
+    const result = await db
+      .select()
+      .from(items)
+      .innerJoin(itemPublisheds, eq(itemPublisheds.itemPath, items.path))
+      .innerJoin(
+        itemMemberships,
+        and(
+          isAncestorOrSelf(itemMemberships.itemPath, items.path),
+          inArray(itemMemberships.permission, [PermissionLevel.Admin, PermissionLevel.Write]),
+        ),
+      )
+      .innerJoin(accounts, and(eq(accounts.id, memberId), eq(items.creatorId, accounts.id)));
 
-    return result;
+    return result.map(({ item_view, account }) => ({ ...item_view, creator: account }));
   }
 
+  // TODO: remove??
   async findAndCount(db: DBConnection, args: FindManyOptions<Item>) {
     return this.repository.findAndCount(args);
   }
   async softRemove(db: DBConnection, args: Item[]) {
-    return this.repository.softRemove(args);
+    return await db
+      .update(itemsRaw)
+      .set({ deletedAt: new Date().toISOString() })
+      .where(
+        inArray(
+          itemsRaw.id,
+          args.map(({ id }) => id),
+        ),
+      );
   }
   async recover(db: DBConnection, args: Item[]) {
-    return this.repository.recover(args);
+    return await db
+      .update(itemsRaw)
+      .set({ deletedAt: null })
+      .where(
+        inArray(
+          itemsRaw.id,
+          args.map(({ id }) => id),
+        ),
+      );
   }
 
   /**
@@ -765,7 +836,8 @@ const whereConditions =[sql`${items.path} <@ ${item.path}`, ne(items.id,item.id)
    * @param previousItemId id of the item whose order will be smaller than the returned order
    * @returns {number|null} next valid order value
    */
-  async getNextOrderCount(db: DBConnection,
+  async getNextOrderCount(
+    db: DBConnection,
     parentPath?: Item['path'],
     previousItemId?: Item['id'],
   ): Promise<number | null> {
@@ -774,43 +846,58 @@ const whereConditions =[sql`${items.path} <@ ${item.path}`, ne(items.id,item.id)
       return null;
     }
 
-    const q = this.repository
-      .createQueryBuilder('item')
-      // default value: self order + "default order value" to increase of one the order
-      .select(
-        '(item.order + (lead(item.order, 1, item.order + (' +
-          DEFAULT_ORDER +
-          '*2)) OVER (ORDER BY item.order)))/2',
-        'next',
-      )
-      .where('path <@ :path', { path: parentPath })
-      .andWhere('path != :path', { path: parentPath });
-
     // by default take the biggest value
-    let orderDirection: 'DESC' | 'ASC' = 'DESC';
+    let orderDirection = desc;
+    const whereConditions = [isDirectChild(items.path, parentPath)];
 
     if (previousItemId) {
       // might not exist
-      const previousItem = await this.repository
-        .createQueryBuilder()
-        .select(['id', '"order"'])
-        .where('id = :previousItemId', { previousItemId })
-        // ensure it is a child of parent
-        .andWhere('path ~ :path', { path: `${parentPath}.*{1}` })
-        .getRawOne();
+      const previousItems = await db
+        .select({ id: items.id, order: items.order })
+        .from(items)
+        .where(and(eq(items.id, previousItemId), isDirectChild(items.path, parentPath)))
+        .limit(1);
+
+      // const previousItem = await this.repository
+      //   .createQueryBuilder()
+      //   .select(['id', '"order"'])
+      //   .where('id = :previousItemId', { previousItemId })
+      //   // ensure it is a child of parent
+      //   .andWhere('path ~ :path', { path: `${parentPath}.*{1}` })
+      //   .getRawOne();
 
       // if needs to add in between, remove previous elements and order by next value to get the first one
-      if (previousItem) {
-        q.andWhere('item.order >= :previousOrder', { previousOrder: previousItem.order });
-        // will take smallest value corresponding to given previous item id
-        orderDirection = 'ASC';
+      if (previousItems.length) {
+        const previousItemOrder = previousItems[0].order;
+        if (previousItemOrder) {
+          // will take smallest value corresponding to given previous item id
+          orderDirection = asc;
+          whereConditions.push(gte(items.order, previousItemOrder));
+        }
       }
     }
 
-    q.orderBy('next', orderDirection);
+    const result = await db
+      .select({
+        next: sql`(item.order + (lead(item.order, 1, item.order + ( ${DEFAULT_ORDER} *2)) OVER (ORDER BY item.order)))/2`,
+      })
+      .from(items)
+      .where(and(...whereConditions))
+      .orderBy(orderDirection(sql.raw('next')))
+      .limit(1);
 
-    const result = await q.limit(1).getRawOne<{ next: number }>();
-    return result?.next ? +result.next : DEFAULT_ORDER;
+    // .createQueryBuilder('item')
+    // // default value: self order + "default order value" to increase of one the order
+    // .select(
+    //   '(item.order + (lead(item.order, 1, item.order + (' +
+    //     DEFAULT_ORDER +
+    //     '*2)) OVER (ORDER BY item.order)))/2',
+    //   'next',
+    // )
+    // .where('path <@ :path', { path: parentPath })
+    // .andWhere('path != :path', { path: parentPath });
+
+    return result?.[0]?.next ? +result?.[0]?.next : DEFAULT_ORDER;
   }
 
   /**
@@ -826,16 +913,15 @@ const whereConditions =[sql`${items.path} <@ ${item.path}`, ne(items.id,item.id)
       return null;
     }
 
-    const q = this.repository
-      .createQueryBuilder('item')
-      .select('item.order')
-      .where('path <@ :path AND path != :path', { path: parentPath })
-      .orderBy('item.order')
+    const result = await db
+      .select({ order: items.order })
+      .from(items)
+      .where(and(isDescendantOrSelf(items.path, parentPath), ne(items.path, parentPath)))
+      .orderBy(asc(items.order))
       .limit(1);
 
-    const result = await q.getOne();
-    if (result && result.order) {
-      return result.order / 2;
+    if (result.length && result[0].order) {
+      return result[0].order / 2;
     }
     return DEFAULT_ORDER;
   }
@@ -845,23 +931,18 @@ const whereConditions =[sql`${items.path} <@ ${item.path}`, ne(items.id,item.id)
     let order;
     if (!previousItemId) {
       // warning: by design reordering among one item will decrease this item order
-      order = await this.getFirstOrderValue(parentPath);
+      order = await this.getFirstOrderValue(db, parentPath);
     } else {
-      order = await this.getNextOrderCount(parentPath, previousItemId);
+      order = await this.getNextOrderCount(db, parentPath, previousItemId);
     }
-    await this.repository.update(item.id, { order });
+    await db.update(itemsRaw).set({ order }).where(eq(items.id, item.id));
 
     // TODO: optimize
-    return await this.getOneOrThrow(db: DBConnection, item.id);
+    return await this.getOneOrThrow(db, item.id);
   }
 
   async rescaleOrder(db: DBConnection, actor: Actor, parentItem: Item) {
-    const children = await this.getChildren(
-      actor,
-      parentItem,
-      { ordered: true },
-      { withOrder: true },
-    );
+    const children = await this.getChildren(db, actor, parentItem);
 
     // no need to rescale for less than 2 items
     if (children.length < 2) {
@@ -887,7 +968,7 @@ const whereConditions =[sql`${items.path} <@ ${item.path}`, ne(items.id,item.id)
       // can update in disorder
       await Promise.all(
         values.map(async (i) => {
-          return this.repository.update(i.id, i);
+          return await db.update(itemsRaw).set(i).where(eq(items.id, i.id));
         }),
       );
     }

@@ -4,6 +4,7 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { MembershipRequestStatus, PermissionLevel } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import { ItemNotFound } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
@@ -24,7 +25,7 @@ import { createOne, deleteOne, getAllByItem, getOwn } from './schemas';
 import { MembershipRequestService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { db } = fastify;
+  const { db: typeormDB } = fastify;
 
   const membershipRequestService = resolveDependency(MembershipRequestService);
   const itemMembershipService = resolveDependency(ItemMembershipService);
@@ -45,7 +46,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       const { itemId } = params;
 
-      await db.transaction(async (manager) => {
+      await typeormDB.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
 
         // Check if the Item exists and the member has the required permission.
@@ -67,7 +68,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       const { itemId } = params;
 
-      await db.transaction(async (manager) => {
+      await typeormDB.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
 
         const membershipRequest = await membershipRequestService.get(
@@ -79,8 +80,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           return reply.send({ status: MembershipRequestStatus.Pending });
         }
 
-        const itemMembership = await itemMembershipService.getByAccountAndItem(
-          repositories,
+        const itemMembership = await itemMembershipService.hasMembershipOnItem(
+          // TODO: change this to the transaction var
+          db,
           member.id,
           itemId,
         );
@@ -109,7 +111,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       assertIsMember(member);
       const { itemId } = params;
 
-      await db.transaction(async (manager) => {
+      await typeormDB.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
 
         const membershipRequest = await membershipRequestService.get(
@@ -120,8 +122,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         if (membershipRequest) {
           throw new MembershipRequestAlreadyExists();
         }
-
-        const item = await repositories.itemRepository.getOneOrThrow(itemId);
+        //TODO: replace by transaction tx
+        const item = await repositories.itemRepository.getOneOrThrow(db, itemId);
 
         const itemLoginSchema = await itemLoginService.getByItemPath(repositories, item.path);
         if (itemLoginSchema) {
@@ -150,7 +152,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       const { itemId, memberId } = params;
 
-      await db.transaction(async (manager) => {
+      await typeormDB.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
 
         // Check if the Item exists and the member has the required permission

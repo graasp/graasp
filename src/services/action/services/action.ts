@@ -5,10 +5,10 @@ import { FastifyRequest } from 'fastify';
 
 import { ClientManager, Context } from '@graasp/sdk';
 
+import { Actor } from '../../../drizzle/schema';
 import { BaseLogger } from '../../../logger';
 import { Repositories } from '../../../utils/repositories';
 import { ItemService } from '../../item/service';
-import { Actor, isMember } from '../../member/entities/member';
 import { MemberService } from '../../member/service';
 import { Action } from '../entities/action';
 import { getGeolocationIp } from '../utils/actions';
@@ -32,9 +32,9 @@ export class ActionService {
     actions: (Partial<Action> & Pick<Action, 'type'>)[],
   ): Promise<void> {
     const { headers } = request;
-
+    //TODO: should we assert that the member is a "member" ?
     // prevent saving if member is defined and has disabled saveActions
-    if (member && isMember(member) && member.enableSaveActions === false) {
+    if (member && member.enableSaveActions === false) {
       return;
     }
 

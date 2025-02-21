@@ -301,7 +301,7 @@ export class ImportExportService {
     if (isItemType(item, ItemType.FOLDER)) {
       // append description
       const folderPath = path.join(archiveRootPath, item.name);
-      const children = await this.itemService.getChildren(actor, repositories, item.id);
+      const children = await this.itemService.getChildren(db, actor, repositories, item.id);
       const result = await Promise.all(
         children.map((child) =>
           this._addItemToZip(

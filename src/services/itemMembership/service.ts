@@ -2,6 +2,7 @@ import { singleton } from 'tsyringe';
 
 import { ClientManager, Context, PermissionLevel, UUID } from '@graasp/sdk';
 
+import { DBConnection } from '../../drizzle/db';
 import { TRANSLATIONS } from '../../langs/constants';
 import { MailBuilder } from '../../plugins/mailer/builder';
 import { MailerService } from '../../plugins/mailer/service';
@@ -19,20 +20,27 @@ import { ItemService } from '../item/service';
 import { isGuest } from '../itemLogin/entities/guest';
 import { Actor, Member } from '../member/entities/member';
 import { ItemMembership } from './entities/ItemMembership';
+import { ItemMembershipRepository } from './repository';
 
 @singleton()
 export class ItemMembershipService {
   private readonly itemService: ItemService;
   private readonly mailerService: MailerService;
+  private readonly itemMembershipRepository: ItemMembershipRepository;
   hooks = new HookManager<{
     create: { pre: Partial<ItemMembership>; post: ItemMembership };
     update: { pre: ItemMembership; post: ItemMembership };
     delete: { pre: ItemMembership; post: ItemMembership };
   }>();
 
-  constructor(itemService: ItemService, mailerService: MailerService) {
+  constructor(
+    itemService: ItemService,
+    mailerService: MailerService,
+    itemMembershipRepository: ItemMembershipRepository,
+  ) {
     this.itemService = itemService;
     this.mailerService = mailerService;
+    this.itemMembershipRepository = itemMembershipRepository;
   }
 
   async _notifyMember(account: Account, member: Member, item: Item): Promise<void> {
@@ -62,12 +70,12 @@ export class ItemMembershipService {
       });
   }
 
-  async getByAccountAndItem(
-    { itemMembershipRepository }: Repositories,
-    accountId: UUID,
-    itemId: UUID,
-  ) {
-    return await itemMembershipRepository.getByAccountAndItem(accountId, itemId);
+  async hasMembershipOnItem(db: DBConnection, accountId: UUID, itemId: UUID) {
+    return await this.itemMembershipRepository.hasMembershipOnItem(db, accountId, itemId);
+  }
+
+  async getByAccountAndItemPath(db: DBConnection, accountId: UUID, itemPath: string) {
+    return await this.itemMembershipRepository.getByAccountAndItem(db, accountId, itemPath);
   }
 
   async getForManyItems(actor: Actor, repositories: Repositories, itemIds: string[]) {

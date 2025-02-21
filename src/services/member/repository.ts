@@ -43,11 +43,11 @@ export class MemberRepository {
     const member = await db.select().from(membersView).where(eq(accounts.email, email));
 
     if (args.shouldExist) {
-      if (!member) {
+      if (member.length != 1) {
         throw new MemberNotFound({ email });
       }
     }
-    return member;
+    return member.at(0);
   }
 
   async getManyByEmails(db: DBConnection, emails: string[]) {
@@ -81,7 +81,7 @@ export class MemberRepository {
 
     if (body.extra) {
       const member = await this.get(db, id);
-      newData.extra = Object.assign({}, JSON.parse(member.extra), body?.extra);
+      newData.extra = Object.assign({}, member.extra, body?.extra);
     }
 
     if (typeof body.enableSaveActions === 'boolean') {

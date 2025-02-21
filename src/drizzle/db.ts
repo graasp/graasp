@@ -4,6 +4,7 @@ import { Client } from 'pg';
 import * as relations from './relations';
 import * as schema from './schema';
 
+// TODO: https://orm.drizzle.team/docs/drizzle-kit-migrate#applied-migrations-log-in-the-database
 export const client = new Client({
   host: process.env.DB_HOST!,
   port: Number(process.env.DB_PORT!),

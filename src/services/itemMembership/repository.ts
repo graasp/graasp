@@ -14,7 +14,11 @@ import {
 import { DEFAULT_LANG } from '@graasp/translations';
 
 import { DBConnection } from '../../drizzle/db';
-import { ItemMembership, itemMembership as itemMembershipTable } from '../../drizzle/schema';
+import {
+  ItemMembership,
+  itemMemberships as itemMembershipTable,
+  items,
+} from '../../drizzle/schema';
 import { ALLOWED_SEARCH_LANGS } from '../../utils/config';
 import {
   InvalidMembership,
@@ -66,7 +70,7 @@ type MoveHousekeepingType = DetachedMoveHousekeepingType & {
 @singleton()
 export class ItemMembershipRepository {
   async getOne(db: DBConnection, id: string): Promise<ItemMembership | undefined> {
-    const res = await db.query.itemMembership.findFirst({
+    const res = await db.query.itemMemberships.findFirst({
       where: eq(itemMembershipTable.id, id),
       with: { creator: true, item: true, account: true },
     });
@@ -98,7 +102,7 @@ export class ItemMembershipRepository {
     itemMembershipId: string,
     args: { purgeBelow?: boolean } = { purgeBelow: true },
   ): Promise<ItemMembership> {
-    const itemMembership = await db.query.itemMembership.findFirst({
+    const itemMembership = await db.query.itemMemberships.findFirst({
       where: eq(itemMembershipTable.id, itemMembershipId),
     });
     if (!itemMembership) {
@@ -119,8 +123,7 @@ export class ItemMembershipRepository {
         await db.delete(itemMembershipTable).where(itemMembershipsBelow.map(({ id }) => id));
       }
     }
-
-    await this.delete(itemMembershipId);
+    await db.delete(itemMembershipTable).where(eq(itemMembershipTable.id, itemMembershipId));
     return itemMembership;
   }
 
@@ -130,18 +133,26 @@ export class ItemMembershipRepository {
    * @param composedKeys List of objects with: `accountId`, `itemPath`
    */
   async deleteManyByItemPathAndAccount(
-    composedKeys: KeyCompositionItemMembership[],
+    db: DBConnection,
+    composedKeys: {
+      itemPath: ItemPath;
+      accountId: AccountId;
+    }[],
   ): Promise<void> {
-    for (const composedKey of composedKeys) {
-      await this.repository.delete({
-        item: { path: composedKey.itemPath },
-        account: { id: composedKey.accountId },
-      });
+    for (const { itemPath, accountId } of composedKeys) {
+      await db
+        .delete(itemMembershipTable)
+        .where(
+          and(
+            eq(itemMembershipTable.itemPath, itemPath),
+            eq(itemMembershipTable.accountId, accountId),
+          ),
+        );
     }
   }
 
   async get(db: DBConnection, id: string): Promise<ItemMembership> {
-    const item = await db.query.itemMembership.findFirst({
+    const item = await db.query.itemMemberships.findFirst({
       where: eq(itemMembershipTable.id, id),
       with: { account: true, item: { with: { account: true } } },
     });
@@ -153,19 +164,50 @@ export class ItemMembershipRepository {
     return item;
   }
 
-  async getByAccountAndItem(accountId: string, itemId: string): Promise<ItemMembership | null> {
+  /**
+   *
+   * @param db Database connection or transaction connection
+   * @param accountId the user id
+   * @param itemId the itemId that we are testing for membership
+   * @returns true if the user has a membership (direct or inherited) for the itemId, false otherwise
+   */
+  async hasMembershipOnItem(db: DBConnection, accountId: string, itemId: string): boolean {
     if (!accountId) {
       throw new MemberNotFound();
     } else if (!itemId) {
       throw new ItemNotFound(itemId);
     }
 
-    return await this.repository.findOne({
-      where: {
-        account: { id: accountId },
-        item: { id: itemId },
-      },
-      relations: {
+    const res = await db
+      .select({ id: itemMembershipTable.id })
+      .from(itemMembershipTable)
+      .leftJoin(items, and(eq(items.path, itemMembershipTable.itemPath), eq()))
+      .where(and(eq(itemMembershipTable.accountId, accountId), eq(items.id, itemId)));
+    // we were able to get a result, so the accountId has a membership on the item
+    if (res.length >= 1) {
+      return true;
+    }
+    return false;
+  }
+
+  async getByAccountAndItemPath(
+    db: DBConnection,
+    accountId: string,
+    itemPath: string,
+  ): Promise<ItemMembership | null> {
+    if (!accountId) {
+      throw new MemberNotFound();
+    } else if (!itemPath) {
+      throw new ItemNotFound(itemPath);
+    }
+
+    // CHECK: does it need to take into account inheritance ?
+    return await db.query.itemMemberships.findFirst({
+      where: and(
+        eq(itemMembershipTable.accountId, accountId),
+        eq(itemMembershipTable.itemPath, itemPath),
+      ),
+      with: {
         account: true,
         item: true,
       },

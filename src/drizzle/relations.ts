@@ -151,7 +151,7 @@ export const recycledItemDataRelations = relations(recycledItemDatas, ({ one }) 
 }));
 
 export const itemLikeRelations = relations(itemLikes, ({ one }) => ({
-  account: one(accounts, {
+  creator: one(accounts, {
     fields: [itemLikes.creatorId],
     references: [accounts.id],
   }),
