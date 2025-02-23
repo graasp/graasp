@@ -16,9 +16,9 @@ env:
   CI: true
   LOG_LEVEL: fatal # avoid unnecessary logging
   # random keys
-  APPS_JWT_SECRET: ${{ vars.MOCK_APPS_JWT_SECRET }}
+  APPS_JWT_SECRET: 'apps-jwt-secret'
   APPS_PUBLISHER_ID: 9c9cea73-f3b7-48a3-aa6e-ead82c0685e7 # mock uuid
-  AUTH_TOKEN_JWT_SECRET: ${{ vars.MOCK_AUTH_TOKEN_JWT_SECRET }}
+  AUTH_TOKEN_JWT_SECRET: 'auth-token-jwt-secret'
   COOKIE_DOMAIN: localhost
   CLIENT_HOST: http://localhost:3114
   DB_PASSWORD: docker
@@ -35,23 +35,22 @@ env:
   H5P_PATH_PREFIX: h5p-content/
   H5P_STORAGE_ROOT_PATH: /tmp/h5p
   H5P_FILE_STORAGE_HOST: http://localhost:1081
-  JWT_SECRET: ${{ vars.MOCK_JWT_SECRET }}
-  PASSWORD_RESET_JWT_SECRET: ${{ vars.MOCK_PASSWORD_RESET_JWT_SECRET }}
-  EMAIL_CHANGE_JWT_SECRET: ${{ vars.MOCK_EMAIL_CHANGE_JWT_SECRET }}
+  JWT_SECRET: 'jwt-secret'
+  PASSWORD_RESET_JWT_SECRET: 'password-reset-jwt-secret'
+  EMAIL_CHANGE_JWT_SECRET: 'email-change-jwt-secret'
   MAILER_CONFIG_PASSWORD: password
   MAILER_CONFIG_SMTP_HOST: localhost
   MAILER_CONFIG_USERNAME: username
   RECAPTCHA_SECRET_ACCESS_KEY: 'iamamockkey'
   REDIS_HOST: localhost
   REDIS_PORT: 6379
-  REFRESH_TOKEN_JWT_SECRET: ${{ vars.MOCK_REFRESH_TOKEN_JWT_SECRET }}
+  REFRESH_TOKEN_JWT_SECRET: 'refresh-token-jwt-secret'
   S3_FILE_ITEM_ACCESS_KEY_ID: graasp-user
   S3_FILE_ITEM_BUCKET: graasp
   S3_FILE_ITEM_PLUGIN: true
   S3_FILE_ITEM_REGION: us-east-1
   S3_FILE_ITEM_SECRET_ACCESS_KEY: graasp-pwd
-  SECURE_SESSION_SECRET_KEY: ${{ vars.MOCK_SECURE_SESSION_SECRET_KEY }}
-  STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+  SECURE_SESSION_SECRET_KEY: 'secure-session-secret-key'
   MEILISEARCH_URL: fake
   MEILISEARCH_MASTER_KEY: fake
   JOB_SCHEDULING: false
