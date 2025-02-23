@@ -1,6 +1,6 @@
+import { inArray, isNotNull, ne } from 'drizzle-orm';
 import { and, eq, sql } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
-import { Brackets, In, Not } from 'typeorm';
 
 import {
   Paginated,
@@ -14,11 +14,13 @@ import {
 import { DEFAULT_LANG } from '@graasp/translations';
 
 import { DBConnection } from '../../drizzle/db';
+import { isAncestorOrSelf } from '../../drizzle/operations';
 import {
   ItemMembership,
   itemMemberships as itemMembershipTable,
   items,
 } from '../../drizzle/schema';
+import { InferResultType } from '../../drizzle/types';
 import { ALLOWED_SEARCH_LANGS } from '../../utils/config';
 import {
   InvalidMembership,
@@ -28,15 +30,11 @@ import {
   MemberNotFound,
   ModifyExistingMembership,
 } from '../../utils/errors';
-import { AncestorOf } from '../../utils/typeorm/treeOperators';
 import { Account } from '../account/entities/account';
 import { ITEMS_PAGE_SIZE_MAX } from '../item/constants';
 import { Item } from '../item/entities/Item';
 import { ItemSearchParams, Ordering, SortBy, orderingToUpperCase } from '../item/types';
-import { MemberIdentifierNotFound } from '../itemLogin/errors';
 import { isMember } from '../member/entities/member';
-import { itemMembershipSchema } from '../member/plugins/export-data/schemas/schemas';
-import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils';
 import { mapById } from '../utils';
 import { PermissionType, getPermissionsAtItemSql } from './utils';
 
@@ -120,7 +118,12 @@ export class ItemMembershipRepository {
       if (itemMembershipsBelow.length > 0) {
         // return list of subtasks for task manager to execute and
         // delete all memberships in the (sub)tree, one by one, in reverse order (bottom > top)
-        await db.delete(itemMembershipTable).where(itemMembershipsBelow.map(({ id }) => id));
+        await db.delete(itemMembershipTable).where(
+          inArray(
+            itemMembershipTable.id,
+            itemMembershipsBelow.map(({ id }) => id),
+          ),
+        );
       }
     }
     await db.delete(itemMembershipTable).where(eq(itemMembershipTable.id, itemMembershipId));
@@ -151,7 +154,10 @@ export class ItemMembershipRepository {
     }
   }
 
-  async get(db: DBConnection, id: string): Promise<ItemMembership> {
+  async get(
+    db: DBConnection,
+    id: string,
+  ): Promise<InferResultType<'itemMemberships', { account: true; item: true }>> {
     const item = await db.query.itemMemberships.findFirst({
       where: eq(itemMembershipTable.id, id),
       with: { account: true, item: { with: { account: true } } },
@@ -171,7 +177,7 @@ export class ItemMembershipRepository {
    * @param itemId the itemId that we are testing for membership
    * @returns true if the user has a membership (direct or inherited) for the itemId, false otherwise
    */
-  async hasMembershipOnItem(db: DBConnection, accountId: string, itemId: string): boolean {
+  async hasMembershipOnItem(db: DBConnection, accountId: string, itemId: string): Promise<boolean> {
     if (!accountId) {
       throw new MemberNotFound();
     } else if (!itemId) {
@@ -194,7 +200,7 @@ export class ItemMembershipRepository {
     db: DBConnection,
     accountId: string,
     itemPath: string,
-  ): Promise<ItemMembership | null> {
+  ): Promise<ItemMembership | undefined> {
     if (!accountId) {
       throw new MemberNotFound();
     } else if (!itemPath) {
@@ -215,7 +221,7 @@ export class ItemMembershipRepository {
   }
 
   async getAllBellowItemPath(db: DBConnection, itemPath: ItemPath) {
-    const membershipsBelowItemPath = db.query.itemMembership.findMany({
+    const membershipsBelowItemPath = db.query.itemMemberships.findMany({
       where: sql`${itemMembershipTable.itemPath} <@ ${itemPath}`,
       with: { account: true },
     });
@@ -223,7 +229,7 @@ export class ItemMembershipRepository {
   }
 
   async getAllBellowItemPathForAccount(db: DBConnection, itemPath: ItemPath, accountId: string) {
-    const membershipsBelowItemPath = db.query.itemMembership.findMany({
+    const membershipsBelowItemPath = db.query.itemMemberships.findMany({
       where: and(
         sql`${itemMembershipTable.itemPath} <@ ${itemPath}`,
         eq(itemMembershipTable.accountId, accountId),
@@ -276,6 +282,7 @@ export class ItemMembershipRepository {
    *  get accessible items for actor and given params
    *  */
   async getAccessibleItems(
+    db: DBConnection,
     account: Account,
     {
       creatorId,
@@ -393,6 +400,7 @@ export class ItemMembershipRepository {
    *  get accessible items name for actor and given params
    *  */
   async getAccessibleItemNames(
+    db: DBConnection,
     actor: Account,
     { startWith }: { startWith?: string },
   ): Promise<string[]> {
@@ -422,27 +430,8 @@ export class ItemMembershipRepository {
     return raw.map(({ item_name }) => item_name);
   }
 
-  /**
-   * Return all the memberships related to the given account.
-   * @param accountId ID of the account to retrieve the data.
-   * @returns an array of memberships.
-   */
-  async getForMemberExport(accountId: string): Promise<ItemMembership[]> {
-    if (!accountId) {
-      throw new MemberIdentifierNotFound();
-    }
-
-    return this.repository.find({
-      select: schemaToSelectMapper(itemMembershipSchema),
-      where: { account: { id: accountId } },
-      order: { updatedAt: 'DESC' },
-      relations: {
-        item: true,
-      },
-    });
-  }
-
   async getForManyItems(
+    db: DBConnection,
     items: Item[],
     {
       accountId = undefined,
@@ -488,6 +477,7 @@ export class ItemMembershipRepository {
   }
 
   async getInheritedMany(
+    db: DBConnection,
     items: Item[],
     accountId: AccountId,
     considerLocal = false,
@@ -538,6 +528,7 @@ export class ItemMembershipRepository {
 
   /** check member's membership "at" item */
   async getInherited(
+    db: DBConnection,
     itemPath: ItemPath,
     accountId: AccountId,
     considerLocal = false,
@@ -575,28 +566,29 @@ export class ItemMembershipRepository {
   }
 
   async getMany(
+    db: DBConnection,
     ids: string[],
     args: { throwOnError?: boolean } = { throwOnError: false },
   ): Promise<ResultOf<ItemMembership>> {
-    const itemMemberships = await this.repository.find({
-      where: { id: In(ids) },
-      relations: {
+    const result = await db.query.itemMemberships.findMany({
+      where: inArray(itemMembershipTable.id, ids),
+      with: {
         account: true,
         item: true,
       },
     });
 
-    const result = mapById({
+    const mappedMemberships = mapById({
       keys: ids,
-      findElement: (id) => itemMemberships.find(({ id: thisId }) => id === thisId),
+      findElement: (id) => result.find(({ id: thisId }) => id === thisId),
       buildError: (id) => new ItemMembershipNotFound({ id }),
     });
 
-    if (args.throwOnError && result.errors.length) {
-      throw result.errors[0];
+    if (args.throwOnError && mappedMemberships.errors.length) {
+      throw mappedMemberships.errors[0];
     }
 
-    return result;
+    return mappedMemberships;
   }
 
   async getSharedItems(actorId: UUID, permission?: PermissionLevel): Promise<Item[]> {
@@ -616,15 +608,14 @@ export class ItemMembershipRepository {
     }
 
     // get items with given permission, without own items
-    const sharedMemberships = await this.repository.find({
-      where: {
-        permission: In(permissions),
-        account: { id: actorId },
-        item: { creator: Not(actorId) },
-      },
-      relations: {
+    const sharedMemberships = await db.query.itemMemberships.findMany({
+      where: and(
+        inArray(itemMembershipTable.permission, permissions),
+        eq(itemMembershipTable.accountId, actorId),
+      ),
+      with: {
         item: {
-          creator: true,
+          where: (item) => and(isNotNull(item.creatorId), ne(item.creatorId, actorId)),
         },
       },
     });
@@ -638,12 +629,16 @@ export class ItemMembershipRepository {
   }
 
   async getByItemPathAndPermission(
+    db: DBConnection,
     itemPath: string,
     permission: PermissionLevel,
   ): Promise<ItemMembership[]> {
-    return this.repository.find({
-      where: { item: AncestorOf(itemPath), permission },
-      relations: {
+    return await db.query.itemMemberships.findMany({
+      where: and(
+        isAncestorOrSelf(itemMembershipTable.itemPath, itemPath),
+        eq(itemMembershipTable.permission, permission),
+      ),
+      with: {
         account: true,
       },
     });
@@ -654,7 +649,7 @@ export class ItemMembershipRepository {
     itemMembershipId: string,
     data: UpdateItemMembershipBody,
   ): Promise<ItemMembership> {
-    const itemMembership = await this.get(itemMembershipId);
+    const itemMembership = await this.get(db, itemMembershipId);
     // check member's inherited membership
     const { item, account: memberOfMembership } = itemMembership;
 

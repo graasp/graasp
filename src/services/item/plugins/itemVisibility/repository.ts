@@ -1,11 +1,11 @@
+import { inArray, isNotNull, isNull, or } from 'drizzle-orm';
 import { and, eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
-import { Brackets } from 'typeorm';
 
 import { ItemVisibilityOptionsType, ResultOf, getChildFromPath } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { isAncestorOrSelf } from '../../../../drizzle/operations';
+import { isAncestorOrSelf, isDescendantOrSelf } from '../../../../drizzle/operations';
 import { itemVisibilities, items } from '../../../../drizzle/schema';
 import { EntryNotFoundAfterInsertException } from '../../../../repositories/errors';
 import { Member } from '../../../member/entities/member';
@@ -50,13 +50,14 @@ export class ItemVisibilityRepository {
    * @param visibilityTypes
    * @returns map type => whether item has this visibility type
    */
-  async hasMany(item: Item, visibilityTypes: ItemVisibilityOptionsType[]) {
-    const hasVisibilities = await this.repository
-      .createQueryBuilder('itemVisibility')
-      .leftJoinAndSelect('itemVisibility.item', 'item')
-      .where('itemVisibility.item @> :path', { path: item.path })
-      .andWhere('itemVisibility.type IN (:...types)', { types: visibilityTypes })
-      .getMany();
+  async hasMany(db: DBConnection, item: Item, visibilityTypes: ItemVisibilityOptionsType[]) {
+    const hasVisibilities = await db.query.itemVisibilities.findMany({
+      with: { item: true },
+      where: and(
+        isAncestorOrSelf(itemVisibilities.itemPath, item.path),
+        inArray(itemVisibilities.type, visibilityTypes),
+      ),
+    });
 
     return mapById({
       keys: visibilityTypes,
@@ -66,38 +67,31 @@ export class ItemVisibilityRepository {
   }
 
   private async getManyVisibilitiesForTypes(
+    db: DBConnection,
     items: Item[],
     visibilityTypes: ItemVisibilityOptionsType[],
-  ): Promise<ItemVisibility[]> {
+  ) {
     // we expect to query visibilities for defined items, if the items array is empty we will return an empty array.
     if (!items.length) {
       return [];
     }
 
-    const query = this.repository
-      .createQueryBuilder('itemVisibility')
-      .leftJoinAndSelect('itemVisibility.item', 'item');
+    const pathsCondition = items.map(({ path }) => {
+      return isAncestorOrSelf(itemVisibilities.itemPath, path);
+    });
 
-    query.where(
-      new Brackets((qb) => {
-        items.forEach(({ path }, idx) => {
-          const key = `${path}_${idx}`;
-          qb.orWhere(`item.path @> :${key}`, { [key]: path });
-        });
-      }),
-    );
-
-    const hasVisibilities: ItemVisibility[] = await query
-      .andWhere('itemVisibility.type IN (:...types)', { types: visibilityTypes })
-      .getMany();
-    return hasVisibilities;
+    return await db.query.itemVisibilities.findMany({
+      with: { item: true },
+      where: and(inArray(itemVisibilities.type, visibilityTypes), or(...pathsCondition)),
+    });
   }
 
   async getManyForMany(
+    db: DBConnection,
     items: Item[],
     visibilityTypes: ItemVisibilityOptionsType[],
-  ): Promise<ResultOf<ItemVisibility[]>> {
-    const visibilities = await this.getManyVisibilitiesForTypes(items, visibilityTypes);
+  ) {
+    const visibilities = await this.getManyVisibilitiesForTypes(db, items, visibilityTypes);
 
     const mapByPath = mapById({
       keys: items.map(({ path }) => path),
@@ -120,42 +114,32 @@ export class ItemVisibilityRepository {
    * @returns visibility array
    */
   async getManyBelowAndSelf(
+    db: DBConnection,
     parent: Item,
     visibilityTypes: ItemVisibilityOptionsType[],
-  ): Promise<ItemVisibility[]> {
-    const query = this.repository
-      .createQueryBuilder('itemVisibility')
-      .leftJoinAndSelect('itemVisibility.item', 'item');
-
-    query.where(`item.path <@ :path`, { path: parent.path });
-
-    const visibilities: ItemVisibility[] = await query
-      .andWhere('itemVisibility.type IN (:...types)', { types: visibilityTypes })
-      .getMany();
-
-    return visibilities;
+  ) {
+    return await db.query.itemVisibilities.findMany({
+      with: { item: true },
+      where: and(
+        isDescendantOrSelf(itemVisibilities.itemPath, parent.path),
+        inArray(itemVisibilities.type, visibilityTypes),
+      ),
+    });
   }
 
   async hasForMany(
+    db: DBConnection,
     items: Item[],
     visibilityType: ItemVisibilityOptionsType,
   ): Promise<ResultOf<boolean>> {
-    const query = this.repository
-      .createQueryBuilder('itemVisibility')
-      .leftJoinAndSelect('itemVisibility.item', 'item');
+    const pathsCondition = items.map(({ path }) => {
+      return isAncestorOrSelf(itemVisibilities.itemPath, path);
+    });
 
-    query.where(
-      new Brackets((qb) => {
-        items.forEach(({ path }, idx) => {
-          const key = `${path}_${idx}`;
-          qb.orWhere(`item.path @> :${key}`, { [key]: path });
-        });
-      }),
-    );
-
-    const haveVisibility = await query
-      .andWhere('itemVisibility.type = :type', { type: visibilityType })
-      .getMany();
+    const haveVisibility = await db.query.itemVisibilities.findMany({
+      with: { item: true },
+      where: and(eq(itemVisibilities.type, visibilityType), or(...pathsCondition)),
+    });
 
     const mapByPath = mapById({
       keys: items.map(({ path }) => path),
@@ -212,19 +196,15 @@ export class ItemVisibilityRepository {
     // we delete descendants visibilities, they happen on copy, move, or if you had on ancestor
     // but does not change the behavior
     // cannot use leftJoinAndSelect for delete, so we select first
-    const itemVisibilitys = await this.repository
-      .createQueryBuilder('itemVisibility')
-      .leftJoinAndSelect('itemVisibility.item', 'item')
-      .where('item.path <@ :path', { path: item.path })
-      .andWhere('itemVisibility.type = :type', { type })
-      .getMany();
-
-    if (!itemVisibilitys || !itemVisibilitys.length) {
-      throw new ItemVisibilityNotFound({ item, type });
-    }
-
-    const ids = itemVisibilitys.map(({ id }) => id);
-    await this.repository.delete(ids);
+    await db
+      .delete(itemVisibilities)
+      .where(
+        and(
+          isDescendantOrSelf(itemVisibilities.itemPath, item.path),
+          eq(itemVisibilities.type, type),
+        ),
+      )
+      .returning();
   }
 
   async isNotInherited(
@@ -256,29 +236,28 @@ export class ItemVisibilityRepository {
    * @throws when item array is empty, as this is considered an invalid use of the function
    * @param  {Item[]} items
    */
-  async getForManyItems(items: Item[], { withDeleted = false }: { withDeleted?: boolean } = {}) {
+  async getForManyItems(
+    db: DBConnection,
+    items: Item[],
+    { withDeleted = false }: { withDeleted?: boolean } = {},
+  ) {
     // should not query when items array is empty
     if (!items.length) {
       throw new InvalidUseOfItemVisibilityRepository();
     }
 
-    const query = this.repository
-      .createQueryBuilder('itemVisibility')
-      .leftJoinAndSelect('itemVisibility.item', 'item');
+    const pathsCondition = or(
+      ...items.map(({ path }) => isAncestorOrSelf(itemVisibilities.itemPath, path)),
+    );
 
-    items.forEach(({ path }, idx) => {
-      if (idx === 0) {
-        query.where(`item.path @> :path_${path}`, { [`path_${path}`]: path });
-      } else {
-        query.orWhere(`item.path @> :path_${path}`, { [`path_${path}`]: path });
-      }
+    const visibilities = await db.query.itemVisibilities.findMany({
+      where: pathsCondition,
+      with: {
+        item: {
+          where: (item) => (withDeleted ? isNotNull(item.deletedAt) : isNull(item.deletedAt)),
+        },
+      },
     });
-
-    if (withDeleted) {
-      query.withDeleted();
-    }
-
-    const visibilities = await query.getMany();
 
     const mapByPath = mapById({
       keys: items.map(({ path }) => path),
@@ -312,7 +291,7 @@ export class ItemVisibilityRepository {
       await db
         .insert(itemVisibilities)
         .values(
-          itemVisibilities
+          originalVisibilities
             .filter((visibility) => !excludeTypes?.includes(visibility.type))
             .map(({ type }) => ({ itemPath: copy.path, type, creator })),
         );

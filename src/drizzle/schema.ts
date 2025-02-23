@@ -1,4 +1,4 @@
-import { and, getTableColumns, isNotNull, sql } from 'drizzle-orm';
+import { InferSelectModel, and, getTableColumns, isNotNull, relations, sql } from 'drizzle-orm';
 import {
   AnyPgColumn,
   bigint,
@@ -123,7 +123,9 @@ export const itemMemberships = pgTable(
     unique('item_membership-item-member').on(table.itemPath, table.accountId),
   ],
 );
+
 export type ItemMembership = typeof itemMemberships.$inferSelect;
+export type ItemMembershipWith = InferSelectModel<typeof itemMemberships>;
 
 export const memberPasswords = pgTable(
   'member_password',

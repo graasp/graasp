@@ -29,7 +29,7 @@ import { DBConnection } from '../../drizzle/db';
 // TODO: This is only used here but should probably be put in a better place than the plugin file
 export async function isItemVisible(
   db: DBConnection,
-  services: {itemVisibilityService: ItemVisibilityService, }
+  services: {itemVisibilityService: ItemVisibilityService, },
   actor: Actor,
   itemPath: Item['path'],
 ) {

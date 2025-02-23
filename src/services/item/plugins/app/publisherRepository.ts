@@ -1,15 +1,8 @@
-import { EntityManager } from 'typeorm';
+import { DBConnection } from '../../../../drizzle/db';
 
-import { AbstractRepository } from '../../../../repositories/AbstractRepository';
-import { Publisher } from './entities/publisher';
-
-export class PublisherRepository extends AbstractRepository<Publisher> {
-  constructor(manager?: EntityManager) {
-    super(Publisher, manager);
-  }
-
-  async getAllValidAppOrigins() {
-    const publishers = await this.repository.find();
+export class PublisherRepository {
+  async getAllValidAppOrigins(db: DBConnection) {
+    const publishers = await db.query.publishers.findMany({ columns: { origins: true } });
     return publishers.map(({ origins }) => origins).flat();
   }
 }

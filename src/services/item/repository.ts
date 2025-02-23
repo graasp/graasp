@@ -270,7 +270,6 @@ export class ItemRepository {
 
       // search by member lang
       const memberLang = actor && isMember(actor) ? actor?.lang : DEFAULT_LANG;
-      const matchMemberLangSearchCondition = null;
       if (memberLang && ALLOWED_SEARCH_LANGS[memberLang]) {
         const matchMemberLangSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery(${ALLOWED_SEARCH_LANGS[memberLang]}, ${keywordsString})`;
         searchConditions.push(matchMemberLangSearchCondition);
@@ -296,7 +295,7 @@ export class ItemRepository {
       .select()
       .from(items)
       .leftJoin(accounts, eq(items.creatorId, accounts.id))
-      .where(andConditions)
+      .where(and(...andConditions))
       .orderBy(orderByValues);
 
     return result.map(({ item_view, account }) => ({ ...item_view, creator: account }));

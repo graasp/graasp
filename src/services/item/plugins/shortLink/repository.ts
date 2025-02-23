@@ -1,4 +1,4 @@
-import { EntityManager } from 'typeorm';
+import { and, asc, count, eq } from 'drizzle-orm';
 
 import {
   ShortLink as CreateShortLink,
@@ -7,11 +7,13 @@ import {
   UpdateShortLink,
 } from '@graasp/sdk';
 
-import { MutableRepository } from '../../../../repositories/MutableRepository';
+import { DBConnection } from '../../../../drizzle/db';
+import { shortLinks } from '../../../../drizzle/schema';
 import {
   EntryNotFoundAfterUpdateException,
   UpdateException,
 } from '../../../../repositories/errors';
+import { throwsIfParamIsInvalid } from '../../../../repositories/utils';
 import { assertIsError } from '../../../../utils/assertions';
 import {
   ShortLinkDuplication,
@@ -19,25 +21,19 @@ import {
   ShortLinkNotFound,
 } from '../../../../utils/errors';
 import { isDuplicateEntryError } from '../../../../utils/typeormError';
-import { ShortLink } from './entities/ShortLink';
 
 type CreateShortLinkBody = CreateShortLink;
 type UpdateShortLinkBody = UpdateShortLink;
-const PRIMARY_KEY = 'alias';
 
-export class ShortLinkRepository extends MutableRepository<ShortLink, UpdateShortLinkBody> {
-  constructor(manager?: EntityManager) {
-    super(PRIMARY_KEY, ShortLink, manager);
-  }
-
-  async addOne({ alias, platform, itemId }: CreateShortLinkBody): Promise<ShortLink> {
-    super.throwsIfPKIsInvalid(alias);
-    if ((await this.countByItemAndPlatform(itemId, platform)) > 0) {
+export class ShortLinkRepository {
+  async addOne(db: DBConnection, { alias, platform, itemId }: CreateShortLinkBody) {
+    throwsIfParamIsInvalid('alias', alias);
+    if ((await this.countByItemAndPlatform(db, itemId, platform)) > 0) {
       throw new ShortLinkLimitExceed(itemId, platform);
     }
 
     try {
-      return await super.insert({ alias, platform, item: { id: itemId } });
+      return await db.insert(shortLinks).values({ alias, platform, itemId }).returning();
     } catch (e) {
       assertIsError(e);
       if (isDuplicateEntryError(e)) {
@@ -48,42 +44,34 @@ export class ShortLinkRepository extends MutableRepository<ShortLink, UpdateShor
   }
 
   private async countByItemAndPlatform(
+    db: DBConnection,
     itemId: string,
     platform: UnionOfConst<typeof ShortLinkPlatform>,
   ): Promise<number> {
-    super.throwsIfParamIsInvalid('itemId', itemId);
-    super.throwsIfParamIsInvalid('platform', platform);
+    throwsIfParamIsInvalid('itemId', itemId);
+    throwsIfParamIsInvalid('platform', platform);
 
-    return await this.repository.count({
-      where: {
-        item: {
-          id: itemId,
-        },
-        platform,
-      },
+    const result = await db
+      .select({ count: count() })
+      .from(shortLinks)
+      .where(and(eq(shortLinks.itemId, itemId), eq(shortLinks.platform, platform)));
+
+    return result[0].count;
+  }
+
+  async getByItem(db: DBConnection, itemId: string) {
+    throwsIfParamIsInvalid('itemId', itemId);
+
+    return await db.query.shortLinks.findMany({
+      where: eq(shortLinks.itemId, itemId),
+      orderBy: asc(shortLinks.createdAt),
     });
   }
 
-  async getByItem(itemId: string): Promise<ShortLink[]> {
-    super.throwsIfParamIsInvalid('itemId', itemId);
-
-    return await this.repository.find({
-      where: {
-        item: {
-          id: itemId,
-        },
-      },
-      order: {
-        createdAt: 'ASC',
-      },
-    });
-  }
-
-  async getOne(alias: string): Promise<ShortLink> {
-    const shortLink = await super.findOne(alias, {
-      relations: {
-        item: true,
-      },
+  async getOne(db: DBConnection, alias: string) {
+    const shortLink = await db.query.shortLinks.findFirst({
+      where: eq(shortLinks.alias, alias),
+      with: { item: true },
     });
 
     if (!shortLink) {
@@ -93,18 +81,20 @@ export class ShortLinkRepository extends MutableRepository<ShortLink, UpdateShor
     return shortLink;
   }
 
-  async updateOne(alias: string, entity: UpdateShortLinkBody): Promise<ShortLink> {
+  async updateOne(db: DBConnection, alias: string, entity: UpdateShortLinkBody) {
     // Because we are updating the alias, which is the PK, we cannot use the super.updateOne method.
-    this.throwsIfPKIsInvalid(alias);
+    throwsIfParamIsInvalid('alias', alias);
 
     try {
-      await this.repository.update({ alias }, entity);
-
-      const updatedEntity = await this.getOne(entity.alias);
+      const updatedEntity = await db
+        .update(shortLinks)
+        .set(entity)
+        .where(eq(shortLinks.alias, alias))
+        .returning();
 
       // Could happen if the given pk doesn't exist, because update does not check if entity exists.
       if (!updatedEntity) {
-        throw new EntryNotFoundAfterUpdateException(this.entity);
+        throw new EntryNotFoundAfterUpdateException(alias);
       }
 
       return updatedEntity;

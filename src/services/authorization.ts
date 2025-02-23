@@ -2,6 +2,7 @@ import { FastifyRequest, RouteGenericInterface, RouteHandlerMethod } from 'fasti
 
 import { ItemVisibilityType, PermissionLevel, PermissionLevelCompare, ResultOf } from '@graasp/sdk';
 
+import { DBConnection } from '../drizzle/db';
 import { Actor, Item, ItemMembership } from '../drizzle/schema';
 import {
   InsufficientPermission,
@@ -14,10 +15,8 @@ import { Repositories } from '../utils/repositories';
 import { ItemWrapper, PackedItem } from './item/ItemWrapper';
 import { ItemVisibility } from './item/plugins/itemVisibility/ItemVisibility';
 import { ItemVisibilityRepository } from './item/plugins/itemVisibility/repository';
-import { ItemVisibilityService } from './item/plugins/itemVisibility/service';
 import { ItemsThumbnails } from './item/plugins/thumbnail/types';
 import { ItemMembershipRepository } from './itemMembership/repository';
-import { ItemMembershipService } from './itemMembership/service';
 
 const permissionMapping = {
   [PermissionLevel.Read]: [PermissionLevel.Read],
@@ -35,6 +34,7 @@ const permissionMapping = {
  * @throws if the user cannot access the item
  */
 export const validatePermissionMany = async (
+  db: DBConnection,
   {
     itemMembershipRepository,
     itemVisibilityRepository,
@@ -59,9 +59,9 @@ export const validatePermissionMany = async (
 
   // batch request for all items
   const inheritedMemberships = actor
-    ? await itemMembershipRepository.getInheritedMany(items, actor.id, true)
+    ? await itemMembershipRepository.getInheritedMany(db, items, actor.id, true)
     : null;
-  const visibilities = await itemVisibilityRepository.getManyForMany(items, [
+  const visibilities = await itemVisibilityRepository.getManyForMany(db, items, [
     ItemVisibilityType.Public,
     ItemVisibilityType.Hidden,
   ]);
@@ -128,6 +128,7 @@ export const validatePermissionMany = async (
 };
 
 export const hasPermission = async (
+  db: DBConnection,
   repositories: {
     itemMembershipRepository: ItemMembershipRepository;
     itemVisibilityRepository: ItemVisibilityRepository;
@@ -137,7 +138,7 @@ export const hasPermission = async (
   item: Item,
 ) => {
   try {
-    await validatePermission(repositories, permission, actor, item);
+    await validatePermission(db, repositories, permission, actor, item);
     return true;
   } catch (err: unknown) {
     return false;
@@ -145,6 +146,7 @@ export const hasPermission = async (
 };
 
 export const validatePermission = async (
+  db: DBConnection,
   {
     itemMembershipRepository,
     itemVisibilityRepository,
@@ -165,7 +167,7 @@ export const validatePermission = async (
   const highest = inheritedMembership?.permission;
   const isValid = highest && permissionMapping[highest].includes(permission);
   let isPublic = false;
-  const visibilities = await itemVisibilityRepository.getByItemPath(item.path);
+  const visibilities = await itemVisibilityRepository.getByItemPath(db, item.path);
   if (highest === PermissionLevel.Read || permission === PermissionLevel.Read) {
     isPublic = Boolean(visibilities.find((t) => t.type === ItemVisibilityType.Public));
   }
@@ -211,12 +213,15 @@ export const validatePermission = async (
  * Internal filtering function that takes out limited items (eg. hidden children)
  *  */
 const _filterOutItems = async (
+  db: DBConnection,
   actor: Actor,
-  repositories: Pick<Repositories, 'itemMembershipRepository' | 'itemVisibilityRepository'>,
+  {
+    itemMembershipRepository,
+    itemVisibilityRepository,
+  }: Pick<Repositories, 'itemMembershipRepository' | 'itemVisibilityRepository'>,
   items: Item[],
   options?: { showHidden?: boolean },
 ) => {
-  const { itemMembershipRepository } = repositories;
   const showHidden = options?.showHidden ?? true;
   if (!items.length) {
     return { items: [], memberships: [] };
@@ -224,12 +229,12 @@ const _filterOutItems = async (
 
   // TODO: optimize with on query
   const { data: memberships } = actor
-    ? await itemMembershipRepository.getForManyItems(items, {
+    ? await itemMembershipRepository.getForManyItems(db, items, {
         accountId: actor.id,
       })
     : { data: [] };
 
-  const visibilities = await repositories.itemVisibilityRepository.getManyForMany(items, [
+  const visibilities = await itemVisibilityRepository.getManyForMany(db, items, [
     ItemVisibilityType.Hidden,
     ItemVisibilityType.Public,
   ]);
@@ -254,17 +259,19 @@ const _filterOutItems = async (
  * Filtering function that takes out limited items (eg. hidden children)
  *  */
 export const filterOutItems = async (
+  db: DBConnection,
   actor: Actor,
-  repositories: Repositories,
+  repositories: Pick<Repositories, 'itemMembershipRepository' | 'itemVisibilityRepository'>,
   items: Item[],
 ): Promise<Item[]> => {
-  return (await _filterOutItems(actor, repositories, items)).items;
+  return (await _filterOutItems(db, actor, repositories, items)).items;
 };
 
 /**
  * Filtering function that takes out limited items (eg. hidden children) and return packed items
  *  */
 export const filterOutPackedItems = async (
+  db: DBConnection,
   actor: Actor,
   repositories: Repositories,
   items: Item[],
@@ -275,7 +282,7 @@ export const filterOutPackedItems = async (
     items: filteredItems,
     memberships,
     visibilities,
-  } = await _filterOutItems(actor, repositories, items, options);
+  } = await _filterOutItems(db, actor, repositories, items, options);
   return filteredItems.map((item) => {
     const permission = PermissionLevelCompare.getHighest(
       memberships[item.id]?.map(({ permission }) => permission),
@@ -297,6 +304,7 @@ export const filterOutPackedItems = async (
  * @param descendants flat list of descendants of item
  *  */
 export const filterOutPackedDescendants = async (
+  db: DBConnection,
   actor: Actor,
   repositories: Pick<Repositories, 'itemMembershipRepository' | 'itemVisibilityRepository'>,
   item: Item,
@@ -312,12 +320,12 @@ export const filterOutPackedDescendants = async (
   }
 
   const allMemberships = actor
-    ? await itemMembershipRepository.getAllBelow(item.path, actor.id, {
+    ? await itemMembershipRepository.getAllBelow(db, item.path, actor.id, {
         considerLocal: true,
         selectItem: true,
       })
     : [];
-  const visibilities = await itemVisibilityRepository.getManyBelowAndSelf(item, [
+  const visibilities = await itemVisibilityRepository.getManyBelowAndSelf(db, item, [
     ItemVisibilityType.Hidden,
     ItemVisibilityType.Public,
   ]);
@@ -357,14 +365,18 @@ export const filterOutPackedDescendants = async (
  * Filter out children based on hidden visibilities only.
  * It does not show hidden for admin as well, which is useful for published items
  *  */
-export const filterOutHiddenItems = async (repositories: Repositories, items: Item[]) => {
+export const filterOutHiddenItems = async (
+  db: DBConnection,
+  repositories: Repositories,
+  items: Item[],
+) => {
   const { itemVisibilityRepository } = repositories;
 
   if (!items.length) {
     return [];
   }
 
-  const isHidden = await itemVisibilityRepository.hasForMany(items, ItemVisibilityType.Hidden);
+  const isHidden = await itemVisibilityRepository.hasForMany(db, items, ItemVisibilityType.Hidden);
   return items.filter((item) => {
     return !isHidden.data[item.id];
   });
