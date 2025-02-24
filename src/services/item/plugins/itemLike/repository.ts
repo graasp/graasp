@@ -3,8 +3,6 @@ import { singleton } from 'tsyringe';
 
 import { DBConnection } from '../../../../drizzle/db';
 import { Account, Item, ItemLike, itemLikes } from '../../../../drizzle/schema';
-import { itemLikeSchema } from '../../../member/plugins/export-data/schemas/schemas';
-import { schemaToSelectMapper } from '../../../member/plugins/export-data/utils/selection.utils';
 import { ItemLikeNotFound } from './errors';
 
 type CreatorId = ItemLike['creatorId'];
@@ -52,24 +50,6 @@ export class ItemLikeRepository {
       with: { item: true, creator: true },
     });
     return result;
-  }
-
-  /**
-   * Return all the likes created by the given member.
-   * @param creatorId ID of the member to retrieve the data.
-   * @returns an array of item likes.
-   */
-  async getByCreatorToExport(creatorId: CreatorId): Promise<ItemLike[]> {
-    this.throwsIfParamIsInvalid('creatorId', creatorId);
-
-    return await this.repository.find({
-      select: schemaToSelectMapper(itemLikeSchema),
-      where: { creator: { id: creatorId } },
-      order: { createdAt: 'DESC' },
-      relations: {
-        item: true,
-      },
-    });
   }
 
   /**

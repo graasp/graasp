@@ -1,7 +1,6 @@
 import { singleton } from 'tsyringe';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { Repositories } from '../../../../utils/repositories';
 import { Item } from '../../../item/entities/Item';
 import { Member } from '../../entities/member';
 import { ExportDataRepository } from './repository';
@@ -41,30 +40,28 @@ export class ExportMemberDataService {
     db: DBConnection,
     {
       member,
-      repositories,
     }: {
       member: Member;
-      repositories: Repositories;
     },
   ) {
     // get the data to export
-    const dataRetriever = async () => await this.getAllData(db, member, repositories);
+    const dataRetriever = async () => await this.getAllData(db, member);
     await this.requestDataExportService.requestExport(member, member.id, dataRetriever);
   }
 
-  async getAllData(db: DBConnection, actor: Member, repositories: Repositories) {
+  async getAllData(db: DBConnection, actor: Member) {
     // TODO: export more data
-    const actions = await this.getActions(actor, repositories);
-    const appActions = await this.getAppActions(actor, repositories);
-    const appData = await this.getAppData(actor, repositories);
-    const appSettings = await this.getAppSettings(actor, repositories);
-    const chatMentions = await this.getChatMentions(actor, repositories);
-    const chatMessages = await this.getChatMessages(actor, repositories);
+    const actions = await this.getActions(db, actor);
+    const appActions = await this.getAppActions(db, actor);
+    const appData = await this.getAppData(db, actor);
+    const appSettings = await this.getAppSettings(db, actor);
+    const chatMentions = await this.getChatMentions(db, actor);
+    const chatMessages = await this.getChatMessages(db, actor);
 
-    const items = await this.getItems(actor, repositories);
-    const itemFavorites = await this.getItemFavorites(db, actor, repositories);
-    const itemLikes = await this.getItemLikes(actor, repositories);
-    const itemMemberShips = await this.getItemsMemberShips(actor, repositories);
+    const items = await this.getItems(db, actor);
+    const itemFavorites = await this.getItemBookmarks(db, actor);
+    const itemLikes = await this.getItemLikes(db, actor);
+    const itemMemberShips = await this.getItemsMemberShips(db, actor);
 
     return {
       actions,
@@ -80,40 +77,40 @@ export class ExportMemberDataService {
     };
   }
 
-  async getActions(actor: Member, { actionRepository }: Repositories) {
-    const results = await actionRepository.getForAccountExport(actor.id);
+  async getActions(db: DBConnection, actor: Member) {
+    const results = await this.exportDataRepository.getActions(db, actor.id);
     return getFilteredData(results, actionArraySchema);
   }
 
-  async getAppActions(actor: Member, { appActionRepository }: Repositories) {
-    const results = await appActionRepository.getForMemberExport(actor.id);
+  async getAppActions(db: DBConnection, actor: Member) {
+    const results = await this.exportDataRepository.getAppActions(db, actor.id);
     return getFilteredData(results, appActionArraySchema);
   }
 
-  async getAppData(actor: Member, { appDataRepository }: Repositories) {
-    const appData = await appDataRepository.getForMemberExport(actor.id);
+  async getAppData(db: DBConnection, actor: Member) {
+    const appData = await this.exportDataRepository.getAppData(db, actor.id);
     return getFilteredData(appData, appDataArraySchema);
   }
 
-  async getAppSettings(actor: Member, { appSettingRepository }: Repositories) {
-    const results = await appSettingRepository.getForMemberExport(actor.id);
+  async getAppSettings(db: DBConnection, actor: Member) {
+    const results = await this.exportDataRepository.getAppSettings(db, actor.id);
     return getFilteredData(results, appSettingArraySchema);
   }
 
-  async getChatMentions(actor: Member, { mentionRepository }: Repositories) {
-    const results = await mentionRepository.getForMemberExport(actor.id);
+  async getChatMentions(db: DBConnection, actor: Member) {
+    const results = await this.exportDataRepository.getChatMentions(db, actor.id);
     const anonymized = anonymizeMentionsMessage({ results, exportingActorId: actor.id });
     return getFilteredData(anonymized, messageMentionArraySchema);
   }
 
-  async getChatMessages(actor: Member, { chatMessageRepository }: Repositories) {
-    const results = await chatMessageRepository.getExportByMember(actor.id);
+  async getChatMessages(db: DBConnection, actor: Member) {
+    const results = await this.exportDataRepository.getChatMessages(db, actor.id);
     const anonymized = anonymizeMessages({ results, exportingActorId: actor.id });
     return getFilteredData(anonymized, messageArraySchema);
   }
 
-  async getItemsMemberShips(actor: Member, { itemMembershipRepository }: Repositories) {
-    const itemMemberShips = await itemMembershipRepository.getForMemberExport(actor.id);
+  async getItemsMemberShips(db: DBConnection, actor: Member) {
+    const itemMemberShips = await this.exportDataRepository.getItemMemberships(db, actor.id);
     return getFilteredData(itemMemberShips, itemMembershipArraySchema);
   }
 
@@ -121,25 +118,21 @@ export class ExportMemberDataService {
     return memberItemsOwner.map((item) => item.id);
   }
 
-  async getItems(actor: Member) {
-    const results = await this.exportDataRepository.getForMemberExport(actor.id);
+  async getItems(db: DBConnection, actor: Member) {
+    const results = await this.exportDataRepository.getItems(db, actor.id);
     return getFilteredData(results, itemArraySchema);
   }
 
-  async getItemFavorites(
-    db: DBConnection,
-    actor: Member,
-    { itemFavoriteRepository }: Repositories,
-  ) {
-    const results = await itemFavoriteRepository.getForMemberExport(db, actor.id);
+  async getItemBookmarks(db: DBConnection, actor: Member) {
+    const results = await this.exportDataRepository.getItemBookmarks(db, actor.id);
     return getFilteredData(results, itemFavoriteArraySchema);
   }
 
-  async getItemLikes(actor: Member, { itemLikeRepository }: Repositories) {
+  async getItemLikes(db: DBConnection, actor: Member) {
     // TODO: check if we should also export the likes created by another actor on its items
     // In this case, don't forget to anonymize the id of the other actor ?
     // Or should we put the username of the other actor who liked the item ?
-    const results = await itemLikeRepository.getByCreatorToExport(actor.id);
+    const results = await this.exportDataRepository.getByCreatorToExport(db, actor.id);
     return getFilteredData(results, itemLikeArraySchema);
   }
 }
