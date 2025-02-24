@@ -1,12 +1,10 @@
 import { v4 } from 'uuid';
 
-import { FastifyInstance } from 'fastify';
-
 import { EmailFrequency, MemberFactory } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../test/app';
+import { client, db } from '../../drizzle/db';
+import { Member } from '../../drizzle/schema';
 import { MemberNotFound } from '../../utils/errors';
-import { Member } from './entities/member';
 import { MemberRepository } from './repository';
 import { expectMember, saveMember, saveMembers } from './test/fixtures/members';
 
@@ -28,27 +26,23 @@ const expectMembersById = (
 };
 
 describe('MemberRepository', () => {
-  let app: FastifyInstance;
-
-  beforeEach(async () => {
-    ({ app } = await build());
+  beforeAll(async () => {
+    await client.connect();
   });
-  afterEach(async () => {
-    jest.clearAllMocks();
-    await clearDatabase(app.db);
-    app.close();
+  afterAll(async () => {
+    await client.end();
   });
 
   describe('deleteOne', () => {
     it('delete member', async () => {
       const member = await saveMember();
-      expect(await memberRepository.get(member.id)).toBeDefined();
+      expect(await memberRepository.get(db, member.id)).toBeDefined();
 
-      await memberRepository.deleteOne(member.id);
-      expect(memberRepository.get(member.id)).rejects.toBeInstanceOf(MemberNotFound);
+      await memberRepository.deleteOne(db, member.id);
+      expect(memberRepository.get(db, member.id)).rejects.toBeInstanceOf(MemberNotFound);
     });
     it('silent error if member does not exist', async () => {
-      await memberRepository.deleteOne(v4());
+      await memberRepository.deleteOne(db, v4());
     });
   });
 
@@ -56,16 +50,16 @@ describe('MemberRepository', () => {
     it('get member', async () => {
       const member = await saveMember();
 
-      const m = await memberRepository.get(member.id);
+      const m = await memberRepository.get(db, member.id);
       expectMember(m, member);
     });
 
     it('throw for undefined id', async () => {
-      expect(memberRepository.get(undefined!)).rejects.toBeInstanceOf(MemberNotFound);
+      expect(memberRepository.get(db, undefined!)).rejects.toBeInstanceOf(MemberNotFound);
     });
 
     it('throw for member does not exist', async () => {
-      expect(memberRepository.get(v4())).rejects.toBeInstanceOf(MemberNotFound);
+      expect(memberRepository.get(db, v4())).rejects.toBeInstanceOf(MemberNotFound);
     });
   });
 
@@ -73,7 +67,10 @@ describe('MemberRepository', () => {
     it('get members', async () => {
       const members = await saveMembers();
 
-      const ms = await memberRepository.getMany(members.map((m) => m.id));
+      const ms = await memberRepository.getMany(
+        db,
+        members.map((m) => m.id),
+      );
       expectMembersById(members, ms.data);
     });
     it('get members with errors', async () => {
@@ -81,7 +78,7 @@ describe('MemberRepository', () => {
 
       const errorMemberId = v4();
       const ids = [...members.map((m) => m.id), errorMemberId];
-      const ms = await memberRepository.getMany(ids);
+      const ms = await memberRepository.getMany(db, ids);
 
       expectMembersById(members, ms.data);
       expect(ms.errors[0]).toBeInstanceOf(MemberNotFound);
@@ -92,21 +89,21 @@ describe('MemberRepository', () => {
     it('get member by email', async () => {
       const member = await saveMember();
 
-      const m = await memberRepository.getByEmail(member.email);
+      const m = await memberRepository.getByEmail(db, member.email);
       expectMember(m, member);
     });
 
     it('throw for undefined email', async () => {
-      expect(memberRepository.getByEmail(undefined!)).rejects.toThrow();
+      expect(memberRepository.getByEmail(db, undefined!)).rejects.toThrow();
     });
 
     it('return null for unexisting email', async () => {
-      expect(await memberRepository.getByEmail('email@email.com')).toBeNull();
+      expect(await memberRepository.getByEmail(db, 'email@email.com')).toBeUndefined();
     });
 
     it('throw for unexisting email and shouldExist=true', async () => {
       expect(
-        memberRepository.getByEmail('email@email.com', { shouldExist: true }),
+        memberRepository.getByEmail(db, 'email@email.com', { shouldExist: true }),
       ).rejects.toBeInstanceOf(MemberNotFound);
     });
   });
@@ -115,7 +112,10 @@ describe('MemberRepository', () => {
     it('get members by email', async () => {
       const members = await saveMembers();
 
-      const ms = await memberRepository.getManyByEmails(members.map((m) => m.email));
+      const ms = await memberRepository.getManyByEmails(
+        db,
+        members.map((m) => m.email),
+      );
 
       for (const m of members) {
         const expectM = ms.data[m.email];
@@ -131,7 +131,7 @@ describe('MemberRepository', () => {
       const errorMemberMail = 'email@email.com';
 
       const emails = [...members.map((m) => m.email), errorMemberMail];
-      const ms = await memberRepository.getManyByEmails(emails);
+      const ms = await memberRepository.getManyByEmails(db, emails);
 
       for (const m of members) {
         const expectM = ms.data[m.email];
@@ -147,8 +147,9 @@ describe('MemberRepository', () => {
   describe('patch', () => {
     it('patch member', async () => {
       const member = await saveMember();
-      const newMember = { name: 'newname', email: 'newemail@email.com' };
-      const newM = await memberRepository.patch(member.id, newMember);
+      const randomMember = MemberFactory();
+      const newMember = { name: randomMember.name, email: randomMember.email };
+      const newM = await memberRepository.patch(db, member.id, newMember);
 
       expectMember(newM, { ...member, ...newMember });
     });
@@ -156,7 +157,7 @@ describe('MemberRepository', () => {
     it('patch extra', async () => {
       const member = await saveMember(MemberFactory({ extra: { hasAvatar: true, lang: 'en' } }));
       const extra = { lang: 'fr', emailFreq: EmailFrequency.Never };
-      const newM = await memberRepository.patch(member.id, { extra });
+      const newM = await memberRepository.patch(db, member.id, { extra });
 
       // keep previous extra
       expect(newM.extra.hasAvatar).toBe(true);
@@ -169,14 +170,14 @@ describe('MemberRepository', () => {
     it('patch enableSaveActions', async () => {
       const member = await saveMember();
       const newMember = { enableSaveActions: false };
-      const newM = await memberRepository.patch(member.id, newMember);
+      const newM = await memberRepository.patch(db, member.id, newMember);
 
       expect(newM.enableSaveActions).toBe(false);
     });
 
     it('does not update for empty new data', async () => {
       const member = await saveMember();
-      const newM = await memberRepository.patch(member.id, {});
+      const newM = await memberRepository.patch(db, member.id, {});
 
       expectMember(newM, member);
     });
@@ -184,23 +185,26 @@ describe('MemberRepository', () => {
     it('update unexisting member', async () => {
       const newMember = { enableSaveActions: false };
 
-      expect(memberRepository.patch(v4(), newMember)).rejects.toBeInstanceOf(MemberNotFound);
+      expect(memberRepository.patch(db, v4(), newMember)).rejects.toBeInstanceOf(MemberNotFound);
     });
   });
 
   describe('post', () => {
     it('post member', async () => {
-      const newMember = { name: 'newname', email: 'newemail@email.com' };
-      const newM = await memberRepository.post(newMember);
+      const newRandomMember = MemberFactory({ name: 'newName' });
+      const newMember = { name: newRandomMember.name, email: newRandomMember.email };
+      const newM = await memberRepository.post(db, newMember);
 
       expect(newM.name).toEqual(newMember.name);
-      expect(newM.email).toEqual(newMember.email);
-      expect(newM.userAgreementsDate.getDate()).toEqual(new Date().getDate());
+      // Important: The email will be lowercased by the service
+      expect(newM.email).toEqual(newMember.email.toLowerCase());
+      expect(newM.userAgreementsDate).toBeDefined();
+      expect(new Date(newM.userAgreementsDate!).getDate()).toEqual(new Date().getDate());
     });
 
     it('throw if email already exists', async () => {
       const member = await saveMember();
-      expect(memberRepository.post(member)).rejects.toMatchObject({ code: '23505' });
+      expect(memberRepository.post(db, member)).rejects.toMatchObject({ code: '23505' });
     });
   });
 });

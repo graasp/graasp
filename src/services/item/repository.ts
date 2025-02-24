@@ -35,6 +35,7 @@ import { isAncestorOrSelf, isDescendantOrSelf, isDirectChild } from '../../drizz
 import {
   Account,
   Item,
+  Member,
   accounts,
   itemMemberships,
   itemPublisheds,
@@ -75,8 +76,6 @@ type CreateItemBody = {
   creator: Member;
   parentItem?: Item;
 };
-
-type UpdateItemBody = DeepPartial<Item>;
 
 @singleton()
 export class ItemRepository {
@@ -497,7 +496,7 @@ export class ItemRepository {
     //   .execute();
   }
 
-  async updateOne(db: DBConnection, id: string, data: UpdateItemBody) {
+  async updateOne(db: DBConnection, id: string, data: Partial<Item>) {
     // update only if data is not empty
     if (!Object.keys(data).length) {
       throw new IllegalArgumentException("The item's body cannot be empty!");

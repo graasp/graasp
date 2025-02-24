@@ -5,6 +5,7 @@ import { TagCategory } from '@graasp/sdk';
 
 import { DBConnection } from '../../drizzle/db';
 import { Tag, tags } from '../../drizzle/schema';
+import { IllegalArgumentException } from '../../repositories/errors';
 
 @singleton()
 export class TagRepository {
@@ -14,6 +15,9 @@ export class TagRepository {
   }
 
   async get(db: DBConnection, tagId: Tag['id']): Promise<Tag | undefined> {
+    if (!tagId) {
+      throw new IllegalArgumentException('tagId is not valid');
+    }
     const tag = await db.query.tags.findFirst({ where: eq(tags.id, tagId) });
     return tag;
   }

@@ -94,6 +94,7 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
     },
   );
 
+  // TODO: mobile?? patch member? lang?
   /**
    * @deprecated use PATCH /members/current instead
    */
@@ -108,8 +109,6 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
       if (member.id !== id) {
         throw new CannotModifyOtherMembers({ id });
       }
-
-      client.transaction();
 
       return db.transaction(async (manager) => {
         return memberService.patch(buildRepositories(manager), id, body);

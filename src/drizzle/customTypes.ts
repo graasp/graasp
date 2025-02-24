@@ -28,6 +28,7 @@ export const customJsonb = <TData>(columnName: string) =>
       return JSON.stringify(value);
     },
     fromDriver(value: string): TData {
+      console.log(value);
       // TODO: to have better validation, specify a validation to run agains the data that was parsed
       return JSON.parse(value);
     },

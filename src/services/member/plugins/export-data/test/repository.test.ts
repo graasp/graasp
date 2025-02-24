@@ -4,8 +4,8 @@ import { PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { AppDataSource } from '../../../../../plugins/datasource';
+import { ActionRepository } from '../../../../action/action.repository';
 import { Action } from '../../../../action/entities/action';
-import { ActionRepository } from '../../../../action/repositories/action.repository';
 import { saveActions } from '../../../../action/test/fixtures/actions';
 import { ChatMessage } from '../../../../chat/chatMessage';
 import { ChatMention } from '../../../../chat/plugins/mentions/chatMention';
@@ -18,7 +18,7 @@ import { AppDataRepository } from '../../../../item/plugins/app/appData/reposito
 import { saveAppData } from '../../../../item/plugins/app/appData/test/fixtures';
 import { AppSettingRepository } from '../../../../item/plugins/app/appSetting/repository';
 import { saveAppSettings } from '../../../../item/plugins/app/appSetting/test/fixtures';
-import { FavoriteRepository } from '../../../../item/plugins/itemFavorite/itemBookmark.repository';
+import { ItemBookmarkRepository } from '../../../../item/plugins/itemFavorite/itemBookmark.repository';
 import { saveItemFavorites } from '../../../../item/plugins/itemFavorite/test/fixtures';
 import { ItemLikeRepository } from '../../../../item/plugins/itemLike/repository';
 import { saveItemLikes } from '../../../../item/plugins/itemLike/test/utils';
@@ -222,7 +222,7 @@ describe('DataMember Export', () => {
       // noise
       await saveItemFavorites({ items: [itemOfRandomUser], member: randomUser });
 
-      const results = await new FavoriteRepository().getForMemberExport(exportingActor.id);
+      const results = await new ItemBookmarkRepository().getForMemberExport(exportingActor.id);
       expectNoLeaksAndEquality(results, favorites, itemFavoriteSchema);
     });
 

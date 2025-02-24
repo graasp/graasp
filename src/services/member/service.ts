@@ -90,7 +90,7 @@ export class MemberService {
   }
 
   async deleteCurrent(memberId: string, db: DBConnection) {
-    return this.memberRepository.deleteOne(db, memberId);
+    await this.memberRepository.deleteOne(db, memberId);
   }
 
   async deleteOne(db: DBConnection, id: UUID) {

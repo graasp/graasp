@@ -1,7 +1,7 @@
 import { EntityManager } from 'typeorm';
 
 import { AccountRepository } from '../services/account/repository';
-import { ActionRepository } from '../services/action/repositories/action.repository';
+import { ActionRepository } from '../services/action/action.repository';
 import { MemberPasswordRepository } from '../services/auth/plugins/password/repository';
 import { ChatMentionRepository } from '../services/chat/plugins/mentions/repository';
 import { ChatMessageRepository } from '../services/chat/repository';
@@ -30,7 +30,7 @@ import { GuestPasswordRepository } from '../services/itemLogin/repositories/gues
 import { ItemLoginSchemaRepository } from '../services/itemLogin/repositories/itemLoginSchema';
 import { MembershipRequestRepository } from '../services/itemMembership/plugins/MembershipRequest/repository';
 import { ItemMembershipRepository } from '../services/itemMembership/repository';
-import MemberProfileRepository from '../services/member/plugins/profile/repository';
+import { MemberProfileRepository } from '../services/member/plugins/profile/repository';
 import { MemberRepository } from '../services/member/repository';
 import { TagRepository } from '../services/tag/Tag.repository';
 
@@ -58,7 +58,6 @@ export type Repositories = {
   itemValidationReviewRepository: ItemValidationReviewRepository;
   memberPasswordRepository: MemberPasswordRepository;
   guestPasswordRepository: GuestPasswordRepository;
-  memberRepository: MemberRepository;
   mentionRepository: ChatMentionRepository;
   publisherRepository: PublisherRepository;
   recycledItemRepository: RecycledItemDataRepository;
@@ -75,7 +74,6 @@ export const buildRepositories = (manager?: EntityManager): Repositories => ({
   itemRepository: new ItemRepository(manager),
   itemMembershipRepository: new ItemMembershipRepository(manager),
   membershipRequestRepository: new MembershipRequestRepository(manager),
-  memberRepository: new MemberRepository(manager),
 
   itemPublishedRepository: new ItemPublishedRepository(manager),
   itemLoginRepository: new GuestRepository(manager),

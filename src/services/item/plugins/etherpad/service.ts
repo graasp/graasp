@@ -6,6 +6,7 @@ import Etherpad, { AuthorSession } from '@graasp/etherpad-api';
 import { EtherpadItemExtra, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { ETHERPAD_NAME_FACTORY_DI_KEY } from '../../../../di/constants';
+import { DBConnection } from '../../../../drizzle/db';
 import { BaseLogger } from '../../../../logger';
 import { MemberCannotWriteItem } from '../../../../utils/errors';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
@@ -13,6 +14,7 @@ import { Account } from '../../../account/entities/account';
 import { Member } from '../../../member/entities/member';
 import { EtherpadItem, Item, isItemType } from '../../entities/Item';
 import { WrongItemTypeError } from '../../errors';
+import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
 import { MAX_SESSIONS_IN_COOKIE, PLUGIN_NAME } from './constants';
 import { EtherpadServerError, ItemMissingExtraError } from './errors';
@@ -36,6 +38,7 @@ export class EtherpadItemService {
   private readonly publicUrl: string;
   private readonly cookieDomain: string;
   private readonly itemService: ItemService;
+  private readonly itemRepository: ItemRepository;
   private readonly log: BaseLogger;
 
   constructor(
@@ -43,6 +46,7 @@ export class EtherpadItemService {
     @inject(ETHERPAD_NAME_FACTORY_DI_KEY) padNameFactory: PadNameFactory,
     etherPadConfig: EtherpadServiceConfig,
     itemService: ItemService,
+    itemRepository: ItemRepository,
     log: BaseLogger,
   ) {
     this.api = etherpad;
@@ -50,6 +54,7 @@ export class EtherpadItemService {
     this.publicUrl = etherPadConfig.publicUrl;
     this.cookieDomain = etherPadConfig.cookieDomain;
     this.itemService = itemService;
+    this.itemRepository = itemRepository;
     this.log = log;
   }
 
@@ -92,8 +97,8 @@ export class EtherpadItemService {
    * Creates a new Etherpad item linked to a pad in the service
    */
   public async createEtherpadItem(
+    db: DBConnection,
     member: Member,
-    repositories: Repositories,
     name: string,
     parentId?: string,
     initHtml?: string,
@@ -101,7 +106,7 @@ export class EtherpadItemService {
     const { groupID, padName } = await this.createPad({ action: 'create', initHtml });
 
     try {
-      return this.itemService.post(member, repositories, {
+      return this.itemService.post(db, member, {
         item: {
           name,
           type: ItemType.ETHERPAD,
@@ -125,21 +130,19 @@ export class EtherpadItemService {
    * Updates Etherpad item
    */
   public async patchWithOptions(
+    db: DBConnection,
     member: Member,
-    repositories: Repositories,
     itemId: Item['id'],
     { readerPermission }: { readerPermission: PermissionLevel.Read | PermissionLevel.Write },
   ) {
-    const { itemRepository } = repositories;
-
-    const item = await itemRepository.getOneOrThrow(itemId);
+    const item = await this.itemRepository.getOneOrThrow(itemId);
 
     // check item is link
     if (!isItemType(item, ItemType.ETHERPAD)) {
       throw new WrongItemTypeError(item.type);
     }
 
-    return this.itemService.patch(member, repositories, itemId, {
+    return this.itemService.patch(db, member, itemId, {
       extra: { [ItemType.ETHERPAD]: { readerPermission } },
     });
   }

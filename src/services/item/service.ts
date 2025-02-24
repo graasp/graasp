@@ -466,17 +466,21 @@ export class ItemService {
     return ItemWrapper.merge(items, itemMemberships, visibilities, thumbnails);
   }
 
-  async patch(member: Member, repositories: Repositories, itemId: UUID, body: DeepPartial<Item>) {
-    const { itemRepository } = repositories;
-
+  async patch(
+    db: DBConnection,
+    member: Member,
+    repositories: Repositories,
+    itemId: UUID,
+    body: DeepPartial<Item>,
+  ) {
     // check memberships
-    const item = await itemRepository.getOneOrThrow(itemId);
+    const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
-    await validatePermission(repositories, PermissionLevel.Write, member, item);
+    await validatePermission(db, repositories, PermissionLevel.Write, member, item);
 
     await this.hooks.runPreHooks('update', member, repositories, { item: item });
 
-    const updated = await itemRepository.updateOne(item.id, body);
+    const updated = await this.itemRepository.updateOne(db, item.id, body);
 
     await this.hooks.runPostHooks('update', member, repositories, { item: updated });
 

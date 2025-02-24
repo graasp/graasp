@@ -20,7 +20,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   await client.connect();
 
   // This command run all migrations from the migrations folder and apply changes to the database
-  await migrate(db, { migrationsFolder: resolve(__dirname, './drizzle') });
+  // WARNING: This command needs to reference the drizzle folder from the location of execution of node (dist folder...) this is why the path is weird.
+  await migrate(db, { migrationsFolder: resolve(__dirname, '../../src/drizzle') });
 
   // check schema is sync
   // const databaseUpQueries = (await db.driver.createSchemaBuilder().log()).upQueries;

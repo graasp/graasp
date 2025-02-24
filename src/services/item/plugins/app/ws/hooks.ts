@@ -73,14 +73,11 @@ function registerAppActionTopic(
   });
 
   // on post app action, notify apps of new app action
-  appActionService.hooks.setPostHook(
-    'post',
-    async (member, repositories, { appAction, itemId }) => {
-      if (itemId !== undefined) {
-        websockets.publish(appActionsTopic, itemId, AppActionEvent('post', appAction));
-      }
-    },
-  );
+  appActionService.hooks.setPostHook('post', async (member, { appAction, itemId }) => {
+    if (itemId !== undefined) {
+      websockets.publish(appActionsTopic, itemId, AppActionEvent('post', appAction));
+    }
+  });
 }
 
 /**

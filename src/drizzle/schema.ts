@@ -1,17 +1,16 @@
-import { InferSelectModel, and, getTableColumns, isNotNull, relations, sql } from 'drizzle-orm';
+import { InferSelectModel, and, getTableColumns, isNotNull, sql } from 'drizzle-orm';
 import {
   AnyPgColumn,
-  bigint,
   boolean,
   check,
   doublePrecision,
   foreignKey,
   index,
+  jsonb,
   pgEnum,
   pgTable,
   pgView,
   primaryKey,
-  serial,
   text,
   timestamp,
   unique,
@@ -20,9 +19,9 @@ import {
 } from 'drizzle-orm/pg-core';
 import { eq, isNull } from 'drizzle-orm/sql';
 
-import { AccountType, CompleteMember, type ItemSettings } from '@graasp/sdk';
+import { AccountType, CompleteMember } from '@graasp/sdk';
 
-import { customJsonb, customNumeric, ltree } from './customTypes';
+import { customNumeric, ltree } from './customTypes';
 
 export const actionRequestExportFormatEnum = pgEnum('action_request_export_format_enum', [
   'json',
@@ -40,29 +39,10 @@ export const tagCategoryEnum = pgEnum('tag_category_enum', [
   'resource-type',
 ]);
 
-export const migrations = pgTable('migrations', {
-  id: serial().primaryKey().notNull(),
-  // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-  timestamp: bigint({ mode: 'number' }).notNull(),
-  name: varchar().notNull(),
-});
-
-export const typeormMetadata = pgTable('typeorm_metadata', {
-  type: varchar().notNull(),
-  database: varchar(),
-  schema: varchar(),
-  table: varchar(),
-  name: varchar(),
-  value: text(),
-});
-
 export const itemPublisheds = pgTable(
   'item_published',
   {
-    id: uuid()
-      .default(sql`uuid_generate_v4()`)
-      .primaryKey()
-      .notNull(),
+    id: uuid().primaryKey().defaultRandom().notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     creatorId: uuid('creator_id').references(() => accounts.id, { onDelete: 'set null' }),
     itemPath: ltree('item_path')
@@ -79,14 +59,11 @@ export const itemPublisheds = pgTable(
   ],
 );
 
-export const permissionEnum = pgEnum('permission', ['read', 'write', 'admin']);
+export const permissionEnum = pgEnum('permission_enum', ['read', 'write', 'admin']);
 export const itemMemberships = pgTable(
   'item_membership',
   {
-    id: uuid()
-      .default(sql`uuid_generate_v4()`)
-      .primaryKey()
-      .notNull(),
+    id: uuid().primaryKey().defaultRandom().notNull(),
     permission: permissionEnum().notNull(),
     itemPath: ltree('item_path')
       .notNull()
@@ -130,10 +107,7 @@ export type ItemMembershipWith = InferSelectModel<typeof itemMemberships>;
 export const memberPasswords = pgTable(
   'member_password',
   {
-    id: uuid()
-      .default(sql`uuid_generate_v4()`)
-      .primaryKey()
-      .notNull(),
+    id: uuid().primaryKey().defaultRandom().notNull(),
     password: varchar({ length: 100 }).notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
@@ -145,10 +119,7 @@ export const memberPasswords = pgTable(
 export const recycledItemDatas = pgTable(
   'recycled_item_data',
   {
-    id: uuid()
-      .default(sql`uuid_generate_v4()`)
-      .primaryKey()
-      .notNull(),
+    id: uuid().primaryKey().defaultRandom().notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     creatorId: uuid('creator_id'),
     itemPath: ltree('item_path').notNull(),
@@ -173,10 +144,7 @@ export const recycledItemDatas = pgTable(
 export const itemLikes = pgTable(
   'item_like',
   {
-    id: uuid()
-      .default(sql`uuid_generate_v4()`)
-      .primaryKey()
-      .notNull(),
+    id: uuid().primaryKey().defaultRandom().notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     creatorId: uuid('creator_id').notNull(),
     itemId: uuid('item_id').notNull(),
@@ -201,10 +169,7 @@ export type ItemLike = typeof itemLikes.$inferSelect;
 export const itemFlags = pgTable(
   'item_flag',
   {
-    id: uuid()
-      .default(sql`uuid_generate_v4()`)
-      .primaryKey()
-      .notNull(),
+    id: uuid().primaryKey().defaultRandom().notNull(),
     type: varchar().notNull(),
     creatorId: uuid('creator_id'),
     itemId: uuid('item_id'),
@@ -228,10 +193,7 @@ export const itemFlags = pgTable(
 export const itemCategories = pgTable(
   'item_category',
   {
-    id: uuid()
-      .default(sql`uuid_generate_v4()`)
-      .primaryKey()
-      .notNull(),
+    id: uuid().primaryKey().defaultRandom().notNull(),
     creatorId: uuid('creator_id'),
     itemPath: ltree('item_path').notNull(),
     categoryId: uuid('category_id').notNull(),
@@ -262,10 +224,7 @@ export const itemCategories = pgTable(
 export const categories = pgTable(
   'category',
   {
-    id: uuid()
-      .default(sql`uuid_generate_v4()`)
-      .primaryKey()
-      .notNull(),
+    id: uuid().notNull().primaryKey().defaultRandom(),
     name: varchar({ length: 50 }).notNull(),
     type: varchar().notNull(),
   },
@@ -275,11 +234,8 @@ export const categories = pgTable(
 export const chatMessages = pgTable(
   'chat_message',
   {
-    id: uuid()
-      .default(sql`uuid_generate_v4()`)
-      .primaryKey()
-      .notNull(),
-    itemId: uuid('item_id'),
+    id: uuid().defaultRandom().primaryKey().notNull(),
+    itemId: uuid('item_id').notNull(),
     creatorId: uuid('creator_id'),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
@@ -299,13 +255,12 @@ export const chatMessages = pgTable(
   ],
 );
 
+export type ChatMessageCreationDTO = typeof chatMessages.$inferInsert;
+
 export const chatMentions = pgTable(
   'chat_mention',
   {
-    id: uuid()
-      .default(sql`uuid_generate_v4()`)
-      .primaryKey()
-      .notNull(),
+    id: uuid().defaultRandom().primaryKey().notNull(),
     messageId: uuid('message_id'),
     accountId: uuid('account_id'),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
@@ -329,10 +284,7 @@ export const chatMentions = pgTable(
 export const appDatas = pgTable(
   'app_data',
   {
-    id: uuid()
-      .default(sql`uuid_generate_v4()`)
-      .primaryKey()
-      .notNull(),
+    id: uuid().defaultRandom().primaryKey().notNull(),
     accountId: uuid('account_id').notNull(),
     itemId: uuid('item_id').notNull(),
     data: text().default('{}').notNull(),
@@ -368,10 +320,7 @@ export const appDatas = pgTable(
 export const appActions = pgTable(
   'app_action',
   {
-    id: uuid()
-      .default(sql`uuid_generate_v4()`)
-      .primaryKey()
-      .notNull(),
+    id: uuid().defaultRandom().primaryKey().notNull(),
     accountId: uuid('account_id').notNull(),
     itemId: uuid('item_id').notNull(),
     data: text().default('{}').notNull(),
@@ -395,10 +344,7 @@ export const appActions = pgTable(
 export const appSettings = pgTable(
   'app_setting',
   {
-    id: uuid()
-      .default(sql`uuid_generate_v4()`)
-      .primaryKey()
-      .notNull(),
+    id: uuid().primaryKey().defaultRandom().notNull(),
     itemId: uuid('item_id').notNull(),
     creatorId: uuid('creator_id'),
     name: varchar().notNull(),
@@ -428,17 +374,14 @@ export const appSettings = pgTable(
 export const invitations = pgTable(
   'invitation',
   {
-    id: uuid()
-      .default(sql`uuid_generate_v4()`)
-      .primaryKey()
-      .notNull(),
+    id: uuid().primaryKey().defaultRandom().notNull(),
     creatorId: uuid('creator_id'),
     itemPath: ltree('item_path')
       .notNull()
       .references(() => itemsRaw.path),
     name: varchar({ length: 100 }),
     email: varchar({ length: 100 }).notNull(),
-    permission: varchar().notNull(),
+    permission: permissionEnum().notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
   },
@@ -462,10 +405,7 @@ export const invitations = pgTable(
 export const publishers = pgTable(
   'publisher',
   {
-    id: uuid()
-      .default(sql`uuid_generate_v4()`)
-      .primaryKey()
-      .notNull(),
+    id: uuid().primaryKey().defaultRandom().notNull(),
     name: varchar({ length: 250 }).notNull(),
     origins: text().array().notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
@@ -477,13 +417,8 @@ export const publishers = pgTable(
 export const apps = pgTable(
   'app',
   {
-    id: uuid()
-      .default(sql`uuid_generate_v4()`)
-      .primaryKey()
-      .notNull(),
-    key: uuid()
-      .default(sql`uuid_generate_v4()`)
-      .notNull(),
+    id: uuid().primaryKey().defaultRandom().notNull(),
+    key: uuid().notNull().defaultRandom(),
     name: varchar({ length: 250 }).notNull(),
     description: varchar({ length: 250 }).notNull(),
     url: varchar({ length: 250 }).notNull(),
@@ -507,10 +442,7 @@ export const apps = pgTable(
 export const itemValidationGroups = pgTable(
   'item_validation_group',
   {
-    id: uuid()
-      .default(sql`uuid_generate_v4()`)
-      .primaryKey()
-      .notNull(),
+    id: uuid().primaryKey().notNull().defaultRandom(),
     itemId: uuid('item_id').notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
   },
@@ -526,10 +458,7 @@ export const itemValidationGroups = pgTable(
 export const itemValidations = pgTable(
   'item_validation',
   {
-    id: uuid()
-      .default(sql`uuid_generate_v4()`)
-      .primaryKey()
-      .notNull(),
+    id: uuid().primaryKey().defaultRandom().notNull(),
     itemId: uuid('item_id').notNull(),
     process: varchar().notNull(),
     status: varchar().notNull(),
@@ -555,10 +484,7 @@ export const itemValidations = pgTable(
 export const itemValidationReviews = pgTable(
   'item_validation_review',
   {
-    id: uuid()
-      .default(sql`uuid_generate_v4()`)
-      .primaryKey()
-      .notNull(),
+    id: uuid().primaryKey().defaultRandom().notNull(),
     itemValidationId: uuid('item_validation_id').notNull(),
     reviewerId: uuid('reviewer_id'),
     status: varchar().notNull(),
@@ -583,10 +509,7 @@ export const itemValidationReviews = pgTable(
 export const itemBookmarks = pgTable(
   'item_favorite',
   {
-    id: uuid()
-      .default(sql`uuid_generate_v4()`)
-      .primaryKey()
-      .notNull(),
+    id: uuid().primaryKey().defaultRandom().notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     memberId: uuid('member_id').notNull(),
     itemId: uuid('item_id').notNull(),
@@ -612,10 +535,7 @@ export type ItemBookmark = typeof itemBookmarks.$inferSelect;
 export const memberProfiles = pgTable(
   'member_profile',
   {
-    id: uuid()
-      .default(sql`uuid_generate_v4()`)
-      .primaryKey()
-      .notNull(),
+    id: uuid().primaryKey().defaultRandom().notNull(),
     bio: varchar({ length: 5000 }),
     visibility: boolean().default(false).notNull(),
     facebookId: varchar({ length: 100 }),
@@ -673,10 +593,7 @@ export const shortLinks = pgTable(
 export const actions = pgTable(
   'action',
   {
-    id: uuid()
-      .default(sql`uuid_generate_v4()`)
-      .primaryKey()
-      .notNull(),
+    id: uuid().primaryKey().defaultRandom().notNull(),
     view: varchar().notNull(),
     type: varchar().notNull(),
     extra: text().notNull(),
@@ -703,14 +620,12 @@ export const actions = pgTable(
     }).onDelete('set null'),
   ],
 );
+export type Action = typeof actions.$inferInsert;
 
 export const itemGeolocations = pgTable(
   'item_geolocation',
   {
-    id: uuid()
-      .default(sql`uuid_generate_v4()`)
-      .primaryKey()
-      .notNull(),
+    id: uuid().primaryKey().defaultRandom().notNull(),
     lat: doublePrecision().notNull(),
     lng: doublePrecision().notNull(),
     country: varchar({ length: 4 }),
@@ -735,10 +650,7 @@ export const itemGeolocations = pgTable(
 export const actionRequestExports = pgTable(
   'action_request_export',
   {
-    id: uuid()
-      .default(sql`uuid_generate_v4()`)
-      .primaryKey()
-      .notNull(),
+    id: uuid().primaryKey().defaultRandom().notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     memberId: uuid('member_id').notNull(),
     itemPath: ltree('item_path'),
@@ -770,8 +682,8 @@ export const itemsRaw = pgTable(
     path: ltree('path').notNull(),
     creatorId: uuid('creator_id'),
     // TODO: fix type
-    extra: customJsonb<object>('extra').notNull(),
-    settings: customJsonb<ItemSettings>('settings').notNull(),
+    extra: jsonb().notNull(),
+    settings: jsonb().notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
     deletedAt: timestamp('deleted_at', { mode: 'string' }), // HACK: the softdeletion mechanism relies on the deletedAt being null or having a date
@@ -847,10 +759,7 @@ export type Item = typeof items.$inferSelect;
 export const membershipRequests = pgTable(
   'membership_request',
   {
-    id: uuid()
-      .default(sql`uuid_generate_v4()`)
-      .primaryKey()
-      .notNull(),
+    id: uuid().primaryKey().defaultRandom().notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     memberId: uuid('member_id').notNull(),
     itemId: uuid('item_id').notNull(),
@@ -873,15 +782,13 @@ export const membershipRequests = pgTable(
 export const accounts = pgTable(
   'account',
   {
-    id: uuid()
-      .default(sql`uuid_generate_v4()`)
-      .primaryKey()
-      .notNull(),
+    id: uuid().primaryKey().defaultRandom().notNull(),
     name: varchar({ length: 100 }).notNull(),
     email: varchar({ length: 150 }),
     // TODO: notNull added - check for migrations, and db status
     //, '{}', true
-    extra: customJsonb<CompleteMember['extra']>('extra').default({}).notNull(),
+    extra: jsonb().$type<CompleteMember['extra']>().default({}).notNull(),
+    // TODO: This should be an enum to have better type safety
     type: varchar().default('individual').notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
@@ -933,10 +840,7 @@ export type Member = typeof membersView.$inferSelect;
 export const guestPasswords = pgTable(
   'guest_password',
   {
-    id: uuid()
-      .default(sql`uuid_generate_v4()`)
-      .primaryKey()
-      .notNull(),
+    id: uuid().primaryKey().defaultRandom().notNull(),
     password: varchar({ length: 100 }).notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
@@ -955,10 +859,7 @@ export const guestPasswords = pgTable(
 export const itemLoginSchemas = pgTable(
   'item_login_schema',
   {
-    id: uuid()
-      .default(sql`uuid_generate_v4()`)
-      .primaryKey()
-      .notNull(),
+    id: uuid().primaryKey().defaultRandom().notNull(),
     type: varchar({ length: 100 }).notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
@@ -974,10 +875,7 @@ export const itemVisibilityEnum = pgEnum('item_visibility_type', ['public', 'hid
 export const itemVisibilities = pgTable(
   'item_visibility',
   {
-    id: uuid()
-      .default(sql`uuid_generate_v4()`)
-      .primaryKey()
-      .notNull(),
+    id: uuid().primaryKey().defaultRandom().notNull(),
     type: itemVisibilityEnum().notNull(),
     itemPath: ltree('item_path').notNull(),
     creatorId: uuid('creator_id'),
@@ -1007,10 +905,7 @@ export const itemVisibilities = pgTable(
 export const tags = pgTable(
   'tag',
   {
-    id: uuid()
-      .default(sql`uuid_generate_v4()`)
-      .primaryKey()
-      .notNull(),
+    id: uuid().primaryKey().defaultRandom().notNull(),
     name: varchar({ length: 255 }).notNull(),
     category: tagCategoryEnum().notNull(),
   },

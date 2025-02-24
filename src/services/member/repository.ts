@@ -11,7 +11,8 @@ import { mapById } from '../utils';
 @singleton()
 export class MemberRepository {
   async deleteOne(db: DBConnection, id: string) {
-    return db
+    // need to use the accounts table as we can not delete from a view (membersView)
+    await db
       .delete(accounts)
       .where(and(eq(accounts.id, id), eq(accounts.type, AccountType.Individual)));
   }
@@ -30,7 +31,7 @@ export class MemberRepository {
   }
 
   async getMany(db: DBConnection, ids: string[]) {
-    const members = await db.select().from(membersView).where(inArray(accounts.id, ids));
+    const members = await db.select().from(membersView).where(inArray(membersView.id, ids));
     return mapById({
       keys: ids,
       findElement: (id) => members.find(({ id: thisId }) => thisId === id),
@@ -40,7 +41,7 @@ export class MemberRepository {
 
   async getByEmail(db: DBConnection, emailString: string, args: { shouldExist?: boolean } = {}) {
     const email = emailString.toLowerCase();
-    const member = await db.select().from(membersView).where(eq(accounts.email, email));
+    const member = await db.select().from(membersView).where(eq(membersView.email, email));
 
     if (args.shouldExist) {
       if (member.length != 1) {
@@ -51,7 +52,7 @@ export class MemberRepository {
   }
 
   async getManyByEmails(db: DBConnection, emails: string[]) {
-    const members = await db.select().from(membersView).where(inArray(accounts.email, emails));
+    const members = await db.select().from(membersView).where(inArray(membersView.email, emails));
     return mapById({
       keys: emails,
       findElement: (email) => members.find(({ email: thisEmail }) => thisEmail === email),
@@ -99,9 +100,13 @@ export class MemberRepository {
     // update if newData is not empty
     if (Object.keys(newData).length) {
       // TODO: check member exists
-      return await db.update(accounts).set(newData).where(eq(accounts.id, id));
+      const res = await db.update(accounts).set(newData).where(eq(accounts.id, id)).returning();
+      if (res.length != 1) {
+        throw new MemberNotFound({ id });
+      }
+      return res[0];
     }
-    // todo: optimize?
+
     return this.get(db, id);
   }
 
@@ -116,7 +121,7 @@ export class MemberRepository {
     // The frontend avoids sending agreement data to prevent manipulation of the agreement date.
     // The agreements links are included in the registration email as a reminder.
     const userAgreementsDate = new Date().toISOString();
-    return await db
+    const res = await db
       .insert(accounts)
       .values({
         ...data,
@@ -124,5 +129,9 @@ export class MemberRepository {
         userAgreementsDate,
       })
       .returning();
+    if (res.length != 1) {
+      throw new Error('could not get added member');
+    }
+    return res[0];
   }
 }

@@ -3,8 +3,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { ActionTriggers, Context } from '@graasp/sdk';
 
 import { Account } from '../../../../../account/entities/account';
+import { ActionRepository } from '../../../../../action/action.repository';
 import { Action } from '../../../../../action/entities/action';
-import { ActionRepository } from '../../../../../action/repositories/action.repository';
 import { Member } from '../../../../../member/entities/member';
 import { Item } from '../../../../entities/Item';
 import { ItemActionType } from '../../utils';

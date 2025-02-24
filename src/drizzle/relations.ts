@@ -196,7 +196,7 @@ export const chatMessageRelations = relations(chatMessages, ({ one, many }) => (
     fields: [chatMessages.itemId],
     references: [itemsRaw.id],
   }),
-  account: one(accounts, {
+  creator: one(accounts, {
     fields: [chatMessages.creatorId],
     references: [accounts.id],
   }),

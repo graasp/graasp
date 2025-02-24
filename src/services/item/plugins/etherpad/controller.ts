@@ -5,6 +5,7 @@ import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
@@ -16,7 +17,6 @@ import { createEtherpad, getEtherpadFromItem, updateEtherpad } from './schemas';
 import { EtherpadItemService } from './service';
 
 const endpoints: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { db } = fastify;
   const itemService = resolveDependency(ItemService);
   const etherpadItemService = resolveDependency(EtherpadItemService);
 
@@ -38,13 +38,8 @@ const endpoints: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
 
-      return await db.transaction(async (manager) => {
-        return await etherpadItemService.createEtherpadItem(
-          member,
-          buildRepositories(manager),
-          name,
-          parentId,
-        );
+      return await db.transaction(async (tx) => {
+        return await etherpadItemService.createEtherpadItem(tx, member, name, parentId);
       });
     },
   );

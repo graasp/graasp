@@ -187,7 +187,8 @@ export class ItemMembershipRepository {
     const res = await db
       .select({ id: itemMembershipTable.id })
       .from(itemMembershipTable)
-      .leftJoin(items, and(eq(items.path, itemMembershipTable.itemPath), eq()))
+      .leftJoin(items, eq(items.path, itemMembershipTable.itemPath))
+      // TODO: we should probably check for ancestors of the item with itemId input to have a membership.
       .where(and(eq(itemMembershipTable.accountId, accountId), eq(items.id, itemId)));
     // we were able to get a result, so the accountId has a membership on the item
     if (res.length >= 1) {

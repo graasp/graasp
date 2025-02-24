@@ -8,11 +8,10 @@ import { CompleteMember } from '@graasp/sdk';
 
 import registerAppPlugins from '../src/app';
 import { resetDependencies } from '../src/di/utils';
+import { Member } from '../src/drizzle/schema';
 import { BaseLogger } from '../src/logger';
 import ajvFormats from '../src/schemas/ajvFormats';
-import { Account } from '../src/services/account/entities/account';
 import { PassportStrategy } from '../src/services/auth/plugins/passport';
-import { Member } from '../src/services/member/entities/member';
 import { saveMember } from '../src/services/member/test/fixtures/members';
 import { DB_TEST_SCHEMA } from './constants';
 
@@ -23,7 +22,9 @@ let originalStrictSessionStrategy;
  * Override the session strategy to always validate the request. Set the given Account to request.user.member on authentications
  * @param account Account to set to request.user.member
  */
-export function mockAuthenticate(account: Account | undefined) {
+export function mockAuthenticate<T extends { id: string; name: string; type: string }>(
+  account: T | undefined,
+) {
   if (!originalStrictSessionStrategy) {
     originalStrictSessionStrategy = fastifyPassport.strategy(PassportStrategy.StrictSession);
   }
