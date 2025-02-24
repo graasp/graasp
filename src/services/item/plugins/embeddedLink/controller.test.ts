@@ -13,13 +13,16 @@ import build, {
   unmockAuthenticate,
 } from '../../../../../test/app';
 import { AppDataSource } from '../../../../plugins/datasource';
+import { assertIsDefined } from '../../../../utils/assertions';
 import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN } from '../../../../utils/config';
 import { Guest } from '../../../itemLogin/entities/guest';
 import { saveMember } from '../../../member/test/fixtures/members';
+import { EmbeddedLinkItem, Item } from '../../entities/Item';
 import { ItemTestUtils } from '../../test/fixtures/items';
 import { FETCH_RESULT, METADATA } from './test/fixtures';
 
 const rawGuestRepository = AppDataSource.getRepository(Guest);
+const rawItemRepository = AppDataSource.getRepository(Item);
 const itemTestUtils = new ItemTestUtils();
 const MOCK_URL = 'https://url.com';
 
@@ -371,9 +374,13 @@ describe('Tests Embedded Link Controller', () => {
         const actor = await saveMember();
         mockAuthenticate(actor);
         const { item } = await itemTestUtils.saveItemAndMembership({
-          item: { type: ItemType.LINK },
+          item: { type: ItemType.LINK, settings: { isCollapsible: false } },
           member: actor,
         });
+
+        const initialItem = await rawItemRepository.findOneBy({ id: item.id });
+        assertIsDefined(initialItem);
+        expect(initialItem.settings.isCollapsible).toEqual(false);
 
         const response = await app.inject({
           method: HttpMethod.Patch,
@@ -389,6 +396,13 @@ describe('Tests Embedded Link Controller', () => {
         });
 
         expect(response.statusCode).toBe(StatusCodes.OK);
+
+        const savedItem = (await rawItemRepository.findOneBy({ id: item.id })) as EmbeddedLinkItem;
+        assertIsDefined(savedItem);
+        expect(savedItem.settings.isCollapsible).toEqual(true);
+        expect(savedItem.settings.showLinkIframe).toEqual(true);
+        expect(savedItem.settings.showLinkButton).toEqual(true);
+        expect(savedItem.name).toEqual('name');
       });
     });
   });
