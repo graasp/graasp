@@ -14,7 +14,7 @@ import { seedFromJson } from '../../../../../test/mocks/seed';
 import { TOKEN_REGEX } from '../../../../../test/utils';
 import { resolveDependency } from '../../../../di/utils';
 import { AppDataSource } from '../../../../plugins/datasource';
-import { MailerService } from '../../../../plugins/mailer/service';
+import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../../../utils/assertions';
 import {
   AUTH_TOKEN_JWT_SECRET,

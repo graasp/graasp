@@ -1,5 +1,4 @@
 import { StatusCodes } from 'http-status-codes';
-import fetch from 'node-fetch';
 import { EntityManager } from 'typeorm';
 
 import { FastifyPluginAsyncTypebox, Type } from '@fastify/type-provider-typebox';

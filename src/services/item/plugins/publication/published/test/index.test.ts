@@ -13,7 +13,7 @@ import build, {
 } from '../../../../../../../test/app';
 import { resolveDependency } from '../../../../../../di/utils';
 import { AppDataSource } from '../../../../../../plugins/datasource';
-import { MailerService } from '../../../../../../plugins/mailer/service';
+import { MailerService } from '../../../../../../plugins/mailer/mailer.service';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../../utils/config';
 import { ItemNotFound, MemberCannotAdminItem } from '../../../../../../utils/errors';
 import { saveMember } from '../../../../../member/test/fixtures/members';

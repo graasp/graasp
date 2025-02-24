@@ -9,9 +9,10 @@ import {
   UUID,
 } from '@graasp/sdk';
 
+import { DBConnection } from '../../../../../drizzle/db';
 import { TRANSLATIONS } from '../../../../../langs/constants';
 import { MailBuilder } from '../../../../../plugins/mailer/builder';
-import { MailerService } from '../../../../../plugins/mailer/service';
+import { MailerService } from '../../../../../plugins/mailer/mailer.service';
 import { Repositories } from '../../../../../utils/repositories';
 import { EXPORT_FILE_EXPIRATION, ZIP_MIMETYPE } from '../../../../action/constants/constants';
 import {
@@ -25,6 +26,7 @@ import { Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 import { ItemService } from '../../../service';
 import { ActionItemService } from '../service';
+import { ActionRequestExportRepository } from './repository';
 import { ActionRequestExport } from './requestExport';
 
 @singleton()
@@ -33,6 +35,7 @@ export class ActionRequestExportService {
   private readonly actionItemService: ActionItemService;
   private readonly itemService: ItemService;
   private readonly mailerService: MailerService;
+  private readonly actionRequestExportRepository: ActionRequestExportRepository;
 
   constructor(
     actionItemService: ActionItemService,
@@ -46,18 +49,13 @@ export class ActionRequestExportService {
     this.mailerService = mailerService;
   }
 
-  async request(
-    member: Member,
-    repositories: Repositories,
-    itemId: UUID,
-    format: ExportActionsFormatting,
-  ) {
+  async request(db: DBConnection, member: Member, itemId: UUID, format: ExportActionsFormatting) {
     // check member has admin access to the item
-    const item = await this.itemService.get(member, repositories, itemId);
+    const item = await this.itemService.get(db, member, itemId);
     await validatePermission(repositories, PermissionLevel.Admin, member, item);
 
     // get last export entry within interval
-    const lastRequestExport = await repositories.actionRequestExportRepository.getLast({
+    const lastRequestExport = await this.actionRequestExportRepository.getLast({
       memberId: member?.id,
       itemPath: item.path,
       format,

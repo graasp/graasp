@@ -12,7 +12,7 @@ import build, {
 } from '../../../../../test/app';
 import { resolveDependency } from '../../../../di/utils';
 import { AppDataSource } from '../../../../plugins/datasource';
-import { MailerService } from '../../../../plugins/mailer/service';
+import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { Item } from '../../../item/entities/Item';
 import { ItemTestUtils } from '../../../item/test/fixtures/items';
 import { Member } from '../../../member/entities/member';

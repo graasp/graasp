@@ -9,7 +9,7 @@ import { DBConnection } from '../../../../drizzle/db';
 import { TRANSLATIONS } from '../../../../langs/constants';
 import { BaseLogger } from '../../../../logger';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
-import { MailerService } from '../../../../plugins/mailer/service';
+import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { NonEmptyArray } from '../../../../types';
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';

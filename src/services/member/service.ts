@@ -9,7 +9,7 @@ import { MemberCreationDTO } from '../../drizzle/schema';
 import { TRANSLATIONS } from '../../langs/constants';
 import { BaseLogger } from '../../logger';
 import { MailBuilder } from '../../plugins/mailer/builder';
-import { MailerService } from '../../plugins/mailer/service';
+import { MailerService } from '../../plugins/mailer/mailer.service';
 import {
   EMAIL_CHANGE_JWT_EXPIRATION_IN_MINUTES,
   EMAIL_CHANGE_JWT_SECRET,

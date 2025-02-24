@@ -3,27 +3,34 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { ActionFactory, MemberFactory } from '@graasp/sdk';
 
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
+import { db } from '../../../drizzle/db';
 import { BaseLogger } from '../../../logger';
 import { AppDataSource } from '../../../plugins/datasource';
-import { MailerService } from '../../../plugins/mailer/service';
+import { MailerService } from '../../../plugins/mailer/mailer.service';
 import { buildRepositories } from '../../../utils/repositories';
+import { ItemGeolocationRepository } from '../../item/plugins/geolocation/repository';
 import { MeiliSearchWrapper } from '../../item/plugins/publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../../item/plugins/thumbnail/service';
+import { ItemRepository } from '../../item/repository';
 import { ItemService } from '../../item/service';
 import { ItemMembershipRepository } from '../../itemMembership/repository';
 import { MemberRepository } from '../../member/repository';
 import { MemberService } from '../../member/service';
 import { saveMember } from '../../member/test/fixtures/members';
 import { ThumbnailService } from '../../thumbnail/service';
+import { ActionRepository } from '../action.repository';
 import { Action } from '../entities/action';
 import { ActionService } from './action';
 
 const service = new ActionService(
+  new ActionRepository(),
   new ItemService(
     {} as ThumbnailService,
     {} as ItemThumbnailService,
     {} as ItemMembershipRepository,
     {} as MeiliSearchWrapper,
+    new ItemRepository(),
+    {} as ItemGeolocationRepository,
     {} as BaseLogger,
   ),
   new MemberService({} as MailerService, {} as MemberRepository, {} as BaseLogger),
@@ -65,7 +72,7 @@ describe('ActionService', () => {
         ActionFactory(),
       ] as unknown as Action[];
       const request = MOCK_REQUEST;
-      await service.postMany(actor, buildRepositories(), request, actions);
+      await service.postMany(db, actor, request, actions);
 
       expect(await rawRepository.count()).toEqual(actions.length);
     });
@@ -75,7 +82,7 @@ describe('ActionService', () => {
       mockAuthenticate(actor);
       const actions = [ActionFactory(), ActionFactory(), ActionFactory()] as unknown as Action[];
       const request = MOCK_REQUEST;
-      await service.postMany(actor, buildRepositories(), request, actions);
+      await service.postMany(db, actor, request, actions);
 
       expect(await rawRepository.count()).toEqual(0);
     });

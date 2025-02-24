@@ -7,7 +7,7 @@ import Etherpad from '@graasp/etherpad-api';
 
 import { CRON_3AM_MONDAY, JobServiceBuilder } from '../jobs';
 import { BaseLogger } from '../logger';
-import { MailerService } from '../plugins/mailer/service';
+import { MailerService } from '../plugins/mailer/mailer.service';
 import { CachingService } from '../services/caching/service';
 import FileService from '../services/file/service';
 import { fileRepositoryFactory } from '../services/file/utils/factory';

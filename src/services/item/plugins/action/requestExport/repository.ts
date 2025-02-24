@@ -1,12 +1,14 @@
 import { and, eq, gte } from 'drizzle-orm/sql';
+import { singleton } from 'tsyringe';
 
 import { ExportActionsFormatting, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../drizzle/db';
-import { actionRequestExports } from '../../../../../drizzle/schema';
+import { ActionRequestExport, actionRequestExports } from '../../../../../drizzle/schema';
+import { IllegalArgumentException } from '../../../../../repositories/errors';
 import { DEFAULT_REQUEST_EXPORT_INTERVAL } from '../../../../action/constants/constants';
-import { ActionRequestExport } from './requestExport';
 
+@singleton()
 export class ActionRequestExportRepository {
   /**
    * Create given request export and return it.
@@ -16,14 +18,26 @@ export class ActionRequestExportRepository {
     db: DBConnection,
     requestExport: Partial<ActionRequestExport>,
   ): Promise<ActionRequestExport> {
-    return await db.insert(actionRequestExports).values({
-      memberId: requestExport.member.id,
-      itemPath: requestExport.item.path,
-
-      // TODO check
-      createdAt: requestExport.createdAt?.toISOString(),
-      format: requestExport.format,
-    });
+    const { memberId, itemPath } = requestExport;
+    // expect memberId to be defined
+    if (memberId == undefined || memberId == null) {
+      throw new IllegalArgumentException('memberId for export request is illegal');
+    }
+    // expect itemPath to be defined
+    if (itemPath == undefined || itemPath == null) {
+      throw new IllegalArgumentException('itemPath for export request is illegal');
+    }
+    const res = await db
+      .insert(actionRequestExports)
+      .values({
+        memberId,
+        itemPath,
+        // TODO: check that the date can be passed as a string and not as a Date object, otherwise we should call `.toISOString()` on it
+        createdAt: requestExport.createdAt,
+        format: requestExport.format,
+      })
+      .returning();
+    return res[0];
   }
 
   /**
@@ -40,7 +54,7 @@ export class ActionRequestExportRepository {
       itemPath: string;
       format: ExportActionsFormatting;
     },
-  ): Promise<ActionRequestExport | null> {
+  ): Promise<ActionRequestExport | undefined> {
     const lowerLimitDate = new Date(Date.now() - DEFAULT_REQUEST_EXPORT_INTERVAL);
     return await db.query.actionRequestExports.findFirst({
       where: and(

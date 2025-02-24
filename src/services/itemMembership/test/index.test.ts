@@ -9,7 +9,7 @@ import { DiscriminatedItem, HttpMethod, PermissionLevel } from '@graasp/sdk';
 import build, { clearDatabase } from '../../../../test/app';
 import { resolveDependency } from '../../../di/utils';
 import { AppDataSource } from '../../../plugins/datasource';
-import { MailerService } from '../../../plugins/mailer/service';
+import { MailerService } from '../../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../../utils/assertions';
 import {
   CannotDeleteOnlyAdmin,

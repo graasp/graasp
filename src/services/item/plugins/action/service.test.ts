@@ -21,7 +21,7 @@ import build, {
 } from '../../../../../test/app';
 import { BaseLogger } from '../../../../logger';
 import { AppDataSource } from '../../../../plugins/datasource';
-import { MailerService } from '../../../../plugins/mailer/service';
+import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { MemberCannotAccess, UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { Action } from '../../../action/entities/action';

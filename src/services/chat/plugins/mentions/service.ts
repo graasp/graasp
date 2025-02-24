@@ -4,7 +4,7 @@ import { ClientManager, Context, MentionStatus, PermissionLevel } from '@graasp/
 
 import { TRANSLATIONS } from '../../../../langs/constants';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
-import { MailerService } from '../../../../plugins/mailer/service';
+import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { Repositories } from '../../../../utils/repositories';
 import { Account } from '../../../account/entities/account';
 import { validatePermission } from '../../../authorization';

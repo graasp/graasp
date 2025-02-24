@@ -8,7 +8,7 @@ import { FolderItemFactory, HttpMethod } from '@graasp/sdk';
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
 import { resolveDependency } from '../../../di/utils';
 import { AppDataSource } from '../../../plugins/datasource';
-import { MailerService } from '../../../plugins/mailer/service';
+import { MailerService } from '../../../plugins/mailer/mailer.service';
 import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
 import { ItemNotFound, MemberCannotAccess } from '../../../utils/errors';
 import { setItemPublic } from '../../item/plugins/itemVisibility/test/fixtures';

@@ -5,7 +5,7 @@ import { ClientManager, Context, Member, PermissionLevel } from '@graasp/sdk';
 import { TRANSLATIONS } from '../../../../langs/constants';
 import { BaseLogger } from '../../../../logger';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
-import { MailerService } from '../../../../plugins/mailer/service';
+import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { Repositories } from '../../../../utils/repositories';
 import { Item } from '../../../item/entities/Item';
 import { isMember } from '../../../member/entities/member';

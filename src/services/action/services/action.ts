@@ -5,29 +5,37 @@ import { FastifyRequest } from 'fastify';
 
 import { ClientManager, Context } from '@graasp/sdk';
 
+import { DBConnection } from '../../../drizzle/db';
 import { Actor } from '../../../drizzle/schema';
 import { BaseLogger } from '../../../logger';
-import { Repositories } from '../../../utils/repositories';
 import { ItemService } from '../../item/service';
 import { MemberService } from '../../member/service';
+import { ActionRepository } from '../action.repository';
 import { Action } from '../entities/action';
 import { getGeolocationIp } from '../utils/actions';
 
 @singleton()
 export class ActionService {
+  actionRepository: ActionRepository;
   itemService: ItemService;
   memberService: MemberService;
   logger: BaseLogger;
 
-  constructor(itemService: ItemService, memberService: MemberService, logger: BaseLogger) {
+  constructor(
+    actionRepository: ActionRepository,
+    itemService: ItemService,
+    memberService: MemberService,
+    logger: BaseLogger,
+  ) {
+    this.actionRepository = actionRepository;
     this.itemService = itemService;
     this.memberService = memberService;
     this.logger = logger;
   }
 
   async postMany(
+    db: DBConnection,
     member: Actor,
-    repositories: Repositories,
     request: FastifyRequest,
     actions: (Partial<Action> & Pick<Action, 'type'>)[],
   ): Promise<void> {
@@ -67,6 +75,6 @@ export class ActionService {
       ...a,
     }));
 
-    await repositories.actionRepository.postMany(completeActions);
+    await this.actionRepository.postMany(db, completeActions);
   }
 }

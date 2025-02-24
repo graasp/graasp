@@ -6,6 +6,7 @@ import fp from 'fastify-plugin';
 import { ExportActionsFormatting, FileItemType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import { ALLOWED_ORIGINS } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
@@ -32,7 +33,7 @@ export interface GraaspActionsOptions {
 }
 
 const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) => {
-  const { db, websockets } = fastify;
+  const { db: typeormDB, websockets } = fastify;
 
   const itemService = resolveDependency(ItemService);
   const actionService = resolveDependency(ActionService);
@@ -110,10 +111,9 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
         throw new CannotPostAction(request.headers.origin);
       }
 
-      await db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-        const item = await itemService.get(member, repositories, itemId);
-        await actionService.postMany(member, repositories, request, [
+      await db.transaction(async (tx) => {
+        const item = await itemService.get(tx, member, itemId);
+        await actionService.postMany(tx, member, request, [
           {
             item,
             type,
@@ -141,9 +141,8 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
       } = request;
       const member = asDefined(user?.account);
       assertIsMember(member);
-      db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-        const item = await requestExportService.request(member, repositories, itemId, format);
+      db.transaction(async (tx) => {
+        const item = await requestExportService.request(tx, member, itemId, format);
         if (item) {
           websockets.publish(
             memberItemsTopic,

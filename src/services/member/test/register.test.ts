@@ -10,7 +10,7 @@ import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../.
 import { mockCaptchaValidation } from '../../../../test/utils';
 import { resolveDependency } from '../../../di/utils';
 import { AppDataSource } from '../../../plugins/datasource';
-import { MailerService } from '../../../plugins/mailer/service';
+import { MailerService } from '../../../plugins/mailer/mailer.service';
 import { MOCK_CAPTCHA } from '../../auth/plugins/captcha/test/utils';
 import { Invitation } from '../../item/plugins/invitation/entity';
 import { saveInvitations } from '../../item/plugins/invitation/test/utils';

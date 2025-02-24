@@ -5,7 +5,7 @@ import { ClientManager, Context, PermissionLevel, UUID } from '@graasp/sdk';
 import { DBConnection } from '../../drizzle/db';
 import { TRANSLATIONS } from '../../langs/constants';
 import { MailBuilder } from '../../plugins/mailer/builder';
-import { MailerService } from '../../plugins/mailer/service';
+import { MailerService } from '../../plugins/mailer/mailer.service';
 import {
   CannotDeleteOnlyAdmin,
   CannotModifyGuestItemMembership,

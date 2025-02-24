@@ -17,7 +17,7 @@ import build, {
 } from '../../../../../../test/app';
 import { resolveDependency } from '../../../../../di/utils';
 import { AppDataSource } from '../../../../../plugins/datasource';
-import { MailerService } from '../../../../../plugins/mailer/service';
+import { MailerService } from '../../../../../plugins/mailer/mailer.service';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { MOCK_CAPTCHA } from '../../../../auth/plugins/captcha/test/utils';
 import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';

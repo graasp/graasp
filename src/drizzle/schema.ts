@@ -671,6 +671,7 @@ export const actionRequestExports = pgTable(
     }).onDelete('cascade'),
   ],
 );
+export type ActionRequestExport = typeof actionRequestExports.$inferSelect;
 
 export const itemsRaw = pgTable(
   'item',
