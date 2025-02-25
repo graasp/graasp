@@ -1,16 +1,12 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { ItemType } from '@graasp/sdk';
-
 import { resolveDependency } from '../../../../di/utils';
 import { asDefined } from '../../../../utils/assertions';
-import { Repositories, buildRepositories } from '../../../../utils/repositories';
+import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
-import { Actor, assertIsMember } from '../../../member/entities/member';
+import { assertIsMember } from '../../../member/entities/member';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { Item } from '../../entities/Item';
-import { ItemService } from '../../service';
 import { ActionItemService } from '../action/service';
 import { createLink, getLinkMetadata, updateLink } from './schemas';
 import { EmbeddedLinkItemService } from './service';
@@ -18,7 +14,6 @@ import { ensureProtocol } from './utils';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db, log } = fastify;
-  const itemService = resolveDependency(ItemService);
   const embeddedLinkService = resolveDependency(EmbeddedLinkItemService);
   const actionItemService = resolveDependency(ActionItemService);
 

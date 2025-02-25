@@ -47,9 +47,8 @@ import { ThumbnailService } from '../thumbnail/service';
 import { mapById } from '../utils';
 import { ItemWrapper, PackedItem } from './ItemWrapper';
 import { IS_COPY_REGEX, MAX_COPY_SUFFIX_LENGTH } from './constants';
-import { FolderItem, Item, isItemType } from './entities/Item';
+import { DEFAULT_ORDER, FolderItem, Item, isItemType } from './entities/Item';
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
-import { PartialItemGeolocation } from './plugins/geolocation/errors';
 import { ItemGeolocationRepository } from './plugins/geolocation/repository';
 import { ItemVisibility } from './plugins/itemVisibility/ItemVisibility';
 import { MeiliSearchWrapper } from './plugins/publication/published/plugins/search/meilisearch';
@@ -117,7 +116,8 @@ export class ItemService {
     const { item, parentId, previousItemId, geolocation, thumbnail } = args;
 
     // item
-    const createdItems = await this.createItems(
+    // take the first and (must be) the only item
+    const [createdItem] = await this.createItems(
       member,
       repositories,
       [item],
@@ -125,13 +125,11 @@ export class ItemService {
       previousItemId,
     );
 
-    // take the first and (must be) the only item
-    const createdItem = createdItems[0];
     const { id, path } = createdItem;
 
     // geolocation
     if (geolocation) {
-      await this.registerGeolocations(itemGeolocationRepository, { [path]: geolocation });
+      await this.saveGeolocations(itemGeolocationRepository, { [path]: geolocation });
     }
 
     // thumbnail
@@ -188,7 +186,7 @@ export class ItemService {
     }
 
     // register geolocations
-    await this.registerGeolocations(itemGeolocationRepository, geolocations);
+    await this.saveGeolocations(itemGeolocationRepository, geolocations);
 
     // upload thumbnails
     await this.uploadThumbnails(member, repositories, thumbnails);
@@ -196,6 +194,12 @@ export class ItemService {
     return createdItems;
   }
 
+  /**
+   * Creates the given items in the DB.
+   * @param parentId Parent for the given items, if defined
+   * @param previousItemId Defines the order of the items, if defined
+   * @returns An unordered list of inserted items
+   */
   private async createItems(
     member: Member,
     repositories: Repositories,
@@ -229,6 +233,11 @@ export class ItemService {
     return createdItems;
   }
 
+  /**
+   * Creates items under a certain parent in the DB.
+   * @param previousItemId Defines the order of the items, if present
+   * @returns An unordered list of inserted items
+   */
   private async createItemsWithParent(
     member: Member,
     repositories: Repositories,
@@ -268,7 +277,8 @@ export class ItemService {
       order = await repositories.itemRepository.getNextOrderCount(parentItem.path, previousItemId);
     }
     for (let i = 0; i < items.length; i++) {
-      items[i] = { ...items[i], order: order++ };
+      items[i] = { ...items[i], order };
+      order += DEFAULT_ORDER;
     }
 
     const createdItems = await this.createItemsAndMemberships(
@@ -287,6 +297,10 @@ export class ItemService {
     return createdItems;
   }
 
+  /**
+   * Creates items and its associated memberships in the DB
+   * @returns An unordered list of inserted items
+   */
   private async createItemsAndMemberships(
     member: Member,
     repositories: Repositories,
@@ -321,23 +335,19 @@ export class ItemService {
   }
 
   /**
-   * Register the geolocations in the repository.
+   * Save the geolocations in the repository.
    * @param geolocations Key-value map with the item path ID as key
    */
-  private async registerGeolocations(
+  private async saveGeolocations(
     itemGeolocationRepository: ItemGeolocationRepository,
     geolocations: { [key: string]: Pick<ItemGeolocation, 'lat' | 'lng'> },
   ) {
     return Promise.all(
       Object.keys(geolocations).map(async (itemPath) => {
         const geolocation = geolocations[itemPath];
-
-        // lat and lng should exist together
-        const { lat, lng } = geolocation || {};
-        if ((lat && !lng) || (lng && !lat)) {
-          throw new PartialItemGeolocation({ lat, lng });
+        if (geolocation) {
+          return itemGeolocationRepository.put(itemPath, geolocations[itemPath]);
         }
-        return itemGeolocationRepository.put(itemPath, geolocation);
       }),
     );
   }
@@ -350,7 +360,7 @@ export class ItemService {
   private async uploadThumbnails(
     member: Member,
     repositories: Repositories,
-    thumbnails: { [key: string]: Readable | undefined },
+    thumbnails: { [key: string]: Readable },
   ) {
     return Promise.all(
       Object.keys(thumbnails).map(async (itemId) => {

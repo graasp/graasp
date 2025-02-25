@@ -160,8 +160,10 @@ describe('Item Service', () => {
     it('Respects the input item array order', async () => {
       const actor = await saveMember();
       const repositories = buildRepositories();
-      const parentItem = await itemService.post(actor, repositories, {
-        item: { name: 'parentItem', type: ItemType.FOLDER },
+      const {
+        items: [parentItem],
+      } = await seedFromJson({
+        items: [{ name: 'parentItem', type: ItemType.FOLDER }],
       });
       const items: { item: Item }[] = [];
       const itemNames: string[] = [];
@@ -189,8 +191,10 @@ describe('Item Service', () => {
     it('Uploads the thumbnails', async () => {
       const actor = await saveMember();
       const repositories = buildRepositories();
-      const parentItem = await itemService.post(actor, repositories, {
-        item: { name: 'parentItem', type: ItemType.FOLDER },
+      const {
+        items: [parentItem],
+      } = await seedFromJson({
+        items: [{ name: 'parentItem', type: ItemType.FOLDER }],
       });
 
       const items: { item: Item; thumbnail?: Readable }[] = [];
@@ -213,12 +217,14 @@ describe('Item Service', () => {
 
       expect(itemsInDB.every((i) => i.settings.hasThumbnail === true)).toBeTruthy();
     });
-    it('Registers the geolocations', async () => {
+    it('Saves the geolocations', async () => {
       const actor = await saveMember();
       const repositories = buildRepositories();
       const geoMock = jest.spyOn(repositories.itemGeolocationRepository, 'put');
-      const parentItem = await itemService.post(actor, repositories, {
-        item: { name: 'parentItem', type: ItemType.FOLDER },
+      const {
+        items: [parentItem],
+      } = await seedFromJson({
+        items: [{ name: 'parentItem', type: ItemType.FOLDER }],
       });
 
       const items: { item: Item; geolocation?: ItemGeolocation }[] = [];

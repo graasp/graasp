@@ -17,6 +17,7 @@ import {
 } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../test/app';
+import { ItemFactory } from '../../../test/factories/item.factory';
 import {
   HierarchyTooDeep,
   InvalidMoveTarget,
@@ -732,15 +733,11 @@ describe('ItemRepository', () => {
   });
   describe('postMany', () => {
     it('post many', async () => {
-      const items: Item[] = [];
-      for (let i = 0; i < 15; i++) {
-        const newItem = itemRepository.createOne({
-          name: `item${i}`,
-          type: ItemType.FOLDER,
-          creator: actor,
-        });
-        items.push(newItem);
-      }
+      const items = Array.from(
+        { length: 15 },
+        (_v, idx) =>
+          ItemFactory({ id: `item${idx}`, type: ItemType.FOLDER, creator: actor }) as Item,
+      );
 
       const insertedItems = await itemRepository.addMany(items, actor);
       const insertedItemNames = insertedItems.map((i) => i.name);
@@ -754,23 +751,21 @@ describe('ItemRepository', () => {
       const itemNamesInDB = itemsInDB.map((i) => i.name);
       const itemTypesInDB = insertedItems.map((i) => i.type);
       const itemCreatorIdsInDB = insertedItems.map((i) => i.creator?.id);
+      const itemPathsInDb = insertedItems.map((i) => i.path);
 
       expect(itemNamesInDB.sort()).toEqual(insertedItemNames.sort());
       expect(itemTypesInDB.sort()).toEqual(insertedItemTypes.sort());
       expect(itemCreatorIdsInDB.sort()).toEqual(insertedItemCreatorIds.sort());
+      expect(itemPathsInDb.every((path) => !path.includes('.'))).toBeTruthy();
     });
     it('post many with parent item', async () => {
       const parentItem = await testUtils.saveItem({ actor });
 
-      const items: Item[] = [];
-      for (let i = 0; i < 15; i++) {
-        const newItem = itemRepository.createOne({
-          name: `item${i}`,
-          type: ItemType.FOLDER,
-          creator: actor,
-        });
-        items.push(newItem);
-      }
+      const items = Array.from(
+        { length: 15 },
+        (_v, idx) =>
+          ItemFactory({ name: `item${idx}`, type: ItemType.FOLDER, creator: actor }) as Item,
+      );
 
       const insertedItems = await itemRepository.addMany(items, actor, parentItem);
       const insertedItemNames = insertedItems.map((i) => i.name);
@@ -791,6 +786,7 @@ describe('ItemRepository', () => {
       expect(itemTypesInDB.sort()).toEqual(insertedItemTypes.sort());
       expect(itemCreatorIdsInDB.sort()).toEqual(insertedItemCreatorIds.sort());
       expect(itemPathsInDB.sort()).toEqual(insertedItemPaths.sort());
+      expect(itemPathsInDB.every((path) => path.includes(`${parentItem.path}.`))).toBeTruthy();
     });
   });
   describe('copy', () => {

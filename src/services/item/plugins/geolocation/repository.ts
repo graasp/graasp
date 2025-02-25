@@ -12,7 +12,7 @@ import { ALLOWED_SEARCH_LANGS, GEOLOCATION_API_HOST } from '../../../../utils/co
 import { Actor, isMember } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import { ItemGeolocation } from './ItemGeolocation';
-import { MissingGeolocationSearchParams } from './errors';
+import { MissingGeolocationSearchParams, PartialItemGeolocation } from './errors';
 
 export class ItemGeolocationRepository extends AbstractRepository<ItemGeolocation> {
   constructor(manager?: EntityManager) {
@@ -177,6 +177,12 @@ export class ItemGeolocationRepository extends AbstractRepository<ItemGeolocatio
     geolocation: Pick<ItemGeolocation, 'lat' | 'lng'> &
       Pick<Partial<ItemGeolocation>, 'addressLabel' | 'helperLabel'>,
   ): Promise<void> {
+    // lat and lng should exist together
+    const { lat, lng } = geolocation || {};
+    if ((lat && !lng) || (lng && !lat)) {
+      throw new PartialItemGeolocation({ lat, lng });
+    }
+
     // country might not exist because the point is outside borders
     const country = iso1A2Code([geolocation.lng, geolocation.lat]);
 
