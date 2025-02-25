@@ -111,13 +111,11 @@ export class ItemService {
       previousItemId?: Item['id'];
     },
   ): Promise<Item> {
-    const { itemGeolocationRepository } = repositories;
-
     const { item, parentId, previousItemId, geolocation, thumbnail } = args;
 
     // item
     // take the first and (must be) the only item
-    const [createdItem] = await this.createItems(
+    const createdItems = await this.createItems(
       member,
       repositories,
       [item],
@@ -125,19 +123,14 @@ export class ItemService {
       previousItemId,
     );
 
-    const { id, path } = createdItem;
+    const [updatedItem] = await this.saveGeolocationsAndThumbnails(
+      member,
+      repositories,
+      [{ item, geolocation, thumbnail }],
+      createdItems,
+    );
 
-    // geolocation
-    if (geolocation) {
-      await this.saveGeolocations(itemGeolocationRepository, { [path]: geolocation });
-    }
-
-    // thumbnail
-    if (thumbnail) {
-      await this.uploadThumbnails(member, repositories, { [id]: thumbnail });
-    }
-
-    return createdItem;
+    return updatedItem;
   }
 
   /**
@@ -155,12 +148,26 @@ export class ItemService {
       parentId: string;
     },
   ): Promise<Item[]> {
-    const { itemGeolocationRepository } = repositories;
     const { items: inputItems, parentId } = args;
 
     // create items
     const itemsToInsert = inputItems.map((i) => i.item);
     const createdItems = await this.createItems(member, repositories, itemsToInsert, parentId);
+
+    return this.saveGeolocationsAndThumbnails(member, repositories, inputItems, createdItems);
+  }
+
+  private async saveGeolocationsAndThumbnails(
+    member: Member,
+    repositories: Repositories,
+    inputItems: {
+      item: Partial<Item> & Pick<Item, 'name' | 'type'>;
+      geolocation?: Pick<ItemGeolocation, 'lat' | 'lng'>;
+      thumbnail?: Readable;
+    }[],
+    createdItems: Item[],
+  ) {
+    const { itemGeolocationRepository } = repositories;
 
     // get the ordered items from the db
     // to get them in the same order as the input item array
@@ -189,9 +196,7 @@ export class ItemService {
     await this.saveGeolocations(itemGeolocationRepository, geolocations);
 
     // upload thumbnails
-    await this.uploadThumbnails(member, repositories, thumbnails);
-
-    return createdItems;
+    return this.uploadThumbnails(member, repositories, createdItems, thumbnails);
   }
 
   /**
@@ -360,16 +365,19 @@ export class ItemService {
   private async uploadThumbnails(
     member: Member,
     repositories: Repositories,
+    createdItems: Item[],
     thumbnails: { [key: string]: Readable },
-  ) {
+  ): Promise<Item[]> {
     return Promise.all(
-      Object.keys(thumbnails).map(async (itemId) => {
-        const thumbnail = thumbnails[itemId];
+      createdItems.map(async (item) => {
+        const thumbnail = thumbnails[item.id];
         if (thumbnail) {
-          await this.thumbnailService.upload(member, itemId, thumbnail);
-          return this.patch(member, repositories, itemId, {
+          await this.thumbnailService.upload(member, item.id, thumbnail);
+          return this.patch(member, repositories, item.id, {
             settings: { hasThumbnail: true },
           });
+        } else {
+          return item;
         }
       }),
     );
