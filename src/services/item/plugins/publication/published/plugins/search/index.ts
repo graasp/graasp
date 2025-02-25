@@ -7,7 +7,7 @@ import { ActionTriggers } from '@graasp/sdk';
 import { resolveDependency } from '../../../../../../../di/utils';
 import { MEILISEARCH_REBUILD_SECRET } from '../../../../../../../utils/config';
 import { buildRepositories } from '../../../../../../../utils/repositories';
-import { ActionService } from '../../../../../../action/services/action';
+import { ActionService } from '../../../../../../action/services/action.service';
 import { optionalIsAuthenticated } from '../../../../../../auth/plugins/passport';
 import { getFacets, getMostLiked, getMostRecent, search } from './schemas';
 import { SearchService } from './service';

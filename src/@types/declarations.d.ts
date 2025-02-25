@@ -8,7 +8,7 @@ import { RecaptchaActionType } from '@graasp/sdk';
 import { JobService } from '../jobs';
 import type { MailerDecoration } from '../plugins/mailer';
 import { Account } from '../services/account/entities/account';
-import { ActionService } from '../services/action/services/action';
+import { ActionService } from '../services/action/services/action.service';
 import { MagicLinkService } from '../services/auth/plugins/magicLink/service';
 import { MobileService } from '../services/auth/plugins/mobile/service';
 import { MemberPasswordService } from '../services/auth/plugins/password/service';

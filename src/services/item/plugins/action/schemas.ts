@@ -16,10 +16,7 @@ import {
 import { customType } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
 import { accountSchemaRef, nullableAccountSchemaRef } from '../../../account/schemas';
-import {
-  MAX_ACTIONS_SAMPLE_SIZE,
-  MIN_ACTIONS_SAMPLE_SIZE,
-} from '../../../action/constants/constants';
+import { MAX_ACTIONS_SAMPLE_SIZE, MIN_ACTIONS_SAMPLE_SIZE } from '../../../action/constants';
 import { itemSchema, itemSchemaRef } from '../../schemas';
 import { appActionSchemaRef } from '../app/appAction/schemas';
 import { appDataSchemaRef } from '../app/appData/schemas';

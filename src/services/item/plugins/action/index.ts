@@ -10,7 +10,7 @@ import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import { ALLOWED_ORIGINS } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
-import { ActionService } from '../../../action/services/action';
+import { ActionService } from '../../../action/services/action.service';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
 import {

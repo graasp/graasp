@@ -18,6 +18,7 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 import { eq, isNull } from 'drizzle-orm/sql';
+import { NullSchema } from 'fast-json-stringify';
 
 import { AccountType, CompleteMember } from '@graasp/sdk';
 
@@ -608,6 +609,9 @@ export const actions = pgTable(
       table.itemId.asc().nullsLast().op('uuid_ops'),
     ),
     index('IDX_action_account_id').using('btree', table.accountId.asc().nullsLast().op('uuid_ops')),
+    // FIX: We should probably cascade on delete, as there is not reason why we would want to keep the actions around after item deletion
+    // Eventually if we wanted to keep a trace of the things that happened to the capsule for debugging and internal analysis,
+    // but then we should probably keep them somewhere else and only store user/educational actions in here.
     foreignKey({
       columns: [table.itemId],
       foreignColumns: [itemsRaw.id],
@@ -620,7 +624,13 @@ export const actions = pgTable(
     }).onDelete('set null'),
   ],
 );
-export type Action = typeof actions.$inferInsert;
+export type ActionInsertRaw = typeof actions.$inferInsert;
+// this is type that matches the automatically linked entities from typeORM,
+// we should cehck each usage location to see if including the realtions is necessary or not
+export type ActionWithItem = Omit<typeof actions.$inferSelect, 'accountId' | 'itemId'> & {
+  item: Item | null;
+};
+export type ActionWithItemAndAccount = ActionWithItem & { account: MinimalAccount | null };
 
 export const itemGeolocations = pgTable(
   'item_geolocation',
@@ -823,7 +833,11 @@ export const accounts = pgTable(
 
 export type Account = typeof accounts.$inferSelect;
 export type AccountCreationDTO = typeof accounts.$inferInsert;
-export type Actor = Account | undefined;
+// minimal account
+export type MinimalAccount = {
+  id: Account['id'];
+  name: Account['name'];
+};
 
 // TODO: materialized?? check
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -837,6 +851,8 @@ export const membersView = pgView('members_view').as((qb) =>
 // HACK: Using inferSelect isnce this is a PGView and it does not allow to insert on the view
 export type MemberCreationDTO = typeof membersView.$inferSelect & { email: string };
 export type Member = typeof membersView.$inferSelect;
+
+export type Actor = Account | Member | undefined;
 
 export const guestPasswords = pgTable(
   'guest_password',

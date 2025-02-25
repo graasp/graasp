@@ -6,7 +6,7 @@ import { ExportActionsFormatting, UUID } from '@graasp/sdk';
 import { DBConnection } from '../../../../../drizzle/db';
 import { ActionRequestExport, actionRequestExports } from '../../../../../drizzle/schema';
 import { IllegalArgumentException } from '../../../../../repositories/errors';
-import { DEFAULT_REQUEST_EXPORT_INTERVAL } from '../../../../action/constants/constants';
+import { DEFAULT_REQUEST_EXPORT_INTERVAL } from '../../../../action/constants';
 
 @singleton()
 export class ActionRequestExportRepository {

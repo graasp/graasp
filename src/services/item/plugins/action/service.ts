@@ -14,16 +14,16 @@ import {
   UUID,
 } from '@graasp/sdk';
 
-import { db } from '../../../../drizzle/db';
+import { DBConnection, db } from '../../../../drizzle/db';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
 import {
   DEFAULT_ACTIONS_SAMPLE_SIZE,
   MAX_ACTIONS_SAMPLE_SIZE,
   MIN_ACTIONS_SAMPLE_SIZE,
-} from '../../../action/constants/constants';
+} from '../../../action/constants';
 import { Action } from '../../../action/entities/action';
-import { ActionService } from '../../../action/services/action';
+import { ActionService } from '../../../action/services/action.service';
 import { InvalidAggregationError } from '../../../action/utils/errors';
 import { ChatMessage } from '../../../chat/chatMessage';
 import { Actor } from '../../../member/entities/member';
@@ -133,6 +133,7 @@ export class ActionItemService {
   }
 
   async getBaseAnalyticsForItem(
+    db: DBConnection,
     actor: Actor,
     repositories: Repositories,
     payload: {
@@ -158,7 +159,7 @@ export class ActionItemService {
 
     // check permission
     const permission = actor
-      ? (await repositories.itemMembershipRepository.getInherited(item.path, actor.id, true))
+      ? (await repositories.itemMembershipRepository.getInherited(db, item.path, actor.id, true))
           ?.permission
       : null;
 
@@ -166,7 +167,7 @@ export class ActionItemService {
       throw new InvalidAggregationError('start date should be before end date');
     }
     // check membership and get actions
-    const actions = await repositories.actionRepository.getForItem(item.path, {
+    const actions = await repositories.actionRepository.getForItem(db, item.path, {
       sampleSize: payload.sampleSize,
       view: payload.view,
       accountId: permission === PermissionLevel.Admin ? undefined : actor.id,
@@ -176,7 +177,8 @@ export class ActionItemService {
 
     // get memberships
     const inheritedMemberships =
-      (await repositories.itemMembershipRepository.getForManyItems([item])).data?.[item.id] ?? [];
+      (await repositories.itemMembershipRepository.getForManyItems(db, [item])).data?.[item.id] ??
+      [];
     // TODO: use db argument passed from the transaction
     const itemMemberships = await repositories.itemMembershipRepository.getAllBellowItemPath(
       db,
@@ -188,16 +190,12 @@ export class ActionItemService {
       permission === PermissionLevel.Admin ? allMemberships.map(({ account }) => account) : [actor];
 
     // get descendants items
-    const descendants = await this.itemService.getFilteredDescendants(
-      actor,
-      repositories,
-      payload.itemId,
-    );
+    const descendants = await this.itemService.getFilteredDescendants(db, actor, payload.itemId);
 
     // chatbox for all items
     const chatMessages = Object.values(
       (
-        await repositories.chatMessageRepository.getByItems([
+        await repositories.chatMessageRepository.getByItems(db, [
           payload.itemId,
           ...descendants.map(({ id }) => id),
         ])

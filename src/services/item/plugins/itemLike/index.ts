@@ -6,7 +6,7 @@ import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
-import { ActionService } from '../../../action/services/action';
+import { ActionService } from '../../../action/services/action.service';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
 import { assertIsMember } from '../../../member/entities/member';

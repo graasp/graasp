@@ -20,7 +20,7 @@ import { ItemTestUtils } from '../item/test/fixtures/items';
 import { getPreviousMonthFromNow } from '../member/plugins/action/service';
 import { saveMember } from '../member/test/fixtures/members';
 import { ActionRepository } from './action.repository';
-import { DEFAULT_ACTIONS_SAMPLE_SIZE } from './constants/constants';
+import { DEFAULT_ACTIONS_SAMPLE_SIZE } from './constants';
 import { Action } from './entities/action';
 import { expectActions, saveActions } from './test/fixtures/actions';
 

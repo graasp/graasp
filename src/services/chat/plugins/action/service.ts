@@ -5,7 +5,7 @@ import { FastifyRequest } from 'fastify';
 import { UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { ActionService } from '../../../action/services/action';
+import { ActionService } from '../../../action/services/action.service';
 import { ChatMessage } from '../../chatMessage';
 
 enum ChatActionType {

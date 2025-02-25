@@ -4,9 +4,9 @@ import { fastifyMultipart } from '@fastify/multipart';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../di/utils';
+import { db } from '../../drizzle/db';
 import { FastifyInstanceTypebox } from '../../plugins/typebox';
 import { asDefined } from '../../utils/assertions';
-import { buildRepositories } from '../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
 import { matchOne } from '../authorization';
 import { assertIsMember } from '../member/entities/member';
@@ -30,7 +30,6 @@ import { getPostItemPayloadFromFormData } from './utils';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from './ws/events';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { db, websockets } = fastify;
   const itemService = resolveDependency(ItemService);
   const actionItemService = resolveDependency(ActionItemService);
 
@@ -51,9 +50,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
 
-      const item = await db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-        const item = await itemService.post(member, repositories, {
+      const item = await db.transaction(async (tsx) => {
+        const item = await itemService.post(tsx, member, {
           // Because of an incoherence between the service and the schema, we need to cast the data to the correct type
           // This need to be fixed in issue #1288 https://github.com/graasp/graasp/issues/1288
           item: data as Partial<Item> & Pick<Item, 'name' | 'type'>,
@@ -67,10 +65,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       reply.send(item);
 
       // background operations
-      await actionItemService.postPostAction(request, buildRepositories(), item);
-      await db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-        await itemService.rescaleOrderForParent(member, repositories, item);
+      await actionItemService.postPostAction(db, request, item);
+      await db.transaction(async (tsx) => {
+        await itemService.rescaleOrderForParent(tsx, member, item);
       });
     },
   );
@@ -110,15 +107,14 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           thumbnail,
         } = getPostItemPayloadFromFormData(formData);
 
-        return await db.transaction(async (manager) => {
-          const repositories = buildRepositories(manager);
-          const item = await itemService.post(member, repositories, {
+        return await db.transaction(async (tsx) => {
+          const item = await itemService.post(tsx, member, {
             item: itemPayload,
             parentId,
             geolocation,
             thumbnail,
           });
-          await actionItemService.postPostAction(request, repositories, item);
+          await actionItemService.postPostAction(tsx, request, item);
           return item;
         });
       },
@@ -133,7 +129,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       preHandler: optionalIsAuthenticated,
     },
     async ({ user, params: { id } }) => {
-      return itemService.getPacked(user?.account, buildRepositories(), id);
+      return itemService.getPacked(db, user?.account, id);
     },
   );
 
@@ -141,7 +137,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     '/',
     { schema: getMany, preHandler: optionalIsAuthenticated },
     async ({ user, query: { id: ids } }) => {
-      return itemService.getManyPacked(user?.account, buildRepositories(), ids);
+      return itemService.getManyPacked(db, user?.account, ids);
     },
   );
 
@@ -163,8 +159,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
       return itemService.getAccessible(
+        db,
         member,
-        buildRepositories(),
         { creatorId, keywords, sortBy, ordering, permissions, types },
         { page, pageSize },
       );
@@ -178,7 +174,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return itemService.getOwn(member, buildRepositories());
+      return itemService.getOwn(db, member);
     },
   );
 
@@ -192,7 +188,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user, query }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return itemService.getShared(member, buildRepositories(), query.permission);
+      return itemService.getShared(db, member, query.permission);
     },
   );
 
@@ -201,7 +197,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     '/:id/children',
     { schema: getChildren, preHandler: optionalIsAuthenticated },
     async ({ user, params: { id }, query: { ordered, types, keywords } }) => {
-      return itemService.getPackedChildren(user?.account, buildRepositories(), id, {
+      return itemService.getPackedChildren(db, user?.account, id, {
         ordered,
         types,
         keywords,
@@ -214,7 +210,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     '/:id/descendants',
     { schema: getDescendantItems, preHandler: optionalIsAuthenticated },
     async ({ user, params: { id }, query }) => {
-      return itemService.getPackedDescendants(user?.account, buildRepositories(), id, query);
+      return itemService.getPackedDescendants(db, user?.account, id, query);
     },
   );
 
@@ -226,7 +222,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       preHandler: optionalIsAuthenticated,
     },
     async ({ user, params: { id } }) => {
-      return itemService.getParents(user?.account, buildRepositories(), id);
+      return itemService.getParents(db, user?.account, id);
     },
   );
 
@@ -245,10 +241,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       } = request;
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return await db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-        const item = await itemService.patch(member, repositories, id, body);
-        await actionItemService.postPatchAction(request, repositories, item);
+      return await db.transaction(async (tsx) => {
+        const item = await itemService.patch(tsx, member, id, body);
+        await actionItemService.postPatchAction(tsx, request, item);
         return item;
       });
     },
@@ -270,16 +265,15 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
 
-      const item = await db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-        return itemService.reorder(member, repositories, id, body);
+      const item = await db.transaction(async (tsx) => {
+        return itemService.reorder(tsx, member, id, body);
       });
 
       reply.send(item);
 
       // background operation, no need to await
-      await db.transaction(async (manager) => {
-        await itemService.rescaleOrderForParent(member, buildRepositories(manager), item);
+      await db.transaction(async (tsx) => {
+        await itemService.rescaleOrderForParent(tsx, member, item);
       });
     },
   );
@@ -298,10 +292,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       } = request;
       const member = asDefined(user?.account);
       assertIsMember(member);
-      db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-        const items = await itemService.deleteMany(member, repositories, ids);
-        await actionItemService.postManyDeleteAction(request, repositories, items);
+      db.transaction(async (tsx) => {
+        const items = await itemService.deleteMany(tsx, member, ids);
+        await actionItemService.postManyDeleteAction(tsx, request, items);
         return items;
       })
         .then((items) => {
@@ -339,10 +332,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       } = request;
       const member = asDefined(user?.account);
       assertIsMember(member);
-      db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-        const results = await itemService.moveMany(member, repositories, ids, parentId);
-        await actionItemService.postManyMoveAction(request, repositories, results.items);
+      db.transaction(async (tsx) => {
+        const results = await itemService.moveMany(tsx, member, ids, parentId);
+        await actionItemService.postManyMoveAction(tsx, request, results.items);
         return results;
       })
         .then(({ items, moved }) => {
@@ -376,9 +368,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       } = request;
       const member = asDefined(user?.account);
       assertIsMember(member);
-      db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-        return await itemService.copyMany(member, repositories, ids, {
+      db.transaction(async (tsx) => {
+        return await itemService.copyMany(tsx, member, ids, {
           parentId,
         });
       })

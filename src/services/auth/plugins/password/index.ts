@@ -9,7 +9,7 @@ import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import { LOGIN_TOKEN_EXPIRATION_IN_MINUTES, PUBLIC_URL } from '../../../../utils/config';
-import { ActionService } from '../../../action/services/action';
+import { ActionService } from '../../../action/services/action.service';
 import { matchOne } from '../../../authorization';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { getRedirectionLink } from '../../utils';

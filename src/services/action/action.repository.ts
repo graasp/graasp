@@ -5,9 +5,9 @@ import { AggregateBy, AggregateFunction, AggregateMetric, CountGroupBy, UUID } f
 
 import { DBConnection } from '../../drizzle/db';
 import { isDescendantOrSelf } from '../../drizzle/operations';
-import { Action, actions as actionsTable, items } from '../../drizzle/schema';
+import { Action, ActionWithItem, actions as actionsTable, items } from '../../drizzle/schema';
 import { MemberIdentifierNotFound } from '../itemLogin/errors';
-import { DEFAULT_ACTIONS_SAMPLE_SIZE } from './constants/constants';
+import { DEFAULT_ACTIONS_SAMPLE_SIZE } from './constants';
 import { aggregateExpressionNames, buildAggregateExpression } from './utils/actions';
 import { validateAggregationParameters } from './utils/utils';
 
@@ -17,6 +17,7 @@ export class ActionRepository {
    * @param action Action to create
    */
   async postMany(db: DBConnection, actions: Pick<Action, 'accountId' | 'type'>[]): Promise<void> {
+    // FIX: this type, investigate why this does not typecheck and if we should use a different input type
     await db.insert(actionsTable).values(actions);
   }
 
@@ -31,23 +32,25 @@ export class ActionRepository {
     db: DBConnection,
     accountId: string,
     filters: { startDate: Date; endDate: Date },
-  ): Promise<Action[]> {
-    if (!accoundId) {
+  ): Promise<ActionWithItem[]> {
+    if (!accountId) {
       throw new MemberIdentifierNotFound();
     }
 
     const { startDate, endDate } = filters;
 
-    return await db.query.actions.findMany({
+    const res = await db.query.actions.findMany({
       where: and(
         eq(actionsTable.accountId, accountId),
-        between(actionsTable.createdAt, startDate, endDate),
+        between(actionsTable.createdAt, startDate.toISOString(), endDate.toISOString()),
       ),
       orderBy: desc(actionsTable.createdAt),
       with: {
         item: true,
       },
     });
+
+    return res;
   }
 
   /**
@@ -88,16 +91,30 @@ export class ActionRepository {
     if (filters?.accountId) {
       andConditions.push(eq(actionsTable.accountId, filters.accountId));
     }
+    // subquery for items descendants of the itemPath queried
+    const itemSub = await db
+      .select()
+      .from(items)
+      .where(isDescendantOrSelf(items.path, itemPath))
+      .as('item');
+    const res = await db
+      .select()
+      .from(actionsTable)
+      .innerJoin(itemSub, eq(actionsTable.itemId, itemSub.id))
+      .where(and(...andConditions));
 
-    return await db.query.actions.findMany({
-      where: and(...andConditions),
-      with: {
-        item: { where: (items) => isDescendantOrSelf(items.path, itemPath) },
-        account: true,
-      },
-      orderBy: desc(actionsTable.createdAt),
-      limit: size,
-    });
+    // apply DTO
+
+    return res;
+    // return await db.query.actions.findMany({
+    //   where: and(...andConditions),
+    //   with: {
+    //     item: { where: (items) => isDescendantOrSelf(items.path, itemPath) },
+    //     account: true,
+    //   },
+    //   orderBy: desc(actionsTable.createdAt),
+    //   limit: size,
+    // });
   }
 
   // TODO: improve parameters, it seems we can enforce some of them

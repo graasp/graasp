@@ -14,11 +14,13 @@ import {
 import { DEFAULT_LANG } from '@graasp/translations';
 
 import { DBConnection } from '../../drizzle/db';
-import { isAncestorOrSelf } from '../../drizzle/operations';
+import { isAncestorOrSelf, isDescendantOrSelf } from '../../drizzle/operations';
 import {
+  Account,
   ItemMembership,
   itemMemberships as itemMembershipTable,
   items,
+  membersView,
 } from '../../drizzle/schema';
 import { InferResultType } from '../../drizzle/types';
 import { ALLOWED_SEARCH_LANGS } from '../../utils/config';
@@ -30,7 +32,6 @@ import {
   MemberNotFound,
   ModifyExistingMembership,
 } from '../../utils/errors';
-import { Account } from '../account/entities/account';
 import { ITEMS_PAGE_SIZE_MAX } from '../item/constants';
 import { Item } from '../item/entities/Item';
 import { ItemSearchParams, Ordering, SortBy, orderingToUpperCase } from '../item/types';
@@ -249,34 +250,27 @@ export class ItemMembershipRepository {
   async getAllBelow(
     db: DBConnection,
     itemPath: ItemPath,
-    accountId?: string,
+    accountId: string,
     {
       considerLocal = false,
       selectItem = false,
     }: { considerLocal?: boolean; selectItem?: boolean } = {},
   ): Promise<ItemMembership[]> {
-    const query = this.repository
-      .createQueryBuilder('item_membership')
-      .andWhere('item_membership.item_path <@ :path', { path: itemPath });
+    const andConditions = [
+      isDescendantOrSelf(itemMembershipTable.itemPath, itemPath),
+      eq(itemMembershipTable.accountId, accountId),
+    ];
 
     if (!considerLocal) {
-      query.andWhere('item_membership.item_path != :path', { path: itemPath });
+      andConditions.push(ne(itemMembershipTable.itemPath, itemPath));
     }
 
-    // if member is specified, select only this user
-    if (accountId) {
-      query.andWhere('item_membership.account = :id', { id: accountId });
-    }
-    // otherwise return members' info
-    else {
-      query.leftJoinAndSelect('item_membership.account', 'account');
-    }
-
-    if (selectItem) {
-      query.leftJoinAndSelect('item_membership.item', 'item');
-    }
-
-    return query.getMany();
+    return await db.query.itemMemberships.findMany({
+      where: and(...andConditions),
+      with: {
+        item: selectItem ? true : undefined,
+      },
+    });
   }
 
   /**
@@ -299,11 +293,16 @@ export class ItemMembershipRepository {
     const limit = Math.min(pageSize, ITEMS_PAGE_SIZE_MAX);
     const skip = (page - 1) * limit;
 
-    const query = this.repository
-      .createQueryBuilder('im')
-      .leftJoinAndSelect('im.item', 'item')
-      .leftJoinAndSelect('item.creator', 'creator')
-      .where('im.account_id = :actorId', { actorId: account.id })
+    db.query.itemMemberships.findFirst({
+      columns: {},
+    });
+
+    const query = await db
+      .select()
+      .from(itemMembershipTable)
+      .leftJoin(items, eq(itemMembershipTable.itemPath, items.path))
+      .leftJoin(membersView, eq(membersView.id, items.creatorId))
+      .where(eq(itemMembershipTable.accountId, account.id))
       // returns only top most item
       .andWhere((qb) => {
         const subQuery = qb
@@ -697,16 +696,14 @@ export class ItemMembershipRepository {
     return this.get(itemMembershipId);
   }
 
-  async addOne({
-    itemPath,
-    accountId,
-    creatorId,
-    permission,
-  }: CreateItemMembershipBody): Promise<ItemMembership> {
+  async addOne(
+    db: DBConnection,
+    { itemPath, accountId, creatorId, permission }: CreateItemMembershipBody,
+  ): Promise<ItemMembership> {
     // prepare membership but do not save it
     const itemId = getChildFromPath(itemPath);
 
-    const inheritedMembership = await this.getInherited(itemPath, accountId, true);
+    const inheritedMembership = await this.getInherited(db, itemPath, accountId, true);
     if (inheritedMembership) {
       const { item: itemFromPermission, permission: inheritedPermission, id } = inheritedMembership;
       // fail if trying to add a new membership for the same member and item
@@ -722,7 +719,7 @@ export class ItemMembershipRepository {
     }
 
     // check existing memberships lower in the tree
-    const membershipsBelow = await this.getAllBelow(itemPath, accountId);
+    const membershipsBelow = await this.getAllBelow(db, itemPath, accountId);
     let tasks: Promise<unknown>[] = [];
     if (membershipsBelow.length > 0) {
       // check if any have the same or a worse permission level
@@ -733,7 +730,7 @@ export class ItemMembershipRepository {
       if (membershipsBelowToDiscard.length > 0) {
         // remove redundant existing memberships and to create the new one
         tasks = membershipsBelowToDiscard.map(async (membership) => {
-          await this.delete(membership.id);
+          await this.delete(db, membership.id);
         });
       }
     }

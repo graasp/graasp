@@ -2,25 +2,25 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 
 import { ActionFactory, MemberFactory } from '@graasp/sdk';
 
-import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
-import { db } from '../../../drizzle/db';
-import { BaseLogger } from '../../../logger';
-import { AppDataSource } from '../../../plugins/datasource';
-import { MailerService } from '../../../plugins/mailer/mailer.service';
-import { buildRepositories } from '../../../utils/repositories';
-import { ItemGeolocationRepository } from '../../item/plugins/geolocation/repository';
-import { MeiliSearchWrapper } from '../../item/plugins/publication/published/plugins/search/meilisearch';
-import { ItemThumbnailService } from '../../item/plugins/thumbnail/service';
-import { ItemRepository } from '../../item/repository';
-import { ItemService } from '../../item/service';
-import { ItemMembershipRepository } from '../../itemMembership/repository';
-import { MemberRepository } from '../../member/repository';
-import { MemberService } from '../../member/service';
-import { saveMember } from '../../member/test/fixtures/members';
-import { ThumbnailService } from '../../thumbnail/service';
-import { ActionRepository } from '../action.repository';
-import { Action } from '../entities/action';
-import { ActionService } from './action';
+import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../test/app';
+import { db } from '../../drizzle/db';
+import { BaseLogger } from '../../logger';
+import { AppDataSource } from '../../plugins/datasource';
+import { MailerService } from '../../plugins/mailer/mailer.service';
+import { buildRepositories } from '../../utils/repositories';
+import { ItemGeolocationRepository } from '../item/plugins/geolocation/repository';
+import { MeiliSearchWrapper } from '../item/plugins/publication/published/plugins/search/meilisearch';
+import { ItemThumbnailService } from '../item/plugins/thumbnail/service';
+import { ItemRepository } from '../item/repository';
+import { ItemService } from '../item/service';
+import { ItemMembershipRepository } from '../itemMembership/repository';
+import { MemberRepository } from '../member/repository';
+import { MemberService } from '../member/service';
+import { saveMember } from '../member/test/fixtures/members';
+import { ThumbnailService } from '../thumbnail/service';
+import { ActionRepository } from './action.repository';
+import { ActionService } from './action.service';
+import { Action } from './entities/action';
 
 const service = new ActionService(
   new ActionRepository(),

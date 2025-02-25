@@ -14,7 +14,7 @@ import { TRANSLATIONS } from '../../../../../langs/constants';
 import { MailBuilder } from '../../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../../plugins/mailer/mailer.service';
 import { Repositories } from '../../../../../utils/repositories';
-import { EXPORT_FILE_EXPIRATION, ZIP_MIMETYPE } from '../../../../action/constants/constants';
+import { EXPORT_FILE_EXPIRATION, ZIP_MIMETYPE } from '../../../../action/constants';
 import {
   buildActionFilePath,
   buildItemTmpFolder,

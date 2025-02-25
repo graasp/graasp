@@ -33,7 +33,7 @@ import { DEFAULT_LANG } from '@graasp/translations';
 import { DBConnection } from '../../drizzle/db';
 import { isAncestorOrSelf, isDescendantOrSelf, isDirectChild } from '../../drizzle/operations';
 import {
-  Account,
+  Actor,
   Item,
   Member,
   accounts,
@@ -57,7 +57,7 @@ import {
   FILE_METADATA_MAX_PAGE_SIZE,
   FILE_METADATA_MIN_PAGE,
 } from '../member/constants';
-import { Actor, isMember } from '../member/entities/member';
+import { isMember } from '../member/entities/member';
 import { mapById } from '../utils';
 import { IS_COPY_REGEX } from './constants';
 import { DEFAULT_ORDER, FolderItem, ItemExtraUnion, isItemType } from './entities/Item';
@@ -533,7 +533,9 @@ export class ItemRepository {
       parent: parentItem,
     });
 
-    return await db.insert(itemsRaw).values(newItem).returning();
+    const result = await db.insert(itemsRaw).values(newItem).returning();
+
+    return result[0];
   }
 
   /////// -------- COPY

@@ -214,6 +214,7 @@ export class AuthorizationService {
 const _filterOutItems = async (
   db: DBConnection,
   actor: Actor,
+  { itemMembershipRepository, itemVisibilityRepository },
   items: Item[],
   options?: { showHidden?: boolean },
 ) => {
@@ -224,12 +225,12 @@ const _filterOutItems = async (
 
   // TODO: optimize with on query
   const { data: memberships } = actor
-    ? await this.itemMembershipRepository.getForManyItems(db, items, {
+    ? await itemMembershipRepository.getForManyItems(db, items, {
         accountId: actor.id,
       })
     : { data: [] };
 
-  const visibilities = await this.itemVisibilityRepository.getManyForMany(db, items, [
+  const visibilities = await itemVisibilityRepository.getManyForMany(db, items, [
     ItemVisibilityType.Hidden,
     ItemVisibilityType.Public,
   ]);
@@ -253,8 +254,15 @@ const _filterOutItems = async (
 /**
  * Filtering function that takes out limited items (eg. hidden children)
  *  */
-const filterOutItems = async (db: DBConnection, actor: Actor, items: Item[]): Promise<Item[]> => {
-  return (await this._filterOutItems(db, actor, items)).items;
+const filterOutItems = async (
+  db: DBConnection,
+  actor: Actor,
+  { itemMembershipRepository, itemVisibilityRepository },
+  items: Item[],
+): Promise<Item[]> => {
+  return (
+    await _filterOutItems(db, actor, { itemMembershipRepository, itemVisibilityRepository }, items)
+  ).items;
 };
 
 /**
@@ -263,6 +271,7 @@ const filterOutItems = async (db: DBConnection, actor: Actor, items: Item[]): Pr
 const filterOutPackedItems = async (
   db: DBConnection,
   actor: Actor,
+  { itemMembershipRepository, itemVisibilityRepository },
   items: Item[],
   itemsThumbnails?: ItemsThumbnails,
   options?: { showHidden?: boolean },
@@ -271,7 +280,13 @@ const filterOutPackedItems = async (
     items: filteredItems,
     memberships,
     visibilities,
-  } = await this._filterOutItems(db, actor, items, options);
+  } = await _filterOutItems(
+    db,
+    actor,
+    { itemMembershipRepository, itemVisibilityRepository },
+    items,
+    options,
+  );
   return filteredItems.map((item) => {
     const permission = PermissionLevelCompare.getHighest(
       memberships[item.id]?.map(({ permission }) => permission),
@@ -295,6 +310,7 @@ const filterOutPackedItems = async (
 const filterOutPackedDescendants = async (
   db: DBConnection,
   actor: Actor,
+  { itemMembershipRepository, itemVisibilityRepository },
   item: Item,
   descendants: Item[],
   itemsThumbnails?: ItemsThumbnails,
@@ -307,12 +323,12 @@ const filterOutPackedDescendants = async (
   }
 
   const allMemberships = actor
-    ? await this.itemMembershipRepository.getAllBelow(db, item.path, actor.id, {
+    ? await itemMembershipRepository.getAllBelow(db, item.path, actor.id, {
         considerLocal: true,
         selectItem: true,
       })
     : [];
-  const visibilities = await this.itemVisibilityRepository.getManyBelowAndSelf(db, item, [
+  const visibilities = await itemVisibilityRepository.getManyBelowAndSelf(db, item, [
     ItemVisibilityType.Hidden,
     ItemVisibilityType.Public,
   ]);
@@ -352,7 +368,11 @@ const filterOutPackedDescendants = async (
  * Filter out children based on hidden visibilities only.
  * It does not show hidden for admin as well, which is useful for published items
  *  */
-const filterOutHiddenItems = async (db: DBConnection, items: Item[]) => {
+const filterOutHiddenItems = async (
+  db: DBConnection,
+  { itemVisibilityRepository },
+  items: Item[],
+) => {
   if (!items.length) {
     return [];
   }

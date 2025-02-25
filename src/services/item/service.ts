@@ -22,6 +22,7 @@ import {
 } from '@graasp/sdk';
 
 import { DBConnection } from '../../drizzle/db';
+import { Actor, Item, ItemMembership, Member } from '../../drizzle/schema';
 import { BaseLogger } from '../../logger';
 import {
   CannotReorderRootItem,
@@ -36,20 +37,17 @@ import HookManager from '../../utils/hook';
 import { Repositories } from '../../utils/repositories';
 import { Account } from '../account/entities/account';
 import {
+  AuthorizationService,
   filterOutItems,
   filterOutPackedDescendants,
   filterOutPackedItems,
-  validatePermission,
-  validatePermissionMany,
 } from '../authorization';
-import { ItemMembership } from '../itemMembership/entities/ItemMembership';
 import { ItemMembershipRepository } from '../itemMembership/repository';
-import { Actor, Member } from '../member/entities/member';
 import { ThumbnailService } from '../thumbnail/service';
 import { mapById } from '../utils';
 import { ItemWrapper, PackedItem } from './ItemWrapper';
 import { IS_COPY_REGEX, MAX_COPY_SUFFIX_LENGTH } from './constants';
-import { FolderItem, Item, isItemType } from './entities/Item';
+import { FolderItem, isItemType } from './entities/Item';
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
 import { PartialItemGeolocation } from './plugins/geolocation/errors';
 import { ItemGeolocationRepository } from './plugins/geolocation/repository';
@@ -68,6 +66,7 @@ export class ItemService {
   private readonly itemMembershipRepository: ItemMembershipRepository;
   private readonly itemGeolocationRepository: ItemGeolocationRepository;
   private readonly itemRepository: ItemRepository;
+  private readonly authorizationService: AuthorizationService;
 
   hooks = new HookManager<{
     create: { pre: { item: Partial<Item> }; post: { item: Item } };
@@ -99,6 +98,7 @@ export class ItemService {
     meilisearchWrapper: MeiliSearchWrapper,
     itemRepository: ItemRepository,
     itemGeolocationRepository: ItemGeolocationRepository,
+    authorizationService: AuthorizationService,
     log: BaseLogger,
   ) {
     this.thumbnailService = thumbnailService;
@@ -107,6 +107,7 @@ export class ItemService {
     this.meilisearchWrapper = meilisearchWrapper;
     this.itemGeolocationRepository = itemGeolocationRepository;
     this.itemRepository = itemRepository;
+    this.authorizationService = authorizationService;
     this.log = log;
   }
 
@@ -152,11 +153,11 @@ export class ItemService {
       );
 
       // quick check, necessary for ts
-      if (!isItemType(parentItem, ItemType.FOLDER)) {
+      if (parentItem.type !== ItemType.FOLDER) {
         throw new ItemNotFolder(parentItem);
       }
 
-      this.itemRepository.checkHierarchyDepth(db, parentItem);
+      this.itemRepository.checkHierarchyDepth(parentItem);
 
       // check if there's too many children under the same parent
       const descendants = await this.itemRepository.getChildren(db, member, parentItem);
@@ -205,7 +206,7 @@ export class ItemService {
 
     // geolocation
     if (geolocation) {
-      await this.itemGeolocationRepository.put(createdItem.path, geolocation);
+      await this.itemGeolocationRepository.put(db, createdItem.path, geolocation);
     }
 
     // thumbnail
@@ -235,7 +236,12 @@ export class ItemService {
   ) {
     const item = await this.itemRepository.getOneOrThrow(db, id);
 
-    const { itemMembership, visibilities } = await validatePermission(db, permission, actor, item);
+    const { itemMembership, visibilities } = await this.authorizationService.validatePermission(
+      db,
+      permission,
+      actor,
+      item,
+    );
     return { item, itemMembership, visibilities };
   }
 
@@ -264,7 +270,12 @@ export class ItemService {
    * @param permission
    * @returns
    */
-  async getPacked(actor: Actor, id: string, permission: PermissionLevel = PermissionLevel.Read) {
+  async getPacked(
+    db: DBConnection,
+    actor: Actor,
+    id: string,
+    permission: PermissionLevel = PermissionLevel.Read,
+  ) {
     const { item, itemMembership, visibilities } = await this._get(db, actor, id, permission);
     const thumbnails = await this.itemThumbnailService.getUrlsByItems([item]);
 
@@ -290,12 +301,13 @@ export class ItemService {
     const result = await this.itemRepository.getMany(db, ids);
     // check memberships
     // remove items if they do not have permissions
-    const { itemMemberships, visibilities } = await validatePermissionMany(
-      db,
-      PermissionLevel.Read,
-      actor,
-      Object.values(result.data),
-    );
+    const { itemMemberships, visibilities } =
+      await this.authorizationService.validatePermissionMany(
+        db,
+        PermissionLevel.Read,
+        actor,
+        Object.values(result.data),
+      );
 
     for (const [id, _item] of Object.entries(result.data)) {
       // Do not delete if value exist but is null, because no memberships but can be public
@@ -374,8 +386,8 @@ export class ItemService {
   }
 
   private async _getChildren(
+    db: DBConnection,
     actor: Actor,
-    repositories: Repositories,
     itemId: string,
     params?: ItemChildrenParams,
   ) {
@@ -385,20 +397,15 @@ export class ItemService {
     return itemRepository.getChildren(actor, item, params);
   }
 
-  async getChildren(
-    actor: Actor,
-    repositories: Repositories,
-    itemId: string,
-    params?: ItemChildrenParams,
-  ) {
+  async getChildren(db: DBConnection, actor: Actor, itemId: string, params?: ItemChildrenParams) {
     const children = await this._getChildren(actor, repositories, itemId, params);
     // TODO optimize?
     return filterOutItems(actor, repositories, children);
   }
 
   async getPackedChildren(
+    db: DBConnection,
     actor: Actor,
-    repositories: Repositories,
     itemId: string,
     params?: ItemChildrenParams,
   ) {
@@ -410,8 +417,8 @@ export class ItemService {
   }
 
   private async getDescendants(
+    db: DBConnection,
     actor: Actor,
-    repositories: Repositories,
     itemId: UUID,
     options?: { types?: string[] },
   ) {
@@ -425,7 +432,7 @@ export class ItemService {
     return { item, descendants: await itemRepository.getDescendants(item, options) };
   }
 
-  async getFilteredDescendants(account: Account, repositories: Repositories, itemId: UUID) {
+  async getFilteredDescendants(db: DBConnection, account: Account, itemId: UUID) {
     const { descendants } = await this.getDescendants(account, repositories, itemId);
     if (!descendants.length) {
       return [];
@@ -435,8 +442,8 @@ export class ItemService {
   }
 
   async getPackedDescendants(
+    db: DBConnection,
     actor: Actor,
-    repositories: Repositories,
     itemId: UUID,
     options?: { showHidden?: boolean; types?: string[] },
   ) {
@@ -448,7 +455,7 @@ export class ItemService {
     return filterOutPackedDescendants(actor, repositories, item, descendants, thumbnails, options);
   }
 
-  async getParents(actor: Actor, repositories: Repositories, itemId: UUID) {
+  async getParents(db: DBConnection, actor: Actor, itemId: UUID) {
     const { itemRepository } = repositories;
     const item = await this.get(actor, repositories, itemId);
     const parents = await itemRepository.getAncestors(item);
@@ -466,13 +473,7 @@ export class ItemService {
     return ItemWrapper.merge(items, itemMemberships, visibilities, thumbnails);
   }
 
-  async patch(
-    db: DBConnection,
-    member: Member,
-    repositories: Repositories,
-    itemId: UUID,
-    body: DeepPartial<Item>,
-  ) {
+  async patch(db: DBConnection, member: Member, itemId: UUID, body: DeepPartial<Item>) {
     // check memberships
     const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
@@ -488,7 +489,7 @@ export class ItemService {
   }
 
   // QUESTION? DELETE BY PATH???
-  async delete(actor: Member, repositories: Repositories, itemId: UUID) {
+  async delete(db: DBConnection, actor: Member, itemId: UUID) {
     const { itemRepository } = repositories;
     // check memberships
     const item = await itemRepository.getDeletedById(itemId);
@@ -521,7 +522,7 @@ export class ItemService {
   }
 
   // QUESTION? DELETE BY PATH???
-  async deleteMany(actor: Member, repositories: Repositories, itemIds: string[]) {
+  async deleteMany(db: DBConnection, actor: Member, itemIds: string[]) {
     if (!actor) {
       throw new UnauthorizedMember();
     }
@@ -571,7 +572,7 @@ export class ItemService {
   }
 
   /////// -------- MOVE
-  async move(member: Member, repositories: Repositories, itemId: UUID, parentItem?: FolderItem) {
+  async move(db: DBConnection, member: Member, itemId: UUID, parentItem?: FolderItem) {
     const { itemRepository } = repositories;
 
     const item = await itemRepository.getOneOrThrow(itemId);
@@ -606,7 +607,7 @@ export class ItemService {
   }
 
   // TODO: optimize
-  async moveMany(member: Member, repositories: Repositories, itemIds: string[], toItemId?: string) {
+  async moveMany(db: DBConnection, member: Member, itemIds: string[], toItemId?: string) {
     let parentItem: FolderItem | undefined = undefined;
     if (toItemId) {
       parentItem = (await this.get(
@@ -640,13 +641,7 @@ export class ItemService {
    * * `inserts`' `itemPath`s already have the expected paths for the destination;
    * * `deletes`' `itemPath`s have the path changes after `this.itemService.move()`.
    */
-  async _move(
-    db: DBConnection,
-    actor: Member,
-    repositories: Repositories,
-    item: Item,
-    parentItem?: Item,
-  ) {
+  async _move(db: DBConnection, actor: Member, item: Item, parentItem?: Item) {
     const { itemRepository } = repositories;
     // identify all the necessary adjustments to memberships
     // TODO: maybe this whole 'magic' should happen in a db procedure?
@@ -670,7 +665,7 @@ export class ItemService {
   }
 
   /////// -------- COPY
-  async copy(member: Member, repositories: Repositories, itemId: UUID, parentItem?: FolderItem) {
+  async copy(db: DBConnection, member: Member, itemId: UUID, parentItem?: FolderItem) {
     const { itemRepository, itemMembershipRepository, itemGeolocationRepository } = repositories;
 
     const item = await this.get(member, repositories, itemId);
@@ -765,12 +760,7 @@ export class ItemService {
   }
 
   // TODO: optimize
-  async copyMany(
-    member: Member,
-    repositories: Repositories,
-    itemIds: string[],
-    args: { parentId?: UUID },
-  ) {
+  async copyMany(db: DBConnection, member: Member, itemIds: string[], args: { parentId?: UUID }) {
     const { itemRepository } = repositories;
 
     let parentItem: FolderItem | undefined;
@@ -796,8 +786,8 @@ export class ItemService {
   }
 
   async reorder(
+    db: DBConnection,
     actor: Member,
-    repositories: Repositories,
     itemId: string,
     body: { previousItemId?: string },
   ) {
@@ -821,7 +811,7 @@ export class ItemService {
    * @param repositories
    * @param itemId item whose parent get its children order rescaled if necessary
    */
-  async rescaleOrderForParent(member: Member, repositories: Repositories, item: Item) {
+  async rescaleOrderForParent(db: DBConnection, member: Member, item: Item) {
     const parentId = getParentFromPath(item.path);
     if (parentId) {
       const parentItem = await this.get(member, repositories, parentId);
