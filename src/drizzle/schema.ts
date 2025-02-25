@@ -625,6 +625,7 @@ export const actions = pgTable(
   ],
 );
 export type ActionInsertRaw = typeof actions.$inferInsert;
+export type ActionRaw = typeof actions.$inferSelect;
 // this is type that matches the automatically linked entities from typeORM,
 // we should cehck each usage location to see if including the realtions is necessary or not
 export type ActionWithItem = Omit<typeof actions.$inferSelect, 'accountId' | 'itemId'> & {

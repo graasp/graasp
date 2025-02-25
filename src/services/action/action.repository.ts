@@ -5,7 +5,13 @@ import { AggregateBy, AggregateFunction, AggregateMetric, CountGroupBy, UUID } f
 
 import { DBConnection } from '../../drizzle/db';
 import { isDescendantOrSelf } from '../../drizzle/operations';
-import { Action, ActionWithItem, actions as actionsTable, items } from '../../drizzle/schema';
+import {
+  Action,
+  ActionInsertRaw,
+  ActionWithItem,
+  actions as actionsTable,
+  items,
+} from '../../drizzle/schema';
 import { MemberIdentifierNotFound } from '../itemLogin/errors';
 import { DEFAULT_ACTIONS_SAMPLE_SIZE } from './constants';
 import { aggregateExpressionNames, buildAggregateExpression } from './utils/actions';
@@ -16,7 +22,7 @@ export class ActionRepository {
    * Create given action and return it.
    * @param action Action to create
    */
-  async postMany(db: DBConnection, actions: Pick<Action, 'accountId' | 'type'>[]): Promise<void> {
+  async postMany(db: DBConnection, actions: ActionInsertRaw[]): Promise<void> {
     // FIX: this type, investigate why this does not typecheck and if we should use a different input type
     await db.insert(actionsTable).values(actions);
   }
