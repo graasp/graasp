@@ -33,6 +33,8 @@ import { ItemTestUtils, expectItem, expectManyItems } from './test/fixtures/item
 const itemRepository = new ItemRepository();
 const testUtils = new ItemTestUtils();
 
+const alphabeticalOrder = (a: string, b: string) => a.localeCompare(b);
+
 describe('ItemRepository', () => {
   let app: FastifyInstance;
   let actor;
@@ -753,9 +755,15 @@ describe('ItemRepository', () => {
       const itemCreatorIdsInDB = insertedItems.map((i) => i.creator?.id);
       const itemPathsInDb = insertedItems.map((i) => i.path);
 
-      expect(itemNamesInDB.sort()).toEqual(insertedItemNames.sort());
-      expect(itemTypesInDB.sort()).toEqual(insertedItemTypes.sort());
-      expect(itemCreatorIdsInDB.sort()).toEqual(insertedItemCreatorIds.sort());
+      expect(itemNamesInDB.sort(alphabeticalOrder)).toEqual(
+        insertedItemNames.sort(alphabeticalOrder),
+      );
+      expect(itemTypesInDB.sort(alphabeticalOrder)).toEqual(
+        insertedItemTypes.sort(alphabeticalOrder),
+      );
+      expect(itemCreatorIdsInDB.sort(alphabeticalOrder)).toEqual(
+        insertedItemCreatorIds.sort(alphabeticalOrder),
+      );
       expect(itemPathsInDb.every((path) => !path.includes('.'))).toBeTruthy();
     });
     it('post many with parent item', async () => {
@@ -782,10 +790,18 @@ describe('ItemRepository', () => {
       const itemCreatorIdsInDB = insertedItems.map((i) => i.creator?.id);
       const itemPathsInDB = insertedItems.map((i) => i.path);
 
-      expect(itemNamesInDB.sort()).toEqual(insertedItemNames.sort());
-      expect(itemTypesInDB.sort()).toEqual(insertedItemTypes.sort());
-      expect(itemCreatorIdsInDB.sort()).toEqual(insertedItemCreatorIds.sort());
-      expect(itemPathsInDB.sort()).toEqual(insertedItemPaths.sort());
+      expect(itemNamesInDB.sort(alphabeticalOrder)).toEqual(
+        insertedItemNames.sort(alphabeticalOrder),
+      );
+      expect(itemTypesInDB.sort(alphabeticalOrder)).toEqual(
+        insertedItemTypes.sort(alphabeticalOrder),
+      );
+      expect(itemCreatorIdsInDB.sort(alphabeticalOrder)).toEqual(
+        insertedItemCreatorIds.sort(alphabeticalOrder),
+      );
+      expect(itemPathsInDB.sort(alphabeticalOrder)).toEqual(
+        insertedItemPaths.sort(alphabeticalOrder),
+      );
       expect(itemPathsInDB.every((path) => path.includes(`${parentItem.path}.`))).toBeTruthy();
     });
   });
