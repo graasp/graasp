@@ -17,6 +17,19 @@
         "test",
         "doc"
       ]
+    },
+    {
+      "login": "pyphilia",
+      "name": "Kim Lan Phan Hoang",
+      "avatar_url": "https://avatars.githubusercontent.com/u/11229627?v=4",
+      "profile": "https://github.com/pyphilia",
+      "contributions": [
+        "code",
+        "test",
+        "doc",
+        "design",
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
