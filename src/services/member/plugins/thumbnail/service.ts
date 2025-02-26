@@ -53,16 +53,18 @@ export class MemberThumbnailService {
 
   // get member's avatar
   async getUrl(repositories: Repositories, { size, memberId }: { memberId: string; size: string }) {
-    const member = await repositories.memberRepository.get(memberId);
+    const account = await repositories.accountRepository.get(memberId);
 
-    if (!member) {
+    if (!account) {
       throw new AccountNotFound(memberId);
     }
 
     // only members can upload an avatar
-    if (member.type !== AccountType.Individual) {
+    if (account.type !== AccountType.Individual) {
       return null;
     }
+    // HACK: this is safe as long as we keep the previous check
+    const member = account as Member;
     // member does not have avatar
     if (!member.extra.hasAvatar) {
       return null;
