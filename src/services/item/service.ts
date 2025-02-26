@@ -52,6 +52,7 @@ import { PartialItemGeolocation } from './plugins/geolocation/errors';
 import { ItemGeolocationRepository } from './plugins/geolocation/repository';
 import { ItemVisibility } from './plugins/itemVisibility/ItemVisibility';
 import { MeiliSearchWrapper } from './plugins/publication/published/plugins/search/meilisearch';
+import { ItemPublishedRepository } from './plugins/publication/published/repositories/itemPublished';
 import { ItemThumbnailService } from './plugins/thumbnail/service';
 import { ItemRepository } from './repository';
 import { ItemChildrenParams, ItemSearchParams } from './types';
@@ -64,6 +65,7 @@ export class ItemService {
   private readonly itemThumbnailService: ItemThumbnailService;
   private readonly itemMembershipRepository: ItemMembershipRepository;
   private readonly itemGeolocationRepository: ItemGeolocationRepository;
+  private readonly itemPublishedRepository: ItemPublishedRepository;
   private readonly itemRepository: ItemRepository;
   private readonly authorizationService: AuthorizationService;
 
@@ -96,6 +98,7 @@ export class ItemService {
     itemMembershipRepository: ItemMembershipRepository,
     meilisearchWrapper: MeiliSearchWrapper,
     itemRepository: ItemRepository,
+    itemPublishedRepository: ItemPublishedRepository,
     itemGeolocationRepository: ItemGeolocationRepository,
     authorizationService: AuthorizationService,
     log: BaseLogger,
@@ -104,6 +107,7 @@ export class ItemService {
     this.itemThumbnailService = itemThumbnailService;
     this.itemMembershipRepository = itemMembershipRepository;
     this.meilisearchWrapper = meilisearchWrapper;
+    this.itemPublishedRepository = itemPublishedRepository;
     this.itemGeolocationRepository = itemGeolocationRepository;
     this.itemRepository = itemRepository;
     this.authorizationService = authorizationService;

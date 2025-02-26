@@ -15,9 +15,9 @@ import {
 } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { Account, ActionWithItem, Actor } from '../../../../drizzle/schema';
+import { Account, ActionWithItem } from '../../../../drizzle/schema';
+import { AuthenticatedUser } from '../../../../types';
 import { UnauthorizedMember } from '../../../../utils/errors';
-import { Repositories } from '../../../../utils/repositories';
 import { ActionRepository } from '../../../action/action.repository';
 import { ActionService } from '../../../action/action.service';
 import {
@@ -27,37 +27,51 @@ import {
 } from '../../../action/constants';
 import { InvalidAggregationError } from '../../../action/utils/errors';
 import { ChatMessage } from '../../../chat/chatMessage';
+import { ChatMessageRepository } from '../../../chat/repository';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { Item } from '../../entities/Item';
 import { ItemService } from '../../service';
 import { AppAction } from '../app/appAction/appAction';
+import { AppActionRepository } from '../app/appAction/repository';
 import { AppData } from '../app/appData/appData';
+import { AppDataRepository } from '../app/appData/repository';
 import { AppSetting } from '../app/appSetting/appSettings';
 import { BaseAnalytics } from './base-analytics';
 import { ItemActionType } from './utils';
+import { AppSettingRepository } from '../app/appSetting/repository';
 
 @singleton()
 export class ActionItemService {
   private readonly itemService: ItemService;
   private readonly actionService: ActionService;
   private readonly actionRepository: ActionRepository;
+  private readonly appActionRepository: AppActionRepository;
+  private readonly appSettingRepository: AppSettingRepository;
+  private readonly chatMessageRepository: ChatMessageRepository;
   private readonly itemMembershipRepository: ItemMembershipRepository;
+  private readonly appDataRepository: AppDataRepository;
 
   constructor(
     actionService: ActionService,
     itemService: ItemService,
     actionRepository: ActionRepository,
     itemMembershipRepository: ItemMembershipRepository,
+    appActionRepository: AppActionRepository,
+    appSettingRepository: AppSettingRepository,
+    appDataRepository: AppDataRepository,
   ) {
     this.actionService = actionService;
     this.itemService = itemService;
     this.actionRepository = actionRepository;
     this.itemMembershipRepository = itemMembershipRepository;
+    this.appActionRepository = appActionRepository;
+    this.appSettingRepository = appSettingRepository;
+    this.appDataRepository = appDataRepository;
   }
 
   async getForItem(
     db: DBConnection,
-    actor: Actor,
+    actor: AuthenticatedUser,
     itemId: string,
     filters: { view?: Context; sampleSize?: number } = {},
   ): Promise<ActionWithItem[]> {
@@ -209,6 +223,7 @@ export class ActionItemService {
     const appItems = [item, ...descendants].filter(({ type }) => type === ItemType.APP);
     for (const { id: appId } of appItems) {
       const appData = await this.appDataRepository.getForItem(
+        db,
         appId,
         {},
         // needs investigating: does this mean a reader could export the actions of an item and see all users responses ?
@@ -216,10 +231,14 @@ export class ActionItemService {
       );
       // TODO member id?
       // todo: create getForItems?
-      const appActions = await this.appActionRepository.getForItem(appId, {});
-      const appSettings = await this.appSettingRepository.getForItem(appId);
+      const appActions = await this.appActionRepository.getForItem(db, appId, {});
+      const appSettings = await this.appSettingRepository.getForItem(db, appId);
 
-      apps[appId] = { data: appData, actions: appActions, settings: appSettings };
+      apps[appId] = {
+        data: appData,
+        actions: appActions,
+        settings: appSettings,
+      };
     }
 
     // set all data in last task's result

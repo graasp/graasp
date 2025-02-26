@@ -34,6 +34,7 @@ export type MinimalMember = MinimalUser & {
  */
 export type MinimalGuest = MinimalUser & {
   type: typeof AccountType.Guest;
+  isValidated: boolean;
 };
 
 /**
@@ -60,5 +61,7 @@ export function isNonEmptyArray<T>(arr: T[]): arr is NonEmptyArray<T> {
   return arr.length > 0;
 }
 
-export type KeysWithValsOfType<T, V> = keyof { [P in keyof T as T[P] extends V ? P : never]: P };
+export type KeysWithValsOfType<T, V> = keyof {
+  [P in keyof T as T[P] extends V ? P : never]: P;
+};
 export type KeysOfString<T> = KeysWithValsOfType<T, string>;

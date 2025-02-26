@@ -2,18 +2,21 @@ import { singleton } from 'tsyringe';
 
 import { PermissionLevel, UUID } from '@graasp/sdk';
 
+import { DBConnection } from '../../../../../drizzle/db';
 import { UnauthorizedMember } from '../../../../../utils/errors';
 import HookManager from '../../../../../utils/hook';
-import { Repositories } from '../../../../../utils/repositories';
 import { Actor, Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 import { ItemService } from '../../../service';
 import { AppSetting } from './appSettings';
 import { InputAppSetting } from './interfaces/app-setting';
+import { AppSettingRepository } from './repository';
 
 @singleton()
 export class AppSettingService {
   private readonly itemService: ItemService;
+  private readonly appSettingRepository: AppSettingRepository;
+
   hooks = new HookManager<{
     post: {
       pre: { appSetting: Partial<InputAppSetting>; itemId: string };
@@ -33,29 +36,23 @@ export class AppSettingService {
     };
   }>();
 
-  constructor(itemService: ItemService) {
+  constructor(itemService: ItemService, appSettingRepository: AppSettingRepository) {
     this.itemService = itemService;
+    this.appSettingRepository = appSettingRepository;
   }
 
-  async post(
-    member: Member,
-    repositories: Repositories,
-    itemId: string,
-    body: Partial<InputAppSetting>,
-  ) {
-    const { appSettingRepository } = repositories;
-
+  async post(db: DBConnection, member: Member, itemId: string, body: Partial<InputAppSetting>) {
     // posting an app setting is allowed to admin only
-    await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
+    await this.itemService.get(db, member, itemId, PermissionLevel.Admin);
 
-    await this.hooks.runPreHooks('post', member, repositories, { appSetting: body, itemId });
+    await this.hooks.runPreHooks('post', member, db, { appSetting: body, itemId });
 
-    const appSetting = await appSettingRepository.addOne({
+    const appSetting = await this.appSettingRepository.addOne(db, {
       itemId,
       memberId: member.id,
       appSetting: body,
     });
-    await this.hooks.runPostHooks('post', member, repositories, {
+    await this.hooks.runPostHooks('post', member, db, {
       appSetting,
       itemId,
     });
@@ -63,77 +60,64 @@ export class AppSettingService {
   }
 
   async patch(
+    db: DBConnection,
     member: Member,
-    repositories: Repositories,
     itemId: string,
     appSettingId: string,
     body: Partial<AppSetting>,
   ) {
-    const { appSettingRepository } = repositories;
-
     // patching requires admin rights
-    await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
+    await this.itemService.get(db, member, itemId, PermissionLevel.Admin);
 
-    await this.hooks.runPreHooks('patch', member, repositories, {
+    await this.hooks.runPreHooks('patch', member, db, {
       appSetting: { ...body, id: appSettingId },
       itemId,
     });
 
-    const appSetting = await appSettingRepository.updateOne(appSettingId, body);
-    await this.hooks.runPostHooks('patch', member, repositories, {
+    const appSetting = await this.appSettingRepository.updateOne(db, appSettingId, body);
+    await this.hooks.runPostHooks('patch', member, db, {
       appSetting,
       itemId,
     });
     return appSetting;
   }
 
-  async deleteOne(
-    member: Member,
-    repositories: Repositories,
-    itemId: string,
-    appSettingId: string,
-  ) {
-    const { appSettingRepository } = repositories;
-
+  async deleteOne(db: DBConnection, member: Member, itemId: string, appSettingId: string) {
     // delete an app data is allowed to admins
-    await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
+    await this.itemService.get(db, member, itemId, PermissionLevel.Admin);
 
-    const appSetting = await appSettingRepository.getOneOrThrow(appSettingId);
+    const appSetting = await this.appSettingRepository.getOneOrThrow(db, appSettingId);
 
-    await this.hooks.runPreHooks('delete', member, repositories, { appSettingId, itemId });
+    await this.hooks.runPreHooks('delete', member, db, { appSettingId, itemId });
 
-    const { id: result } = await appSettingRepository.deleteOne(appSettingId);
+    const { id: result } = await this.appSettingRepository.deleteOne(db, appSettingId);
 
-    await this.hooks.runPostHooks('delete', member, repositories, { appSetting, itemId });
+    await this.hooks.runPostHooks('delete', member, db, { appSetting, itemId });
 
     return result;
   }
 
-  async get(actor: Actor, repositories: Repositories, itemId: string, appSettingId: UUID) {
-    const { appSettingRepository } = repositories;
-
+  async get(db: DBConnection, actor: Actor, itemId: string, appSettingId: UUID) {
     // get app setting is allowed to readers
-    await this.itemService.get(actor, repositories, itemId);
+    await this.itemService.get(db, actor, itemId);
 
-    return await appSettingRepository.getOneOrThrow(appSettingId);
+    return await this.appSettingRepository.getOneOrThrow(db, appSettingId);
   }
 
-  async getForItem(actor: Actor, repositories: Repositories, itemId: string, name?: string) {
-    const { appSettingRepository } = repositories;
-
+  async getForItem(db: DBConnection, actor: Actor, itemId: string, name?: string) {
     // item can be public
     // get app setting is allowed to readers
-    await this.itemService.get(actor, repositories, itemId);
+    await this.itemService.get(db, actor, itemId);
 
-    return appSettingRepository.getForItem(itemId, name);
+    return this.appSettingRepository.getForItem(db, itemId, name);
   }
 
-  async copyForItem(actor: Actor, repositories: Repositories, original: Item, copy: Item) {
+  async copyForItem(db: DBConnection, actor: Actor, original: Item, copy: Item) {
     if (!actor) {
       throw new UnauthorizedMember();
     }
     try {
-      const appSettings = await this.getForItem(actor, repositories, original.id);
+      const appSettings = await this.getForItem(db, actor, original.id);
       const newAppSettings: AppSetting[] = [];
       for (const appSetting of appSettings) {
         const copyData = {
@@ -142,19 +126,19 @@ export class AppSettingService {
           itemId: copy.id,
           creator: { id: actor.id },
         };
-        await this.hooks.runPreHooks('copyMany', actor, repositories, {
+        await this.hooks.runPreHooks('copyMany', actor, db, {
           appSettings,
           originalItemId: original.id,
           copyItemId: copy.id,
         });
-        const newSetting = await repositories.appSettingRepository.addOne({
+        const newSetting = await this.appSettingRepository.addOne(db, {
           itemId: copy.id,
           memberId: appSetting.creator?.id,
           appSetting: copyData,
         });
         newAppSettings.push(newSetting);
       }
-      await this.hooks.runPostHooks('copyMany', actor, repositories, {
+      await this.hooks.runPostHooks('copyMany', actor, db, {
         appSettings: newAppSettings,
         originalItemId: original.id,
         copyItemId: copy.id,

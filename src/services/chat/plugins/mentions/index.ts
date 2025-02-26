@@ -3,15 +3,14 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import { clearAllMentions, deleteMention, getOwnMentions, patchMention } from './schemas';
 import { MentionService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   // isolate plugin content using fastify.register to ensure that the action hook from chat_message will not be called when using mention routes
-  const { db } = fastify;
   const mentionService = resolveDependency(MentionService);
 
   // TODO: MEMBERSHIP POSTHOOK: REMOVE MENTION TO AVOID PROVIDING ITEM INFO through message
@@ -22,7 +21,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     { schema: getOwnMentions, preHandler: isAuthenticated },
     async ({ user }) => {
       const member = asDefined(user?.account);
-      return await mentionService.getForAccount(member, buildRepositories());
+      return await mentionService.getForAccount(db, member);
     },
   );
 
@@ -30,9 +29,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     '/mentions/:mentionId',
     { schema: patchMention, preHandler: isAuthenticated },
     async ({ user, params: { mentionId }, body: { status } }) => {
-      return db.transaction(async (manager) => {
+      return db.transaction(async (tx) => {
         const member = asDefined(user?.account);
-        return await mentionService.patch(member, buildRepositories(manager), mentionId, status);
+        return await mentionService.patch(tx, member, mentionId, status);
       });
     },
   );
@@ -44,7 +43,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user, params: { mentionId } }) => {
       return db.transaction(async (manager) => {
         const member = asDefined(user?.account);
-        return mentionService.deleteOne(member, buildRepositories(manager), mentionId);
+        return mentionService.deleteOne(tx, member, mentionId);
       });
     },
   );
@@ -58,8 +57,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async ({ user }, reply) => {
       const member = asDefined(user?.account);
-      await db.transaction(async (manager) => {
-        await mentionService.deleteAll(member, buildRepositories(manager));
+      await db.transaction(async (tx) => {
+        await mentionService.deleteAll(tx, member);
       });
       reply.status(StatusCodes.NO_CONTENT);
     },

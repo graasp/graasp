@@ -14,7 +14,6 @@ import {
 
 import { IFRAMELY_API_DI_KEY } from '../../../../di/constants';
 import { BaseLogger } from '../../../../logger';
-import { Repositories } from '../../../../utils/repositories';
 import { Member } from '../../../member/entities/member';
 import { ThumbnailService } from '../../../thumbnail/service';
 import { EmbeddedLinkItem, Item, isItemType } from '../../entities/Item';

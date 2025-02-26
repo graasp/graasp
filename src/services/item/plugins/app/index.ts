@@ -4,9 +4,9 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { AuthTokenSubject } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
 import { FastifyInstanceTypebox } from '../../../../plugins/typebox';
 import { asDefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
 import {
   guestAuthenticateAppsJWT,
   isAuthenticated,
@@ -40,7 +40,7 @@ const plugin: FastifyPluginAsyncTypebox<AppsPluginOptions> = async (fastify, opt
     // proper authentication
     const { corsPluginOptions } = fastify;
     if (corsPluginOptions) {
-      const allowedOrigins = await appService.getAllValidAppOrigins(buildRepositories());
+      const allowedOrigins = await appService.getAllValidAppOrigins(db);
 
       const graaspAndAppsOrigins = corsPluginOptions.origin.concat(allowedOrigins);
       fastify.register(
@@ -52,7 +52,7 @@ const plugin: FastifyPluginAsyncTypebox<AppsPluginOptions> = async (fastify, opt
     fastify.register(async function (fastify: FastifyInstanceTypebox) {
       // get all apps
       fastify.get('/list', { schema: getList }, async () => {
-        return appService.getAllApps(buildRepositories(), publisherId);
+        return appService.getAllApps(db, publisherId);
       });
 
       fastify.get(
@@ -60,7 +60,7 @@ const plugin: FastifyPluginAsyncTypebox<AppsPluginOptions> = async (fastify, opt
         { schema: getOwnMostUsedApps, preHandler: isAuthenticated },
         async ({ user }) => {
           const member = asDefined(user?.account);
-          return appService.getMostUsedApps(member, buildRepositories());
+          return appService.getMostUsedApps(db, member);
         },
       );
 
@@ -75,7 +75,7 @@ const plugin: FastifyPluginAsyncTypebox<AppsPluginOptions> = async (fastify, opt
             body,
           } = request;
 
-          return appService.getApiAccessToken(user?.account, buildRepositories(), itemId, body);
+          return appService.getApiAccessToken(db, user?.account, itemId, body);
         },
       );
 
@@ -116,12 +116,7 @@ const plugin: FastifyPluginAsyncTypebox<AppsPluginOptions> = async (fastify, opt
             origin: app.origin,
             key: app.key,
           };
-          return appService.getContext(
-            requestDetails.accountId,
-            buildRepositories(),
-            itemId,
-            requestDetails,
-          );
+          return appService.getContext(db, requestDetails.accountId, itemId, requestDetails);
         },
       );
 

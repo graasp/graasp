@@ -3,8 +3,8 @@ import { singleton } from 'tsyringe';
 
 import { DocumentItemExtraProperties, ItemGeolocation, ItemType, UUID } from '@graasp/sdk';
 
-import { BaseLogger } from '../../../../logger';
-import { Repositories } from '../../../../utils/repositories';
+import { DBConnection } from '../../../../drizzle/db';
+import { BaseLogger } from '../../../../logger'; 
 import { Member } from '../../../member/entities/member';
 import { ThumbnailService } from '../../../thumbnail/service';
 import { DocumentItem, Item, isItemType } from '../../entities/Item';
@@ -61,8 +61,8 @@ export class DocumentItemService extends ItemService {
   }
 
   async postWithOptions(
+    db: DBConnection,
     member: Member,
-    repositories: Repositories,
     args: {
       name: Item['name'];
       content: DocumentItemExtraProperties['content'];
@@ -83,22 +83,20 @@ export class DocumentItemService extends ItemService {
         flavor,
       }),
     );
-    return (await this.post(member, repositories, {
+    return (await this.post(db, member, repositories, {
       item: newItem,
       ...options,
     })) as DocumentItem;
   }
 
   async patchWithOptions(
+    db: DBConnection,
     member: Member,
-    repositories: Repositories,
     itemId: UUID,
     args: Partial<Pick<Item, 'name' | 'description' | 'lang'>> &
       Partial<DocumentItemExtraProperties>,
   ): Promise<DocumentItem> {
-    const { itemRepository } = repositories;
-
-    const item = await itemRepository.getOneOrThrow(itemId);
+    const item = await this.itemRepository.getOneOrThrow(itemId);
 
     // check item is document
     if (!isItemType(item, ItemType.DOCUMENT)) {
@@ -119,6 +117,6 @@ export class DocumentItemService extends ItemService {
         item.extra.document,
       ),
     );
-    return (await this.patch(member, repositories, itemId, newItem)) as DocumentItem;
+    return (await this.patch(db, member, repositories, itemId, newItem)) as DocumentItem;
   }
 }

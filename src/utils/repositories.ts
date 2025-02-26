@@ -1,6 +1,5 @@
 import { EntityManager } from 'typeorm';
 
-import { AccountRepository } from '../services/account/repository';
 import { ActionRepository } from '../services/action/action.repository';
 import { MemberPasswordRepository } from '../services/auth/plugins/password/repository';
 import { ChatMentionRepository } from '../services/chat/plugins/mentions/repository';

@@ -1,10 +1,10 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../../di/utils';
+import { db } from '../../../../../drizzle/db';
 import { asDefined } from '../../../../../utils/assertions';
 import { OPENAI_DEFAULT_TEMPERATURE, OPENAI_GPT_VERSION } from '../../../../../utils/config';
 import { InvalidJWTItem } from '../../../../../utils/errors';
-import { buildRepositories } from '../../../../../utils/repositories';
 import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
 import { ItemService } from '../../../service';
 import { create } from './schemas';
@@ -23,9 +23,8 @@ const chatBotPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user, params: { itemId }, body: prompt, query }, reply) => {
       const member = asDefined(user?.account);
       const jwtItemId = asDefined(user?.app).item.id;
-      const repositories = buildRepositories();
       if (jwtItemId !== itemId) {
-        await itemService.get(member, repositories, itemId);
+        await itemService.get(db, member, itemId);
         throw new InvalidJWTItem(jwtItemId ?? '<EMPTY>', itemId);
       }
       // default to 3.5 turbo / or the version specified in the env variable
@@ -34,8 +33,8 @@ const chatBotPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const temperature = query.temperature ?? OPENAI_DEFAULT_TEMPERATURE;
 
       const message = await chatBotService.post(
+        db,
         member,
-        repositories,
         itemId,
         prompt,
         gptVersion,

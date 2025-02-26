@@ -1,15 +1,21 @@
-import { desc, eq } from 'drizzle-orm';
+import { desc, eq, sql } from 'drizzle-orm';
 import { singleton } from 'tsyringe';
 
 import { PermissionLevel } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../../drizzle/db';
 import { isAncestorOrSelf } from '../../../../../../drizzle/operations';
-import { itemPublisheds, items, membersView } from '../../../../../../drizzle/schema';
+import {
+  Item,
+  ItemPublishedRaw,
+  ItemPublishedWithItemAndAccount,
+  itemPublisheds,
+  items,
+  membersView,
+} from '../../../../../../drizzle/schema';
+import { assertIsDefined } from '../../../../../../utils/assertions';
 import { Member } from '../../../../../member/entities/member';
 import { mapById } from '../../../../../utils';
-import { Item } from '../../../../entities/Item';
-import { ItemPublished } from '../entities/itemPublished';
 import { ItemPublishedNotFound } from '../errors';
 
 @singleton()
@@ -19,14 +25,25 @@ export class ItemPublishedRepository {
    * @param item
    * @returns published entry if the item is published, null otherwise
    */
-  async getForItem(db: DBConnection, item: Item): Promise<ItemPublished | null> {
-    return await db
+  async getForItem(
+    db: DBConnection,
+    itemPath: string,
+  ): Promise<ItemPublishedWithItemAndAccount | null> {
+    const res = await db
       .select()
       .from(itemPublisheds)
       .innerJoin(membersView, eq(itemPublisheds.creatorId, membersView.id))
       .innerJoin(items, isAncestorOrSelf(itemPublisheds.itemPath, itemPath))
-      .orderBy(desc('nlevel(pi.item_path)'))
+      .orderBy(desc(sql`nlevel(${itemPublisheds.itemPath})`))
       .limit(1);
+    const entry = res[0];
+    assertIsDefined(entry);
+    const mappedEntry = {
+      ...entry.item_published,
+      item: entry.item_view,
+      creator: entry.members_view,
+    };
+    return mappedEntry;
   }
 
   async getForItems(db: DBConnection, items: Item[]) {
@@ -74,7 +91,9 @@ export class ItemPublishedRepository {
 
   // return public item entry? contains when it was published
   async getAllItems(db: DBConnection) {
-    const publishedRows = await this.repository.find({ relations: { item: true } });
+    const publishedRows = await this.repository.find({
+      relations: { item: true },
+    });
     return publishedRows.map(({ item }) => item);
   }
 

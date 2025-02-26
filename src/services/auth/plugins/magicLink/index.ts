@@ -11,8 +11,8 @@ import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import { MemberAlreadySignedUp } from '../../../../utils/errors';
+import { isMember } from '../../../authentication';
 import { InvitationService } from '../../../item/plugins/invitation/service';
-import { isMember } from '../../../member/entities/member';
 import { MemberService } from '../../../member/service';
 import { getRedirectionLink } from '../../utils';
 import captchaPreHandler from '../captcha';
@@ -44,7 +44,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           // const repositories = buildRepositories(manager);
           // we use member service to allow post hook for invitation
           const member = await memberService.post(tx, body, lang);
-          await magicLinkService.sendRegisterMail(tx, member, url);
+          await magicLinkService.sendRegisterMail(member, url);
 
           // transform memberships from existing invitations
           await invitationService.createToMemberships(tx, member);

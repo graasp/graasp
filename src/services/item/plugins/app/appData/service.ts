@@ -3,13 +3,14 @@ import { inject, singleton } from 'tsyringe';
 import { AppDataVisibility, FileItemType, PermissionLevel, UUID } from '@graasp/sdk';
 
 import { FILE_ITEM_TYPE_DI_KEY } from '../../../../../di/constants';
+import { DBConnection } from '../../../../../drizzle/db';
 import HookManager from '../../../../../utils/hook';
-import { Repositories } from '../../../../../utils/repositories';
 import { Account } from '../../../../account/entities/account';
-import { validatePermission } from '../../../../authorization';
+import { AuthorizationService } from '../../../../authorization';
 import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
 import { Actor } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
+import { ItemRepository } from '../../../repository';
 import { AppData } from './appData';
 import {
   AppDataNotAccessible,
@@ -18,6 +19,7 @@ import {
   PreventUpdateOtherAppData,
 } from './errors';
 import { InputAppData } from './interfaces/app-data';
+import { AppDataRepository } from './repository';
 
 const ownAppDataAbility = (appData: AppData, actor: Actor) => {
   if (!appData.creator || !actor) {
@@ -58,6 +60,9 @@ const permissionMapping = {
 @singleton()
 export class AppDataService {
   private fileItemType: FileItemType;
+  private readonly itemRepository: ItemRepository;
+  private readonly appDataRepository: AppDataRepository;
+  private readonly authorizationService: AuthorizationService;
 
   hooks = new HookManager<{
     post: {
@@ -74,23 +79,24 @@ export class AppDataService {
     };
   }>();
 
-  constructor(@inject(FILE_ITEM_TYPE_DI_KEY) fileItemType: FileItemType) {
+  constructor(
+    @inject(FILE_ITEM_TYPE_DI_KEY) fileItemType: FileItemType,
+    authorizationService: AuthorizationService,
+    itemRepository: ItemRepository,
+    appDataRepository: AppDataRepository,
+  ) {
     this.fileItemType = fileItemType;
+    this.itemRepository = itemRepository;
+    this.authorizationService = authorizationService;
+    this.appDataRepository = appDataRepository;
   }
 
-  async post(
-    account: Account,
-    repositories: Repositories,
-    itemId: string,
-    body: Partial<InputAppData>,
-  ) {
-    const { appDataRepository, itemRepository } = repositories;
-
+  async post(db: DBConnection, account: Account, itemId: string, body: Partial<InputAppData>) {
     // check item exists? let post fail?
-    const item = await itemRepository.getOneOrThrow(itemId);
+    const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
     // posting an app data is allowed to readers
-    await validatePermission(repositories, PermissionLevel.Read, account, item);
+    await this.authorizationService.validatePermission(db, PermissionLevel.Read, account, item);
 
     // any user can write app data for others
     const attachedToMemberId = body.accountId ?? body.memberId ?? account.id;
@@ -105,38 +111,38 @@ export class AppDataService {
       },
     );
 
-    await this.hooks.runPreHooks('post', account, repositories, { appData: body, itemId });
+    await this.hooks.runPreHooks('post', account, db, {
+      appData: body,
+      itemId,
+    });
 
-    const appData = await appDataRepository.addOne({
+    const appData = await this.appDataRepository.addOne(db, {
       appData: completeData,
       itemId,
       actorId: account.id,
     });
-    await this.hooks.runPostHooks('post', account, repositories, { appData, itemId });
+    await this.hooks.runPostHooks('post', account, db, {
+      appData,
+      itemId,
+    });
     return appData;
   }
 
   async patch(
+    db: DBConnection,
     account: Account,
-    repositories: Repositories,
     itemId: string,
     appDataId: string,
     body: Partial<AppData>,
   ) {
-    const { appDataRepository, itemRepository } = repositories;
-
     // check item exists? let post fail?
-    const item = await itemRepository.getOneOrThrow(itemId);
+    const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
     // patching requires at least read
-    const { itemMembership: inheritedMembership } = await validatePermission(
-      repositories,
-      PermissionLevel.Read,
-      account,
-      item,
-    );
+    const { itemMembership: inheritedMembership } =
+      await this.authorizationService.validatePermission(db, PermissionLevel.Read, account, item);
 
-    const currentAppData = await appDataRepository.getOne(appDataId);
+    const currentAppData = await this.appDataRepository.getOne(db, appDataId);
 
     if (!currentAppData) {
       throw new AppDataNotFound(appDataId);
@@ -149,7 +155,7 @@ export class AppDataService {
 
     // patch own or is admin
     const isValid = await this.validateAppDataPermission(
-      repositories,
+      db,
       account,
       currentAppData,
       PermissionLevel.Write,
@@ -159,34 +165,28 @@ export class AppDataService {
       throw new PreventUpdateOtherAppData(appDataId);
     }
 
-    await this.hooks.runPreHooks('patch', account, repositories, {
+    await this.hooks.runPreHooks('patch', account, db, {
       appData: { ...body, id: appDataId },
       itemId,
     });
 
-    const appData = await appDataRepository.updateOne(appDataId, body);
-    await this.hooks.runPostHooks('patch', account, repositories, {
+    const appData = await this.appDataRepository.updateOne(db, appDataId, body);
+    await this.hooks.runPostHooks('patch', account, db, {
       appData,
       itemId,
     });
     return appData;
   }
 
-  async deleteOne(account: Account, repositories: Repositories, itemId: string, appDataId: string) {
-    const { appDataRepository, itemRepository } = repositories;
-
+  async deleteOne(db: DBConnection, account: Account, itemId: string, appDataId: string) {
     // check item exists? let post fail?
-    const item = await itemRepository.getOneOrThrow(itemId);
+    const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
     // delete an app data is allowed to readers
-    const { itemMembership: inheritedMembership } = await validatePermission(
-      repositories,
-      PermissionLevel.Read,
-      account,
-      item,
-    );
+    const { itemMembership: inheritedMembership } =
+      await this.authorizationService.validatePermission(db, PermissionLevel.Read, account, item);
 
-    const appData = await appDataRepository.getOne(appDataId);
+    const appData = await this.appDataRepository.getOne(db, appDataId);
 
     if (!appData) {
       throw new AppDataNotFound(appDataId);
@@ -194,46 +194,44 @@ export class AppDataService {
 
     // patch own or is admin
     await this.validateAppDataPermission(
-      repositories,
+      db,
       account,
       appData,
       PermissionLevel.Admin,
       inheritedMembership,
     );
 
-    await this.hooks.runPreHooks('delete', account, repositories, { appDataId, itemId });
+    await this.hooks.runPreHooks('delete', account, db, {
+      appDataId,
+      itemId,
+    });
 
-    const result = await appDataRepository.deleteOne(appDataId);
+    const result = await this.appDataRepository.deleteOne(db, appDataId);
 
-    await this.hooks.runPostHooks('delete', account, repositories, { appData, itemId });
+    await this.hooks.runPostHooks('delete', account, db, {
+      appData,
+      itemId,
+    });
 
     return result;
   }
 
-  async get(account: Account, repositories: Repositories, item: Item, appDataId: UUID) {
-    const { appDataRepository } = repositories;
-
-    const { itemMembership } = await validatePermission(
-      repositories,
+  async get(db: DBConnection, account: Account, item: Item, appDataId: UUID) {
+    const { itemMembership } = await this.authorizationService.validatePermission(
+      db,
       PermissionLevel.Read,
       account,
       item,
     );
 
-    const appData = await appDataRepository.getOne(appDataId);
+    const appData = await this.appDataRepository.getOne(db, appDataId);
 
     if (!appData) {
       throw new AppDataNotFound(appDataId);
     }
 
     if (
-      !this.validateAppDataPermission(
-        repositories,
-        account,
-        appData,
-        PermissionLevel.Read,
-        itemMembership,
-      )
+      !this.validateAppDataPermission(db, account, appData, PermissionLevel.Read, itemMembership)
     ) {
       throw new AppDataNotAccessible({ appDataId, accountId: account.id });
     }
@@ -241,21 +239,20 @@ export class AppDataService {
     return appData;
   }
 
-  async getForItem(account: Account, repositories: Repositories, itemId: string, type?: string) {
-    const { appDataRepository, itemRepository } = repositories;
-
+  async getForItem(db: DBConnection, account: Account, itemId: string, type?: string) {
     // check item exists? let post fail?
-    const item = await itemRepository.getOneOrThrow(itemId);
+    const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
     // posting an app data is allowed to readers
-    const { itemMembership } = await validatePermission(
-      repositories,
+    const { itemMembership } = await this.authorizationService.validatePermission(
+      db,
       PermissionLevel.Read,
       account,
       item,
     );
 
-    return appDataRepository.getForItem(
+    return this.appDataRepository.getForItem(
+      db,
       itemId,
       { accountId: account.id, type },
       itemMembership?.permission,
@@ -264,7 +261,7 @@ export class AppDataService {
 
   // TODO: check
   async validateAppDataPermission(
-    repositories: Repositories,
+    db: DBConnection,
     actor: Actor,
     appData: AppData,
     permission: PermissionLevel,

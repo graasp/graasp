@@ -1,4 +1,5 @@
 import { asc, eq, inArray } from 'drizzle-orm/sql';
+import { singleton } from 'tsyringe';
 
 import { ResultOf } from '@graasp/sdk';
 
@@ -10,9 +11,12 @@ import { assertIsError } from '../../utils/assertions';
 import { Guest } from '../itemLogin/entities/guest';
 import { Member } from '../member/entities/member';
 import { mapById } from '../utils';
-import { ChatMessage } from './chatMessage';
 
-type ChatMessageCreateBody = { itemId: string; creator: Guest | Member; body: string };
+type ChatMessageCreateBody = {
+  itemId: string;
+  creator: Guest | Member;
+  body: string;
+};
 
 @singleton()
 export class ChatMessageRepository {

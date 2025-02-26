@@ -1,8 +1,8 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
 import { assertIsMember } from '../../../member/entities/member';
@@ -12,7 +12,6 @@ import { createDocument, updateDocument } from './schemas';
 import { DocumentItemService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { db } = fastify;
   const documentService = resolveDependency(DocumentItemService);
   const actionItemService = resolveDependency(ActionItemService);
 
@@ -31,9 +30,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
 
-      const item = await db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-        const item = await documentService.postWithOptions(member, repositories, {
+      const item = await db.transaction(async (tx) => {
+        const item = await documentService.postWithOptions(tx, member, {
           ...data,
           previousItemId,
           parentId,
@@ -44,10 +42,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       reply.send(item);
 
       // background operations
-      await actionItemService.postPostAction(request, buildRepositories(), item);
-      await db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-        await documentService.rescaleOrderForParent(member, repositories, item);
+      await actionItemService.postPostAction(db, request, item);
+      await db.transaction(async (tx) => {
+        await documentService.rescaleOrderForParent(tx, member, item);
       });
     },
   );
@@ -66,10 +63,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       } = request;
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return await db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-        const item = await documentService.patchWithOptions(member, repositories, id, body);
-        await actionItemService.postPatchAction(request, repositories, item);
+      return await db.transaction(async (tx) => {
+        const item = await documentService.patchWithOptions(tx, member, id, body);
+        await actionItemService.postPatchAction(tx, request, item);
         return item;
       });
     },

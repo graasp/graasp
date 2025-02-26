@@ -10,6 +10,7 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import fp from 'fastify-plugin';
 
 import { resolveDependency } from '../../di/utils';
+import { db } from '../../drizzle/db';
 import { FastifyInstanceTypebox } from '../../plugins/typebox';
 import {
   EntityNotFound,
@@ -17,7 +18,6 @@ import {
   EntryNotFoundBeforeDeleteException,
 } from '../../repositories/errors';
 import { asDefined, assertIsMemberOrGuest } from '../../utils/assertions';
-import { buildRepositories } from '../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
 import { matchOne } from '../authorization';
 import { ItemService } from '../item/service';
@@ -40,7 +40,7 @@ export interface GraaspChatPluginOptions {
 const plugin: FastifyPluginAsyncTypebox<GraaspChatPluginOptions> = async (fastify) => {
   await fastify.register(fp(mentionPlugin));
 
-  const { db, websockets: websockets } = fastify;
+  const { websockets: websockets } = fastify;
 
   const itemService = resolveDependency(ItemService);
   const chatService = resolveDependency(ChatMessageService);
@@ -58,7 +58,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspChatPluginOptions> = async (fastif
       '/:itemId/chat',
       { schema: getChat, preHandler: optionalIsAuthenticated },
       async ({ user, params: { itemId } }) => {
-        return await chatService.getForItem(user?.account, buildRepositories(), itemId);
+        return await chatService.getForItem(db, user?.account, itemId);
       },
     );
 
@@ -76,10 +76,9 @@ const plugin: FastifyPluginAsyncTypebox<GraaspChatPluginOptions> = async (fastif
         } = request;
         const account = asDefined(user?.account);
         assertIsMemberOrGuest(account);
-        return await db.transaction(async (manager) => {
-          const repositories = buildRepositories(manager);
-          const message = await chatService.postOne(account, repositories, itemId, body);
-          await actionChatService.postPostMessageAction(request, repositories, message);
+        return await db.transaction(async (tx) => {
+          const message = await chatService.postOne(tx, account, itemId, body);
+          await actionChatService.postPostMessageAction(tx, request, message);
           return message;
         });
       },
@@ -102,17 +101,10 @@ const plugin: FastifyPluginAsyncTypebox<GraaspChatPluginOptions> = async (fastif
           body,
         } = request;
         try {
-          return await db.transaction(async (manager) => {
+          return await db.transaction(async (tx) => {
             const member = asDefined(user?.account);
-            const repositories = buildRepositories(manager);
-            const message = await chatService.patchOne(
-              member,
-              repositories,
-              itemId,
-              messageId,
-              body,
-            );
-            await actionChatService.postPatchMessageAction(request, repositories, message);
+            const message = await chatService.patchOne(tx, member, itemId, messageId, body);
+            await actionChatService.postPatchMessageAction(tx, request, message);
             return message;
           });
         } catch (e: unknown) {
@@ -138,10 +130,9 @@ const plugin: FastifyPluginAsyncTypebox<GraaspChatPluginOptions> = async (fastif
         } = request;
         const member = asDefined(user?.account);
         try {
-          return await db.transaction(async (manager) => {
-            const repositories = buildRepositories(manager);
-            const message = await chatService.deleteOne(member, repositories, itemId, messageId);
-            await actionChatService.postDeleteMessageAction(request, repositories, message);
+          return await db.transaction(async (tx) => {
+            const message = await chatService.deleteOne(tx, member, itemId, messageId);
+            await actionChatService.postDeleteMessageAction(tx, request, message);
             return message;
           });
         } catch (e: unknown) {
@@ -166,10 +157,9 @@ const plugin: FastifyPluginAsyncTypebox<GraaspChatPluginOptions> = async (fastif
           params: { itemId },
         } = request;
         const member = asDefined(user?.account);
-        await db.transaction(async (manager) => {
-          const repositories = buildRepositories(manager);
-          await chatService.clear(member, repositories, itemId);
-          await actionChatService.postClearMessageAction(request, repositories, itemId);
+        await db.transaction(async (tx) => {
+          await chatService.clear(tx, member, itemId);
+          await actionChatService.postClearMessageAction(tx, request, itemId);
         });
 
         return;

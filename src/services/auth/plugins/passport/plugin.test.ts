@@ -22,9 +22,10 @@ import {
   REFRESH_TOKEN_JWT_SECRET,
 } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
+import { assertIsMember } from '../../../authentication';
 import { Item } from '../../../item/entities/Item';
 import { expectItem } from '../../../item/test/fixtures/items';
-import { Member, assertIsMember } from '../../../member/entities/member';
+import { Member } from '../../../member/entities/member';
 import { expectMember } from '../../../member/test/fixtures/members';
 import { MemberPasswordService } from '../password/service';
 import {
@@ -573,7 +574,10 @@ describe('Passport Plugin', () => {
     });
     it('Unauthenticated', async () => {
       handler.mockImplementation(shouldNotBeCalled);
-      const response = await app.inject({ method: HttpMethod.Post, path: MOCKED_ROUTE });
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        path: MOCKED_ROUTE,
+      });
       expect(handler).toHaveBeenCalledTimes(0);
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
     });

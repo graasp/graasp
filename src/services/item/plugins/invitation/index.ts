@@ -202,7 +202,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user, params: { invitationId } }, reply) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      await invitationService.resend(member, buildRepositories(), invitationId);
+      await invitationService.resend(db, member, invitationId);
       reply.status(StatusCodes.NO_CONTENT);
     },
   );

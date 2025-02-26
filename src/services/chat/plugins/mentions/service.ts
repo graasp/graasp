@@ -2,23 +2,36 @@ import { singleton } from 'tsyringe';
 
 import { ClientManager, Context, MentionStatus, PermissionLevel } from '@graasp/sdk';
 
+import { DBConnection } from '../../../../drizzle/db';
 import { TRANSLATIONS } from '../../../../langs/constants';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
-import { Repositories } from '../../../../utils/repositories';
 import { Account } from '../../../account/entities/account';
-import { validatePermission } from '../../../authorization';
+import { AuthorizationService } from '../../../authorization';
 import { Item } from '../../../item/entities/Item';
+import { ItemRepository } from '../../../item/repository';
 import { Member, isMember } from '../../../member/entities/member';
 import { ChatMessage } from '../../chatMessage';
 import { MemberCannotAccessMention } from '../../errors';
+import { ChatMentionRepository } from './repository';
 
 @singleton()
 export class MentionService {
   private readonly mailerService: MailerService;
+  private readonly authorizationService: AuthorizationService;
+  private readonly itemRepository: ItemRepository;
+  private readonly chatMentionRepository: ChatMentionRepository;
 
-  constructor(mailerService: MailerService) {
+  constructor(
+    mailerService: MailerService,
+    authorizationService: AuthorizationService,
+    itemRepository: ItemRepository,
+    chatMentionRepository: ChatMentionRepository,
+  ) {
     this.mailerService = mailerService;
+    this.authorizationService = authorizationService;
+    this.itemRepository = itemRepository;
+    this.chatMentionRepository = chatMentionRepository;
   }
 
   async sendMentionNotificationEmail({
@@ -57,19 +70,17 @@ export class MentionService {
   }
 
   async createManyForItem(
+    db: DBConnection,
     account: Account,
-    repositories: Repositories,
     message: ChatMessage,
     mentionedMembers: string[],
   ) {
-    const { mentionRepository, itemRepository } = repositories;
-
     // check actor has access to item
-    const item = await itemRepository.getOneOrThrow(message.item.id);
-    await validatePermission(repositories, PermissionLevel.Read, account, item);
+    const item = await this.itemRepository.getOneOrThrow(db, message.item.id);
+    await this.authorizationService.validatePermission(db, PermissionLevel.Read, account, item);
 
     // TODO: optimize ? suppose same item - validate multiple times
-    const mentions = await mentionRepository.postMany(mentionedMembers, message.id);
+    const mentions = await this.chatMentionRepository.postMany(db, mentionedMembers, message.id);
 
     mentions.forEach((mention) => {
       const member = mention.account;
@@ -81,14 +92,12 @@ export class MentionService {
     return mentions;
   }
 
-  async getForAccount(account: Account, repositories: Repositories) {
-    const { mentionRepository } = repositories;
-    return mentionRepository.getForAccount(account.id);
+  async getForAccount(db: DBConnection, account: Account) {
+    return this.chatMentionRepository.getForAccount(db, account.id);
   }
 
-  async get(actor: Account, repositories: Repositories, mentionId: string) {
-    const { mentionRepository } = repositories;
-    const mentionContent = await mentionRepository.get(mentionId);
+  async get(db: DBConnection, actor: Account, mentionId: string) {
+    const mentionContent = await this.chatMentionRepository.get(db, mentionId);
 
     if (mentionContent.account.id !== actor.id) {
       throw new MemberCannotAccessMention({ id: mentionId });
@@ -97,32 +106,22 @@ export class MentionService {
     return mentionContent;
   }
 
-  async patch(
-    actor: Account,
-    repositories: Repositories,
-    mentionId: string,
-    status: MentionStatus,
-  ) {
-    const { mentionRepository } = repositories;
-
+  async patch(db: DBConnection, actor: Account, mentionId: string, status: MentionStatus) {
     // check permission
-    await this.get(actor, repositories, mentionId);
+    await this.get(db, actor, mentionId);
 
-    return mentionRepository.patch(mentionId, status);
+    return this.chatMentionRepository.patch(db, mentionId, status);
   }
 
-  async deleteOne(actor: Account, repositories: Repositories, mentionId: string) {
-    const { mentionRepository } = repositories;
-
+  async deleteOne(db: DBConnection, actor: Account, mentionId: string) {
     // check permission
-    await this.get(actor, repositories, mentionId);
+    await this.get(db, actor, mentionId);
 
-    return mentionRepository.deleteOne(mentionId);
+    return this.chatMentionRepository.deleteOne(db, mentionId);
   }
 
-  async deleteAll(actor: Account, repositories: Repositories) {
-    const { mentionRepository } = repositories;
-    await mentionRepository.deleteAll(actor.id);
+  async deleteAll(db: DBConnection, actor: Account) {
+    await this.chatMentionRepository.deleteAll(db, actor.id);
     //     const clearedChat: Chat = { id: this.targetId, messages: [] };
     //     await this.postHookHandler?.(clearedChat, this.actor, { log, handler });
   }

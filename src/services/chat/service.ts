@@ -39,18 +39,19 @@ export class ChatMessageService {
     // check permission
     await this.itemService.get(db, actor, itemId);
 
-    return await this.chatMessageRepository.getByItem(itemId);
+    return await this.chatMessageRepository.getByItem(db, itemId);
   }
 
   async postOne(
+    db: DBConnection,
     actor: Guest | Member,
     itemId: string,
     data: { body: string; mentions?: string[] },
   ) {
     // check permission
-    await this.itemService.get(actor, repositories, itemId);
+    await this.itemService.get(db, actor, itemId);
 
-    const message = await this.chatMessageRepository.addOne({
+    const message = await this.chatMessageRepository.addOne(db, {
       itemId,
       creator: actor,
       body: data.body,
@@ -58,10 +59,12 @@ export class ChatMessageService {
 
     // post the mentions that are sent with the message
     if (data.mentions?.length) {
-      await this.mentionService.createManyForItem(actor, repositories, message, data.mentions);
+      await this.mentionService.createManyForItem(db, actor, message, data.mentions);
     }
 
-    await this.hooks.runPostHooks('publish', actor, repositories, { message: message });
+    await this.hooks.runPostHooks('publish', actor, db, {
+      message: message,
+    });
 
     return message;
   }
@@ -77,7 +80,11 @@ export class ChatMessageService {
     await this.itemService.get(db, actor, itemId);
 
     // check right to make sure that the user is editing his own message
-    const messageContent = await this.chatMessageRepository.getOneOrThrow(db, messageId);
+    const messageContent = await this.chatMessageRepository.getOne(db, messageId);
+
+    if (!messageContent) {
+      throw new ChatMessageNotFound(messageId);
+    }
 
     if (messageContent.creator?.id !== actor.id) {
       throw new MemberCannotEditMessage(messageId);
@@ -85,16 +92,21 @@ export class ChatMessageService {
 
     const updatedMessage = await this.chatMessageRepository.updateOne(db, messageId, message);
 
-    await this.hooks.runPostHooks('update', actor, db, { message: updatedMessage });
+    await this.hooks.runPostHooks('update', actor, db, {
+      message: updatedMessage,
+    });
 
     return updatedMessage;
   }
 
   async deleteOne(db: DBConnection, actor: Account, itemId: string, messageId: string) {
     // check permission
-    await this.itemService.get(actor, repositories, itemId);
+    await this.itemService.get(db, actor, itemId);
 
-    const messageContent = await this.chatMessageRepository.getOneOrThrow(db, messageId);
+    const messageContent = await this.chatMessageRepository.getOne(db, messageId);
+    if (!messageContent) {
+      throw new ChatMessageNotFound(messageId);
+    }
 
     if (messageContent.creator?.id !== actor.id) {
       throw new MemberCannotDeleteMessage({ id: messageId });
@@ -103,9 +115,11 @@ export class ChatMessageService {
     // TODO: get associated mentions to push the update in the websockets
     // await mentionRepository.getMany()
 
-    await this.chatMessageRepository.deleteOne(messageId);
+    await this.chatMessageRepository.deleteOne(db, messageId);
 
-    await this.hooks.runPostHooks('delete', actor, repositories, { message: messageContent });
+    await this.hooks.runPostHooks('delete', actor, db, {
+      message: messageContent,
+    });
 
     return messageContent;
   }
@@ -113,10 +127,10 @@ export class ChatMessageService {
   async clear(db: DBConnection, actor: Account, itemId: string) {
     // check rights for accessing the chat and sufficient right to clear the conversation
     // user should be an admin of the item
-    await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
+    await this.itemService.get(db, actor, itemId, PermissionLevel.Admin);
 
-    await this.hooks.runPostHooks('clear', actor, repositories, { itemId });
+    await this.hooks.runPostHooks('clear', actor, db, { itemId });
 
-    await this.chatMessageRepository.deleteByItem(itemId);
+    await this.chatMessageRepository.deleteByItem(db, itemId);
   }
 }

@@ -3,16 +3,24 @@ import { singleton } from 'tsyringe';
 
 import { DBConnection } from '../../../../drizzle/db';
 import { Account, Item, ItemLike, itemLikes } from '../../../../drizzle/schema';
+import { IllegalArgumentException } from '../../../../repositories/errors';
 import { ItemLikeNotFound } from './errors';
 
 type CreatorId = ItemLike['creatorId'];
 type ItemId = ItemLike['itemId'];
 type CreateItemLikeBody = { creatorId: CreatorId; itemId: ItemId };
 
-type ItemLikeWithRelations = ItemLike & { item: Item; creator: Account };
+type ItemLikeWithItem = ItemLike & { item: Item };
+type ItemLikeWithItemAndAccount = ItemLikeWithItem & { creator: Account };
 
 @singleton()
 export class ItemLikeRepository {
+  protected throwsIfParamIsInvalid(name: string, value: string) {
+    if (!value) {
+      throw new IllegalArgumentException(`The given ${name} is undefined!`);
+    }
+  }
+
   /**
    * create an item like
    * @param memberId user's id
@@ -26,7 +34,7 @@ export class ItemLikeRepository {
     return result[0];
   }
 
-  async getOne(db: DBConnection, id: string): Promise<ItemLikeWithRelations> {
+  async getOne(db: DBConnection, id: string): Promise<ItemLikeWithItemAndAccount> {
     const result = await db.query.itemLikes.findFirst({
       where: eq(itemLikes.id, id),
       with: { item: true, creator: true },
@@ -41,7 +49,10 @@ export class ItemLikeRepository {
    * Get item likes by given memberId.
    * @param creatorId user's id
    */
-  async getByCreator(db: DBConnection, creatorId: CreatorId): Promise<ItemLikeWithRelations[]> {
+  async getByCreator(
+    db: DBConnection,
+    creatorId: CreatorId,
+  ): Promise<ItemLikeWithItemAndAccount[]> {
     if (!creatorId) {
       throw new Error('creator Id is not defined');
     }
@@ -56,13 +67,14 @@ export class ItemLikeRepository {
    * Get likes for item
    * @param itemId
    */
-  async getByItemId(itemId: ItemId): Promise<ItemLike[]> {
+  async getByItemId(db: DBConnection, itemId: ItemId): Promise<ItemLikeWithItem[]> {
     this.throwsIfParamIsInvalid('itemId', itemId);
-    return await this.repository
-      .createQueryBuilder('itemLike')
-      .innerJoinAndSelect('itemLike.item', 'item')
-      .where('itemLike.item = :itemId', { itemId })
-      .getMany();
+    const res = await db.query.itemLikes.findMany({
+      where: eq(itemLikes.itemId, itemId),
+      with: { item: true },
+    });
+
+    return res;
   }
 
   /**
@@ -70,12 +82,10 @@ export class ItemLikeRepository {
    * @param itemId
    * @returns number of likes for item
    */
-  async getCountByItemId(itemId: ItemId): Promise<number> {
+  async getCountByItemId(db: DBConnection, itemId: ItemId): Promise<number> {
     this.throwsIfParamIsInvalid('itemId', itemId);
-    return await this.repository
-      .createQueryBuilder('itemLike')
-      .where('itemLike.item_id = :itemId', { itemId })
-      .getCount();
+    const res = await db.$count(itemLikes, eq(itemLikes.itemId, itemId));
+    return res;
   }
 
   /**

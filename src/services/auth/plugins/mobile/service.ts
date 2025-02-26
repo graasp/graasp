@@ -5,7 +5,6 @@ import { DEFAULT_LANG } from '@graasp/translations';
 import { DBConnection } from '../../../../drizzle/db';
 import { BaseLogger } from '../../../../logger';
 import { MemberAlreadySignedUp, MemberNotSignedUp } from '../../../../utils/errors';
-import { Actor } from '../../../member/entities/member';
 import { MemberRepository } from '../../../member/repository';
 import { AuthService } from '../../service';
 
@@ -23,13 +22,17 @@ export class MobileService {
 
   async register(
     db: DBConnection,
-    actor: Actor,
     {
       name,
       email,
       challenge,
       enableSaveActions,
-    }: { name: string; email: string; challenge: string; enableSaveActions?: boolean },
+    }: {
+      name: string;
+      email: string;
+      challenge: string;
+      enableSaveActions?: boolean;
+    },
     lang = DEFAULT_LANG,
   ) {
     // check if member w/ email already exists
@@ -45,7 +48,9 @@ export class MobileService {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       const newMember = await memberRepository.post(data);
-      await this.authService.generateRegisterLinkAndEmailIt(newMember, { challenge });
+      await this.authService.generateRegisterLinkAndEmailIt(newMember, {
+        challenge,
+      });
     } else {
       this.log.warn(`Member re-registration attempt for email '${email}'`);
       await this.authService.generateLoginLinkAndEmailIt(member, { challenge });
@@ -53,11 +58,7 @@ export class MobileService {
     }
   }
 
-  async login(
-    db: DBConnection,
-    actor: Actor,
-    { email, challenge }: { email: string; challenge: string },
-  ) {
+  async login(db: DBConnection, { email, challenge }: { email: string; challenge: string }) {
     const member = await this.memberRepository.getByEmail(db, email);
 
     if (member) {

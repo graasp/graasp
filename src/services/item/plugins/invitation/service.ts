@@ -6,22 +6,22 @@ import { MultipartFile } from '@fastify/multipart';
 import { ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
+import { Invitation } from '../../../../drizzle/schema';
 import { TRANSLATIONS } from '../../../../langs/constants';
 import { BaseLogger } from '../../../../logger';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { NonEmptyArray } from '../../../../types';
 import { Repositories } from '../../../../utils/repositories';
-import { validatePermission } from '../../../authorization';
+import { AuthorizationService } from '../../../authorization';
 import { Item, isItemType } from '../../../item/entities/Item';
 import { ItemService } from '../../../item/service';
 import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { ItemMembershipService } from '../../../itemMembership/service';
-import { Actor, Member } from '../../../member/entities/member';
+import { Member } from '../../../member/entities/member';
 import { MemberService } from '../../../member/service';
 import { EMAIL_COLUMN_NAME, GROUP_COL_NAME, buildInvitationLink } from './constants';
-import { Invitation } from './entity';
 import {
   CantCreateStructureInNoFolderItem,
   InvitationNotFound,
@@ -42,6 +42,7 @@ export class InvitationService {
   private readonly itemService: ItemService;
   private readonly memberService: MemberService;
   private readonly itemMembershipService: ItemMembershipService;
+  private readonly authorizationService: AuthorizationService;
   private readonly invitationRepository: InvitationRepository;
 
   constructor(
@@ -50,6 +51,7 @@ export class InvitationService {
     itemService: ItemService,
     memberService: MemberService,
     itemMembershipService: ItemMembershipService,
+    authorizationService: AuthorizationService,
     invitationRepository: InvitationRepository,
   ) {
     this.log = log;
@@ -57,6 +59,7 @@ export class InvitationService {
     this.itemService = itemService;
     this.memberService = memberService;
     this.itemMembershipService = itemMembershipService;
+    this.authorizationService = authorizationService;
     this.invitationRepository = invitationRepository;
   }
 
@@ -85,37 +88,36 @@ export class InvitationService {
     });
   }
 
-  async get(actor: Actor, repositories: Repositories, invitationId: string) {
+  async get(db: DBConnection, actor: Actor, invitationId: string) {
     if (actor) {
-      return repositories.invitationRepository.getOneByIdAndByCreatorOrThrow(
-        invitationId,
-        actor.id,
-      );
+      return this.invitationRepository.getOneByIdAndByCreatorOrThrow(db, invitationId, actor.id);
     } else {
-      return repositories.invitationRepository.getOneOrThrow(
-        invitationId,
-        undefined,
-        new InvitationNotFound({ invitationId }),
-      );
+      const invitation = this.invitationRepository.getOne(db, invitationId);
+      if (!invitation) {
+        throw new InvitationNotFound({ invitationId });
+      }
     }
   }
 
-  async getForItem(member: Member, repositories: Repositories, itemId: string) {
-    const { invitationRepository } = repositories;
-    const item = await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
-    return invitationRepository.getManyByItem(item.path);
+  async getForItem(db: DBConnection, member: Member, itemId: string) {
+    const item = await this.itemService.get(db, member, itemId, PermissionLevel.Admin);
+    return this.invitationRepository.getManyByItem(db, item.path);
   }
 
   async postManyForItem(
+    db: DBConnection,
     member: Member,
-    repositories: Repositories,
     itemId: string,
     invitations: Partial<Invitation>[],
   ): Promise<Invitation[]> {
-    const { invitationRepository } = repositories;
-    const item = await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
+    const item = await this.itemService.get(db, member, itemId, PermissionLevel.Admin);
 
-    const completeInvitations = await invitationRepository.addMany(invitations, item.path, member);
+    const completeInvitations = await this.invitationRepository.addMany(
+      db,
+      invitations,
+      item.path,
+      member,
+    );
 
     this.log.debug('send invitation mails');
     completeInvitations.forEach((invitation: Invitation) => {
@@ -126,30 +128,30 @@ export class InvitationService {
     return completeInvitations;
   }
 
-  async patch(
-    member: Member,
-    repositories: Repositories,
-    invitationId: string,
-    body: Partial<Invitation>,
-  ) {
-    const { invitationRepository } = repositories;
+  async patch(db: DBConnection, member: Member, invitationId: string, body: Partial<Invitation>) {
+    const invitation = await this.invitationRepository.getOne(db, invitationId);
+    if (!invitation) {
+      throw new InvitationNotFound({ invitationId });
+    }
+    await this.authorizationService.validatePermission(
+      db,
+      PermissionLevel.Admin,
+      member,
+      invitation.item,
+    );
+
+    return this.invitationRepository.updateOne(db, invitationId, body);
+  }
+
+  async delete(db: DBConnection, member: Member, invitationId: string) {
     const invitation = await invitationRepository.getOneOrThrow(invitationId);
     await validatePermission(repositories, PermissionLevel.Admin, member, invitation.item);
 
-    return invitationRepository.updateOne(invitationId, body);
+    await this.invitationRepository.delete(db, invitationId);
   }
 
-  async delete(member: Member, repositories: Repositories, invitationId: string) {
-    const { invitationRepository } = repositories;
-    const invitation = await invitationRepository.getOneOrThrow(invitationId);
-    await validatePermission(repositories, PermissionLevel.Admin, member, invitation.item);
-
-    await invitationRepository.delete(invitationId);
-  }
-
-  async resend(member: Member, repositories: Repositories, invitationId: string) {
-    const { invitationRepository } = repositories;
-    const invitation = await invitationRepository.getOneOrThrow(invitationId);
+  async resend(db: DBConnection, member: Member, invitationId: string) {
+    const invitation = await this.invitationRepository.getOneOrThrow(db, invitationId);
     await validatePermission(repositories, PermissionLevel.Admin, member, invitation.item);
 
     this.sendInvitationEmail({ invitation, member });
@@ -163,8 +165,8 @@ export class InvitationService {
       accountId: member.id,
       permission,
     }));
-    await new ItemMembershipRepository().addMany(memberships);
-    await this.invitationRepository.deleteManyByEmail(member.email);
+    await new ItemMembershipRepository().addMany(db, memberships);
+    await this.invitationRepository.deleteManyByEmail(db, member.email);
   }
 
   async _partitionExistingUsersAndNewUsers(

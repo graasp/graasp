@@ -45,10 +45,15 @@ export const itemPublisheds = pgTable(
   {
     id: uuid().primaryKey().defaultRandom().notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    creatorId: uuid('creator_id').references(() => accounts.id, { onDelete: 'set null' }),
+    creatorId: uuid('creator_id').references(() => accounts.id, {
+      onDelete: 'set null',
+    }),
     itemPath: ltree('item_path')
       .notNull()
-      .references(() => itemsRaw.path, { onUpdate: 'cascade', onDelete: 'cascade' }),
+      .references(() => itemsRaw.path, {
+        onUpdate: 'cascade',
+        onDelete: 'cascade',
+      }),
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
   },
   (table) => [
@@ -60,6 +65,12 @@ export const itemPublisheds = pgTable(
   ],
 );
 
+export type ItemPublishedRaw = typeof itemPublisheds.$inferSelect;
+export type ItemPublishedWithItem = Omit<typeof itemPublisheds.$inferSelect, 'itemPath'> & {
+  item: Item;
+};
+export type ItemPublishedWithItemAndAccount = ItemPublishedWithItem & { creator: Member };
+
 export const permissionEnum = pgEnum('permission_enum', ['read', 'write', 'admin']);
 export const itemMemberships = pgTable(
   'item_membership',
@@ -68,8 +79,13 @@ export const itemMemberships = pgTable(
     permission: permissionEnum().notNull(),
     itemPath: ltree('item_path')
       .notNull()
-      .references(() => itemsRaw.path, { onUpdate: 'cascade', onDelete: 'cascade' }),
-    creatorId: uuid('creator_id').references(() => accounts.id, { onDelete: 'set null' }),
+      .references(() => itemsRaw.path, {
+        onUpdate: 'cascade',
+        onDelete: 'cascade',
+      }),
+    creatorId: uuid('creator_id').references(() => accounts.id, {
+      onDelete: 'set null',
+    }),
     accountId: uuid('account_id')
       .notNull()
       .references(() => accounts.id, { onDelete: 'cascade' }),
@@ -112,7 +128,9 @@ export const memberPasswords = pgTable(
     password: varchar({ length: 100 }).notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
-    memberId: uuid('member_id').references(() => accounts.id, { onDelete: 'cascade' }),
+    memberId: uuid('member_id').references(() => accounts.id, {
+      onDelete: 'cascade',
+    }),
   },
   (table) => [unique('member-password').on(table.memberId)],
 );
@@ -373,7 +391,7 @@ export const appSettings = pgTable(
     }).onDelete('set null'),
   ],
 );
-export type AppSetting = typeof appSettings.$inferSelect
+export type AppSetting = typeof appSettings.$inferSelect;
 
 export const invitations = pgTable(
   'invitation',
@@ -459,7 +477,7 @@ export const itemValidationGroups = pgTable(
     }).onDelete('cascade'),
   ],
 );
-export type ItemValidationGroup = typeof itemValidationGroups.$inferInsert
+export type ItemValidationGroup = typeof itemValidationGroups.$inferInsert;
 
 export const itemValidations = pgTable(
   'item_validation',
@@ -512,7 +530,7 @@ export const itemValidationReviews = pgTable(
     }).onDelete('set null'),
   ],
 );
-export type ItemValidationReview = typeof itemValidationReviews.$inferInsert
+export type ItemValidationReview = typeof itemValidationReviews.$inferInsert;
 
 export const itemBookmarks = pgTable(
   'item_favorite',
@@ -638,7 +656,9 @@ export type ActionRaw = typeof actions.$inferSelect;
 export type ActionWithItem = Omit<typeof actions.$inferSelect, 'accountId' | 'itemId'> & {
   item: Item | null;
 };
-export type ActionWithItemAndAccount = ActionWithItem & { account: MinimalAccount | null };
+export type ActionWithItemAndAccount = ActionWithItem & {
+  account: MinimalAccount | null;
+};
 
 export const itemGeolocations = pgTable(
   'item_geolocation',
@@ -863,7 +883,9 @@ export const guestsView = pgView('guests_view').as((qb) =>
     .where(and(eq(accounts.type, AccountType.Guest), isNotNull(accounts.itemLoginSchemaId))),
 );
 // HACK: Using inferSelect isnce this is a PGView and it does not allow to insert on the view
-export type MemberCreationDTO = typeof membersView.$inferSelect & { email: string };
+export type MemberCreationDTO = typeof membersView.$inferSelect & {
+  email: string;
+};
 export type Member = typeof membersView.$inferSelect;
 
 export const guestPasswords = pgTable(
@@ -894,7 +916,10 @@ export const itemLoginSchemas = pgTable(
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
     itemPath: ltree('item_path')
       .notNull()
-      .references(() => itemsRaw.path, { onUpdate: 'cascade', onDelete: 'cascade' }),
+      .references(() => itemsRaw.path, {
+        onUpdate: 'cascade',
+        onDelete: 'cascade',
+      }),
     status: varchar({ length: 100 }).default('active').notNull(),
   },
   (table) => [unique('item-login-schema').on(table.itemPath)],
@@ -961,7 +986,10 @@ export const itemTags = pgTable(
       foreignColumns: [itemsRaw.id],
       name: 'FK_39b492fda03c7ac846afe164b58',
     }).onDelete('cascade'),
-    primaryKey({ columns: [table.tagId, table.itemId], name: 'PK_a04bb2298e37d95233a0c92347e' }),
+    primaryKey({
+      columns: [table.tagId, table.itemId],
+      name: 'PK_a04bb2298e37d95233a0c92347e',
+    }),
     unique('UQ_item_tag').on(table.tagId, table.itemId),
   ],
 );
