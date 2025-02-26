@@ -11,10 +11,10 @@ import {
 
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../test/app';
 import { ItemMembershipRepository } from '../services/itemMembership/repository';
+import { AuthenticatedUser } from '../types';
 import { asDefined } from '../utils/assertions';
 import { MemberCannotAccess, MemberCannotAdminItem, MemberCannotWriteItem } from '../utils/errors';
 import { type Repositories } from '../utils/repositories';
-import { Account } from './account/entities/account';
 import { isAuthenticated } from './auth/plugins/passport';
 import {
   filterOutPackedDescendants,
@@ -32,8 +32,18 @@ import { Member } from './member/entities/member';
 import { validatedMemberAccountRole } from './member/strategies/validatedMemberAccountRole';
 import { saveMember } from './member/test/fixtures/members';
 
-const OWNER = { id: 'owner', name: 'owner' } as Account;
-const SHARED_MEMBER = { id: 'shared', name: 'shared' } as Account;
+const OWNER = {
+  id: 'owner',
+  name: 'owner',
+  type: 'individual',
+  isValidated: true,
+} satisfies AuthenticatedUser;
+const SHARED_MEMBER = {
+  id: 'shared',
+  name: 'shared',
+  type: 'individual',
+  isValidated: true,
+} satisfies AuthenticatedUser;
 const OTHER_MEMBER = { id: 'other', name: 'other' } as Member;
 const ITEM = { id: 'item' } as Item;
 const ownerMembership = { account: OWNER, permission: PermissionLevel.Admin } as ItemMembership;

@@ -179,7 +179,7 @@ describe('ItemGeolocationRepository', () => {
       // noise
       await testUtils.saveItemAndMembership({ member: actor, parentItem });
 
-      const res = await repository.getItemsIn(actor, { lat1: 0, lat2: 4, lng1: 0, lng2: 4 });
+      const res = await repository.getItemsIn({ lat1: 0, lat2: 4, lng1: 0, lng2: 4 });
       expect(res).toHaveLength(2);
       expectItemGeolocations(res, [geoloc, geolocParent]);
     });
@@ -195,7 +195,7 @@ describe('ItemGeolocationRepository', () => {
       // noise
       await testUtils.saveItemAndMembership({ member: actor, parentItem });
 
-      const res = await repository.getItemsIn(actor, { lat1: 0, lat2: 0.5, lng1: 0, lng2: 0.5 });
+      const res = await repository.getItemsIn({ lat1: 0, lat2: 0.5, lng1: 0, lng2: 0.5 });
       expect(res).toHaveLength(0);
     });
 
@@ -213,7 +213,7 @@ describe('ItemGeolocationRepository', () => {
       // noise
       await testUtils.saveItemAndMembership({ member: actor, parentItem });
 
-      const res = await repository.getItemsIn(actor, { lat1: 0, lat2: 4, lng1: 0, lng2: 4 });
+      const res = await repository.getItemsIn({ lat1: 0, lat2: 4, lng1: 0, lng2: 4 });
       expect(res).toHaveLength(2);
       expectItemGeolocations(res, [geoloc, geolocParent]);
     });
@@ -240,16 +240,13 @@ describe('ItemGeolocationRepository', () => {
       // noise
       await testUtils.saveItemAndMembership({ member: actor, parentItem });
 
-      const res = await repository.getItemsIn(
-        { ...actor, lang: 'fr' },
-        {
-          lat1: 0,
-          lat2: 4,
-          lng1: 0,
-          lng2: 4,
-          keywords: ['chats'],
-        },
-      );
+      const res = await repository.getItemsIn({
+        lat1: 0,
+        lat2: 4,
+        lng1: 0,
+        lng2: 4,
+        keywords: ['chats'],
+      });
       expect(res).toHaveLength(1);
       expectItemGeolocations(res, [geolocParent]);
     });
@@ -276,17 +273,14 @@ describe('ItemGeolocationRepository', () => {
       // noise
       await testUtils.saveItemAndMembership({ member: actor, parentItem });
 
-      const res1 = await repository.getItemsIn(
-        { ...actor, lang: 'fr' },
-        {
-          lat1: 0,
-          lat2: 4,
-          lng1: 0,
-          lng2: 4,
-          // this checked the search_document stemmed correctly gatos
-          keywords: ['gato'],
-        },
-      );
+      const res1 = await repository.getItemsIn({
+        lat1: 0,
+        lat2: 4,
+        lng1: 0,
+        lng2: 4,
+        // this checked the search_document stemmed correctly gatos
+        keywords: ['gato'],
+      });
       expect(res1).toHaveLength(1);
       expectItemGeolocations(res1, [geolocParent]);
     });
@@ -312,7 +306,7 @@ describe('ItemGeolocationRepository', () => {
       // noise
       await testUtils.saveItemAndMembership({ member: actor, parentItem });
 
-      const res = await repository.getItemsIn(actor, {
+      const res = await repository.getItemsIn({
         lat1: 0,
         lat2: 4,
         lng1: 0,
@@ -344,7 +338,7 @@ describe('ItemGeolocationRepository', () => {
       // noise
       await testUtils.saveItemAndMembership({ member: actor, parentItem });
 
-      const res = await repository.getItemsIn(actor, {
+      const res = await repository.getItemsIn({
         lat1: 0,
         lat2: 4,
         lng1: 0,
@@ -376,7 +370,7 @@ describe('ItemGeolocationRepository', () => {
       // noise
       await testUtils.saveItemAndMembership({ member: actor, parentItem });
 
-      const res = await repository.getItemsIn(actor, {
+      const res = await repository.getItemsIn({
         lat1: 0,
         lat2: 4,
         lng1: 0,
@@ -430,7 +424,7 @@ describe('ItemGeolocationRepository', () => {
       });
       await rawRepository.save({ lat: 1, lng: 2, item: item2, country: 'de' });
 
-      const res = await repository.getItemsIn(actor, {
+      const res = await repository.getItemsIn({
         lat1: 0,
         lat2: 4,
         lng1: 0,
@@ -483,7 +477,7 @@ describe('ItemGeolocationRepository', () => {
       });
       await rawRepository.save({ lat: 1, lng: 2, item: item2, country: 'de' });
 
-      const res = await repository.getItemsIn(actor, {
+      const res = await repository.getItemsIn({
         lat1: 0,
         lat2: 4,
         lng1: 0,
@@ -535,7 +529,7 @@ describe('ItemGeolocationRepository', () => {
       });
       await rawRepository.save({ lat: 1, lng: 2, item: item2, country: 'de' });
 
-      const res = await repository.getItemsIn(actor, {
+      const res = await repository.getItemsIn({
         lat1: 0,
         lat2: 4,
         lng1: 0,
@@ -567,7 +561,7 @@ describe('ItemGeolocationRepository', () => {
       });
       const geoloc2 = await rawRepository.save({ lat: 1, lng: 2, item: item2, country: 'de' });
 
-      const res = await repository.getItemsIn(actor, {
+      const res = await repository.getItemsIn({
         lat1: 0,
         lat2: 4,
         lng1: 0,
@@ -603,7 +597,6 @@ describe('ItemGeolocationRepository', () => {
       await rawRepository.save({ lat: 1, lng: 2, item: item2, country: 'de' });
 
       const res = await repository.getItemsIn(
-        actor,
         {
           lat1: 0,
           lat2: 4,
@@ -641,7 +634,7 @@ describe('ItemGeolocationRepository', () => {
       });
       await rawRepository.save({ lat: 1, lng: 2, item: item2, country: 'de' });
 
-      const res = await repository.getItemsIn(actor, {}, parentItem);
+      const res = await repository.getItemsIn({}, parentItem);
       expect(res).toHaveLength(1);
       expectItemGeolocations(res, [geoloc]);
     });

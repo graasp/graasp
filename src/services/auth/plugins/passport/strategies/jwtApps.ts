@@ -2,6 +2,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 
 import { Authenticator } from '@fastify/passport';
 
+import { AuthenticatedUser } from '../../../../../types';
 import { APPS_JWT_SECRET } from '../../../../../utils/config';
 import { UnauthorizedMember } from '../../../../../utils/errors';
 import { AccountRepository } from '../../../../account/repository';
@@ -34,7 +35,8 @@ export default (
         }
 
         // Fetch Member datas
-        const account = await accountRepository.get(accountId);
+        // HACK: We cast here, but in the future we should only retrieve the minimal info
+        const account = (await accountRepository.get(accountId)) as AuthenticatedUser;
         // Member can be undefined if authorized.
         if (strict && !account) {
           return done(new UnauthorizedMember(), false);

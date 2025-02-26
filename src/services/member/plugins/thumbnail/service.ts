@@ -10,7 +10,7 @@ import {
   ThumbnailService,
   ThumbnailServiceTransformer,
 } from '../../../thumbnail/service';
-import { Actor, Member, assertIsMember } from '../../entities/member';
+import { Actor, Member } from '../../entities/member';
 import { MemberService } from '../../service';
 
 @singleton()
@@ -52,25 +52,19 @@ export class MemberThumbnailService {
   }
 
   // get member's avatar
-  async getUrl(
-    actor: Actor,
-    repositories: Repositories,
-    { size, memberId }: { memberId: string; size: string },
-  ) {
-    const account = await repositories.accountRepository.get(memberId);
+  async getUrl(repositories: Repositories, { size, memberId }: { memberId: string; size: string }) {
+    const member = await repositories.memberRepository.get(memberId);
 
-    if (!account) {
+    if (!member) {
       throw new AccountNotFound(memberId);
     }
 
     // only members can upload an avatar
-    if (account.type !== AccountType.Individual) {
+    if (member.type !== AccountType.Individual) {
       return null;
     }
-
-    assertIsMember(account);
     // member does not have avatar
-    if (!account.extra.hasAvatar) {
+    if (!member.extra.hasAvatar) {
       return null;
     }
 

@@ -23,7 +23,7 @@ const memberSchema = {
 
 export class BaseAnalytics {
   readonly actions: Action[];
-  readonly members: { id: string; name: string }[];
+  readonly members: { id: string; name: string }[] | undefined;
   readonly itemMemberships: ItemMembership[];
   readonly descendants: Item[];
   readonly item: Item;
@@ -44,7 +44,7 @@ export class BaseAnalytics {
     item: Item;
     descendants: Item[];
     actions: Action[];
-    members: Account[];
+    members: Account[] | undefined;
     itemMemberships: ItemMembership[];
     chatMessages: ChatMessage[];
     apps: {

@@ -10,10 +10,10 @@ import {
   UpdateShortLink,
 } from '@graasp/sdk';
 
+import { AuthenticatedUser } from '../../../../types';
 import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
-import { Account } from '../../../account/entities/account';
 import { ItemService } from '../../../item/service';
 import { Member } from '../../../member/entities/member';
 import { ItemPublishedNotFound } from '../publication/published/errors';
@@ -63,7 +63,7 @@ export class ShortLinkService {
     return ShortLinkDTO.from(shortLink);
   }
 
-  async getAllForItem(account: Account, repositories: Repositories, itemId: string) {
+  async getAllForItem(account: AuthenticatedUser, repositories: Repositories, itemId: string) {
     const { shortLinkRepository } = repositories;
 
     if (!account) throw new UnauthorizedMember();

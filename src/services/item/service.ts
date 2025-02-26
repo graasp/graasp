@@ -22,6 +22,7 @@ import {
 } from '@graasp/sdk';
 
 import { BaseLogger } from '../../logger';
+import { AuthenticatedUser } from '../../types';
 import {
   CannotReorderRootItem,
   InvalidMembership,
@@ -33,7 +34,6 @@ import {
 } from '../../utils/errors';
 import HookManager from '../../utils/hook';
 import { Repositories } from '../../utils/repositories';
-import { Account } from '../account/entities/account';
 import {
   filterOutItems,
   filterOutPackedDescendants,
@@ -584,16 +584,11 @@ export class ItemService {
     const { itemRepository } = repositories;
     const item = await this.get(actor, repositories, itemId);
 
-    return itemRepository.getChildren(actor, item, params);
+    return itemRepository.getChildren(actor?.lang, item, params);
   }
 
-  async getChildren(
-    actor: Actor,
-    repositories: Repositories,
-    itemId: string,
-    params?: ItemChildrenParams,
-  ) {
-    const children = await this._getChildren(actor, repositories, itemId, params);
+  async getChildren(actor: Actor, repositories: Repositories, itemId: string) {
+    const children = await this._getChildren(actor, repositories, itemId);
     // TODO optimize?
     return filterOutItems(actor, repositories, children);
   }
@@ -627,7 +622,11 @@ export class ItemService {
     return { item, descendants: await itemRepository.getDescendants(item, options) };
   }
 
-  async getFilteredDescendants(account: Account, repositories: Repositories, itemId: UUID) {
+  async getFilteredDescendants(
+    account: AuthenticatedUser,
+    repositories: Repositories,
+    itemId: UUID,
+  ) {
     const { descendants } = await this.getDescendants(account, repositories, itemId);
     if (!descendants.length) {
       return [];

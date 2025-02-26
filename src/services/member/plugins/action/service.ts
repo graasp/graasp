@@ -3,9 +3,9 @@ import { singleton } from 'tsyringe';
 
 import { ActionTriggers, PermissionLevel } from '@graasp/sdk';
 
+import { AuthenticatedUser } from '../../../../types';
 import { CannotModifyOtherMembers } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
-import { Account } from '../../../account/entities/account';
 import { ActionService } from '../../../action/services/action';
 import { validatePermissionMany } from '../../../authorization';
 import { Item, ItemExtraMap } from '../../../item/entities/Item';
@@ -35,7 +35,7 @@ export class ActionMemberService {
   }
 
   async getFilteredActions(
-    actor: Account,
+    actor: AuthenticatedUser,
     repositories: Repositories,
     filters: { startDate?: string; endDate?: string },
   ) {
@@ -73,7 +73,7 @@ export class ActionMemberService {
   }
 
   async deleteAllForMember(
-    actor: Account,
+    actor: AuthenticatedUser,
     repositories: Repositories,
     memberId: string,
   ): Promise<void> {

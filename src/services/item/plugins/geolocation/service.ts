@@ -1,11 +1,12 @@
 import { inject, singleton } from 'tsyringe';
 
 import { PermissionLevel } from '@graasp/sdk';
+import { DEFAULT_LANG } from '@graasp/translations';
 
 import { GEOLOCATION_API_KEY_DI_KEY } from '../../../../di/constants';
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermissionMany } from '../../../authorization';
-import { Actor, Member } from '../../../member/entities/member';
+import { Actor, Member, isMember } from '../../../member/entities/member';
 import { ItemWrapper } from '../../ItemWrapper';
 import { Item } from '../../entities/Item';
 import { ItemService } from '../../service';
@@ -74,14 +75,16 @@ export class ItemGeolocationService {
       keywords?: string[];
     },
   ): Promise<PackedItemGeolocation[]> {
-    const { itemGeolocationRepository } = repositories;
+    const { itemGeolocationRepository, memberRepository } = repositories;
 
     let parentItem: Item | undefined;
     if (query.parentItemId) {
       parentItem = await this.itemService.get(actor, repositories, query.parentItemId);
     }
+    const memberLang =
+      actor && isMember(actor) ? (await memberRepository.get(actor.id))?.lang : DEFAULT_LANG;
 
-    const geoloc = await itemGeolocationRepository.getItemsIn(actor, query, parentItem);
+    const geoloc = await itemGeolocationRepository.getItemsIn(query, parentItem, memberLang);
 
     // check if there are any items with a geolocation, if not return early
     const itemsWithGeoloc = geoloc.map(({ item }) => item);

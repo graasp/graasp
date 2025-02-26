@@ -2,12 +2,11 @@ import { singleton } from 'tsyringe';
 
 import { PermissionLevel } from '@graasp/sdk';
 
+import { AuthenticatedUser } from '../../types';
 import HookManager from '../../utils/hook';
 import { Repositories } from '../../utils/repositories';
-import { Account } from '../account/entities/account';
 import { ItemService } from '../item/service';
-import { Guest } from '../itemLogin/entities/guest';
-import { Actor, Member } from '../member/entities/member';
+import { Actor } from '../member/entities/member';
 import { ChatMessage } from './chatMessage';
 import { MemberCannotDeleteMessage, MemberCannotEditMessage } from './errors';
 import { MentionService } from './plugins/mentions/service';
@@ -37,7 +36,7 @@ export class ChatMessageService {
   }
 
   async postOne(
-    actor: Guest | Member,
+    actor: AuthenticatedUser,
     repositories: Repositories,
     itemId: string,
     data: { body: string; mentions?: string[] },
@@ -49,7 +48,7 @@ export class ChatMessageService {
 
     const message = await chatMessageRepository.addOne({
       itemId,
-      creator: actor,
+      creatorId: actor.id,
       body: data.body,
     });
 
@@ -64,7 +63,7 @@ export class ChatMessageService {
   }
 
   async patchOne(
-    actor: Account,
+    actor: AuthenticatedUser,
     repositories: Repositories,
     itemId: string,
     messageId: string,
@@ -89,7 +88,12 @@ export class ChatMessageService {
     return updatedMessage;
   }
 
-  async deleteOne(actor: Account, repositories: Repositories, itemId: string, messageId: string) {
+  async deleteOne(
+    actor: AuthenticatedUser,
+    repositories: Repositories,
+    itemId: string,
+    messageId: string,
+  ) {
     const { chatMessageRepository } = repositories;
 
     // check permission
@@ -111,7 +115,7 @@ export class ChatMessageService {
     return messageContent;
   }
 
-  async clear(actor: Account, repositories: Repositories, itemId: string) {
+  async clear(actor: AuthenticatedUser, repositories: Repositories, itemId: string) {
     const { chatMessageRepository } = repositories;
 
     // check rights for accessing the chat and sufficient right to clear the conversation

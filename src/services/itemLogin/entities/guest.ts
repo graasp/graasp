@@ -2,7 +2,8 @@ import { ChildEntity, Column, JoinColumn, ManyToOne, Unique } from 'typeorm';
 
 import { AccountType, CompleteMember } from '@graasp/sdk';
 
-import { Account, is } from '../../account/entities/account';
+import { AuthenticatedUser } from '../../../types';
+import { Account } from '../../account/entities/account';
 import { ItemLoginSchema } from './itemLoginSchema';
 
 const TYPE = AccountType.Guest;
@@ -25,6 +26,6 @@ export class Guest extends Account {
   type: AccountType.Guest;
 }
 
-export function isGuest(account: Account): account is Guest {
-  return is<Guest>(account, TYPE);
+export function isGuest(account: AuthenticatedUser): account is Guest {
+  return account.type === TYPE;
 }

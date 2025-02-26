@@ -61,7 +61,7 @@ export const getItemActions = {
   response: {
     [StatusCodes.OK]: customType.StrictObject({
       actions: Type.Array(actionSchema),
-      members: Type.Array(accountSchemaRef),
+      members: Type.Optional(Type.Array(accountSchemaRef)),
       descendants: Type.Array(itemSchemaRef),
       item: itemSchemaRef,
       apps: Type.Record(

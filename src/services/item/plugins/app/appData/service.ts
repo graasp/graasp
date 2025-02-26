@@ -3,9 +3,9 @@ import { inject, singleton } from 'tsyringe';
 import { AppDataVisibility, FileItemType, PermissionLevel, UUID } from '@graasp/sdk';
 
 import { FILE_ITEM_TYPE_DI_KEY } from '../../../../../di/constants';
+import { AuthenticatedUser } from '../../../../../types';
 import HookManager from '../../../../../utils/hook';
 import { Repositories } from '../../../../../utils/repositories';
-import { Account } from '../../../../account/entities/account';
 import { validatePermission } from '../../../../authorization';
 import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
 import { Actor } from '../../../../member/entities/member';
@@ -79,7 +79,7 @@ export class AppDataService {
   }
 
   async post(
-    account: Account,
+    account: AuthenticatedUser,
     repositories: Repositories,
     itemId: string,
     body: Partial<InputAppData>,
@@ -117,7 +117,7 @@ export class AppDataService {
   }
 
   async patch(
-    account: Account,
+    account: AuthenticatedUser,
     repositories: Repositories,
     itemId: string,
     appDataId: string,
@@ -172,7 +172,12 @@ export class AppDataService {
     return appData;
   }
 
-  async deleteOne(account: Account, repositories: Repositories, itemId: string, appDataId: string) {
+  async deleteOne(
+    account: AuthenticatedUser,
+    repositories: Repositories,
+    itemId: string,
+    appDataId: string,
+  ) {
     const { appDataRepository, itemRepository } = repositories;
 
     // check item exists? let post fail?
@@ -210,7 +215,7 @@ export class AppDataService {
     return result;
   }
 
-  async get(account: Account, repositories: Repositories, item: Item, appDataId: UUID) {
+  async get(account: AuthenticatedUser, repositories: Repositories, item: Item, appDataId: UUID) {
     const { appDataRepository } = repositories;
 
     const { itemMembership } = await validatePermission(
@@ -241,7 +246,12 @@ export class AppDataService {
     return appData;
   }
 
-  async getForItem(account: Account, repositories: Repositories, itemId: string, type?: string) {
+  async getForItem(
+    account: AuthenticatedUser,
+    repositories: Repositories,
+    itemId: string,
+    type?: string,
+  ) {
     const { appDataRepository, itemRepository } = repositories;
 
     // check item exists? let post fail?

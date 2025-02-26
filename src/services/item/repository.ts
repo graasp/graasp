@@ -35,7 +35,7 @@ import {
   FILE_METADATA_MAX_PAGE_SIZE,
   FILE_METADATA_MIN_PAGE,
 } from '../member/constants';
-import { Actor, Member, isMember } from '../member/entities/member';
+import { Actor, Member } from '../member/entities/member';
 import { itemSchema } from '../member/plugins/export-data/schemas/schemas';
 import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils';
 import { fileItemMetadata } from '../member/schemas';
@@ -183,7 +183,7 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
   }
 
   async getChildren(
-    actor: Actor,
+    memberLang: string | undefined,
     parent: Item,
     params?: ItemChildrenParams,
     options: { withOrder?: boolean } = {},
@@ -225,7 +225,6 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
           });
 
           // search by member lang
-          const memberLang = actor && isMember(actor) ? actor?.lang : DEFAULT_LANG;
           if (memberLang && ALLOWED_SEARCH_LANGS[memberLang]) {
             q.orWhere('item.search_document @@ plainto_tsquery(:lang, :keywords)', {
               keywords: keywordsString,
@@ -878,7 +877,7 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
 
   async rescaleOrder(actor: Actor, parentItem: Item) {
     const children = await this.getChildren(
-      actor,
+      undefined,
       parentItem,
       { ordered: true },
       { withOrder: true },

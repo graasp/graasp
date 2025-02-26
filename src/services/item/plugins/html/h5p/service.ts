@@ -8,6 +8,7 @@ import { FastifyBaseLogger } from 'fastify';
 import { H5PItemExtra, ItemType } from '@graasp/sdk';
 
 import { BaseLogger } from '../../../../../logger';
+import { AuthenticatedUser } from '../../../../../types';
 import {
   H5P_FILE_STORAGE_CONFIG,
   H5P_FILE_STORAGE_TYPE,
@@ -74,7 +75,7 @@ export class H5PService extends HtmlService {
   }
 
   async copy(
-    member: Member,
+    member: AuthenticatedUser,
     repositories: Repositories,
     {
       original: item,

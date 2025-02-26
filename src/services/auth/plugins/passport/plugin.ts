@@ -3,6 +3,7 @@ import { fastifySecureSession } from '@fastify/secure-session';
 import { FastifyInstance, FastifyPluginAsync, PassportUser } from 'fastify';
 
 import { resolveDependency } from '../../../../di/utils';
+import { AuthenticatedUser } from '../../../../types';
 import { assertIsDefined } from '../../../../utils/assertions';
 import {
   AUTH_TOKEN_JWT_SECRET,
@@ -126,7 +127,8 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   });
   fastifyPassport.registerUserDeserializer(async (uuid: string, _req): Promise<PassportUser> => {
     return {
-      account: await accountRepository.get(uuid),
+      // HACK: We cast here, but in the future we should only retrieve the minimal info
+      account: (await accountRepository.get(uuid)) as AuthenticatedUser,
     };
   });
 };

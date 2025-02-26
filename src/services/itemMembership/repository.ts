@@ -28,7 +28,6 @@ import { ITEMS_PAGE_SIZE_MAX } from '../item/constants';
 import { Item } from '../item/entities/Item';
 import { ItemSearchParams, Ordering, SortBy, orderingToUpperCase } from '../item/types';
 import { MemberIdentifierNotFound } from '../itemLogin/errors';
-import { isMember } from '../member/entities/member';
 import { itemMembershipSchema } from '../member/plugins/export-data/schemas/schemas';
 import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils';
 import { mapById } from '../utils';
@@ -218,6 +217,7 @@ export class ItemMembershipRepository extends MutableRepository<
       types,
     }: ItemSearchParams,
     pagination: Pagination,
+    memberLang?: string,
   ): Promise<Paginated<ItemMembership>> {
     const { page, pageSize } = pagination;
     const limit = Math.min(pageSize, ITEMS_PAGE_SIZE_MAX);
@@ -268,7 +268,6 @@ export class ItemMembershipRepository extends MutableRepository<
           });
 
           // search by member lang
-          const memberLang = isMember(account) ? account.lang : DEFAULT_LANG;
           const memberLangKey = memberLang as keyof typeof ALLOWED_SEARCH_LANGS;
           if (memberLang != DEFAULT_LANG && ALLOWED_SEARCH_LANGS[memberLangKey]) {
             q.orWhere('item.search_document @@ plainto_tsquery(:lang, :keywords)', {

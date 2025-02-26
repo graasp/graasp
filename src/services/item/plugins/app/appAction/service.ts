@@ -1,8 +1,8 @@
 import { PermissionLevel } from '@graasp/sdk';
 
+import { AuthenticatedUser } from '../../../../../types';
 import HookManager from '../../../../../utils/hook';
 import { Repositories } from '../../../../../utils/repositories';
-import { Account } from '../../../../account/entities/account';
 import { validatePermission } from '../../../../authorization';
 import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request';
 import { AppAction } from './appAction';
@@ -17,7 +17,7 @@ export class AppActionService {
     };
   }>();
   async post(
-    account: Account,
+    account: AuthenticatedUser,
     repositories: Repositories,
     itemId: string,
     body: Partial<InputAppAction>,
@@ -45,7 +45,7 @@ export class AppActionService {
   }
 
   async getForItem(
-    account: Account,
+    account: AuthenticatedUser,
     repositories: Repositories,
     itemId: string,
     filters: SingleItemGetFilter,
@@ -78,7 +78,7 @@ export class AppActionService {
   }
 
   async getForManyItems(
-    account: Account,
+    account: AuthenticatedUser,
     repositories: Repositories,
     itemIds: string[],
     filters: ManyItemsGetFilter,

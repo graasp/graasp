@@ -20,6 +20,7 @@ import { Item } from '../services/item/entities/Item';
 import { create, updateOne } from '../services/item/schema';
 import { Actor, Member } from '../services/member/entities/member';
 import { WebsocketService } from '../services/websockets/ws-service';
+import { AuthenticatedUser } from '../types';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -32,7 +33,7 @@ declare module 'fastify' {
   }
 
   interface PassportUser {
-    account?: Member | Guest;
+    account?: Actor;
     passwordResetRedisKey?: string; // Used for Password Reset
     emailChange?: {
       newEmail: string;

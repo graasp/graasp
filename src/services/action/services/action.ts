@@ -26,12 +26,15 @@ export class ActionService {
   }
 
   async postMany(
-    member: Actor,
+    actor: Actor,
     repositories: Repositories,
     request: FastifyRequest,
     actions: (Partial<Action> & Pick<Action, 'type'>)[],
   ): Promise<void> {
     const { headers } = request;
+
+    // expand member to the full account
+    const member = actor ? await repositories.memberRepository.get(actor.id) : null;
 
     // prevent saving if member is defined and has disabled saveActions
     if (member && isMember(member) && member.enableSaveActions === false) {

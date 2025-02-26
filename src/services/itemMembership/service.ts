@@ -5,6 +5,7 @@ import { ClientManager, Context, PermissionLevel, UUID } from '@graasp/sdk';
 import { TRANSLATIONS } from '../../langs/constants';
 import { MailBuilder } from '../../plugins/mailer/builder';
 import { MailerService } from '../../plugins/mailer/service';
+import { AccountType, AuthenticatedUser } from '../../types';
 import {
   CannotDeleteOnlyAdmin,
   CannotModifyGuestItemMembership,
@@ -12,11 +13,9 @@ import {
 } from '../../utils/errors';
 import HookManager from '../../utils/hook';
 import { Repositories } from '../../utils/repositories';
-import { Account } from '../account/entities/account';
 import { validatePermission } from '../authorization';
 import { Item } from '../item/entities/Item';
 import { ItemService } from '../item/service';
-import { isGuest } from '../itemLogin/entities/guest';
 import { Actor, Member } from '../member/entities/member';
 import { ItemMembership } from './entities/ItemMembership';
 
@@ -35,7 +34,7 @@ export class ItemMembershipService {
     this.mailerService = mailerService;
   }
 
-  async _notifyMember(account: Account, member: Member, item: Item): Promise<void> {
+  async _notifyMember(account: AuthenticatedUser, member: Member, item: Item): Promise<void> {
     const link = ClientManager.getInstance().getItemLink(Context.Player, item.id);
 
     const mail = new MailBuilder({
@@ -82,7 +81,7 @@ export class ItemMembershipService {
   }
 
   private async _create(
-    account: Account,
+    account: AuthenticatedUser,
     repositories: Repositories,
     item: Item,
     memberId: Member['id'],
@@ -116,7 +115,7 @@ export class ItemMembershipService {
   }
 
   async create(
-    actor: Account,
+    actor: AuthenticatedUser,
     repositories: Repositories,
     membership: { permission: PermissionLevel; itemId: UUID; memberId: UUID },
   ) {
@@ -132,7 +131,7 @@ export class ItemMembershipService {
   }
 
   async createMany(
-    actor: Account,
+    actor: AuthenticatedUser,
     repositories: Repositories,
     memberships: { permission: PermissionLevel; accountId: UUID }[],
     itemId: UUID,
@@ -148,7 +147,7 @@ export class ItemMembershipService {
   }
 
   async patch(
-    actor: Account,
+    actor: AuthenticatedUser,
     repositories: Repositories,
     itemMembershipId: string,
     data: { permission: PermissionLevel },
@@ -156,7 +155,7 @@ export class ItemMembershipService {
     const { itemMembershipRepository } = repositories;
     // check memberships
     const membership = await itemMembershipRepository.get(itemMembershipId);
-    if (isGuest(membership.account)) {
+    if (membership.account.type === AccountType.Guest) {
       throw new CannotModifyGuestItemMembership();
     }
     await validatePermission(repositories, PermissionLevel.Admin, actor, membership.item);
@@ -171,7 +170,7 @@ export class ItemMembershipService {
   }
 
   async deleteOne(
-    actor: Account,
+    actor: AuthenticatedUser,
     repositories: Repositories,
     itemMembershipId: string,
     args: { purgeBelow?: boolean } = { purgeBelow: false },

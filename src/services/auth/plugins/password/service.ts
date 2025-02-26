@@ -9,6 +9,7 @@ import { TRANSLATIONS } from '../../../../langs/constants';
 import { BaseLogger } from '../../../../logger';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../plugins/mailer/service';
+import { AuthenticatedUser } from '../../../../types';
 import {
   JWT_SECRET,
   PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES,
@@ -16,7 +17,6 @@ import {
 } from '../../../../utils/config';
 import { MemberNotSignedUp, MemberWithoutPassword } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
-import { Account } from '../../../account/entities/account';
 import { Member } from '../../../member/entities/member';
 import { SHORT_TOKEN_PARAM } from '../passport';
 import { PasswordConflict } from './errors';
@@ -57,7 +57,7 @@ export class MemberPasswordService {
     });
   }
 
-  async post(actor: Account, repositories: Repositories, newPassword: string) {
+  async post(actor: AuthenticatedUser, repositories: Repositories, newPassword: string) {
     const { memberPasswordRepository } = repositories;
     // verify that input current password is the same as the stored one
     const currentPassword = await memberPasswordRepository.getForMemberId(actor.id);
@@ -71,7 +71,7 @@ export class MemberPasswordService {
   }
 
   async patch(
-    account: Account,
+    account: AuthenticatedUser,
     repositories: Repositories,
     newPassword: string,
     currentPassword: string,
