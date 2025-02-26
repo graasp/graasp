@@ -307,7 +307,7 @@ export class ItemMembershipRepository {
       .andWhere((qb) => {
         const subQuery = qb
           .subQuery()
-          .from(ItemMembership, 'im1')
+          .from(itemMembershipTable, 'im1')
           .select('im1.item.path')
           .where('im.item_path <@ im1.item_path')
           .andWhere('im1.account_id = :actorId', { actorId: account.id })

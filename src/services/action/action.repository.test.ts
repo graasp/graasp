@@ -511,9 +511,7 @@ describe('Action Repository', () => {
           },
         ]);
 
-        const r = new ActionRepository();
-
-        const result = await r.getAggregationForItem(
+        const result = await actionRepository.getAggregationForItem(
           db,
           item.path,
           { view, startDate: '2000-12-16T03:24:00', endDate: '2000-12-20T03:24:00' },

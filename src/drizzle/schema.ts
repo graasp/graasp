@@ -18,7 +18,6 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 import { eq, isNull } from 'drizzle-orm/sql';
-import { NullSchema } from 'fast-json-stringify';
 
 import { AccountType, CompleteMember } from '@graasp/sdk';
 

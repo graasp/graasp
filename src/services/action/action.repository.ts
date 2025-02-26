@@ -6,7 +6,6 @@ import { AggregateBy, AggregateFunction, AggregateMetric, CountGroupBy, UUID } f
 import { DBConnection } from '../../drizzle/db';
 import { isDescendantOrSelf } from '../../drizzle/operations';
 import {
-  Action,
   ActionInsertRaw,
   ActionWithItem,
   actions as actionsTable,
@@ -19,7 +18,7 @@ import { validateAggregationParameters } from './utils/utils';
 
 export class ActionRepository {
   /**
-   * Create given action and return it.
+   * Create given actions. Does not return them
    * @param action Action to create
    */
   async postMany(db: DBConnection, actions: ActionInsertRaw[]): Promise<void> {
@@ -83,7 +82,7 @@ export class ActionRepository {
       startDate?: string;
       endDate?: string;
     },
-  ): Promise<Action[]> {
+  ): Promise<ActionWithItem[]> {
     const size = filters?.sampleSize ?? DEFAULT_ACTIONS_SAMPLE_SIZE;
     const endDate = filters?.endDate ?? formatISO(new Date());
     const startDate = filters?.startDate ?? formatISO(addMonths(endDate, -1));
@@ -107,11 +106,14 @@ export class ActionRepository {
       .select()
       .from(actionsTable)
       .innerJoin(itemSub, eq(actionsTable.itemId, itemSub.id))
-      .where(and(...andConditions));
+      .where(and(...andConditions))
+      .orderBy(desc(actionsTable.createdAt))
+      .limit(size);
 
     // apply DTO
+    const actions = res.map((r) => ({ ...r.action, item: r.item }));
 
-    return res;
+    return actions;
     // return await db.query.actions.findMany({
     //   where: and(...andConditions),
     //   with: {

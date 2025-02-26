@@ -2,11 +2,11 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { ActionTriggers, Context } from '@graasp/sdk';
 
+import { db } from '../../../../../../drizzle/db';
+import { ActionWithItemAndAccount, Item } from '../../../../../../drizzle/schema';
 import { Account } from '../../../../../account/entities/account';
 import { ActionRepository } from '../../../../../action/action.repository';
-import { Action } from '../../../../../action/entities/action';
 import { Member } from '../../../../../member/entities/member';
-import { Item } from '../../../../entities/Item';
 import { ItemActionType } from '../../utils';
 
 export const getDummyAction = (
@@ -15,22 +15,22 @@ export const getDummyAction = (
   createdAt: Date,
   account: Account,
   item: Item,
-): Action => {
+): ActionWithItemAndAccount => {
   const buildId = uuidv4();
   return {
     id: buildId,
     view: view,
     type: type,
-    geolocation: {},
-    createdAt: createdAt,
+    geolocation: '',
+    createdAt: createdAt.toISOString(),
     account,
     item: item,
-    extra: {},
-  } as unknown as Action;
+    extra: JSON.stringify({}),
+  };
 };
 
 const buildActions = (item: Item, member: Member[]) => {
-  const actions: Action[] = [
+  const actions: ActionWithItemAndAccount[] = [
     getDummyAction(
       Context.Builder,
       ItemActionType.Create,
@@ -85,8 +85,8 @@ const buildActions = (item: Item, member: Member[]) => {
 };
 
 export const saveActions = async (item: Item, member: Member[]) => {
-  const actions: Action[] = buildActions(item, member);
+  const actions: ActionWithItemAndAccount[] = buildActions(item, member);
 
-  await new ActionRepository().postMany(actions);
+  await new ActionRepository().postMany(db, actions);
   return actions;
 };

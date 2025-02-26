@@ -9,8 +9,7 @@ import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import { ALLOWED_ORIGINS } from '../../../../utils/config';
-import { buildRepositories } from '../../../../utils/repositories';
-import { ActionService } from '../../../action/services/action.service';
+import { ActionService } from '../../../action/action.service';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
 import {
@@ -33,7 +32,7 @@ export interface GraaspActionsOptions {
 }
 
 const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) => {
-  const { db: typeormDB, websockets } = fastify;
+  const { websockets } = fastify;
 
   const itemService = resolveDependency(ItemService);
   const actionService = resolveDependency(ActionService);
@@ -50,8 +49,8 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
     async ({ user, params: { id }, query }) => {
       // remove itemMemberships from return
       const { itemMemberships: _, ...result } = await actionItemService.getBaseAnalyticsForItem(
+        db,
         user?.account,
-        buildRepositories(),
         {
           sampleSize: query.requestedSampleSize,
           itemId: id,
@@ -72,7 +71,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
       preHandler: isAuthenticated,
     },
     async ({ user, params: { id }, query }) => {
-      return actionItemService.getAnalyticsAggregation(user?.account, buildRepositories(), {
+      return actionItemService.getAnalyticsAggregation(db, user?.account, {
         sampleSize: query.requestedSampleSize,
         itemId: id,
         view: query.view?.toLowerCase(),
