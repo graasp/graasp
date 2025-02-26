@@ -1,28 +1,25 @@
-import { EntityManager } from 'typeorm';
+import { eq } from 'drizzle-orm';
 
 import { ItemValidationReviewStatus } from '@graasp/sdk';
 
-import { AbstractRepository } from '../../../../../../repositories/AbstractRepository';
-import { ItemValidationReview } from '../entities/itemValidationReview';
-import { ItemValidationReviewNotFound } from '../errors';
+import { DBConnection } from '../../../../../../drizzle/db';
+import { type ItemValidationReview, itemValidationReviews } from '../../../../../../drizzle/schema';
 
-export class ItemValidationReviewRepository extends AbstractRepository<ItemValidationReview> {
-  constructor(manager?: EntityManager) {
-    super(ItemValidationReview, manager);
-  }
-
-  private async get(id: string): Promise<ItemValidationReview> {
-    // additional check that id is not null
-    // o/w empty parameter to findOneBy return the first entry
-    if (!id) {
-      throw new ItemValidationReviewNotFound({ id });
-    }
-    const result = await this.repository.findOneBy({ id });
-    if (!result) {
-      throw new ItemValidationReviewNotFound({ id });
-    }
-    return result;
-  }
+export class ItemValidationReviewRepository {
+  // private async get(db: DBConnection, id: string): Promise<ItemValidationReview> {
+  //   // additional check that id is not null
+  //   // o/w empty parameter to findOneBy return the first entry
+  //   if (!id) {
+  //     throw new ItemValidationReviewNotFound({ id });
+  //   }
+  //   const result = await db.query.itemValidationReviews.findFirst({
+  //     where: eq(itemValidationReviews.id, id),
+  //   });
+  //   if (!result) {
+  //     throw new ItemValidationReviewNotFound({ id });
+  //   }
+  //   return result;
+  // }
 
   /**
    * Create an entry for manual review
@@ -30,14 +27,17 @@ export class ItemValidationReviewRepository extends AbstractRepository<ItemValid
    * @param status review status
    */
   async post(
+    db: DBConnection,
     itemValidationId: string,
     status: ItemValidationReviewStatus,
   ): Promise<ItemValidationReview> {
-    const created = await this.repository.insert({
-      itemValidation: { id: itemValidationId },
-      status,
-    });
-    return this.get(created.identifiers[0].id);
+    return await db
+      .insert(itemValidationReviews)
+      .values({
+        itemValidationId,
+        status,
+      })
+      .returning()[0];
   }
 
   /**
@@ -45,12 +45,16 @@ export class ItemValidationReviewRepository extends AbstractRepository<ItemValid
    * @param itemValidationReviewEntry entry with updated data
    */
   async patch(
+    db: DBConnection,
     id: string,
     status: ItemValidationReviewStatus,
     reviewerId: string,
     reason: string = '',
   ): Promise<ItemValidationReview> {
-    await this.repository.update(id, { status, reason, reviewer: { id: reviewerId } });
-    return this.get(id);
+    return await db
+      .update(itemValidationReviews)
+      .set({ status, reason, reviewerId })
+      .where(eq(itemValidationReviews.id, id))
+      .returning()[0];
   }
 }

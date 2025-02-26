@@ -1,7 +1,6 @@
 import { EntityManager } from 'typeorm';
 
-import { AccountRepository } from '../services/account/repository';
-import { ActionRepository } from '../services/action/repositories/action';
+import { ActionRepository } from '../services/action/action.repository';
 import { MemberPasswordRepository } from '../services/auth/plugins/password/repository';
 import { ChatMentionRepository } from '../services/chat/plugins/mentions/repository';
 import { ChatMessageRepository } from '../services/chat/repository';
@@ -13,7 +12,7 @@ import { PublisherRepository } from '../services/item/plugins/app/publisherRepos
 import { AppRepository } from '../services/item/plugins/app/repository';
 import { ItemGeolocationRepository } from '../services/item/plugins/geolocation/repository';
 import { InvitationRepository } from '../services/item/plugins/invitation/repository';
-import { FavoriteRepository } from '../services/item/plugins/itemFavorite/repositories/favorite';
+import { ItemBookmarkRepository } from '../services/item/plugins/itemFavorite/itemBookmark.repository';
 import { ItemFlagRepository } from '../services/item/plugins/itemFlag/repository';
 import { ItemLikeRepository } from '../services/item/plugins/itemLike/repository';
 import { ItemVisibilityRepository } from '../services/item/plugins/itemVisibility/repository';
@@ -30,7 +29,7 @@ import { GuestPasswordRepository } from '../services/itemLogin/repositories/gues
 import { ItemLoginSchemaRepository } from '../services/itemLogin/repositories/itemLoginSchema';
 import { MembershipRequestRepository } from '../services/itemMembership/plugins/MembershipRequest/repository';
 import { ItemMembershipRepository } from '../services/itemMembership/repository';
-import MemberProfileRepository from '../services/member/plugins/profile/repository';
+import { MemberProfileRepository } from '../services/member/plugins/profile/repository';
 import { MemberRepository } from '../services/member/repository';
 import { TagRepository } from '../services/tag/Tag.repository';
 
@@ -43,7 +42,7 @@ export type Repositories = {
   appSettingRepository: AppSettingRepository;
   chatMessageRepository: ChatMessageRepository;
   invitationRepository: InvitationRepository;
-  itemFavoriteRepository: FavoriteRepository;
+  itemFavoriteRepository: ItemBookmarkRepository;
   itemFlagRepository: ItemFlagRepository;
   itemLikeRepository: ItemLikeRepository;
   itemLoginRepository: GuestRepository;
@@ -58,7 +57,6 @@ export type Repositories = {
   itemValidationReviewRepository: ItemValidationReviewRepository;
   memberPasswordRepository: MemberPasswordRepository;
   guestPasswordRepository: GuestPasswordRepository;
-  memberRepository: MemberRepository;
   mentionRepository: ChatMentionRepository;
   publisherRepository: PublisherRepository;
   recycledItemRepository: RecycledItemDataRepository;
@@ -75,7 +73,6 @@ export const buildRepositories = (manager?: EntityManager): Repositories => ({
   itemRepository: new ItemRepository(manager),
   itemMembershipRepository: new ItemMembershipRepository(manager),
   membershipRequestRepository: new MembershipRequestRepository(manager),
-  memberRepository: new MemberRepository(manager),
 
   itemPublishedRepository: new ItemPublishedRepository(manager),
   itemLoginRepository: new GuestRepository(manager),
@@ -93,7 +90,7 @@ export const buildRepositories = (manager?: EntityManager): Repositories => ({
   invitationRepository: new InvitationRepository(manager),
   chatMessageRepository: new ChatMessageRepository(manager),
   mentionRepository: new ChatMentionRepository(manager),
-  itemFavoriteRepository: new FavoriteRepository(manager),
+  itemFavoriteRepository: new ItemBookmarkRepository(),
   itemVisibilityRepository: new ItemVisibilityRepository(manager),
   itemValidationRepository: new ItemValidationRepository(manager),
   itemValidationReviewRepository: new ItemValidationReviewRepository(manager),
@@ -106,5 +103,5 @@ export const buildRepositories = (manager?: EntityManager): Repositories => ({
   itemGeolocationRepository: new ItemGeolocationRepository(manager),
   accountRepository: new AccountRepository(manager),
   itemTagRepository: new ItemTagRepository(manager),
-  tagRepository: new TagRepository(manager),
+  tagRepository: new TagRepository(),
 });

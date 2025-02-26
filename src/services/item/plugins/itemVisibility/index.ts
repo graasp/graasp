@@ -1,6 +1,7 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
@@ -21,8 +22,6 @@ import { ItemVisibilityService } from './service';
  */
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { db } = fastify;
-
   const itemVisibilityService = resolveDependency(ItemVisibilityService);
 
   fastify.post(
@@ -31,8 +30,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user, params: { itemId, type } }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return db.transaction(async (manager) => {
-        return itemVisibilityService.post(member, buildRepositories(manager), itemId, type);
+      return db.transaction(async (tx) => {
+        return itemVisibilityService.post(tx, member, itemId, type);
       });
     },
   );

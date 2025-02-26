@@ -1,14 +1,26 @@
 import { AccountType, CompleteMember, MemberFactory } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import { AppDataSource } from '../../../../plugins/datasource';
+import { db } from '../../../../drizzle/db';
+import { Member, accounts } from '../../../../drizzle/schema';
+import { assertIsDefined } from '../../../../utils/assertions';
 import { Account } from '../../../account/entities/account';
-import { Member } from '../../entities/member';
 
 export const saveMember = async (m: CompleteMember = MemberFactory()) => {
-  const rawRepository = AppDataSource.getRepository(Member);
-  const savedMember = await rawRepository.save({ ...m, email: m.email.toLowerCase() });
-  return savedMember;
+  // using accounts table since member is just a view and we can not insert on views
+  const res = await db
+    .insert(accounts)
+    .values({ ...m, email: m.email.toLowerCase() })
+    .returning();
+  const savedMember = res[0];
+  assertIsDefined(savedMember);
+  // ensure member email is typed as string and not null
+  const email = savedMember.email;
+  if (!email) {
+    throw new Error('saved member email is not defined');
+  }
+  // this ensures the type of the email property is `string` and not `string | null`
+  return { ...savedMember, email };
 };
 
 export const saveMembers = async (

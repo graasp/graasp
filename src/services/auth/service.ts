@@ -1,10 +1,11 @@
 import { sign } from 'jsonwebtoken';
 import { singleton } from 'tsyringe';
 
+import { Member } from '../../drizzle/schema';
 import { TRANSLATIONS } from '../../langs/constants';
 import { BaseLogger } from '../../logger';
 import { MailBuilder } from '../../plugins/mailer/builder';
-import { MailerService } from '../../plugins/mailer/service';
+import { MailerService } from '../../plugins/mailer/mailer.service';
 import {
   JWT_SECRET,
   LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
@@ -12,8 +13,6 @@ import {
   PUBLIC_URL,
   REGISTER_TOKEN_EXPIRATION_IN_MINUTES,
 } from '../../utils/config';
-import { Repositories } from '../../utils/repositories';
-import { Member } from '../member/entities/member';
 import { SHORT_TOKEN_PARAM } from './plugins/passport';
 import { getRedirectionLink } from './utils';
 
@@ -47,7 +46,7 @@ export class AuthService {
 
     const mail = new MailBuilder({
       subject: { text: TRANSLATIONS.SIGN_UP_TITLE },
-      lang: member.lang,
+      lang: member.extra.lang,
     })
       .addText(TRANSLATIONS.GREETINGS)
       .addText(TRANSLATIONS.SIGN_UP_TEXT)
@@ -55,6 +54,11 @@ export class AuthService {
       .addUserAgreement()
       .addIgnoreEmailIfNotRequestedNotice()
       .build();
+
+    // HACK: member should always have ane mail set, but the db is not strict enough yet.
+    if (!member.email) {
+      return;
+    }
 
     // don't wait for mailerService's response; log error and link if it fails.
     this.mailerService
@@ -82,20 +86,21 @@ export class AuthService {
 
     const mail = new MailBuilder({
       subject: { text: TRANSLATIONS.SIGN_IN_TITLE },
-      lang: member.lang,
+      lang: member.extra.lang,
     })
       .addText(TRANSLATIONS.SIGN_IN_TEXT)
       .addButton(TRANSLATIONS.SIGN_IN_BUTTON_TEXT, link)
       .addIgnoreEmailIfNotRequestedNotice()
       .build();
 
+    // HACK: member should always have ane mail set, but the db is not strict enough yet.
+    if (!member.email) {
+      return;
+    }
+
     // don't wait for mailerService's response; log error and link if it fails.
     this.mailerService
       .send(mail, member.email)
       .catch((err) => this.log.warn(err, `mailerService failed. link: ${link}`));
   };
-
-  async validateMemberId(repositories: Repositories, memberId: string): Promise<boolean> {
-    return !!(await repositories.memberRepository.get(memberId));
-  }
 }

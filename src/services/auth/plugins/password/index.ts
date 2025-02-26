@@ -3,12 +3,13 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { ActionTriggers, Context, RecaptchaAction } from '@graasp/sdk';
+import { DEFAULT_LANG } from '@graasp/translations';
 
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import { LOGIN_TOKEN_EXPIRATION_IN_MINUTES, PUBLIC_URL } from '../../../../utils/config';
-import { buildRepositories } from '../../../../utils/repositories';
-import { ActionService } from '../../../action/services/action';
+import { ActionService } from '../../../action/services/action.service';
 import { matchOne } from '../../../authorization';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { getRedirectionLink } from '../../utils';
@@ -33,7 +34,6 @@ const REDIRECTION_URL_PARAM = 'url';
 const AUTHENTICATION_FALLBACK_ROUTE = '/auth';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { db } = fastify;
   const actionService = resolveDependency(ActionService);
   const memberPasswordService = resolveDependency(MemberPasswordService);
 
@@ -81,8 +81,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     { schema: setPassword, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async ({ user, body: { password } }, reply) => {
       const member = asDefined(user?.account);
-      return db.transaction(async (manager) => {
-        await memberPasswordService.post(member, buildRepositories(manager), password);
+      return db.transaction(async (tx) => {
+        await memberPasswordService.post(tx, member, password);
         reply.status(StatusCodes.NO_CONTENT);
       });
     },
@@ -100,13 +100,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     { schema: updatePassword, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async ({ user, body: { currentPassword, password } }, reply) => {
       const member = asDefined(user?.account);
-      return db.transaction(async (manager) => {
-        await memberPasswordService.patch(
-          member,
-          buildRepositories(manager),
-          password,
-          currentPassword,
-        );
+      return db.transaction(async (tx) => {
+        await memberPasswordService.patch(tx, member, password, currentPassword);
         reply.status(StatusCodes.NO_CONTENT);
       });
     },
@@ -137,15 +132,17 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       // need to await this
       await reply.send();
 
-      const repositories = buildRepositories();
-
       const resetPasswordRequest = await memberPasswordService.createResetPasswordRequest(
-        repositories,
+        db,
         email,
       );
       if (resetPasswordRequest) {
         const { token, member } = resetPasswordRequest;
-        memberPasswordService.mailResetPasswordRequest(email, token, member.lang);
+        memberPasswordService.mailResetPasswordRequest(
+          email,
+          token,
+          member.extra.lang ?? DEFAULT_LANG,
+        );
         const action = {
           member,
           type: ActionTriggers.AskResetPassword,
@@ -153,7 +150,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           extra: {},
         };
         // Do not await the action to be saved. It is not critical.
-        actionService.postMany(member, repositories, request, [action]);
+        actionService.postMany(db, member, request, [action]);
       }
     },
   );
@@ -173,25 +170,28 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       preHandler: authenticatePasswordReset,
     },
     async (request, reply) => {
-      const repositories = buildRepositories();
       const {
         user,
         body: { password },
       } = request;
       const uuid = asDefined(user?.passwordResetRedisKey);
-      await memberPasswordService.applyReset(repositories, password, uuid);
-      const member = await memberPasswordService.getMemberByPasswordResetUuid(repositories, uuid);
-      reply.status(StatusCodes.NO_CONTENT);
+      await memberPasswordService.applyReset(db, password, uuid);
+      try {
+        const member = await memberPasswordService.getMemberByPasswordResetUuid(db, uuid);
+        reply.status(StatusCodes.NO_CONTENT);
 
-      // Log the action
-      const action = {
-        member,
-        type: ActionTriggers.ResetPassword,
-        view: Context.Auth,
-        extra: {},
-      };
-      // Do not await the action to be saved. It is not critical.
-      actionService.postMany(member, repositories, request, [action]);
+        // Log the action
+        const action = {
+          member,
+          type: ActionTriggers.ResetPassword,
+          view: Context.Auth,
+          extra: {},
+        };
+        // Do not await the action to be saved. It is not critical.
+        actionService.postMany(db, member, request, [action]);
+      } catch {
+        // do nothing
+      }
     },
   );
 
@@ -206,8 +206,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async ({ user }) => {
       const account = asDefined(user?.account);
-      const repositories = buildRepositories();
-      const hasPassword = await memberPasswordService.hasPassword(repositories, account.id);
+      const hasPassword = await memberPasswordService.hasPassword(db, account.id);
       return { hasPassword };
     },
   );

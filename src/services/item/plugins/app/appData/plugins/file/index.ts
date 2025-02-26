@@ -4,8 +4,8 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { HttpMethod } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../../../di/utils';
+import { DBConnection, db } from '../../../../../../../drizzle/db';
 import { asDefined } from '../../../../../../../utils/assertions';
-import { Repositories, buildRepositories } from '../../../../../../../utils/repositories';
 import { guestAuthenticateAppsJWT } from '../../../../../../auth/plugins/passport';
 import {
   DownloadFileUnexpectedError,
@@ -34,8 +34,6 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
     appDataService,
   } = options;
 
-  const { db } = fastify;
-
   const appDataFileService = resolveDependency(AppDataFileService);
 
   fastify.register(fastifyMultipart, {
@@ -51,11 +49,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
   });
 
   // register post delete handler to remove the file object after item delete
-  const deleteHook = async (
-    actor: Member,
-    repositories: Repositories,
-    args: { appData: AppData },
-  ) => {
+  const deleteHook = async (actor: Member, db: DBConnection, args: { appData: AppData }) => {
     await appDataFileService.deleteOne(args.appData);
   };
   appDataService.hooks.setPostHook('delete', deleteHook);
@@ -71,9 +65,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
       const app = asDefined(user?.app);
 
       return db
-        .transaction(async (manager) => {
-          const repositories = buildRepositories(manager);
-
+        .transaction(async (tx) => {
           // files are saved in temporary folder in disk, they are removed when the response ends
           // necessary to get file size -> can use stream busboy only otherwise
           // only one file is uploaded
@@ -81,9 +73,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
           if (!file) {
             throw new UploadEmptyFileError();
           }
-          return addMemberInAppData(
-            await appDataFileService.upload(member, repositories, file, app.item),
-          );
+          return addMemberInAppData(await appDataFileService.upload(tx, member, file, app.item));
         })
         .catch((e) => {
           console.error(e);
@@ -113,7 +103,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
       const app = asDefined(user?.app);
 
       return appDataFileService
-        .download(member, buildRepositories(), { item: app.item, appDataId })
+        .download(db,member, { item: app.item, appDataId })
         .catch((e) => {
           if (e.code) {
             throw e;

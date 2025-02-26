@@ -4,62 +4,63 @@ import { singleton } from 'tsyringe';
 import { ClientManager, Context, UUID } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
+import { DBConnection } from '../../drizzle/db';
+import { MemberCreationDTO } from '../../drizzle/schema';
 import { TRANSLATIONS } from '../../langs/constants';
 import { BaseLogger } from '../../logger';
 import { MailBuilder } from '../../plugins/mailer/builder';
-import { MailerService } from '../../plugins/mailer/service';
+import { MailerService } from '../../plugins/mailer/mailer.service';
 import {
   EMAIL_CHANGE_JWT_EXPIRATION_IN_MINUTES,
   EMAIL_CHANGE_JWT_SECRET,
 } from '../../utils/config';
 import { MemberAlreadySignedUp } from '../../utils/errors';
-import { Repositories } from '../../utils/repositories';
 import { NEW_EMAIL_PARAM, SHORT_TOKEN_PARAM } from '../auth/plugins/passport';
-import { Actor, Member } from './entities/member';
+import { Member } from './entities/member';
+import { type MemberRepository } from './repository';
 
 @singleton()
 export class MemberService {
   private readonly mailerService: MailerService;
   private readonly log: BaseLogger;
+  private readonly memberRepository: MemberRepository;
 
-  constructor(mailerService: MailerService, log: BaseLogger) {
+  constructor(mailerService: MailerService, memberRepository: MemberRepository, log: BaseLogger) {
     this.mailerService = mailerService;
     this.log = log;
   }
 
-  async get({ memberRepository }: Repositories, id: string) {
-    return memberRepository.get(id);
+  async get(db: DBConnection, id: string) {
+    return this.memberRepository.get(db, id);
   }
 
-  async getByEmail({ memberRepository }: Repositories, email: string) {
-    return await memberRepository.getByEmail(email);
+  async getByEmail(db: DBConnection, email: string) {
+    return await this.memberRepository.getByEmail(db, email);
   }
 
-  async getMany({ memberRepository }: Repositories, ids: string[]) {
-    return memberRepository.getMany(ids);
+  async getMany(db: DBConnection, ids: string[]) {
+    return this.memberRepository.getMany(db, ids);
   }
 
-  async getManyByEmail({ memberRepository }: Repositories, emails: string[]) {
-    return memberRepository.getManyByEmail(emails.map((email) => email.trim().toLowerCase()));
+  async getManyByEmails(db: DBConnection, emails: string[]) {
+    return this.memberRepository.getManyByEmails(
+      db,
+      emails.map((email) => email.trim().toLowerCase()),
+    );
   }
 
   async post(
-    actor: Actor,
-    repositories: Repositories,
-    body: Pick<Member, 'email'>,
+    db: DBConnection,
+    body: Partial<MemberCreationDTO> & Pick<MemberCreationDTO, 'email' | 'name'>,
     lang = DEFAULT_LANG,
   ) {
-    // actor may not exist on register
-
-    const { memberRepository } = repositories;
-
     // The email is lowercased when the user registers
     // To every subsequents call, it is to the client to ensure the email is sent in lowercase
     // the servers always do a 1:1 match to retrieve the member by email.
     const email = body.email.toLowerCase();
 
     // check if member w/ email already exists
-    const member = await memberRepository.getByEmail(email);
+    const member = await this.memberRepository.getByEmail(db, email);
 
     if (!member) {
       const newMember = {
@@ -67,22 +68,20 @@ export class MemberService {
         extra: { lang },
       };
 
-      const member = await memberRepository.post(newMember);
+      const member = await this.memberRepository.post(db, newMember);
 
       return member;
     } else {
       throw new MemberAlreadySignedUp({ email });
     }
-
-    // TODO: refactor
   }
 
   async patch(
-    { memberRepository }: Repositories,
+    db: DBConnection,
     id: UUID,
     body: Partial<Pick<Member, 'extra' | 'email' | 'name' | 'enableSaveActions'>>,
   ) {
-    return memberRepository.patch(id, {
+    return this.memberRepository.patch(db, id, {
       name: body.name,
       email: body.email,
       extra: body?.extra,
@@ -90,21 +89,21 @@ export class MemberService {
     });
   }
 
-  async deleteCurrent(memberId: string, { memberRepository }: Repositories) {
-    return memberRepository.deleteOne(memberId);
+  async deleteCurrent(memberId: string, db: DBConnection) {
+    await this.memberRepository.deleteOne(db, memberId);
   }
 
-  async deleteOne({ memberRepository }: Repositories, id: UUID) {
-    return memberRepository.deleteOne(id);
+  async deleteOne(db: DBConnection, id: UUID) {
+    return this.memberRepository.deleteOne(db, id);
   }
 
-  async refreshLastAuthenticatedAt(id: UUID, { memberRepository }: Repositories) {
-    return await memberRepository.patch(id, {
-      lastAuthenticatedAt: new Date(),
+  async refreshLastAuthenticatedAt(db: DBConnection, id: UUID) {
+    return await this.memberRepository.patch(db, id, {
+      lastAuthenticatedAt: new Date().toISOString(),
     });
   }
-  async validate(id: UUID, { memberRepository }: Repositories) {
-    return await memberRepository.patch(id, { isValidated: true });
+  async validate(db: DBConnection, id: UUID) {
+    return await this.memberRepository.patch(db, id, { isValidated: true });
   }
 
   createEmailChangeRequest(member: Member, newEmail: string) {

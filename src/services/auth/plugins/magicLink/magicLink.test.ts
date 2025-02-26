@@ -20,7 +20,7 @@ import build, { clearDatabase } from '../../../../../test/app';
 import { URL_REGEX } from '../../../../../test/utils';
 import { resolveDependency } from '../../../../di/utils';
 import { AppDataSource } from '../../../../plugins/datasource';
-import { MailerService } from '../../../../plugins/mailer/service';
+import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { JWT_SECRET } from '../../../../utils/config';
 import { Member } from '../../../member/entities/member';
 import { saveMember } from '../../../member/test/fixtures/members';

@@ -106,8 +106,6 @@ export const MOBILE_DEEP_LINK_PROTOCOL = new URL(
   `${process.env.MOBILE_DEEP_LINK_PROTOCOL || 'graasp-mobile'}://graasp.org`,
 ).protocol; // we only use the protocol anyway
 
-export const DATABASE_LOGS = process.env.DATABASE_LOGS === 'true';
-
 // Graasp constants
 /**
  * Session cookie key
@@ -405,9 +403,9 @@ export const JEST_WORKER_ID: number = +process.env.JEST_WORKER_ID! || 1;
 export const CI: boolean = process.env.CI === 'true';
 export const AUTO_RUN_MIGRATIONS: boolean = (process.env.AUTO_RUN_MIGRATIONS ?? 'true') === 'true';
 
-//////////////////////////////////////
-// Database Environements Variables //
-//////////////////////////////////////
+/////////////////////////////////////
+// Database Environement Variables //
+/////////////////////////////////////
 export const DEFAULT_DB_PORT = 5432;
 // Can be undefined, so tests can run without setting it. In production, TypeORM will throw an exception if not defined.
 export const DB_HOST: string | undefined = process.env.DB_HOST;

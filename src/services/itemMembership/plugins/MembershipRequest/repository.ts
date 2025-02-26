@@ -1,70 +1,58 @@
-import { EntityManager } from 'typeorm';
+import { and, eq } from 'drizzle-orm/sql';
+import { singleton } from 'tsyringe';
 
-import { AbstractRepository } from '../../../../repositories/AbstractRepository';
-import { EntryNotFoundAfterInsertException } from '../../../../repositories/errors';
+import { type DBConnection } from '../../../../drizzle/db';
+import { membershipRequests } from '../../../../drizzle/schema';
 import { ItemNotFound, MemberNotFound } from '../../../../utils/errors';
 import { AccountNotFound } from '../../../account/errors';
-import { ItemLoginSchema } from '../../../itemLogin/entities/itemLoginSchema';
-import { MembershipRequest } from './entities/MembershipRequest';
 
-export class MembershipRequestRepository extends AbstractRepository<MembershipRequest> {
-  constructor(manager?: EntityManager) {
-    super(MembershipRequest, manager);
-  }
-
-  async get(memberId: string, itemId: string) {
+@singleton()
+export class MembershipRequestRepository {
+  async get(db: DBConnection, memberId: string, itemId: string) {
     if (!memberId) {
       throw new AccountNotFound();
     } else if (!itemId) {
       throw new ItemNotFound(itemId);
     }
 
-    return await this.repository.findOne({
-      where: {
-        member: { id: memberId },
-        item: { id: itemId },
-      },
-      relations: {
+    return await db.query.membershipRequests.findFirst({
+      where: and(eq(membershipRequests.memberId, memberId), eq(membershipRequests.itemId, itemId)),
+      with: {
         member: true,
         item: true,
       },
     });
   }
 
-  async post(memberId: string, itemId: string) {
+  async post(db: DBConnection, memberId: string, itemId: string) {
     if (!memberId) {
       throw new MemberNotFound();
     } else if (!itemId) {
       throw new ItemNotFound(itemId);
     }
 
-    await this.repository.insert({
-      member: { id: memberId },
-      item: { id: itemId },
-    });
-    const result = await this.get(memberId, itemId);
-    if (!result) {
-      throw new EntryNotFoundAfterInsertException(ItemLoginSchema);
-    }
-    return result;
+    return await db
+      .insert(membershipRequests)
+      .values({
+        memberId,
+        itemId,
+      })
+      .returning();
   }
 
-  async getAllByItem(itemId: string) {
+  async getAllByItem(db: DBConnection, itemId: string) {
     if (!itemId) {
       throw new ItemNotFound(itemId);
     }
-    return await this.repository.find({
-      where: { item: { id: itemId } },
-      relations: ['member'],
+    return await db.query.membershipRequests.findMany({
+      where: eq(membershipRequests.itemId, itemId),
+      with: { member: true },
     });
   }
 
-  async deleteOne(memberId: string, itemId: string) {
-    const membershipRequest = await this.get(memberId, itemId);
-    if (!membershipRequest) {
-      return null;
-    }
-    await this.repository.delete(membershipRequest.id);
-    return membershipRequest;
+  async deleteOne(db: DBConnection, memberId: string, itemId: string) {
+    return await db
+      .delete(membershipRequests)
+      .where(and(eq(membershipRequests.memberId, memberId), eq(membershipRequests.itemId, itemId)));
   }
 }

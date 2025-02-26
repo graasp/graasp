@@ -6,7 +6,7 @@ import { ActionTriggers, PermissionLevel } from '@graasp/sdk';
 import { CannotModifyOtherMembers } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
 import { Account } from '../../../account/entities/account';
-import { ActionService } from '../../../action/services/action';
+import { ActionService } from '../../../action/services/action.service';
 import { validatePermissionMany } from '../../../authorization';
 import { Item, ItemExtraMap } from '../../../item/entities/Item';
 

@@ -11,7 +11,7 @@ import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../.
 import { buildFile, seedFromJson } from '../../../test/mocks/seed';
 import { resolveDependency } from '../../di/utils';
 import { AppDataSource } from '../../plugins/datasource';
-import { MailerService } from '../../plugins/mailer/service';
+import { MailerService } from '../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../utils/assertions';
 import { EMAIL_CHANGE_JWT_SECRET } from '../../utils/config';
 import { Item } from '../item/entities/Item';

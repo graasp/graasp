@@ -7,7 +7,6 @@ import {
   MultiSearchParams,
   TypoTolerance,
 } from 'meilisearch';
-import { DataSource } from 'typeorm';
 
 import {
   DocumentItemExtra,
@@ -20,16 +19,20 @@ import {
   TagCategory,
 } from '@graasp/sdk';
 
+import { DBConnection, db } from '../../../../../../../drizzle/db';
+import { Item, Tag } from '../../../../../../../drizzle/schema';
 import { BaseLogger } from '../../../../../../../logger';
 import { MEILISEARCH_STORE_LEGACY_PDF_CONTENT } from '../../../../../../../utils/config';
-import { Repositories, buildRepositories } from '../../../../../../../utils/repositories';
 import FileService from '../../../../../../file/service';
-import { Tag } from '../../../../../../tag/Tag.entity';
-import { Item, isItemType } from '../../../../../entities/Item';
+import { ItemRepository } from '../../../../../repository';
 import { readPdfContent } from '../../../../../utils';
+import { ItemLikeRepository } from '../../../../itemLike/repository';
+import { ItemVisibilityRepository } from '../../../../itemVisibility/repository';
+import { ItemTagRepository } from '../../../../tag/ItemTag.repository';
 import { stripHtml } from '../../../validation/utils';
 import { ItemPublished } from '../../entities/itemPublished';
 import { ItemPublishedNotFound } from '../../errors';
+import { ItemPublishedRepository } from '../../repositories/itemPublished';
 import { Hit } from './schemas';
 
 const ACTIVE_INDEX = 'itemIndex';
@@ -92,18 +95,30 @@ export class MeiliSearchWrapper {
   private readonly meilisearchClient: MeiliSearch;
   private readonly indexDictionary: Record<string, Index<IndexItem>> = {};
   private readonly fileService: FileService;
-  private readonly db: DataSource;
   private readonly logger: BaseLogger;
+  private readonly itemVisibilityRepository: ItemVisibilityRepository;
+  private readonly itemRepository: ItemRepository;
+  private readonly itemPublishedRepository: ItemPublishedRepository;
+  private readonly itemTagRepository: ItemTagRepository;
+  private readonly itemLikeRepository: ItemLikeRepository;
 
   constructor(
-    db: DataSource,
     meilisearchConnection: MeiliSearch,
     fileService: FileService,
+    itemVisibilityRepository: ItemVisibilityRepository,
+    itemRepository: ItemRepository,
+    itemPublishedRepository: ItemPublishedRepository,
+    itemTagRepository: ItemTagRepository,
+    itemLikeRepository: ItemLikeRepository,
     logger: BaseLogger,
   ) {
     this.meilisearchClient = meilisearchConnection;
     this.fileService = fileService;
-    this.db = db;
+    this.itemRepository = itemRepository;
+    this.itemVisibilityRepository = itemVisibilityRepository;
+    this.itemPublishedRepository = itemPublishedRepository;
+    this.itemTagRepository = itemTagRepository;
+    this.itemLikeRepository = itemLikeRepository;
     this.logger = logger;
 
     // create index in the background if it doesn't exist
@@ -197,9 +212,8 @@ export class MeiliSearchWrapper {
       content: await this.getContent(item),
       isPublishedRoot: isPublishedRoot,
       isHidden: isHidden,
-      // todo: fix typings
-      createdAt: item.createdAt.toISOString(),
-      updatedAt: item.updatedAt.toISOString(),
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
       lang: item.lang,
       likes: likesCount,
       ...tagsByCategory,
@@ -233,16 +247,16 @@ export class MeiliSearchWrapper {
   }
 
   async indexOne(
+    db: DBConnection,
     itemPublished: ItemPublished,
-    repositories: Repositories,
     targetIndex: ALLOWED_INDICES = ACTIVE_INDEX,
   ): Promise<EnqueuedTask> {
-    return this.index([itemPublished], repositories, targetIndex);
+    return this.index(db, [itemPublished], targetIndex);
   }
 
   async index(
+    db: DBConnection,
     manyItemPublished: ItemPublished[],
-    repositories: Repositories,
     targetIndex: ALLOWED_INDICES = ACTIVE_INDEX,
   ): Promise<EnqueuedTask> {
     try {
@@ -253,7 +267,7 @@ export class MeiliSearchWrapper {
         item: Item;
       }[] = [];
       for (const p of manyItemPublished) {
-        const isHidden = await repositories.itemVisibilityRepository.getManyBelowAndSelf(p.item, [
+        const isHidden = await this.itemVisibilityRepository.getManyBelowAndSelf(db, p.item, [
           ItemVisibilityType.Hidden,
         ]);
 
@@ -263,9 +277,10 @@ export class MeiliSearchWrapper {
           isHidden: Boolean(isHidden.find((ih) => p.item.path.includes(ih.item.path))),
         });
 
-        const descendants = isItemType(p.item, ItemType.FOLDER)
-          ? await repositories.itemRepository.getDescendants(p.item)
-          : [];
+        const descendants =
+          p.item.type === ItemType.FOLDER
+            ? await this.itemRepository.getDescendants(db, p.item)
+            : [];
 
         itemsToIndex = itemsToIndex.concat(
           descendants.map((d) => ({
@@ -283,14 +298,14 @@ export class MeiliSearchWrapper {
           // Publishing and categories are implicit/inherited on children, we are forced to query the database to check these
           // More efficient way to get this info? Do the db query for all item at once ?
           // This part might slow the app when we index many items or an item with many children.
-          const publishedRoot = await repositories.itemPublishedRepository.getForItem(i);
+          const publishedRoot = await this.itemPublishedRepository.getForItem(i);
           if (!publishedRoot) {
             throw new ItemPublishedNotFound(i.id);
           }
 
-          const tags = await repositories.itemTagRepository.getByItemId(i.id);
+          const tags = await this.itemTagRepository.getByItemId(db, i.id);
 
-          const likesCount = await repositories.itemLikeRepository.getCountByItemId(i.id);
+          const likesCount = await this.itemLikeRepository.getCountByItemId(db, i.id);
 
           return {
             ...(await this.parseItem(
@@ -323,12 +338,12 @@ export class MeiliSearchWrapper {
     }
   }
 
-  async deleteOne(item: Item, repositories: Repositories) {
+  async deleteOne(db: DBConnection, item: Item) {
     try {
       let itemsToIndex = [item];
-      if (isItemType(item, ItemType.FOLDER)) {
+      if (item.type === ItemType.FOLDER) {
         itemsToIndex = itemsToIndex.concat(
-          await repositories.itemRepository.getDescendants(item, { ordered: false }),
+          await this.itemRepository.getDescendants(db, item, { ordered: false }),
         );
       }
 
@@ -341,14 +356,14 @@ export class MeiliSearchWrapper {
   }
 
   // Update the PDF that were stored before the indexing feature to add the content in database
-  private async storeMissingPdfContent(repositories: Repositories) {
+  private async storeMissingPdfContent(db: DBConnection) {
     this.logger.info('PDF BACKFILL: Start adding content to PDFs added before the search feature');
 
     let total = 0;
     let currentPage = 1;
     // Paginate with 1000 items per page
     while (currentPage === 1 || (currentPage - 1) * 1000 < total) {
-      const [fileItems, totalCount] = await repositories.itemRepository.findAndCount({
+      const [fileItems, totalCount] = await this.itemRepository.findAndCount(db, {
         where: { type: ItemType.S3_FILE },
         take: 1000,
         skip: (currentPage - 1) * 1000,
@@ -383,7 +398,7 @@ export class MeiliSearchWrapper {
             path: s3extra.path,
           });
           const content = await readPdfContent(url);
-          await repositories.itemRepository.updateOne(item.id, {
+          await this.itemRepository.updateOne(db, item.id, {
             extra: { [ItemType.S3_FILE]: { content } } as S3FileItemExtra,
           });
         } catch (e) {
@@ -448,16 +463,16 @@ export class MeiliSearchWrapper {
     // Paginate with cursor through DB items (serializable transaction)
     // This is not executed in a HTTP request context so we can't rely on fastify to create a transaction at the controller level
     // SERIALIZABLE because we don't want other transaction to affect this one while it goes through the pages.
-    await this.db.transaction('SERIALIZABLE', async (manager) => {
+    await db.transaction('SERIALIZABLE', async (tx) => {
       const tasks: EnqueuedTask[] = [];
 
       // instanciate the itempublished repository to use the provided transaction manager
-      const { itemPublishedRepository } = buildRepositories(manager);
       let currentPage = 1;
       let total = 0;
       while (currentPage === 1 || (currentPage - 1) * pageSize < total) {
         // Retrieve a page (i.e. 20 items)
-        const [published, totalCount] = await itemPublishedRepository.getPaginatedItems(
+        const [published, totalCount] = await this.itemPublishedRepository.getPaginatedItems(
+          tx,
           currentPage,
           pageSize,
         );
@@ -468,7 +483,7 @@ export class MeiliSearchWrapper {
 
         // Index items (1 task per page)
         try {
-          const task = await this.index(published, buildRepositories(manager), ROTATING_INDEX);
+          const task = await this.index(tx, published, ROTATING_INDEX);
           this.logger.info(
             `REBUILD INDEX: Pushing indexing task ${task.taskUid} (page ${currentPage})`,
           );

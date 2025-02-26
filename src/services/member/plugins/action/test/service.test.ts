@@ -4,7 +4,7 @@ import { AppDataSource } from '../../../../../plugins/datasource';
 import { asDefined } from '../../../../../utils/assertions';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { Action } from '../../../../action/entities/action';
-import { ActionService } from '../../../../action/services/action';
+import { ActionService } from '../../../../action/services/action.service';
 import { getMemberActions } from '../../../../action/test/fixtures/actions';
 import { ItemService } from '../../../../item/service';
 import { Member } from '../../../entities/member';

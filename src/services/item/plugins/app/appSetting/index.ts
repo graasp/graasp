@@ -3,8 +3,8 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { ItemType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../di/utils';
+import { db } from '../../../../../drizzle/db';
 import { asDefined } from '../../../../../utils/assertions';
-import { Repositories, buildRepositories } from '../../../../../utils/repositories';
 import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
 import { matchOne } from '../../../../authorization';
 import { Actor, assertIsMember } from '../../../../member/entities/member';
@@ -17,8 +17,6 @@ import { create, deleteOne, getForOne, updateOne } from './schemas';
 import { AppSettingService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { db } = fastify;
-
   const itemService = resolveDependency(ItemService);
   const appSettingService = resolveDependency(AppSettingService);
 
@@ -27,7 +25,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   // copy app settings and related files on item copy
   const hook = async (
     actor: Actor,
-    repositories: Repositories,
+    db: DBConnection,
     { original, copy }: { original: Item; copy: Item },
   ) => {
     if (original.type !== ItemType.APP || copy.type !== ItemType.APP) return;
@@ -48,8 +46,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user, params: { itemId }, body }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return db.transaction(async (manager) => {
-        return appSettingService.post(member, buildRepositories(manager), itemId, body);
+      return db.transaction(async (tx) => {
+        return appSettingService.post(tx, member, itemId, body);
       });
     },
   );
@@ -65,13 +63,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
       return db.transaction(async (manager) => {
-        return appSettingService.patch(
-          member,
-          buildRepositories(manager),
-          itemId,
-          appSettingId,
-          body,
-        );
+        return appSettingService.patch(tx, member, itemId, appSettingId, body);
       });
     },
   );
@@ -87,12 +79,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
       return db.transaction(async (manager) => {
-        return appSettingService.deleteOne(
-          member,
-          buildRepositories(manager),
-          itemId,
-          appSettingId,
-        );
+        return appSettingService.deleteOne(tx, member, itemId, appSettingId);
       });
     },
   );
@@ -102,7 +89,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     '/:itemId/app-settings',
     { schema: getForOne, preHandler: authenticateAppsJWT },
     async ({ user, params: { itemId }, query: { name } }) => {
-      return appSettingService.getForItem(user?.account, buildRepositories(), itemId, name);
+      return appSettingService.getForItem(db, user?.account, itemId, name);
     },
   );
 };

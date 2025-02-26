@@ -21,12 +21,12 @@ import build, {
 } from '../../../../../test/app';
 import { BaseLogger } from '../../../../logger';
 import { AppDataSource } from '../../../../plugins/datasource';
-import { MailerService } from '../../../../plugins/mailer/service';
+import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { MemberCannotAccess, UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { Action } from '../../../action/entities/action';
-import { ActionService } from '../../../action/services/action';
-import { MOCK_REQUEST } from '../../../action/services/action.test';
+import { ActionService } from '../../../action/services/action.service';
+import { MOCK_REQUEST } from '../../../action/services/action.service.testice.test';
 import { saveActions } from '../../../action/test/fixtures/actions';
 import { MemberService } from '../../../member/service';
 import { saveMember } from '../../../member/test/fixtures/members';

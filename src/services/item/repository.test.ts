@@ -849,13 +849,6 @@ describe('ItemRepository', () => {
       );
     });
   });
-  describe('getAllPublishedItems', () => {
-    it('get published items', async () => {
-      const { items } = await testUtils.saveCollections(actor);
-      const result = await itemRepository.getAllPublishedItems();
-      expectManyItems(result, items);
-    });
-  });
   describe('getPublishedItemsForMember', () => {
     it('get published items for member', async () => {
       const { items } = await testUtils.saveCollections(actor);

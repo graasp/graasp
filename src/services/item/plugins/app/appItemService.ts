@@ -2,8 +2,8 @@ import { singleton } from 'tsyringe';
 
 import { ItemGeolocation, ItemType, UUID } from '@graasp/sdk';
 
+import { DBConnection } from '../../../../drizzle/db';
 import { BaseLogger } from '../../../../logger';
-import { Repositories } from '../../../../utils/repositories';
 import { Member } from '../../../member/entities/member';
 import { ThumbnailService } from '../../../thumbnail/service';
 import { AppItem, Item, isItemType } from '../../entities/Item';
@@ -24,8 +24,8 @@ export class AppItemService extends ItemService {
   }
 
   async postWithOptions(
+    db: DBConnection,
     member: Member,
-    repositories: Repositories,
     args: Partial<Pick<Item, 'description' | 'lang'>> &
       Pick<Item, 'name'> & {
         url: string;
@@ -37,27 +37,25 @@ export class AppItemService extends ItemService {
     const { name, description, lang, url, ...options } = args;
 
     const newItem = { type: ItemType.APP, name, description, lang, extra: { app: { url } } };
-    return (await super.post(member, repositories, {
+    return (await super.post(db, member, {
       item: newItem,
       ...options,
     })) as AppItem;
   }
 
   async patch(
+    db: DBConnection,
     member: Member,
-    repositories: Repositories,
     itemId: UUID,
     args: Partial<Pick<Item, 'name' | 'description' | 'lang' | 'settings'>>,
   ): Promise<AppItem> {
-    const { itemRepository } = repositories;
-
-    const item = await itemRepository.getOneOrThrow(itemId);
+    const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
     // check item is app
     if (!isItemType(item, ItemType.APP)) {
       throw new WrongItemTypeError(item.type);
     }
 
-    return (await super.patch(member, repositories, itemId, args)) as AppItem;
+    return (await super.patch(db, member, itemId, args)) as AppItem;
   }
 }

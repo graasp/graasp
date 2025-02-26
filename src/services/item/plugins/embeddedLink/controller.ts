@@ -3,8 +3,8 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { ItemType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
+import { DBConnection, db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
-import { Repositories, buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
 import { Actor, assertIsMember } from '../../../member/entities/member';
@@ -17,7 +17,7 @@ import { EmbeddedLinkItemService } from './service';
 import { ensureProtocol } from './utils';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { db, log } = fastify;
+  const { log } = fastify;
   const itemService = resolveDependency(ItemService);
   const embeddedLinkService = resolveDependency(EmbeddedLinkItemService);
   const actionItemService = resolveDependency(ActionItemService);
@@ -52,9 +52,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
 
-      const item = await db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-        const item = await embeddedLinkService.postWithOptions(member, repositories, {
+      const item = await db.transaction(async (tx) => {
+        const item = await embeddedLinkService.postWithOptions(tx, member, {
           ...data,
           previousItemId,
           parentId,
@@ -65,10 +64,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       reply.send(item);
 
       // background operations
-      await actionItemService.postPostAction(request, buildRepositories(), item);
+      await actionItemService.postPostAction(db, request, item);
       await db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-        await embeddedLinkService.rescaleOrderForParent(member, repositories, item);
+        await embeddedLinkService.rescaleOrderForParent(db, member, item);
       });
     },
   );
@@ -87,10 +85,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       } = request;
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return await db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-        const item = await embeddedLinkService.patchWithOptions(member, repositories, id, body);
-        await actionItemService.postPatchAction(request, repositories, item);
+      return await db.transaction(async (tx) => {
+        const item = await embeddedLinkService.patchWithOptions(tx, member, id, body);
+        await actionItemService.postPatchAction(tx, request, item);
         return item;
       });
     },
@@ -99,7 +96,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   // necessary for legacy POST /items to work with links
   // remove when POST /items is removed
   // register pre create handler to pre fetch link metadata
-  const hook = async (_actor: Actor, _repos: Repositories, { item }: { item: Partial<Item> }) => {
+  const hook = async (_actor: Actor, _db: DBConnection, { item }: { item: Partial<Item> }) => {
     // if the extra is undefined or it does not contain the embedded link extra key, exit
     if (!item.extra || !(ItemType.LINK in item.extra)) {
       return;

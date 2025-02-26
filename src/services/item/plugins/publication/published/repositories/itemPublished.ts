@@ -1,37 +1,52 @@
-import { EntityManager } from 'typeorm';
+import { desc, eq, sql } from 'drizzle-orm';
+import { singleton } from 'tsyringe';
 
 import { PermissionLevel } from '@graasp/sdk';
 
-import { AbstractRepository } from '../../../../../../repositories/AbstractRepository';
+import { DBConnection } from '../../../../../../drizzle/db';
+import { isAncestorOrSelf } from '../../../../../../drizzle/operations';
+import {
+  Item,
+  ItemPublishedRaw,
+  ItemPublishedWithItemAndAccount,
+  itemPublisheds,
+  items,
+  membersView,
+} from '../../../../../../drizzle/schema';
+import { assertIsDefined } from '../../../../../../utils/assertions';
 import { Member } from '../../../../../member/entities/member';
 import { mapById } from '../../../../../utils';
-import { Item } from '../../../../entities/Item';
-import { ItemPublished } from '../entities/itemPublished';
 import { ItemPublishedNotFound } from '../errors';
 
-export class ItemPublishedRepository extends AbstractRepository<ItemPublished> {
-  constructor(manager?: EntityManager) {
-    super(ItemPublished, manager);
-  }
-
+@singleton()
+export class ItemPublishedRepository {
   /**
    * Returns inherited published entry for given item
    * @param item
    * @returns published entry if the item is published, null otherwise
    */
-  async getForItem(item: Item): Promise<ItemPublished | null> {
-    const entry = await this.repository
-      .createQueryBuilder('pi')
-      .innerJoinAndSelect('pi.item', 'item', 'pi.item @> :itemPath', { itemPath: item.path })
-      .innerJoinAndSelect('pi.creator', 'member')
-      // Order isn't guaranteed so we must force it to avoid flaky results
-      .orderBy('nlevel(pi.item_path)', 'DESC')
-      .getOne();
-
-    return entry;
+  async getForItem(
+    db: DBConnection,
+    itemPath: string,
+  ): Promise<ItemPublishedWithItemAndAccount | null> {
+    const res = await db
+      .select()
+      .from(itemPublisheds)
+      .innerJoin(membersView, eq(itemPublisheds.creatorId, membersView.id))
+      .innerJoin(items, isAncestorOrSelf(itemPublisheds.itemPath, itemPath))
+      .orderBy(desc(sql`nlevel(${itemPublisheds.itemPath})`))
+      .limit(1);
+    const entry = res[0];
+    assertIsDefined(entry);
+    const mappedEntry = {
+      ...entry.item_published,
+      item: entry.item_view,
+      creator: entry.members_view,
+    };
+    return mappedEntry;
   }
 
-  async getForItems(items: Item[]) {
+  async getForItems(db: DBConnection, items: Item[]) {
     const paths = items.map((i) => i.path);
     const ids = items.map((i) => i.id);
     const entries = await this.repository
@@ -50,7 +65,7 @@ export class ItemPublishedRepository extends AbstractRepository<ItemPublished> {
     });
   }
 
-  async getForMember(memberId: Member['id']): Promise<Item[]> {
+  async getForMember(db: DBConnection, memberId: Member['id']): Promise<Item[]> {
     const itemPublished = await this.repository
       .createQueryBuilder('pi')
       // join with memberships that are at or above the item published
@@ -75,13 +90,16 @@ export class ItemPublishedRepository extends AbstractRepository<ItemPublished> {
   }
 
   // return public item entry? contains when it was published
-  async getAllItems() {
-    const publishedRows = await this.repository.find({ relations: { item: true } });
+  async getAllItems(db: DBConnection) {
+    const publishedRows = await this.repository.find({
+      relations: { item: true },
+    });
     return publishedRows.map(({ item }) => item);
   }
 
   // Must Implement a proper Paginated<Type> if more complex pagination is needed in the future
   async getPaginatedItems(
+    db: DBConnection,
     page: number = 1,
     pageSize: number = 20,
   ): Promise<[ItemPublished[], number]> {
@@ -95,7 +113,7 @@ export class ItemPublishedRepository extends AbstractRepository<ItemPublished> {
     return [items, total];
   }
 
-  async post(creator: Member, item: Item) {
+  async post(db: DBConnection, creator: Member, item: Item) {
     const p = this.repository.create({
       item: item,
       creator,
@@ -104,7 +122,7 @@ export class ItemPublishedRepository extends AbstractRepository<ItemPublished> {
     return p;
   }
 
-  async deleteForItem(item: Item) {
+  async deleteForItem(db: DBConnection, item: Item) {
     const entry = await this.getForItem(item);
 
     if (!entry) {
@@ -115,7 +133,7 @@ export class ItemPublishedRepository extends AbstractRepository<ItemPublished> {
     return entry;
   }
 
-  async getRecentItems(limit: number = 10): Promise<Item[]> {
+  async getRecentItems(db: DBConnection, limit: number = 10): Promise<Item[]> {
     const publishedInfos = await this.repository
       .createQueryBuilder('item_published')
       .innerJoinAndSelect('item_published.item', 'item')
@@ -127,7 +145,7 @@ export class ItemPublishedRepository extends AbstractRepository<ItemPublished> {
     return publishedInfos.map(({ item }) => item);
   }
 
-  async touchUpdatedAt(path: Item['path']): Promise<string> {
+  async touchUpdatedAt(db: DBConnection, path: Item['path']): Promise<string> {
     const updatedAt = new Date().toISOString();
     await this.repository.update({ item: { path } }, { updatedAt });
     return updatedAt;

@@ -1,8 +1,9 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
+import { resolveDependency } from '../../../../../di/utils';
+import { db } from '../../../../../drizzle/db';
 import { FastifyInstanceTypebox } from '../../../../../plugins/typebox';
 import { asDefined } from '../../../../../utils/assertions';
-import { buildRepositories } from '../../../../../utils/repositories';
 import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
 import { addMemberInAppAction } from '../legacy';
 import { appActionsWsHooks } from '../ws/hooks';
@@ -10,9 +11,7 @@ import { create, getForOne } from './schemas';
 import { AppActionService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { db } = fastify;
-
-  const appActionService = new AppActionService();
+  const appActionService = resolveDependency(AppActionService);
 
   // endpoints accessible to third parties with Bearer token
   fastify.register(async function (fastify: FastifyInstanceTypebox) {
@@ -24,10 +23,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       { schema: create, preHandler: authenticateAppsJWT },
       async ({ user, params: { itemId }, body }) => {
         const member = asDefined(user?.account);
-        return db.transaction(async (manager) => {
-          return addMemberInAppAction(
-            await appActionService.post(member, buildRepositories(manager), itemId, body),
-          );
+        return db.transaction(async (tx) => {
+          return addMemberInAppAction(await appActionService.post(tx, member, itemId, body));
         });
       },
     );
@@ -45,7 +42,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           accountId = filters.memberId;
         }
 
-        const appActions = await appActionService.getForItem(member, buildRepositories(), itemId, {
+        const appActions = await appActionService.getForItem(db, member, itemId, {
           accountId,
         });
         return appActions.map(addMemberInAppAction);

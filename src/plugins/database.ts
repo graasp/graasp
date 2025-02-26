@@ -1,22 +1,27 @@
+import 'dotenv/config';
+import { migrate } from 'drizzle-orm/node-postgres/migrator';
+import { resolve } from 'node:path';
+
 import { FastifyPluginAsync } from 'fastify';
 
+import { client, db } from '../drizzle/db';
 import { AppDataSource } from './datasource';
 
-export interface DatabasePluginOptions {
-  // uri: string;
-  readReplicaUris?: Array<string>;
-  logs: boolean;
-}
-
-const plugin: FastifyPluginAsync<DatabasePluginOptions> = async (
-  fastify,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  { readReplicaUris, logs },
-) => {
-  const db = AppDataSource;
+const plugin: FastifyPluginAsync = async (fastify) => {
+  // TODO: remove
+  // legacy typeorm instanciation
+  const typeormDb = AppDataSource;
   if (!AppDataSource.isInitialized) {
     await AppDataSource.initialize();
   }
+  fastify.decorate('db', typeormDb);
+
+  // connect drizzle to database
+  await client.connect();
+
+  // This command run all migrations from the migrations folder and apply changes to the database
+  // WARNING: This command needs to reference the drizzle folder from the location of execution of node (dist folder...) this is why the path is weird.
+  await migrate(db, { migrationsFolder: resolve(__dirname, '../../src/drizzle') });
 
   // check schema is sync
   // const databaseUpQueries = (await db.driver.createSchemaBuilder().log()).upQueries;
@@ -24,8 +29,6 @@ const plugin: FastifyPluginAsync<DatabasePluginOptions> = async (
   //   console.error(`${databaseUpQueries.length} schema differences detected in current connection.`);
   //   throw new Error(`${databaseUpQueries.length} schema differences detected in current connection.`);
   // }
-
-  fastify.decorate('db', db);
 };
 
 export default plugin;

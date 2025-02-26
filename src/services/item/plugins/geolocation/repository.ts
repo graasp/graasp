@@ -2,33 +2,31 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import { iso1A2Code } from '@rapideditor/country-coder';
+import { SQL, and, between, desc, eq, ilike, or, sql } from 'drizzle-orm';
 import fetch from 'node-fetch';
-import { Brackets, EntityManager } from 'typeorm';
 
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import { AbstractRepository } from '../../../../repositories/AbstractRepository';
+import { DBConnection } from '../../../../drizzle/db';
+import { isAncestorOrSelf, isDescendantOrSelf } from '../../../../drizzle/operations';
+import { accounts, itemGeolocations, items } from '../../../../drizzle/schema';
 import { ALLOWED_SEARCH_LANGS, GEOLOCATION_API_HOST } from '../../../../utils/config';
 import { Actor, isMember } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import { ItemGeolocation } from './ItemGeolocation';
 import { MissingGeolocationSearchParams } from './errors';
 
-export class ItemGeolocationRepository extends AbstractRepository<ItemGeolocation> {
-  constructor(manager?: EntityManager) {
-    super(ItemGeolocation, manager);
-  }
-
+export class ItemGeolocationRepository {
   /**
    * copy geolocation of original item to copied item
    * @param original original item
    * @param copy copied item
    */
-  async copy(original: Item, copy: Item): Promise<void> {
-    const geoloc = await this.getByItem(original.path);
+  async copy(db: DBConnection, original: Item, copy: Item): Promise<void> {
+    const geoloc = await this.getByItem(db, original.path);
     if (geoloc) {
-      await this.repository.insert({
-        item: { path: copy.path },
+      await db.insert(itemGeolocations).values({
+        itemPath: copy.path,
         lat: geoloc.lat,
         lng: geoloc.lng,
         country: geoloc.country,
@@ -42,8 +40,8 @@ export class ItemGeolocationRepository extends AbstractRepository<ItemGeolocatio
    * Delete a geolocation given an item
    * @param item item to delete
    */
-  async delete(item: Item): Promise<void> {
-    await this.repository.delete({ item: { path: item.path } });
+  async delete(db: DBConnection, item: Item): Promise<void> {
+    await db.delete(itemGeolocations).where(eq(itemGeolocations.itemPath, item.path));
   }
 
   /**
@@ -57,6 +55,7 @@ export class ItemGeolocationRepository extends AbstractRepository<ItemGeolocatio
    * @returns item geolocations within bounding box. Does not include inheritance.
    */
   async getItemsIn(
+    db: DBConnection,
     actor: Actor,
     {
       lat1,
@@ -72,7 +71,7 @@ export class ItemGeolocationRepository extends AbstractRepository<ItemGeolocatio
       keywords?: string[];
     },
     parentItem?: Item,
-  ): Promise<ItemGeolocation[]> {
+  ) {
     // should include at least parentItem or all lat/lng
     if (
       !parentItem &&
@@ -84,13 +83,9 @@ export class ItemGeolocationRepository extends AbstractRepository<ItemGeolocatio
       throw new MissingGeolocationSearchParams({ parentItem, lat1, lat2, lng1, lng2 });
     }
 
-    const query = this.repository
-      .createQueryBuilder('ig')
-      // inner join to filter out recycled items
-      .innerJoinAndSelect('ig.item', 'item')
-      .leftJoinAndSelect('item.creator', 'member')
-      // basic where to allow following where to be `andWhere`
-      .where('item = item');
+    // reunite where conditions
+    // is direct child
+    const andConditions: SQL[] = [];
 
     if (
       typeof lat1 === 'number' &&
@@ -100,68 +95,72 @@ export class ItemGeolocationRepository extends AbstractRepository<ItemGeolocatio
     ) {
       const [minLat, maxLat] = [lat1, lat2].sort((a, b) => a - b);
       const [minLng, maxLng] = [lng1, lng2].sort((a, b) => a - b);
-      query
-        .andWhere('lat BETWEEN :minLat AND :maxLat', { minLat, maxLat })
-        .andWhere('lng BETWEEN :minLng AND :maxLng', { minLng, maxLng });
+      andConditions.push(
+        between(itemGeolocations.lat, minLat, maxLat),
+        between(itemGeolocations.lng, minLng, maxLng),
+      );
     }
 
     if (parentItem) {
-      query.andWhere('item.path <@ :path', { path: parentItem.path });
+      andConditions.push(isDescendantOrSelf(items.path, parentItem.path));
     }
+
+    // .where('path ~ ${${parent.path}.*{1}}', { path: `${parent.path}.*{1}` });
 
     const allKeywords = keywords?.filter((s) => s && s.length);
     if (allKeywords?.length) {
       const keywordsString = allKeywords.join(' ');
+
+      // search in english by default
+      const matchEnglishSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery('english', ${keywordsString})`;
+
+      // no dictionary
+      const matchSimpleSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery('simple', ${keywordsString})`;
+
+      // raw words search
+      const matchRawWordSearchConditions = allKeywords.map((k) => ilike(items.name, `%${k}%`));
+
+      const searchConditions = [
+        matchEnglishSearchCondition,
+        matchSimpleSearchCondition,
+        ...matchRawWordSearchConditions,
+      ];
+
+      // search by member lang
       const memberLang = actor && isMember(actor) ? actor?.lang : DEFAULT_LANG;
-      query.andWhere(
-        new Brackets((q) => {
-          // search in english by default
-          q.where("item.search_document @@ plainto_tsquery('english', :keywords)", {
-            keywords: keywordsString,
-          });
+      if (memberLang && ALLOWED_SEARCH_LANGS[memberLang]) {
+        const matchMemberLangSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery(${ALLOWED_SEARCH_LANGS[memberLang]}, ${keywordsString})`;
+        searchConditions.push(matchMemberLangSearchCondition);
+      }
 
-          // no dictionary
-          q.orWhere("item.search_document @@ plainto_tsquery('simple', :keywords)", {
-            keywords: keywordsString,
-          });
-
-          // raw words search
-          allKeywords.forEach((k, idx) => {
-            q.orWhere(`item.name ILIKE :k_${idx}`, {
-              [`k_${idx}`]: `%${k}%`,
-            });
-          });
-
-          // search by member lang if defined and not english
-          if (memberLang && memberLang != 'en') {
-            const memberLangKey = memberLang as keyof typeof ALLOWED_SEARCH_LANGS;
-
-            if (ALLOWED_SEARCH_LANGS[memberLangKey]) {
-              q.orWhere('item.search_document @@ plainto_tsquery(:lang, :keywords)', {
-                keywords: keywordsString,
-                lang: ALLOWED_SEARCH_LANGS[memberLangKey],
-              });
-            }
-          }
-        }),
-      );
+      andConditions.push(or(...searchConditions));
     }
 
-    return query.getMany();
+    const result = await db
+      .select()
+      .from(itemGeolocations)
+      // use view to filter out recycled items
+      .leftJoin(items, eq(items.path, itemGeolocations.itemPath))
+      .leftJoin(accounts, eq(items.creatorId, accounts.id))
+      .where(and(...andConditions));
+
+    return result.map(({ item_view, account, item_geolocation }) => ({
+      ...item_geolocation,
+      item: item_view,
+      creator: account,
+    }));
   }
 
   /**
    * @param itemPath
    * @returns geolocation for this item
    */
-  async getByItem(itemPath: Item['path']): Promise<ItemGeolocation | null> {
-    const geoloc = await this.repository
-      .createQueryBuilder('geoloc')
-      .leftJoinAndSelect('geoloc.item', 'item')
-      .where('item.path @> :path', { path: itemPath })
-      .orderBy('geoloc.item_path', 'DESC')
-      .limit(1)
-      .getOne();
+  async getByItem(db: DBConnection, itemPath: Item['path']) {
+    const geoloc = await db.query.itemGeolocations.findFirst({
+      where: isAncestorOrSelf(itemGeolocations.itemPath, itemPath),
+      with: { item: true },
+      orderBy: desc(itemGeolocations.itemPath),
+    });
 
     return geoloc;
   }
@@ -173,6 +172,7 @@ export class ItemGeolocationRepository extends AbstractRepository<ItemGeolocatio
    * @param geolocation lat and lng values, optional addressLabel
    */
   async put(
+    db: DBConnection,
     itemPath: Item['path'],
     geolocation: Pick<ItemGeolocation, 'lat' | 'lng'> &
       Pick<Partial<ItemGeolocation>, 'addressLabel' | 'helperLabel'>,
@@ -180,19 +180,27 @@ export class ItemGeolocationRepository extends AbstractRepository<ItemGeolocatio
     // country might not exist because the point is outside borders
     const country = iso1A2Code([geolocation.lng, geolocation.lat]);
 
-    await this.repository.upsert(
-      [
-        {
-          item: { path: itemPath },
+    await db
+      .insert(itemGeolocations)
+      .values({
+        itemPath,
+        lat: geolocation.lat,
+        lng: geolocation.lng,
+        addressLabel: geolocation.addressLabel,
+        helperLabel: geolocation.helperLabel,
+        country,
+      })
+      .onConflictDoUpdate({
+        target: itemGeolocations.itemPath,
+        targetWhere: eq(itemGeolocations.itemPath, itemPath),
+        set: {
           lat: geolocation.lat,
           lng: geolocation.lng,
           addressLabel: geolocation.addressLabel,
           helperLabel: geolocation.helperLabel,
           country,
         },
-      ],
-      ['item'],
-    );
+      });
   }
 
   async getAddressFromCoordinates(

@@ -1,10 +1,11 @@
 import { ItemVisibilityType, ResultOf, ThumbnailsBySize } from '@graasp/sdk';
 
-import { Repositories } from '../../utils/repositories';
+import { Item } from '../../drizzle/schema';
 import { ItemMembership } from '../itemMembership/entities/ItemMembership';
+import { ItemMembershipRepository } from '../itemMembership/repository';
 import { Actor } from '../member/entities/member';
-import { Item } from './entities/Item';
 import { ItemVisibility } from './plugins/itemVisibility/ItemVisibility';
+import { ItemVisibilityRepository } from './plugins/itemVisibility/repository';
 import { ItemThumbnailService } from './plugins/thumbnail/service';
 import { ItemsThumbnails } from './plugins/thumbnail/types';
 
@@ -51,12 +52,48 @@ export class ItemWrapper {
   }
 
   /**
+   * build item unit with complementary info, such as permission
+   * @returns item unit with permission
+   */
+  packed(): PackedItem {
+    // sort visibilities to retrieve the most restrictive (highest) visibility first
+    if (this.visibilities) {
+      this.visibilities.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
+    }
+
+    return {
+      ...this.item,
+      permission: this.actorPermission?.permission ?? null,
+      hidden: this.visibilities?.find((t) => t.type === ItemVisibilityType.Hidden),
+      public: this.visibilities?.find((t) => t.type === ItemVisibilityType.Public),
+      thumbnails: this.thumbnails,
+    };
+  }
+}
+
+@singleton()
+export class ItemWrapperService {
+  private readonly itemVisibilityRepository: ItemVisibilityRepository;
+  private readonly itemMembershipRepository: ItemMembershipRepository;
+  private readonly itemThumbnailService: ItemThumbnailService;
+
+  constructor(
+    itemVisibilityRepository: ItemVisibilityRepository,
+    itemMembershipRepository: ItemMembershipRepository,
+    itemThumbnailService: ItemThumbnailService,
+  ) {
+    this.itemVisibilityRepository = itemVisibilityRepository;
+    this.itemMembershipRepository = itemMembershipRepository;
+    this.itemThumbnailService = itemThumbnailService;
+  }
+
+  /**
    * merge items and their permission in a result of structure
    * @param items result of many items
    * @param memberships result memberships for many items
    * @returns PackedItem[]
    */
-  static merge(
+  merge(
     items: Item[],
     memberships: ResultOf<ItemMembership | null>,
     visibilities?: ResultOf<ItemVisibility[] | null>,
@@ -92,7 +129,7 @@ export class ItemWrapper {
    * @param memberships result memberships for many items
    * @returns ResultOf<PackedItem>
    */
-  static mergeResult(
+  mergeResult(
     items: ResultOf<Item>,
     memberships: ResultOf<ItemMembership | null>,
     visibilities?: ResultOf<ItemVisibility[] | null>,
@@ -122,9 +159,8 @@ export class ItemWrapper {
     return { data, errors: [...items.errors, ...memberships.errors] };
   }
 
-  static async createPackedItems(
+  async createPackedItems(
     actor: Actor,
-    repositories: Repositories,
     itemThumbnailService: ItemThumbnailService,
     items: Item[],
     memberships?: ResultOf<ItemMembership[]>,
@@ -135,15 +171,17 @@ export class ItemWrapper {
       return [];
     }
 
-    const visibilities = await repositories.itemVisibilityRepository.getForManyItems(items, {
+    const visibilities = await this.itemVisibilityRepository.getForManyItems(items, {
       withDeleted,
     });
 
     const m =
       memberships ??
-      (await repositories.itemMembershipRepository.getForManyItems(items, { withDeleted }));
+      (await this.itemMembershipRepository.getForManyItems(items, {
+        withDeleted,
+      }));
 
-    const itemsThumbnails = await itemThumbnailService.getUrlsByItems(items);
+    const itemsThumbnails = await this.itemThumbnailService.getUrlsByItems(items);
 
     return items.map((item) => {
       const permission = m.data[item.id][0]?.permission;
@@ -163,24 +201,5 @@ export class ItemWrapper {
         ...(thumbnails ? { thumbnails } : {}),
       } as unknown as PackedItem;
     });
-  }
-
-  /**
-   * build item unit with complementary info, such as permission
-   * @returns item unit with permission
-   */
-  packed(): PackedItem {
-    // sort visibilities to retrieve the most restrictive (highest) visibility first
-    if (this.visibilities) {
-      this.visibilities.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
-    }
-
-    return {
-      ...this.item,
-      permission: this.actorPermission?.permission ?? null,
-      hidden: this.visibilities?.find((t) => t.type === ItemVisibilityType.Hidden),
-      public: this.visibilities?.find((t) => t.type === ItemVisibilityType.Public),
-      thumbnails: this.thumbnails,
-    };
   }
 }

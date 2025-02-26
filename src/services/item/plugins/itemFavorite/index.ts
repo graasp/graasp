@@ -8,8 +8,8 @@ import { matchOne } from '../../../authorization';
 import { assertIsMember } from '../../../member/entities/member';
 import { memberAccountRole } from '../../../member/strategies/memberAccountRole';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
+import { FavoriteService } from './itemBookmark.service';
 import { create, deleteOne, getOwnFavorite } from './schemas';
-import { FavoriteService } from './services/favorite';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db } = fastify;
@@ -22,7 +22,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return favoriteService.getOwn(member, buildRepositories());
+      return favoriteService.getOwn(member);
     },
   );
 

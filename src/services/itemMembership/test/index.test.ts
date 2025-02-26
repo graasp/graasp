@@ -10,7 +10,7 @@ import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../.
 import { seedFromJson } from '../../../../test/mocks/seed';
 import { resolveDependency } from '../../../di/utils';
 import { AppDataSource } from '../../../plugins/datasource';
-import { MailerService } from '../../../plugins/mailer/service';
+import { MailerService } from '../../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../../utils/assertions';
 import {
   CannotDeleteOnlyAdmin,

@@ -20,7 +20,7 @@ import { MemberFactory } from '../../../../../test/factories/member.factory';
 import seed, { seedFromJson } from '../../../../../test/mocks/seed';
 import { TOKEN_REGEX, mockCaptchaValidationOnce } from '../../../../../test/utils';
 import { resolveDependency } from '../../../../di/utils';
-import { MailerService } from '../../../../plugins/mailer/service';
+import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../../../utils/assertions';
 import {
   PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES,

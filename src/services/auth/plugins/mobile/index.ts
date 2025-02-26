@@ -6,13 +6,13 @@ import { RecaptchaAction } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import {
   LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
   MOBILE_DEEP_LINK_PROTOCOL,
 } from '../../../../utils/config';
-import { buildRepositories } from '../../../../utils/repositories';
-import { isMember } from '../../../member/entities/member';
+import { isMember } from '../../../authentication';
 import { MemberService } from '../../../member/service';
 import { generateAuthTokensPair, getRedirectionLink } from '../../utils';
 import captchaPreHandler from '../captcha';
@@ -29,7 +29,7 @@ import { MobileService } from './service';
 
 // token based auth and endpoints for mobile
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { log, db } = fastify;
+  const { log } = fastify;
 
   const mobileService = resolveDependency(MobileService);
   const memberPasswordService = resolveDependency(MemberPasswordService);
@@ -49,8 +49,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         query: { lang = DEFAULT_LANG },
       } = request;
 
-      return db.transaction(async (manager) => {
-        await mobileService.register(undefined, buildRepositories(manager), body, lang);
+      return db.transaction(async (tx) => {
+        await mobileService.register(tx, body, lang);
         reply.status(StatusCodes.NO_CONTENT);
       });
     },
@@ -65,7 +65,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async (request, reply) => {
       const { body } = request;
 
-      await mobileService.login(undefined, buildRepositories(), body);
+      await mobileService.login(db, body);
       reply.status(StatusCodes.NO_CONTENT);
     },
   );
@@ -113,12 +113,11 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async ({ user, authInfo }) => {
       const member = asDefined(user?.account);
-      await db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-        await memberService.refreshLastAuthenticatedAt(member.id, repositories);
+      await db.transaction(async (tx) => {
+        await memberService.refreshLastAuthenticatedAt(tx, member.id);
         // on auth, if the user used the email sign in, its account gets validated
         if (authInfo?.emailValidation && isMember(member) && !member.isValidated) {
-          await memberService.validate(member.id, repositories);
+          await memberService.validate(tx, member.id);
         }
       });
       return generateAuthTokensPair(member.id);

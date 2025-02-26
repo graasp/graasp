@@ -1,75 +1,86 @@
-import { EntityManager } from 'typeorm';
+import { and, asc, eq, ilike } from 'drizzle-orm/sql';
+import { singleton } from 'tsyringe';
 
-import { TagCategory, UUID } from '@graasp/sdk';
+import { UUID } from '@graasp/sdk';
 
-import { AbstractRepository } from '../../../../repositories/AbstractRepository';
+import { DBConnection } from '../../../../drizzle/db';
+import { Tag, itemTags, tags } from '../../../../drizzle/schema';
 import { IllegalArgumentException } from '../../../../repositories/errors';
 import { assertIsError } from '../../../../utils/assertions';
 import { isDuplicateEntryError } from '../../../../utils/typeormError';
-import { Tag } from '../../../tag/Tag.entity';
-import { TagCount } from '../../../tag/schemas';
+import { TagCategoryOptions, TagCount } from '../../../tag/schemas';
 import { Item } from '../../entities/Item';
-import { ItemTag } from './ItemTag.entity';
 import { TAG_COUNT_MAX_RESULTS } from './constants';
 import { ItemTagAlreadyExists } from './errors';
 
-export class ItemTagRepository extends AbstractRepository<ItemTag> {
-  constructor(manager?: EntityManager) {
-    super(ItemTag, manager);
-  }
-
-  async getByItemId(itemId: UUID): Promise<Tag[]> {
+@singleton()
+export class ItemTagRepository {
+  async getByItemId(db: DBConnection, itemId: UUID): Promise<Tag[]> {
     if (!itemId) {
       throw new IllegalArgumentException(`The given 'itemId' is undefined!`);
     }
 
-    const itemTags = await this.repository.find({
-      where: { itemId },
-      relations: { tag: true },
-      order: { tag: { category: 'ASC', name: 'ASC' } },
+    const result = await db.query.itemTags.findMany({
+      where: eq(itemTags.itemId, itemId),
+      with: { tag: true },
+      orderBy: [asc(tags.category), asc(tags.name)],
     });
-    return itemTags.map(({ tag }) => tag);
+    return result.map(({ tag }) => tag);
   }
 
-  async getCountBy({
-    search,
-    category,
-  }: {
-    search: string;
-    category?: TagCategory;
-  }): Promise<TagCount[]> {
+  async getCountBy(
+    db: DBConnection,
+    {
+      search,
+      category,
+    }: {
+      search: string;
+      category: TagCategoryOptions;
+    },
+  ): Promise<TagCount[]> {
     if (!search) {
       throw new IllegalArgumentException(`search is invalid: "${search}"`);
     }
+    const res = await db
+      .select({
+        id: tags.id,
+        name: tags.name,
+        category: tags.category,
+        count: db.$count(itemTags, eq(itemTags.tagId, tags.id)),
+      })
+      .from(tags)
+      .where(and(ilike(tags.name, `%${search}%`), eq(tags.category, category)))
+      // TODO: add the orderBy count desc
+      .limit(TAG_COUNT_MAX_RESULTS);
 
-    const q = this.repository
-      .createQueryBuilder('itemTag')
-      .select([
-        't.id AS id',
-        't.name AS name',
-        't.category AS category',
-        'count(t.id)::integer as count',
-      ])
-      .innerJoinAndSelect('tag', 't', 't.id = itemTag.tag_id AND t.name ILIKE :search', {
-        search: `%${search}%`,
-      });
+    // const q = this.repository
+    //   .createQueryBuilder('itemTag')
+    //   .select([
+    //     't.id AS id',
+    //     't.name AS name',
+    //     't.category AS category',
+    //     'count(t.id)::integer as count',
+    //   ])
+    //   .innerJoinAndSelect('tag', 't', 't.id = itemTag.tag_id AND t.name ILIKE :search', {
+    //     search: `%${search}%`,
+    //   });
 
-    if (category) {
-      q.where('category = :category', { category });
-    }
+    // if (category) {
+    //   q.where('category = :category', { category });
+    // }
 
-    const result = await q
-      .groupBy('t.id')
-      .orderBy('count', 'DESC')
-      .limit(TAG_COUNT_MAX_RESULTS)
-      .getRawMany<TagCount>();
+    // const result = await q
+    //   .groupBy('t.id')
+    //   .orderBy('count', 'DESC')
+    //   .limit(TAG_COUNT_MAX_RESULTS)
+    //   .getRawMany<TagCount>();
 
-    return result;
+    return res;
   }
 
-  async create(itemId: UUID, tagId: Tag['id']): Promise<void> {
+  async create(db: DBConnection, itemId: UUID, tagId: Tag['id']): Promise<void> {
     try {
-      await this.repository.insert({ itemId, tagId });
+      await db.insert(itemTags).values({ itemId, tagId });
     } catch (e) {
       assertIsError(e);
       if (isDuplicateEntryError(e)) {
@@ -79,10 +90,11 @@ export class ItemTagRepository extends AbstractRepository<ItemTag> {
     }
   }
 
-  async delete(itemId: Item['id'], tagId: Tag['id']): Promise<void> {
+  async delete(db: DBConnection, itemId: Item['id'], tagId: Tag['id']): Promise<void> {
     if (!itemId || !tagId) {
       throw new IllegalArgumentException(`Given 'itemId' or 'tagId' is undefined!`);
     }
-    await this.repository.delete({ itemId, tagId });
+    // remove association between item and tag in tag association table
+    await db.delete(itemTags).where(and(eq(itemTags.tagId, tagId), eq(itemTags.itemId, itemId)));
   }
 }

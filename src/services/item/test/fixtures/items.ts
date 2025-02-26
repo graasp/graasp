@@ -17,10 +17,11 @@ import {
   buildPathFromIds,
 } from '@graasp/sdk';
 
+import { Member } from '../../../../drizzle/schema';
 import { AppDataSource } from '../../../../plugins/datasource';
 import { Guest } from '../../../itemLogin/entities/guest';
 import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
-import { Member, isMember } from '../../../member/entities/member';
+import { isMember } from '../../../member/entities/member';
 import { saveMember } from '../../../member/test/fixtures/members';
 import { ItemWrapper, PackedItem } from '../../ItemWrapper';
 import { DEFAULT_ORDER, Item, ItemExtraMap } from '../../entities/Item';

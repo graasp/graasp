@@ -3,7 +3,7 @@ import { v4 } from 'uuid';
 import { buildPathFromIds } from '@graasp/sdk';
 
 import { MOCK_LOGGER } from '../../../../../../test/app';
-import { MailerService } from '../../../../../plugins/mailer/service';
+import { MailerService } from '../../../../../plugins/mailer/mailer.service';
 import { Repositories } from '../../../../../utils/repositories';
 import { ItemService } from '../../../service';
 import { ItemThumbnailService } from '../../thumbnail/service';

@@ -1,7 +1,6 @@
 import { DataSource } from 'typeorm';
 
 import { Account } from '../services/account/entities/account';
-import { Action } from '../services/action/entities/action';
 import { MemberPassword } from '../services/auth/plugins/password/entities/password';
 import { ChatMessage } from '../services/chat/chatMessage';
 import { ChatMention } from '../services/chat/plugins/mentions/chatMention';
@@ -32,7 +31,6 @@ import { ItemMembership } from '../services/itemMembership/entities/ItemMembersh
 import { MembershipRequest } from '../services/itemMembership/plugins/MembershipRequest/entities/MembershipRequest';
 import { Member } from '../services/member/entities/member';
 import { MemberProfile } from '../services/member/plugins/profile/entities/profile';
-import { Tag } from '../services/tag/Tag.entity';
 import {
   AUTO_RUN_MIGRATIONS,
   DB_CONNECTION_POOL_SIZE,
@@ -99,12 +97,10 @@ export const AppDataSource = new DataSource({
     ItemValidation,
     ItemValidationGroup,
     ItemValidationReview,
-    Action,
     ActionRequestExport,
     MemberProfile,
     ShortLink,
     ItemGeolocation,
-    Tag,
     ItemTag,
   ],
   // refer to built files in js because it cannot run ts files

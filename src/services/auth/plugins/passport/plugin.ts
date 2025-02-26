@@ -3,6 +3,7 @@ import { fastifySecureSession } from '@fastify/secure-session';
 import { FastifyInstance, FastifyPluginAsync, PassportUser } from 'fastify';
 
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
 import { assertIsDefined } from '../../../../utils/assertions';
 import {
   AUTH_TOKEN_JWT_SECRET,
@@ -15,7 +16,9 @@ import {
   SECURE_SESSION_SECRET_KEY,
   STAGING,
 } from '../../../../utils/config';
-import { Repositories, buildRepositories } from '../../../../utils/repositories';
+import { AccountRepository } from '../../../account/repository';
+import { ItemRepository } from '../../../item/repository';
+import { MemberRepository } from '../../../member/repository';
 import { MemberPasswordService } from '../password/service';
 import { SHORT_TOKEN_PARAM, TOKEN_PARAM } from './constants';
 import { PassportStrategy } from './strategies';
@@ -31,10 +34,9 @@ import strictSessionStrategy from './strategies/strictSession';
 // This plugin needs to be globally register before using the prehandlers.
 const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   const memberPasswordService = resolveDependency(MemberPasswordService);
-  const repositories: Repositories = buildRepositories();
-  const memberRepository = repositories.memberRepository;
-  const accountRepository = repositories.accountRepository;
-  const itemRepository = repositories.itemRepository;
+  const memberRepository = resolveDependency(MemberRepository);
+  const accountRepository = resolveDependency(AccountRepository);
+  const itemRepository = resolveDependency(ItemRepository);
 
   // Mandatory registration for @fastify/passport
   await fastify
@@ -60,7 +62,7 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   strictSessionStrategy(fastifyPassport);
 
   //-- Password Strategies --//
-  passwordStrategy(fastifyPassport, memberPasswordService, repositories, {
+  passwordStrategy(fastifyPassport, memberPasswordService, {
     propagateError: true,
   });
 
@@ -126,7 +128,7 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   });
   fastifyPassport.registerUserDeserializer(async (uuid: string, _req): Promise<PassportUser> => {
     return {
-      account: await accountRepository.get(uuid),
+      account: await accountRepository.get(db, uuid),
     };
   });
 };

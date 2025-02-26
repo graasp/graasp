@@ -1,4 +1,6 @@
-import { Brackets, EntityManager, In, Not } from 'typeorm';
+import { inArray, isNotNull, ne } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm/sql';
+import { singleton } from 'tsyringe';
 
 import {
   Paginated,
@@ -11,8 +13,16 @@ import {
 } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import { MutableRepository } from '../../repositories/MutableRepository';
-import { DEFAULT_PRIMARY_KEY } from '../../repositories/const';
+import { DBConnection } from '../../drizzle/db';
+import { isAncestorOrSelf, isDescendantOrSelf } from '../../drizzle/operations';
+import {
+  Account,
+  ItemMembership,
+  itemMemberships as itemMembershipTable,
+  items,
+  membersView,
+} from '../../drizzle/schema';
+import { InferResultType } from '../../drizzle/types';
 import { ALLOWED_SEARCH_LANGS } from '../../utils/config';
 import {
   InvalidMembership,
@@ -22,17 +32,11 @@ import {
   MemberNotFound,
   ModifyExistingMembership,
 } from '../../utils/errors';
-import { AncestorOf } from '../../utils/typeorm/treeOperators';
-import { Account } from '../account/entities/account';
 import { ITEMS_PAGE_SIZE_MAX } from '../item/constants';
 import { Item } from '../item/entities/Item';
 import { ItemSearchParams, Ordering, SortBy, orderingToUpperCase } from '../item/types';
-import { MemberIdentifierNotFound } from '../itemLogin/errors';
 import { isMember } from '../member/entities/member';
-import { itemMembershipSchema } from '../member/plugins/export-data/schemas/schemas';
-import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils';
 import { mapById } from '../utils';
-import { ItemMembership } from './entities/ItemMembership';
 import { PermissionType, getPermissionsAtItemSql } from './utils';
 
 type ItemPath = Item['path'];
@@ -43,7 +47,7 @@ type CreateItemMembershipBody = {
   itemPath: ItemPath;
   accountId: AccountId;
   creatorId?: CreatorId;
-  permission: PermissionLevel;
+  permission: `${PermissionLevel}`;
 };
 type UpdateItemMembershipBody = { permission: PermissionLevel };
 type KeyCompositionItemMembership = { itemPath: ItemPath; accountId: AccountId };
@@ -62,59 +66,68 @@ type MoveHousekeepingType = DetachedMoveHousekeepingType & {
   action2IgnoreInherited: boolean;
 };
 
-export class ItemMembershipRepository extends MutableRepository<
-  ItemMembership,
-  UpdateItemMembershipBody
-> {
-  constructor(manager?: EntityManager) {
-    super(DEFAULT_PRIMARY_KEY, ItemMembership, manager);
-  }
-
-  async getOne(id: string): Promise<ItemMembership | null> {
-    return await super.findOne(id, {
-      relations: {
-        creator: true,
-        account: true,
-        item: true,
-      },
+@singleton()
+export class ItemMembershipRepository {
+  async getOne(db: DBConnection, id: string): Promise<ItemMembership | undefined> {
+    const res = await db.query.itemMemberships.findFirst({
+      where: eq(itemMembershipTable.id, id),
+      with: { creator: true, item: true, account: true },
     });
+    return res;
   }
 
   /**
    * Create multiple memberships given an array of partial membership objects.
    * @param memberships Array of objects with properties: `memberId`, `itemPath`, `permission`, `creator`
    */
-  async addMany(memberships: CreateItemMembershipBody[]): Promise<ItemMembership[]> {
-    const itemsMemberships = memberships.map((m) =>
-      this.repository.create({
-        permission: m.permission,
-        item: { id: getChildFromPath(m.itemPath), path: m.itemPath },
-        account: { id: m.accountId },
-        creator: { id: m.creatorId },
-      }),
-    );
-    await this.repository.insert(itemsMemberships);
+  async addMany(db: DBConnection, memberships: CreateItemMembershipBody[]) {
+    const itemsMemberships = await db
+      .insert(itemMembershipTable)
+      .values(
+        memberships.map((m) => ({
+          permission: m.permission,
+          itemPath: m.itemPath,
+          accountId: m.accountId,
+          creatorId: m.creatorId,
+        })),
+      )
+      .returning();
+
     return itemsMemberships;
   }
 
   async deleteOne(
+    db: DBConnection,
     itemMembershipId: string,
     args: { purgeBelow?: boolean } = { purgeBelow: true },
   ): Promise<ItemMembership> {
-    const itemMembership = await this.get(itemMembershipId);
+    const itemMembership = await db.query.itemMemberships.findFirst({
+      where: eq(itemMembershipTable.id, itemMembershipId),
+    });
+    if (!itemMembership) {
+      throw new ItemMembershipNotFound();
+    }
 
     if (args.purgeBelow) {
-      const { item, account } = itemMembership;
-      const itemMembershipsBelow = await this.getAllBelow(item.path, account.id);
+      const { itemPath, accountId } = itemMembership;
+      const itemMembershipsBelow = await this.getAllBellowItemPathForAccount(
+        db,
+        itemPath,
+        accountId,
+      );
 
       if (itemMembershipsBelow.length > 0) {
         // return list of subtasks for task manager to execute and
         // delete all memberships in the (sub)tree, one by one, in reverse order (bottom > top)
-        await this.delete(itemMembershipsBelow.map(({ id }) => id));
+        await db.delete(itemMembershipTable).where(
+          inArray(
+            itemMembershipTable.id,
+            itemMembershipsBelow.map(({ id }) => id),
+          ),
+        );
       }
     }
-
-    await this.delete(itemMembershipId);
+    await db.delete(itemMembershipTable).where(eq(itemMembershipTable.id, itemMembershipId));
     return itemMembership;
   }
 
@@ -124,20 +137,31 @@ export class ItemMembershipRepository extends MutableRepository<
    * @param composedKeys List of objects with: `accountId`, `itemPath`
    */
   async deleteManyByItemPathAndAccount(
-    composedKeys: KeyCompositionItemMembership[],
+    db: DBConnection,
+    composedKeys: {
+      itemPath: ItemPath;
+      accountId: AccountId;
+    }[],
   ): Promise<void> {
-    for (const composedKey of composedKeys) {
-      await this.repository.delete({
-        item: { path: composedKey.itemPath },
-        account: { id: composedKey.accountId },
-      });
+    for (const { itemPath, accountId } of composedKeys) {
+      await db
+        .delete(itemMembershipTable)
+        .where(
+          and(
+            eq(itemMembershipTable.itemPath, itemPath),
+            eq(itemMembershipTable.accountId, accountId),
+          ),
+        );
     }
   }
 
-  async get(id: string): Promise<ItemMembership> {
-    const item = await this.repository.findOne({
-      where: { id },
-      relations: ['account', 'item', 'item.creator'],
+  async get(
+    db: DBConnection,
+    id: string,
+  ): Promise<InferResultType<'itemMemberships', { account: true; item: true }>> {
+    const item = await db.query.itemMemberships.findFirst({
+      where: eq(itemMembershipTable.id, id),
+      with: { account: true, item: { with: { account: true } } },
     });
 
     if (!item) {
@@ -147,23 +171,74 @@ export class ItemMembershipRepository extends MutableRepository<
     return item;
   }
 
-  async getByAccountAndItem(accountId: string, itemId: string): Promise<ItemMembership | null> {
+  /**
+   *
+   * @param db Database connection or transaction connection
+   * @param accountId the user id
+   * @param itemId the itemId that we are testing for membership
+   * @returns true if the user has a membership (direct or inherited) for the itemId, false otherwise
+   */
+  async hasMembershipOnItem(db: DBConnection, accountId: string, itemId: string): Promise<boolean> {
     if (!accountId) {
       throw new MemberNotFound();
     } else if (!itemId) {
       throw new ItemNotFound(itemId);
     }
 
-    return await this.repository.findOne({
-      where: {
-        account: { id: accountId },
-        item: { id: itemId },
-      },
-      relations: {
+    const res = await db
+      .select({ id: itemMembershipTable.id })
+      .from(itemMembershipTable)
+      .leftJoin(items, eq(items.path, itemMembershipTable.itemPath))
+      // TODO: we should probably check for ancestors of the item with itemId input to have a membership.
+      .where(and(eq(itemMembershipTable.accountId, accountId), eq(items.id, itemId)));
+    // we were able to get a result, so the accountId has a membership on the item
+    if (res.length >= 1) {
+      return true;
+    }
+    return false;
+  }
+
+  async getByAccountAndItemPath(
+    db: DBConnection,
+    accountId: string,
+    itemPath: string,
+  ): Promise<ItemMembership | undefined> {
+    if (!accountId) {
+      throw new MemberNotFound();
+    } else if (!itemPath) {
+      throw new ItemNotFound(itemPath);
+    }
+
+    // CHECK: does it need to take into account inheritance ?
+    return await db.query.itemMemberships.findFirst({
+      where: and(
+        eq(itemMembershipTable.accountId, accountId),
+        eq(itemMembershipTable.itemPath, itemPath),
+      ),
+      with: {
         account: true,
         item: true,
       },
     });
+  }
+
+  async getAllBellowItemPath(db: DBConnection, itemPath: ItemPath) {
+    const membershipsBelowItemPath = db.query.itemMemberships.findMany({
+      where: sql`${itemMembershipTable.itemPath} <@ ${itemPath}`,
+      with: { account: true },
+    });
+    return membershipsBelowItemPath;
+  }
+
+  async getAllBellowItemPathForAccount(db: DBConnection, itemPath: ItemPath, accountId: string) {
+    const membershipsBelowItemPath = db.query.itemMemberships.findMany({
+      where: and(
+        sql`${itemMembershipTable.itemPath} <@ ${itemPath}`,
+        eq(itemMembershipTable.accountId, accountId),
+      ),
+      with: { account: true },
+    });
+    return membershipsBelowItemPath;
   }
 
   /**
@@ -173,158 +248,159 @@ export class ItemMembershipRepository extends MutableRepository<
    * @returns
    */
   async getAllBelow(
+    db: DBConnection,
     itemPath: ItemPath,
-    accountId?: string,
+    accountId: string,
     {
       considerLocal = false,
       selectItem = false,
     }: { considerLocal?: boolean; selectItem?: boolean } = {},
   ): Promise<ItemMembership[]> {
-    const query = this.repository
-      .createQueryBuilder('item_membership')
-      .andWhere('item_membership.item_path <@ :path', { path: itemPath });
+    const andConditions = [
+      isDescendantOrSelf(itemMembershipTable.itemPath, itemPath),
+      eq(itemMembershipTable.accountId, accountId),
+    ];
 
     if (!considerLocal) {
-      query.andWhere('item_membership.item_path != :path', { path: itemPath });
+      andConditions.push(ne(itemMembershipTable.itemPath, itemPath));
     }
 
-    // if member is specified, select only this user
-    if (accountId) {
-      query.andWhere('item_membership.account = :id', { id: accountId });
-    }
-    // otherwise return members' info
-    else {
-      query.leftJoinAndSelect('item_membership.account', 'account');
-    }
-
-    if (selectItem) {
-      query.leftJoinAndSelect('item_membership.item', 'item');
-    }
-
-    return query.getMany();
+    return await db.query.itemMemberships.findMany({
+      where: and(...andConditions),
+      with: {
+        item: selectItem ? true : undefined,
+      },
+    });
   }
 
-  /**
-   *  get accessible items for actor and given params
-   *  */
-  async getAccessibleItems(
-    account: Account,
-    {
-      creatorId,
-      keywords,
-      sortBy = SortBy.ItemUpdatedAt,
-      ordering = Ordering.DESC,
-      permissions,
-      types,
-    }: ItemSearchParams,
-    pagination: Pagination,
-  ): Promise<Paginated<ItemMembership>> {
-    const { page, pageSize } = pagination;
-    const limit = Math.min(pageSize, ITEMS_PAGE_SIZE_MAX);
-    const skip = (page - 1) * limit;
+  // /**
+  //  *  get accessible items for actor and given params
+  //  *  */
+  // async getAccessibleItems(
+  //   db: DBConnection,
+  //   account: Account,
+  //   {
+  //     creatorId,
+  //     keywords,
+  //     sortBy = SortBy.ItemUpdatedAt,
+  //     ordering = Ordering.DESC,
+  //     permissions,
+  //     types,
+  //   }: ItemSearchParams,
+  //   pagination: Pagination,
+  // ): Promise<Paginated<ItemMembership>> {
+  //   const { page, pageSize } = pagination;
+  //   const limit = Math.min(pageSize, ITEMS_PAGE_SIZE_MAX);
+  //   const skip = (page - 1) * limit;
 
-    const query = this.repository
-      .createQueryBuilder('im')
-      .leftJoinAndSelect('im.item', 'item')
-      .leftJoinAndSelect('item.creator', 'creator')
-      .where('im.account_id = :actorId', { actorId: account.id })
-      // returns only top most item
-      .andWhere((qb) => {
-        const subQuery = qb
-          .subQuery()
-          .from(ItemMembership, 'im1')
-          .select('im1.item.path')
-          .where('im.item_path <@ im1.item_path')
-          .andWhere('im1.account_id = :actorId', { actorId: account.id })
-          .orderBy('im1.item_path', 'ASC')
-          .limit(1);
+  //   db.query.itemMemberships.findFirst({
+  //     columns: {},
+  //   });
 
-        if (permissions) {
-          subQuery.andWhere('im1.permission IN (:...permissions)', { permissions });
-        }
-        return 'item.path =' + subQuery.getQuery();
-      });
+  //   const query = await db
+  //     .select()
+  //     .from(itemMembershipTable)
+  //     .leftJoin(items, eq(itemMembershipTable.itemPath, items.path))
+  //     .leftJoin(membersView, eq(membersView.id, items.creatorId))
+  //     .where(eq(itemMembershipTable.accountId, account.id))
+  //     // returns only top most item
+  //     .andWhere((qb) => {
+  //       const subQuery = qb
+  //         .subQuery()
+  //         .from(itemMembershipTable, 'im1')
+  //         .select('im1.item.path')
+  //         .where('im.item_path <@ im1.item_path')
+  //         .andWhere('im1.account_id = :actorId', { actorId: account.id })
+  //         .orderBy('im1.item_path', 'ASC')
+  //         .limit(1);
 
-    const allKeywords = keywords?.filter((s) => s && s.length);
-    if (allKeywords?.length) {
-      const keywordsString = allKeywords.join(' ');
-      query.andWhere(
-        new Brackets((q) => {
-          // search in english by default
-          q.where("item.search_document @@ plainto_tsquery('english', :keywords)", {
-            keywords: keywordsString,
-          });
+  //       if (permissions) {
+  //         subQuery.andWhere('im1.permission IN (:...permissions)', { permissions });
+  //       }
+  //       return 'item.path =' + subQuery.getQuery();
+  //     });
 
-          // no dictionary
-          q.orWhere("item.search_document @@ plainto_tsquery('simple', :keywords)", {
-            keywords: keywordsString,
-          });
+  //   const allKeywords = keywords?.filter((s) => s && s.length);
+  //   if (allKeywords?.length) {
+  //     const keywordsString = allKeywords.join(' ');
+  //     query.andWhere(
+  //       new Brackets((q) => {
+  //         // search in english by default
+  //         q.where("item.search_document @@ plainto_tsquery('english', :keywords)", {
+  //           keywords: keywordsString,
+  //         });
 
-          // raw words search
-          allKeywords.forEach((k, idx) => {
-            q.orWhere(`item.name ILIKE :k_${idx}`, {
-              [`k_${idx}`]: `%${k}%`,
-            });
-          });
+  //         // no dictionary
+  //         q.orWhere("item.search_document @@ plainto_tsquery('simple', :keywords)", {
+  //           keywords: keywordsString,
+  //         });
 
-          // search by member lang
-          const memberLang = isMember(account) ? account.lang : DEFAULT_LANG;
-          const memberLangKey = memberLang as keyof typeof ALLOWED_SEARCH_LANGS;
-          if (memberLang != DEFAULT_LANG && ALLOWED_SEARCH_LANGS[memberLangKey]) {
-            q.orWhere('item.search_document @@ plainto_tsquery(:lang, :keywords)', {
-              keywords: keywordsString,
-              lang: ALLOWED_SEARCH_LANGS[memberLangKey],
-            });
-          }
-        }),
-      );
-    }
+  //         // raw words search
+  //         allKeywords.forEach((k, idx) => {
+  //           q.orWhere(`item.name ILIKE :k_${idx}`, {
+  //             [`k_${idx}`]: `%${k}%`,
+  //           });
+  //         });
 
-    if (creatorId) {
-      query.andWhere('item.creator = :creatorId', { creatorId });
-    }
+  //         // search by member lang
+  //         const memberLang = isMember(account) ? account.lang : DEFAULT_LANG;
+  //         const memberLangKey = memberLang as keyof typeof ALLOWED_SEARCH_LANGS;
+  //         if (memberLang != DEFAULT_LANG && ALLOWED_SEARCH_LANGS[memberLangKey]) {
+  //           q.orWhere('item.search_document @@ plainto_tsquery(:lang, :keywords)', {
+  //             keywords: keywordsString,
+  //             lang: ALLOWED_SEARCH_LANGS[memberLangKey],
+  //           });
+  //         }
+  //       }),
+  //     );
+  //   }
 
-    if (permissions) {
-      query.andWhere('im.permission IN (:...permissions)', { permissions });
-    }
+  //   if (creatorId) {
+  //     query.andWhere('item.creator = :creatorId', { creatorId });
+  //   }
 
-    if (types) {
-      query.andWhere('item.type IN (:...types)', { types });
-    }
+  //   if (permissions) {
+  //     query.andWhere('im.permission IN (:...permissions)', { permissions });
+  //   }
 
-    if (sortBy) {
-      // map strings to correct sort by column
-      let mappedSortBy;
-      switch (sortBy) {
-        case SortBy.ItemType:
-          mappedSortBy = 'item.type';
-          break;
-        case SortBy.ItemUpdatedAt:
-          mappedSortBy = 'item.updated_at';
-          break;
-        case SortBy.ItemCreatedAt:
-          mappedSortBy = 'item.created_at';
-          break;
-        case SortBy.ItemCreatorName:
-          mappedSortBy = 'creator.name';
-          break;
-        case SortBy.ItemName:
-          mappedSortBy = 'item.name';
-          break;
-      }
-      if (mappedSortBy) {
-        query.orderBy(mappedSortBy, orderingToUpperCase(ordering));
-      }
-    }
+  //   if (types) {
+  //     query.andWhere('item.type IN (:...types)', { types });
+  //   }
 
-    const [im, totalCount] = await query.offset(skip).limit(limit).getManyAndCount();
-    return { data: im, totalCount, pagination };
-  }
+  //   if (sortBy) {
+  //     // map strings to correct sort by column
+  //     let mappedSortBy;
+  //     switch (sortBy) {
+  //       case SortBy.ItemType:
+  //         mappedSortBy = 'item.type';
+  //         break;
+  //       case SortBy.ItemUpdatedAt:
+  //         mappedSortBy = 'item.updated_at';
+  //         break;
+  //       case SortBy.ItemCreatedAt:
+  //         mappedSortBy = 'item.created_at';
+  //         break;
+  //       case SortBy.ItemCreatorName:
+  //         mappedSortBy = 'creator.name';
+  //         break;
+  //       case SortBy.ItemName:
+  //         mappedSortBy = 'item.name';
+  //         break;
+  //     }
+  //     if (mappedSortBy) {
+  //       query.orderBy(mappedSortBy, orderingToUpperCase(ordering));
+  //     }
+  //   }
+
+  //   const [im, totalCount] = await query.offset(skip).limit(limit).getManyAndCount();
+  //   return { data: im, totalCount, pagination };
+  // }
 
   /**
    *  get accessible items name for actor and given params
    *  */
   async getAccessibleItemNames(
+    db: DBConnection,
     actor: Account,
     { startWith }: { startWith?: string },
   ): Promise<string[]> {
@@ -354,27 +430,8 @@ export class ItemMembershipRepository extends MutableRepository<
     return raw.map(({ item_name }) => item_name);
   }
 
-  /**
-   * Return all the memberships related to the given account.
-   * @param accountId ID of the account to retrieve the data.
-   * @returns an array of memberships.
-   */
-  async getForMemberExport(accountId: string): Promise<ItemMembership[]> {
-    if (!accountId) {
-      throw new MemberIdentifierNotFound();
-    }
-
-    return this.repository.find({
-      select: schemaToSelectMapper(itemMembershipSchema),
-      where: { account: { id: accountId } },
-      order: { updatedAt: 'DESC' },
-      relations: {
-        item: true,
-      },
-    });
-  }
-
   async getForManyItems(
+    db: DBConnection,
     items: Item[],
     {
       accountId = undefined,
@@ -420,6 +477,7 @@ export class ItemMembershipRepository extends MutableRepository<
   }
 
   async getInheritedMany(
+    db: DBConnection,
     items: Item[],
     accountId: AccountId,
     considerLocal = false,
@@ -470,6 +528,7 @@ export class ItemMembershipRepository extends MutableRepository<
 
   /** check member's membership "at" item */
   async getInherited(
+    db: DBConnection,
     itemPath: ItemPath,
     accountId: AccountId,
     considerLocal = false,
@@ -507,28 +566,29 @@ export class ItemMembershipRepository extends MutableRepository<
   }
 
   async getMany(
+    db: DBConnection,
     ids: string[],
     args: { throwOnError?: boolean } = { throwOnError: false },
   ): Promise<ResultOf<ItemMembership>> {
-    const itemMemberships = await this.repository.find({
-      where: { id: In(ids) },
-      relations: {
+    const result = await db.query.itemMemberships.findMany({
+      where: inArray(itemMembershipTable.id, ids),
+      with: {
         account: true,
         item: true,
       },
     });
 
-    const result = mapById({
+    const mappedMemberships = mapById({
       keys: ids,
-      findElement: (id) => itemMemberships.find(({ id: thisId }) => id === thisId),
+      findElement: (id) => result.find(({ id: thisId }) => id === thisId),
       buildError: (id) => new ItemMembershipNotFound({ id }),
     });
 
-    if (args.throwOnError && result.errors.length) {
-      throw result.errors[0];
+    if (args.throwOnError && mappedMemberships.errors.length) {
+      throw mappedMemberships.errors[0];
     }
 
-    return result;
+    return mappedMemberships;
   }
 
   async getSharedItems(actorId: UUID, permission?: PermissionLevel): Promise<Item[]> {
@@ -548,15 +608,14 @@ export class ItemMembershipRepository extends MutableRepository<
     }
 
     // get items with given permission, without own items
-    const sharedMemberships = await this.repository.find({
-      where: {
-        permission: In(permissions),
-        account: { id: actorId },
-        item: { creator: Not(actorId) },
-      },
-      relations: {
+    const sharedMemberships = await db.query.itemMemberships.findMany({
+      where: and(
+        inArray(itemMembershipTable.permission, permissions),
+        eq(itemMembershipTable.accountId, actorId),
+      ),
+      with: {
         item: {
-          creator: true,
+          where: (item) => and(isNotNull(item.creatorId), ne(item.creatorId, actorId)),
         },
       },
     });
@@ -570,22 +629,27 @@ export class ItemMembershipRepository extends MutableRepository<
   }
 
   async getByItemPathAndPermission(
+    db: DBConnection,
     itemPath: string,
     permission: PermissionLevel,
   ): Promise<ItemMembership[]> {
-    return this.repository.find({
-      where: { item: AncestorOf(itemPath), permission },
-      relations: {
+    return await db.query.itemMemberships.findMany({
+      where: and(
+        isAncestorOrSelf(itemMembershipTable.itemPath, itemPath),
+        eq(itemMembershipTable.permission, permission),
+      ),
+      with: {
         account: true,
       },
     });
   }
 
   async updateOne(
+    db: DBConnection,
     itemMembershipId: string,
     data: UpdateItemMembershipBody,
   ): Promise<ItemMembership> {
-    const itemMembership = await this.get(itemMembershipId);
+    const itemMembership = await this.get(db, itemMembershipId);
     // check member's inherited membership
     const { item, account: memberOfMembership } = itemMembership;
 
@@ -606,7 +670,11 @@ export class ItemMembershipRepository extends MutableRepository<
     }
 
     // check existing memberships lower in the tree
-    const membershipsBelow = await this.getAllBelow(item.path, memberOfMembership.id);
+    const membershipsBelow = await this.getAllBellowItemPathForAccount(
+      db,
+      item.path,
+      memberOfMembership.id,
+    );
     let tasks: Promise<unknown>[] = [];
     if (membershipsBelow.length > 0) {
       // check if any have the same or a worse permission level
@@ -628,16 +696,14 @@ export class ItemMembershipRepository extends MutableRepository<
     return this.get(itemMembershipId);
   }
 
-  async addOne({
-    itemPath,
-    accountId,
-    creatorId,
-    permission,
-  }: CreateItemMembershipBody): Promise<ItemMembership> {
+  async addOne(
+    db: DBConnection,
+    { itemPath, accountId, creatorId, permission }: CreateItemMembershipBody,
+  ): Promise<ItemMembership> {
     // prepare membership but do not save it
     const itemId = getChildFromPath(itemPath);
 
-    const inheritedMembership = await this.getInherited(itemPath, accountId, true);
+    const inheritedMembership = await this.getInherited(db, itemPath, accountId, true);
     if (inheritedMembership) {
       const { item: itemFromPermission, permission: inheritedPermission, id } = inheritedMembership;
       // fail if trying to add a new membership for the same member and item
@@ -653,7 +719,7 @@ export class ItemMembershipRepository extends MutableRepository<
     }
 
     // check existing memberships lower in the tree
-    const membershipsBelow = await this.getAllBelow(itemPath, accountId);
+    const membershipsBelow = await this.getAllBelow(db, itemPath, accountId);
     let tasks: Promise<unknown>[] = [];
     if (membershipsBelow.length > 0) {
       // check if any have the same or a worse permission level
@@ -664,7 +730,7 @@ export class ItemMembershipRepository extends MutableRepository<
       if (membershipsBelowToDiscard.length > 0) {
         // remove redundant existing memberships and to create the new one
         tasks = membershipsBelowToDiscard.map(async (membership) => {
-          await this.delete(membership.id);
+          await this.delete(db, membership.id);
         });
       }
     }

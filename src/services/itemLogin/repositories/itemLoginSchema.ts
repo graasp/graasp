@@ -1,16 +1,13 @@
-import { EntityManager } from 'typeorm';
+import { eq } from 'drizzle-orm';
 
-import { ItemLoginSchemaType, getChildFromPath } from '@graasp/sdk';
+import { ItemLoginSchemaType } from '@graasp/sdk';
 
-import { MutableRepository } from '../../../repositories/MutableRepository';
-import { DEFAULT_PRIMARY_KEY } from '../../../repositories/const';
-import {
-  DeleteException,
-  EntityNotFound,
-  EntryNotFoundBeforeDeleteException,
-} from '../../../repositories/errors';
+import { DBConnection } from '../../../drizzle/db';
+import { isAncestorOrSelf } from '../../../drizzle/operations';
+import { itemLoginSchemas } from '../../../drizzle/schema';
+import { DeleteException, EntryNotFoundBeforeDeleteException } from '../../../repositories/errors';
+import { throwsIfParamIsInvalid } from '../../../repositories/utils';
 import { assertIsError } from '../../../utils/assertions';
-import { AncestorOf } from '../../../utils/typeorm/treeOperators';
 import { Item } from '../../item/entities/Item';
 import { ItemLoginSchema } from '../entities/itemLoginSchema';
 import { CannotNestItemLoginSchema } from '../errors';
@@ -21,71 +18,49 @@ type CreateItemLoginSchemaBody = {
   itemPath: ItemPath;
   type?: ItemLoginSchema['type'];
 };
-type UpdateItemLoginSchemaBody = {
-  type?: ItemLoginSchema['type'];
-  status?: ItemLoginSchema['status'];
-};
 
-export class ItemLoginSchemaRepository extends MutableRepository<
-  ItemLoginSchema,
-  UpdateItemLoginSchemaBody
-> {
-  constructor(manager?: EntityManager) {
-    super(DEFAULT_PRIMARY_KEY, ItemLoginSchema, manager);
-  }
+export class ItemLoginSchemaRepository {
+  async getOneByItemId(db: DBConnection, itemId: ItemId): Promise<ItemLoginSchema | null> {
+    throwsIfParamIsInvalid('item', itemId);
 
-  async getOneByItemId(itemId: ItemId): Promise<ItemLoginSchema | null> {
-    this.throwsIfParamIsInvalid('item', itemId);
-
-    return await this.repository.findOne({
-      where: { item: { id: itemId } },
+    return await db.query.itemLoginSchemas.findFirst({
+      where: eq(itemLoginSchemas.itemId, itemId),
     });
   }
 
-  async getOneByItemPath(itemPath: ItemPath): Promise<ItemLoginSchema | null> {
-    this.throwsIfParamIsInvalid('itemPath', itemPath);
+  async getOneByItemPath(db: DBConnection, itemPath: ItemPath): Promise<ItemLoginSchema | null> {
+    throwsIfParamIsInvalid('itemPath', itemPath);
 
-    return await this.repository.findOne({
-      where: { item: { path: AncestorOf(itemPath) } },
-      relations: { item: true },
+    return await db.query.itemLoginSchemas.findFirst({
+      where: isAncestorOrSelf(itemLoginSchemas.itemPath, itemPath),
+      with: { item: true },
     });
   }
 
-  async getOneByItemPathOrThrow<Err extends Error, Args extends unknown[]>(
-    itemPath: ItemPath,
-    errorToThrow?: new (...args: Args) => Err,
-    ...errorArgs: Args
-  ): Promise<ItemLoginSchema> {
-    const entity = await this.getOneByItemPath(itemPath);
-    if (!entity) {
-      throw errorToThrow
-        ? new errorToThrow(...errorArgs)
-        : new EntityNotFound(this.entity, itemPath);
-    }
-    return entity;
-  }
-
-  async addOne({ itemPath, type = ItemLoginSchemaType.Username }: CreateItemLoginSchemaBody) {
-    const existingItemLoginSchema = await this.getOneByItemPath(itemPath);
+  async addOne(
+    db: DBConnection,
+    { itemPath, type = ItemLoginSchemaType.Username }: CreateItemLoginSchemaBody,
+  ) {
+    const existingItemLoginSchema = await this.getOneByItemPath(db, itemPath);
     // if item login schema is inherited
     if (existingItemLoginSchema && existingItemLoginSchema?.item.path !== itemPath) {
       throw new CannotNestItemLoginSchema(itemPath);
     }
 
-    return await super.insert({ item: { id: getChildFromPath(itemPath), path: itemPath }, type });
+    return await db.insert(itemLoginSchemas).values({ itemPath, type });
   }
 
-  async deleteOneByItemId(itemId: Item['id']) {
-    this.throwsIfParamIsInvalid('itemId', itemId);
+  async deleteOneByItemId(db: DBConnection, itemId: Item['id']) {
+    throwsIfParamIsInvalid('itemId', itemId);
 
-    const entity = await this.getOneByItemId(itemId);
+    const entity = await this.getOneByItemId(db, itemId);
 
     if (!entity) {
       throw new EntryNotFoundBeforeDeleteException(this.entity);
     }
 
     try {
-      await this.repository.delete(entity.id);
+      await db.delete(itemLoginSchemas).where(eq(itemLoginSchemas.id, entity.id));
       return entity;
     } catch (e) {
       assertIsError(e);

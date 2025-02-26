@@ -2,7 +2,7 @@
 # Used in CI for creating images to push on registry
 
 # Update the NODE_VERSION arg in docker-compose.yml to pick a Node version of Docker Image
-ARG NODE_VERSION=20
+ARG NODE_VERSION=22
 
 # Update the ALPINE_VERSION arg in docker-compose.yml to pick a Node version of Docker Image
 ARG ALPINE_VERSION=3.19

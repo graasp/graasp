@@ -8,11 +8,11 @@ import { ClientManager, Context, RecaptchaAction } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import { MemberAlreadySignedUp } from '../../../../utils/errors';
-import { buildRepositories } from '../../../../utils/repositories';
+import { isMember } from '../../../authentication';
 import { InvitationService } from '../../../item/plugins/invitation/service';
-import { isMember } from '../../../member/entities/member';
 import { MemberService } from '../../../member/service';
 import { getRedirectionLink } from '../../utils';
 import captchaPreHandler from '../captcha';
@@ -25,8 +25,6 @@ const ERROR_SEARCH_PARAM = 'error';
 const ERROR_SEARCH_PARAM_HAS_ERROR = 'true';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { db } = fastify;
-
   const memberService = resolveDependency(MemberService);
   const magicLinkService = resolveDependency(MagicLinkService);
   const invitationService = resolveDependency(InvitationService);
@@ -41,15 +39,15 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         query: { lang = DEFAULT_LANG },
       } = request;
       const { url } = body;
-      return db.transaction(async (manager) => {
+      return db.transaction(async (tx) => {
         try {
-          const repositories = buildRepositories(manager);
+          // const repositories = buildRepositories(manager);
           // we use member service to allow post hook for invitation
-          const member = await memberService.post(undefined, repositories, body, lang);
-          await magicLinkService.sendRegisterMail(undefined, repositories, member, url);
+          const member = await memberService.post(tx, body, lang);
+          await magicLinkService.sendRegisterMail(member, url);
 
           // transform memberships from existing invitations
-          await invitationService.createToMemberships(repositories, member);
+          await invitationService.createToMemberships(tx, member);
 
           reply.status(StatusCodes.NO_CONTENT);
         } catch (e) {
@@ -57,7 +55,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
             throw e;
           }
           // send login email
-          await magicLinkService.login(undefined, buildRepositories(manager), body, lang);
+          await magicLinkService.login(tx, body, lang);
           reply.status(StatusCodes.NO_CONTENT);
         }
       });
@@ -75,7 +73,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const { body } = request;
       const { url } = body;
 
-      await magicLinkService.login(undefined, buildRepositories(), body, url);
+      await magicLinkService.login(db, body, url);
       reply.status(StatusCodes.NO_CONTENT);
     },
   );
@@ -111,12 +109,11 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       } = request;
       const member = asDefined(user?.account);
       const redirectionLink = getRedirectionLink(log, url ? decodeURIComponent(url) : undefined);
-      await db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-        await memberService.refreshLastAuthenticatedAt(member.id, repositories);
+      await db.transaction(async (tx) => {
+        await memberService.refreshLastAuthenticatedAt(tx, member.id);
         // on auth, if the user used the email sign in, its account gets validated
         if (authInfo?.emailValidation && isMember(member) && !member.isValidated) {
-          await memberService.validate(member.id, repositories);
+          await memberService.validate(tx, member.id);
         }
       });
       reply.redirect(StatusCodes.SEE_OTHER, redirectionLink);

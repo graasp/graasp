@@ -12,11 +12,11 @@ export const ITEM_THUMBNAIL_PREFIX = 'thumbnails';
 
 @injectable()
 export class ThumbnailService {
-  private readonly _fileService: FileService;
+  private readonly fileService: FileService;
   private _prefix: string = ITEM_THUMBNAIL_PREFIX;
 
   constructor(fileService: FileService) {
-    this._fileService = fileService;
+    this.fileService = fileService;
   }
 
   public set prefix(prefix: string) {
@@ -48,7 +48,7 @@ export class ThumbnailService {
         );
 
         // upload file
-        await this._fileService.upload(actor, {
+        await this.fileService.upload(actor, {
           file: pipeline,
           filepath: this.buildFilePath(id, sizeName),
           mimetype: THUMBNAIL_MIMETYPE,
@@ -58,14 +58,14 @@ export class ThumbnailService {
   }
 
   async getUrl({ id, size }: { size: string; id: string }) {
-    const result = await this._fileService.getUrl({
+    const result = await this.fileService.getUrl({
       path: this.buildFilePath(id, size),
     });
 
     return result;
   }
   async getFile(actor: Actor, { id, size }: { size: string; id: string }) {
-    const result = await this._fileService.getFile(actor, {
+    const result = await this.fileService.getFile(actor, {
       path: this.buildFilePath(id, size),
     });
 
@@ -74,13 +74,13 @@ export class ThumbnailService {
 
   async delete({ id, size }: { size: string; id: string }) {
     const filePath = this.buildFilePath(id, size);
-    await this._fileService.delete(filePath);
+    await this.fileService.delete(filePath);
   }
 
   async copyFolder(actor: Member, { originalId, newId }: { originalId: string; newId: string }) {
     const originalFolderPath = this.buildFolderPath(originalId);
     const newFolderPath = this.buildFolderPath(newId);
-    await this._fileService.copyFolder({ originalFolderPath, newFolderPath });
+    await this.fileService.copyFolder({ originalFolderPath, newFolderPath });
   }
 }
 

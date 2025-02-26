@@ -11,7 +11,7 @@ import {
 } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { ItemVisibilityType } from '@graasp/sdk';
+import { ItemVisibilityOptionsType, ItemVisibilityType } from '@graasp/sdk';
 
 import { Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
@@ -33,7 +33,7 @@ export class ItemVisibility extends BaseEntity {
   createdAt: Date;
 
   @Column({ nullable: false, enum: Object.values(ItemVisibilityType) })
-  type: ItemVisibilityType;
+  type: ItemVisibilityOptionsType;
 
   @ManyToOne(() => Item, (item) => item.path, {
     onUpdate: 'CASCADE',

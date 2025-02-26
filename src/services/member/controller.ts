@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../di/utils';
+import { client, db } from '../../drizzle/db';
 import { asDefined } from '../../utils/assertions';
 import { CannotModifyOtherMembers } from '../../utils/errors';
 import { buildRepositories } from '../../utils/repositories';
@@ -36,7 +37,6 @@ import { MemberService } from './service';
 import { memberAccountRole } from './strategies/memberAccountRole';
 
 const controller: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { db } = fastify;
   const fileService = resolveDependency(FileService);
   const memberService = resolveDependency(MemberService);
   const storageService = resolveDependency(StorageService);
@@ -90,10 +90,11 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
     '/:id',
     { schema: getOne, preHandler: optionalIsAuthenticated },
     async ({ params: { id } }) => {
-      return memberService.get(buildRepositories(), id);
+      return memberService.get(db, id);
     },
   );
 
+  // TODO: mobile?? patch member? lang?
   /**
    * @deprecated use PATCH /members/current instead
    */
