@@ -3,7 +3,8 @@ import { injectWithTransform, singleton } from 'tsyringe';
 
 import { AccountType } from '@graasp/sdk';
 
-import { Repositories } from '../../../../utils/repositories';
+import { DBConnection } from '../../../../drizzle/db';
+import { AccountRepository } from '../../../account/account.repository';
 import { AccountNotFound } from '../../../account/errors';
 import {
   AVATAR_THUMBNAIL_PREFIX,
@@ -17,30 +18,33 @@ import { MemberService } from '../../service';
 export class MemberThumbnailService {
   thumbnailService: ThumbnailService;
   memberService: MemberService;
+  accountRepository: AccountRepository;
 
   constructor(
     memberService: MemberService,
     @injectWithTransform(ThumbnailService, ThumbnailServiceTransformer, AVATAR_THUMBNAIL_PREFIX)
     thumbnailService: ThumbnailService,
+    accountRepository: AccountRepository,
   ) {
     this.thumbnailService = thumbnailService;
     this.memberService = memberService;
+    this.accountRepository = accountRepository;
   }
 
   // upload self avatar
-  async upload(actor: Member, repositories: Repositories, file: Readable) {
+  async upload(db: DBConnection, actor: Member, file: Readable) {
     await this.thumbnailService.upload(actor, actor.id, file);
 
     // update item that should have thumbnail
-    await this.memberService.patch(repositories, actor.id, {
+    await this.memberService.patch(db, actor.id, {
       extra: { hasAvatar: true },
     });
   }
 
   // get member's avatar
   async getFile(
+    db: DBConnection,
     actor: Actor,
-    repositories: Repositories,
     { size, memberId }: { memberId: string; size: string },
   ) {
     const result = await this.thumbnailService.getFile(actor, {
@@ -53,11 +57,11 @@ export class MemberThumbnailService {
 
   // get member's avatar
   async getUrl(
+    db: DBConnection,
     actor: Actor,
-    repositories: Repositories,
     { size, memberId }: { memberId: string; size: string },
   ) {
-    const account = await repositories.accountRepository.get(memberId);
+    const account = await this.accountRepository.get(db, memberId);
 
     if (!account) {
       throw new AccountNotFound(memberId);

@@ -3,68 +3,69 @@ import { inject, singleton } from 'tsyringe';
 import { PermissionLevel } from '@graasp/sdk';
 
 import { GEOLOCATION_API_KEY_DI_KEY } from '../../../../di/constants';
-import { Repositories } from '../../../../utils/repositories';
-import { validatePermissionMany } from '../../../authorization';
-import { Actor, Member } from '../../../member/entities/member';
+import { DBConnection } from '../../../../drizzle/db';
+import { Item, Member } from '../../../../drizzle/schema';
+import { AuthorizationService } from '../../../authorization';
+import { Actor } from '../../../member/entities/member';
 import { ItemWrapper } from '../../ItemWrapper';
-import { Item } from '../../entities/Item';
 import { ItemService } from '../../service';
 import { ItemThumbnailService } from '../thumbnail/service';
 import { ItemGeolocation, PackedItemGeolocation } from './ItemGeolocation';
 import { MissingGeolocationApiKey } from './errors';
+import { ItemGeolocationRepository } from './repository';
 
 @singleton()
 export class ItemGeolocationService {
   private readonly itemService: ItemService;
   private readonly itemThumbnailService: ItemThumbnailService;
+  private readonly authorizationService: AuthorizationService;
   private readonly geolocationKey: string;
+  private readonly itemGeolocationRepository: ItemGeolocationRepository;
 
   constructor(
     itemService: ItemService,
     itemThumbnailService: ItemThumbnailService,
+    authorizationService: AuthorizationService,
+    itemGeolocationRepository: ItemGeolocationRepository,
     @inject(GEOLOCATION_API_KEY_DI_KEY) geolocationKey: string,
   ) {
     this.itemService = itemService;
     this.itemThumbnailService = itemThumbnailService;
+    this.authorizationService = authorizationService;
+    this.itemGeolocationRepository = itemGeolocationRepository;
     this.geolocationKey = geolocationKey;
   }
 
-  async delete(member: Member, repositories: Repositories, itemId: Item['id']) {
-    const { itemGeolocationRepository } = repositories;
-
+  async delete(db: DBConnection, member: Member, itemId: Item['id']) {
     // check item exists and actor has permission
-    const item = await this.itemService.get(member, repositories, itemId, PermissionLevel.Write);
+    const item = await this.itemService.get(db, member, itemId, PermissionLevel.Write);
 
-    return itemGeolocationRepository.delete(item);
+    return this.itemGeolocationRepository.delete(db, item);
   }
 
   async getByItem(
+    db: DBConnection,
     actor: Actor,
-    repositories: Repositories,
+
     itemId: Item['id'],
   ): Promise<PackedItemGeolocation | null> {
-    const { itemGeolocationRepository } = repositories;
-
     // check item exists and actor has permission
-    const item = await this.itemService.get(actor, repositories, itemId);
+    const item = await this.itemService.get(db, actor, itemId);
 
-    const geoloc = await itemGeolocationRepository.getByItem(item.path);
+    const geoloc = await this.itemGeolocationRepository.getByItem(db, item.path);
 
     if (geoloc) {
       // return packed item of related item (could be parent)
-      const geolocPackedItem = await this.itemService.getPacked(
-        actor,
-        repositories,
-        geoloc.item.id,
-      );
+      const geolocPackedItem = await this.itemService.getPacked(db, actor, geoloc.item.id);
       return { ...geoloc, item: geolocPackedItem };
     }
     return null;
   }
 
   async getIn(
+    db: DBConnection,
     actor: Actor,
-    repositories: Repositories,
+
     query: {
       parentItemId?: Item['id'];
       lat1?: ItemGeolocation['lat'];
@@ -74,14 +75,12 @@ export class ItemGeolocationService {
       keywords?: string[];
     },
   ): Promise<PackedItemGeolocation[]> {
-    const { itemGeolocationRepository } = repositories;
-
     let parentItem: Item | undefined;
     if (query.parentItemId) {
-      parentItem = await this.itemService.get(actor, repositories, query.parentItemId);
+      parentItem = await this.itemService.get(db, actor, query.parentItemId);
     }
 
-    const geoloc = await itemGeolocationRepository.getItemsIn(actor, query, parentItem);
+    const geoloc = await this.itemGeolocationRepository.getItemsIn(actor, query, parentItem);
 
     // check if there are any items with a geolocation, if not return early
     const itemsWithGeoloc = geoloc.map(({ item }) => item);
@@ -89,12 +88,13 @@ export class ItemGeolocationService {
       return [];
     }
 
-    const { itemMemberships, visibilities } = await validatePermissionMany(
-      repositories,
-      PermissionLevel.Read,
-      actor,
-      geoloc.map(({ item }) => item),
-    );
+    const { itemMemberships, visibilities } =
+      await this.authorizationService.validatePermissionMany(
+        db,
+        PermissionLevel.Read,
+        actor,
+        geoloc.map(({ item }) => item),
+      );
 
     const thumbnailsByItem = await this.itemThumbnailService.getUrlsByItems(itemsWithGeoloc);
 
@@ -128,41 +128,35 @@ export class ItemGeolocationService {
   }
 
   async put(
+    db: DBConnection,
     member: Member,
-    repositories: Repositories,
+
     itemId: Item['id'],
     geolocation: Pick<ItemGeolocation, 'lat' | 'lng'> &
       Pick<Partial<ItemGeolocation>, 'addressLabel' | 'helperLabel'>,
   ) {
-    const { itemGeolocationRepository } = repositories;
-
     // check item exists and member has permission
-    const item = await this.itemService.get(member, repositories, itemId, PermissionLevel.Write);
+    const item = await this.itemService.get(db, member, itemId, PermissionLevel.Write);
 
-    return itemGeolocationRepository.put(item.path, geolocation);
+    return this.itemGeolocationRepository.put(db, item.path, geolocation);
   }
 
   async getAddressFromCoordinates(
-    repositories: Repositories,
+    db: DBConnection,
     query: Pick<ItemGeolocation, 'lat' | 'lng'> & { lang?: string },
   ) {
     if (!this.geolocationKey) {
       throw new MissingGeolocationApiKey();
     }
 
-    const { itemGeolocationRepository } = repositories;
-    return itemGeolocationRepository.getAddressFromCoordinates(query, this.geolocationKey);
+    return this.itemGeolocationRepository.getAddressFromCoordinates(query, this.geolocationKey);
   }
 
-  async getSuggestionsForQuery(
-    repositories: Repositories,
-    query: { query: string; lang?: string },
-  ) {
+  async getSuggestionsForQuery(db: DBConnection, query: { query: string; lang?: string }) {
     if (!this.geolocationKey) {
       throw new MissingGeolocationApiKey();
     }
 
-    const { itemGeolocationRepository } = repositories;
-    return itemGeolocationRepository.getSuggestionsForQuery(query, this.geolocationKey);
+    return this.itemGeolocationRepository.getSuggestionsForQuery(query, this.geolocationKey);
   }
 }

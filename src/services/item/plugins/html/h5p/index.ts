@@ -8,10 +8,10 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../di/utils';
+import { db } from '../../../../../drizzle/db';
 import { asDefined } from '../../../../../utils/assertions';
-import { buildRepositories } from '../../../../../utils/repositories';
 import { isAuthenticated } from '../../../../auth/plugins/passport';
-import { matchOne, validatePermission } from '../../../../authorization';
+import { AuthorizationService, matchOne } from '../../../../authorization';
 import { assertIsMember, isMember } from '../../../../member/entities/member';
 import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
 import { isItemType } from '../../../entities/Item';
@@ -31,10 +31,9 @@ import { H5PService } from './service';
 import { H5PPluginOptions } from './types';
 
 const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
-  const { db } = fastify;
-
   const itemService = resolveDependency(ItemService);
   const h5pService = resolveDependency(H5PService);
+  const authorizationService = resolveDependency(AuthorizationService);
 
   /**
    * In local storage mode, proxy serve h5p files
@@ -98,13 +97,11 @@ const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
 
-      return db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-
+      return db.transaction(async (tx) => {
         // validate write permission in parent if it exists
         if (parentId) {
-          const item = await itemService.get(member, repositories, parentId);
-          await validatePermission(repositories, PermissionLevel.Write, member, item);
+          const item = await itemService.get(tx, member, parentId);
+          await authorizationService.validatePermission(tx, PermissionLevel.Write, member, item);
         }
 
         // WARNING: cannot destructure { file } = request, which triggers an undefined TypeError internally
@@ -119,8 +116,8 @@ const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
         const { filename, file: stream } = h5pFile;
 
         return await h5pService.createH5PItem(
+          tx,
           member,
-          repositories,
           filename,
           stream,
           parentId,
@@ -134,7 +131,7 @@ const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
   /**
    * Delete H5P assets on item delete
    */
-  itemService.hooks.setPostHook('delete', async (actor, repositories, { item }) => {
+  itemService.hooks.setPostHook('delete', async (actor, db, { item }) => {
     if (!isItemType(item, ItemType.H5P)) {
       return;
     }
@@ -148,7 +145,7 @@ const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
   /**
    * Copy H5P assets on item copy
    */
-  itemService.hooks.setPostHook('copy', async (actor, repositories, { original: item, copy }) => {
+  itemService.hooks.setPostHook('copy', async (actor, db, { original: item, copy }) => {
     // only execute this handler for H5P item types
     if (!isItemType(item, ItemType.H5P) || !isItemType(copy, ItemType.H5P)) {
       return;
@@ -157,7 +154,7 @@ const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
       return;
     }
 
-    await h5pService.copy(actor, repositories, {
+    await h5pService.copy(db, actor, {
       original: item,
       copy: copy,
     });

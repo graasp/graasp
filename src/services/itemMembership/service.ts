@@ -3,6 +3,7 @@ import { singleton } from 'tsyringe';
 import { ClientManager, Context, PermissionLevel, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../drizzle/db';
+import { Account, Item, ItemMembership, Member } from '../../drizzle/schema';
 import { TRANSLATIONS } from '../../langs/constants';
 import { MailBuilder } from '../../plugins/mailer/builder';
 import { MailerService } from '../../plugins/mailer/mailer.service';
@@ -12,14 +13,11 @@ import {
   ItemMembershipNotFound,
 } from '../../utils/errors';
 import HookManager from '../../utils/hook';
-import { Repositories } from '../../utils/repositories';
-import { Account } from '../account/entities/account';
-import { validatePermission } from '../authorization';
-import { Item } from '../item/entities/Item';
+import { AuthorizationService } from '../authorization';
 import { ItemService } from '../item/service';
 import { isGuest } from '../itemLogin/entities/guest';
-import { Actor, Member } from '../member/entities/member';
-import { ItemMembership } from './entities/ItemMembership';
+import { Actor } from '../member/entities/member';
+import { MemberRepository } from '../member/repository';
 import { ItemMembershipRepository } from './repository';
 
 @singleton()
@@ -27,6 +25,9 @@ export class ItemMembershipService {
   private readonly itemService: ItemService;
   private readonly mailerService: MailerService;
   private readonly itemMembershipRepository: ItemMembershipRepository;
+  private readonly authorizationService: AuthorizationService;
+  private readonly memberRepository: MemberRepository;
+
   hooks = new HookManager<{
     create: { pre: Partial<ItemMembership>; post: ItemMembership };
     update: { pre: ItemMembership; post: ItemMembership };
@@ -37,10 +38,14 @@ export class ItemMembershipService {
     itemService: ItemService,
     mailerService: MailerService,
     itemMembershipRepository: ItemMembershipRepository,
+    authorizationService: AuthorizationService,
+    memberRepository: MemberRepository,
   ) {
     this.itemService = itemService;
     this.mailerService = mailerService;
     this.itemMembershipRepository = itemMembershipRepository;
+    this.memberRepository = memberRepository;
+    this.authorizationService = authorizationService;
   }
 
   async _notifyMember(account: Account, member: Member, item: Item): Promise<void> {
@@ -78,35 +83,34 @@ export class ItemMembershipService {
     return await this.itemMembershipRepository.getByAccountAndItem(db, accountId, itemPath);
   }
 
-  async getForManyItems(actor: Actor, repositories: Repositories, itemIds: string[]) {
+  async getForManyItems(db: DBConnection, actor: Actor, itemIds: string[]) {
     // get memberships, containing item
 
-    const { itemMembershipRepository } = repositories;
-
-    const items = await this.itemService.getMany(actor, repositories, itemIds);
-    const result = await itemMembershipRepository.getForManyItems(Object.values(items.data));
+    const items = await this.itemService.getMany(db, actor, itemIds);
+    const result = await this.itemMembershipRepository.getForManyItems(
+      db,
+      Object.values(items.data),
+    );
 
     return { data: result.data, errors: [...items.errors, ...result.errors] };
   }
 
   private async _create(
+    db: DBConnection,
     account: Account,
-    repositories: Repositories,
     item: Item,
     memberId: Member['id'],
     permission: PermissionLevel,
     // membership: { permission: PermissionLevel; itemId: UUID; memberId: UUID },
   ) {
-    const { memberRepository, itemMembershipRepository, membershipRequestRepository } =
-      repositories;
-    const member = await memberRepository.get(memberId);
+    const member = await this.memberRepository.get(db, memberId);
 
-    await this.hooks.runPreHooks('create', account, repositories, {
+    await this.hooks.runPreHooks('create', account, db, {
       item,
       account: member,
     });
 
-    const result = await itemMembershipRepository.addOne({
+    const result = await this.itemMembershipRepository.addOne(db, {
       itemPath: item.path,
       accountId: member.id,
       creatorId: account.id,
@@ -114,9 +118,9 @@ export class ItemMembershipService {
     });
 
     // Delete corresponding membership request if it exists. If there is not a membership request, it will do nothing.
-    await membershipRequestRepository.deleteOne(memberId, item.id);
+    await this.membershipRequestRepository.deleteOne(db, memberId, item.id);
 
-    await this.hooks.runPostHooks('create', account, repositories, result);
+    await this.hooks.runPostHooks('create', account, db, result);
 
     await this._notifyMember(account, member, item);
 
@@ -124,74 +128,74 @@ export class ItemMembershipService {
   }
 
   async create(
+    db: DBConnection,
     actor: Account,
-    repositories: Repositories,
     membership: { permission: PermissionLevel; itemId: UUID; memberId: UUID },
   ) {
     // check memberships
-    const item = await this.itemService.get(
-      actor,
-      repositories,
-      membership.itemId,
-      PermissionLevel.Admin,
-    );
+    const item = await this.itemService.get(db, actor, membership.itemId, PermissionLevel.Admin);
 
-    return this._create(actor, repositories, item, membership.memberId, membership.permission);
+    return this._create(db, actor, item, membership.memberId, membership.permission);
   }
 
   async createMany(
+    db: DBConnection,
     actor: Account,
-    repositories: Repositories,
     memberships: { permission: PermissionLevel; accountId: UUID }[],
     itemId: UUID,
   ) {
     // check memberships
-    const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
+    const item = await this.itemService.get(db, actor, itemId, PermissionLevel.Admin);
 
     return Promise.all(
       memberships.map(async ({ accountId, permission }) => {
-        return this._create(actor, repositories, item, accountId, permission);
+        return this._create(db, actor, item, accountId, permission);
       }),
     );
   }
 
   async patch(
+    db: DBConnection,
     actor: Account,
-    repositories: Repositories,
     itemMembershipId: string,
     data: { permission: PermissionLevel },
   ) {
-    const { itemMembershipRepository } = repositories;
     // check memberships
-    const membership = await itemMembershipRepository.get(itemMembershipId);
+    const membership = await this.itemMembershipRepository.get(db, itemMembershipId);
     if (isGuest(membership.account)) {
       throw new CannotModifyGuestItemMembership();
     }
-    await validatePermission(repositories, PermissionLevel.Admin, actor, membership.item);
+    await this.authorizationService.validatePermission(
+      db,
+      PermissionLevel.Admin,
+      actor,
+      membership.item,
+    );
 
-    await this.hooks.runPreHooks('update', actor, repositories, membership);
+    await this.hooks.runPreHooks('update', actor, db, membership);
 
-    const result = await itemMembershipRepository.updateOne(itemMembershipId, data);
+    const result = await this.itemMembershipRepository.updateOne(db, itemMembershipId, data);
 
-    await this.hooks.runPostHooks('update', actor, repositories, result);
+    await this.hooks.runPostHooks('update', actor, db, result);
 
     return result;
   }
 
   async deleteOne(
+    db: DBConnection,
     actor: Account,
-    repositories: Repositories,
     itemMembershipId: string,
     args: { purgeBelow?: boolean } = { purgeBelow: false },
   ) {
-    const { itemMembershipRepository } = repositories;
     // check memberships
-    const membership = await itemMembershipRepository.get(itemMembershipId);
+    const membership = await this.itemMembershipRepository.get(db, itemMembershipId);
     const { item } = membership;
-    await validatePermission(repositories, PermissionLevel.Admin, actor, item);
+    await this.authorizationService.validatePermission(db, PermissionLevel.Admin, actor, item);
 
     // check if last admin, in which case prevent deletion
-    const { data: itemIdToMemberships } = await itemMembershipRepository.getForManyItems([item]);
+    const { data: itemIdToMemberships } = await this.itemMembershipRepository.getForManyItems(db, [
+      item,
+    ]);
     if (!(item.id in itemIdToMemberships)) {
       throw new ItemMembershipNotFound({ id: itemMembershipId });
     }
@@ -204,13 +208,13 @@ export class ItemMembershipService {
       throw new CannotDeleteOnlyAdmin({ id: item.id });
     }
 
-    await this.hooks.runPreHooks('delete', actor, repositories, membership);
+    await this.hooks.runPreHooks('delete', actor, db, membership);
 
-    const result = await itemMembershipRepository.deleteOne(itemMembershipId, {
+    const result = await this.itemMembershipRepository.deleteOne(db, itemMembershipId, {
       purgeBelow: args.purgeBelow,
     });
 
-    await this.hooks.runPostHooks('delete', actor, repositories, result);
+    await this.hooks.runPostHooks('delete', actor, db, result);
 
     return result;
   }

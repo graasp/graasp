@@ -4,15 +4,16 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { FileItemProperties, PermissionLevel, getFileExtension } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
-import { matchOne, validatePermission } from '../../../authorization';
+import { AuthorizationService, matchOne } from '../../../authorization';
 import FileService from '../../../file/service';
 import { assertIsMember, isMember } from '../../../member/entities/member';
 import { StorageService } from '../../../member/plugins/storage/service';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { Item } from '../../entities/Item';
+import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
 import { H5PService } from '../html/h5p/service';
 import { H5P_FILE_EXTENSION } from '../importExport/constants';
@@ -30,13 +31,13 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
   const { uploadMaxFileNb = MAX_NUMBER_OF_FILES_UPLOAD, maxFileSize = DEFAULT_MAX_FILE_SIZE } =
     options;
 
-  const { db } = fastify;
-
   const fileService = resolveDependency(FileService);
   const itemService = resolveDependency(ItemService);
   const storageService = resolveDependency(StorageService);
   const fileItemService = resolveDependency(FileItemService);
   const h5pService = resolveDependency(H5PService);
+  const itemRepository = resolveDependency(ItemRepository);
+  const authorizationService = resolveDependency(AuthorizationService);
 
   fastify.register(fastifyMultipart, {
     limits: {
@@ -100,7 +101,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
     if (!id || type !== fileService.fileType) {
       return;
     }
-    await fileItemService.copy(actor, repositories, { original, copy });
+    await fileItemService.copy(db, actor, repositories, { original, copy });
   });
 
   fastify.post('/upload', {
@@ -117,9 +118,8 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
 
       // check rights
       if (parentId) {
-        const repositories = buildRepositories();
-        const item = await repositories.itemRepository.getOneOrThrow(parentId);
-        await validatePermission(repositories, PermissionLevel.Write, member, item);
+        const item = await itemRepository.getOneOrThrow(db, parentId);
+        await authorizationService.validatePermission(db, PermissionLevel.Write, member, item);
       }
 
       // upload file one by one
@@ -133,17 +133,15 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
 
         // if one file fails, keep other files
         // transaction to ensure item is saved with memberships
-        await db.transaction(async (manager) => {
-          const repositories = buildRepositories(manager);
-
+        await db.transaction(async (tx) => {
           try {
             // if the file is an H5P file, we treat it appropriately
             // othwerwise, we save it as a generic file
             let item: Item;
             if (getFileExtension(filename) === H5P_FILE_EXTENSION) {
               item = await h5pService.createH5PItem(
+                tx,
                 member,
-                repositories,
                 filename,
                 stream,
                 parentId,
@@ -151,7 +149,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
                 log,
               );
             } else {
-              item = await fileItemService.upload(member, repositories, {
+              item = await fileItemService.upload(tx, member, {
                 parentId,
                 filename,
                 mimetype,
@@ -175,7 +173,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
 
       // rescale is necessary when uploading multiple files: they have the same order number
       if (items.length) {
-        await itemService.rescaleOrderForParent(member, buildRepositories(), items[0]);
+        await itemService.rescaleOrderForParent(db, member, items[0]);
       }
 
       return {
@@ -198,7 +196,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
         query: { replyUrl },
       } = request;
 
-      const url = await fileItemService.getUrl(user?.account, buildRepositories(), {
+      const url = await fileItemService.getUrl(db, user?.account, {
         itemId,
       });
       fileService.setHeaders({ url, reply, replyUrl, id: itemId });

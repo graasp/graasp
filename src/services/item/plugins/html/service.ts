@@ -12,9 +12,9 @@ import { FastifyBaseLogger } from 'fastify';
 
 import { FileItemType } from '@graasp/sdk';
 
+import { DBConnection } from '../../../../drizzle/db';
 import { BaseLogger } from '../../../../logger';
 import { TMP_FOLDER } from '../../../../utils/config';
-import { Repositories } from '../../../../utils/repositories';
 import FileService, { FileServiceConfig } from '../../../file/service';
 import { fileRepositoryFactory } from '../../../file/utils/factory';
 import { Member } from '../../../member/entities/member';
@@ -156,13 +156,13 @@ export abstract class HtmlService {
   }
 
   async createItem(
+    db: DBConnection,
     actor: Member,
-    repositories: Repositories,
     filename: string,
     stream: Readable,
     onComplete: (
+      db: DBConnection,
       actor: Member,
-      repositories: Repositories,
       baseName: string,
       contentId: string,
       parentId?: Item['id'],
@@ -174,7 +174,7 @@ export abstract class HtmlService {
     log?: FastifyBaseLogger,
   ): Promise<Item> {
     // check member storage limit
-    await this.storageService.checkRemainingStorage(actor, repositories);
+    await this.storageService.checkRemainingStorage(db, actor);
 
     const contentId = v4();
     const tmpDir = await dir({ tmpdir: this.tempDir, unsafeCleanup: true });
@@ -201,8 +201,8 @@ export abstract class HtmlService {
         // upload whole folder to public storage
         await this.upload(actor, targetFolder, remoteRootPath, log);
         const item = await onComplete(
+          db,
           actor,
-          repositories,
           baseName,
           contentId,
           parentId,

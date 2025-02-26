@@ -254,7 +254,7 @@ const _filterOutItems = async (
 /**
  * Filtering function that takes out limited items (eg. hidden children)
  *  */
-const filterOutItems = async (
+export const filterOutItems = async (
   db: DBConnection,
   actor: Actor,
   { itemMembershipRepository, itemVisibilityRepository },
@@ -268,7 +268,7 @@ const filterOutItems = async (
 /**
  * Filtering function that takes out limited items (eg. hidden children) and return packed items
  *  */
-const filterOutPackedItems = async (
+export const filterOutPackedItems = async (
   db: DBConnection,
   actor: Actor,
   { itemMembershipRepository, itemVisibilityRepository },
@@ -307,7 +307,7 @@ const filterOutPackedItems = async (
  * @param item item is parent of descendants, suppose actor has at least access to it
  * @param descendants flat list of descendants of item
  *  */
-const filterOutPackedDescendants = async (
+export const filterOutPackedDescendants = async (
   db: DBConnection,
   actor: Actor,
   { itemMembershipRepository, itemVisibilityRepository },
@@ -368,7 +368,7 @@ const filterOutPackedDescendants = async (
  * Filter out children based on hidden visibilities only.
  * It does not show hidden for admin as well, which is useful for published items
  *  */
-const filterOutHiddenItems = async (
+export const filterOutHiddenItems = async (
   db: DBConnection,
   { itemVisibilityRepository },
   items: Item[],
@@ -389,7 +389,7 @@ const filterOutHiddenItems = async (
  * @throws {InsufficientPermission} If user does not satisfy any of the preconditions.
  * @throws {GraaspAuthError} If only one role strategy is provided and it failed with a provided error.
  */
-function matchOne<R extends RouteGenericInterface>(
+export function matchOne<R extends RouteGenericInterface>(
   ...strategies: RessourceAuthorizationStrategy<R>[]
 ): RouteHandlerMethod {
   return async (req: FastifyRequest<R>) => {

@@ -9,10 +9,9 @@ import { DEFAULT_LANG } from '@graasp/translations';
 
 import { DBConnection } from '../../../../drizzle/db';
 import { isAncestorOrSelf, isDescendantOrSelf } from '../../../../drizzle/operations';
-import { accounts, itemGeolocations, items } from '../../../../drizzle/schema';
+import { Item, accounts, itemGeolocations, items } from '../../../../drizzle/schema';
 import { ALLOWED_SEARCH_LANGS, GEOLOCATION_API_HOST } from '../../../../utils/config';
 import { Actor, isMember } from '../../../member/entities/member';
-import { Item } from '../../entities/Item';
 import { ItemGeolocation } from './ItemGeolocation';
 import { MissingGeolocationSearchParams } from './errors';
 

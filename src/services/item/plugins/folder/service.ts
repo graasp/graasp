@@ -3,8 +3,8 @@ import { singleton } from 'tsyringe';
 
 import { ItemGeolocation, ItemType, PermissionLevel, UUID } from '@graasp/sdk';
 
+import { DBConnection } from '../../../../drizzle/db';
 import { BaseLogger } from '../../../../logger';
-import { Repositories } from '../../../../utils/repositories';
 import { Member } from '../../../member/entities/member';
 import { ThumbnailService } from '../../../thumbnail/service';
 import { FolderItem, Item, isItemType } from '../../entities/Item';
@@ -25,12 +25,12 @@ export class FolderItemService extends ItemService {
   }
 
   async get(
+    db: DBConnection,
     member: Member,
-    repositories: Repositories,
     itemId: Item['id'],
     permission?: PermissionLevel,
   ): Promise<FolderItem> {
-    const item = await super.get(member, repositories, itemId, permission);
+    const item = await super.get(db, member, itemId, permission);
     if (!isItemType(item, ItemType.FOLDER)) {
       throw new WrongItemTypeError(item.type);
     }
@@ -38,8 +38,8 @@ export class FolderItemService extends ItemService {
   }
 
   async post(
+    db: DBConnection,
     member: Member,
-    repositories: Repositories,
     args: {
       item: Partial<Pick<Item, 'description' | 'settings' | 'lang'>> & Pick<Item, 'name'>;
       parentId?: string;
@@ -48,27 +48,25 @@ export class FolderItemService extends ItemService {
       previousItemId?: Item['id'];
     },
   ): Promise<FolderItem> {
-    return (await super.post(member, repositories, {
+    return (await super.post(db, member, {
       ...args,
       item: { ...args.item, type: ItemType.FOLDER, extra: { folder: {} } },
     })) as FolderItem;
   }
 
   async patch(
+    db: DBConnection,
     member: Member,
-    repositories: Repositories,
     itemId: UUID,
     body: Partial<Pick<Item, 'name' | 'description' | 'settings' | 'lang'>>,
   ): Promise<FolderItem> {
-    const { itemRepository } = repositories;
-
-    const item = await itemRepository.getOneOrThrow(itemId);
+    const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
     // check item is folder
     if (item.type !== ItemType.FOLDER) {
       throw new WrongItemTypeError(item.type);
     }
 
-    return (await super.patch(member, repositories, item.id, body)) as FolderItem;
+    return (await super.patch(db, member, item.id, body)) as FolderItem;
   }
 }

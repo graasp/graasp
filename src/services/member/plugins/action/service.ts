@@ -3,11 +3,12 @@ import { singleton } from 'tsyringe';
 
 import { ActionTriggers, PermissionLevel } from '@graasp/sdk';
 
+import { DBConnection } from '../../../../drizzle/db';
 import { CannotModifyOtherMembers } from '../../../../utils/errors';
-import { Repositories } from '../../../../utils/repositories';
 import { Account } from '../../../account/entities/account';
+import { ActionRepository } from '../../../action/action.repository';
 import { ActionService } from '../../../action/services/action.service';
-import { validatePermissionMany } from '../../../authorization';
+import { AuthorizationService } from '../../../authorization';
 import { Item, ItemExtraMap } from '../../../item/entities/Item';
 
 export const getPreviousMonthFromNow = () => {
@@ -29,23 +30,29 @@ export const actionTypesWithoutNeedOfPermission: string[] = [
 @singleton()
 export class ActionMemberService {
   private readonly actionService: ActionService;
+  private readonly actionRepository: ActionRepository;
+  private readonly authorizationService: AuthorizationService;
 
-  constructor(actionService: ActionService) {
+  constructor(
+    actionService: ActionService,
+    actionRepository: ActionRepository,
+    authorizationService: AuthorizationService,
+  ) {
     this.actionService = actionService;
+    this.authorizationService = authorizationService;
+    this.actionRepository = actionRepository;
   }
 
   async getFilteredActions(
+    db: DBConnection,
     actor: Account,
-    repositories: Repositories,
     filters: { startDate?: string; endDate?: string },
   ) {
-    const { actionRepository } = repositories;
-
     const { startDate, endDate } = filters;
     const start = startDate ? new Date(startDate) : getPreviousMonthFromNow();
     const end = endDate ? new Date(endDate) : new Date();
 
-    const actions = await actionRepository.getAccountActions(actor.id, {
+    const actions = await this.actionRepository.getAccountActions(db, actor.id, {
       startDate: start,
       endDate: end,
     });
@@ -59,8 +66,8 @@ export class ActionMemberService {
       new Map(actionsNeedPermission.map(({ item }) => [item?.id, item])).values(),
     ).filter(Boolean);
 
-    const { itemMemberships } = await validatePermissionMany(
-      repositories,
+    const { itemMemberships } = await this.authorizationService.validatePermissionMany(
+      db,
       PermissionLevel.Read,
       actor,
       setOfItemsToCheckPermission as Item<keyof ItemExtraMap>[],
@@ -72,17 +79,11 @@ export class ActionMemberService {
     return [...actionsWithoutPermission, ...filteredActionsWithAccessPermission];
   }
 
-  async deleteAllForMember(
-    actor: Account,
-    repositories: Repositories,
-    memberId: string,
-  ): Promise<void> {
-    const { actionRepository } = repositories;
-
+  async deleteAllForMember(db: DBConnection, actor: Account, memberId: string): Promise<void> {
     if (actor?.id !== memberId) {
       throw new CannotModifyOtherMembers({ id: memberId });
     }
 
-    await actionRepository.deleteAllForAccount(memberId);
+    await this.actionRepository.deleteAllForAccount(db, memberId);
   }
 }

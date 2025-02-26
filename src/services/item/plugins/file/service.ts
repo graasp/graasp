@@ -15,15 +15,17 @@ import {
   getFileExtension,
 } from '@graasp/sdk';
 
+import { DBConnection } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import { Repositories } from '../../../../utils/repositories';
-import { validatePermission } from '../../../authorization';
+import { AuthorizationService } from '../../../authorization';
 import FileService from '../../../file/service';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { Actor, Member } from '../../../member/entities/member';
 import { StorageService } from '../../../member/plugins/storage/service';
 import { randomHexOf4 } from '../../../utils';
 import { Item } from '../../entities/Item';
+import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
 import { readPdfContent } from '../../utils';
 import { ItemThumbnailService } from '../thumbnail/service';
@@ -34,17 +36,23 @@ class FileItemService {
   private readonly itemService: ItemService;
   private readonly storageService: StorageService;
   private readonly itemThumbnailService: ItemThumbnailService;
+  private readonly authorizationService: AuthorizationService;
+  private readonly itemRepository: ItemRepository;
 
   constructor(
     fileService: FileService,
     itemService: ItemService,
     storageService: StorageService,
     itemThumbnailService: ItemThumbnailService,
+    authorizationService: AuthorizationService,
+    itemRepository: ItemRepository,
   ) {
     this.fileService = fileService;
     this.itemService = itemService;
     this.storageService = storageService;
     this.itemThumbnailService = itemThumbnailService;
+    this.authorizationService = authorizationService;
+    this.itemRepository = itemRepository;
   }
 
   public buildFilePath(extension?: string) {
@@ -54,8 +62,8 @@ class FileItemService {
   }
 
   async upload(
+    db: DBConnection,
     actor: Member,
-    repositories: Repositories,
     {
       description,
       parentId,
@@ -75,7 +83,7 @@ class FileItemService {
     const filepath = this.buildFilePath(getFileExtension(filename)); // parentId, filename
 
     // check member storage limit
-    await this.storageService.checkRemainingStorage(actor, repositories);
+    await this.storageService.checkRemainingStorage(db, actor);
 
     return await withTmpFile(async ({ path }) => {
       // Write uploaded file to a temporary file
@@ -124,7 +132,7 @@ class FileItemService {
         creator: actor,
       };
 
-      const newItem = await this.itemService.post(actor, repositories, {
+      const newItem = await this.itemService.post(db, actor, {
         item,
         parentId,
         previousItemId,
@@ -134,35 +142,25 @@ class FileItemService {
       // allow failures
       try {
         if (MimeTypes.isImage(mimetype)) {
-          await this.itemThumbnailService.upload(
-            actor,
-            repositories,
-            newItem.id,
-            fs.createReadStream(path),
-          );
+          await this.itemThumbnailService.upload(db, actor, newItem.id, fs.createReadStream(path));
         } else if (MimeTypes.isPdf(mimetype)) {
           // Convert first page of PDF to image buffer and upload as thumbnail
           const outputImg = await convertPDFtoImageFromPath(path)(1, { responseType: 'buffer' });
           const buffer = asDefined(outputImg.buffer);
-          await this.itemThumbnailService.upload(
-            actor,
-            repositories,
-            newItem.id,
-            Readable.from(buffer),
-          );
+          await this.itemThumbnailService.upload(db, actor, newItem.id, Readable.from(buffer));
         }
       } catch (e) {
         console.error(e);
       }
 
       // retrieve item again since hasThumbnail might have changed
-      return await repositories.itemRepository.getOneOrThrow(newItem.id);
+      return await this.itemRepository.getOneOrThrow(db, newItem.id);
     });
   }
 
   async getFile(
+    db: DBConnection,
     actor: Actor,
-    repositories: Repositories,
     {
       itemId,
     }: {
@@ -171,8 +169,8 @@ class FileItemService {
   ) {
     // prehook: get item and input in download call ?
     // check rights
-    const item = await repositories.itemRepository.getOneOrThrow(itemId);
-    await validatePermission(repositories, PermissionLevel.Read, actor, item);
+    const item = await this.itemRepository.getOneOrThrow(db, itemId);
+    await this.authorizationService.validatePermission(db, PermissionLevel.Read, actor, item);
     const extraData = item.extra[this.fileService.fileType] as FileItemProperties;
     const result = await this.fileService.getFile(actor, {
       id: itemId,
@@ -183,8 +181,8 @@ class FileItemService {
   }
 
   async getUrl(
+    db: DBConnection,
     actor: Actor,
-    repositories: Repositories,
     {
       itemId,
     }: {
@@ -193,8 +191,8 @@ class FileItemService {
   ) {
     // prehook: get item and input in download call ?
     // check rights
-    const item = await repositories.itemRepository.getOneOrThrow(itemId);
-    await validatePermission(repositories, PermissionLevel.Read, actor, item);
+    const item = await this.itemRepository.getOneOrThrow(db, itemId);
+    await this.authorizationService.validatePermission(db, PermissionLevel.Read, actor, item);
     const extraData = item.extra[this.fileService.fileType] as FileItemProperties | undefined;
 
     const result = await this.fileService.getUrl({
@@ -226,11 +224,11 @@ class FileItemService {
 
     // update item copy's 'extra'
     if (this.fileService.fileType === ItemType.S3_FILE) {
-      await repositories.itemRepository.updateOne(copy.id, {
+      await this.itemRepository.updateOne(db, copy.id, {
         extra: { s3File: { ...extra.s3File, path: filepath } },
       });
     } else {
-      await repositories.itemRepository.updateOne(copy.id, {
+      await this.itemRepository.updateOne(db, copy.id, {
         extra: { file: { ...extra.s3File, path: filepath } },
       });
     }

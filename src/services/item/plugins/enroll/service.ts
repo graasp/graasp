@@ -2,28 +2,41 @@ import { singleton } from 'tsyringe';
 
 import { ItemLoginSchemaStatus, PermissionLevel, UUID } from '@graasp/sdk';
 
-import { Repositories } from '../../../../utils/repositories';
-import { hasPermission } from '../../../authorization';
+import { DBConnection } from '../../../../drizzle/db';
+import { AuthorizationService } from '../../../authorization';
 import {
   CannotEnrollFrozenItemLoginSchema,
   CannotEnrollItemWithoutItemLoginSchema,
 } from '../../../itemLogin/errors';
 import { ItemLoginService } from '../../../itemLogin/service';
 import { ItemMembershipAlreadyExists } from '../../../itemMembership/plugins/MembershipRequest/error';
+import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { Member } from '../../../member/entities/member';
+import { ItemRepository } from '../../repository';
 
 @singleton()
 export class EnrollService {
-  private itemLoginService: ItemLoginService;
+  private readonly itemLoginService: ItemLoginService;
+  private readonly itemRepository: ItemRepository;
+  private readonly authorizationService: AuthorizationService;
+  private readonly itemMembershipRepository: ItemMembershipRepository;
 
-  constructor(itemLoginService: ItemLoginService) {
+  constructor(
+    itemLoginService: ItemLoginService,
+    itemRepository: ItemRepository,
+    authorizationService: AuthorizationService,
+    itemMembershipRepository: ItemMembershipRepository,
+  ) {
     this.itemLoginService = itemLoginService;
+    this.itemRepository = itemRepository;
+    this.authorizationService = authorizationService;
+    this.itemMembershipRepository = itemMembershipRepository;
   }
 
-  async enroll(member: Member, repositories: Repositories, itemId: UUID) {
-    const item = await repositories.itemRepository.getOneOrThrow(itemId);
+  async enroll(db: DBConnection, member: Member, itemId: UUID) {
+    const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
-    const itemLoginSchema = await this.itemLoginService.getByItemPath(repositories, item.path);
+    const itemLoginSchema = await this.itemLoginService.getByItemPath(db, item.path);
     if (!itemLoginSchema || itemLoginSchema.status === ItemLoginSchemaStatus.Disabled) {
       throw new CannotEnrollItemWithoutItemLoginSchema();
     } else if (itemLoginSchema.status === ItemLoginSchemaStatus.Freeze) {
@@ -31,11 +44,11 @@ export class EnrollService {
     }
 
     // Check if the member already has an access to the item (from membership or item visibility), if so, throw an error
-    if (await hasPermission(repositories, PermissionLevel.Read, member, item)) {
+    if (await this.authorizationService.hasPermission(db, PermissionLevel.Read, member, item)) {
       throw new ItemMembershipAlreadyExists();
     }
 
-    return await repositories.itemMembershipRepository.addOne({
+    return await this.itemMembershipRepository.addOne(db, {
       itemPath: item.path,
       permission: PermissionLevel.Read,
       accountId: member.id,

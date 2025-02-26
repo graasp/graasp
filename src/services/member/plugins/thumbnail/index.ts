@@ -6,8 +6,8 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { MAX_THUMBNAIL_SIZE } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
 import FileService from '../../../file/service';
@@ -25,7 +25,6 @@ type GraaspThumbnailsOptions = {
 
 const plugin: FastifyPluginAsyncTypebox<GraaspThumbnailsOptions> = async (fastify, options) => {
   const { maxFileSize = MAX_THUMBNAIL_SIZE } = options;
-  const { db } = fastify;
   const fileService = resolveDependency(FileService);
   const thumbnailService = resolveDependency(MemberThumbnailService);
 
@@ -51,7 +50,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspThumbnailsOptions> = async (fastif
       const member = asDefined(request.user?.account);
       assertIsMember(member);
       return db
-        .transaction(async (manager) => {
+        .transaction(async (tx) => {
           // const files = request.files();
           // files are saved in temporary folder in disk, they are removed when the response ends
           // necessary to get file size -> can use stream busboy only otherwise
@@ -64,7 +63,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspThumbnailsOptions> = async (fastif
             throw new UploadFileNotImageError();
           }
 
-          await thumbnailService.upload(member, buildRepositories(manager), file.file);
+          await thumbnailService.upload(tx, member, file.file);
 
           reply.status(StatusCodes.NO_CONTENT);
         })
@@ -86,7 +85,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspThumbnailsOptions> = async (fastif
       preHandler: optionalIsAuthenticated,
     },
     async ({ user, params: { size, id: memberId }, query: { replyUrl } }, reply) => {
-      const url = await thumbnailService.getUrl(user?.account, buildRepositories(), {
+      const url = await thumbnailService.getUrl(user?.account, db, {
         memberId,
         size,
       });

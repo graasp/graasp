@@ -2,9 +2,9 @@ import { fastifyCors } from '@fastify/cors';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../di/utils';
+import { db } from '../../drizzle/db';
 import { FastifyInstanceTypebox } from '../../plugins/typebox';
 import { asDefined } from '../../utils/assertions';
-import { buildRepositories } from '../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
 import { matchOne } from '../authorization';
 import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
@@ -16,8 +16,6 @@ import { membershipWsHooks } from './ws/hooks';
 const ROUTES_PREFIX = '/item-memberships';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { db } = fastify;
-
   const itemMembershipService = resolveDependency(ItemMembershipService);
 
   fastify.register(MembershipRequestAPI, { prefix: '/items/:itemId/memberships/requests' });
@@ -38,7 +36,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         '/',
         { schema: getManyItemMemberships, preHandler: optionalIsAuthenticated },
         async ({ user, query: { itemId: ids } }) => {
-          return itemMembershipService.getForManyItems(user?.account, buildRepositories(), ids);
+          return itemMembershipService.getForManyItems(db, user?.account, ids);
         },
       );
 
@@ -48,8 +46,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         { schema: create, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
         async ({ user, query: { itemId }, body }) => {
           const account = asDefined(user?.account);
-          return db.transaction((manager) => {
-            return itemMembershipService.create(account, buildRepositories(manager), {
+          return db.transaction((tx) => {
+            return itemMembershipService.create(tx, account, {
               permission: body.permission,
               itemId,
               memberId: body.accountId,
@@ -68,12 +66,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           // we have to return immediately
           // solution: it's probably simpler to upload a csv and handle it in the back
           return db.transaction((manager) => {
-            return itemMembershipService.createMany(
-              account,
-              buildRepositories(manager),
-              body.memberships,
-              itemId,
-            );
+            return itemMembershipService.createMany(tx, account, body.memberships, itemId);
           });
         },
       );
@@ -87,8 +80,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         },
         async ({ user, params: { id }, body }) => {
           const account = asDefined(user?.account);
-          return db.transaction((manager) => {
-            return itemMembershipService.patch(account, buildRepositories(manager), id, body);
+          return db.transaction((tx) => {
+            return itemMembershipService.patch(tx, account, id, body);
           });
         },
       );
@@ -99,8 +92,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         { schema: deleteOne, preHandler: isAuthenticated },
         async ({ user, params: { id }, query: { purgeBelow } }) => {
           const account = asDefined(user?.account);
-          return db.transaction((manager) => {
-            return itemMembershipService.deleteOne(account, buildRepositories(manager), id, {
+          return db.transaction((tx) => {
+            return itemMembershipService.deleteOne(tx, account, id, {
               purgeBelow,
             });
           });

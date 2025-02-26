@@ -2,9 +2,9 @@ import { singleton } from 'tsyringe';
 
 import { ItemType } from '@graasp/sdk';
 
+import { DBConnection } from '../../../../drizzle/db';
 import i18next from '../../../../i18n';
 import { BaseLogger } from '../../../../logger';
-import { Repositories } from '../../../../utils/repositories';
 import { Member } from '../../../member/entities/member';
 import { ThumbnailService } from '../../../thumbnail/service';
 import { Item, ShortcutItem } from '../../entities/Item';
@@ -25,8 +25,8 @@ export class ShortcutItemService extends ItemService {
   }
 
   async postWithOptions(
+    db: DBConnection,
     member: Member,
-    repositories: Repositories,
     args: {
       item: Partial<Pick<Item, 'description' | 'name'>>;
       target: Item['id'];
@@ -37,14 +37,14 @@ export class ShortcutItemService extends ItemService {
     const { target, item, ...properties } = args;
     const { description, name: definedName } = item;
 
-    const targetItem = await super.get(member, repositories, target);
+    const targetItem = await super.get(db, member, target);
 
     // generate name from target item if not defined
     const name =
       definedName ??
       i18next.t('DEFAULT_SHORTCUT_NAME', { name: targetItem.name, lng: member.lang });
 
-    return (await super.post(member, repositories, {
+    return (await super.post(db, member, {
       ...properties,
       item: {
         name,
@@ -56,14 +56,12 @@ export class ShortcutItemService extends ItemService {
   }
 
   async patch(
+    db: DBConnection,
     member: Member,
-    repositories: Repositories,
     itemId: Item['id'],
     body: Partial<Pick<Item, 'name' | 'description'>>,
   ): Promise<ShortcutItem> {
-    const { itemRepository } = repositories;
-
-    const item = await itemRepository.getOneOrThrow(itemId);
+    const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
     // check item is shortcut
     if (item.type !== ItemType.SHORTCUT) {
@@ -72,7 +70,7 @@ export class ShortcutItemService extends ItemService {
 
     const { name, description } = body;
 
-    return (await super.patch(member, repositories, item.id, {
+    return (await super.patch(db, member, item.id, {
       name,
       description,
     })) as ShortcutItem;

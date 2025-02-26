@@ -1,8 +1,8 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
 import { assertIsMember } from '../../../member/entities/member';
@@ -12,7 +12,6 @@ import { FavoriteService } from './itemBookmark.service';
 import { create, deleteOne, getOwnFavorite } from './schemas';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { db } = fastify;
   const favoriteService = resolveDependency(FavoriteService);
 
   // get favorites
@@ -22,7 +21,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return favoriteService.getOwn(member);
+      return favoriteService.getOwn(db, member);
     },
   );
 
@@ -33,8 +32,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user, params: { itemId } }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return db.transaction(async (manager) => {
-        return favoriteService.post(member, buildRepositories(manager), itemId);
+      return db.transaction(async (tx) => {
+        return favoriteService.post(tx, member, itemId);
       });
     },
   );
@@ -46,8 +45,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user, params: { itemId } }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return db.transaction(async (manager) => {
-        return favoriteService.delete(member, buildRepositories(manager), itemId);
+      return db.transaction(async (tx) => {
+        return favoriteService.delete(tx, member, itemId);
       });
     },
   );

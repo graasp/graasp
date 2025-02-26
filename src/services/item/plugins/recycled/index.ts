@@ -3,8 +3,8 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
 import { assertIsMember } from '../../../member/entities/member';
@@ -16,7 +16,7 @@ import { getOwnRecycledItems, recycleMany, restoreMany } from './schemas';
 import { RecycledBinService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { db, websockets } = fastify;
+  const { websockets } = fastify;
 
   const recycleBinService = resolveDependency(RecycledBinService);
 
@@ -37,7 +37,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
       const { page = 1, pageSize = ITEMS_PAGE_SIZE } = query;
-      const result = await recycleBinService.getOwn(member, buildRepositories(), {
+      const result = await recycleBinService.getOwn(db, member, {
         page,
         pageSize,
       });
@@ -60,8 +60,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       } = request;
       const member = asDefined(user?.account);
       assertIsMember(member);
-      db.transaction(async (manager) => {
-        const items = await recycleBinService.recycleMany(member, buildRepositories(manager), ids);
+      db.transaction(async (tx) => {
+        const items = await recycleBinService.recycleMany(tx, member, ids);
         websockets.publish(
           memberItemsTopic,
           member.id,
@@ -99,8 +99,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       assertIsMember(member);
       log.info(`Restoring items ${ids}`);
 
-      db.transaction(async (manager) => {
-        const items = await recycleBinService.restoreMany(member, buildRepositories(manager), ids);
+      db.transaction(async (tx) => {
+        const items = await recycleBinService.restoreMany(tx, member, ids);
         websockets.publish(
           memberItemsTopic,
           member.id,

@@ -3,10 +3,9 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../di/utils';
-import { client, db } from '../../drizzle/db';
+import { db } from '../../drizzle/db';
 import { asDefined } from '../../utils/assertions';
 import { CannotModifyOtherMembers } from '../../utils/errors';
-import { buildRepositories } from '../../utils/repositories';
 import {
   authenticateEmailChange,
   isAuthenticated,
@@ -53,7 +52,7 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return storageService.getStorageLimits(member, fileService.fileType, buildRepositories());
+      return storageService.getStorageLimits(member, fileService.fileType, db);
     },
   );
 
@@ -72,8 +71,8 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
       const storageFilesMetadata = await storageService.getStorageFilesMetadata(
+        db,
         member,
-        buildRepositories(),
         fileService.fileType,
         { page, pageSize },
       );
@@ -110,8 +109,8 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
         throw new CannotModifyOtherMembers({ id });
       }
 
-      return db.transaction(async (manager) => {
-        return memberService.patch(buildRepositories(manager), id, body);
+      return db.transaction(async (tx) => {
+        return memberService.patch(tx, id, body);
       });
     },
   );
@@ -123,8 +122,8 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user, body }) => {
       const member = asDefined(user?.account);
 
-      return db.transaction(async (manager) => {
-        return memberService.patch(buildRepositories(manager), member.id, body);
+      return db.transaction(async (tx) => {
+        return memberService.patch(tx, member.id, body);
       });
     },
   );
@@ -136,8 +135,8 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
     async (request, reply) => {
       const { user } = request;
       const member = asDefined(user?.account);
-      return db.transaction(async (manager) => {
-        await memberService.deleteCurrent(member.id, buildRepositories(manager));
+      return db.transaction(async (tx) => {
+        await memberService.deleteCurrent(member.id, tx);
         // logout member
         request.logOut();
         // remove session from browser
@@ -155,7 +154,7 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
       assertIsMember(member);
 
       reply.status(StatusCodes.NO_CONTENT);
-      if (await memberService.getByEmail(buildRepositories(), email)) {
+      if (await memberService.getByEmail(db, email)) {
         // Email adress is already taken, throw an error
         throw new EmailAlreadyTaken();
       }
@@ -176,13 +175,12 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
 
-      await db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-        if (await memberService.getByEmail(repositories, emailModification.newEmail)) {
+      await db.transaction(async (tx) => {
+        if (await memberService.getByEmail(tx, emailModification.newEmail)) {
           // Email adress is already taken, throw an error
           throw new EmailAlreadyTaken();
         }
-        await memberService.patch(repositories, member.id, {
+        await memberService.patch(tx, member.id, {
           email: emailModification.newEmail,
         });
 

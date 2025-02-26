@@ -3,12 +3,13 @@ import { delay, inject, singleton } from 'tsyringe';
 
 import { PermissionLevel, ThumbnailSize } from '@graasp/sdk';
 
+import { DBConnection } from '../../../../drizzle/db';
+import { Item, Member } from '../../../../drizzle/schema';
 import { BaseLogger } from '../../../../logger';
-import { Repositories } from '../../../../utils/repositories';
-import { validatePermission } from '../../../authorization';
-import { Actor, Member } from '../../../member/entities/member';
+import { AuthorizationService } from '../../../authorization';
+import { Actor } from '../../../member/entities/member';
 import { ThumbnailService } from '../../../thumbnail/service';
-import { Item } from '../../entities/Item';
+import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
 import { DEFAULT_ITEM_THUMBNAIL_SIZES } from './constants';
 import { ItemThumbnailSize, ItemsThumbnails } from './types';
@@ -18,40 +19,46 @@ export class ItemThumbnailService {
   private readonly thumbnailService: ThumbnailService;
   private readonly itemService: ItemService;
   private readonly logger: BaseLogger;
+  private readonly authorizationService: AuthorizationService;
+  private readonly itemRepository: ItemRepository;
 
   constructor(
     // As ItemService use ItemThumbnailService, there is a circular dependency issue.
     // This can be solved by refactoring the code or using the `delay` helper function.
     @inject(delay(() => ItemService)) itemService: ItemService,
     thumbnailService: ThumbnailService,
+    authorizationService: AuthorizationService,
+    itemRepository: ItemRepository,
     logger: BaseLogger,
   ) {
     this.thumbnailService = thumbnailService;
     this.itemService = itemService;
+    this.itemRepository = itemRepository;
+    this.authorizationService = authorizationService;
     this.logger = logger;
   }
 
-  async upload(actor: Member, repositories: Repositories, itemId: string, file: Readable) {
-    const item = await repositories.itemRepository.getOneOrThrow(itemId);
-    await validatePermission(repositories, PermissionLevel.Write, actor, item);
+  async upload(db: DBConnection, actor: Member, itemId: string, file: Readable) {
+    const item = await this.itemRepository.getOneOrThrow(db, itemId);
+    await this.authorizationService.validatePermission(db, PermissionLevel.Write, actor, item);
     await this.thumbnailService.upload(actor, itemId, file);
 
     // update item that should have thumbnail
-    await this.itemService.patch(actor, repositories, itemId, {
+    await this.itemService.patch(db, actor, itemId, {
       settings: { hasThumbnail: true },
     });
     return item;
   }
 
   async getFile(
+    db: DBConnection,
     actor: Actor,
-    repositories: Repositories,
     { size, itemId }: { size: string; itemId: string },
   ) {
     // prehook: get item and input in download call ?
     // check rights
-    const item = await repositories.itemRepository.getOneOrThrow(itemId);
-    await validatePermission(repositories, PermissionLevel.Read, actor, item);
+    const item = await this.itemRepository.getOneOrThrow(db, itemId);
+    await this.authorizationService.validatePermission(db, PermissionLevel.Read, actor, item);
 
     const result = await this.thumbnailService.getFile(actor, {
       size,
@@ -61,12 +68,8 @@ export class ItemThumbnailService {
     return result;
   }
 
-  async getUrl(
-    actor: Actor,
-    repositories: Repositories,
-    { size, itemId }: { size: string; itemId: string },
-  ) {
-    const item = await this.itemService.get(actor, repositories, itemId);
+  async getUrl(db: DBConnection, actor: Actor, { size, itemId }: { size: string; itemId: string }) {
+    const item = await this.itemService.get(db, actor, itemId);
 
     // item does not have thumbnail
     if (!item.settings.hasThumbnail) {
@@ -127,18 +130,14 @@ export class ItemThumbnailService {
     }, {});
   }
 
-  async deleteAllThumbnailSizes(
-    actor: Member,
-    repositories: Repositories,
-    { itemId }: { itemId: string },
-  ) {
-    await this.itemService.get(actor, repositories, itemId, PermissionLevel.Write);
+  async deleteAllThumbnailSizes(db: DBConnection, actor: Member, { itemId }: { itemId: string }) {
+    await this.itemService.get(db, actor, itemId, PermissionLevel.Write);
     await Promise.all(
       Object.values(ThumbnailSize).map(async (size) => {
         this.thumbnailService.delete({ id: itemId, size });
       }),
     );
-    await this.itemService.patch(actor, repositories, itemId, {
+    await this.itemService.patch(db, actor, itemId, {
       settings: { hasThumbnail: false },
     });
   }

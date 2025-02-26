@@ -7,13 +7,13 @@ import { FastifyBaseLogger } from 'fastify';
 
 import { H5PItemExtra, ItemType } from '@graasp/sdk';
 
+import { DBConnection } from '../../../../../drizzle/db';
 import { BaseLogger } from '../../../../../logger';
 import {
   H5P_FILE_STORAGE_CONFIG,
   H5P_FILE_STORAGE_TYPE,
   H5P_PATH_PREFIX,
 } from '../../../../../utils/config';
-import { Repositories } from '../../../../../utils/repositories';
 import { Member } from '../../../../member/entities/member';
 import { StorageService } from '../../../../member/plugins/storage/service';
 import { Item } from '../../../entities/Item';
@@ -74,8 +74,8 @@ export class H5PService extends HtmlService {
   }
 
   async copy(
+    db: DBConnection,
     member: Member,
-    repositories: Repositories,
     {
       original: item,
       copy,
@@ -101,15 +101,15 @@ export class H5PService extends HtmlService {
       newFolderPath: this.buildContentPath(remoteRootPath),
     });
 
-    await repositories.itemRepository.updateOne(copy.id, {
+    await repositories.itemRepository.updateOne(db, copy.id, {
       name: this.buildH5PPath('', newName),
       extra: { h5p: this.buildH5PExtra(newContentId, newName).h5p },
     });
   }
 
   async createH5PItem(
+    db: DBConnection,
     actor: Member,
-    repositories: Repositories,
     filename: string,
     stream: Readable,
     parentId?: Item['id'],
@@ -137,8 +137,8 @@ export class H5PService extends HtmlService {
    * @param parentId Optional parent id of the newly created item
    */
   private createItemForH5PFile = async (
+    db: DBConnection,
     member: Member,
-    repositories: Repositories,
     filename: string,
     contentId: string,
     parentId?: string,
@@ -149,7 +149,7 @@ export class H5PService extends HtmlService {
       type: ItemType.H5P,
       extra: this.buildH5PExtra(contentId, filename),
     };
-    return this.itemService.post(member, repositories, {
+    return this.itemService.post(db, member, {
       item: metadata,
       parentId,
       previousItemId,
