@@ -1,0 +1,28 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "commitType": "docs",
+  "commitConvention": "angular",
+  "contributors": [
+    {
+      "login": "Defferrard",
+      "name": "Jeremy Defferrard",
+      "avatar_url": "https://avatars.githubusercontent.com/u/56632076?v=4",
+      "profile": "https://defferrard.dev/",
+      "contributions": [
+        "code",
+        "test",
+        "doc"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "skipCi": true,
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "projectName": "graasp",
+  "projectOwner": "graasp"
+}
