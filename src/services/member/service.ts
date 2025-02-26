@@ -97,12 +97,12 @@ export class MemberService {
     return this.memberRepository.deleteOne(db, id);
   }
 
-  async refreshLastAuthenticatedAt(id: UUID, db: DBConnection) {
+  async refreshLastAuthenticatedAt(db: DBConnection, id: UUID) {
     return await this.memberRepository.patch(db, id, {
       lastAuthenticatedAt: new Date().toISOString(),
     });
   }
-  async validate(id: UUID, db: DBConnection) {
+  async validate(db: DBConnection, id: UUID) {
     return await this.memberRepository.patch(db, id, { isValidated: true });
   }
 

@@ -5,6 +5,7 @@ import { FastifyInstance } from 'fastify';
 
 import Etherpad from '@graasp/etherpad-api';
 
+import { db } from '../drizzle/db';
 import { CRON_3AM_MONDAY, JobServiceBuilder } from '../jobs';
 import { BaseLogger } from '../logger';
 import { MailerService } from '../plugins/mailer/mailer.service';
@@ -20,10 +21,8 @@ import { EtherpadServiceConfig } from '../services/item/plugins/etherpad/service
 import FileItemService from '../services/item/plugins/file/service';
 import { H5PService } from '../services/item/plugins/html/h5p/service';
 import { ImportExportService } from '../services/item/plugins/importExport/service';
-import { PublicationService } from '../services/item/plugins/publication/publicationState/service';
 import { MeiliSearchWrapper } from '../services/item/plugins/publication/published/plugins/search/meilisearch';
 import { SearchService } from '../services/item/plugins/publication/published/plugins/search/service';
-import { ValidationQueue } from '../services/item/plugins/publication/validation/validationQueue';
 import { ItemService } from '../services/item/service';
 import {
   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
@@ -45,7 +44,6 @@ import {
   REDIS_USERNAME,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
 } from '../utils/config';
-import { buildRepositories } from '../utils/repositories';
 import {
   ETHERPAD_NAME_FACTORY_DI_KEY,
   FASTIFY_LOGGER_DI_KEY,
@@ -58,7 +56,7 @@ import {
 import { registerValue, resolveDependency } from './utils';
 
 export const registerDependencies = (instance: FastifyInstance) => {
-  const { log, db } = instance;
+  const { log } = instance;
 
   // register FastifyBasLogger as a value to allow BaseLogger to be injected automatically.
   registerValue(FASTIFY_LOGGER_DI_KEY, log);
@@ -124,16 +122,6 @@ export const registerDependencies = (instance: FastifyInstance) => {
       apiKey: MEILISEARCH_MASTER_KEY,
     }),
   );
-  // Will be registered automatically when db will be injectable.
-  registerValue(
-    MeiliSearchWrapper,
-    new MeiliSearchWrapper(
-      db,
-      resolveDependency(MeiliSearch),
-      resolveDependency(FileService),
-      resolveDependency(BaseLogger),
-    ),
-  );
 
   // Launch Job workers
   const jobServiceBuilder = new JobServiceBuilder(resolveDependency(BaseLogger));
@@ -170,20 +158,6 @@ export const registerDependencies = (instance: FastifyInstance) => {
       resolveDependency(H5PService),
       resolveDependency(EtherpadItemService),
       resolveDependency(BaseLogger),
-    ),
-  );
-
-  // This code will be improved when we will be able to inject the repositories.
-  const { itemVisibilityRepository, itemValidationGroupRepository, itemPublishedRepository } =
-    buildRepositories();
-  registerValue(
-    PublicationService,
-    new PublicationService(
-      resolveDependency(ItemService),
-      itemVisibilityRepository,
-      itemValidationGroupRepository,
-      itemPublishedRepository,
-      resolveDependency(ValidationQueue),
     ),
   );
 };

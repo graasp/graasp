@@ -3,10 +3,10 @@ import { singleton } from 'tsyringe';
 import { ActionTriggers, Context } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
+import { Member } from '../../../../drizzle/schema';
 import { BaseLogger } from '../../../../logger';
 import { MemberNotSignedUp } from '../../../../utils/errors';
 import { ActionRepository } from '../../../action/action.repository';
-import { Member } from '../../../member/entities/member';
 import { MemberRepository } from '../../../member/repository';
 import { AuthService } from '../../service';
 
@@ -41,7 +41,7 @@ export class MagicLinkService {
           extra: { type: 'email' },
         },
       ];
-      await this.actionRepository.postMany(actions);
+      await this.actionRepository.postMany(db, actions);
     } else {
       this.log.warn(`Login attempt with non-existent email '${email}'`);
       throw new MemberNotSignedUp({ email });

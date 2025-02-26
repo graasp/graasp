@@ -1,90 +1,96 @@
-import { type Static } from '@sinclair/typebox';
-import { and, asc, count, eq, ilike, inArray, isNotNull, ne, or, sql } from 'drizzle-orm/sql';
-import { EntityManager, In } from 'typeorm';
+import { count, eq, inArray } from 'drizzle-orm';
+import { and, asc, desc, isNotNull, ne } from 'drizzle-orm/sql';
 
 import { Paginated, Pagination, PermissionLevel } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { accounts, items, itemsRaw } from '../../../../drizzle/schema';
-import { MutableRepository } from '../../../../repositories/MutableRepository';
-import { DEFAULT_PRIMARY_KEY } from '../../../../repositories/const';
+import { isDescendantOrSelf } from '../../../../drizzle/operations';
+import {
+  type Item,
+  itemMemberships,
+  items,
+  itemsRaw,
+  membersView,
+  recycledItemDatas,
+} from '../../../../drizzle/schema';
+import { throwsIfParamIsInvalid } from '../../../../repositories/utils';
 import { Account } from '../../../account/entities/account';
-import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
 import { Member } from '../../../member/entities/member';
 import { ITEMS_PAGE_SIZE_MAX } from '../../constants';
-import { Item } from '../../entities/Item';
-import { RecycledItemData } from './RecycledItemData';
 
 type CreateRecycledItemDataBody = { itemPath: string; creatorId: string };
 
-export class RecycledItemDataRepository extends MutableRepository<RecycledItemData, never> {
-  constructor(manager?: EntityManager) {
-    super(DEFAULT_PRIMARY_KEY, RecycledItemData, manager);
+export class RecycledItemDataRepository {
+  // warning: this call insert in the table
+  // but does not soft delete the item
+  // should we move to core item?
+  async addOne(db: DBConnection, { itemPath, creatorId }: CreateRecycledItemDataBody) {
+    return await db.insert(recycledItemDatas).values({ itemPath, creatorId }).returning();
   }
 
   // warning: this call insert in the table
   // but does not soft delete the item
   // should we move to core item?
-  async addOne({ itemPath, creatorId }: CreateRecycledItemDataBody) {
-    return await super.insert({ item: { path: itemPath }, creator: { id: creatorId } });
+  async addMany(db: DBConnection, items: Item[], creator: Member) {
+    const recycled = items.map((item) => ({ itemPath: item.path, creatorId: creator.id }));
+    return await db.insert(recycledItemDatas).values(recycled).returning();
   }
 
-  // warning: this call insert in the table
-  // but does not soft delete the item
-  // should we move to core item?
-  async addMany(items: Item[], creator: Member) {
-    const recycled = items.map((item) => this.repository.create({ item, creator }));
-    await this.repository.insert(recycled);
-    return recycled;
-  }
-
-  async getOwnRecycledItems(account: Account, pagination: Pagination): Promise<Paginated<Item>> {
+  async getOwnRecycledItems(
+    db: DBConnection,
+    account: Account,
+    pagination: Pagination,
+  ): Promise<Paginated<Item>> {
     const { page, pageSize } = pagination;
     const limit = Math.min(pageSize, ITEMS_PAGE_SIZE_MAX);
     const skip = (page - 1) * limit;
 
-    const query = this.manager
+    const query = db
+      .select()
       // start with smaller table that can have the most contraints: membership with admin and accountId
-      .getRepository(ItemMembership)
-      .createQueryBuilder('im')
+      .from(itemMemberships)
       // we want to join on recycled item
-      .withDeleted()
-      .innerJoinAndSelect(
-        'im.item',
-        'item',
+      .innerJoin(
+        itemsRaw,
         // reduce size by getting only recycled items
-        `item.path <@ im.item_path and item.deleted_at is not null`,
+        and(
+          isDescendantOrSelf(itemsRaw.path, itemMemberships.itemPath),
+          isNotNull(itemsRaw.deletedAt),
+        ),
       )
       // get top most recycled item
-      .innerJoin(RecycledItemData, 'rid', 'item.path = rid.item_path')
+      .innerJoin(recycledItemDatas, eq(recycledItemDatas.itemPath, itemsRaw.path))
       // return item's creator
-      .leftJoinAndSelect('item.creator', 'member')
+      .leftJoin(membersView, eq(itemsRaw.creatorId, membersView.id))
       // item membership constraints
-      .where(`im.account_id = :accountId`, {
-        accountId: account.id,
-      })
-      .andWhere(` im.permission = :permission`, {
-        permission: PermissionLevel.Admin,
-      })
+      .where(
+        and(
+          eq(itemMemberships.accountId, account.id),
+          eq(itemMemberships.permission, PermissionLevel.Admin),
+        ),
+      )
+      .as('subquery');
+
+    const data = await db
+      .select()
+      .from(query)
       // show most recently deleted items first
-      .orderBy('item.deleted_at', 'DESC')
+      .orderBy(desc(itemsRaw.deletedAt))
+      // pagination
       .offset(skip)
       .limit(limit);
 
-    const [data, totalCount] = await query.getManyAndCount();
+    const totalCount = (await db.select({ count: count() }).from(query))[0].count;
+
     return { data: data.map(({ item }) => item), totalCount, pagination };
   }
 
   // warning: this call removes from the table
   // but does not soft delete the item
   // should we move to core item?
-  async deleteManyByItemPath(itemsPath: Item['path'][]) {
-    this.throwsIfParamIsInvalid('itemsPath', itemsPath);
-    // optimize ? delete by item ?
-    const entries = await this.repository.findBy({
-      item: { path: In(itemsPath) },
-    });
-    await this.delete(entries.map(({ id }) => id));
+  async deleteManyByItemPath(db: DBConnection, itemsPath: Item['path'][]) {
+    throwsIfParamIsInvalid('itemsPath', itemsPath);
+    await db.delete(recycledItemDatas).where(inArray(recycledItemDatas.itemPath, itemsPath));
   }
 
   /**
@@ -110,7 +116,7 @@ export class RecycledItemDataRepository extends MutableRepository<RecycledItemDa
       .where(
         and(
           and(
-            sql`item.path <@ ${itemsRaw.path}`,
+            isDescendantOrSelf(items.path, itemsRaw.path),
             ne(itemsRaw.id, item.id),
             isNotNull(itemsRaw.deletedAt),
           ),

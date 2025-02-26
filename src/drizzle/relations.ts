@@ -247,7 +247,7 @@ export const appSettingRelations = relations(appSettings, ({ one }) => ({
     fields: [appSettings.itemId],
     references: [itemsRaw.id],
   }),
-  account: one(accounts, {
+  creator: one(accounts, {
     fields: [appSettings.creatorId],
     references: [accounts.id],
   }),

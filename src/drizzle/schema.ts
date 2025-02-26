@@ -318,6 +318,8 @@ export const appDatas = pgTable(
   ],
 );
 
+export type AppDataInsertRaw = typeof appDatas.$inferInsert;
+
 export const appActions = pgTable(
   'app_action',
   {
@@ -371,6 +373,7 @@ export const appSettings = pgTable(
     }).onDelete('set null'),
   ],
 );
+export type AppSetting = typeof appSettings.$inferSelect
 
 export const invitations = pgTable(
   'invitation',
@@ -456,6 +459,7 @@ export const itemValidationGroups = pgTable(
     }).onDelete('cascade'),
   ],
 );
+export type ItemValidationGroup = typeof itemValidationGroups.$inferInsert
 
 export const itemValidations = pgTable(
   'item_validation',
@@ -482,6 +486,7 @@ export const itemValidations = pgTable(
     }).onDelete('cascade'),
   ],
 );
+export type ItemValidation = typeof itemValidations.$inferSelect;
 
 export const itemValidationReviews = pgTable(
   'item_validation_review',
@@ -507,6 +512,7 @@ export const itemValidationReviews = pgTable(
     }).onDelete('set null'),
   ],
 );
+export type ItemValidationReview = typeof itemValidationReviews.$inferInsert
 
 export const itemBookmarks = pgTable(
   'item_favorite',
@@ -849,6 +855,12 @@ export const membersView = pgView('members_view').as((qb) =>
     .select(membersColumns)
     .from(accounts)
     .where(and(eq(accounts.type, AccountType.Individual), isNotNull(accounts.email))),
+);
+export const guestsView = pgView('guests_view').as((qb) =>
+  qb
+    .select(membersColumns)
+    .from(accounts)
+    .where(and(eq(accounts.type, AccountType.Guest), isNotNull(accounts.itemLoginSchemaId))),
 );
 // HACK: Using inferSelect isnce this is a PGView and it does not allow to insert on the view
 export type MemberCreationDTO = typeof membersView.$inferSelect & { email: string };

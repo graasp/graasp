@@ -14,6 +14,7 @@ import { ChatMessage } from './chatMessage';
 
 type ChatMessageCreateBody = { itemId: string; creator: Guest | Member; body: string };
 
+@singleton()
 export class ChatMessageRepository {
   /**
    * Retrieves all the messages related to the given item

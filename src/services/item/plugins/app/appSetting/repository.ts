@@ -1,11 +1,10 @@
-import { EntityManager } from 'typeorm';
+import { and, eq } from 'drizzle-orm';
 
 import { FileItemType, ItemType } from '@graasp/sdk';
 
-import { MutableRepository } from '../../../../../repositories/MutableRepository';
-import { DEFAULT_PRIMARY_KEY } from '../../../../../repositories/const';
+import { DBConnection } from '../../../../../drizzle/db';
+import { type AppSetting, appSettings } from '../../../../../drizzle/schema';
 import { ItemNotFound } from '../../../../../utils/errors';
-import { AppSetting } from './appSettings';
 import { AppSettingNotFound, PreventUpdateAppSettingFile } from './errors';
 import { InputAppSetting } from './interfaces/app-setting';
 
@@ -16,22 +15,27 @@ type CreateAppSettingBody = {
 };
 type UpdateAppSettingBody = Partial<AppSetting>;
 
-export class AppSettingRepository extends MutableRepository<AppSetting, UpdateAppSettingBody> {
-  constructor(manager?: EntityManager) {
-    super(DEFAULT_PRIMARY_KEY, AppSetting, manager);
-  }
-
-  async addOne({ itemId, memberId, appSetting }: CreateAppSettingBody): Promise<AppSetting> {
-    return await super.insert({
+export class AppSettingRepository {
+  async addOne(
+    db: DBConnection,
+    { itemId, memberId, appSetting }: CreateAppSettingBody,
+  ): Promise<AppSetting> {
+    return await db.insert(appSettings).values({
       ...appSetting,
-      item: { id: itemId },
-      creator: { id: memberId },
+      itemId,
+      creatorId: memberId,
     });
   }
 
-  async updateOne(appSettingId: string, body: UpdateAppSettingBody): Promise<AppSetting> {
+  async updateOne(
+    db: DBConnection,
+    appSettingId: string,
+    body: UpdateAppSettingBody,
+  ): Promise<AppSetting> {
     // we shouldn't update file data
-    const originalData = await super.findOne(appSettingId);
+    const originalData = await db.query.appSettings.findFirst({
+      where: eq(appSettings.id, appSettingId),
+    });
 
     if (!originalData) {
       throw new AppSettingNotFound(appSettingId);
@@ -42,27 +46,37 @@ export class AppSettingRepository extends MutableRepository<AppSetting, UpdateAp
       throw new PreventUpdateAppSettingFile(originalData);
     }
 
-    return await super.updateOne(appSettingId, body);
+    return await db.update(appSettings).set(body).where(eq(appSettings.id, appSettingId));
   }
 
-  async getOne(id: string) {
-    return await super.findOne(id, { relations: { creator: true, item: true } });
+  async getOne(db: DBConnection, id: string) {
+    return await db.query.appSettings.findFirst({
+      where: eq(appSettings.id, id),
+      with: { creator: true, item: true },
+    });
   }
 
-  async getOneOrThrow(id: string) {
-    return await super.getOneOrThrow(id, undefined, new AppSettingNotFound(id));
+  async getOneOrThrow(db: DBConnection, id: string) {
+    const data = await this.getOne(db, id);
+    if (!data) {
+      throw new AppSettingNotFound(id);
+    }
+    return data;
   }
 
-  async getForItem(itemId: string, name?: string): Promise<AppSetting[]> {
+  async getForItem(db: DBConnection, itemId: string, name?: string): Promise<AppSetting[]> {
     if (!itemId) {
       throw new ItemNotFound(itemId);
     }
-    return await this.repository.find({
-      where: {
-        item: { id: itemId },
-        ...(name ? { name } : undefined),
-      },
-      relations: { creator: true, item: true },
+
+    const whereConditions = [eq(appSettings.itemId, itemId)];
+    if (name) {
+      whereConditions.push(eq(appSettings.name, name));
+    }
+
+    return await db.query.appSettings.findMany({
+      where: and(...whereConditions),
+      with: { creator: true, item: true },
     });
   }
 }

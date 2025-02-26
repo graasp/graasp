@@ -1,6 +1,6 @@
 import { ItemVisibilityType, PermissionLevel } from '@graasp/sdk';
 
-import { Repositories } from '../../../../../utils/repositories';
+import { DBConnection } from '../../../../../drizzle/db';
 import { Account } from '../../../../account/entities/account';
 import { ItemWrapper } from '../../../ItemWrapper';
 import { ItemService } from '../../../service';
@@ -31,9 +31,10 @@ export class PublicationService {
     this.validationQueue = validationQueue;
   }
 
-  public async computeStateForItem(member: Account, repositores: Repositories, itemId: string) {
-    const item = await this.itemService.get(member, repositores, itemId, PermissionLevel.Admin);
+  public async computeStateForItem(db: DBConnection, member: Account, itemId: string) {
+    const item = await this.itemService.get(db, member, itemId, PermissionLevel.Admin);
     const publicVisibility = await this.itemVisibilityRepository.getType(
+      db,
       item.path,
       ItemVisibilityType.Public,
       {
@@ -45,8 +46,8 @@ export class PublicationService {
       undefined,
       publicVisibility ? [publicVisibility] : [],
     ).packed();
-    const validationGroup = await this.validationRepository.getLastForItem(itemId);
-    const publishedEntry = (await this.publishedRepository.getForItem(item)) ?? undefined;
+    const validationGroup = await this.validationRepository.getLastForItem(db, itemId);
+    const publishedEntry = (await this.publishedRepository.getForItem(db, item)) ?? undefined;
     const isValidationInProgress = await this.validationQueue.isInProgress(item.path);
 
     return new PublicationState(packedItem, {

@@ -5,7 +5,6 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
 import { assertIsMember } from '../../entities/member';
@@ -14,7 +13,6 @@ import { exportMemberData } from './schemas/schemas';
 import { ExportMemberDataService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { db: typeormDB } = fastify;
   const exportMemberDataService = resolveDependency(ExportMemberDataService);
 
   // download all related data to the given user
@@ -27,14 +25,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user }, reply) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      // HACK: Remove once all queries inside use drizzle
-      typeormDB.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-        db.transaction(async (tx) => {
-          await exportMemberDataService.requestDataExport(tx, {
-            member,
-            repositories,
-          });
+      db.transaction(async (tsx) => {
+        await exportMemberDataService.requestDataExport(tsx, {
+          member,
         });
       });
 
