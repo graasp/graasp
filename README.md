@@ -1,6 +1,6 @@
 # Graasp Backend
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![GitHub Release](https://img.shields.io/github/release/graasp/graasp)]()
@@ -339,6 +339,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <tbody>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://defferrard.dev/"><img src="https://avatars.githubusercontent.com/u/56632076?v=4?s=100" width="100px;" alt="Jeremy Defferrard"/><br /><sub><b>Jeremy Defferrard</b></sub></a><br /><a href="https://github.com/graasp/graasp/commits?author=Defferrard" title="Code">💻</a> <a href="https://github.com/graasp/graasp/commits?author=Defferrard" title="Tests">⚠️</a> <a href="https://github.com/graasp/graasp/commits?author=Defferrard" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/pyphilia"><img src="https://avatars.githubusercontent.com/u/11229627?v=4?s=100" width="100px;" alt="Kim Lan Phan Hoang"/><br /><sub><b>Kim Lan Phan Hoang</b></sub></a><br /><a href="https://github.com/graasp/graasp/commits?author=pyphilia" title="Code">💻</a> <a href="https://github.com/graasp/graasp/commits?author=pyphilia" title="Tests">⚠️</a> <a href="https://github.com/graasp/graasp/commits?author=pyphilia" title="Documentation">📖</a> <a href="#design-pyphilia" title="Design">🎨</a> <a href="https://github.com/graasp/graasp/issues?q=author%3Apyphilia" title="Bug reports">🐛</a></td>
     </tr>
   </tbody>
 </table>
