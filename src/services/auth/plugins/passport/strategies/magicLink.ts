@@ -2,6 +2,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 
 import { Authenticator } from '@fastify/passport';
 
+import { db } from '../../../../../drizzle/db';
 import { MemberNotFound, UnauthorizedMember } from '../../../../../utils/errors';
 import { MemberRepository } from '../../../../member/repository';
 import { PassportStrategy } from '../strategies';
@@ -24,7 +25,7 @@ export default (
       },
       async ({ sub, emailValidation }, done: StrictVerifiedCallback) => {
         try {
-          const member = await memberRepository.get(sub);
+          const member = await memberRepository.get(db, sub);
           if (member) {
             // Token has been validated
             return done(null, { account: member }, { emailValidation });

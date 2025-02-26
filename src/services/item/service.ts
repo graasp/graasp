@@ -22,8 +22,9 @@ import {
 } from '@graasp/sdk';
 
 import { DBConnection } from '../../drizzle/db';
-import { Actor, Item, ItemMembership, Member } from '../../drizzle/schema';
+import { Item, ItemMembership, Member } from '../../drizzle/schema';
 import { BaseLogger } from '../../logger';
+import { AuthenticatedUser } from '../../types';
 import {
   CannotReorderRootItem,
   InvalidMembership,
@@ -111,7 +112,7 @@ export class ItemService {
 
   async post(
     db: DBConnection,
-    member: Member,
+    member: AuthenticatedUser,
     args: {
       item: Partial<Item> & Pick<Item, 'name' | 'type'>;
       parentId?: string;
@@ -445,25 +446,25 @@ export class ItemService {
     itemId: UUID,
     options?: { showHidden?: boolean; types?: string[] },
   ) {
-    const { descendants, item } = await this.getDescendants(actor, repositories, itemId, options);
+    const { descendants, item } = await this.getDescendants(db, actor, itemId, options);
     if (!descendants.length) {
       return [];
     }
     const thumbnails = await this.itemThumbnailService.getUrlsByItems(descendants);
-    return filterOutPackedDescendants(actor, repositories, item, descendants, thumbnails, options);
+    return filterOutPackedDescendants(db, actor, item, descendants, thumbnails, options);
   }
 
   async getParents(db: DBConnection, actor: Actor, itemId: UUID) {
-    const { itemRepository } = repositories;
-    const item = await this.get(actor, repositories, itemId);
-    const parents = await itemRepository.getAncestors(item);
+    const item = await this.get(db, actor, itemId);
+    const parents = await this.itemRepository.getAncestors(db, item);
 
-    const { itemMemberships, visibilities } = await validatePermissionMany(
-      repositories,
-      PermissionLevel.Read,
-      actor,
-      parents,
-    );
+    const { itemMemberships, visibilities } =
+      await this.authorizationService.validatePermissionMany(
+        db,
+        PermissionLevel.Read,
+        actor,
+        parents,
+      );
     // remove parents actor does not have access
     const parentsIds = Object.keys(itemMemberships.data);
     const items = parents.filter((p) => parentsIds.includes(p.id));
@@ -475,7 +476,13 @@ export class ItemService {
     // check memberships
     const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
-    await validatePermission(db, repositories, PermissionLevel.Write, member, item);
+    await this.authorizationService.validatePermission(
+      db,
+
+      PermissionLevel.Write,
+      member,
+      item,
+    );
 
     await this.hooks.runPreHooks('update', member, repositories, { item: item });
 
@@ -488,16 +495,15 @@ export class ItemService {
 
   // QUESTION? DELETE BY PATH???
   async delete(db: DBConnection, actor: Member, itemId: UUID) {
-    const { itemRepository } = repositories;
     // check memberships
-    const item = await itemRepository.getDeletedById(itemId);
-    await validatePermission(repositories, PermissionLevel.Admin, actor, item);
+    const item = await this.itemRepository.getDeletedById(db, itemId);
+    await this.authorizationService.validatePermission(db, PermissionLevel.Admin, actor, item);
 
     // check how "big the tree is" below the item
     // we do not use checkNumberOfDescendants because we use descendants
     let items = [item];
     if (isItemType(item, ItemType.FOLDER)) {
-      const descendants = await itemRepository.getDescendants(item, { ordered: false });
+      const descendants = await this.itemRepository.getDescendants(db, item, { ordered: false });
       if (descendants.length > MAX_DESCENDANTS_FOR_DELETE) {
         throw new TooManyDescendants(itemId);
       }
@@ -509,7 +515,10 @@ export class ItemService {
       await this.hooks.runPreHooks('delete', actor, repositories, { item });
     }
 
-    await itemRepository.delete(items.map((i) => i.id));
+    await this.itemRepository.delete(
+      db,
+      items.map((i) => i.id),
+    );
 
     // post hook
     for (const item of items) {
@@ -525,11 +534,10 @@ export class ItemService {
       throw new UnauthorizedMember();
     }
 
-    const { itemRepository } = repositories;
     // check memberships
     // can get soft deleted items
     // QUESTION: move to recycle bin and the endpoint can only delete recycled items
-    const { data: itemsMap } = await itemRepository.getMany(itemIds, {
+    const { data: itemsMap } = await this.itemRepository.getMany(db, itemIds, {
       throwOnError: true,
       withDeleted: true,
     });
@@ -538,13 +546,13 @@ export class ItemService {
     // TODO: optimize
     const allDescendants = await Promise.all(
       allItems.map(async (item) => {
-        await validatePermission(repositories, PermissionLevel.Admin, actor, item);
+        await this.authorizationService.validatePermission(db, PermissionLevel.Admin, actor, item);
         if (!isItemType(item, ItemType.FOLDER)) {
           return [];
         }
         // check how "big the tree is" below the item
         // we do not use checkNumberOfDescendants because we use descendants
-        const descendants = await itemRepository.getDescendants(item, { ordered: false });
+        const descendants = await this.itemRepository.getDescendants(db, item, { ordered: false });
         if (descendants.length > MAX_DESCENDANTS_FOR_DELETE) {
           throw new TooManyDescendants(item.id);
         }
@@ -559,7 +567,10 @@ export class ItemService {
       await this.hooks.runPreHooks('delete', actor, repositories, { item });
     }
 
-    await itemRepository.delete(items.map((i) => i.id));
+    await this.itemRepository.delete(
+      db,
+      items.map((i) => i.id),
+    );
 
     // post hook
     for (const item of items) {
@@ -571,19 +582,20 @@ export class ItemService {
 
   /////// -------- MOVE
   async move(db: DBConnection, member: Member, itemId: UUID, parentItem?: FolderItem) {
-    const { itemRepository } = repositories;
+    const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
-    const item = await itemRepository.getOneOrThrow(itemId);
-
-    await validatePermission(repositories, PermissionLevel.Admin, member, item);
+    await this.authorizationService.validatePermission(db, PermissionLevel.Admin, member, item);
 
     // check how "big the tree is" below the item
-    await itemRepository.checkNumberOfDescendants(item, MAX_DESCENDANTS_FOR_MOVE);
+    await this.itemRepository.checkNumberOfDescendants(db, item, MAX_DESCENDANTS_FOR_MOVE);
 
     if (parentItem) {
       // check how deep (number of levels) the resulting tree will be
-      const levelsToFarthestChild = await itemRepository.getNumberOfLevelsToFarthestChild(item);
-      await itemRepository.checkHierarchyDepth(parentItem, levelsToFarthestChild);
+      const levelsToFarthestChild = await this.itemRepository.getNumberOfLevelsToFarthestChild(
+        db,
+        item,
+      );
+      await this.itemRepository.checkHierarchyDepth(db, parentItem, levelsToFarthestChild);
     }
 
     // post hook
@@ -593,7 +605,7 @@ export class ItemService {
       destinationParent: parentItem,
     });
 
-    const result = await this._move(member, repositories, item, parentItem);
+    const result = await this._move(db, member, item, parentItem);
 
     await this.hooks.runPostHooks('move', member, repositories, {
       source: item,
@@ -608,21 +620,14 @@ export class ItemService {
   async moveMany(db: DBConnection, member: Member, itemIds: string[], toItemId?: string) {
     let parentItem: FolderItem | undefined = undefined;
     if (toItemId) {
-      parentItem = (await this.get(
-        member,
-        repositories,
-        toItemId,
-        PermissionLevel.Write,
-      )) as FolderItem;
+      parentItem = (await this.get(db, member, toItemId, PermissionLevel.Write)) as FolderItem;
     }
 
-    const results = await Promise.all(
-      itemIds.map((id) => this.move(member, repositories, id, parentItem)),
-    );
+    const results = await Promise.all(itemIds.map((id) => this.move(db, member, id, parentItem)));
 
     // newly moved items needs rescaling since they are added in parallel
     if (parentItem) {
-      await repositories.itemRepository.rescaleOrder(member, parentItem);
+      await this.itemRepository.rescaleOrder(db, member, parentItem);
     }
 
     return { items: results.map(({ item }) => item), moved: results.map(({ moved }) => moved) };
@@ -640,16 +645,16 @@ export class ItemService {
    * * `deletes`' `itemPath`s have the path changes after `this.itemService.move()`.
    */
   async _move(db: DBConnection, actor: Member, item: Item, parentItem?: Item) {
-    const { itemRepository } = repositories;
     // identify all the necessary adjustments to memberships
     // TODO: maybe this whole 'magic' should happen in a db procedure?
     const { inserts, deletes } = await this.itemMembershipRepository.moveHousekeeping(
+      db,
       item,
       actor,
       parentItem,
     );
 
-    const result = await itemRepository.move(item, parentItem);
+    const result = await this.itemRepository.move(db, item, parentItem);
 
     // adjust memberships to keep the constraints
     if (inserts.length) {
@@ -664,22 +669,23 @@ export class ItemService {
 
   /////// -------- COPY
   async copy(db: DBConnection, member: Member, itemId: UUID, parentItem?: FolderItem) {
-    const { itemRepository, itemMembershipRepository, itemGeolocationRepository } = repositories;
-
-    const item = await this.get(member, repositories, itemId);
+    const item = await this.get(db, member, itemId);
 
     if (parentItem) {
       // check how deep (number of levels) the resulting tree will be
-      const levelsToFarthestChild = await itemRepository.getNumberOfLevelsToFarthestChild(item);
-      await itemRepository.checkHierarchyDepth(parentItem, levelsToFarthestChild);
+      const levelsToFarthestChild = await this.itemRepository.getNumberOfLevelsToFarthestChild(
+        db,
+        item,
+      );
+      await this.itemRepository.checkHierarchyDepth(db, parentItem, levelsToFarthestChild);
     }
 
     // check how "big the tree is" below the item
-    await itemRepository.checkNumberOfDescendants(item, MAX_DESCENDANTS_FOR_COPY);
+    await this.itemRepository.checkNumberOfDescendants(db, item, MAX_DESCENDANTS_FOR_COPY);
 
     let items = [item];
     if (isItemType(item, ItemType.FOLDER)) {
-      const descendants = await itemRepository.getDescendants(item, { ordered: false });
+      const descendants = await this.itemRepository.getDescendants(db, item, { ordered: false });
       items = [...descendants, item];
     }
 
@@ -698,16 +704,23 @@ export class ItemService {
     startWith = startWith.substring(0, MAX_ITEM_NAME_LENGTH - MAX_COPY_SUFFIX_LENGTH);
 
     if (parentItem) {
-      siblings = await itemRepository.getChildrenNames(parentItem, { startWith });
+      siblings = await this.itemRepository.getChildrenNames(db, parentItem, { startWith });
     } else {
-      siblings = await itemMembershipRepository.getAccessibleItemNames(member, { startWith });
+      siblings = await this.itemMembershipRepository.getAccessibleItemNames(db, member, {
+        startWith,
+      });
     }
 
-    const { copyRoot, treeCopyMap } = await itemRepository.copy(item, member, siblings, parentItem);
+    const { copyRoot, treeCopyMap } = await this.itemRepository.copy(
+      item,
+      member,
+      siblings,
+      parentItem,
+    );
 
     // create a membership if needed
-    await itemMembershipRepository
-      .addOne({
+    await this.itemMembershipRepository
+      .addOne(db, {
         itemPath: copyRoot.path,
         accountId: member.id,
         creatorId: member.id,
@@ -726,17 +739,17 @@ export class ItemService {
       await this.hooks.runPostHooks('copy', member, repositories, { original, copy });
 
       // copy hidden visibility
-      await repositories.itemVisibilityRepository.copyAll(member, original, copy, [
+      await this.itemVisibilityRepository.copyAll(db, member, original, copy, [
         ItemVisibilityType.Public,
       ]);
 
       // copy geolocation
-      await itemGeolocationRepository.copy(original, copy);
+      await this.itemGeolocationRepository.copy(db, original, copy);
       // copy thumbnails if original has setting to true
       if (original.settings.hasThumbnail) {
         try {
           // try to copy thumbnails, this might fail, so we wrap in a try-catch
-          await this.thumbnailService.copyFolder(member, {
+          await this.thumbnailService.copyFolder(db, member, {
             originalId: original.id,
             newId: copy.id,
           });
@@ -748,9 +761,9 @@ export class ItemService {
 
     // index copied root if copied in a published item
     if (parentItem) {
-      const published = await repositories.itemPublishedRepository.getForItem(parentItem);
+      const published = await this.itemPublishedRepository.getForItem(db, parentItem);
       if (published) {
-        await this.meilisearchWrapper.indexOne(published, repositories);
+        await this.meilisearchWrapper.indexOne(db, published);
       }
     }
 
@@ -759,25 +772,16 @@ export class ItemService {
 
   // TODO: optimize
   async copyMany(db: DBConnection, member: Member, itemIds: string[], args: { parentId?: UUID }) {
-    const { itemRepository } = repositories;
-
     let parentItem: FolderItem | undefined;
     if (args.parentId) {
-      parentItem = (await this.get(
-        member,
-        repositories,
-        args.parentId,
-        PermissionLevel.Write,
-      )) as FolderItem;
+      parentItem = (await this.get(db, member, args.parentId, PermissionLevel.Write)) as FolderItem;
     }
 
-    const results = await Promise.all(
-      itemIds.map((id) => this.copy(member, repositories, id, parentItem)),
-    );
+    const results = await Promise.all(itemIds.map((id) => this.copy(db, member, id, parentItem)));
 
     // rescale order because copies happen in parallel
     if (parentItem) {
-      await itemRepository.rescaleOrder(member, parentItem);
+      await this.itemRepository.rescaleOrder(member, parentItem);
     }
 
     return { items: results.map(({ item }) => item), copies: results.map(({ copy }) => copy) };
@@ -789,7 +793,7 @@ export class ItemService {
     itemId: string,
     body: { previousItemId?: string },
   ) {
-    const item = await this.get(actor, repositories, itemId);
+    const item = await this.get(db, actor, itemId);
 
     const ids = getIdsFromPath(item.path);
 
@@ -800,7 +804,7 @@ export class ItemService {
 
     const parentPath = buildPathFromIds(...ids.slice(0, -1));
 
-    return repositories.itemRepository.reorder(item, parentPath, body.previousItemId);
+    return this.itemRepository.reorder(db, item, parentPath, body.previousItemId);
   }
 
   /**
@@ -812,8 +816,8 @@ export class ItemService {
   async rescaleOrderForParent(db: DBConnection, member: Member, item: Item) {
     const parentId = getParentFromPath(item.path);
     if (parentId) {
-      const parentItem = await this.get(member, repositories, parentId);
-      await repositories.itemRepository.rescaleOrder(member, parentItem);
+      const parentItem = await this.get(db, member, parentId);
+      await this.itemRepository.rescaleOrder(db, member, parentItem);
     }
   }
 }

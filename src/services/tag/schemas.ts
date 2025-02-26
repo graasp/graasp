@@ -3,17 +3,25 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifySchema } from 'fastify';
 
-import { TagCategory } from '@graasp/sdk';
+import { UnionOfConst } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 import { errorSchemaRef } from '../../schemas/global';
 import { TAG_COUNT_MAX_RESULTS } from '../item/plugins/tag/constants';
 
+export const TagCategory = {
+  Level: 'level',
+  Discipline: 'discipline',
+  ResourceType: 'resource-type',
+} as const;
+const TagCategoryValues = Object.values(TagCategory);
+export type TagCategoryOptions = UnionOfConst<typeof TagCategory>;
+
 const tagSchema = customType.StrictObject(
   {
     id: customType.UUID(),
     name: Type.String(),
-    category: Type.Enum(TagCategory),
+    category: customType.EnumString(TagCategoryValues),
   },
   { description: 'User provided tag, representing a theme or subject' },
 );
@@ -24,7 +32,7 @@ export const tagCount = customType.StrictObject(
   {
     id: customType.UUID(),
     name: Type.String(),
-    category: Type.Enum(TagCategory),
+    category: customType.EnumString(TagCategoryValues),
     count: Type.Number(),
   },
   { description: 'Successful Response' },
@@ -40,7 +48,7 @@ export const getCountForTags = {
 
   querystring: customType.StrictObject({
     search: Type.String({ minLength: 1 }),
-    category: Type.Optional(Type.Enum(TagCategory)),
+    category: customType.EnumString(TagCategoryValues),
   }),
   response: {
     [StatusCodes.OK]: Type.Array(tagCount, { maxItems: TAG_COUNT_MAX_RESULTS }),

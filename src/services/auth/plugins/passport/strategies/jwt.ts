@@ -3,7 +3,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Authenticator } from '@fastify/passport';
 
 import { MemberNotFound, UnauthorizedMember } from '../../../../../utils/errors';
-import { AccountRepository } from '../../../../account/repository';
+import { AccountRepository } from '../../../../account/account.repository';
 import { PassportStrategy } from '../strategies';
 import { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
 
@@ -23,7 +23,7 @@ export default (
       },
       async ({ sub }, done: StrictVerifiedCallback) => {
         try {
-          const account = await accountRepository.get(sub);
+          const account = await accountRepository.get(db, sub);
           if (account) {
             // Token has been validated
             return done(null, { account });

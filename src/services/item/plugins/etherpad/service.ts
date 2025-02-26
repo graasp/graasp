@@ -8,6 +8,7 @@ import { EtherpadItemExtra, ItemType, PermissionLevel } from '@graasp/sdk';
 import { ETHERPAD_NAME_FACTORY_DI_KEY } from '../../../../di/constants';
 import { DBConnection } from '../../../../drizzle/db';
 import { BaseLogger } from '../../../../logger';
+import { AuthenticatedUser } from '../../../../types';
 import { MemberCannotWriteItem } from '../../../../utils/errors';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
 import { Account } from '../../../account/entities/account';
@@ -98,7 +99,7 @@ export class EtherpadItemService {
    */
   public async createEtherpadItem(
     db: DBConnection,
-    member: Member,
+    member: AuthenticatedUser,
     name: string,
     parentId?: string,
     initHtml?: string,

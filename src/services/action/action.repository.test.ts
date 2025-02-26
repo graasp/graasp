@@ -325,8 +325,6 @@ describe('Action Repository', () => {
         { item, account: member, view, createdAt },
       ]);
 
-      const r = new ActionRepository();
-
       const result = await actionRepository.getAggregationForItem(db, item.path, {
         view,
         sampleSize,

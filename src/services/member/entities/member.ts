@@ -1,11 +1,9 @@
-import { StatusCodes } from 'http-status-codes';
 import { Check, ChildEntity, Column, Unique } from 'typeorm';
 
 import { AccountType, CompleteMember } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import { Account, is } from '../../account/entities/account';
-import { NotMember } from '../error';
+import { Account } from '../../account/entities/account';
 
 const TYPE = AccountType.Individual;
 
@@ -53,27 +51,5 @@ export class Member extends Account {
 
   get lang(): string {
     return (this.extra.lang as string) ?? DEFAULT_LANG;
-  }
-}
-
-export type Actor = Account | undefined;
-
-export function isMember(account: Account): account is Member {
-  return is<Member>(account, TYPE);
-}
-
-export function assertIsMember<Err extends Error, Args extends unknown[]>(
-  account: Account,
-  error?: new (...args: Args) => Err,
-  ...args: Args
-): asserts account is Member {
-  if (!isMember(account)) {
-    if (error) {
-      throw new error(...args);
-    } else {
-      const defaultError = new NotMember();
-      defaultError.statusCode = StatusCodes.INTERNAL_SERVER_ERROR;
-      throw defaultError;
-    }
   }
 }

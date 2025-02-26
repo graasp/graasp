@@ -38,6 +38,7 @@ export const tagCategoryEnum = pgEnum('tag_category_enum', [
   'discipline',
   'resource-type',
 ]);
+export const accountTypeEnum = pgEnum('account_type_enum', ['individual', 'guest']);
 
 export const itemPublisheds = pgTable(
   'item_published',
@@ -401,6 +402,7 @@ export const invitations = pgTable(
     unique('item-email').on(table.itemPath, table.email),
   ],
 );
+export type Invitation = typeof invitations.$inferSelect;
 
 export const publishers = pgTable(
   'publisher',
@@ -766,6 +768,7 @@ export const items = pgView('item_view').as((qb) =>
   qb.select(itemColumns).from(itemsRaw).where(isNull(itemsRaw.deletedAt)),
 );
 export type Item = typeof items.$inferSelect;
+export type ItemInsertDTO = typeof itemsRaw.$inferInsert;
 
 export const membershipRequests = pgTable(
   'membership_request',
@@ -799,8 +802,7 @@ export const accounts = pgTable(
     // TODO: notNull added - check for migrations, and db status
     //, '{}', true
     extra: jsonb().$type<CompleteMember['extra']>().default({}).notNull(),
-    // TODO: This should be an enum to have better type safety
-    type: varchar().default('individual').notNull(),
+    type: accountTypeEnum().default('individual').notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
     userAgreementsDate: timestamp('user_agreements_date', { mode: 'string' }),
@@ -851,8 +853,6 @@ export const membersView = pgView('members_view').as((qb) =>
 // HACK: Using inferSelect isnce this is a PGView and it does not allow to insert on the view
 export type MemberCreationDTO = typeof membersView.$inferSelect & { email: string };
 export type Member = typeof membersView.$inferSelect;
-
-export type Actor = Account | Member | undefined;
 
 export const guestPasswords = pgTable(
   'guest_password',

@@ -273,128 +273,128 @@ export class ItemMembershipRepository {
     });
   }
 
-  /**
-   *  get accessible items for actor and given params
-   *  */
-  async getAccessibleItems(
-    db: DBConnection,
-    account: Account,
-    {
-      creatorId,
-      keywords,
-      sortBy = SortBy.ItemUpdatedAt,
-      ordering = Ordering.DESC,
-      permissions,
-      types,
-    }: ItemSearchParams,
-    pagination: Pagination,
-  ): Promise<Paginated<ItemMembership>> {
-    const { page, pageSize } = pagination;
-    const limit = Math.min(pageSize, ITEMS_PAGE_SIZE_MAX);
-    const skip = (page - 1) * limit;
+  // /**
+  //  *  get accessible items for actor and given params
+  //  *  */
+  // async getAccessibleItems(
+  //   db: DBConnection,
+  //   account: Account,
+  //   {
+  //     creatorId,
+  //     keywords,
+  //     sortBy = SortBy.ItemUpdatedAt,
+  //     ordering = Ordering.DESC,
+  //     permissions,
+  //     types,
+  //   }: ItemSearchParams,
+  //   pagination: Pagination,
+  // ): Promise<Paginated<ItemMembership>> {
+  //   const { page, pageSize } = pagination;
+  //   const limit = Math.min(pageSize, ITEMS_PAGE_SIZE_MAX);
+  //   const skip = (page - 1) * limit;
 
-    db.query.itemMemberships.findFirst({
-      columns: {},
-    });
+  //   db.query.itemMemberships.findFirst({
+  //     columns: {},
+  //   });
 
-    const query = await db
-      .select()
-      .from(itemMembershipTable)
-      .leftJoin(items, eq(itemMembershipTable.itemPath, items.path))
-      .leftJoin(membersView, eq(membersView.id, items.creatorId))
-      .where(eq(itemMembershipTable.accountId, account.id))
-      // returns only top most item
-      .andWhere((qb) => {
-        const subQuery = qb
-          .subQuery()
-          .from(itemMembershipTable, 'im1')
-          .select('im1.item.path')
-          .where('im.item_path <@ im1.item_path')
-          .andWhere('im1.account_id = :actorId', { actorId: account.id })
-          .orderBy('im1.item_path', 'ASC')
-          .limit(1);
+  //   const query = await db
+  //     .select()
+  //     .from(itemMembershipTable)
+  //     .leftJoin(items, eq(itemMembershipTable.itemPath, items.path))
+  //     .leftJoin(membersView, eq(membersView.id, items.creatorId))
+  //     .where(eq(itemMembershipTable.accountId, account.id))
+  //     // returns only top most item
+  //     .andWhere((qb) => {
+  //       const subQuery = qb
+  //         .subQuery()
+  //         .from(itemMembershipTable, 'im1')
+  //         .select('im1.item.path')
+  //         .where('im.item_path <@ im1.item_path')
+  //         .andWhere('im1.account_id = :actorId', { actorId: account.id })
+  //         .orderBy('im1.item_path', 'ASC')
+  //         .limit(1);
 
-        if (permissions) {
-          subQuery.andWhere('im1.permission IN (:...permissions)', { permissions });
-        }
-        return 'item.path =' + subQuery.getQuery();
-      });
+  //       if (permissions) {
+  //         subQuery.andWhere('im1.permission IN (:...permissions)', { permissions });
+  //       }
+  //       return 'item.path =' + subQuery.getQuery();
+  //     });
 
-    const allKeywords = keywords?.filter((s) => s && s.length);
-    if (allKeywords?.length) {
-      const keywordsString = allKeywords.join(' ');
-      query.andWhere(
-        new Brackets((q) => {
-          // search in english by default
-          q.where("item.search_document @@ plainto_tsquery('english', :keywords)", {
-            keywords: keywordsString,
-          });
+  //   const allKeywords = keywords?.filter((s) => s && s.length);
+  //   if (allKeywords?.length) {
+  //     const keywordsString = allKeywords.join(' ');
+  //     query.andWhere(
+  //       new Brackets((q) => {
+  //         // search in english by default
+  //         q.where("item.search_document @@ plainto_tsquery('english', :keywords)", {
+  //           keywords: keywordsString,
+  //         });
 
-          // no dictionary
-          q.orWhere("item.search_document @@ plainto_tsquery('simple', :keywords)", {
-            keywords: keywordsString,
-          });
+  //         // no dictionary
+  //         q.orWhere("item.search_document @@ plainto_tsquery('simple', :keywords)", {
+  //           keywords: keywordsString,
+  //         });
 
-          // raw words search
-          allKeywords.forEach((k, idx) => {
-            q.orWhere(`item.name ILIKE :k_${idx}`, {
-              [`k_${idx}`]: `%${k}%`,
-            });
-          });
+  //         // raw words search
+  //         allKeywords.forEach((k, idx) => {
+  //           q.orWhere(`item.name ILIKE :k_${idx}`, {
+  //             [`k_${idx}`]: `%${k}%`,
+  //           });
+  //         });
 
-          // search by member lang
-          const memberLang = isMember(account) ? account.lang : DEFAULT_LANG;
-          const memberLangKey = memberLang as keyof typeof ALLOWED_SEARCH_LANGS;
-          if (memberLang != DEFAULT_LANG && ALLOWED_SEARCH_LANGS[memberLangKey]) {
-            q.orWhere('item.search_document @@ plainto_tsquery(:lang, :keywords)', {
-              keywords: keywordsString,
-              lang: ALLOWED_SEARCH_LANGS[memberLangKey],
-            });
-          }
-        }),
-      );
-    }
+  //         // search by member lang
+  //         const memberLang = isMember(account) ? account.lang : DEFAULT_LANG;
+  //         const memberLangKey = memberLang as keyof typeof ALLOWED_SEARCH_LANGS;
+  //         if (memberLang != DEFAULT_LANG && ALLOWED_SEARCH_LANGS[memberLangKey]) {
+  //           q.orWhere('item.search_document @@ plainto_tsquery(:lang, :keywords)', {
+  //             keywords: keywordsString,
+  //             lang: ALLOWED_SEARCH_LANGS[memberLangKey],
+  //           });
+  //         }
+  //       }),
+  //     );
+  //   }
 
-    if (creatorId) {
-      query.andWhere('item.creator = :creatorId', { creatorId });
-    }
+  //   if (creatorId) {
+  //     query.andWhere('item.creator = :creatorId', { creatorId });
+  //   }
 
-    if (permissions) {
-      query.andWhere('im.permission IN (:...permissions)', { permissions });
-    }
+  //   if (permissions) {
+  //     query.andWhere('im.permission IN (:...permissions)', { permissions });
+  //   }
 
-    if (types) {
-      query.andWhere('item.type IN (:...types)', { types });
-    }
+  //   if (types) {
+  //     query.andWhere('item.type IN (:...types)', { types });
+  //   }
 
-    if (sortBy) {
-      // map strings to correct sort by column
-      let mappedSortBy;
-      switch (sortBy) {
-        case SortBy.ItemType:
-          mappedSortBy = 'item.type';
-          break;
-        case SortBy.ItemUpdatedAt:
-          mappedSortBy = 'item.updated_at';
-          break;
-        case SortBy.ItemCreatedAt:
-          mappedSortBy = 'item.created_at';
-          break;
-        case SortBy.ItemCreatorName:
-          mappedSortBy = 'creator.name';
-          break;
-        case SortBy.ItemName:
-          mappedSortBy = 'item.name';
-          break;
-      }
-      if (mappedSortBy) {
-        query.orderBy(mappedSortBy, orderingToUpperCase(ordering));
-      }
-    }
+  //   if (sortBy) {
+  //     // map strings to correct sort by column
+  //     let mappedSortBy;
+  //     switch (sortBy) {
+  //       case SortBy.ItemType:
+  //         mappedSortBy = 'item.type';
+  //         break;
+  //       case SortBy.ItemUpdatedAt:
+  //         mappedSortBy = 'item.updated_at';
+  //         break;
+  //       case SortBy.ItemCreatedAt:
+  //         mappedSortBy = 'item.created_at';
+  //         break;
+  //       case SortBy.ItemCreatorName:
+  //         mappedSortBy = 'creator.name';
+  //         break;
+  //       case SortBy.ItemName:
+  //         mappedSortBy = 'item.name';
+  //         break;
+  //     }
+  //     if (mappedSortBy) {
+  //       query.orderBy(mappedSortBy, orderingToUpperCase(ordering));
+  //     }
+  //   }
 
-    const [im, totalCount] = await query.offset(skip).limit(limit).getManyAndCount();
-    return { data: im, totalCount, pagination };
-  }
+  //   const [im, totalCount] = await query.offset(skip).limit(limit).getManyAndCount();
+  //   return { data: im, totalCount, pagination };
+  // }
 
   /**
    *  get accessible items name for actor and given params

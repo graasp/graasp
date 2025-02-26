@@ -1,72 +1,75 @@
-import { eq } from 'drizzle-orm/expressions';
+import { and, eq } from 'drizzle-orm/expressions';
 import { singleton } from 'tsyringe';
-import { EntityManager } from 'typeorm';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { invitation } from '../../../../drizzle/schema';
-import { MutableRepository } from '../../../../repositories/MutableRepository';
-import { DEFAULT_PRIMARY_KEY } from '../../../../repositories/const';
-import { AncestorOf } from '../../../../utils/typeorm/treeOperators';
+import { isAncestorOrSelf } from '../../../../drizzle/operations';
+import { type Invitation, invitations } from '../../../../drizzle/schema';
+import { throwsIfParamIsInvalid } from '../../../../repositories/utils';
 import { Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
-import { Invitation } from './entity';
 import { InvitationNotFound } from './errors';
 
 type CreatorId = Member['id'];
 type ItemPath = Item['path'];
 type Email = Invitation['email'];
 
-type CreateInvitationBody = {
-  partialInvitations: Partial<Invitation>[];
-  itemPath: ItemPath;
-  creatorId: CreatorId;
-};
-type UpdateInvitationBody = Partial<Invitation>;
+// type CreateInvitationBody = {
+//   partialInvitations: Partial<Invitation>[];
+//   itemPath: ItemPath;
+//   creatorId: CreatorId;
+// };
 
 /**
  * Database's first layer of abstraction for Invitations
  */
 @singleton()
-export class InvitationRepository extends MutableRepository<Invitation, UpdateInvitationBody> {
-  constructor(manager?: EntityManager) {
-    super(DEFAULT_PRIMARY_KEY, Invitation, manager);
-  }
+export class InvitationRepository {
+  // async addOne(
+  //   db: DBConnection,
+  //   { partialInvitations, itemPath, creatorId }: CreateInvitationBody,
+  // ) {
+  //   throwsIfParamIsInvalid('itemPath', itemPath);
+  //   throwsIfParamIsInvalid('creatorId', creatorId);
 
-  async addOne({ partialInvitations, itemPath, creatorId }: CreateInvitationBody) {
-    this.throwsIfParamIsInvalid('itemPath', itemPath);
-    this.throwsIfParamIsInvalid('creatorId', creatorId);
+  //   return await db
+  //     .insert(invitations)
+  //     .values(
+  //       partialInvitations.map((inv) => ({
+  //         ...inv,
+  //         itemPath,
+  //         creatorId,
+  //       })),
+  //     )
+  //     .returning();
+  // }
 
-    return await super.insert({
-      ...partialInvitations,
-      item: { path: itemPath },
-      creator: { id: creatorId },
+  async getOne(db: DBConnection, id: string) {
+    throwsIfParamIsInvalid('id', id);
+    return await db.query.invitations.findFirst({
+      with: { item: true },
+      where: eq(invitations.id, id),
     });
-  }
-
-  async getOne(id: string) {
-    this.throwsIfPKIsInvalid(id);
-    return await this.repository
-      .createQueryBuilder('invitation')
-      .innerJoinAndSelect('invitation.item', 'item')
-      .where('invitation.id = :id', { id })
-      .getOne();
   }
 
   /**
    * Get invitation by id or null if it is not found
    * @param id Invitation id
    */
-  async getOneByIdAndByCreatorOrThrow(id: string, creatorId: CreatorId): Promise<Invitation> {
-    this.throwsIfPKIsInvalid(id);
-    this.throwsIfParamIsInvalid('creatorId', creatorId);
+  async getOneByIdAndByCreatorOrThrow(
+    db: DBConnection,
+    id: string,
+    creatorId: CreatorId,
+  ): Promise<Invitation> {
+    throwsIfParamIsInvalid('id', id);
+    throwsIfParamIsInvalid('creatorId', creatorId);
 
-    const entity = await this.repository
-      .createQueryBuilder('invitation')
-      .innerJoinAndSelect('invitation.item', 'item')
-      .innerJoinAndSelect('invitation.creator', 'creator')
-      .where('invitation.id = :id', { id })
-      .andWhere('invitation.creator_id = :creatorId', { creatorId })
-      .getOne();
+    const entity = await db.query.invitations.findFirst({
+      where: and(eq(invitations.id, id), eq(invitations.creatorId, creatorId)),
+      with: {
+        item: true,
+        creator: true,
+      },
+    });
 
     if (!entity) {
       throw new InvitationNotFound(id);
@@ -79,21 +82,21 @@ export class InvitationRepository extends MutableRepository<Invitation, UpdateIn
    * Get invitations for item path and below
    * @param itemPath Item path
    */
-  async getManyByItem(itemPath: ItemPath) {
-    this.throwsIfParamIsInvalid('itemPath', itemPath);
+  async getManyByItem(db: DBConnection, itemPath: ItemPath) {
+    throwsIfParamIsInvalid('itemPath', itemPath);
 
-    return await this.repository.find({
-      where: { item: { path: AncestorOf(itemPath) } },
-      relations: { item: true },
+    return await db.query.invitations.findMany({
+      where: isAncestorOrSelf(invitations.itemPath, itemPath),
+      with: { item: true },
     });
   }
 
   async getManyByEmail(db: DBConnection, email: Email) {
-    this.throwsIfParamIsInvalid('email', email);
+    throwsIfParamIsInvalid('email', email);
     const lowercaseEmail = email.toLowerCase();
 
-    const res = await db.query.invitation.findMany({
-      where: eq(invitation.email, lowercaseEmail),
+    const res = await db.query.invitations.findMany({
+      where: eq(invitations.email, lowercaseEmail),
       with: { item: true },
     });
 
@@ -107,53 +110,45 @@ export class InvitationRepository extends MutableRepository<Invitation, UpdateIn
    * @param creator user responsible for the creation of invitations
    */
   async addMany(
+    db: DBConnection,
     partialInvitations: Partial<Invitation>[],
     itemPath: string,
     creator: Member,
   ): Promise<Invitation[]> {
-    const invitations = partialInvitations.map((inv) => ({
+    const data = partialInvitations.map((inv) => ({
       ...inv,
       // this normalisation is necessary because we match emails 1:1 and they are expeted to be in lowercase
       email: inv.email?.toLowerCase(),
     }));
     // get invitations for the item and its parents
-    const existingEntries = await this.repository
-      .createQueryBuilder('invitation')
-      .leftJoinAndSelect('invitation.item', 'item')
-      .where('item.path @> :path', { path: itemPath })
-      .getMany();
+    const existingEntries = await db.query.invitations.findMany({
+      with: { item: true },
+      where: isAncestorOrSelf(invitations.itemPath, itemPath),
+    });
 
-    const insertResult = await this.repository.insert(
-      invitations
-        .filter(
-          (i) =>
-            // exclude duplicate item-email combinations that are already invited
-            !existingEntries.find(({ email, item }) => email === i.email && item.path === itemPath),
-        )
-        .map((invitations) => ({
-          ...invitations,
-          item: { path: itemPath },
-          creator,
-        })),
-    );
-
-    const ids = insertResult.identifiers.map(({ id }) => id);
-    if (ids.length) {
-      // get the created invitations
-      const res = await this.repository
-        .createQueryBuilder('invitation')
-        .innerJoinAndSelect('invitation.item', 'item')
-        .innerJoinAndSelect('invitation.creator', 'creator')
-        .where('invitation.id IN (:...ids)', { ids })
-        .getMany();
-      return res;
-    }
-    return [];
+    return await db
+      .insert(invitations)
+      .values(
+        data
+          .filter(
+            (i) =>
+              // exclude duplicate item-email combinations that are already invited
+              !existingEntries.find(
+                ({ email, item }) => email === i.email && item.path === itemPath,
+              ),
+          )
+          .map((inv) => ({
+            ...inv,
+            item: { path: itemPath },
+            creator,
+          })),
+      )
+      .returning();
   }
 
-  async deleteManyByEmail(email: Email) {
-    this.throwsIfParamIsInvalid('email', email);
+  async deleteManyByEmail(db: DBConnection, email: Email) {
+    throwsIfParamIsInvalid('email', email);
 
-    await this.repository.delete({ email });
+    await db.delete(invitations).where(eq(invitations.email, email));
   }
 }

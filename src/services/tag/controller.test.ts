@@ -1,18 +1,19 @@
+import { inArray } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 
 import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, TagCategory } from '@graasp/sdk';
 
-import build, { clearDatabase, unmockAuthenticate } from '../../../test/app';
+import build, { unmockAuthenticate } from '../../../test/app';
+import { db } from '../../drizzle/db';
+import { Tag, tags as tagsTable } from '../../drizzle/schema';
 import { AppDataSource } from '../../plugins/datasource';
 import { ItemTag } from '../item/plugins/tag/ItemTag.entity';
 import { ItemTestUtils } from '../item/test/fixtures/items';
 import { saveMember } from '../member/test/fixtures/members';
-import { Tag } from '../tag/Tag.entity';
 
 const testUtils = new ItemTestUtils();
-const tagRawRepository = AppDataSource.getRepository(Tag);
 const itemTagRawRepository = AppDataSource.getRepository(ItemTag);
 
 describe('Tag Endpoints', () => {
@@ -21,16 +22,21 @@ describe('Tag Endpoints', () => {
 
   beforeAll(async () => {
     ({ app } = await build({ member: null }));
-
-    const tag1 = await tagRawRepository.save({ name: 'tag1', category: TagCategory.Discipline });
-    const tag2 = await tagRawRepository.save({ name: 'tag2', category: TagCategory.Discipline });
-    const tag3 = await tagRawRepository.save({ name: 'tag3', category: TagCategory.Level });
-
-    tags = [tag1, tag2, tag3];
+    const tagsToInsert = [
+      { name: 'tag1', category: TagCategory.Discipline },
+      { name: 'tag2', category: TagCategory.Discipline },
+      { name: 'tag3', category: TagCategory.Level },
+    ];
+    await db.insert(tagsTable).values(tagsToInsert).onConflictDoNothing();
+    tags = await db.query.tags.findMany({
+      where: inArray(
+        tagsTable.name,
+        tagsToInsert.map((t) => t.name),
+      ),
+    });
   });
 
   afterAll(async () => {
-    await clearDatabase(app.db);
     app.close();
   });
 

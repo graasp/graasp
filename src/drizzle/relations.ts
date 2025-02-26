@@ -254,7 +254,7 @@ export const appSettingRelations = relations(appSettings, ({ one }) => ({
 }));
 
 export const invitationsRelations = relations(invitations, ({ one }) => ({
-  account: one(accounts, {
+  creator: one(accounts, {
     fields: [invitations.creatorId],
     references: [accounts.id],
   }),
@@ -361,7 +361,7 @@ export const actionRequestExportRelations = relations(actionRequestExports, ({ o
 }));
 
 export const membershipRequestRelations = relations(membershipRequests, ({ one }) => ({
-  account: one(accounts, {
+  member: one(accounts, {
     fields: [membershipRequests.memberId],
     references: [accounts.id],
   }),
