@@ -30,6 +30,18 @@
         "design",
         "bug"
       ]
+    },
+    {
+      "login": "ReidyT",
+      "name": "Thibault Reidy",
+      "avatar_url": "https://avatars.githubusercontent.com/u/147397675?v=4",
+      "profile": "https://github.com/ReidyT",
+      "contributions": [
+        "code",
+        "test",
+        "doc",
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
