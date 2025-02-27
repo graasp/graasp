@@ -3,15 +3,14 @@ import { singleton } from 'tsyringe';
 import { PermissionLevel } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../drizzle/db';
-import HookManager from '../../../../../utils/hook';
+import { AuthenticatedUser } from '../../../../../types';
 import { Account } from '../../../../account/entities/account';
 import { AuthorizationService } from '../../../../authorization';
 import { ItemRepository } from '../../../repository';
 import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request';
-import { AppAction } from './appAction';
+import { InputAppAction } from './appAction.interface';
+import { AppActionRepository } from './appAction.repository';
 import { AppActionNotAccessible } from './errors';
-import { InputAppAction } from './interfaces/app-action';
-import { AppActionRepository } from './repository';
 
 @singleton()
 export class AppActionService {
@@ -19,20 +18,17 @@ export class AppActionService {
   private readonly itemRepository: ItemRepository;
   private readonly authorizationService: AuthorizationService;
 
-  hooks = new HookManager<{
-    post: {
-      pre: { appAction: Partial<InputAppAction>; itemId: string };
-      post: { appAction: AppAction; itemId: string };
-    };
-  }>();
-
-  constructor(authorizationService: AuthorizationService, appActionRepository, itemRepository) {
+  constructor(
+    authorizationService: AuthorizationService,
+    appActionRepository: AppActionRepository,
+    itemRepository: ItemRepository,
+  ) {
     this.authorizationService = authorizationService;
     this.appActionRepository = appActionRepository;
     this.itemRepository = itemRepository;
   }
 
-  async post(db: DBConnection, account: Account, itemId: string, body: Partial<InputAppAction>) {
+  async post(db: DBConnection, account: AuthenticatedUser, itemId: string, body: InputAppAction) {
     // check item exists? let post fail?
     const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
@@ -44,16 +40,12 @@ export class AppActionService {
       accountId: account.id,
       appAction: body,
     });
-    await this.hooks.runPostHooks('post', account, {
-      appAction,
-      itemId,
-    });
     return appAction;
   }
 
   async getForItem(
     db: DBConnection,
-    account: Account,
+    account: AuthenticatedUser,
     itemId: string,
     filters: SingleItemGetFilter,
   ) {
@@ -61,13 +53,12 @@ export class AppActionService {
     const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
     // posting an app action is allowed to readers
-    const { itemMembership } =
-      await this.authorizationService.this.authorizationService.validatePermission(
-        db,
-        PermissionLevel.Read,
-        account,
-        item,
-      );
+    const { itemMembership } = await this.authorizationService.validatePermission(
+      db,
+      PermissionLevel.Read,
+      account,
+      item,
+    );
     const permission = itemMembership?.permission;
     let { accountId: fMemberId } = filters;
 
@@ -80,7 +71,9 @@ export class AppActionService {
       }
     }
 
-    return this.appActionRepository.getForItem(db, itemId, { accountId: fMemberId });
+    return this.appActionRepository.getForItem(db, itemId, {
+      accountId: fMemberId,
+    });
   }
 
   async getForManyItems(

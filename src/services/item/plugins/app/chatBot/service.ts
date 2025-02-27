@@ -1,6 +1,6 @@
 import { ChatBotMessage, GPTVersion, PermissionLevel } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../../drizzle/db'; 
+import { DBConnection } from '../../../../../drizzle/db';
 import { Account } from '../../../../account/entities/account';
 import { AuthorizationService } from '../../../../authorization';
 import { ItemRepository } from '../../../repository';

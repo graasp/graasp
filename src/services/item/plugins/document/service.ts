@@ -4,7 +4,7 @@ import { singleton } from 'tsyringe';
 import { DocumentItemExtraProperties, ItemGeolocation, ItemType, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { BaseLogger } from '../../../../logger'; 
+import { BaseLogger } from '../../../../logger';
 import { Member } from '../../../member/entities/member';
 import { ThumbnailService } from '../../../thumbnail/service';
 import { DocumentItem, Item, isItemType } from '../../entities/Item';

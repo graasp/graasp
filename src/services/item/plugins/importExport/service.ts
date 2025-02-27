@@ -13,11 +13,13 @@ import { FastifyReply } from 'fastify';
 
 import { ItemType, getMimetype } from '@graasp/sdk';
 
+import { DBConnection } from '../../../../drizzle/db';
+import { Item } from '../../../../drizzle/schema';
 import { BaseLogger } from '../../../../logger';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
-import { Actor, Member } from '../../../member/entities/member';
-import { Item, isItemType } from '../../entities/Item';
+import { Member } from '../../../member/entities/member';
+import { isItemType } from '../../entities/Item';
 import { ItemService } from '../../service';
 import { EtherpadItemService } from '../etherpad/service';
 import FileItemService from '../file/service';
@@ -76,13 +78,12 @@ export class ImportExportService {
   /**
    * private function that create an item and its necessary membership with given parameters
    * @param {Member} actor creator
-   * @param {Repositories} repositories
    * @param {any} options.filename filename of the file to import
    * @returns {any}
    */
   private async _saveItemFromFilename(
+    db: DBConnection,
     actor: Member,
-    repositories: Repositories,
     options: {
       filename: string;
       folderPath: string;
@@ -113,7 +114,7 @@ export class ImportExportService {
       const description = await this._getDescriptionForFilepath(path.join(filepath, filename));
 
       this.log.debug(`create folder from '${filename}'`);
-      return this.itemService.post(actor, repositories, {
+      return this.itemService.post(db, actor, {
         item: {
           description,
           name: filename,
@@ -154,7 +155,7 @@ export class ImportExportService {
               },
             },
           };
-          return this.itemService.post(actor, repositories, {
+          return this.itemService.post(db, actor, {
             item: newItem,
             parentId: parent?.id,
           });
@@ -169,7 +170,7 @@ export class ImportExportService {
               },
             },
           };
-          return this.itemService.post(actor, repositories, {
+          return this.itemService.post(db, actor, {
             item: newItem,
             parentId: parent?.id,
           });
@@ -190,7 +191,7 @@ export class ImportExportService {
             },
           },
         };
-        return this.itemService.post(actor, repositories, { item: newItem, parentId: parent?.id });
+        return this.itemService.post(db, actor, { item: newItem, parentId: parent?.id });
       }
 
       // normal files
@@ -198,7 +199,7 @@ export class ImportExportService {
         const mimetype = await asyncDetectFile(filepath);
         // upload file
         const file = fs.createReadStream(filepath);
-        const item = await this.fileItemService.upload(actor, repositories, {
+        const item = await this.fileItemService.upload(db, actor, {
           filename,
           mimetype,
           description,

@@ -102,14 +102,12 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
       const member = asDefined(user?.account);
       const app = asDefined(user?.app);
 
-      return appDataFileService
-        .download(db,member, { item: app.item, appDataId })
-        .catch((e) => {
-          if (e.code) {
-            throw e;
-          }
-          throw new DownloadFileUnexpectedError(e);
-        });
+      return appDataFileService.download(db, member, { item: app.item, appDataId }).catch((e) => {
+        if (e.code) {
+          throw e;
+        }
+        throw new DownloadFileUnexpectedError(e);
+      });
     },
   );
 };

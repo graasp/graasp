@@ -69,7 +69,9 @@ export type ItemPublishedRaw = typeof itemPublisheds.$inferSelect;
 export type ItemPublishedWithItem = Omit<typeof itemPublisheds.$inferSelect, 'itemPath'> & {
   item: Item;
 };
-export type ItemPublishedWithItemAndAccount = ItemPublishedWithItem & { creator: Member };
+export type ItemPublishedWithItemAndAccount = ItemPublishedWithItem & {
+  creator: Member;
+};
 
 export const permissionEnum = pgEnum('permission_enum', ['read', 'write', 'admin']);
 export const itemMemberships = pgTable(
@@ -344,7 +346,7 @@ export const appActions = pgTable(
     id: uuid().defaultRandom().primaryKey().notNull(),
     accountId: uuid('account_id').notNull(),
     itemId: uuid('item_id').notNull(),
-    data: text().default('{}').notNull(),
+    data: jsonb().default('{}').notNull(),
     type: varchar({ length: 25 }).notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
   },

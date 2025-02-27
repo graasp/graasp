@@ -7,11 +7,11 @@ import { appActions } from '../../../../../drizzle/schema';
 import { IllegalArgumentException } from '../../../../../repositories/errors';
 import { mapById } from '../../../../utils';
 import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request';
-import { AppAction } from './appAction';
-import { InputAppAction } from './interfaces/app-action';
+import { AppAction } from './appAction.entity';
+import { InputAppAction } from './appAction.interface';
 
 type CreateAppActionBody = {
-  appAction: Partial<InputAppAction>;
+  appAction: InputAppAction;
   itemId: string;
   accountId: string;
 };
@@ -42,7 +42,10 @@ export class AppActionRepository {
 
     const { accountId } = filters;
     return await db.query.appActions.findMany({
-      where: and(eq(appActions.itemId, itemId), eq(appActions.accountId, accountId)),
+      where: and(
+        eq(appActions.itemId, itemId),
+        accountId ? eq(appActions.accountId, accountId) : undefined,
+      ),
       with: { account: true, item: true },
     });
   }

@@ -7,8 +7,8 @@ import { asDefined } from '../../../../../utils/assertions';
 import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
 import { addMemberInAppAction } from '../legacy';
 import { appActionsWsHooks } from '../ws/hooks';
+import { AppActionService } from './appAction.service';
 import { create, getForOne } from './schemas';
-import { AppActionService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const appActionService = resolveDependency(AppActionService);

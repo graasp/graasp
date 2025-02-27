@@ -36,9 +36,9 @@ import { AppActionRepository } from '../app/appAction/repository';
 import { AppData } from '../app/appData/appData';
 import { AppDataRepository } from '../app/appData/repository';
 import { AppSetting } from '../app/appSetting/appSettings';
+import { AppSettingRepository } from '../app/appSetting/repository';
 import { BaseAnalytics } from './base-analytics';
 import { ItemActionType } from './utils';
-import { AppSettingRepository } from '../app/appSetting/repository';
 
 @singleton()
 export class ActionItemService {
