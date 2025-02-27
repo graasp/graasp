@@ -3,11 +3,16 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifySchema } from 'fastify';
 
-import { PermissionLevel } from '@graasp/sdk';
+import { EtherpadReaderPermission } from '@graasp/sdk';
 
 import { customType } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
-import { itemSchemaRef } from '../../schemas';
+import { itemSchema, itemSchemaRef } from '../../schemas';
+
+const readerPermissionType = Type.Union([
+  Type.Literal(EtherpadReaderPermission.Read),
+  Type.Literal(EtherpadReaderPermission.Write),
+]);
 
 export const createEtherpad = {
   operationId: 'createEtherpad',
@@ -20,6 +25,7 @@ export const createEtherpad = {
   }),
   body: customType.StrictObject({
     name: customType.ItemName(),
+    readerPermission: Type.Optional(readerPermissionType),
   }),
   response: {
     [StatusCodes.OK]: itemSchemaRef,
@@ -54,16 +60,22 @@ export const updateEtherpad = {
   operationId: 'updateEtherpad',
   tags: ['item'],
   summary: 'Update etherpad',
-  description: 'Update etherpad permission of readers.',
+  description: 'Update etherpad properties, including permission of readers.',
 
   params: customType.StrictObject({
     id: customType.UUID(),
   }),
-  body: customType.StrictObject({
-    readerPermission: Type.Union([
-      Type.Literal(PermissionLevel.Read),
-      Type.Literal(PermissionLevel.Write),
-    ]),
-  }),
+  body: Type.Partial(
+    Type.Composite(
+      [
+        Type.Pick(itemSchema, ['name', 'description', 'lang', 'settings']),
+        customType.StrictObject({
+          readerPermission: readerPermissionType,
+        }),
+      ],
+      { additionalProperties: false },
+    ),
+    { minProperties: 1 },
+  ),
   response: { [StatusCodes.NO_CONTENT]: Type.Null(), '4xx': errorSchemaRef },
 } as const satisfies FastifySchema;

@@ -1,7 +1,13 @@
 import { v4 } from 'uuid';
 
 import Etherpad, { AuthorSession } from '@graasp/etherpad-api';
-import { EtherpadItemFactory, FolderItemFactory, ItemType, PermissionLevel } from '@graasp/sdk';
+import {
+  EtherpadItemFactory,
+  EtherpadReaderPermission,
+  FolderItemFactory,
+  ItemType,
+  PermissionLevel,
+} from '@graasp/sdk';
 
 import { MOCK_LOGGER } from '../../../../../test/app';
 import { resolveDependency } from '../../../../di/utils';
@@ -22,7 +28,9 @@ import { PadNameFactory } from './types';
 
 jest.mock('node-fetch');
 
-const padNameFactory = {} as PadNameFactory;
+const padNameFactory = {
+  getName: () => 'padName',
+} as PadNameFactory;
 const etherPadConfig = resolveDependency(EtherpadServiceConfig);
 const itemService = new ItemService(
   {} as ThumbnailService,
@@ -36,6 +44,8 @@ const etherpad = {
   createSession: () => {},
   deleteSession: () => {},
   listSessionsOfAuthor: () => {},
+  createGroupPad: async () => {},
+  createGroupIfNotExistsFor: async () => ({ groupID: 'groupId' }),
 } as unknown as Etherpad;
 
 const etherpadService = new EtherpadItemService(
@@ -49,6 +59,9 @@ const id = v4();
 const MOCK_ITEM = EtherpadItemFactory({
   id,
   extra: { etherpad: { readerPermission: undefined, padID: v4(), groupID: v4() } },
+  settings: {
+    isCollapsible: false,
+  },
 }) as unknown as EtherpadItem;
 
 const MOCK_MEMBER = {} as Member;
@@ -73,6 +86,63 @@ describe('Etherpad Service', () => {
     jest.clearAllMocks();
   });
 
+  describe('createEtherpadItem', () => {
+    it('create with readerPermission', async () => {
+      const itemServiceCreateMock = jest
+        .spyOn(ItemService.prototype, 'post')
+        .mockImplementation(async () => {
+          return MOCK_ITEM;
+        });
+
+      const readerPermission = EtherpadReaderPermission.Write;
+      await etherpadService.createEtherpadItem(MOCK_MEMBER, repositories, {
+        name: 'newName',
+        readerPermission,
+      });
+
+      expect(itemServiceCreateMock).toHaveBeenCalledWith(MOCK_MEMBER, repositories, {
+        item: {
+          name: 'newName',
+          type: ItemType.ETHERPAD,
+          extra: {
+            [ItemType.ETHERPAD]: {
+              groupID: expect.anything(),
+              padID: expect.anything(),
+              readerPermission,
+            },
+          },
+        },
+        parentId: undefined,
+      });
+    });
+    it('create with default readerPermission', async () => {
+      const itemServiceCreateMock = jest
+        .spyOn(ItemService.prototype, 'post')
+        .mockImplementation(async () => {
+          return MOCK_ITEM;
+        });
+
+      await etherpadService.createEtherpadItem(MOCK_MEMBER, repositories, {
+        name: 'newName',
+      });
+
+      expect(itemServiceCreateMock).toHaveBeenCalledWith(MOCK_MEMBER, repositories, {
+        item: {
+          name: 'newName',
+          type: ItemType.ETHERPAD,
+          extra: {
+            [ItemType.ETHERPAD]: {
+              groupID: expect.anything(),
+              padID: expect.anything(),
+              readerPermission: EtherpadReaderPermission.Read,
+            },
+          },
+        },
+        parentId: undefined,
+      });
+    });
+  });
+
   describe('patchWithOptions', () => {
     it('throw if item is not an etherpad', async () => {
       const FOLDER_ITEM = FolderItemFactory();
@@ -87,7 +157,7 @@ describe('Etherpad Service', () => {
             } as unknown as ItemRepository,
           } as repositoriesUtils.Repositories,
           FOLDER_ITEM.id,
-          { readerPermission: PermissionLevel.Write },
+          { readerPermission: EtherpadReaderPermission.Write },
         ),
       ).rejects.toBeInstanceOf(WrongItemTypeError);
     });
@@ -112,6 +182,24 @@ describe('Etherpad Service', () => {
             readerPermission: PermissionLevel.Write,
           },
         },
+      });
+    });
+    it('patch name and settings', async () => {
+      const itemServicePatchMock = jest
+        .spyOn(ItemService.prototype, 'patch')
+        .mockImplementation(async () => {
+          return MOCK_ITEM;
+        });
+
+      await etherpadService.patchWithOptions(MOCK_MEMBER, repositories, MOCK_ITEM.id, {
+        name: 'newName',
+        settings: { isCollapsible: true },
+      });
+
+      // call to item service with initial item name
+      expect(itemServicePatchMock).toHaveBeenCalledWith(MOCK_MEMBER, repositories, MOCK_ITEM.id, {
+        name: 'newName',
+        settings: { isCollapsible: true },
       });
     });
 

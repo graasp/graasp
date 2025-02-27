@@ -2094,9 +2094,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@npm:5.9.1":
+"@graasp/sdk@github:graasp/graasp-sdk#etherpad-reader-permission-type":
   version: 5.9.1
-  resolution: "@graasp/sdk@npm:5.9.1"
+  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=a3682a868638ba7d28ba23961edfaeeb976b9a4c"
   dependencies:
     "@faker-js/faker": "npm:9.5.0"
     filesize: "npm:10.1.6"
@@ -2104,7 +2104,7 @@ __metadata:
   peerDependencies:
     date-fns: ^3 || ^4.0.0
     uuid: ^9 || ^10 || ^11.0.0
-  checksum: 10/4811a4033b75d09076c5749ce9137f48b017fe03fa8c4ff999f7f690d7ca0e1068e5ffd8bd9f91b21d92c81a41bdd5431b9d85a0304ba045fea5b69a0a1618ef
+  checksum: 10/38038267363ff6251162766ad8132d8fbba5acef20c0a8be49a3d033797ac9e81e53ddfc25fcf85d5d646f6bf168369b10823d685492db3714e061abae475e3b
   languageName: node
   linkType: hard
 
@@ -7468,7 +7468,7 @@ __metadata:
     "@fastify/type-provider-typebox": "npm:4.1.0"
     "@fastify/websocket": "npm:7.2.0"
     "@graasp/etherpad-api": "npm:2.1.1"
-    "@graasp/sdk": "npm:5.9.1"
+    "@graasp/sdk": "github:graasp/graasp-sdk#etherpad-reader-permission-type"
     "@graasp/translations": "npm:1.42.0"
     "@jest/globals": "npm:29.7.0"
     "@quobix/vacuum": "npm:0.13.6"
