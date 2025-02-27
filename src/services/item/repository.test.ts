@@ -1,6 +1,7 @@
 // This import is necessary so we only download needed langage. eslint can't find the import because it's dynamic.
 // eslint-disable-next-line import/no-unresolved
 import { faker } from '@faker-js/faker/locale/en';
+import { In } from 'typeorm';
 import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
@@ -16,6 +17,7 @@ import {
 } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../test/app';
+import { ItemFactory } from '../../../test/factories/item.factory';
 import {
   HierarchyTooDeep,
   InvalidMoveTarget,
@@ -30,6 +32,8 @@ import { ItemTestUtils, expectItem, expectManyItems } from './test/fixtures/item
 
 const itemRepository = new ItemRepository();
 const testUtils = new ItemTestUtils();
+
+const alphabeticalOrder = (a: string, b: string) => a.localeCompare(b);
 
 describe('ItemRepository', () => {
   let app: FastifyInstance;
@@ -727,6 +731,78 @@ describe('ItemRepository', () => {
         await testUtils.saveItem({ actor, parentItem, item: { order: 25 } });
         expect(await itemRepository.getNextOrderCount(parentItem.path)).toEqual(45);
       });
+    });
+  });
+  describe('postMany', () => {
+    it('post many', async () => {
+      const items = Array.from(
+        { length: 15 },
+        (_v, idx) =>
+          ItemFactory({ id: `item${idx}`, type: ItemType.FOLDER, creator: actor }) as Item,
+      );
+
+      const insertedItems = await itemRepository.addMany(items, actor);
+      const insertedItemNames = insertedItems.map((i) => i.name);
+      const insertedItemTypes = insertedItems.map((i) => i.type);
+      const insertedItemCreatorIds = insertedItems.map((i) => i.creator?.id);
+
+      const itemsInDB = await testUtils.rawItemRepository.find({
+        where: { name: In(insertedItemNames) },
+        relations: { creator: true },
+      });
+      const itemNamesInDB = itemsInDB.map((i) => i.name);
+      const itemTypesInDB = insertedItems.map((i) => i.type);
+      const itemCreatorIdsInDB = insertedItems.map((i) => i.creator?.id);
+      const itemPathsInDb = insertedItems.map((i) => i.path);
+
+      expect(itemNamesInDB.sort(alphabeticalOrder)).toEqual(
+        insertedItemNames.sort(alphabeticalOrder),
+      );
+      expect(itemTypesInDB.sort(alphabeticalOrder)).toEqual(
+        insertedItemTypes.sort(alphabeticalOrder),
+      );
+      expect(itemCreatorIdsInDB.sort(alphabeticalOrder)).toEqual(
+        insertedItemCreatorIds.sort(alphabeticalOrder),
+      );
+      expect(itemPathsInDb.every((path) => !path.includes('.'))).toBeTruthy();
+    });
+    it('post many with parent item', async () => {
+      const parentItem = await testUtils.saveItem({ actor });
+
+      const items = Array.from(
+        { length: 15 },
+        (_v, idx) =>
+          ItemFactory({ name: `item${idx}`, type: ItemType.FOLDER, creator: actor }) as Item,
+      );
+
+      const insertedItems = await itemRepository.addMany(items, actor, parentItem);
+      const insertedItemNames = insertedItems.map((i) => i.name);
+      const insertedItemTypes = insertedItems.map((i) => i.type);
+      const insertedItemCreatorIds = insertedItems.map((i) => i.creator?.id);
+      const insertedItemPaths = insertedItems.map((i) => i.path);
+
+      const itemsInDB = await testUtils.rawItemRepository.find({
+        where: { name: In(insertedItemNames) },
+        relations: { creator: true },
+      });
+      const itemNamesInDB = itemsInDB.map((i) => i.name);
+      const itemTypesInDB = insertedItems.map((i) => i.type);
+      const itemCreatorIdsInDB = insertedItems.map((i) => i.creator?.id);
+      const itemPathsInDB = insertedItems.map((i) => i.path);
+
+      expect(itemNamesInDB.sort(alphabeticalOrder)).toEqual(
+        insertedItemNames.sort(alphabeticalOrder),
+      );
+      expect(itemTypesInDB.sort(alphabeticalOrder)).toEqual(
+        insertedItemTypes.sort(alphabeticalOrder),
+      );
+      expect(itemCreatorIdsInDB.sort(alphabeticalOrder)).toEqual(
+        insertedItemCreatorIds.sort(alphabeticalOrder),
+      );
+      expect(itemPathsInDB.sort(alphabeticalOrder)).toEqual(
+        insertedItemPaths.sort(alphabeticalOrder),
+      );
+      expect(itemPathsInDB.every((path) => path.includes(`${parentItem.path}.`))).toBeTruthy();
     });
   });
   describe('copy', () => {

@@ -332,7 +332,10 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
     return query.getMany();
   }
 
-  async getMany(ids: string[], args: { throwOnError?: boolean; withDeleted?: boolean } = {}) {
+  async getMany(
+    ids: string[],
+    args: { throwOnError?: boolean; withDeleted?: boolean; ordered?: boolean } = {},
+  ) {
     if (!ids.length) {
       return { data: {}, errors: [] };
     }
@@ -342,6 +345,7 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
       where: { id: In(ids) },
       relations: { creator: true },
       withDeleted: Boolean(args.withDeleted),
+      order: args.ordered ? { order: 'ASC' } : {},
     });
     const result = mapById<Item>({
       keys: ids,
@@ -490,6 +494,22 @@ export class ItemRepository extends MutableRepository<Item, UpdateItemBody> {
     });
 
     return await super.insert(newItem);
+  }
+
+  public async addMany(
+    items: (Partial<Item> & Pick<Item, 'name' | 'type'>)[],
+    creator: Member,
+    parent?: Item,
+  ) {
+    const newItems = items.map((item) =>
+      this.createOne({
+        ...item,
+        creator,
+        parent,
+      }),
+    );
+
+    return await super.insertMany(newItems);
   }
 
   /////// -------- COPY

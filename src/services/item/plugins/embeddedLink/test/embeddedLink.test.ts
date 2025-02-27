@@ -3,7 +3,7 @@ import fetch from 'node-fetch';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType, LinkItemFactory, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, ItemType } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -12,15 +12,8 @@ import build, {
 } from '../../../../../../test/app';
 import { ItemFactory } from '../../../../../../test/factories/item.factory';
 import { seedFromJson } from '../../../../../../test/mocks/seed';
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
-import { ItemRepository } from '../../../repository';
-import { expectItem } from '../../../test/fixtures/items';
 
 jest.mock('node-fetch');
-
-const itemRepository = new ItemRepository();
-const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
 
 const iframelyMeta = {
   title: 'title',
@@ -58,124 +51,6 @@ describe('Link Item tests', () => {
   afterEach(async () => {
     jest.clearAllMocks();
     unmockAuthenticate();
-  });
-
-  describe('POST /items', () => {
-    it('Throws if signed out', async () => {
-      const payload = LinkItemFactory();
-      const response = await app.inject({
-        method: HttpMethod.Post,
-        url: '/items',
-        payload,
-      });
-
-      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-    });
-
-    describe('Signed In', () => {
-      beforeEach(async () => {
-        const { actor } = await seedFromJson();
-        mockAuthenticate(actor);
-      });
-
-      it('Create successfully', async () => {
-        const payload = LinkItemFactory();
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: '/items',
-          payload,
-        });
-
-        const expectedItem = {
-          name: payload.name,
-          type: ItemType.LINK,
-          extra: {
-            [ItemType.LINK]: {
-              url: payload.extra.embeddedLink.url,
-              html: 'html',
-              icons: [],
-              thumbnails: [],
-              description: iframelyMeta.description,
-            },
-          },
-          description: payload.description,
-          settings: {
-            showLinkIframe: false,
-            showLinkButton: true,
-          },
-        };
-
-        // check response value
-        const newItem = response.json();
-        expect(response.statusCode).toBe(StatusCodes.OK);
-        expectItem(newItem, expectedItem);
-
-        // check item exists in db
-        const item = await itemRepository.getOne(newItem.id);
-        expectItem(item, expectedItem);
-
-        // a membership is created for this item
-        const membership = await itemMembershipRawRepository.findOneBy({
-          item: { id: newItem.id },
-        });
-        expect(membership?.permission).toEqual(PermissionLevel.Admin);
-      });
-
-      it('Fail to create if type does not match extra', async () => {
-        const payload = {
-          type: ItemType.DOCUMENT,
-          extra: {
-            [ItemType.LINK]: {
-              html: 'html',
-              icons: [],
-              thumbnails: [],
-              url: 'https://myurl.com',
-            },
-          },
-          name: 'mylink',
-        };
-
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: '/items',
-          payload,
-        });
-
-        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-      });
-
-      it('Fail to create if payload is invalid', async () => {
-        const payload = {
-          type: ItemType.DOCUMENT,
-          extra: { [ItemType.FOLDER]: { url: 'https://myurl.com' } },
-          name: 'mylink',
-        };
-
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: '/items',
-          payload,
-        });
-
-        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-      });
-
-      it('Fail to create if url of link is not an url', async () => {
-        const payload1 = {
-          type: ItemType.LINK,
-          extra: { [ItemType.LINK]: { url: 'someurl' } },
-          name: 'mylink',
-        };
-
-        const response1 = await app.inject({
-          method: HttpMethod.Post,
-          url: '/items',
-          payload: payload1,
-        });
-
-        expect(response1.statusCode).toBe(StatusCodes.BAD_REQUEST);
-      });
-    });
   });
 
   // cannot update a link

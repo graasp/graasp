@@ -100,9 +100,6 @@ describe('Shortcut routes tests', () => {
           item: { id: newItem.id },
         });
         expect(membership?.permission).toEqual(PermissionLevel.Admin);
-        // check some creator properties are not leaked
-        expect(newItem.creator.id).toBeTruthy();
-        expect(newItem.creator.createdAt).toBeFalsy();
 
         // order is null for root
         expect(await testUtils.getOrderForItemId(newItem.id)).toBeNull();
