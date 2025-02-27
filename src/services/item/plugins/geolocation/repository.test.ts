@@ -641,7 +641,7 @@ describe('ItemGeolocationRepository', () => {
 
     it('throw if does not provide parent item or lat lng', async () => {
       repository
-        .getItemsIn(actor, {
+        .getItemsIn({
           lat1: null,
           lat2: null,
           lng1: null,
@@ -653,7 +653,7 @@ describe('ItemGeolocationRepository', () => {
         });
 
       repository
-        .getItemsIn(actor, {
+        .getItemsIn({
           lat1: 1,
           lat2: 2,
           lng1: 1,
@@ -664,7 +664,7 @@ describe('ItemGeolocationRepository', () => {
           expect(e).toMatchObject(new MissingGeolocationSearchParams(expect.anything()));
         });
       repository
-        .getItemsIn(actor, {
+        .getItemsIn({
           lat1: 1,
           lat2: 2,
           lng1: 1,
