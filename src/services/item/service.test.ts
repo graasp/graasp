@@ -109,7 +109,7 @@ describe('Item Service', () => {
       });
 
       const itemsInDB = await testUtils.itemRepository.getChildren(
-        actor,
+        actor.lang,
         parentItem,
         { ordered: true },
         { withOrder: true },
@@ -139,7 +139,7 @@ describe('Item Service', () => {
       });
 
       const itemsInDB = await testUtils.itemRepository.getChildren(
-        actor,
+        actor.lang,
         parentItem,
         { ordered: true },
         { withOrder: true },
@@ -179,7 +179,7 @@ describe('Item Service', () => {
       });
 
       const itemsInDB = await testUtils.itemRepository.getChildren(
-        actor,
+        actor.lang,
         parentItem,
         { ordered: true },
         { withOrder: true },

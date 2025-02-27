@@ -268,7 +268,7 @@ export class ItemService {
     itemRepository.checkHierarchyDepth(parentItem);
 
     // check if there's too many children under the same parent
-    const descendants = await itemRepository.getChildren(member, parentItem);
+    const descendants = await itemRepository.getChildren(member.lang, parentItem);
     if (descendants.length + items.length > MAX_NUMBER_OF_CHILDREN) {
       throw new TooManyChildren();
     }
