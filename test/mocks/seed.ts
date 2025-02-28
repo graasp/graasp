@@ -3,6 +3,8 @@ import { BaseEntity, DataSource } from 'typeorm';
 import { v4 } from 'uuid';
 
 import {
+  ItemLoginSchemaStatus,
+  ItemLoginSchemaType,
   ItemType,
   ItemVisibilityType,
   PermissionLevel,
@@ -16,11 +18,14 @@ import { MemberPassword } from '../../src/services/auth/plugins/password/entitie
 import { encryptPassword } from '../../src/services/auth/plugins/password/utils';
 import { Item } from '../../src/services/item/entities/Item';
 import { ItemVisibility } from '../../src/services/item/plugins/itemVisibility/ItemVisibility';
+import { Guest } from '../../src/services/itemLogin/entities/guest';
+import { GuestPassword } from '../../src/services/itemLogin/entities/guestPassword';
+import { ItemLoginSchema } from '../../src/services/itemLogin/entities/itemLoginSchema';
 import { ItemMembership } from '../../src/services/itemMembership/entities/ItemMembership';
 import { Actor, Member } from '../../src/services/member/entities/member';
 import { MemberProfile } from '../../src/services/member/plugins/profile/entities/profile';
 import { ItemFactory } from '../factories/item.factory';
-import { MemberFactory } from '../factories/member.factory';
+import { GuestFactory, MemberFactory } from '../factories/member.factory';
 import defaultDatas from './sampledatas';
 
 export type TableType<C extends BaseEntity, E> = {
@@ -83,6 +88,9 @@ type SeedItem<M = SeedMember> = (Partial<Omit<Item, 'creator'>> & { creator?: M 
   memberships?: SeedMembership<M>[];
   isPublic?: boolean;
   isHidden?: boolean;
+  itemLoginSchema?: Partial<ItemLoginSchema> & {
+    guests?: (Partial<Guest> & { password?: string })[];
+  };
 };
 type DataType = {
   actor?: SeedActor | null;
@@ -355,6 +363,74 @@ async function createItemVisibilities(items: (SeedItem & { path: string })[]) {
   ).visibilities as ItemVisibility[];
 }
 
+async function createItemLoginSchemasAndGuests(items: (SeedItem & { path: string })[]) {
+  const itemLoginSchemasData = items.reduce<
+    {
+      id: string;
+      item: { path: string };
+      status: ItemLoginSchema['status'];
+      type: ItemLoginSchema['type'];
+      guests?: (Partial<Guest> & { password?: string })[];
+    }[]
+  >((acc, { path, itemLoginSchema }) => {
+    if (itemLoginSchema) {
+      acc.push({
+        item: { path },
+        id: v4(),
+        type: ItemLoginSchemaType.Username,
+        status: ItemLoginSchemaStatus.Active,
+        ...itemLoginSchema,
+      });
+    }
+    return acc;
+  }, []);
+
+  const { itemLoginSchemas } = await seed({
+    itemLoginSchemas: {
+      constructor: ItemLoginSchema,
+      entities: itemLoginSchemasData,
+    },
+  });
+
+  // save pre-registered guests
+  // feed item login schema in guests' data
+  const guestsData = itemLoginSchemasData.reduce<
+    (ReturnType<typeof GuestFactory> & { password?: string })[]
+  >((acc, { id, guests }) => {
+    if (guests) {
+      return acc.concat(
+        guests.map(({ password, ...g }) => ({
+          ...GuestFactory({ ...g, itemLoginSchema: { id } }),
+          password,
+        })),
+      );
+    }
+    return acc;
+  }, []);
+  const { guests } = await seed({
+    guests: {
+      constructor: Account,
+      entities: guestsData,
+    },
+  });
+
+  // save guests' password
+  const guestPasswords: { guest: { id: string }; password: string }[] = [];
+  for (const { id, password } of guestsData) {
+    if (password) {
+      guestPasswords.push({ guest: { id }, password: await encryptPassword(password) });
+    }
+  }
+  await seed({
+    guestPasswords: {
+      constructor: GuestPassword,
+      entities: guestPasswords,
+    },
+  });
+
+  return { itemLoginSchemas: itemLoginSchemas as ItemLoginSchema[], guests: guests as Guest[] };
+}
+
 /**
  * Given seed object, save them in the database for initialization of a test
  * @param data
@@ -371,6 +447,8 @@ export async function seedFromJson(data: DataType = {}) {
     members: Member[];
     memberProfiles: MemberProfile[];
     itemVisibilities: ItemVisibility[];
+    itemLoginSchemas: ItemLoginSchema[];
+    guests: Guest[];
   } = {
     items: [],
     actor: undefined,
@@ -378,6 +456,8 @@ export async function seedFromJson(data: DataType = {}) {
     members: [],
     memberProfiles: [],
     itemVisibilities: [],
+    itemLoginSchemas: [],
+    guests: [],
   };
 
   const { items: itemsWithActor, actor, members, actorProfile } = await processActor(data);
@@ -413,6 +493,9 @@ export async function seedFromJson(data: DataType = {}) {
 
   // save item visibilities
   result.itemVisibilities = await createItemVisibilities(processedItems);
+  const { itemLoginSchemas, guests } = await createItemLoginSchemasAndGuests(processedItems);
+  result.itemLoginSchemas = itemLoginSchemas;
+  result.guests = guests;
 
   // save item memberships
   const itemMembershipsEntities = processItemMemberships(processedItems);
