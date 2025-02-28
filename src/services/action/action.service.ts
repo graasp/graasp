@@ -5,29 +5,32 @@ import { FastifyRequest } from 'fastify';
 
 import { ClientManager, Context } from '@graasp/sdk';
 
-import { DBConnection } from '../../../drizzle/db';
-import { Actor } from '../../../drizzle/schema';
-import { BaseLogger } from '../../../logger';
-import { ItemService } from '../../item/service';
-import { MemberService } from '../../member/service';
-import { ActionRepository } from '../action.repository';
-import { Action } from '../entities/action';
-import { getGeolocationIp } from '../utils/actions';
+import { DBConnection } from '../../drizzle/db';
+import { BaseLogger } from '../../logger';
+import { Actor } from '../../types';
+import { ItemService } from '../item/service';
+import { MemberRepository } from '../member/repository';
+import { MemberService } from '../member/service';
+import { ActionRepository } from './action.repository';
+import { getGeolocationIp } from './utils/actions';
 
 @singleton()
 export class ActionService {
   actionRepository: ActionRepository;
+  memberRepository: MemberRepository;
   itemService: ItemService;
   memberService: MemberService;
   logger: BaseLogger;
 
   constructor(
     actionRepository: ActionRepository,
+    memberRepository: MemberRepository,
     itemService: ItemService,
     memberService: MemberService,
     logger: BaseLogger,
   ) {
     this.actionRepository = actionRepository;
+    this.memberRepository = memberRepository;
     this.itemService = itemService;
     this.memberService = memberService;
     this.logger = logger;
@@ -35,11 +38,13 @@ export class ActionService {
 
   async postMany(
     db: DBConnection,
-    member: Actor,
+    actor: Actor,
     request: FastifyRequest,
     actions: (Partial<Action> & Pick<Action, 'type'>)[],
   ): Promise<void> {
     const { headers } = request;
+    // expand member to the full account
+    const member = actor ? await this.memberRepository.get(db, actor.id) : null;
     //TODO: should we assert that the member is a "member" ?
     // prevent saving if member is defined and has disabled saveActions
     if (member && member.enableSaveActions === false) {
@@ -47,7 +52,9 @@ export class ActionService {
     }
 
     // prevent saving if item disabled analytics
-    actions.filter((action) => action.item?.settings?.enableSaveActions ?? true);
+    actions.filter(
+      (action) => action.item?.settings?.enableSaveActions ?? true,
+    );
     if (actions.length === 0) {
       return;
     }

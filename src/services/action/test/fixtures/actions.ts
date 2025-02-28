@@ -8,12 +8,14 @@ import {
   ActionRaw,
   ActionWithItem,
   ActionWithItemAndAccount,
-  actions as actionsTable,
+  actionsTable,
 } from '../../../../drizzle/schema';
 import { Account } from '../../../account/entities/account';
 
 type ActionToTest = ActionRaw | ActionWithItem | ActionWithItemAndAccount;
-export const saveActions = async (actions: Partial<GraaspAction>[]): Promise<ActionInsertRaw[]> => {
+export const saveActions = async (
+  actions: Partial<GraaspAction>[],
+): Promise<ActionInsertRaw[]> => {
   const data = actions
     .map((d) => ActionFactory(d))
     // HACK: transform the extra to a string since the schema expects it to be a string
@@ -38,7 +40,10 @@ export const getMemberActions = async (
   return res;
 };
 
-export const expectAction = <T extends ActionToTest>(action: T, correctAction: T) => {
+export const expectAction = <T extends ActionToTest>(
+  action: T,
+  correctAction: T,
+) => {
   expect(action.extra).toMatchObject(correctAction.extra);
   expect(action.view).toEqual(correctAction.view);
   expect(action.createdAt).toEqual(correctAction.createdAt);
@@ -48,13 +53,18 @@ export const expectAction = <T extends ActionToTest>(action: T, correctAction: T
     if ('item' in action) {
       expect(action.item?.id).toEqual(correctAction.item?.id);
     } else {
-      throw new Error('expected item prop to exist on action under test. The property is missing.');
+      throw new Error(
+        'expected item prop to exist on action under test. The property is missing.',
+      );
     }
   }
   expect(action.type).toEqual(correctAction.type);
 };
 
-export const expectActions = <T extends ActionToTest>(actions: T[], correctActions: T[]) => {
+export const expectActions = <T extends ActionToTest>(
+  actions: T[],
+  correctActions: T[],
+) => {
   expect(actions).toHaveLength(correctActions.length);
 
   for (const action of correctActions) {

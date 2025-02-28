@@ -1,17 +1,21 @@
 import { singleton } from 'tsyringe';
 
-import { ClientManager, Context, MentionStatus, PermissionLevel } from '@graasp/sdk';
+import {
+  ClientManager,
+  Context,
+  MentionStatus,
+  PermissionLevel,
+} from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
+import { ChatMessageRaw, Item } from '../../../../drizzle/types';
 import { TRANSLATIONS } from '../../../../langs/constants';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
+import { AuthenticatedUser } from '../../../../types';
 import { Account } from '../../../account/entities/account';
 import { AuthorizationService } from '../../../authorization';
-import { Item } from '../../../item/entities/Item';
 import { ItemRepository } from '../../../item/repository';
-import { Member, isMember } from '../../../member/entities/member';
-import { ChatMessage } from '../../chatMessage';
 import { MemberCannotAccessMention } from '../../errors';
 import { ChatMentionRepository } from './repository';
 
@@ -40,12 +44,16 @@ export class MentionService {
     creator,
   }: {
     item: Item;
-    member: Member;
-    creator: Account;
+    member: { email: string; lang: string };
+    creator: { name: string };
   }) {
-    const itemLink = ClientManager.getInstance().getItemLink(Context.Builder, item.id, {
-      chatOpen: true,
-    });
+    const itemLink = ClientManager.getInstance().getItemLink(
+      Context.Builder,
+      item.id,
+      {
+        chatOpen: true,
+      },
+    );
 
     const mail = new MailBuilder({
       subject: {
@@ -71,16 +79,25 @@ export class MentionService {
 
   async createManyForItem(
     db: DBConnection,
-    account: Account,
-    message: ChatMessage,
+    account: AuthenticatedUser,
+    message: ChatMessageRaw,
     mentionedMembers: string[],
   ) {
     // check actor has access to item
-    const item = await this.itemRepository.getOneOrThrow(db, message.item.id);
-    await this.authorizationService.validatePermission(db, PermissionLevel.Read, account, item);
+    const item = await this.itemRepository.getOneOrThrow(db, message.itemId);
+    await this.authorizationService.validatePermission(
+      db,
+      PermissionLevel.Read,
+      account,
+      item,
+    );
 
     // TODO: optimize ? suppose same item - validate multiple times
-    const mentions = await this.chatMentionRepository.postMany(db, mentionedMembers, message.id);
+    const mentions = await this.chatMentionRepository.postMany(
+      db,
+      mentionedMembers,
+      message.id,
+    );
 
     mentions.forEach((mention) => {
       const member = mention.account;
@@ -92,8 +109,8 @@ export class MentionService {
     return mentions;
   }
 
-  async getForAccount(db: DBConnection, account: Account) {
-    return this.chatMentionRepository.getForAccount(db, account.id);
+  async getForAccount(db: DBConnection, authenticatedUser: AuthenticatedUser) {
+    return this.chatMentionRepository.getForAccount(db, authenticatedUser.id);
   }
 
   async get(db: DBConnection, actor: Account, mentionId: string) {
@@ -106,7 +123,12 @@ export class MentionService {
     return mentionContent;
   }
 
-  async patch(db: DBConnection, actor: Account, mentionId: string, status: MentionStatus) {
+  async patch(
+    db: DBConnection,
+    actor: Account,
+    mentionId: string,
+    status: MentionStatus,
+  ) {
     // check permission
     await this.get(db, actor, mentionId);
 

@@ -12,6 +12,7 @@ export type AccountTypeOptions = UnionOfConst<typeof AccountType>;
 type MinimalUser = {
   id: string;
   name: string;
+  lang?: string;
 };
 
 /**
@@ -23,6 +24,7 @@ type MinimalUser = {
  */
 export type MinimalMember = MinimalUser & {
   type: typeof AccountType.Individual;
+  isValidated: boolean;
 };
 
 /**
@@ -34,11 +36,10 @@ export type MinimalMember = MinimalUser & {
  */
 export type MinimalGuest = MinimalUser & {
   type: typeof AccountType.Guest;
-  isValidated: boolean;
 };
 
 /**
- * The authenticated user as given by the autnetication functions.
+ * The authenticated user as given by the authentication functions.
  * Is can be a member (real account) or a guest (only has access to a single item)
  */
 export type AuthenticatedUser = MinimalMember | MinimalGuest;
@@ -46,7 +47,7 @@ export type AuthenticatedUser = MinimalMember | MinimalGuest;
 /**
  * Sometimes we do not care if the person making the request exists or not, so we can use `Actor` instead
  */
-export type Actor = AuthenticatedUser | undefined;
+export type MaybeUser = AuthenticatedUser | undefined;
 
 export type IdParam = {
   id: string;

@@ -6,13 +6,11 @@ import {
   ChatMessageCreationDTO,
   ChatMessageRaw,
   ChatMessageWithCreatorAndItem,
-  chatMessages,
+  chatMessagesTable,
 } from '../../drizzle/schema';
 import { DeleteException } from '../../repositories/errors';
 import { throwsIfParamIsInvalid } from '../../repositories/utils';
 import { assertIsError } from '../../utils/assertions';
-import { Guest } from '../itemLogin/entities/guest';
-import { Member } from '../member/entities/member';
 
 @singleton()
 export class ChatMessageRepository {
@@ -23,10 +21,10 @@ export class ChatMessageRepository {
   async getByItem(db: DBConnection, itemId: string): Promise<ChatMessageRaw[]> {
     throwsIfParamIsInvalid('itemId', itemId);
 
-    return await db.query.chatMessages.findMany({
-      where: eq(chatMessages.itemId, itemId),
+    return await db.query.chatMessagesTable.findMany({
+      where: eq(chatMessagesTable.itemId, itemId),
       with: { creator: true, item: true },
-      orderBy: asc(chatMessages.createdAt),
+      orderBy: asc(chatMessagesTable.createdAt),
     });
   }
 
@@ -54,9 +52,12 @@ export class ChatMessageRepository {
    * Retrieves a message by its id
    * @param id Id of the message to retrieve
    */
-  async getOne(db: DBConnection, id: string): Promise<ChatMessageWithCreatorAndItem | undefined> {
-    return await db.query.chatMessages.findFirst({
-      where: eq(chatMessages.id, id),
+  async getOne(
+    db: DBConnection,
+    id: string,
+  ): Promise<ChatMessageWithCreatorAndItem | undefined> {
+    return await db.query.chatMessagesTable.findFirst({
+      where: eq(chatMessagesTable.id, id),
       with: { item: true, creator: true },
     });
   }
@@ -69,11 +70,11 @@ export class ChatMessageRepository {
     db: DBConnection,
     message: {
       itemId: string;
-      creator: Guest | Member;
+      creatorId: string;
       body: string;
     },
-  ): Promise<ChatMessageCreationDTO> {
-    return await db.insert(chatMessages).values(message).returning()[0];
+  ): Promise<ChatMessageRaw> {
+    return await db.insert(chatMessagesTable).values(message).returning()[0];
   }
 
   /**
@@ -86,7 +87,11 @@ export class ChatMessageRepository {
     id: string,
     data: ChatMessageCreationDTO,
   ): Promise<ChatMessageRaw> {
-    return await db.update(chatMessages).set(data).where(eq(chatMessages.id, id));
+    return await db
+      .update(chatMessagesTable)
+      .set(data)
+      .where(eq(chatMessagesTable.id, id))
+      .returning()[0];
   }
 
   /*
@@ -97,7 +102,9 @@ export class ChatMessageRepository {
     throwsIfParamIsInvalid('itemId', itemId);
 
     try {
-      await db.delete(chatMessages).where(eq(chatMessages.itemId, itemId));
+      await db
+        .delete(chatMessagesTable)
+        .where(eq(chatMessagesTable.itemId, itemId));
     } catch (e) {
       assertIsError(e);
       throw new DeleteException(e.message);

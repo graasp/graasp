@@ -7,11 +7,10 @@ import { DBConnection } from '../../../../../../drizzle/db';
 import { isAncestorOrSelf } from '../../../../../../drizzle/operations';
 import {
   Item,
-  ItemPublishedRaw,
   ItemPublishedWithItemAndAccount,
-  itemPublisheds,
   items,
   membersView,
+  publishedItems,
 } from '../../../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../../../utils/assertions';
 import { Member } from '../../../../../member/entities/member';
@@ -31,10 +30,10 @@ export class ItemPublishedRepository {
   ): Promise<ItemPublishedWithItemAndAccount | null> {
     const res = await db
       .select()
-      .from(itemPublisheds)
-      .innerJoin(membersView, eq(itemPublisheds.creatorId, membersView.id))
-      .innerJoin(items, isAncestorOrSelf(itemPublisheds.itemPath, itemPath))
-      .orderBy(desc(sql`nlevel(${itemPublisheds.itemPath})`))
+      .from(publishedItems)
+      .innerJoin(membersView, eq(publishedItems.creatorId, membersView.id))
+      .innerJoin(items, isAncestorOrSelf(publishedItems.itemPath, itemPath))
+      .orderBy(desc(sql`nlevel(${publishedItems.itemPath})`))
       .limit(1);
     const entry = res[0];
     assertIsDefined(entry);
@@ -51,21 +50,31 @@ export class ItemPublishedRepository {
     const ids = items.map((i) => i.id);
     const entries = await this.repository
       .createQueryBuilder('pi')
-      .innerJoinAndSelect('pi.item', 'item', 'pi.item @> ARRAY[:...paths]::ltree[]', {
-        paths,
-      })
+      .innerJoinAndSelect(
+        'pi.item',
+        'item',
+        'pi.item @> ARRAY[:...paths]::ltree[]',
+        {
+          paths,
+        },
+      )
       .innerJoinAndSelect('pi.creator', 'member')
       .getMany();
 
     return mapById({
       keys: ids,
       findElement: (id) =>
-        entries.find((e) => items.find((i) => i.id === id)?.path.startsWith(e.item.path)),
+        entries.find((e) =>
+          items.find((i) => i.id === id)?.path.startsWith(e.item.path),
+        ),
       buildError: (id) => new ItemPublishedNotFound(id),
     });
   }
 
-  async getForMember(db: DBConnection, memberId: Member['id']): Promise<Item[]> {
+  async getForMember(
+    db: DBConnection,
+    memberId: Member['id'],
+  ): Promise<Item[]> {
     const itemPublished = await this.repository
       .createQueryBuilder('pi')
       // join with memberships that are at or above the item published

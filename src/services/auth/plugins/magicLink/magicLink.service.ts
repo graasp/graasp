@@ -17,7 +17,11 @@ export class MagicLinkService {
   private readonly memberRepository: MemberRepository;
   private readonly actionRepository: ActionRepository;
 
-  constructor(authService: AuthService, log: BaseLogger, memberRepository: MemberRepository) {
+  constructor(
+    authService: AuthService,
+    log: BaseLogger,
+    memberRepository: MemberRepository,
+  ) {
     this.authService = authService;
     this.memberRepository = memberRepository;
     this.log = log;
@@ -35,10 +39,10 @@ export class MagicLinkService {
       await this.authService.generateLoginLinkAndEmailIt(member, { url });
       const actions = [
         {
-          member,
+          creatorId: member.id,
           type: ActionTriggers.MemberLogin,
           view: Context.Unknown,
-          extra: { type: 'email' },
+          extra: JSON.stringify({ type: 'email' }),
         },
       ];
       await this.actionRepository.postMany(db, actions);

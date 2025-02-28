@@ -4,7 +4,12 @@ import { singleton } from 'tsyringe';
 import { AccountType, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../drizzle/db';
-import { AccountCreationDTO, MemberCreationDTO, accounts, membersView } from '../../drizzle/schema';
+import {
+  AccountCreationDTO,
+  MemberCreationDTO,
+  accountsTable,
+  membersView,
+} from '../../drizzle/schema';
 import { MemberNotFound } from '../../utils/errors';
 import { mapById } from '../utils';
 
@@ -13,8 +18,13 @@ export class MemberRepository {
   async deleteOne(db: DBConnection, id: string) {
     // need to use the accounts table as we can not delete from a view (membersView)
     await db
-      .delete(accounts)
-      .where(and(eq(accounts.id, id), eq(accounts.type, AccountType.Individual)));
+      .delete(accountsTable)
+      .where(
+        and(
+          eq(accountsTable.id, id),
+          eq(accountsTable.type, AccountType.Individual),
+        ),
+      );
   }
 
   async get(db: DBConnection, id: string) {
@@ -23,7 +33,11 @@ export class MemberRepository {
     if (!id) {
       throw new MemberNotFound({ id });
     }
-    const m = await db.select().from(membersView).where(eq(membersView.id, id)).limit(1);
+    const m = await db
+      .select()
+      .from(membersView)
+      .where(eq(membersView.id, id))
+      .limit(1);
     if (!m.length) {
       throw new MemberNotFound({ id });
     }
@@ -31,7 +45,10 @@ export class MemberRepository {
   }
 
   async getMany(db: DBConnection, ids: string[]) {
-    const members = await db.select().from(membersView).where(inArray(membersView.id, ids));
+    const members = await db
+      .select()
+      .from(membersView)
+      .where(inArray(membersView.id, ids));
     return mapById({
       keys: ids,
       findElement: (id) => members.find(({ id: thisId }) => thisId === id),
@@ -39,9 +56,16 @@ export class MemberRepository {
     });
   }
 
-  async getByEmail(db: DBConnection, emailString: string, args: { shouldExist?: boolean } = {}) {
+  async getByEmail(
+    db: DBConnection,
+    emailString: string,
+    args: { shouldExist?: boolean } = {},
+  ) {
     const email = emailString.toLowerCase();
-    const member = await db.select().from(membersView).where(eq(membersView.email, email));
+    const member = await db
+      .select()
+      .from(membersView)
+      .where(eq(membersView.email, email));
 
     if (args.shouldExist) {
       if (member.length != 1) {
@@ -52,10 +76,14 @@ export class MemberRepository {
   }
 
   async getManyByEmails(db: DBConnection, emails: string[]) {
-    const members = await db.select().from(membersView).where(inArray(membersView.email, emails));
+    const members = await db
+      .select()
+      .from(membersView)
+      .where(inArray(membersView.email, emails));
     return mapById({
       keys: emails,
-      findElement: (email) => members.find(({ email: thisEmail }) => thisEmail === email),
+      findElement: (email) =>
+        members.find(({ email: thisEmail }) => thisEmail === email),
       buildError: (email) => new MemberNotFound({ email }),
     });
   }
@@ -66,7 +94,12 @@ export class MemberRepository {
     body: Partial<
       Pick<
         AccountCreationDTO,
-        'extra' | 'email' | 'name' | 'enableSaveActions' | 'lastAuthenticatedAt' | 'isValidated'
+        | 'extra'
+        | 'email'
+        | 'name'
+        | 'enableSaveActions'
+        | 'lastAuthenticatedAt'
+        | 'isValidated'
       >
     >,
   ) {
@@ -100,7 +133,11 @@ export class MemberRepository {
     // update if newData is not empty
     if (Object.keys(newData).length) {
       // TODO: check member exists
-      const res = await db.update(accounts).set(newData).where(eq(accounts.id, id)).returning();
+      const res = await db
+        .update(accountsTable)
+        .set(newData)
+        .where(eq(accountsTable.id, id))
+        .returning();
       if (res.length != 1) {
         throw new MemberNotFound({ id });
       }
@@ -112,7 +149,8 @@ export class MemberRepository {
 
   async post(
     db: DBConnection,
-    data: Partial<MemberCreationDTO> & Pick<MemberCreationDTO, 'email' | 'name'>,
+    data: Partial<MemberCreationDTO> &
+      Pick<MemberCreationDTO, 'email' | 'name'>,
   ) {
     const email = data.email.toLowerCase();
 
@@ -122,7 +160,7 @@ export class MemberRepository {
     // The agreements links are included in the registration email as a reminder.
     const userAgreementsDate = new Date().toISOString();
     const res = await db
-      .insert(accounts)
+      .insert(accountsTable)
       .values({
         ...data,
         email,

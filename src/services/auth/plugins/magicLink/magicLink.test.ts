@@ -21,7 +21,7 @@ import build, { clearDatabase } from '../../../../../test/app';
 import { URL_REGEX } from '../../../../../test/utils';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
-import { accounts } from '../../../../drizzle/schema';
+import { accountsTable } from '../../../../drizzle/schema';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { JWT_SECRET } from '../../../../utils/config';
 import { saveMember } from '../../../member/test/fixtures/members';
@@ -38,7 +38,9 @@ export const mockCaptchaValidation = (action: RecaptchaActionType) => {
   });
 };
 
-const AUTH_CLIENT_HOST = ClientManager.getInstance().getURLByContext(Context.Auth);
+const AUTH_CLIENT_HOST = ClientManager.getInstance().getURLByContext(
+  Context.Auth,
+);
 
 describe('Auth routes tests', () => {
   let app: FastifyInstance;
@@ -126,7 +128,9 @@ describe('Auth routes tests', () => {
       });
 
       // ensure the message is `member not signed up`
-      expect(response.json().message).toEqual(FAILURE_MESSAGES.MEMBER_NOT_SIGNED_UP);
+      expect(response.json().message).toEqual(
+        FAILURE_MESSAGES.MEMBER_NOT_SIGNED_UP,
+      );
       expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
     });
   });
@@ -142,8 +146,8 @@ describe('Auth routes tests', () => {
       expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
       expect(response.headers.location).not.toContain('error');
 
-      const m = await db.query.accounts.findFirst({
-        where: eq(accounts.email, member.email),
+      const m = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.email, member.email),
       });
       expect(m?.lastAuthenticatedAt).toBeDefined();
       expect(m?.isValidated).toBeFalsy();
@@ -159,8 +163,8 @@ describe('Auth routes tests', () => {
       expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
       expect(response.headers.location).not.toContain('error');
 
-      const m = await db.query.accounts.findFirst({
-        where: eq(accounts.email, member.email),
+      const m = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.email, member.email),
       });
       expect(m?.lastAuthenticatedAt).toBeDefined();
       expect(m?.isValidated).toBeTruthy();
@@ -218,7 +222,10 @@ describe('Auth routes tests', () => {
   describe('Complete Authentication Process', () => {
     it('MagicLink', async () => {
       mockCaptchaValidation(RecaptchaAction.SignUp);
-      const mockSendEmail = jest.spyOn(resolveDependency(MailerService), 'sendRaw');
+      const mockSendEmail = jest.spyOn(
+        resolveDependency(MailerService),
+        'sendRaw',
+      );
 
       const name = faker.internet.userName().toLowerCase();
       const email = faker.internet.email().toLowerCase();
@@ -230,14 +237,16 @@ describe('Auth routes tests', () => {
       });
       expect(responseRegister.statusCode).toBe(StatusCodes.NO_CONTENT);
 
-      const memberBefore = await db.query.accounts.findFirst({
-        where: eq(accounts.email, email),
+      const memberBefore = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.email, email),
       });
       expect(memberBefore?.lastAuthenticatedAt).toBeNull();
       expect(memberBefore?.isValidated).toBeFalsy();
 
       expect(mockSendEmail).toHaveBeenCalledTimes(1);
-      const fetchedURL = new URL(mockSendEmail.mock.calls[0][2].match(URL_REGEX)![1]);
+      const fetchedURL = new URL(
+        mockSendEmail.mock.calls[0][2].match(URL_REGEX)![1],
+      );
       const authURL = fetchedURL.toString();
       const responseAuth = await app.inject({
         method: HttpMethod.Get,
@@ -245,8 +254,8 @@ describe('Auth routes tests', () => {
       });
       expect(responseAuth.statusCode).toBe(StatusCodes.SEE_OTHER);
 
-      const memberAfter = await db.query.accounts.findFirst({
-        where: eq(accounts.email, email),
+      const memberAfter = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.email, email),
       });
       expect(memberAfter?.lastAuthenticatedAt).toBeDefined();
       expect(memberAfter?.isValidated).toBeTruthy();

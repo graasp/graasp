@@ -6,7 +6,7 @@ import { AuthTokenSubject, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
 import { Item } from '../../../../drizzle/schema';
-import { Actor, AuthenticatedUser } from '../../../../types';
+import { AuthenticatedUser, MaybeUser } from '../../../../types';
 import { APPS_JWT_SECRET } from '../../../../utils/config';
 import { AccountRepository } from '../../../account/account.repository';
 import { AuthorizationService } from '../../../authorization';
@@ -63,7 +63,7 @@ export class AppService {
 
   async getApiAccessToken(
     db: DBConnection,
-    actor: Actor,
+    actor: MaybeUser,
     itemId: string,
     appDetails: { origin: string; key: string },
   ) {
@@ -74,7 +74,12 @@ export class AppService {
     }
 
     // check actor has access to item
-    await this.authorizationService.validatePermission(db, PermissionLevel.Read, actor, item);
+    await this.authorizationService.validatePermission(
+      db,
+      PermissionLevel.Read,
+      actor,
+      item,
+    );
 
     await this.appRepository.isValidAppOrigin(db, appDetails);
 
@@ -92,7 +97,7 @@ export class AppService {
 
   async getContext(
     db: DBConnection,
-    actor: Actor,
+    actor: MaybeUser,
     itemId: string,
     requestDetails?: AuthTokenSubject,
   ) {
@@ -116,8 +121,15 @@ export class AppService {
   }
 
   // used in apps: get members from tree
-  async getTreeMembers(db: DBConnection, actor: AuthenticatedUser, item: Item): Promise<Member[]> {
-    const memberships = await this.itemMembershipRepository.getForManyItems(db, [item]);
+  async getTreeMembers(
+    db: DBConnection,
+    actor: AuthenticatedUser,
+    item: Item,
+  ): Promise<Member[]> {
+    const memberships = await this.itemMembershipRepository.getForManyItems(
+      db,
+      [item],
+    );
     // get members only without duplicate
     return uniqBy(
       memberships.data[item.id].map(({ account }) => account),

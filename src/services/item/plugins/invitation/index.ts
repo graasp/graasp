@@ -9,13 +9,19 @@ import { db } from '../../../../drizzle/db';
 import { FastifyInstanceTypebox } from '../../../../plugins/typebox';
 import { isNonEmptyArray } from '../../../../types';
 import { asDefined } from '../../../../utils/assertions';
-import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import {
+  isAuthenticated,
+  optionalIsAuthenticated,
+} from '../../../auth/plugins/passport';
+import { assertIsMember } from '../../../authentication';
 import { matchOne } from '../../../authorization';
-import { assertIsMember } from '../../../member/entities/member';
 import { memberAccountRole } from '../../../member/strategies/memberAccountRole';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { MAX_FILE_SIZE } from './constants';
-import { NoFileProvidedForInvitations, NoInvitationReceivedFound } from './errors';
+import {
+  NoFileProvidedForInvitations,
+  NoInvitationReceivedFound,
+} from './errors';
 import {
   deleteOne,
   getById,
@@ -65,7 +71,12 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       }
 
       return db.transaction(async (tx) => {
-        return await invitationService.shareItem(tx, member, params.id, invitations);
+        return await invitationService.shareItem(
+          tx,
+          member,
+          params.id,
+          invitations,
+        );
       });
     },
   );
@@ -143,7 +154,12 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         const { id: itemId } = params;
         return await db.transaction(
           async (tx) =>
-            await invitationService.importUsersWithCSV(tx, member, itemId, uploadedFile),
+            await invitationService.importUsersWithCSV(
+              tx,
+              member,
+              itemId,
+              uploadedFile,
+            ),
         );
       },
     );
@@ -152,7 +168,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   // get all invitations for an item
   fastify.get(
     '/:id/invitations',
-    { schema: getForItem, preHandler: [isAuthenticated, matchOne(memberAccountRole)] },
+    {
+      schema: getForItem,
+      preHandler: [isAuthenticated, matchOne(memberAccountRole)],
+    },
     async ({ user, params: { id: itemId } }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
@@ -163,7 +182,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   // update invitation
   fastify.patch(
     '/:id/invitations/:invitationId',
-    { schema: updateOne, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
+    {
+      schema: updateOne,
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
+    },
     async ({ user, params: { invitationId }, body }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
@@ -176,7 +198,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   // delete invitation
   fastify.delete(
     '/:id/invitations/:invitationId',
-    { schema: deleteOne, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
+    {
+      schema: deleteOne,
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
+    },
     async ({ user, params: { invitationId } }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
@@ -190,7 +215,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   // resend invitation mail
   fastify.post(
     '/:id/invitations/:invitationId/send',
-    { schema: sendOne, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
+    {
+      schema: sendOne,
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
+    },
     async ({ user, params: { invitationId } }, reply) => {
       const member = asDefined(user?.account);
       assertIsMember(member);

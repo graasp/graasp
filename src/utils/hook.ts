@@ -1,16 +1,18 @@
 import { FastifyBaseLogger } from 'fastify';
 
 import { DBConnection } from '../drizzle/db';
-import { Actor } from '../types';
+import { MaybeUser } from '../types';
 
 export type Handler<Data> = (
-  actor: Actor,
+  actor: MaybeUser,
   db: DBConnection,
   data: Data,
   log?: FastifyBaseLogger,
 ) => Promise<void>;
 
-class HookManager<EventMap extends { [event: string]: { pre: unknown; post: unknown } }> {
+class HookManager<
+  EventMap extends { [event: string]: { pre: unknown; post: unknown } },
+> {
   private readonly postHooks = new Map<keyof EventMap, Handler<unknown>[]>();
   private readonly preHooks = new Map<keyof EventMap, Handler<unknown>[]>();
 
@@ -28,7 +30,7 @@ class HookManager<EventMap extends { [event: string]: { pre: unknown; post: unkn
 
   async runPostHooks<Event extends keyof EventMap>(
     event: Event,
-    actor: Actor,
+    actor: MaybeUser,
     db: DBConnection,
     data: EventMap[Event]['post'],
     log?: FastifyBaseLogger,
@@ -40,7 +42,10 @@ class HookManager<EventMap extends { [event: string]: { pre: unknown; post: unkn
     }
   }
 
-  setPreHook<Event extends keyof EventMap>(event: Event, handler: Handler<EventMap[Event]['pre']>) {
+  setPreHook<Event extends keyof EventMap>(
+    event: Event,
+    handler: Handler<EventMap[Event]['pre']>,
+  ) {
     const hooks = this.preHooks.get(event);
     if (!hooks) {
       this.preHooks.set(event, [handler]);
@@ -51,7 +56,7 @@ class HookManager<EventMap extends { [event: string]: { pre: unknown; post: unkn
 
   async runPreHooks<Event extends keyof EventMap>(
     event: Event,
-    actor: Actor,
+    actor: MaybeUser,
     db: DBConnection,
     data: EventMap[Event]['pre'],
     log?: FastifyBaseLogger,

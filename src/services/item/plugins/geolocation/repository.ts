@@ -8,9 +8,20 @@ import fetch from 'node-fetch';
 import { DEFAULT_LANG } from '@graasp/translations';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { isAncestorOrSelf, isDescendantOrSelf } from '../../../../drizzle/operations';
-import { Item, accounts, itemGeolocations, items } from '../../../../drizzle/schema';
-import { ALLOWED_SEARCH_LANGS, GEOLOCATION_API_HOST } from '../../../../utils/config';
+import {
+  isAncestorOrSelf,
+  isDescendantOrSelf,
+} from '../../../../drizzle/operations';
+import {
+  Item,
+  accountsTable,
+  itemGeolocations,
+  items,
+} from '../../../../drizzle/schema';
+import {
+  ALLOWED_SEARCH_LANGS,
+  GEOLOCATION_API_HOST,
+} from '../../../../utils/config';
 import { Actor, isMember } from '../../../member/entities/member';
 import { ItemGeolocation } from './ItemGeolocation';
 import { MissingGeolocationSearchParams } from './errors';
@@ -40,7 +51,9 @@ export class ItemGeolocationRepository {
    * @param item item to delete
    */
   async delete(db: DBConnection, item: Item): Promise<void> {
-    await db.delete(itemGeolocations).where(eq(itemGeolocations.itemPath, item.path));
+    await db
+      .delete(itemGeolocations)
+      .where(eq(itemGeolocations.itemPath, item.path));
   }
 
   /**
@@ -79,7 +92,13 @@ export class ItemGeolocationRepository {
         (!lng1 && lng1 !== 0) ||
         (!lng2 && lng2 !== 0))
     ) {
-      throw new MissingGeolocationSearchParams({ parentItem, lat1, lat2, lng1, lng2 });
+      throw new MissingGeolocationSearchParams({
+        parentItem,
+        lat1,
+        lat2,
+        lng1,
+        lng2,
+      });
     }
 
     // reunite where conditions
@@ -117,7 +136,9 @@ export class ItemGeolocationRepository {
       const matchSimpleSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery('simple', ${keywordsString})`;
 
       // raw words search
-      const matchRawWordSearchConditions = allKeywords.map((k) => ilike(items.name, `%${k}%`));
+      const matchRawWordSearchConditions = allKeywords.map((k) =>
+        ilike(items.name, `%${k}%`),
+      );
 
       const searchConditions = [
         matchEnglishSearchCondition,
@@ -140,7 +161,7 @@ export class ItemGeolocationRepository {
       .from(itemGeolocations)
       // use view to filter out recycled items
       .leftJoin(items, eq(items.path, itemGeolocations.itemPath))
-      .leftJoin(accounts, eq(items.creatorId, accounts.id))
+      .leftJoin(accountsTable, eq(items.creatorId, accountsTable.id))
       .where(and(...andConditions));
 
     return result.map(({ item_view, account, item_geolocation }) => ({
@@ -203,7 +224,11 @@ export class ItemGeolocationRepository {
   }
 
   async getAddressFromCoordinates(
-    { lat, lng, lang = DEFAULT_LANG }: Pick<ItemGeolocation, 'lat' | 'lng'> & { lang?: string },
+    {
+      lat,
+      lng,
+      lang = DEFAULT_LANG,
+    }: Pick<ItemGeolocation, 'lat' | 'lng'> & { lang?: string },
     key: string,
   ) {
     const searchParams = new URLSearchParams({

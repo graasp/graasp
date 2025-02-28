@@ -17,14 +17,13 @@ import {
   buildPathFromIds,
 } from '@graasp/sdk';
 
-import { Member } from '../../../../drizzle/schema';
+import { Item, Member } from '../../../../drizzle/schema';
 import { AppDataSource } from '../../../../plugins/datasource';
 import { Guest } from '../../../itemLogin/entities/guest';
 import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
-import { isMember } from '../../../member/entities/member';
 import { saveMember } from '../../../member/test/fixtures/members';
 import { ItemWrapper, PackedItem } from '../../ItemWrapper';
-import { DEFAULT_ORDER, Item, ItemExtraMap } from '../../entities/Item';
+import { DEFAULT_ORDER, ItemExtraMap } from '../../entities/Item';
 import { ItemVisibility } from '../../plugins/itemVisibility/ItemVisibility';
 import { ItemVisibilityRepository } from '../../plugins/itemVisibility/repository';
 import { setItemPublic } from '../../plugins/itemVisibility/test/fixtures';
@@ -46,7 +45,8 @@ export class ItemTestUtils {
     this.itemVisibilityRepository = new ItemVisibilityRepository();
     this.rawItemRepository = AppDataSource.getRepository(Item);
     this.recycledItemDataRepository = new RecycledItemDataRepository();
-    this.rawItemPublishedRepository = AppDataSource.getRepository(ItemPublished);
+    this.rawItemPublishedRepository =
+      AppDataSource.getRepository(ItemPublished);
   }
 
   createItem(
@@ -129,7 +129,9 @@ export class ItemTestUtils {
     const publicVisibility = await setItemPublic(newItem, member);
     return {
       item: newItem,
-      packedItem: new ItemWrapper(newItem, undefined, [publicVisibility]).packed(),
+      packedItem: new ItemWrapper(newItem, undefined, [
+        publicVisibility,
+      ]).packed(),
       publicVisibility,
     };
   };
@@ -157,7 +159,11 @@ export class ItemTestUtils {
     account: Member | Guest;
     permission?: PermissionLevel;
   }) => {
-    return await itemMembershipRawRepository.save({ item, account, permission });
+    return await itemMembershipRawRepository.save({
+      item,
+      account,
+      permission,
+    });
   };
 
   saveItemAndMembership = async (options: {
@@ -200,7 +206,10 @@ export class ItemTestUtils {
     if (!item) {
       ({ item } = await this.saveItemAndMembership({ member }));
     }
-    await this.recycledItemDataRepository.addOne({ itemPath: item.path, creatorId: member.id });
+    await this.recycledItemDataRepository.addOne({
+      itemPath: item.path,
+      creatorId: member.id,
+    });
     await this.rawItemRepository.softRemove(item);
     return { item };
   };
@@ -210,10 +219,14 @@ export class ItemTestUtils {
     const packedItems: PackedItem[] = [];
     const visibilities: ItemVisibility[] = [];
     for (let i = 0; i < 3; i++) {
-      const { item, itemMembership } = await this.saveItemAndMembership({ member });
+      const { item, itemMembership } = await this.saveItemAndMembership({
+        member,
+      });
       items.push(item);
       const publicVisibility = await setItemPublic(item, member);
-      packedItems.push(new ItemWrapper(item, itemMembership, [publicVisibility]).packed());
+      packedItems.push(
+        new ItemWrapper(item, itemMembership, [publicVisibility]).packed(),
+      );
       visibilities.push(publicVisibility);
       await this.rawItemPublishedRepository.save({ item, creator: member });
     }
@@ -236,7 +249,11 @@ export class ItemTestUtils {
     return parseFloat(order);
   };
 
-  expectOrder = async (itemId: string, previousItemId?: string, nextItemId?: string) => {
+  expectOrder = async (
+    itemId: string,
+    previousItemId?: string,
+    nextItemId?: string,
+  ) => {
     const thisOrder = await this.getOrderForItemId(itemId);
     if (previousItemId) {
       const previousItemOrder = (await this.getOrderForItemId(previousItemId))!;
@@ -259,15 +276,22 @@ export class ItemTestUtils {
 }
 export const expectItem = (
   newItem: Partial<Item> | undefined | null,
-  correctItem: Partial<Omit<Item, 'createdAt' | 'updatedAt' | 'creator'>> | undefined | null,
+  correctItem:
+    | Partial<Omit<Item, 'createdAt' | 'updatedAt' | 'creator'>>
+    | undefined
+    | null,
   creator?: Member,
   parent?: Item,
 ) => {
   if (!newItem || !newItem.id) {
-    throw new Error('expectItem.newItem is not defined ' + JSON.stringify(newItem));
+    throw new Error(
+      'expectItem.newItem is not defined ' + JSON.stringify(newItem),
+    );
   }
   if (!correctItem) {
-    throw new Error('expectItem.correctItem is not defined ' + JSON.stringify(correctItem));
+    throw new Error(
+      'expectItem.correctItem is not defined ' + JSON.stringify(correctItem),
+    );
   }
   expect(newItem.name).toEqual(correctItem.name);
   expect(newItem.description).toEqual(correctItem.description ?? null);
@@ -307,13 +331,17 @@ export const expectPackedItem = (
 
   expect(newItem!.permission).toEqual(correctItem?.permission);
 
-  const pVisibility = visibilities?.find((t) => t.type === ItemVisibilityType.Public);
+  const pVisibility = visibilities?.find(
+    (t) => t.type === ItemVisibilityType.Public,
+  );
   if (pVisibility) {
     expect(newItem!.public!.type).toEqual(pVisibility.type);
     expect(newItem!.public!.id).toEqual(pVisibility.id);
     expect(newItem!.public!.item!.id).toEqual(pVisibility.item.id);
   }
-  const hVisibility = visibilities?.find((t) => t.type === ItemVisibilityType.Hidden);
+  const hVisibility = visibilities?.find(
+    (t) => t.type === ItemVisibilityType.Hidden,
+  );
   if (hVisibility) {
     expect(newItem!.hidden!.type).toEqual(hVisibility.type);
     expect(newItem!.hidden!.id).toEqual(hVisibility.id);
@@ -341,7 +369,10 @@ export const expectManyItems = (
 export const expectManyPackedItems = (
   items: PackedItem[],
   correctItems: (Partial<
-    Pick<PackedItem, 'id' | 'name' | 'description' | 'type' | 'extra' | 'settings'>
+    Pick<
+      PackedItem,
+      'id' | 'name' | 'description' | 'type' | 'extra' | 'settings'
+    >
   > &
     Pick<PackedItem, 'permission'>)[],
   creator?: Member,

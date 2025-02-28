@@ -1,8 +1,9 @@
 import { type Lookup, lookup } from 'geoip-lite';
 
-import { AggregateFunction, AggregateMetric } from '@graasp/sdk';
+import { AggregateFunction, AggregateMetric, UnionOfConst } from '@graasp/sdk';
 
-export const getGeolocationIp = (ip: string | number): Lookup | null => lookup(ip);
+export const getGeolocationIp = (ip: string | number): Lookup | null =>
+  lookup(ip);
 
 export const aggregateExpressionNames = {
   user: 'action.account_id',
@@ -12,7 +13,10 @@ export const aggregateExpressionNames = {
   createdDay: "date_trunc('day', action.createdAt)",
   createdTimeOfDay: 'extract(hour from action.created_at)',
   createdDayOfWeek: 'extract(dow from action.created_at)',
-};
+} as const;
+export type AggregateExpressionValuesOptions = UnionOfConst<
+  typeof aggregateExpressionNames
+>;
 
 export const buildAggregateExpression = (
   subqueryName: string,

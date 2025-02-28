@@ -1,15 +1,22 @@
+import { sql } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
-import { EntityManager } from 'typeorm';
 
-import { FastifyPluginAsyncTypebox, Type } from '@fastify/type-provider-typebox';
+import {
+  FastifyPluginAsyncTypebox,
+  Type,
+} from '@fastify/type-provider-typebox';
 import { FastifySchema } from 'fastify';
 
 import { UnionOfConst } from '@graasp/sdk';
 
 import { resolveDependency } from '../di/utils';
+import { DBConnection, db } from '../drizzle/db';
 import { SearchService } from '../services/item/plugins/publication/published/plugins/search/service';
 import { assertIsError } from '../utils/assertions';
-import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN, ETHERPAD_URL } from '../utils/config';
+import {
+  EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
+  ETHERPAD_URL,
+} from '../utils/config';
 
 const Status = {
   Healthy: 'healthy',
@@ -85,10 +92,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   });
 
   fastify.get('/status', async (_, reply) => {
-    const { db } = fastify;
     const searchService = resolveDependency(SearchService);
     const api = new HealthyStatus().format();
-    const database = (await getDBStatusCheck(db.manager)).format();
+    const database = (await getDBStatusCheck(db)).format();
     const etherpad = (await getEtherpadStatusCheck()).format();
     const meilisearch = (await getSearchStatusCheck(searchService)).format();
     const iframely = (await getIframelyStatusCheck()).format();
@@ -106,11 +112,11 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   });
 };
 
-const getDBStatusCheck = async (manager: EntityManager): Promise<ServiceStatus> => {
+const getDBStatusCheck = async (db: DBConnection): Promise<ServiceStatus> => {
   try {
     // this just checks that we can execute queries on the database.
     // if tables are locked it will still execute fine as long as the connection is working
-    const res = await manager.query('select 1 result;');
+    const res = await db.execute(sql`select 1 result;`);
     if (res[0].result === 1) {
       return new HealthyStatus();
     }
@@ -144,7 +150,9 @@ const getEtherpadStatusCheck = async (): Promise<ServiceStatus> => {
 
 const getIframelyStatusCheck = async (): Promise<ServiceStatus> => {
   try {
-    const iframelyEndpoint = new URL(`${EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN}/iframely`);
+    const iframelyEndpoint = new URL(
+      `${EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN}/iframely`,
+    );
     iframelyEndpoint.searchParams.set('url', 'https://graasp.org');
     const res = await fetch(iframelyEndpoint.toString(), { method: 'HEAD' });
     if (res.ok) {
@@ -160,7 +168,9 @@ const getIframelyStatusCheck = async (): Promise<ServiceStatus> => {
   }
 };
 
-const getSearchStatusCheck = async (search: SearchService): Promise<ServiceStatus> => {
+const getSearchStatusCheck = async (
+  search: SearchService,
+): Promise<ServiceStatus> => {
   try {
     const res = await search.getHealth();
     if (res.status) {

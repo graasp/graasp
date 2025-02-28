@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker';
 import crypto from 'crypto';
+import { eq } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 import { sign, verify } from 'jsonwebtoken';
 import { v4 } from 'uuid';
@@ -11,7 +12,8 @@ import { HttpMethod } from '@graasp/sdk';
 import build, { clearDatabase } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { resolveDependency } from '../../../../di/utils';
-import { AppDataSource } from '../../../../plugins/datasource';
+import { db } from '../../../../drizzle/db';
+import { Item, accountsTable } from '../../../../drizzle/schema';
 import { asDefined, assertIsDefined } from '../../../../utils/assertions';
 import {
   APPS_JWT_SECRET,
@@ -21,11 +23,8 @@ import {
   PASSWORD_RESET_JWT_SECRET,
   REFRESH_TOKEN_JWT_SECRET,
 } from '../../../../utils/config';
-import { buildRepositories } from '../../../../utils/repositories';
 import { assertIsMember } from '../../../authentication';
-import { Item } from '../../../item/entities/Item';
 import { expectItem } from '../../../item/test/fixtures/items';
-import { Member } from '../../../member/entities/member';
 import { expectMember } from '../../../member/test/fixtures/members';
 import { MemberPasswordService } from '../password/service';
 import {
@@ -42,7 +41,6 @@ import {
 } from './preHandlers';
 
 const MOCKED_ROUTE = '/mock-route';
-const memberRawRepository = AppDataSource.getRepository(Member);
 
 const expectUserApp = (
   user: PassportUser,
@@ -59,7 +57,7 @@ const expectUserApp = (
  * @param member Member to log in
  * @returns set-cookie header
  */
-async function logIn(app: FastifyInstance, member: Member) {
+async function logIn(app: FastifyInstance, member: { id: string }) {
   const token = sign({ sub: member.id }, JWT_SECRET);
   const response = await app.inject({
     method: HttpMethod.Get,
@@ -132,7 +130,9 @@ describe('Passport Plugin', () => {
       assertIsDefined(actor);
       assertIsMember(actor);
       const token = sign({ sub: actor.id }, AUTH_TOKEN_JWT_SECRET);
-      handler.mockImplementation(({ user }) => expectMember(user.account, actor));
+      handler.mockImplementation(({ user }) =>
+        expectMember(user.account, actor),
+      );
       const response = await app.inject({
         path: MOCKED_ROUTE,
         headers: { authorization: `Bearer ${token}` },
@@ -156,7 +156,9 @@ describe('Passport Plugin', () => {
       assertIsMember(actor);
       const cookie = await logIn(app, actor);
       handler.mockImplementation(async ({ user }) => {
-        const rawMember = await memberRawRepository.findOneBy({ id: actor.id });
+        const rawMember = await db.query.accountsTable.findFirst({
+          where: eq(accountsTable.id, actor.id),
+        });
         expectMember(rawMember, user.account);
       });
       const response = await app.inject({
@@ -205,7 +207,9 @@ describe('Passport Plugin', () => {
       assertIsDefined(actor);
       assertIsMember(actor);
       const token = sign({ sub: actor.id }, AUTH_TOKEN_JWT_SECRET);
-      handler.mockImplementation(({ user }) => expectMember(user.account, actor));
+      handler.mockImplementation(({ user }) =>
+        expectMember(user.account, actor),
+      );
       const response = await app.inject({
         path: MOCKED_ROUTE,
         headers: { authorization: `Bearer ${token}` },
@@ -229,7 +233,9 @@ describe('Passport Plugin', () => {
       assertIsMember(actor);
       const cookie = await logIn(app, actor);
       handler.mockImplementation(async ({ user }) => {
-        const rawMember = await memberRawRepository.findOneBy({ id: actor.id });
+        const rawMember = await db.query.accountsTable.findFirst({
+          where: eq(accountsTable.id, actor.id),
+        });
         expectMember(rawMember, user.account);
       });
       const response = await app.inject({
@@ -334,7 +340,9 @@ describe('Passport Plugin', () => {
       expect(response.statusCode).toBe(StatusCodes.NOT_ACCEPTABLE);
     });
     it('Authenticated', async () => {
-      handler.mockImplementation(({ user }) => expectMember(user.account, newMember));
+      handler.mockImplementation(({ user }) =>
+        expectMember(user.account, newMember),
+      );
       const response = await app.inject({
         method: HttpMethod.Post,
         path: MOCKED_ROUTE,
@@ -382,7 +390,9 @@ describe('Passport Plugin', () => {
       assertIsDefined(actor);
       assertIsMember(actor);
       const token = sign({ sub: actor.id }, AUTH_TOKEN_JWT_SECRET);
-      handler.mockImplementation(({ user }) => expectMember(user.account, actor));
+      handler.mockImplementation(({ user }) =>
+        expectMember(user.account, actor),
+      );
       const response = await app.inject({
         path: MOCKED_ROUTE,
         query: { token },
@@ -412,7 +422,8 @@ describe('Passport Plugin', () => {
       );
       expect(result?.token).toBeDefined();
       token = result!.token;
-      uuid = (verify(token, PASSWORD_RESET_JWT_SECRET) as { uuid: string }).uuid;
+      uuid = (verify(token, PASSWORD_RESET_JWT_SECRET) as { uuid: string })
+        .uuid;
     });
     it('Unauthenticated', async () => {
       handler.mockImplementation(shouldNotBeCalled);
@@ -441,7 +452,9 @@ describe('Passport Plugin', () => {
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
     });
     it('Valid JWT Member', async () => {
-      handler.mockImplementation(({ user }) => expect(user.passwordResetRedisKey).toEqual(uuid));
+      handler.mockImplementation(({ user }) =>
+        expect(user.passwordResetRedisKey).toEqual(uuid),
+      );
       const response = await app.inject({
         path: MOCKED_ROUTE,
         headers: { authorization: `Bearer ${token}` },
@@ -463,7 +476,10 @@ describe('Passport Plugin', () => {
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
     });
     it('Unknown JWT uuid', async () => {
-      const token = sign({ uuid: v4(), oldEmail: 'abc', newEmail: 'def' }, EMAIL_CHANGE_JWT_SECRET);
+      const token = sign(
+        { uuid: v4(), oldEmail: 'abc', newEmail: 'def' },
+        EMAIL_CHANGE_JWT_SECRET,
+      );
       handler.mockImplementation(shouldNotBeCalled);
       const response = await app.inject({
         path: MOCKED_ROUTE,
@@ -476,7 +492,10 @@ describe('Passport Plugin', () => {
       const { actor } = await seedFromJson();
       assertIsDefined(actor);
       assertIsMember(actor);
-      const token = sign({ uuid: actor.id, oldEmail: 'abc', newEmail }, EMAIL_CHANGE_JWT_SECRET);
+      const token = sign(
+        { uuid: actor.id, oldEmail: 'abc', newEmail },
+        EMAIL_CHANGE_JWT_SECRET,
+      );
       handler.mockImplementation(shouldNotBeCalled);
       const response = await app.inject({
         path: MOCKED_ROUTE,
@@ -489,7 +508,10 @@ describe('Passport Plugin', () => {
       const { actor } = await seedFromJson();
       assertIsDefined(actor);
       assertIsMember(actor);
-      const token = sign({ uuid: actor.id, oldEmail: actor.email, newEmail }, 'invalid');
+      const token = sign(
+        { uuid: actor.id, oldEmail: actor.email, newEmail },
+        'invalid',
+      );
       handler.mockImplementation(shouldNotBeCalled);
       const response = await app.inject({
         path: MOCKED_ROUTE,
@@ -555,7 +577,9 @@ describe('Passport Plugin', () => {
       assertIsDefined(actor);
       assertIsMember(actor);
       const token = sign({ sub: actor.id }, REFRESH_TOKEN_JWT_SECRET);
-      handler.mockImplementation(({ user }) => expectMember(user.account, actor));
+      handler.mockImplementation(({ user }) =>
+        expectMember(user.account, actor),
+      );
       const response = await app.inject({
         path: MOCKED_ROUTE,
         headers: { authorization: `Bearer ${token}` },
@@ -629,7 +653,10 @@ describe('Passport Plugin', () => {
     it('Invalid challenge', async () => {
       const { actor } = await seedFromJson();
       assertIsDefined(actor);
-      const challenge = crypto.createHash('sha256').update('invalid').digest('hex');
+      const challenge = crypto
+        .createHash('sha256')
+        .update('invalid')
+        .digest('hex');
       const token = sign({ sub: actor.id, challenge }, JWT_SECRET);
       handler.mockImplementation(shouldNotBeCalled);
       const response = await app.inject({
@@ -679,7 +706,9 @@ describe('Passport Plugin', () => {
       assertIsDefined(actor);
       assertIsMember(actor);
       const token = sign({ sub: actor.id, challenge }, JWT_SECRET);
-      handler.mockImplementation(({ user }) => expectMember(user.account, actor));
+      handler.mockImplementation(({ user }) =>
+        expectMember(user.account, actor),
+      );
       const response = await app.inject({
         method: HttpMethod.Post,
         path: MOCKED_ROUTE,
@@ -724,7 +753,10 @@ describe('Passport Plugin', () => {
       const {
         items: [item],
       } = await seedFromJson({ items: [{}] });
-      const token = sign({ sub: { itemId: item.id, key, origin } }, APPS_JWT_SECRET);
+      const token = sign(
+        { sub: { itemId: item.id, key, origin } },
+        APPS_JWT_SECRET,
+      );
       handler.mockImplementation(shouldNotBeCalled);
       const response = await app.inject({
         path: MOCKED_ROUTE,
@@ -751,7 +783,10 @@ describe('Passport Plugin', () => {
     it('Unspecified JWT Item', async () => {
       const { actor } = await seedFromJson();
       assertIsDefined(actor);
-      const token = sign({ sub: { accountId: actor.id, key, origin } }, APPS_JWT_SECRET);
+      const token = sign(
+        { sub: { accountId: actor.id, key, origin } },
+        APPS_JWT_SECRET,
+      );
       handler.mockImplementation(shouldNotBeCalled);
       const response = await app.inject({
         path: MOCKED_ROUTE,
@@ -766,7 +801,10 @@ describe('Passport Plugin', () => {
         items: [item],
       } = await seedFromJson({ items: [{}] });
       assertIsDefined(actor);
-      const token = sign({ sub: { accountId: actor.id, itemId: item.id, key, origin } }, 'invalid');
+      const token = sign(
+        { sub: { accountId: actor.id, itemId: item.id, key, origin } },
+        'invalid',
+      );
       handler.mockImplementation(shouldNotBeCalled);
       const response = await app.inject({
         path: MOCKED_ROUTE,
@@ -799,7 +837,10 @@ describe('Passport Plugin', () => {
         items: [item],
       } = await seedFromJson({ items: [{}] });
       assertIsDefined(actor);
-      const token = sign({ sub: { accountId: actor.id, itemId: item.id, key } }, APPS_JWT_SECRET);
+      const token = sign(
+        { sub: { accountId: actor.id, itemId: item.id, key } },
+        APPS_JWT_SECRET,
+      );
       handler.mockImplementation(shouldNotBeCalled);
       const response = await app.inject({
         path: MOCKED_ROUTE,
@@ -866,7 +907,10 @@ describe('Passport Plugin', () => {
       const {
         items: [item],
       } = await seedFromJson({ items: [{}] });
-      const token = sign({ sub: { itemId: item.id, key, origin } }, APPS_JWT_SECRET);
+      const token = sign(
+        { sub: { itemId: item.id, key, origin } },
+        APPS_JWT_SECRET,
+      );
       handler.mockImplementation(({ user }) => {
         expectUserApp(user, { item, key, origin });
         expect(user.account).toBeUndefined();
@@ -896,7 +940,10 @@ describe('Passport Plugin', () => {
     it('Unspecified JWT Item', async () => {
       const { actor } = await seedFromJson();
       assertIsDefined(actor);
-      const token = sign({ sub: { accountId: actor.id, key, origin } }, APPS_JWT_SECRET);
+      const token = sign(
+        { sub: { accountId: actor.id, key, origin } },
+        APPS_JWT_SECRET,
+      );
       handler.mockImplementation(shouldNotBeCalled);
       const response = await app.inject({
         path: MOCKED_ROUTE,
@@ -911,7 +958,10 @@ describe('Passport Plugin', () => {
         items: [item],
       } = await seedFromJson({ items: [{}] });
       assertIsDefined(actor);
-      const token = sign({ sub: { accountId: actor.id, itemId: item.id, key, origin } }, 'invalid');
+      const token = sign(
+        { sub: { accountId: actor.id, itemId: item.id, key, origin } },
+        'invalid',
+      );
       handler.mockImplementation(shouldNotBeCalled);
       const response = await app.inject({
         path: MOCKED_ROUTE,
@@ -944,7 +994,10 @@ describe('Passport Plugin', () => {
         items: [item],
       } = await seedFromJson({ items: [{}] });
       assertIsDefined(actor);
-      const token = sign({ sub: { accountId: actor.id, itemId: item.id, key } }, APPS_JWT_SECRET);
+      const token = sign(
+        { sub: { accountId: actor.id, itemId: item.id, key } },
+        APPS_JWT_SECRET,
+      );
       handler.mockImplementation(shouldNotBeCalled);
       const response = await app.inject({
         path: MOCKED_ROUTE,

@@ -1,7 +1,7 @@
-import { Account } from '../services/account/entities/account';
 import { NotMemberOrGuest } from '../services/account/errors';
-import { Guest, isGuest } from '../services/itemLogin/entities/guest';
-import { Member, isMember } from '../services/member/entities/member';
+import { isMember } from '../services/authentication';
+import { isGuest } from '../services/itemLogin/entities/guest';
+import { AuthenticatedUser, MinimalGuest, MinimalMember } from '../types';
 import { UnexpectedError } from './errors';
 
 export type Nullable<T> = T | null | undefined;
@@ -48,11 +48,14 @@ export function assertIsDefined<T, Err extends Error, Args extends unknown[]>(
   }
 }
 
-export function assertIsMemberOrGuest<Err extends Error, Args extends unknown[]>(
-  account: Account,
+export function assertIsMemberOrGuest<
+  Err extends Error,
+  Args extends unknown[],
+>(
+  account: AuthenticatedUser,
   error?: new (...args: Args) => Err,
   ...args: Args
-): asserts account is Member | Guest {
+): asserts account is MinimalMember | MinimalGuest {
   if (!(isMember(account) || isGuest(account))) {
     if (error) {
       throw new error(...args);

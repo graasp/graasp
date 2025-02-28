@@ -15,7 +15,6 @@ import { DBConnection } from '../../../../drizzle/db';
 import { Item } from '../../../../drizzle/schema';
 import { BaseLogger } from '../../../../logger';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
-import { Member } from '../../../member/entities/member';
 import { isItemType } from '../../entities/Item';
 import { ItemService } from '../../service';
 import { EtherpadItemService } from '../etherpad/service';
@@ -102,7 +101,9 @@ export class ImportExportService {
     if (stats.isDirectory()) {
       // element has no extension -> folder
 
-      const description = await this._getDescriptionForFilepath(path.join(filepath, filename));
+      const description = await this._getDescriptionForFilepath(
+        path.join(filepath, filename),
+      );
 
       this.log.debug(`create folder from '${filename}'`);
       return this.itemService.post(db, actor, {
@@ -216,7 +217,8 @@ export class ImportExportService {
     mimetype: string;
   }> {
     switch (true) {
-      case isItemType(item, ItemType.LOCAL_FILE) || isItemType(item, ItemType.S3_FILE): {
+      case isItemType(item, ItemType.LOCAL_FILE) ||
+        isItemType(item, ItemType.S3_FILE): {
         const mimetype = getMimetype(item.extra) || 'application/octet-stream';
         const url = await this.fileItemService.getUrl(db, actor, {
           itemId: item.id,
@@ -249,14 +251,18 @@ export class ImportExportService {
       }
       case isItemType(item, ItemType.LINK): {
         return {
-          stream: Readable.from(buildTextContent(item.extra.embeddedLink?.url, ItemType.LINK)),
+          stream: Readable.from(
+            buildTextContent(item.extra.embeddedLink?.url, ItemType.LINK),
+          ),
           name: getFilenameFromItem(item),
           mimetype: 'text/plain',
         };
       }
       case isItemType(item, ItemType.APP): {
         return {
-          stream: Readable.from(buildTextContent(item.extra.app?.url, ItemType.APP)),
+          stream: Readable.from(
+            buildTextContent(item.extra.app?.url, ItemType.APP),
+          ),
           name: getFilenameFromItem(item),
           mimetype: 'text/plain',
         };
@@ -264,7 +270,10 @@ export class ImportExportService {
       case isItemType(item, ItemType.ETHERPAD): {
         return {
           stream: Readable.from(
-            await this.etherpadService.getEtherpadContentFromItem(actor, item.id),
+            await this.etherpadService.getEtherpadContentFromItem(
+              actor,
+              item.id,
+            ),
           ),
           name: getFilenameFromItem(item),
           mimetype: 'text/html',

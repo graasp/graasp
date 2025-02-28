@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker';
 import crypto from 'crypto';
+import { eq } from 'drizzle-orm';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import { sign } from 'jsonwebtoken';
 import fetch, { type Response } from 'node-fetch';
@@ -7,13 +8,17 @@ import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
+import { HttpMethod, RecaptchaAction } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
-import { TOKEN_REGEX } from '../../../../../test/utils';
+import {
+  TOKEN_REGEX,
+  mockCaptchaValidationOnce,
+} from '../../../../../test/utils';
 import { resolveDependency } from '../../../../di/utils';
-import { AppDataSource } from '../../../../plugins/datasource';
+import { db } from '../../../../drizzle/db';
+import { accountsTable } from '../../../../drizzle/schema';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../../../utils/assertions';
 import {
@@ -23,23 +28,31 @@ import {
   REFRESH_TOKEN_JWT_SECRET,
 } from '../../../../utils/config';
 import { MemberNotFound } from '../../../../utils/errors';
-import { Member, assertIsMember } from '../../../member/entities/member';
-import { expectMember, saveMember } from '../../../member/test/fixtures/members';
+import { assertIsMember } from '../../../authentication';
+import {
+  expectMember,
+  saveMember,
+} from '../../../member/test/fixtures/members';
 import { MOCK_CAPTCHA } from '../captcha/test/utils';
 import { SHORT_TOKEN_PARAM } from '../passport';
 
-jest.mock('node-fetch');
-const memberRawRepository = AppDataSource.getRepository(Member);
+// jest.mock('node-fetch');
+const memberRawRepository = {
+  findOneBy: async ({ email }: { email: string }) =>
+    await db.query.accountsTable.findFirst({
+      where: eq(accountsTable.email, email),
+    }),
+};
 
 // mock captcha
 // bug: cannot use exported mockCaptchaValidation
-const mockCaptchaValidation = (action: RecaptchaActionType) => {
-  (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
-    return {
-      json: async () => ({ success: true, action, score: 1 }),
-    } as Response;
-  });
-};
+// const mockCaptchaValidation = (action: RecaptchaActionType) => {
+//   (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
+//     return {
+//       json: async () => ({ success: true, action, score: 1 }),
+//     } as Response;
+//   });
+// };
 
 const challenge = 'challenge';
 describe('Mobile Endpoints', () => {
@@ -60,7 +73,7 @@ describe('Mobile Endpoints', () => {
   describe('POST /m/register', () => {
     beforeEach(() => {
       // mock captcha validation
-      mockCaptchaValidation(RecaptchaAction.SignUpMobile);
+      mockCaptchaValidationOnce(RecaptchaAction.SignUpMobile);
     });
 
     it('Sign Up successfully', async () => {
@@ -266,7 +279,7 @@ describe('Mobile Endpoints', () => {
   describe('POST /m/login-password', () => {
     beforeEach(() => {
       // mock captcha validation
-      mockCaptchaValidation(RecaptchaAction.SignInWithPasswordMobile);
+      mockCaptchaValidationOnce(RecaptchaAction.SignInWithPasswordMobile);
     });
     it('Sign In successfully', async () => {
       const password = 'password';
@@ -293,15 +306,17 @@ describe('Mobile Endpoints', () => {
     });
 
     it('Sign In successfully with captcha score = 0', async () => {
-      (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
-        return {
-          json: async () => ({
-            success: true,
-            action: RecaptchaAction.SignInWithPasswordMobile,
-            score: 0,
-          }),
-        } as Response;
-      });
+      (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(
+        async () => {
+          return {
+            json: async () => ({
+              success: true,
+              action: RecaptchaAction.SignInWithPasswordMobile,
+              score: 0,
+            }),
+          } as Response;
+        },
+      );
       const password = 'password';
       const { actor } = await seedFromJson({ actor: { password } });
       assertIsDefined(actor);
@@ -326,15 +341,17 @@ describe('Mobile Endpoints', () => {
     });
 
     it('Sign In successfully with captcha score < 0.5', async () => {
-      (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
-        return {
-          json: async () => ({
-            success: true,
-            action: RecaptchaAction.SignInWithPasswordMobile,
-            score: 0.3,
-          }),
-        } as Response;
-      });
+      (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(
+        async () => {
+          return {
+            json: async () => ({
+              success: true,
+              action: RecaptchaAction.SignInWithPasswordMobile,
+              score: 0.3,
+            }),
+          } as Response;
+        },
+      );
       const password = 'password';
       const { actor } = await seedFromJson({ actor: { password } });
       assertIsDefined(actor);
@@ -360,7 +377,9 @@ describe('Mobile Endpoints', () => {
 
     it('Sign In does send unauthorized error for wrong password', async () => {
       const wrongPassword = '1234';
-      const { actor } = await seedFromJson({ actor: { password: 'somestring' } });
+      const { actor } = await seedFromJson({
+        actor: { password: 'somestring' },
+      });
       assertIsDefined(actor);
       assertIsMember(actor);
 
@@ -430,7 +449,10 @@ describe('Mobile Endpoints', () => {
       const member = await saveMember();
       const verifier = 'verifier';
       // compute challenge from verifier
-      const challenge = crypto.createHash('sha256').update(verifier).digest('hex');
+      const challenge = crypto
+        .createHash('sha256')
+        .update(verifier)
+        .digest('hex');
 
       const t = sign({ sub: member.id, challenge }, JWT_SECRET);
 
@@ -480,7 +502,10 @@ describe('Mobile Endpoints', () => {
     it('Fail to authenticate if token contains undefined member id', async () => {
       const verifier = 'verifier';
       // compute challenge from verifier
-      const challenge = crypto.createHash('sha256').update(verifier).digest('hex');
+      const challenge = crypto
+        .createHash('sha256')
+        .update(verifier)
+        .digest('hex');
 
       const t = sign({ sub: undefined, challenge }, JWT_SECRET);
 
@@ -568,7 +593,9 @@ describe('Mobile Endpoints', () => {
         query: { token },
       });
       expect(response.headers).not.toHaveProperty('set-cookie');
-      expect(response.json()).toMatchObject(new MemberNotFound({ id: memberId }));
+      expect(response.json()).toMatchObject(
+        new MemberNotFound({ id: memberId }),
+      );
     });
     it('Fail if token is invalid', async () => {
       const member = await saveMember();
@@ -592,7 +619,10 @@ describe('Mobile Endpoints', () => {
     });
     it('MagicLink', async () => {
       mockCaptchaValidation(RecaptchaAction.SignUpMobile);
-      const mockSendEmail = jest.spyOn(resolveDependency(MailerService), 'sendRaw');
+      const mockSendEmail = jest.spyOn(
+        resolveDependency(MailerService),
+        'sendRaw',
+      );
 
       const username = faker.internet.userName().toLowerCase();
       const email = faker.internet.email().toLowerCase();

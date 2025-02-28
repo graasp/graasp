@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
 import { DBConnection } from '../../drizzle/db';
-import { accounts } from '../../drizzle/schema';
+import { accountsTable } from '../../drizzle/schema';
 
 @singleton()
 export class AccountRepository {
@@ -10,8 +10,8 @@ export class AccountRepository {
     if (!id) {
       return undefined;
     }
-    const result = await db.query.accounts.findFirst({
-      where: eq(accounts.id, id),
+    const result = await db.query.accountsTable.findFirst({
+      where: eq(accountsTable.id, id),
     });
     if (result === null) {
       return undefined;

@@ -1,8 +1,7 @@
 import { Type } from '@fastify/type-provider-typebox';
 
-import { AccountType } from '@graasp/sdk';
-
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
+import { AccountType } from '../../types';
 
 const accountSchema = customType.StrictObject(
   {
@@ -79,7 +78,8 @@ export const nullableAugmentedAccountSchemaRef = registerSchemaAsRef(
     ],
     {
       discriminator: { propertyName: 'type' },
-      description: 'The augmented account can either be an individual or a guest, or null',
+      description:
+        'The augmented account can either be an individual or a guest, or null',
     },
   ),
 );

@@ -1,7 +1,7 @@
 import { singleton } from 'tsyringe';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { Actor } from '../../../../types';
+import { MaybeUser } from '../../../../types';
 import { filterOutPackedItems } from '../../../authorization';
 import { ItemService } from '../../../item/service';
 import { Member } from '../../../member/entities/member';
@@ -46,7 +46,7 @@ export class ItemLikeService {
     });
   }
 
-  async getForItem(db: DBConnection, actor: Actor, itemId: string) {
+  async getForItem(db: DBConnection, actor: MaybeUser, itemId: string) {
     await this.itemService.get(db, actor, itemId);
 
     return this.itemLikeRepository.getByItemId(db, itemId);
@@ -56,10 +56,17 @@ export class ItemLikeService {
     // QUESTION: allow public to be liked?
     const item = await this.itemService.get(db, member, itemId);
 
-    const result = await this.itemLikeRepository.deleteOneByCreatorAndItem(db, member.id, item.id);
+    const result = await this.itemLikeRepository.deleteOneByCreatorAndItem(
+      db,
+      member.id,
+      item.id,
+    );
 
     // update index if item is published
-    const publishedItem = await this.itemPublishedRepository.getForItem(db, item.path);
+    const publishedItem = await this.itemPublishedRepository.getForItem(
+      db,
+      item.path,
+    );
     if (publishedItem) {
       const likes = await this.itemLikeRepository.getCountByItemId(db, item.id);
       await this.meilisearchClient.updateItem(item.id, { likes });
@@ -77,7 +84,10 @@ export class ItemLikeService {
     });
 
     // update index if item is published
-    const publishedItem = await this.itemPublishedRepository.getForItem(db, item.path);
+    const publishedItem = await this.itemPublishedRepository.getForItem(
+      db,
+      item.path,
+    );
     if (publishedItem) {
       const likes = await this.itemLikeRepository.getCountByItemId(db, item.id);
       await this.meilisearchClient.updateItem(item.id, { likes });

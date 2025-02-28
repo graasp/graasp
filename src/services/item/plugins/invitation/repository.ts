@@ -3,15 +3,21 @@ import { singleton } from 'tsyringe';
 
 import { DBConnection } from '../../../../drizzle/db';
 import { isAncestorOrSelf } from '../../../../drizzle/operations';
-import { type Invitation, invitations } from '../../../../drizzle/schema';
+import {
+  InvitationInsertDTO,
+  InvitationRaw,
+  InvitationWIthItemAndCreator,
+  invitations,
+} from '../../../../drizzle/schema';
 import { throwsIfParamIsInvalid } from '../../../../repositories/utils';
+import { AuthenticatedUser } from '../../../../types';
 import { Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import { InvitationNotFound } from './errors';
 
 type CreatorId = Member['id'];
 type ItemPath = Item['path'];
-type Email = Invitation['email'];
+type Email = InvitationRaw['email'];
 
 // type CreateInvitationBody = {
 //   partialInvitations: Partial<Invitation>[];
@@ -59,7 +65,7 @@ export class InvitationRepository {
     db: DBConnection,
     id: string,
     creatorId: CreatorId,
-  ): Promise<Invitation> {
+  ): Promise<InvitationWIthItemAndCreator> {
     throwsIfParamIsInvalid('id', id);
     throwsIfParamIsInvalid('creatorId', creatorId);
 
@@ -111,10 +117,10 @@ export class InvitationRepository {
    */
   async addMany(
     db: DBConnection,
-    partialInvitations: Partial<Invitation>[],
+    partialInvitations: InvitationInsertDTO[],
     itemPath: string,
-    creator: Member,
-  ): Promise<Invitation[]> {
+    creator: AuthenticatedUser,
+  ): Promise<InvitationRaw[]> {
     const data = partialInvitations.map((inv) => ({
       ...inv,
       // this normalisation is necessary because we match emails 1:1 and they are expeted to be in lowercase
@@ -134,7 +140,8 @@ export class InvitationRepository {
             (i) =>
               // exclude duplicate item-email combinations that are already invited
               !existingEntries.find(
-                ({ email, item }) => email === i.email && item.path === itemPath,
+                ({ email, item }) =>
+                  email === i.email && item.path === itemPath,
               ),
           )
           .map((inv) => ({
