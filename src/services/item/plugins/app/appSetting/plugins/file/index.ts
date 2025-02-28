@@ -4,7 +4,7 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { HttpMethod } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../../../di/utils';
-import { db } from '../../../../../../../drizzle/db';
+import { DBConnection, db } from '../../../../../../../drizzle/db';
 import { asDefined } from '../../../../../../../utils/assertions';
 import {
   authenticateAppsJWT,
@@ -67,7 +67,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
     const isFileSetting = (a: AppSetting) => a.data[fileService.fileType];
     const toCopy = appSettings.filter(isFileSetting);
     if (toCopy.length) {
-      await appSettingFileService.copyMany(actor, repositories, toCopy);
+      await appSettingFileService.copyMany(actor, db, toCopy);
     }
   };
   appSettingService.hooks.setPostHook('copyMany', hook);

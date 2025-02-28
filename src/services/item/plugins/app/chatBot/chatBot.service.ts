@@ -1,11 +1,14 @@
+import { singleton } from 'tsyringe';
+
 import { ChatBotMessage, GPTVersion, PermissionLevel } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../drizzle/db';
-import { Account } from '../../../../account/entities/account';
+import { AuthenticatedUser } from '../../../../../types';
 import { AuthorizationService } from '../../../../authorization';
 import { ItemRepository } from '../../../repository';
 import { fetchOpenAI } from './utils';
 
+@singleton()
 export class ChatBotService {
   private readonly authorizationService: AuthorizationService;
   private readonly itemRepository: ItemRepository;
@@ -17,7 +20,7 @@ export class ChatBotService {
 
   async post(
     db: DBConnection,
-    account: Account,
+    account: AuthenticatedUser,
     itemId: string,
     body: Array<ChatBotMessage>,
     gptVersion: GPTVersion,

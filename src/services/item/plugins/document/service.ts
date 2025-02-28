@@ -83,7 +83,7 @@ export class DocumentItemService extends ItemService {
         flavor,
       }),
     );
-    return (await this.post(db, member, repositories, {
+    return (await this.post(db, member, {
       item: newItem,
       ...options,
     })) as DocumentItem;
@@ -117,6 +117,6 @@ export class DocumentItemService extends ItemService {
         item.extra.document,
       ),
     );
-    return (await this.patch(db, member, repositories, itemId, newItem)) as DocumentItem;
+    return (await this.patch(db, member, itemId, newItem)) as DocumentItem;
   }
 }

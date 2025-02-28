@@ -1,23 +1,24 @@
 import { sign } from 'jsonwebtoken';
 import uniqBy from 'lodash.uniqby';
+import { singleton } from 'tsyringe';
 
 import { AuthTokenSubject, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
 import { Item } from '../../../../drizzle/schema';
+import { Actor, AuthenticatedUser } from '../../../../types';
 import { APPS_JWT_SECRET } from '../../../../utils/config';
 import { AccountRepository } from '../../../account/account.repository';
-import { Account } from '../../../account/entities/account';
 import { AuthorizationService } from '../../../authorization';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
-import { Actor, Member } from '../../../member/entities/member';
-import { isItemType } from '../../entities/Item';
+import { Member } from '../../../member/entities/member';
 import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
 import { PublisherRepository } from './publisherRepository';
 import { AppRepository } from './repository';
 import { checkTargetItemAndTokenItemMatch } from './utils';
 
+@singleton()
 export class AppService {
   private readonly itemService: ItemService;
   private readonly jwtExpiration: number;
@@ -56,7 +57,7 @@ export class AppService {
     return this.appRepository.getAll(db, publisherId);
   }
 
-  async getMostUsedApps(db: DBConnection, account: Account) {
+  async getMostUsedApps(db: DBConnection, account: AuthenticatedUser) {
     return this.appRepository.getMostUsedApps(db, account.id);
   }
 
@@ -91,7 +92,7 @@ export class AppService {
 
   async getContext(
     db: DBConnection,
-    actorId: string | undefined,
+    actor: Actor,
     itemId: string,
     requestDetails?: AuthTokenSubject,
   ) {
@@ -99,7 +100,7 @@ export class AppService {
     if (item.type !== ItemType.APP) {
       throw new Error('Item is not an app');
     }
-    const account = actorId ? await this.accountRepository.get(db, actorId) : undefined;
+
     if (requestDetails) {
       const { itemId: tokenItemId } = requestDetails;
       checkTargetItemAndTokenItemMatch(itemId, tokenItemId);
@@ -107,15 +108,15 @@ export class AppService {
 
     // return member data only if authenticated
     let members: Member[] = [];
-    if (account) {
-      members = await this.getTreeMembers(db, account, item);
+    if (actor) {
+      members = await this.getTreeMembers(db, actor, item);
     }
 
     return { item, members };
   }
 
   // used in apps: get members from tree
-  async getTreeMembers(db: DBConnection, actor: Actor, item: Item): Promise<Member[]> {
+  async getTreeMembers(db: DBConnection, actor: AuthenticatedUser, item: Item): Promise<Member[]> {
     const memberships = await this.itemMembershipRepository.getForManyItems(db, [item]);
     // get members only without duplicate
     return uniqBy(

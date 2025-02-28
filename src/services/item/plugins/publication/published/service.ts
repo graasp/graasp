@@ -16,7 +16,6 @@ import { MailBuilder } from '../../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../../plugins/mailer/mailer.service';
 import { resultOfToList } from '../../../../../services/utils';
 import HookManager from '../../../../../utils/hook';
-import { Repositories } from '../../../../../utils/repositories';
 import { filterOutHiddenItems } from '../../../../authorization';
 import { Actor, Member, isMember } from '../../../../member/entities/member';
 import { ItemWrapper } from '../../../ItemWrapper';
@@ -44,7 +43,10 @@ export class ItemPublishedService {
   private readonly mailerService: MailerService;
 
   hooks = new HookManager<{
-    create: { pre: { item: Item }; post: { published: ItemPublished; item: Item } };
+    create: {
+      pre: { item: Item };
+      post: { published: ItemPublished; item: Item };
+    };
     delete: { pre: { item: Item }; post: { item: Item } };
   }>();
 
@@ -62,9 +64,9 @@ export class ItemPublishedService {
     this.mailerService = mailerService;
   }
 
-  async _notifyContributors(actor: Member, repositories: Repositories, item: Item): Promise<void> {
+  async _notifyContributors(db: DBConnection, actor: Member, item: Item): Promise<void> {
     // send email to contributors except yourself
-    const memberships = await repositories.itemMembershipRepository.getForManyItems([item]);
+    const memberships = await this.itemMembershipRepository.getForManyItems(db, [item]);
     const contributors = resultOfToList(memberships)[0]
       .filter(
         ({ permission, account }) =>
@@ -96,24 +98,22 @@ export class ItemPublishedService {
     }
   }
 
-  async get(actor: Actor, repositories: Repositories, itemId: string) {
-    const { itemPublishedRepository, itemVisibilityRepository, actionRepository } = repositories;
-
-    const item = await this.itemService.get(actor, repositories, itemId);
+  async get(db: DBConnection, actor: Actor, itemId: string) {
+    const item = await this.itemService.get(db, actor, itemId);
 
     // item should be public first
-    await itemVisibilityRepository.getType(item.path, ItemVisibilityType.Public, {
+    await this.itemVisibilityRepository.getType(item.path, ItemVisibilityType.Public, {
       shouldThrow: true,
     });
 
     // get item published entry
-    const publishedItem = await itemPublishedRepository.getForItem(item);
+    const publishedItem = await this.itemPublishedRepository.getForItem(item);
 
     if (!publishedItem) {
       return null;
     }
     // get views from the actions table
-    const totalViews = await actionRepository.getAggregationForItem(item.path, {
+    const totalViews = await this.actionRepository.getAggregationForItem(item.path, {
       view: 'library',
       types: ['collection-view'],
       startDate: formatISO(publishedItem.createdAt),
@@ -125,9 +125,8 @@ export class ItemPublishedService {
     };
   }
 
-  async getMany(actor: Actor, repositories: Repositories, itemIds: string[]) {
-    const { itemPublishedRepository, itemVisibilityRepository } = repositories;
-    const { data: itemsMap, errors } = await this.itemService.getMany(actor, repositories, itemIds);
+  async getMany(db: DBConnection, actor: Actor, itemIds: string[]) {
+    const { data: itemsMap, errors } = await this.itemService.getMany(db, actor, itemIds);
 
     const items = Object.values(itemsMap);
 
@@ -145,22 +144,20 @@ export class ItemPublishedService {
   }
 
   async publishIfNotExist(
+    db: DBConnection,
     member: Member,
-    repositories: Repositories,
     itemId: string,
     publicationStatus: PublicationStatus,
   ) {
-    const { itemPublishedRepository } = repositories;
+    const item = await this.itemService.get(db, member, itemId, PermissionLevel.Admin);
 
-    const item = await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
-
-    const itemPublished = await itemPublishedRepository.getForItem(item);
+    const itemPublished = await this.itemPublishedRepository.getForItem(item);
 
     if (itemPublished) {
       return itemPublished;
     }
 
-    return await this.post(member, repositories, item, publicationStatus, {
+    return await this.post(db, member, item, publicationStatus, {
       canBePrivate: true,
     });
   }
@@ -184,19 +181,18 @@ export class ItemPublishedService {
   }
 
   async post(
+    db: DBConnection,
     member: Member,
-    repositories: Repositories,
     item: Item,
     publicationStatus: PublicationStatus,
     { canBePrivate }: { canBePrivate?: boolean } = {},
   ) {
-    const { itemPublishedRepository, itemVisibilityRepository } = repositories;
-
     // ensure that the item can be published
     this.checkPublicationStatus(item, publicationStatus);
 
     // item should be public first
-    const visibility = await itemVisibilityRepository.getType(
+    const visibility = await this.itemVisibilityRepository.getType(
+      db,
       item.path,
       ItemVisibilityType.Public,
       {
@@ -208,56 +204,50 @@ export class ItemPublishedService {
     // it's usefull to publish the item automatically after the validation.
     // the user is asked to set the item to public in the frontend.
     if (!visibility && canBePrivate) {
-      await itemVisibilityRepository.post(member, item, ItemVisibilityType.Public);
+      await this.itemVisibilityRepository.post(db, member, item, ItemVisibilityType.Public);
     }
 
     // TODO: check validation is alright
 
-    const published = await itemPublishedRepository.post(member, item);
+    const published = await this.itemPublishedRepository.post(db, member, item);
 
-    await this.meilisearchWrapper.indexOne(published, repositories);
+    await this.meilisearchWrapper.indexOne(db, published);
 
     //TODO: should we sent a publish hooks for all descendants? If yes take inspiration from delete method in ItemService
 
-    this._notifyContributors(member, repositories, item);
+    this._notifyContributors(db, member, item);
 
     return published;
   }
 
-  async delete(member: Member, repositories: Repositories, itemId: string) {
-    const { itemPublishedRepository } = repositories;
+  async delete(db: DBConnection, member: Member, itemId: string) {
+    const item = await this.itemService.get(db, member, itemId, PermissionLevel.Admin);
 
-    const item = await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
-
-    await this.hooks.runPreHooks('delete', member, repositories, { item });
+    await this.hooks.runPreHooks('delete', member, db, { item });
 
     const result = await itemPublishedRepository.deleteForItem(item);
 
-    await this.hooks.runPostHooks('delete', member, repositories, { item });
+    await this.hooks.runPostHooks('delete', member, db, { item });
 
     return result;
   }
 
-  async touchUpdatedAt(repositories: Repositories, item: { id: Item['id']; path: Item['path'] }) {
-    const { itemPublishedRepository } = repositories;
-
-    const updatedAt = await itemPublishedRepository.touchUpdatedAt(item.path);
+  async touchUpdatedAt(db: DBConnection, item: { id: Item['id']; path: Item['path'] }) {
+    const updatedAt = await this.itemPublishedRepository.touchUpdatedAt(item.path);
 
     // change value in meilisearch index
     await this.meilisearchWrapper.updateItem(item.id, { updatedAt });
   }
 
-  async getItemsForMember(actor: Actor, repositories: Repositories, memberId: UUID) {
-    const { itemRepository } = repositories;
-    const items = await itemRepository.getPublishedItemsForMember(memberId);
+  async getItemsForMember(db: DBConnection, actor: Actor, memberId: UUID) {
+    const items = await this.itemRepository.getPublishedItemsForMember(memberId);
 
-    return ItemWrapper.createPackedItems(actor, repositories, this.itemThumbnailService, items);
+    return ItemWrapper.createPackedItems(actor, db, this.itemThumbnailService, items);
   }
 
-  async getRecentItems(actor: Actor, repositories: Repositories, limit?: number) {
-    const { itemPublishedRepository } = repositories;
-    const items = await itemPublishedRepository.getRecentItems(limit);
+  async getRecentItems(db: DBConnection, actor: Actor, limit?: number) {
+    const items = await this.itemPublishedRepository.getRecentItems(db, limit);
 
-    return filterOutHiddenItems(repositories, items);
+    return filterOutHiddenItems(db, items);
   }
 }

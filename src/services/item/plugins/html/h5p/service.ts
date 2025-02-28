@@ -29,8 +29,14 @@ import { H5PValidator } from './validation/h5p-validator';
 @singleton()
 export class H5PService extends HtmlService {
   private readonly itemService: ItemService;
+  private readonly itemRepository: ItemRepository;
 
-  constructor(itemService: ItemService, storageService: StorageService, log: BaseLogger) {
+  constructor(
+    itemService: ItemService,
+    storageService: StorageService,
+    itemRepository: ItemRepository,
+    log: BaseLogger,
+  ) {
     const h5pValidator = new H5PValidator();
 
     super(
@@ -44,6 +50,7 @@ export class H5PService extends HtmlService {
     );
 
     this.itemService = itemService;
+    this.itemRepository = itemRepository;
   }
 
   /**
@@ -101,7 +108,7 @@ export class H5PService extends HtmlService {
       newFolderPath: this.buildContentPath(remoteRootPath),
     });
 
-    await repositories.itemRepository.updateOne(db, copy.id, {
+    await this.itemRepository.updateOne(db, copy.id, {
       name: this.buildH5PPath('', newName),
       extra: { h5p: this.buildH5PExtra(newContentId, newName).h5p },
     });
@@ -117,8 +124,8 @@ export class H5PService extends HtmlService {
     log?: FastifyBaseLogger,
   ): Promise<Item> {
     return super.createItem(
+      db,
       actor,
-      repositories,
       filename,
       stream,
       this.createItemForH5PFile,

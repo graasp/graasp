@@ -133,7 +133,7 @@ export const itemMembershipRelations = relations(itemMemberships, ({ one }) => (
 }));
 
 export const memberPasswordRelations = relations(memberPasswords, ({ one }) => ({
-  account: one(accounts, {
+  member: one(accounts, {
     fields: [memberPasswords.memberId],
     references: [accounts.id],
   }),

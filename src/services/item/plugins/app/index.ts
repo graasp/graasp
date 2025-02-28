@@ -16,7 +16,7 @@ import { ItemService } from '../../service';
 import appActionPlugin from './appAction';
 import appDataPlugin from './appData';
 import appSettingPlugin from './appSetting';
-import chatBotPlugin from './chatBot';
+import chatBotPlugin from './chatBot/chatBot.controller';
 import { DEFAULT_JWT_EXPIRATION } from './constants';
 import { generateToken, getContext, getList, getOwnMostUsedApps } from './schemas';
 import { AppService } from './service';
@@ -29,8 +29,7 @@ const plugin: FastifyPluginAsyncTypebox<AppsPluginOptions> = async (fastify, opt
     throw new Error('jwtSecret is not defined!');
   }
   const itemService = resolveDependency(ItemService);
-
-  const appService = new AppService(itemService, jwtExpiration);
+  const appService = resolveDependency(AppService);
 
   // API endpoints
   fastify.register(async function (fastify: FastifyInstanceTypebox) {
@@ -110,13 +109,14 @@ const plugin: FastifyPluginAsyncTypebox<AppsPluginOptions> = async (fastify, opt
         { schema: getContext, preHandler: guestAuthenticateAppsJWT },
         async ({ user, params: { itemId } }) => {
           const app = asDefined(user?.app);
+          const actor = user?.account;
           const requestDetails: AuthTokenSubject = {
-            accountId: user?.account?.id,
+            accountId: actor?.id,
             itemId: app.item.id,
             origin: app.origin,
             key: app.key,
           };
-          return appService.getContext(db, requestDetails.accountId, itemId, requestDetails);
+          return appService.getContext(db, actor, itemId, requestDetails);
         },
       );
 

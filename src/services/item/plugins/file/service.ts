@@ -17,7 +17,6 @@ import {
 
 import { DBConnection } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
-import { Repositories } from '../../../../utils/repositories';
 import { AuthorizationService } from '../../../authorization';
 import FileService from '../../../file/service';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
@@ -202,7 +201,7 @@ class FileItemService {
     return result;
   }
 
-  async copy(member: Member, repositories: Repositories, { copy }: { original; copy }) {
+  async copy(db: DBConnection, member: Member, { copy }: { original; copy }) {
     const { id, extra } = copy; // full copy with new `id`
     const { path: originalPath, mimetype } = extra[this.fileService.fileType];
     // filenames are not used

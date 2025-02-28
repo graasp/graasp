@@ -7,9 +7,9 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { ActionTriggers, ItemType, MAX_ZIP_FILE_SIZE } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
 import { BaseLogger } from '../../../../logger';
 import { asDefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
 import { ActionService } from '../../../action/services/action.service';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
@@ -74,7 +74,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       // create items from folder
       // does not wait
       importExportService
-        .import(member, buildRepositories(), {
+        .import(db, member, {
           folderPath,
           targetFolder,
           parentId,
@@ -100,8 +100,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         params: { itemId },
       } = request;
       const member = user?.account;
-      const repositories = buildRepositories();
-      const item = await itemService.get(member, repositories, itemId);
+      const item = await itemService.get(db, member, itemId);
 
       // trigger download action for a collection
       const action = {
@@ -109,7 +108,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         type: ActionTriggers.ItemDownload,
         extra: { itemId: item?.id },
       };
-      await actionService.postMany(member, repositories, request, [action]);
+      await actionService.postMany(db, member, request, [action]);
 
       // allow browser to access content disposition
       reply.header('Access-Control-Expose-Headers', 'Content-Disposition');
@@ -117,8 +116,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       // return single file
       if (item.type !== ItemType.FOLDER) {
         const { stream, mimetype, name } = await importExportService.fetchItemData(
+          db,
           member,
-          repositories,
           item,
         );
 
@@ -133,8 +132,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
       // generate archive stream
       const archiveStream = await importExportService.export(
+        db,
         member,
-        repositories,
         {
           item,
           reply,

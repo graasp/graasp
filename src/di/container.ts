@@ -5,7 +5,6 @@ import { FastifyInstance } from 'fastify';
 
 import Etherpad from '@graasp/etherpad-api';
 
-import { db } from '../drizzle/db';
 import { CRON_3AM_MONDAY, JobServiceBuilder } from '../jobs';
 import { BaseLogger } from '../logger';
 import { MailerService } from '../plugins/mailer/mailer.service';
@@ -21,7 +20,6 @@ import { EtherpadServiceConfig } from '../services/item/plugins/etherpad/service
 import FileItemService from '../services/item/plugins/file/service';
 import { H5PService } from '../services/item/plugins/html/h5p/service';
 import { ImportExportService } from '../services/item/plugins/importExport/service';
-import { MeiliSearchWrapper } from '../services/item/plugins/publication/published/plugins/search/meilisearch';
 import { SearchService } from '../services/item/plugins/publication/published/plugins/search/service';
 import { ItemService } from '../services/item/service';
 import {
@@ -152,7 +150,6 @@ export const registerDependencies = (instance: FastifyInstance) => {
   registerValue(
     ImportExportService,
     new ImportExportService(
-      db,
       resolveDependency(FileItemService),
       resolveDependency(ItemService),
       resolveDependency(H5PService),

@@ -65,8 +65,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
       // background operations
       await actionItemService.postPostAction(db, request, item);
-      await db.transaction(async (manager) => {
-        await embeddedLinkService.rescaleOrderForParent(db, member, item);
+      await db.transaction(async (tx) => {
+        await embeddedLinkService.rescaleOrderForParent(tx, member, item);
       });
     },
   );

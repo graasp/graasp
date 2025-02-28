@@ -52,29 +52,26 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
   });
 
   // register post delete handler to remove the file object after item delete
-  itemService.hooks.setPostHook(
-    'delete',
-    async (actor, repositories, { item: { id, type, extra } }) => {
-      if (!actor) {
+  itemService.hooks.setPostHook('delete', async (actor, db, { item: { id, type, extra } }) => {
+    if (!actor) {
+      return;
+    }
+    try {
+      // delete file only if type is the current file type
+      if (!id || type !== fileService.fileType) {
         return;
       }
-      try {
-        // delete file only if type is the current file type
-        if (!id || type !== fileService.fileType) {
-          return;
-        }
-        const filepath = (extra[fileService.fileType] as FileItemProperties).path;
-        await fileService.delete(filepath);
-      } catch (err) {
-        // we catch the error, it ensures the item is deleted even if the file is not
-        // this is especially useful for the files uploaded before the migration to the new plugin
-        console.error(err);
-      }
-    },
-  );
+      const filepath = (extra[fileService.fileType] as FileItemProperties).path;
+      await fileService.delete(filepath);
+    } catch (err) {
+      // we catch the error, it ensures the item is deleted even if the file is not
+      // this is especially useful for the files uploaded before the migration to the new plugin
+      console.error(err);
+    }
+  });
 
   // register post copy handler to copy the file object after item copy
-  itemService.hooks.setPreHook('copy', async (actor, repositories, { original: item }) => {
+  itemService.hooks.setPreHook('copy', async (actor, thisDb, { original: item }) => {
     if (!actor) {
       return;
     }
@@ -86,11 +83,11 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
     if (!id || type !== fileService.fileType) return;
     const size = (item.extra[fileService.fileType] as FileItemProperties & { size?: number })?.size;
 
-    await storageService.checkRemainingStorage(actor, repositories, size);
+    await storageService.checkRemainingStorage(thisDb, actor, size);
   });
 
   // register post copy handler to copy the file object after item copy
-  itemService.hooks.setPostHook('copy', async (actor, repositories, { original, copy }) => {
+  itemService.hooks.setPostHook('copy', async (actor, thisDb, { original, copy }) => {
     if (!actor || !isMember(actor)) {
       return;
     }
@@ -101,7 +98,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
     if (!id || type !== fileService.fileType) {
       return;
     }
-    await fileItemService.copy(db, actor, repositories, { original, copy });
+    await fileItemService.copy(thisDb, actor, { original, copy });
   });
 
   fastify.post('/upload', {

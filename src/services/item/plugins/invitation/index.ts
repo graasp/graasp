@@ -5,10 +5,10 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import fp from 'fastify-plugin';
 
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
 import { FastifyInstanceTypebox } from '../../../../plugins/typebox';
 import { isNonEmptyArray } from '../../../../types';
 import { asDefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
 import { assertIsMember } from '../../../member/entities/member';
@@ -29,7 +29,6 @@ import {
 import { InvitationService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { db } = fastify;
   const invitationService = resolveDependency(InvitationService);
 
   // register multipart plugin for use in the invitations API
@@ -41,7 +40,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     { schema: getById, preHandler: optionalIsAuthenticated },
     async ({ user, params }) => {
       const { id } = params;
-      return await invitationService.get(user?.account, buildRepositories(), id);
+      return await invitationService.get(db, user?.account, id);
     },
   );
 
@@ -65,10 +64,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         throw new NoInvitationReceivedFound();
       }
 
-      return db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-
-        return await invitationService.shareItem(member, repositories, params.id, invitations);
+      return db.transaction(async (tx) => {
+        return await invitationService.shareItem(tx, member, params.id, invitations);
       });
     },
   );
@@ -106,10 +103,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         const { templateId } = query;
 
         return await db.transaction(
-          async (manager) =>
+          async (tx) =>
             await invitationService.createStructureForCSVAndTemplate(
+              tx,
               member,
-              buildRepositories(manager),
               itemId,
               templateId,
               uploadedFile,
@@ -145,13 +142,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         // destructure query params
         const { id: itemId } = params;
         return await db.transaction(
-          async (manager) =>
-            await invitationService.importUsersWithCSV(
-              member,
-              buildRepositories(manager),
-              itemId,
-              uploadedFile,
-            ),
+          async (tx) =>
+            await invitationService.importUsersWithCSV(tx, member, itemId, uploadedFile),
         );
       },
     );
@@ -164,7 +156,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user, params: { id: itemId } }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return invitationService.getForItem(member, buildRepositories(), itemId);
+      return invitationService.getForItem(db, member, itemId);
     },
   );
 
@@ -175,8 +167,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user, params: { invitationId }, body }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return db.transaction(async (manager) => {
-        return invitationService.patch(member, buildRepositories(manager), invitationId, body);
+      return db.transaction(async (tx) => {
+        return invitationService.patch(tx, member, invitationId, body);
       });
     },
   );
@@ -188,8 +180,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user, params: { invitationId } }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      await db.transaction(async (manager) => {
-        await invitationService.delete(member, buildRepositories(manager), invitationId);
+      await db.transaction(async (tx) => {
+        await invitationService.delete(tx, member, invitationId);
       });
       return invitationId;
     },

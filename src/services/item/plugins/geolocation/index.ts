@@ -3,9 +3,9 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
 import { FastifyInstanceTypebox } from '../../../../plugins/typebox';
 import { asDefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
 import { assertIsMember } from '../../../member/entities/member';
@@ -21,8 +21,6 @@ import {
 import { ItemGeolocationService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { db } = fastify;
-
   const itemGeolocationService = resolveDependency(ItemGeolocationService);
 
   fastify.register(async function (fastify: FastifyInstanceTypebox) {
@@ -33,7 +31,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         preHandler: optionalIsAuthenticated,
       },
       async ({ user, params }) => {
-        return itemGeolocationService.getByItem(user?.account, buildRepositories(), params.id);
+        return itemGeolocationService.getByItem(db, user?.account, params.id);
       },
     );
 
@@ -44,7 +42,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         preHandler: optionalIsAuthenticated,
       },
       async ({ user, query }) => {
-        return itemGeolocationService.getIn(user?.account, buildRepositories(), query);
+        return itemGeolocationService.getIn(db, user?.account, query);
       },
     );
 
@@ -57,13 +55,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       async ({ user, body, params }, reply) => {
         const member = asDefined(user?.account);
         assertIsMember(member);
-        return db.transaction(async (manager) => {
-          await itemGeolocationService.put(
-            member,
-            buildRepositories(manager),
-            params.id,
-            body.geolocation,
-          );
+        return db.transaction(async (tx) => {
+          await itemGeolocationService.put(tx, member, params.id, body.geolocation);
           reply.status(StatusCodes.NO_CONTENT);
         });
       },
@@ -76,10 +69,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
       },
       async ({ user, params }, reply) => {
-        return db.transaction(async (manager) => {
+        return db.transaction(async (tx) => {
           const member = asDefined(user?.account);
           assertIsMember(member);
-          await itemGeolocationService.delete(member, buildRepositories(manager), params.id);
+          await itemGeolocationService.delete(tx, member, params.id);
           reply.status(StatusCodes.NO_CONTENT);
         });
       },
@@ -92,7 +85,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         preHandler: isAuthenticated,
       },
       async ({ query }) => {
-        return itemGeolocationService.getAddressFromCoordinates(buildRepositories(), query);
+        return itemGeolocationService.getAddressFromCoordinates(db, query);
       },
     );
 
@@ -103,7 +96,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         preHandler: isAuthenticated,
       },
       async ({ query }) => {
-        return itemGeolocationService.getSuggestionsForQuery(buildRepositories(), query);
+        return itemGeolocationService.getSuggestionsForQuery(db, query);
       },
     );
   });

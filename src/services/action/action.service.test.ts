@@ -7,7 +7,6 @@ import { db } from '../../drizzle/db';
 import { BaseLogger } from '../../logger';
 import { AppDataSource } from '../../plugins/datasource';
 import { MailerService } from '../../plugins/mailer/mailer.service';
-import { buildRepositories } from '../../utils/repositories';
 import { ItemGeolocationRepository } from '../item/plugins/geolocation/repository';
 import { MeiliSearchWrapper } from '../item/plugins/publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../item/plugins/thumbnail/service';
@@ -20,7 +19,6 @@ import { saveMember } from '../member/test/fixtures/members';
 import { ThumbnailService } from '../thumbnail/service';
 import { ActionRepository } from './action.repository';
 import { ActionService } from './action.service';
-import { Action } from './entities/action';
 
 const service = new ActionService(
   new ActionRepository(),
@@ -40,7 +38,10 @@ const rawRepository = AppDataSource.getRepository(Action);
 
 export const MOCK_REQUEST = {
   headers: { origin: 'https://origin.com' },
-  raw: { headers: { 'x-forwarded-for': '' }, socket: { remoteAddress: 'address' } },
+  raw: {
+    headers: { 'x-forwarded-for': '' },
+    socket: { remoteAddress: 'address' },
+  },
 } as unknown as FastifyRequest;
 
 describe('ActionService', () => {

@@ -16,13 +16,18 @@ import {
   PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES,
   PASSWORD_RESET_JWT_SECRET,
 } from '../../../../utils/config';
-import { MemberNotSignedUp, MemberWithoutPassword } from '../../../../utils/errors';
+import {
+  EmptyCurrentPassword,
+  InvalidPassword,
+  MemberNotSignedUp,
+  MemberWithoutPassword,
+} from '../../../../utils/errors';
 import { Account } from '../../../account/entities/account';
 import { MemberRepository } from '../../../member/repository';
 import { SHORT_TOKEN_PARAM } from '../passport';
 import { PasswordConflict } from './errors';
-import { MemberPasswordRepository } from './repository';
-import { comparePasswords, encryptPassword } from './utils';
+import { MemberPasswordRepository } from './memberPassword.repository';
+import { comparePasswords, encryptPassword, verifyCurrentPassword } from './utils';
 
 const REDIS_PREFIX = 'reset-password:';
 
@@ -82,8 +87,23 @@ export class MemberPasswordService {
   }
 
   async patch(db: DBConnection, account: Account, newPassword: string, currentPassword: string) {
-    // verify that input current password is the same as the stored one
-    await this.memberPasswordRepository.validatePassword(db, account.id, currentPassword);
+    // get member stored password
+    const memberPassword = await this.memberPasswordRepository.getForMemberId(db, account.id);
+
+    // Check if password can be updated
+    // member has a password, we must check if passwords match before updating
+    if (memberPassword) {
+      const verified = await verifyCurrentPassword(memberPassword.password, currentPassword);
+      // throw error if password verification fails
+      if (!verified) {
+        // this should be validated by the schema, but we do it again here.
+        if (currentPassword === '') {
+          throw new EmptyCurrentPassword();
+        }
+        throw new InvalidPassword();
+      }
+    }
+    // apply password change
     await this.memberPasswordRepository.patch(db, account.id, newPassword);
   }
 

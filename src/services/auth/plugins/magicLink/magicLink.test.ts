@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker';
+import { eq } from 'drizzle-orm/sql';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import { sign } from 'jsonwebtoken';
 import fetch from 'node-fetch';
@@ -19,15 +20,14 @@ import { FAILURE_MESSAGES } from '@graasp/translations';
 import build, { clearDatabase } from '../../../../../test/app';
 import { URL_REGEX } from '../../../../../test/utils';
 import { resolveDependency } from '../../../../di/utils';
-import { AppDataSource } from '../../../../plugins/datasource';
+import { db } from '../../../../drizzle/db';
+import { accounts } from '../../../../drizzle/schema';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { JWT_SECRET } from '../../../../utils/config';
-import { Member } from '../../../member/entities/member';
 import { saveMember } from '../../../member/test/fixtures/members';
 import { MOCK_CAPTCHA } from '../captcha/test/utils';
 
 jest.mock('node-fetch');
-const memberRawRepository = AppDataSource.getRepository(Member);
 
 // mock captcha
 // bug: cannot use exported mockCaptchaValidation
@@ -142,7 +142,9 @@ describe('Auth routes tests', () => {
       expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
       expect(response.headers.location).not.toContain('error');
 
-      const m = await memberRawRepository.findOneBy({ email: member.email });
+      const m = await db.query.accounts.findFirst({
+        where: eq(accounts.email, member.email),
+      });
       expect(m?.lastAuthenticatedAt).toBeDefined();
       expect(m?.isValidated).toBeFalsy();
     });
@@ -157,7 +159,9 @@ describe('Auth routes tests', () => {
       expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
       expect(response.headers.location).not.toContain('error');
 
-      const m = await memberRawRepository.findOneBy({ email: member.email });
+      const m = await db.query.accounts.findFirst({
+        where: eq(accounts.email, member.email),
+      });
       expect(m?.lastAuthenticatedAt).toBeDefined();
       expect(m?.isValidated).toBeTruthy();
     });
@@ -226,9 +230,11 @@ describe('Auth routes tests', () => {
       });
       expect(responseRegister.statusCode).toBe(StatusCodes.NO_CONTENT);
 
-      let m = await memberRawRepository.findOneBy({ email });
-      expect(m?.lastAuthenticatedAt).toBeNull();
-      expect(m?.isValidated).toBeFalsy();
+      const memberBefore = await db.query.accounts.findFirst({
+        where: eq(accounts.email, email),
+      });
+      expect(memberBefore?.lastAuthenticatedAt).toBeNull();
+      expect(memberBefore?.isValidated).toBeFalsy();
 
       expect(mockSendEmail).toHaveBeenCalledTimes(1);
       const fetchedURL = new URL(mockSendEmail.mock.calls[0][2].match(URL_REGEX)![1]);
@@ -239,9 +245,11 @@ describe('Auth routes tests', () => {
       });
       expect(responseAuth.statusCode).toBe(StatusCodes.SEE_OTHER);
 
-      m = await memberRawRepository.findOneBy({ email });
-      expect(m?.lastAuthenticatedAt).toBeDefined();
-      expect(m?.isValidated).toBeTruthy();
+      const memberAfter = await db.query.accounts.findFirst({
+        where: eq(accounts.email, email),
+      });
+      expect(memberAfter?.lastAuthenticatedAt).toBeDefined();
+      expect(memberAfter?.isValidated).toBeTruthy();
     });
   });
 });

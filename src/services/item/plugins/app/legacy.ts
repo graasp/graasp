@@ -1,12 +1,11 @@
-import { AppAction } from './appAction/appAction';
-import { AppData } from './appData/appData';
+import { Account } from '../../../../drizzle/schema';
 
 /**
  * Add legacy property `member` to an app data
  * @param appData
  * @returns appData with an additional key `member`
  */
-export const addMemberInAppData = (ad: AppData) => ({
+export const addMemberInAppData = <T extends { account: Account }>(ad: T) => ({
   member: ad.account,
   ...ad,
 });
@@ -16,7 +15,7 @@ export const addMemberInAppData = (ad: AppData) => ({
  * @param appAction
  * @returns appData with an additional key `member`
  */
-export const addMemberInAppAction = (aa: AppAction) => ({
+export const addMemberInAppAction = <T extends { account: Account }>(aa: T) => ({
   member: aa.account,
   ...aa,
 });

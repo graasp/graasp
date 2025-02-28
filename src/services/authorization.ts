@@ -41,7 +41,6 @@ export class AuthorizationService {
   /**
    * Verify if actor has access (or has the necessary rights) to a given item
    * This function checks the member's memberships, if the item is public and if it is hidden.
-   * @param repositories
    * @param permission minimum permission required
    * @param actor member that tries to access the item
    * @param item
@@ -155,7 +154,10 @@ export class AuthorizationService {
     permission: PermissionLevel,
     actor: Actor,
     item: Item,
-  ): Promise<{ itemMembership: ItemMembership | null; visibilities: ItemVisibility[] }> {
+  ): Promise<{
+    itemMembership: ItemMembership | null;
+    visibilities: ItemVisibility[];
+  }> {
     // get best permission for user
     // but do not fetch membership for signed out member
 
@@ -205,6 +207,34 @@ export class AuthorizationService {
       default:
         throw new Error(`${permission} is not a valid permission`);
     }
+  }
+
+  // TODO: This is only used here but should probably be put in a better place than the plugin file
+  async isItemVisible(db: DBConnection, actor: Actor, itemPath: Item['path']) {
+    const isHidden = await this.itemVisibilityRepository.getType(
+      db,
+      itemPath,
+      ItemVisibilityType.Hidden,
+    );
+    // If the item is hidden AND there is no membership with the user, then throw an error
+    if (isHidden) {
+      if (!actor) {
+        // If actor is not provided, then there is no membership
+        return false;
+      }
+
+      // Check if the actor has at least write permission
+      const membership = await this.itemMembershipRepository.getByAccountAndItemPath(
+        db,
+        actor?.id,
+        itemPath,
+      );
+      if (!membership || PermissionLevelCompare.lt(membership.permission, PermissionLevel.Write)) {
+        return false;
+      }
+    }
+
+    return true;
   }
 }
 

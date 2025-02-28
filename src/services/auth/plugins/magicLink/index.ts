@@ -15,11 +15,11 @@ import { isMember } from '../../../authentication';
 import { InvitationService } from '../../../item/plugins/invitation/service';
 import { MemberService } from '../../../member/service';
 import { getRedirectionLink } from '../../utils';
-import captchaPreHandler from '../captcha';
+import captchaPreHandler from '../captcha/index';
 import { PassportStrategy } from '../passport/strategies';
 import { PassportInfo } from '../passport/types';
+import { MagicLinkService } from './magicLink.service';
 import { auth, login, register } from './schemas';
-import { MagicLinkService } from './service';
 
 const ERROR_SEARCH_PARAM = 'error';
 const ERROR_SEARCH_PARAM_HAS_ERROR = 'true';
@@ -41,7 +41,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const { url } = body;
       return db.transaction(async (tx) => {
         try {
-          // const repositories = buildRepositories(manager);
           // we use member service to allow post hook for invitation
           const member = await memberService.post(tx, body, lang);
           await magicLinkService.sendRegisterMail(member, url);

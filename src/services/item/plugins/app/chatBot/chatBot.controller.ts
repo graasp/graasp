@@ -7,12 +7,12 @@ import { OPENAI_DEFAULT_TEMPERATURE, OPENAI_GPT_VERSION } from '../../../../../u
 import { InvalidJWTItem } from '../../../../../utils/errors';
 import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
 import { ItemService } from '../../../service';
+import { ChatBotService } from './chatBot.service';
 import { create } from './schemas';
-import { ChatBotService } from './service';
 
 const chatBotPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const itemService = resolveDependency(ItemService);
-  const chatBotService = new ChatBotService();
+  const chatBotService = resolveDependency(ChatBotService);
 
   fastify.post(
     '/:itemId/chat-bot',

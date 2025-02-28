@@ -4,10 +4,10 @@ import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import { isAuthenticated } from '../../../auth/plugins/passport';
+import { assertIsMember } from '../../../authentication';
 import { matchOne } from '../../../authorization';
-import { assertIsMember } from '../../../member/entities/member';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { ActionItemService } from '../action/service';
+import { ActionItemService } from '../action/action.service';
 import { AppItemService } from './appItemService';
 import { createApp, updateApp } from './schemas';
 import { AppsPluginOptions } from './types';
@@ -33,7 +33,7 @@ export const plugin: FastifyPluginAsyncTypebox<AppsPluginOptions> = async (fasti
       assertIsMember(member);
 
       const item = await db.transaction(async (tx) => {
-        const item = await appItemService.postWithOptions(tx, repositories, {
+        const item = await appItemService.postWithOptions(tx, member, {
           ...data,
           previousItemId,
           parentId,

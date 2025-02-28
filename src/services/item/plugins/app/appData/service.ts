@@ -4,11 +4,11 @@ import { AppDataVisibility, FileItemType, PermissionLevel, UUID } from '@graasp/
 
 import { FILE_ITEM_TYPE_DI_KEY } from '../../../../../di/constants';
 import { DBConnection } from '../../../../../drizzle/db';
+import { AuthenticatedUser } from '../../../../../types';
 import HookManager from '../../../../../utils/hook';
 import { Account } from '../../../../account/entities/account';
 import { AuthorizationService } from '../../../../authorization';
 import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
-import { Actor } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 import { ItemRepository } from '../../../repository';
 import { AppData } from './appData';
@@ -91,7 +91,12 @@ export class AppDataService {
     this.appDataRepository = appDataRepository;
   }
 
-  async post(db: DBConnection, account: Account, itemId: string, body: Partial<InputAppData>) {
+  async post(
+    db: DBConnection,
+    account: AuthenticatedUser,
+    itemId: string,
+    body: Partial<InputAppData>,
+  ) {
     // check item exists? let post fail?
     const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
@@ -130,7 +135,7 @@ export class AppDataService {
 
   async patch(
     db: DBConnection,
-    account: Account,
+    account: AuthenticatedUser,
     itemId: string,
     appDataId: string,
     body: Partial<AppData>,
@@ -178,7 +183,7 @@ export class AppDataService {
     return appData;
   }
 
-  async deleteOne(db: DBConnection, account: Account, itemId: string, appDataId: string) {
+  async deleteOne(db: DBConnection, account: AuthenticatedUser, itemId: string, appDataId: string) {
     // check item exists? let post fail?
     const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
@@ -216,7 +221,7 @@ export class AppDataService {
     return result;
   }
 
-  async get(db: DBConnection, account: Account, item: Item, appDataId: UUID) {
+  async get(db: DBConnection, account: AuthenticatedUser, item: Item, appDataId: UUID) {
     const { itemMembership } = await this.authorizationService.validatePermission(
       db,
       PermissionLevel.Read,

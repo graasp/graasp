@@ -5,7 +5,6 @@ import { ActionTriggers } from '@graasp/sdk';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
 import { ActionService } from '../../../action/services/action.service';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
@@ -17,8 +16,6 @@ import { create, deleteOne, getLikesForCurrentMember, getLikesForItem } from './
 import { ItemLikeService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { db: typeormDB } = fastify;
-
   const itemService = resolveDependency(ItemService);
   const itemLikeService = resolveDependency(ItemLikeService);
   const actionService = resolveDependency(ActionService);
@@ -34,7 +31,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return itemLikeService.getForMember(member, buildRepositories());
+      return itemLikeService.getForMember(db, member);
     },
   );
 
@@ -44,7 +41,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     '/:itemId/likes',
     { schema: getLikesForItem, preHandler: optionalIsAuthenticated },
     async ({ user, params: { itemId } }) => {
-      return itemLikeService.getForItem(user?.account, buildRepositories(), itemId);
+      return itemLikeService.getForItem(db, user?.account, itemId);
     },
   );
 
@@ -59,15 +56,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       } = request;
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return typeormDB.transaction(async (manager) => {
-        const newItemLike = await itemLikeService.post(
-          db,
-          member,
-          buildRepositories(manager),
-          itemId,
-        );
+      return db.transaction(async (tx) => {
+        const newItemLike = await itemLikeService.post(tx, member, itemId);
         // action like item
-        const item = await itemService.get(member, buildRepositories(manager), itemId);
+        const item = await itemService.get(tx, member, itemId);
         const action = {
           item,
           type: ActionTriggers.ItemLike,
@@ -75,7 +67,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
             itemId: item.id,
           },
         };
-        await actionService.postMany(member, buildRepositories(manager), request, [action]);
+        await actionService.postMany(tx, member, request, [action]);
         return newItemLike;
       });
     },
@@ -96,7 +88,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       return db.transaction(async (tx) => {
         const newItemLike = await itemLikeService.removeOne(tx, member, itemId);
         // action unlike item
-        const item = await itemService.get(member, buildRepositories(manager), itemId);
+        const item = await itemService.get(tx, member, itemId);
 
         const action = {
           item,
@@ -105,7 +97,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
             itemId: item.id,
           },
         };
-        await actionService.postMany(member, buildRepositories(manager), request, [action]);
+        await actionService.postMany(tx, member, request, [action]);
         return newItemLike.id;
       });
     },

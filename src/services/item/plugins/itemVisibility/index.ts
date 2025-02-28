@@ -3,7 +3,6 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
 import { assertIsMember } from '../../../member/entities/member';
@@ -41,10 +40,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     '/:itemId/visibilities/:type',
     { schema: deleteOne, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async ({ user, params: { itemId, type } }) => {
-      return db.transaction(async (manager) => {
+      return db.transaction(async (tx) => {
         const member = asDefined(user?.account);
         assertIsMember(member);
-        return itemVisibilityService.deleteOne(member, buildRepositories(manager), itemId, type);
+        return itemVisibilityService.deleteOne(tx, member, itemId, type);
       });
     },
   );

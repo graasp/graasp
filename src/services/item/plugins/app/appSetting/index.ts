@@ -3,7 +3,7 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { ItemType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../di/utils';
-import { db } from '../../../../../drizzle/db';
+import { DBConnection, db } from '../../../../../drizzle/db';
 import { asDefined } from '../../../../../utils/assertions';
 import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
 import { matchOne } from '../../../../authorization';
@@ -30,7 +30,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   ) => {
     if (original.type !== ItemType.APP || copy.type !== ItemType.APP) return;
 
-    await appSettingService.copyForItem(actor, repositories, original, copy);
+    await appSettingService.copyForItem(actor, db, original, copy);
   };
   itemService.hooks.setPostHook('copy', hook);
 
@@ -62,7 +62,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user, params: { itemId, id: appSettingId }, body }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return db.transaction(async (manager) => {
+      return db.transaction(async (tx) => {
         return appSettingService.patch(tx, member, itemId, appSettingId, body);
       });
     },
@@ -78,7 +78,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user, params: { itemId, id: appSettingId } }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return db.transaction(async (manager) => {
+      return db.transaction(async (tx) => {
         return appSettingService.deleteOne(tx, member, itemId, appSettingId);
       });
     },

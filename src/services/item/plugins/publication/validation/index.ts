@@ -5,8 +5,8 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { PermissionLevel, PublicationStatus } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../di/utils';
+import { db } from '../../../../../drizzle/db';
 import { asDefined } from '../../../../../utils/assertions';
-import { buildRepositories } from '../../../../../utils/repositories';
 import { isAuthenticated } from '../../../../auth/plugins/passport';
 import { matchOne } from '../../../../authorization';
 import { assertIsMember } from '../../../../member/entities/member';
@@ -24,7 +24,7 @@ import { getItemValidationGroup, getLatestItemValidationGroup, validateItem } fr
 import { ItemValidationService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { db, websockets } = fastify;
+  const { websockets } = fastify;
 
   const validationService = resolveDependency(ItemValidationService);
   const publishService = resolveDependency(ItemPublishedService);
@@ -41,12 +41,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user, params: { itemId } }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      const item = await itemService.get(member, buildRepositories(), itemId);
-      return await validationService.getLastItemValidationGroupForItem(
-        member,
-        buildRepositories(),
-        item,
-      );
+      const item = await itemService.get(db, member, itemId);
+      return await validationService.getLastItemValidationGroupForItem(db, member, item);
     },
   );
 
@@ -60,11 +56,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user, params: { itemValidationGroupId } }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return await validationService.getItemValidationGroup(
-        member,
-        buildRepositories(),
-        itemValidationGroupId,
-      );
+      return await validationService.getItemValidationGroup(db, member, itemValidationGroupId);
     },
   );
 
@@ -84,16 +76,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
 
-      db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
+      db.transaction(async (tx) => {
         // get item and check permission
         // only folder items are allowed as root for validation
-        const item = await folderItemService.get(
-          member,
-          repositories,
-          itemId,
-          PermissionLevel.Admin,
-        );
+        const item = await folderItemService.get(tx, member, itemId, PermissionLevel.Admin);
 
         const notifyOnValidationChanges = () => {
           websockets.publish(
@@ -104,7 +90,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         };
 
         const hasValidationSucceeded = await validationService.post(
-          repositories,
+          tx,
           item,
           notifyOnValidationChanges,
         );
@@ -113,8 +99,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           // publish automatically the item if it is valid.
           // private item will be set to public automatically (should ask the user on the frontend).
           await publishService.publishIfNotExist(
+            tx,
             member,
-            repositories,
             itemId,
             PublicationStatus.ReadyToPublish,
           );

@@ -25,8 +25,6 @@ import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { MemberCannotAccess, UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { Action } from '../../../action/entities/action';
-import { ActionService } from '../../../action/services/action.service';
-import { MOCK_REQUEST } from '../../../action/services/action.service.testice.test';
 import { saveActions } from '../../../action/test/fixtures/actions';
 import { MemberService } from '../../../member/service';
 import { saveMember } from '../../../member/test/fixtures/members';
@@ -36,7 +34,7 @@ import { ItemTestUtils, expectItem } from '../../test/fixtures/items';
 import { saveAppActions } from '../app/appAction/test/fixtures';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../thumbnail/service';
-import { ActionItemService } from './service';
+import { ActionItemService } from './action.service';
 import { ItemActionType } from './utils';
 
 const itemService = new ItemService(

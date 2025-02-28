@@ -7,7 +7,6 @@ import fp from 'fastify-plugin';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
 import { matchOne } from '../../../authorization';
@@ -62,8 +61,8 @@ const endpoints: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
 
-      await db.transaction(async (manager) => {
-        return await etherpadItemService.patchWithOptions(member, buildRepositories(manager), id, {
+      await db.transaction(async (tx) => {
+        return await etherpadItemService.patchWithOptions(tx, member, id, {
           readerPermission,
         });
       });
@@ -102,7 +101,7 @@ const endpoints: FastifyPluginAsyncTypebox = async (fastify) => {
   /**
    * Delete etherpad on item delete
    */
-  itemService.hooks.setPreHook('delete', async (actor, repositories, { item }) => {
+  itemService.hooks.setPreHook('delete', async (actor, _db, { item }) => {
     if (!actor) {
       return;
     }
@@ -112,7 +111,7 @@ const endpoints: FastifyPluginAsyncTypebox = async (fastify) => {
   /**
    * Copy etherpad on item copy
    */
-  itemService.hooks.setPreHook('copy', async (actor, repositories, { original: item }) => {
+  itemService.hooks.setPreHook('copy', async (actor, _db, { original: item }) => {
     if (!actor) {
       return;
     }

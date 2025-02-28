@@ -7,11 +7,9 @@ import { ItemVisibilityOptionsType, ResultOf, getChildFromPath } from '@graasp/s
 import { DBConnection } from '../../../../drizzle/db';
 import { isAncestorOrSelf, isDescendantOrSelf } from '../../../../drizzle/operations';
 import { itemVisibilities, items } from '../../../../drizzle/schema';
-import { EntryNotFoundAfterInsertException } from '../../../../repositories/errors';
 import { Member } from '../../../member/entities/member';
 import { mapById } from '../../../utils';
 import { Item } from '../../entities/Item';
-import { ItemVisibility } from './ItemVisibility';
 import {
   CannotModifyParentVisibility,
   ConflictingVisibilitiesInTheHierarchy,
@@ -178,7 +176,7 @@ export class ItemVisibilityRepository {
       .values({ itemPath: itemPath, type, creatorId: creatorId })
       .returning();
     if (result.length != 1) {
-      throw new EntryNotFoundAfterInsertException(ItemVisibility);
+      throw new Error('Entitiy not found after insert: ItemVisibility');
     }
     return result[0];
   }

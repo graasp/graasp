@@ -3,8 +3,9 @@ import { singleton } from 'tsyringe';
 import { FlagType } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { Account } from '../../../account/entities/account';
+import { AuthenticatedUser } from '../../../../types';
 import { ItemService } from '../../service';
+import { FlagOptionsType } from './itemFlag.types';
 import { ItemFlagRepository } from './repository';
 
 @singleton()
@@ -21,10 +22,19 @@ export class ItemFlagService {
     return Object.values(FlagType);
   }
 
-  async post(db: DBConnection, account: Account, itemId: string, flagType: FlagType) {
+  async post(
+    db: DBConnection,
+    actor: AuthenticatedUser,
+    itemId: string,
+    flagType: FlagOptionsType,
+  ) {
     // only register member can report
-    await this.itemService.get(db, account, itemId);
+    await this.itemService.get(db, actor, itemId);
 
-    return this.itemFlagRepository.addOne(db, { flagType, creator: account, itemId });
+    return this.itemFlagRepository.addOne(db, {
+      flagType,
+      creatorId: actor.id,
+      itemId,
+    });
   }
 }

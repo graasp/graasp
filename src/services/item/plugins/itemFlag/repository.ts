@@ -1,23 +1,21 @@
 import { singleton } from 'tsyringe';
 
-import { FlagType } from '@graasp/sdk';
-
 import { DBConnection } from '../../../../drizzle/db';
-import { itemFlags } from '../../../../drizzle/schema';
-import { Account } from '../../../account/entities/account';
+import { ItemFlagCreationDTO, itemFlags } from '../../../../drizzle/schema';
+import { FlagOptionsType } from './itemFlag.types';
 
 type CreateItemFlagBody = {
-  flagType: FlagType;
-  creator: Account;
+  flagType: FlagOptionsType;
+  creatorId: string;
   itemId: string;
 };
 
 @singleton()
 export class ItemFlagRepository {
-  async addOne(db: DBConnection, { flagType, creator, itemId }: CreateItemFlagBody) {
-    return await db
-      .insert(itemFlags)
-      .values({ type: flagType, creatorId: creator.id, itemId })
-      .returning();
+  async addOne(
+    db: DBConnection,
+    { flagType, creatorId, itemId }: CreateItemFlagBody,
+  ): Promise<ItemFlagCreationDTO> {
+    return await db.insert(itemFlags).values({ type: flagType, creatorId, itemId }).returning();
   }
 }

@@ -288,7 +288,6 @@ export class ItemService {
   /**
    * internally get generic items
    * @param actor
-   * @param repositories
    * @param ids
    * @returns result of items given ids
    */
@@ -325,20 +324,21 @@ export class ItemService {
   /**
    * get generic items
    * @param actor
-   * @param repositories
    * @param ids
    * @returns
    */
   async getMany(db: DBConnection, actor: Actor, ids: string[]) {
     const { items, itemMemberships } = await this._getMany(db, actor, ids);
 
-    return { data: items.data, errors: items.errors.concat(itemMemberships?.errors ?? []) };
+    return {
+      data: items.data,
+      errors: items.errors.concat(itemMemberships?.errors ?? []),
+    };
   }
 
   /**
    * get item packed with complementary items
    * @param actor
-   * @param repositories
    * @param ids
    * @returns
    */
@@ -394,16 +394,15 @@ export class ItemService {
     itemId: string,
     params?: ItemChildrenParams,
   ) {
-    const { itemRepository } = repositories;
-    const item = await this.get(actor, repositories, itemId);
+    const item = await this.get(db, actor, itemId);
 
     return itemRepository.getChildren(actor, item, params);
   }
 
   async getChildren(db: DBConnection, actor: Actor, itemId: string, params?: ItemChildrenParams) {
-    const children = await this._getChildren(actor, repositories, itemId, params);
+    const children = await this._getChildren(db, actor, itemId, params);
     // TODO optimize?
-    return filterOutItems(actor, repositories, children);
+    return filterOutItems(db, actor, children);
   }
 
   async getPackedChildren(
@@ -412,11 +411,11 @@ export class ItemService {
     itemId: string,
     params?: ItemChildrenParams,
   ) {
-    const children = await this._getChildren(actor, repositories, itemId, params);
+    const children = await this._getChildren(db, actor, itemId, params);
     const thumbnails = await this.itemThumbnailService.getUrlsByItems(children);
 
     // TODO optimize?
-    return filterOutPackedItems(actor, repositories, children, thumbnails);
+    return filterOutPackedItems(db, actor, children, thumbnails);
   }
 
   private async getDescendants(
@@ -425,23 +424,25 @@ export class ItemService {
     itemId: UUID,
     options?: { types?: string[] },
   ) {
-    const { itemRepository } = repositories;
-    const item = await this.get(actor, repositories, itemId);
+    const item = await this.get(db, actor, itemId);
 
     if (!isItemType(item, ItemType.FOLDER)) {
       return { item, descendants: [] };
     }
 
-    return { item, descendants: await itemRepository.getDescendants(item, options) };
+    return {
+      item,
+      descendants: await itemRepository.getDescendants(item, options),
+    };
   }
 
   async getFilteredDescendants(db: DBConnection, account: Account, itemId: UUID) {
-    const { descendants } = await this.getDescendants(account, repositories, itemId);
+    const { descendants } = await this.getDescendants(db, account, itemId);
     if (!descendants.length) {
       return [];
     }
     // TODO optimize?
-    return filterOutItems(account, repositories, descendants);
+    return filterOutItems(db, account, descendants);
   }
 
   async getPackedDescendants(
@@ -488,11 +489,11 @@ export class ItemService {
       item,
     );
 
-    await this.hooks.runPreHooks('update', member, repositories, { item: item });
+    await this.hooks.runPreHooks('update', member, db, { item: item });
 
     const updated = await this.itemRepository.updateOne(db, item.id, body);
 
-    await this.hooks.runPostHooks('update', member, repositories, { item: updated });
+    await this.hooks.runPostHooks('update', member, db, { item: updated });
 
     return updated;
   }
@@ -507,7 +508,9 @@ export class ItemService {
     // we do not use checkNumberOfDescendants because we use descendants
     let items = [item];
     if (isItemType(item, ItemType.FOLDER)) {
-      const descendants = await this.itemRepository.getDescendants(db, item, { ordered: false });
+      const descendants = await this.itemRepository.getDescendants(db, item, {
+        ordered: false,
+      });
       if (descendants.length > MAX_DESCENDANTS_FOR_DELETE) {
         throw new TooManyDescendants(itemId);
       }
@@ -516,7 +519,7 @@ export class ItemService {
 
     // pre hook
     for (const item of items) {
-      await this.hooks.runPreHooks('delete', actor, repositories, { item });
+      await this.hooks.runPreHooks('delete', actor, db, { item });
     }
 
     await this.itemRepository.delete(
@@ -526,7 +529,7 @@ export class ItemService {
 
     // post hook
     for (const item of items) {
-      await this.hooks.runPostHooks('delete', actor, repositories, { item });
+      await this.hooks.runPostHooks('delete', actor, db, { item });
     }
 
     return item;
@@ -556,7 +559,9 @@ export class ItemService {
         }
         // check how "big the tree is" below the item
         // we do not use checkNumberOfDescendants because we use descendants
-        const descendants = await this.itemRepository.getDescendants(db, item, { ordered: false });
+        const descendants = await this.itemRepository.getDescendants(db, item, {
+          ordered: false,
+        });
         if (descendants.length > MAX_DESCENDANTS_FOR_DELETE) {
           throw new TooManyDescendants(item.id);
         }
@@ -568,7 +573,7 @@ export class ItemService {
 
     // pre hook
     for (const item of items) {
-      await this.hooks.runPreHooks('delete', actor, repositories, { item });
+      await this.hooks.runPreHooks('delete', actor, db, { item });
     }
 
     await this.itemRepository.delete(
@@ -578,7 +583,7 @@ export class ItemService {
 
     // post hook
     for (const item of items) {
-      await this.hooks.runPostHooks('delete', actor, repositories, { item });
+      await this.hooks.runPostHooks('delete', actor, db, { item });
     }
 
     return allItems;
@@ -604,14 +609,14 @@ export class ItemService {
 
     // post hook
     // question: invoque on all items?
-    await this.hooks.runPreHooks('move', member, repositories, {
+    await this.hooks.runPreHooks('move', member, db, {
       source: item,
       destinationParent: parentItem,
     });
 
     const result = await this._move(db, member, item, parentItem);
 
-    await this.hooks.runPostHooks('move', member, repositories, {
+    await this.hooks.runPostHooks('move', member, db, {
       source: item,
       sourceParentId: getParentFromPath(item.path),
       destination: result,
@@ -634,7 +639,10 @@ export class ItemService {
       await this.itemRepository.rescaleOrder(db, member, parentItem);
     }
 
-    return { items: results.map(({ item }) => item), moved: results.map(({ moved }) => moved) };
+    return {
+      items: results.map(({ item }) => item),
+      moved: results.map(({ moved }) => moved),
+    };
   }
 
   /**
@@ -689,13 +697,15 @@ export class ItemService {
 
     let items = [item];
     if (isItemType(item, ItemType.FOLDER)) {
-      const descendants = await this.itemRepository.getDescendants(db, item, { ordered: false });
+      const descendants = await this.itemRepository.getDescendants(db, item, {
+        ordered: false,
+      });
       items = [...descendants, item];
     }
 
     // pre hook
     for (const original of items) {
-      await this.hooks.runPreHooks('copy', member, repositories, { original });
+      await this.hooks.runPreHooks('copy', member, db, { original });
     }
 
     let siblings: string[] = [];
@@ -708,7 +718,9 @@ export class ItemService {
     startWith = startWith.substring(0, MAX_ITEM_NAME_LENGTH - MAX_COPY_SUFFIX_LENGTH);
 
     if (parentItem) {
-      siblings = await this.itemRepository.getChildrenNames(db, parentItem, { startWith });
+      siblings = await this.itemRepository.getChildrenNames(db, parentItem, {
+        startWith,
+      });
     } else {
       siblings = await this.itemMembershipRepository.getAccessibleItemNames(db, member, {
         startWith,
@@ -740,7 +752,10 @@ export class ItemService {
 
     // post hook
     for (const { original, copy } of treeCopyMap.values()) {
-      await this.hooks.runPostHooks('copy', member, repositories, { original, copy });
+      await this.hooks.runPostHooks('copy', member, db, {
+        original,
+        copy,
+      });
 
       // copy hidden visibility
       await this.itemVisibilityRepository.copyAll(db, member, original, copy, [
@@ -788,7 +803,10 @@ export class ItemService {
       await this.itemRepository.rescaleOrder(member, parentItem);
     }
 
-    return { items: results.map(({ item }) => item), copies: results.map(({ copy }) => copy) };
+    return {
+      items: results.map(({ item }) => item),
+      copies: results.map(({ copy }) => copy),
+    };
   }
 
   async reorder(
@@ -814,10 +832,9 @@ export class ItemService {
   /**
    * Rescale order of children (of itemId's parent) if necessary
    * @param member
-   * @param repositories
    * @param itemId item whose parent get its children order rescaled if necessary
    */
-  async rescaleOrderForParent(db: DBConnection, member: Member, item: Item) {
+  async rescaleOrderForParent(db: DBConnection, member: AuthenticatedUser, item: Item) {
     const parentId = getParentFromPath(item.path);
     if (parentId) {
       const parentItem = await this.get(db, member, parentId);

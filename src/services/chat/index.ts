@@ -51,7 +51,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspChatPluginOptions> = async (fastif
   fastify.register(async (fastify: FastifyInstanceTypebox) => {
     // register websocket behaviours for chats
     if (websockets) {
-      registerChatWsHooks(buildRepositories(), websockets, chatService, itemService);
+      registerChatWsHooks(db, websockets, chatService, itemService);
     }
 
     fastify.get(

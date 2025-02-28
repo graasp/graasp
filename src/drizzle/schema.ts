@@ -136,6 +136,7 @@ export const memberPasswords = pgTable(
   },
   (table) => [unique('member-password').on(table.memberId)],
 );
+export type MemberPasswordRaw = typeof memberPasswords.$inferSelect;
 
 export const recycledItemDatas = pgTable(
   'recycled_item_data',
@@ -210,6 +211,7 @@ export const itemFlags = pgTable(
     unique('item-flag-creator').on(table.type, table.creatorId, table.itemId),
   ],
 );
+export type ItemFlagCreationDTO = typeof itemLikes.$inferInsert;
 
 export const itemCategories = pgTable(
   'item_category',
@@ -276,6 +278,11 @@ export const chatMessages = pgTable(
   ],
 );
 
+export type ChatMessageRaw = typeof chatMessages.$inferSelect;
+export type ChatMessageWithCreatorAndItem = typeof chatMessages.$inferSelect & {
+  creator: Account;
+  item: Item;
+};
 export type ChatMessageCreationDTO = typeof chatMessages.$inferInsert;
 
 export const chatMentions = pgTable(

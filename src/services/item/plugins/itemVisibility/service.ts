@@ -17,10 +17,6 @@ export class ItemVisibilityService {
     this.itemVisibilityRepository = itemVisibilityRepository;
   }
 
-  async has(db: DBConnection, path: string, visibilityType: ItemVisibilityOptionsType) {
-    return await this.itemVisibilityRepository.getType(path, visibilityType);
-  }
-
   async post(
     db: DBConnection,
     member: Member,
@@ -48,7 +44,7 @@ export class ItemVisibilityService {
   ) {
     const item = await this.itemService.get(db, member, id, PermissionLevel.Admin);
 
-    await this.itemVisibilityRepository.deleteOne(item, visibilityType);
+    await this.itemVisibilityRepository.deleteOne(db, item, visibilityType);
     return { item: { path: item.path } };
   }
 }

@@ -1,15 +1,17 @@
 import { eq } from 'drizzle-orm/sql';
+import { singleton } from 'tsyringe';
 
 import { UUID, isPasswordStrong } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { memberPasswords } from '../../../../drizzle/schema';
-import { EmptyCurrentPassword, InvalidPassword, MemberNotFound } from '../../../../utils/errors';
+import { MemberPasswordRaw, memberPasswords } from '../../../../drizzle/schema';
+import { MemberNotFound } from '../../../../utils/errors';
 import { PasswordNotStrong } from './errors';
-import { encryptPassword, verifyCurrentPassword } from './utils';
+import { encryptPassword } from './utils';
 
+@singleton()
 export class MemberPasswordRepository {
-  async getForMemberId(db: DBConnection, memberId: string) {
+  async getForMemberId(db: DBConnection, memberId: string): Promise<MemberPasswordRaw | undefined> {
     // additional check that id is not null
     // o/w empty parameter to findOneBy return the first entry
     if (!memberId) {
@@ -23,14 +25,14 @@ export class MemberPasswordRepository {
     return memberPassword;
   }
 
-  async post(db: DBConnection, memberId: UUID, newEncryptedPassword: string) {
+  async post(db: DBConnection, memberId: UUID, newEncryptedPassword: string): Promise<void> {
     await db.insert(memberPasswords).values({
       memberId,
       password: newEncryptedPassword,
     });
   }
 
-  async patch(db: DBConnection, memberId: UUID, newPassword: string) {
+  async patch(db: DBConnection, memberId: UUID, newPassword: string): Promise<void> {
     if (!isPasswordStrong(newPassword)) {
       throw new PasswordNotStrong(newPassword);
     }
@@ -51,23 +53,5 @@ export class MemberPasswordRepository {
           password: hash,
         },
       });
-  }
-
-  async validatePassword(db: DBConnection, memberId: UUID, currentPassword: string) {
-    const memberPassword = await this.getForMemberId(db, memberId);
-
-    if (!memberPassword) {
-      return true;
-    }
-
-    const verified = await verifyCurrentPassword(memberPassword.password, currentPassword);
-    // throw error if password verification fails
-    if (!verified) {
-      // this should be validated by the schema, but we do it again here.
-      if (currentPassword === '') {
-        throw new EmptyCurrentPassword();
-      }
-      throw new InvalidPassword();
-    }
   }
 }

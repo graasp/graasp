@@ -6,7 +6,6 @@ import { ActionTriggers } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../../../di/utils';
 import { MEILISEARCH_REBUILD_SECRET } from '../../../../../../../utils/config';
-import { buildRepositories } from '../../../../../../../utils/repositories';
 import { ActionService } from '../../../../../../action/services/action.service';
 import { optionalIsAuthenticated } from '../../../../../../auth/plugins/passport';
 import { getFacets, getMostLiked, getMostRecent, search } from './schemas';
@@ -30,14 +29,13 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     { preHandler: optionalIsAuthenticated, schema: search },
     async (request) => {
       const { user, body } = request;
-      const repositories = buildRepositories();
       const member = user?.account;
       const searchResults = await searchService.search(body);
       const action = {
         type: ActionTriggers.ItemSearch,
         extra: body,
       };
-      await actionService.postMany(member, repositories, request, [action]);
+      await actionService.postMany(db, member, request, [action]);
       return searchResults;
     },
   );

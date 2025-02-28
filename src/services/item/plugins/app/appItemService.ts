@@ -4,6 +4,7 @@ import { ItemGeolocation, ItemType, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
 import { BaseLogger } from '../../../../logger';
+import { AuthenticatedUser } from '../../../../types';
 import { Member } from '../../../member/entities/member';
 import { ThumbnailService } from '../../../thumbnail/service';
 import { AppItem, Item, isItemType } from '../../entities/Item';
@@ -25,7 +26,7 @@ export class AppItemService extends ItemService {
 
   async postWithOptions(
     db: DBConnection,
-    member: Member,
+    member: AuthenticatedUser,
     args: Partial<Pick<Item, 'description' | 'lang'>> &
       Pick<Item, 'name'> & {
         url: string;
@@ -36,7 +37,13 @@ export class AppItemService extends ItemService {
   ): Promise<AppItem> {
     const { name, description, lang, url, ...options } = args;
 
-    const newItem = { type: ItemType.APP, name, description, lang, extra: { app: { url } } };
+    const newItem = {
+      type: ItemType.APP,
+      name,
+      description,
+      lang,
+      extra: { app: { url } },
+    };
     return (await super.post(db, member, {
       item: newItem,
       ...options,

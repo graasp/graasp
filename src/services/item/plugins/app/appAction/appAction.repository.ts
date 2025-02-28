@@ -3,11 +3,10 @@ import { and, eq, inArray } from 'drizzle-orm/sql';
 import { ResultOf } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../drizzle/db';
-import { appActions } from '../../../../../drizzle/schema';
+import { Account, Item, appActions } from '../../../../../drizzle/schema';
 import { IllegalArgumentException } from '../../../../../repositories/errors';
 import { mapById } from '../../../../utils';
 import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request';
-import { AppAction } from './appAction.entity';
 import { InputAppAction } from './appAction.interface';
 
 type CreateAppActionBody = {
@@ -54,7 +53,7 @@ export class AppActionRepository {
     db: DBConnection,
     itemIds: string[],
     filters: ManyItemsGetFilter,
-  ): Promise<ResultOf<AppAction[]>> {
+  ): Promise<ResultOf<(typeof appActions.$inferSelect & { item: Item; account: Account })[]>> {
     const { accountId } = filters;
 
     if (itemIds.length === 0) {
@@ -63,7 +62,10 @@ export class AppActionRepository {
 
     // here it is ok to have some app actions where the item or the member are null (because of missing or soft-deleted relations)
     const result = await db.query.appActions.findMany({
-      where: and(eq(appActions.accountId, accountId), inArray(appActions.itemId, itemIds)),
+      where: and(
+        inArray(appActions.itemId, itemIds),
+        accountId ? eq(appActions.accountId, accountId) : undefined,
+      ),
       with: { item: true, account: true },
     });
     // todo: should use something like:

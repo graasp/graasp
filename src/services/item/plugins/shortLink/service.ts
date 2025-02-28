@@ -10,15 +10,16 @@ import {
   UpdateShortLink,
 } from '@graasp/sdk';
 
+import { DBConnection } from '../../../../drizzle/db';
 import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
 import { UnauthorizedMember } from '../../../../utils/errors';
-import { Repositories } from '../../../../utils/repositories';
 import { Account } from '../../../account/entities/account';
 import { ItemService } from '../../../item/service';
 import { Member } from '../../../member/entities/member';
 import { ItemPublishedNotFound } from '../publication/published/errors';
 import { ItemPublishedService } from '../publication/published/service';
 import { ShortLinkDTO } from './dto/ShortLinkDTO';
+import { ShortLinkRepository } from './repository';
 
 export const SHORT_LINKS_ROUTE_PREFIX = '/short-links';
 export const SHORT_LINKS_LIST_ROUTE = '/list';
@@ -28,49 +29,49 @@ export const SHORT_LINKS_FULL_PREFIX = `${ITEMS_ROUTE_PREFIX}${SHORT_LINKS_ROUTE
 export class ShortLinkService {
   private itemService: ItemService;
   private itemPublishedService: ItemPublishedService;
+  private readonly shortLinkRepository: ShortLinkRepository;
 
-  public constructor(itemService: ItemService, itemPublishedService: ItemPublishedService) {
+  public constructor(
+    itemService: ItemService,
+    itemPublishedService: ItemPublishedService,
+    shortLinkRepository: ShortLinkRepository,
+  ) {
     this.itemService = itemService;
     this.itemPublishedService = itemPublishedService;
+    this.shortLinkRepository = shortLinkRepository;
   }
 
-  async post(member: Member, repositories: Repositories, shortLink: ShortLink) {
-    const { shortLinkRepository } = repositories;
-
+  async post(db: DBConnection, member: Member, shortLink: ShortLink) {
     // check that the item is published if platform is Library
     if (shortLink.platform === ShortLinkPlatform.Library) {
       // Will throw exception if not published or not tagged.
       // Rethrow an ItemPublishedNotFound to indicate that we try
       // to create a short links to the library on an unpublished item.
       try {
-        await this.itemPublishedService.get(member, repositories, shortLink.itemId);
+        await this.itemPublishedService.get(db, member, shortLink.itemId);
       } catch (ex) {
         throw new ItemPublishedNotFound();
       }
     }
 
     // check that the member can admin the item to be allowed to create short link
-    await this.itemService.get(member, repositories, shortLink.itemId, PermissionLevel.Admin);
+    await this.itemService.get(db, member, shortLink.itemId, PermissionLevel.Admin);
 
-    const createdShortLink = await shortLinkRepository.addOne(shortLink);
+    const createdShortLink = await this.shortLinkRepository.addOne(db, shortLink);
     return ShortLinkDTO.from(createdShortLink);
   }
 
-  async getOne(repositories: Repositories, alias: string) {
-    const { shortLinkRepository } = repositories;
-
-    const shortLink = await shortLinkRepository.getOne(alias);
+  async getOne(db: DBConnection, alias: string) {
+    const shortLink = await this.shortLinkRepository.getOne(db, alias);
     return ShortLinkDTO.from(shortLink);
   }
 
-  async getAllForItem(account: Account, repositories: Repositories, itemId: string) {
-    const { shortLinkRepository } = repositories;
-
+  async getAllForItem(db: DBConnection, account: Account, itemId: string) {
     if (!account) throw new UnauthorizedMember();
     // check that the member can read the item to be allowed to read all short links
-    await this.itemService.get(account, repositories, itemId, PermissionLevel.Read);
+    await this.itemService.get(db, account, itemId, PermissionLevel.Read);
 
-    const res = await shortLinkRepository.getByItem(itemId);
+    const res = await this.shortLinkRepository.getByItem(db, itemId);
 
     return res.reduce<ShortLinksOfItem>((acc, { alias, platform }) => {
       if (acc[platform]) {
@@ -82,42 +83,34 @@ export class ShortLinkService {
     }, {});
   }
 
-  async getRedirection(repositories: Repositories, alias: string) {
-    const shortLink = await this.getOne(repositories, alias);
+  async getRedirection(db: DBConnection, alias: string) {
+    const shortLink = await this.getOne(db, alias);
     const clientHostManager = ClientManager.getInstance();
 
     return clientHostManager.getItemLink(shortLink.platform as Context, shortLink.itemId);
   }
 
-  async delete(member: Member, repositories: Repositories, alias: string) {
-    const { shortLinkRepository } = repositories;
-
+  async delete(db: DBConnection, member: Member, alias: string) {
     if (!member) throw new UnauthorizedMember();
-    const shortLink = await shortLinkRepository.getOne(alias);
+    const shortLink = await this.shortLinkRepository.getOne(db, alias);
 
     // check that the member can admin the item to be allowed to create short link
-    await this.itemService.get(member, repositories, shortLink.item.id, PermissionLevel.Admin);
+    await this.itemService.get(db, member, shortLink.item.id, PermissionLevel.Admin);
 
-    await shortLinkRepository.deleteOne(alias);
+    await this.shortLinkRepository.deleteOne(db, alias);
     return ShortLinkDTO.from(shortLink);
   }
 
-  async update(
-    member: Member,
-    repositories: Repositories,
-    alias: string,
-    updatedShortLink: UpdateShortLink,
-  ) {
-    const { shortLinkRepository } = repositories;
+  async update(db: DBConnection, member: Member, alias: string, updatedShortLink: UpdateShortLink) {
     if (!member) {
       throw new UnauthorizedMember();
     }
-    const shortLink = await shortLinkRepository.getOne(alias);
+    const shortLink = await this.shortLinkRepository.getOne(db, alias);
 
     // check that the member can admin the item to be allowed to create short link
-    await this.itemService.get(member, repositories, shortLink.item.id, PermissionLevel.Admin);
+    await this.itemService.get(db, member, shortLink.item.id, PermissionLevel.Admin);
 
-    const res = await shortLinkRepository.updateOne(alias, updatedShortLink);
+    const res = await this.shortLinkRepository.updateOne(db, alias, updatedShortLink);
     return ShortLinkDTO.from(res);
   }
 }

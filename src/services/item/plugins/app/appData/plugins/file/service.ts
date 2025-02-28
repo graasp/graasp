@@ -7,6 +7,7 @@ import { MultipartFile } from '@fastify/multipart';
 import { AppDataVisibility, FileItemProperties, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../../../drizzle/db';
+import { AuthenticatedUser } from '../../../../../../../types';
 import { Account } from '../../../../../../account/entities/account';
 import FileService from '../../../../../../file/service';
 import { Item } from '../../../../../entities/Item';
@@ -88,7 +89,7 @@ class AppDataFileService {
 
   async download(
     db: DBConnection,
-    account: Account,
+    account: AuthenticatedUser,
     { item, appDataId }: { item: Item; appDataId: UUID },
   ) {
     // get app data and check it is a file

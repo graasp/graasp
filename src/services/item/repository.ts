@@ -943,7 +943,7 @@ export class ItemRepository {
     return await this.getOneOrThrow(db, item.id);
   }
 
-  async rescaleOrder(db: DBConnection, actor: Actor, parentItem: Item) {
+  async rescaleOrder(db: DBConnection, actor: AuthenticatedUser, parentItem: Item) {
     const children = await this.getChildren(db, actor, parentItem);
 
     // no need to rescale for less than 2 items

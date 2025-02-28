@@ -79,10 +79,6 @@ export class ItemMembershipService {
     return await this.itemMembershipRepository.hasMembershipOnItem(db, accountId, itemId);
   }
 
-  async getByAccountAndItemPath(db: DBConnection, accountId: UUID, itemPath: string) {
-    return await this.itemMembershipRepository.getByAccountAndItem(db, accountId, itemPath);
-  }
-
   async getForManyItems(db: DBConnection, actor: Actor, itemIds: string[]) {
     // get memberships, containing item
 

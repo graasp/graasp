@@ -2,7 +2,6 @@ import { FastifyBaseLogger } from 'fastify';
 
 import { DBConnection } from '../drizzle/db';
 import { Actor } from '../types';
-import { Repositories } from './repositories';
 
 export type Handler<Data> = (
   actor: Actor,

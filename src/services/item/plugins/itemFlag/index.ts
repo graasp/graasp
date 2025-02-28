@@ -1,8 +1,8 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import { matchOne } from '../../../authorization';
 import { guestAccountRole } from '../../../itemLogin/strategies/guestAccountRole';
@@ -11,8 +11,6 @@ import { create, getFlagTypes } from './schemas';
 import { ItemFlagService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { db } = fastify;
-
   const itemFlagService = resolveDependency(ItemFlagService);
 
   // Get all flag types that can be assigned to an ItemFlag entity.
@@ -29,8 +27,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async ({ user, params: { itemId }, body: { type } }) => {
       const account = asDefined(user?.account);
-      return db.transaction(async (manager) => {
-        return itemFlagService.post(account, buildRepositories(manager), itemId, type);
+      return db.transaction(async (tx) => {
+        const res = itemFlagService.post(tx, account, itemId, type);
+        return res;
       });
     },
   );

@@ -1,8 +1,6 @@
 import { fastifyMultipart } from '@fastify/multipart';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { HttpMethod } from '@graasp/sdk';
-
 import { resolveDependency } from '../../../../../../../di/utils';
 import { DBConnection, db } from '../../../../../../../drizzle/db';
 import { asDefined } from '../../../../../../../utils/assertions';
@@ -50,16 +48,17 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
 
   // register post delete handler to remove the file object after item delete
   const deleteHook = async (actor: Member, db: DBConnection, args: { appData: AppData }) => {
-    await appDataFileService.deleteOne(args.appData);
+    await appDataFileService.deleteOne(db, args.appData);
   };
   appDataService.hooks.setPostHook('delete', deleteHook);
 
-  fastify.route({
-    method: HttpMethod.Post,
-    url: '/app-data/upload',
-    schema: upload,
-    preHandler: guestAuthenticateAppsJWT,
-    handler: async (request) => {
+  fastify.post(
+    '/app-data/upload',
+    {
+      schema: upload,
+      preHandler: guestAuthenticateAppsJWT,
+    },
+    async (request) => {
       const { user } = request;
       const member = asDefined(user?.account);
       const app = asDefined(user?.app);
@@ -86,7 +85,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
           throw new UploadFileUnexpectedError(e);
         });
     },
-  });
+  );
 
   fastify.get(
     '/app-data/:id/download',

@@ -6,7 +6,6 @@ import { ChatMessage } from '../services/chat/chatMessage';
 import { ChatMention } from '../services/chat/plugins/mentions/chatMention';
 import { Item } from '../services/item/entities/Item';
 import { ActionRequestExport } from '../services/item/plugins/action/requestExport/requestExport';
-import { AppAction } from '../services/item/plugins/app/appAction/appAction';
 import { AppData } from '../services/item/plugins/app/appData/appData';
 import { AppSetting } from '../services/item/plugins/app/appSetting/appSettings';
 import { App } from '../services/item/plugins/app/entities/app';
@@ -83,7 +82,6 @@ export const AppDataSource = new DataSource({
     Publisher,
     App,
     AppData,
-    AppAction,
     AppSetting,
     ChatMessage,
     ChatMention,
