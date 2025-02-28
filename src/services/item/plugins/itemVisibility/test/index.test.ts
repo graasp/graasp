@@ -141,7 +141,6 @@ describe('Item Visibility', () => {
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
     });
-    // });
 
     describe('DELETE /:itemId/visibilities/:id', () => {
       describe('Signed Out', () => {

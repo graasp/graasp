@@ -332,7 +332,7 @@ async function processMembers({
 }
 
 async function createItemVisibilities(items: (SeedItem & { path: string })[]) {
-  const visibilities = items.reduce(
+  const visibilities = items.reduce<{ item: { path: string }; type: ItemVisibilityType }[]>(
     (acc, { path, isHidden, isPublic }) => {
       if (isHidden) {
         acc.push({ item: { path }, type: ItemVisibilityType.Hidden });
@@ -342,7 +342,7 @@ async function createItemVisibilities(items: (SeedItem & { path: string })[]) {
       }
       return acc;
     },
-    [] as { item: { path: string }; type: ItemVisibilityType }[],
+    [],
   );
 
   return (
