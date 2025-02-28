@@ -16,6 +16,7 @@ import {
   actionsTable,
   chatMentionsTable,
   chatMessagesTable,
+  invitationsTable,
   items,
   itemsRaw,
   membersView,
@@ -100,10 +101,7 @@ export type ItemWithCreator = Omit<Item, 'creatorId'> & { creator: Account };
 
 export type PublishedIteminsertDTO = typeof publishedItems.$inferInsert;
 export type PublishedItemRaw = typeof publishedItems.$inferSelect;
-export type ItemPublishedWithItem = Omit<
-  typeof publishedItems.$inferSelect,
-  'itemPath'
-> & {
+export type ItemPublishedWithItem = Omit<typeof publishedItems.$inferSelect, 'itemPath'> & {
   item: Item;
 };
 export type ItemPublishedWithItemAndAccount = ItemPublishedWithItem & {
@@ -111,14 +109,11 @@ export type ItemPublishedWithItemAndAccount = ItemPublishedWithItem & {
 };
 
 // --- Actions
-export type ActionInsertRaw = typeof actionsTable.$inferInsert;
+export type ActionInsertDTO = typeof actionsTable.$inferInsert;
 export type ActionRaw = typeof actionsTable.$inferSelect;
 // this is type that matches the automatically linked entities from typeORM,
 // we should check each usage location to see if including the realtions is necessary or not
-export type ActionWithItem = Omit<
-  typeof actionsTable.$inferSelect,
-  'accountId' | 'itemId'
-> & {
+export type ActionWithItem = Omit<typeof actionsTable.$inferSelect, 'accountId' | 'itemId'> & {
   item: NullableItem;
 };
 export type ActionWithItemAndAccount = ActionWithItem & {
@@ -136,4 +131,14 @@ export type ChatMentionRaw = typeof chatMentionsTable.$inferSelect;
 export type ChatMentionWithMessageAndCreator = ChatMentionRaw & {
   creator: Account;
   message: ChatMessageRaw;
+};
+
+// --- Invitations
+export type InvitationInsertDTO = typeof invitationsTable.$inferInsert;
+export type InvitationRaw = typeof invitationsTable.$inferSelect;
+export type InvitationWithItem = Omit<InvitationRaw, 'itemPath'> & {
+  item: Item;
+};
+export type InvitationWIthItemAndCreator = Omit<InvitationWithItem, 'creatorId'> & {
+  creator: NullableAccount;
 };

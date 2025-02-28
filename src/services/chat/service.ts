@@ -28,11 +28,7 @@ export class ChatMessageService {
     this.chatMessageRepository = chatMessageRepository;
   }
 
-  async getForItem(
-    db: DBConnection,
-    actor: MaybeUser,
-    itemId: string,
-  ): Promise<ChatMessage[]> {
+  async getForItem(db: DBConnection, actor: MaybeUser, itemId: string): Promise<ChatMessage[]> {
     // check permission
     await this.itemService.get(db, actor, itemId);
 
@@ -56,12 +52,7 @@ export class ChatMessageService {
 
     // post the mentions that are sent with the message
     if (data.mentions?.length) {
-      await this.mentionService.createManyForItem(
-        db,
-        actor,
-        message,
-        data.mentions,
-      );
+      await this.mentionService.createManyForItem(db, actor, message, data.mentions);
     }
 
     await this.hooks.runPostHooks('publish', actor, db, {
@@ -82,10 +73,7 @@ export class ChatMessageService {
     await this.itemService.get(db, actor, itemId);
 
     // check right to make sure that the user is editing his own message
-    const messageContent = await this.chatMessageRepository.getOne(
-      db,
-      messageId,
-    );
+    const messageContent = await this.chatMessageRepository.getOne(db, messageId);
 
     if (!messageContent) {
       throw new ChatMessageNotFound(messageId);
@@ -95,11 +83,7 @@ export class ChatMessageService {
       throw new MemberCannotEditMessage(messageId);
     }
 
-    const updatedMessage = await this.chatMessageRepository.updateOne(
-      db,
-      messageId,
-      message,
-    );
+    const updatedMessage = await this.chatMessageRepository.updateOne(db, messageId, message);
 
     await this.hooks.runPostHooks('update', actor, db, {
       message: updatedMessage,
@@ -108,19 +92,11 @@ export class ChatMessageService {
     return updatedMessage;
   }
 
-  async deleteOne(
-    db: DBConnection,
-    actor: Account,
-    itemId: string,
-    messageId: string,
-  ) {
+  async deleteOne(db: DBConnection, actor: Account, itemId: string, messageId: string) {
     // check permission
     await this.itemService.get(db, actor, itemId);
 
-    const messageContent = await this.chatMessageRepository.getOne(
-      db,
-      messageId,
-    );
+    const messageContent = await this.chatMessageRepository.getOne(db, messageId);
     if (!messageContent) {
       throw new ChatMessageNotFound(messageId);
     }

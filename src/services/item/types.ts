@@ -1,6 +1,6 @@
 import { ItemType, PermissionLevel, UnionOfConst } from '@graasp/sdk';
 
-import { Member } from '../member/entities/member';
+import { Account } from '../../drizzle/types';
 
 export enum SortBy {
   ItemType = 'item.type',
@@ -29,7 +29,7 @@ export function orderingToUpperCase(ordering: Ordering): Ordering.ASC | Ordering
 }
 
 export type ItemSearchParams = {
-  creatorId?: Member['id'];
+  creatorId?: Account['id'];
   keywords?: string[];
   sortBy?: SortBy;
   ordering?: Ordering;

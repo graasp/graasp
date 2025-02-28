@@ -5,15 +5,9 @@ import { PermissionLevel } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../../drizzle/db';
 import { isAncestorOrSelf } from '../../../../../../drizzle/operations';
-import {
-  Item,
-  ItemPublishedWithItemAndAccount,
-  items,
-  membersView,
-  publishedItems,
-} from '../../../../../../drizzle/schema';
+import { items, membersView, publishedItems } from '../../../../../../drizzle/schema';
+import { ItemPublishedWithItemAndAccount } from '../../../../../../drizzle/types';
 import { assertIsDefined } from '../../../../../../utils/assertions';
-import { Member } from '../../../../../member/entities/member';
 import { mapById } from '../../../../../utils';
 import { ItemPublishedNotFound } from '../errors';
 
@@ -50,31 +44,21 @@ export class ItemPublishedRepository {
     const ids = items.map((i) => i.id);
     const entries = await this.repository
       .createQueryBuilder('pi')
-      .innerJoinAndSelect(
-        'pi.item',
-        'item',
-        'pi.item @> ARRAY[:...paths]::ltree[]',
-        {
-          paths,
-        },
-      )
+      .innerJoinAndSelect('pi.item', 'item', 'pi.item @> ARRAY[:...paths]::ltree[]', {
+        paths,
+      })
       .innerJoinAndSelect('pi.creator', 'member')
       .getMany();
 
     return mapById({
       keys: ids,
       findElement: (id) =>
-        entries.find((e) =>
-          items.find((i) => i.id === id)?.path.startsWith(e.item.path),
-        ),
+        entries.find((e) => items.find((i) => i.id === id)?.path.startsWith(e.item.path)),
       buildError: (id) => new ItemPublishedNotFound(id),
     });
   }
 
-  async getForMember(
-    db: DBConnection,
-    memberId: Member['id'],
-  ): Promise<Item[]> {
+  async getForMember(db: DBConnection, memberId: Member['id']): Promise<Item[]> {
     const itemPublished = await this.repository
       .createQueryBuilder('pi')
       // join with memberships that are at or above the item published

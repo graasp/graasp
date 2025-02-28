@@ -3,8 +3,7 @@ import { singleton } from 'tsyringe';
 import { PermissionLevel, TagCategory, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { Member } from '../../../../drizzle/schema';
-import { Actor } from '../../../member/entities/member';
+import { AuthenticatedUser, MaybeUser } from '../../../../types';
 import { TagRepository } from '../../../tag/Tag.repository';
 import { ItemService } from '../../service';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
@@ -15,9 +14,9 @@ import { ItemTagRepository } from './ItemTag.repository';
 export class ItemTagService {
   private readonly itemService: ItemService;
   private readonly meilisearchClient: MeiliSearchWrapper;
-  private readonly tagRepository: TagRepository,
-  private readonly itemTagRepository: ItemTagRepository,
-  private readonly itemPublishedRepository: ItemPublishedRepository,
+  private readonly tagRepository: TagRepository;
+  private readonly itemTagRepository: ItemTagRepository;
+  private readonly itemPublishedRepository: ItemPublishedRepository;
 
   constructor(
     itemService: ItemService,
@@ -28,24 +27,19 @@ export class ItemTagService {
   ) {
     this.itemService = itemService;
     this.meilisearchClient = meilisearchClient;
-    this.itemTagRepository=itemTagRepository
-    this.itemPublishedRepository=itemPublishedRepository
-    this.tagRepository=tagRepository
+    this.itemTagRepository = itemTagRepository;
+    this.itemPublishedRepository = itemPublishedRepository;
+    this.tagRepository = tagRepository;
   }
 
   async create(
     db: DBConnection,
-    actor: Member,
+    authenticatedUser: AuthenticatedUser,
     itemId: UUID,
     tagInfo: { name: string; category: TagCategory },
   ) {
     // Get item and check permission
-    const item = await this.itemService.get(
-      db,
-      actor,
-      itemId,
-      PermissionLevel.Admin,
-    );
+    const item = await this.itemService.get(db, authenticatedUser, itemId, PermissionLevel.Admin);
 
     // create tag if does not exist
     const tag = await this.tagRepository.addOneIfDoesNotExist(db, tagInfo);
@@ -53,10 +47,7 @@ export class ItemTagService {
     const result = await this.itemTagRepository.create(db, itemId, tag.id);
 
     // update index if item is published
-    const publishedItem = await this.itemPublishedRepository.getForItem(
-      db,
-      item,
-    );
+    const publishedItem = await this.itemPublishedRepository.getForItem(db, item);
     if (publishedItem) {
       await this.meilisearchClient.indexOne(db, publishedItem);
     }
@@ -64,27 +55,19 @@ export class ItemTagService {
     return result;
   }
 
-  async getByItemId(db: DBConnection, actor: Actor, itemId: UUID) {
+  async getByItemId(db: DBConnection, actor: MaybeUser, itemId: UUID) {
     // Get item and check permission
     await this.itemService.get(db, actor, itemId, PermissionLevel.Read);
 
-    return await this.itemTagRepository.getByItemId(itemId);
+    return await this.itemTagRepository.getByItemId(db, itemId);
   }
 
-  async delete(db: DBConnection, actor: Member, itemId: UUID, tagId: UUID) {
+  async delete(db: DBConnection, authenticatedUser: AuthenticatedUser, itemId: UUID, tagId: UUID) {
     // Get item and check permission
-    const item = await this.itemService.get(
-      db,
-      actor,
-      itemId,
-      PermissionLevel.Admin,
-    );
+    const item = await this.itemService.get(db, authenticatedUser, itemId, PermissionLevel.Admin);
 
     // update index if item is published
-    const publishedItem = await this.itemPublishedRepository.getForItem(
-      db,
-      item,
-    );
+    const publishedItem = await this.itemPublishedRepository.getForItem(db, item);
     if (publishedItem) {
       await this.meilisearchClient.indexOne(db, publishedItem);
     }

@@ -57,10 +57,7 @@ export class ChatMentionRepository {
    * Return chat mentions by id
    * @param ids ids of the chat mentions
    */
-  async getMany(
-    db: DBConnection,
-    ids: ChatMessage['id'][],
-  ): Promise<ChatMention[]> {
+  async getMany(db: DBConnection, ids: ChatMessage['id'][]): Promise<ChatMention[]> {
     return await db.query.chatMentionsTable.findMany({
       where: inArray(chatMentionsTable.id, ids),
       with: { account: true },
@@ -91,11 +88,7 @@ export class ChatMentionRepository {
    * @param mentionId Mention id to be updated
    * @param status new status to be set
    */
-  async patch(
-    db: DBConnection,
-    mentionId: string,
-    status: MentionStatus,
-  ): Promise<ChatMention> {
+  async patch(db: DBConnection, mentionId: string, status: MentionStatus): Promise<ChatMention> {
     return await db
       .update(chatMentionsTable)
       .set({ status })
@@ -107,14 +100,8 @@ export class ChatMentionRepository {
    * Remove a mention
    * @param mentionId Id of chat
    */
-  async deleteOne(
-    db: DBConnection,
-    mentionId: ChatMention['id'],
-  ): Promise<ChatMention> {
-    await db
-      .delete(chatMentionsTable)
-      .where(eq(chatMentionsTable.id, mentionId))
-      .returning();
+  async deleteOne(db: DBConnection, mentionId: ChatMention['id']): Promise<ChatMention> {
+    await db.delete(chatMentionsTable).where(eq(chatMentionsTable.id, mentionId)).returning();
   }
 
   /**
@@ -122,8 +109,6 @@ export class ChatMentionRepository {
    * @param accountId Id of the account
    */
   async deleteAll(db: DBConnection, accountId: string): Promise<void> {
-    await db
-      .delete(chatMentionsTable)
-      .where(eq(chatMentionsTable.accountId, accountId));
+    await db.delete(chatMentionsTable).where(eq(chatMentionsTable.accountId, accountId));
   }
 }

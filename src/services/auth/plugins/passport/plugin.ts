@@ -126,12 +126,10 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     assertIsDefined(user.account);
     return user.account.id;
   });
-  fastifyPassport.registerUserDeserializer(
-    async (uuid: string, _req): Promise<PassportUser> => {
-      return {
-        account: await accountRepository.get(db, uuid),
-      };
-    },
-  );
+  fastifyPassport.registerUserDeserializer(async (uuid: string, _req): Promise<PassportUser> => {
+    return {
+      account: await accountRepository.get(db, uuid),
+    };
+  });
 };
 export default plugin;

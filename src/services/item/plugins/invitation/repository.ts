@@ -3,12 +3,8 @@ import { singleton } from 'tsyringe';
 
 import { DBConnection } from '../../../../drizzle/db';
 import { isAncestorOrSelf } from '../../../../drizzle/operations';
-import {
-  InvitationInsertDTO,
-  InvitationRaw,
-  InvitationWIthItemAndCreator,
-  invitations,
-} from '../../../../drizzle/schema';
+import { InvitationInsertDTO, invitationsTable } from '../../../../drizzle/schema';
+import { InvitationRaw } from '../../../../drizzle/types';
 import { throwsIfParamIsInvalid } from '../../../../repositories/utils';
 import { AuthenticatedUser } from '../../../../types';
 import { Member } from '../../../member/entities/member';
@@ -51,9 +47,9 @@ export class InvitationRepository {
 
   async getOne(db: DBConnection, id: string) {
     throwsIfParamIsInvalid('id', id);
-    return await db.query.invitations.findFirst({
+    return await db.query.invitationsTable.findFirst({
       with: { item: true },
-      where: eq(invitations.id, id),
+      where: eq(invitationsTable.id, id),
     });
   }
 
@@ -69,8 +65,8 @@ export class InvitationRepository {
     throwsIfParamIsInvalid('id', id);
     throwsIfParamIsInvalid('creatorId', creatorId);
 
-    const entity = await db.query.invitations.findFirst({
-      where: and(eq(invitations.id, id), eq(invitations.creatorId, creatorId)),
+    const entity = await db.query.invitationsTable.findFirst({
+      where: and(eq(invitationsTable.id, id), eq(invitationsTable.creatorId, creatorId)),
       with: {
         item: true,
         creator: true,
@@ -91,8 +87,8 @@ export class InvitationRepository {
   async getManyByItem(db: DBConnection, itemPath: ItemPath) {
     throwsIfParamIsInvalid('itemPath', itemPath);
 
-    return await db.query.invitations.findMany({
-      where: isAncestorOrSelf(invitations.itemPath, itemPath),
+    return await db.query.invitationsTable.findMany({
+      where: isAncestorOrSelf(invitationsTable.itemPath, itemPath),
       with: { item: true },
     });
   }
@@ -101,8 +97,8 @@ export class InvitationRepository {
     throwsIfParamIsInvalid('email', email);
     const lowercaseEmail = email.toLowerCase();
 
-    const res = await db.query.invitations.findMany({
-      where: eq(invitations.email, lowercaseEmail),
+    const res = await db.query.invitationsTable.findMany({
+      where: eq(invitationsTable.email, lowercaseEmail),
       with: { item: true },
     });
 
@@ -127,21 +123,20 @@ export class InvitationRepository {
       email: inv.email?.toLowerCase(),
     }));
     // get invitations for the item and its parents
-    const existingEntries = await db.query.invitations.findMany({
+    const existingEntries = await db.query.invitationsTable.findMany({
       with: { item: true },
-      where: isAncestorOrSelf(invitations.itemPath, itemPath),
+      where: isAncestorOrSelf(invitationsTable.itemPath, itemPath),
     });
 
     return await db
-      .insert(invitations)
+      .insert(invitationsTable)
       .values(
         data
           .filter(
             (i) =>
               // exclude duplicate item-email combinations that are already invited
               !existingEntries.find(
-                ({ email, item }) =>
-                  email === i.email && item.path === itemPath,
+                ({ email, item }) => email === i.email && item.path === itemPath,
               ),
           )
           .map((inv) => ({
@@ -153,9 +148,17 @@ export class InvitationRepository {
       .returning();
   }
 
+  async updateOne(db: DBConnection, invitationId: string, body: Partial<InvitationInsertDTO>) {
+    await db
+      .update(invitationsTable)
+      .set(body)
+      .where(eq(invitationsTable.id, invitationId))
+      .returning();
+  }
+
   async deleteManyByEmail(db: DBConnection, email: Email) {
     throwsIfParamIsInvalid('email', email);
 
-    await db.delete(invitations).where(eq(invitations.email, email));
+    await db.delete(invitationsTable).where(eq(invitationsTable.email, email));
   }
 }

@@ -8,20 +8,9 @@ import fetch from 'node-fetch';
 import { DEFAULT_LANG } from '@graasp/translations';
 
 import { DBConnection } from '../../../../drizzle/db';
-import {
-  isAncestorOrSelf,
-  isDescendantOrSelf,
-} from '../../../../drizzle/operations';
-import {
-  Item,
-  accountsTable,
-  itemGeolocations,
-  items,
-} from '../../../../drizzle/schema';
-import {
-  ALLOWED_SEARCH_LANGS,
-  GEOLOCATION_API_HOST,
-} from '../../../../utils/config';
+import { isAncestorOrSelf, isDescendantOrSelf } from '../../../../drizzle/operations';
+import { Item, accountsTable, itemGeolocations, items } from '../../../../drizzle/schema';
+import { ALLOWED_SEARCH_LANGS, GEOLOCATION_API_HOST } from '../../../../utils/config';
 import { Actor, isMember } from '../../../member/entities/member';
 import { ItemGeolocation } from './ItemGeolocation';
 import { MissingGeolocationSearchParams } from './errors';
@@ -51,9 +40,7 @@ export class ItemGeolocationRepository {
    * @param item item to delete
    */
   async delete(db: DBConnection, item: Item): Promise<void> {
-    await db
-      .delete(itemGeolocations)
-      .where(eq(itemGeolocations.itemPath, item.path));
+    await db.delete(itemGeolocations).where(eq(itemGeolocations.itemPath, item.path));
   }
 
   /**
@@ -136,9 +123,7 @@ export class ItemGeolocationRepository {
       const matchSimpleSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery('simple', ${keywordsString})`;
 
       // raw words search
-      const matchRawWordSearchConditions = allKeywords.map((k) =>
-        ilike(items.name, `%${k}%`),
-      );
+      const matchRawWordSearchConditions = allKeywords.map((k) => ilike(items.name, `%${k}%`));
 
       const searchConditions = [
         matchEnglishSearchCondition,
@@ -224,11 +209,7 @@ export class ItemGeolocationRepository {
   }
 
   async getAddressFromCoordinates(
-    {
-      lat,
-      lng,
-      lang = DEFAULT_LANG,
-    }: Pick<ItemGeolocation, 'lat' | 'lng'> & { lang?: string },
+    { lat, lng, lang = DEFAULT_LANG }: Pick<ItemGeolocation, 'lat' | 'lng'> & { lang?: string },
     key: string,
   ) {
     const searchParams = new URLSearchParams({

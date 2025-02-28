@@ -10,9 +10,7 @@ export type Handler<Data> = (
   log?: FastifyBaseLogger,
 ) => Promise<void>;
 
-class HookManager<
-  EventMap extends { [event: string]: { pre: unknown; post: unknown } },
-> {
+class HookManager<EventMap extends { [event: string]: { pre: unknown; post: unknown } }> {
   private readonly postHooks = new Map<keyof EventMap, Handler<unknown>[]>();
   private readonly preHooks = new Map<keyof EventMap, Handler<unknown>[]>();
 
@@ -42,10 +40,7 @@ class HookManager<
     }
   }
 
-  setPreHook<Event extends keyof EventMap>(
-    event: Event,
-    handler: Handler<EventMap[Event]['pre']>,
-  ) {
+  setPreHook<Event extends keyof EventMap>(event: Event, handler: Handler<EventMap[Event]['pre']>) {
     const hooks = this.preHooks.get(event);
     if (!hooks) {
       this.preHooks.set(event, [handler]);

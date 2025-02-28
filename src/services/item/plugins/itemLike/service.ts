@@ -56,17 +56,10 @@ export class ItemLikeService {
     // QUESTION: allow public to be liked?
     const item = await this.itemService.get(db, member, itemId);
 
-    const result = await this.itemLikeRepository.deleteOneByCreatorAndItem(
-      db,
-      member.id,
-      item.id,
-    );
+    const result = await this.itemLikeRepository.deleteOneByCreatorAndItem(db, member.id, item.id);
 
     // update index if item is published
-    const publishedItem = await this.itemPublishedRepository.getForItem(
-      db,
-      item.path,
-    );
+    const publishedItem = await this.itemPublishedRepository.getForItem(db, item.path);
     if (publishedItem) {
       const likes = await this.itemLikeRepository.getCountByItemId(db, item.id);
       await this.meilisearchClient.updateItem(item.id, { likes });
@@ -84,10 +77,7 @@ export class ItemLikeService {
     });
 
     // update index if item is published
-    const publishedItem = await this.itemPublishedRepository.getForItem(
-      db,
-      item.path,
-    );
+    const publishedItem = await this.itemPublishedRepository.getForItem(db, item.path);
     if (publishedItem) {
       const likes = await this.itemLikeRepository.getCountByItemId(db, item.id);
       await this.meilisearchClient.updateItem(item.id, { likes });

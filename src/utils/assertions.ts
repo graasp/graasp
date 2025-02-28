@@ -48,10 +48,7 @@ export function assertIsDefined<T, Err extends Error, Args extends unknown[]>(
   }
 }
 
-export function assertIsMemberOrGuest<
-  Err extends Error,
-  Args extends unknown[],
->(
+export function assertIsMemberOrGuest<Err extends Error, Args extends unknown[]>(
   account: AuthenticatedUser,
   error?: new (...args: Args) => Err,
   ...args: Args

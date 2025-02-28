@@ -5,7 +5,6 @@ import { ActionFactory, MemberFactory } from '@graasp/sdk';
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../test/app';
 import { db } from '../../drizzle/db';
 import { BaseLogger } from '../../logger';
-import { AppDataSource } from '../../plugins/datasource';
 import { MailerService } from '../../plugins/mailer/mailer.service';
 import { ItemGeolocationRepository } from '../item/plugins/geolocation/repository';
 import { MeiliSearchWrapper } from '../item/plugins/publication/published/plugins/search/meilisearch';

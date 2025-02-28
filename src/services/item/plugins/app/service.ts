@@ -74,12 +74,7 @@ export class AppService {
     }
 
     // check actor has access to item
-    await this.authorizationService.validatePermission(
-      db,
-      PermissionLevel.Read,
-      actor,
-      item,
-    );
+    await this.authorizationService.validatePermission(db, PermissionLevel.Read, actor, item);
 
     await this.appRepository.isValidAppOrigin(db, appDetails);
 
@@ -121,15 +116,8 @@ export class AppService {
   }
 
   // used in apps: get members from tree
-  async getTreeMembers(
-    db: DBConnection,
-    actor: AuthenticatedUser,
-    item: Item,
-  ): Promise<Member[]> {
-    const memberships = await this.itemMembershipRepository.getForManyItems(
-      db,
-      [item],
-    );
+  async getTreeMembers(db: DBConnection, actor: AuthenticatedUser, item: Item): Promise<Member[]> {
+    const memberships = await this.itemMembershipRepository.getForManyItems(db, [item]);
     // get members only without duplicate
     return uniqBy(
       memberships.data[item.id].map(({ account }) => account),

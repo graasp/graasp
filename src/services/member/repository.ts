@@ -19,12 +19,7 @@ export class MemberRepository {
     // need to use the accounts table as we can not delete from a view (membersView)
     await db
       .delete(accountsTable)
-      .where(
-        and(
-          eq(accountsTable.id, id),
-          eq(accountsTable.type, AccountType.Individual),
-        ),
-      );
+      .where(and(eq(accountsTable.id, id), eq(accountsTable.type, AccountType.Individual)));
   }
 
   async get(db: DBConnection, id: string) {
@@ -33,11 +28,7 @@ export class MemberRepository {
     if (!id) {
       throw new MemberNotFound({ id });
     }
-    const m = await db
-      .select()
-      .from(membersView)
-      .where(eq(membersView.id, id))
-      .limit(1);
+    const m = await db.select().from(membersView).where(eq(membersView.id, id)).limit(1);
     if (!m.length) {
       throw new MemberNotFound({ id });
     }
@@ -45,10 +36,7 @@ export class MemberRepository {
   }
 
   async getMany(db: DBConnection, ids: string[]) {
-    const members = await db
-      .select()
-      .from(membersView)
-      .where(inArray(membersView.id, ids));
+    const members = await db.select().from(membersView).where(inArray(membersView.id, ids));
     return mapById({
       keys: ids,
       findElement: (id) => members.find(({ id: thisId }) => thisId === id),
@@ -56,16 +44,9 @@ export class MemberRepository {
     });
   }
 
-  async getByEmail(
-    db: DBConnection,
-    emailString: string,
-    args: { shouldExist?: boolean } = {},
-  ) {
+  async getByEmail(db: DBConnection, emailString: string, args: { shouldExist?: boolean } = {}) {
     const email = emailString.toLowerCase();
-    const member = await db
-      .select()
-      .from(membersView)
-      .where(eq(membersView.email, email));
+    const member = await db.select().from(membersView).where(eq(membersView.email, email));
 
     if (args.shouldExist) {
       if (member.length != 1) {
@@ -76,14 +57,10 @@ export class MemberRepository {
   }
 
   async getManyByEmails(db: DBConnection, emails: string[]) {
-    const members = await db
-      .select()
-      .from(membersView)
-      .where(inArray(membersView.email, emails));
+    const members = await db.select().from(membersView).where(inArray(membersView.email, emails));
     return mapById({
       keys: emails,
-      findElement: (email) =>
-        members.find(({ email: thisEmail }) => thisEmail === email),
+      findElement: (email) => members.find(({ email: thisEmail }) => thisEmail === email),
       buildError: (email) => new MemberNotFound({ email }),
     });
   }
@@ -94,12 +71,7 @@ export class MemberRepository {
     body: Partial<
       Pick<
         AccountCreationDTO,
-        | 'extra'
-        | 'email'
-        | 'name'
-        | 'enableSaveActions'
-        | 'lastAuthenticatedAt'
-        | 'isValidated'
+        'extra' | 'email' | 'name' | 'enableSaveActions' | 'lastAuthenticatedAt' | 'isValidated'
       >
     >,
   ) {
@@ -149,8 +121,7 @@ export class MemberRepository {
 
   async post(
     db: DBConnection,
-    data: Partial<MemberCreationDTO> &
-      Pick<MemberCreationDTO, 'email' | 'name'>,
+    data: Partial<MemberCreationDTO> & Pick<MemberCreationDTO, 'email' | 'name'>,
   ) {
     const email = data.email.toLowerCase();
 

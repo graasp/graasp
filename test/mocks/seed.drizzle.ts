@@ -31,10 +31,7 @@ export async function seed(datas: SeedInput) {
       const values = datas[tableName] as PgInsertValue<typeof table>[];
 
       if (values && values.length !== 0) {
-        const createdEntities = await tx
-          .insert(table)
-          .values(values)
-          .returning();
+        const createdEntities = await tx.insert(table).values(values).returning();
         result[key] = createdEntities;
       } else {
         result[key] = [];

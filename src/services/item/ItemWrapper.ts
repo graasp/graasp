@@ -1,6 +1,6 @@
 import { ItemVisibilityType, ResultOf, ThumbnailsBySize } from '@graasp/sdk';
 
-import { Item } from '../../drizzle/types';
+import { Account, Item } from '../../drizzle/types';
 import { ItemMembership } from '../itemMembership/entities/ItemMembership';
 import { ItemMembershipRepository } from '../itemMembership/repository';
 import { ItemVisibility } from './plugins/itemVisibility/ItemVisibility';
@@ -14,15 +14,13 @@ type GraaspItem = Pick<
   | 'name'
   | 'type'
   | 'path'
-  | 'geolocation'
   | 'description'
   | 'extra'
   | 'createdAt'
-  | 'creator'
   | 'updatedAt'
   | 'settings'
   | 'lang'
->;
+> & { creator: Account; geolocation: string };
 
 export type PackedItem = GraaspItem & {
   // permission can be undefined because the item is public
@@ -57,20 +55,14 @@ export class ItemWrapper {
   packed(): PackedItem {
     // sort visibilities to retrieve the most restrictive (highest) visibility first
     if (this.visibilities) {
-      this.visibilities.sort((a, b) =>
-        a.item.path.length > b.item.path.length ? 1 : -1,
-      );
+      this.visibilities.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
     }
 
     return {
       ...this.item,
       permission: this.actorPermission?.permission ?? null,
-      hidden: this.visibilities?.find(
-        (t) => t.type === ItemVisibilityType.Hidden,
-      ),
-      public: this.visibilities?.find(
-        (t) => t.type === ItemVisibilityType.Public,
-      ),
+      hidden: this.visibilities?.find((t) => t.type === ItemVisibilityType.Hidden),
+      public: this.visibilities?.find((t) => t.type === ItemVisibilityType.Public),
       thumbnails: this.thumbnails,
     };
   }
@@ -113,20 +105,14 @@ export class ItemWrapperService {
       // sort visibilities to retrieve the most restrictive (highest) visibility first
       const itemVisibilities = visibilities?.data?.[i.id];
       if (itemVisibilities) {
-        itemVisibilities.sort((a, b) =>
-          a.item.path.length > b.item.path.length ? 1 : -1,
-        );
+        itemVisibilities.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
       }
 
       data.push({
         ...i,
         permission,
-        hidden: itemVisibilities?.find(
-          (t) => t.type === ItemVisibilityType.Hidden,
-        ),
-        public: itemVisibilities?.find(
-          (t) => t.type === ItemVisibilityType.Public,
-        ),
+        hidden: itemVisibilities?.find((t) => t.type === ItemVisibilityType.Hidden),
+        public: itemVisibilities?.find((t) => t.type === ItemVisibilityType.Public),
         ...(thumbnails ? { thumbnails } : {}),
       });
     }
@@ -155,20 +141,14 @@ export class ItemWrapperService {
       // sort visibilities to retrieve the most restrictive (highest) visibility first
       const itemVisibilities = visibilities?.data?.[i.id];
       if (itemVisibilities) {
-        itemVisibilities.sort((a, b) =>
-          a.item.path.length > b.item.path.length ? 1 : -1,
-        );
+        itemVisibilities.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
       }
 
       data[i.id] = {
         ...i,
         permission,
-        hidden: itemVisibilities?.find(
-          (t) => t.type === ItemVisibilityType.Hidden,
-        ),
-        public: itemVisibilities?.find(
-          (t) => t.type === ItemVisibilityType.Public,
-        ),
+        hidden: itemVisibilities?.find((t) => t.type === ItemVisibilityType.Hidden),
+        public: itemVisibilities?.find((t) => t.type === ItemVisibilityType.Public),
         ...(thumbnails ? { thumbnails } : {}),
       };
     }
@@ -188,12 +168,9 @@ export class ItemWrapperService {
       return [];
     }
 
-    const visibilities = await this.itemVisibilityRepository.getForManyItems(
-      items,
-      {
-        withDeleted,
-      },
-    );
+    const visibilities = await this.itemVisibilityRepository.getForManyItems(items, {
+      withDeleted,
+    });
 
     const m =
       memberships ??
@@ -201,8 +178,7 @@ export class ItemWrapperService {
         withDeleted,
       }));
 
-    const itemsThumbnails =
-      await this.itemThumbnailService.getUrlsByItems(items);
+    const itemsThumbnails = await this.itemThumbnailService.getUrlsByItems(items);
 
     return items.map((item) => {
       const permission = m.data[item.id][0]?.permission;
@@ -211,20 +187,14 @@ export class ItemWrapperService {
       // sort visibilities to retrieve the most restrictive (highest) visibility first
       const itemVisibilities = visibilities?.data?.[item.id] ?? [];
       if (itemVisibilities) {
-        itemVisibilities.sort((a, b) =>
-          a.item.path.length > b.item.path.length ? 1 : -1,
-        );
+        itemVisibilities.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
       }
 
       return {
         ...item,
         permission,
-        hidden: itemVisibilities.find(
-          (t) => t.type === ItemVisibilityType.Hidden,
-        ),
-        public: itemVisibilities.find(
-          (t) => t.type === ItemVisibilityType.Public,
-        ),
+        hidden: itemVisibilities.find((t) => t.type === ItemVisibilityType.Hidden),
+        public: itemVisibilities.find((t) => t.type === ItemVisibilityType.Public),
         ...(thumbnails ? { thumbnails } : {}),
       } as unknown as PackedItem;
     });

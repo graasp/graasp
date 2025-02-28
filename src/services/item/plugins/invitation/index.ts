@@ -9,19 +9,13 @@ import { db } from '../../../../drizzle/db';
 import { FastifyInstanceTypebox } from '../../../../plugins/typebox';
 import { isNonEmptyArray } from '../../../../types';
 import { asDefined } from '../../../../utils/assertions';
-import {
-  isAuthenticated,
-  optionalIsAuthenticated,
-} from '../../../auth/plugins/passport';
+import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
 import { matchOne } from '../../../authorization';
 import { memberAccountRole } from '../../../member/strategies/memberAccountRole';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { MAX_FILE_SIZE } from './constants';
-import {
-  NoFileProvidedForInvitations,
-  NoInvitationReceivedFound,
-} from './errors';
+import { NoFileProvidedForInvitations, NoInvitationReceivedFound } from './errors';
 import {
   deleteOne,
   getById,
@@ -71,12 +65,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       }
 
       return db.transaction(async (tx) => {
-        return await invitationService.shareItem(
-          tx,
-          member,
-          params.id,
-          invitations,
-        );
+        return await invitationService.shareItem(tx, member, params.id, invitations);
       });
     },
   );
@@ -154,12 +143,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         const { id: itemId } = params;
         return await db.transaction(
           async (tx) =>
-            await invitationService.importUsersWithCSV(
-              tx,
-              member,
-              itemId,
-              uploadedFile,
-            ),
+            await invitationService.importUsersWithCSV(tx, member, itemId, uploadedFile),
         );
       },
     );

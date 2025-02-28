@@ -2,12 +2,7 @@ import { faker } from '@faker-js/faker';
 import { BaseEntity } from 'typeorm';
 import { v4 } from 'uuid';
 
-import {
-  CompleteMember,
-  ItemType,
-  PermissionLevel,
-  buildPathFromIds,
-} from '@graasp/sdk';
+import { CompleteMember, ItemType, PermissionLevel, buildPathFromIds } from '@graasp/sdk';
 
 import { Member } from '../../src/drizzle/schema';
 import { MemberPassword } from '../../src/services/auth/plugins/password/entities/password';
@@ -55,10 +50,7 @@ type DataType = {
   })[];
 };
 
-const replaceActorInItems = (
-  createdActor?: MaybeUser,
-  items?: DataType['items'],
-) => {
+const replaceActorInItems = (createdActor?: MaybeUser, items?: DataType['items']) => {
   if (!items?.length) {
     return [];
   }
@@ -147,9 +139,7 @@ const generateIdAndPathForItems = (
 
   return items.flatMap((i) => {
     const id = v4();
-    const path = buildPathFromIds(
-      ...([parent?.id, id].filter(Boolean) as string[]),
-    );
+    const path = buildPathFromIds(...([parent?.id, id].filter(Boolean) as string[]));
     const { children, ...allprops } = i;
 
     const fullParent = {
@@ -230,8 +220,7 @@ export async function seedFromJson(data: DataType = {}) {
       },
     });
     result.members = membersAndProfiles.members as Member[];
-    result.memberProfiles =
-      membersAndProfiles.memberProfiles as MemberProfile[];
+    result.memberProfiles = membersAndProfiles.memberProfiles as MemberProfile[];
   }
 
   // save items

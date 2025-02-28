@@ -3,19 +3,17 @@ import { eq } from 'drizzle-orm';
 import { ActionFactory, Action as GraaspAction } from '@graasp/sdk';
 
 import { DBConnection, db } from '../../../../drizzle/db';
+import { actionsTable } from '../../../../drizzle/schema';
 import {
-  ActionInsertRaw,
+  Account,
+  ActionInsertDTO,
   ActionRaw,
   ActionWithItem,
   ActionWithItemAndAccount,
-  actionsTable,
-} from '../../../../drizzle/schema';
-import { Account } from '../../../account/entities/account';
+} from '../../../../drizzle/types';
 
 type ActionToTest = ActionRaw | ActionWithItem | ActionWithItemAndAccount;
-export const saveActions = async (
-  actions: Partial<GraaspAction>[],
-): Promise<ActionInsertRaw[]> => {
+export const saveActions = async (actions: Partial<GraaspAction>[]): Promise<ActionInsertDTO[]> => {
   const data = actions
     .map((d) => ActionFactory(d))
     // HACK: transform the extra to a string since the schema expects it to be a string
@@ -33,17 +31,14 @@ export const getMemberActions = async (
   db: DBConnection,
   memberId: Account['id'],
 ): Promise<ActionWithItem[]> => {
-  const res = await db.query.actions.findMany({
+  const res = await db.query.actionsTable.findMany({
     where: eq(actionsTable.accountId, memberId),
     with: { item: true },
   });
   return res;
 };
 
-export const expectAction = <T extends ActionToTest>(
-  action: T,
-  correctAction: T,
-) => {
+export const expectAction = <T extends ActionToTest>(action: T, correctAction: T) => {
   expect(action.extra).toMatchObject(correctAction.extra);
   expect(action.view).toEqual(correctAction.view);
   expect(action.createdAt).toEqual(correctAction.createdAt);
@@ -53,18 +48,13 @@ export const expectAction = <T extends ActionToTest>(
     if ('item' in action) {
       expect(action.item?.id).toEqual(correctAction.item?.id);
     } else {
-      throw new Error(
-        'expected item prop to exist on action under test. The property is missing.',
-      );
+      throw new Error('expected item prop to exist on action under test. The property is missing.');
     }
   }
   expect(action.type).toEqual(correctAction.type);
 };
 
-export const expectActions = <T extends ActionToTest>(
-  actions: T[],
-  correctActions: T[],
-) => {
+export const expectActions = <T extends ActionToTest>(actions: T[], correctActions: T[]) => {
   expect(actions).toHaveLength(correctActions.length);
 
   for (const action of correctActions) {

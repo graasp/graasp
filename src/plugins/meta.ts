@@ -1,10 +1,7 @@
 import { sql } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 
-import {
-  FastifyPluginAsyncTypebox,
-  Type,
-} from '@fastify/type-provider-typebox';
+import { FastifyPluginAsyncTypebox, Type } from '@fastify/type-provider-typebox';
 import { FastifySchema } from 'fastify';
 
 import { UnionOfConst } from '@graasp/sdk';
@@ -13,10 +10,7 @@ import { resolveDependency } from '../di/utils';
 import { DBConnection, db } from '../drizzle/db';
 import { SearchService } from '../services/item/plugins/publication/published/plugins/search/service';
 import { assertIsError } from '../utils/assertions';
-import {
-  EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
-  ETHERPAD_URL,
-} from '../utils/config';
+import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN, ETHERPAD_URL } from '../utils/config';
 
 const Status = {
   Healthy: 'healthy',
@@ -150,9 +144,7 @@ const getEtherpadStatusCheck = async (): Promise<ServiceStatus> => {
 
 const getIframelyStatusCheck = async (): Promise<ServiceStatus> => {
   try {
-    const iframelyEndpoint = new URL(
-      `${EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN}/iframely`,
-    );
+    const iframelyEndpoint = new URL(`${EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN}/iframely`);
     iframelyEndpoint.searchParams.set('url', 'https://graasp.org');
     const res = await fetch(iframelyEndpoint.toString(), { method: 'HEAD' });
     if (res.ok) {
@@ -168,9 +160,7 @@ const getIframelyStatusCheck = async (): Promise<ServiceStatus> => {
   }
 };
 
-const getSearchStatusCheck = async (
-  search: SearchService,
-): Promise<ServiceStatus> => {
+const getSearchStatusCheck = async (search: SearchService): Promise<ServiceStatus> => {
   try {
     const res = await search.getHealth();
     if (res.status) {

@@ -6,8 +6,9 @@ import { FastifyRequest } from 'fastify';
 import { ClientManager, Context } from '@graasp/sdk';
 
 import { DBConnection } from '../../drizzle/db';
+import { ActionInsertDTO } from '../../drizzle/types';
 import { BaseLogger } from '../../logger';
-import { Actor } from '../../types';
+import { MaybeUser } from '../../types';
 import { ItemService } from '../item/service';
 import { MemberRepository } from '../member/repository';
 import { MemberService } from '../member/service';
@@ -38,9 +39,9 @@ export class ActionService {
 
   async postMany(
     db: DBConnection,
-    actor: Actor,
+    actor: MaybeUser,
     request: FastifyRequest,
-    actions: (Partial<Action> & Pick<Action, 'type'>)[],
+    actions: ActionInsertDTO[],
   ): Promise<void> {
     const { headers } = request;
     // expand member to the full account
@@ -52,9 +53,7 @@ export class ActionService {
     }
 
     // prevent saving if item disabled analytics
-    actions.filter(
-      (action) => action.item?.settings?.enableSaveActions ?? true,
-    );
+    actions.filter((action) => action.item?.settings?.enableSaveActions ?? true);
     if (actions.length === 0) {
       return;
     }
@@ -75,10 +74,10 @@ export class ActionService {
 
     const geolocation = ip ? getGeolocationIp(ip) : null;
     const completeActions = actions.map((a) => ({
-      account: member,
+      accountId: member?.id,
       geolocation: geolocation ?? undefined,
       view,
-      extra: {},
+      extra: JSON.stringify({}),
       ...a,
     }));
 

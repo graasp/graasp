@@ -7,7 +7,7 @@ import { ExportActionsFormatting } from '@graasp/sdk';
 
 import { TMP_FOLDER } from '../../../utils/config';
 import { BaseAnalytics } from '../../item/plugins/action/base-analytics';
-import { AppAction } from '../../item/plugins/app/appAction/appAction';
+import { AppAction } from '../../item/plugins/app/appAction/appAction.entity';
 import { AppData } from '../../item/plugins/app/appData/appData';
 import { AppSetting } from '../../item/plugins/app/appSetting/appSettings';
 import { CannotWriteFileError } from './errors';
@@ -163,7 +163,11 @@ export const exportActionsInArchive = async (args: {
           fileFolderPath,
           buildActionFileName('apps', archiveDate, format),
         );
-        writeFileForFormat(appsPath, format, { appActions, appData, appSettings });
+        writeFileForFormat(appsPath, format, {
+          appActions,
+          appData,
+          appSettings,
+        });
         break;
       }
       // For CSV format there will be one file for actions, one for data and one for settings

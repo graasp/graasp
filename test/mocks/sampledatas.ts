@@ -49,10 +49,7 @@ const datas: {
   items?: TableType<
     Item,
     {
-      [K in keyof Omit<
-        Item,
-        defaultOmitedKeys | 'search_document' | 'geolocation'
-      >];
+      [K in keyof Omit<Item, defaultOmitedKeys | 'search_document' | 'geolocation'>];
     }
   >;
   itemMemberships?: TableType<
@@ -70,10 +67,7 @@ const datas: {
   itemValidationGroups?: TableType<
     ItemValidationGroup,
     {
-      [K in keyof Omit<
-        ItemValidationGroup,
-        defaultOmitedKeys | 'itemValidations'
-      >];
+      [K in keyof Omit<ItemValidationGroup, defaultOmitedKeys | 'itemValidations'>];
     }
   >;
   itemValidations?: TableType<
@@ -84,10 +78,7 @@ const datas: {
     ItemPublished,
     { [K in keyof Omit<ItemPublished, defaultOmitedKeys>] }
   >;
-  publishers?: TableType<
-    Publisher,
-    { [K in keyof Omit<Publisher, defaultOmitedKeys>] }
-  >;
+  publishers?: TableType<Publisher, { [K in keyof Omit<Publisher, defaultOmitedKeys>] }>;
   apps?: TableType<App, { [K in keyof Omit<App, defaultOmitedKeys>] }>;
 } = {
   members: {
@@ -129,10 +120,7 @@ const datas: {
         name: 'public_child_geoloc_document',
         type: ItemType.DOCUMENT,
         description: undefined,
-        path: buildPathFromIds(
-          sharedIds.publicRootFolder,
-          sharedIds.publicChildGeolocDocument,
-        ),
+        path: buildPathFromIds(sharedIds.publicRootFolder, sharedIds.publicChildGeolocDocument),
         creator: sharedIds.bobMember,
         extra: { document: { content: faker.lorem.text() } },
         settings: { hasThumbnail: false },
@@ -145,10 +133,7 @@ const datas: {
         name: 'hidden_child_document',
         type: ItemType.DOCUMENT,
         description: undefined,
-        path: buildPathFromIds(
-          sharedIds.publicRootFolder,
-          sharedIds.hiddenChildItem,
-        ),
+        path: buildPathFromIds(sharedIds.publicRootFolder, sharedIds.hiddenChildItem),
         creator: sharedIds.bobMember,
         extra: { document: { content: faker.lorem.text() } },
         settings: { hasThumbnail: false },
@@ -161,10 +146,7 @@ const datas: {
         name: 'public_child_chatbox_document',
         type: ItemType.DOCUMENT,
         description: undefined,
-        path: buildPathFromIds(
-          sharedIds.publicRootFolder,
-          sharedIds.publicChildChatboxItem,
-        ),
+        path: buildPathFromIds(sharedIds.publicRootFolder, sharedIds.publicChildChatboxItem),
         creator: sharedIds.bobMember,
         extra: { document: { content: faker.lorem.text() } },
         settings: { hasThumbnail: false, showChatbox: true },

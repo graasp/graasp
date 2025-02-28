@@ -1,7 +1,7 @@
 import { ItemVisibilityType, PermissionLevel } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../drizzle/db';
-import { Account } from '../../../../account/entities/account';
+import { AuthenticatedUser } from '../../../../../types';
 import { ItemWrapper } from '../../../ItemWrapper';
 import { ItemService } from '../../../service';
 import { ItemVisibilityRepository } from '../../itemVisibility/repository';
@@ -31,7 +31,7 @@ export class PublicationService {
     this.validationQueue = validationQueue;
   }
 
-  public async computeStateForItem(db: DBConnection, member: Account, itemId: string) {
+  public async computeStateForItem(db: DBConnection, member: AuthenticatedUser, itemId: string) {
     const item = await this.itemService.get(db, member, itemId, PermissionLevel.Admin);
     const publicVisibility = await this.itemVisibilityRepository.getType(
       db,
