@@ -1,3 +1,5 @@
+import { EtherpadReaderPermission } from '@graasp/sdk';
+
 import { EtherpadItemService } from '../service';
 
 describe('Service helper methods', () => {
@@ -29,6 +31,7 @@ describe('Service helper methods', () => {
       etherpad: {
         padID: 'g.s8oes9dhwrvt0zif$test',
         groupID: 'g.s8oes9dhwrvt0zif',
+        readerPermission: EtherpadReaderPermission.Read,
       },
     });
   });

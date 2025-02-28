@@ -180,6 +180,8 @@ describe('Etherpad Service', () => {
         extra: {
           [ItemType.ETHERPAD]: {
             readerPermission: PermissionLevel.Write,
+            padID: MOCK_ITEM.extra.etherpad.padID,
+            groupID: MOCK_ITEM.extra.etherpad.groupID,
           },
         },
       });
