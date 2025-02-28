@@ -2,13 +2,20 @@ import { faker } from '@faker-js/faker';
 import { BaseEntity, DataSource } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { ItemType, PermissionLevel, buildPathFromIds, getIdsFromPath } from '@graasp/sdk';
+import {
+  ItemType,
+  ItemVisibilityType,
+  PermissionLevel,
+  buildPathFromIds,
+  getIdsFromPath,
+} from '@graasp/sdk';
 
 import { AppDataSource } from '../../src/plugins/datasource';
 import { Account } from '../../src/services/account/entities/account';
 import { MemberPassword } from '../../src/services/auth/plugins/password/entities/password';
 import { encryptPassword } from '../../src/services/auth/plugins/password/utils';
 import { Item } from '../../src/services/item/entities/Item';
+import { ItemVisibility } from '../../src/services/item/plugins/itemVisibility/ItemVisibility';
 import { ItemMembership } from '../../src/services/itemMembership/entities/ItemMembership';
 import { Actor, Member } from '../../src/services/member/entities/member';
 import { MemberProfile } from '../../src/services/member/plugins/profile/entities/profile';
@@ -74,6 +81,8 @@ type SeedMembership<M = SeedMember> = Partial<Omit<ItemMembership, 'creator' | '
 type SeedItem<M = SeedMember> = (Partial<Omit<Item, 'creator'>> & { creator?: M | null }) & {
   children?: SeedItem<M>[];
   memberships?: SeedMembership<M>[];
+  isPublic?: boolean;
+  isHidden?: boolean;
 };
 type DataType = {
   actor?: SeedActor | null;
@@ -322,6 +331,30 @@ async function processMembers({
   return { members: [], memberProfiles: [], items: [] };
 }
 
+async function createItemVisibilities(items: (SeedItem & { path: string })[]) {
+  const visibilities = items.reduce<{ item: { path: string }; type: ItemVisibilityType }[]>(
+    (acc, { path, isHidden, isPublic }) => {
+      if (isHidden) {
+        acc.push({ item: { path }, type: ItemVisibilityType.Hidden });
+      }
+      if (isPublic) {
+        acc.push({ item: { path }, type: ItemVisibilityType.Public });
+      }
+      return acc;
+    },
+    [],
+  );
+
+  return (
+    await seed({
+      visibilities: {
+        constructor: ItemVisibility,
+        entities: visibilities,
+      },
+    })
+  ).visibilities as ItemVisibility[];
+}
+
 /**
  * Given seed object, save them in the database for initialization of a test
  * @param data
@@ -337,12 +370,14 @@ export async function seedFromJson(data: DataType = {}) {
     itemMemberships: ItemMembership[];
     members: Member[];
     memberProfiles: MemberProfile[];
+    itemVisibilities: ItemVisibility[];
   } = {
     items: [],
     actor: undefined,
     itemMemberships: [],
     members: [],
     memberProfiles: [],
+    itemVisibilities: [],
   };
 
   const { items: itemsWithActor, actor, members, actorProfile } = await processActor(data);
@@ -375,6 +410,9 @@ export async function seedFromJson(data: DataType = {}) {
       })
     ).items as Item[];
   }
+
+  // save item visibilities
+  result.itemVisibilities = await createItemVisibilities(processedItems);
 
   // save item memberships
   const itemMembershipsEntities = processItemMemberships(processedItems);
