@@ -2,19 +2,15 @@ import { faker } from '@faker-js/faker';
 
 import { FastifyInstance } from 'fastify';
 
-import { DiscriminatedItem } from '@graasp/sdk';
-
 import build, { clearDatabase } from '../../../../test/app';
+import { seedFromJson } from '../../../../test/mocks/seed';
 import { AppDataSource } from '../../../plugins/datasource';
 import { Account } from '../../account/entities/account';
-import { ItemTestUtils } from '../../item/test/fixtures/items';
-import { saveItemLoginSchema } from '../../itemLogin/test/index.test';
 import { saveMember } from '../test/fixtures/members';
 import { Member } from './member';
 
 const memberRawRepository = AppDataSource.getRepository(Member);
 const accountRawRepository = AppDataSource.getRepository(Account);
-const testUtils = new ItemTestUtils();
 
 describe('MemberRepository', () => {
   let app: FastifyInstance;
@@ -42,10 +38,10 @@ describe('MemberRepository', () => {
   });
   describe('fetching', () => {
     it('should not retrieve guest', async () => {
-      const item = await testUtils.saveItem({});
-      const { guest } = await saveItemLoginSchema({
-        item: item as unknown as DiscriminatedItem,
-        memberName: faker.internet.userName(),
+      const {
+        guests: [guest],
+      } = await seedFromJson({
+        items: [{ itemLoginSchema: { guests: [{ name: faker.internet.userName() }] } }],
       });
       expect(guest).toBeDefined();
       const member = await memberRawRepository.findOne({ where: { id: guest!.id } });

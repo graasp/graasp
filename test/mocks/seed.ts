@@ -395,13 +395,14 @@ async function createItemLoginSchemasAndGuests(items: (SeedItem & { path: string
   // save pre-registered guests
   // feed item login schema in guests' data
   const guestsData = itemLoginSchemasData.reduce<
-    (ReturnType<typeof GuestFactory> & { password?: string })[]
-  >((acc, { id, guests }) => {
+    (ReturnType<typeof GuestFactory> & { password?: string; item: { path: string } })[]
+  >((acc, { id, guests, item }) => {
     if (guests) {
       return acc.concat(
         guests.map(({ password, ...g }) => ({
           ...GuestFactory({ ...g, itemLoginSchema: { id } }),
           password,
+          item,
         })),
       );
     }
@@ -413,22 +414,44 @@ async function createItemLoginSchemasAndGuests(items: (SeedItem & { path: string
       entities: guestsData,
     },
   });
-
-  // save guests' password
+  // save guest memberships and guest passwords
   const guestPasswords: { guest: { id: string }; password: string }[] = [];
   for (const { id, password } of guestsData) {
     if (password) {
       guestPasswords.push({ guest: { id }, password: await encryptPassword(password) });
     }
   }
-  await seed({
+  const guestMemberships: {
+    account: { id: string };
+    permission: PermissionLevel;
+    item: { path: string };
+  }[] = [];
+  for (const {
+    id,
+    item: { path },
+  } of guestsData) {
+    guestMemberships.push({
+      account: { id },
+      permission: PermissionLevel.Read,
+      item: { path },
+    });
+  }
+  const passwordAndMemberships = await seed({
     guestPasswords: {
       constructor: GuestPassword,
       entities: guestPasswords,
     },
+    memberships: {
+      constructor: ItemMembership,
+      entities: guestMemberships,
+    },
   });
 
-  return { itemLoginSchemas: itemLoginSchemas as ItemLoginSchema[], guests: guests as Guest[] };
+  return {
+    itemLoginSchemas: itemLoginSchemas as ItemLoginSchema[],
+    guests: guests as Guest[],
+    itemMemberships: passwordAndMemberships.memberships as ItemMembership[],
+  };
 }
 
 /**
@@ -491,12 +514,6 @@ export async function seedFromJson(data: DataType = {}) {
     ).items as Item[];
   }
 
-  // save item visibilities
-  result.itemVisibilities = await createItemVisibilities(processedItems);
-  const { itemLoginSchemas, guests } = await createItemLoginSchemasAndGuests(processedItems);
-  result.itemLoginSchemas = itemLoginSchemas;
-  result.guests = guests;
-
   // save item memberships
   const itemMembershipsEntities = processItemMemberships(processedItems);
   if (itemMembershipsEntities) {
@@ -509,6 +526,17 @@ export async function seedFromJson(data: DataType = {}) {
       })
     ).itemMemberships as ItemMembership[];
   }
+
+  // save item visibilities
+  result.itemVisibilities = await createItemVisibilities(processedItems);
+  const {
+    itemLoginSchemas,
+    guests,
+    itemMemberships: guestItemMemberships,
+  } = await createItemLoginSchemasAndGuests(processedItems);
+  result.itemLoginSchemas = itemLoginSchemas;
+  result.guests = guests;
+  result.itemMemberships = result.itemMemberships.concat(guestItemMemberships);
 
   return result;
 }
