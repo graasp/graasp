@@ -10,10 +10,10 @@ import registerAppPlugins from '../src/app';
 import { resetDependencies } from '../src/di/utils';
 import { BaseLogger } from '../src/logger';
 import ajvFormats from '../src/schemas/ajvFormats';
-import { Account } from '../src/services/account/entities/account';
 import { PassportStrategy } from '../src/services/auth/plugins/passport';
 import { Member } from '../src/services/member/entities/member';
 import { saveMember } from '../src/services/member/test/fixtures/members';
+import { Actor } from '../src/types';
 import { DB_TEST_SCHEMA } from './constants';
 
 const originalSessionStrategy = fastifyPassport.strategy(PassportStrategy.Session)!;
@@ -23,7 +23,7 @@ let originalStrictSessionStrategy;
  * Override the session strategy to always validate the request. Set the given Account to request.user.member on authentications
  * @param account Account to set to request.user.member
  */
-export function mockAuthenticate(account: Account | undefined) {
+export function mockAuthenticate(account: Actor | undefined) {
   if (!originalStrictSessionStrategy) {
     originalStrictSessionStrategy = fastifyPassport.strategy(PassportStrategy.StrictSession);
   }

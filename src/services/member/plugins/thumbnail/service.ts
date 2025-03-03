@@ -10,7 +10,7 @@ import {
   ThumbnailService,
   ThumbnailServiceTransformer,
 } from '../../../thumbnail/service';
-import { Actor, Member, assertIsMember } from '../../entities/member';
+import { Actor, Member } from '../../entities/member';
 import { MemberService } from '../../service';
 
 @singleton()
@@ -52,11 +52,7 @@ export class MemberThumbnailService {
   }
 
   // get member's avatar
-  async getUrl(
-    actor: Actor,
-    repositories: Repositories,
-    { size, memberId }: { memberId: string; size: string },
-  ) {
+  async getUrl(repositories: Repositories, { size, memberId }: { memberId: string; size: string }) {
     const account = await repositories.accountRepository.get(memberId);
 
     if (!account) {
@@ -67,10 +63,10 @@ export class MemberThumbnailService {
     if (account.type !== AccountType.Individual) {
       return null;
     }
-
-    assertIsMember(account);
+    // HACK: this is safe as long as we keep the previous check
+    const member = account as Member;
     // member does not have avatar
-    if (!account.extra.hasAvatar) {
+    if (!member.extra.hasAvatar) {
       return null;
     }
 

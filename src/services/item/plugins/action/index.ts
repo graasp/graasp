@@ -47,9 +47,10 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
       preHandler: isAuthenticated,
     },
     async ({ user, params: { id }, query }) => {
+      const account = asDefined(user?.account);
       // remove itemMemberships from return
       const { itemMemberships: _, ...result } = await actionItemService.getBaseAnalyticsForItem(
-        user?.account,
+        account,
         buildRepositories(),
         {
           sampleSize: query.requestedSampleSize,

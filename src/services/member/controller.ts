@@ -2,7 +2,10 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
+import { CompleteMember } from '@graasp/sdk';
+
 import { resolveDependency } from '../../di/utils';
+import { AccountType } from '../../types';
 import { asDefined } from '../../utils/assertions';
 import { CannotModifyOtherMembers } from '../../utils/errors';
 import { buildRepositories } from '../../utils/repositories';
@@ -35,6 +38,23 @@ import {
 import { MemberService } from './service';
 import { memberAccountRole } from './strategies/memberAccountRole';
 
+type CurrentUser = {
+  id: string;
+  name: string;
+  lastAuthenticatedAt: Date;
+  updatedAt: Date;
+  createdAt: Date;
+};
+type DiscriminatedCurrentUser =
+  | (CurrentUser & {
+      type: typeof AccountType.Individual;
+      extra: CompleteMember['extra'];
+      isValidated: boolean;
+      userAgreementsDate: Date;
+      enableSaveActions: boolean;
+    })
+  | (CurrentUser & { type: typeof AccountType.Guest });
+
 const controller: FastifyPluginAsyncTypebox = async (fastify) => {
   const { db } = fastify;
   const fileService = resolveDependency(FileService);
@@ -43,7 +63,16 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
 
   // get current
   fastify.get('/current', { schema: getCurrent, preHandler: isAuthenticated }, async ({ user }) => {
-    return user?.account;
+    if (user?.account) {
+      const repositories = buildRepositories();
+      const account = user.account;
+      // HACK: this will have the correct value at runtime, but we should fetch correctly in order to have the right type
+      const current = (await repositories.accountRepository.get(
+        account.id,
+      )) as DiscriminatedCurrentUser;
+      return current;
+    }
+    return null;
   });
 
   // get current member storage and its limits

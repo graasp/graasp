@@ -9,7 +9,6 @@ import { DEFAULT_LANG } from '@graasp/translations';
 
 import { AbstractRepository } from '../../../../repositories/AbstractRepository';
 import { ALLOWED_SEARCH_LANGS, GEOLOCATION_API_HOST } from '../../../../utils/config';
-import { Actor, isMember } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import { ItemGeolocation } from './ItemGeolocation';
 import { MissingGeolocationSearchParams, PartialItemGeolocation } from './errors';
@@ -57,7 +56,6 @@ export class ItemGeolocationRepository extends AbstractRepository<ItemGeolocatio
    * @returns item geolocations within bounding box. Does not include inheritance.
    */
   async getItemsIn(
-    actor: Actor,
     {
       lat1,
       lat2,
@@ -72,6 +70,7 @@ export class ItemGeolocationRepository extends AbstractRepository<ItemGeolocatio
       keywords?: string[];
     },
     parentItem?: Item,
+    memberLang?: string,
   ): Promise<ItemGeolocation[]> {
     // should include at least parentItem or all lat/lng
     if (
@@ -112,7 +111,6 @@ export class ItemGeolocationRepository extends AbstractRepository<ItemGeolocatio
     const allKeywords = keywords?.filter((s) => s && s.length);
     if (allKeywords?.length) {
       const keywordsString = allKeywords.join(' ');
-      const memberLang = actor && isMember(actor) ? actor?.lang : DEFAULT_LANG;
       query.andWhere(
         new Brackets((q) => {
           // search in english by default

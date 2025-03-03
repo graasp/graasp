@@ -15,6 +15,7 @@ import {
   getFileExtension,
 } from '@graasp/sdk';
 
+import { AuthenticatedUser } from '../../../../types';
 import { asDefined } from '../../../../utils/assertions';
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
@@ -204,7 +205,7 @@ class FileItemService {
     return result;
   }
 
-  async copy(member: Member, repositories: Repositories, { copy }: { original; copy }) {
+  async copy(member: AuthenticatedUser, repositories: Repositories, { copy }: { original; copy }) {
     const { id, extra } = copy; // full copy with new `id`
     const { path: originalPath, mimetype } = extra[this.fileService.fileType];
     // filenames are not used

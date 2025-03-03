@@ -7,9 +7,9 @@ import { EtherpadItemExtra, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { ETHERPAD_NAME_FACTORY_DI_KEY } from '../../../../di/constants';
 import { BaseLogger } from '../../../../logger';
+import { AuthenticatedUser } from '../../../../types';
 import { MemberCannotWriteItem } from '../../../../utils/errors';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
-import { Account } from '../../../account/entities/account';
 import { Member } from '../../../member/entities/member';
 import { EtherpadItem, Item, isItemType } from '../../entities/Item';
 import { WrongItemTypeError } from '../../errors';
@@ -150,7 +150,7 @@ export class EtherpadItemService {
   private async checkMode(
     repositories: Repositories,
     requestedMode: 'read' | 'write',
-    account: Account,
+    account: AuthenticatedUser,
     item: EtherpadItem,
   ): Promise<'read' | 'write'> {
     // no specific check if read mode was requested
@@ -190,7 +190,11 @@ export class EtherpadItemService {
    * Retrieves the Etherpad service URL of the requested pad for a given item and a cookie
    * containing all valid sessions for pads for a given member (including the requested pad)
    */
-  public async getEtherpadFromItem(account: Account, itemId: string, mode: 'read' | 'write') {
+  public async getEtherpadFromItem(
+    account: AuthenticatedUser,
+    itemId: string,
+    mode: 'read' | 'write',
+  ) {
     const repos = buildRepositories();
     const item = await this.itemService.get(account, repos, itemId);
 
@@ -333,7 +337,10 @@ export class EtherpadItemService {
    * @param {string} itemId item to retrieve the content of
    * @returns {string} html content of the etherpad
    */
-  public async getEtherpadContentFromItem(account: Account, itemId: string): Promise<string> {
+  public async getEtherpadContentFromItem(
+    account: AuthenticatedUser,
+    itemId: string,
+  ): Promise<string> {
     const repos = buildRepositories();
     const item = await this.itemService.get(account, repos, itemId);
 

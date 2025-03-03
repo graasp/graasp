@@ -127,7 +127,7 @@ export const exportActionsInArchive = async (args: {
       fileFolderPath,
       buildActionFileName('members', archiveDate, format),
     );
-    writeFileForFormat(membersFilepath, format, baseAnalytics.members);
+    writeFileForFormat(membersFilepath, format, baseAnalytics.members ?? []);
 
     // create file for the memberships
     const iMembershipsPath = path.join(

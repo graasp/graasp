@@ -4,7 +4,9 @@ import { Check, ChildEntity, Column, Unique } from 'typeorm';
 import { AccountType, CompleteMember } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import { Account, is } from '../../account/entities/account';
+import { AuthenticatedUser, MinimalMember } from '../../../types';
+import { assertIsDefined } from '../../../utils/assertions';
+import { Account } from '../../account/entities/account';
 import { NotMember } from '../error';
 
 const TYPE = AccountType.Individual;
@@ -56,17 +58,18 @@ export class Member extends Account {
   }
 }
 
-export type Actor = Account | undefined;
+export type Actor = AuthenticatedUser | undefined;
 
-export function isMember(account: Account): account is Member {
-  return is<Member>(account, TYPE);
+export function isMember(account: AuthenticatedUser | Member): account is MinimalMember {
+  return account.type === TYPE;
 }
 
 export function assertIsMember<Err extends Error, Args extends unknown[]>(
-  account: Account,
+  account: Actor,
   error?: new (...args: Args) => Err,
   ...args: Args
 ): asserts account is Member {
+  assertIsDefined(account);
   if (!isMember(account)) {
     if (error) {
       throw new error(...args);

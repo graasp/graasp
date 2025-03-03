@@ -5,8 +5,8 @@ import { ClientManager, Context, MentionStatus, PermissionLevel } from '@graasp/
 import { TRANSLATIONS } from '../../../../langs/constants';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../plugins/mailer/service';
+import { AuthenticatedUser } from '../../../../types';
 import { Repositories } from '../../../../utils/repositories';
-import { Account } from '../../../account/entities/account';
 import { validatePermission } from '../../../authorization';
 import { Item } from '../../../item/entities/Item';
 import { Member, isMember } from '../../../member/entities/member';
@@ -28,7 +28,7 @@ export class MentionService {
   }: {
     item: Item;
     member: Member;
-    creator: Account;
+    creator: { name: string };
   }) {
     const itemLink = ClientManager.getInstance().getItemLink(Context.Builder, item.id, {
       chatOpen: true,
@@ -57,7 +57,7 @@ export class MentionService {
   }
 
   async createManyForItem(
-    account: Account,
+    account: AuthenticatedUser,
     repositories: Repositories,
     message: ChatMessage,
     mentionedMembers: string[],
@@ -72,7 +72,8 @@ export class MentionService {
     const mentions = await mentionRepository.postMany(mentionedMembers, message.id);
 
     mentions.forEach((mention) => {
-      const member = mention.account;
+      // HACK: casting here because the table inheritance does not work well with the types.
+      const member = mention.account as Member;
       if (isMember(member)) {
         this.sendMentionNotificationEmail({ item, member, creator: account });
       }
@@ -81,12 +82,12 @@ export class MentionService {
     return mentions;
   }
 
-  async getForAccount(account: Account, repositories: Repositories) {
+  async getForAccount(account: AuthenticatedUser, repositories: Repositories) {
     const { mentionRepository } = repositories;
     return mentionRepository.getForAccount(account.id);
   }
 
-  async get(actor: Account, repositories: Repositories, mentionId: string) {
+  async get(actor: AuthenticatedUser, repositories: Repositories, mentionId: string) {
     const { mentionRepository } = repositories;
     const mentionContent = await mentionRepository.get(mentionId);
 
@@ -98,7 +99,7 @@ export class MentionService {
   }
 
   async patch(
-    actor: Account,
+    actor: AuthenticatedUser,
     repositories: Repositories,
     mentionId: string,
     status: MentionStatus,
@@ -111,7 +112,7 @@ export class MentionService {
     return mentionRepository.patch(mentionId, status);
   }
 
-  async deleteOne(actor: Account, repositories: Repositories, mentionId: string) {
+  async deleteOne(actor: AuthenticatedUser, repositories: Repositories, mentionId: string) {
     const { mentionRepository } = repositories;
 
     // check permission
@@ -120,7 +121,7 @@ export class MentionService {
     return mentionRepository.deleteOne(mentionId);
   }
 
-  async deleteAll(actor: Account, repositories: Repositories) {
+  async deleteAll(actor: AuthenticatedUser, repositories: Repositories) {
     const { mentionRepository } = repositories;
     await mentionRepository.deleteAll(actor.id);
     //     const clearedChat: Chat = { id: this.targetId, messages: [] };

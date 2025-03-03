@@ -112,16 +112,21 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       preHandler: authenticateJWTChallengeVerifier,
     },
     async ({ user, authInfo }) => {
-      const member = asDefined(user?.account);
+      const account = asDefined(user?.account);
       await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
-        await memberService.refreshLastAuthenticatedAt(member.id, repositories);
+        await memberService.refreshLastAuthenticatedAt(account.id, repositories);
         // on auth, if the user used the email sign in, its account gets validated
-        if (authInfo?.emailValidation && isMember(member) && !member.isValidated) {
-          await memberService.validate(member.id, repositories);
+        if (authInfo?.emailValidation && isMember(account)) {
+          // fetch complete member info from DB
+          const member = await repositories.memberRepository.get(account.id);
+          // if member is not validated, we validate them since they provided a proof of access to their email
+          if (!member.isValidated) {
+            await memberService.validate(account.id, repositories);
+          }
         }
       });
-      return generateAuthTokensPair(member.id);
+      return generateAuthTokensPair(account.id);
     },
   );
 

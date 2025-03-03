@@ -14,6 +14,7 @@ import {
   UUID,
 } from '@graasp/sdk';
 
+import { AuthenticatedUser } from '../../../../types';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
 import {
@@ -132,7 +133,7 @@ export class ActionItemService {
   }
 
   async getBaseAnalyticsForItem(
-    actor: Actor,
+    actor: AuthenticatedUser,
     repositories: Repositories,
     payload: {
       itemId: string;
@@ -180,7 +181,9 @@ export class ActionItemService {
     const allMemberships = [...inheritedMemberships, ...itemMemberships];
     // get members
     const members =
-      permission === PermissionLevel.Admin ? allMemberships.map(({ account }) => account) : [actor];
+      permission === PermissionLevel.Admin
+        ? allMemberships.map(({ account }) => account)
+        : undefined;
 
     // get descendants items
     const descendants = await this.itemService.getFilteredDescendants(

@@ -6,8 +6,8 @@ import { MultipartFile } from '@fastify/multipart';
 
 import { AppDataVisibility, FileItemProperties, UUID } from '@graasp/sdk';
 
+import { AuthenticatedUser } from '../../../../../../../types';
 import { Repositories } from '../../../../../../../utils/repositories';
-import { Account } from '../../../../../../account/entities/account';
 import FileService from '../../../../../../file/service';
 import { Item } from '../../../../../entities/Item';
 import { APP_DATA_TYPE_FILE } from '../../../constants';
@@ -29,7 +29,12 @@ class AppDataFileService {
     this.fileService = fileService;
   }
 
-  async upload(account: Account, repositories: Repositories, file: MultipartFile, item: Item) {
+  async upload(
+    account: AuthenticatedUser,
+    repositories: Repositories,
+    file: MultipartFile,
+    item: Item,
+  ) {
     const { filename, mimetype, file: stream } = file;
     const appDataId = v4();
     const filepath = this.buildFilePath(item.id, appDataId); // parentId, filename
@@ -80,7 +85,7 @@ class AppDataFileService {
   }
 
   async download(
-    account: Account,
+    account: AuthenticatedUser,
     repositories: Repositories,
     { item, appDataId }: { item: Item; appDataId: UUID },
   ) {

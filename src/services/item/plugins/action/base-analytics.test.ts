@@ -81,7 +81,7 @@ describe('Base Analytics', () => {
     });
 
     for (const m of members) {
-      const member = analytics.members.find((me) => me.name === m.name) as Member | undefined;
+      const member = analytics.members?.find((me) => me.name === m.name) as Member | undefined;
       // lang exists
       if (m?.extra?.lang) {
         expect(member?.extra.lang).toBeTruthy();

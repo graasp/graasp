@@ -3,6 +3,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 
 import { Authenticator } from '@fastify/passport';
 
+import { AuthenticatedUser } from '../../../../../types';
 import { JWT_SECRET } from '../../../../../utils/config';
 import { ChallengeFailed, MemberNotFound, UnauthorizedMember } from '../../../../../utils/errors';
 import { AccountRepository } from '../../../../account/repository';
@@ -44,7 +45,8 @@ export default (
 
         //-- Fetch Member Data --//
         try {
-          const account = await accountRepository.get(sub);
+          // HACK: We cast here, but in the future we should only retrieve the minimal info
+          const account = (await accountRepository.get(sub)) as AuthenticatedUser;
           if (account) {
             // Token has been validated
             return done(null, { account }, { emailValidation });

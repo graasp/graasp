@@ -6,8 +6,8 @@ import { MultipartFile } from '@fastify/multipart';
 
 import { FileItemProperties, MAX_ITEM_NAME_LENGTH, UUID } from '@graasp/sdk';
 
+import { AuthenticatedUser } from '../../../../../../../types';
 import { Repositories } from '../../../../../../../utils/repositories';
-import { Account } from '../../../../../../account/entities/account';
 import FileService from '../../../../../../file/service';
 import { Actor, Member } from '../../../../../../member/entities/member';
 import { Item } from '../../../../../entities/Item';
@@ -42,7 +42,12 @@ class AppSettingFileService {
     this.itemService = itemService;
   }
 
-  async upload(member: Account, repositories: Repositories, file: MultipartFile, item: Item) {
+  async upload(
+    member: AuthenticatedUser,
+    repositories: Repositories,
+    file: MultipartFile,
+    item: Item,
+  ) {
     const { filename, mimetype, fields, file: stream } = file;
     const appSettingId = v4();
     const filepath = this.buildFilePath(item.id, appSettingId); // parentId, filename
@@ -88,7 +93,7 @@ class AppSettingFileService {
   }
 
   async download(
-    account: Account,
+    account: AuthenticatedUser,
     repositories: Repositories,
     { item, appSettingId }: { item: Item; appSettingId: UUID },
   ) {

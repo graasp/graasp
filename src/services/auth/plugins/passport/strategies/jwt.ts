@@ -2,6 +2,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 
 import { Authenticator } from '@fastify/passport';
 
+import { AuthenticatedUser } from '../../../../../types';
 import { MemberNotFound, UnauthorizedMember } from '../../../../../utils/errors';
 import { AccountRepository } from '../../../../account/repository';
 import { PassportStrategy } from '../strategies';
@@ -23,7 +24,8 @@ export default (
       },
       async ({ sub }, done: StrictVerifiedCallback) => {
         try {
-          const account = await accountRepository.get(sub);
+          // HACK: We cast here, but in the future we should only retrieve the minimal info
+          const account = (await accountRepository.get(sub)) as AuthenticatedUser;
           if (account) {
             // Token has been validated
             return done(null, { account });

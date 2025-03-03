@@ -1,7 +1,7 @@
 import { ItemVisibilityType, PermissionLevel } from '@graasp/sdk';
 
+import { AuthenticatedUser } from '../../../../../types';
 import { Repositories } from '../../../../../utils/repositories';
-import { Account } from '../../../../account/entities/account';
 import { ItemWrapper } from '../../../ItemWrapper';
 import { ItemService } from '../../../service';
 import { ItemVisibilityRepository } from '../../itemVisibility/repository';
@@ -31,7 +31,11 @@ export class PublicationService {
     this.validationQueue = validationQueue;
   }
 
-  public async computeStateForItem(member: Account, repositores: Repositories, itemId: string) {
+  public async computeStateForItem(
+    member: AuthenticatedUser,
+    repositores: Repositories,
+    itemId: string,
+  ) {
     const item = await this.itemService.get(member, repositores, itemId, PermissionLevel.Admin);
     const publicVisibility = await this.itemVisibilityRepository.getType(
       item.path,

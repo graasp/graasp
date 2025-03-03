@@ -1,8 +1,9 @@
 import { Readable } from 'stream';
 
-import { Account, Member } from '@graasp/sdk';
+import { Account } from '@graasp/sdk';
 
 import { BaseLogger } from '../../logger';
+import { AuthenticatedUser } from '../../types';
 import { CachingService } from '../caching/service';
 import { Actor } from '../member/entities/member';
 import { LocalFileConfiguration, S3FileConfiguration } from './interfaces/configuration';
@@ -135,7 +136,7 @@ class FileService {
   }
 
   async copy(
-    member: Member,
+    member: AuthenticatedUser,
     data: {
       newId?: string;
       newFilePath: string;
