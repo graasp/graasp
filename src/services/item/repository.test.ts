@@ -31,13 +31,11 @@ import { RecycledItemDataRepository } from './plugins/recycled/repository';
 import { ItemRepository } from './repository';
 import { expectItem, expectManyItems } from './test/fixtures/items';
 
-const itemRepository = new ItemRepository();
-const recycledItemRepository = new RecycledItemDataRepository();
-
 const alphabeticalOrder = (a: string, b: string) => a.localeCompare(b);
 
 // TODO: remove when this can be handled by the seed
 async function saveRecycledItem(
+  recycledItemRepository: RecycledItemDataRepository,
   rawItemRepository: Repository<Item>,
   item: Item,
   creatorId: string,
@@ -103,12 +101,16 @@ describe('ItemRepository', () => {
 
   let itemRawRepository: Repository<Item>;
   let rawItemPublishedRepository: Repository<ItemPublished>;
+  let itemRepository: ItemRepository;
+  let recycledItemRepository: RecycledItemDataRepository;
 
   beforeAll(async () => {
     db = await AppDataSource.initialize();
     await db.runMigrations();
     itemRawRepository = db.getRepository(Item);
     rawItemPublishedRepository = db.getRepository(ItemPublished);
+    itemRepository = new ItemRepository();
+    recycledItemRepository = new RecycledItemDataRepository();
   });
 
   afterAll(async () => {
@@ -496,7 +498,7 @@ describe('ItemRepository', () => {
       assertIsDefined(actor);
       assertIsMember(actor);
       // TODO: remove once deleted is part of seed
-      await saveRecycledItem(itemRawRepository, deleted, actor.id);
+      await saveRecycledItem(recycledItemRepository, itemRawRepository, deleted, actor.id);
 
       const result = await itemRepository.getManyDescendants([A, B]);
 
@@ -523,7 +525,7 @@ describe('ItemRepository', () => {
       assertIsDefined(actor);
       assertIsMember(actor);
       // TODO: remove once deleted is part of seed
-      await saveRecycledItem(itemRawRepository, deleted, actor.id);
+      await saveRecycledItem(recycledItemRepository, itemRawRepository, deleted, actor.id);
 
       const result = await itemRepository.getManyDescendants([A, B], {
         withDeleted: true,
@@ -559,7 +561,7 @@ describe('ItemRepository', () => {
       assertIsDefined(actor);
       assertIsMember(actor);
       // TODO: remove once deleted is part of seed
-      await saveRecycledItem(itemRawRepository, item3, actor.id);
+      await saveRecycledItem(recycledItemRepository, itemRawRepository, item3, actor.id);
 
       const result = await itemRepository.getMany([item1.id, item2.id, item3.id, v4()], {
         withDeleted: true,
