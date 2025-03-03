@@ -517,11 +517,10 @@ describe('Item Login Tests', () => {
             const {
               items: [item],
             } = await seedFromJson({
-              actor: null,
               items: [
                 {
                   itemLoginSchema: {},
-                  memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                  memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
                 },
               ],
             });
@@ -847,7 +846,8 @@ describe('Item Login Tests', () => {
             {
               memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
               itemLoginSchema: {
-                type: ItemLoginSchemaType.UsernameAndPassword,
+                status: ItemLoginSchemaStatus.Active,
+                type: ItemLoginSchemaType.Username,
               },
             },
           ],
@@ -1005,7 +1005,7 @@ describe('Item Login Tests', () => {
         actor: null,
         items: [
           {
-            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
             itemLoginSchema: {},
           },
         ],
