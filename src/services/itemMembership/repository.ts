@@ -2,7 +2,11 @@ import { inArray, isNotNull, ne } from 'drizzle-orm';
 import { and, eq, sql } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
-import { PermissionLevel, PermissionLevelCompare, getChildFromPath } from '@graasp/sdk';
+import {
+  PermissionLevel,
+  PermissionLevelCompare,
+  getChildFromPath,
+} from '@graasp/sdk';
 
 import { DBConnection } from '../../drizzle/db';
 import { isAncestorOrSelf, isDescendantOrSelf } from '../../drizzle/operations';
@@ -56,7 +60,10 @@ type MoveHousekeepingType = DetachedMoveHousekeepingType & {
 
 @singleton()
 export class ItemMembershipRepository {
-  async getOne(db: DBConnection, id: string): Promise<ItemMembership | undefined> {
+  async getOne(
+    db: DBConnection,
+    id: string,
+  ): Promise<ItemMembership | undefined> {
     const res = await db.query.itemMemberships.findFirst({
       where: eq(itemMembershipTable.id, id),
       with: { creator: true, item: true, account: true },
@@ -115,7 +122,9 @@ export class ItemMembershipRepository {
         );
       }
     }
-    await db.delete(itemMembershipTable).where(eq(itemMembershipTable.id, itemMembershipId));
+    await db
+      .delete(itemMembershipTable)
+      .where(eq(itemMembershipTable.id, itemMembershipId));
     return itemMembership;
   }
 
@@ -163,7 +172,11 @@ export class ItemMembershipRepository {
    * @param itemId the itemId that we are testing for membership
    * @returns true if the user has a membership (direct or inherited) for the itemId, false otherwise
    */
-  async hasMembershipOnItem(db: DBConnection, accountId: string, itemId: string): Promise<boolean> {
+  async hasMembershipOnItem(
+    db: DBConnection,
+    accountId: string,
+    itemId: string,
+  ): Promise<boolean> {
     if (!accountId) {
       throw new MemberNotFound();
     } else if (!itemId) {
@@ -175,7 +188,9 @@ export class ItemMembershipRepository {
       .from(itemMembershipTable)
       .leftJoin(items, eq(items.path, itemMembershipTable.itemPath))
       // TODO: we should probably check for ancestors of the item with itemId input to have a membership.
-      .where(and(eq(itemMembershipTable.accountId, accountId), eq(items.id, itemId)));
+      .where(
+        and(eq(itemMembershipTable.accountId, accountId), eq(items.id, itemId)),
+      );
     // we were able to get a result, so the accountId has a membership on the item
     if (res.length >= 1) {
       return true;
@@ -215,7 +230,11 @@ export class ItemMembershipRepository {
     return membershipsBelowItemPath;
   }
 
-  async getAllBellowItemPathForAccount(db: DBConnection, itemPath: ItemPath, accountId: string) {
+  async getAllBellowItemPathForAccount(
+    db: DBConnection,
+    itemPath: ItemPath,
+    accountId: string,
+  ) {
     const membershipsBelowItemPath = db.query.itemMemberships.findMany({
       where: and(
         sql`${itemMembershipTable.itemPath} <@ ${itemPath}`,
@@ -437,7 +456,11 @@ export class ItemMembershipRepository {
     }
 
     query
-      .innerJoin('item', 'descendant', 'item_membership.item_path @> descendant.path')
+      .innerJoin(
+        'item',
+        'descendant',
+        'item_membership.item_path @> descendant.path',
+      )
       .where('descendant.id in (:...ids)', { ids });
     if (accountId) {
       query.andWhere('account.id = :accountId', { accountId });
@@ -451,13 +474,17 @@ export class ItemMembershipRepository {
 
     const mapByPath = mapById({
       keys: items.map(({ path }) => path),
-      findElement: (path) => memberships.filter(({ item }) => path.includes(item.path)),
+      findElement: (path) =>
+        memberships.filter(({ item }) => path.includes(item.path)),
       buildError: (path) => new ItemMembershipNotFound({ path }),
     });
 
     // use id as key
     const idToMemberships = Object.fromEntries(
-      Object.entries(mapByPath.data).map(([key, value]) => [getChildFromPath(key), value]),
+      Object.entries(mapByPath.data).map(([key, value]) => [
+        getChildFromPath(key),
+        value,
+      ]),
     );
 
     return { data: idToMemberships, errors: mapByPath.errors };
@@ -478,7 +505,11 @@ export class ItemMembershipRepository {
     const query = this.repository
       .createQueryBuilder('item_membership')
       // Map each membership to the item it can affect
-      .innerJoin('item', 'descendant', 'item_membership.item_path @> descendant.path')
+      .innerJoin(
+        'item',
+        'descendant',
+        'item_membership.item_path @> descendant.path',
+      )
       // Join for entity result
       .leftJoinAndSelect('item_membership.account', 'account')
       .leftJoinAndSelect('item_membership.item', 'item')
@@ -501,7 +532,10 @@ export class ItemMembershipRepository {
     // map entities by id to avoid iterating on the result multiple times
     const entityMap = new Map(memberships.entities.map((e) => [e.id, e]));
     const itemIdToMemberships = new Map(
-      memberships.raw.map((e) => [e.descendant_id, entityMap.get(e.item_membership_id)]),
+      memberships.raw.map((e) => [
+        e.descendant_id,
+        entityMap.get(e.item_membership_id),
+      ]),
     ); // unfortunately we lose type safety because of the raw
 
     const result = mapById({
@@ -532,17 +566,27 @@ export class ItemMembershipRepository {
     }
 
     // .limit(1) -> getOne()
-    const memberships = await query.orderBy('nlevel(item_membership.item_path)', 'DESC').getMany();
+    const memberships = await query
+      .orderBy('nlevel(item_membership.item_path)', 'DESC')
+      .getMany();
 
     // TODO: optimize
     // order by array https://stackoverflow.com/questions/866465/order-by-the-in-value-list
     // order by https://stackoverflow.com/questions/17603907/order-by-enum-field-in-mysql
-    const result = memberships?.reduce((highest: ItemMembership | null, m: ItemMembership) => {
-      if (PermissionLevelCompare.gte(m.permission, highest?.permission ?? PermissionLevel.Read)) {
-        return m;
-      }
-      return highest;
-    }, null);
+    const result = memberships?.reduce(
+      (highest: ItemMembership | null, m: ItemMembership) => {
+        if (
+          PermissionLevelCompare.gte(
+            m.permission,
+            highest?.permission ?? PermissionLevel.Read,
+          )
+        ) {
+          return m;
+        }
+        return highest;
+      },
+      null,
+    );
 
     if (result) {
       return result;
@@ -578,7 +622,11 @@ export class ItemMembershipRepository {
     return mappedMemberships;
   }
 
-  async getSharedItems(actorId: UUID, permission?: PermissionLevel): Promise<Item[]> {
+  async getSharedItems(
+    db: DBConnection,
+    actorId: string,
+    permission?: PermissionLevel,
+  ): Promise<Item[]> {
     // TODO: refactor
     let permissions: PermissionLevel[];
     switch (permission) {
@@ -602,7 +650,8 @@ export class ItemMembershipRepository {
       ),
       with: {
         item: {
-          where: (item) => and(isNotNull(item.creatorId), ne(item.creatorId, actorId)),
+          where: (item) =>
+            and(isNotNull(item.creatorId), ne(item.creatorId, actorId)),
         },
       },
     });
@@ -640,7 +689,10 @@ export class ItemMembershipRepository {
     // check member's inherited membership
     const { item, account: memberOfMembership } = itemMembership;
 
-    const inheritedMembership = await this.getInherited(item.path, memberOfMembership.id);
+    const inheritedMembership = await this.getInherited(db,
+      item.path,
+      memberOfMembership.id,
+    );
 
     const { permission } = data;
     if (inheritedMembership) {
@@ -672,7 +724,9 @@ export class ItemMembershipRepository {
       if (membershipsBelowToDiscard.length > 0) {
         // return subtasks to remove redundant existing memberships
         // and to update the existing one
-        tasks = membershipsBelowToDiscard.map(async (m) => await this.delete(m.id));
+        tasks = membershipsBelowToDiscard.map(
+          async (m) => await this.delete(m.id),
+        );
       }
     }
 
@@ -690,9 +744,18 @@ export class ItemMembershipRepository {
     // prepare membership but do not save it
     const itemId = getChildFromPath(itemPath);
 
-    const inheritedMembership = await this.getInherited(db, itemPath, accountId, true);
+    const inheritedMembership = await this.getInherited(
+      db,
+      itemPath,
+      accountId,
+      true,
+    );
     if (inheritedMembership) {
-      const { item: itemFromPermission, permission: inheritedPermission, id } = inheritedMembership;
+      const {
+        item: itemFromPermission,
+        permission: inheritedPermission,
+        id,
+      } = inheritedMembership;
       // fail if trying to add a new membership for the same member and item
       if (itemFromPermission.id === itemId) {
         throw new ModifyExistingMembership({ id });
@@ -803,7 +866,12 @@ export class ItemMembershipRepository {
    * @param account Account used as `creator` for any new memberships
    * @param newParentItem Parent item to where `item` will be moved to
    */
-  async moveHousekeeping(item: Item, account: Account, newParentItem?: Item) {
+  async moveHousekeeping(
+    db: DBConnection,
+    item: Item,
+    account: Account,
+    newParentItem?: Item,
+  ) {
     if (!newParentItem) {
       // Moving to the root
       return this.detachedMoveHousekeeping(item, account);
@@ -847,12 +915,22 @@ export class ItemMembershipRepository {
 
     return rows.reduce<ResultMoveHousekeeping>(
       (changes, row) => {
-        const { accountId, itemPath, permission, action, inherited, action2IgnoreInherited } = row;
+        const {
+          accountId,
+          itemPath,
+          permission,
+          action,
+          inherited,
+          action2IgnoreInherited,
+        } = row;
 
         if (action === PermissionType.InheritedAtDestination) {
           return changes;
         }
-        if (action === PermissionType.BellongsToTree && action2IgnoreInherited) {
+        if (
+          action === PermissionType.BellongsToTree &&
+          action2IgnoreInherited
+        ) {
           return changes;
         }
 

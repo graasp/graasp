@@ -3,17 +3,16 @@ import { singleton } from 'tsyringe';
 import { ItemLoginSchemaStatus, PermissionLevel, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../drizzle/db';
+import { GuestRaw } from '../../drizzle/types';
 import { MaybeUser } from '../../types';
 import { asDefined, assertIsDefined } from '../../utils/assertions';
 import { InvalidPassword } from '../../utils/errors';
 import { verifyCurrentPassword } from '../auth/plugins/password/utils';
 import { ItemRepository } from '../item/repository';
-import { Guest } from './entities/guest';
-import { ItemLoginSchema } from './entities/itemLoginSchema';
 import {
-  CannotRegisterOnFrozenItemLoginSchema,
-  ItemLoginSchemaNotFound,
-  MissingCredentialsForLoginSchema,
+    CannotRegisterOnFrozenItemLoginSchema,
+    ItemLoginSchemaNotFound,
+    MissingCredentialsForLoginSchema,
 } from './errors';
 import { ItemLoginMemberCredentials } from './interfaces/item-login';
 import { GuestRepository } from './repositories/guest';
@@ -24,6 +23,7 @@ import { loginSchemaRequiresPassword } from './utils';
 @singleton()
 export class ItemLoginService {
   private readonly itemLoginSchemaRepository: ItemLoginSchemaRepository;
+  private readonly itemLoginRepository: ItemLoginRepository;
   private readonly itemRepository: ItemRepository;
   private readonly guestRepository: GuestRepository;
   private readonly guestPasswordRepository: GuestPasswordRepository;
@@ -43,7 +43,8 @@ export class ItemLoginService {
   async getSchemaType(db: DBConnection, actor: MaybeUser, itemPath: string) {
     // do not need permission to get item login schema
     // we need to know the schema to display the correct form
-    const itemLoginSchema = await this.itemLoginSchemaRepository.getOneByItemPath(db, itemPath);
+    const itemLoginSchema =
+      await this.itemLoginSchemaRepository.getOneByItemPath(db, itemPath);
     return itemLoginSchema?.type;
   }
 
@@ -51,9 +52,13 @@ export class ItemLoginService {
     return await this.itemLoginSchemaRepository.getOneByItemPath(db, itemPath);
   }
 
-  async logInOrRegister(db: DBConnection, itemId: string, credentials: ItemLoginMemberCredentials) {
+  async logInOrRegister(
+    db: DBConnection,
+    itemId: string,
+    credentials: ItemLoginMemberCredentials,
+  ) {
     const { username, password } = credentials; // TODO: allow for "empty" username and generate one (anonymous, anonymous+password)
-    let bondMember: Guest | undefined = undefined;
+    let bondMember: GuestRaw | undefined = undefined;
     if (username) {
       bondMember = await this.logInOrRegisterWithUsername(db, itemId, {
         username,
@@ -78,7 +83,8 @@ export class ItemLoginService {
 
     // initial validation
     // this throws if does not exist
-    const itemLoginSchema = await this.itemLoginSchemaRepository.getOneByItemPath(db, item.path);
+    const itemLoginSchema =
+      await this.itemLoginSchemaRepository.getOneByItemPath(db, item.path);
     if (!itemLoginSchema) {
       throw new ItemLoginSchemaNotFound(item.path);
     }
@@ -87,12 +93,19 @@ export class ItemLoginService {
       throw new ItemLoginSchemaNotFound();
     }
 
-    let guestAccount = await this.guestRepository.getForItemAndUsername(db, item, username);
+    let guestAccount = await this.guestRepository.getForItemAndUsername(
+      db,
+      item,
+      username,
+    );
 
     // reuse existing item login for this user
     if (guestAccount && loginSchemaRequiresPassword(itemLoginSchema.type)) {
       password = asDefined(password, MissingCredentialsForLoginSchema);
-      const accountPassword = await this.guestPasswordRepository.getForGuestId(db, guestAccount.id);
+      const accountPassword = await this.guestPasswordRepository.getForGuestId(
+        db,
+        guestAccount.id,
+      );
       if (accountPassword) {
         if (!(await verifyCurrentPassword(accountPassword, password))) {
           throw new InvalidPassword();
@@ -136,15 +149,20 @@ export class ItemLoginService {
       });
     }
 
-    const refreshedMember = await this.itemLoginRepository.refreshLastAuthenticatedAt(
-      db,
-      guestAccount.id,
-    );
+    const refreshedMember =
+      await this.guestRepository.refreshLastAuthenticatedAt(
+        db,
+        guestAccount.id,
+      );
 
     return refreshedMember;
   }
 
-  async create(db: DBConnection, itemPath: string, type?: ItemLoginSchema['type']) {
+  async create(
+    db: DBConnection,
+    itemPath: string,
+    type?: ItemLoginSchema['type'],
+  ) {
     return this.itemLoginSchemaRepository.addOne(db, { itemPath, type });
   }
 

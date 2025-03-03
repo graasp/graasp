@@ -4,8 +4,8 @@ import { FastifyBaseLogger } from 'fastify';
 
 import { Websocket as GraaspWS } from '@graasp/sdk';
 
-import { Account } from '../account/entities/account';
-import { Actor } from '../member/entities/member';
+import { Account } from '../../drizzle/types';
+import { MaybeUser } from '../../types';
 import {
   createServerErrorResponse,
   createServerSuccessResponse,
@@ -74,7 +74,7 @@ export class WebsocketService {
    */
   private async handleSubscribe(
     request: GraaspWS.ClientSubscribe | GraaspWS.ClientSubscribeOnly,
-    member: Actor,
+    member: MaybeUser,
     client: WebSocket,
     subscribeFn: (client: WebSocket, channelName: string) => boolean,
   ) {
@@ -91,7 +91,9 @@ export class WebsocketService {
 
     const validate = this.validators.get(request.topic);
     if (validate === undefined) {
-      this.logger.info(`graasp-plugin-websockets: Validator not found for topic ${request.topic}`);
+      this.logger.info(
+        `graasp-plugin-websockets: Validator not found for topic ${request.topic}`,
+      );
       res = createServerErrorResponse(new GraaspWS.NotFoundError(), request);
     } else {
       try {
@@ -122,7 +124,10 @@ export class WebsocketService {
   /**
    * Helper to handle unsubscribe action
    */
-  private handleUnsubscribe(request: GraaspWS.ClientUnsubscribe, client: WebSocket) {
+  private handleUnsubscribe(
+    request: GraaspWS.ClientUnsubscribe,
+    client: WebSocket,
+  ) {
     // scope channel into topic
     const scopedChannel = this.scope(request.channel, request.topic);
     const res = this.wsChannels.clientUnsubscribe(client, scopedChannel)
@@ -140,13 +145,15 @@ export class WebsocketService {
    * @param member member performing the request
    * @param socket client socket
    */
-  handleRequest(data: Data, member: Actor, client: WebSocket): void {
-    const request = this.parse(typeof data === 'string' ? data : data?.toString());
+  handleRequest(data: Data, actor: MaybeUser, client: WebSocket): void {
+    const request = this.parse(
+      typeof data === 'string' ? data : data?.toString(),
+    );
 
     // validation error, send bad request
     if (request === undefined) {
       this.logger.info(
-        `graasp-plugin-websockets: Bad client request (memberID: ${member?.id} with message`,
+        `graasp-plugin-websockets: Bad client request (memberID: ${actor?.id} with message`,
         data?.toString(),
       );
       const err = new GraaspWS.BadRequestError();
@@ -161,13 +168,13 @@ export class WebsocketService {
         break;
       }
       case GraaspWS.ClientActions.Subscribe: {
-        this.handleSubscribe(request, member, client, (client, channel) =>
+        this.handleSubscribe(request, actor, client, (client, channel) =>
           this.wsChannels.clientSubscribe(client, channel),
         );
         break;
       }
       case GraaspWS.ClientActions.SubscribeOnly: {
-        this.handleSubscribe(request, member, client, (client, channel) =>
+        this.handleSubscribe(request, actor, client, (client, channel) =>
           this.wsChannels.clientSubscribeOnly(client, channel),
         );
         break;
@@ -181,7 +188,9 @@ export class WebsocketService {
 
   register(topic: string, validateClient: ValidationFn): this {
     if (this.validators.has(topic)) {
-      this.logger.error(`graasp-plugin-websockets: Topic ${topic} is already registered`);
+      this.logger.error(
+        `graasp-plugin-websockets: Topic ${topic} is already registered`,
+      );
       throw new Error('WebSocketService.register: topic already exists!');
     }
     this.validators.set(topic, validateClient);
@@ -191,12 +200,22 @@ export class WebsocketService {
   publish<Message>(topic: string, channel: string, message: Message): void {
     // scope channel into topic
     const scopedChannel = this.scope(channel, topic);
-    this.wsMultiBroker.dispatch(scopedChannel, createServerUpdate(topic, channel, message));
+    this.wsMultiBroker.dispatch(
+      scopedChannel,
+      createServerUpdate(topic, channel, message),
+    );
   }
 
-  publishLocal<Message>(topic: string, channel: string, message: Message): void {
+  publishLocal<Message>(
+    topic: string,
+    channel: string,
+    message: Message,
+  ): void {
     // scope channel into topic
     const scopedChannel = this.scope(channel, topic);
-    this.wsChannels.channelSend(scopedChannel, createServerUpdate(topic, channel, message));
+    this.wsChannels.channelSend(
+      scopedChannel,
+      createServerUpdate(topic, channel, message),
+    );
   }
 }

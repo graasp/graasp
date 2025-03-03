@@ -16,7 +16,9 @@ import {
   actionsTable,
   chatMentionsTable,
   chatMessagesTable,
+  guestsView,
   invitationsTable,
+  itemTags,
   items,
   itemsRaw,
   membersView,
@@ -45,6 +47,9 @@ export type MemberCreationDTO = typeof membersView.$inferSelect & {
 };
 export type MemberRaw = Omit<typeof membersView.$inferSelect, 'type'> & {
   type: 'individual';
+};
+export type GuestRaw = Omit<typeof guestsView.$inferSelect, 'type'> & {
+  type: 'guest';
 };
 
 /**
@@ -103,7 +108,10 @@ export type ItemWithCreator = Omit<Item, 'creatorId'> & { creator: Account };
 
 export type PublishedIteminsertDTO = typeof publishedItems.$inferInsert;
 export type PublishedItemRaw = typeof publishedItems.$inferSelect;
-export type ItemPublishedWithItem = Omit<typeof publishedItems.$inferSelect, 'itemPath'> & {
+export type ItemPublishedWithItem = Omit<
+  typeof publishedItems.$inferSelect,
+  'itemPath'
+> & {
   item: Item;
 };
 export type ItemPublishedWithItemAndAccount = ItemPublishedWithItem & {
@@ -115,7 +123,10 @@ export type ActionInsertDTO = typeof actionsTable.$inferInsert;
 export type ActionRaw = typeof actionsTable.$inferSelect;
 // this is type that matches the automatically linked entities from typeORM,
 // we should check each usage location to see if including the realtions is necessary or not
-export type ActionWithItem = Omit<typeof actionsTable.$inferSelect, 'accountId' | 'itemId'> & {
+export type ActionWithItem = Omit<
+  typeof actionsTable.$inferSelect,
+  'accountId' | 'itemId'
+> & {
   item: NullableItem;
 };
 export type ActionWithItemAndAccount = ActionWithItem & {
@@ -141,6 +152,13 @@ export type InvitationRaw = typeof invitationsTable.$inferSelect;
 export type InvitationWithItem = Omit<InvitationRaw, 'itemPath'> & {
   item: Item;
 };
-export type InvitationWIthItemAndCreator = Omit<InvitationWithItem, 'creatorId'> & {
+export type InvitationWIthItemAndCreator = Omit<
+  InvitationWithItem,
+  'creatorId'
+> & {
   creator: NullableAccount;
 };
+
+// --- ItemTags
+export type ItemTagInsertDTO = typeof itemTags.$inferInsert;
+export type ItemTagRaw = typeof itemTags.$inferSelect;

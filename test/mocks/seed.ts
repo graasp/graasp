@@ -10,7 +10,6 @@ import {
 } from '@graasp/sdk';
 
 import { Item, ItemWithCreator, MemberRaw } from '../../src/drizzle/types';
-import { MemberPassword } from '../../src/services/auth/plugins/password/entities/password';
 import { encryptPassword } from '../../src/services/auth/plugins/password/utils';
 import { ItemMembership } from '../../src/services/itemMembership/entities/ItemMembership';
 import { MemberProfile } from '../../src/services/member/plugins/profile/entities/profile';
@@ -110,7 +109,7 @@ const processActor = async ({ actor, items, members }: DataType) => {
       if (actor.password) {
         await seed({
           actorPassword: {
-            constructor: MemberPassword,
+            constructor: MemberPasswordRaw,
             entities: [
               {
                 password: await encryptPassword(actor.password),

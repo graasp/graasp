@@ -1,11 +1,21 @@
 import { singleton } from 'tsyringe';
 
-import { FastifyRequest, RouteGenericInterface, RouteHandlerMethod } from 'fastify';
+import {
+  FastifyRequest,
+  RouteGenericInterface,
+  RouteHandlerMethod,
+} from 'fastify';
 
-import { ItemVisibilityType, PermissionLevel, PermissionLevelCompare, ResultOf } from '@graasp/sdk';
+import {
+  ItemVisibilityType,
+  PermissionLevel,
+  PermissionLevelCompare,
+  ResultOf,
+} from '@graasp/sdk';
 
 import { DBConnection } from '../drizzle/db';
 import { ItemMembership } from '../drizzle/schema';
+import { ItemRaw } from '../drizzle/types';
 import { MaybeUser } from '../types';
 import {
   InsufficientPermission,
@@ -23,7 +33,11 @@ import { ItemMembershipRepository } from './itemMembership/repository';
 const permissionMapping = {
   [PermissionLevel.Read]: [PermissionLevel.Read],
   [PermissionLevel.Write]: [PermissionLevel.Read, PermissionLevel.Write],
-  [PermissionLevel.Admin]: [PermissionLevel.Read, PermissionLevel.Write, PermissionLevel.Admin],
+  [PermissionLevel.Admin]: [
+    PermissionLevel.Read,
+    PermissionLevel.Write,
+    PermissionLevel.Admin,
+  ],
 };
 
 @singleton()
@@ -66,12 +80,18 @@ export class AuthorizationService {
 
     // batch request for all items
     const inheritedMemberships = actor
-      ? await this.itemMembershipRepository.getInheritedMany(db, items, actor.id, true)
+      ? await this.itemMembershipRepository.getInheritedMany(
+          db,
+          items,
+          actor.id,
+          true,
+        )
       : null;
-    const visibilities = await this.itemVisibilityRepository.getManyForMany(db, items, [
-      ItemVisibilityType.Public,
-      ItemVisibilityType.Hidden,
-    ]);
+    const visibilities = await this.itemVisibilityRepository.getManyForMany(
+      db,
+      items,
+      [ItemVisibilityType.Public, ItemVisibilityType.Hidden],
+    );
 
     const resultOfMemberships: ResultOf<ItemMembership | null> = {
       data: inheritedMemberships?.data ?? {},
@@ -80,8 +100,11 @@ export class AuthorizationService {
 
     for (const item of items) {
       const highest = resultOfMemberships.data[item.id]?.permission;
-      const isValid = highest && permissionMapping[highest].includes(permission);
-      const isPublic = visibilities.data[item.id].find((t) => t.type === ItemVisibilityType.Public);
+      const isValid =
+        highest && permissionMapping[highest].includes(permission);
+      const isPublic = visibilities.data[item.id].find(
+        (t) => t.type === ItemVisibilityType.Public,
+      );
 
       // HIDDEN CHECK - prevent read
       // cannot read if your have read access only
@@ -128,7 +151,9 @@ export class AuthorizationService {
           resultOfMemberships.errors.push(new MemberCannotAdminItem(item.id));
           break;
         default:
-          resultOfMemberships.errors.push(new Error(`${permission} is not a valid permission`));
+          resultOfMemberships.errors.push(
+            new Error(`${permission} is not a valid permission`),
+          );
           break;
       }
     }
@@ -140,7 +165,7 @@ export class AuthorizationService {
     db: DBConnection,
     permission: PermissionLevel,
     actor: MaybeUser,
-    item: Item,
+    item: ItemRaw,
   ) {
     try {
       await this.validatePermission(db, permission, actor, item);
@@ -154,7 +179,7 @@ export class AuthorizationService {
     db: DBConnection,
     permission: PermissionLevel,
     actor: MaybeUser,
-    item: Item,
+    item: ItemRaw,
   ): Promise<{
     itemMembership: ItemMembership | null;
     visibilities: ItemVisibility[];
@@ -163,21 +188,36 @@ export class AuthorizationService {
     // but do not fetch membership for signed out member
 
     const inheritedMembership = actor
-      ? await this.itemMembershipRepository.getInherited(db, item.path, actor.id, true)
+      ? await this.itemMembershipRepository.getInherited(
+          db,
+          item.path,
+          actor.id,
+          true,
+        )
       : null;
     const highest = inheritedMembership?.permission;
     const isValid = highest && permissionMapping[highest].includes(permission);
     let isPublic = false;
-    const visibilities = await this.itemVisibilityRepository.getByItemPath(db, item.path);
-    if (highest === PermissionLevel.Read || permission === PermissionLevel.Read) {
-      isPublic = Boolean(visibilities.find((t) => t.type === ItemVisibilityType.Public));
+    const visibilities = await this.itemVisibilityRepository.getByItemPath(
+      db,
+      item.path,
+    );
+    if (
+      highest === PermissionLevel.Read ||
+      permission === PermissionLevel.Read
+    ) {
+      isPublic = Boolean(
+        visibilities.find((t) => t.type === ItemVisibilityType.Public),
+      );
     }
 
     // HIDDEN CHECK - prevent read
     // cannot read if your have read access only
     // or if the item is public so you would have normally access without permission
     if (highest === PermissionLevel.Read || (isPublic && !highest)) {
-      const isHidden = Boolean(visibilities.find((t) => t.type === ItemVisibilityType.Hidden));
+      const isHidden = Boolean(
+        visibilities.find((t) => t.type === ItemVisibilityType.Hidden),
+      );
       if (isHidden) {
         throw new MemberCannotAccess(item.id);
       }
@@ -211,7 +251,11 @@ export class AuthorizationService {
   }
 
   // TODO: This is only used here but should probably be put in a better place than the plugin file
-  async isItemVisible(db: DBConnection, actor: MaybeUser, itemPath: Item['path']) {
+  async isItemVisible(
+    db: DBConnection,
+    actor: MaybeUser,
+    itemPath: ItemRaw['path'],
+  ) {
     const isHidden = await this.itemVisibilityRepository.getType(
       db,
       itemPath,
@@ -225,12 +269,16 @@ export class AuthorizationService {
       }
 
       // Check if the actor has at least write permission
-      const membership = await this.itemMembershipRepository.getByAccountAndItemPath(
-        db,
-        actor?.id,
-        itemPath,
-      );
-      if (!membership || PermissionLevelCompare.lt(membership.permission, PermissionLevel.Write)) {
+      const membership =
+        await this.itemMembershipRepository.getByAccountAndItemPath(
+          db,
+          actor?.id,
+          itemPath,
+        );
+      if (
+        !membership ||
+        PermissionLevelCompare.lt(membership.permission, PermissionLevel.Write)
+      ) {
         return false;
       }
     }
@@ -246,7 +294,7 @@ const _filterOutItems = async (
   db: DBConnection,
   actor: MaybeUser,
   { itemMembershipRepository, itemVisibilityRepository },
-  items: Item[],
+  items: ItemRaw[],
   options?: { showHidden?: boolean },
 ) => {
   const showHidden = options?.showHidden ?? true;
@@ -261,12 +309,15 @@ const _filterOutItems = async (
       })
     : { data: [] };
 
-  const visibilities = await itemVisibilityRepository.getManyForMany(db, items, [
-    ItemVisibilityType.Hidden,
-    ItemVisibilityType.Public,
-  ]);
+  const visibilities = await itemVisibilityRepository.getManyForMany(
+    db,
+    items,
+    [ItemVisibilityType.Hidden, ItemVisibilityType.Public],
+  );
   const filteredItems = items.filter((item) => {
-    const isHidden = visibilities.data[item.id].find((t) => t.type === ItemVisibilityType.Hidden);
+    const isHidden = visibilities.data[item.id].find(
+      (t) => t.type === ItemVisibilityType.Hidden,
+    );
     if (isHidden && !showHidden) {
       return false;
     }
@@ -276,7 +327,9 @@ const _filterOutItems = async (
 
     // return item if has at least write permission or is not hidden
     return (
-      (permission && PermissionLevelCompare.gte(permission, PermissionLevel.Write)) || !isHidden
+      (permission &&
+        PermissionLevelCompare.gte(permission, PermissionLevel.Write)) ||
+      !isHidden
     );
   });
   return { items: filteredItems, memberships, visibilities };
@@ -289,10 +342,15 @@ export const filterOutItems = async (
   db: DBConnection,
   actor: MaybeUser,
   { itemMembershipRepository, itemVisibilityRepository },
-  items: Item[],
-): Promise<Item[]> => {
+  items: ItemRaw[],
+): Promise<ItemRaw[]> => {
   return (
-    await _filterOutItems(db, actor, { itemMembershipRepository, itemVisibilityRepository }, items)
+    await _filterOutItems(
+      db,
+      actor,
+      { itemMembershipRepository, itemVisibilityRepository },
+      items,
+    )
   ).items;
 };
 
@@ -303,7 +361,7 @@ export const filterOutPackedItems = async (
   db: DBConnection,
   actor: MaybeUser,
   { itemMembershipRepository, itemVisibilityRepository },
-  items: Item[],
+  items: ItemRaw[],
   itemsThumbnails?: ItemsThumbnails,
   options?: { showHidden?: boolean },
 ): Promise<PackedItem[]> => {
@@ -342,8 +400,8 @@ export const filterOutPackedDescendants = async (
   db: DBConnection,
   actor: MaybeUser,
   { itemMembershipRepository, itemVisibilityRepository },
-  item: Item,
-  descendants: Item[],
+  item: ItemRaw,
+  descendants: ItemRaw[],
   itemsThumbnails?: ItemsThumbnails,
   options?: { showHidden?: boolean },
 ): Promise<PackedItem[]> => {
@@ -359,10 +417,11 @@ export const filterOutPackedDescendants = async (
         selectItem: true,
       })
     : [];
-  const visibilities = await itemVisibilityRepository.getManyBelowAndSelf(db, item, [
-    ItemVisibilityType.Hidden,
-    ItemVisibilityType.Public,
-  ]);
+  const visibilities = await itemVisibilityRepository.getManyBelowAndSelf(
+    db,
+    item,
+    [ItemVisibilityType.Hidden, ItemVisibilityType.Public],
+  );
 
   return (
     descendants
@@ -372,7 +431,9 @@ export const filterOutPackedDescendants = async (
           .filter((m) => item.path.includes(m.item.path))
           .map(({ permission }) => permission);
         const permission = PermissionLevelCompare.getHighest(permissions);
-        const itemVisibilities = visibilities.filter((t) => item.path.includes(t.item.path));
+        const itemVisibilities = visibilities.filter((t) =>
+          item.path.includes(t.item.path),
+        );
 
         return new ItemWrapper(
           item,
@@ -388,7 +449,8 @@ export const filterOutPackedDescendants = async (
 
         // return item if has at least write permission or is not hidden
         return (
-          (i.permission && PermissionLevelCompare.gte(i.permission, PermissionLevel.Write)) ||
+          (i.permission &&
+            PermissionLevelCompare.gte(i.permission, PermissionLevel.Write)) ||
           !i.hidden
         );
       })
@@ -402,13 +464,17 @@ export const filterOutPackedDescendants = async (
 export const filterOutHiddenItems = async (
   db: DBConnection,
   { itemVisibilityRepository },
-  items: Item[],
+  items: ItemRaw[],
 ) => {
   if (!items.length) {
     return [];
   }
 
-  const isHidden = await itemVisibilityRepository.hasForMany(db, items, ItemVisibilityType.Hidden);
+  const isHidden = await itemVisibilityRepository.hasForMany(
+    db,
+    items,
+    ItemVisibilityType.Hidden,
+  );
   return items.filter((item) => {
     return !isHidden.data[item.id];
   });

@@ -13,6 +13,7 @@ import {
   isAuthenticated,
   optionalIsAuthenticated,
 } from '../auth/plugins/passport';
+import { assertIsMember } from '../authentication';
 import { matchOne } from '../authorization';
 import FileService from '../file/service';
 import {
@@ -20,7 +21,6 @@ import {
   FILE_METADATA_MIN_PAGE,
   FILE_METADATA_MIN_PAGE_SIZE,
 } from './constants';
-import { assertIsMember } from './entities/member';
 import { EmailAlreadyTaken } from './error';
 import { StorageService } from './plugins/storage/service';
 import {
@@ -43,9 +43,13 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
   const storageService = resolveDependency(StorageService);
 
   // get current
-  fastify.get('/current', { schema: getCurrent, preHandler: isAuthenticated }, async ({ user }) => {
-    return user?.account;
-  });
+  fastify.get(
+    '/current',
+    { schema: getCurrent, preHandler: isAuthenticated },
+    async ({ user }) => {
+      return user?.account;
+    },
+  );
 
   // get current member storage and its limits
   fastify.get(
@@ -175,7 +179,11 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = await memberService.get(db, account.id);
       assertIsDefined(member);
       const token = memberService.createEmailChangeRequest(member, email);
-      memberService.sendEmailChangeRequest(email, token, member.extra.lang ?? DEFAULT_LANG);
+      memberService.sendEmailChangeRequest(
+        email,
+        token,
+        member.extra.lang ?? DEFAULT_LANG,
+      );
     },
   );
 

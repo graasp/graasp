@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker';
 
 import { CCLicenseAdaptions, ItemType } from '@graasp/sdk';
 
-import { Item } from '../../src/services/item/entities/Item';
+import { Item } from '../../src/drizzle/types';
 
 /**
  * This factory does not guarantee valid items given their type. But they are acceptable when seed into the db.
@@ -31,7 +31,9 @@ export const ItemFactory = (item: Partial<Item>) => ({
         ccLicenseAdaption: faker.helpers.enumValue(CCLicenseAdaptions),
       },
     ]),
-  lang: item.lang ?? faker.helpers.arrayElement(['fr', 'en', 'it', 'es', 'ar', 'de']),
+  lang:
+    item.lang ??
+    faker.helpers.arrayElement(['fr', 'en', 'it', 'es', 'ar', 'de']),
   creator: null,
   ...item,
 });

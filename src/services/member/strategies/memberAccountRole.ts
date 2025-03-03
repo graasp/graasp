@@ -1,5 +1,5 @@
+import { isMember } from '../../authentication';
 import { RessourceAuthorizationStrategy } from '../../authorization';
-import { isMember } from '../entities/member';
 import { NotMember } from '../error';
 
 /**

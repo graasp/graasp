@@ -1,10 +1,19 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { AccountType, AuthenticatedUser, MinimalMember } from '../types';
+import {
+  AccountType,
+  AuthenticatedUser,
+  MinimalGuest,
+  MinimalMember,
+} from '../types';
 import { NotMember } from './member/error';
 
 export function isMember(account: AuthenticatedUser): account is MinimalMember {
   return account.type === AccountType.Individual;
+}
+
+export function isGuest(account: AuthenticatedUser): account is MinimalGuest {
+  return account.type === AccountType.Guest;
 }
 
 export function assertIsMember<Err extends Error, Args extends unknown[]>(

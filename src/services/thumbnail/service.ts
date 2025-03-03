@@ -3,9 +3,13 @@ import sharp from 'sharp';
 import { Readable } from 'stream';
 import { injectable } from 'tsyringe';
 
+import { AuthenticatedUser, MaybeUser } from '../../types';
 import FileService from '../file/service';
-import { Actor, Member } from '../member/entities/member';
-import { THUMBNAIL_FORMAT, THUMBNAIL_MIMETYPE, ThumbnailSizeFormat } from './constants';
+import {
+  THUMBNAIL_FORMAT,
+  THUMBNAIL_MIMETYPE,
+  ThumbnailSizeFormat,
+} from './constants';
 
 export const AVATAR_THUMBNAIL_PREFIX = 'avatars';
 export const ITEM_THUMBNAIL_PREFIX = 'thumbnails';
@@ -31,7 +35,11 @@ export class ThumbnailService {
     return path.join(this._prefix, itemId);
   }
 
-  async upload(actor: Member, id: string, file: Readable) {
+  async upload(
+    authenticatedUser: AuthenticatedUser,
+    id: string,
+    file: Readable,
+  ) {
     // upload all thumbnails in parallel
     await Promise.all(
       Object.entries(ThumbnailSizeFormat).map(async ([sizeName, width]) => {
@@ -48,7 +56,7 @@ export class ThumbnailService {
         );
 
         // upload file
-        await this.fileService.upload(actor, {
+        await this.fileService.upload(authenticatedUser, {
           file: pipeline,
           filepath: this.buildFilePath(id, sizeName),
           mimetype: THUMBNAIL_MIMETYPE,
@@ -64,7 +72,8 @@ export class ThumbnailService {
 
     return result;
   }
-  async getFile(actor: Actor, { id, size }: { size: string; id: string }) {
+
+  async getFile(actor: MaybeUser, { id, size }: { size: string; id: string }) {
     const result = await this.fileService.getFile(actor, {
       path: this.buildFilePath(id, size),
     });
@@ -77,7 +86,10 @@ export class ThumbnailService {
     await this.fileService.delete(filePath);
   }
 
-  async copyFolder(actor: Member, { originalId, newId }: { originalId: string; newId: string }) {
+  async copyFolder(
+    authenticatedUser: AuthenticatedUser,
+    { originalId, newId }: { originalId: string; newId: string },
+  ) {
     const originalFolderPath = this.buildFolderPath(originalId);
     const newFolderPath = this.buildFolderPath(newId);
     await this.fileService.copyFolder({ originalFolderPath, newFolderPath });

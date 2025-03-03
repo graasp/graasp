@@ -1,16 +1,15 @@
 import { faker } from '@faker-js/faker';
 
-import { AccountType } from '@graasp/sdk';
+import { AccountRaw, GuestRaw, MemberRaw } from '../../src/drizzle/types';
+import { AccountType, AccountTypeOptions } from '../../src/types';
 
-import { Account } from '../../src/services/account/entities/account';
-import { Guest } from '../../src/services/itemLogin/entities/guest';
-import { Member } from '../../src/services/member/entities/member';
-
-export function AccountFactory(account: Partial<Account> = {}) {
+export function AccountFactory(account: Partial<AccountRaw> = {}) {
   return { id: faker.string.uuid(), name: faker.person.fullName(), ...account };
 }
 
-function BaseAccountFactory<T extends AccountType>(baseAccount: Partial<Account> & { type: T }) {
+function BaseAccountFactory<T extends AccountTypeOptions>(
+  baseAccount: Partial<AccountRaw> & { type: T },
+) {
   return {
     ...AccountFactory(baseAccount),
     createdAt: faker.date.anytime(),
@@ -19,16 +18,21 @@ function BaseAccountFactory<T extends AccountType>(baseAccount: Partial<Account>
   };
 }
 
-export const MemberFactory = (m: Partial<Member> = {}) => ({
+export const MemberFactory = (m: Partial<MemberRaw> = {}) => ({
   email: faker.internet.email().toLowerCase(),
-  extra: faker.helpers.arrayElement([{ lang: faker.helpers.arrayElement(['en', 'fr', 'de']) }, {}]),
-  enableSaveActions: m.enableSaveActions ?? true,
-  isValidated: m.isValidated ?? true,
+  extra: faker.helpers.arrayElement([
+    { lang: faker.helpers.arrayElement(['en', 'fr', 'de']) },
+    {},
+  ]),
   ...BaseAccountFactory({ type: AccountType.Individual }),
   ...m,
+  enableSaveActions: m.enableSaveActions ?? true,
+  isValidated: m.isValidated ?? true,
 });
 
-export const GuestFactory = (g: Partial<Guest> & Pick<Guest, 'itemLoginSchema'>) => ({
+export const GuestFactory = (
+  g: Partial<GuestRaw> & Pick<GuestRaw, 'itemLoginSchema'>,
+) => ({
   ...BaseAccountFactory({ type: AccountType.Guest }),
   ...g,
 });

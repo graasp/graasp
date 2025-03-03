@@ -1,6 +1,5 @@
 import { NotMemberOrGuest } from '../services/account/errors';
-import { isMember } from '../services/authentication';
-import { isGuest } from '../services/itemLogin/entities/guest';
+import { isGuest, isMember } from '../services/authentication';
 import { AuthenticatedUser, MinimalGuest, MinimalMember } from '../types';
 import { UnexpectedError } from './errors';
 
@@ -48,7 +47,10 @@ export function assertIsDefined<T, Err extends Error, Args extends unknown[]>(
   }
 }
 
-export function assertIsMemberOrGuest<Err extends Error, Args extends unknown[]>(
+export function assertIsMemberOrGuest<
+  Err extends Error,
+  Args extends unknown[],
+>(
   account: AuthenticatedUser,
   error?: new (...args: Args) => Err,
   ...args: Args

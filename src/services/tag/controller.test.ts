@@ -7,14 +7,16 @@ import { HttpMethod, TagCategory } from '@graasp/sdk';
 
 import build, { unmockAuthenticate } from '../../../test/app';
 import { db } from '../../drizzle/db';
-import { Tag, tags as tagsTable } from '../../drizzle/schema';
-import { AppDataSource } from '../../plugins/datasource';
-import { ItemTag } from '../item/plugins/tag/ItemTag.entity';
+import {
+  Tag,
+  itemTags as itemTagsTable,
+  tags as tagsTable,
+} from '../../drizzle/schema';
+import { ItemTagRaw } from '../../drizzle/types';
 import { ItemTestUtils } from '../item/test/fixtures/items';
 import { saveMember } from '../member/test/fixtures/members';
 
 const testUtils = new ItemTestUtils();
-const itemTagRawRepository = AppDataSource.getRepository(ItemTag);
 
 describe('Tag Endpoints', () => {
   let app: FastifyInstance;
@@ -69,9 +71,14 @@ describe('Tag Endpoints', () => {
       const member = await saveMember();
       const { item } = await testUtils.savePublicItem({ member });
 
-      const itemTags: ItemTag[] = [];
+      const itemTags: ItemTagRaw[] = [];
       for (const t of tags) {
-        itemTags.push(await itemTagRawRepository.save({ item, tag: t }));
+        itemTags.push(
+          await db
+            .insert(itemTagsTable)
+            .values({ itemId: item.id, tagId: t.id })
+            .returning()[0],
+        );
       }
 
       const response = await app.inject({

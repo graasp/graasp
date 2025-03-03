@@ -8,10 +8,10 @@ import { encryptPassword } from '../../auth/plugins/password/utils';
 
 export class GuestPasswordRepository {
   async getForGuestId(db: DBConnection, guestId: string) {
-    const password = await db.query.guestPasswords.findFirst({
+    const res = await db.query.guestPasswords.findFirst({
       where: eq(guestPasswords.guestId, guestId),
     });
-    return password;
+    return res?.password;
   }
   async patch(db: DBConnection, guestId: UUID, newPassword: string) {
     // auto-generate a salt and a hash

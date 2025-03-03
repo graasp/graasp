@@ -2,9 +2,9 @@ import { AccountType, CompleteMember, MemberFactory } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
 import { db } from '../../../../drizzle/db';
-import { Member, accountsTable } from '../../../../drizzle/schema';
+import { accountsTable } from '../../../../drizzle/schema';
+import { Account, MemberRaw } from '../../../../drizzle/types';
 import { assertIsDefined } from '../../../../utils/assertions';
-import { Account } from '../../../account/entities/account';
 
 export const saveMember = async (m: CompleteMember = MemberFactory()) => {
   // using accounts table since member is just a view and we can not insert on views
@@ -24,15 +24,19 @@ export const saveMember = async (m: CompleteMember = MemberFactory()) => {
 };
 
 export const saveMembers = async (
-  members: CompleteMember[] = [MemberFactory(), MemberFactory(), MemberFactory()],
+  members: CompleteMember[] = [
+    MemberFactory(),
+    MemberFactory(),
+    MemberFactory(),
+  ],
 ) => {
   const promises = members.map((m) => saveMember(m));
   return Promise.all(promises);
 };
 
 export const expectMember = (
-  m: Member | undefined | null,
-  validation: Partial<Member> & Pick<Member, 'name' | 'email'>,
+  m: MemberRaw | undefined | null,
+  validation: Partial<MemberRaw> & Pick<MemberRaw, 'name' | 'email'>,
 ) => {
   if (!m) {
     throw 'member does not exist';
