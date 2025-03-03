@@ -1,7 +1,7 @@
 /**
  * Membership websocket events are registered under these topics
  */
-import { ItemMembership } from '../entities/ItemMembership';
+import { ItemMembershipRaw } from '../../../drizzle/types';
 
 // memberships of a given item
 export const itemMembershipsTopic = 'memberships/item';
@@ -12,7 +12,7 @@ export const itemMembershipsTopic = 'memberships/item';
 export interface MembershipEvent {
   kind: string;
   op: string;
-  membership: ItemMembership;
+  membership: ItemMembershipRaw;
 }
 
 /**
@@ -21,7 +21,7 @@ export interface MembershipEvent {
 interface ItemMembershipEvent extends MembershipEvent {
   kind: 'item';
   op: 'create' | 'update' | 'delete';
-  membership: ItemMembership;
+  membership: ItemMembershipRaw;
 }
 
 /**
@@ -33,7 +33,7 @@ interface ItemMembershipEvent extends MembershipEvent {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const ItemMembershipEvent = (
   op: ItemMembershipEvent['op'],
-  membership: ItemMembership,
+  membership: ItemMembershipRaw,
 ): ItemMembershipEvent => ({
   kind: 'item',
   op,

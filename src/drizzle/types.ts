@@ -14,10 +14,12 @@ import {
 import {
   accountsTable,
   actionsTable,
+  appActions,
   chatMentionsTable,
   chatMessagesTable,
   guestsView,
   invitationsTable,
+  itemMemberships,
   itemTags,
   items,
   itemsRaw,
@@ -134,15 +136,25 @@ export type ActionWithItemAndAccount = ActionWithItem & {
 };
 
 // --- ChatMessage
+export type ChatMessageInsertDTO = typeof chatMessagesTable.$inferInsert;
 export type ChatMessageRaw = typeof chatMessagesTable.$inferSelect;
 export type ChatMessageWithCreator = Omit<ChatMessageRaw, 'creatorId'> & {
-  creator: Account;
+  creator: NullableAccount;
+};
+export type ChatMessageWithCreatorAndItem = Omit<
+  ChatMessageWithCreator,
+  'itemId'
+> & {
+  item: Item;
 };
 
 // --- ChatMentions
 export type ChatMentionRaw = typeof chatMentionsTable.$inferSelect;
-export type ChatMentionWithMessageAndCreator = ChatMentionRaw & {
-  creator: Account;
+export type ChatMentionWithMessageAndCreator = Omit<
+  ChatMentionRaw,
+  'accountId' | 'messageId'
+> & {
+  account: MinimalAccount;
   message: ChatMessageRaw;
 };
 
@@ -162,3 +174,22 @@ export type InvitationWIthItemAndCreator = Omit<
 // --- ItemTags
 export type ItemTagInsertDTO = typeof itemTags.$inferInsert;
 export type ItemTagRaw = typeof itemTags.$inferSelect;
+
+// --- ItemMembership
+export type ItemMembershipRaw = typeof itemMemberships.$inferSelect;
+export type ItemMembershipWithItem = Omit<ItemMembershipRaw, 'itemPath'> & {
+  item: Item;
+};
+export type ItemMembershipWithItemAndAccount = Omit<
+  ItemMembershipWithItem,
+  'accountId'
+> & {
+  account: MinimalAccount;
+};
+
+// --- AppAction
+export type AppActionRaw = typeof appActions.$inferSelect;
+export type AppActionWithItemAndAccount = AppActionRaw & {
+  item: Item;
+  account: MinimalAccount;
+};

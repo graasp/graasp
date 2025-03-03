@@ -12,7 +12,7 @@ import {
 } from '../../utils/config';
 import graaspChatbox from '../chat';
 import graaspItemLogin from '../itemLogin';
-import itemController from './controller';
+import itemController from './item.controller';
 import actionItemPlugin from './plugins/action';
 import graaspApps from './plugins/app';
 import { plugin as graaspAppItem } from './plugins/app/controller';

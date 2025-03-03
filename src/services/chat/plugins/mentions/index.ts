@@ -6,7 +6,12 @@ import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import { isAuthenticated } from '../../../auth/plugins/passport';
-import { clearAllMentions, deleteMention, getOwnMentions, patchMention } from './schemas';
+import {
+  clearAllMentions,
+  deleteMention,
+  getOwnMentions,
+  patchMention,
+} from './schemas';
 import { MentionService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
@@ -41,8 +46,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     '/mentions/:mentionId',
     { schema: deleteMention, preHandler: isAuthenticated },
     async ({ user, params: { mentionId } }) => {
-      return db.transaction(async (manager) => {
-        const member = asDefined(user?.account);
+      const member = asDefined(user?.account);
+      return db.transaction(async (tx) => {
         return mentionService.deleteOne(tx, member, mentionId);
       });
     },

@@ -9,7 +9,6 @@ import { DEFAULT_LANG } from '@graasp/translations';
 
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
-import { AccountType } from '../../../../types';
 import { asDefined } from '../../../../utils/assertions';
 import { MemberAlreadySignedUp } from '../../../../utils/errors';
 import { isMember } from '../../../authentication';
@@ -44,16 +43,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         try {
           // we use member service to allow post hook for invitation
           const member = await memberService.post(tx, body, lang);
-          await magicLinkService.sendRegisterMail(
-            // explicit mapping
-            {
-              id: member.id,
-              name: member.name,
-              type: AccountType.Individual,
-              isValidated: member.isValidated ?? false,
-            },
-            url,
-          );
+          await magicLinkService.sendRegisterMail(member.toMemberInfo(), url);
 
           // transform memberships from existing invitations
           await invitationService.createToMemberships(tx, member);

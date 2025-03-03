@@ -5,8 +5,16 @@ import { PermissionLevel } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../../drizzle/db';
 import { isAncestorOrSelf } from '../../../../../../drizzle/operations';
-import { items, membersView, publishedItems } from '../../../../../../drizzle/schema';
-import { ItemPublishedWithItemAndAccount } from '../../../../../../drizzle/types';
+import {
+  items,
+  membersView,
+  publishedItems,
+} from '../../../../../../drizzle/schema';
+import {
+  Item,
+  ItemPublishedWithItemAndAccount,
+} from '../../../../../../drizzle/types';
+import { MinimalMember } from '../../../../../../types';
 import { assertIsDefined } from '../../../../../../utils/assertions';
 import { mapById } from '../../../../../utils';
 import { ItemPublishedNotFound } from '../errors';
@@ -44,21 +52,28 @@ export class ItemPublishedRepository {
     const ids = items.map((i) => i.id);
     const entries = await this.repository
       .createQueryBuilder('pi')
-      .innerJoinAndSelect('pi.item', 'item', 'pi.item @> ARRAY[:...paths]::ltree[]', {
-        paths,
-      })
+      .innerJoinAndSelect(
+        'pi.item',
+        'item',
+        'pi.item @> ARRAY[:...paths]::ltree[]',
+        {
+          paths,
+        },
+      )
       .innerJoinAndSelect('pi.creator', 'member')
       .getMany();
 
     return mapById({
       keys: ids,
       findElement: (id) =>
-        entries.find((e) => items.find((i) => i.id === id)?.path.startsWith(e.item.path)),
+        entries.find((e) =>
+          items.find((i) => i.id === id)?.path.startsWith(e.item.path),
+        ),
       buildError: (id) => new ItemPublishedNotFound(id),
     });
   }
 
-  async getForMember(db: DBConnection, memberId: Member['id']): Promise<Item[]> {
+  async getForMember(db: DBConnection, memberId: string): Promise<Item[]> {
     const itemPublished = await this.repository
       .createQueryBuilder('pi')
       // join with memberships that are at or above the item published
@@ -106,41 +121,44 @@ export class ItemPublishedRepository {
     return [items, total];
   }
 
-  async post(db: DBConnection, creator: Member, item: Item) {
-    const p = this.repository.create({
-      item: item,
-      creator,
-    });
-    await this.repository.insert(p);
-    return p;
+  async post(db: DBConnection, creator: MinimalMember, item: Item) {
+    const res = db
+      .insert(publishedItems)
+      .values({
+        itemPath: item.path,
+        creatorId: creator.id,
+      })
+      .returning();
+    return res[0];
   }
 
   async deleteForItem(db: DBConnection, item: Item) {
-    const entry = await this.getForItem(item);
+    const entry = await this.getForItem(db, item.path);
 
     if (!entry) {
       throw new ItemPublishedNotFound(item.id);
     }
 
-    await this.repository.delete(entry.id);
+    await db.delete(publishedItems).where(eq(publishedItems.id, entry.id));
     return entry;
   }
 
   async getRecentItems(db: DBConnection, limit: number = 10): Promise<Item[]> {
-    const publishedInfos = await this.repository
-      .createQueryBuilder('item_published')
-      .innerJoinAndSelect('item_published.item', 'item')
-      .innerJoinAndSelect('item.creator', 'member')
-      .orderBy('item.createdAt', 'DESC')
-      .limit(limit)
-      .getMany();
+    const publishedInfos = await db.query.publishedItems.findMany({
+      with: { item: true, account: true },
+      orderBy: desc(items.createdAt),
+      limit,
+    });
 
     return publishedInfos.map(({ item }) => item);
   }
 
   async touchUpdatedAt(db: DBConnection, path: Item['path']): Promise<string> {
     const updatedAt = new Date().toISOString();
-    await this.repository.update({ item: { path } }, { updatedAt });
+    await db
+      .update(publishedItems)
+      .set({ updatedAt })
+      .where(eq(publishedItems.itemPath, path));
     return updatedAt;
   }
 }

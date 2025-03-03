@@ -3,7 +3,8 @@ import { and, eq, inArray } from 'drizzle-orm/sql';
 import { ResultOf } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../drizzle/db';
-import { Account, Item, appActions } from '../../../../../drizzle/schema';
+import { appActions } from '../../../../../drizzle/schema';
+import { AppActionWithItemAndAccount } from '../../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../../repositories/errors';
 import { mapById } from '../../../../utils';
 import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request';
@@ -16,7 +17,10 @@ type CreateAppActionBody = {
 };
 
 export class AppActionRepository {
-  async addOne(db: DBConnection, { itemId, accountId, appAction }: CreateAppActionBody) {
+  async addOne(
+    db: DBConnection,
+    { itemId, accountId, appAction }: CreateAppActionBody,
+  ) {
     return await db
       .insert(appActions)
       .values({
@@ -34,7 +38,11 @@ export class AppActionRepository {
     });
   }
 
-  async getForItem(db: DBConnection, itemId: string, filters: SingleItemGetFilter) {
+  async getForItem(
+    db: DBConnection,
+    itemId: string,
+    filters: SingleItemGetFilter,
+  ) {
     if (!itemId) {
       throw new IllegalArgumentException('The itemId must be defined');
     }
@@ -53,7 +61,7 @@ export class AppActionRepository {
     db: DBConnection,
     itemIds: string[],
     filters: ManyItemsGetFilter,
-  ): Promise<ResultOf<(typeof appActions.$inferSelect & { item: Item; account: Account })[]>> {
+  ): Promise<ResultOf<AppActionWithItemAndAccount[]>> {
     const { accountId } = filters;
 
     if (itemIds.length === 0) {

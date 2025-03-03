@@ -8,7 +8,7 @@ import { DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS } from '@graasp/sdk';
 import { TRANSLATIONS } from '../../../../../langs/constants';
 import { MailBuilder } from '../../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../../plugins/mailer/mailer.service';
-import { MinimalMember } from '../../../../../types';
+import { MemberInfo, MinimalMember } from '../../../../../types';
 import { TMP_FOLDER } from '../../../../../utils/config';
 import {
   EXPORT_FILE_EXPIRATION,
@@ -16,8 +16,6 @@ import {
 } from '../../../../action/constants';
 import { CannotWriteFileError } from '../../../../action/utils/errors';
 import FileService from '../../../../file/service';
-
-export type MemberInfo = MinimalMember & { lang: string; email: string };
 
 /**
  * DataToExport will be used to store each values in its own file with the name of the key.

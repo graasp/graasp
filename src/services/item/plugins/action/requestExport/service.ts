@@ -10,10 +10,15 @@ import {
 } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../drizzle/db';
+import { Item } from '../../../../../drizzle/types';
 import { TRANSLATIONS } from '../../../../../langs/constants';
 import { MailBuilder } from '../../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../../plugins/mailer/mailer.service';
-import { EXPORT_FILE_EXPIRATION, ZIP_MIMETYPE } from '../../../../action/constants';
+import { AuthenticatedUser, MinimalMember } from '../../../../../types';
+import {
+  EXPORT_FILE_EXPIRATION,
+  ZIP_MIMETYPE,
+} from '../../../../action/constants';
 import {
   buildActionFilePath,
   buildItemTmpFolder,
@@ -21,12 +26,9 @@ import {
 } from '../../../../action/utils/export';
 import { AuthorizationService } from '../../../../authorization';
 import FileService from '../../../../file/service';
-import { Member } from '../../../../member/entities/member';
-import { Item } from '../../../entities/Item';
 import { ItemService } from '../../../service';
-import { ActionItemService } from '../service';
+import { ActionItemService } from '../action.service';
 import { ActionRequestExportRepository } from './repository';
-import { ActionRequestExport } from './requestExport';
 
 @singleton()
 export class ActionRequestExportService {
@@ -51,21 +53,39 @@ export class ActionRequestExportService {
     this.mailerService = mailerService;
   }
 
-  async request(db: DBConnection, member: Member, itemId: UUID, format: ExportActionsFormatting) {
+  async request(
+    db: DBConnection,
+    authenticatedUser: AuthenticatedUser,
+    itemId: UUID,
+    format: ExportActionsFormatting,
+  ) {
     // check member has admin access to the item
-    const item = await this.itemService.get(db, member, itemId);
-    await this.authorizationService.validatePermission(db, PermissionLevel.Admin, member, item);
+    const item = await this.itemService.get(db, authenticatedUser, itemId);
+    await this.authorizationService.validatePermission(
+      db,
+      PermissionLevel.Admin,
+      authenticatedUser,
+      item,
+    );
 
     // get last export entry within interval
-    const lastRequestExport = await this.actionRequestExportRepository.getLast(db, {
-      memberId: member?.id,
-      itemPath: item.path,
-      format,
-    });
+    const lastRequestExport = await this.actionRequestExportRepository.getLast(
+      db,
+      {
+        memberId: authenticatedUser?.id,
+        itemPath: item.path,
+        format,
+      },
+    );
 
     // check if a previous request already created the file and send it back
     if (lastRequestExport) {
-      await this._sendExportLinkInMail(member, item, lastRequestExport.createdAt, format);
+      await this._sendExportLinkInMail(
+        authenticatedUser,
+        item,
+        lastRequestExport.createdAt,
+        format,
+      );
       return;
       // the previous exported data does not exist or
       // is outdated and a new version should be uploaded
@@ -76,7 +96,13 @@ export class ActionRequestExportService {
     const tmpFolder = buildItemTmpFolder(itemId);
     fs.mkdirSync(tmpFolder, { recursive: true });
 
-    const requestExport = await this._createAndUploadArchive(db, member, itemId, tmpFolder, format);
+    const requestExport = await this._createAndUploadArchive(
+      db,
+      authenticatedUser,
+      itemId,
+      tmpFolder,
+      format,
+    );
 
     // delete tmp folder
     if (fs.existsSync(tmpFolder)) {
@@ -89,13 +115,18 @@ export class ActionRequestExportService {
       console.error(`${tmpFolder} was not found, and was not deleted`);
     }
 
-    await this._sendExportLinkInMail(member, item, requestExport.createdAt, format);
+    await this._sendExportLinkInMail(
+      authenticatedUser,
+      item,
+      requestExport.createdAt,
+      format,
+    );
 
     return item;
   }
 
   async _sendExportLinkInMail(
-    actor: Member,
+    actor: MinimalMember,
     item: Item,
     archiveDate: Date,
     format: ExportActionsFormatting,
@@ -136,9 +167,13 @@ export class ActionRequestExportService {
     format: ExportActionsFormatting,
   ): Promise<ActionRequestExport> {
     // get actions and more data
-    const baseAnalytics = await this.actionItemService.getBaseAnalyticsForItem(db, actor, {
-      itemId,
-    });
+    const baseAnalytics = await this.actionItemService.getBaseAnalyticsForItem(
+      db,
+      actor,
+      {
+        itemId,
+      },
+    );
 
     // create archive given base analytics
 

@@ -9,21 +9,25 @@ import { asDefined, assertIsDefined } from '../../utils/assertions';
 import { InvalidPassword } from '../../utils/errors';
 import { verifyCurrentPassword } from '../auth/plugins/password/utils';
 import { ItemRepository } from '../item/repository';
+import { ItemMembershipRepository } from '../itemMembership/repository';
 import {
-    CannotRegisterOnFrozenItemLoginSchema,
-    ItemLoginSchemaNotFound,
-    MissingCredentialsForLoginSchema,
+  CannotRegisterOnFrozenItemLoginSchema,
+  ItemLoginSchemaNotFound,
+  MissingCredentialsForLoginSchema,
 } from './errors';
 import { ItemLoginMemberCredentials } from './interfaces/item-login';
 import { GuestRepository } from './repositories/guest';
 import { GuestPasswordRepository } from './repositories/guestPassword';
-import { ItemLoginSchemaRepository } from './repositories/itemLoginSchema';
+import {
+  ItemLoginSchemaRepository,
+  ItemSchemaTypeOptions,
+} from './repositories/itemLoginSchema';
 import { loginSchemaRequiresPassword } from './utils';
 
 @singleton()
 export class ItemLoginService {
   private readonly itemLoginSchemaRepository: ItemLoginSchemaRepository;
-  private readonly itemLoginRepository: ItemLoginRepository;
+  private readonly itemMembershipRepository: ItemMembershipRepository;
   private readonly itemRepository: ItemRepository;
   private readonly guestRepository: GuestRepository;
   private readonly guestPasswordRepository: GuestPasswordRepository;
@@ -31,11 +35,13 @@ export class ItemLoginService {
   constructor(
     itemLoginSchemaRepository: ItemLoginSchemaRepository,
     itemRepository: ItemRepository,
+    itemMembershipRepository: ItemMembershipRepository,
     guestRepository: GuestRepository,
     guestPasswordRepository: GuestPasswordRepository,
   ) {
     this.itemLoginSchemaRepository = itemLoginSchemaRepository;
     this.itemRepository = itemRepository;
+    this.itemMembershipRepository = itemMembershipRepository;
     this.guestRepository = guestRepository;
     this.guestPasswordRepository = guestPasswordRepository;
   }
@@ -57,7 +63,8 @@ export class ItemLoginService {
     itemId: string,
     credentials: ItemLoginMemberCredentials,
   ) {
-    const { username, password } = credentials; // TODO: allow for "empty" username and generate one (anonymous, anonymous+password)
+    // TODO: allow for "empty" username and generate one (anonymous, anonymous+password)
+    const { username, password } = credentials;
     let bondMember: GuestRaw | undefined = undefined;
     if (username) {
       bondMember = await this.logInOrRegisterWithUsername(db, itemId, {
@@ -122,7 +129,7 @@ export class ItemLoginService {
       }
 
       // create member w/ `username`
-      const data: Partial<Guest> & Pick<Guest, 'name'> = {
+      const data = {
         name: username,
         itemLoginSchema: itemLoginSchema,
       };
@@ -161,7 +168,7 @@ export class ItemLoginService {
   async create(
     db: DBConnection,
     itemPath: string,
-    type?: ItemLoginSchema['type'],
+    type?: ItemSchemaTypeOptions,
   ) {
     return this.itemLoginSchemaRepository.addOne(db, { itemPath, type });
   }
@@ -169,7 +176,7 @@ export class ItemLoginService {
   async update(
     db: DBConnection,
     itemId: string,
-    type?: ItemLoginSchema['type'],
+    type?: ItemSchemaTypeOptions,
     status?: ItemLoginSchema['status'],
   ) {
     return this.itemLoginSchemaRepository.updateOne(db, itemId, {
@@ -182,7 +189,7 @@ export class ItemLoginService {
     return await this.itemLoginSchemaRepository.getOneByItemId(db, itemId);
   }
 
-  async delete(db: DBConnection, member: Member, itemId: string) {
+  async delete(db: DBConnection, itemId: string) {
     return this.itemLoginSchemaRepository.deleteOneByItemId(db, itemId);
   }
 }

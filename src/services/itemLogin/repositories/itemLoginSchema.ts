@@ -1,34 +1,48 @@
 import { eq } from 'drizzle-orm';
+import { singleton } from 'tsyringe';
 
-import { ItemLoginSchemaType } from '@graasp/sdk';
+import { UnionOfConst } from '@graasp/sdk';
 
 import { DBConnection } from '../../../drizzle/db';
 import { isAncestorOrSelf } from '../../../drizzle/operations';
 import { itemLoginSchemas } from '../../../drizzle/schema';
-import { DeleteException, EntryNotFoundBeforeDeleteException } from '../../../repositories/errors';
+import { DeleteException } from '../../../repositories/errors';
 import { throwsIfParamIsInvalid } from '../../../repositories/utils';
 import { assertIsError } from '../../../utils/assertions';
-import { Item } from '../../item/entities/Item';
-import { ItemLoginSchema } from '../entities/itemLoginSchema';
 import { CannotNestItemLoginSchema } from '../errors';
 
-type ItemPath = Item['path'];
-type ItemId = Item['id'];
+export const ItemLoginSchemaType = {
+  Username: 'username',
+  UsernameAndPassword: 'username+password',
+  Anonymous: 'anonymous',
+  AnonymousAndPassword: 'anonymous+password',
+} as const;
+export type ItemSchemaTypeOptions = UnionOfConst<typeof ItemLoginSchemaType>;
+
+type ItemPath = string;
+type ItemId = string;
 type CreateItemLoginSchemaBody = {
   itemPath: ItemPath;
-  type?: ItemLoginSchema['type'];
+  type?: ItemSchemaTypeOptions;
 };
 
+@singleton()
 export class ItemLoginSchemaRepository {
-  async getOneByItemId(db: DBConnection, itemId: ItemId): Promise<ItemLoginSchema | null> {
+  async getOneByItemId(
+    db: DBConnection,
+    itemId: ItemId,
+  ): Promise<ItemLoginSchema | null> {
     throwsIfParamIsInvalid('item', itemId);
 
     return await db.query.itemLoginSchemas.findFirst({
-      where: eq(itemLoginSchemas.itemId, itemId),
+      where: eq(itemLoginSchemas.itemPath, itemId),
     });
   }
 
-  async getOneByItemPath(db: DBConnection, itemPath: ItemPath): Promise<ItemLoginSchema | null> {
+  async getOneByItemPath(
+    db: DBConnection,
+    itemPath: ItemPath,
+  ): Promise<ItemLoginSchema | null> {
     throwsIfParamIsInvalid('itemPath', itemPath);
 
     return await db.query.itemLoginSchemas.findFirst({
@@ -39,11 +53,17 @@ export class ItemLoginSchemaRepository {
 
   async addOne(
     db: DBConnection,
-    { itemPath, type = ItemLoginSchemaType.Username }: CreateItemLoginSchemaBody,
+    {
+      itemPath,
+      type = ItemLoginSchemaType.Username,
+    }: CreateItemLoginSchemaBody,
   ) {
     const existingItemLoginSchema = await this.getOneByItemPath(db, itemPath);
     // if item login schema is inherited
-    if (existingItemLoginSchema && existingItemLoginSchema?.item.path !== itemPath) {
+    if (
+      existingItemLoginSchema &&
+      existingItemLoginSchema?.item.path !== itemPath
+    ) {
       throw new CannotNestItemLoginSchema(itemPath);
     }
 
@@ -60,7 +80,9 @@ export class ItemLoginSchemaRepository {
     }
 
     try {
-      await db.delete(itemLoginSchemas).where(eq(itemLoginSchemas.id, entity.id));
+      await db
+        .delete(itemLoginSchemas)
+        .where(eq(itemLoginSchemas.id, entity.id));
       return entity;
     } catch (e) {
       assertIsError(e);

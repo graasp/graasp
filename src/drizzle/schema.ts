@@ -1,10 +1,4 @@
-import {
-  InferSelectModel,
-  and,
-  getTableColumns,
-  isNotNull,
-  sql,
-} from 'drizzle-orm';
+import { and, getTableColumns, isNotNull, sql } from 'drizzle-orm';
 import {
   AnyPgColumn,
   boolean,
@@ -125,9 +119,6 @@ export const itemMemberships = pgTable(
     unique('item_membership-item-member').on(table.itemPath, table.accountId),
   ],
 );
-
-export type ItemMembership = typeof itemMemberships.$inferSelect;
-export type ItemMembershipWith = InferSelectModel<typeof itemMemberships>;
 
 export const memberPasswords = pgTable(
   'member_password',
@@ -297,8 +288,12 @@ export const chatMentionsTable = pgTable(
   'chat_mention',
   {
     id: uuid().defaultRandom().primaryKey().notNull(),
-    messageId: uuid('message_id'),
-    accountId: uuid('account_id'),
+    messageId: uuid('message_id')
+      .references(() => chatMessagesTable.id)
+      .notNull(),
+    accountId: uuid('account_id')
+      .references(() => accountsTable.id)
+      .notNull(),
     createdAt: timestamp('created_at', { mode: 'string' })
       .defaultNow()
       .notNull(),
@@ -998,6 +993,7 @@ export const itemLoginSchemas = pgTable(
   'item_login_schema',
   {
     id: uuid().primaryKey().defaultRandom().notNull(),
+    // TODO: change to be an enum of the options
     type: varchar({ length: 100 }).notNull(),
     createdAt: timestamp('created_at', { mode: 'string' })
       .defaultNow()
@@ -1011,6 +1007,7 @@ export const itemLoginSchemas = pgTable(
         onUpdate: 'cascade',
         onDelete: 'cascade',
       }),
+    // TODO: change to be an enum of the possible options
     status: varchar({ length: 100 }).default('active').notNull(),
   },
   (table) => [unique('item-login-schema').on(table.itemPath)],

@@ -5,12 +5,10 @@ import { FastifyInstance } from 'fastify';
 import { MentionStatus } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
-import { AppDataSource } from '../../../../plugins/datasource';
-import { Member } from '../../../member/entities/member';
+import { db } from '../../../../drizzle/db';
 import { ChatMentionNotFound, NoChatMentionForMember } from '../../errors';
 import { expectChatMentions } from '../../test/chatMention.test';
 import { saveItemWithChatMessages } from '../../test/chatMessage.test';
-import { ChatMention } from './chatMention';
 import { ChatMentionRepository } from './repository';
 
 const rawRepository = AppDataSource.getRepository(ChatMention);
@@ -19,8 +17,14 @@ const repository = new ChatMentionRepository();
 const saveItemWithChatMessagesAndMentionsAndNoise = async (actor: Member) => {
   const { chatMessages, members } = await saveItemWithChatMessages(actor);
   const member = members[0];
-  const mention1 = await rawRepository.save({ account: member, message: chatMessages[0] });
-  const mention2 = await rawRepository.save({ account: member, message: chatMessages[1] });
+  const mention1 = await rawRepository.save({
+    account: member,
+    message: chatMessages[0],
+  });
+  const mention2 = await rawRepository.save({
+    account: member,
+    message: chatMessages[1],
+  });
 
   // noise
   await rawRepository.save({ account: members[1], message: chatMessages[1] });
@@ -46,7 +50,8 @@ describe('ChatMentionRepository', () => {
 
   describe('getForMember', () => {
     it('returns mentions for member', async () => {
-      const { mentions, account } = await saveItemWithChatMessagesAndMentionsAndNoise(actor);
+      const { mentions, account } =
+        await saveItemWithChatMessagesAndMentionsAndNoise(actor);
 
       const result = await repository.getForAccount(account.id);
       expect(result).toHaveLength(2);
@@ -58,8 +63,14 @@ describe('ChatMentionRepository', () => {
       const member = members[0];
 
       // noise
-      await rawRepository.save({ account: members[1], message: chatMessages[1] });
-      await rawRepository.save({ account: members[2], message: chatMessages[2] });
+      await rawRepository.save({
+        account: members[1],
+        message: chatMessages[1],
+      });
+      await rawRepository.save({
+        account: members[2],
+        message: chatMessages[2],
+      });
 
       const result = await repository.getForAccount(member.id);
       expect(result).toHaveLength(0);
@@ -69,8 +80,14 @@ describe('ChatMentionRepository', () => {
       const { chatMessages, members } = await saveItemWithChatMessages(actor);
 
       // noise
-      await rawRepository.save({ account: members[1], message: chatMessages[1] });
-      await rawRepository.save({ account: members[2], message: chatMessages[2] });
+      await rawRepository.save({
+        account: members[1],
+        message: chatMessages[1],
+      });
+      await rawRepository.save({
+        account: members[2],
+        message: chatMessages[2],
+      });
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       await expect(repository.getForAccount(undefined!)).rejects.toMatchObject(
@@ -81,7 +98,8 @@ describe('ChatMentionRepository', () => {
 
   describe('get', () => {
     it('returns mention by id', async () => {
-      const { mentions } = await saveItemWithChatMessagesAndMentionsAndNoise(actor);
+      const { mentions } =
+        await saveItemWithChatMessagesAndMentionsAndNoise(actor);
       const mention = mentions[0];
       const result = await repository.get(mention.id);
       // return only member and no message
@@ -100,15 +118,21 @@ describe('ChatMentionRepository', () => {
 
     it('throws if mention does not exist', async () => {
       const id = v4();
-      await expect(repository.get(id)).rejects.toMatchObject(new ChatMentionNotFound(id));
+      await expect(repository.get(id)).rejects.toMatchObject(
+        new ChatMentionNotFound(id),
+      );
     });
   });
 
   describe('getMany', () => {
     it('returns many mentions by id', async () => {
-      const { mentions } = await saveItemWithChatMessagesAndMentionsAndNoise(actor);
+      const { mentions } =
+        await saveItemWithChatMessagesAndMentionsAndNoise(actor);
 
-      const result = await repository.getMany(mentions.map(({ id }) => id));
+      const result = await repository.getMany(
+        db,
+        mentions.map(({ id }) => id),
+      );
       // return only member and no message
       expectChatMentions(result, mentions, {
         message: { item: false, creator: false },
@@ -119,7 +143,7 @@ describe('ChatMentionRepository', () => {
     it('returns empty if id is empty', async () => {
       await saveItemWithChatMessagesAndMentionsAndNoise(actor);
 
-      const result = await repository.getMany([]);
+      const result = await repository.getMany(db, []);
       expect(result).toHaveLength(0);
     });
   });
@@ -144,7 +168,8 @@ describe('ChatMentionRepository', () => {
 
   describe('patch', () => {
     it('update mention status', async () => {
-      const { mentions } = await saveItemWithChatMessagesAndMentionsAndNoise(actor);
+      const { mentions } =
+        await saveItemWithChatMessagesAndMentionsAndNoise(actor);
 
       const mention = mentions[0];
       const result = await repository.patch(mention.id, MentionStatus.Read);
@@ -158,15 +183,16 @@ describe('ChatMentionRepository', () => {
     it('throw if mention does not exist', async () => {
       const id = v4();
 
-      await expect(repository.patch(id, MentionStatus.Read)).rejects.toMatchObject(
-        new ChatMentionNotFound(id),
-      );
+      await expect(
+        repository.patch(id, MentionStatus.Read),
+      ).rejects.toMatchObject(new ChatMentionNotFound(id));
     });
   });
 
   describe('deleteOne', () => {
     it('delete mention', async () => {
-      const { mentions } = await saveItemWithChatMessagesAndMentionsAndNoise(actor);
+      const { mentions } =
+        await saveItemWithChatMessagesAndMentionsAndNoise(actor);
 
       const mention = mentions[0];
       const result = await repository.deleteOne(mention.id);
@@ -184,17 +210,22 @@ describe('ChatMentionRepository', () => {
     it('throw if mention does not exist', async () => {
       const id = v4();
 
-      await expect(repository.deleteOne(id)).rejects.toMatchObject(new ChatMentionNotFound(id));
+      await expect(repository.deleteOne(id)).rejects.toMatchObject(
+        new ChatMentionNotFound(id),
+      );
     });
   });
 
   describe('deleteAll', () => {
     it('delete all mentions for member id', async () => {
-      const { account } = await saveItemWithChatMessagesAndMentionsAndNoise(actor);
+      const { account } =
+        await saveItemWithChatMessagesAndMentionsAndNoise(actor);
 
       await repository.deleteAll(account.id);
 
-      expect(await rawRepository.findBy({ account: { id: account.id } })).toHaveLength(0);
+      expect(
+        await rawRepository.findBy({ account: { id: account.id } }),
+      ).toHaveLength(0);
     });
     it('do nothing if user does not exist', async () => {
       await repository.deleteAll(v4());

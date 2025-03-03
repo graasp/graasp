@@ -66,12 +66,16 @@ export class MemberDTO {
   }
 
   toMaybeUser(): MaybeUser {
+    return this.toMinimal();
+  }
+
+  toMinimal(): MinimalMember {
     return {
       id: this.member.id,
       name: this.member.name,
       type: AccountType.Individual,
       isValidated: this.member.isValidated ?? false,
-    } satisfies MinimalMember;
+    };
   }
 
   toMemberInfo(): MemberInfo {

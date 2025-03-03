@@ -10,6 +10,7 @@ import { TRANSLATIONS } from '../../langs/constants';
 import { BaseLogger } from '../../logger';
 import { MailBuilder } from '../../plugins/mailer/builder';
 import { MailerService } from '../../plugins/mailer/mailer.service';
+import { MemberInfo } from '../../types';
 import {
   EMAIL_CHANGE_JWT_EXPIRATION_IN_MINUTES,
   EMAIL_CHANGE_JWT_SECRET,
@@ -24,7 +25,11 @@ export class MemberService {
   private readonly log: BaseLogger;
   private readonly memberRepository: MemberRepository;
 
-  constructor(mailerService: MailerService, memberRepository: MemberRepository, log: BaseLogger) {
+  constructor(
+    mailerService: MailerService,
+    memberRepository: MemberRepository,
+    log: BaseLogger,
+  ) {
     this.mailerService = mailerService;
     this.log = log;
   }
@@ -50,7 +55,8 @@ export class MemberService {
 
   async post(
     db: DBConnection,
-    body: Partial<MemberCreationDTO> & Pick<MemberCreationDTO, 'email' | 'name'>,
+    body: Partial<MemberCreationDTO> &
+      Pick<MemberCreationDTO, 'email' | 'name'>,
     lang = DEFAULT_LANG,
   ) {
     // The email is lowercased when the user registers
@@ -78,7 +84,9 @@ export class MemberService {
   async patch(
     db: DBConnection,
     id: UUID,
-    body: Partial<Pick<MemberRaw, 'extra' | 'email' | 'name' | 'enableSaveActions'>>,
+    body: Partial<
+      Pick<MemberRaw, 'extra' | 'email' | 'name' | 'enableSaveActions'>
+    >,
   ) {
     return this.memberRepository.patch(db, id, {
       name: body.name,
@@ -105,7 +113,7 @@ export class MemberService {
     return await this.memberRepository.patch(db, id, { isValidated: true });
   }
 
-  createEmailChangeRequest(member: MemberRaw, newEmail: string) {
+  createEmailChangeRequest(member: MemberInfo, newEmail: string) {
     const payload = { uuid: member.id, oldEmail: member.email, newEmail };
     return jwtSign(payload, EMAIL_CHANGE_JWT_SECRET, {
       expiresIn: `${EMAIL_CHANGE_JWT_EXPIRATION_IN_MINUTES}m`,
@@ -144,7 +152,11 @@ export class MemberService {
       .catch((err) => this.log.warn(err, `mailer failed. link: ${link}`));
   }
 
-  mailConfirmEmailChangeRequest(oldEmail: string, newEmail: string, lang: string) {
+  mailConfirmEmailChangeRequest(
+    oldEmail: string,
+    newEmail: string,
+    lang: string,
+  ) {
     const mail = new MailBuilder({
       subject: { text: TRANSLATIONS.CONFIRM_CHANGE_EMAIL_TITLE },
       lang: lang,
@@ -153,6 +165,8 @@ export class MemberService {
       .build();
 
     // don't wait for mailer's response; log error and link if it fails.
-    this.mailerService.send(mail, oldEmail).catch((err) => this.log.warn(err, `mailer failed.`));
+    this.mailerService
+      .send(mail, oldEmail)
+      .catch((err) => this.log.warn(err, `mailer failed.`));
   }
 }

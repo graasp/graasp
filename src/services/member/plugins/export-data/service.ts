@@ -2,7 +2,7 @@ import { singleton } from 'tsyringe';
 
 import { DBConnection } from '../../../../drizzle/db';
 import { ItemRaw } from '../../../../drizzle/types';
-import { MinimalMember } from '../../../../types';
+import { MemberInfo, MinimalMember } from '../../../../types';
 import { ExportDataRepository } from './repository';
 import {
   actionArraySchema,
@@ -21,7 +21,7 @@ import {
   anonymizeMessages,
   getFilteredData,
 } from './utils/anonymize.utils';
-import { MemberInfo, RequestDataExportService } from './utils/export.utils';
+import { RequestDataExportService } from './utils/export.utils';
 
 @singleton()
 export class ExportMemberDataService {

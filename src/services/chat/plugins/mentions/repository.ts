@@ -5,8 +5,11 @@ import { MentionStatus } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
 import { chatMentionsTable } from '../../../../drizzle/schema';
-import { ChatMentionWithMessageAndCreator } from '../../../../drizzle/types';
-import { Account } from '../../../account/entities/account';
+import {
+  ChatMentionRaw,
+  ChatMentionWithMessageAndCreator,
+  ChatMessageRaw,
+} from '../../../../drizzle/types';
 import { ChatMentionNotFound, NoChatMentionForMember } from '../../errors';
 
 @singleton()
@@ -25,7 +28,7 @@ export class ChatMentionRepository {
 
     const res = await db.query.chatMentionsTable.findMany({
       with: {
-        chatMessage: true,
+        message: true,
         account: true,
       },
     });
@@ -36,14 +39,13 @@ export class ChatMentionRepository {
    * Retrieves a mention given the mention id
    * @param mentionId Id of the mention to retrieve
    */
-  async get(db: DBConnection, mentionId: string): Promise<ChatMention> {
+  async get(db: DBConnection, mentionId: string): Promise<ChatMentionRaw> {
     if (!mentionId) {
       throw new ChatMentionNotFound(mentionId);
     }
 
     const mention = await db.query.chatMentionsTable.findFirst({
       where: eq(chatMentionsTable.id, mentionId),
-      with: { account: true },
     });
 
     if (!mention) {
@@ -53,14 +55,17 @@ export class ChatMentionRepository {
     return mention;
   }
 
+  // FIX: Not used ??
   /**
    * Return chat mentions by id
    * @param ids ids of the chat mentions
    */
-  async getMany(db: DBConnection, ids: ChatMessage['id'][]): Promise<ChatMention[]> {
+  async getMany(
+    db: DBConnection,
+    ids: ChatMessageRaw['id'][],
+  ): Promise<ChatMentionRaw[]> {
     return await db.query.chatMentionsTable.findMany({
       where: inArray(chatMentionsTable.id, ids),
-      with: { account: true },
     });
   }
 
@@ -72,12 +77,12 @@ export class ChatMentionRepository {
    */
   async postMany(
     db: DBConnection,
-    mentionedAccountIds: (typeof Account.prototype.id)[],
-    messageId: typeof ChatMessage.prototype.id,
-  ): Promise<ChatMention[]> {
+    mentionedAccountIds: string[],
+    messageId: string,
+  ): Promise<ChatMentionRaw[]> {
     const entries = mentionedAccountIds.map((accountId) => ({
-      account: { id: accountId },
-      message: { id: messageId },
+      accountId: accountId,
+      messageId: messageId,
       status: MentionStatus.Unread,
     }));
     return await db.insert(chatMentionsTable).values(entries).returning();
@@ -88,20 +93,32 @@ export class ChatMentionRepository {
    * @param mentionId Mention id to be updated
    * @param status new status to be set
    */
-  async patch(db: DBConnection, mentionId: string, status: MentionStatus): Promise<ChatMention> {
-    return await db
+  async patch(
+    db: DBConnection,
+    mentionId: string,
+    status: MentionStatus,
+  ): Promise<ChatMentionRaw> {
+    const res = await db
       .update(chatMentionsTable)
       .set({ status })
       .where(eq(chatMentionsTable.id, mentionId))
       .returning();
+    return res[0];
   }
 
   /**
    * Remove a mention
    * @param mentionId Id of chat
    */
-  async deleteOne(db: DBConnection, mentionId: ChatMention['id']): Promise<ChatMention> {
-    await db.delete(chatMentionsTable).where(eq(chatMentionsTable.id, mentionId)).returning();
+  async deleteOne(
+    db: DBConnection,
+    mentionId: string,
+  ): Promise<ChatMentionRaw> {
+    const res = await db
+      .delete(chatMentionsTable)
+      .where(eq(chatMentionsTable.id, mentionId))
+      .returning();
+    return res[0];
   }
 
   /**
@@ -109,6 +126,8 @@ export class ChatMentionRepository {
    * @param accountId Id of the account
    */
   async deleteAll(db: DBConnection, accountId: string): Promise<void> {
-    await db.delete(chatMentionsTable).where(eq(chatMentionsTable.accountId, accountId));
+    await db
+      .delete(chatMentionsTable)
+      .where(eq(chatMentionsTable.accountId, accountId));
   }
 }

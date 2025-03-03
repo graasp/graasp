@@ -15,7 +15,7 @@ import {
 
 import { DBConnection } from '../drizzle/db';
 import { ItemMembership } from '../drizzle/schema';
-import { ItemRaw } from '../drizzle/types';
+import { Item, ItemRaw } from '../drizzle/types';
 import { MaybeUser } from '../types';
 import {
   InsufficientPermission,

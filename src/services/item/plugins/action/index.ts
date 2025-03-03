@@ -10,28 +10,45 @@ import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import { ALLOWED_ORIGINS } from '../../../../utils/config';
 import { ActionService } from '../../../action/action.service';
-import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import {
+  isAuthenticated,
+  optionalIsAuthenticated,
+} from '../../../auth/plugins/passport';
+import { assertIsMember } from '../../../authentication';
 import { matchOne } from '../../../authorization';
 import {
   LocalFileConfiguration,
   S3FileConfiguration,
 } from '../../../file/interfaces/configuration';
-import { assertIsMember } from '../../../member/entities/member';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { ItemService } from '../../service';
-import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
+import {
+  ItemOpFeedbackErrorEvent,
+  ItemOpFeedbackEvent,
+  memberItemsTopic,
+} from '../../ws/events';
+import { ActionItemService } from './action.service';
 import { CannotPostAction } from './errors';
 import { ActionRequestExportService } from './requestExport/service';
-import { exportActions, getAggregateActions, getItemActions, postAction } from './schemas';
-import { ActionItemService } from './service';
+import {
+  exportActions,
+  getAggregateActions,
+  getItemActions,
+  postAction,
+} from './schemas';
 
 export interface GraaspActionsOptions {
   shouldSave?: boolean;
   fileItemType: FileItemType;
-  fileConfigurations: { s3: S3FileConfiguration; local: LocalFileConfiguration };
+  fileConfigurations: {
+    s3: S3FileConfiguration;
+    local: LocalFileConfiguration;
+  };
 }
 
-const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) => {
+const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (
+  fastify,
+) => {
   const { websockets } = fastify;
 
   const itemService = resolveDependency(ItemService);
@@ -48,17 +65,14 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
     },
     async ({ user, params: { id }, query }) => {
       // remove itemMemberships from return
-      const { itemMemberships: _, ...result } = await actionItemService.getBaseAnalyticsForItem(
-        db,
-        user?.account,
-        {
+      const { itemMemberships: _, ...result } =
+        await actionItemService.getBaseAnalyticsForItem(db, user?.account, {
           sampleSize: query.requestedSampleSize,
           itemId: id,
           view: query.view?.toLowerCase(),
           startDate: query.startDate,
           endDate: query.endDate,
-        },
-      );
+        });
       return result;
     },
   );
@@ -114,9 +128,11 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
         const item = await itemService.get(tx, member, itemId);
         await actionService.postMany(tx, member, request, [
           {
-            item,
+            itemId: item.id,
             type,
-            extra,
+            extra: JSON.stringify(extra),
+            // FIX: define the view !
+            // view: ??
           },
         ]);
       });
@@ -141,7 +157,12 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
       const member = asDefined(user?.account);
       assertIsMember(member);
       db.transaction(async (tx) => {
-        const item = await requestExportService.request(tx, member, itemId, format);
+        const item = await requestExportService.request(
+          tx,
+          member,
+          itemId,
+          format,
+        );
         if (item) {
           websockets.publish(
             memberItemsTopic,

@@ -1,10 +1,12 @@
+import { eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
 import { PermissionLevel } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../drizzle/db';
+import { appActions } from '../../../../../drizzle/schema';
+import { AppActionWithItemAndAccount } from '../../../../../drizzle/types';
 import { AuthenticatedUser } from '../../../../../types';
-import { Account } from '../../../../account/entities/account';
 import { AuthorizationService } from '../../../../authorization';
 import { ItemRepository } from '../../../repository';
 import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request';
@@ -28,18 +30,43 @@ export class AppActionService {
     this.itemRepository = itemRepository;
   }
 
-  async post(db: DBConnection, account: AuthenticatedUser, itemId: string, body: InputAppAction) {
+  async getOne(
+    db: DBConnection,
+    actionId: string,
+  ): Promise<AppActionWithItemAndAccount | undefined> {
+    return db.query.appActions.findFirst({
+      where: eq(appActions.id, actionId),
+      with: { account: true, item: true },
+    });
+  }
+
+  async post(
+    db: DBConnection,
+    account: AuthenticatedUser,
+    itemId: string,
+    body: InputAppAction,
+  ): Promise<AppActionWithItemAndAccount> {
     // check item exists? let post fail?
     const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
     // posting an app action is allowed to readers
-    await this.authorizationService.validatePermission(db, PermissionLevel.Read, account, item);
+    await this.authorizationService.validatePermission(
+      db,
+      PermissionLevel.Read,
+      account,
+      item,
+    );
 
-    const appAction = await this.appActionRepository.addOne(db, {
+    const rawAppActions = await this.appActionRepository.addOne(db, {
       itemId,
       accountId: account.id,
       appAction: body,
     });
+
+    const appAction = await this.getOne(db, rawAppActions[0].id);
+    if (!appAction) {
+      throw new Error('expected to get app action on creation');
+    }
     return appAction;
   }
 
@@ -53,12 +80,13 @@ export class AppActionService {
     const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
     // posting an app action is allowed to readers
-    const { itemMembership } = await this.authorizationService.validatePermission(
-      db,
-      PermissionLevel.Read,
-      account,
-      item,
-    );
+    const { itemMembership } =
+      await this.authorizationService.validatePermission(
+        db,
+        PermissionLevel.Read,
+        account,
+        item,
+      );
     const permission = itemMembership?.permission;
     let { accountId: fMemberId } = filters;
 
@@ -86,12 +114,13 @@ export class AppActionService {
     const item = await this.itemRepository.getOneOrThrow(db, itemIds[0]);
 
     // posting an app action is allowed to readers
-    const { itemMembership } = await this.authorizationService.validatePermission(
-      db,
-      PermissionLevel.Read,
-      account,
-      item,
-    );
+    const { itemMembership } =
+      await this.authorizationService.validatePermission(
+        db,
+        PermissionLevel.Read,
+        account,
+        item,
+      );
     const permission = itemMembership?.permission;
     const { accountId: fMemberId } = filters;
 

@@ -2,12 +2,12 @@ import { asc, eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
 import { DBConnection } from '../../drizzle/db';
+import { chatMessagesTable } from '../../drizzle/schema';
 import {
-  ChatMessageCreationDTO,
+  ChatMessageInsertDTO,
   ChatMessageRaw,
   ChatMessageWithCreatorAndItem,
-  chatMessagesTable,
-} from '../../drizzle/schema';
+} from '../../drizzle/types';
 import { DeleteException } from '../../repositories/errors';
 import { throwsIfParamIsInvalid } from '../../repositories/utils';
 import { assertIsError } from '../../utils/assertions';
@@ -52,7 +52,10 @@ export class ChatMessageRepository {
    * Retrieves a message by its id
    * @param id Id of the message to retrieve
    */
-  async getOne(db: DBConnection, id: string): Promise<ChatMessageWithCreatorAndItem | undefined> {
+  async getOne(
+    db: DBConnection,
+    id: string,
+  ): Promise<ChatMessageWithCreatorAndItem | undefined> {
     return await db.query.chatMessagesTable.findFirst({
       where: eq(chatMessagesTable.id, id),
       with: { item: true, creator: true },
@@ -82,13 +85,17 @@ export class ChatMessageRepository {
   async updateOne(
     db: DBConnection,
     id: string,
-    data: ChatMessageCreationDTO,
+    data: ChatMessageInsertDTO,
   ): Promise<ChatMessageRaw> {
     return await db
       .update(chatMessagesTable)
       .set(data)
       .where(eq(chatMessagesTable.id, id))
       .returning()[0];
+  }
+
+  async deleteOne(db: DBConnection, id: string): Promise<void> {
+    await db.delete(chatMessagesTable).where(eq(chatMessagesTable.id, id));
   }
 
   /*
@@ -99,7 +106,9 @@ export class ChatMessageRepository {
     throwsIfParamIsInvalid('itemId', itemId);
 
     try {
-      await db.delete(chatMessagesTable).where(eq(chatMessagesTable.itemId, itemId));
+      await db
+        .delete(chatMessagesTable)
+        .where(eq(chatMessagesTable.itemId, itemId));
     } catch (e) {
       assertIsError(e);
       throw new DeleteException(e.message);

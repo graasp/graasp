@@ -2,8 +2,6 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { DEFAULT_LANG } from '@graasp/translations';
-
 import { resolveDependency } from '../../di/utils';
 import { db } from '../../drizzle/db';
 import { asDefined, assertIsDefined } from '../../utils/assertions';
@@ -128,7 +126,8 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
       }
 
       return db.transaction(async (tx) => {
-        return memberService.patch(tx, id, body);
+        const patchedMember = await memberService.patch(tx, id, body);
+        return patchedMember.toCurrent();
       });
     },
   );
@@ -185,12 +184,9 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
       // HACK: re-fetch the member from the repo to have it in full (so the types match)
       const member = await memberService.get(db, account.id);
       assertIsDefined(member);
-      const token = memberService.createEmailChangeRequest(member, email);
-      memberService.sendEmailChangeRequest(
-        email,
-        token,
-        member.extra.lang ?? DEFAULT_LANG,
-      );
+      const memberInfo = member.toMemberInfo();
+      const token = memberService.createEmailChangeRequest(memberInfo, email);
+      memberService.sendEmailChangeRequest(email, token, memberInfo.lang);
     },
   );
 
@@ -213,13 +209,12 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
         const newMember = await memberService.patch(tx, account.id, {
           email: emailModification.newEmail,
         });
-
+        const memberInfo = newMember.toMemberInfo();
         // we send the email asynchronously without awaiting
         memberService.mailConfirmEmailChangeRequest(
-          // HACK: The email should always be defined, but the types on the db are weak
-          newMember.email!,
+          memberInfo.email,
           emailModification.newEmail,
-          newMember.extra.lang ?? DEFAULT_LANG,
+          memberInfo.lang,
         );
       });
       // this needs to be outside the transaction

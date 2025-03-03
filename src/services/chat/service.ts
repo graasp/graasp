@@ -3,11 +3,15 @@ import { singleton } from 'tsyringe';
 import { PermissionLevel } from '@graasp/sdk';
 
 import { DBConnection } from '../../drizzle/db';
+import { ChatMessageRaw } from '../../drizzle/types';
 import { AuthenticatedUser, MaybeUser } from '../../types';
 import HookManager from '../../utils/hook';
 import { ItemService } from '../item/service';
-import { ChatMessage } from './chatMessage';
-import { MemberCannotDeleteMessage, MemberCannotEditMessage } from './errors';
+import {
+  ChatMessageNotFound,
+  MemberCannotDeleteMessage,
+  MemberCannotEditMessage,
+} from './errors';
 import { MentionService } from './plugins/mentions/service';
 import { ChatMessageRepository } from './repository';
 
@@ -28,7 +32,11 @@ export class ChatMessageService {
     this.chatMessageRepository = chatMessageRepository;
   }
 
-  async getForItem(db: DBConnection, actor: MaybeUser, itemId: string): Promise<ChatMessage[]> {
+  async getForItem(
+    db: DBConnection,
+    actor: MaybeUser,
+    itemId: string,
+  ): Promise<ChatMessageRaw[]> {
     // check permission
     await this.itemService.get(db, actor, itemId);
 
@@ -52,7 +60,12 @@ export class ChatMessageService {
 
     // post the mentions that are sent with the message
     if (data.mentions?.length) {
-      await this.mentionService.createManyForItem(db, actor, message, data.mentions);
+      await this.mentionService.createManyForItem(
+        db,
+        actor,
+        message,
+        data.mentions,
+      );
     }
 
     await this.hooks.runPostHooks('publish', actor, db, {
@@ -64,44 +77,59 @@ export class ChatMessageService {
 
   async patchOne(
     db: DBConnection,
-    actor: Account,
+    authenticatedUser: AuthenticatedUser,
     itemId: string,
     messageId: string,
     message: { body: string },
   ) {
     // check permission
-    await this.itemService.get(db, actor, itemId);
+    await this.itemService.get(db, authenticatedUser, itemId);
 
     // check right to make sure that the user is editing his own message
-    const messageContent = await this.chatMessageRepository.getOne(db, messageId);
+    const messageContent = await this.chatMessageRepository.getOne(
+      db,
+      messageId,
+    );
 
     if (!messageContent) {
       throw new ChatMessageNotFound(messageId);
     }
 
-    if (messageContent.creator?.id !== actor.id) {
+    if (messageContent.creator?.id !== authenticatedUser.id) {
       throw new MemberCannotEditMessage(messageId);
     }
 
-    const updatedMessage = await this.chatMessageRepository.updateOne(db, messageId, message);
+    const updatedMessage = await this.chatMessageRepository.updateOne(
+      db,
+      messageId,
+      { itemId, ...message },
+    );
 
-    await this.hooks.runPostHooks('update', actor, db, {
+    await this.hooks.runPostHooks('update', authenticatedUser, db, {
       message: updatedMessage,
     });
 
     return updatedMessage;
   }
 
-  async deleteOne(db: DBConnection, actor: Account, itemId: string, messageId: string) {
+  async deleteOne(
+    db: DBConnection,
+    authenticatedUser: AuthenticatedUser,
+    itemId: string,
+    messageId: string,
+  ) {
     // check permission
-    await this.itemService.get(db, actor, itemId);
+    await this.itemService.get(db, authenticatedUser, itemId);
 
-    const messageContent = await this.chatMessageRepository.getOne(db, messageId);
+    const messageContent = await this.chatMessageRepository.getOne(
+      db,
+      messageId,
+    );
     if (!messageContent) {
       throw new ChatMessageNotFound(messageId);
     }
 
-    if (messageContent.creator?.id !== actor.id) {
+    if (messageContent.creator?.id !== authenticatedUser.id) {
       throw new MemberCannotDeleteMessage({ id: messageId });
     }
 
@@ -110,19 +138,28 @@ export class ChatMessageService {
 
     await this.chatMessageRepository.deleteOne(db, messageId);
 
-    await this.hooks.runPostHooks('delete', actor, db, {
+    await this.hooks.runPostHooks('delete', authenticatedUser, db, {
       message: messageContent,
     });
 
     return messageContent;
   }
 
-  async clear(db: DBConnection, actor: Account, itemId: string) {
+  async clear(
+    db: DBConnection,
+    authenticatedUser: AuthenticatedUser,
+    itemId: string,
+  ) {
     // check rights for accessing the chat and sufficient right to clear the conversation
     // user should be an admin of the item
-    await this.itemService.get(db, actor, itemId, PermissionLevel.Admin);
+    await this.itemService.get(
+      db,
+      authenticatedUser,
+      itemId,
+      PermissionLevel.Admin,
+    );
 
-    await this.hooks.runPostHooks('clear', actor, db, { itemId });
+    await this.hooks.runPostHooks('clear', authenticatedUser, db, { itemId });
 
     await this.chatMessageRepository.deleteByItem(db, itemId);
   }

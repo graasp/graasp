@@ -11,11 +11,16 @@ import {
 import { DBConnection } from '../../drizzle/db';
 import { isAncestorOrSelf, isDescendantOrSelf } from '../../drizzle/operations';
 import {
-  Account,
-  ItemMembership,
   itemMemberships as itemMembershipTable,
   items,
 } from '../../drizzle/schema';
+import {
+  Item,
+  ItemMembershipRaw,
+  ItemMembershipWithItem,
+  ItemMembershipWithItemAndAccount,
+} from '../../drizzle/types';
+import { AuthenticatedUser } from '../../types';
 import {
   InvalidMembership,
   InvalidPermissionLevel,
@@ -24,13 +29,12 @@ import {
   MemberNotFound,
   ModifyExistingMembership,
 } from '../../utils/errors';
-import { Item } from '../item/entities/Item';
 import { mapById } from '../utils';
 import { PermissionType, getPermissionsAtItemSql } from './utils';
 
 type ItemPath = Item['path'];
-type AccountId = Account['id'];
-type CreatorId = Account['id'];
+type AccountId = string;
+type CreatorId = string;
 
 type CreateItemMembershipBody = {
   itemPath: ItemPath;
@@ -63,7 +67,7 @@ export class ItemMembershipRepository {
   async getOne(
     db: DBConnection,
     id: string,
-  ): Promise<ItemMembership | undefined> {
+  ): Promise<ItemMembershipRaw | undefined> {
     const res = await db.query.itemMemberships.findFirst({
       where: eq(itemMembershipTable.id, id),
       with: { creator: true, item: true, account: true },
@@ -95,7 +99,7 @@ export class ItemMembershipRepository {
     db: DBConnection,
     itemMembershipId: string,
     args: { purgeBelow?: boolean } = { purgeBelow: true },
-  ): Promise<ItemMembership> {
+  ): Promise<ItemMembershipRaw> {
     const itemMembership = await db.query.itemMemberships.findFirst({
       where: eq(itemMembershipTable.id, itemMembershipId),
     });
@@ -152,10 +156,13 @@ export class ItemMembershipRepository {
     }
   }
 
-  async get(db: DBConnection, id: string) {
+  async get(
+    db: DBConnection,
+    id: string,
+  ): Promise<ItemMembershipWithItemAndAccount> {
     const item = await db.query.itemMemberships.findFirst({
       where: eq(itemMembershipTable.id, id),
-      with: { account: true, item: { with: { account: true } } },
+      with: { account: true, item: true },
     });
 
     if (!item) {
@@ -202,7 +209,7 @@ export class ItemMembershipRepository {
     db: DBConnection,
     accountId: string,
     itemPath: string,
-  ): Promise<ItemMembership | undefined> {
+  ): Promise<ItemMembershipRaw | undefined> {
     if (!accountId) {
       throw new MemberNotFound();
     } else if (!itemPath) {
@@ -259,7 +266,7 @@ export class ItemMembershipRepository {
       considerLocal = false,
       selectItem = false,
     }: { considerLocal?: boolean; selectItem?: boolean } = {},
-  ): Promise<ItemMembership[]> {
+  ): Promise<ItemMembershipRaw[]> {
     const andConditions = [
       isDescendantOrSelf(itemMembershipTable.itemPath, itemPath),
       eq(itemMembershipTable.accountId, accountId),
@@ -405,7 +412,7 @@ export class ItemMembershipRepository {
    *  */
   async getAccessibleItemNames(
     db: DBConnection,
-    actor: Account,
+    actor: AuthenticatedUser,
     { startWith }: { startWith?: string },
   ): Promise<string[]> {
     let query = this.repository
@@ -664,11 +671,12 @@ export class ItemMembershipRepository {
     });
   }
 
+  // TODO: looks not used ?? Remove ?
   async getByItemPathAndPermission(
     db: DBConnection,
     itemPath: string,
     permission: PermissionLevel,
-  ): Promise<ItemMembership[]> {
+  ): Promise<ItemMembershipRaw[]> {
     return await db.query.itemMemberships.findMany({
       where: and(
         isAncestorOrSelf(itemMembershipTable.itemPath, itemPath),
@@ -684,12 +692,13 @@ export class ItemMembershipRepository {
     db: DBConnection,
     itemMembershipId: string,
     data: UpdateItemMembershipBody,
-  ): Promise<ItemMembership> {
+  ): Promise<ItemMembershipWithItem> {
     const itemMembership = await this.get(db, itemMembershipId);
     // check member's inherited membership
     const { item, account: memberOfMembership } = itemMembership;
 
-    const inheritedMembership = await this.getInherited(db,
+    const inheritedMembership = await this.getInherited(
+      db,
       item.path,
       memberOfMembership.id,
     );
@@ -700,7 +709,7 @@ export class ItemMembershipRepository {
 
       if (permission === inheritedPermission) {
         // downgrading to same as the inherited, delete current membership
-        await this.delete(itemMembership.id);
+        await this.delete(db, itemMembership.id);
         return inheritedMembership;
       } else if (PermissionLevelCompare.lt(permission, inheritedPermission)) {
         // if downgrading to "worse" than inherited
@@ -725,7 +734,7 @@ export class ItemMembershipRepository {
         // return subtasks to remove redundant existing memberships
         // and to update the existing one
         tasks = membershipsBelowToDiscard.map(
-          async (m) => await this.delete(m.id),
+          async (m) => await this.delete(db, m.id),
         );
       }
     }
@@ -734,13 +743,13 @@ export class ItemMembershipRepository {
     // TODO: optimize
     await Promise.all(tasks);
 
-    return this.get(itemMembershipId);
+    return this.get(db, itemMembershipId);
   }
 
   async addOne(
     db: DBConnection,
     { itemPath, accountId, creatorId, permission }: CreateItemMembershipBody,
-  ): Promise<ItemMembership> {
+  ): Promise<ItemMembershipRaw> {
     // prepare membership but do not save it
     const itemId = getChildFromPath(itemPath);
 
@@ -790,18 +799,27 @@ export class ItemMembershipRepository {
     }
 
     // create new membership
-    const itemMembership = await this.insert({
-      permission,
-      item: { id: itemId, path: itemPath },
-      account: { id: accountId },
-      creator: { id: creatorId },
-    });
+    const itemMembership = await db
+      .insert(itemMembershipTable)
+      .values({
+        permission,
+        itemPath: itemPath,
+        accountId: accountId,
+        creatorId: creatorId,
+      })
+      .returning();
     await Promise.all(tasks);
 
-    return itemMembership;
+    return itemMembership[0];
   }
 
   // UTILS
+
+  private async delete(db: DBConnection, membershipId: string) {
+    await db
+      .delete(itemMembershipTable)
+      .where(eq(itemMembershipTable.id, membershipId));
+  }
 
   /**
    * Retrieves all memberships related to the ancestors of the given item and returns the memberships

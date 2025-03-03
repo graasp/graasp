@@ -141,7 +141,14 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           itemId,
           PermissionLevel.Admin,
         ); // Validate permissions
-        const schema = await itemLoginService.getOneByItem(tx, item.id);
+
+        // TODO: create function !
+        const schema = await itemLoginService.updateOrCreate(
+          tx,
+          item.path,
+          type,
+          status,
+        );
         if (schema) {
           // If exists, then update the existing one
           return await itemLoginService.update(tx, schema.id, type, status);

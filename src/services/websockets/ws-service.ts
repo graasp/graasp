@@ -4,7 +4,6 @@ import { FastifyBaseLogger } from 'fastify';
 
 import { Websocket as GraaspWS } from '@graasp/sdk';
 
-import { Account } from '../../drizzle/types';
 import { MaybeUser } from '../../types';
 import {
   createServerErrorResponse,
@@ -22,7 +21,7 @@ export interface SubscriptionRequest {
   /**
    * Member requesting a subscription
    */
-  member: Account;
+  member: MaybeUser;
 }
 
 type ValidationFn = (request: SubscriptionRequest) => Promise<void>;

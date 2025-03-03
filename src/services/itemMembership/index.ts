@@ -5,11 +5,20 @@ import { resolveDependency } from '../../di/utils';
 import { db } from '../../drizzle/db';
 import { FastifyInstanceTypebox } from '../../plugins/typebox';
 import { asDefined } from '../../utils/assertions';
-import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
+import {
+  isAuthenticated,
+  optionalIsAuthenticated,
+} from '../auth/plugins/passport';
 import { matchOne } from '../authorization';
 import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
 import MembershipRequestAPI from './plugins/MembershipRequest';
-import { create, createMany, deleteOne, getManyItemMemberships, updateOne } from './schemas';
+import {
+  create,
+  createMany,
+  deleteOne,
+  getManyItemMemberships,
+  updateOne,
+} from './schemas';
 import { ItemMembershipService } from './service';
 import { membershipWsHooks } from './ws/hooks';
 
@@ -18,7 +27,9 @@ const ROUTES_PREFIX = '/item-memberships';
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const itemMembershipService = resolveDependency(ItemMembershipService);
 
-  fastify.register(MembershipRequestAPI, { prefix: '/items/:itemId/memberships/requests' });
+  fastify.register(MembershipRequestAPI, {
+    prefix: '/items/:itemId/memberships/requests',
+  });
 
   // routes
   fastify.register(
@@ -43,7 +54,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       // create item membership
       fastify.post(
         '/',
-        { schema: create, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
+        {
+          schema: create,
+          preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
+        },
         async ({ user, query: { itemId }, body }) => {
           const account = asDefined(user?.account);
           return db.transaction((tx) => {
@@ -59,14 +73,22 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       // create many item memberships
       fastify.post(
         '/:itemId',
-        { schema: createMany, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
+        {
+          schema: createMany,
+          preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
+        },
         async ({ user, params: { itemId }, body }) => {
           const account = asDefined(user?.account);
           // BUG: because we use this call to save csv member
           // we have to return immediately
           // solution: it's probably simpler to upload a csv and handle it in the back
-          return db.transaction((manager) => {
-            return itemMembershipService.createMany(tx, account, body.memberships, itemId);
+          return db.transaction((tx) => {
+            return itemMembershipService.createMany(
+              tx,
+              account,
+              body.memberships,
+              itemId,
+            );
           });
         },
       );
