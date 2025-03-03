@@ -3,7 +3,13 @@ import { inject, singleton } from 'tsyringe';
 import { v4 } from 'uuid';
 
 import Etherpad, { AuthorSession } from '@graasp/etherpad-api';
-import { EtherpadItemExtra, ItemType, PermissionLevel } from '@graasp/sdk';
+import {
+  EtherpadItemExtra,
+  EtherpadPermission,
+  EtherpadPermissionType,
+  ItemType,
+  PermissionLevel,
+} from '@graasp/sdk';
 
 import { ETHERPAD_NAME_FACTORY_DI_KEY } from '../../../../di/constants';
 import { BaseLogger } from '../../../../logger';
@@ -94,7 +100,7 @@ export class EtherpadItemService {
   public async createEtherpadItem(
     member: Member,
     repositories: Repositories,
-    name: string,
+    args: { readerPermission?: EtherpadPermissionType; name: string },
     parentId?: string,
     initHtml?: string,
   ) {
@@ -103,9 +109,13 @@ export class EtherpadItemService {
     try {
       return this.itemService.post(member, repositories, {
         item: {
-          name,
+          name: args.name,
           type: ItemType.ETHERPAD,
-          extra: this.buildEtherpadExtra({ groupID, padName }),
+          extra: this.buildEtherpadExtra({
+            groupID,
+            padName,
+            readerPermission: args.readerPermission ?? EtherpadPermission.Read,
+          }),
         },
         parentId,
       });
@@ -128,7 +138,9 @@ export class EtherpadItemService {
     member: Member,
     repositories: Repositories,
     itemId: Item['id'],
-    { readerPermission }: { readerPermission: PermissionLevel.Read | PermissionLevel.Write },
+    body: Partial<Pick<Item, 'settings' | 'name' | 'lang'>> & {
+      readerPermission?: EtherpadPermissionType;
+    },
   ) {
     const { itemRepository } = repositories;
 
@@ -139,9 +151,24 @@ export class EtherpadItemService {
       throw new WrongItemTypeError(item.type);
     }
 
-    return this.itemService.patch(member, repositories, itemId, {
-      extra: { [ItemType.ETHERPAD]: { readerPermission } },
-    });
+    const { readerPermission: newReaderPermissionValue, ...itemProps } = body;
+
+    const newProps: Partial<EtherpadItem> = { ...itemProps };
+    // patch extra only if has changes
+    if (newReaderPermissionValue) {
+      newProps.extra = {
+        [ItemType.ETHERPAD]: {
+          ...item.extra.etherpad,
+          // use new value, previously set value, or default 'read'
+          readerPermission:
+            newReaderPermissionValue ??
+            item.extra.etherpad.readerPermission ??
+            EtherpadPermission.Read,
+        },
+      };
+    }
+
+    return this.itemService.patch(member, repositories, itemId, newProps);
   }
 
   /**
@@ -412,14 +439,17 @@ export class EtherpadItemService {
   static buildEtherpadExtra({
     groupID,
     padName,
+    readerPermission = EtherpadPermission.Read,
   }: {
     groupID: string;
     padName: string;
+    readerPermission?: EtherpadPermissionType;
   }): EtherpadItemExtra {
     return {
       etherpad: {
         padID: this.buildPadID({ groupID, padName }),
         groupID,
+        readerPermission,
       },
     };
   }
