@@ -26,23 +26,89 @@ import {
 import { assertIsMember } from '../member/entities/member';
 import { expectMember } from '../member/test/fixtures/members';
 import { DEFAULT_ORDER, FolderItem, Item } from './entities/Item';
+import { ItemPublished } from './plugins/publication/published/entities/itemPublished';
+import { RecycledItemDataRepository } from './plugins/recycled/repository';
 import { ItemRepository } from './repository';
-import { ItemTestUtils, expectItem, expectManyItems } from './test/fixtures/items';
+import { expectItem, expectManyItems } from './test/fixtures/items';
 
 const itemRepository = new ItemRepository();
-const testUtils = new ItemTestUtils();
+const recycledItemRepository = new RecycledItemDataRepository();
 
 const alphabeticalOrder = (a: string, b: string) => a.localeCompare(b);
+
+// TODO: remove when this can be handled by the seed
+async function saveRecycledItem(
+  rawItemRepository: Repository<Item>,
+  item: Item,
+  creatorId: string,
+) {
+  await recycledItemRepository.addOne({ itemPath: item.path, creatorId });
+  await rawItemRepository.softRemove(item);
+}
+
+// TODO: remove when this can be handled by the seed
+const saveCollections = async (rawItemPublishedRepository: Repository<ItemPublished>) => {
+  const {
+    items,
+    members: [member],
+  } = await seedFromJson({
+    actor: null,
+    items: [
+      {
+        isPublic: true,
+        creator: { name: 'bob' },
+        memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+      },
+      {
+        isPublic: true,
+        creator: { name: 'bob' },
+        memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+      },
+      {
+        isPublic: true,
+        creator: { name: 'bob' },
+        memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+      },
+    ],
+  });
+
+  for (const item of items) {
+    await rawItemPublishedRepository.save({ item, creator: member });
+  }
+  return { items, member };
+};
+
+// TODO: remove when this when we use drizzle
+const getOrderForItemId = async (
+  rawItemRepository: Repository<Item>,
+  itemId: Item['id'],
+): Promise<number | null> => {
+  const order = (await rawItemRepository
+    .createQueryBuilder('item')
+    .select('item."order"')
+    .where(`id = '${itemId}'`)
+    // needs to get raw otherwise we cannot get null order
+    .getRawOne<{ order: string }>())!.order;
+  // return null value
+  // TODO: check returns null
+  if (!order) {
+    return order as unknown as null;
+  }
+  // return float order
+  return parseFloat(order);
+};
 
 describe('ItemRepository', () => {
   let db: DataSource;
 
   let itemRawRepository: Repository<Item>;
+  let rawItemPublishedRepository: Repository<ItemPublished>;
 
   beforeAll(async () => {
     db = await AppDataSource.initialize();
     await db.runMigrations();
     itemRawRepository = db.getRepository(Item);
+    rawItemPublishedRepository = db.getRepository(ItemPublished);
   });
 
   afterAll(async () => {
@@ -430,7 +496,7 @@ describe('ItemRepository', () => {
       assertIsDefined(actor);
       assertIsMember(actor);
       // TODO: remove once deleted is part of seed
-      await testUtils.saveRecycledItem(actor, deleted);
+      await saveRecycledItem(itemRawRepository, deleted, actor.id);
 
       const result = await itemRepository.getManyDescendants([A, B]);
 
@@ -457,7 +523,7 @@ describe('ItemRepository', () => {
       assertIsDefined(actor);
       assertIsMember(actor);
       // TODO: remove once deleted is part of seed
-      await testUtils.saveRecycledItem(actor, deleted);
+      await saveRecycledItem(itemRawRepository, deleted, actor.id);
 
       const result = await itemRepository.getManyDescendants([A, B], {
         withDeleted: true,
@@ -493,7 +559,7 @@ describe('ItemRepository', () => {
       assertIsDefined(actor);
       assertIsMember(actor);
       // TODO: remove once deleted is part of seed
-      await testUtils.saveRecycledItem(actor, item3);
+      await saveRecycledItem(itemRawRepository, item3, actor.id);
 
       const result = await itemRepository.getMany([item1.id, item2.id, item3.id, v4()], {
         withDeleted: true,
@@ -712,7 +778,7 @@ describe('ItemRepository', () => {
     it('post successfully', async () => {
       const {
         members: [member],
-      } = await seedFromJson({ members: [{}] });
+      } = await seedFromJson({ actor: null, members: [{}] });
       const data = { name: 'name', type: ItemType.FOLDER };
 
       await itemRepository.addOne({ item: data, creator: member });
@@ -979,31 +1045,18 @@ describe('ItemRepository', () => {
   });
   describe('getAllPublishedItems', () => {
     it('get published items', async () => {
-      const {
-        members: [member],
-      } = await seedFromJson({
-        actor: null,
-        members: [{}],
-      });
       // TODO: update when seed handle published items
-      const { items } = await testUtils.saveCollections(member);
+      const { items } = await saveCollections(rawItemPublishedRepository);
       const result = await itemRepository.getAllPublishedItems();
       expectManyItems(result, items);
     });
   });
   describe('getPublishedItemsForMember', () => {
     it('get published items for member', async () => {
-      const {
-        members: [member, bob],
-      } = await seedFromJson({
-        actor: null,
-        members: [{}, { name: 'bob' }],
-      });
       // TODO: update when seed handle published items
-      const { items } = await testUtils.saveCollections(member);
-
+      const { items, member } = await saveCollections(rawItemPublishedRepository);
       // noise
-      await testUtils.saveCollections(bob);
+      await saveCollections(rawItemPublishedRepository);
 
       const result = await itemRepository.getPublishedItemsForMember(member.id);
       expectManyItems(result, items);
@@ -1097,14 +1150,14 @@ describe('ItemRepository', () => {
         items: [parentItem, item],
       } = await seedFromJson({ items: [{ children: [{ order: 10 }] }] });
       await itemRepository.reorder(item, parentItem.path);
-      expect(await testUtils.getOrderForItemId(item.id)).toEqual(5);
+      expect(await getOrderForItemId(itemRawRepository, item.id)).toEqual(5);
     });
     it('reorder in one child will return smaller order', async () => {
       const {
         items: [parentItem, item],
       } = await seedFromJson({ items: [{ children: [{ order: 10 }] }] });
       await itemRepository.reorder(item, parentItem.path);
-      expect(await testUtils.getOrderForItemId(item.id)).toBeLessThan(10);
+      expect(await getOrderForItemId(itemRawRepository, item.id)).toBeLessThan(10);
     });
     it('reorder in root returns null', async () => {
       const {
@@ -1112,7 +1165,7 @@ describe('ItemRepository', () => {
       } = await seedFromJson({ items: [{}] });
       await itemRepository.reorder(item, '');
       // cannot use findOne because order is null
-      expect(await testUtils.getOrderForItemId(item.id)).toBeNull();
+      expect(await getOrderForItemId(itemRawRepository, item.id)).toBeNull();
     });
     it('reorder in between children after previous item', async () => {
       const {
@@ -1123,7 +1176,7 @@ describe('ItemRepository', () => {
 
       await itemRepository.reorder(item, parentItem.path, previousItem.id);
 
-      expect(await testUtils.getOrderForItemId(item.id)).toEqual(60);
+      expect(await getOrderForItemId(itemRawRepository, item.id)).toEqual(60);
     });
     it('reorder at the end after previous item', async () => {
       const {
@@ -1133,7 +1186,7 @@ describe('ItemRepository', () => {
       });
 
       await itemRepository.reorder(item, parentItem.path, previousItem.id);
-      expect(await testUtils.getOrderForItemId(item.id)).toEqual(70);
+      expect(await getOrderForItemId(itemRawRepository, item.id)).toEqual(70);
     });
   });
   describe('rescaleOrder', () => {
@@ -1160,10 +1213,10 @@ describe('ItemRepository', () => {
 
       await itemRepository.rescaleOrder(actor, parentItem);
 
-      expect(await testUtils.getOrderForItemId(item1.id)).toEqual(20);
-      expect(await testUtils.getOrderForItemId(item2.id)).toEqual(40);
-      expect(await testUtils.getOrderForItemId(item3.id)).toEqual(80);
-      expect(await testUtils.getOrderForItemId(item4.id)).toEqual(60);
+      expect(await getOrderForItemId(itemRawRepository, item1.id)).toEqual(20);
+      expect(await getOrderForItemId(itemRawRepository, item2.id)).toEqual(40);
+      expect(await getOrderForItemId(itemRawRepository, item3.id)).toEqual(80);
+      expect(await getOrderForItemId(itemRawRepository, item4.id)).toEqual(60);
     });
     it('rescale children for null values', async () => {
       const {
@@ -1185,13 +1238,13 @@ describe('ItemRepository', () => {
 
       await itemRepository.rescaleOrder(actor, parentItem);
 
-      expect(await testUtils.getOrderForItemId(item1.id)).toEqual(20);
+      expect(await getOrderForItemId(itemRawRepository, item1.id)).toEqual(20);
       // null value is at the end but before item5 because it is the least recent
-      expect(await testUtils.getOrderForItemId(item2.id)).toEqual(80);
-      expect(await testUtils.getOrderForItemId(item3.id)).toEqual(60);
-      expect(await testUtils.getOrderForItemId(item4.id)).toEqual(40);
+      expect(await getOrderForItemId(itemRawRepository, item2.id)).toEqual(80);
+      expect(await getOrderForItemId(itemRawRepository, item3.id)).toEqual(60);
+      expect(await getOrderForItemId(itemRawRepository, item4.id)).toEqual(40);
       // null value is at the end because it's the most recent
-      expect(await testUtils.getOrderForItemId(item5.id)).toEqual(100);
+      expect(await getOrderForItemId(itemRawRepository, item5.id)).toEqual(100);
     });
     it('rescale children for identical values', async () => {
       const {
@@ -1213,13 +1266,13 @@ describe('ItemRepository', () => {
 
       await itemRepository.rescaleOrder(actor, parentItem);
 
-      expect(await testUtils.getOrderForItemId(item1.id)).toEqual(60);
+      expect(await getOrderForItemId(itemRawRepository, item1.id)).toEqual(60);
       // first among duplicata because is more recent
-      expect(await testUtils.getOrderForItemId(item2.id)).toEqual(20);
-      expect(await testUtils.getOrderForItemId(item3.id)).toEqual(100);
-      expect(await testUtils.getOrderForItemId(item4.id)).toEqual(80);
+      expect(await getOrderForItemId(itemRawRepository, item2.id)).toEqual(20);
+      expect(await getOrderForItemId(itemRawRepository, item3.id)).toEqual(100);
+      expect(await getOrderForItemId(itemRawRepository, item4.id)).toEqual(80);
       // second among duplicata because is less recent
-      expect(await testUtils.getOrderForItemId(item5.id)).toEqual(40);
+      expect(await getOrderForItemId(itemRawRepository, item5.id)).toEqual(40);
     });
     it('do not rescale if bigger than threshold', async () => {
       const {
@@ -1231,10 +1284,10 @@ describe('ItemRepository', () => {
 
       await itemRepository.rescaleOrder(actor, parentItem);
 
-      expect(await testUtils.getOrderForItemId(item1.id)).toEqual(11);
-      expect(await testUtils.getOrderForItemId(item2.id)).toEqual(12);
-      expect(await testUtils.getOrderForItemId(item3.id)).toEqual(14);
-      expect(await testUtils.getOrderForItemId(item4.id)).toEqual(13);
+      expect(await getOrderForItemId(itemRawRepository, item1.id)).toEqual(11);
+      expect(await getOrderForItemId(itemRawRepository, item2.id)).toEqual(12);
+      expect(await getOrderForItemId(itemRawRepository, item3.id)).toEqual(14);
+      expect(await getOrderForItemId(itemRawRepository, item4.id)).toEqual(13);
     });
   });
 });
