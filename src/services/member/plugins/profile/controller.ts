@@ -4,26 +4,38 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../di/utils';
 import { asDefined } from '../../../../utils/assertions';
-import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import {
+  isAuthenticated,
+  optionalIsAuthenticated,
+} from '../../../auth/plugins/passport';
+import { assertIsMember } from '../../../authentication';
 import { matchOne } from '../../../authorization';
-import { assertIsMember } from '../../entities/member';
 import { validatedMemberAccountRole } from '../../strategies/validatedMemberAccountRole';
 import { MemberProfileNotFound } from './errors';
-import { createOwnProfile, getOwnProfile, getProfileForMember, updateOwnProfile } from './schemas';
+import {
+  createOwnProfile,
+  getOwnProfile,
+  getProfileForMember,
+  updateOwnProfile,
+} from './schemas';
 import { MemberProfileService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const memberProfileService = resolveDependency(MemberProfileService);
 
-  fastify.get('/own', { schema: getOwnProfile, preHandler: isAuthenticated }, async ({ user }) => {
-    const member = asDefined(user?.account);
-    assertIsMember(member);
-    const profile = await memberProfileService.getOwn(member);
-    if (!profile) {
-      return null;
-    }
-    return profile;
-  });
+  fastify.get(
+    '/own',
+    { schema: getOwnProfile, preHandler: isAuthenticated },
+    async ({ user }) => {
+      const member = asDefined(user?.account);
+      assertIsMember(member);
+      const profile = await memberProfileService.getOwn(member);
+      if (!profile) {
+        return null;
+      }
+      return profile;
+    },
+  );
 
   fastify.get(
     '/:memberId',

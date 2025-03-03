@@ -5,7 +5,11 @@ import { Authenticator } from '@fastify/passport';
 
 import { db } from '../../../../../drizzle/db';
 import { JWT_SECRET } from '../../../../../utils/config';
-import { ChallengeFailed, MemberNotFound, UnauthorizedMember } from '../../../../../utils/errors';
+import {
+  ChallengeFailed,
+  MemberNotFound,
+  UnauthorizedMember,
+} from '../../../../../utils/errors';
 import { AccountRepository } from '../../../../account/account.repository';
 import { SHORT_TOKEN_PARAM } from '../constants';
 import { PassportStrategy } from '../strategies';
@@ -32,15 +36,26 @@ export default (
         const spreadException: boolean = options?.propagateError ?? false;
         //-- Verify Challenge --//
         try {
-          const verifierChallenge = crypto.createHash('sha256').update(verifier).digest('hex');
+          const verifierChallenge = crypto
+            .createHash('sha256')
+            .update(verifier)
+            .digest('hex');
           if (challenge !== verifierChallenge) {
             // Challenge failed
             // Error is defined, user is false
-            return done(spreadException ? new ChallengeFailed() : new UnauthorizedMember(), false);
+            return done(
+              spreadException
+                ? new ChallengeFailed()
+                : new UnauthorizedMember(),
+              false,
+            );
           }
         } catch (err) {
           // Exception occurred while comparing challenge
-          return done(spreadException ? new ChallengeFailed() : new UnauthorizedMember(), false);
+          return done(
+            spreadException ? new ChallengeFailed() : new UnauthorizedMember(),
+            false,
+          );
         }
 
         //-- Fetch Member Data --//
@@ -48,11 +63,17 @@ export default (
           const account = await accountRepository.get(db, sub);
           if (account) {
             // Token has been validated
-            return done(null, { account }, { emailValidation });
+            return done(
+              null,
+              { account: account.toMaybeUser() },
+              { emailValidation },
+            );
           } else {
             // Authentication refused
             return done(
-              spreadException ? new MemberNotFound({ id: sub }) : new UnauthorizedMember(),
+              spreadException
+                ? new MemberNotFound({ id: sub })
+                : new UnauthorizedMember(),
               false,
             );
           }

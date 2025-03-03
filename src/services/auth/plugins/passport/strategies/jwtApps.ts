@@ -45,7 +45,7 @@ export default (
         try {
           const item = await itemRepository.getOneOrThrow(db, itemId);
           return done(null, {
-            account,
+            account: account?.toMaybeUser(),
             app: {
               item,
               origin,
@@ -56,7 +56,10 @@ export default (
           // Exception occurred while fetching item
           // itemRepository.getOneOrThrow() can fail for many reasons like the item was not found, database error, etc.
           // To avoid leaking information, we prefer to return UnauthorizedMember error.
-          return done(options?.propagateError ? err : new UnauthorizedMember(), false);
+          return done(
+            options?.propagateError ? err : new UnauthorizedMember(),
+            false,
+          );
         }
       },
     ),

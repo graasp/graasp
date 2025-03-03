@@ -6,12 +6,11 @@ import { v4 as uuid } from 'uuid';
 import { ClientManager, Context } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { MemberRaw } from '../../../../drizzle/types';
 import { TRANSLATIONS } from '../../../../langs/constants';
 import { BaseLogger } from '../../../../logger';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
-import { AuthenticatedUser } from '../../../../types';
+import { AuthenticatedUser, MemberInfo } from '../../../../types';
 import {
   JWT_SECRET,
   PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES,
@@ -23,7 +22,7 @@ import {
   MemberNotSignedUp,
   MemberWithoutPassword,
 } from '../../../../utils/errors';
-import { MemberRepository } from '../../../member/repository';
+import { MemberDTO, MemberRepository } from '../../../member/repository';
 import { SHORT_TOKEN_PARAM } from '../passport';
 import { PasswordConflict } from './errors';
 import { MemberPasswordRepository } from './memberPassword.repository';
@@ -173,7 +172,7 @@ export class MemberPasswordService {
   async createResetPasswordRequest(
     db: DBConnection,
     email: string,
-  ): Promise<{ token: string; member: MemberRaw } | undefined> {
+  ): Promise<{ token: string; member: MemberInfo } | undefined> {
     const member = await this.memberRepository.getByEmail(db, email);
 
     if (!member) {
@@ -195,7 +194,7 @@ export class MemberPasswordService {
       PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES * 60,
       member.id,
     );
-    return { token, member };
+    return { token, member: member.toMemberInfo() };
   }
 
   /**
@@ -251,12 +250,13 @@ export class MemberPasswordService {
   async getMemberByPasswordResetUuid(
     db: DBConnection,
     uuid: string,
-  ): Promise<MemberRaw> {
+  ): Promise<MemberDTO> {
     const id = await this.redis.get(this.buildRedisKey(uuid));
     if (!id) {
       throw new Error('Id not found');
     }
-    return this.memberRepository.get(db, id);
+    const member = await this.memberRepository.get(db, id);
+    return member;
   }
 
   /** Authenticate a member with email and password.
@@ -271,7 +271,7 @@ export class MemberPasswordService {
     db: DBConnection,
     email: string,
     password: string,
-  ): Promise<MemberRaw | undefined> {
+  ): Promise<MemberDTO | undefined> {
     // Check if the member is registered
     const member = await this.memberRepository.getByEmail(db, email);
     if (!member) {

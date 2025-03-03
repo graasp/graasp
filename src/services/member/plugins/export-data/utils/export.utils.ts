@@ -8,11 +8,16 @@ import { DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS } from '@graasp/sdk';
 import { TRANSLATIONS } from '../../../../../langs/constants';
 import { MailBuilder } from '../../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../../plugins/mailer/mailer.service';
+import { MinimalMember } from '../../../../../types';
 import { TMP_FOLDER } from '../../../../../utils/config';
-import { EXPORT_FILE_EXPIRATION, ZIP_MIMETYPE } from '../../../../action/constants';
+import {
+  EXPORT_FILE_EXPIRATION,
+  ZIP_MIMETYPE,
+} from '../../../../action/constants';
 import { CannotWriteFileError } from '../../../../action/utils/errors';
 import FileService from '../../../../file/service';
-import { Member } from '../../../entities/member';
+
+export type MemberInfo = MinimalMember & { lang: string; email: string };
 
 /**
  * DataToExport will be used to store each values in its own file with the name of the key.
@@ -82,18 +87,20 @@ export class DataArchiver {
       throw err;
     });
 
-    const promise = new Promise<ExportDataInArchiveOutput>((resolve, reject) => {
-      outputStream.on('error', (err) => {
-        reject(err);
-      });
-
-      outputStream.on('close', async () => {
-        resolve({
-          timestamp: this.timestamp,
-          filepath: outputPath,
+    const promise = new Promise<ExportDataInArchiveOutput>(
+      (resolve, reject) => {
+        outputStream.on('error', (err) => {
+          reject(err);
         });
-      });
-    });
+
+        outputStream.on('close', async () => {
+          resolve({
+            timestamp: this.timestamp,
+            filepath: outputPath,
+          });
+        });
+      },
+    );
 
     return { archive, promise };
   }
@@ -142,7 +149,7 @@ export class ArchiveDataExporter {
     uploadedRootFolder,
   }: {
     fileService: FileService;
-    member: Member;
+    member: MinimalMember;
     exportId: string;
     dataToExport: DataToExport;
     storageFolder: string;
@@ -159,19 +166,25 @@ export class ArchiveDataExporter {
     // This promise is necessary to be sure to have close the stream before then end of the function.
     // Because we are mocking S3 in tests, the stream is never read and so, never closed.
     // Never closing the stream throws an error when trying to remove the ZIP folder in the tests.
-    const onArchiveClosed = new Promise<{ archiveCreationTime: Date }>((resolve, reject) => {
-      const res = {
-        archiveCreationTime: new Date(archive.timestamp.getTime()),
-      };
+    const onArchiveClosed = new Promise<{ archiveCreationTime: Date }>(
+      (resolve, reject) => {
+        const res = {
+          archiveCreationTime: new Date(archive.timestamp.getTime()),
+        };
 
-      archivedFile.on('error', (err) => reject(err));
-      archivedFile.on('close', async () => resolve(res));
-    });
+        archivedFile.on('error', (err) => reject(err));
+        archivedFile.on('close', async () => resolve(res));
+      },
+    );
 
     // upload file
     await fileService.upload(member, {
       file: archivedFile,
-      filepath: buildUploadedExportFilePath(uploadedRootFolder, exportId, archive.timestamp),
+      filepath: buildUploadedExportFilePath(
+        uploadedRootFolder,
+        exportId,
+        archive.timestamp,
+      ),
       mimetype: ZIP_MIMETYPE,
     });
 
@@ -197,8 +210,16 @@ export class RequestDataExportService {
     this.mailerService = mailerService;
   }
 
-  private async _sendExportLinkInMail(actor: Member, exportId: string, archiveDate: Date) {
-    const filepath = buildUploadedExportFilePath(this.ROOT_EXPORT_FOLDER, exportId, archiveDate);
+  private async _sendExportLinkInMail(
+    actor: MemberInfo,
+    exportId: string,
+    archiveDate: Date,
+  ) {
+    const filepath = buildUploadedExportFilePath(
+      this.ROOT_EXPORT_FOLDER,
+      exportId,
+      archiveDate,
+    );
     const link = await this.fileService.getUrl({
       path: filepath,
       expiration: EXPORT_FILE_EXPIRATION,
@@ -220,7 +241,7 @@ export class RequestDataExportService {
   }
 
   async requestExport(
-    member: Member,
+    memberInfo: MemberInfo,
     exportId: string,
     dataRetriever: () => Promise<DataToExport>,
   ) {
@@ -233,14 +254,15 @@ export class RequestDataExportService {
     fs.mkdirSync(tmpFolder, { recursive: true });
 
     // archives the data and upload it.
-    const { archiveCreationTime } = await new ArchiveDataExporter().createAndUploadArchive({
-      fileService: this.fileService,
-      member,
-      exportId,
-      dataToExport,
-      storageFolder: tmpFolder,
-      uploadedRootFolder: this.ROOT_EXPORT_FOLDER,
-    });
+    const { archiveCreationTime } =
+      await new ArchiveDataExporter().createAndUploadArchive({
+        fileService: this.fileService,
+        member: memberInfo,
+        exportId,
+        dataToExport,
+        storageFolder: tmpFolder,
+        uploadedRootFolder: this.ROOT_EXPORT_FOLDER,
+      });
 
     // delete tmp folder
     if (fs.existsSync(tmpFolder)) {
@@ -253,6 +275,6 @@ export class RequestDataExportService {
       console.error(`${tmpFolder} was not found, and was not deleted`);
     }
 
-    this._sendExportLinkInMail(member, exportId, archiveCreationTime);
+    this._sendExportLinkInMail(memberInfo, exportId, archiveCreationTime);
   }
 }

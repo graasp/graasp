@@ -8,11 +8,17 @@ import { MAX_THUMBNAIL_SIZE } from '@graasp/sdk';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
-import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import {
+  isAuthenticated,
+  optionalIsAuthenticated,
+} from '../../../auth/plugins/passport';
+import { assertIsMember } from '../../../authentication';
 import { matchOne } from '../../../authorization';
 import FileService from '../../../file/service';
-import { UploadEmptyFileError, UploadFileUnexpectedError } from '../../../file/utils/errors';
-import { assertIsMember } from '../../entities/member';
+import {
+  UploadEmptyFileError,
+  UploadFileUnexpectedError,
+} from '../../../file/utils/errors';
 import { validatedMemberAccountRole } from '../../strategies/validatedMemberAccountRole';
 import { download, upload } from './schemas';
 import { MemberThumbnailService } from './service';
@@ -23,7 +29,10 @@ type GraaspThumbnailsOptions = {
   maxFileSize?: number; // max size for an uploaded file in bytes
 };
 
-const plugin: FastifyPluginAsyncTypebox<GraaspThumbnailsOptions> = async (fastify, options) => {
+const plugin: FastifyPluginAsyncTypebox<GraaspThumbnailsOptions> = async (
+  fastify,
+  options,
+) => {
   const { maxFileSize = MAX_THUMBNAIL_SIZE } = options;
   const fileService = resolveDependency(FileService);
   const thumbnailService = resolveDependency(MemberThumbnailService);
@@ -84,8 +93,8 @@ const plugin: FastifyPluginAsyncTypebox<GraaspThumbnailsOptions> = async (fastif
       schema: download,
       preHandler: optionalIsAuthenticated,
     },
-    async ({ user, params: { size, id: memberId }, query: { replyUrl } }, reply) => {
-      const url = await thumbnailService.getUrl(user?.account, db, {
+    async ({ params: { size, id: memberId }, query: { replyUrl } }, reply) => {
+      const url = await thumbnailService.getUrl(db, {
         memberId,
         size,
       });

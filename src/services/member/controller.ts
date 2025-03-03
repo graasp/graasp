@@ -47,7 +47,11 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
     '/current',
     { schema: getCurrent, preHandler: isAuthenticated },
     async ({ user }) => {
-      return user?.account;
+      if (user?.account) {
+        const member = await memberService.get(db, user?.account?.id);
+        return member.toCurrent();
+      }
+      return undefined;
     },
   );
 
@@ -61,7 +65,7 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return storageService.getStorageLimits(member, fileService.fileType, db);
+      return storageService.getStorageLimits(db, member, fileService.fileType);
     },
   );
 
@@ -101,7 +105,9 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
     '/:id',
     { schema: getOne, preHandler: optionalIsAuthenticated },
     async ({ params: { id } }) => {
-      return memberService.get(db, id);
+      const member = await memberService.get(db, id);
+      // explicitly map the return object to not leak information
+      return member.toPublicMember();
     },
   );
 
@@ -135,7 +141,8 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
 
       return db.transaction(async (tx) => {
-        return memberService.patch(tx, member.id, body);
+        const patchedMember = await memberService.patch(tx, member.id, body);
+        return patchedMember.toCurrent();
       });
     },
   );

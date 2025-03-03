@@ -4,7 +4,7 @@ import { ActionTriggers, Context } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
 import { BaseLogger } from '../../../../logger';
-import { MinimalMember } from '../../../../types';
+import { MemberInfo } from '../../../../types';
 import { MemberNotSignedUp } from '../../../../utils/errors';
 import { ActionRepository } from '../../../action/action.repository';
 import { MemberRepository } from '../../../member/repository';
@@ -17,13 +17,17 @@ export class MagicLinkService {
   private readonly memberRepository: MemberRepository;
   private readonly actionRepository: ActionRepository;
 
-  constructor(authService: AuthService, log: BaseLogger, memberRepository: MemberRepository) {
+  constructor(
+    authService: AuthService,
+    log: BaseLogger,
+    memberRepository: MemberRepository,
+  ) {
     this.authService = authService;
     this.memberRepository = memberRepository;
     this.log = log;
   }
 
-  async sendRegisterMail(member: MinimalMember, url?: string) {
+  async sendRegisterMail(member: MemberInfo, url?: string) {
     await this.authService.generateRegisterLinkAndEmailIt(member, { url });
   }
 
@@ -32,7 +36,10 @@ export class MagicLinkService {
     const member = await this.memberRepository.getByEmail(db, email);
 
     if (member) {
-      await this.authService.generateLoginLinkAndEmailIt(member, { url });
+      await this.authService.generateLoginLinkAndEmailIt(
+        member.toMemberInfo(),
+        { url },
+      );
       const actions = [
         {
           creatorId: member.id,

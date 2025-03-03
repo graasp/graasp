@@ -49,6 +49,11 @@ export type AuthenticatedUser = MinimalMember | MinimalGuest;
  */
 export type MaybeUser = AuthenticatedUser | undefined;
 
+/**
+ * Whenever the member needs to be manipulated with lang and email
+ */
+export type MemberInfo = MinimalMember & { lang: string; email: string };
+
 export type IdParam = {
   id: string;
 };

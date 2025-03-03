@@ -4,12 +4,12 @@ import { singleton } from 'tsyringe';
 import { ActionTriggers, PermissionLevel } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
+import { ItemRaw } from '../../../../drizzle/types';
+import { AuthenticatedUser } from '../../../../types';
 import { CannotModifyOtherMembers } from '../../../../utils/errors';
-import { Account } from '../../../account/entities/account';
 import { ActionRepository } from '../../../action/action.repository';
-import { ActionService } from '../../../action/services/action.service';
+import { ActionService } from '../../../action/action.service';
 import { AuthorizationService } from '../../../authorization';
-import { Item, ItemExtraMap } from '../../../item/entities/Item';
 
 export const getPreviousMonthFromNow = () => {
   const date = new Date(); // Today's date
@@ -45,42 +45,61 @@ export class ActionMemberService {
 
   async getFilteredActions(
     db: DBConnection,
-    actor: Account,
+    authenticatedUser: AuthenticatedUser,
     filters: { startDate?: string; endDate?: string },
   ) {
     const { startDate, endDate } = filters;
     const start = startDate ? new Date(startDate) : getPreviousMonthFromNow();
     const end = endDate ? new Date(endDate) : new Date();
 
-    const actions = await this.actionRepository.getAccountActions(db, actor.id, {
-      startDate: start,
-      endDate: end,
-    });
-
-    // filter actions based on permission validity
-    const [actionsWithoutPermission, actionsNeedPermission] = partition(actions, (action) => {
-      return actionTypesWithoutNeedOfPermission.includes(action.type);
-    });
-
-    const setOfItemsToCheckPermission = Array.from(
-      new Map(actionsNeedPermission.map(({ item }) => [item?.id, item])).values(),
-    ).filter(Boolean);
-
-    const { itemMemberships } = await this.authorizationService.validatePermissionMany(
+    const actions = await this.actionRepository.getAccountActions(
       db,
-      PermissionLevel.Read,
-      actor,
-      setOfItemsToCheckPermission as Item<keyof ItemExtraMap>[],
+      authenticatedUser.id,
+      {
+        startDate: start,
+        endDate: end,
+      },
     );
 
-    const filteredActionsWithAccessPermission = actionsNeedPermission.filter((g) => {
-      return g.item && g?.item?.id in itemMemberships.data;
-    });
-    return [...actionsWithoutPermission, ...filteredActionsWithAccessPermission];
+    // filter actions based on permission validity
+    const [actionsWithoutPermission, actionsNeedPermission] = partition(
+      actions,
+      (action) => {
+        return actionTypesWithoutNeedOfPermission.includes(action.type);
+      },
+    );
+
+    const setOfItemsToCheckPermission = Array.from(
+      new Map(
+        actionsNeedPermission.map(({ item }) => [item?.id, item]),
+      ).values(),
+    ).filter(Boolean);
+
+    const { itemMemberships } =
+      await this.authorizationService.validatePermissionMany(
+        db,
+        PermissionLevel.Read,
+        authenticatedUser,
+        setOfItemsToCheckPermission as ItemRaw[],
+      );
+
+    const filteredActionsWithAccessPermission = actionsNeedPermission.filter(
+      (g) => {
+        return g.item && g?.item?.id in itemMemberships.data;
+      },
+    );
+    return [
+      ...actionsWithoutPermission,
+      ...filteredActionsWithAccessPermission,
+    ];
   }
 
-  async deleteAllForMember(db: DBConnection, actor: Account, memberId: string): Promise<void> {
-    if (actor?.id !== memberId) {
+  async deleteAllForMember(
+    db: DBConnection,
+    authenticatedUser: AuthenticatedUser,
+    memberId: string,
+  ): Promise<void> {
+    if (authenticatedUser?.id !== memberId) {
       throw new CannotModifyOtherMembers({ id: memberId });
     }
 

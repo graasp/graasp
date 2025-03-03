@@ -22,7 +22,7 @@ describe('AccountRepository', () => {
       expect(rawAccount).toEqual(member);
     });
 
-    it('return null for undefined id', async () => {
+    it('return undefined for undefined id', async () => {
       const rawAccount = await accountRepository.get(db, undefined!);
       expect(rawAccount).toBeUndefined();
 

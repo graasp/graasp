@@ -9,6 +9,7 @@ import { DEFAULT_LANG } from '@graasp/translations';
 
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
+import { AccountType } from '../../../../types';
 import { asDefined } from '../../../../utils/assertions';
 import { MemberAlreadySignedUp } from '../../../../utils/errors';
 import { isMember } from '../../../authentication';
@@ -43,7 +44,16 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         try {
           // we use member service to allow post hook for invitation
           const member = await memberService.post(tx, body, lang);
-          await magicLinkService.sendRegisterMail(member, url);
+          await magicLinkService.sendRegisterMail(
+            // explicit mapping
+            {
+              id: member.id,
+              name: member.name,
+              type: AccountType.Individual,
+              isValidated: member.isValidated ?? false,
+            },
+            url,
+          );
 
           // transform memberships from existing invitations
           await invitationService.createToMemberships(tx, member);
@@ -84,13 +94,24 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       schema: auth,
       preHandler: fastifyPassport.authenticate(
         PassportStrategy.WebMagicLink,
-        async (request, reply, err, user?: PassportUser, info?: PassportInfo) => {
+        async (
+          request,
+          reply,
+          err,
+          user?: PassportUser,
+          info?: PassportInfo,
+        ) => {
           // This function is called after the strategy has been executed.
           // It is necessary, so we match the behavior of the original implementation.
           if (!user || err) {
             // Authentication failed
-            const target = ClientManager.getInstance().getURLByContext(Context.Auth);
-            target.searchParams.set(ERROR_SEARCH_PARAM, ERROR_SEARCH_PARAM_HAS_ERROR);
+            const target = ClientManager.getInstance().getURLByContext(
+              Context.Auth,
+            );
+            target.searchParams.set(
+              ERROR_SEARCH_PARAM,
+              ERROR_SEARCH_PARAM_HAS_ERROR,
+            );
             reply.redirect(StatusCodes.SEE_OTHER, target.toString());
           } else {
             request.logIn(user, { session: true });
@@ -107,11 +128,18 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         log,
       } = request;
       const member = asDefined(user?.account);
-      const redirectionLink = getRedirectionLink(log, url ? decodeURIComponent(url) : undefined);
+      const redirectionLink = getRedirectionLink(
+        log,
+        url ? decodeURIComponent(url) : undefined,
+      );
       await db.transaction(async (tx) => {
         await memberService.refreshLastAuthenticatedAt(tx, member.id);
         // on auth, if the user used the email sign in, its account gets validated
-        if (authInfo?.emailValidation && isMember(member) && !member.isValidated) {
+        if (
+          authInfo?.emailValidation &&
+          isMember(member) &&
+          !member.isValidated
+        ) {
           await memberService.validate(tx, member.id);
         }
       });

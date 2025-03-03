@@ -3,10 +3,10 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { ActionTriggers, Context, RecaptchaAction } from '@graasp/sdk';
-import { DEFAULT_LANG } from '@graasp/translations';
 
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
+import { ActionInsertDTO } from '../../../../drizzle/types';
 import { asDefined } from '../../../../utils/assertions';
 import {
   LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
@@ -149,20 +149,20 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const resetPasswordRequest =
         await memberPasswordService.createResetPasswordRequest(db, email);
       if (resetPasswordRequest) {
-        const { token, member } = resetPasswordRequest;
+        const { token, member: memberInfo } = resetPasswordRequest;
         memberPasswordService.mailResetPasswordRequest(
           email,
           token,
-          member.extra.lang ?? DEFAULT_LANG,
+          memberInfo.lang,
         );
         const action = {
-          member,
+          member: memberInfo,
           type: ActionTriggers.AskResetPassword,
           view: Context.Auth,
-          extra: JSON.stringify('{}}'),
+          extra: JSON.stringify('{}'),
         };
         // Do not await the action to be saved. It is not critical.
-        actionService.postMany(db, member, request, [action]);
+        actionService.postMany(db, memberInfo, request, [action]);
       }
     },
   );
@@ -197,13 +197,13 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
         // Log the action
         const action = {
-          member,
+          accountId: member.id,
           type: ActionTriggers.ResetPassword,
           view: Context.Auth,
           extra: JSON.stringify('{}'),
-        };
+        } satisfies ActionInsertDTO;
         // Do not await the action to be saved. It is not critical.
-        actionService.postMany(db, member, request, [action]);
+        actionService.postMany(db, member.toMaybeUser(), request, [action]);
       } catch {
         // do nothing
       }

@@ -4,10 +4,10 @@ import { FileItemType, MemberStorage, Pagination } from '@graasp/sdk';
 
 import { FILE_ITEM_TYPE_DI_KEY } from '../../../../di/constants';
 import { DBConnection } from '../../../../drizzle/db';
+import { MinimalMember } from '../../../../types';
 import { DEFAULT_MAX_STORAGE } from '../../../item/plugins/file/utils/constants';
 import { StorageExceeded } from '../../../item/plugins/file/utils/errors';
 import { ItemRepository } from '../../../item/repository';
-import { Member } from '../../entities/member';
 
 @singleton()
 export class StorageService {
@@ -22,31 +22,31 @@ export class StorageService {
     this.itemRepository = itemRepository;
   }
 
-  async getMaximumStorageSize(_actor: Member): Promise<number> {
+  async getMaximumStorageSize(): Promise<number> {
     // todo: depends on user/group
     return DEFAULT_MAX_STORAGE;
   }
 
   async getStorageLimits(
     db: DBConnection,
-    actor: Member,
+    member: MinimalMember,
     type: FileItemType,
   ): Promise<MemberStorage> {
     return {
-      current: await this.itemRepository.getItemSumSize(db, actor?.id, type),
-      maximum: await this.getMaximumStorageSize(actor),
+      current: await this.itemRepository.getItemSumSize(db, member?.id, type),
+      maximum: await this.getMaximumStorageSize(),
     };
   }
 
   async getStorageFilesMetadata(
     db: DBConnection,
-    actor: Member,
+    member: MinimalMember,
     type: FileItemType,
     pagination: Pagination,
   ) {
     const { data, totalCount } = await this.itemRepository.getFilesMetadata(
       db,
-      actor?.id,
+      member?.id,
       type,
       pagination,
     );
@@ -56,8 +56,12 @@ export class StorageService {
   // check the user has enough storage to create a new item given its size
   // get the complete storage
   // todo: include more item types
-  async checkRemainingStorage(db: DBConnection, actor: Member, size: number = 0) {
-    const { id: memberId } = actor;
+  async checkRemainingStorage(
+    db: DBConnection,
+    member: MinimalMember,
+    size: number = 0,
+  ) {
+    const { id: memberId } = member;
 
     const currentStorage = await this.itemRepository.getItemSumSize(
       db,
@@ -65,7 +69,7 @@ export class StorageService {
       this.fileItemType,
     );
 
-    const maxStorage = await this.getMaximumStorageSize(actor);
+    const maxStorage = await this.getMaximumStorageSize();
     if (currentStorage + size > maxStorage) {
       throw new StorageExceeded(currentStorage + size);
     }

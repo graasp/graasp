@@ -3,6 +3,7 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { FileItemType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import {
@@ -15,10 +16,15 @@ import { ActionMemberService } from './service';
 export interface GraaspActionsOptions {
   shouldSave?: boolean;
   fileItemType: FileItemType;
-  fileConfigurations: { s3: S3FileConfiguration; local: LocalFileConfiguration };
+  fileConfigurations: {
+    s3: S3FileConfiguration;
+    local: LocalFileConfiguration;
+  };
 }
 
-const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) => {
+const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (
+  fastify,
+) => {
   const actionMemberService = resolveDependency(ActionMemberService);
 
   fastify.get(

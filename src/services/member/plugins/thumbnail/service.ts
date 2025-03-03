@@ -4,6 +4,7 @@ import { injectWithTransform, singleton } from 'tsyringe';
 import { AccountType } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
+import { MaybeUser, MinimalMember } from '../../../../types';
 import { AccountRepository } from '../../../account/account.repository';
 import { AccountNotFound } from '../../../account/errors';
 import {
@@ -11,7 +12,6 @@ import {
   ThumbnailService,
   ThumbnailServiceTransformer,
 } from '../../../thumbnail/service';
-import { Actor, Member, assertIsMember } from '../../entities/member';
 import { MemberService } from '../../service';
 
 @singleton()
@@ -22,7 +22,11 @@ export class MemberThumbnailService {
 
   constructor(
     memberService: MemberService,
-    @injectWithTransform(ThumbnailService, ThumbnailServiceTransformer, AVATAR_THUMBNAIL_PREFIX)
+    @injectWithTransform(
+      ThumbnailService,
+      ThumbnailServiceTransformer,
+      AVATAR_THUMBNAIL_PREFIX,
+    )
     thumbnailService: ThumbnailService,
     accountRepository: AccountRepository,
   ) {
@@ -32,7 +36,7 @@ export class MemberThumbnailService {
   }
 
   // upload self avatar
-  async upload(db: DBConnection, actor: Member, file: Readable) {
+  async upload(db: DBConnection, actor: MinimalMember, file: Readable) {
     await this.thumbnailService.upload(actor, actor.id, file);
 
     // update item that should have thumbnail
@@ -44,7 +48,7 @@ export class MemberThumbnailService {
   // get member's avatar
   async getFile(
     db: DBConnection,
-    actor: Actor,
+    actor: MaybeUser,
     { size, memberId }: { memberId: string; size: string },
   ) {
     const result = await this.thumbnailService.getFile(actor, {
@@ -58,7 +62,6 @@ export class MemberThumbnailService {
   // get member's avatar
   async getUrl(
     db: DBConnection,
-    actor: Actor,
     { size, memberId }: { memberId: string; size: string },
   ) {
     const account = await this.accountRepository.get(db, memberId);
@@ -72,9 +75,8 @@ export class MemberThumbnailService {
       return null;
     }
 
-    assertIsMember(account);
     // member does not have avatar
-    if (!account.extra.hasAvatar) {
+    if (!account.hasAvatar) {
       return null;
     }
 
