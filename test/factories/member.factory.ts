@@ -36,7 +36,9 @@ export const MemberFactory = (m: Partial<Member> = {}): Member => {
   } as Member; // necessary cast because typeORM requires more properties
 };
 
-export const GuestFactory = (g: Partial<Guest> & Pick<Guest, 'itemLoginSchema'>) => ({
+export const GuestFactory = (
+  g: Partial<Omit<Guest, 'itemLoginSchema'>> & { itemLoginSchema: { id: string } },
+) => ({
   ...BaseAccountFactory({ type: AccountType.Guest }),
   ...g,
 });
