@@ -363,7 +363,13 @@ async function createItemVisibilities(items: (SeedItem & { path: string })[]) {
   ).visibilities as ItemVisibility[];
 }
 
+/**
+ * Create item login schema, related guests, their passwords and memberships given items definition
+ * @param items.itemLoginSchema defined by status, type, as well as guests and their passwords
+ * @returns item login schema, guests, and related item memberships
+ */
 async function createItemLoginSchemasAndGuests(items: (SeedItem & { path: string })[]) {
+  // generate item login schema objects, with id so it can be references for guests later
   const itemLoginSchemasData = items.reduce<
     {
       id: string;
@@ -384,7 +390,6 @@ async function createItemLoginSchemasAndGuests(items: (SeedItem & { path: string
     }
     return acc;
   }, []);
-
   const { itemLoginSchemas } = await seed({
     itemLoginSchemas: {
       constructor: ItemLoginSchema,
@@ -394,6 +399,7 @@ async function createItemLoginSchemasAndGuests(items: (SeedItem & { path: string
 
   // save pre-registered guests
   // feed item login schema in guests' data
+  // keep track of password and item for later use
   const guestsData = itemLoginSchemasData.reduce<
     (ReturnType<typeof GuestFactory> & { password?: string; item: { path: string } })[]
   >((acc, { id, guests, item }) => {
@@ -414,6 +420,7 @@ async function createItemLoginSchemasAndGuests(items: (SeedItem & { path: string
       entities: guestsData,
     },
   });
+
   // save guest memberships and guest passwords
   const guestPasswords: { guest: { id: string }; password: string }[] = [];
   for (const { id, password } of guestsData) {
@@ -421,21 +428,21 @@ async function createItemLoginSchemasAndGuests(items: (SeedItem & { path: string
       guestPasswords.push({ guest: { id }, password: await encryptPassword(password) });
     }
   }
-  const guestMemberships: {
-    account: { id: string };
-    permission: PermissionLevel;
-    item: { path: string };
-  }[] = [];
-  for (const {
-    id,
-    item: { path },
-  } of guestsData) {
-    guestMemberships.push({
-      account: { id },
-      permission: PermissionLevel.Read,
-      item: { path },
-    });
-  }
+  const guestMemberships = guestsData.reduce<
+    {
+      account: { id: string };
+      permission: PermissionLevel;
+      item: { path: string };
+    }[]
+  >((acc, { id, item: { path } }) => {
+    return acc.concat([
+      {
+        account: { id },
+        permission: PermissionLevel.Read,
+        item: { path },
+      },
+    ]);
+  }, []);
   const passwordAndMemberships = await seed({
     guestPasswords: {
       constructor: GuestPassword,
