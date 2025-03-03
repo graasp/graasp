@@ -7,10 +7,9 @@ import { MultipartFile } from '@fastify/multipart';
 import { FileItemProperties, MAX_ITEM_NAME_LENGTH, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../../../drizzle/db';
-import { Account } from '../../../../../../account/entities/account';
+import { Item } from '../../../../../../../drizzle/types';
+import { AuthenticatedUser, MinimalMember } from '../../../../../../../types';
 import FileService from '../../../../../../file/service';
-import { Actor, Member } from '../../../../../../member/entities/member';
-import { Item } from '../../../../../entities/Item';
 import { ItemService } from '../../../../../service';
 import { AppSetting } from '../../appSettings';
 import { NotAppSettingFile } from '../../errors';
@@ -46,7 +45,12 @@ class AppSettingFileService {
     this.appSettingRepository = appSettingRepository;
   }
 
-  async upload(db: DBConnection, member: Account, file: MultipartFile, item: Item) {
+  async upload(
+    db: DBConnection,
+    member: AuthenticatedUser,
+    file: MultipartFile,
+    item: Item,
+  ) {
     const { filename, mimetype, fields, file: stream } = file;
     const appSettingId = v4();
     const filepath = this.buildFilePath(item.id, appSettingId); // parentId, filename
@@ -93,12 +97,19 @@ class AppSettingFileService {
 
   async download(
     db: DBConnection,
-    account: Account,
+    account: AuthenticatedUser,
     { item, appSettingId }: { item: Item; appSettingId: UUID },
   ) {
     // get app setting and check it is a file
-    const appSetting = await this.appSettingService.get(db, account, item.id, appSettingId);
-    const fileProp = appSetting.data[this.fileService.fileType] as AppSettingFileProperties;
+    const appSetting = await this.appSettingService.get(
+      db,
+      account,
+      item.id,
+      appSettingId,
+    );
+    const fileProp = appSetting.data[
+      this.fileService.fileType
+    ] as AppSettingFileProperties;
     if (!fileProp) {
       throw new NotAppSettingFile(appSetting);
     }
@@ -112,7 +123,7 @@ class AppSettingFileService {
     return result;
   }
 
-  async copyMany(db: DBConnection, actor: Member, toCopy: AppSetting[]) {
+  async copyMany(db: DBConnection, actor: MinimalMember, toCopy: AppSetting[]) {
     const fileItemType = this.fileService.fileType;
     for (const appSetting of toCopy) {
       if (!appSetting.data) {
@@ -122,7 +133,9 @@ class AppSettingFileService {
       // create file data object
       const itemId = appSetting.item.id;
       const newFilePath = this.buildFilePath(itemId, appSetting.id);
-      const originalFileExtra = appSetting.data[fileItemType] as AppSettingFileProperties;
+      const originalFileExtra = appSetting.data[
+        fileItemType
+      ] as AppSettingFileProperties;
       const newFileData = {
         [fileItemType]: {
           path: newFilePath,
@@ -140,15 +153,23 @@ class AppSettingFileService {
       });
 
       // update new setting with file data
-      await this.appSettingRepository.updateOne(db, appSetting.id, { data: newFileData });
+      await this.appSettingRepository.updateOne(db, appSetting.id, {
+        data: JSON.stringify(newFileData),
+      });
     }
   }
 
-  async deleteOne(db: DBConnection, actor: Actor, appSetting: AppSetting) {
+  async deleteOne(
+    db: DBConnection,
+    actor: AuthenticatedUser,
+    appSetting: AppSetting,
+  ) {
     // TODO: check rights? but only use in posthook
     try {
       // delete file only if type is the current file type
-      const fileProp = appSetting?.data?.[this.fileService.fileType] as FileItemProperties;
+      const fileProp = appSetting?.data?.[
+        this.fileService.fileType
+      ] as FileItemProperties;
       if (!fileProp) {
         return;
       }

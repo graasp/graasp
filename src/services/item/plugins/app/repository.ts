@@ -8,9 +8,10 @@ import { apps, items } from '../../../../drizzle/schema';
 import { InvalidApplicationOrigin } from './errors';
 
 export class AppRepository {
-  async getAll(db: DBConnection, publisherId?: string) {
-    // undefined should get all
-    return await db.query.apps.findMany({ where: eq(apps.publisherId, publisherId) });
+  async getAll(db: DBConnection, publisherId: string) {
+    return await db.query.apps.findMany({
+      where: eq(apps.publisherId, publisherId),
+    });
   }
 
   async getMostUsedApps(
@@ -22,7 +23,10 @@ export class AppRepository {
       .from(apps)
       .innerJoin(
         items,
-        and(eq(sql`${items.extra}::json->'app'->>'url'`, apps.url), eq(items.creatorId, memberId)),
+        and(
+          eq(sql`${items.extra}::json->'app'->>'url'`, apps.url),
+          eq(items.creatorId, memberId),
+        ),
       )
       .groupBy([apps.id, apps.url, apps.name])
       .orderBy(desc(sql.raw('count')));
@@ -30,7 +34,10 @@ export class AppRepository {
     return data;
   }
 
-  async isValidAppOrigin(db: DBConnection, appDetails: { key: string; origin: string }) {
+  async isValidAppOrigin(
+    db: DBConnection,
+    appDetails: { key: string; origin: string },
+  ) {
     const valid = await db.query.apps.findFirst({
       where: eq(apps.key, appDetails.key),
       with: {

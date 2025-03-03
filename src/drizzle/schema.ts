@@ -391,7 +391,7 @@ export const appSettings = pgTable(
     itemId: uuid('item_id').notNull(),
     creatorId: uuid('creator_id'),
     name: varchar().notNull(),
-    data: text().default('{}').notNull(),
+    data: jsonb().$type<object>().default({}).notNull(),
     createdAt: timestamp('created_at', { mode: 'string' })
       .defaultNow()
       .notNull(),
@@ -417,7 +417,6 @@ export const appSettings = pgTable(
     }).onDelete('set null'),
   ],
 );
-export type AppSetting = typeof appSettings.$inferSelect;
 
 export const invitationsTable = pgTable(
   'invitation',

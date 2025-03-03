@@ -5,13 +5,12 @@ import { singleton } from 'tsyringe';
 import { AuthTokenSubject, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { Item } from '../../../../drizzle/schema';
+import { Item, MinimalAccount } from '../../../../drizzle/types';
 import { AuthenticatedUser, MaybeUser } from '../../../../types';
 import { APPS_JWT_SECRET } from '../../../../utils/config';
 import { AccountRepository } from '../../../account/account.repository';
 import { AuthorizationService } from '../../../authorization';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
-import { Member } from '../../../member/entities/member';
 import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
 import { PublisherRepository } from './publisherRepository';
@@ -74,7 +73,12 @@ export class AppService {
     }
 
     // check actor has access to item
-    await this.authorizationService.validatePermission(db, PermissionLevel.Read, actor, item);
+    await this.authorizationService.validatePermission(
+      db,
+      PermissionLevel.Read,
+      actor,
+      item,
+    );
 
     await this.appRepository.isValidAppOrigin(db, appDetails);
 
@@ -107,7 +111,7 @@ export class AppService {
     }
 
     // return member data only if authenticated
-    let members: Member[] = [];
+    let members: MinimalAccount[] = [];
     if (actor) {
       members = await this.getTreeMembers(db, actor, item);
     }
@@ -116,8 +120,15 @@ export class AppService {
   }
 
   // used in apps: get members from tree
-  async getTreeMembers(db: DBConnection, actor: AuthenticatedUser, item: Item): Promise<Member[]> {
-    const memberships = await this.itemMembershipRepository.getForManyItems(db, [item]);
+  async getTreeMembers(
+    db: DBConnection,
+    actor: AuthenticatedUser,
+    item: Item,
+  ): Promise<MinimalAccount[]> {
+    const memberships = await this.itemMembershipRepository.getForManyItems(
+      db,
+      [item],
+    );
     // get members only without duplicate
     return uniqBy(
       memberships.data[item.id].map(({ account }) => account),

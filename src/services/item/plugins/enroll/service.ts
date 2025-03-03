@@ -3,6 +3,7 @@ import { singleton } from 'tsyringe';
 import { ItemLoginSchemaStatus, PermissionLevel, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
+import { MinimalMember } from '../../../../types';
 import { AuthorizationService } from '../../../authorization';
 import {
   CannotEnrollFrozenItemLoginSchema,
@@ -11,7 +12,6 @@ import {
 import { ItemLoginService } from '../../../itemLogin/service';
 import { ItemMembershipAlreadyExists } from '../../../itemMembership/plugins/MembershipRequest/error';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
-import { Member } from '../../../member/entities/member';
 import { ItemRepository } from '../../repository';
 
 @singleton()
@@ -33,18 +33,31 @@ export class EnrollService {
     this.itemMembershipRepository = itemMembershipRepository;
   }
 
-  async enroll(db: DBConnection, member: Member, itemId: UUID) {
+  async enroll(db: DBConnection, member: MinimalMember, itemId: UUID) {
     const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
-    const itemLoginSchema = await this.itemLoginService.getByItemPath(db, item.path);
-    if (!itemLoginSchema || itemLoginSchema.status === ItemLoginSchemaStatus.Disabled) {
+    const itemLoginSchema = await this.itemLoginService.getByItemPath(
+      db,
+      item.path,
+    );
+    if (
+      !itemLoginSchema ||
+      itemLoginSchema.status === ItemLoginSchemaStatus.Disabled
+    ) {
       throw new CannotEnrollItemWithoutItemLoginSchema();
     } else if (itemLoginSchema.status === ItemLoginSchemaStatus.Freeze) {
       throw new CannotEnrollFrozenItemLoginSchema();
     }
 
     // Check if the member already has an access to the item (from membership or item visibility), if so, throw an error
-    if (await this.authorizationService.hasPermission(db, PermissionLevel.Read, member, item)) {
+    if (
+      await this.authorizationService.hasPermission(
+        db,
+        PermissionLevel.Read,
+        member,
+        item,
+      )
+    ) {
       throw new ItemMembershipAlreadyExists();
     }
 

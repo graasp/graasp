@@ -21,6 +21,13 @@ export const completeMembershipRequestSchemaRef = registerSchemaAsRef(
   completeMembershipRequestSchema,
 );
 
+const createdMembershipRequestSchema = customType.StrictObject({
+  id: customType.UUID(),
+  memberId: customType.UUID(),
+  itemId: customType.UUID(),
+  createdAt: customType.DateTime(),
+});
+
 export const simpleMembershipRequestSchemaRef = registerSchemaAsRef(
   'simpleMembershipRequest',
   'Simple Membership Request',
@@ -30,39 +37,45 @@ export const simpleMembershipRequestSchemaRef = registerSchemaAsRef(
 export const getAllByItem = {
   tags: ['membership-request'],
   summary: 'Get all membership requests for an item',
-  description: 'Get all membership requests with member information for an item by its ID',
+  description:
+    'Get all membership requests with member information for an item by its ID',
   params: customType.StrictObject({
     itemId: customType.UUID(),
   }),
   response: {
-    [StatusCodes.OK]: Type.Array(simpleMembershipRequestSchemaRef, { uniqueItems: true }),
+    [StatusCodes.OK]: Type.Array(simpleMembershipRequestSchemaRef, {
+      uniqueItems: true,
+    }),
   },
 } as const satisfies FastifySchema;
 
 export const createOne = {
   tags: ['membership-request'],
   summary: 'Create a membership request',
-  description: `Create a membership request for an item with the authenticated member. 
+  description: `Create a membership request for an item with the authenticated member.
   The member should not have any permission on the item.
   If there is an Item Login associated with the item, the request will be rejected.`,
   params: customType.StrictObject({
     itemId: customType.UUID(),
   }),
   response: {
-    [StatusCodes.OK]: completeMembershipRequestSchemaRef,
+    [StatusCodes.OK]: Type.Array(createdMembershipRequestSchema),
   },
 } as const satisfies FastifySchema;
 
 export const getOwn = {
   tags: ['membership-request'],
-  summary: 'Get the status of the membership request for the authenticated member',
+  summary:
+    'Get the status of the membership request for the authenticated member',
   description:
     'Get the status of the membership request for the authenticated member for an item by its ID',
   params: customType.StrictObject({
     itemId: customType.UUID(),
   }),
   response: {
-    [StatusCodes.OK]: customType.StrictObject({ status: Type.Enum(MembershipRequestStatus) }),
+    [StatusCodes.OK]: customType.StrictObject({
+      status: Type.Enum(MembershipRequestStatus),
+    }),
   },
 } as const satisfies FastifySchema;
 
@@ -75,6 +88,6 @@ export const deleteOne = {
     memberId: customType.UUID(),
   }),
   response: {
-    [StatusCodes.OK]: completeMembershipRequestSchemaRef,
+    [StatusCodes.OK]: createdMembershipRequestSchema,
   },
 } as const satisfies FastifySchema;

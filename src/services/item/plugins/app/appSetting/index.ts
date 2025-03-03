@@ -4,12 +4,13 @@ import { ItemType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../di/utils';
 import { DBConnection, db } from '../../../../../drizzle/db';
+import { Item } from '../../../../../drizzle/types';
+import { AuthenticatedUser } from '../../../../../types';
 import { asDefined } from '../../../../../utils/assertions';
 import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
+import { assertIsMember } from '../../../../authentication';
 import { matchOne } from '../../../../authorization';
-import { Actor, assertIsMember } from '../../../../member/entities/member';
 import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
-import { Item } from '../../../entities/Item';
 import { ItemService } from '../../../service';
 import { appSettingsWsHooks } from '../ws/hooks';
 import appSettingFilePlugin from './plugins/file';
@@ -24,13 +25,13 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
   // copy app settings and related files on item copy
   const hook = async (
-    actor: Actor,
+    actor: AuthenticatedUser,
     db: DBConnection,
     { original, copy }: { original: Item; copy: Item },
   ) => {
     if (original.type !== ItemType.APP || copy.type !== ItemType.APP) return;
 
-    await appSettingService.copyForItem(actor, db, original, copy);
+    await appSettingService.copyForItem(db, actor, original, copy);
   };
   itemService.hooks.setPostHook('copy', hook);
 
@@ -47,7 +48,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
       return db.transaction(async (tx) => {
-        return appSettingService.post(tx, member, itemId, body);
+        return await appSettingService.post(tx, member, itemId, body);
       });
     },
   );
@@ -78,8 +79,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user, params: { itemId, id: appSettingId } }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return db.transaction(async (tx) => {
-        return appSettingService.deleteOne(tx, member, itemId, appSettingId);
+      await db.transaction(async (tx) => {
+        await appSettingService.deleteOne(tx, member, itemId, appSettingId);
       });
     },
   );

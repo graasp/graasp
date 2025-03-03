@@ -4,10 +4,10 @@ import { delay, inject, singleton } from 'tsyringe';
 import { PermissionLevel, ThumbnailSize } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { Item, Member } from '../../../../drizzle/schema';
+import { Item } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
+import { MaybeUser, MinimalMember } from '../../../../types';
 import { AuthorizationService } from '../../../authorization';
-import { Actor } from '../../../member/entities/member';
 import { ThumbnailService } from '../../../thumbnail/service';
 import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
@@ -38,9 +38,19 @@ export class ItemThumbnailService {
     this.logger = logger;
   }
 
-  async upload(db: DBConnection, actor: Member, itemId: string, file: Readable) {
+  async upload(
+    db: DBConnection,
+    actor: MinimalMember,
+    itemId: string,
+    file: Readable,
+  ) {
     const item = await this.itemRepository.getOneOrThrow(db, itemId);
-    await this.authorizationService.validatePermission(db, PermissionLevel.Write, actor, item);
+    await this.authorizationService.validatePermission(
+      db,
+      PermissionLevel.Write,
+      actor,
+      item,
+    );
     await this.thumbnailService.upload(actor, itemId, file);
 
     // update item that should have thumbnail
@@ -52,13 +62,18 @@ export class ItemThumbnailService {
 
   async getFile(
     db: DBConnection,
-    actor: Actor,
+    actor: MaybeUser,
     { size, itemId }: { size: string; itemId: string },
   ) {
     // prehook: get item and input in download call ?
     // check rights
     const item = await this.itemRepository.getOneOrThrow(db, itemId);
-    await this.authorizationService.validatePermission(db, PermissionLevel.Read, actor, item);
+    await this.authorizationService.validatePermission(
+      db,
+      PermissionLevel.Read,
+      actor,
+      item,
+    );
 
     const result = await this.thumbnailService.getFile(actor, {
       size,
@@ -68,7 +83,11 @@ export class ItemThumbnailService {
     return result;
   }
 
-  async getUrl(db: DBConnection, actor: Actor, { size, itemId }: { size: string; itemId: string }) {
+  async getUrl(
+    db: DBConnection,
+    actor: MaybeUser,
+    { size, itemId }: { size: string; itemId: string },
+  ) {
     const item = await this.itemService.get(db, actor, itemId);
 
     // item does not have thumbnail
@@ -93,7 +112,9 @@ export class ItemThumbnailService {
    * @returns An object whose keys are the item id and whose values are the URLs stored by size.
    * */
   async getUrlsByItems(
-    items: (Pick<Item, 'id'> & { settings: Pick<Item['settings'], 'hasThumbnail'> })[],
+    items: (Pick<Item, 'id'> & {
+      settings: Pick<Item['settings'], 'hasThumbnail'>;
+    })[],
     sizes: ItemThumbnailSize[] = DEFAULT_ITEM_THUMBNAIL_SIZES,
   ) {
     if (!items?.length || !sizes.length) {
@@ -109,7 +130,10 @@ export class ItemThumbnailService {
       itemsIdWithThumbnail.map(async (id) => {
         const thumbnails = await Promise.all(
           thumbnailSizes.map(async (size) => {
-            const url = await this.thumbnailService.getUrl({ size: String(size), id });
+            const url = await this.thumbnailService.getUrl({
+              size: String(size),
+              id,
+            });
             return [size, url];
           }),
         );
@@ -130,7 +154,11 @@ export class ItemThumbnailService {
     }, {});
   }
 
-  async deleteAllThumbnailSizes(db: DBConnection, actor: Member, { itemId }: { itemId: string }) {
+  async deleteAllThumbnailSizes(
+    db: DBConnection,
+    actor: MinimalMember,
+    { itemId }: { itemId: string },
+  ) {
     await this.itemService.get(db, actor, itemId, PermissionLevel.Write);
     await Promise.all(
       Object.values(ThumbnailSize).map(async (size) => {

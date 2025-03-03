@@ -1,14 +1,15 @@
 import { singleton } from 'tsyringe';
 
-import { ClientManager, Context, Member, PermissionLevel } from '@graasp/sdk';
+import { ClientManager, Context, PermissionLevel } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
+import { Item } from '../../../../drizzle/types';
 import { TRANSLATIONS } from '../../../../langs/constants';
 import { BaseLogger } from '../../../../logger';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
-import { Item } from '../../../item/entities/Item';
-import { isMember } from '../../../member/entities/member';
+import { AccountType, MinimalMember } from '../../../../types';
+import { ItemMembershipRepository } from '../../repository';
 import { MembershipRequestRepository } from './repository';
 
 @singleton()
@@ -16,9 +17,17 @@ export class MembershipRequestService {
   private readonly mailerService: MailerService;
   private readonly log: BaseLogger;
   private readonly membershipRequestRepository: MembershipRequestRepository;
+  private readonly itemMembershipRepository: ItemMembershipRepository;
 
-  constructor(mailerService: MailerService, log: BaseLogger) {
+  constructor(
+    mailerService: MailerService,
+    log: BaseLogger,
+    itemMembershipRepository: ItemMembershipRepository,
+    membershipRequestRepository: MembershipRequestRepository,
+  ) {
     this.mailerService = mailerService;
+    this.itemMembershipRepository = itemMembershipRepository;
+    this.membershipRequestRepository = membershipRequestRepository;
     this.log = log;
   }
 
@@ -34,12 +43,13 @@ export class MembershipRequestService {
     return await this.membershipRequestRepository.post(db, memberId, itemId);
   }
 
-  async notifyAdmins(db: DBConnection, member: Member, item: Item) {
-    const adminMemberships = await this.itemMembershipRepository.getByItemPathAndPermission(
-      db,
-      item.path,
-      PermissionLevel.Admin,
-    );
+  async notifyAdmins(db: DBConnection, member: MinimalMember, item: Item) {
+    const adminMemberships =
+      await this.itemMembershipRepository.getByItemPathAndPermission(
+        db,
+        item.path,
+        PermissionLevel.Admin,
+      );
 
     const link = ClientManager.getInstance().getLinkByContext(
       Context.Builder,
@@ -48,7 +58,7 @@ export class MembershipRequestService {
 
     for (const adminMembership of adminMemberships) {
       const admin = adminMembership.account;
-      if (!isMember(admin)) {
+      if (admin.type !== AccountType.Individual) {
         continue;
       }
 
@@ -60,7 +70,7 @@ export class MembershipRequestService {
             itemName: item.name,
           },
         },
-        lang: admin.lang,
+        lang: admin.extra.lang,
       })
         .addText(TRANSLATIONS.MEMBERSHIP_REQUEST_TEXT, {
           memberName: member.name,
@@ -71,13 +81,17 @@ export class MembershipRequestService {
         })
         .build();
 
-      this.mailerService.send(mail, admin.email).catch((err) => {
+      this.mailerService.send(mail, admin.email!).catch((err) => {
         this.log.error(err, `mailerService failed. shared link: ${link}`);
       });
     }
   }
 
   async deleteOne(db: DBConnection, memberId: string, itemId: string) {
-    return await this.membershipRequestRepository.deleteOne(db, memberId, itemId);
+    return await this.membershipRequestRepository.deleteOne(
+      db,
+      memberId,
+      itemId,
+    );
   }
 }

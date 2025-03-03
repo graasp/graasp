@@ -3,35 +3,30 @@ import { and, eq } from 'drizzle-orm';
 import { FileItemType, ItemType } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../drizzle/db';
-import { type AppSetting, appSettings } from '../../../../../drizzle/schema';
+import { appSettings } from '../../../../../drizzle/schema';
+import {
+  AppSettingInsertDTO,
+  AppSettingRaw,
+} from '../../../../../drizzle/types';
 import { ItemNotFound } from '../../../../../utils/errors';
 import { AppSettingNotFound, PreventUpdateAppSettingFile } from './errors';
-import { InputAppSetting } from './interfaces/app-setting';
 
-type CreateAppSettingBody = {
-  itemId: string;
-  memberId: string | undefined;
-  appSetting: Partial<InputAppSetting>;
-};
-type UpdateAppSettingBody = Partial<AppSetting>;
+type UpdateAppSettingBody = Partial<AppSettingRaw>;
 
 export class AppSettingRepository {
   async addOne(
     db: DBConnection,
-    { itemId, memberId, appSetting }: CreateAppSettingBody,
-  ): Promise<AppSetting> {
-    return await db.insert(appSettings).values({
-      ...appSetting,
-      itemId,
-      creatorId: memberId,
-    });
+    appSetting: AppSettingInsertDTO,
+  ): Promise<AppSettingRaw> {
+    const res = await db.insert(appSettings).values(appSetting).returning();
+    return res[0];
   }
 
   async updateOne(
     db: DBConnection,
     appSettingId: string,
     body: UpdateAppSettingBody,
-  ): Promise<AppSetting> {
+  ): Promise<AppSettingRaw> {
     // we shouldn't update file data
     const originalData = await db.query.appSettings.findFirst({
       where: eq(appSettings.id, appSettingId),
@@ -41,12 +36,27 @@ export class AppSettingRepository {
       throw new AppSettingNotFound(appSettingId);
     }
 
-    const dataType = originalData.data?.type as FileItemType;
+    // parsing very unsecurely ...
+    const appSettingData = originalData.data as { type: string };
+    const dataType = appSettingData?.type as FileItemType;
+
     if ([ItemType.LOCAL_FILE, ItemType.S3_FILE].includes(dataType)) {
       throw new PreventUpdateAppSettingFile(originalData);
     }
 
-    return await db.update(appSettings).set(body).where(eq(appSettings.id, appSettingId));
+    const res = await db
+      .update(appSettings)
+      .set(body)
+      .where(eq(appSettings.id, appSettingId))
+      .returning();
+    return res[0];
+  }
+
+  async deleteOne(db: DBConnection, appSettingId: string) {
+    await db
+      .delete(appSettings)
+      .where(eq(appSettings.id, appSettingId))
+      .returning();
   }
 
   async getOne(db: DBConnection, id: string) {
@@ -64,7 +74,11 @@ export class AppSettingRepository {
     return data;
   }
 
-  async getForItem(db: DBConnection, itemId: string, name?: string): Promise<AppSetting[]> {
+  async getForItem(
+    db: DBConnection,
+    itemId: string,
+    name?: string,
+  ): Promise<AppSettingRaw[]> {
     if (!itemId) {
       throw new ItemNotFound(itemId);
     }

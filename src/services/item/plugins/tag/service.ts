@@ -39,7 +39,12 @@ export class ItemTagService {
     tagInfo: { name: string; category: TagCategory },
   ) {
     // Get item and check permission
-    const item = await this.itemService.get(db, authenticatedUser, itemId, PermissionLevel.Admin);
+    const item = await this.itemService.get(
+      db,
+      authenticatedUser,
+      itemId,
+      PermissionLevel.Admin,
+    );
 
     // create tag if does not exist
     const tag = await this.tagRepository.addOneIfDoesNotExist(db, tagInfo);
@@ -47,7 +52,10 @@ export class ItemTagService {
     const result = await this.itemTagRepository.create(db, itemId, tag.id);
 
     // update index if item is published
-    const publishedItem = await this.itemPublishedRepository.getForItem(db, item);
+    const publishedItem = await this.itemPublishedRepository.getForItem(
+      db,
+      item.path,
+    );
     if (publishedItem) {
       await this.meilisearchClient.indexOne(db, publishedItem);
     }
@@ -62,12 +70,25 @@ export class ItemTagService {
     return await this.itemTagRepository.getByItemId(db, itemId);
   }
 
-  async delete(db: DBConnection, authenticatedUser: AuthenticatedUser, itemId: UUID, tagId: UUID) {
+  async delete(
+    db: DBConnection,
+    authenticatedUser: AuthenticatedUser,
+    itemId: UUID,
+    tagId: UUID,
+  ) {
     // Get item and check permission
-    const item = await this.itemService.get(db, authenticatedUser, itemId, PermissionLevel.Admin);
+    const item = await this.itemService.get(
+      db,
+      authenticatedUser,
+      itemId,
+      PermissionLevel.Admin,
+    );
 
     // update index if item is published
-    const publishedItem = await this.itemPublishedRepository.getForItem(db, item);
+    const publishedItem = await this.itemPublishedRepository.getForItem(
+      db,
+      item.path,
+    );
     if (publishedItem) {
       await this.meilisearchClient.indexOne(db, publishedItem);
     }

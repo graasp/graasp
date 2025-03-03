@@ -3,25 +3,33 @@ import { singleton } from 'tsyringe';
 import { ClientManager, Context, PermissionLevel, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../drizzle/db';
-import { Item, ItemMembershipRaw, ItemRaw } from '../../drizzle/types';
+import {
+  Item,
+  ItemMembershipRaw,
+  ItemMembershipWithItem,
+  ItemMembershipWithItemAndAccount,
+  ItemRaw,
+} from '../../drizzle/types';
 import { TRANSLATIONS } from '../../langs/constants';
 import { MailBuilder } from '../../plugins/mailer/builder';
 import { MailerService } from '../../plugins/mailer/mailer.service';
-import { AuthenticatedUser, MemberInfo, MinimalMember } from '../../types';
 import {
-    CannotDeleteOnlyAdmin,
-    CannotModifyGuestItemMembership,
-    ItemMembershipNotFound,
+  AccountType,
+  AuthenticatedUser,
+  MaybeUser,
+  MemberInfo,
+} from '../../types';
+import {
+  CannotDeleteOnlyAdmin,
+  CannotModifyGuestItemMembership,
+  ItemMembershipNotFound,
 } from '../../utils/errors';
 import HookManager from '../../utils/hook';
-import { isGuest } from '../authentication';
 import { AuthorizationService } from '../authorization';
 import { ItemService } from '../item/service';
 import { MemberRepository } from '../member/repository';
 import { MembershipRequestRepository } from './plugins/MembershipRequest/repository';
 import { ItemMembershipRepository } from './repository';
-import { MaybeUser } from MemberInfo, from;
-'../../types';
 
 @singleton()
 export class ItemMembershipService {
@@ -34,8 +42,11 @@ export class ItemMembershipService {
 
   hooks = new HookManager<{
     create: { pre: Partial<ItemMembershipRaw>; post: ItemMembershipRaw };
-    update: { pre: ItemMembershipRaw; post: ItemMembershipRaw };
-    delete: { pre: ItemMembershipRaw; post: ItemMembershipRaw };
+    update: {
+      pre: ItemMembershipWithItemAndAccount;
+      post: ItemMembershipWithItem;
+    };
+    delete: { pre: ItemMembershipWithItemAndAccount; post: ItemMembershipRaw };
   }>();
 
   constructor(
@@ -55,7 +66,7 @@ export class ItemMembershipService {
   }
 
   async _notifyMember(
-    account: MinimalMember,
+    account: { name: string },
     member: MemberInfo,
     item: Item,
   ): Promise<void> {
@@ -114,7 +125,7 @@ export class ItemMembershipService {
 
   private async _create(
     db: DBConnection,
-    account: MaybeUser,
+    account: AuthenticatedUser,
     item: ItemRaw,
     memberId: string,
     permission: PermissionLevel,
@@ -144,7 +155,7 @@ export class ItemMembershipService {
 
   async create(
     db: DBConnection,
-    actor: MaybeUser,
+    actor: AuthenticatedUser,
     membership: { permission: PermissionLevel; itemId: UUID; memberId: UUID },
   ) {
     // check memberships
@@ -196,7 +207,7 @@ export class ItemMembershipService {
       db,
       itemMembershipId,
     );
-    if (isGuest(membership.account)) {
+    if (membership.account.type === AccountType.Guest) {
       throw new CannotModifyGuestItemMembership();
     }
     await this.authorizationService.validatePermission(
@@ -221,7 +232,7 @@ export class ItemMembershipService {
 
   async deleteOne(
     db: DBConnection,
-    actor: Account,
+    actor: AuthenticatedUser,
     itemMembershipId: string,
     args: { purgeBelow?: boolean } = { purgeBelow: false },
   ) {

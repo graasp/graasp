@@ -6,12 +6,16 @@ import { db } from '../../../../drizzle/db';
 import { FastifyInstanceTypebox } from '../../../../plugins/typebox';
 import { asDefined } from '../../../../utils/assertions';
 import { isAuthenticated } from '../../../auth/plugins/passport';
+import { assertIsMember } from '../../../authentication';
 import { matchOne } from '../../../authorization';
-import { assertIsMember } from '../../../member/entities/member';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { getPostItemPayloadFromFormData } from '../../utils';
-import { ActionItemService } from '../action/service';
-import { createFolder, createFolderWithThumbnail, updateFolder } from './schemas';
+import { ActionItemService } from '../action/action.service';
+import {
+  createFolder,
+  createFolderWithThumbnail,
+  updateFolder,
+} from './schemas';
 import { FolderItemService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
@@ -48,7 +52,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       reply.send(item);
 
       // background operations
-      await actionItemService.postPostAction(tx, request, item);
+      await actionItemService.postPostAction(db, request, item);
       await db.transaction(async (tx) => {
         await folderItemService.rescaleOrderForParent(tx, member, item);
       });

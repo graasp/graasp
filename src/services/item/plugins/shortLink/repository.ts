@@ -9,10 +9,7 @@ import {
 
 import { DBConnection } from '../../../../drizzle/db';
 import { shortLinks } from '../../../../drizzle/schema';
-import {
-  EntryNotFoundAfterUpdateException,
-  UpdateException,
-} from '../../../../repositories/errors';
+import { UpdateException } from '../../../../repositories/errors';
 import { throwsIfParamIsInvalid } from '../../../../repositories/utils';
 import { assertIsError } from '../../../../utils/assertions';
 import {
@@ -26,14 +23,22 @@ type CreateShortLinkBody = CreateShortLink;
 type UpdateShortLinkBody = UpdateShortLink;
 
 export class ShortLinkRepository {
-  async addOne(db: DBConnection, { alias, platform, itemId }: CreateShortLinkBody) {
+  async addOne(
+    db: DBConnection,
+    { alias, platform, itemId }: CreateShortLinkBody,
+  ) {
     throwsIfParamIsInvalid('alias', alias);
     if ((await this.countByItemAndPlatform(db, itemId, platform)) > 0) {
       throw new ShortLinkLimitExceed(itemId, platform);
     }
 
     try {
-      return await db.insert(shortLinks).values({ alias, platform, itemId }).returning();
+      const res = await db
+        .insert(shortLinks)
+        .values({ alias, platform, itemId })
+        .returning();
+
+      return res[0];
     } catch (e) {
       assertIsError(e);
       if (isDuplicateEntryError(e)) {
@@ -54,7 +59,9 @@ export class ShortLinkRepository {
     const result = await db
       .select({ count: count() })
       .from(shortLinks)
-      .where(and(eq(shortLinks.itemId, itemId), eq(shortLinks.platform, platform)));
+      .where(
+        and(eq(shortLinks.itemId, itemId), eq(shortLinks.platform, platform)),
+      );
 
     return result[0].count;
   }
@@ -81,20 +88,25 @@ export class ShortLinkRepository {
     return shortLink;
   }
 
-  async updateOne(db: DBConnection, alias: string, entity: UpdateShortLinkBody) {
+  async updateOne(
+    db: DBConnection,
+    alias: string,
+    entity: UpdateShortLinkBody,
+  ) {
     // Because we are updating the alias, which is the PK, we cannot use the super.updateOne method.
     throwsIfParamIsInvalid('alias', alias);
 
     try {
-      const updatedEntity = await db
+      const res = await db
         .update(shortLinks)
         .set(entity)
         .where(eq(shortLinks.alias, alias))
         .returning();
 
+      const updatedEntity = res.at(0);
       // Could happen if the given pk doesn't exist, because update does not check if entity exists.
       if (!updatedEntity) {
-        throw new EntryNotFoundAfterUpdateException(alias);
+        throw new Error('entity not found after Update');
       }
 
       return updatedEntity;
@@ -103,10 +115,11 @@ export class ShortLinkRepository {
       if (isDuplicateEntryError(e)) {
         throw new ShortLinkDuplication(alias);
       }
-      if (e instanceof EntryNotFoundAfterUpdateException) {
-        throw e;
-      }
       throw new UpdateException(e.message);
     }
+  }
+
+  async deleteOne(db: DBConnection, alias: string): Promise<void> {
+    await db.delete(shortLinks).where(eq(shortLinks.alias, alias)).returning();
   }
 }

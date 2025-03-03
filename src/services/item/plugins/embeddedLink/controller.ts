@@ -4,14 +4,16 @@ import { ItemType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
 import { DBConnection, db } from '../../../../drizzle/db';
+import { Item } from '../../../../drizzle/types';
+import { AuthenticatedUser } from '../../../../types';
 import { asDefined } from '../../../../utils/assertions';
 import { isAuthenticated } from '../../../auth/plugins/passport';
+import { assertIsMember } from '../../../authentication';
 import { matchOne } from '../../../authorization';
-import { Actor, assertIsMember } from '../../../member/entities/member';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { Item } from '../../entities/Item';
+import { isItemType } from '../../discrimination';
 import { ItemService } from '../../service';
-import { ActionItemService } from '../action/service';
+import { ActionItemService } from '../action/action.service';
 import { createLink, getLinkMetadata, updateLink } from './schemas';
 import { EmbeddedLinkItemService } from './service';
 import { ensureProtocol } from './utils';
@@ -28,7 +30,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ query: { link } }) => {
       const url = ensureProtocol(link);
       const metadata = await embeddedLinkService.getLinkMetadata(url);
-      const isEmbeddingAllowed = await embeddedLinkService.checkEmbeddingAllowed(url, log);
+      const isEmbeddingAllowed =
+        await embeddedLinkService.checkEmbeddingAllowed(url, log);
 
       return {
         ...metadata,
@@ -86,7 +89,12 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
       return await db.transaction(async (tx) => {
-        const item = await embeddedLinkService.patchWithOptions(tx, member, id, body);
+        const item = await embeddedLinkService.patchWithOptions(
+          tx,
+          member,
+          id,
+          body,
+        );
         await actionItemService.postPatchAction(tx, request, item);
         return item;
       });
@@ -96,15 +104,20 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   // necessary for legacy POST /items to work with links
   // remove when POST /items is removed
   // register pre create handler to pre fetch link metadata
-  const hook = async (_actor: Actor, _db: DBConnection, { item }: { item: Partial<Item> }) => {
+  const hook = async (
+    _actor: AuthenticatedUser,
+    _db: DBConnection,
+    { item }: { item: Item },
+  ) => {
     // if the extra is undefined or it does not contain the embedded link extra key, exit
-    if (!item.extra || !(ItemType.LINK in item.extra)) {
+    if (!item.extra || (item && !isItemType(item, ItemType.LINK))) {
       return;
     }
     const { embeddedLink } = item.extra;
 
     const { url } = embeddedLink;
-    const { description, html, thumbnails, icons } = await embeddedLinkService.getLinkMetadata(url);
+    const { description, html, thumbnails, icons } =
+      await embeddedLinkService.getLinkMetadata(url);
 
     if (description) {
       embeddedLink.description = description;

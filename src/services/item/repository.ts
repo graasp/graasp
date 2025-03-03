@@ -24,6 +24,7 @@ import {
   ItemType,
   MAX_ITEM_NAME_LENGTH,
   MAX_TREE_LEVELS,
+  Paginated,
   Pagination,
   PermissionLevel,
   buildPathFromIds,
@@ -39,16 +40,15 @@ import {
   isDirectChild,
 } from '../../drizzle/operations';
 import {
-  Item,
-  Member,
   accountsTable,
   itemMemberships,
   items,
   itemsRaw,
   publishedItems,
 } from '../../drizzle/schema';
+import { ItemMembershipRaw } from '../../drizzle/types';
 import { IllegalArgumentException } from '../../repositories/errors';
-import { MaybeUser } from '../../types';
+import { MaybeUser, MinimalMember } from '../../types';
 import { assertIsDefined } from '../../utils/assertions';
 import { ALLOWED_SEARCH_LANGS } from '../../utils/config';
 import {
@@ -66,14 +66,19 @@ import {
   FILE_METADATA_MIN_PAGE,
 } from '../member/constants';
 import { mapById } from '../utils';
-import { IS_COPY_REGEX } from './constants';
+import { IS_COPY_REGEX, ITEMS_PAGE_SIZE_MAX } from './constants';
 import {
   DEFAULT_ORDER,
   FolderItem,
   ItemExtraUnion,
   isItemType,
 } from './entities/Item';
-import { ItemChildrenParams } from './types';
+import {
+  ItemChildrenParams,
+  ItemSearchParams,
+  Ordering,
+  SortBy,
+} from './types';
 import { sortChildrenForTreeWith } from './utils';
 
 const DEFAULT_COPY_SUFFIX = ' (2)';
@@ -127,7 +132,7 @@ export class ItemRepository {
     type?: Item['type'];
     extra?: Item['extra'];
     settings?: Item['settings'];
-    creator: Account;
+    creator: MinimalMember;
     lang?: Item['lang'];
     parent?: Item;
     order?: Item['order'];
@@ -174,7 +179,7 @@ export class ItemRepository {
         ...settings,
       },
       // set lang from user lang
-      lang: lang ?? parent?.lang ?? creator?.extra?.lang ?? DEFAULT_LANG,
+      lang: lang ?? parent?.lang ?? creator?.lang ?? DEFAULT_LANG,
       creatorId: creator.id,
       order,
     };
@@ -1083,7 +1088,7 @@ export class ItemRepository {
    *  */
   async getAccessibleItems(
     db: DBConnection,
-    account: Account,
+    account: MinimalMember,
     {
       creatorId,
       keywords,
@@ -1093,7 +1098,7 @@ export class ItemRepository {
       types,
     }: ItemSearchParams,
     pagination: Pagination,
-  ): Promise<Paginated<ItemMembership>> {
+  ): Promise<Paginated<ItemMembershipRaw>> {
     const { page, pageSize } = pagination;
     const limit = Math.min(pageSize, ITEMS_PAGE_SIZE_MAX);
     const skip = (page - 1) * limit;

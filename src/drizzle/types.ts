@@ -15,16 +15,20 @@ import {
   accountsTable,
   actionsTable,
   appActions,
+  appSettings,
   chatMentionsTable,
   chatMessagesTable,
   guestsView,
   invitationsTable,
+  itemLoginSchemas,
   itemMemberships,
   itemTags,
+  itemVisibilities,
   items,
   itemsRaw,
   membersView,
   publishedItems,
+  shortLinks,
 } from './schema';
 
 export type AccountInsertDTO = typeof accountsTable.$inferInsert;
@@ -50,8 +54,14 @@ export type MemberCreationDTO = typeof membersView.$inferSelect & {
 export type MemberRaw = Omit<typeof membersView.$inferSelect, 'type'> & {
   type: 'individual';
 };
+
+export type ItemLoginSchemaRaw = typeof itemLoginSchemas.$inferSelect;
+export type GuestInsertDTO = typeof accountsTable.$inferInsert;
 export type GuestRaw = Omit<typeof guestsView.$inferSelect, 'type'> & {
   type: 'guest';
+};
+export type GuestWithItemLoginSchema = GuestRaw & {
+  itemLoginSchema: ItemLoginSchemaRaw | null;
 };
 
 /**
@@ -105,6 +115,9 @@ export type ItemWithType<TExtra extends ItemTypeEnumKeys> = Item & {
   extra: ItemExtraMap[TExtra];
 };
 export type ItemWithCreator = Omit<Item, 'creatorId'> & { creator: Account };
+
+// --- ItemVisibilities
+export type ItemVisibilityRaw = typeof itemVisibilities.$inferSelect;
 
 // ---- Published items
 
@@ -178,13 +191,13 @@ export type ItemTagRaw = typeof itemTags.$inferSelect;
 // --- ItemMembership
 export type ItemMembershipRaw = typeof itemMemberships.$inferSelect;
 export type ItemMembershipWithItem = Omit<ItemMembershipRaw, 'itemPath'> & {
-  item: Item;
+  item: ItemRaw;
 };
 export type ItemMembershipWithItemAndAccount = Omit<
   ItemMembershipWithItem,
   'accountId'
 > & {
-  account: MinimalAccount;
+  account: AccountRaw;
 };
 
 // --- AppAction
@@ -193,3 +206,11 @@ export type AppActionWithItemAndAccount = AppActionRaw & {
   item: Item;
   account: MinimalAccount;
 };
+
+// --- AppSetting
+export type AppSettingInsertDTO = typeof appSettings.$inferInsert;
+export type AppSettingRaw = typeof appSettings.$inferSelect;
+
+// --- ShortLink
+export type ShortLinkRaw = typeof shortLinks.$inferSelect;
+export type ShortLinkWithItem = ShortLinkRaw & { item: Item };

@@ -14,8 +14,12 @@ import {
 } from '@graasp/sdk';
 
 import { DBConnection } from '../drizzle/db';
-import { ItemMembership } from '../drizzle/schema';
-import { Item, ItemRaw } from '../drizzle/types';
+import {
+  Item,
+  ItemMembershipRaw,
+  ItemRaw,
+  ItemVisibilityRaw,
+} from '../drizzle/types';
 import { MaybeUser } from '../types';
 import {
   InsufficientPermission,
@@ -25,7 +29,6 @@ import {
   MemberCannotWriteItem,
 } from '../utils/errors';
 import { ItemWrapper, PackedItem } from './item/ItemWrapper';
-import { ItemVisibility } from './item/plugins/itemVisibility/ItemVisibility';
 import { ItemVisibilityRepository } from './item/plugins/itemVisibility/repository';
 import { ItemsThumbnails } from './item/plugins/thumbnail/types';
 import { ItemMembershipRepository } from './itemMembership/repository';
@@ -67,8 +70,8 @@ export class AuthorizationService {
     actor: MaybeUser,
     items: Item[],
   ): Promise<{
-    itemMemberships: ResultOf<ItemMembership | null>;
-    visibilities: ResultOf<ItemVisibility[] | null>;
+    itemMemberships: ResultOf<ItemMembershipRaw | null>;
+    visibilities: ResultOf<ItemVisibilityRaw[] | null>;
   }> {
     // items array is empty, nothing to check return early
     if (!items.length) {
@@ -93,7 +96,7 @@ export class AuthorizationService {
       [ItemVisibilityType.Public, ItemVisibilityType.Hidden],
     );
 
-    const resultOfMemberships: ResultOf<ItemMembership | null> = {
+    const resultOfMemberships: ResultOf<ItemMembershipRaw | null> = {
       data: inheritedMemberships?.data ?? {},
       errors: [],
     };
@@ -181,8 +184,8 @@ export class AuthorizationService {
     actor: MaybeUser,
     item: ItemRaw,
   ): Promise<{
-    itemMembership: ItemMembership | null;
-    visibilities: ItemVisibility[];
+    itemMembership: ItemMembershipRaw | null;
+    visibilities: ItemVisibilityRaw[];
   }> {
     // get best permission for user
     // but do not fetch membership for signed out member

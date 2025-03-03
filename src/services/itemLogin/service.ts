@@ -3,7 +3,7 @@ import { singleton } from 'tsyringe';
 import { ItemLoginSchemaStatus, PermissionLevel, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../drizzle/db';
-import { GuestRaw } from '../../drizzle/types';
+import { MinimalAccount } from '../../drizzle/types';
 import { MaybeUser } from '../../types';
 import { asDefined, assertIsDefined } from '../../utils/assertions';
 import { InvalidPassword } from '../../utils/errors';
@@ -15,13 +15,13 @@ import {
   ItemLoginSchemaNotFound,
   MissingCredentialsForLoginSchema,
 } from './errors';
+import { GuestRepository } from './guest.repository';
+import { GuestPasswordRepository } from './guestPassword.repository';
 import { ItemLoginMemberCredentials } from './interfaces/item-login';
-import { GuestRepository } from './repositories/guest';
-import { GuestPasswordRepository } from './repositories/guestPassword';
 import {
   ItemLoginSchemaRepository,
   ItemSchemaTypeOptions,
-} from './repositories/itemLoginSchema';
+} from './itemLoginSchema.repository';
 import { loginSchemaRequiresPassword } from './utils';
 
 @singleton()
@@ -62,30 +62,28 @@ export class ItemLoginService {
     db: DBConnection,
     itemId: string,
     credentials: ItemLoginMemberCredentials,
-  ) {
-    // TODO: allow for "empty" username and generate one (anonymous, anonymous+password)
+  ): Promise<MinimalAccount> {
     const { username, password } = credentials;
-    let bondMember: GuestRaw | undefined = undefined;
-    if (username) {
-      bondMember = await this.logInOrRegisterWithUsername(db, itemId, {
-        username,
-        password,
-      });
+
+    // TODO: allow for "empty" username and generate one (anonymous, anonymous+password)
+    if (!username) {
+      throw new Error(
+        'It is currently not supported to login without a username',
+      );
     }
 
-    if (!bondMember) {
-      // TODO
-      throw new Error();
-    }
-
-    return bondMember;
+    const guest = await this.logInOrRegisterWithUsername(db, itemId, {
+      username,
+      password,
+    });
+    return guest;
   }
 
   async logInOrRegisterWithUsername(
     db: DBConnection,
     itemId: UUID,
     { username, password }: { username: string; password?: string },
-  ) {
+  ): Promise<MinimalAccount> {
     const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
     // initial validation
@@ -100,11 +98,14 @@ export class ItemLoginService {
       throw new ItemLoginSchemaNotFound();
     }
 
-    let guestAccount = await this.guestRepository.getForItemAndUsername(
+    const existingAccount = await this.guestRepository.getForItemAndUsername(
       db,
       item,
       username,
     );
+    let guestAccount = existingAccount
+      ? { id: existingAccount.id, name: existingAccount.name }
+      : undefined;
 
     // reuse existing item login for this user
     if (guestAccount && loginSchemaRequiresPassword(itemLoginSchema.type)) {
@@ -131,7 +132,7 @@ export class ItemLoginService {
       // create member w/ `username`
       const data = {
         name: username,
-        itemLoginSchema: itemLoginSchema,
+        itemLoginSchemaId: itemLoginSchema.id,
       };
 
       if (loginSchemaRequiresPassword(itemLoginSchema.type)) {
@@ -162,7 +163,7 @@ export class ItemLoginService {
         guestAccount.id,
       );
 
-    return refreshedMember;
+    return { id: refreshedMember.id, name: refreshedMember.name };
   }
 
   async create(
@@ -177,7 +178,7 @@ export class ItemLoginService {
     db: DBConnection,
     itemId: string,
     type?: ItemSchemaTypeOptions,
-    status?: ItemLoginSchema['status'],
+    status?: ItemLoginSchemaStatus,
   ) {
     return this.itemLoginSchemaRepository.updateOne(db, itemId, {
       type,

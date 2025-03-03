@@ -4,13 +4,17 @@ import { fastifyMultipart } from '@fastify/multipart';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import { THUMBNAILS_ROUTE_PREFIX } from '../../../../utils/config';
-import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import {
+  isAuthenticated,
+  optionalIsAuthenticated,
+} from '../../../auth/plugins/passport';
+import { assertIsMember } from '../../../authentication';
 import { matchOne } from '../../../authorization';
 import FileService from '../../../file/service';
 import { UploadFileUnexpectedError } from '../../../file/utils/errors';
-import { assertIsMember } from '../../../member/entities/member';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
 import { deleteSchema, download, upload } from './schemas';
@@ -22,7 +26,10 @@ type GraaspThumbnailsOptions = {
   maxFileSize?: number; // max size for an uploaded file in bytes
 };
 
-const plugin: FastifyPluginAsyncTypebox<GraaspThumbnailsOptions> = async (fastify, options) => {
+const plugin: FastifyPluginAsyncTypebox<GraaspThumbnailsOptions> = async (
+  fastify,
+  options,
+) => {
   const { maxFileSize = DEFAULT_MAX_FILE_SIZE } = options;
 
   const fileService = resolveDependency(FileService);
@@ -103,7 +110,10 @@ const plugin: FastifyPluginAsyncTypebox<GraaspThumbnailsOptions> = async (fastif
 
   fastify.delete(
     `/:id${THUMBNAILS_ROUTE_PREFIX}`,
-    { schema: deleteSchema, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
+    {
+      schema: deleteSchema,
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
+    },
     async (request, reply) => {
       const {
         user,

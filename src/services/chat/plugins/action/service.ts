@@ -38,7 +38,16 @@ export class ActionChatService {
       // FIX: add view from which the action was created
       // view: ??
     };
-    await this.actionService.postMany(db, user?.account, request, [action]);
+
+    await this.actionService.postMany(
+      db,
+      user?.account,
+      request,
+      // FIX: !!!!!!
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
+      [action],
+    );
   }
 
   async postPatchMessageAction(
@@ -57,7 +66,15 @@ export class ActionChatService {
       // FIX: add view from which the action was created
       // view: ??
     };
-    await this.actionService.postMany(db, user?.account, request, [action]);
+    await this.actionService.postMany(
+      db,
+      user?.account,
+      request,
+      // FIX: !!!!!!
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
+      [action],
+    );
   }
 
   async postDeleteMessageAction(
@@ -73,7 +90,15 @@ export class ActionChatService {
       // FIX: add view from which the action was created
       // view: ??
     };
-    await this.actionService.postMany(db, user?.account, request, [action]);
+    await this.actionService.postMany(
+      db,
+      user?.account,
+      request,
+      // FIX: !!!!!!
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
+      [action],
+    );
   }
 
   async postClearMessageAction(

@@ -5,8 +5,8 @@ import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import { isAuthenticated } from '../../../auth/plugins/passport';
+import { assertIsMember } from '../../../authentication';
 import { matchOne } from '../../../authorization';
-import { assertIsMember } from '../../../member/entities/member';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { enroll } from './schema';
 import { EnrollService } from './service';
@@ -25,8 +25,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       assertIsMember(member);
       const { itemId } = params;
 
-      return await db.transaction(async (manager) => {
-        return await enrollService.enroll(db, member, itemId);
+      return await db.transaction(async (tx) => {
+        return await enrollService.enroll(tx, member, itemId);
       });
     },
   );

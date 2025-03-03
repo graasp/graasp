@@ -1,10 +1,9 @@
 import { fastifyMultipart } from '@fastify/multipart';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { HttpMethod } from '@graasp/sdk';
-
 import { resolveDependency } from '../../../../../../../di/utils';
 import { DBConnection, db } from '../../../../../../../drizzle/db';
+import { AuthenticatedUser } from '../../../../../../../types';
 import { asDefined } from '../../../../../../../utils/assertions';
 import {
   authenticateAppsJWT,
@@ -29,7 +28,10 @@ export interface GraaspPluginFileOptions {
   appSettingService: AppSettingService;
 }
 
-const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fastify, options) => {
+const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (
+  fastify,
+  options,
+) => {
   const { maxFileSize = DEFAULT_MAX_FILE_SIZE, appSettingService } = options;
 
   const fileService = resolveDependency(FileService);
@@ -49,7 +51,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
 
   // register post delete handler to remove the file object after item delete
   const deleteHook = async (
-    actor: Actor,
+    actor: AuthenticatedUser,
     db: DBConnection,
     { appSetting }: { appSetting: AppSetting; itemId: string },
   ) => {
@@ -61,13 +63,19 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
   const hook = async (
     actor: Member,
     db: DBConnection,
-    { appSettings }: { appSettings: AppSetting[]; originalItemId: string; copyItemId: string },
+    {
+      appSettings,
+    }: {
+      appSettings: AppSetting[];
+      originalItemId: string;
+      copyItemId: string;
+    },
   ) => {
     // copy file only if content is a file
     const isFileSetting = (a: AppSetting) => a.data[fileService.fileType];
     const toCopy = appSettings.filter(isFileSetting);
     if (toCopy.length) {
-      await appSettingFileService.copyMany(actor, db, toCopy);
+      await appSettingFileService.copyMany(db, actor, toCopy);
     }
   };
   appSettingService.hooks.setPostHook('copyMany', hook);
@@ -86,12 +94,13 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
   };
   appSettingService.hooks.setPreHook('patch', patchPreHook);
 
-  fastify.route({
-    method: HttpMethod.Post,
-    url: '/app-settings/upload',
-    schema: upload,
-    preHandler: guestAuthenticateAppsJWT,
-    handler: async (request) => {
+  fastify.post(
+    '/app-settings/upload',
+    {
+      schema: upload,
+      preHandler: guestAuthenticateAppsJWT,
+    },
+    async (request) => {
       const { user } = request;
       const account = asDefined(user?.account);
       const app = asDefined(user?.app);
@@ -119,7 +128,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
           throw new UploadFileUnexpectedError(e);
         });
     },
-  });
+  );
 
   fastify.get(
     '/app-settings/:id/download',

@@ -15,8 +15,8 @@ import {
 } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { Account, ActionWithItem } from '../../../../drizzle/schema';
-import { AuthenticatedUser } from '../../../../types';
+import { ActionWithItem, Item } from '../../../../drizzle/types';
+import { AuthenticatedUser, MaybeUser } from '../../../../types';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { ActionRepository } from '../../../action/action.repository';
 import { ActionService } from '../../../action/action.service';
@@ -26,16 +26,12 @@ import {
   MIN_ACTIONS_SAMPLE_SIZE,
 } from '../../../action/constants';
 import { InvalidAggregationError } from '../../../action/utils/errors';
-import { ChatMessage } from '../../../chat/chatMessage';
 import { ChatMessageRepository } from '../../../chat/repository';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
-import { Item } from '../../entities/Item';
 import { ItemService } from '../../service';
-import { AppAction } from '../app/appAction/appAction.entity';
 import { AppActionRepository } from '../app/appAction/appAction.repository';
 import { AppData } from '../app/appData/appData';
 import { AppDataRepository } from '../app/appData/repository';
-import { AppSetting } from '../app/appSetting/appSettings';
 import { AppSettingRepository } from '../app/appSetting/repository';
 import { BaseAnalytics } from './base-analytics';
 import { ItemActionType } from './utils';
@@ -75,7 +71,8 @@ export class ActionItemService {
     itemId: string,
     filters: { view?: Context; sampleSize?: number } = {},
   ): Promise<ActionWithItem[]> {
-    const { view = Context.Builder, sampleSize = DEFAULT_ACTIONS_SAMPLE_SIZE } = filters;
+    const { view = Context.Builder, sampleSize = DEFAULT_ACTIONS_SAMPLE_SIZE } =
+      filters;
 
     // prevent access from unautorized members
     if (!actor) {
@@ -83,11 +80,21 @@ export class ActionItemService {
     }
 
     // check right and get item
-    const item = await this.itemService.get(db, actor, itemId, PermissionLevel.Read);
+    const item = await this.itemService.get(
+      db,
+      actor,
+      itemId,
+      PermissionLevel.Read,
+    );
 
     // check permission
     const permission = (
-      await this.itemMembershipRepository.getInherited(db, item.path, actor.id, true)
+      await this.itemMembershipRepository.getInherited(
+        db,
+        item.path,
+        actor.id,
+        true,
+      )
     )?.permission;
 
     // Check validity of the requestSampleSize parameter (it is a number between min and max constants)
@@ -95,7 +102,10 @@ export class ActionItemService {
     if (sampleSize) {
       // If it is an integer, return the value bounded between min and max
       if (Number.isInteger(sampleSize)) {
-        size = Math.min(Math.max(sampleSize, MIN_ACTIONS_SAMPLE_SIZE), MAX_ACTIONS_SAMPLE_SIZE);
+        size = Math.min(
+          Math.max(sampleSize, MIN_ACTIONS_SAMPLE_SIZE),
+          MAX_ACTIONS_SAMPLE_SIZE,
+        );
         // If it is not valid, set the default value
       } else {
         size = DEFAULT_ACTIONS_SAMPLE_SIZE;
@@ -112,7 +122,7 @@ export class ActionItemService {
 
   async getAnalyticsAggregation(
     db: DBConnection,
-    actor: Actor,
+    actor: MaybeUser,
     payload: {
       itemId: string;
       sampleSize?: number;
@@ -129,9 +139,18 @@ export class ActionItemService {
     },
   ) {
     // check rights
-    const item = await this.itemService.get(db, actor, payload.itemId, PermissionLevel.Read);
+    const item = await this.itemService.get(
+      db,
+      actor,
+      payload.itemId,
+      PermissionLevel.Read,
+    );
 
-    if (payload.startDate && payload.endDate && isBefore(payload.endDate, payload.startDate)) {
+    if (
+      payload.startDate &&
+      payload.endDate &&
+      isBefore(payload.endDate, payload.startDate)
+    ) {
       throw new InvalidAggregationError('start date should be before end date');
     }
     // get actions aggregation
@@ -154,7 +173,7 @@ export class ActionItemService {
 
   async getBaseAnalyticsForItem(
     db: DBConnection,
-    actor: Account,
+    actor: AuthenticatedUser,
     payload: {
       itemId: string;
       sampleSize?: number;
@@ -169,15 +188,30 @@ export class ActionItemService {
     }
 
     // check right and get item
-    const item = await this.itemService.get(db, actor, payload.itemId, PermissionLevel.Read);
+    const item = await this.itemService.get(
+      db,
+      actor,
+      payload.itemId,
+      PermissionLevel.Read,
+    );
 
     // check permission
     const permission = actor
-      ? (await this.itemMembershipRepository.getInherited(db, item.path, actor.id, true))
-          ?.permission
+      ? (
+          await this.itemMembershipRepository.getInherited(
+            db,
+            item.path,
+            actor.id,
+            true,
+          )
+        )?.permission
       : null;
 
-    if (payload.startDate && payload.endDate && isBefore(payload.endDate, payload.startDate)) {
+    if (
+      payload.startDate &&
+      payload.endDate &&
+      isBefore(payload.endDate, payload.startDate)
+    ) {
       throw new InvalidAggregationError('start date should be before end date');
     }
     // check membership and get actions
@@ -191,16 +225,25 @@ export class ActionItemService {
 
     // get memberships
     const inheritedMemberships =
-      (await this.itemMembershipRepository.getForManyItems(db, [item])).data?.[item.id] ?? [];
+      (await this.itemMembershipRepository.getForManyItems(db, [item])).data?.[
+        item.id
+      ] ?? [];
     // TODO: use db argument passed from the transaction
-    const itemMemberships = await this.itemMembershipRepository.getAllBellowItemPath(db, item.path);
+    const itemMemberships =
+      await this.itemMembershipRepository.getAllBellowItemPath(db, item.path);
     const allMemberships = [...inheritedMemberships, ...itemMemberships];
     // get members
     const members =
-      permission === PermissionLevel.Admin ? allMemberships.map(({ account }) => account) : [actor];
+      permission === PermissionLevel.Admin
+        ? allMemberships.map(({ account }) => account)
+        : [actor];
 
     // get descendants items
-    const descendants = await this.itemService.getFilteredDescendants(db, actor, payload.itemId);
+    const descendants = await this.itemService.getFilteredDescendants(
+      db,
+      actor,
+      payload.itemId,
+    );
 
     // chatbox for all items
     const chatMessages = Object.values(
@@ -220,7 +263,9 @@ export class ActionItemService {
         actions: AppAction[];
       };
     } = {};
-    const appItems = [item, ...descendants].filter(({ type }) => type === ItemType.APP);
+    const appItems = [item, ...descendants].filter(
+      ({ type }) => type === ItemType.APP,
+    );
     for (const { id: appId } of appItems) {
       const appData = await this.appDataRepository.getForItem(
         db,
@@ -231,7 +276,11 @@ export class ActionItemService {
       );
       // TODO member id?
       // todo: create getForItems?
-      const appActions = await this.appActionRepository.getForItem(db, appId, {});
+      const appActions = await this.appActionRepository.getForItem(
+        db,
+        appId,
+        {},
+      );
       const appSettings = await this.appSettingRepository.getForItem(db, appId);
 
       apps[appId] = {
@@ -264,7 +313,15 @@ export class ActionItemService {
       type: ItemActionType.Create,
       extra: { itemId: item.id },
     };
-    await this.actionService.postMany(db, user?.account, request, [action]);
+    await this.actionService.postMany(
+      db,
+      user?.account,
+      request,
+      // FIX: !!!!
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
+      [action],
+    );
   }
 
   async postPatchAction(db: DBConnection, request: FastifyRequest, item: Item) {
@@ -276,20 +333,44 @@ export class ActionItemService {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       extra: { itemId: item.id, body: request.body as any },
     };
-    await this.actionService.postMany(db, user?.account, request, [action]);
+    await this.actionService.postMany(
+      db,
+      user?.account,
+      request,
+      // FIX: !!!!
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
+      [action],
+    );
   }
 
-  async postManyDeleteAction(db: DBConnection, request: FastifyRequest, items: Item[]) {
+  async postManyDeleteAction(
+    db: DBConnection,
+    request: FastifyRequest,
+    items: Item[],
+  ) {
     const { user } = request;
     const actions = items.map((item) => ({
       // cannot include item since is has been deleted
       type: ItemActionType.Delete,
       extra: { itemId: item.id },
     }));
-    await this.actionService.postMany(db, user?.account, request, actions);
+    await this.actionService.postMany(
+      db,
+      user?.account,
+      request,
+      // FIX: !!!!
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
+      actions,
+    );
   }
 
-  async postManyMoveAction(db: DBConnection, request: FastifyRequest, items: Item[]) {
+  async postManyMoveAction(
+    db: DBConnection,
+    request: FastifyRequest,
+    items: Item[],
+  ) {
     const { user } = request;
     const actions = items.map((item) => ({
       item,
@@ -301,7 +382,11 @@ export class ActionItemService {
     await this.actionService.postMany(db, user?.account, request, actions);
   }
 
-  async postManyCopyAction(db: DBConnection, request: FastifyRequest, items: Item[]) {
+  async postManyCopyAction(
+    db: DBConnection,
+    request: FastifyRequest,
+    items: Item[],
+  ) {
     const { user } = request;
     const actions = items.map((item) => ({
       item,
@@ -310,6 +395,14 @@ export class ActionItemService {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       extra: { itemId: item.id, body: request.body as any },
     }));
-    await this.actionService.postMany(db, user?.account, request, actions);
+    await this.actionService.postMany(
+      db,
+      user?.account,
+      request,
+      // FIX: !!!!
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
+      actions,
+    );
   }
 }

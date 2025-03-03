@@ -1,6 +1,13 @@
+import { singleton } from 'tsyringe';
+
 import { ItemVisibilityType, ResultOf, ThumbnailsBySize } from '@graasp/sdk';
 
-import { Account, Item } from '../../drizzle/types';
+import {
+  Account,
+  Item,
+  ItemMembershipRaw,
+  ItemWithCreator,
+} from '../../drizzle/types';
 import { ItemMembershipRepository } from '../itemMembership/repository';
 import { ItemVisibility } from './plugins/itemVisibility/ItemVisibility';
 import { ItemVisibilityRepository } from './plugins/itemVisibility/repository';
@@ -23,21 +30,21 @@ type GraaspItem = Pick<
 
 export type PackedItem = GraaspItem & {
   // permission can be undefined because the item is public
-  permission: ItemMembership['permission'] | null;
+  permission: ItemMembershipRaw['permission'] | null;
   hidden?: ItemVisibility;
   public?: ItemVisibility;
   thumbnails?: ThumbnailsBySize;
 };
 
 export class ItemWrapper {
-  item: Item;
-  actorPermission?: { permission: ItemMembership['permission'] } | null;
+  item: ItemWithCreator;
+  actorPermission?: { permission: ItemMembershipRaw['permission'] } | null;
   visibilities?: ItemVisibility[] | null;
   private readonly thumbnails?: ThumbnailsBySize;
 
   constructor(
-    item: Item,
-    im?: { permission: ItemMembership['permission'] } | null,
+    item: ItemWithCreator,
+    im?: { permission: ItemMembershipRaw['permission'] } | null,
     visibilities?: ItemVisibility[] | null,
     thumbnails?: ThumbnailsBySize,
   ) {
@@ -97,7 +104,7 @@ export class ItemWrapperService {
    */
   merge(
     items: Item[],
-    memberships: ResultOf<ItemMembership | null>,
+    memberships: ResultOf<ItemMembershipRaw | null>,
     visibilities?: ResultOf<ItemVisibility[] | null>,
     itemsThumbnails?: ItemsThumbnails,
   ): PackedItem[] {
@@ -139,7 +146,7 @@ export class ItemWrapperService {
    */
   mergeResult(
     items: ResultOf<Item>,
-    memberships: ResultOf<ItemMembership | null>,
+    memberships: ResultOf<ItemMembershipRaw | null>,
     visibilities?: ResultOf<ItemVisibility[] | null>,
     itemsThumbnails?: ItemsThumbnails,
   ): ResultOf<PackedItem> {
@@ -174,10 +181,8 @@ export class ItemWrapperService {
   }
 
   async createPackedItems(
-    actor: Actor,
-    itemThumbnailService: ItemThumbnailService,
     items: Item[],
-    memberships?: ResultOf<ItemMembership[]>,
+    memberships?: ResultOf<ItemMembershipRaw[]>,
     { withDeleted = false }: { withDeleted?: boolean } = {},
   ): Promise<PackedItem[]> {
     // no items, so nothing to fetch

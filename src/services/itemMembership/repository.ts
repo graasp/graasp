@@ -676,7 +676,7 @@ export class ItemMembershipRepository {
     db: DBConnection,
     itemPath: string,
     permission: PermissionLevel,
-  ): Promise<ItemMembershipRaw[]> {
+  ): Promise<ItemMembershipWithItemAndAccount[]> {
     return await db.query.itemMemberships.findMany({
       where: and(
         isAncestorOrSelf(itemMembershipTable.itemPath, itemPath),
@@ -684,6 +684,7 @@ export class ItemMembershipRepository {
       ),
       with: {
         account: true,
+        item: true,
       },
     });
   }

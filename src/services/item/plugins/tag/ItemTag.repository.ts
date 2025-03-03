@@ -5,11 +5,11 @@ import { UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
 import { Tag, itemTags, tags } from '../../../../drizzle/schema';
+import { Item } from '../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../repositories/errors';
 import { assertIsError } from '../../../../utils/assertions';
 import { isDuplicateEntryError } from '../../../../utils/typeormError';
 import { TagCategoryOptions, TagCount } from '../../../tag/schemas';
-import { Item } from '../../entities/Item';
 import { TAG_COUNT_MAX_RESULTS } from './constants';
 import { ItemTagAlreadyExists } from './errors';
 
@@ -78,7 +78,11 @@ export class ItemTagRepository {
     return res;
   }
 
-  async create(db: DBConnection, itemId: UUID, tagId: Tag['id']): Promise<void> {
+  async create(
+    db: DBConnection,
+    itemId: UUID,
+    tagId: Tag['id'],
+  ): Promise<void> {
     try {
       await db.insert(itemTags).values({ itemId, tagId });
     } catch (e) {
@@ -90,11 +94,19 @@ export class ItemTagRepository {
     }
   }
 
-  async delete(db: DBConnection, itemId: Item['id'], tagId: Tag['id']): Promise<void> {
+  async delete(
+    db: DBConnection,
+    itemId: Item['id'],
+    tagId: Tag['id'],
+  ): Promise<void> {
     if (!itemId || !tagId) {
-      throw new IllegalArgumentException(`Given 'itemId' or 'tagId' is undefined!`);
+      throw new IllegalArgumentException(
+        `Given 'itemId' or 'tagId' is undefined!`,
+      );
     }
     // remove association between item and tag in tag association table
-    await db.delete(itemTags).where(and(eq(itemTags.tagId, tagId), eq(itemTags.itemId, itemId)));
+    await db
+      .delete(itemTags)
+      .where(and(eq(itemTags.tagId, tagId), eq(itemTags.itemId, itemId)));
   }
 }

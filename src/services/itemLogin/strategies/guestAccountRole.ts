@@ -1,5 +1,5 @@
+import { isGuest } from '../../authentication';
 import { RessourceAuthorizationStrategy } from '../../authorization';
-import { isGuest } from '../entities/guest';
 import { NotGuest } from '../errors';
 
 /**
