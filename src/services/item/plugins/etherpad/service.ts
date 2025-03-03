@@ -5,8 +5,8 @@ import { v4 } from 'uuid';
 import Etherpad, { AuthorSession } from '@graasp/etherpad-api';
 import {
   EtherpadItemExtra,
-  EtherpadReaderPermission,
-  EtherpadReaderPermissionType,
+  EtherpadPermission,
+  EtherpadPermissionType,
   ItemType,
   PermissionLevel,
 } from '@graasp/sdk';
@@ -100,7 +100,7 @@ export class EtherpadItemService {
   public async createEtherpadItem(
     member: Member,
     repositories: Repositories,
-    args: { readerPermission?: EtherpadReaderPermissionType; name: string },
+    args: { readerPermission?: EtherpadPermissionType; name: string },
     parentId?: string,
     initHtml?: string,
   ) {
@@ -114,7 +114,7 @@ export class EtherpadItemService {
           extra: this.buildEtherpadExtra({
             groupID,
             padName,
-            readerPermission: args.readerPermission ?? EtherpadReaderPermission.Read,
+            readerPermission: args.readerPermission ?? EtherpadPermission.Read,
           }),
         },
         parentId,
@@ -139,7 +139,7 @@ export class EtherpadItemService {
     repositories: Repositories,
     itemId: Item['id'],
     body: Partial<Pick<Item, 'settings' | 'name' | 'lang'>> & {
-      readerPermission?: EtherpadReaderPermissionType;
+      readerPermission?: EtherpadPermissionType;
     },
   ) {
     const { itemRepository } = repositories;
@@ -163,7 +163,7 @@ export class EtherpadItemService {
           readerPermission:
             newReaderPermissionValue ??
             item.extra.etherpad.readerPermission ??
-            EtherpadReaderPermission.Read,
+            EtherpadPermission.Read,
         },
       };
     }
@@ -439,11 +439,11 @@ export class EtherpadItemService {
   static buildEtherpadExtra({
     groupID,
     padName,
-    readerPermission = EtherpadReaderPermission.Read,
+    readerPermission = EtherpadPermission.Read,
   }: {
     groupID: string;
     padName: string;
-    readerPermission?: EtherpadReaderPermissionType;
+    readerPermission?: EtherpadPermissionType;
   }): EtherpadItemExtra {
     return {
       etherpad: {

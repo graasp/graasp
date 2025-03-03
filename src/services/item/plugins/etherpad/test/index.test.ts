@@ -9,7 +9,7 @@ import { FastifyInstance } from 'fastify';
 
 import {
   EtherpadItemType,
-  EtherpadReaderPermission,
+  EtherpadPermission,
   HttpMethod,
   ItemType,
   PermissionLevel,
@@ -115,7 +115,7 @@ describe('Etherpad service API', () => {
         url: 'items/etherpad/create',
         payload: {
           name: 'test-item-name',
-          readerPermission: EtherpadReaderPermission.Write,
+          readerPermission: EtherpadPermission.Write,
         },
       });
 
@@ -131,7 +131,7 @@ describe('Etherpad service API', () => {
           etherpad: {
             padID: `${MOCK_GROUP_ID}$${createGroupPad?.get('padName')}`,
             groupID: MOCK_GROUP_ID,
-            readerPermission: EtherpadReaderPermission.Write,
+            readerPermission: EtherpadPermission.Write,
           },
         },
       });
@@ -864,7 +864,7 @@ describe('Etherpad service API', () => {
         url: `items/etherpad/${item.id}`,
         payload: {
           name: 'new-name',
-          readerPermission: EtherpadReaderPermission.Write,
+          readerPermission: EtherpadPermission.Write,
         },
       });
 

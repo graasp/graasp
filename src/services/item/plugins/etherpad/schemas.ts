@@ -3,15 +3,15 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifySchema } from 'fastify';
 
-import { EtherpadReaderPermission } from '@graasp/sdk';
+import { EtherpadPermission } from '@graasp/sdk';
 
 import { customType } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
 import { itemSchema, itemSchemaRef } from '../../schemas';
 
 const readerPermissionType = Type.Union([
-  Type.Literal(EtherpadReaderPermission.Read),
-  Type.Literal(EtherpadReaderPermission.Write),
+  Type.Literal(EtherpadPermission.Read),
+  Type.Literal(EtherpadPermission.Write),
 ]);
 
 export const createEtherpad = {

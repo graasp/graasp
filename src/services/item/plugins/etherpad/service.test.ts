@@ -3,7 +3,7 @@ import { v4 } from 'uuid';
 import Etherpad, { AuthorSession } from '@graasp/etherpad-api';
 import {
   EtherpadItemFactory,
-  EtherpadReaderPermission,
+  EtherpadPermission,
   FolderItemFactory,
   ItemType,
   PermissionLevel,
@@ -94,7 +94,7 @@ describe('Etherpad Service', () => {
           return MOCK_ITEM;
         });
 
-      const readerPermission = EtherpadReaderPermission.Write;
+      const readerPermission = EtherpadPermission.Write;
       await etherpadService.createEtherpadItem(MOCK_MEMBER, repositories, {
         name: 'newName',
         readerPermission,
@@ -134,7 +134,7 @@ describe('Etherpad Service', () => {
             [ItemType.ETHERPAD]: {
               groupID: expect.anything(),
               padID: expect.anything(),
-              readerPermission: EtherpadReaderPermission.Read,
+              readerPermission: EtherpadPermission.Read,
             },
           },
         },
@@ -157,7 +157,7 @@ describe('Etherpad Service', () => {
             } as unknown as ItemRepository,
           } as repositoriesUtils.Repositories,
           FOLDER_ITEM.id,
-          { readerPermission: EtherpadReaderPermission.Write },
+          { readerPermission: EtherpadPermission.Write },
         ),
       ).rejects.toBeInstanceOf(WrongItemTypeError);
     });
