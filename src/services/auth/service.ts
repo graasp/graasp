@@ -1,11 +1,11 @@
 import { sign } from 'jsonwebtoken';
 import { singleton } from 'tsyringe';
 
-import { Member } from '../../drizzle/schema';
 import { TRANSLATIONS } from '../../langs/constants';
 import { BaseLogger } from '../../logger';
 import { MailBuilder } from '../../plugins/mailer/builder';
 import { MailerService } from '../../plugins/mailer/mailer.service';
+import { MinimalMember } from '../../types';
 import {
   JWT_SECRET,
   LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
@@ -26,10 +26,10 @@ export class AuthService {
     this.log = log;
   }
 
-  generateRegisterLinkAndEmailIt = async (
-    member: Member,
+  public async generateRegisterLinkAndEmailIt(
+    member: MinimalMember,
     options: { challenge?: string; url?: string } = {},
-  ): Promise<void> => {
+  ): Promise<void> {
     const { challenge, url } = options;
 
     // generate token with member info and expiration
@@ -64,7 +64,7 @@ export class AuthService {
     this.mailerService
       .send(mail, member.email)
       .catch((err) => this.log.warn(err, `mailerService failed. link: ${link}`));
-  };
+  }
 
   generateLoginLinkAndEmailIt = async (
     member: Member,

@@ -11,10 +11,10 @@ import { resolveDependency } from '../../../../../di/utils';
 import { db } from '../../../../../drizzle/db';
 import { asDefined } from '../../../../../utils/assertions';
 import { isAuthenticated } from '../../../../auth/plugins/passport';
+import { assertIsMember, isMember } from '../../../../authentication';
 import { AuthorizationService, matchOne } from '../../../../authorization';
-import { assertIsMember, isMember } from '../../../../member/entities/member';
 import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
-import { isItemType } from '../../../entities/Item';
+import { isItemType } from '../../../discrimination';
 import { ItemService } from '../../../service';
 import { FastifyStaticReply } from '../types';
 import {
@@ -87,7 +87,10 @@ const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
 
   fastify.post(
     '/h5p-import',
-    { schema: h5pImport, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
+    {
+      schema: h5pImport,
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
+    },
     async (request) => {
       const {
         user,

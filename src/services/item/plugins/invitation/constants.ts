@@ -1,6 +1,6 @@
 import { ClientManager, Context } from '@graasp/sdk';
 
-import { InvitationRaw } from '../../../../drizzle/schema';
+import { InvitationWithItem } from '../../../../drizzle/types';
 
 export const PLUGIN_NAME = 'graasp-plugin-invitations';
 
@@ -9,12 +9,19 @@ export const PLUGIN_NAME = 'graasp-plugin-invitations';
  * @param invitation
  * @returns
  */
-export const buildInvitationLink = (invitation: InvitationRaw) => {
-  const destination = ClientManager.getInstance().getItemLink(Context.Player, invitation.itemId);
-  const url = ClientManager.getInstance().getURLByContext(Context.Auth, 'register', {
-    invitationId: invitation.id,
-    url: destination.toString(),
-  });
+export const buildInvitationLink = (invitation: InvitationWithItem) => {
+  const destination = ClientManager.getInstance().getItemLink(
+    Context.Player,
+    invitation.item.id,
+  );
+  const url = ClientManager.getInstance().getURLByContext(
+    Context.Auth,
+    'register',
+    {
+      invitationId: invitation.id,
+      url: destination.toString(),
+    },
+  );
   return url.toString();
 };
 

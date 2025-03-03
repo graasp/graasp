@@ -7,8 +7,8 @@ import { Readable } from 'stream';
 import { ItemType, MimeTypes } from '@graasp/sdk';
 
 import { BaseLogger } from '../../logger';
+import { MinimalMember } from '../../types';
 import { CachingService } from '../caching/service';
-import { Member } from '../member/entities/member';
 import { LocalFileRepository } from './repositories/local';
 import { S3FileRepository } from './repositories/s3';
 import FileService from './service';
@@ -37,9 +37,16 @@ const MOCK_S3_CONFIG = {
   s3SecretAccessKey: 'string',
 };
 
-const member = new Member();
+const member = {
+  id: '1234',
+  name: 'toto',
+  type: 'individual',
+  isValidated: true,
+} satisfies MinimalMember;
 
-const s3Repository = fileRepositoryFactory(ItemType.S3_FILE, { s3: MOCK_S3_CONFIG });
+const s3Repository = fileRepositoryFactory(ItemType.S3_FILE, {
+  s3: MOCK_S3_CONFIG,
+});
 
 const s3FileService = new FileService(
   s3Repository,
@@ -58,7 +65,9 @@ describe('FileService', () => {
       expect(s3Repository).toBeInstanceOf(S3FileRepository);
     });
     it('use local repository', () => {
-      const repository = fileRepositoryFactory(ItemType.LOCAL_FILE, { local: MOCK_LOCAL_CONFIG });
+      const repository = fileRepositoryFactory(ItemType.LOCAL_FILE, {
+        local: MOCK_LOCAL_CONFIG,
+      });
       expect(repository).toBeInstanceOf(LocalFileRepository);
     });
     it('throws for conflicting settings', () => {
@@ -73,7 +82,11 @@ describe('FileService', () => {
   });
 
   describe('upload', () => {
-    const uploadPayload = { file: {} as unknown as ReadStream, size: 10, filepath: 'filepath' };
+    const uploadPayload = {
+      file: {} as unknown as ReadStream,
+      size: 10,
+      filepath: 'filepath',
+    };
 
     it('upload successfully', async () => {
       const uploadFileMock = jest.spyOn(s3Repository, 'uploadFile').mockImplementation(doNothing);
@@ -260,7 +273,10 @@ describe('FileService', () => {
     it('sanitize html', async () => {
       const filepath = path.join(__dirname, './fixtures/htmlWithScript.html');
       const file = createReadStream(filepath);
-      const f = await s3FileService.sanitizeFile({ mimetype: 'text/html', file });
+      const f = await s3FileService.sanitizeFile({
+        mimetype: 'text/html',
+        file,
+      });
 
       // return stream
       expect(f).toBeDefined();
@@ -272,7 +288,10 @@ describe('FileService', () => {
     });
     it('does not sanitize for non-svg', async () => {
       const file = Readable.from('hello');
-      const f = await s3FileService.sanitizeFile({ mimetype: MimeTypes.Image.PNG, file });
+      const f = await s3FileService.sanitizeFile({
+        mimetype: MimeTypes.Image.PNG,
+        file,
+      });
       // returns same file as the one passed in the function
       expect(f).toEqual(file);
     });

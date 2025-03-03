@@ -5,7 +5,7 @@ import { ClientManager, Context, UUID } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
 import { DBConnection } from '../../drizzle/db';
-import { MemberCreationDTO } from '../../drizzle/schema';
+import { MemberCreationDTO, MemberRaw } from '../../drizzle/types';
 import { TRANSLATIONS } from '../../langs/constants';
 import { BaseLogger } from '../../logger';
 import { MailBuilder } from '../../plugins/mailer/builder';
@@ -16,7 +16,6 @@ import {
 } from '../../utils/config';
 import { MemberAlreadySignedUp } from '../../utils/errors';
 import { NEW_EMAIL_PARAM, SHORT_TOKEN_PARAM } from '../auth/plugins/passport';
-import { Member } from './entities/member';
 import { type MemberRepository } from './repository';
 
 @singleton()
@@ -79,7 +78,7 @@ export class MemberService {
   async patch(
     db: DBConnection,
     id: UUID,
-    body: Partial<Pick<Member, 'extra' | 'email' | 'name' | 'enableSaveActions'>>,
+    body: Partial<Pick<MemberRaw, 'extra' | 'email' | 'name' | 'enableSaveActions'>>,
   ) {
     return this.memberRepository.patch(db, id, {
       name: body.name,
@@ -106,7 +105,7 @@ export class MemberService {
     return await this.memberRepository.patch(db, id, { isValidated: true });
   }
 
-  createEmailChangeRequest(member: Member, newEmail: string) {
+  createEmailChangeRequest(member: MemberRaw, newEmail: string) {
     const payload = { uuid: member.id, oldEmail: member.email, newEmail };
     return jwtSign(payload, EMAIL_CHANGE_JWT_SECRET, {
       expiresIn: `${EMAIL_CHANGE_JWT_EXPIRATION_IN_MINUTES}m`,

@@ -4293,15 +4293,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/mmmagic@npm:0.4.33":
-  version: 0.4.33
-  resolution: "@types/mmmagic@npm:0.4.33"
-  dependencies:
-    "@types/node": "npm:*"
-  checksum: 10/851b1dea19d24989be9af3c1329ebc4f92d0a74ebd3490b17c94f8589d75aac3f67c53c93088d368b4b3c0508882c26cc259955161c67ae2a93a8a0a40c99766
-  languageName: node
-  linkType: hard
-
 "@types/ms@npm:*":
   version: 2.1.0
   resolution: "@types/ms@npm:2.1.0"
@@ -8273,7 +8264,6 @@ __metadata:
     "@types/lodash.groupby": "npm:4.6.9"
     "@types/lodash.partition": "npm:^4"
     "@types/mime": "npm:3.0.4"
-    "@types/mmmagic": "npm:0.4.33"
     "@types/node": "npm:20.14.13"
     "@types/node-fetch": "npm:2"
     "@types/nodemailer": "npm:6.4.15"
@@ -8326,7 +8316,7 @@ __metadata:
     lodash.uniqby: "npm:4.7.0"
     meilisearch: "npm:0.41.0"
     mime: "npm:3.0.0"
-    mmmagic: "npm:0.5.3"
+    mimetics: "npm:1.0.4"
     nock: "npm:13.5.4"
     node-fetch: "npm:2"
     nodemailer: "npm:6.9.16"
@@ -9975,6 +9965,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jszip@npm:^3.10.1":
+  version: 3.10.1
+  resolution: "jszip@npm:3.10.1"
+  dependencies:
+    lie: "npm:~3.3.0"
+    pako: "npm:~1.0.2"
+    readable-stream: "npm:~2.3.6"
+    setimmediate: "npm:^1.0.5"
+  checksum: 10/bfbfbb9b0a27121330ac46ab9cdb3b4812433faa9ba4a54742c87ca441e31a6194ff70ae12acefa5fe25406c432290e68003900541d948a169b23d30c34dd984
+  languageName: node
+  linkType: hard
+
 "jwa@npm:^1.4.1":
   version: 1.4.1
   resolution: "jwa@npm:1.4.1"
@@ -10058,6 +10060,15 @@ __metadata:
   dependencies:
     immediate: "npm:~3.0.5"
   checksum: 10/c2c7d9dcc3a9aae641f41cde4e2e2cd571e4426b1f5915862781d77776672dcbca43461e16f4d382c9a300825c15e1a4923f1def3a5568d97577e077a3cecb44
+  languageName: node
+  linkType: hard
+
+"lie@npm:~3.3.0":
+  version: 3.3.0
+  resolution: "lie@npm:3.3.0"
+  dependencies:
+    immediate: "npm:~3.0.5"
+  checksum: 10/f335ce67fe221af496185d7ce39c8321304adb701e122942c495f4f72dcee8803f9315ee572f5f8e8b08b9e8d7195da91b9fad776e8864746ba8b5e910adf76e
   languageName: node
   linkType: hard
 
@@ -10524,6 +10535,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"mimetics@npm:1.0.4":
+  version: 1.0.4
+  resolution: "mimetics@npm:1.0.4"
+  dependencies:
+    jszip: "npm:^3.10.1"
+  checksum: 10/70edd512fdd79e904395c127ea88d6a2c045cff2d79a89c57fa20364f781fc331ee3b42b670b0ffe0f052fbb5dd9497ea298642e2383066d66b37ae5b6e8b9a2
+  languageName: node
+  linkType: hard
+
 "mimic-fn@npm:^2.1.0":
   version: 2.1.0
   resolution: "mimic-fn@npm:2.1.0"
@@ -10726,16 +10746,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mmmagic@npm:0.5.3":
-  version: 0.5.3
-  resolution: "mmmagic@npm:0.5.3"
-  dependencies:
-    nan: "npm:^2.13.2"
-    node-gyp: "npm:latest"
-  checksum: 10/19dded52d41c7560f7746b1d5efae3a06d493b1960f6456dcc54f4feccf309894b424222254070ceae238e7e4f2d4ad8159f172cdc3a732128b163b96f437be7
-  languageName: node
-  linkType: hard
-
 "mnemonist@npm:0.39.6":
   version: 0.39.6
   resolution: "mnemonist@npm:0.39.6"
@@ -10803,15 +10813,6 @@ __metadata:
     object-assign: "npm:^4.0.1"
     thenify-all: "npm:^1.0.0"
   checksum: 10/8427de0ece99a07e9faed3c0c6778820d7543e3776f9a84d22cf0ec0a8eb65f6e9aee9c9d353ff9a105ff62d33a9463c6ca638974cc652ee8140cd1e35951c87
-  languageName: node
-  linkType: hard
-
-"nan@npm:^2.13.2":
-  version: 2.22.2
-  resolution: "nan@npm:2.22.2"
-  dependencies:
-    node-gyp: "npm:latest"
-  checksum: 10/bee49de633650213970596ffbdf036bfe2109ff283a40f7742c3aa6d1fc15b9836f62bfee82192b879f56ab5f9fa9a1e5c58a908a50e5c87d91fb2118ef70827
   languageName: node
   linkType: hard
 
@@ -11390,6 +11391,13 @@ __metadata:
   version: 1.0.1
   resolution: "package-json-from-dist@npm:1.0.1"
   checksum: 10/58ee9538f2f762988433da00e26acc788036914d57c71c246bf0be1b60cdbd77dd60b6a3e1a30465f0b248aeb80079e0b34cb6050b1dfa18c06953bb1cbc7602
+  languageName: node
+  linkType: hard
+
+"pako@npm:~1.0.2":
+  version: 1.0.11
+  resolution: "pako@npm:1.0.11"
+  checksum: 10/1ad07210e894472685564c4d39a08717e84c2a68a70d3c1d9e657d32394ef1670e22972a433cbfe48976cb98b154ba06855dcd3fcfba77f60f1777634bec48c0
   languageName: node
   linkType: hard
 
@@ -12161,7 +12169,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"readable-stream@npm:^2.0.5":
+"readable-stream@npm:^2.0.5, readable-stream@npm:~2.3.6":
   version: 2.3.8
   resolution: "readable-stream@npm:2.3.8"
   dependencies:
@@ -12687,6 +12695,13 @@ __metadata:
     es-errors: "npm:^1.3.0"
     es-object-atoms: "npm:^1.0.0"
   checksum: 10/b87f8187bca595ddc3c0721ece4635015fd9d7cb294e6dd2e394ce5186a71bbfa4dc8a35010958c65e43ad83cde09642660e61a952883c24fd6b45ead15f045c
+  languageName: node
+  linkType: hard
+
+"setimmediate@npm:^1.0.5":
+  version: 1.0.5
+  resolution: "setimmediate@npm:1.0.5"
+  checksum: 10/76e3f5d7f4b581b6100ff819761f04a984fa3f3990e72a6554b57188ded53efce2d3d6c0932c10f810b7c59414f85e2ab3c11521877d1dea1ce0b56dc906f485
   languageName: node
   linkType: hard
 

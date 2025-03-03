@@ -4,12 +4,12 @@ import { singleton } from 'tsyringe';
 import { AccountType, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../drizzle/db';
+import { accountsTable, membersView } from '../../drizzle/schema';
 import {
-  AccountCreationDTO,
+  AccountInsertDTO,
   MemberCreationDTO,
-  accountsTable,
-  membersView,
-} from '../../drizzle/schema';
+  MemberRaw,
+} from '../../drizzle/types';
 import { MemberNotFound } from '../../utils/errors';
 import { mapById } from '../utils';
 
@@ -19,7 +19,12 @@ export class MemberRepository {
     // need to use the accounts table as we can not delete from a view (membersView)
     await db
       .delete(accountsTable)
-      .where(and(eq(accountsTable.id, id), eq(accountsTable.type, AccountType.Individual)));
+      .where(
+        and(
+          eq(accountsTable.id, id),
+          eq(accountsTable.type, AccountType.Individual),
+        ),
+      );
   }
 
   async get(db: DBConnection, id: string) {
@@ -28,15 +33,22 @@ export class MemberRepository {
     if (!id) {
       throw new MemberNotFound({ id });
     }
-    const m = await db.select().from(membersView).where(eq(membersView.id, id)).limit(1);
+    const m = await db
+      .select()
+      .from(membersView)
+      .where(eq(membersView.id, id))
+      .limit(1);
     if (!m.length) {
       throw new MemberNotFound({ id });
     }
-    return m[0];
+    return m[0] as MemberRaw;
   }
 
   async getMany(db: DBConnection, ids: string[]) {
-    const members = await db.select().from(membersView).where(inArray(membersView.id, ids));
+    const members = await db
+      .select()
+      .from(membersView)
+      .where(inArray(membersView.id, ids));
     return mapById({
       keys: ids,
       findElement: (id) => members.find(({ id: thisId }) => thisId === id),
@@ -44,23 +56,34 @@ export class MemberRepository {
     });
   }
 
-  async getByEmail(db: DBConnection, emailString: string, args: { shouldExist?: boolean } = {}) {
+  async getByEmail(
+    db: DBConnection,
+    emailString: string,
+    args: { shouldExist?: boolean } = {},
+  ) {
     const email = emailString.toLowerCase();
-    const member = await db.select().from(membersView).where(eq(membersView.email, email));
+    const member = await db
+      .select()
+      .from(membersView)
+      .where(eq(membersView.email, email));
 
     if (args.shouldExist) {
       if (member.length != 1) {
         throw new MemberNotFound({ email });
       }
     }
-    return member.at(0);
+    return member.at(0) as MemberRaw;
   }
 
   async getManyByEmails(db: DBConnection, emails: string[]) {
-    const members = await db.select().from(membersView).where(inArray(membersView.email, emails));
+    const members = await db
+      .select()
+      .from(membersView)
+      .where(inArray(membersView.email, emails));
     return mapById({
       keys: emails,
-      findElement: (email) => members.find(({ email: thisEmail }) => thisEmail === email),
+      findElement: (email) =>
+        members.find(({ email: thisEmail }) => thisEmail === email),
       buildError: (email) => new MemberNotFound({ email }),
     });
   }
@@ -70,12 +93,17 @@ export class MemberRepository {
     id: UUID,
     body: Partial<
       Pick<
-        AccountCreationDTO,
-        'extra' | 'email' | 'name' | 'enableSaveActions' | 'lastAuthenticatedAt' | 'isValidated'
+        AccountInsertDTO,
+        | 'extra'
+        | 'email'
+        | 'name'
+        | 'enableSaveActions'
+        | 'lastAuthenticatedAt'
+        | 'isValidated'
       >
     >,
   ) {
-    const newData: Partial<AccountCreationDTO> = {};
+    const newData: Partial<AccountInsertDTO> = {};
 
     if (body.name) {
       newData.name = body.name;
@@ -121,7 +149,8 @@ export class MemberRepository {
 
   async post(
     db: DBConnection,
-    data: Partial<MemberCreationDTO> & Pick<MemberCreationDTO, 'email' | 'name'>,
+    data: Partial<MemberCreationDTO> &
+      Pick<MemberCreationDTO, 'email' | 'name'>,
   ) {
     const email = data.email.toLowerCase();
 
@@ -141,6 +170,10 @@ export class MemberRepository {
     if (res.length != 1) {
       throw new Error('could not get added member');
     }
-    return res[0];
+    const member = res[0];
+    if (member.type !== AccountType.Individual) {
+      throw new Error('Expected member to be an individual but was not');
+    }
+    return member as MemberRaw;
   }
 }

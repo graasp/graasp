@@ -3,11 +3,11 @@ import { singleton } from 'tsyringe';
 import { ItemLoginSchemaStatus, PermissionLevel, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../drizzle/db';
+import { MaybeUser } from '../../types';
 import { asDefined, assertIsDefined } from '../../utils/assertions';
 import { InvalidPassword } from '../../utils/errors';
 import { verifyCurrentPassword } from '../auth/plugins/password/utils';
 import { ItemRepository } from '../item/repository';
-import { Actor, Member } from '../member/entities/member';
 import { Guest } from './entities/guest';
 import { ItemLoginSchema } from './entities/itemLoginSchema';
 import {
@@ -40,7 +40,7 @@ export class ItemLoginService {
     this.guestPasswordRepository = guestPasswordRepository;
   }
 
-  async getSchemaType(db: DBConnection, actor: Actor, itemPath: string) {
+  async getSchemaType(db: DBConnection, actor: MaybeUser, itemPath: string) {
     // do not need permission to get item login schema
     // we need to know the schema to display the correct form
     const itemLoginSchema = await this.itemLoginSchemaRepository.getOneByItemPath(db, itemPath);
@@ -154,7 +154,10 @@ export class ItemLoginService {
     type?: ItemLoginSchema['type'],
     status?: ItemLoginSchema['status'],
   ) {
-    return this.itemLoginSchemaRepository.updateOne(db, itemId, { type, status });
+    return this.itemLoginSchemaRepository.updateOne(db, itemId, {
+      type,
+      status,
+    });
   }
 
   async getOneByItem(db: DBConnection, itemId: string) {

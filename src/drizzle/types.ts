@@ -43,7 +43,9 @@ export type NullableAccount = Account | null;
 export type MemberCreationDTO = typeof membersView.$inferSelect & {
   email: string;
 };
-export type MemberRaw = typeof membersView.$inferSelect;
+export type MemberRaw = Omit<typeof membersView.$inferSelect, 'type'> & {
+  type: 'individual';
+};
 
 /**
  * Raw insert type used when creating an item

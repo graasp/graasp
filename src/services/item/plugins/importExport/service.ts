@@ -1,5 +1,6 @@
 import fs, { existsSync } from 'fs';
 import { readFile } from 'fs/promises';
+import mimetics from 'mimetics';
 import fetch from 'node-fetch';
 import path from 'path';
 import sanitize from 'sanitize-html';
@@ -11,8 +12,11 @@ import { FastifyReply } from 'fastify';
 import { ItemType, getMimetype } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
+import { Item } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
+import { MaybeUser, MinimalMember } from '../../../../types';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
+import { isItemType } from '../../discrimination';
 import { ItemService } from '../../service';
 import { EtherpadItemService } from '../etherpad/service';
 import FileItemService from '../file/service';
@@ -34,6 +38,7 @@ export class ImportExportService {
   private readonly itemService: ItemService;
   private readonly etherpadService: EtherpadItemService;
   private readonly log: BaseLogger;
+  private readonly mimetics: typeof mimetics;
 
   constructor(
     fileItemService: FileItemService,
@@ -70,7 +75,7 @@ export class ImportExportService {
    */
   private async _saveItemFromFilename(
     db: DBConnection,
-    actor: Member,
+    actor: MinimalMember,
     options: {
       filename: string;
       folderPath: string;
@@ -186,7 +191,10 @@ export class ImportExportService {
 
       // normal files
       default: {
-        const { mime: mimetype } = await fileTypeFromFile(filepath);
+        // TODO: replace by file-type library once we are in ESM
+        const fileTypeAnalysis = await mimetics.parseAsync(fs.readFileSync(filepath));
+        const mimetype = fileTypeAnalysis?.mime ?? 'text/plain';
+
         // upload file
         const file = fs.createReadStream(filepath);
         const item = await this.fileItemService.upload(db, actor, {
@@ -260,7 +268,7 @@ export class ImportExportService {
       case isItemType(item, ItemType.ETHERPAD): {
         return {
           stream: Readable.from(
-            await this.etherpadService.getEtherpadContentFromItem(actor, item.id),
+            await this.etherpadService.getEtherpadContentFromItem(db, actor, item.id),
           ),
           name: getFilenameFromItem(item),
           mimetype: 'text/html',
@@ -277,7 +285,7 @@ export class ImportExportService {
    */
   private async _addItemToZip(
     db: DBConnection,
-    actor: Actor,
+    actor: MaybeUser,
     args: {
       reply;
       item: Item;
@@ -329,7 +337,7 @@ export class ImportExportService {
 
   async export(
     db: DBConnection,
-    actor: Actor,
+    actor: MaybeUser,
     { item, reply }: { item: Item; reply: FastifyReply },
     logger: BaseLogger,
   ) {
@@ -369,7 +377,7 @@ export class ImportExportService {
    */
   async _import(
     db: DBConnection,
-    actor: Member,
+    actor: MinimalMember,
     { parent, folderPath }: { parent?: Item; folderPath: string },
   ) {
     const filenames = fs.readdirSync(folderPath);
@@ -382,7 +390,7 @@ export class ImportExportService {
         try {
           // transaction is necessary since we are adding data
           // we don't add it at the very top to allow partial zip to be updated
-          await this.db.transaction(async (tx) => {
+          await db.transaction(async (tx) => {
             const item = await this._saveItemFromFilename(tx, actor, {
               filename,
               folderPath,
@@ -419,7 +427,7 @@ export class ImportExportService {
 
   async import(
     db: DBConnection,
-    actor: Member,
+    actor: MinimalMember,
     {
       folderPath,
       targetFolder,

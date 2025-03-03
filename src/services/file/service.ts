@@ -4,11 +4,11 @@ import { Readable } from 'stream';
 
 import { FastifyReply } from 'fastify';
 
-import { Account, Member } from '@graasp/sdk';
+import { Account } from '@graasp/sdk';
 
 import { BaseLogger } from '../../logger';
+import { MaybeUser, MinimalMember } from '../../types';
 import { CachingService } from '../caching/service';
-import { Actor } from '../member/entities/member';
 import { LocalFileConfiguration, S3FileConfiguration } from './interfaces/configuration';
 import { FileRepository } from './interfaces/fileRepository';
 import { createSanitizedFile, sanitizeHtml } from './sanitize';
@@ -22,7 +22,10 @@ import {
   UploadFileUnexpectedError,
 } from './utils/errors';
 
-export type FileServiceConfig = { s3?: S3FileConfiguration; local?: LocalFileConfiguration };
+export type FileServiceConfig = {
+  s3?: S3FileConfiguration;
+  local?: LocalFileConfiguration;
+};
 
 class FileService {
   private readonly repository: FileRepository;
@@ -39,7 +42,7 @@ class FileService {
     return this.repository.fileType;
   }
 
-  async getFileSize(actor: Actor, filepath: string) {
+  async getFileSize(actor: MaybeUser, filepath: string) {
     return this.repository.getFileSize(filepath);
   }
 
@@ -89,7 +92,7 @@ class FileService {
     return file;
   }
 
-  async getFile(_actor: Actor, data: { id?: string; path?: string }): Promise<Readable> {
+  async getFile(_actor: MaybeUser, data: { id?: string; path?: string }): Promise<Readable> {
     const { id, path: filepath } = data;
     if (!filepath || !id) {
       throw new DownloadFileInvalidParameterError();
@@ -139,7 +142,7 @@ class FileService {
   }
 
   async copy(
-    member: Member,
+    member: MinimalMember,
     data: {
       newId?: string;
       newFilePath: string;

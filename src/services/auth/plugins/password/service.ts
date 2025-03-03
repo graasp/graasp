@@ -6,11 +6,12 @@ import { v4 as uuid } from 'uuid';
 import { ClientManager, Context } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { Member } from '../../../../drizzle/schema';
+import { MemberRaw } from '../../../../drizzle/types';
 import { TRANSLATIONS } from '../../../../langs/constants';
 import { BaseLogger } from '../../../../logger';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
+import { AuthenticatedUser } from '../../../../types';
 import {
   JWT_SECRET,
   PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES,
@@ -22,12 +23,15 @@ import {
   MemberNotSignedUp,
   MemberWithoutPassword,
 } from '../../../../utils/errors';
-import { Account } from '../../../account/entities/account';
 import { MemberRepository } from '../../../member/repository';
 import { SHORT_TOKEN_PARAM } from '../passport';
 import { PasswordConflict } from './errors';
 import { MemberPasswordRepository } from './memberPassword.repository';
-import { comparePasswords, encryptPassword, verifyCurrentPassword } from './utils';
+import {
+  comparePasswords,
+  encryptPassword,
+  verifyCurrentPassword,
+} from './utils';
 
 const REDIS_PREFIX = 'reset-password:';
 
@@ -74,26 +78,48 @@ export class MemberPasswordService {
     });
   }
 
-  async post(db: DBConnection, actor: Account, newPassword: string) {
+  async post(
+    db: DBConnection,
+    authenticatedUser: AuthenticatedUser,
+    newPassword: string,
+  ) {
     // verify that input current password is the same as the stored one
-    const currentPassword = await this.memberPasswordRepository.getForMemberId(db, actor.id);
+    const currentPassword = await this.memberPasswordRepository.getForMemberId(
+      db,
+      authenticatedUser.id,
+    );
     if (currentPassword) {
       throw new PasswordConflict();
     }
     // auto-generate a salt and a hash
     const newEncryptedPassword = await encryptPassword(newPassword);
 
-    await this.memberPasswordRepository.post(db, actor.id, newEncryptedPassword);
+    await this.memberPasswordRepository.post(
+      db,
+      authenticatedUser.id,
+      newEncryptedPassword,
+    );
   }
 
-  async patch(db: DBConnection, account: Account, newPassword: string, currentPassword: string) {
+  async patch(
+    db: DBConnection,
+    authenticatedUser: AuthenticatedUser,
+    newPassword: string,
+    currentPassword: string,
+  ) {
     // get member stored password
-    const memberPassword = await this.memberPasswordRepository.getForMemberId(db, account.id);
+    const memberPassword = await this.memberPasswordRepository.getForMemberId(
+      db,
+      authenticatedUser.id,
+    );
 
     // Check if password can be updated
     // member has a password, we must check if passwords match before updating
     if (memberPassword) {
-      const verified = await verifyCurrentPassword(memberPassword.password, currentPassword);
+      const verified = await verifyCurrentPassword(
+        memberPassword.password,
+        currentPassword,
+      );
       // throw error if password verification fails
       if (!verified) {
         // this should be validated by the schema, but we do it again here.
@@ -104,7 +130,11 @@ export class MemberPasswordService {
       }
     }
     // apply password change
-    await this.memberPasswordRepository.patch(db, account.id, newPassword);
+    await this.memberPasswordRepository.patch(
+      db,
+      authenticatedUser.id,
+      newPassword,
+    );
   }
 
   /**
@@ -116,7 +146,11 @@ export class MemberPasswordService {
    * @param uuid The Password Reset Request UUID associated to the member that wants to reset the password.
    * @returns void
    */
-  async applyReset(db: DBConnection, password: string, uuid: string): Promise<void> {
+  async applyReset(
+    db: DBConnection,
+    password: string,
+    uuid: string,
+  ): Promise<void> {
     const id = await this.redis.get(this.buildRedisKey(uuid));
     if (!id) {
       return;
@@ -139,13 +173,16 @@ export class MemberPasswordService {
   async createResetPasswordRequest(
     db: DBConnection,
     email: string,
-  ): Promise<{ token: string; member: Member } | undefined> {
+  ): Promise<{ token: string; member: MemberRaw } | undefined> {
     const member = await this.memberRepository.getByEmail(db, email);
 
     if (!member) {
       return;
     }
-    const password = await this.memberPasswordRepository.getForMemberId(db, member.id);
+    const password = await this.memberPasswordRepository.getForMemberId(
+      db,
+      member.id,
+    );
     if (!password) {
       return;
     }
@@ -191,7 +228,9 @@ export class MemberPasswordService {
     // don't wait for mailerService's response; log error and link if it fails.
     this.mailerService
       .send(mail, email)
-      .catch((err) => this.log.warn(err, `mailerService failed. link: ${destinationUrl}`));
+      .catch((err) =>
+        this.log.warn(err, `mailerService failed. link: ${destinationUrl}`),
+      );
   }
 
   /**
@@ -209,7 +248,10 @@ export class MemberPasswordService {
    * @param uuid The Password Reset Request UUID
    * @returns The member associated to the UUID. Otherwise, undefined if we couldn't find the member.
    */
-  async getMemberByPasswordResetUuid(db: DBConnection, uuid: string): Promise<Member> {
+  async getMemberByPasswordResetUuid(
+    db: DBConnection,
+    uuid: string,
+  ): Promise<MemberRaw> {
     const id = await this.redis.get(this.buildRedisKey(uuid));
     if (!id) {
       throw new Error('Id not found');
@@ -229,7 +271,7 @@ export class MemberPasswordService {
     db: DBConnection,
     email: string,
     password: string,
-  ): Promise<Member | undefined> {
+  ): Promise<MemberRaw | undefined> {
     // Check if the member is registered
     const member = await this.memberRepository.getByEmail(db, email);
     if (!member) {
@@ -237,7 +279,10 @@ export class MemberPasswordService {
       throw new MemberNotSignedUp({ email });
     }
     // Fetch the member's password
-    const memberPassword = await this.memberPasswordRepository.getForMemberId(db, member.id);
+    const memberPassword = await this.memberPasswordRepository.getForMemberId(
+      db,
+      member.id,
+    );
     if (!memberPassword) {
       throw new MemberWithoutPassword();
     }
@@ -249,7 +294,10 @@ export class MemberPasswordService {
   }
 
   async hasPassword(db: DBConnection, memberId: string): Promise<boolean> {
-    const password = await this.memberPasswordRepository.getForMemberId(db, memberId);
+    const password = await this.memberPasswordRepository.getForMemberId(
+      db,
+      memberId,
+    );
     return Boolean(password);
   }
 }

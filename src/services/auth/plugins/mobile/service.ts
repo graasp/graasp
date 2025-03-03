@@ -4,6 +4,7 @@ import { DEFAULT_LANG } from '@graasp/translations';
 
 import { DBConnection } from '../../../../drizzle/db';
 import { BaseLogger } from '../../../../logger';
+import { MinimalMember } from '../../../../types';
 import { MemberAlreadySignedUp, MemberNotSignedUp } from '../../../../utils/errors';
 import { MemberRepository } from '../../../member/repository';
 import { AuthService } from '../../service';
@@ -45,9 +46,8 @@ export class MobileService {
         extra: { lang },
         enableSaveActions,
       };
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      const newMember = await memberRepository.post(data);
+
+      const newMember = (await this.memberRepository.post(db, data)) satisfies MinimalMember;
       await this.authService.generateRegisterLinkAndEmailIt(newMember, {
         challenge,
       });

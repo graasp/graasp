@@ -4,16 +4,16 @@ import { default as sanitize } from 'sanitize-filename';
 import { fastifyMultipart } from '@fastify/multipart';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { ActionTriggers, ItemType, MAX_ZIP_FILE_SIZE } from '@graasp/sdk';
+import { ActionTriggers, Context, ItemType, MAX_ZIP_FILE_SIZE } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { BaseLogger } from '../../../../logger';
 import { asDefined } from '../../../../utils/assertions';
-import { ActionService } from '../../../action/services/action.service';
+import { ActionService } from '../../../action/action.service';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import { assertIsMember } from '../../../authentication';
 import { matchOne } from '../../../authorization';
-import { assertIsMember } from '../../../member/entities/member';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { ItemService } from '../../service';
 import { ZIP_FILE_MIME_TYPES } from './constants';
@@ -45,7 +45,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
   fastify.post(
     '/zip-import',
-    { schema: zipImport, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
+    {
+      schema: zipImport,
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
+    },
     async (request, reply) => {
       const {
         user,
@@ -104,9 +107,11 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
       // trigger download action for a collection
       const action = {
-        item,
+        itemId: item.id,
         type: ActionTriggers.ItemDownload,
-        extra: { itemId: item?.id },
+        extra: JSON.stringify({ itemId: item?.id }),
+        // FIX: this should be infered from the request ! add a parameter in the request
+        view: Context.Builder,
       };
       await actionService.postMany(db, member, request, [action]);
 

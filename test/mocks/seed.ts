@@ -2,12 +2,16 @@ import { faker } from '@faker-js/faker';
 import { BaseEntity } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { CompleteMember, ItemType, PermissionLevel, buildPathFromIds } from '@graasp/sdk';
+import {
+  CompleteMember,
+  ItemType,
+  PermissionLevel,
+  buildPathFromIds,
+} from '@graasp/sdk';
 
-import { Member } from '../../src/drizzle/schema';
+import { Item, ItemWithCreator, MemberRaw } from '../../src/drizzle/types';
 import { MemberPassword } from '../../src/services/auth/plugins/password/entities/password';
 import { encryptPassword } from '../../src/services/auth/plugins/password/utils';
-import { Item } from '../../src/services/item/entities/Item';
 import { ItemMembership } from '../../src/services/itemMembership/entities/ItemMembership';
 import { MemberProfile } from '../../src/services/member/plugins/profile/entities/profile';
 import { MaybeUser } from '../../src/types';
@@ -36,9 +40,9 @@ type SeedActor =
     });
 type DataType = {
   actor?: SeedActor | null;
-  members?: (Partial<Member> & { profile?: Partial<MemberProfile> })[];
-  items?: ((Partial<Item> | { creator: SeedActor }) & {
-    children?: (Partial<Item> | { creator: SeedActor })[];
+  members?: (Partial<MemberRaw> & { profile?: Partial<MemberProfile> })[];
+  items?: ((Partial<ItemWithCreator> | { creator: SeedActor }) & {
+    children?: (Partial<ItemWithCreator> | { creator: SeedActor })[];
     memberships?: (
       | Partial<ItemMembership>
       | {
@@ -50,7 +54,10 @@ type DataType = {
   })[];
 };
 
-const replaceActorInItems = (createdActor?: MaybeUser, items?: DataType['items']) => {
+const replaceActorInItems = (
+  createdActor?: MaybeUser,
+  items?: DataType['items'],
+) => {
   if (!items?.length) {
     return [];
   }
@@ -139,7 +146,9 @@ const generateIdAndPathForItems = (
 
   return items.flatMap((i) => {
     const id = v4();
-    const path = buildPathFromIds(...([parent?.id, id].filter(Boolean) as string[]));
+    const path = buildPathFromIds(
+      ...([parent?.id, id].filter(Boolean) as string[]),
+    );
     const { children, ...allprops } = i;
 
     const fullParent = {
@@ -191,7 +200,7 @@ export async function seedFromJson(data: DataType = {}) {
     actor: MaybeUser | undefined;
     items: Item[];
     itemMemberships: ItemMembership[];
-    members: Member[];
+    members: MemberRaw[];
     memberProfiles: MemberProfile[];
   } = {
     items: [],
@@ -211,7 +220,7 @@ export async function seedFromJson(data: DataType = {}) {
     const membersAndProfiles = await seed({
       members: {
         factory: MemberFactory,
-        constructor: Member,
+        constructor: MemberRaw, // FIX: update to use own factory
         entities: membersEntities,
       },
       memberProfiles: {
@@ -219,8 +228,9 @@ export async function seedFromJson(data: DataType = {}) {
         entities: membersEntities.map((m) => m.profile).filter(Boolean),
       },
     });
-    result.members = membersAndProfiles.members as Member[];
-    result.memberProfiles = membersAndProfiles.memberProfiles as MemberProfile[];
+    result.members = membersAndProfiles.members as MemberRaw[];
+    result.memberProfiles =
+      membersAndProfiles.memberProfiles as MemberProfile[];
   }
 
   // save items
@@ -230,7 +240,7 @@ export async function seedFromJson(data: DataType = {}) {
       await seed({
         items: {
           factory: ItemFactory,
-          constructor: Item,
+          constructor: ItemFactory,
           entities: processedItems,
         },
       })

@@ -3,8 +3,8 @@ import { singleton } from 'tsyringe';
 import { ActionTriggers, Context } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { Member } from '../../../../drizzle/schema';
 import { BaseLogger } from '../../../../logger';
+import { MinimalMember } from '../../../../types';
 import { MemberNotSignedUp } from '../../../../utils/errors';
 import { ActionRepository } from '../../../action/action.repository';
 import { MemberRepository } from '../../../member/repository';
@@ -23,7 +23,7 @@ export class MagicLinkService {
     this.log = log;
   }
 
-  async sendRegisterMail(member: Member, url?: string) {
+  async sendRegisterMail(member: MinimalMember, url?: string) {
     await this.authService.generateRegisterLinkAndEmailIt(member, { url });
   }
 

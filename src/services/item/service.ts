@@ -22,9 +22,10 @@ import {
 } from '@graasp/sdk';
 
 import { DBConnection } from '../../drizzle/db';
-import { Item, ItemMembership, Member } from '../../drizzle/schema';
+import { ItemMembership } from '../../drizzle/schema';
+import { Item, ItemRaw } from '../../drizzle/types';
 import { BaseLogger } from '../../logger';
-import { AuthenticatedUser } from '../../types';
+import { AuthenticatedUser, MaybeUser, MinimalMember } from '../../types';
 import {
   CannotReorderRootItem,
   InvalidMembership,
@@ -46,7 +47,6 @@ import { ThumbnailService } from '../thumbnail/service';
 import { mapById } from '../utils';
 import { ItemWrapper, PackedItem } from './ItemWrapper';
 import { IS_COPY_REGEX, MAX_COPY_SUFFIX_LENGTH } from './constants';
-import { FolderItem, isItemType } from './entities/Item';
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
 import { PartialItemGeolocation } from './plugins/geolocation/errors';
 import { ItemGeolocationRepository } from './plugins/geolocation/repository';
@@ -118,7 +118,7 @@ export class ItemService {
     db: DBConnection,
     member: AuthenticatedUser,
     args: {
-      item: Partial<Item> & Pick<Item, 'name' | 'type'>;
+      item: Partial<ItemRaw> & Pick<ItemRaw, 'name' | 'type'>;
       parentId?: string;
       geolocation?: Pick<ItemGeolocation, 'lat' | 'lng'>;
       thumbnail?: Readable;
@@ -196,7 +196,7 @@ export class ItemService {
       PermissionLevelCompare.lt(inheritedMembership?.permission, PermissionLevel.Admin)
     ) {
       this.log.debug(`create membership for ${createdItem.id}`);
-      await this.itemMembershipRepository.addOne({
+      await this.itemMembershipRepository.addOne(db, {
         itemPath: createdItem.path,
         accountId: member.id,
         creatorId: member.id,
@@ -214,7 +214,7 @@ export class ItemService {
 
     // thumbnail
     if (thumbnail) {
-      await this.thumbnailService.upload(db, member, createdItem.id, thumbnail);
+      await this.thumbnailService.upload(member, createdItem.id, thumbnail);
       await this.patch(db, member, createdItem.id, {
         settings: { hasThumbnail: true },
       });
@@ -233,7 +233,7 @@ export class ItemService {
    */
   private async _get(
     db: DBConnection,
-    actor: Actor,
+    actor: MaybeUser,
     id: string,
     permission: PermissionLevel = PermissionLevel.Read,
   ) {
@@ -257,7 +257,7 @@ export class ItemService {
    */
   async get(
     db: DBConnection,
-    actor: Actor,
+    actor: MaybeUser,
     id: string,
     permission: PermissionLevel = PermissionLevel.Read,
   ) {
@@ -275,7 +275,7 @@ export class ItemService {
    */
   async getPacked(
     db: DBConnection,
-    actor: Actor,
+    actor: MaybeUser,
     id: string,
     permission: PermissionLevel = PermissionLevel.Read,
   ) {
@@ -293,7 +293,7 @@ export class ItemService {
    */
   private async _getMany(
     db: DBConnection,
-    actor: Actor,
+    actor: MaybeUser,
     ids: string[],
   ): Promise<{
     items: ResultOf<Item>;
@@ -327,7 +327,7 @@ export class ItemService {
    * @param ids
    * @returns
    */
-  async getMany(db: DBConnection, actor: Actor, ids: string[]) {
+  async getMany(db: DBConnection, actor: MaybeUser, ids: string[]) {
     const { items, itemMemberships } = await this._getMany(db, actor, ids);
 
     return {
@@ -342,7 +342,7 @@ export class ItemService {
    * @param ids
    * @returns
    */
-  async getManyPacked(db: DBConnection, actor: Actor, ids: string[]) {
+  async getManyPacked(db: DBConnection, actor: MaybeUser, ids: string[]) {
     const { items, itemMemberships, visibilities } = await this._getMany(db, actor, ids);
 
     const thumbnails = await this.itemThumbnailService.getUrlsByItems(Object.values(items.data));
@@ -352,7 +352,7 @@ export class ItemService {
 
   async getAccessible(
     db: DBConnection,
-    member: Member,
+    member: MinimalMember,
     params: ItemSearchParams,
     pagination: Pagination,
   ): Promise<Paginated<PackedItem>> {
@@ -378,11 +378,11 @@ export class ItemService {
     return { data: packedItems, totalCount, pagination };
   }
 
-  async getOwn(db: DBConnection, member: Member) {
+  async getOwn(db: DBConnection, member: MinimalMember) {
     return this.itemRepository.getOwn(db, member.id);
   }
 
-  async getShared(db: DBConnection, member: Member, permission?: PermissionLevel) {
+  async getShared(db: DBConnection, member: MinimalMember, permission?: PermissionLevel) {
     const items = await this.itemMembershipRepository.getSharedItems(member.id, permission);
     // TODO optimize?
     return filterOutItems(db, member, items);

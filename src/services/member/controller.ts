@@ -2,9 +2,11 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
+import { DEFAULT_LANG } from '@graasp/translations';
+
 import { resolveDependency } from '../../di/utils';
 import { db } from '../../drizzle/db';
-import { asDefined } from '../../utils/assertions';
+import { asDefined, assertIsDefined } from '../../utils/assertions';
 import { CannotModifyOtherMembers } from '../../utils/errors';
 import {
   authenticateEmailChange,
@@ -48,7 +50,10 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
   // get current member storage and its limits
   fastify.get(
     '/current/storage',
-    { schema: getStorage, preHandler: [isAuthenticated, matchOne(memberAccountRole)] },
+    {
+      schema: getStorage,
+      preHandler: [isAuthenticated, matchOne(memberAccountRole)],
+    },
     async ({ user }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
@@ -59,7 +64,10 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
   // get current member storage files metadata
   fastify.get(
     '/current/storage/files',
-    { schema: getStorageFiles, preHandler: [isAuthenticated, matchOne(memberAccountRole)] },
+    {
+      schema: getStorageFiles,
+      preHandler: [isAuthenticated, matchOne(memberAccountRole)],
+    },
     async ({ user, query: { page, pageSize } }, reply) => {
       if (
         page < FILE_METADATA_MIN_PAGE ||
@@ -148,19 +156,26 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
 
   fastify.post(
     '/current/email/change',
-    { schema: postChangeEmail, preHandler: [isAuthenticated, matchOne(memberAccountRole)] },
+    {
+      schema: postChangeEmail,
+      preHandler: [isAuthenticated, matchOne(memberAccountRole)],
+    },
     async ({ user, body: { email } }, reply) => {
-      const member = asDefined(user?.account);
-      assertIsMember(member);
+      const account = asDefined(user?.account);
+      assertIsMember(account);
 
       reply.status(StatusCodes.NO_CONTENT);
+      // check if there is a member that already has the new email
       if (await memberService.getByEmail(db, email)) {
         // Email adress is already taken, throw an error
         throw new EmailAlreadyTaken();
       }
 
+      // HACK: re-fetch the member from the repo to have it in full (so the types match)
+      const member = await memberService.get(db, account.id);
+      assertIsDefined(member);
       const token = memberService.createEmailChangeRequest(member, email);
-      memberService.sendEmailChangeRequest(email, token, member.lang);
+      memberService.sendEmailChangeRequest(email, token, member.extra.lang ?? DEFAULT_LANG);
     },
   );
 
@@ -172,23 +187,24 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async ({ user }, reply) => {
       const emailModification = asDefined(user?.emailChange);
-      const member = asDefined(user?.account);
-      assertIsMember(member);
+      const account = asDefined(user?.account);
+      assertIsMember(account);
 
       await db.transaction(async (tx) => {
         if (await memberService.getByEmail(tx, emailModification.newEmail)) {
           // Email adress is already taken, throw an error
           throw new EmailAlreadyTaken();
         }
-        await memberService.patch(tx, member.id, {
+        const newMember = await memberService.patch(tx, account.id, {
           email: emailModification.newEmail,
         });
 
         // we send the email asynchronously without awaiting
         memberService.mailConfirmEmailChangeRequest(
-          member.email,
+          // HACK: The email should always be defined, but the types on the db are weak
+          newMember.email!,
           emailModification.newEmail,
-          member.lang,
+          newMember.extra.lang ?? DEFAULT_LANG,
         );
       });
       // this needs to be outside the transaction

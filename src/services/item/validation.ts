@@ -2,7 +2,7 @@ import { Ajv } from 'ajv';
 
 import { ItemGeolocation } from '@graasp/sdk';
 
-import { Item } from './entities/Item';
+import { Item } from '../../drizzle/types';
 import { geoCoordinateSchema } from './plugins/geolocation/schemas';
 import { settingsSchema } from './schemas';
 

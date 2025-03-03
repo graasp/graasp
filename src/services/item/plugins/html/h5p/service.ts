@@ -8,15 +8,17 @@ import { FastifyBaseLogger } from 'fastify';
 import { H5PItemExtra, ItemType } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../drizzle/db';
+import { Item, ItemWithType } from '../../../../../drizzle/types';
 import { BaseLogger } from '../../../../../logger';
+import { MinimalMember } from '../../../../../types';
 import {
   H5P_FILE_STORAGE_CONFIG,
   H5P_FILE_STORAGE_TYPE,
   H5P_PATH_PREFIX,
 } from '../../../../../utils/config';
-import { Member } from '../../../../member/entities/member';
 import { StorageService } from '../../../../member/plugins/storage/service';
-import { Item } from '../../../entities/Item';
+import { H5PItem, isItemType } from '../../../discrimination';
+import { ItemRepository } from '../../../repository';
 import { ItemService } from '../../../service';
 import { HtmlService } from '../service';
 import { H5P_FILE_DOT_EXTENSION, H5P_FILE_MIME_TYPE } from './constants';
@@ -75,18 +77,21 @@ export class H5PService extends HtmlService {
   /**
    * Get the H5P file url referenced by a given Item
    */
-  getUrl(item: Item<typeof ItemType.H5P>) {
+  getUrl(item: ItemWithType<typeof ItemType.H5P>) {
     const h5pPath = item.extra.h5p.h5pFilePath;
     return super._getUrl(item.id, h5pPath);
   }
 
   async copy(
     db: DBConnection,
-    member: Member,
+    member: MinimalMember,
     {
       original: item,
       copy,
-    }: { original: Item<typeof ItemType.H5P>; copy: Item<typeof ItemType.H5P> },
+    }: {
+      original: ItemWithType<typeof ItemType.H5P>;
+      copy: ItemWithType<typeof ItemType.H5P>;
+    },
   ): Promise<void> {
     const { extra } = item;
 
@@ -116,14 +121,14 @@ export class H5PService extends HtmlService {
 
   async createH5PItem(
     db: DBConnection,
-    actor: Member,
+    actor: MinimalMember,
     filename: string,
     stream: Readable,
     parentId?: Item['id'],
     previousItemId?: Item['id'],
     log?: FastifyBaseLogger,
-  ): Promise<Item> {
-    return super.createItem(
+  ): Promise<H5PItem> {
+    const item = await super.createItem(
       db,
       actor,
       filename,
@@ -133,6 +138,10 @@ export class H5PService extends HtmlService {
       previousItemId,
       log,
     );
+    if (!isItemType(item, ItemType.H5P)) {
+      throw new Error('Expected item to be H5P but it was something else');
+    }
+    return item;
   }
 
   /**
@@ -143,14 +152,14 @@ export class H5PService extends HtmlService {
    * @param member Actor member
    * @param parentId Optional parent id of the newly created item
    */
-  private createItemForH5PFile = async (
+  private async createItemForH5PFile(
     db: DBConnection,
-    member: Member,
+    member: MinimalMember,
     filename: string,
     contentId: string,
     parentId?: string,
     previousItemId?: string,
-  ): Promise<Item> => {
+  ): Promise<Item> {
     const metadata = {
       name: this.buildH5PPath('', filename),
       type: ItemType.H5P,
@@ -161,5 +170,5 @@ export class H5PService extends HtmlService {
       parentId,
       previousItemId,
     });
-  };
+  }
 }
