@@ -7,7 +7,6 @@ import {
 } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import contentDisposition from 'content-disposition';
 import fs from 'fs';
 import { StatusCodes } from 'http-status-codes';
 import fetch from 'node-fetch';
@@ -69,7 +68,6 @@ export class S3FileRepository implements FileRepository {
     memberId,
     originalPath,
     newFilePath,
-    filename,
     mimetype,
   }: {
     newId?: UUID;
@@ -93,9 +91,7 @@ export class S3FileRepository implements FileRepository {
       Key: newFilePath,
       Metadata: metadata,
       MetadataDirective: 'REPLACE',
-      ContentDisposition: contentDisposition(filename),
       ContentType: mimetype,
-      CacheControl: 'no-cache', // TODO: improve?
     };
 
     // TODO: the Cache-Control policy metadata is lost. try to set a global policy for the bucket in aws.
