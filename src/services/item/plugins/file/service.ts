@@ -50,7 +50,7 @@ class FileItemService extends ItemService {
     this.storageService = storageService;
   }
 
-  public buildFilePath(extension?: string) {
+  public buildFilePath(extension: string = '') {
     // TODO: CHANGE ??
     const filepath = `${randomHexOf4()}/${randomHexOf4()}/${randomHexOf4()}-${Date.now()}${extension}`;
     return path.join('files', filepath);
@@ -209,9 +209,8 @@ class FileItemService extends ItemService {
 
   async copyFile(member: Member, repositories: Repositories, { copy }: { original; copy }) {
     const { id, extra } = copy; // full copy with new `id`
-    const { path: originalPath, mimetype } = extra[this.fileService.fileType];
-    // filenames are not used
-    const newFilePath = this.buildFilePath();
+    const { path: originalPath, mimetype, name } = extra[this.fileService.fileType];
+    const newFilePath = this.buildFilePath(getFileExtension(name));
 
     const data = {
       newId: id,
