@@ -7,13 +7,11 @@ import { EtherpadItemExtra, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { ETHERPAD_NAME_FACTORY_DI_KEY } from '../../../../di/constants';
 import { DBConnection } from '../../../../drizzle/db';
+import { Item, MinimalAccount } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
-import { AuthenticatedUser } from '../../../../types';
+import { AuthenticatedUser, MinimalMember } from '../../../../types';
 import { MemberCannotWriteItem } from '../../../../utils/errors';
-import { Account } from '../../../account/entities/account';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
-import { Member } from '../../../member/entities/member';
-import { EtherpadItem, Item, isItemType } from '../../entities/Item';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
@@ -138,7 +136,7 @@ export class EtherpadItemService {
    */
   public async patchWithOptions(
     db: DBConnection,
-    member: Member,
+    member: MinimalMember,
     itemId: Item['id'],
     { readerPermission }: { readerPermission: PermissionLevel.Read | PermissionLevel.Write },
   ) {
@@ -160,7 +158,7 @@ export class EtherpadItemService {
   private async checkMode(
     db: DBConnection,
     requestedMode: 'read' | 'write',
-    account: Account,
+    account: MinimalAccount,
     item: EtherpadItem,
   ): Promise<'read' | 'write'> {
     // no specific check if read mode was requested
@@ -203,17 +201,17 @@ export class EtherpadItemService {
    */
   public async getEtherpadFromItem(
     db: DBConnection,
-    account: Account,
+    account: AuthenticatedUser,
     itemId: string,
     mode: 'read' | 'write',
   ) {
-    const item = await this.itemService.get(db, account, repos, itemId);
+    const item = await this.itemService.get(db, account, itemId);
 
     if (!isItemType(item, ItemType.ETHERPAD) || !item.extra?.etherpad) {
       throw new ItemMissingExtraError(item?.id);
     }
 
-    const checkedMode = await this.checkMode(repos, mode, account, item);
+    const checkedMode = await this.checkMode(db, mode, account, item);
 
     const { padID, groupID } = item.extra.etherpad;
 
@@ -344,16 +342,16 @@ export class EtherpadItemService {
    * Retrieves the Etherpad html content for a given item
    * useful for exporting data
    *
-   * @param {Account} account user retrieving the content
+   * @param {AuthenticatedUser} account user retrieving the content
    * @param {string} itemId item to retrieve the content of
    * @returns {string} html content of the etherpad
    */
   public async getEtherpadContentFromItem(
     db: DBConnection,
-    account: Account,
+    account: AuthenticatedUser,
     itemId: string,
   ): Promise<string> {
-    const item = await this.itemService.get(db, account, repos, itemId);
+    const item = await this.itemService.get(db, account, itemId);
 
     if (!isItemType(item, ItemType.ETHERPAD) || !item.extra?.etherpad) {
       throw new ItemMissingExtraError(item?.id);

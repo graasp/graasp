@@ -4,7 +4,8 @@ import { singleton } from 'tsyringe';
 import { TagCategory } from '@graasp/sdk';
 
 import { DBConnection } from '../../drizzle/db';
-import { Tag, tags } from '../../drizzle/schema';
+import { tags } from '../../drizzle/schema';
+import { TagRaw } from '../../drizzle/types';
 import { IllegalArgumentException } from '../../repositories/errors';
 
 @singleton()
@@ -14,7 +15,7 @@ export class TagRepository {
     return name.trim().replace(/ +(?= )/g, '');
   }
 
-  async get(db: DBConnection, tagId: Tag['id']): Promise<Tag | undefined> {
+  async get(db: DBConnection, tagId: TagRaw['id']): Promise<TagRaw | undefined> {
     if (!tagId) {
       throw new IllegalArgumentException('tagId is not valid');
     }
@@ -22,7 +23,7 @@ export class TagRepository {
     return tag;
   }
 
-  async addOne(db: DBConnection, tag: { name: string; category: TagCategory }): Promise<Tag> {
+  async addOne(db: DBConnection, tag: { name: string; category: TagCategory }): Promise<TagRaw> {
     const createdTag = await db
       .insert(tags)
       .values({ name: this.sanitizeName(tag.name), category: tag.category })
@@ -36,7 +37,7 @@ export class TagRepository {
   async addOneIfDoesNotExist(
     db: DBConnection,
     tagInfo: { name: string; category: TagCategory },
-  ): Promise<Tag> {
+  ): Promise<TagRaw> {
     const tag = await db.query.tags.findFirst({
       where: and(
         eq(tags.name, this.sanitizeName(tagInfo.name)),

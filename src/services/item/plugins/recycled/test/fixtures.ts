@@ -1,13 +1,13 @@
 import { PackedItem } from '@graasp/sdk';
 
-import { Member } from '../../../../member/entities/member';
-import { Item } from '../../../entities/Item';
+import { Item } from '../../../../../drizzle/types';
+import { MinimalMember } from '../../../../../types';
 import { PackedRecycledItemData, RecycledItemData } from '../RecycledItemData';
 
 export const expectRecycledItem = (
   newRecycledItem: RecycledItemData,
   item?: Item,
-  creator?: Member,
+  creator?: MinimalMember,
 ) => {
   if (!item) {
     throw 'expectRecycledItem.item is not defined';
@@ -20,7 +20,7 @@ export const expectRecycledItem = (
 export const expectPackedRecycledItem = (
   newRecycledItem: PackedRecycledItemData,
   item?: PackedItem,
-  creator?: Member,
+  creator?: MinimalMember,
 ) => {
   if (!item) {
     throw 'expectRecycledItem.item is not defined';
@@ -32,7 +32,7 @@ export const expectPackedRecycledItem = (
 export const expectManyRecycledItems = (
   newRecycledItems: RecycledItemData[],
   items: Item[],
-  creator?: Member,
+  creator?: MinimalMember,
 ) => {
   newRecycledItems.forEach((rI) => {
     expectRecycledItem(

@@ -9,10 +9,15 @@ import { DEFAULT_LANG } from '@graasp/translations';
 
 import { DBConnection } from '../../../../drizzle/db';
 import { isAncestorOrSelf, isDescendantOrSelf } from '../../../../drizzle/operations';
-import { Item, accountsTable, itemGeolocations, items } from '../../../../drizzle/schema';
+import { accountsTable, itemGeolocations, items } from '../../../../drizzle/schema';
+import {
+  Item,
+  ItemGeolocationRaw,
+  ItemGeolocationWithItem,
+  ItemGeolocationWithItemAndCreator,
+} from '../../../../drizzle/types';
+import { MaybeUser } from '../../../../types';
 import { ALLOWED_SEARCH_LANGS, GEOLOCATION_API_HOST } from '../../../../utils/config';
-import { Actor, isMember } from '../../../member/entities/member';
-import { ItemGeolocation } from './ItemGeolocation';
 import { MissingGeolocationSearchParams } from './errors';
 
 export class ItemGeolocationRepository {
@@ -55,7 +60,7 @@ export class ItemGeolocationRepository {
    */
   async getItemsIn(
     db: DBConnection,
-    actor: Actor,
+    actor: MaybeUser,
     {
       lat1,
       lat2,
@@ -63,14 +68,14 @@ export class ItemGeolocationRepository {
       lng2,
       keywords,
     }: {
-      lat1?: ItemGeolocation['lat'];
-      lat2?: ItemGeolocation['lat'];
-      lng1?: ItemGeolocation['lng'];
-      lng2?: ItemGeolocation['lng'];
+      lat1?: ItemGeolocationRaw['lat'];
+      lat2?: ItemGeolocationRaw['lat'];
+      lng1?: ItemGeolocationRaw['lng'];
+      lng2?: ItemGeolocationRaw['lng'];
       keywords?: string[];
     },
     parentItem?: Item,
-  ) {
+  ): Promise<ItemGeolocationWithItemAndCreator[]> {
     // should include at least parentItem or all lat/lng
     if (
       !parentItem &&
@@ -160,7 +165,10 @@ export class ItemGeolocationRepository {
    * @param itemPath
    * @returns geolocation for this item
    */
-  async getByItem(db: DBConnection, itemPath: Item['path']) {
+  async getByItem(
+    db: DBConnection,
+    itemPath: Item['path'],
+  ): Promise<ItemGeolocationWithItem | undefined> {
     const geoloc = await db.query.itemGeolocations.findFirst({
       where: isAncestorOrSelf(itemGeolocations.itemPath, itemPath),
       with: { item: true },
@@ -179,8 +187,8 @@ export class ItemGeolocationRepository {
   async put(
     db: DBConnection,
     itemPath: Item['path'],
-    geolocation: Pick<ItemGeolocation, 'lat' | 'lng'> &
-      Pick<Partial<ItemGeolocation>, 'addressLabel' | 'helperLabel'>,
+    geolocation: Pick<ItemGeolocationRaw, 'lat' | 'lng'> &
+      Pick<Partial<ItemGeolocationRaw>, 'addressLabel' | 'helperLabel'>,
   ): Promise<void> {
     // country might not exist because the point is outside borders
     const country = iso1A2Code([geolocation.lng, geolocation.lat]);
@@ -209,9 +217,9 @@ export class ItemGeolocationRepository {
   }
 
   async getAddressFromCoordinates(
-    { lat, lng, lang = DEFAULT_LANG }: Pick<ItemGeolocation, 'lat' | 'lng'> & { lang?: string },
+    { lat, lng, lang = DEFAULT_LANG }: Pick<ItemGeolocationRaw, 'lat' | 'lng'> & { lang?: string },
     key: string,
-  ) {
+  ): Promise<{ addressLabel: string; country: string }> {
     const searchParams = new URLSearchParams({
       apiKey: key,
       lat: lat.toString(),

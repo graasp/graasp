@@ -7,12 +7,10 @@ import { MultipartFile } from '@fastify/multipart';
 import { AppDataVisibility, FileItemProperties, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../../../drizzle/db';
+import { Item } from '../../../../../../../drizzle/types';
 import { AuthenticatedUser } from '../../../../../../../types';
-import { Account } from '../../../../../../account/entities/account';
 import FileService from '../../../../../../file/service';
-import { Item } from '../../../../../entities/Item';
 import { APP_DATA_TYPE_FILE } from '../../../constants';
-import { AppData } from '../../appData';
 import { NotAppDataFile } from '../../errors';
 import { AppDataRepository } from '../../repository';
 import { AppDataService } from '../../service';
@@ -37,7 +35,7 @@ class AppDataFileService {
     this.appDataRepository = appDataRepository;
   }
 
-  async upload(db: DBConnection, account: Account, file: MultipartFile, item: Item) {
+  async upload(db: DBConnection, account: AuthenticatedUser, file: MultipartFile, item: Item) {
     const { filename, mimetype, file: stream } = file;
     const appDataId = v4();
     const filepath = this.buildFilePath(item.id, appDataId); // parentId, filename

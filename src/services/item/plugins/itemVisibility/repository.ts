@@ -6,10 +6,10 @@ import { ItemVisibilityOptionsType, ResultOf, getChildFromPath } from '@graasp/s
 
 import { DBConnection } from '../../../../drizzle/db';
 import { isAncestorOrSelf, isDescendantOrSelf } from '../../../../drizzle/operations';
-import { itemVisibilities, items } from '../../../../drizzle/schema';
-import { Member } from '../../../member/entities/member';
+import { itemVisibilities, items, itemsRaw } from '../../../../drizzle/schema';
+import { Item, ItemVisibilityRaw, ItemVisibilityWithItem } from '../../../../drizzle/types';
+import { MinimalMember } from '../../../../types';
 import { mapById } from '../../../utils';
-import { Item } from '../../entities/Item';
 import {
   CannotModifyParentVisibility,
   ConflictingVisibilitiesInTheHierarchy,
@@ -24,7 +24,7 @@ export class ItemVisibilityRepository {
     itemPath: Item['path'],
     visibilityType: ItemVisibilityOptionsType,
     { shouldThrow = false } = {},
-  ) {
+  ): Promise<ItemVisibilityWithItem> {
     const result = await db
       .select()
       .from(itemVisibilities)
@@ -48,7 +48,11 @@ export class ItemVisibilityRepository {
    * @param visibilityTypes
    * @returns map type => whether item has this visibility type
    */
-  async hasMany(db: DBConnection, item: Item, visibilityTypes: ItemVisibilityOptionsType[]) {
+  async hasMany(
+    db: DBConnection,
+    item: Item,
+    visibilityTypes: ItemVisibilityOptionsType[],
+  ): Promise<ResultOf<boolean>> {
     const hasVisibilities = await db.query.itemVisibilities.findMany({
       with: { item: true },
       where: and(
@@ -68,7 +72,7 @@ export class ItemVisibilityRepository {
     db: DBConnection,
     items: Item[],
     visibilityTypes: ItemVisibilityOptionsType[],
-  ) {
+  ): Promise<ItemVisibilityWithItem[]> {
     // we expect to query visibilities for defined items, if the items array is empty we will return an empty array.
     if (!items.length) {
       return [];
@@ -165,7 +169,7 @@ export class ItemVisibilityRepository {
     creatorId: string,
     itemPath: string,
     type: ItemVisibilityOptionsType,
-  ) {
+  ): Promise<ItemVisibilityRaw> {
     const existingVisibility = await this.getType(db, itemPath, type);
     if (existingVisibility) {
       throw new ConflictingVisibilitiesInTheHierarchy({ itemPath, type });
@@ -186,7 +190,7 @@ export class ItemVisibilityRepository {
    * @param  {Item} item
    * @param  {ItemVisibilityOptionsType} type
    */
-  async deleteOne(db: DBConnection, item: Item, type: ItemVisibilityOptionsType) {
+  async deleteOne(db: DBConnection, item: Item, type: ItemVisibilityOptionsType): Promise<void> {
     // delete from parent only
     await this.isNotInherited(db, item, type);
 
@@ -201,8 +205,7 @@ export class ItemVisibilityRepository {
           isDescendantOrSelf(itemVisibilities.itemPath, item.path),
           eq(itemVisibilities.type, type),
         ),
-      )
-      .returning();
+      );
   }
 
   async isNotInherited(
@@ -210,7 +213,7 @@ export class ItemVisibilityRepository {
     item: Item,
     type: ItemVisibilityOptionsType,
     { shouldThrow = true } = {},
-  ) {
+  ): Promise<void> {
     const entry = await this.getType(db, item.path, type);
     if (entry && entry.item.path !== item.path && shouldThrow) {
       throw new CannotModifyParentVisibility(entry);
@@ -221,7 +224,7 @@ export class ItemVisibilityRepository {
    * Get all visibilities for one item
    * @param  {Item} item
    */
-  async getByItemPath(db: DBConnection, itemPath: string) {
+  async getByItemPath(db: DBConnection, itemPath: string): Promise<ItemVisibilityWithItem[]> {
     const res = await db.query.itemVisibilities.findMany({
       where: isAncestorOrSelf(itemVisibilities.itemPath, itemPath),
       with: { item: true },
@@ -236,31 +239,36 @@ export class ItemVisibilityRepository {
    */
   async getForManyItems(
     db: DBConnection,
-    items: Item[],
+    inputItems: Item[],
     { withDeleted = false }: { withDeleted?: boolean } = {},
-  ) {
+  ): Promise<ResultOf<ItemVisibilityWithItem[]>> {
     // should not query when items array is empty
-    if (!items.length) {
+    if (!inputItems.length) {
       throw new InvalidUseOfItemVisibilityRepository();
     }
 
     const pathsCondition = or(
-      ...items.map(({ path }) => isAncestorOrSelf(itemVisibilities.itemPath, path)),
+      ...inputItems.map(({ path }) => isAncestorOrSelf(itemVisibilities.itemPath, path)),
     );
+    const deletedCondition = withDeleted
+      ? isNotNull(itemsRaw.deletedAt)
+      : isNull(itemsRaw.deletedAt);
 
-    const visibilities = await db.query.itemVisibilities.findMany({
-      where: pathsCondition,
-      with: {
-        item: {
-          where: (item) => (withDeleted ? isNotNull(item.deletedAt) : isNull(item.deletedAt)),
-        },
-      },
-    });
+    const visibilities = await db
+      .select()
+      .from(itemVisibilities)
+      .innerJoin(itemsRaw, eq(itemVisibilities.itemPath, items.path))
+      .where(and(pathsCondition, deletedCondition));
+
+    const transformedVisibilities = visibilities.map(({ item, item_visibility }) => ({
+      item,
+      ...item_visibility,
+    }));
 
     const mapByPath = mapById({
-      keys: items.map(({ path }) => path),
+      keys: inputItems.map(({ path }) => path),
       findElement: (path) =>
-        visibilities.filter((itemVisibility) => path.includes(itemVisibility.item.path)),
+        transformedVisibilities.filter((itemVisibility) => path.includes(itemVisibility.item.path)),
     });
     // use id as key
     const idToItemVisibilities = Object.fromEntries(
@@ -279,11 +287,11 @@ export class ItemVisibilityRepository {
    */
   async copyAll(
     db: DBConnection,
-    creator: Member,
+    creator: MinimalMember,
     original: Item,
     copy: Item,
     excludeTypes?: ItemVisibilityOptionsType[],
-  ) {
+  ): Promise<void> {
     const originalVisibilities = await this.getByItemPath(db, original.path);
     if (originalVisibilities) {
       await db

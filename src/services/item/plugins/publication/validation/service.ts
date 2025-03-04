@@ -5,11 +5,11 @@ import { singleton } from 'tsyringe';
 import { ItemValidationStatus, PermissionLevel, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../drizzle/db';
+import { Item } from '../../../../../drizzle/types';
 import { BaseLogger } from '../../../../../logger';
+import { MinimalMember } from '../../../../../types';
 import { TMP_FOLDER } from '../../../../../utils/config';
 import { AuthorizationService } from '../../../../authorization';
-import { Member } from '../../../../member/entities/member';
-import { FolderItem, Item } from '../../../entities/Item';
 import { ItemRepository } from '../../../repository';
 import { ItemPublishedService } from '../published/service';
 import { ItemValidationModerator } from './moderators/itemValidationModerator';
@@ -50,7 +50,7 @@ export class ItemValidationService {
     return p;
   }
 
-  async getLastItemValidationGroupForItem(db: DBConnection, member: Member, item: Item) {
+  async getLastItemValidationGroupForItem(db: DBConnection, member: MinimalMember, item: Item) {
     const group = await this.itemValidationGroupRepository.getLastForItem(db, item.id);
 
     // check permissions
@@ -59,7 +59,11 @@ export class ItemValidationService {
     return group;
   }
 
-  async getItemValidationGroup(db: DBConnection, member: Member, itemValidationGroupId: string) {
+  async getItemValidationGroup(
+    db: DBConnection,
+    member: MinimalMember,
+    itemValidationGroupId: string,
+  ) {
     const group = await this.itemValidationGroupRepository.get(db, itemValidationGroupId);
 
     await this.authorizationService.validatePermission(

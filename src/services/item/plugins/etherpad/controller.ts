@@ -72,9 +72,8 @@ const endpoints: FastifyPluginAsyncTypebox = async (fastify) => {
 
   /**
    * Etherpad view in given mode (read or write)
-   * Access should be granted if and only if the user has at least write
-   * access to the item. If user only has read permission, then the pad
-   * should be displayed in read-only mode
+   * Access should be granted if and only if the user has at least write access to the item.
+   * If user only has read permission, then the pad should be displayed in read-only mode.
    */
   fastify.get(
     '/view/:itemId',

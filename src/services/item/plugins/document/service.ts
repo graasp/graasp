@@ -4,11 +4,12 @@ import { singleton } from 'tsyringe';
 import { DocumentItemExtraProperties, ItemGeolocation, ItemType, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
+import { Item } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
-import { Member } from '../../../member/entities/member';
+import { MinimalMember } from '../../../../types';
 import { ThumbnailService } from '../../../thumbnail/service';
-import { DocumentItem, Item, isItemType } from '../../entities/Item';
 import { WrongItemTypeError } from '../../errors';
+import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../thumbnail/service';
@@ -21,9 +22,10 @@ export class DocumentItemService extends ItemService {
     thumbnailService: ThumbnailService,
     itemThumbnailService: ItemThumbnailService,
     meilisearchWrapper: MeiliSearchWrapper,
+    itemRepository: ItemRepository,
     log: BaseLogger,
   ) {
-    super(thumbnailService, itemThumbnailService, meilisearchWrapper, log);
+    super(thumbnailService, itemThumbnailService, meilisearchWrapper, itemRepository, log);
   }
 
   /**
@@ -62,7 +64,7 @@ export class DocumentItemService extends ItemService {
 
   async postWithOptions(
     db: DBConnection,
-    member: Member,
+    member: MinimalMember,
     args: {
       name: Item['name'];
       content: DocumentItemExtraProperties['content'];

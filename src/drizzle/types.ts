@@ -15,20 +15,26 @@ import {
   accountsTable,
   actionsTable,
   appActions,
+  appDatas,
   appSettings,
+  apps,
   chatMentionsTable,
   chatMessagesTable,
   guestsView,
   invitationsTable,
+  itemGeolocations,
+  itemLikes,
   itemLoginSchemas,
   itemMemberships,
   itemTags,
+  itemValidationGroups,
   itemVisibilities,
   items,
   itemsRaw,
   membersView,
   publishedItems,
   shortLinks,
+  tags,
 } from './schema';
 
 export type AccountInsertDTO = typeof accountsTable.$inferInsert;
@@ -114,23 +120,28 @@ export type ItemTypeEnumKeys = keyof ItemExtraMap;
 export type ItemWithType<TExtra extends ItemTypeEnumKeys> = Item & {
   extra: ItemExtraMap[TExtra];
 };
-export type ItemWithCreator = Omit<Item, 'creatorId'> & { creator: Account };
+// note: cannot combine nicely Item and ItemWithCreator when defined with omit
+// export type ItemWithCreator = Omit<Item, 'creatorId'> & { creator: Account };
+export type ItemWithCreator = Item & { creator: Account };
 
 // --- ItemVisibilities
 export type ItemVisibilityRaw = typeof itemVisibilities.$inferSelect;
+export type ItemVisibilityWithItem = Omit<typeof itemVisibilities.$inferSelect, 'itemPath'> & {
+  item: Item;
+};
 
 // ---- Published items
 
-export type PublishedIteminsertDTO = typeof publishedItems.$inferInsert;
-export type PublishedItemRaw = typeof publishedItems.$inferSelect;
-export type ItemPublishedWithItem = Omit<
-  typeof publishedItems.$inferSelect,
-  'itemPath'
-> & {
+export type ItemPublishedRaw = typeof publishedItems.$inferSelect;
+
+export type ItemPublishedWithItem = Omit<typeof publishedItems.$inferSelect, 'itemPath'> & {
   item: Item;
 };
 export type ItemPublishedWithItemAndAccount = ItemPublishedWithItem & {
   creator: Account;
+};
+export type ItemPublishedWithItemWithCreator = ItemPublishedRaw & {
+  item: ItemWithCreator;
 };
 
 // --- Actions
@@ -138,10 +149,7 @@ export type ActionInsertDTO = typeof actionsTable.$inferInsert;
 export type ActionRaw = typeof actionsTable.$inferSelect;
 // this is type that matches the automatically linked entities from typeORM,
 // we should check each usage location to see if including the realtions is necessary or not
-export type ActionWithItem = Omit<
-  typeof actionsTable.$inferSelect,
-  'accountId' | 'itemId'
-> & {
+export type ActionWithItem = Omit<typeof actionsTable.$inferSelect, 'accountId' | 'itemId'> & {
   item: NullableItem;
 };
 export type ActionWithItemAndAccount = ActionWithItem & {
@@ -154,19 +162,13 @@ export type ChatMessageRaw = typeof chatMessagesTable.$inferSelect;
 export type ChatMessageWithCreator = Omit<ChatMessageRaw, 'creatorId'> & {
   creator: NullableAccount;
 };
-export type ChatMessageWithCreatorAndItem = Omit<
-  ChatMessageWithCreator,
-  'itemId'
-> & {
+export type ChatMessageWithCreatorAndItem = Omit<ChatMessageWithCreator, 'itemId'> & {
   item: Item;
 };
 
 // --- ChatMentions
 export type ChatMentionRaw = typeof chatMentionsTable.$inferSelect;
-export type ChatMentionWithMessageAndCreator = Omit<
-  ChatMentionRaw,
-  'accountId' | 'messageId'
-> & {
+export type ChatMentionWithMessageAndCreator = Omit<ChatMentionRaw, 'accountId' | 'messageId'> & {
   account: MinimalAccount;
   message: ChatMessageRaw;
 };
@@ -177,12 +179,13 @@ export type InvitationRaw = typeof invitationsTable.$inferSelect;
 export type InvitationWithItem = Omit<InvitationRaw, 'itemPath'> & {
   item: Item;
 };
-export type InvitationWIthItemAndCreator = Omit<
-  InvitationWithItem,
-  'creatorId'
-> & {
+export type InvitationWIthItemAndCreator = Omit<InvitationWithItem, 'creatorId'> & {
   creator: NullableAccount;
 };
+
+// --- Tags
+export type TagRaw = typeof tags.$inferSelect;
+export type TagCreationDTO = typeof tags.$inferInsert;
 
 // --- ItemTags
 export type ItemTagInsertDTO = typeof itemTags.$inferInsert;
@@ -193,12 +196,19 @@ export type ItemMembershipRaw = typeof itemMemberships.$inferSelect;
 export type ItemMembershipWithItem = Omit<ItemMembershipRaw, 'itemPath'> & {
   item: ItemRaw;
 };
-export type ItemMembershipWithItemAndAccount = Omit<
+export type ItemMembershipWithItemAndAccount = Omit<ItemMembershipWithItem, 'accountId'> & {
+  account: AccountRaw;
+};
+export type ItemMembershipWithItemAndAccountAndCreator = Omit<
   ItemMembershipWithItem,
   'accountId'
 > & {
   account: AccountRaw;
+  creator: AccountRaw;
 };
+
+// -- App
+export type AppRaw = typeof apps.$inferSelect;
 
 // --- AppAction
 export type AppActionRaw = typeof appActions.$inferSelect;
@@ -211,6 +221,33 @@ export type AppActionWithItemAndAccount = AppActionRaw & {
 export type AppSettingInsertDTO = typeof appSettings.$inferInsert;
 export type AppSettingRaw = typeof appSettings.$inferSelect;
 
+// --- AppData
+export type AppDataInsertDTO = typeof appDatas.$inferInsert;
+export type AppDataRaw = typeof appDatas.$inferSelect;
+export type AppDataWithItemAndAccountAndCreator = AppDataRaw & {
+  item: Item;
+  account: Account;
+  creator: Account | null;
+};
+
 // --- ShortLink
 export type ShortLinkRaw = typeof shortLinks.$inferSelect;
+export type ShortLinkInsertDTO = typeof shortLinks.$inferInsert;
 export type ShortLinkWithItem = ShortLinkRaw & { item: Item };
+
+// --- ItemLike
+export type ItemLikeRaw = typeof itemLikes.$inferSelect;
+export type ItemLikeWithItem = ItemLikeRaw & { item: Item };
+export type ItemLikeWithItemAndAccount = ItemLikeWithItem & { creator: Account };
+
+// --- ItemGeolocation
+export type ItemGeolocationRaw = typeof itemGeolocations.$inferSelect;
+export type ItemGeolocationWithItem = ItemGeolocationRaw & { item: Item };
+export type ItemGeolocationWithItemAndCreator = ItemGeolocationRaw & {
+  item: Item;
+  creator: Account;
+};
+
+// --- ItemValidationGroup
+export type ItemValidationGroupRaw = typeof itemValidationGroups.$inferSelect;
+export type ItemValidationGroupInsertDTO = typeof itemValidationGroups.$inferInsert;

@@ -1,14 +1,14 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import { isAuthenticated } from '../../../auth/plugins/passport';
+import { assertIsMember } from '../../../authentication';
 import { matchOne } from '../../../authorization';
-import { assertIsMember } from '../../../member/entities/member';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { ShortcutItem } from '../../entities/Item';
 import { ItemService } from '../../service';
-import { ActionItemService } from '../action/service';
+import { ActionItemService } from '../action/action.service';
 import { createShortcut, updateShortcut } from './schemas';
 import { ShortcutItemService } from './service';
 

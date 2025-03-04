@@ -1,15 +1,21 @@
-import { ItemMembership } from '../../entities/ItemMembership';
+import {
+  ItemMembershipWithItemAndAccount,
+  ItemMembershipWithItemAndAccountAndCreator,
+} from '../../../../drizzle/types';
 
 export const expectMembership = (
   newMembership:
     | undefined
-    | (Pick<ItemMembership, 'permission' | 'item' | 'account'> & {
-        creator?: ItemMembership['creator'];
+    | (Pick<ItemMembershipWithItemAndAccount, 'permission' | 'item' | 'account'> & {
+        creator?: { id: string };
       }),
   correctMembership:
     | undefined
-    | Pick<ItemMembership, 'permission' | 'item' | 'account' | 'creator'>,
-  creator?: ItemMembership['creator'],
+    | Pick<
+        ItemMembershipWithItemAndAccountAndCreator,
+        'permission' | 'item' | 'account' | 'creator'
+      >,
+  creator?: { id: string },
 ) => {
   if (!newMembership || !correctMembership) {
     throw new Error(

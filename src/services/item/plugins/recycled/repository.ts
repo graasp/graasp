@@ -6,16 +6,15 @@ import { Paginated, Pagination, PermissionLevel } from '@graasp/sdk';
 import { DBConnection } from '../../../../drizzle/db';
 import { isDescendantOrSelf } from '../../../../drizzle/operations';
 import {
-  type Item,
   itemMemberships,
   items,
   itemsRaw,
   membersView,
   recycledItemDatas,
 } from '../../../../drizzle/schema';
+import { Item } from '../../../../drizzle/types';
 import { throwsIfParamIsInvalid } from '../../../../repositories/utils';
-import { Account } from '../../../account/entities/account';
-import { Member } from '../../../member/entities/member';
+import { MinimalMember } from '../../../../types';
 import { ITEMS_PAGE_SIZE_MAX } from '../../constants';
 
 type CreateRecycledItemDataBody = { itemPath: string; creatorId: string };
@@ -24,21 +23,24 @@ export class RecycledItemDataRepository {
   // warning: this call insert in the table
   // but does not soft delete the item
   // should we move to core item?
-  async addOne(db: DBConnection, { itemPath, creatorId }: CreateRecycledItemDataBody) {
-    return await db.insert(recycledItemDatas).values({ itemPath, creatorId }).returning();
+  async addOne(
+    db: DBConnection,
+    { itemPath, creatorId }: CreateRecycledItemDataBody,
+  ): Promise<void> {
+    await db.insert(recycledItemDatas).values({ itemPath, creatorId });
   }
 
   // warning: this call insert in the table
   // but does not soft delete the item
   // should we move to core item?
-  async addMany(db: DBConnection, items: Item[], creator: Member) {
+  async addMany(db: DBConnection, items: Item[], creator: MinimalMember): Promise<void> {
     const recycled = items.map((item) => ({ itemPath: item.path, creatorId: creator.id }));
-    return await db.insert(recycledItemDatas).values(recycled).returning();
+    await db.insert(recycledItemDatas).values(recycled);
   }
 
   async getOwnRecycledItems(
     db: DBConnection,
-    account: Account,
+    account: MinimalMember,
     pagination: Pagination,
   ): Promise<Paginated<Item>> {
     const { page, pageSize } = pagination;
@@ -88,7 +90,7 @@ export class RecycledItemDataRepository {
   // warning: this call removes from the table
   // but does not soft delete the item
   // should we move to core item?
-  async deleteManyByItemPath(db: DBConnection, itemsPath: Item['path'][]) {
+  async deleteManyByItemPath(db: DBConnection, itemsPath: Item['path'][]): Promise<void> {
     throwsIfParamIsInvalid('itemsPath', itemsPath);
     await db.delete(recycledItemDatas).where(inArray(recycledItemDatas.itemPath, itemsPath));
   }
@@ -100,7 +102,7 @@ export class RecycledItemDataRepository {
    * @param {string[]} [options.types] filter out the items by type. If undefined or empty, all types are returned.
    * @returns {Item[]}
    */
-  async getDeletedDescendants(db: DBConnection, item: FolderItem) {
+  async getDeletedDescendants(db: DBConnection, item: FolderItem): Promise<Item[]> {
     // TODO: no need with drizzle
     // need order column to further sort in this function or afterwards
     // if (ordered || selectOrder) {

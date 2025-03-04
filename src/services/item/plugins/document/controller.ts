@@ -4,10 +4,10 @@ import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import { isAuthenticated } from '../../../auth/plugins/passport';
+import { assertIsMember } from '../../../authentication';
 import { matchOne } from '../../../authorization';
-import { assertIsMember } from '../../../member/entities/member';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { ActionItemService } from '../action/service';
+import { ActionItemService } from '../action/action.service';
 import { createDocument, updateDocument } from './schemas';
 import { DocumentItemService } from './service';
 

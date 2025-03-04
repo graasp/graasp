@@ -10,6 +10,7 @@ import {
   UUID,
 } from '@graasp/sdk';
 
+import { Item } from '../../../../../drizzle/types';
 import { TRANSLATIONS } from '../../../../../langs/constants';
 import { BaseLogger } from '../../../../../logger';
 import { MailBuilder } from '../../../../../plugins/mailer/builder';
@@ -17,18 +18,18 @@ import { MailerService } from '../../../../../plugins/mailer/mailer.service';
 import { resultOfToList } from '../../../../../services/utils';
 import HookManager from '../../../../../utils/hook';
 import { filterOutHiddenItems } from '../../../../authorization';
-import { Actor, Member, isMember } from '../../../../member/entities/member';
+import { ItemMembershipRepository } from '../../../../itemMembership/repository';
 import { ItemWrapper } from '../../../ItemWrapper';
-import { Item } from '../../../entities/Item';
 import { ItemService } from '../../../service';
+import { ItemVisibilityRepository } from '../../itemVisibility/repository';
 import { ItemThumbnailService } from '../../thumbnail/service';
-import { ItemPublished } from './entities/itemPublished';
 import {
   ItemIsNotValidated,
   ItemPublicationAlreadyExists,
   ItemTypeNotAllowedToPublish,
 } from './errors';
 import { MeiliSearchWrapper } from './plugins/search/meilisearch';
+import { ItemPublishedRepository } from './repositories/itemPublished';
 
 interface ActionCount {
   actionCount: number;
@@ -41,6 +42,9 @@ export class ItemPublishedService {
   private readonly itemThumbnailService: ItemThumbnailService;
   private readonly meilisearchWrapper: MeiliSearchWrapper;
   private readonly mailerService: MailerService;
+  private readonly itemMembershipRepository: ItemMembershipRepository;
+  private readonly itemVisibilityRepository: ItemVisibilityRepository;
+  private readonly itemPublishedRepository: ItemPublishedRepository;
 
   hooks = new HookManager<{
     create: {
@@ -55,12 +59,17 @@ export class ItemPublishedService {
     itemThumbnailService: ItemThumbnailService,
     mailerService: MailerService,
     meilisearchWrapper: MeiliSearchWrapper,
+    itemVisibilityRepository: ItemVisibilityRepository,
+    itemMembershipRepository: ItemMembershipRepository,
+    itemPublishedRepository: ItemPublishedRepository,
     log: BaseLogger,
   ) {
     this.log = log;
     this.itemService = itemService;
     this.itemThumbnailService = itemThumbnailService;
     this.meilisearchWrapper = meilisearchWrapper;
+    this.itemVisibilityRepository = itemVisibilityRepository;
+    this.itemMembershipRepository = itemMembershipRepository;
     this.mailerService = mailerService;
   }
 

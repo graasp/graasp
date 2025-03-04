@@ -20,7 +20,12 @@ import {
 } from '@graasp/sdk';
 
 import { DBConnection, db } from '../../../../../../../drizzle/db';
-import { Item, Tag } from '../../../../../../../drizzle/schema';
+import {
+  Item,
+  ItemPublishedWithItemWithCreator,
+  ItemWithCreator,
+  TagRaw,
+} from '../../../../../../../drizzle/types';
 import { BaseLogger } from '../../../../../../../logger';
 import { MEILISEARCH_STORE_LEGACY_PDF_CONTENT } from '../../../../../../../utils/config';
 import FileService from '../../../../../../file/service';
@@ -30,7 +35,6 @@ import { ItemLikeRepository } from '../../../../itemLike/repository';
 import { ItemVisibilityRepository } from '../../../../itemVisibility/repository';
 import { ItemTagRepository } from '../../../../tag/ItemTag.repository';
 import { stripHtml } from '../../../validation/utils';
-import { ItemPublished } from '../../entities/itemPublished';
 import { ItemPublishedNotFound } from '../../errors';
 import { ItemPublishedRepository } from '../../repositories/itemPublished';
 import { Hit } from './schemas';
@@ -188,8 +192,8 @@ export class MeiliSearchWrapper {
   }
 
   private async parseItem(
-    item: Item,
-    tags: Tag[],
+    item: ItemWithCreator,
+    tags: TagRaw[],
     isPublishedRoot: boolean,
     isHidden: boolean,
     likesCount: number,
@@ -248,7 +252,7 @@ export class MeiliSearchWrapper {
 
   async indexOne(
     db: DBConnection,
-    itemPublished: ItemPublished,
+    itemPublished: ItemPublishedWithItemWithCreator,
     targetIndex: ALLOWED_INDICES = ACTIVE_INDEX,
   ): Promise<EnqueuedTask> {
     return this.index(db, [itemPublished], targetIndex);
@@ -256,7 +260,7 @@ export class MeiliSearchWrapper {
 
   async index(
     db: DBConnection,
-    manyItemPublished: ItemPublished[],
+    manyItemPublished: ItemPublishedWithItemWithCreator[],
     targetIndex: ALLOWED_INDICES = ACTIVE_INDEX,
   ): Promise<EnqueuedTask> {
     try {
@@ -264,7 +268,7 @@ export class MeiliSearchWrapper {
       let itemsToIndex: {
         isHidden: boolean;
         publicationUpdatedAt: string;
-        item: Item;
+        item: ItemWithCreator;
       }[] = [];
       for (const p of manyItemPublished) {
         const isHidden = await this.itemVisibilityRepository.getManyBelowAndSelf(db, p.item, [
@@ -298,7 +302,7 @@ export class MeiliSearchWrapper {
           // Publishing and categories are implicit/inherited on children, we are forced to query the database to check these
           // More efficient way to get this info? Do the db query for all item at once ?
           // This part might slow the app when we index many items or an item with many children.
-          const publishedRoot = await this.itemPublishedRepository.getForItem(i);
+          const publishedRoot = await this.itemPublishedRepository.getForItem(db, i.path);
           if (!publishedRoot) {
             throw new ItemPublishedNotFound(i.id);
           }
@@ -438,7 +442,7 @@ export class MeiliSearchWrapper {
   async rebuildIndex(pageSize: number = 10) {
     if (MEILISEARCH_STORE_LEGACY_PDF_CONTENT) {
       // Backfill needed pdf data - Probably remove this when everything work well after deployment
-      await this.storeMissingPdfContent(buildRepositories());
+      await this.storeMissingPdfContent(db);
     }
 
     this.logger.info('REBUILD INDEX: Starting index rebuild...');

@@ -3,10 +3,10 @@ import { singleton } from 'tsyringe';
 import { Paginated, Pagination, PermissionLevel } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { Item } from '../../../../drizzle/schema';
+import { Item } from '../../../../drizzle/types';
+import { MinimalMember } from '../../../../types';
 import HookManager from '../../../../utils/hook';
 import { AuthorizationService } from '../../../authorization';
-import { Member } from '../../../member/entities/member';
 import { ItemRepository } from '../../repository';
 import { RecycledItemDataRepository } from './repository';
 
@@ -37,11 +37,15 @@ export class RecycledBinService {
     };
   }>();
 
-  async getOwn(db: DBConnection, member: Member, pagination: Pagination): Promise<Paginated<Item>> {
+  async getOwn(
+    db: DBConnection,
+    member: MinimalMember,
+    pagination: Pagination,
+  ): Promise<Paginated<Item>> {
     return await this.recycledItemRepository.getOwnRecycledItems(db, member, pagination);
   }
 
-  async recycleMany(db: DBConnection, actor: Member, itemIds: string[]) {
+  async recycleMany(db: DBConnection, actor: MinimalMember, itemIds: string[]) {
     const itemsResult = await this.itemRepository.getMany(db, itemIds, { throwOnError: true });
     const { data: idsToItems } = itemsResult;
     const items = Object.values(idsToItems);
@@ -75,7 +79,7 @@ export class RecycledBinService {
     return itemsResult;
   }
 
-  async restoreMany(db: DBConnection, member: Member, itemIds: string[]) {
+  async restoreMany(db: DBConnection, member: MinimalMember, itemIds: string[]) {
     const result = await this.itemRepository.getMany(db, itemIds, {
       throwOnError: true,
       withDeleted: true,

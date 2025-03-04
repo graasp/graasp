@@ -16,6 +16,6 @@ export class ItemFlagRepository {
     db: DBConnection,
     { flagType, creatorId, itemId }: CreateItemFlagBody,
   ): Promise<ItemFlagCreationDTO> {
-    return await db.insert(itemFlags).values({ type: flagType, creatorId, itemId }).returning();
+    return await db.insert(itemFlags).values({ type: flagType, creatorId, itemId }).returning()[0];
   }
 }

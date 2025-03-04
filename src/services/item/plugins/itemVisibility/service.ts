@@ -3,7 +3,7 @@ import { singleton } from 'tsyringe';
 import { ItemVisibilityOptionsType, PermissionLevel } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { Member } from '../../../member/entities/member';
+import { MinimalMember } from '../../../../types';
 import { ItemService } from '../../service';
 import { ItemVisibilityRepository } from './repository';
 
@@ -19,7 +19,7 @@ export class ItemVisibilityService {
 
   async post(
     db: DBConnection,
-    member: Member,
+    member: MinimalMember,
     id: string,
     visibilityType: ItemVisibilityOptionsType,
   ) {
@@ -38,7 +38,7 @@ export class ItemVisibilityService {
 
   async deleteOne(
     db: DBConnection,
-    member: Member,
+    member: MinimalMember,
     id: string,
     visibilityType: ItemVisibilityOptionsType,
   ) {

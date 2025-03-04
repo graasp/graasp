@@ -1,14 +1,14 @@
-import { count } from 'console';
-import { and, desc, eq, sql } from 'drizzle-orm/sql';
+import { and, arrayContains, count, desc, eq, sql } from 'drizzle-orm/sql';
 
 import { AuthTokenSubject } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { apps, items } from '../../../../drizzle/schema';
+import { apps, items, publishers } from '../../../../drizzle/schema';
+import { AppRaw } from '../../../../drizzle/types';
 import { InvalidApplicationOrigin } from './errors';
 
 export class AppRepository {
-  async getAll(db: DBConnection, publisherId: string) {
+  async getAll(db: DBConnection, publisherId: string): Promise<AppRaw[]> {
     return await db.query.apps.findMany({
       where: eq(apps.publisherId, publisherId),
     });
@@ -23,12 +23,11 @@ export class AppRepository {
       .from(apps)
       .innerJoin(
         items,
-        and(
-          eq(sql`${items.extra}::json->'app'->>'url'`, apps.url),
-          eq(items.creatorId, memberId),
-        ),
+        and(eq(sql`${items.extra}::json->'app'->>'url'`, apps.url), eq(items.creatorId, memberId)),
       )
-      .groupBy([apps.id, apps.url, apps.name])
+      // TODO: verify
+      .groupBy(apps.id)
+      // .groupBy((t) => [t.id, t.url, t.name])
       .orderBy(desc(sql.raw('count')));
 
     return data;
@@ -37,15 +36,18 @@ export class AppRepository {
   async isValidAppOrigin(
     db: DBConnection,
     appDetails: { key: string; origin: string },
-  ) {
-    const valid = await db.query.apps.findFirst({
-      where: eq(apps.key, appDetails.key),
-      with: {
-        publisher: {
-          where: (p, { inArray }) => inArray(appDetails.origin, p.origins),
-        },
-      },
-    });
+  ): Promise<void> {
+    const valid = await db
+      .select()
+      .from(apps)
+      .where(eq(apps.key, appDetails.key))
+      .rightJoin(
+        publishers,
+        and(
+          eq(publishers.id, apps.publisherId),
+          arrayContains(publishers.origins, [appDetails.origin]),
+        ),
+      );
     if (!valid) {
       throw new InvalidApplicationOrigin();
     }

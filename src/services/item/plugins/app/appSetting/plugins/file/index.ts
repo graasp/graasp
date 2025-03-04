@@ -3,7 +3,8 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../../../../di/utils';
 import { DBConnection, db } from '../../../../../../../drizzle/db';
-import { AuthenticatedUser } from '../../../../../../../types';
+import { AppSettingRaw } from '../../../../../../../drizzle/types';
+import { AuthenticatedUser, MinimalMember } from '../../../../../../../types';
 import { asDefined } from '../../../../../../../utils/assertions';
 import {
   authenticateAppsJWT,
@@ -15,9 +16,7 @@ import {
   UploadEmptyFileError,
   UploadFileUnexpectedError,
 } from '../../../../../../file/utils/errors';
-import { Actor, Member } from '../../../../../../member/entities/member';
 import { DEFAULT_MAX_FILE_SIZE } from '../../../../file/utils/constants';
-import { AppSetting } from '../../appSettings';
 import { PreventUpdateAppSettingFile } from '../../errors';
 import type { AppSettingService } from '../../service';
 import { download, upload } from './schema';
@@ -28,10 +27,7 @@ export interface GraaspPluginFileOptions {
   appSettingService: AppSettingService;
 }
 
-const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (
-  fastify,
-  options,
-) => {
+const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fastify, options) => {
   const { maxFileSize = DEFAULT_MAX_FILE_SIZE, appSettingService } = options;
 
   const fileService = resolveDependency(FileService);
@@ -53,7 +49,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (
   const deleteHook = async (
     actor: AuthenticatedUser,
     db: DBConnection,
-    { appSetting }: { appSetting: AppSetting; itemId: string },
+    { appSetting }: { appSetting: AppSettingRaw; itemId: string },
   ) => {
     await appSettingFileService.deleteOne(db, actor, appSetting);
   };
@@ -61,18 +57,18 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (
 
   // app setting copy hook
   const hook = async (
-    actor: Member,
+    actor: MinimalMember,
     db: DBConnection,
     {
       appSettings,
     }: {
-      appSettings: AppSetting[];
+      appSettings: AppSettingRaw[];
       originalItemId: string;
       copyItemId: string;
     },
   ) => {
     // copy file only if content is a file
-    const isFileSetting = (a: AppSetting) => a.data[fileService.fileType];
+    const isFileSetting = (a: AppSettingRaw) => a.data[fileService.fileType];
     const toCopy = appSettings.filter(isFileSetting);
     if (toCopy.length) {
       await appSettingFileService.copyMany(db, actor, toCopy);
@@ -82,9 +78,9 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (
 
   // prevent patch on app setting file
   const patchPreHook = async (
-    _actor: Actor,
+    _actor: MinimalMember,
     _db: DBConnection,
-    { appSetting }: { appSetting: Partial<AppSetting> },
+    { appSetting }: { appSetting: Partial<AppSettingRaw> },
   ) => {
     if (appSetting?.data) {
       if (appSetting.data[fileService.fileType]) {

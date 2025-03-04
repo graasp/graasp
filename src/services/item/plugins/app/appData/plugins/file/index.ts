@@ -3,6 +3,7 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../../../../di/utils';
 import { DBConnection, db } from '../../../../../../../drizzle/db';
+import { AuthenticatedUser } from '../../../../../../../types';
 import { asDefined } from '../../../../../../../utils/assertions';
 import { guestAuthenticateAppsJWT } from '../../../../../../auth/plugins/passport';
 import {
@@ -10,7 +11,6 @@ import {
   UploadEmptyFileError,
   UploadFileUnexpectedError,
 } from '../../../../../../file/utils/errors';
-import { Member } from '../../../../../../member/entities/member';
 import { addMemberInAppData } from '../../../legacy';
 import { AppData } from '../../appData';
 import { AppDataService } from '../../service';
@@ -47,7 +47,11 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
   });
 
   // register post delete handler to remove the file object after item delete
-  const deleteHook = async (actor: Member, db: DBConnection, args: { appData: AppData }) => {
+  const deleteHook = async (
+    actor: AuthenticatedUser,
+    db: DBConnection,
+    args: { appData: AppData },
+  ) => {
     await appDataFileService.deleteOne(db, args.appData);
   };
   appDataService.hooks.setPostHook('delete', deleteHook);

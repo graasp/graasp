@@ -3,11 +3,11 @@ import { singleton } from 'tsyringe';
 import { ItemType } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
+import { Item } from '../../../../drizzle/types';
 import i18next from '../../../../i18n';
 import { BaseLogger } from '../../../../logger';
-import { Member } from '../../../member/entities/member';
+import { MinimalMember } from '../../../../types';
 import { ThumbnailService } from '../../../thumbnail/service';
-import { Item, ShortcutItem } from '../../entities/Item';
 import { WrongItemTypeError } from '../../errors';
 import { ItemService } from '../../service';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
@@ -26,7 +26,7 @@ export class ShortcutItemService extends ItemService {
 
   async postWithOptions(
     db: DBConnection,
-    member: Member,
+    member: MinimalMember,
     args: {
       item: Partial<Pick<Item, 'description' | 'name'>>;
       target: Item['id'];
@@ -57,7 +57,7 @@ export class ShortcutItemService extends ItemService {
 
   async patch(
     db: DBConnection,
-    member: Member,
+    member: MinimalMember,
     itemId: Item['id'],
     body: Partial<Pick<Item, 'name' | 'description'>>,
   ): Promise<ShortcutItem> {

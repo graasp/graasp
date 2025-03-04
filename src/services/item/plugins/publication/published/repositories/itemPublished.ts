@@ -5,15 +5,8 @@ import { PermissionLevel } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../../drizzle/db';
 import { isAncestorOrSelf } from '../../../../../../drizzle/operations';
-import {
-  items,
-  membersView,
-  publishedItems,
-} from '../../../../../../drizzle/schema';
-import {
-  Item,
-  ItemPublishedWithItemAndAccount,
-} from '../../../../../../drizzle/types';
+import { items, membersView, publishedItems } from '../../../../../../drizzle/schema';
+import { Item, ItemPublishedWithItemAndAccount } from '../../../../../../drizzle/types';
 import { MinimalMember } from '../../../../../../types';
 import { assertIsDefined } from '../../../../../../utils/assertions';
 import { mapById } from '../../../../../utils';
@@ -28,7 +21,7 @@ export class ItemPublishedRepository {
    */
   async getForItem(
     db: DBConnection,
-    itemPath: string,
+    itemPath: Item['path'],
   ): Promise<ItemPublishedWithItemAndAccount | null> {
     const res = await db
       .select()
@@ -52,23 +45,16 @@ export class ItemPublishedRepository {
     const ids = items.map((i) => i.id);
     const entries = await this.repository
       .createQueryBuilder('pi')
-      .innerJoinAndSelect(
-        'pi.item',
-        'item',
-        'pi.item @> ARRAY[:...paths]::ltree[]',
-        {
-          paths,
-        },
-      )
+      .innerJoinAndSelect('pi.item', 'item', 'pi.item @> ARRAY[:...paths]::ltree[]', {
+        paths,
+      })
       .innerJoinAndSelect('pi.creator', 'member')
       .getMany();
 
     return mapById({
       keys: ids,
       findElement: (id) =>
-        entries.find((e) =>
-          items.find((i) => i.id === id)?.path.startsWith(e.item.path),
-        ),
+        entries.find((e) => items.find((i) => i.id === id)?.path.startsWith(e.item.path)),
       buildError: (id) => new ItemPublishedNotFound(id),
     });
   }
@@ -155,10 +141,7 @@ export class ItemPublishedRepository {
 
   async touchUpdatedAt(db: DBConnection, path: Item['path']): Promise<string> {
     const updatedAt = new Date().toISOString();
-    await db
-      .update(publishedItems)
-      .set({ updatedAt })
-      .where(eq(publishedItems.itemPath, path));
+    await db.update(publishedItems).set({ updatedAt }).where(eq(publishedItems.itemPath, path));
     return updatedAt;
   }
 }

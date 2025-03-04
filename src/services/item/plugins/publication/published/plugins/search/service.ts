@@ -165,7 +165,7 @@ export class SearchService {
     itemService.hooks.setPostHook('create', async (member, db, { item }) => {
       try {
         // Check if the item is published (or has published parent)
-        const published = await this.itemPublishedRepository.getForItem(db, item);
+        const published = await this.itemPublishedRepository.getForItem(db, item.path);
 
         if (!published) {
           return;
@@ -204,7 +204,7 @@ export class SearchService {
     itemService.hooks.setPostHook('move', async (member, db, { destination }) => {
       try {
         // Check if published from moved item up to tree root
-        const published = await this.itemPublishedRepository.getForItem(db, destination);
+        const published = await this.itemPublishedRepository.getForItem(db, destination.path);
 
         if (published) {
           // destination or moved item is published, we must update the index

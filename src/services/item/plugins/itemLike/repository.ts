@@ -2,16 +2,18 @@ import { and, eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { Account, Item, ItemLike, itemLikes } from '../../../../drizzle/schema';
+import { itemLikes } from '../../../../drizzle/schema';
+import {
+  ItemLikeRaw,
+  ItemLikeWithItem,
+  ItemLikeWithItemAndAccount,
+} from '../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../repositories/errors';
 import { ItemLikeNotFound } from './errors';
 
-type CreatorId = ItemLike['creatorId'];
-type ItemId = ItemLike['itemId'];
+type CreatorId = ItemLikeRaw['creatorId'];
+type ItemId = ItemLikeRaw['itemId'];
 type CreateItemLikeBody = { creatorId: CreatorId; itemId: ItemId };
-
-type ItemLikeWithItem = ItemLike & { item: Item };
-type ItemLikeWithItemAndAccount = ItemLikeWithItem & { creator: Account };
 
 @singleton()
 export class ItemLikeRepository {
@@ -26,7 +28,7 @@ export class ItemLikeRepository {
    * @param memberId user's id
    * @param itemId item's id
    */
-  async addOne(db: DBConnection, { creatorId, itemId }: CreateItemLikeBody): Promise<ItemLike> {
+  async addOne(db: DBConnection, { creatorId, itemId }: CreateItemLikeBody): Promise<ItemLikeRaw> {
     const result = await db.insert(itemLikes).values({ itemId, creatorId }).returning();
     if (result.length != 1) {
       throw new Error('Expected to receive, created item, but did not get it.');
@@ -97,7 +99,7 @@ export class ItemLikeRepository {
     db: DBConnection,
     creatorId: CreatorId,
     itemId: ItemId,
-  ): Promise<ItemLike> {
+  ): Promise<ItemLikeRaw> {
     const result = await db
       .delete(itemLikes)
       .where(and(eq(itemLikes.itemId, itemId), eq(itemLikes.creatorId, creatorId)))

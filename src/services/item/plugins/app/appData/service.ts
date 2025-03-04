@@ -4,12 +4,10 @@ import { AppDataVisibility, FileItemType, PermissionLevel, UUID } from '@graasp/
 
 import { FILE_ITEM_TYPE_DI_KEY } from '../../../../../di/constants';
 import { DBConnection } from '../../../../../drizzle/db';
-import { AuthenticatedUser } from '../../../../../types';
+import { Item, ItemMembershipRaw } from '../../../../../drizzle/types';
+import { AuthenticatedUser, MaybeUser } from '../../../../../types';
 import HookManager from '../../../../../utils/hook';
-import { Account } from '../../../../account/entities/account';
 import { AuthorizationService } from '../../../../authorization';
-import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
-import { Item } from '../../../entities/Item';
 import { ItemRepository } from '../../../repository';
 import { AppData } from './appData';
 import {
@@ -21,7 +19,7 @@ import {
 import { InputAppData } from './interfaces/app-data';
 import { AppDataRepository } from './repository';
 
-const ownAppDataAbility = (appData: AppData, actor: Actor) => {
+const ownAppDataAbility = (appData: AppData, actor: MaybeUser) => {
   if (!appData.creator || !actor) {
     return false;
   }
@@ -211,14 +209,14 @@ export class AppDataService {
       itemId,
     });
 
-    const result = await this.appDataRepository.deleteOne(db, appDataId);
+    await this.appDataRepository.deleteOne(db, appDataId);
 
     await this.hooks.runPostHooks('delete', account, db, {
       appData,
       itemId,
     });
 
-    return result;
+    return appData;
   }
 
   async get(db: DBConnection, account: AuthenticatedUser, item: Item, appDataId: UUID) {
@@ -244,7 +242,7 @@ export class AppDataService {
     return appData;
   }
 
-  async getForItem(db: DBConnection, account: Account, itemId: string, type?: string) {
+  async getForItem(db: DBConnection, account: MaybeUser, itemId: string, type?: string) {
     // check item exists? let post fail?
     const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
@@ -259,7 +257,7 @@ export class AppDataService {
     return this.appDataRepository.getForItem(
       db,
       itemId,
-      { accountId: account.id, type },
+      { accountId: account?.id, type },
       itemMembership?.permission,
     );
   }
@@ -267,10 +265,10 @@ export class AppDataService {
   // TODO: check
   async validateAppDataPermission(
     db: DBConnection,
-    actor: Actor,
+    actor: MaybeUser,
     appData: AppData,
     permission: PermissionLevel,
-    inheritedMembership?: ItemMembership | null,
+    inheritedMembership?: ItemMembershipRaw | null,
   ) {
     const isValid =
       ownAppDataAbility(appData, actor) ||

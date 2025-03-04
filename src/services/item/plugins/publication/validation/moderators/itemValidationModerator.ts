@@ -3,8 +3,7 @@ import { singleton } from 'tsyringe';
 import { ItemValidationReviewStatus, ItemValidationStatus } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../../drizzle/db';
-import { Item } from '../../../../entities/Item';
-import { ItemValidationGroup } from '../entities/ItemValidationGroup';
+import { Item, ItemValidationGroupRaw } from '../../../../../../drizzle/types';
 import { ProcessExecutionError } from '../errors';
 import { ItemValidationRepository } from '../repositories/itemValidation';
 import { ItemValidationReviewRepository } from '../repositories/itemValidationReview';
@@ -30,7 +29,7 @@ export class ItemValidationModerator {
   async validate(
     db: DBConnection,
     item: Item,
-    itemValidationGroup: ItemValidationGroup,
+    itemValidationGroup: ItemValidationGroupRaw,
   ): Promise<ItemValidationStatus[]> {
     // execute each process on item
     const results = (

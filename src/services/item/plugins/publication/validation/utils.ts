@@ -3,8 +3,8 @@ import striptags from 'striptags';
 
 import { ItemType, MimeTypes, getMimetype } from '@graasp/sdk';
 
+import { Item } from '../../../../../drizzle/types';
 import { TMP_FOLDER } from '../../../../../utils/config';
-import { Item, isItemType } from '../../../entities/Item';
 
 export const stripHtml = (str?: string | null): string => (str ? striptags(str) : '');
 

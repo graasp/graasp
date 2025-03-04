@@ -11,8 +11,8 @@ import {
   UUID,
 } from '@graasp/sdk';
 
-import { Member } from '../../../../member/entities/member';
-import { Item } from '../../../entities/Item';
+import { Item } from '../../../../../drizzle/types';
+import { MinimalMember } from '../../../../../types';
 import { ItemTestUtils } from '../../../test/fixtures/items';
 import { setItemPublic } from '../../itemVisibility/test/fixtures';
 import { createShortLink, updateShortLink } from '../schemas';
@@ -23,7 +23,7 @@ export const MOCK_PLATFORM = ShortLinkPlatform.Player;
 export const MOCK_ITEM_ID = '1c21f7f8-1917-4dfc-82b6-21d7136812e8';
 
 type MemberWithPermission = {
-  member: Member;
+  member: MinimalMember;
   permission: PermissionLevel;
 };
 
@@ -45,7 +45,7 @@ export class ShortLinkTestUtils extends ItemTestUtils {
     setPublic = false,
   }: {
     item?: Partial<Item>;
-    itemCreator: Member;
+    itemCreator: MinimalMember;
     memberWithPermission?: MemberWithPermission;
     setPublic?: boolean;
   }) => {

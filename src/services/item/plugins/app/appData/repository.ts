@@ -1,35 +1,44 @@
+import { SQL } from 'drizzle-orm';
 import { and, eq, or } from 'drizzle-orm/sql';
 
 import { AppDataVisibility, FileItemType, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../drizzle/db';
 import { AppDataInsertRaw, appDatas } from '../../../../../drizzle/schema';
-import { Account } from '../../../../account/entities/account';
-import { AppData, Filters } from './appData';
+import {
+  Account,
+  AppDataInsertDTO,
+  AppDataRaw,
+  AppDataWithItemAndAccountAndCreator,
+} from '../../../../../drizzle/types';
 import { AppDataNotFound, PreventUpdateAppDataFile } from './errors';
 import { InputAppData } from './interfaces/app-data';
 
-type CreateAppDataBody = { appData: Partial<InputAppData>; itemId: string; actorId: Account['id'] };
-
-const RELATIONS = { account: true, creator: true, item: true };
+// TODO: appData was previously Partial, define what is needed all the time:
+// -- type
+type CreateAppDataBody = { appData: InputAppData; itemId: string; actorId: Account['id'] };
 
 export class AppDataRepository {
   async addOne(
     db: DBConnection,
     { itemId, actorId, appData }: CreateAppDataBody,
-  ): Promise<AppData> {
+  ): Promise<AppDataInsertDTO> {
     return await db
       .insert(appDatas)
       .values({
         ...appData,
-        item: { id: itemId },
-        creator: { id: actorId },
-        account: { id: appData.accountId ?? actorId },
+        itemId,
+        creatorId: actorId,
+        accountId: appData.accountId ?? actorId,
       })
-      .returning();
+      .returning()[0];
   }
 
-  async updateOne(db: DBConnection, appDataId: string, body: AppDataInsertRaw): Promise<AppData> {
+  async updateOne(
+    db: DBConnection,
+    appDataId: string,
+    body: AppDataInsertRaw,
+  ): Promise<AppDataInsertDTO> {
     // we shouldn't update file data
     const originalData = await db.query.appDatas.findFirst({ where: eq(appDatas.id, appDataId) });
 
@@ -37,30 +46,37 @@ export class AppDataRepository {
       throw new AppDataNotFound(appDataId);
     }
 
-    const dataType = originalData.data?.type as FileItemType;
+    const dataType = originalData?.type as FileItemType;
     if ([ItemType.LOCAL_FILE, ItemType.S3_FILE].includes(dataType)) {
       throw new PreventUpdateAppDataFile(originalData.id);
     }
 
-    return await db.update(appDatas).set(body).where(eq(appDatas.id, appDataId));
+    return await db.update(appDatas).set(body).where(eq(appDatas.id, appDataId)).returning()[0];
   }
 
-  async getOne(db: DBConnection, id: string) {
+  async getOne(
+    db: DBConnection,
+    id: string,
+  ): Promise<AppDataWithItemAndAccountAndCreator | undefined> {
     return await db.query.appDatas.findFirst({
       where: eq(appDatas.id, id),
-      with: RELATIONS,
+      with: { account: true, creator: true, item: true },
     });
   }
 
   async getForItem(
     db: DBConnection,
     itemId: string,
-    filters: Filters = {},
+    filters: {
+      visibility?: AppDataVisibility;
+      accountId?: Account['id'];
+      type?: string;
+    } = {},
     permission?: PermissionLevel,
-  ): Promise<AppData[]> {
+  ): Promise<AppDataRaw[]> {
     const { accountId, type } = filters;
 
-    const andConditions = [eq(appDatas.itemId, itemId)];
+    const andConditions: (SQL | undefined)[] = [eq(appDatas.itemId, itemId)];
 
     // filter app data to only include requested type
     if (type) {
@@ -69,7 +85,7 @@ export class AppDataRepository {
 
     // restrict app data access if user is not an admin
     if (permission !== PermissionLevel.Admin) {
-      const orConditions = [
+      const orConditions: (SQL | undefined)[] = [
         // - visibility: item
         eq(appDatas.visibility, AppDataVisibility.Item),
       ];
@@ -92,5 +108,9 @@ export class AppDataRepository {
         item: true,
       },
     });
+  }
+
+  async deleteOne(db: DBConnection, id: string): Promise<void> {
+    await db.delete(appDatas).where(eq(appDatas.id, id));
   }
 }

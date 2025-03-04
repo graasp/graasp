@@ -28,7 +28,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user, params: { itemId }, body: { type } }) => {
       const account = asDefined(user?.account);
       return db.transaction(async (tx) => {
-        const res = itemFlagService.post(tx, account, itemId, type);
+        const res = await itemFlagService.post(tx, account, itemId, type);
         return res;
       });
     },

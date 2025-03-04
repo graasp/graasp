@@ -4,9 +4,9 @@ import { PermissionLevel } from '@graasp/sdk';
 
 import { GEOLOCATION_API_KEY_DI_KEY } from '../../../../di/constants';
 import { DBConnection } from '../../../../drizzle/db';
-import { Item, Member } from '../../../../drizzle/schema';
+import { Item } from '../../../../drizzle/types';
+import { MaybeUser, MinimalMember } from '../../../../types';
 import { AuthorizationService } from '../../../authorization';
-import { Actor } from '../../../member/entities/member';
 import { ItemWrapper } from '../../ItemWrapper';
 import { ItemService } from '../../service';
 import { ItemThumbnailService } from '../thumbnail/service';
@@ -36,7 +36,7 @@ export class ItemGeolocationService {
     this.geolocationKey = geolocationKey;
   }
 
-  async delete(db: DBConnection, member: Member, itemId: Item['id']) {
+  async delete(db: DBConnection, member: MinimalMember, itemId: Item['id']) {
     // check item exists and actor has permission
     const item = await this.itemService.get(db, member, itemId, PermissionLevel.Write);
 
@@ -45,8 +45,7 @@ export class ItemGeolocationService {
 
   async getByItem(
     db: DBConnection,
-    actor: Actor,
-
+    actor: MaybeUser,
     itemId: Item['id'],
   ): Promise<PackedItemGeolocation | null> {
     // check item exists and actor has permission
@@ -64,8 +63,7 @@ export class ItemGeolocationService {
 
   async getIn(
     db: DBConnection,
-    actor: Actor,
-
+    actor: MaybeUser,
     query: {
       parentItemId?: Item['id'];
       lat1?: ItemGeolocation['lat'];
@@ -129,8 +127,7 @@ export class ItemGeolocationService {
 
   async put(
     db: DBConnection,
-    member: Member,
-
+    member: MinimalMember,
     itemId: Item['id'],
     geolocation: Pick<ItemGeolocation, 'lat' | 'lng'> &
       Pick<Partial<ItemGeolocation>, 'addressLabel' | 'helperLabel'>,
