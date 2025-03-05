@@ -56,10 +56,7 @@ export default (
           // Exception occurred while fetching item
           // itemRepository.getOneOrThrow() can fail for many reasons like the item was not found, database error, etc.
           // To avoid leaking information, we prefer to return UnauthorizedMember error.
-          return done(
-            options?.propagateError ? err : new UnauthorizedMember(),
-            false,
-          );
+          return done(options?.propagateError ? err : new UnauthorizedMember(), false);
         }
       },
     ),

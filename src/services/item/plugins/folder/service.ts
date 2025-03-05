@@ -4,10 +4,10 @@ import { singleton } from 'tsyringe';
 import { ItemGeolocation, ItemType, PermissionLevel, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
+import { Item } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
-import { Member } from '../../../member/entities/member';
+import { MaybeUser, MinimalMember } from '../../../../types';
 import { ThumbnailService } from '../../../thumbnail/service';
-import { FolderItem, Item, isItemType } from '../../entities/Item';
 import { WrongItemTypeError } from '../../errors';
 import { ItemService } from '../../service';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
@@ -26,7 +26,7 @@ export class FolderItemService extends ItemService {
 
   async get(
     db: DBConnection,
-    member: Member,
+    member: MaybeUser,
     itemId: Item['id'],
     permission?: PermissionLevel,
   ): Promise<FolderItem> {
@@ -39,7 +39,7 @@ export class FolderItemService extends ItemService {
 
   async post(
     db: DBConnection,
-    member: Member,
+    member: MinimalMember,
     args: {
       item: Partial<Pick<Item, 'description' | 'settings' | 'lang'>> & Pick<Item, 'name'>;
       parentId?: string;
@@ -56,7 +56,7 @@ export class FolderItemService extends ItemService {
 
   async patch(
     db: DBConnection,
-    member: Member,
+    member: MinimalMember,
     itemId: UUID,
     body: Partial<Pick<Item, 'name' | 'description' | 'settings' | 'lang'>>,
   ): Promise<FolderItem> {

@@ -1,12 +1,13 @@
 import { singleton } from 'tsyringe';
 
-import { Paginated, Pagination, PermissionLevel } from '@graasp/sdk';
+import { ItemType, Paginated, Pagination, PermissionLevel } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
 import { Item } from '../../../../drizzle/types';
 import { MinimalMember } from '../../../../types';
 import HookManager from '../../../../utils/hook';
 import { AuthorizationService } from '../../../authorization';
+import { isItemType } from '../../discrimination';
 import { ItemRepository } from '../../repository';
 import { RecycledItemDataRepository } from './repository';
 
@@ -55,21 +56,24 @@ export class RecycledBinService {
       await this.authorizationService.validatePermission(db, PermissionLevel.Admin, actor, item);
     }
 
+    let allDescendants: Item[] = [];
     for (const item of items) {
       await this.hooks.runPreHooks('recycle', actor, db, { item, isRecycledRoot: true });
+      if (isItemType(item, ItemType.FOLDER)) {
+        allDescendants = allDescendants.concat(await this.itemRepository.getDescendants(db, item));
+      }
     }
-    const descendants = await this.itemRepository.getDescendants(db, item);
-    for (const d of descendants) {
+    for (const d of allDescendants) {
       await this.hooks.runPreHooks('recycle', actor, db, {
         item: d,
         isRecycledRoot: false,
       });
     }
 
-    await this.itemRepository.softRemove([...descendants, ...items]);
+    await this.itemRepository.softRemove(db, [...allDescendants, ...items]);
     await this.recycledItemRepository.addMany(db, items, actor);
 
-    for (const d of descendants) {
+    for (const d of allDescendants) {
       this.hooks.runPostHooks('recycle', actor, db, { item: d, isRecycledRoot: false });
     }
     for (const item of items) {
@@ -97,7 +101,7 @@ export class RecycledBinService {
     for (const item of items) {
       await this.hooks.runPreHooks('restore', member, db, { item, isRestoredRoot: true });
     }
-    const descendants = await this.recycledItemRepository.getDeletedDescendants(db, item);
+    const descendants = await this.recycledItemRepository.getDeletedDescendants(db, items);
     for (const d of descendants) {
       await this.hooks.runPreHooks('restore', member, db, {
         item: d,
@@ -105,7 +109,7 @@ export class RecycledBinService {
       });
     }
 
-    await this.itemRepository.recover([...descendants, ...items]);
+    await this.itemRepository.recover(db, [...descendants, ...items]);
     await this.recycledItemRepository.deleteManyByItemPath(
       db,
       items.map((item) => item.path),

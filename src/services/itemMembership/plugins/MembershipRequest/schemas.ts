@@ -37,8 +37,7 @@ export const simpleMembershipRequestSchemaRef = registerSchemaAsRef(
 export const getAllByItem = {
   tags: ['membership-request'],
   summary: 'Get all membership requests for an item',
-  description:
-    'Get all membership requests with member information for an item by its ID',
+  description: 'Get all membership requests with member information for an item by its ID',
   params: customType.StrictObject({
     itemId: customType.UUID(),
   }),
@@ -65,8 +64,7 @@ export const createOne = {
 
 export const getOwn = {
   tags: ['membership-request'],
-  summary:
-    'Get the status of the membership request for the authenticated member',
+  summary: 'Get the status of the membership request for the authenticated member',
   description:
     'Get the status of the membership request for the authenticated member for an item by its ID',
   params: customType.StrictObject({

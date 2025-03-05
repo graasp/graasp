@@ -50,12 +50,7 @@ export class AppActionService {
     const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
     // posting an app action is allowed to readers
-    await this.authorizationService.validatePermission(
-      db,
-      PermissionLevel.Read,
-      account,
-      item,
-    );
+    await this.authorizationService.validatePermission(db, PermissionLevel.Read, account, item);
 
     const rawAppActions = await this.appActionRepository.addOne(db, {
       itemId,
@@ -80,13 +75,12 @@ export class AppActionService {
     const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
     // posting an app action is allowed to readers
-    const { itemMembership } =
-      await this.authorizationService.validatePermission(
-        db,
-        PermissionLevel.Read,
-        account,
-        item,
-      );
+    const { itemMembership } = await this.authorizationService.validatePermission(
+      db,
+      PermissionLevel.Read,
+      account,
+      item,
+    );
     const permission = itemMembership?.permission;
     let { accountId: fMemberId } = filters;
 
@@ -114,13 +108,12 @@ export class AppActionService {
     const item = await this.itemRepository.getOneOrThrow(db, itemIds[0]);
 
     // posting an app action is allowed to readers
-    const { itemMembership } =
-      await this.authorizationService.validatePermission(
-        db,
-        PermissionLevel.Read,
-        account,
-        item,
-      );
+    const { itemMembership } = await this.authorizationService.validatePermission(
+      db,
+      PermissionLevel.Read,
+      account,
+      item,
+    );
     const permission = itemMembership?.permission;
     const { accountId: fMemberId } = filters;
 

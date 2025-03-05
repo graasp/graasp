@@ -11,11 +11,7 @@ import { matchOne } from '../../../authorization';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { getPostItemPayloadFromFormData } from '../../utils';
 import { ActionItemService } from '../action/action.service';
-import {
-  createFolder,
-  createFolderWithThumbnail,
-  updateFolder,
-} from './schemas';
+import { createFolder, createFolderWithThumbnail, updateFolder } from './schemas';
 import { FolderItemService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {

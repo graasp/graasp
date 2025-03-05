@@ -18,7 +18,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { eq, isNull } from 'drizzle-orm/sql';
 
-import { AccountType, CompleteMember } from '@graasp/sdk';
+import { AccountType, CompleteMember, ItemSettings } from '@graasp/sdk';
 
 import { customNumeric, ltree } from './customTypes';
 import {
@@ -693,7 +693,7 @@ export const itemsRaw = pgTable(
     creatorId: uuid('creator_id'),
     // TODO: fix type
     extra: jsonb().notNull(),
-    settings: jsonb().notNull(),
+    settings: jsonb().$type<ItemSettings>().notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
     deletedAt: timestamp('deleted_at', { mode: 'string' }), // HACK: the softdeletion mechanism relies on the deletedAt being null or having a date

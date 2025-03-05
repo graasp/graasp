@@ -1,3 +1,4 @@
+import { asc } from 'drizzle-orm';
 import {
   EnqueuedTask,
   Index,
@@ -20,6 +21,7 @@ import {
 } from '@graasp/sdk';
 
 import { DBConnection, db } from '../../../../../../../drizzle/db';
+import { items } from '../../../../../../../drizzle/schema';
 import {
   Item,
   ItemPublishedWithItemWithCreator,
@@ -29,6 +31,7 @@ import {
 import { BaseLogger } from '../../../../../../../logger';
 import { MEILISEARCH_STORE_LEGACY_PDF_CONTENT } from '../../../../../../../utils/config';
 import FileService from '../../../../../../file/service';
+import { isItemType } from '../../../../../discrimination';
 import { ItemRepository } from '../../../../../repository';
 import { readPdfContent } from '../../../../../utils';
 import { ItemLikeRepository } from '../../../../itemLike/repository';
@@ -276,20 +279,19 @@ export class MeiliSearchWrapper {
         ]);
 
         itemsToIndex.push({
-          publicationUpdatedAt: p.updatedAt.toISOString(),
+          publicationUpdatedAt: p.updatedAt,
           item: p.item,
           isHidden: Boolean(isHidden.find((ih) => p.item.path.includes(ih.item.path))),
         });
 
-        const descendants =
-          p.item.type === ItemType.FOLDER
-            ? await this.itemRepository.getDescendants(db, p.item)
-            : [];
+        const descendants = isItemType(p.item, ItemType.FOLDER)
+          ? await this.itemRepository.getDescendants(db, p.item)
+          : [];
 
         itemsToIndex = itemsToIndex.concat(
           descendants.map((d) => ({
             item: d,
-            publicationUpdatedAt: p.updatedAt.toISOString(),
+            publicationUpdatedAt: p.updatedAt,
             isHidden: Boolean(isHidden.find((ih) => d.path.includes(ih.item.path))),
           })),
         );
@@ -345,7 +347,7 @@ export class MeiliSearchWrapper {
   async deleteOne(db: DBConnection, item: Item) {
     try {
       let itemsToIndex = [item];
-      if (item.type === ItemType.FOLDER) {
+      if (isItemType(item, ItemType.FOLDER)) {
         itemsToIndex = itemsToIndex.concat(
           await this.itemRepository.getDescendants(db, item, { ordered: false }),
         );
@@ -371,9 +373,7 @@ export class MeiliSearchWrapper {
         where: { type: ItemType.S3_FILE },
         take: 1000,
         skip: (currentPage - 1) * 1000,
-        order: {
-          createdAt: 'ASC',
-        },
+        order: asc(items.createdAt),
       });
       total = totalCount;
       currentPage++;

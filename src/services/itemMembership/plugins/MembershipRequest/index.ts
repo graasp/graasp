@@ -50,10 +50,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         // Check if the Item exists and the member has the required permission.
         await itemService.get(tx, member, itemId, PermissionLevel.Admin);
 
-        const requests = await membershipRequestService.getAllByItem(
-          tx,
-          itemId,
-        );
+        const requests = await membershipRequestService.getAllByItem(tx, itemId);
         reply.send(requests);
       });
     },
@@ -70,11 +67,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const { itemId } = params;
 
       await db.transaction(async (tx) => {
-        const membershipRequest = await membershipRequestService.get(
-          tx,
-          member.id,
-          itemId,
-        );
+        const membershipRequest = await membershipRequestService.get(tx, member.id, itemId);
         if (membershipRequest) {
           return reply.send({ status: MembershipRequestStatus.Pending });
         }
@@ -112,42 +105,24 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const { itemId } = params;
 
       await db.transaction(async (tx) => {
-        const membershipRequest = await membershipRequestService.get(
-          tx,
-          member.id,
-          itemId,
-        );
+        const membershipRequest = await membershipRequestService.get(tx, member.id, itemId);
         if (membershipRequest) {
           throw new MembershipRequestAlreadyExists();
         }
         //TODO: replace by transaction tx
         const item = await itemRepository.getOneOrThrow(db, itemId);
 
-        const itemLoginSchema = await itemLoginService.getByItemPath(
-          tx,
-          item.path,
-        );
+        const itemLoginSchema = await itemLoginService.getByItemPath(tx, item.path);
         if (itemLoginSchema) {
           throw new ItemLoginSchemaExists();
         }
 
         // Check if the member already has an access to the item (from membership or item visibility), if so, throw an error
-        if (
-          await authorizationService.hasPermission(
-            tx,
-            PermissionLevel.Read,
-            member,
-            item,
-          )
-        ) {
+        if (await authorizationService.hasPermission(tx, PermissionLevel.Read, member, item)) {
           throw new ItemMembershipAlreadyExists();
         }
 
-        const result = await membershipRequestService.post(
-          tx,
-          member.id,
-          itemId,
-        );
+        const result = await membershipRequestService.post(tx, member.id, itemId);
         await membershipRequestService.notifyAdmins(tx, member, item);
         reply.send(result);
       });
@@ -168,11 +143,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         // Check if the Item exists and the member has the required permission
         await itemService.get(tx, member, itemId, PermissionLevel.Admin);
 
-        const requests = await membershipRequestService.deleteOne(
-          tx,
-          memberId,
-          itemId,
-        );
+        const requests = await membershipRequestService.deleteOne(tx, memberId, itemId);
         if (!requests) {
           throw new MembershipRequestNotFound();
         }

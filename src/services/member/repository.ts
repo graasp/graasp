@@ -1,7 +1,7 @@
 import { and, eq, inArray } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
-import { AccountType, CompleteMember, UUID } from '@graasp/sdk';
+import { AccountType, CompleteMember, ResultOf, UUID } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
 import { DBConnection } from '../../drizzle/db';
@@ -87,6 +87,7 @@ export class MemberDTO {
       // HACK: email should always exist but the columns is not marked as nonNull
       email: this.member.email!,
       lang: this.member.extra.lang ?? DEFAULT_LANG,
+      enableSaveActions: this.member.extra.enableSaveActions,
     };
   }
 
@@ -124,12 +125,7 @@ export class MemberRepository {
     // need to use the accounts table as we can not delete from a view (membersView)
     await db
       .delete(accountsTable)
-      .where(
-        and(
-          eq(accountsTable.id, id),
-          eq(accountsTable.type, AccountType.Individual),
-        ),
-      );
+      .where(and(eq(accountsTable.id, id), eq(accountsTable.type, AccountType.Individual)));
   }
 
   async get(db: DBConnection, id: string): Promise<MemberDTO> {
@@ -138,25 +134,23 @@ export class MemberRepository {
     if (!id) {
       throw new MemberNotFound({ id });
     }
-    const m = await db
-      .select()
-      .from(membersView)
-      .where(eq(membersView.id, id))
-      .limit(1);
+    const m = await db.select().from(membersView).where(eq(membersView.id, id)).limit(1);
     if (!m.length) {
       throw new MemberNotFound({ id });
     }
     return new MemberDTO(m[0]);
   }
 
-  async getMany(db: DBConnection, ids: string[]) {
-    const members = await db
-      .select()
-      .from(membersView)
-      .where(inArray(membersView.id, ids));
+  async getMany(db: DBConnection, ids: string[]): Promise<ResultOf<MemberDTO>> {
+    const members = await db.select().from(membersView).where(inArray(membersView.id, ids));
     return mapById({
       keys: ids,
-      findElement: (id) => members.find(({ id: thisId }) => thisId === id),
+      findElement: (id) => {
+        const m = members.find(({ id: thisId }) => thisId === id);
+        if (m) {
+          return new MemberDTO(m);
+        }
+      },
       buildError: (id) => new MemberNotFound({ id }),
     });
   }
@@ -165,12 +159,9 @@ export class MemberRepository {
     db: DBConnection,
     emailString: string,
     args: { shouldExist?: boolean } = {},
-  ) {
+  ): Promise<MemberDTO> {
     const email = emailString.toLowerCase();
-    const member = await db
-      .select()
-      .from(membersView)
-      .where(eq(membersView.email, email));
+    const member = await db.select().from(membersView).where(eq(membersView.email, email));
 
     if (args.shouldExist) {
       if (member.length !== 1) {
@@ -180,15 +171,16 @@ export class MemberRepository {
     return new MemberDTO(member[0]);
   }
 
-  async getManyByEmails(db: DBConnection, emails: string[]) {
-    const members = await db
-      .select()
-      .from(membersView)
-      .where(inArray(membersView.email, emails));
+  async getManyByEmails(db: DBConnection, emails: string[]): Promise<ResultOf<MemberDTO>> {
+    const members = await db.select().from(membersView).where(inArray(membersView.email, emails));
     return mapById({
       keys: emails,
-      findElement: (email) =>
-        members.find(({ email: thisEmail }) => thisEmail === email),
+      findElement: (email) => {
+        const m = members.find(({ email: thisEmail }) => thisEmail === email);
+        if (m) {
+          return new MemberDTO(m);
+        }
+      },
       buildError: (email) => new MemberNotFound({ email }),
     });
   }
@@ -199,15 +191,10 @@ export class MemberRepository {
     body: Partial<
       Pick<
         AccountInsertDTO,
-        | 'extra'
-        | 'email'
-        | 'name'
-        | 'enableSaveActions'
-        | 'lastAuthenticatedAt'
-        | 'isValidated'
+        'extra' | 'email' | 'name' | 'enableSaveActions' | 'lastAuthenticatedAt' | 'isValidated'
       >
     >,
-  ) {
+  ): Promise<MemberDTO> {
     const newData: Partial<AccountInsertDTO> = {};
 
     if (body.name) {
@@ -219,11 +206,7 @@ export class MemberRepository {
     }
 
     if (body.extra) {
-      const [member] = await db
-        .select()
-        .from(membersView)
-        .where(eq(membersView.id, id))
-        .limit(1);
+      const [member] = await db.select().from(membersView).where(eq(membersView.id, id)).limit(1);
       newData.extra = Object.assign({}, member.extra, body?.extra);
     }
 
@@ -258,9 +241,8 @@ export class MemberRepository {
 
   async post(
     db: DBConnection,
-    data: Partial<MemberCreationDTO> &
-      Pick<MemberCreationDTO, 'email' | 'name'>,
-  ) {
+    data: Partial<MemberCreationDTO> & Pick<MemberCreationDTO, 'email' | 'name'>,
+  ): Promise<MemberDTO> {
     const email = data.email.toLowerCase();
 
     // The backend assumes user agrees to terms by creating an account.

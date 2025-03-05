@@ -22,11 +22,7 @@ export class MemberThumbnailService {
 
   constructor(
     memberService: MemberService,
-    @injectWithTransform(
-      ThumbnailService,
-      ThumbnailServiceTransformer,
-      AVATAR_THUMBNAIL_PREFIX,
-    )
+    @injectWithTransform(ThumbnailService, ThumbnailServiceTransformer, AVATAR_THUMBNAIL_PREFIX)
     thumbnailService: ThumbnailService,
     accountRepository: AccountRepository,
   ) {
@@ -60,10 +56,7 @@ export class MemberThumbnailService {
   }
 
   // get member's avatar
-  async getUrl(
-    db: DBConnection,
-    { size, memberId }: { memberId: string; size: string },
-  ) {
+  async getUrl(db: DBConnection, { size, memberId }: { memberId: string; size: string }) {
     const account = await this.accountRepository.get(db, memberId);
 
     if (!account) {

@@ -5,11 +5,7 @@ import { injectable } from 'tsyringe';
 
 import { AuthenticatedUser, MaybeUser } from '../../types';
 import FileService from '../file/service';
-import {
-  THUMBNAIL_FORMAT,
-  THUMBNAIL_MIMETYPE,
-  ThumbnailSizeFormat,
-} from './constants';
+import { THUMBNAIL_FORMAT, THUMBNAIL_MIMETYPE, ThumbnailSizeFormat } from './constants';
 
 export const AVATAR_THUMBNAIL_PREFIX = 'avatars';
 export const ITEM_THUMBNAIL_PREFIX = 'thumbnails';
@@ -35,11 +31,7 @@ export class ThumbnailService {
     return path.join(this._prefix, itemId);
   }
 
-  async upload(
-    authenticatedUser: AuthenticatedUser,
-    id: string,
-    file: Readable,
-  ) {
+  async upload(authenticatedUser: AuthenticatedUser, id: string, file: Readable) {
     // upload all thumbnails in parallel
     await Promise.all(
       Object.entries(ThumbnailSizeFormat).map(async ([sizeName, width]) => {

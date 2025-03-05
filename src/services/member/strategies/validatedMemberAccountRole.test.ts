@@ -4,10 +4,7 @@ import { FastifyRequest } from 'fastify';
 
 import { AccountType } from '@graasp/sdk';
 
-import {
-  GuestFactory,
-  MemberFactory,
-} from '../../../../test/factories/member.factory';
+import { GuestFactory, MemberFactory } from '../../../../test/factories/member.factory';
 import { validatedMemberAccountRole } from './validatedMemberAccountRole';
 
 describe('Validated Member', () => {

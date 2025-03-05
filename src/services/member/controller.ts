@@ -41,17 +41,13 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
   const storageService = resolveDependency(StorageService);
 
   // get current
-  fastify.get(
-    '/current',
-    { schema: getCurrent, preHandler: isAuthenticated },
-    async ({ user }) => {
-      if (user?.account) {
-        const member = await memberService.get(db, user?.account?.id);
-        return member.toCurrent();
-      }
-      return undefined;
-    },
-  );
+  fastify.get('/current', { schema: getCurrent, preHandler: isAuthenticated }, async ({ user }) => {
+    if (user?.account) {
+      const member = await memberService.get(db, user?.account?.id);
+      return member.toCurrent();
+    }
+    return undefined;
+  });
 
   // get current member storage and its limits
   fastify.get(

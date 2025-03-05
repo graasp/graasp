@@ -78,11 +78,7 @@ export class ItemTagRepository {
     return res;
   }
 
-  async create(
-    db: DBConnection,
-    itemId: UUID,
-    tagId: Tag['id'],
-  ): Promise<void> {
+  async create(db: DBConnection, itemId: UUID, tagId: Tag['id']): Promise<void> {
     try {
       await db.insert(itemTags).values({ itemId, tagId });
     } catch (e) {
@@ -94,19 +90,11 @@ export class ItemTagRepository {
     }
   }
 
-  async delete(
-    db: DBConnection,
-    itemId: Item['id'],
-    tagId: Tag['id'],
-  ): Promise<void> {
+  async delete(db: DBConnection, itemId: Item['id'], tagId: Tag['id']): Promise<void> {
     if (!itemId || !tagId) {
-      throw new IllegalArgumentException(
-        `Given 'itemId' or 'tagId' is undefined!`,
-      );
+      throw new IllegalArgumentException(`Given 'itemId' or 'tagId' is undefined!`);
     }
     // remove association between item and tag in tag association table
-    await db
-      .delete(itemTags)
-      .where(and(eq(itemTags.tagId, tagId), eq(itemTags.itemId, itemId)));
+    await db.delete(itemTags).where(and(eq(itemTags.tagId, tagId), eq(itemTags.itemId, itemId)));
   }
 }

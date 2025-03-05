@@ -5,10 +5,7 @@ import { FastifySchema } from 'fastify';
 
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 import { errorSchemaRef } from '../../schemas/global';
-import {
-    augmentedAccountSchemaRef,
-    nullableAugmentedAccountSchemaRef,
-} from '../account/schemas';
+import { augmentedAccountSchemaRef, nullableAugmentedAccountSchemaRef } from '../account/schemas';
 import { itemSchemaRef } from '../item/schemas';
 import { PermissionLevel } from './types';
 
@@ -98,10 +95,7 @@ export const getManyItemMemberships = {
   }),
   response: {
     [StatusCodes.OK]: customType.StrictObject({
-      data: Type.Record(
-        Type.String({ format: 'uuid' }),
-        Type.Array(itemMembershipSchemaRef),
-      ),
+      data: Type.Record(Type.String({ format: 'uuid' }), Type.Array(itemMembershipSchemaRef)),
       errors: Type.Array(errorSchemaRef),
     }),
     '4xx': errorSchemaRef,

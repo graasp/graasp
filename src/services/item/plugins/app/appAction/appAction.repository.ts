@@ -17,10 +17,7 @@ type CreateAppActionBody = {
 };
 
 export class AppActionRepository {
-  async addOne(
-    db: DBConnection,
-    { itemId, accountId, appAction }: CreateAppActionBody,
-  ) {
+  async addOne(db: DBConnection, { itemId, accountId, appAction }: CreateAppActionBody) {
     return await db
       .insert(appActions)
       .values({
@@ -38,11 +35,7 @@ export class AppActionRepository {
     });
   }
 
-  async getForItem(
-    db: DBConnection,
-    itemId: string,
-    filters: SingleItemGetFilter,
-  ) {
+  async getForItem(db: DBConnection, itemId: string, filters: SingleItemGetFilter) {
     if (!itemId) {
       throw new IllegalArgumentException('The itemId must be defined');
     }

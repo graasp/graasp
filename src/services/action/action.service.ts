@@ -6,9 +6,9 @@ import { FastifyRequest } from 'fastify';
 import { ClientManager, Context } from '@graasp/sdk';
 
 import { DBConnection } from '../../drizzle/db';
-import { ActionInsertDTO } from '../../drizzle/types';
+import { Item } from '../../drizzle/types';
 import { BaseLogger } from '../../logger';
-import { MaybeUser } from '../../types';
+import { AuthenticatedUser } from '../../types';
 import { ItemService } from '../item/service';
 import { MemberRepository } from '../member/repository';
 import { MemberService } from '../member/service';
@@ -39,16 +39,16 @@ export class ActionService {
 
   async postMany(
     db: DBConnection,
-    actor: MaybeUser,
+    actor: AuthenticatedUser,
     request: FastifyRequest,
-    actions: ActionInsertDTO[],
+    actions: { item: Item; type: string; extra: unknown }[],
   ): Promise<void> {
     const { headers } = request;
     // expand member to the full account
     const member = actor ? await this.memberRepository.get(db, actor.id) : null;
     //TODO: should we assert that the member is a "member" ?
     // prevent saving if member is defined and has disabled saveActions
-    if (member && member.enableSaveActions === false) {
+    if (member && member.toMemberInfo().enableSaveActions === false) {
       return;
     }
 

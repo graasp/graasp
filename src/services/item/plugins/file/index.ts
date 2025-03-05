@@ -5,14 +5,14 @@ import { FileItemProperties, PermissionLevel, getFileExtension } from '@graasp/s
 
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
+import { Item } from '../../../../drizzle/types';
 import { asDefined } from '../../../../utils/assertions';
 import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import { assertIsMember, isMember } from '../../../authentication';
 import { AuthorizationService, matchOne } from '../../../authorization';
 import FileService from '../../../file/service';
-import { assertIsMember, isMember } from '../../../member/entities/member';
 import { StorageService } from '../../../member/plugins/storage/service';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { Item } from '../../entities/Item';
 import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
 import { H5PService } from '../html/h5p/service';

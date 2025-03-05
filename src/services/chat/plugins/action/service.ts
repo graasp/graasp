@@ -23,11 +23,7 @@ export class ActionChatService {
     this.actionService = actionService;
   }
 
-  async postPostMessageAction(
-    db: DBConnection,
-    request: FastifyRequest,
-    message: ChatMessageRaw,
-  ) {
+  async postPostMessageAction(db: DBConnection, request: FastifyRequest, message: ChatMessageRaw) {
     const { user } = request;
     const action = {
       itemId: message.itemId,
@@ -50,11 +46,7 @@ export class ActionChatService {
     );
   }
 
-  async postPatchMessageAction(
-    db: DBConnection,
-    request: FastifyRequest,
-    message: ChatMessageRaw,
-  ) {
+  async postPatchMessageAction(db: DBConnection, request: FastifyRequest, message: ChatMessageRaw) {
     const { user } = request;
     const action = {
       itemId: message.itemId,
@@ -101,11 +93,7 @@ export class ActionChatService {
     );
   }
 
-  async postClearMessageAction(
-    db: DBConnection,
-    request: FastifyRequest,
-    itemId: UUID,
-  ) {
+  async postClearMessageAction(db: DBConnection, request: FastifyRequest, itemId: UUID) {
     const { user } = request;
     const action = {
       type: ChatActionType.Clear,

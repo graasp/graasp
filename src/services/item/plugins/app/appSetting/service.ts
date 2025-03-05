@@ -3,11 +3,7 @@ import { singleton } from 'tsyringe';
 import { PermissionLevel, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../drizzle/db';
-import {
-    AppSettingInsertDTO,
-    AppSettingRaw,
-    Item,
-} from '../../../../../drizzle/types';
+import { AppSettingInsertDTO, AppSettingRaw, Item } from '../../../../../drizzle/types';
 import { AuthenticatedUser, MaybeUser } from '../../../../../types';
 import { UnauthorizedMember } from '../../../../../utils/errors';
 import HookManager from '../../../../../utils/hook';
@@ -49,10 +45,7 @@ export class AppSettingService {
     };
   }>();
 
-  constructor(
-    itemService: ItemService,
-    appSettingRepository: AppSettingRepository,
-  ) {
+  constructor(itemService: ItemService, appSettingRepository: AppSettingRepository) {
     this.itemService = itemService;
     this.appSettingRepository = appSettingRepository;
   }
@@ -98,11 +91,7 @@ export class AppSettingService {
       itemId,
     });
 
-    const appSetting = await this.appSettingRepository.updateOne(
-      db,
-      appSettingId,
-      body,
-    );
+    const appSetting = await this.appSettingRepository.updateOne(db, appSettingId, body);
     await this.hooks.runPostHooks('patch', member, db, {
       appSetting,
       itemId,
@@ -119,10 +108,7 @@ export class AppSettingService {
     // delete an app data is allowed to admins
     await this.itemService.get(db, member, itemId, PermissionLevel.Admin);
 
-    const appSetting = await this.appSettingRepository.getOneOrThrow(
-      db,
-      appSettingId,
-    );
+    const appSetting = await this.appSettingRepository.getOneOrThrow(db, appSettingId);
 
     await this.hooks.runPreHooks('delete', member, db, {
       appSettingId,
@@ -134,24 +120,14 @@ export class AppSettingService {
     await this.hooks.runPostHooks('delete', member, db, { appSetting, itemId });
   }
 
-  async get(
-    db: DBConnection,
-    actor: MaybeUser,
-    itemId: string,
-    appSettingId: UUID,
-  ) {
+  async get(db: DBConnection, actor: MaybeUser, itemId: string, appSettingId: UUID) {
     // get app setting is allowed to readers
     await this.itemService.get(db, actor, itemId);
 
     return await this.appSettingRepository.getOneOrThrow(db, appSettingId);
   }
 
-  async getForItem(
-    db: DBConnection,
-    actor: MaybeUser,
-    itemId: string,
-    name?: string,
-  ) {
+  async getForItem(db: DBConnection, actor: MaybeUser, itemId: string, name?: string) {
     // item can be public
     // get app setting is allowed to readers
     await this.itemService.get(db, actor, itemId);
@@ -159,12 +135,7 @@ export class AppSettingService {
     return this.appSettingRepository.getForItem(db, itemId, name);
   }
 
-  async copyForItem(
-    db: DBConnection,
-    actor: MaybeUser,
-    original: Item,
-    copy: Item,
-  ) {
+  async copyForItem(db: DBConnection, actor: MaybeUser, original: Item, copy: Item) {
     if (!actor) {
       throw new UnauthorizedMember();
     }

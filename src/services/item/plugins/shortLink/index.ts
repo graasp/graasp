@@ -25,27 +25,19 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
   fastify.register(async function (fastify: FastifyInstanceTypebox) {
     // No need to be logged for the redirection
-    fastify.get(
-      '/:alias',
-      { schema: getRedirection },
-      async ({ params: { alias } }, reply) => {
-        const path = await shortLinkService.getRedirection(db, alias);
-        reply.code(StatusCodes.MOVED_TEMPORARILY).redirect(path);
-      },
-    );
+    fastify.get('/:alias', { schema: getRedirection }, async ({ params: { alias } }, reply) => {
+      const path = await shortLinkService.getRedirection(db, alias);
+      reply.code(StatusCodes.MOVED_TEMPORARILY).redirect(path);
+    });
 
-    fastify.get(
-      '/available/:alias',
-      { schema: getAvailable },
-      async ({ params: { alias } }) => {
-        try {
-          await shortLinkService.getOne(db, alias);
-          return { available: false };
-        } catch (e) {
-          return { available: true };
-        }
-      },
-    );
+    fastify.get('/available/:alias', { schema: getAvailable }, async ({ params: { alias } }) => {
+      try {
+        await shortLinkService.getOne(db, alias);
+        return { available: false };
+      } catch (e) {
+        return { available: true };
+      }
+    });
 
     // Only the admin can manage a short link of this resource
     await fastify.register(async (fastify: FastifyInstanceTypebox) => {
@@ -100,12 +92,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           const member = asDefined(user?.account);
           assertIsMember(member);
           return db.transaction(async (tx) => {
-            const updatedLink = await shortLinkService.update(
-              tx,
-              member,
-              alias,
-              shortLink,
-            );
+            const updatedLink = await shortLinkService.update(tx, member, alias, shortLink);
             return updatedLink;
           });
         },

@@ -56,11 +56,7 @@ export class StorageService {
   // check the user has enough storage to create a new item given its size
   // get the complete storage
   // todo: include more item types
-  async checkRemainingStorage(
-    db: DBConnection,
-    member: MinimalMember,
-    size: number = 0,
-  ) {
+  async checkRemainingStorage(db: DBConnection, member: MinimalMember, size: number = 0) {
     const { id: memberId } = member;
 
     const currentStorage = await this.itemRepository.getItemSumSize(

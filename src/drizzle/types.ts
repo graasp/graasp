@@ -28,6 +28,7 @@ import {
   itemMemberships,
   itemTags,
   itemValidationGroups,
+  itemValidations,
   itemVisibilities,
   items,
   itemsRaw,
@@ -122,7 +123,7 @@ export type ItemWithType<TExtra extends ItemTypeEnumKeys> = Item & {
 };
 // note: cannot combine nicely Item and ItemWithCreator when defined with omit
 // export type ItemWithCreator = Omit<Item, 'creatorId'> & { creator: Account };
-export type ItemWithCreator = Item & { creator: Account };
+export type ItemWithCreator = ItemRaw & { creator: Account | null };
 
 // --- ItemVisibilities
 export type ItemVisibilityRaw = typeof itemVisibilities.$inferSelect;
@@ -136,9 +137,6 @@ export type ItemPublishedRaw = typeof publishedItems.$inferSelect;
 
 export type ItemPublishedWithItem = Omit<typeof publishedItems.$inferSelect, 'itemPath'> & {
   item: Item;
-};
-export type ItemPublishedWithItemAndAccount = ItemPublishedWithItem & {
-  creator: Account;
 };
 export type ItemPublishedWithItemWithCreator = ItemPublishedRaw & {
   item: ItemWithCreator;
@@ -220,6 +218,7 @@ export type AppActionWithItemAndAccount = AppActionRaw & {
 // --- AppSetting
 export type AppSettingInsertDTO = typeof appSettings.$inferInsert;
 export type AppSettingRaw = typeof appSettings.$inferSelect;
+export type AppSettingWithItem = AppSettingRaw & { item: Item };
 
 // --- AppData
 export type AppDataInsertDTO = typeof appDatas.$inferInsert;
@@ -247,6 +246,10 @@ export type ItemGeolocationWithItemAndCreator = ItemGeolocationRaw & {
   item: Item;
   creator: Account;
 };
+
+// --- ItemValidation
+export type ItemValidationRaw = typeof itemValidations.$inferSelect;
+export type ItemValidationInsertDTO = typeof itemValidations.$inferInsert;
 
 // --- ItemValidationGroup
 export type ItemValidationGroupRaw = typeof itemValidationGroups.$inferSelect;

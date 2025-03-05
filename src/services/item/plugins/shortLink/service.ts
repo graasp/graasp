@@ -54,17 +54,9 @@ export class ShortLinkService {
     }
 
     // check that the member can admin the item to be allowed to create short link
-    await this.itemService.get(
-      db,
-      member,
-      shortLink.itemId,
-      PermissionLevel.Admin,
-    );
+    await this.itemService.get(db, member, shortLink.itemId, PermissionLevel.Admin);
 
-    const createdShortLink = await this.shortLinkRepository.addOne(
-      db,
-      shortLink,
-    );
+    const createdShortLink = await this.shortLinkRepository.addOne(db, shortLink);
     return ShortLinkDTO.from(createdShortLink);
   }
 
@@ -73,11 +65,7 @@ export class ShortLinkService {
     return ShortLinkDTO.from(shortLink);
   }
 
-  async getAllForItem(
-    db: DBConnection,
-    account: AuthenticatedUser,
-    itemId: string,
-  ) {
+  async getAllForItem(db: DBConnection, account: AuthenticatedUser, itemId: string) {
     if (!account) throw new UnauthorizedMember();
     // check that the member can read the item to be allowed to read all short links
     await this.itemService.get(db, account, itemId, PermissionLevel.Read);
@@ -87,9 +75,7 @@ export class ShortLinkService {
     return res.reduce<ShortLinksOfItem>((acc, { alias, platform }) => {
       if (acc[platform]) {
         // This should never happen.
-        throw new Error(
-          `An alias for the platform "${platform}" already exist!`,
-        );
+        throw new Error(`An alias for the platform "${platform}" already exist!`);
       }
 
       return { ...acc, [platform]: alias };
@@ -100,10 +86,7 @@ export class ShortLinkService {
     const shortLink = await this.getOne(db, alias);
     const clientHostManager = ClientManager.getInstance();
 
-    return clientHostManager.getItemLink(
-      shortLink.platform as Context,
-      shortLink.itemId,
-    );
+    return clientHostManager.getItemLink(shortLink.platform as Context, shortLink.itemId);
   }
 
   async delete(db: DBConnection, member: MinimalMember, alias: string) {
@@ -111,12 +94,7 @@ export class ShortLinkService {
     const shortLink = await this.shortLinkRepository.getOne(db, alias);
 
     // check that the member can admin the item to be allowed to create short link
-    await this.itemService.get(
-      db,
-      member,
-      shortLink.item.id,
-      PermissionLevel.Admin,
-    );
+    await this.itemService.get(db, member, shortLink.item.id, PermissionLevel.Admin);
 
     await this.shortLinkRepository.deleteOne(db, alias);
     return ShortLinkDTO.from(shortLink);
@@ -134,18 +112,9 @@ export class ShortLinkService {
     const shortLink = await this.shortLinkRepository.getOne(db, alias);
 
     // check that the member can admin the item to be allowed to create short link
-    await this.itemService.get(
-      db,
-      member,
-      shortLink.item.id,
-      PermissionLevel.Admin,
-    );
+    await this.itemService.get(db, member, shortLink.item.id, PermissionLevel.Admin);
 
-    const res = await this.shortLinkRepository.updateOne(
-      db,
-      alias,
-      updatedShortLink,
-    );
+    const res = await this.shortLinkRepository.updateOne(db, alias, updatedShortLink);
     return ShortLinkDTO.from(res);
   }
 }

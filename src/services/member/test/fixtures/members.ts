@@ -24,11 +24,7 @@ export const saveMember = async (m: CompleteMember = MemberFactory()) => {
 };
 
 export const saveMembers = async (
-  members: CompleteMember[] = [
-    MemberFactory(),
-    MemberFactory(),
-    MemberFactory(),
-  ],
+  members: CompleteMember[] = [MemberFactory(), MemberFactory(), MemberFactory()],
 ) => {
   const promises = members.map((m) => saveMember(m));
   return Promise.all(promises);

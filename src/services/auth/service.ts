@@ -33,13 +33,9 @@ export class AuthService {
     const { challenge, url } = options;
 
     // generate token with member info and expiration
-    const token = sign(
-      { sub: member.id, challenge, emailValidation: true },
-      JWT_SECRET,
-      {
-        expiresIn: `${REGISTER_TOKEN_EXPIRATION_IN_MINUTES}m`,
-      },
-    );
+    const token = sign({ sub: member.id, challenge, emailValidation: true }, JWT_SECRET, {
+      expiresIn: `${REGISTER_TOKEN_EXPIRATION_IN_MINUTES}m`,
+    });
 
     const redirectionUrl = getRedirectionLink(this.log, url);
     const domain = challenge ? MOBILE_AUTH_URL : PUBLIC_URL;
@@ -67,9 +63,7 @@ export class AuthService {
     // don't wait for mailerService's response; log error and link if it fails.
     this.mailerService
       .send(mail, member.email)
-      .catch((err) =>
-        this.log.warn(err, `mailerService failed. link: ${link}`),
-      );
+      .catch((err) => this.log.warn(err, `mailerService failed. link: ${link}`));
   }
 
   public async generateLoginLinkAndEmailIt(
@@ -79,13 +73,9 @@ export class AuthService {
     const { challenge, url } = options;
 
     // generate token with member info and expiration
-    const token = sign(
-      { sub: member.id, challenge, emailValidation: true },
-      JWT_SECRET,
-      {
-        expiresIn: `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
-      },
-    );
+    const token = sign({ sub: member.id, challenge, emailValidation: true }, JWT_SECRET, {
+      expiresIn: `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
+    });
 
     const redirectionUrl = getRedirectionLink(this.log, url);
     const domain = challenge ? MOBILE_AUTH_URL : PUBLIC_URL;
@@ -111,8 +101,6 @@ export class AuthService {
     // don't wait for mailerService's response; log error and link if it fails.
     this.mailerService
       .send(mail, member.email)
-      .catch((err) =>
-        this.log.warn(err, `mailerService failed. link: ${link}`),
-      );
+      .catch((err) => this.log.warn(err, `mailerService failed. link: ${link}`));
   }
 }

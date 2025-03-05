@@ -7,10 +7,7 @@ import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import { THUMBNAILS_ROUTE_PREFIX } from '../../../../utils/config';
-import {
-  isAuthenticated,
-  optionalIsAuthenticated,
-} from '../../../auth/plugins/passport';
+import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
 import { matchOne } from '../../../authorization';
 import FileService from '../../../file/service';
@@ -26,10 +23,7 @@ type GraaspThumbnailsOptions = {
   maxFileSize?: number; // max size for an uploaded file in bytes
 };
 
-const plugin: FastifyPluginAsyncTypebox<GraaspThumbnailsOptions> = async (
-  fastify,
-  options,
-) => {
+const plugin: FastifyPluginAsyncTypebox<GraaspThumbnailsOptions> = async (fastify, options) => {
   const { maxFileSize = DEFAULT_MAX_FILE_SIZE } = options;
 
   const fileService = resolveDependency(FileService);

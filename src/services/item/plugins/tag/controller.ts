@@ -5,10 +5,7 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
-import {
-  isAuthenticated,
-  optionalIsAuthenticated,
-} from '../../../auth/plugins/passport';
+import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
 import { matchOne } from '../../../authorization';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';

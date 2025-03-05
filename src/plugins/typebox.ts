@@ -9,10 +9,7 @@ import {
   UnsafeOptions,
 } from '@sinclair/typebox';
 
-import {
-  FastifyPluginAsyncTypebox,
-  TypeBoxTypeProvider,
-} from '@fastify/type-provider-typebox';
+import { FastifyPluginAsyncTypebox, TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import {
   FastifyBaseLogger,
   FastifyInstance,
@@ -22,11 +19,7 @@ import {
   RawServerDefault,
 } from 'fastify';
 
-import {
-  MAX_ITEM_NAME_LENGTH,
-  MAX_USERNAME_LENGTH,
-  MIN_USERNAME_LENGTH,
-} from '@graasp/sdk';
+import { MAX_ITEM_NAME_LENGTH, MAX_USERNAME_LENGTH, MIN_USERNAME_LENGTH } from '@graasp/sdk';
 
 import { ITEM_NAME_REGEX } from '../schemas/regex';
 import { discriminable } from './typebox/discriminable';
@@ -61,9 +54,7 @@ export function registerSchemaAsRef<T extends TSchema>(
  * Add all schemas previously registered to the Fastify instance. This plugin needs to be registered globally.
  * @param fastify The Fastify instance.
  */
-export const schemaRegisterPlugin: FastifyPluginAsyncTypebox = async (
-  fastify,
-) => {
+export const schemaRegisterPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
   for (const schema of schemas) {
     fastify.addSchema(schema);
   }
@@ -75,8 +66,7 @@ export const schemaRegisterPlugin: FastifyPluginAsyncTypebox = async (
 export const customType = {
   DateTime: (options?: UnsafeOptions) =>
     Type.Unsafe<string>({ ...options, type: 'string', format: 'date-time' }),
-  UUID: (options?: StringOptions) =>
-    Type.String({ ...options, format: 'uuid' }),
+  UUID: (options?: StringOptions) => Type.String({ ...options, format: 'uuid' }),
   Username: (options?: StringOptions) =>
     Type.String({
       ...options,
@@ -119,10 +109,8 @@ export const customType = {
       { additionalProperties: false },
     ),
   Discriminable: discriminable,
-  StrictObject: <T extends TProperties>(
-    properties: T,
-    options?: SchemaOptions,
-  ) => Type.Object(properties, { ...options, additionalProperties: false }),
+  StrictObject: <T extends TProperties>(properties: T, options?: SchemaOptions) =>
+    Type.Object(properties, { ...options, additionalProperties: false }),
   ItemName: (options?: StringOptions) =>
     Type.String({
       ...options,
@@ -139,8 +127,7 @@ export type FastifyInstanceTypebox<
   RawServer extends RawServerBase = RawServerDefault,
   RawRequest extends
     RawRequestDefaultExpression<RawServer> = RawRequestDefaultExpression<RawServer>,
-  RawReply extends
-    RawReplyDefaultExpression<RawServer> = RawReplyDefaultExpression<RawServer>,
+  RawReply extends RawReplyDefaultExpression<RawServer> = RawReplyDefaultExpression<RawServer>,
   Logger extends FastifyBaseLogger = FastifyBaseLogger,
   TypeProvider extends TypeBoxTypeProvider = TypeBoxTypeProvider,
 > = FastifyInstance<RawServer, RawRequest, RawReply, Logger, TypeProvider>;

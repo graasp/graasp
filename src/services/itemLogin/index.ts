@@ -6,11 +6,7 @@ import { resolveDependency } from '../../di/utils';
 import { db } from '../../drizzle/db';
 import { asDefined } from '../../utils/assertions';
 import { ItemNotFound } from '../../utils/errors';
-import {
-  SESSION_KEY,
-  isAuthenticated,
-  optionalIsAuthenticated,
-} from '../auth/plugins/passport';
+import { SESSION_KEY, isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
 import { assertIsMember } from '../authentication';
 import { AuthorizationService, matchOne } from '../authorization';
 import { ItemRepository } from '../item/repository';
@@ -46,22 +42,12 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           throw new ItemNotFound(itemId);
         }
         // If item is not visible, throw NOT_FOUND
-        const isVisible = await authorizationService.isItemVisible(
-          tx,
-          user?.account,
-          item.path,
-        );
+        const isVisible = await authorizationService.isItemVisible(tx, user?.account, item.path);
         if (!isVisible) {
           throw new ItemNotFound(itemId);
         }
-        const itemLoginSchema = await itemLoginService.getByItemPath(
-          tx,
-          item.path,
-        );
-        if (
-          itemLoginSchema &&
-          itemLoginSchema.status !== ItemLoginSchemaStatus.Disabled
-        ) {
+        const itemLoginSchema = await itemLoginService.getByItemPath(tx, item.path);
+        if (itemLoginSchema && itemLoginSchema.status !== ItemLoginSchemaStatus.Disabled) {
           return itemLoginSchema.type;
         }
         return null;
@@ -78,16 +64,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async ({ user, params: { id: itemId } }) => {
       return await db.transaction(async (tx) => {
-        const item = await itemService.get(
-          tx,
-          user?.account,
-          itemId,
-          PermissionLevel.Admin,
-        );
-        const itemLoginSchema = await itemLoginService.getByItemPath(
-          tx,
-          item.path,
-        );
+        const item = await itemService.get(tx, user?.account, itemId, PermissionLevel.Admin);
+        const itemLoginSchema = await itemLoginService.getByItemPath(tx, item.path);
         if (!itemLoginSchema) {
           throw new ItemLoginSchemaNotFound({ itemId });
         }
@@ -111,11 +89,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         throw new ValidMemberSession(user?.account);
       }
       return db.transaction(async (tx) => {
-        const bondMember = await itemLoginService.logInOrRegister(
-          tx,
-          params.id,
-          body,
-        );
+        const bondMember = await itemLoginService.logInOrRegister(tx, params.id, body);
         // set session
         session.set(SESSION_KEY, bondMember.id);
         return bondMember;
@@ -135,20 +109,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
       return await db.transaction(async (tx) => {
-        const item = await itemService.get(
-          tx,
-          member,
-          itemId,
-          PermissionLevel.Admin,
-        ); // Validate permissions
+        const item = await itemService.get(tx, member, itemId, PermissionLevel.Admin); // Validate permissions
 
         // TODO: create function !
-        const schema = await itemLoginService.updateOrCreate(
-          tx,
-          item.path,
-          type,
-          status,
-        );
+        const schema = await itemLoginService.updateOrCreate(tx, item.path, type, status);
         if (schema) {
           // If exists, then update the existing one
           return await itemLoginService.update(tx, schema.id, type, status);

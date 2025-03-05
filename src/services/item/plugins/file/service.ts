@@ -16,14 +16,13 @@ import {
 } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
+import { MaybeUser, MinimalMember } from '../../../../types';
 import { asDefined } from '../../../../utils/assertions';
 import { AuthorizationService } from '../../../authorization';
 import FileService from '../../../file/service';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
-import { Actor, Member } from '../../../member/entities/member';
 import { StorageService } from '../../../member/plugins/storage/service';
 import { randomHexOf4 } from '../../../utils';
-import { Item } from '../../entities/Item';
 import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
 import { readPdfContent } from '../../utils';
@@ -159,7 +158,7 @@ class FileItemService {
 
   async getFile(
     db: DBConnection,
-    actor: Actor,
+    actor: MaybeUser,
     {
       itemId,
     }: {
@@ -201,7 +200,7 @@ class FileItemService {
     return result;
   }
 
-  async copy(db: DBConnection, member: Member, { copy }: { original; copy }) {
+  async copy(db: DBConnection, member: MinimalMember, { copy }: { original; copy }) {
     const { id, extra } = copy; // full copy with new `id`
     const { path: originalPath, mimetype } = extra[this.fileService.fileType];
     // filenames are not used

@@ -1,10 +1,11 @@
 import { singleton } from 'tsyringe';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { MaybeUser } from '../../../../types';
+import { MaybeUser, MinimalMember } from '../../../../types';
 import { filterOutPackedItems } from '../../../authorization';
 import { ItemService } from '../../../item/service';
-import { Member } from '../../../member/entities/member';
+import { ItemMembershipRepository } from '../../../itemMembership/repository';
+import { ItemVisibilityRepository } from '../itemVisibility/repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
 import { ItemPublishedRepository } from '../publication/published/repositories/itemPublished';
 import { ItemLikeRepository } from './repository';
@@ -15,20 +16,26 @@ export class ItemLikeService {
   private itemLikeRepository: ItemLikeRepository;
   private itemPublishedRepository: ItemPublishedRepository;
   private readonly meilisearchClient: MeiliSearchWrapper;
+  private readonly itemMembershipRepository: ItemMembershipRepository;
+  private readonly itemVisibilityRepository: ItemVisibilityRepository;
 
   constructor(
     itemService: ItemService,
     itemLikeRepository: ItemLikeRepository,
     itemPublishedRepository: ItemPublishedRepository,
+    itemMembershipRepository: ItemMembershipRepository,
+    itemVisibilityRepository: ItemVisibilityRepository,
     meilisearchClient: MeiliSearchWrapper,
   ) {
     this.itemService = itemService;
     this.itemLikeRepository = itemLikeRepository;
     this.itemPublishedRepository = itemPublishedRepository;
     this.meilisearchClient = meilisearchClient;
+    this.itemMembershipRepository = itemMembershipRepository;
+    this.itemVisibilityRepository = itemVisibilityRepository;
   }
 
-  async getForMember(db: DBConnection, member: Member) {
+  async getForMember(db: DBConnection, member: MinimalMember) {
     // only own items
     // TODO: allow to get other's like?
 
@@ -38,6 +45,10 @@ export class ItemLikeService {
     const filteredItems = await filterOutPackedItems(
       db,
       member,
+      {
+        itemMembershipRepository: this.itemMembershipRepository,
+        itemVisibilityRepository: this.itemVisibilityRepository,
+      },
       likes.map(({ item }) => item),
     );
     return filteredItems.map((item) => {
@@ -52,7 +63,7 @@ export class ItemLikeService {
     return this.itemLikeRepository.getByItemId(db, itemId);
   }
 
-  async removeOne(db: DBConnection, member: Member, itemId: string) {
+  async removeOne(db: DBConnection, member: MinimalMember, itemId: string) {
     // QUESTION: allow public to be liked?
     const item = await this.itemService.get(db, member, itemId);
 
@@ -68,7 +79,7 @@ export class ItemLikeService {
     return result;
   }
 
-  async post(db: DBConnection, member: Member, itemId: string) {
+  async post(db: DBConnection, member: MinimalMember, itemId: string) {
     // QUESTION: allow public to be liked?
     const item = await this.itemService.get(db, member, itemId);
     const result = await this.itemLikeRepository.addOne(db, {

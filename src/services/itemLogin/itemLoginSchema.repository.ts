@@ -23,9 +23,7 @@ export const ItemLoginSchemaStatus = {
   Disabled: 'disabled', // Guests can't register or log in
   Freeze: 'freeze',
 } as const;
-export type ItemLoginSchemaStatusOptions = UnionOfConst<
-  typeof ItemLoginSchemaStatus
->;
+export type ItemLoginSchemaStatusOptions = UnionOfConst<typeof ItemLoginSchemaStatus>;
 
 type ItemPath = string;
 type ItemId = string;
@@ -36,10 +34,7 @@ type CreateItemLoginSchemaBody = {
 
 @singleton()
 export class ItemLoginSchemaRepository {
-  async getOneByItemId(
-    db: DBConnection,
-    itemId: ItemId,
-  ): Promise<ItemLoginSchemaRaw | undefined> {
+  async getOneByItemId(db: DBConnection, itemId: ItemId): Promise<ItemLoginSchemaRaw | undefined> {
     throwsIfParamIsInvalid('item', itemId);
 
     return await db.query.itemLoginSchemas.findFirst({
@@ -61,17 +56,11 @@ export class ItemLoginSchemaRepository {
 
   async addOne(
     db: DBConnection,
-    {
-      itemPath,
-      type = ItemLoginSchemaType.Username,
-    }: CreateItemLoginSchemaBody,
+    { itemPath, type = ItemLoginSchemaType.Username }: CreateItemLoginSchemaBody,
   ) {
     const existingItemLoginSchema = await this.getOneByItemPath(db, itemPath);
     // if item login schema is inherited
-    if (
-      existingItemLoginSchema &&
-      existingItemLoginSchema?.itemPath !== itemPath
-    ) {
+    if (existingItemLoginSchema && existingItemLoginSchema?.itemPath !== itemPath) {
       throw new CannotNestItemLoginSchema(itemPath);
     }
 
@@ -87,9 +76,6 @@ export class ItemLoginSchemaRepository {
       throw new Error('could not find entity before deletion');
     }
 
-    return await db
-      .delete(itemLoginSchemas)
-      .where(eq(itemLoginSchemas.id, entity.id))
-      .returning();
+    return await db.delete(itemLoginSchemas).where(eq(itemLoginSchemas.id, entity.id)).returning();
   }
 }

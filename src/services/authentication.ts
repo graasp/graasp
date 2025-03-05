@@ -1,11 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 
-import {
-  AccountType,
-  AuthenticatedUser,
-  MinimalGuest,
-  MinimalMember,
-} from '../types';
+import { AccountType, AuthenticatedUser, MinimalGuest, MinimalMember } from '../types';
 import { NotMember } from './member/error';
 
 export function isMember(account: AuthenticatedUser): account is MinimalMember {

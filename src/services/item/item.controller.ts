@@ -8,25 +8,14 @@ import { db } from '../../drizzle/db';
 import { Item } from '../../drizzle/types';
 import { FastifyInstanceTypebox } from '../../plugins/typebox';
 import { asDefined } from '../../utils/assertions';
-import {
-  isAuthenticated,
-  optionalIsAuthenticated,
-} from '../auth/plugins/passport';
+import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
 import { assertIsMember } from '../authentication';
 import { matchOne } from '../authorization';
 import { memberAccountRole } from '../member/strategies/memberAccountRole';
 import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
 import { ITEMS_PAGE_SIZE } from './constants';
 import { ActionItemService } from './plugins/action/action.service';
-import {
-  copyMany,
-  deleteMany,
-  getOwn,
-  getShared,
-  moveMany,
-  reorder,
-  updateOne,
-} from './schemas';
+import { copyMany, deleteMany, getOwn, getShared, moveMany, reorder, updateOne } from './schemas';
 import { create, createWithThumbnail } from './schemas.create';
 import {
   getAccessible,
@@ -38,11 +27,7 @@ import {
 } from './schemas.packed';
 import { ItemService } from './service';
 import { getPostItemPayloadFromFormData } from './utils';
-import {
-  ItemOpFeedbackErrorEvent,
-  ItemOpFeedbackEvent,
-  memberItemsTopic,
-} from './ws/events';
+import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from './ws/events';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const itemService = resolveDependency(ItemService);
@@ -322,11 +307,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           websockets.publish(
             memberItemsTopic,
             member.id,
-            ItemOpFeedbackEvent(
-              'delete',
-              ids,
-              Object.fromEntries(items.map((i) => [i.id, i])),
-            ),
+            ItemOpFeedbackEvent('delete', ids, Object.fromEntries(items.map((i) => [i.id, i]))),
           );
         })
         .catch((e) => {
@@ -371,11 +352,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         })
         .catch((e) => {
           log.error(e);
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackErrorEvent('move', ids, e),
-          );
+          websockets.publish(memberItemsTopic, member.id, ItemOpFeedbackErrorEvent('move', ids, e));
         });
       reply.status(StatusCodes.ACCEPTED);
       return ids;
@@ -411,11 +388,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         })
         .catch((e) => {
           log.error(e);
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackErrorEvent('copy', ids, e),
-          );
+          websockets.publish(memberItemsTopic, member.id, ItemOpFeedbackErrorEvent('copy', ids, e));
         });
       reply.status(StatusCodes.ACCEPTED);
       return ids;

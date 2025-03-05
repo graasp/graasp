@@ -13,18 +13,14 @@ import { CannotWriteFileError } from './errors';
 
 export const buildItemTmpFolder = (itemId: string): string =>
   path.join(TMP_FOLDER, 'export', itemId);
-export const buildActionFileName = (
-  name: string,
-  datetime: string,
-  format: string,
-): string => `${name}_${datetime}.${format}`;
+export const buildActionFileName = (name: string, datetime: string, format: string): string =>
+  `${name}_${datetime}.${format}`;
 
 export const buildActionFilePath = (itemId: string, datetime: Date): string =>
   // TODO: ISO??
   `actions/${itemId}/${datetime.toISOString()}`;
 
-export const buildArchiveDateAsName = (timestamp: Date): string =>
-  timestamp.toISOString();
+export const buildArchiveDateAsName = (timestamp: Date): string => timestamp.toISOString();
 
 export interface ExportActionsInArchiveOutput {
   timestamp: Date;
@@ -34,17 +30,10 @@ export interface ExportActionsInArchiveOutput {
 type RecursiveObject = { [key: string]: string | number | RecursiveObject };
 type ReturnObject = { [key: string]: string | number };
 // flatten object nested keys to have as item.id, member.id to be used for export csv header
-const flattenObject = (
-  obj: RecursiveObject,
-  prefix: string = '',
-): ReturnObject => {
+const flattenObject = (obj: RecursiveObject, prefix: string = ''): ReturnObject => {
   return Object.keys(obj).reduce((acc, k) => {
     const pre = prefix.length ? prefix + '.' : '';
-    if (
-      typeof obj[k] === 'object' &&
-      obj[k] !== null &&
-      !Array.isArray(obj[k])
-    ) {
+    if (typeof obj[k] === 'object' && obj[k] !== null && !Array.isArray(obj[k])) {
       Object.assign(acc, flattenObject(obj[k] as RecursiveObject, pre + k));
     } else {
       acc[pre + k] = obj[k];
@@ -61,9 +50,7 @@ export const writeFileForFormat = <T extends object>(
   switch (format) {
     case ExportActionsFormatting.CSV: {
       if (Array.isArray(data) && data.length) {
-        const newData = data.map((obj) =>
-          flattenObject(obj as RecursiveObject),
-        );
+        const newData = data.map((obj) => flattenObject(obj as RecursiveObject));
         const csv = unparse(newData, {
           header: true,
           delimiter: ',',
@@ -113,14 +100,8 @@ export const exportActionsInArchive = async (args: {
 
     // create file for each view
     views.forEach((viewName) => {
-      const actionsPerView = baseAnalytics.actions.filter(
-        ({ view }) => view === viewName,
-      );
-      const filename = buildActionFileName(
-        `actions_${viewName}`,
-        archiveDate,
-        format,
-      );
+      const actionsPerView = baseAnalytics.actions.filter(({ view }) => view === viewName);
+      const filename = buildActionFileName(`actions_${viewName}`, archiveDate, format);
       const viewFilepath = path.join(fileFolderPath, filename);
 
       writeFileForFormat(viewFilepath, format, actionsPerView);
@@ -155,16 +136,11 @@ export const exportActionsInArchive = async (args: {
     writeFileForFormat(iMembershipsPath, format, baseAnalytics.itemMemberships);
 
     // create file for the chat messages
-    const chatPath = path.join(
-      fileFolderPath,
-      buildActionFileName('chat', archiveDate, format),
-    );
+    const chatPath = path.join(fileFolderPath, buildActionFileName('chat', archiveDate, format));
     writeFileForFormat(chatPath, format, baseAnalytics.chatMessages);
 
     // merge together actions, data and settings from all app_items
-    const { appActions, appData, appSettings } = Object.entries(
-      baseAnalytics.apps,
-    ).reduce<{
+    const { appActions, appData, appSettings } = Object.entries(baseAnalytics.apps).reduce<{
       appActions: AppActionRaw[];
       appData: AppData[];
       appSettings: AppSettingRaw[];
@@ -231,20 +207,18 @@ export const exportActionsInArchive = async (args: {
   });
 
   // the archive is ready
-  const promise = new Promise<ExportActionsInArchiveOutput>(
-    (resolve, reject) => {
-      outputStream.on('error', (err) => {
-        reject(err);
-      });
+  const promise = new Promise<ExportActionsInArchiveOutput>((resolve, reject) => {
+    outputStream.on('error', (err) => {
+      reject(err);
+    });
 
-      outputStream.on('close', async () => {
-        resolve({
-          timestamp,
-          filepath: outputPath,
-        });
+    outputStream.on('close', async () => {
+      resolve({
+        timestamp,
+        filepath: outputPath,
       });
-    },
-  );
+    });
+  });
 
   archive.finalize();
 

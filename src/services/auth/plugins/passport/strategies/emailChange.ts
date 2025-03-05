@@ -4,10 +4,7 @@ import { Authenticator } from '@fastify/passport';
 
 import { db } from '../../../../../drizzle/db';
 import { EMAIL_CHANGE_JWT_SECRET } from '../../../../../utils/config';
-import {
-  MemberNotFound,
-  UnauthorizedMember,
-} from '../../../../../utils/errors';
+import { MemberNotFound, UnauthorizedMember } from '../../../../../utils/errors';
 import { MemberRepository } from '../../../../member/repository';
 import { PassportStrategy } from '../strategies';
 import { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
@@ -38,18 +35,13 @@ export default (
           } else {
             // Authentication refused
             return done(
-              options?.propagateError
-                ? new MemberNotFound({ id: uuid })
-                : new UnauthorizedMember(),
+              options?.propagateError ? new MemberNotFound({ id: uuid }) : new UnauthorizedMember(),
               false,
             );
           }
         } catch (err) {
           // Exception occurred while fetching member
-          return done(
-            options?.propagateError ? err : new UnauthorizedMember(),
-            false,
-          );
+          return done(options?.propagateError ? err : new UnauthorizedMember(), false);
         }
       },
     ),

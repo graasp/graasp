@@ -17,11 +17,7 @@ export class MagicLinkService {
   private readonly memberRepository: MemberRepository;
   private readonly actionRepository: ActionRepository;
 
-  constructor(
-    authService: AuthService,
-    log: BaseLogger,
-    memberRepository: MemberRepository,
-  ) {
+  constructor(authService: AuthService, log: BaseLogger, memberRepository: MemberRepository) {
     this.authService = authService;
     this.memberRepository = memberRepository;
     this.log = log;
@@ -36,10 +32,7 @@ export class MagicLinkService {
     const member = await this.memberRepository.getByEmail(db, email);
 
     if (member) {
-      await this.authService.generateLoginLinkAndEmailIt(
-        member.toMemberInfo(),
-        { url },
-      );
+      await this.authService.generateLoginLinkAndEmailIt(member.toMemberInfo(), { url });
       const actions = [
         {
           creatorId: member.id,

@@ -22,9 +22,7 @@ export interface GraaspActionsOptions {
   };
 }
 
-const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (
-  fastify,
-) => {
+const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) => {
   const actionMemberService = resolveDependency(ActionMemberService);
 
   fastify.get(

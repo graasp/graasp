@@ -16,10 +16,7 @@ export class MembershipRequestRepository {
     }
 
     return await db.query.membershipRequests.findFirst({
-      where: and(
-        eq(membershipRequests.memberId, memberId),
-        eq(membershipRequests.itemId, itemId),
-      ),
+      where: and(eq(membershipRequests.memberId, memberId), eq(membershipRequests.itemId, itemId)),
       with: {
         member: true,
         item: true,
@@ -61,12 +58,7 @@ export class MembershipRequestRepository {
   async deleteOne(db: DBConnection, memberId: string, itemId: string) {
     const res = await db
       .delete(membershipRequests)
-      .where(
-        and(
-          eq(membershipRequests.memberId, memberId),
-          eq(membershipRequests.itemId, itemId),
-        ),
-      )
+      .where(and(eq(membershipRequests.memberId, memberId), eq(membershipRequests.itemId, itemId)))
       .returning();
     return res[0];
   }

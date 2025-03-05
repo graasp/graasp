@@ -3,7 +3,7 @@ import { singleton } from 'tsyringe';
 
 import { TagCategory, UUID } from '@graasp/sdk';
 
-import { Tag } from '../../../../../../../drizzle/schema';
+import { TagRaw } from '../../../../../../../drizzle/types';
 import { BaseLogger } from '../../../../../../../logger';
 import {
   GET_MOST_LIKED_ITEMS_MAXIMUM,
@@ -16,7 +16,7 @@ import { MeiliSearchWrapper } from './meilisearch';
 
 type SearchFilters = Partial<{
   query?: string;
-  tags: Partial<{ [key in TagCategory]: Tag['name'][] }>;
+  tags: Partial<{ [key in TagCategory]: TagRaw['name'][] }>;
   langs: string[];
   isPublishedRoot: boolean;
   creatorId?: UUID;
@@ -189,7 +189,7 @@ export class SearchService {
     itemService.hooks.setPostHook('update', async (member, db, { item }) => {
       try {
         // Check if the item is published (or has published parent)
-        const published = await this.itemPublishedRepository.getForItem(db, item);
+        const published = await this.itemPublishedRepository.getForItem(db, item.path);
 
         if (!published) {
           return;

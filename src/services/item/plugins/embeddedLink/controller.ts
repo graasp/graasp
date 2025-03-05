@@ -30,8 +30,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ query: { link } }) => {
       const url = ensureProtocol(link);
       const metadata = await embeddedLinkService.getLinkMetadata(url);
-      const isEmbeddingAllowed =
-        await embeddedLinkService.checkEmbeddingAllowed(url, log);
+      const isEmbeddingAllowed = await embeddedLinkService.checkEmbeddingAllowed(url, log);
 
       return {
         ...metadata,
@@ -89,12 +88,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
       return await db.transaction(async (tx) => {
-        const item = await embeddedLinkService.patchWithOptions(
-          tx,
-          member,
-          id,
-          body,
-        );
+        const item = await embeddedLinkService.patchWithOptions(tx, member, id, body);
         await actionItemService.postPatchAction(tx, request, item);
         return item;
       });
@@ -104,11 +98,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   // necessary for legacy POST /items to work with links
   // remove when POST /items is removed
   // register pre create handler to pre fetch link metadata
-  const hook = async (
-    _actor: AuthenticatedUser,
-    _db: DBConnection,
-    { item }: { item: Item },
-  ) => {
+  const hook = async (_actor: AuthenticatedUser, _db: DBConnection, { item }: { item: Item }) => {
     // if the extra is undefined or it does not contain the embedded link extra key, exit
     if (!item.extra || (item && !isItemType(item, ItemType.LINK))) {
       return;
@@ -116,8 +106,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     const { embeddedLink } = item.extra;
 
     const { url } = embeddedLink;
-    const { description, html, thumbnails, icons } =
-      await embeddedLinkService.getLinkMetadata(url);
+    const { description, html, thumbnails, icons } = await embeddedLinkService.getLinkMetadata(url);
 
     if (description) {
       embeddedLink.description = description;

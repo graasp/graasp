@@ -12,13 +12,7 @@ import { validatedMemberAccountRole } from '../../../../member/strategies/valida
 import { ItemService } from '../../../service';
 import { PublicationService } from '../publicationState/service';
 import graaspSearchPlugin from './plugins/search';
-import {
-  getCollectionsForMember,
-  getInformations,
-  getManyInformations,
-  publishItem,
-  unpublishItem,
-} from './schemas';
+import { getCollectionsForMember, getInformations, publishItem, unpublishItem } from './schemas';
 import { ItemPublishedService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
@@ -47,17 +41,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async ({ params, user }) => {
       return itemPublishedService.get(db, user?.account, params.itemId);
-    },
-  );
-
-  fastify.get(
-    '/collections/informations',
-    {
-      preHandler: optionalIsAuthenticated,
-      schema: getManyInformations,
-    },
-    async ({ user, query: { itemId } }) => {
-      return itemPublishedService.getMany(db, user?.account, itemId);
     },
   );
 

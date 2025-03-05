@@ -7,11 +7,7 @@ import { HttpMethod, TagCategory } from '@graasp/sdk';
 
 import build, { unmockAuthenticate } from '../../../test/app';
 import { db } from '../../drizzle/db';
-import {
-  Tag,
-  itemTags as itemTagsTable,
-  tags as tagsTable,
-} from '../../drizzle/schema';
+import { Tag, itemTags as itemTagsTable, tags as tagsTable } from '../../drizzle/schema';
 import { ItemTagRaw } from '../../drizzle/types';
 import { ItemTestUtils } from '../item/test/fixtures/items';
 import { saveMember } from '../member/test/fixtures/members';
@@ -74,10 +70,7 @@ describe('Tag Endpoints', () => {
       const itemTags: ItemTagRaw[] = [];
       for (const t of tags) {
         itemTags.push(
-          await db
-            .insert(itemTagsTable)
-            .values({ itemId: item.id, tagId: t.id })
-            .returning()[0],
+          await db.insert(itemTagsTable).values({ itemId: item.id, tagId: t.id }).returning()[0],
         );
       }
 

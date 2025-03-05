@@ -14,22 +14,18 @@ import { PassportStrategy } from '../src/services/auth/plugins/passport';
 import { saveMember } from '../src/services/member/test/fixtures/members';
 import { DB_TEST_SCHEMA } from './constants';
 
-const originalSessionStrategy = fastifyPassport.strategy(
-  PassportStrategy.Session,
-)!;
+const originalSessionStrategy = fastifyPassport.strategy(PassportStrategy.Session)!;
 let originalStrictSessionStrategy;
 
 /**
  * Override the session strategy to always validate the request. Set the given Account to request.user.member on authentications
  * @param account Account to set to request.user.member
  */
-export function mockAuthenticate<
-  T extends { id: string; name: string; type: string },
->(account: T | undefined) {
+export function mockAuthenticate<T extends { id: string; name: string; type: string }>(
+  account: T | undefined,
+) {
   if (!originalStrictSessionStrategy) {
-    originalStrictSessionStrategy = fastifyPassport.strategy(
-      PassportStrategy.StrictSession,
-    );
+    originalStrictSessionStrategy = fastifyPassport.strategy(PassportStrategy.StrictSession);
   }
   // If an account is provided, use a custom strategy that always validate the request.
   // This will override the original session strategy to a custom one
@@ -44,10 +40,7 @@ export function mockAuthenticate<
 export function unmockAuthenticate() {
   fastifyPassport.use(PassportStrategy.Session, originalSessionStrategy);
   if (originalStrictSessionStrategy) {
-    fastifyPassport.use(
-      PassportStrategy.StrictSession,
-      originalStrictSessionStrategy,
-    );
+    fastifyPassport.use(PassportStrategy.StrictSession, originalStrictSessionStrategy);
   }
 }
 

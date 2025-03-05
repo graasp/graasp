@@ -9,19 +9,11 @@ import {
   PermissionLevel,
 } from '@graasp/sdk';
 
-import build, {
-  clearDatabase,
-  mockAuthenticate,
-  unmockAuthenticate,
-} from '../../test/app';
+import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../test/app';
 import { Account } from '../drizzle/types';
 import { ItemMembershipRepository } from '../services/itemMembership/repository';
 import { asDefined } from '../utils/assertions';
-import {
-  MemberCannotAccess,
-  MemberCannotAdminItem,
-  MemberCannotWriteItem,
-} from '../utils/errors';
+import { MemberCannotAccess, MemberCannotAdminItem, MemberCannotWriteItem } from '../utils/errors';
 import { isAuthenticated } from './auth/plugins/passport';
 import { filterOutPackedDescendants, matchOne } from './authorization';
 import { PackedItem } from './item/ItemWrapper';
@@ -40,18 +32,13 @@ const ownerMembership = {
   account: OWNER,
   permission: PermissionLevel.Admin,
 } as ItemMembership;
-const buildSharedMembership = (
-  permission: PermissionLevel,
-  item: Item = ITEM,
-) => ({ account: SHARED_MEMBER, permission, item }) as ItemMembership;
+const buildSharedMembership = (permission: PermissionLevel, item: Item = ITEM) =>
+  ({ account: SHARED_MEMBER, permission, item }) as ItemMembership;
 
 jest.mock('./item/plugins/itemVisibility/repository');
 
 const itemVisibilityRepository = new ItemVisibilityRepository();
-const getManyForManyMock = jest.spyOn(
-  itemVisibilityRepository,
-  'getManyForMany',
-);
+const getManyForManyMock = jest.spyOn(itemVisibilityRepository, 'getManyForMany');
 
 const MOCK_ITEM_VISIBILITY_PUBLIC = {
   type: ItemVisibilityType.Public,
@@ -73,9 +60,7 @@ describe('validatePermission', () => {
     getManyForManyMock.mockClear();
   });
   it('Invalid saved membership', async () => {
-    jest
-      .spyOn(itemVisibilityRepository, 'getByItemPath')
-      .mockImplementation(returnDummyArray);
+    jest.spyOn(itemVisibilityRepository, 'getByItemPath').mockImplementation(returnDummyArray);
 
     const repositories = {
       itemMembershipRepository: {
@@ -92,9 +77,7 @@ describe('validatePermission', () => {
 
   describe('Private item', () => {
     beforeEach(() => {
-      jest
-        .spyOn(itemVisibilityRepository, 'getByItemPath')
-        .mockImplementation(returnDummyArray);
+      jest.spyOn(itemVisibilityRepository, 'getByItemPath').mockImplementation(returnDummyArray);
       repositories = {
         itemMembershipRepository: {
           getInherited: jest.fn((_itemPath, memberId) =>
@@ -117,12 +100,7 @@ describe('validatePermission', () => {
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Read,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Read, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
 
@@ -138,12 +116,7 @@ describe('validatePermission', () => {
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Write,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Write, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
     it(PermissionLevel.Admin, async () => {
@@ -158,12 +131,7 @@ describe('validatePermission', () => {
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Admin,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Admin, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
   });
@@ -171,9 +139,7 @@ describe('validatePermission', () => {
   describe('Shared item with Read permission', () => {
     const sharedMembership = buildSharedMembership(PermissionLevel.Read);
 
-    jest
-      .spyOn(itemVisibilityRepository, 'getByItemPath')
-      .mockImplementation(returnDummyArray);
+    jest.spyOn(itemVisibilityRepository, 'getByItemPath').mockImplementation(returnDummyArray);
     const repositories = {
       itemMembershipRepository: {
         getInherited: jest.fn((_itemPath, memberId) => {
@@ -211,12 +177,7 @@ describe('validatePermission', () => {
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Read,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Read, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
 
@@ -232,22 +193,12 @@ describe('validatePermission', () => {
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Write,
-          SHARED_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Write, SHARED_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotWriteItem);
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Write,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Write, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
 
@@ -263,22 +214,12 @@ describe('validatePermission', () => {
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Admin,
-          SHARED_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Admin, SHARED_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAdminItem);
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Admin,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Admin, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
   });
@@ -286,9 +227,7 @@ describe('validatePermission', () => {
   describe('Shared item with Write permission', () => {
     const sharedMembership = buildSharedMembership(PermissionLevel.Write);
 
-    jest
-      .spyOn(itemVisibilityRepository, 'getByItemPath')
-      .mockImplementation(returnDummyArray);
+    jest.spyOn(itemVisibilityRepository, 'getByItemPath').mockImplementation(returnDummyArray);
     const repositories = {
       itemMembershipRepository: {
         getInherited: jest.fn((_itemPath, memberId) => {
@@ -326,12 +265,7 @@ describe('validatePermission', () => {
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Read,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Read, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
 
@@ -356,12 +290,7 @@ describe('validatePermission', () => {
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Write,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Write, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
 
@@ -377,22 +306,12 @@ describe('validatePermission', () => {
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Admin,
-          SHARED_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Admin, SHARED_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAdminItem);
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Admin,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Admin, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
   });
@@ -400,9 +319,7 @@ describe('validatePermission', () => {
   describe('Shared item with Admin permission', () => {
     const sharedMembership = buildSharedMembership(PermissionLevel.Admin);
 
-    jest
-      .spyOn(itemVisibilityRepository, 'getByItemPath')
-      .mockImplementation(returnDummyArray);
+    jest.spyOn(itemVisibilityRepository, 'getByItemPath').mockImplementation(returnDummyArray);
     const repositories = {
       itemMembershipRepository: {
         getInherited: jest.fn((_itemPath, memberId) => {
@@ -440,12 +357,7 @@ describe('validatePermission', () => {
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Read,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Read, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
 
@@ -470,12 +382,7 @@ describe('validatePermission', () => {
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Write,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Write, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
 
@@ -500,12 +407,7 @@ describe('validatePermission', () => {
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Admin,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Admin, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
   });
@@ -562,12 +464,7 @@ describe('validatePermission', () => {
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Write,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Write, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
 
@@ -583,12 +480,7 @@ describe('validatePermission', () => {
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Admin,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Admin, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
   });
@@ -658,22 +550,12 @@ describe('validatePermission', () => {
 
       // shared member shouldn't write
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Write,
-          SHARED_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Write, SHARED_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotWriteItem);
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Write,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Write, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
 
@@ -689,22 +571,12 @@ describe('validatePermission', () => {
 
       // shared member shouldn't admin
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Admin,
-          SHARED_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Admin, SHARED_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAdminItem);
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Admin,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Admin, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
   });
@@ -783,12 +655,7 @@ describe('validatePermission', () => {
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Write,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Write, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
 
@@ -804,22 +671,12 @@ describe('validatePermission', () => {
 
       // shared member shouldn't admin
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Admin,
-          SHARED_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Admin, SHARED_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAdminItem);
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Admin,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Admin, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
   });
@@ -899,12 +756,7 @@ describe('validatePermission', () => {
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Write,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Write, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
 
@@ -929,12 +781,7 @@ describe('validatePermission', () => {
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Admin,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Admin, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
   });
@@ -976,22 +823,12 @@ describe('validatePermission', () => {
 
       // shared member cannot read
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Read,
-          SHARED_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Read, SHARED_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
 
       // other member cannot read
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Read,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Read, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
 
@@ -1007,22 +844,12 @@ describe('validatePermission', () => {
 
       // shared member cannot read
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Write,
-          SHARED_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Write, SHARED_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Write,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Write, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
 
@@ -1038,22 +865,12 @@ describe('validatePermission', () => {
 
       // shared member cannot read
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Admin,
-          SHARED_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Admin, SHARED_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Admin,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Admin, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
   });
@@ -1102,12 +919,7 @@ describe('validatePermission', () => {
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Write,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Write, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
 
@@ -1132,12 +944,7 @@ describe('validatePermission', () => {
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Write,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Write, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
 
@@ -1153,22 +960,12 @@ describe('validatePermission', () => {
 
       // shared member shouldn't admin
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Admin,
-          SHARED_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Admin, SHARED_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAdminItem);
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Admin,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Admin, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
   });
@@ -1219,12 +1016,7 @@ describe('validatePermission', () => {
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Write,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Write, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
     it(PermissionLevel.Write, async () => {
@@ -1248,12 +1040,7 @@ describe('validatePermission', () => {
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Write,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Write, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
 
@@ -1278,12 +1065,7 @@ describe('validatePermission', () => {
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Admin,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Admin, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
   });
@@ -1292,10 +1074,7 @@ describe('validatePermission', () => {
     beforeEach(() => {
       jest
         .spyOn(itemVisibilityRepository, 'getByItemPath')
-        .mockImplementation(async () => [
-          MOCK_ITEM_VISIBILITY_HIDDEN,
-          MOCK_ITEM_VISIBILITY_PUBLIC,
-        ]);
+        .mockImplementation(async () => [MOCK_ITEM_VISIBILITY_HIDDEN, MOCK_ITEM_VISIBILITY_PUBLIC]);
 
       repositories = {
         itemMembershipRepository: {
@@ -1324,12 +1103,7 @@ describe('validatePermission', () => {
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Read,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Read, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
 
@@ -1345,12 +1119,7 @@ describe('validatePermission', () => {
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Write,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Write, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
 
@@ -1366,12 +1135,7 @@ describe('validatePermission', () => {
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Admin,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Admin, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
   });
@@ -1381,10 +1145,7 @@ describe('validatePermission', () => {
 
     jest
       .spyOn(itemVisibilityRepository, 'getByItemPath')
-      .mockImplementation(async () => [
-        MOCK_ITEM_VISIBILITY_HIDDEN,
-        MOCK_ITEM_VISIBILITY_PUBLIC,
-      ]);
+      .mockImplementation(async () => [MOCK_ITEM_VISIBILITY_HIDDEN, MOCK_ITEM_VISIBILITY_PUBLIC]);
     const repositories = {
       itemMembershipRepository: {
         getInherited: jest.fn(async (_itemPath, memberId) => {
@@ -1413,22 +1174,12 @@ describe('validatePermission', () => {
 
       // shared member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Read,
-          SHARED_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Read, SHARED_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Read,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Read, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
 
@@ -1444,22 +1195,12 @@ describe('validatePermission', () => {
 
       // shared member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Write,
-          SHARED_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Write, SHARED_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Write,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Write, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
 
@@ -1475,22 +1216,12 @@ describe('validatePermission', () => {
 
       // shared member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Admin,
-          SHARED_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Admin, SHARED_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Admin,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Admin, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
   });
@@ -1500,10 +1231,7 @@ describe('validatePermission', () => {
 
     jest
       .spyOn(itemVisibilityRepository, 'getByItemPath')
-      .mockImplementation(async () => [
-        MOCK_ITEM_VISIBILITY_HIDDEN,
-        MOCK_ITEM_VISIBILITY_PUBLIC,
-      ]);
+      .mockImplementation(async () => [MOCK_ITEM_VISIBILITY_HIDDEN, MOCK_ITEM_VISIBILITY_PUBLIC]);
     const repositories = {
       itemMembershipRepository: {
         getInherited: jest.fn(async (_itemPath, memberId) => {
@@ -1541,12 +1269,7 @@ describe('validatePermission', () => {
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Read,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Read, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
 
@@ -1571,12 +1294,7 @@ describe('validatePermission', () => {
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Write,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Write, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
 
@@ -1592,22 +1310,12 @@ describe('validatePermission', () => {
 
       // shared member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Admin,
-          SHARED_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Admin, SHARED_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAdminItem);
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Admin,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Admin, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
   });
@@ -1617,10 +1325,7 @@ describe('validatePermission', () => {
 
     jest
       .spyOn(itemVisibilityRepository, 'getByItemPath')
-      .mockImplementation(async () => [
-        MOCK_ITEM_VISIBILITY_HIDDEN,
-        MOCK_ITEM_VISIBILITY_PUBLIC,
-      ]);
+      .mockImplementation(async () => [MOCK_ITEM_VISIBILITY_HIDDEN, MOCK_ITEM_VISIBILITY_PUBLIC]);
     const repositories = {
       itemMembershipRepository: {
         getInherited: jest.fn(async (_itemPath, memberId) => {
@@ -1658,12 +1363,7 @@ describe('validatePermission', () => {
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Read,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Read, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
 
@@ -1688,12 +1388,7 @@ describe('validatePermission', () => {
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Write,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Write, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
 
@@ -1718,12 +1413,7 @@ describe('validatePermission', () => {
 
       // any other member shouldn't access
       await expect(
-        validatePermission(
-          repositories,
-          PermissionLevel.Admin,
-          OTHER_MEMBER,
-          ITEM,
-        ),
+        validatePermission(repositories, PermissionLevel.Admin, OTHER_MEMBER, ITEM),
       ).rejects.toBeInstanceOf(MemberCannotAccess);
     });
   });
@@ -1735,9 +1425,7 @@ describe('validatePermissionMany for no items', () => {
     getManyForManyMock.mockClear();
   });
   it('Should return empty data', async () => {
-    jest
-      .spyOn(itemVisibilityRepository, 'getByItemPath')
-      .mockImplementation(returnDummyArray);
+    jest.spyOn(itemVisibilityRepository, 'getByItemPath').mockImplementation(returnDummyArray);
     const repositories = {
       itemMembershipRepository: {
         getInheritedMany: jest.fn(() => ({ permission: 'anything' })),
@@ -1745,24 +1433,15 @@ describe('validatePermissionMany for no items', () => {
       itemVisibilityRepository,
     };
 
-    const res = await validatePermissionMany(
-      repositories,
-      PermissionLevel.Admin,
-      OWNER,
-      [],
-    );
+    const res = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, []);
     const expected: Awaited<ReturnType<typeof validatePermissionMany>> = {
       itemMemberships: { data: {}, errors: [] },
       visibilities: { data: {}, errors: [] },
     };
     // any other member shouldn't access
     expect(res).toEqual(expected);
-    expect(
-      repositories.itemMembershipRepository.getInheritedMany,
-    ).not.toHaveBeenCalled();
-    expect(
-      repositories.itemVisibilityRepository.getManyForMany,
-    ).not.toHaveBeenCalled();
+    expect(repositories.itemMembershipRepository.getInheritedMany).not.toHaveBeenCalled();
+    expect(repositories.itemVisibilityRepository.getManyForMany).not.toHaveBeenCalled();
   });
 });
 
@@ -1778,9 +1457,7 @@ describe('validatePermissionMany for one item', () => {
   });
 
   it('Invalid saved membership', async () => {
-    jest
-      .spyOn(itemVisibilityRepository, 'getByItemPath')
-      .mockImplementation(returnDummyArray);
+    jest.spyOn(itemVisibilityRepository, 'getByItemPath').mockImplementation(returnDummyArray);
     const repositories = {
       itemMembershipRepository: {
         getInheritedMany: jest.fn(() => ({ permission: 'anything' })),
@@ -1790,9 +1467,7 @@ describe('validatePermissionMany for one item', () => {
 
     // any other member shouldn't access
     await expect(
-      validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, [
-        ITEM,
-      ]),
+      validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, [ITEM]),
     ).rejects.toBeInstanceOf(Error);
   });
 
@@ -3493,10 +3168,7 @@ describe('validatePermissionMany for many items', () => {
   });
 
   it('Public item & Shared write item', async () => {
-    const sharedMembership = buildSharedMembership(
-      PermissionLevel.Write,
-      SHARED_ITEM,
-    );
+    const sharedMembership = buildSharedMembership(PermissionLevel.Write, SHARED_ITEM);
     getManyForManyMock.mockImplementation(async () => ({
       data: {
         [PUBLIC_ITEM.id]: [MOCK_ITEM_VISIBILITY_PUBLIC],
@@ -3547,10 +3219,7 @@ describe('validatePermissionMany for many items', () => {
 });
 
 describe('filterOutPackedDescendants', () => {
-  let repositories: Pick<
-    Repositories,
-    'itemMembershipRepository' | 'itemVisibilityRepository'
-  >;
+  let repositories: Pick<Repositories, 'itemMembershipRepository' | 'itemVisibilityRepository'>;
   const item = FolderItemFactory() as unknown as Item;
 
   // raw descendants to pass to function
@@ -3591,15 +3260,10 @@ describe('filterOutPackedDescendants', () => {
 
   it('Admin returns all', async () => {
     // one parent membership
-    const memberships = [
-      { item, member: OWNER, permission: PermissionLevel.Admin },
-    ];
+    const memberships = [{ item, member: OWNER, permission: PermissionLevel.Admin }];
     // packed descendants for expect
     // one item is hidden but this item should be returned
-    const packedDescendants = buildPackedDescendants(
-      memberships[0].permission,
-      hiddenVisibility,
-    );
+    const packedDescendants = buildPackedDescendants(memberships[0].permission, hiddenVisibility);
 
     repositories = {
       itemMembershipRepository: {
@@ -3610,12 +3274,7 @@ describe('filterOutPackedDescendants', () => {
       } as unknown as ItemVisibilityRepository,
     };
 
-    const result = await filterOutPackedDescendants(
-      OWNER,
-      repositories,
-      item,
-      descendants,
-    );
+    const result = await filterOutPackedDescendants(OWNER, repositories, item, descendants);
 
     expect(descendants).toHaveLength(result.length);
     for (let i = 0; i < result.length; i += 1) {
@@ -3625,15 +3284,10 @@ describe('filterOutPackedDescendants', () => {
 
   it('Writer returns all', async () => {
     // one parent membership
-    const memberships = [
-      { item, member: OWNER, permission: PermissionLevel.Write },
-    ];
+    const memberships = [{ item, member: OWNER, permission: PermissionLevel.Write }];
     // packed descendants for expect
     // one item is hidden but this item should be returned
-    const packedDescendants = buildPackedDescendants(
-      memberships[0].permission,
-      hiddenVisibility,
-    );
+    const packedDescendants = buildPackedDescendants(memberships[0].permission, hiddenVisibility);
 
     repositories = {
       itemMembershipRepository: {
@@ -3644,12 +3298,7 @@ describe('filterOutPackedDescendants', () => {
       } as unknown as ItemVisibilityRepository,
     };
 
-    const result = await filterOutPackedDescendants(
-      OWNER,
-      repositories,
-      item,
-      descendants,
-    );
+    const result = await filterOutPackedDescendants(OWNER, repositories, item, descendants);
 
     expect(descendants).toHaveLength(result.length);
     for (let i = 0; i < result.length; i += 1) {
@@ -3659,15 +3308,10 @@ describe('filterOutPackedDescendants', () => {
 
   it('Reader does not return hidden', async () => {
     // one parent membership
-    const memberships = [
-      { item, member: OWNER, permission: PermissionLevel.Read },
-    ];
+    const memberships = [{ item, member: OWNER, permission: PermissionLevel.Read }];
     // packed descendants for expect
     // one item is hidden, this item should not be returned!
-    const packedDescendants = buildPackedDescendants(
-      memberships[0].permission,
-      hiddenVisibility,
-    );
+    const packedDescendants = buildPackedDescendants(memberships[0].permission, hiddenVisibility);
 
     repositories = {
       itemMembershipRepository: {
@@ -3678,12 +3322,7 @@ describe('filterOutPackedDescendants', () => {
       } as unknown as ItemVisibilityRepository,
     };
 
-    const result = await filterOutPackedDescendants(
-      OWNER,
-      repositories,
-      item,
-      descendants,
-    );
+    const result = await filterOutPackedDescendants(OWNER, repositories, item, descendants);
 
     expect(result).toHaveLength(descendants.length - 1);
     result.forEach((r) => {
@@ -3706,12 +3345,7 @@ describe('filterOutPackedDescendants', () => {
       } as unknown as ItemVisibilityRepository,
     };
 
-    const result = await filterOutPackedDescendants(
-      OWNER,
-      repositories,
-      item,
-      descendants,
-    );
+    const result = await filterOutPackedDescendants(OWNER, repositories, item, descendants);
 
     expect(result).toHaveLength(descendants.length - 1);
     result.forEach((r) => {
@@ -3732,8 +3366,7 @@ describe('Passport Plugin', () => {
     return () => fail('Should not be called');
   }
   function shouldBeActor(actor: Member) {
-    return ({ user }: { user: PassportUser }) =>
-      expect(user.account).toEqual(actor);
+    return ({ user }: { user: PassportUser }) => expect(user.account).toEqual(actor);
   }
 
   beforeAll(async () => {
@@ -3741,10 +3374,8 @@ describe('Passport Plugin', () => {
 
     handler = jest.fn();
     preHandler = jest.fn(async () => {});
-    app.get(
-      MOCKED_ROUTE,
-      { preHandler: [isAuthenticated, preHandler] },
-      async (...args) => handler(...args),
+    app.get(MOCKED_ROUTE, { preHandler: [isAuthenticated, preHandler] }, async (...args) =>
+      handler(...args),
     );
   });
 

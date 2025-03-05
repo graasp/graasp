@@ -15,7 +15,10 @@ const itemOrderFn = (a: ItemRaw, b: ItemRaw) => {
   return (a.order ?? 0) - (b.order ?? 0);
 };
 // cannot use sdk sort because of createdAt type
-export const sortChildrenForTreeWith = (descendants: Item[], parentItem: FolderItem): Item[] => {
+export const sortChildrenForTreeWith = <T extends ItemRaw>(
+  descendants: T[],
+  parentItem: FolderItem,
+): T[] => {
   const directChildren = descendants.filter((child) => isChildOf(child.path, parentItem.path));
 
   // order

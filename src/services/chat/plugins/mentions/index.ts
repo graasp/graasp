@@ -6,12 +6,7 @@ import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import { isAuthenticated } from '../../../auth/plugins/passport';
-import {
-  clearAllMentions,
-  deleteMention,
-  getOwnMentions,
-  patchMention,
-} from './schemas';
+import { clearAllMentions, deleteMention, getOwnMentions, patchMention } from './schemas';
 import { MentionService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {

@@ -1,12 +1,7 @@
 import { addMonths, formatISO } from 'date-fns';
 import { and, between, count, desc, eq, inArray } from 'drizzle-orm/sql';
 
-import {
-  AggregateBy,
-  AggregateFunction,
-  AggregateMetric,
-  UUID,
-} from '@graasp/sdk';
+import { AggregateBy, AggregateFunction, AggregateMetric, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../drizzle/db';
 import { isDescendantOrSelf } from '../../drizzle/operations';
@@ -15,10 +10,7 @@ import { ActionInsertDTO, ActionWithItem } from '../../drizzle/types';
 import { MemberIdentifierNotFound } from '../itemLogin/errors';
 import { DEFAULT_ACTIONS_SAMPLE_SIZE } from './constants';
 import { CountGroupByOptions } from './types';
-import {
-  aggregateExpressionNames,
-  buildAggregateExpression,
-} from './utils/actions';
+import { aggregateExpressionNames, buildAggregateExpression } from './utils/actions';
 import { validateAggregationParameters } from './utils/utils';
 
 export class ActionRepository {
@@ -52,11 +44,7 @@ export class ActionRepository {
     const res = await db.query.actionsTable.findMany({
       where: and(
         eq(actionsTable.accountId, accountId),
-        between(
-          actionsTable.createdAt,
-          startDate.toISOString(),
-          endDate.toISOString(),
-        ),
+        between(actionsTable.createdAt, startDate.toISOString(), endDate.toISOString()),
       ),
       orderBy: desc(actionsTable.createdAt),
       with: {
@@ -71,10 +59,7 @@ export class ActionRepository {
    * Delete actions matching the given `accountId`. Return actions, or `null`, if delete has no effect.
    * @param accountId ID of the account whose actions are deleted
    */
-  async deleteAllForAccount(
-    db: DBConnection,
-    accountId: string,
-  ): Promise<void> {
+  async deleteAllForAccount(db: DBConnection, accountId: string): Promise<void> {
     await db.delete(actionsTable).where(eq(actionsTable.accountId, accountId));
   }
 
@@ -165,11 +150,7 @@ export class ActionRepository {
     // verify parameters
     validateAggregationParameters({ countGroupBy, aggregationParams });
 
-    const {
-      aggregateFunction,
-      aggregateMetric,
-      aggregateBy = [],
-    } = aggregationParams ?? {};
+    const { aggregateFunction, aggregateMetric, aggregateBy = [] } = aggregationParams ?? {};
 
     const size = filters?.sampleSize ?? DEFAULT_ACTIONS_SAMPLE_SIZE;
     const view = filters?.view ?? 'Unknown';
@@ -204,10 +185,7 @@ export class ActionRepository {
       .where(and(...andConditions))
       .innerJoin(
         items,
-        and(
-          eq(actionsTable.itemId, items.id),
-          isDescendantOrSelf(items.path, itemPath),
-        ),
+        and(eq(actionsTable.itemId, items.id), isDescendantOrSelf(items.path, itemPath)),
       )
       .groupBy(Object.keys(countGroupByColumns))
       .limit(size)
@@ -218,11 +196,7 @@ export class ActionRepository {
 
     if (aggregateFunction && aggregateMetric) {
       select.push({
-        aggregateResult: buildAggregateExpression(
-          'subquery',
-          aggregateFunction,
-          aggregateMetric,
-        ),
+        aggregateResult: buildAggregateExpression('subquery', aggregateFunction, aggregateMetric),
       });
     }
     const groupByParams: string[] = [];

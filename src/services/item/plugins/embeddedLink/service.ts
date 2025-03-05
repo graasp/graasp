@@ -14,10 +14,10 @@ import {
 
 import { IFRAMELY_API_DI_KEY } from '../../../../di/constants';
 import { DBConnection } from '../../../../drizzle/db';
+import { Item } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
-import { Member } from '../../../member/entities/member';
+import { MinimalMember } from '../../../../types';
 import { ThumbnailService } from '../../../thumbnail/service';
-import { EmbeddedLinkItem, Item, isItemType } from '../../entities/Item';
 import { WrongItemTypeError } from '../../errors';
 import { ItemService } from '../../service';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
@@ -189,7 +189,7 @@ export class EmbeddedLinkItemService extends ItemService {
 
   async postWithOptions(
     db: DBConnection,
-    member: Member,
+    member: MinimalMember,
     args: Partial<Pick<Item, 'description' | 'lang'>> &
       Pick<Item, 'name'> & {
         url: string;
@@ -217,7 +217,7 @@ export class EmbeddedLinkItemService extends ItemService {
 
   async patchWithOptions(
     db: DBConnection,
-    member: Member,
+    member: MinimalMember,
     itemId: UUID,
     args: Partial<Pick<Item, 'name' | 'description' | 'lang' | 'settings'>> & {
       url?: string;

@@ -1,17 +1,22 @@
-import { and, eq } from 'drizzle-orm/expressions';
+import { and, eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import { isAncestorOrSelf } from '../../../../drizzle/operations';
-import { InvitationInsertDTO, invitationsTable } from '../../../../drizzle/schema';
-import { InvitationRaw } from '../../../../drizzle/types';
+import { invitationsTable } from '../../../../drizzle/schema';
+import {
+  InvitationInsertDTO,
+  InvitationRaw,
+  InvitationWIthItemAndCreator,
+  InvitationWithItem,
+  Item,
+  MemberRaw,
+} from '../../../../drizzle/types';
 import { throwsIfParamIsInvalid } from '../../../../repositories/utils';
 import { AuthenticatedUser } from '../../../../types';
-import { Member } from '../../../member/entities/member';
-import { Item } from '../../entities/Item';
 import { InvitationNotFound } from './errors';
 
-type CreatorId = Member['id'];
+type CreatorId = MemberRaw['id'];
 type ItemPath = Item['path'];
 type Email = InvitationRaw['email'];
 
@@ -45,7 +50,7 @@ export class InvitationRepository {
   //     .returning();
   // }
 
-  async getOne(db: DBConnection, id: string) {
+  async getOne(db: DBConnection, id: string): Promise<InvitationWithItem | undefined> {
     throwsIfParamIsInvalid('id', id);
     return await db.query.invitationsTable.findFirst({
       with: { item: true },
@@ -84,7 +89,7 @@ export class InvitationRepository {
    * Get invitations for item path and below
    * @param itemPath Item path
    */
-  async getManyByItem(db: DBConnection, itemPath: ItemPath) {
+  async getManyByItem(db: DBConnection, itemPath: ItemPath): Promise<InvitationWithItem[]> {
     throwsIfParamIsInvalid('itemPath', itemPath);
 
     return await db.query.invitationsTable.findMany({
@@ -93,7 +98,7 @@ export class InvitationRepository {
     });
   }
 
-  async getManyByEmail(db: DBConnection, email: Email) {
+  async getManyByEmail(db: DBConnection, email: Email): Promise<InvitationWithItem[]> {
     throwsIfParamIsInvalid('email', email);
     const lowercaseEmail = email.toLowerCase();
 
@@ -116,7 +121,7 @@ export class InvitationRepository {
     partialInvitations: InvitationInsertDTO[],
     itemPath: string,
     creator: AuthenticatedUser,
-  ): Promise<InvitationRaw[]> {
+  ): Promise<InvitationInsertDTO[]> {
     const data = partialInvitations.map((inv) => ({
       ...inv,
       // this normalisation is necessary because we match emails 1:1 and they are expeted to be in lowercase
@@ -148,7 +153,11 @@ export class InvitationRepository {
       .returning();
   }
 
-  async updateOne(db: DBConnection, invitationId: string, body: Partial<InvitationInsertDTO>) {
+  async updateOne(
+    db: DBConnection,
+    invitationId: string,
+    body: Partial<InvitationInsertDTO>,
+  ): Promise<void> {
     await db
       .update(invitationsTable)
       .set(body)
@@ -156,9 +165,13 @@ export class InvitationRepository {
       .returning();
   }
 
-  async deleteManyByEmail(db: DBConnection, email: Email) {
+  async deleteManyByEmail(db: DBConnection, email: Email): Promise<void> {
     throwsIfParamIsInvalid('email', email);
 
     await db.delete(invitationsTable).where(eq(invitationsTable.email, email));
+  }
+
+  async delete(db: DBConnection, invitationId: string): Promise<void> {
+    await db.delete(invitationsTable).where(eq(invitationsTable.id, invitationId));
   }
 }

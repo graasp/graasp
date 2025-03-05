@@ -5,11 +5,7 @@ import { UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../drizzle/db';
 import { isAncestorOrSelf } from '../../drizzle/operations';
-import {
-  accountsTable,
-  guestsView,
-  itemLoginSchemas,
-} from '../../drizzle/schema';
+import { accountsTable, guestsView, itemLoginSchemas } from '../../drizzle/schema';
 import { GuestRaw, GuestWithItemLoginSchema, Item } from '../../drizzle/types';
 import { AccountType } from '../../types';
 

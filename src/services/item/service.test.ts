@@ -4,11 +4,7 @@ import { FastifyInstance } from 'fastify';
 
 import { FolderItemFactory, ItemType, ItemVisibilityType } from '@graasp/sdk';
 
-import build, {
-  MOCK_LOGGER,
-  clearDatabase,
-  mockAuthenticate,
-} from '../../../test/app';
+import build, { MOCK_LOGGER, clearDatabase, mockAuthenticate } from '../../../test/app';
 import { seedFromJson } from '../../../test/mocks/seed';
 import { assertIsDefined } from '../../utils/assertions';
 import { buildRepositories } from '../../utils/repositories';
@@ -60,9 +56,7 @@ describe('Item Service', () => {
       const actor = { id: v4() } as Actor;
       const item = FolderItemFactory() as unknown as FolderItem;
       const repositories = buildRepositories();
-      jest
-        .spyOn(repositories.itemRepository, 'getOneOrThrow')
-        .mockResolvedValue(item);
+      jest.spyOn(repositories.itemRepository, 'getOneOrThrow').mockResolvedValue(item);
       jest
         .spyOn(authorization, 'validatePermission')
         .mockResolvedValue({ itemMembership: null, visibilities: [] });
@@ -74,28 +68,18 @@ describe('Item Service', () => {
       const actor = { id: v4() } as Actor;
       const item = FolderItemFactory() as unknown as FolderItem;
       const repositories = buildRepositories();
-      jest
-        .spyOn(repositories.itemRepository, 'getOneOrThrow')
-        .mockRejectedValue(new Error());
+      jest.spyOn(repositories.itemRepository, 'getOneOrThrow').mockRejectedValue(new Error());
 
-      await expect(() =>
-        service.get(actor, repositories, item.id),
-      ).rejects.toThrow();
+      await expect(() => service.get(actor, repositories, item.id)).rejects.toThrow();
     });
     it('throw if validation does not pass', async () => {
       const actor = { id: v4() } as Actor;
       const item = FolderItemFactory() as unknown as FolderItem;
       const repositories = buildRepositories();
-      jest
-        .spyOn(repositories.itemRepository, 'getOneOrThrow')
-        .mockResolvedValue(item);
-      jest
-        .spyOn(authorization, 'validatePermission')
-        .mockRejectedValue(new Error());
+      jest.spyOn(repositories.itemRepository, 'getOneOrThrow').mockResolvedValue(item);
+      jest.spyOn(authorization, 'validatePermission').mockRejectedValue(new Error());
 
-      await expect(() =>
-        service.get(actor, repositories, item.id),
-      ).rejects.toThrow();
+      await expect(() => service.get(actor, repositories, item.id)).rejects.toThrow();
     });
   });
   describe('Copy', () => {
@@ -108,10 +92,7 @@ describe('Item Service', () => {
       const iv = await app.db
         .getRepository(ItemVisibility)
         .save({ item, type: ItemVisibilityType.Hidden });
-      const visibilityCopyAllMock = jest.spyOn(
-        ItemVisibilityRepository.prototype,
-        'copyAll',
-      );
+      const visibilityCopyAllMock = jest.spyOn(ItemVisibilityRepository.prototype, 'copyAll');
       jest
         .spyOn(authorization, 'validatePermission')
         .mockResolvedValue({ itemMembership, visibilities: [iv] });
@@ -148,11 +129,10 @@ describe('Item Service', () => {
       const indexMock = jest.spyOn(meilisearchWrapper, 'indexOne');
       const actor = await saveMember();
 
-      const { item: unpublishedItem, itemMembership } =
-        await testUtils.saveItemAndMembership({
-          member: actor,
-          item: { name: 'unpublishedItem' },
-        });
+      const { item: unpublishedItem, itemMembership } = await testUtils.saveItemAndMembership({
+        member: actor,
+        item: { name: 'unpublishedItem' },
+      });
 
       const { item: publishedFolder } = await testUtils.saveItemAndMembership({
         member: actor,
@@ -162,9 +142,7 @@ describe('Item Service', () => {
         type: ItemVisibilityType.Public,
         creator: actor,
       });
-      await app.db
-        .getRepository(ItemPublished)
-        .save({ item: publishedFolder, creator: actor });
+      await app.db.getRepository(ItemPublished).save({ item: publishedFolder, creator: actor });
 
       jest
         .spyOn(authorization, 'validatePermission')
@@ -196,11 +174,9 @@ describe('Item Service', () => {
       const repositories = buildRepositories();
 
       // WHEN
-      jest
-        .spyOn(repositories.itemRepository, 'checkHierarchyDepth')
-        .mockImplementation(() => {
-          throw new Error('is too deep');
-        });
+      jest.spyOn(repositories.itemRepository, 'checkHierarchyDepth').mockImplementation(() => {
+        throw new Error('is too deep');
+      });
 
       // SHOULD
       await expect(() =>

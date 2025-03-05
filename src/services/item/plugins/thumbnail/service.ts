@@ -38,19 +38,9 @@ export class ItemThumbnailService {
     this.logger = logger;
   }
 
-  async upload(
-    db: DBConnection,
-    actor: MinimalMember,
-    itemId: string,
-    file: Readable,
-  ) {
+  async upload(db: DBConnection, actor: MinimalMember, itemId: string, file: Readable) {
     const item = await this.itemRepository.getOneOrThrow(db, itemId);
-    await this.authorizationService.validatePermission(
-      db,
-      PermissionLevel.Write,
-      actor,
-      item,
-    );
+    await this.authorizationService.validatePermission(db, PermissionLevel.Write, actor, item);
     await this.thumbnailService.upload(actor, itemId, file);
 
     // update item that should have thumbnail
@@ -68,12 +58,7 @@ export class ItemThumbnailService {
     // prehook: get item and input in download call ?
     // check rights
     const item = await this.itemRepository.getOneOrThrow(db, itemId);
-    await this.authorizationService.validatePermission(
-      db,
-      PermissionLevel.Read,
-      actor,
-      item,
-    );
+    await this.authorizationService.validatePermission(db, PermissionLevel.Read, actor, item);
 
     const result = await this.thumbnailService.getFile(actor, {
       size,

@@ -8,10 +8,7 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { MemberFactory } from '@graasp/sdk';
 
 // mock preHandler to be injected in test fastify instance to simulate authentication
-export const mockSessionPreHandler = async (
-  request: FastifyRequest,
-  _reply: FastifyReply,
-) => {
+export const mockSessionPreHandler = async (request: FastifyRequest, _reply: FastifyReply) => {
   request.user = { account: MemberFactory() };
 };
 

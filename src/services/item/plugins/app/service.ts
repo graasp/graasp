@@ -73,12 +73,7 @@ export class AppService {
     }
 
     // check actor has access to item
-    await this.authorizationService.validatePermission(
-      db,
-      PermissionLevel.Read,
-      actor,
-      item,
-    );
+    await this.authorizationService.validatePermission(db, PermissionLevel.Read, actor, item);
 
     await this.appRepository.isValidAppOrigin(db, appDetails);
 
@@ -125,10 +120,7 @@ export class AppService {
     actor: AuthenticatedUser,
     item: Item,
   ): Promise<MinimalAccount[]> {
-    const memberships = await this.itemMembershipRepository.getForManyItems(
-      db,
-      [item],
-    );
+    const memberships = await this.itemMembershipRepository.getForManyItems(db, [item]);
     // get members only without duplicate
     return uniqBy(
       memberships.data[item.id].map(({ account }) => account),

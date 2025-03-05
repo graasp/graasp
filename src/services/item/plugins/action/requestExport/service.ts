@@ -15,10 +15,7 @@ import { TRANSLATIONS } from '../../../../../langs/constants';
 import { MailBuilder } from '../../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../../plugins/mailer/mailer.service';
 import { AuthenticatedUser, MinimalMember } from '../../../../../types';
-import {
-  EXPORT_FILE_EXPIRATION,
-  ZIP_MIMETYPE,
-} from '../../../../action/constants';
+import { EXPORT_FILE_EXPIRATION, ZIP_MIMETYPE } from '../../../../action/constants';
 import {
   buildActionFilePath,
   buildItemTmpFolder,
@@ -69,14 +66,11 @@ export class ActionRequestExportService {
     );
 
     // get last export entry within interval
-    const lastRequestExport = await this.actionRequestExportRepository.getLast(
-      db,
-      {
-        memberId: authenticatedUser?.id,
-        itemPath: item.path,
-        format,
-      },
-    );
+    const lastRequestExport = await this.actionRequestExportRepository.getLast(db, {
+      memberId: authenticatedUser?.id,
+      itemPath: item.path,
+      format,
+    });
 
     // check if a previous request already created the file and send it back
     if (lastRequestExport) {
@@ -115,12 +109,7 @@ export class ActionRequestExportService {
       console.error(`${tmpFolder} was not found, and was not deleted`);
     }
 
-    await this._sendExportLinkInMail(
-      authenticatedUser,
-      item,
-      requestExport.createdAt,
-      format,
-    );
+    await this._sendExportLinkInMail(authenticatedUser, item, requestExport.createdAt, format);
 
     return item;
   }
@@ -167,13 +156,9 @@ export class ActionRequestExportService {
     format: ExportActionsFormatting,
   ): Promise<ActionRequestExport> {
     // get actions and more data
-    const baseAnalytics = await this.actionItemService.getBaseAnalyticsForItem(
-      db,
-      actor,
-      {
-        itemId,
-      },
-    );
+    const baseAnalytics = await this.actionItemService.getBaseAnalyticsForItem(db, actor, {
+      itemId,
+    });
 
     // create archive given base analytics
 

@@ -1,6 +1,7 @@
 import { getTableColumns } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import {
+  SQL,
   and,
   asc,
   count,
@@ -42,9 +43,9 @@ import {
   itemsRaw,
   publishedItems,
 } from '../../drizzle/schema';
-import { Item, ItemMembershipRaw } from '../../drizzle/types';
+import { Item, ItemRaw, ItemTypeEnumKeys, ItemWithCreator } from '../../drizzle/types';
 import { IllegalArgumentException } from '../../repositories/errors';
-import { MaybeUser, MinimalMember } from '../../types';
+import { AuthenticatedUser, MaybeUser, MinimalMember } from '../../types';
 import { assertIsDefined } from '../../utils/assertions';
 import { ALLOWED_SEARCH_LANGS } from '../../utils/config';
 import {
@@ -62,8 +63,8 @@ import {
   FILE_METADATA_MIN_PAGE,
 } from '../member/constants';
 import { mapById } from '../utils';
-import { IS_COPY_REGEX, ITEMS_PAGE_SIZE_MAX } from './constants';
-import { DEFAULT_ORDER, FolderItem, ItemExtraUnion, isItemType } from './entities/Item';
+import { DEFAULT_ORDER, IS_COPY_REGEX, ITEMS_PAGE_SIZE_MAX } from './constants';
+import { FolderItem, isItemType } from './discrimination';
 import { ItemChildrenParams, ItemSearchParams, Ordering, SortBy } from './types';
 import { sortChildrenForTreeWith } from './utils';
 
@@ -117,8 +118,8 @@ export class ItemRepository {
     creator: MinimalMember;
     lang?: Item['lang'];
     parent?: Item;
-    order?: Item['order'];
-  }) {
+    order?: ItemRaw['order'];
+  }): Omit<ItemRaw, 'createdAt' | 'updatedAt' | 'order'> & { order?: ItemRaw['order'] } {
     const {
       name,
       description = null,
@@ -201,18 +202,18 @@ export class ItemRepository {
   }
 
   // TODO: note: removed  options: Pick<FindOneOptions<Item>, 'withDeleted'> = { withDeleted: false },
-  async getDeletedById(db: DBConnection, id: string) {
+  async getDeletedById(db: DBConnection, id: string): Promise<Item> {
     const item = await db
       .select()
       .from(itemsRaw)
       .where(and(eq(itemsRaw.id, id), isNotNull(itemsRaw.deletedAt)))
       .limit(1);
 
-    if (!item) {
+    if (!item.length) {
       throw new ItemNotFound(id);
     }
 
-    return item;
+    return item[0];
   }
 
   /**
@@ -244,7 +245,7 @@ export class ItemRepository {
 
     // reunite where conditions
     // is direct child
-    const andConditions = [isDirectChild(items.path, parent.path)];
+    const andConditions: (SQL | undefined)[] = [isDirectChild(items.path, parent.path)];
 
     // .where('path ~ ${${parent.path}.*{1}}', { path: `${parent.path}.*{1}` });
 
@@ -300,7 +301,7 @@ export class ItemRepository {
       .from(items)
       .leftJoin(accountsTable, eq(items.creatorId, accountsTable.id))
       .where(and(...andConditions))
-      .orderBy(orderByValues);
+      .orderBy(() => orderByValues);
 
     return result.map(({ item_view, account }) => ({
       ...item_view,
@@ -337,7 +338,7 @@ export class ItemRepository {
     db: DBConnection,
     item: FolderItem,
     options?: { ordered?: boolean; types?: string[] },
-  ): Promise<Item[]> {
+  ): Promise<ItemWithCreator[]> {
     // TODO: LEVEL depth
     const { ordered = true, types } = options ?? {};
 
@@ -359,7 +360,7 @@ export class ItemRepository {
       .select()
       .from(items)
       .leftJoin(accountsTable, eq(items.creatorId, accountsTable.id))
-      .where(and(whereConditions))
+      .where(and(...whereConditions))
       .orderBy(asc(items.path));
 
     const descendants = result.map(({ account, item_view }) => ({
@@ -550,7 +551,7 @@ export class ItemRepository {
   async copy(
     db: DBConnection,
     item: Item,
-    creator: Member,
+    creator: MinimalMember,
     siblingsName: string[],
     parentItem?: Item,
   ): Promise<{
@@ -567,9 +568,9 @@ export class ItemRepository {
 
     // return copy item + all descendants
     const newItems = [...treeItemsCopy.values()].map(({ copy }) => copy);
-    const createdOp = await db.insert(itemsRaw).values(newItems).returning();
+    const createdItems = await db.insert(itemsRaw).values(newItems).returning();
 
-    const newItemRef = createdOp?.identifiers?.[0];
+    const newItemRef = createdItems[0];
     if (!newItemRef) {
       throw new UnexpectedError({ operation: 'copy', itemId: item.id });
     }
@@ -589,12 +590,12 @@ export class ItemRepository {
    */
   private async _copy(
     db: DBConnection,
-    original: Item,
-    creator: Member,
+    original: ItemRaw,
+    creator: MinimalMember,
     siblingsName: string[],
-    parentItem?: Item,
+    parentItem?: FolderItem,
   ) {
-    const old2New = new Map<string, { copy: Item; original: Item }>();
+    const old2New = new Map<string, { copy: ItemRaw; original: ItemRaw }>();
 
     // get next order value
     const order = await this.getNextOrderCount(db, parentItem?.path);
@@ -624,7 +625,7 @@ export class ItemRepository {
   private async copyDescendants(
     db: DBConnection,
     original: FolderItem,
-    creator: Member,
+    creator: MinimalMember,
     old2New: Map<string, { copy: Item; original: Item }>,
   ): Promise<void> {
     const descendants = await this.getDescendants(db, original, {
@@ -794,7 +795,7 @@ export class ItemRepository {
    * @param memberId
    * @returns published items for given member
    */
-  async getPublishedItemsForMember(db: DBConnection, memberId: Member['id']) {
+  async getPublishedItemsForMember(db: DBConnection, memberId: MinimalMember['id']) {
     // get for membership write and admin -> createquerybuilder
     const result = await db
       .select()
@@ -819,11 +820,29 @@ export class ItemRepository {
   }
 
   // TODO: remove??
-  async findAndCount(db: DBConnection, args: FindManyOptions<Item>) {
-    return this.repository.findAndCount(args);
+  async findAndCount(
+    db: DBConnection,
+    args: { where: { type: ItemTypeEnumKeys }; take: number; skip: number; order: SQL },
+  ): Promise<[Item[], number]> {
+    const result = await db
+      .select()
+      .from(items)
+      .where(eq(items.type, args.where.type))
+      .orderBy(args.order)
+      .limit(args.take)
+      .offset(args.skip);
+
+    const totalCount = (
+      await db.select({ count: count() }).from(items).where(eq(items.type, args.where.type))
+    )[0].count;
+
+    return [result, totalCount];
   }
-  async softRemove(db: DBConnection, args: Item[]) {
-    return await db
+  async delete(db: DBConnection, args: Item['id'][]): Promise<void> {
+    await db.delete(itemsRaw).where(inArray(itemsRaw.id, args));
+  }
+  async softRemove(db: DBConnection, args: Item[]): Promise<void> {
+    await db
       .update(itemsRaw)
       .set({ deletedAt: new Date().toISOString() })
       .where(
@@ -833,8 +852,8 @@ export class ItemRepository {
         ),
       );
   }
-  async recover(db: DBConnection, args: Item[]) {
-    return await db
+  async recover(db: DBConnection, args: Item[]): Promise<void> {
+    await db
       .update(itemsRaw)
       .set({ deletedAt: null })
       .where(
@@ -977,7 +996,7 @@ export class ItemRepository {
 
     if (min < RESCALE_ORDER_THRESHOLD || hasNullOrder || hasDuplicatedOrder) {
       // rescale order from multiple of default order
-      const values: Pick<Item, 'id' | 'order'>[] = children.map(({ id }, idx) => ({
+      const values: Pick<ItemRaw, 'id' | 'order'>[] = children.map(({ id }, idx) => ({
         id,
         order: DEFAULT_ORDER * (idx + 1),
       }));
@@ -1006,7 +1025,7 @@ export class ItemRepository {
       types,
     }: ItemSearchParams,
     pagination: Pagination,
-  ): Promise<Paginated<ItemMembershipRaw>> {
+  ): Promise<Paginated<Item>> {
     const { page, pageSize } = pagination;
     const limit = Math.min(pageSize, ITEMS_PAGE_SIZE_MAX);
     const skip = (page - 1) * limit;
@@ -1037,7 +1056,7 @@ export class ItemRepository {
 
     // TODO: CHECK THIS WORKS + COMPLETE WITH SEARCH AND EVERYTHING
     // select top most items from above subquery
-    return await db
+    const result = await db
       .select()
       .from(iom)
       .where(
@@ -1052,6 +1071,13 @@ export class ItemRepository {
         ),
       )
       .orderBy(desc(iom.updatedAt));
+
+    // TODO: pagination
+    return {
+      data: result,
+      totalCount: 239,
+      pagination: { page, pageSize },
+    };
 
     // const query = await db
     //   .select()

@@ -8,10 +8,7 @@ import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { ActionInsertDTO } from '../../../../drizzle/types';
 import { asDefined } from '../../../../utils/assertions';
-import {
-  LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
-  PUBLIC_URL,
-} from '../../../../utils/config';
+import { LOGIN_TOKEN_EXPIRATION_IN_MINUTES, PUBLIC_URL } from '../../../../utils/config';
 import { ActionService } from '../../../action/action.service';
 import { matchOne } from '../../../authorization';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
@@ -110,12 +107,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user, body: { currentPassword, password } }, reply) => {
       const member = asDefined(user?.account);
       return db.transaction(async (tx) => {
-        await memberPasswordService.patch(
-          tx,
-          member,
-          password,
-          currentPassword,
-        );
+        await memberPasswordService.patch(tx, member, password, currentPassword);
         reply.status(StatusCodes.NO_CONTENT);
       });
     },
@@ -146,15 +138,13 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       // need to await this
       await reply.send();
 
-      const resetPasswordRequest =
-        await memberPasswordService.createResetPasswordRequest(db, email);
+      const resetPasswordRequest = await memberPasswordService.createResetPasswordRequest(
+        db,
+        email,
+      );
       if (resetPasswordRequest) {
         const { token, member: memberInfo } = resetPasswordRequest;
-        memberPasswordService.mailResetPasswordRequest(
-          email,
-          token,
-          memberInfo.lang,
-        );
+        memberPasswordService.mailResetPasswordRequest(email, token, memberInfo.lang);
         const action = {
           member: memberInfo,
           type: ActionTriggers.AskResetPassword,
@@ -189,10 +179,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const uuid = asDefined(user?.passwordResetRedisKey);
       await memberPasswordService.applyReset(db, password, uuid);
       try {
-        const member = await memberPasswordService.getMemberByPasswordResetUuid(
-          db,
-          uuid,
-        );
+        const member = await memberPasswordService.getMemberByPasswordResetUuid(db, uuid);
         reply.status(StatusCodes.NO_CONTENT);
 
         // Log the action
@@ -221,10 +208,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async ({ user }) => {
       const account = asDefined(user?.account);
-      const hasPassword = await memberPasswordService.hasPassword(
-        db,
-        account.id,
-      );
+      const hasPassword = await memberPasswordService.hasPassword(db, account.id);
       return { hasPassword };
     },
   );

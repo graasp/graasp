@@ -31,9 +31,7 @@ export const ItemFactory = (item: Partial<Item>) => ({
         ccLicenseAdaption: faker.helpers.enumValue(CCLicenseAdaptions),
       },
     ]),
-  lang:
-    item.lang ??
-    faker.helpers.arrayElement(['fr', 'en', 'it', 'es', 'ar', 'de']),
+  lang: item.lang ?? faker.helpers.arrayElement(['fr', 'en', 'it', 'es', 'ar', 'de']),
   creator: null,
   ...item,
 });

@@ -4,20 +4,14 @@ import { FileItemType, ItemType } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../drizzle/db';
 import { appSettings } from '../../../../../drizzle/schema';
-import {
-  AppSettingInsertDTO,
-  AppSettingRaw,
-} from '../../../../../drizzle/types';
+import { AppSettingInsertDTO, AppSettingRaw } from '../../../../../drizzle/types';
 import { ItemNotFound } from '../../../../../utils/errors';
 import { AppSettingNotFound, PreventUpdateAppSettingFile } from './errors';
 
 type UpdateAppSettingBody = Partial<AppSettingRaw>;
 
 export class AppSettingRepository {
-  async addOne(
-    db: DBConnection,
-    appSetting: AppSettingInsertDTO,
-  ): Promise<AppSettingRaw> {
+  async addOne(db: DBConnection, appSetting: AppSettingInsertDTO): Promise<AppSettingRaw> {
     const res = await db.insert(appSettings).values(appSetting).returning();
     return res[0];
   }
@@ -53,10 +47,7 @@ export class AppSettingRepository {
   }
 
   async deleteOne(db: DBConnection, appSettingId: string) {
-    await db
-      .delete(appSettings)
-      .where(eq(appSettings.id, appSettingId))
-      .returning();
+    await db.delete(appSettings).where(eq(appSettings.id, appSettingId)).returning();
   }
 
   async getOne(db: DBConnection, id: string) {
@@ -74,11 +65,7 @@ export class AppSettingRepository {
     return data;
   }
 
-  async getForItem(
-    db: DBConnection,
-    itemId: string,
-    name?: string,
-  ): Promise<AppSettingRaw[]> {
+  async getForItem(db: DBConnection, itemId: string, name?: string): Promise<AppSettingRaw[]> {
     if (!itemId) {
       throw new ItemNotFound(itemId);
     }

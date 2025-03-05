@@ -13,20 +13,12 @@ export class MemberProfileService {
   }
 
   async post(member: MinimalMember, data: IMemberProfile) {
-    const profile = await this.memberProfileRepository.createOne(
-      db,
-      member.id,
-      data,
-    );
+    const profile = await this.memberProfileRepository.createOne(db, member.id, data);
     return profile;
   }
 
   async get(memberId: UUID) {
-    const memberProfile = await this.memberProfileRepository.getByMemberId(
-      db,
-      memberId,
-      true,
-    );
+    const memberProfile = await this.memberProfileRepository.getByMemberId(db, memberId, true);
     // profile is not visible, return 200 and null data
     if (!memberProfile) {
       return null;
@@ -35,10 +27,7 @@ export class MemberProfileService {
   }
 
   async getOwn(member: MinimalMember) {
-    const memberProfile = await this.memberProfileRepository.getOwn(
-      db,
-      member.id,
-    );
+    const memberProfile = await this.memberProfileRepository.getOwn(db, member.id);
     return memberProfile;
   }
 

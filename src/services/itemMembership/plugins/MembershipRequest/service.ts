@@ -44,12 +44,11 @@ export class MembershipRequestService {
   }
 
   async notifyAdmins(db: DBConnection, member: MinimalMember, item: Item) {
-    const adminMemberships =
-      await this.itemMembershipRepository.getByItemPathAndPermission(
-        db,
-        item.path,
-        PermissionLevel.Admin,
-      );
+    const adminMemberships = await this.itemMembershipRepository.getByItemPathAndPermission(
+      db,
+      item.path,
+      PermissionLevel.Admin,
+    );
 
     const link = ClientManager.getInstance().getLinkByContext(
       Context.Builder,
@@ -88,10 +87,6 @@ export class MembershipRequestService {
   }
 
   async deleteOne(db: DBConnection, memberId: string, itemId: string) {
-    return await this.membershipRequestRepository.deleteOne(
-      db,
-      memberId,
-      itemId,
-    );
+    return await this.membershipRequestRepository.deleteOne(db, memberId, itemId);
   }
 }

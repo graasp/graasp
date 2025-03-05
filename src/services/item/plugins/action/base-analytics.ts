@@ -2,14 +2,16 @@ import { Ajv } from 'ajv';
 
 import { UUID } from '@graasp/sdk';
 
-import { Account } from '../../../account/entities/account';
-import { Action } from '../../../action/entities/action';
-import { ChatMessage } from '../../../chat/chatMessage';
-import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
-import { Item } from '../../entities/Item';
-import { AppAction } from '../app/appAction/appAction';
-import { AppData } from '../app/appData/appData';
-import { AppSetting } from '../app/appSetting/appSettings';
+import {
+  AccountRaw,
+  ActionRaw,
+  AppActionRaw,
+  AppDataRaw,
+  AppSettingRaw,
+  ChatMessageRaw,
+  Item,
+  ItemMembershipRaw,
+} from '../../../../drizzle/types';
 
 // copy of member's schema
 const memberSchema = {
@@ -22,19 +24,19 @@ const memberSchema = {
 };
 
 export class BaseAnalytics {
-  readonly actions: Action[];
+  readonly actions: ActionRaw[];
   readonly members: { id: string; name: string }[];
-  readonly itemMemberships: ItemMembership[];
+  readonly itemMemberships: ItemMembershipRaw[];
   readonly descendants: Item[];
   readonly item: Item;
   readonly apps: {
     [key: UUID]: {
       data: AppData[];
-      settings: AppSetting[];
-      actions: AppAction[];
+      settings: AppSettingRaw[];
+      actions: AppActionRaw[];
     };
   };
-  readonly chatMessages: ChatMessage[];
+  readonly chatMessages: ChatMessageRaw[];
   readonly metadata: {
     numActionsRetrieved: number;
     requestedSampleSize: number;
@@ -43,15 +45,15 @@ export class BaseAnalytics {
   constructor(args: {
     item: Item;
     descendants: Item[];
-    actions: Action[];
-    members: Account[];
-    itemMemberships: ItemMembership[];
-    chatMessages: ChatMessage[];
+    actions: ActionRaw[];
+    members: AccountRaw[];
+    itemMemberships: ItemMembershipRaw[];
+    chatMessages: ChatMessageRaw[];
     apps: {
       [key: UUID]: {
-        data: AppData[];
-        settings: AppSetting[];
-        actions: AppAction[];
+        data: AppDataRaw[];
+        settings: AppSettingRaw[];
+        actions: AppActionRaw[];
       };
     };
     metadata: {

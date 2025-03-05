@@ -1,11 +1,6 @@
 import { singleton } from 'tsyringe';
 
-import {
-  ClientManager,
-  Context,
-  MentionStatus,
-  PermissionLevel,
-} from '@graasp/sdk';
+import { ClientManager, Context, MentionStatus, PermissionLevel } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
 import { ChatMessageRaw, Item } from '../../../../drizzle/types';
@@ -50,13 +45,9 @@ export class MentionService {
     member: { email: string; lang: string };
     creator: { name: string };
   }) {
-    const itemLink = ClientManager.getInstance().getItemLink(
-      Context.Builder,
-      item.id,
-      {
-        chatOpen: true,
-      },
-    );
+    const itemLink = ClientManager.getInstance().getItemLink(Context.Builder, item.id, {
+      chatOpen: true,
+    });
 
     const mail = new MailBuilder({
       subject: {
@@ -88,19 +79,10 @@ export class MentionService {
   ) {
     // check actor has access to item
     const item = await this.itemRepository.getOneOrThrow(db, message.itemId);
-    await this.authorizationService.validatePermission(
-      db,
-      PermissionLevel.Read,
-      account,
-      item,
-    );
+    await this.authorizationService.validatePermission(db, PermissionLevel.Read, account, item);
 
     // TODO: optimize ? suppose same item - validate multiple times
-    const mentions = await this.chatMentionRepository.postMany(
-      db,
-      mentionedMembers,
-      message.id,
-    );
+    const mentions = await this.chatMentionRepository.postMany(db, mentionedMembers, message.id);
 
     mentions.forEach(async (mention) => {
       const { accountId } = mention;
@@ -122,11 +104,7 @@ export class MentionService {
     return this.chatMentionRepository.getForAccount(db, authenticatedUser.id);
   }
 
-  async get(
-    db: DBConnection,
-    authenticatedUser: AuthenticatedUser,
-    mentionId: string,
-  ) {
+  async get(db: DBConnection, authenticatedUser: AuthenticatedUser, mentionId: string) {
     const mentionContent = await this.chatMentionRepository.get(db, mentionId);
 
     if (mentionContent.accountId !== authenticatedUser.id) {
@@ -148,11 +126,7 @@ export class MentionService {
     return this.chatMentionRepository.patch(db, mentionId, status);
   }
 
-  async deleteOne(
-    db: DBConnection,
-    authenticatedUser: AuthenticatedUser,
-    mentionId: string,
-  ) {
+  async deleteOne(db: DBConnection, authenticatedUser: AuthenticatedUser, mentionId: string) {
     // check permission
     await this.get(db, authenticatedUser, mentionId);
 

@@ -10,16 +10,21 @@ import {
   UUID,
 } from '@graasp/sdk';
 
-import { Item } from '../../../../../drizzle/types';
+import { DBConnection } from '../../../../../drizzle/db';
+import { Item, ItemPublishedRaw } from '../../../../../drizzle/types';
 import { TRANSLATIONS } from '../../../../../langs/constants';
 import { BaseLogger } from '../../../../../logger';
 import { MailBuilder } from '../../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../../plugins/mailer/mailer.service';
 import { resultOfToList } from '../../../../../services/utils';
+import { MaybeUser, MinimalMember } from '../../../../../types';
 import HookManager from '../../../../../utils/hook';
+import { ActionRepository } from '../../../../action/action.repository';
+import { isMember } from '../../../../authentication';
 import { filterOutHiddenItems } from '../../../../authorization';
 import { ItemMembershipRepository } from '../../../../itemMembership/repository';
-import { ItemWrapper } from '../../../ItemWrapper';
+import { ItemWrapperService } from '../../../ItemWrapper';
+import { ItemRepository } from '../../../repository';
 import { ItemService } from '../../../service';
 import { ItemVisibilityRepository } from '../../itemVisibility/repository';
 import { ItemThumbnailService } from '../../thumbnail/service';
@@ -44,12 +49,15 @@ export class ItemPublishedService {
   private readonly mailerService: MailerService;
   private readonly itemMembershipRepository: ItemMembershipRepository;
   private readonly itemVisibilityRepository: ItemVisibilityRepository;
+  private readonly actionRepository: ActionRepository;
+  private readonly itemWrapperService: ItemWrapperService;
   private readonly itemPublishedRepository: ItemPublishedRepository;
+  private readonly itemRepository: ItemRepository;
 
   hooks = new HookManager<{
     create: {
       pre: { item: Item };
-      post: { published: ItemPublished; item: Item };
+      post: { published: ItemPublishedRaw; item: Item };
     };
     delete: { pre: { item: Item }; post: { item: Item } };
   }>();
@@ -62,6 +70,9 @@ export class ItemPublishedService {
     itemVisibilityRepository: ItemVisibilityRepository,
     itemMembershipRepository: ItemMembershipRepository,
     itemPublishedRepository: ItemPublishedRepository,
+    actionRepository: ActionRepository,
+    itemWrapperService: ItemWrapperService,
+    itemRepository: ItemRepository,
     log: BaseLogger,
   ) {
     this.log = log;
@@ -69,11 +80,15 @@ export class ItemPublishedService {
     this.itemThumbnailService = itemThumbnailService;
     this.meilisearchWrapper = meilisearchWrapper;
     this.itemVisibilityRepository = itemVisibilityRepository;
+    this.itemPublishedRepository = itemPublishedRepository;
     this.itemMembershipRepository = itemMembershipRepository;
+    this.actionRepository = actionRepository;
+    this.itemRepository = itemRepository;
+    this.itemWrapperService = itemWrapperService;
     this.mailerService = mailerService;
   }
 
-  async _notifyContributors(db: DBConnection, actor: Member, item: Item): Promise<void> {
+  async _notifyContributors(db: DBConnection, actor: MinimalMember, item: Item): Promise<void> {
     // send email to contributors except yourself
     const memberships = await this.itemMembershipRepository.getForManyItems(db, [item]);
     const contributors = resultOfToList(memberships)[0]
@@ -107,22 +122,22 @@ export class ItemPublishedService {
     }
   }
 
-  async get(db: DBConnection, actor: Actor, itemId: string) {
+  async get(db: DBConnection, actor: MaybeUser, itemId: string) {
     const item = await this.itemService.get(db, actor, itemId);
 
     // item should be public first
-    await this.itemVisibilityRepository.getType(item.path, ItemVisibilityType.Public, {
+    await this.itemVisibilityRepository.getType(db, item.path, ItemVisibilityType.Public, {
       shouldThrow: true,
     });
 
     // get item published entry
-    const publishedItem = await this.itemPublishedRepository.getForItem(item);
+    const publishedItem = await this.itemPublishedRepository.getForItem(db, item.path);
 
     if (!publishedItem) {
       return null;
     }
     // get views from the actions table
-    const totalViews = await this.actionRepository.getAggregationForItem(item.path, {
+    const totalViews = await this.actionRepository.getAggregationForItem(db, item.path, {
       view: 'library',
       types: ['collection-view'],
       startDate: formatISO(publishedItem.createdAt),
@@ -134,33 +149,15 @@ export class ItemPublishedService {
     };
   }
 
-  async getMany(db: DBConnection, actor: Actor, itemIds: string[]) {
-    const { data: itemsMap, errors } = await this.itemService.getMany(db, actor, itemIds);
-
-    const items = Object.values(itemsMap);
-
-    // item should be public first
-    const { data: areItemsPublic, errors: publicErrors } =
-      await itemVisibilityRepository.hasForMany(items, ItemVisibilityType.Public);
-
-    const { data: publishedInfo, errors: publishedErrors } =
-      await itemPublishedRepository.getForItems(items.filter((i) => areItemsPublic[i.id]));
-
-    return {
-      data: publishedInfo,
-      errors: [...errors, ...publicErrors, ...publishedErrors],
-    };
-  }
-
   async publishIfNotExist(
     db: DBConnection,
-    member: Member,
+    member: MinimalMember,
     itemId: string,
     publicationStatus: PublicationStatus,
   ) {
     const item = await this.itemService.get(db, member, itemId, PermissionLevel.Admin);
 
-    const itemPublished = await this.itemPublishedRepository.getForItem(item);
+    const itemPublished = await this.itemPublishedRepository.getForItem(db, item.path);
 
     if (itemPublished) {
       return itemPublished;
@@ -191,7 +188,7 @@ export class ItemPublishedService {
 
   async post(
     db: DBConnection,
-    member: Member,
+    member: MinimalMember,
     item: Item,
     publicationStatus: PublicationStatus,
     { canBePrivate }: { canBePrivate?: boolean } = {},
@@ -213,7 +210,7 @@ export class ItemPublishedService {
     // it's usefull to publish the item automatically after the validation.
     // the user is asked to set the item to public in the frontend.
     if (!visibility && canBePrivate) {
-      await this.itemVisibilityRepository.post(db, member, item, ItemVisibilityType.Public);
+      await this.itemVisibilityRepository.post(db, member.id, item.path, ItemVisibilityType.Public);
     }
 
     // TODO: check validation is alright
@@ -229,12 +226,12 @@ export class ItemPublishedService {
     return published;
   }
 
-  async delete(db: DBConnection, member: Member, itemId: string) {
+  async delete(db: DBConnection, member: MinimalMember, itemId: string) {
     const item = await this.itemService.get(db, member, itemId, PermissionLevel.Admin);
 
     await this.hooks.runPreHooks('delete', member, db, { item });
 
-    const result = await itemPublishedRepository.deleteForItem(item);
+    const result = await this.itemPublishedRepository.deleteForItem(db, item);
 
     await this.hooks.runPostHooks('delete', member, db, { item });
 
@@ -242,21 +239,25 @@ export class ItemPublishedService {
   }
 
   async touchUpdatedAt(db: DBConnection, item: { id: Item['id']; path: Item['path'] }) {
-    const updatedAt = await this.itemPublishedRepository.touchUpdatedAt(item.path);
+    const updatedAt = await this.itemPublishedRepository.touchUpdatedAt(db, item.path);
 
     // change value in meilisearch index
     await this.meilisearchWrapper.updateItem(item.id, { updatedAt });
   }
 
-  async getItemsForMember(db: DBConnection, actor: Actor, memberId: UUID) {
-    const items = await this.itemRepository.getPublishedItemsForMember(memberId);
+  async getItemsForMember(db: DBConnection, actor: MaybeUser, memberId: UUID) {
+    const items = await this.itemRepository.getPublishedItemsForMember(db, memberId);
 
-    return ItemWrapper.createPackedItems(actor, db, this.itemThumbnailService, items);
+    return this.itemWrapperService.createPackedItems(db, items);
   }
 
-  async getRecentItems(db: DBConnection, actor: Actor, limit?: number) {
+  async getRecentItems(db: DBConnection, actor: MaybeUser, limit?: number) {
     const items = await this.itemPublishedRepository.getRecentItems(db, limit);
 
-    return filterOutHiddenItems(db, items);
+    return filterOutHiddenItems(
+      db,
+      { itemVisibilityRepository: this.itemVisibilityRepository },
+      items,
+    );
   }
 }

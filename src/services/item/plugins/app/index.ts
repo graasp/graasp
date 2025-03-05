@@ -12,23 +12,20 @@ import {
   isAuthenticated,
   optionalIsAuthenticated,
 } from '../../../auth/plugins/passport';
-import { ItemService } from '../../service';
 import appActionPlugin from './appAction';
 import appDataPlugin from './appData';
 import appSettingPlugin from './appSetting';
 import chatBotPlugin from './chatBot/chatBot.controller';
-import { DEFAULT_JWT_EXPIRATION } from './constants';
 import { generateToken, getContext, getList, getOwnMostUsedApps } from './schemas';
 import { AppService } from './service';
 import { AppsPluginOptions } from './types';
 
 const plugin: FastifyPluginAsyncTypebox<AppsPluginOptions> = async (fastify, options) => {
-  const { jwtSecret, jwtExpiration = DEFAULT_JWT_EXPIRATION, publisherId } = options;
+  const { jwtSecret, publisherId } = options;
 
   if (!jwtSecret) {
     throw new Error('jwtSecret is not defined!');
   }
-  const itemService = resolveDependency(ItemService);
   const appService = resolveDependency(AppService);
 
   // API endpoints

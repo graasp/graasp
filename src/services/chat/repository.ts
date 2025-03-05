@@ -52,10 +52,7 @@ export class ChatMessageRepository {
    * Retrieves a message by its id
    * @param id Id of the message to retrieve
    */
-  async getOne(
-    db: DBConnection,
-    id: string,
-  ): Promise<ChatMessageWithCreatorAndItem | undefined> {
+  async getOne(db: DBConnection, id: string): Promise<ChatMessageWithCreatorAndItem | undefined> {
     return await db.query.chatMessagesTable.findFirst({
       where: eq(chatMessagesTable.id, id),
       with: { item: true, creator: true },
@@ -106,9 +103,7 @@ export class ChatMessageRepository {
     throwsIfParamIsInvalid('itemId', itemId);
 
     try {
-      await db
-        .delete(chatMessagesTable)
-        .where(eq(chatMessagesTable.itemId, itemId));
+      await db.delete(chatMessagesTable).where(eq(chatMessagesTable.itemId, itemId));
     } catch (e) {
       assertIsError(e);
       throw new DeleteException(e.message);
