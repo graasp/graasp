@@ -1,7 +1,7 @@
 // This import is necessary so we only download needed langage. eslint can't find the import because it's dynamic.
 // eslint-disable-next-line import/no-unresolved
 import { faker } from '@faker-js/faker/locale/en';
-import { DataSource, In, Repository } from 'typeorm';
+import { type DataSource, In, type Repository } from 'typeorm';
 import { v4 } from 'uuid';
 
 import {
@@ -109,8 +109,8 @@ describe('ItemRepository', () => {
     await db.runMigrations();
     itemRawRepository = db.getRepository(Item);
     rawItemPublishedRepository = db.getRepository(ItemPublished);
-    itemRepository = new ItemRepository();
-    recycledItemRepository = new RecycledItemDataRepository();
+    itemRepository = new ItemRepository(db.manager);
+    recycledItemRepository = new RecycledItemDataRepository(db.manager);
   });
 
   afterAll(async () => {
