@@ -18,3 +18,14 @@ export const tagCategoryEnum = pgEnum('tag_category_enum', [
 export const accountTypeEnum = pgEnum('account_type_enum', ['individual', 'guest']);
 export const permissionEnum = pgEnum('permission_enum', ['read', 'write', 'admin']);
 export const itemVisibilityEnum = pgEnum('item_visibility_type', ['public', 'hidden']);
+export const itemLoginSchemaStatusEnum = pgEnum('item_login_schema_status', [
+  'active',
+  'freeze',
+  'disabled',
+]);
+export const itemLoginSchemaTypeEnum = pgEnum('item_login_schema_status', [
+  'username',
+  'username+password',
+  'anonymous',
+  'anonymous+password',
+]);

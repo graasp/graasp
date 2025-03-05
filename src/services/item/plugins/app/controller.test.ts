@@ -5,11 +5,9 @@ import { FastifyInstance } from 'fastify';
 import { AppItemFactory, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
-import { AppDataSource } from '../../../../plugins/datasource';
-import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
-import { Member } from '../../../member/entities/member';
+import { Item } from '../../../../drizzle/types';
+import { MaybeUser } from '../../../../types';
 import { saveMember } from '../../../member/test/fixtures/members';
-import { Item } from '../../entities/Item';
 import { ItemRepository } from '../../repository';
 import { ItemTestUtils, expectItem } from '../../test/fixtures/items';
 
@@ -24,7 +22,7 @@ const MOCK_URL = 'https://example.com';
 
 describe('App Item tests', () => {
   let app: FastifyInstance;
-  let actor: Member | undefined;
+  let actor: MaybeUser;
 
   afterEach(async () => {
     jest.clearAllMocks();
@@ -76,7 +74,7 @@ describe('App Item tests', () => {
         expectItem(newItem, expectedItem);
 
         // check item exists in db
-        const item = await itemRepository.getOne(newItem.id);
+        const item = await itemRepository.getOne(app.db, newItem.id);
         expectItem(item, expectedItem);
 
         // a membership is created for this item

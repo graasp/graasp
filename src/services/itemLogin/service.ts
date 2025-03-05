@@ -157,11 +157,11 @@ export class ItemLoginService {
 
   async update(
     db: DBConnection,
-    itemId: string,
+    itemLoginSchemaId: string,
     type?: ItemSchemaTypeOptions,
-    status?: ItemLoginSchemaStatus,
+    status?: `${ItemLoginSchemaStatus}`,
   ) {
-    return this.itemLoginSchemaRepository.updateOne(db, itemId, {
+    await this.itemLoginSchemaRepository.updateOne(db, itemLoginSchemaId, {
       type,
       status,
     });

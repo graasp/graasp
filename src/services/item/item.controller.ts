@@ -170,34 +170,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
   );
 
-  // get own
-  fastify.get(
-    '/own',
-    {
-      schema: getOwn,
-      preHandler: [isAuthenticated, matchOne(memberAccountRole)],
-    },
-    async ({ user }) => {
-      const member = asDefined(user?.account);
-      assertIsMember(member);
-      return itemService.getOwn(db, member);
-    },
-  );
-
-  // get shared with
-  fastify.get(
-    '/shared-with',
-    {
-      schema: getShared,
-      preHandler: [isAuthenticated, matchOne(memberAccountRole)],
-    },
-    async ({ user, query }) => {
-      const member = asDefined(user?.account);
-      assertIsMember(member);
-      return itemService.getShared(db, member, query.permission);
-    },
-  );
-
   // get item's children
   fastify.get(
     '/:id/children',

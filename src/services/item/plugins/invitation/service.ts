@@ -24,6 +24,7 @@ import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { ItemMembershipService } from '../../../itemMembership/service';
 import { MemberDTO } from '../../../member/repository';
 import { MemberService } from '../../../member/service';
+import { isItemType } from '../../discrimination';
 import { EMAIL_COLUMN_NAME, GROUP_COL_NAME, buildInvitationLink } from './constants';
 import {
   CantCreateStructureInNoFolderItem,
@@ -118,16 +119,13 @@ export class InvitationService {
     db: DBConnection,
     member: AuthenticatedUser,
     itemId: string,
-    invitations: Partial<InvitationInsertDTO>[],
-  ): Promise<InvitationRaw[]> {
+    invitations: InvitationInsertDTO[],
+  ) {
     const item = await this.itemService.get(db, member, itemId, PermissionLevel.Admin);
 
-    const completeInvitations = await this.invitationRepository.addMany(
-      db,
-      invitations,
-      item.path,
-      member,
-    );
+    await this.invitationRepository.addMany(db, invitations, item.path, member);
+
+    const completeInvitations = await this.invitationRepository.getManyByItem(db, item.path);
 
     this.log.debug('send invitation mails');
     completeInvitations.forEach((invitation) => {

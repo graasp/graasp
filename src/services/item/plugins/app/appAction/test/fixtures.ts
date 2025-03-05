@@ -1,12 +1,9 @@
 import { v4 } from 'uuid';
 
-import { AppDataSource } from '../../../../../../plugins/datasource';
-import { Member } from '../../../../../member/entities/member';
-import { Item } from '../../../../entities/Item';
-import { AppAction } from '../appAction';
+import { Item } from '../../../../../../drizzle/types';
+import { MinimalMember } from '../../../../../../types';
 
 export const MOCK_APP_ORIGIN = 'https://app.localhost:3000';
-
 export const MOCK_CONTEXT = {
   id: v4(),
   name: 'some-name',
@@ -30,7 +27,7 @@ export const MOCK_APPS = [
   { id: v4(), name: 'some-name', url: 'some-url', description: 'description', extra: {} },
 ];
 
-export const saveAppActions = async ({ item, member }: { item: Item; member: Member }) => {
+export const saveAppActions = async ({ item, member }: { item: Item; member: MinimalMember }) => {
   const defaultData = { type: 'some-type', data: { some: 'data' } };
   const rawAppActionRepository = AppDataSource.getRepository(AppAction);
 

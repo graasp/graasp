@@ -5,7 +5,6 @@ import { FastifyInstance } from 'fastify';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { TMP_FOLDER } from '../../../../../utils/config';
-import { buildRepositories } from '../../../../../utils/repositories';
 import { saveItemFavorites } from '../../../../item/plugins/itemFavorite/test/fixtures';
 import { ItemTestUtils } from '../../../../item/test/fixtures/items';
 import { saveMember } from '../../../test/fixtures/members';
@@ -55,7 +54,7 @@ describe('Export member data tests', () => {
   it('Create archive successfully', async () => {
     const writeFileSyncMock = jest.spyOn(fs, 'writeFileSync');
 
-    const dataToExport = await exportMemberDataService.getAllData(actor, buildRepositories());
+    const dataToExport = await exportMemberDataService.getAllData(app.db, actor);
     const dataArchiver = new DataArchiver({ dataToExport, storageFolder, archiveFileName });
     const result = await dataArchiver.archiveData();
 

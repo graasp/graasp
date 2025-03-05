@@ -3,7 +3,6 @@ import { FastifyInstance } from 'fastify';
 import { ItemType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
-import { AppDataSource } from '../../../../plugins/datasource';
 import { ItemTestUtils } from '../../test/fixtures/items';
 import { RecycledItemData } from '../recycled/RecycledItemData';
 import { ItemGeolocation } from './ItemGeolocation';

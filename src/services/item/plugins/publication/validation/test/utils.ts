@@ -1,11 +1,7 @@
 import { ItemValidationProcess, ItemValidationStatus } from '@graasp/sdk';
 
 import { registerValue } from '../../../../../../di/utils';
-import { AppDataSource } from '../../../../../../plugins/datasource';
-import { Repositories } from '../../../../../../utils/repositories';
-import { Item } from '../../../../entities/Item';
-import { ItemValidation } from '../entities/ItemValidation';
-import { ItemValidationGroup } from '../entities/ItemValidationGroup';
+import { Item } from '../../../../../../drizzle/types';
 import { ItemValidationModerator } from '../moderators/itemValidationModerator';
 import { StrategyExecutorFactory } from '../moderators/strategyExecutorFactory';
 

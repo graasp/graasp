@@ -1,7 +1,6 @@
 import { add, isAfter, isBefore, sub } from 'date-fns';
 import { StatusCodes } from 'http-status-codes';
 import { cleanAll } from 'nock';
-import { And, Not } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
 
@@ -11,11 +10,10 @@ import { EtherpadItemType, HttpMethod, ItemType, PermissionLevel } from '@graasp
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { resolveDependency } from '../../../../../di/utils';
+import { AuthenticatedUser, MinimalMember } from '../../../../../types';
 import { ETHERPAD_PUBLIC_URL } from '../../../../../utils/config';
 import { ItemNotFound, MemberCannotAccess } from '../../../../../utils/errors';
-import { Member } from '../../../../member/entities/member';
 import { saveMember } from '../../../../member/test/fixtures/members';
-import { Item } from '../../../entities/Item';
 import { ItemService } from '../../../service';
 import { ItemTestUtils } from '../../../test/fixtures/items';
 import { MAX_SESSIONS_IN_COOKIE } from '../constants';
@@ -41,7 +39,7 @@ const expectExpiration = (expires: Date) => {
 };
 describe('Etherpad service API', () => {
   let app: FastifyInstance;
-  let member: Member;
+  let member: MinimalMember;
 
   const payloadCreate = {
     method: HttpMethod.Post,
@@ -52,7 +50,7 @@ describe('Etherpad service API', () => {
   };
 
   beforeEach(async () => {
-    let actor: Member | undefined;
+    let actor: AuthenticatedUser;
     ({ app, actor } = await build());
     if (!actor) {
       throw new Error('Test error: member should be defined');

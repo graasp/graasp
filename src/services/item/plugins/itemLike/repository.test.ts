@@ -4,9 +4,6 @@ import { FolderItemFactory, MemberFactory } from '@graasp/sdk';
 
 import { client, db } from '../../../../drizzle/db';
 import { IllegalArgumentException } from '../../../../repositories/errors';
-import { Member } from '../../../member/entities/member';
-import { Item } from '../../entities/Item';
-import { ItemLike } from './itemLike';
 import { ItemLikeRepository } from './repository';
 
 const repository = new ItemLikeRepository();

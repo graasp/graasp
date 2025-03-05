@@ -10,13 +10,13 @@ import build, {
   mockAuthenticate,
   unmockAuthenticate,
 } from '../../../../../../test/app';
+import { Item } from '../../../../../drizzle/types';
+import { AuthenticatedUser, MaybeUser, MinimalMember } from '../../../../../types';
 import { assertIsDefined } from '../../../../../utils/assertions';
 import { APP_ITEMS_PREFIX } from '../../../../../utils/config';
-import { Guest } from '../../../../itemLogin/entities/guest';
-import { Member } from '../../../../member/entities/member';
 import { expectAccount, saveMember } from '../../../../member/test/fixtures/members';
 import { setupGuest } from '../../../../member/test/setup';
-import { Item } from '../../../entities/Item';
+import { FolderItem } from '../../../discrimination';
 import { expectItem } from '../../../test/fixtures/items';
 import { setItemPublic } from '../../itemVisibility/test/fixtures';
 import { AppTestUtils, MOCK_APP_ORIGIN } from './fixtures';
@@ -25,11 +25,11 @@ const testUtils = new AppTestUtils();
 
 const setUpForAppContext = async (
   app,
-  actor: Member | Guest,
-  creator: Member,
+  actor: AuthenticatedUser,
+  creator: MinimalMember,
   permission?: PermissionLevel,
   setPublic?: boolean,
-  parentItem?: Item,
+  parentItem?: FolderItem,
 ) => {
   const values = await testUtils.setUp(app, actor, creator, permission, setPublic, parentItem);
   const appList = await testUtils.saveAppList();
@@ -38,7 +38,7 @@ const setUpForAppContext = async (
 
 describe('Apps Plugin Tests', () => {
   let app: FastifyInstance;
-  let actor: Member | undefined;
+  let actor: MaybeUser;
 
   afterEach(async () => {
     jest.clearAllMocks();

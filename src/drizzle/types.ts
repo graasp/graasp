@@ -22,16 +22,19 @@ import {
   chatMessagesTable,
   guestsView,
   invitationsTable,
+  itemBookmarks,
   itemGeolocations,
   itemLikes,
   itemLoginSchemas,
   itemMemberships,
   itemTags,
   itemValidationGroups,
+  itemValidationReviews,
   itemValidations,
   itemVisibilities,
   items,
   itemsRaw,
+  memberProfiles,
   membersView,
   publishedItems,
   shortLinks,
@@ -60,9 +63,11 @@ export type MemberCreationDTO = typeof membersView.$inferSelect & {
 };
 export type MemberRaw = Omit<typeof membersView.$inferSelect, 'type'> & {
   type: 'individual';
+  email: string;
 };
 
 export type ItemLoginSchemaRaw = typeof itemLoginSchemas.$inferSelect;
+export type ItemLoginSchemaWithItem = ItemLoginSchemaRaw & { item: Item };
 export type GuestInsertDTO = typeof accountsTable.$inferInsert;
 export type GuestRaw = Omit<typeof guestsView.$inferSelect, 'type'> & {
   type: 'guest';
@@ -157,6 +162,7 @@ export type ActionWithItemAndAccount = ActionWithItem & {
 // --- ChatMessage
 export type ChatMessageInsertDTO = typeof chatMessagesTable.$inferInsert;
 export type ChatMessageRaw = typeof chatMessagesTable.$inferSelect;
+export type ChatMessageWithItem = ChatMessageRaw & { item: Item };
 export type ChatMessageWithCreator = Omit<ChatMessageRaw, 'creatorId'> & {
   creator: NullableAccount;
 };
@@ -174,7 +180,7 @@ export type ChatMentionWithMessageAndCreator = Omit<ChatMentionRaw, 'accountId' 
 // --- Invitations
 export type InvitationInsertDTO = typeof invitationsTable.$inferInsert;
 export type InvitationRaw = typeof invitationsTable.$inferSelect;
-export type InvitationWithItem = Omit<InvitationRaw, 'itemPath'> & {
+export type InvitationWithItem = InvitationRaw & {
   item: Item;
 };
 export type InvitationWIthItemAndCreator = Omit<InvitationWithItem, 'creatorId'> & {
@@ -210,6 +216,9 @@ export type AppRaw = typeof apps.$inferSelect;
 
 // --- AppAction
 export type AppActionRaw = typeof appActions.$inferSelect;
+export type AppActionWithItem = AppActionRaw & {
+  item: Item;
+};
 export type AppActionWithItemAndAccount = AppActionRaw & {
   item: Item;
   account: MinimalAccount;
@@ -223,6 +232,9 @@ export type AppSettingWithItem = AppSettingRaw & { item: Item };
 // --- AppData
 export type AppDataInsertDTO = typeof appDatas.$inferInsert;
 export type AppDataRaw = typeof appDatas.$inferSelect;
+export type AppDataWithItem = AppDataRaw & {
+  item: Item;
+};
 export type AppDataWithItemAndAccountAndCreator = AppDataRaw & {
   item: Item;
   account: Account;
@@ -254,3 +266,22 @@ export type ItemValidationInsertDTO = typeof itemValidations.$inferInsert;
 // --- ItemValidationGroup
 export type ItemValidationGroupRaw = typeof itemValidationGroups.$inferSelect;
 export type ItemValidationGroupInsertDTO = typeof itemValidationGroups.$inferInsert;
+
+// --- ItemValidationReview
+export type ItemValidationReviewRaw = typeof itemValidationReviews.$inferSelect;
+export type ItemValidationReviewInsertDTO = typeof itemValidationReviews.$inferInsert;
+
+// --- Publisher
+export type Publisher = any;
+
+// --- ItemBookmark
+export type ItemBookmarkRaw = typeof itemBookmarks.$inferSelect;
+export type ItemBookmarkRawWithItem = ItemBookmarkRaw & { item: Item };
+export type ItemBookmarkInsertDTO = typeof itemBookmarks.$inferInsert;
+export type ItemBookmarkRawWithItemAndAccount = ItemBookmarkRaw & {
+  item: Item;
+  account: Account;
+};
+
+// --- MemberProfile
+export type MemberProfileRaw = typeof memberProfiles.$inferSelect;

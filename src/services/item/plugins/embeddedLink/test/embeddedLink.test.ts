@@ -12,8 +12,6 @@ import build, {
 } from '../../../../../../test/app';
 import { ItemFactory } from '../../../../../../test/factories/item.factory';
 import { seedFromJson } from '../../../../../../test/mocks/seed';
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
 import { ItemRepository } from '../../../repository';
 import { expectItem } from '../../../test/fixtures/items';
 

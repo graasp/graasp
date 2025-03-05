@@ -1,6 +1,5 @@
 import { Readable } from 'stream';
 import { singleton } from 'tsyringe';
-import { DeepPartial } from 'typeorm';
 
 import {
   ItemType,
@@ -378,24 +377,6 @@ export class ItemService {
     return { data: packedItems, totalCount, pagination };
   }
 
-  async getOwn(db: DBConnection, member: MinimalMember) {
-    return this.itemRepository.getOwn(db, member.id);
-  }
-
-  async getShared(db: DBConnection, member: MinimalMember, permission?: PermissionLevel) {
-    const items = await this.itemMembershipRepository.getSharedItems(db, member.id, permission);
-    // TODO optimize?
-    return filterOutItems(
-      db,
-      member,
-      {
-        itemMembershipRepository: this.itemMembershipRepository,
-        itemVisibilityRepository: this.itemVisibilityRepository,
-      },
-      items,
-    );
-  }
-
   private async _getChildren(
     db: DBConnection,
     actor: MaybeUser,
@@ -526,7 +507,7 @@ export class ItemService {
     return this.itemWrapperService.merge(items, itemMemberships, visibilities, thumbnails);
   }
 
-  async patch(db: DBConnection, member: MinimalMember, itemId: UUID, body: DeepPartial<Item>) {
+  async patch(db: DBConnection, member: MinimalMember, itemId: UUID, body: Partial<Item>) {
     // check memberships
     const item = await this.itemRepository.getOneOrThrow(db, itemId);
 

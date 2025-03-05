@@ -8,8 +8,8 @@ import { DiscriminatedItem, HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
 import { resolveDependency } from '../../../di/utils';
-import { AppDataSource } from '../../../plugins/datasource';
 import { MailerService } from '../../../plugins/mailer/mailer.service';
+import { MaybeUser } from '../../../types';
 import { assertIsDefined } from '../../../utils/assertions';
 import {
   CannotDeleteOnlyAdmin,
@@ -24,9 +24,7 @@ import {
 import { setItemPublic } from '../../item/plugins/itemVisibility/test/fixtures';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
 import { saveItemLoginSchema } from '../../itemLogin/test/index.test';
-import { Member } from '../../member/entities/member';
 import { saveMember } from '../../member/test/fixtures/members';
-import { ItemMembership } from '../entities/ItemMembership';
 import { MembershipRequestRepository } from '../plugins/MembershipRequest/repository';
 import { ItemMembershipRepository } from '../repository';
 import { expectMembership } from './fixtures/memberships';
@@ -38,7 +36,7 @@ const itemMembershipRepository = new ItemMembershipRepository();
 
 describe('Membership routes tests', () => {
   let app: FastifyInstance;
-  let actor: Member | undefined;
+  let actor: MaybeUser;
 
   afterEach(async () => {
     jest.clearAllMocks();
@@ -301,7 +299,7 @@ describe('Membership routes tests', () => {
         const m = response.json();
         const correctMembership = { ...payload, item, account: member, creator: actor };
         expectMembership(m, correctMembership, actor);
-        const savedMembership = await itemMembershipRepository.get(m.id);
+        const savedMembership = await itemMembershipRepository.get(app.db, m.id);
         expectMembership(savedMembership, correctMembership, actor);
         expect(response.statusCode).toBe(StatusCodes.OK);
 
@@ -359,9 +357,9 @@ describe('Membership routes tests', () => {
         const childItem = await testUtils.saveItem({ parentItem: targetItem, actor });
         const member = await saveMember();
 
-        await membershipRequestRepository.post(member.id, parentItem.id);
-        await membershipRequestRepository.post(member.id, targetItem.id);
-        await membershipRequestRepository.post(member.id, childItem.id);
+        await membershipRequestRepository.post(app.db, member.id, parentItem.id);
+        await membershipRequestRepository.post(app.db, member.id, targetItem.id);
+        await membershipRequestRepository.post(app.db, member.id, childItem.id);
 
         const payload = {
           accountId: member.id,
@@ -375,9 +373,13 @@ describe('Membership routes tests', () => {
         });
 
         expect(response.statusCode).toBe(StatusCodes.OK);
-        expect(await membershipRequestRepository.get(member.id, parentItem.id)).toBeDefined();
-        expect(await membershipRequestRepository.get(member.id, targetItem.id)).toBeNull();
-        expect(await membershipRequestRepository.get(member.id, childItem.id)).toBeDefined();
+        expect(
+          await membershipRequestRepository.get(app.db, member.id, parentItem.id),
+        ).toBeDefined();
+        expect(await membershipRequestRepository.get(app.db, member.id, targetItem.id)).toBeNull();
+        expect(
+          await membershipRequestRepository.get(app.db, member.id, childItem.id),
+        ).toBeDefined();
       });
       it('Cannot add new membership at same item for same member', async () => {
         const member = await saveMember();
@@ -537,9 +539,10 @@ describe('Membership routes tests', () => {
 
         const newCount = await itemMembershipRawRepository.count();
         expect(newCount).toEqual(initialCount + 2);
-        const { data: savedMembershispForItem } = await itemMembershipRepository.getForManyItems([
-          item,
-        ]);
+        const { data: savedMembershispForItem } = await itemMembershipRepository.getForManyItems(
+          app.db,
+          [item],
+        );
         const savedMemberships = savedMembershispForItem[item.id];
         newMemberships.forEach((m) => {
           const member = members.find(({ id: thisId }) => thisId === m.accountId);
@@ -700,7 +703,7 @@ describe('Membership routes tests', () => {
 
         expectMembership(m, { ...newMembership, account: member, item, creator: actor });
 
-        const savedMembership = await itemMembershipRepository.get(membership.id);
+        const savedMembership = await itemMembershipRepository.get(app.db, membership.id);
         expectMembership(savedMembership, {
           ...newMembership,
           account: member,

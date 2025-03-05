@@ -6,7 +6,7 @@ import { UnionOfConst } from '@graasp/sdk';
 import { DBConnection } from '../../drizzle/db';
 import { isAncestorOrSelf } from '../../drizzle/operations';
 import { itemLoginSchemas } from '../../drizzle/schema';
-import { ItemLoginSchemaRaw } from '../../drizzle/types';
+import { ItemLoginSchemaRaw, ItemLoginSchemaWithItem } from '../../drizzle/types';
 import { throwsIfParamIsInvalid } from '../../repositories/utils';
 import { CannotNestItemLoginSchema } from './errors';
 
@@ -45,7 +45,7 @@ export class ItemLoginSchemaRepository {
   async getOneByItemPath(
     db: DBConnection,
     itemPath: ItemPath,
-  ): Promise<ItemLoginSchemaRaw | undefined> {
+  ): Promise<ItemLoginSchemaWithItem | undefined> {
     throwsIfParamIsInvalid('itemPath', itemPath);
 
     return await db.query.itemLoginSchemas.findFirst({
@@ -65,6 +65,13 @@ export class ItemLoginSchemaRepository {
     }
 
     return await db.insert(itemLoginSchemas).values({ itemPath, type });
+  }
+
+  async updateOne(db: DBConnection, itemLoginSchemaId, { type, status }): Promise<void> {
+    await db
+      .update(itemLoginSchemas)
+      .set({ type, status })
+      .where(eq(itemLoginSchemas.id, itemLoginSchemaId));
   }
 
   async deleteOneByItemId(db: DBConnection, itemId: string) {

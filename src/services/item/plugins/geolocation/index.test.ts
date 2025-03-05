@@ -11,7 +11,6 @@ import build, {
   mockAuthenticate,
   unmockAuthenticate,
 } from '../../../../../test/app';
-import { AppDataSource } from '../../../../plugins/datasource';
 import { GEOLOCATION_API_HOST, ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
 import { MemberCannotAccess } from '../../../../utils/errors';
 import { saveMember } from '../../../member/test/fixtures/members';

@@ -1,11 +1,15 @@
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { Member } from '../../../../member/entities/member';
-import { Item } from '../../../entities/Item';
-import { ItemFavorite } from '../entities/ItemFavorite';
+import { Item, ItemBookmarkRaw } from '../../../../../drizzle/types';
+import { MinimalMember } from '../../../../../types';
 
-export const saveItemFavorites = async ({ items, member }: { items: Item[]; member: Member }) => {
+export const saveItemFavorites = async ({
+  items,
+  member,
+}: {
+  items: Item[];
+  member: MinimalMember;
+}) => {
   const repository = AppDataSource.getRepository(ItemFavorite);
-  const favorites: ItemFavorite[] = [];
+  const favorites: ItemBookmarkRaw[] = [];
 
   for (const item of items) {
     const favorite = await repository.save({ item, member });

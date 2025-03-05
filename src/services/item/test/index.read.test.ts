@@ -12,20 +12,11 @@ import {
 } from '@graasp/sdk';
 
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
-import { AppDataSource } from '../../../plugins/datasource';
+import { Item } from '../../../drizzle/types';
 import { ItemNotFound, MemberCannotAccess } from '../../../utils/errors';
 import { saveMember } from '../../member/test/fixtures/members';
 import { PackedItem } from '../ItemWrapper';
-import { Item } from '../entities/Item';
-import { ItemVisibility } from '../plugins/itemVisibility/ItemVisibility';
 import { Ordering, SortBy } from '../types';
-import {
-  ItemTestUtils,
-  expectItem,
-  expectManyPackedItems,
-  expectPackedItem,
-  expectThumbnails,
-} from './fixtures/items';
 
 const rawRepository = AppDataSource.getRepository(ItemVisibility);
 const testUtils = new ItemTestUtils();
@@ -343,7 +334,7 @@ describe('Item routes tests', () => {
       it('Returns successfully', async () => {
         const member = await saveMember();
         const items: Item[] = [];
-        const publicVisibilities: ItemVisibility[] = [];
+        const publicVisibilities: ItemVisibilityRaw[] = [];
         for (let i = 0; i < 3; i++) {
           const { item, publicVisibility } = await testUtils.savePublicItem({ member });
           items.push(item);
@@ -1646,7 +1637,7 @@ describe('Item routes tests', () => {
         const parents = [parent, child1];
 
         // patch item to force reorder
-        await testUtils.itemRepository.updateOne(parent.id, { name: 'newname' });
+        await testUtils.itemRepository.updateOne(app.db, parent.id, { name: 'newname' });
         parent.name = 'newname';
 
         const response = await app.inject({

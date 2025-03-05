@@ -10,11 +10,10 @@ import build, {
   mockAuthenticate,
   unmockAuthenticate,
 } from '../../../../../../test/app';
-import { AppDataSource } from '../../../../../plugins/datasource';
+import { ItemVisibilityRaw } from '../../../../../drizzle/types';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemTestUtils } from '../../../test/fixtures/items';
-import { ItemVisibility } from '../ItemVisibility';
 import {
   CannotModifyParentVisibility,
   ConflictingVisibilitiesInTheHierarchy,
@@ -25,7 +24,7 @@ const testUtils = new ItemTestUtils();
 const rawItemTagRepository = AppDataSource.getRepository(ItemVisibility);
 
 export const saveTagsForItem = async ({ item, creator }) => {
-  const itemVisibilities: ItemVisibility[] = [];
+  const itemVisibilities: ItemVisibilityRaw[] = [];
   itemVisibilities.push(
     await rawItemTagRepository.save({ item, creator, type: ItemVisibilityType.Hidden }),
   );

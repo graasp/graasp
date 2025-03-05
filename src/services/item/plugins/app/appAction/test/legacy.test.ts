@@ -9,8 +9,8 @@ import { FastifyInstance } from 'fastify';
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../../test/app';
+import { MinimalMember } from '../../../../../../types';
 import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
-import { Member } from '../../../../../member/entities/member';
 import { AppTestUtils } from '../../test/fixtures';
 import { saveAppActions } from './fixtures';
 
@@ -19,8 +19,8 @@ const testUtils = new AppTestUtils();
 // save apps, app actions, and get token
 const setUpForAppActions = async (
   app,
-  actor: Member,
-  creator: Member,
+  actor: MinimalMember,
+  creator: MinimalMember,
   permission?: PermissionLevel,
 ) => {
   const values = await testUtils.setUp(app, actor, creator, permission);

@@ -2,8 +2,9 @@ import { eq } from 'drizzle-orm';
 
 import { ItemValidationReviewStatus } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../../../drizzle/db';
-import { type ItemValidationReview, itemValidationReviews } from '../../../../../../drizzle/schema';
+import { DBConnection } from '../../../../../drizzle/db';
+import { itemValidationReviews } from '../../../../../drizzle/schema';
+import { ItemValidationReviewInsertDTO } from '../../../../../drizzle/types';
 
 export class ItemValidationReviewRepository {
   // private async get(db: DBConnection, id: string): Promise<ItemValidationReview> {
@@ -30,7 +31,7 @@ export class ItemValidationReviewRepository {
     db: DBConnection,
     itemValidationId: string,
     status: ItemValidationReviewStatus,
-  ): Promise<ItemValidationReview> {
+  ): Promise<ItemValidationReviewInsertDTO> {
     return await db
       .insert(itemValidationReviews)
       .values({
@@ -50,7 +51,7 @@ export class ItemValidationReviewRepository {
     status: ItemValidationReviewStatus,
     reviewerId: string,
     reason: string = '',
-  ): Promise<ItemValidationReview> {
+  ): Promise<ItemValidationReviewInsertDTO> {
     return await db
       .update(itemValidationReviews)
       .set({ status, reason, reviewerId })

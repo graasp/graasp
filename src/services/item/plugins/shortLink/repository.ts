@@ -13,12 +13,7 @@ import { ShortLinkInsertDTO, ShortLinkRaw, ShortLinkWithItem } from '../../../..
 import { UpdateException } from '../../../../repositories/errors';
 import { throwsIfParamIsInvalid } from '../../../../repositories/utils';
 import { assertIsError } from '../../../../utils/assertions';
-import {
-  ShortLinkDuplication,
-  ShortLinkLimitExceed,
-  ShortLinkNotFound,
-} from '../../../../utils/errors';
-import { isDuplicateEntryError } from '../../../../utils/typeormError';
+import { ShortLinkLimitExceed, ShortLinkNotFound } from '../../../../utils/errors';
 
 type CreateShortLinkBody = CreateShortLink;
 type UpdateShortLinkBody = UpdateShortLink;
@@ -34,14 +29,15 @@ export class ShortLinkRepository {
     }
 
     try {
-      const res = await db.insert(shortLinks).values({ alias, platform, itemId }).returning();
+      const res = await db
+        .insert(shortLinks)
+        .values({ alias, platform, itemId })
+        .onConflictDoNothing()
+        .returning();
 
       return res[0];
     } catch (e) {
       assertIsError(e);
-      if (isDuplicateEntryError(e)) {
-        throw new ShortLinkDuplication(alias);
-      }
       throw e;
     }
   }
@@ -108,9 +104,7 @@ export class ShortLinkRepository {
       return updatedEntity;
     } catch (e) {
       assertIsError(e);
-      if (isDuplicateEntryError(e)) {
-        throw new ShortLinkDuplication(alias);
-      }
+
       throw new UpdateException(e.message);
     }
   }

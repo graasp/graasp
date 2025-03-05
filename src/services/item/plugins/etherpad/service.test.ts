@@ -5,12 +5,11 @@ import { EtherpadItemFactory, FolderItemFactory, ItemType, PermissionLevel } fro
 
 import { MOCK_LOGGER } from '../../../../../test/app';
 import { resolveDependency } from '../../../../di/utils';
-import * as repositoriesUtils from '../../../../utils/repositories';
-import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
+import { ItemMembershipRaw } from '../../../../drizzle/types';
+import { MinimalMember } from '../../../../types';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
-import { Member } from '../../../member/entities/member';
 import { ThumbnailService } from '../../../thumbnail/service';
-import { EtherpadItem } from '../../entities/Item';
+import { EtherpadItem } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
@@ -51,7 +50,7 @@ const MOCK_ITEM = EtherpadItemFactory({
   extra: { etherpad: { readerPermission: undefined, padID: v4(), groupID: v4() } },
 }) as unknown as EtherpadItem;
 
-const MOCK_MEMBER = {} as Member;
+const MOCK_MEMBER = {} as MinimalMember;
 const repositories = {
   itemRepository: {
     getOneOrThrow: async () => {
@@ -151,7 +150,7 @@ describe('Etherpad Service', () => {
       // actor has read permission
       jest
         .spyOn(repositories.itemMembershipRepository, 'getInherited')
-        .mockResolvedValue({ permission: PermissionLevel.Read } as unknown as ItemMembership);
+        .mockResolvedValue({ permission: PermissionLevel.Read } as unknown as ItemMembershipRaw);
       const getReadOnlyIDMock = jest.spyOn(etherpad, 'getReadOnlyID');
 
       // actor require write
@@ -173,13 +172,13 @@ describe('Etherpad Service', () => {
       // permission is read
       jest
         .spyOn(repositories.itemMembershipRepository, 'getInherited')
-        .mockResolvedValue({ permission: PermissionLevel.Read } as unknown as ItemMembership);
+        .mockResolvedValue({ permission: PermissionLevel.Read } as unknown as ItemMembershipRaw);
       const getReadOnlyIDMock = jest
         .spyOn(etherpad, 'getReadOnlyID')
         .mockResolvedValue({ readOnlyID: v4() });
 
       // request write
-      await etherpadService.getEtherpadFromItem(MOCK_MEMBER, MOCK_ITEM.id, 'write');
+      await etherpadService.getEtherpadFromItem(app.db, MOCK_MEMBER, MOCK_ITEM.id, 'write');
 
       // this is called only if returned mode is read, which is the case here
       expect(getReadOnlyIDMock).toHaveBeenCalled();

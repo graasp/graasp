@@ -1,12 +1,14 @@
-import { AccountType, CompleteMember, MemberFactory } from '@graasp/sdk';
+import { AccountType } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
+import { MemberFactory } from '../../../../../test/factories/member.factory';
 import { db } from '../../../../drizzle/db';
 import { accountsTable } from '../../../../drizzle/schema';
 import { Account, MemberRaw } from '../../../../drizzle/types';
 import { assertIsDefined } from '../../../../utils/assertions';
+import { assertIsMember } from '../../../authentication';
 
-export const saveMember = async (m: CompleteMember = MemberFactory()) => {
+export const saveMember = async (m = MemberFactory()) => {
   // using accounts table since member is just a view and we can not insert on views
   const res = await db
     .insert(accountsTable)
@@ -14,6 +16,7 @@ export const saveMember = async (m: CompleteMember = MemberFactory()) => {
     .returning();
   const savedMember = res[0];
   assertIsDefined(savedMember);
+  assertIsMember(savedMember);
   // ensure member email is typed as string and not null
   const email = savedMember.email;
   if (!email) {
@@ -24,7 +27,7 @@ export const saveMember = async (m: CompleteMember = MemberFactory()) => {
 };
 
 export const saveMembers = async (
-  members: CompleteMember[] = [MemberFactory(), MemberFactory(), MemberFactory()],
+  members = [MemberFactory(), MemberFactory(), MemberFactory()],
 ) => {
   const promises = members.map((m) => saveMember(m));
   return Promise.all(promises);

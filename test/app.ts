@@ -4,8 +4,6 @@ import { DataSource } from 'typeorm';
 import fastifyPassport from '@fastify/passport';
 import { fastify } from 'fastify';
 
-import { CompleteMember } from '@graasp/sdk';
-
 import registerAppPlugins from '../src/app';
 import { resetDependencies } from '../src/di/utils';
 import { BaseLogger } from '../src/logger';
@@ -44,7 +42,7 @@ export function unmockAuthenticate() {
   }
 }
 
-const build = async ({ member }: { member?: CompleteMember | null } = {}) => {
+const build = async ({ member }: { member?: null } = {}) => {
   // Reset dependencies before each test to ensure
   // having new singleton instances in every tests.
   resetDependencies();

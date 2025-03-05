@@ -11,9 +11,9 @@ import { H5PItemExtra, H5PItemType, ItemType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../../test/app';
 import { resolveDependency } from '../../../../../../di/utils';
+import { Item, ItemTypeEnumKeys } from '../../../../../../drizzle/types';
+import { MaybeUser } from '../../../../../../types';
 import { H5P_LOCAL_CONFIG, H5P_PATH_PREFIX, TMP_FOLDER } from '../../../../../../utils/config';
-import { Member } from '../../../../../member/entities/member';
-import { Item, ItemTypeEnumKeys } from '../../../../entities/Item';
 import { ItemService } from '../../../../service';
 import { ItemTestUtils } from '../../../../test/fixtures/items';
 import { HtmlImportError } from '../../errors';
@@ -36,7 +36,7 @@ async function cleanFiles() {
 
 describe('Service plugin', () => {
   let app: FastifyInstance;
-  let member: Member | undefined;
+  let member: MaybeUser;
   let parent: Item;
 
   let res: LightMyRequestResponse,
@@ -268,7 +268,7 @@ describe('Service plugin', () => {
 describe('Upload valid .h5p package after previous item id', () => {
   let previousItem: Item;
   let app: FastifyInstance;
-  let member: Member | undefined;
+  let member: MaybeUser;
   let parent: Item;
 
   let res: LightMyRequestResponse,

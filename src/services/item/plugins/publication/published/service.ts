@@ -23,6 +23,7 @@ import { ActionRepository } from '../../../../action/action.repository';
 import { isMember } from '../../../../authentication';
 import { filterOutHiddenItems } from '../../../../authorization';
 import { ItemMembershipRepository } from '../../../../itemMembership/repository';
+import { MemberRepository } from '../../../../member/repository';
 import { ItemWrapperService } from '../../../ItemWrapper';
 import { ItemRepository } from '../../../repository';
 import { ItemService } from '../../../service';
@@ -53,6 +54,7 @@ export class ItemPublishedService {
   private readonly itemWrapperService: ItemWrapperService;
   private readonly itemPublishedRepository: ItemPublishedRepository;
   private readonly itemRepository: ItemRepository;
+  private readonly memberRepository: MemberRepository;
 
   hooks = new HookManager<{
     create: {
@@ -73,6 +75,7 @@ export class ItemPublishedService {
     actionRepository: ActionRepository,
     itemWrapperService: ItemWrapperService,
     itemRepository: ItemRepository,
+    memberRepository: MemberRepository,
     log: BaseLogger,
   ) {
     this.log = log;
@@ -84,6 +87,7 @@ export class ItemPublishedService {
     this.itemMembershipRepository = itemMembershipRepository;
     this.actionRepository = actionRepository;
     this.itemRepository = itemRepository;
+    this.memberRepository = memberRepository;
     this.itemWrapperService = itemWrapperService;
     this.mailerService = mailerService;
   }
@@ -115,7 +119,10 @@ export class ItemPublishedService {
           })
           .build();
 
-        await this.mailerService.send(mail, member.email).catch((err) => {
+        // TODO: does not seem efficient
+        const memberWithEmail = await this.memberRepository.get(db, member.id);
+
+        await this.mailerService.send(mail, memberWithEmail.email).catch((err) => {
           this.log.warn(err, `mailerService failed. published link: ${link}`);
         });
       }
@@ -215,12 +222,13 @@ export class ItemPublishedService {
 
     // TODO: check validation is alright
 
-    const published = await this.itemPublishedRepository.post(db, member, item);
-
-    await this.meilisearchWrapper.indexOne(db, published);
+    await this.itemPublishedRepository.post(db, member, item);
+    const published = await this.itemPublishedRepository.getForItem(db, item.path);
+    if (published) {
+      await this.meilisearchWrapper.indexOne(db, published);
+    }
 
     //TODO: should we sent a publish hooks for all descendants? If yes take inspiration from delete method in ItemService
-
     this._notifyContributors(db, member, item);
 
     return published;

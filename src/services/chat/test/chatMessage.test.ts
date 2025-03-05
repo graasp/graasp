@@ -7,17 +7,15 @@ import { FolderItemFactory, HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
 import { resolveDependency } from '../../../di/utils';
-import { AppDataSource } from '../../../plugins/datasource';
+import { ChatMessageRaw } from '../../../drizzle/types';
 import { MailerService } from '../../../plugins/mailer/mailer.service';
+import { MinimalMember } from '../../../types';
 import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
 import { ItemNotFound, MemberCannotAccess } from '../../../utils/errors';
 import { setItemPublic } from '../../item/plugins/itemVisibility/test/fixtures';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
-import { Member } from '../../member/entities/member';
 import { saveMember } from '../../member/test/fixtures/members';
-import { ChatMessage } from '../chatMessage';
 import { ChatMessageNotFound, MemberCannotDeleteMessage, MemberCannotEditMessage } from '../errors';
-import { ChatMention } from '../plugins/mentions/chatMention';
 import { ChatMessageRepository } from '../repository';
 
 const testUtils = new ItemTestUtils();
@@ -25,15 +23,19 @@ const memberRawRepository = AppDataSource.getRepository(Member);
 const adminChatMentionRepository = AppDataSource.getRepository(ChatMention);
 const rawChatMessageRepository = AppDataSource.getRepository(ChatMessage);
 
-export const saveItemWithChatMessages = async (creator: Member) => {
+export const saveItemWithChatMessages = async (creator: MinimalMember) => {
   const { item } = await testUtils.saveItemAndMembership({ member: creator });
-  const chatMessages: ChatMessage[] = [];
-  const members: Member[] = [];
+  const chatMessages: ChatMessageRaw[] = [];
+  const members: MinimalMember[] = [];
   for (let i = 0; i < 3; i++) {
     const member = await saveMember();
     members.push(member);
     chatMessages.push(
-      await rawChatMessageRepository.save({ item, creator, body: 'some-text-' + i }),
+      await rawChatMessageRepository.save({
+        item,
+        creator,
+        body: 'some-text-' + i,
+      }),
     );
   }
   return { item, chatMessages, members };
@@ -196,7 +198,10 @@ describe('Chat Message tests', () => {
         const mock = jest.spyOn(mailerService, 'sendRaw');
 
         const members = await memberRawRepository.find();
-        const payload = { body: 'hello', mentions: members.map(({ id }) => id) };
+        const payload = {
+          body: 'hello',
+          mentions: members.map(({ id }) => id),
+        };
         const initialCount = await rawChatMessageRepository.count();
 
         const response = await app.inject({
@@ -252,7 +257,9 @@ describe('Chat Message tests', () => {
         const payload = { body: 'hello' };
         // create brand new user because fixtures are used for chatmessages and will already exists
         const member = await saveMember();
-        const { item: otherItem } = await testUtils.saveItemAndMembership({ member });
+        const { item: otherItem } = await testUtils.saveItemAndMembership({
+          member,
+        });
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -368,7 +375,9 @@ describe('Chat Message tests', () => {
         const payload = { body: 'hello' };
         // create brand new user because fixtures are used for chatmessages and will already exists
         const member = await saveMember();
-        const { item: otherItem } = await testUtils.saveItemAndMembership({ member });
+        const { item: otherItem } = await testUtils.saveItemAndMembership({
+          member,
+        });
 
         const response = await app.inject({
           method: HttpMethod.Patch,
@@ -475,7 +484,9 @@ describe('Chat Message tests', () => {
       it('Throws if member does not have access to item', async () => {
         // create brand new user because fixtures are used for chatmessages and will already exists
         const member = await saveMember();
-        const { item: otherItem } = await testUtils.saveItemAndMembership({ member });
+        const { item: otherItem } = await testUtils.saveItemAndMembership({
+          member,
+        });
 
         const response = await app.inject({
           method: HttpMethod.Delete,
@@ -525,16 +536,30 @@ describe('Chat Message tests', () => {
 
       it('Delete all successfully', async () => {
         // more messages
-        const { item: anotherItem } = await testUtils.saveItemAndMembership({ member: actor });
+        const { item: anotherItem } = await testUtils.saveItemAndMembership({
+          member: actor,
+        });
         const otherMessages: ChatMessage[] = [];
         otherMessages.push(
-          await rawChatMessageRepository.save({ item: anotherItem, creator: actor, body: 'dd' }),
+          await rawChatMessageRepository.save({
+            item: anotherItem,
+            creator: actor,
+            body: 'dd',
+          }),
         );
         otherMessages.push(
-          await rawChatMessageRepository.save({ item: anotherItem, creator: actor, body: 'dd' }),
+          await rawChatMessageRepository.save({
+            item: anotherItem,
+            creator: actor,
+            body: 'dd',
+          }),
         );
         otherMessages.push(
-          await rawChatMessageRepository.save({ item: anotherItem, creator: actor, body: 'dd' }),
+          await rawChatMessageRepository.save({
+            item: anotherItem,
+            creator: actor,
+            body: 'dd',
+          }),
         );
 
         const response = await app.inject({
@@ -569,7 +594,9 @@ describe('Chat Message tests', () => {
       it('Throws if member does not have access to item', async () => {
         // create brand new user because fixtures are used for chatmessages and will already exists
         const member = await saveMember();
-        const { item: otherItem } = await testUtils.saveItemAndMembership({ member });
+        const { item: otherItem } = await testUtils.saveItemAndMembership({
+          member,
+        });
 
         const response = await app.inject({
           method: HttpMethod.Delete,

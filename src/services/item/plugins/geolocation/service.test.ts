@@ -6,11 +6,8 @@ import { PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
 import { BaseLogger } from '../../../../logger';
-import { AppDataSource } from '../../../../plugins/datasource';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { ItemNotFound, MemberCannotAccess, MemberCannotWriteItem } from '../../../../utils/errors';
-import { buildRepositories } from '../../../../utils/repositories';
-import { Member } from '../../../member/entities/member';
 import { saveMember } from '../../../member/test/fixtures/members';
 import { ThumbnailService } from '../../../thumbnail/service';
 import { ItemWrapper } from '../../ItemWrapper';
@@ -18,7 +15,6 @@ import { ItemService } from '../../service';
 import { ItemTestUtils } from '../../test/fixtures/items';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../thumbnail/service';
-import { ItemGeolocation } from './ItemGeolocation';
 import { ItemGeolocationService } from './service';
 import { expectPackedItemGeolocations, saveGeolocation } from './test/utils';
 

@@ -21,10 +21,8 @@ import build, {
   unmockAuthenticate,
 } from '../../../../../../test/app';
 import { resolveDependency } from '../../../../../di/utils';
-import { AppDataSource } from '../../../../../plugins/datasource';
 import { MailerService } from '../../../../../plugins/mailer/mailer.service';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { Action } from '../../../../action/entities/action';
 import { saveItemLoginSchema } from '../../../../itemLogin/test/index.test';
 import { saveMember, saveMembers } from '../../../../member/test/fixtures/members';
 import { ItemTestUtils } from '../../../test/fixtures/items';

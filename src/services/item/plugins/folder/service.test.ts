@@ -3,10 +3,9 @@ import { v4 } from 'uuid';
 import { AppItemFactory, FolderItemFactory, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { MOCK_LOGGER } from '../../../../../test/app';
-import { Repositories } from '../../../../utils/repositories';
-import { Member } from '../../../member/entities/member';
+import { Item } from '../../../../drizzle/types';
+import { MinimalMember } from '../../../../types';
 import { ThumbnailService } from '../../../thumbnail/service';
-import { Item } from '../../entities/Item';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
@@ -23,14 +22,12 @@ const folderService = new FolderItemService(
 const id = v4();
 const MOCK_ITEM = { id, type: ItemType.FOLDER } as Item;
 
-const MOCK_MEMBER = {} as Member;
-const repositories = {
-  itemRepository: {
-    getOneOrThrow: async () => {
-      return MOCK_ITEM;
-    },
-  } as unknown as ItemRepository,
-} as Repositories;
+const MOCK_MEMBER = {} as MinimalMember;
+const itemRepository = {
+  getOneOrThrow: async () => {
+    return MOCK_ITEM;
+  },
+} as unknown as ItemRepository;
 
 describe('Folder Service', () => {
   afterEach(() => {
@@ -46,11 +43,12 @@ describe('Folder Service', () => {
           return folderItem;
         });
 
-      expect(await folderService.get(MOCK_MEMBER, repositories, folderItem.id)).toEqual(folderItem);
+      expect(await folderService.get(app.db, MOCK_MEMBER, folderItem.id)).toEqual(folderItem);
 
       expect(itemServicePostMock).toHaveBeenCalledWith(
+        app.db,
         MOCK_MEMBER,
-        repositories,
+
         folderItem.id,
         undefined,
       );
@@ -65,13 +63,14 @@ describe('Folder Service', () => {
           return folderItem;
         });
 
-      expect(await folderService.get(MOCK_MEMBER, repositories, folderItem.id, permission)).toEqual(
+      expect(await folderService.get(app.db, MOCK_MEMBER, folderItem.id, permission)).toEqual(
         folderItem,
       );
 
       expect(itemServicePostMock).toHaveBeenCalledWith(
+        app.db,
         MOCK_MEMBER,
-        repositories,
+
         folderItem.id,
         permission,
       );
@@ -83,9 +82,9 @@ describe('Folder Service', () => {
         return appItem;
       });
 
-      await expect(() =>
-        folderService.get(MOCK_MEMBER, repositories, appItem.id),
-      ).rejects.toBeInstanceOf(WrongItemTypeError);
+      await expect(() => folderService.get(app.db, MOCK_MEMBER, appItem.id)).rejects.toBeInstanceOf(
+        WrongItemTypeError,
+      );
     });
   });
 
@@ -97,9 +96,9 @@ describe('Folder Service', () => {
           return {} as Item;
         });
 
-      await folderService.post(MOCK_MEMBER, repositories, { item: { name: 'name' } });
+      await folderService.post(app.db, MOCK_MEMBER, { item: { name: 'name' } });
 
-      expect(itemServicePostMock).toHaveBeenCalledWith(MOCK_MEMBER, repositories, {
+      expect(itemServicePostMock).toHaveBeenCalledWith(app.db, MOCK_MEMBER, {
         item: { name: 'name', extra: { [ItemType.FOLDER]: {} }, type: ItemType.FOLDER },
       });
     });
@@ -107,7 +106,7 @@ describe('Folder Service', () => {
   describe('patch', () => {
     it('throw if item is not a folder', async () => {
       await expect(() =>
-        folderService.patch(MOCK_MEMBER, repositories, MOCK_ITEM.id, { name: 'name' }),
+        folderService.patch(app.db, MOCK_MEMBER, MOCK_ITEM.id, { name: 'name' }),
       ).rejects.toThrow();
     });
     it('use item service patch', async () => {
@@ -117,20 +116,20 @@ describe('Folder Service', () => {
           return MOCK_ITEM;
         });
 
-      await folderService.patch(MOCK_MEMBER, repositories, MOCK_ITEM.id, { name: 'name' });
+      await folderService.patch(app.db, MOCK_MEMBER, MOCK_ITEM.id, { name: 'name' });
 
-      expect(itemServicePatchMock).toHaveBeenCalledWith(MOCK_MEMBER, repositories, MOCK_ITEM.id, {
+      expect(itemServicePatchMock).toHaveBeenCalledWith(MOCK_MEMBER, MOCK_ITEM.id, {
         name: 'name',
       });
     });
 
     it('Cannot update not found item given id', async () => {
-      jest.spyOn(repositories.itemRepository, 'getOneOrThrow').mockImplementation(() => {
+      jest.spyOn(itemRepository, 'getOneOrThrow').mockImplementation(() => {
         throw new Error();
       });
 
       await expect(() =>
-        folderService.patch(MOCK_MEMBER, repositories, v4(), { name: 'name' }),
+        folderService.patch(app.db, MOCK_MEMBER, v4(), { name: 'name' }),
       ).rejects.toThrow();
     });
   });

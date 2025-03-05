@@ -28,6 +28,7 @@ import {
   Paginated,
   Pagination,
   PermissionLevel,
+  ResultOf,
   buildPathFromIds,
   getChildFromPath,
   getParentFromPath,
@@ -83,7 +84,7 @@ type CreateItemBody = {
 
 @singleton()
 export class ItemRepository {
-  checkHierarchyDepth(item: Item, additionalNbLevel = 1) {
+  checkHierarchyDepth(item: Item, additionalNbLevel = 1): void {
     // check if hierarchy it too deep
     // adds nb of items to be created
     const itemDepth = item.path.split('.').length;
@@ -92,7 +93,7 @@ export class ItemRepository {
     }
   }
 
-  async checkNumberOfDescendants(db: DBConnection, item: Item, maximum: number) {
+  async checkNumberOfDescendants(db: DBConnection, item: Item, maximum: number): void {
     // check how "big the tree is" below the item
 
     const [{ count: numberOfDescendants }] = await db
@@ -167,7 +168,7 @@ export class ItemRepository {
   }
 
   // TODO: note: removed , options = { withDeleted: false }
-  async getOne(db: DBConnection, id: string) {
+  async getOne(db: DBConnection, id: string): Promise<ItemWithCreator> {
     const results = await db
       .select()
       .from(items)
@@ -184,7 +185,7 @@ export class ItemRepository {
   }
 
   // TODO: note: removed  options: Pick<FindOneOptions<Item>, 'withDeleted'> = { withDeleted: false },
-  async getOneOrThrow(db: DBConnection, id: string) {
+  async getOneOrThrow(db: DBConnection, id: string): Promise<ItemWithCreator> {
     const result = await db
       .select()
       .from(items)
@@ -220,7 +221,7 @@ export class ItemRepository {
    * options.includeCreator {boolean} if true, return full creator
    * options.types {boolean} if defined, filter out the items
    * */
-  async getAncestors(db: DBConnection, item: Item) {
+  async getAncestors(db: DBConnection, item: Item): Promise<ItemWithCreator[]> {
     if (!item.path.includes('.')) {
       return [];
     }
@@ -238,7 +239,12 @@ export class ItemRepository {
     }));
   }
 
-  async getChildren(db: DBConnection, actor: MaybeUser, parent: Item, params?: ItemChildrenParams) {
+  async getChildren(
+    db: DBConnection,
+    actor: MaybeUser,
+    parent: Item,
+    params?: ItemChildrenParams,
+  ): Promise<Item[]> {
     if (parent.type !== ItemType.FOLDER) {
       throw new ItemNotFolder({ id: parent.id });
     }
@@ -375,7 +381,7 @@ export class ItemRepository {
     db: DBConnection,
     ids: string[],
     args: { throwOnError?: boolean; withDeleted?: boolean } = {},
-  ) {
+  ): Promise<ResultOf<Item>> {
     if (!ids.length) {
       return { data: {}, errors: [] };
     }
@@ -424,7 +430,7 @@ export class ItemRepository {
     return farthestItem?.[0]?.path?.split('.')?.length ?? 0;
   }
 
-  async getOwn(db: DBConnection, memberId: string) {
+  async getOwn(db: DBConnection, memberId: string): Promise<Item[]> {
     const result = await db
       .select()
       .from(items)
@@ -455,7 +461,7 @@ export class ItemRepository {
     //   .getMany();
   }
 
-  async move(db: DBConnection, item: Item, parentItem?: Item) {
+  async move(db: DBConnection, item: Item, parentItem?: Item): Promise<Item[]> {
     if (parentItem) {
       // attaching tree to new parent item
       const { id: parentItemId, path: parentItemPath } = parentItem;
@@ -505,7 +511,7 @@ export class ItemRepository {
     //   .execute();
   }
 
-  async updateOne(db: DBConnection, id: string, data: Partial<Item>) {
+  async updateOne(db: DBConnection, id: string, data: Partial<Item>): Promise<Item> {
     // update only if data is not empty
     if (!Object.keys(data).length) {
       throw new IllegalArgumentException("The item's body cannot be empty!");
@@ -532,7 +538,7 @@ export class ItemRepository {
       }
     }
 
-    return await db.update(itemsRaw).set(newData).where(eq(itemsRaw.id, id)).returning();
+    return (await db.update(itemsRaw).set(newData).where(eq(itemsRaw.id, id)).returning())[0];
   }
 
   public async addOne(db: DBConnection, { item, creator, parentItem }: CreateItemBody) {
@@ -795,7 +801,10 @@ export class ItemRepository {
    * @param memberId
    * @returns published items for given member
    */
-  async getPublishedItemsForMember(db: DBConnection, memberId: MinimalMember['id']) {
+  async getPublishedItemsForMember(
+    db: DBConnection,
+    memberId: MinimalMember['id'],
+  ): Promise<ItemWithCreator[]> {
     // get for membership write and admin -> createquerybuilder
     const result = await db
       .select()
@@ -943,7 +952,7 @@ export class ItemRepository {
    * @param parentPath scope of the order
    * @returns {number|null} first valid order value, can be `null` for root
    */
-  async getFirstOrderValue(db: DBConnection, parentPath?: Item['path']) {
+  async getFirstOrderValue(db: DBConnection, parentPath?: Item['path']): Promise<number> {
     // no order for root
     if (!parentPath) {
       return null;
@@ -962,7 +971,12 @@ export class ItemRepository {
     return DEFAULT_ORDER;
   }
 
-  async reorder(db: DBConnection, item: Item, parentPath: Item['path'], previousItemId?: string) {
+  async reorder(
+    db: DBConnection,
+    item: Item,
+    parentPath: Item['path'],
+    previousItemId?: string,
+  ): Promise<Item> {
     // no defined previous item is set at beginning
     let order;
     if (!previousItemId) {
@@ -977,7 +991,7 @@ export class ItemRepository {
     return await this.getOneOrThrow(db, item.id);
   }
 
-  async rescaleOrder(db: DBConnection, actor: AuthenticatedUser, parentItem: Item) {
+  async rescaleOrder(db: DBConnection, actor: AuthenticatedUser, parentItem: Item): Promise<void> {
     const children = await this.getChildren(db, actor, parentItem);
 
     // no need to rescale for less than 2 items

@@ -3,7 +3,6 @@ import FormData from 'form-data';
 import fs from 'fs';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import path from 'node:path';
-import { In, Not } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
 
@@ -23,7 +22,8 @@ import {
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../test/constants';
 import { resolveDependency } from '../../../di/utils';
-import { AppDataSource } from '../../../plugins/datasource';
+import { Item } from '../../../drizzle/types';
+import { MinimalMember } from '../../../types';
 import { assertIsDefined } from '../../../utils/assertions';
 import {
   HierarchyTooDeep,
@@ -33,12 +33,8 @@ import {
   MemberCannotWriteItem,
   TooManyChildren,
 } from '../../../utils/errors';
-import { ItemMembership } from '../../itemMembership/entities/ItemMembership';
-import { Member } from '../../member/entities/member';
 import { saveMember } from '../../member/test/fixtures/members';
-import { Item } from '../entities/Item';
-import { ActionItemService } from '../plugins/action/service';
-import { ItemGeolocation } from '../plugins/geolocation/ItemGeolocation';
+import { ActionItemService } from '../plugins/action/action.service';
 import { ItemService } from '../service';
 import { ItemTestUtils, expectItem } from './fixtures/items';
 import { saveUntilMaxDescendants } from './utils';
@@ -87,9 +83,9 @@ const saveNbOfItems = async ({
   member,
   item: itemData = {},
 }: {
-  member?: Member;
+  member?: MinimalMember;
   nb: number;
-  actor: Member;
+  actor: MinimalMember;
   parentItem?: Item;
   item?: Partial<Item>;
 }) => {
@@ -245,7 +241,7 @@ describe('Item routes tests', () => {
         await waitForPostCreation();
 
         // check item exists in db
-        const item = await testUtils.itemRepository.getOne(newItem.id);
+        const item = await testUtils.itemRepository.getOne(app.db, newItem.id);
         expect(item?.id).toEqual(newItem.id);
 
         // a membership is created for this item
@@ -972,7 +968,10 @@ describe('Item routes tests', () => {
             item: { id: In([item1.id, item2.id]) },
           });
           expect(memberships).toHaveLength(0);
-          const { errors } = await testUtils.itemRepository.getMany(items.map(({ id }) => id));
+          const { errors } = await testUtils.itemRepository.getMany(
+            app.db,
+            items.map(({ id }) => id),
+          );
           expect(errors).toHaveLength(items.length);
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });

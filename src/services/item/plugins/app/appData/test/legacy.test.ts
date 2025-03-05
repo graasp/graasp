@@ -9,9 +9,8 @@ import { FastifyInstance } from 'fastify';
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../../test/app';
+import { AuthenticatedUser, MinimalMember } from '../../../../../../types';
 import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
-import { Guest } from '../../../../../itemLogin/entities/guest';
-import { Member } from '../../../../../member/entities/member';
 import { saveMember } from '../../../../../member/test/fixtures/members';
 import { AppTestUtils } from '../../test/fixtures';
 import { saveAppData } from './fixtures';
@@ -21,8 +20,8 @@ const testUtils = new AppTestUtils();
 // save apps, app data, and get token
 const setUpForAppData = async (
   app,
-  actor: Member | Guest,
-  creator: Member,
+  actor: AuthenticatedUser,
+  creator: MinimalMember,
   permission?: PermissionLevel,
   setPublic?: boolean,
 ) => {

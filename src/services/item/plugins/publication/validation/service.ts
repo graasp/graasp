@@ -10,10 +10,11 @@ import { BaseLogger } from '../../../../../logger';
 import { MinimalMember } from '../../../../../types';
 import { TMP_FOLDER } from '../../../../../utils/config';
 import { AuthorizationService } from '../../../../authorization';
+import { FolderItem } from '../../../discrimination';
 import { ItemRepository } from '../../../repository';
 import { ItemPublishedService } from '../published/service';
+import { ItemValidationGroupRepository } from './ItemValidationGroup.repository';
 import { ItemValidationModerator } from './moderators/itemValidationModerator';
-import { ItemValidationGroupRepository } from './repositories/ItemValidationGroup';
 import { ValidationQueue } from './validationQueue';
 
 @singleton()

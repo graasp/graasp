@@ -1,14 +1,10 @@
 import { ActionFactory, ActionTriggers, DiscriminatedItem } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { Action } from '../../../../action/entities/action';
-import { saveActions } from '../../../../action/test/fixtures/actions';
+import { MinimalMember } from '../../../../../types';
 import { ItemTestUtils } from '../../../../item/test/fixtures/items';
-import { Member } from '../../../entities/member';
 import { saveMember } from '../../../test/fixtures/members';
 
 const testUtils = new ItemTestUtils();
-const rawRepository = AppDataSource.getRepository(Action);
 
 export const getDateBeforeOrAfterNow = (dateDiff: number) => {
   const date = new Date(); // Today's date
@@ -16,8 +12,8 @@ export const getDateBeforeOrAfterNow = (dateDiff: number) => {
   return date.toISOString();
 };
 
-export const saveActionsWithItems = async (
-  member: Member,
+export const generateActionsWithItems = async (
+  member: MinimalMember,
   { saveActionForNotOwnedItem = false } = {},
 ) => {
   const item = await testUtils.saveItem({ actor: member });
@@ -51,5 +47,5 @@ export const saveActionsWithItems = async (
       }),
     );
   }
-  await saveActions(rawRepository, actions);
+  return actions;
 };

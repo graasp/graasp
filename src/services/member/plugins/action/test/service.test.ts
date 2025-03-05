@@ -1,16 +1,12 @@
 import build, { MOCK_LOGGER, clearDatabase } from '../../../../../../test/app';
 import { resolveDependency } from '../../../../../di/utils';
-import { AppDataSource } from '../../../../../plugins/datasource';
 import { asDefined } from '../../../../../utils/assertions';
-import { buildRepositories } from '../../../../../utils/repositories';
-import { Action } from '../../../../action/entities/action';
-import { ActionService } from '../../../../action/services/action.service';
 import { getMemberActions } from '../../../../action/test/fixtures/actions';
+import { saveActions } from '../../../../item/plugins/action/test/fixtures/actions';
 import { ItemService } from '../../../../item/service';
-import { Member } from '../../../entities/member';
 import { MemberService } from '../../../service';
 import { ActionMemberService } from '../service';
-import { saveActionsWithItems } from './utils';
+import { generateActionsWithItems } from './utils';
 
 const rawRepository = AppDataSource.getRepository(Action);
 
@@ -38,7 +34,8 @@ describe('Action member service', () => {
     it('get filtered actions by start and end date for auth member ', async () => {
       ({ app, actor } = await build());
       const member = asDefined(actor);
-      await saveActionsWithItems(member);
+      await generateActionsWithItems(member);
+      await saveActions(rawRepository, actions);
       const result = await getActionMemberService().getFilteredActions(
         member,
         buildRepositories(),
@@ -50,7 +47,8 @@ describe('Action member service', () => {
     it("get filtered actions by start and end date for auth member shouldn't contain actions for items with no permisson", async () => {
       ({ app, actor } = await build());
       const member = asDefined(actor);
-      await saveActionsWithItems(member, { saveActionForNotOwnedItem: true });
+      await generateActionsWithItems(member, { saveActionForNotOwnedItem: true });
+      await saveActions(rawRepository, actions);
       const result = await getActionMemberService().getFilteredActions(
         member,
         buildRepositories(),

@@ -8,6 +8,7 @@ import i18next from '../../../../i18n';
 import { BaseLogger } from '../../../../logger';
 import { MinimalMember } from '../../../../types';
 import { ThumbnailService } from '../../../thumbnail/service';
+import { ShortcutItem, isItemType } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
 import { ItemService } from '../../service';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
@@ -64,7 +65,7 @@ export class ShortcutItemService extends ItemService {
     const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
     // check item is shortcut
-    if (item.type !== ItemType.SHORTCUT) {
+    if (isItemType(item, ItemType.SHORTCUT)) {
       throw new WrongItemTypeError(item.type);
     }
 

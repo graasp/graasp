@@ -1,10 +1,9 @@
 import { v4 } from 'uuid';
 
 import { clearDatabase } from '../../../../../test/app';
-import { AppDataSource } from '../../../../plugins/datasource';
+import { ItemBookmarkRaw } from '../../../../drizzle/types';
 import { saveMember } from '../../../member/test/fixtures/members';
 import { ItemTestUtils } from '../../test/fixtures/items';
-import { ItemFavorite } from './entities/ItemFavorite';
 import { DuplicateBookmarkError, ItemBookmarkNotFound } from './errors';
 import { ItemBookmarkRepository } from './itemBookmark.repository';
 
@@ -12,7 +11,7 @@ const testUtils = new ItemTestUtils();
 
 describe('FavoriteRepository', () => {
   let actor;
-  let favorites: ItemFavorite[];
+  let favorites: ItemBookmarkRaw[];
 
   beforeEach(async () => {
     const r = new ItemBookmarkRepository();
@@ -26,7 +25,7 @@ describe('FavoriteRepository', () => {
 
     // noise
     const m1 = await saveMember();
-    await r.post(item1.id, m1.id);
+    await r.post(app.db, item1.id, m1.id);
   });
 
   afterEach(async () => {
@@ -51,13 +50,13 @@ describe('FavoriteRepository', () => {
       const r = new ItemBookmarkRepository();
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      await expect(r.get(undefined!)).rejects.toMatchObject(new ItemBookmarkRepository());
+      await expect(r.get(app.db, undefined!)).rejects.toMatchObject(new ItemBookmarkRepository());
     });
 
     it('throws if favorite does not exist', async () => {
       const r = new ItemBookmarkRepository();
       const id = v4();
-      await expect(r.get(id)).rejects.toMatchObject(new ItemBookmarkRepository(id));
+      await expect(r.get(app.db, id)).rejects.toMatchObject(new ItemBookmarkRepository(id));
     });
   });
 
@@ -65,7 +64,7 @@ describe('FavoriteRepository', () => {
     it('returns all favorites for member', async () => {
       const r = new ItemBookmarkRepository();
 
-      const result = await r.getFavoriteForMember(actor.id);
+      const result = await r.getFavoriteForMember(app.db, actor.id);
       expect(result).toHaveLength(favorites.length);
       for (const f of favorites) {
         expect(result).toContainEqual(
@@ -82,7 +81,7 @@ describe('FavoriteRepository', () => {
     it('returns empty array if no favorite', async () => {
       const r = new ItemBookmarkRepository();
 
-      const result = await r.getFavoriteForMember(v4());
+      const result = await r.getFavoriteForMember(app.db, v4());
       expect(result).toHaveLength(0);
     });
   });
@@ -93,7 +92,7 @@ describe('FavoriteRepository', () => {
       const item = await testUtils.saveItem({ actor });
 
       // returned value
-      const result = await r.post(item.id, actor.id);
+      const result = await r.post(app.db, item.id, actor.id);
       expect(result).toMatchObject({
         item: expect.objectContaining({ id: item.id }),
       });
@@ -121,7 +120,7 @@ describe('FavoriteRepository', () => {
       const r = new ItemBookmarkRepository();
       const f = favorites[0];
       // returned value
-      const result = await r.deleteOne(f.item.id, f.member.id);
+      const result = await r.deleteOne(app.db, f.item.id, f.member.id);
       expect(result).toEqual(f.item.id);
 
       // saved value
@@ -133,7 +132,7 @@ describe('FavoriteRepository', () => {
       const item = await testUtils.saveItem({ actor });
 
       // returned value
-      const result = await r.deleteOne(item.id, actor.id);
+      const result = await r.deleteOne(app.db, item.id, actor.id);
       expect(result).toEqual(item.id);
     });
   });

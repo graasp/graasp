@@ -2,13 +2,19 @@ import { and, desc, eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { Item, ItemBookmark, itemBookmarks, items } from '../../../../drizzle/schema';
+import { itemBookmarks, items } from '../../../../drizzle/schema';
+import {
+  Item,
+  ItemBookmarkInsertDTO,
+  ItemBookmarkRawWithItem,
+  ItemBookmarkRawWithItemAndAccount,
+} from '../../../../drizzle/types';
 import { MemberIdentifierNotFound } from '../../../itemLogin/errors';
 import { ItemBookmarkNotFound } from './errors';
 
 @singleton()
 export class ItemBookmarkRepository {
-  async get(db: DBConnection, bookmarkId: string): Promise<ItemBookmark> {
+  async get(db: DBConnection, bookmarkId: string): Promise<ItemBookmarkRawWithItemAndAccount> {
     if (!bookmarkId) {
       throw new ItemBookmarkNotFound(bookmarkId);
     }
@@ -27,7 +33,10 @@ export class ItemBookmarkRepository {
    * Get favorite items by given memberId.
    * @param memberId user's id
    */
-  async getFavoriteForMember(db: DBConnection, memberId: string): Promise<(ItemBookmark & Item)[]> {
+  async getFavoriteForMember(
+    db: DBConnection,
+    memberId: string,
+  ): Promise<ItemBookmarkRawWithItem[]> {
     const bookmarks = await db
       .select()
       .from(itemBookmarks)
@@ -67,7 +76,7 @@ export class ItemBookmarkRepository {
     return result;
   }
 
-  async post(db: DBConnection, itemId: string, memberId: string): Promise<ItemBookmark> {
+  async post(db: DBConnection, itemId: string, memberId: string): Promise<ItemBookmarkInsertDTO> {
     const createdFavorite = await db
       .insert(itemBookmarks)
       .values({ itemId, memberId })

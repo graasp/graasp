@@ -1,13 +1,16 @@
 import { StatusCodes } from 'http-status-codes';
 
+import { AccountRaw } from '../drizzle/types';
 import { AccountType, AuthenticatedUser, MinimalGuest, MinimalMember } from '../types';
 import { NotMember } from './member/error';
 
-export function isMember(account: AuthenticatedUser): account is MinimalMember {
+// TODO: allow AccountRow or apply DTO on all relations?
+export function isMember(account: AuthenticatedUser | AccountRaw): account is MinimalMember {
   return account.type === AccountType.Individual;
 }
 
-export function isGuest(account: AuthenticatedUser): account is MinimalGuest {
+// TODO: allow AccountRow or apply DTO on all relations?
+export function isGuest(account: AuthenticatedUser | AccountRaw): account is MinimalGuest {
   return account.type === AccountType.Guest;
 }
 

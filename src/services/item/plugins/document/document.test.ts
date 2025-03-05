@@ -15,9 +15,7 @@ import build, {
   mockAuthenticate,
   unmockAuthenticate,
 } from '../../../../../test/app';
-import { AppDataSource } from '../../../../plugins/datasource';
-import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
-import { Member } from '../../../member/entities/member';
+import { MaybeUser } from '../../../../types';
 import { saveMember } from '../../../member/test/fixtures/members';
 import { ItemTestUtils, expectItem } from '../../test/fixtures/items';
 
@@ -31,7 +29,7 @@ const extra = {
 };
 describe('Document Item tests', () => {
   let app: FastifyInstance;
-  let actor: Member | undefined;
+  let actor: MaybeUser;
 
   beforeAll(async () => {
     ({ app } = await build({ member: null }));

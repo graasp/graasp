@@ -10,30 +10,35 @@ import {
 } from '@graasp/sdk';
 
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../test/app';
-import { Account } from '../drizzle/types';
+import {
+  Account,
+  Item,
+  ItemMembershipRaw,
+  ItemMembershipWithItemAndAccount,
+  ItemVisibilityRaw,
+} from '../drizzle/types';
 import { ItemMembershipRepository } from '../services/itemMembership/repository';
+import { MinimalMember } from '../types';
 import { asDefined } from '../utils/assertions';
 import { MemberCannotAccess, MemberCannotAdminItem, MemberCannotWriteItem } from '../utils/errors';
 import { isAuthenticated } from './auth/plugins/passport';
 import { filterOutPackedDescendants, matchOne } from './authorization';
 import { PackedItem } from './item/ItemWrapper';
-import { ItemVisibility } from './item/plugins/itemVisibility/ItemVisibility';
 import { ItemVisibilityRepository } from './item/plugins/itemVisibility/repository';
 import { expectPackedItem } from './item/test/fixtures/items';
-import { ItemMembership } from './itemMembership/entities/ItemMembership';
 import { validatedMemberAccountRole } from './member/strategies/validatedMemberAccountRole';
 import { saveMember } from './member/test/fixtures/members';
 
 const OWNER = { id: 'owner', name: 'owner' } as Account;
 const SHARED_MEMBER = { id: 'shared', name: 'shared' } as Account;
-const OTHER_MEMBER = { id: 'other', name: 'other' } as Member;
+const OTHER_MEMBER = { id: 'other', name: 'other' } as MinimalMember;
 const ITEM = { id: 'item' } as Item;
 const ownerMembership = {
   account: OWNER,
   permission: PermissionLevel.Admin,
-} as ItemMembership;
+} as ItemMembershipRaw;
 const buildSharedMembership = (permission: PermissionLevel, item: Item = ITEM) =>
-  ({ account: SHARED_MEMBER, permission, item }) as ItemMembership;
+  ({ account: SHARED_MEMBER, permission, item }) as ItemMembershipWithItemAndAccount;
 
 jest.mock('./item/plugins/itemVisibility/repository');
 
@@ -42,10 +47,10 @@ const getManyForManyMock = jest.spyOn(itemVisibilityRepository, 'getManyForMany'
 
 const MOCK_ITEM_VISIBILITY_PUBLIC = {
   type: ItemVisibilityType.Public,
-} as ItemVisibility;
+} as ItemVisibilityRaw;
 const MOCK_ITEM_VISIBILITY_HIDDEN = {
   type: ItemVisibilityType.Hidden,
-} as ItemVisibility;
+} as ItemVisibilityRaw;
 const returnDummyArray = async () => [];
 
 // TODO: Update suite to test the Authorization service which was added to convert the single functions we had previously
@@ -3233,14 +3238,14 @@ describe('filterOutPackedDescendants', () => {
   const hiddenVisibility = {
     type: ItemVisibilityType.Hidden,
     item: descendants[2],
-  } as ItemVisibility;
+  } as ItemVisibilityRaw;
 
   /** build packed descendants for checking returned values
    * types don't play nicely because factory does not use the same types as the backend
    */
   const buildPackedDescendants = (
     permission: PermissionLevel | null,
-    hiddenVisibility: ItemVisibility,
+    hiddenVisibility: ItemVisibilityRaw,
   ): PackedItem[] => {
     const arr = descendants.map((descendant) =>
       PackedFolderItemFactory(descendant as never, {
@@ -3357,7 +3362,7 @@ describe('filterOutPackedDescendants', () => {
 
 describe('Passport Plugin', () => {
   let app: FastifyInstance;
-  let member: Member;
+  let member: MinimalMember;
   let handler: jest.Mock;
   let preHandler: jest.Mock;
   const MOCKED_ROUTE = '/mock-route';
@@ -3365,7 +3370,7 @@ describe('Passport Plugin', () => {
   function shouldNotBeCalled() {
     return () => fail('Should not be called');
   }
-  function shouldBeActor(actor: Member) {
+  function shouldBeActor(actor: MinimalMember) {
     return ({ user }: { user: PassportUser }) => expect(user.account).toEqual(actor);
   }
 
@@ -3407,14 +3412,14 @@ describe('Passport Plugin', () => {
       preHandler.mockImplementation(matchOne(validatedMemberAccountRole));
     });
 
-    it('Validated Member', async () => {
+    it('Validated MinimalMember', async () => {
       handler.mockImplementation(shouldBeActor(member));
       const response = await app.inject({ path: MOCKED_ROUTE });
       expect(handler).toHaveBeenCalledTimes(1);
       expect(response.statusCode).toBe(StatusCodes.OK);
     });
 
-    it('Unvalidated Member', async () => {
+    it('Unvalidated MinimalMember', async () => {
       member.isValidated = false;
       mockAuthenticate(member);
       handler.mockImplementation(shouldNotBeCalled);

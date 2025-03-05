@@ -12,16 +12,16 @@ function BaseAccountFactory<T extends AccountTypeOptions>(
 ) {
   return {
     ...AccountFactory(baseAccount),
-    createdAt: faker.date.anytime(),
-    updatedAt: faker.date.anytime(),
+    createdAt: faker.date.anytime().toISOString(),
+    updatedAt: faker.date.anytime().toISOString(),
     ...baseAccount,
   };
 }
 
 export const MemberFactory = (m: Partial<MemberRaw> = {}) => ({
-  email: faker.internet.email().toLowerCase(),
   extra: faker.helpers.arrayElement([{ lang: faker.helpers.arrayElement(['en', 'fr', 'de']) }, {}]),
   ...BaseAccountFactory({ type: AccountType.Individual }),
+  email: faker.internet.email().toLowerCase(),
   ...m,
   enableSaveActions: m.enableSaveActions ?? true,
   isValidated: m.isValidated ?? true,

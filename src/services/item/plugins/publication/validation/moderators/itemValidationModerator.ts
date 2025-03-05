@@ -5,8 +5,8 @@ import { ItemValidationReviewStatus, ItemValidationStatus } from '@graasp/sdk';
 import { DBConnection } from '../../../../../../drizzle/db';
 import { Item, ItemValidationGroupRaw } from '../../../../../../drizzle/types';
 import { ProcessExecutionError } from '../errors';
-import { ItemValidationRepository } from '../repositories/itemValidation';
-import { ItemValidationReviewRepository } from '../repositories/itemValidationReview';
+import { ItemValidationRepository } from '../itemValidation.repository';
+import { ItemValidationReviewRepository } from '../itemValidationReview.repository';
 import { StrategyExecutorFactory } from './strategyExecutorFactory';
 import { StrategyExecutor } from './types';
 

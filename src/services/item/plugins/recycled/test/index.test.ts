@@ -1,5 +1,4 @@
 import { StatusCodes } from 'http-status-codes';
-import { In } from 'typeorm';
 import { v4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
 
@@ -18,13 +17,11 @@ import build, {
   unmockAuthenticate,
 } from '../../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants';
-import { AppDataSource } from '../../../../../plugins/datasource';
+import { Item } from '../../../../../drizzle/types';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { ITEMS_PAGE_SIZE } from '../../../constants';
-import { Item } from '../../../entities/Item';
 import { ItemTestUtils, expectItem, expectManyItems } from '../../../test/fixtures/items';
-import { RecycledItemData } from '../RecycledItemData';
 import { expectManyRecycledItems } from './fixtures';
 
 const recycledItemDataRawRepository = AppDataSource.getRepository(RecycledItemData);

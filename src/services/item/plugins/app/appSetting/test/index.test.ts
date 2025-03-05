@@ -6,9 +6,9 @@ import { FastifyInstance } from 'fastify';
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../../test/app';
+import { MinimalMember } from '../../../../../../types';
 import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
 import { MemberCannotAdminItem } from '../../../../../../utils/errors';
-import { Member } from '../../../../../member/entities/member';
 import { saveMember } from '../../../../../member/test/fixtures/members';
 import { setItemPublic } from '../../../itemVisibility/test/fixtures';
 import { AppTestUtils } from '../../test/fixtures';
@@ -33,8 +33,8 @@ const testUtils = new AppTestUtils();
 
 const setUpForAppSettings = async (
   app,
-  actor: Member,
-  creator: Member,
+  actor: MinimalMember,
+  creator: MinimalMember,
   permission?: PermissionLevel,
 ) => {
   const values = await testUtils.setUp(app, actor, creator, permission);

@@ -5,12 +5,9 @@ import { FastifyInstance } from 'fastify';
 import { ItemVisibilityType } from '@graasp/sdk';
 
 import build, { MOCK_LOGGER, clearDatabase } from '../../../test/app';
-import { AppDataSource } from '../../plugins/datasource';
-import { buildRepositories } from '../../utils/repositories';
 import { saveMember } from '../member/test/fixtures/members';
 import { ThumbnailService } from '../thumbnail/service';
 import { ItemWrapper } from './ItemWrapper';
-import { ItemVisibility } from './plugins/itemVisibility/ItemVisibility';
 import { createTag, setItemPublic } from './plugins/itemVisibility/test/fixtures';
 import { ItemThumbnailService } from './plugins/thumbnail/service';
 import { ItemService } from './service';

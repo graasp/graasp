@@ -4,18 +4,16 @@ import { singleton } from 'tsyringe';
 import { UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { Tag, itemTags, tags } from '../../../../drizzle/schema';
-import { Item } from '../../../../drizzle/types';
+import { itemTags, tags } from '../../../../drizzle/schema';
+import { Item, TagRaw } from '../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../repositories/errors';
 import { assertIsError } from '../../../../utils/assertions';
-import { isDuplicateEntryError } from '../../../../utils/typeormError';
 import { TagCategoryOptions, TagCount } from '../../../tag/schemas';
 import { TAG_COUNT_MAX_RESULTS } from './constants';
-import { ItemTagAlreadyExists } from './errors';
 
 @singleton()
 export class ItemTagRepository {
-  async getByItemId(db: DBConnection, itemId: UUID): Promise<Tag[]> {
+  async getByItemId(db: DBConnection, itemId: UUID): Promise<TagRaw[]> {
     if (!itemId) {
       throw new IllegalArgumentException(`The given 'itemId' is undefined!`);
     }
@@ -78,19 +76,16 @@ export class ItemTagRepository {
     return res;
   }
 
-  async create(db: DBConnection, itemId: UUID, tagId: Tag['id']): Promise<void> {
+  async create(db: DBConnection, itemId: UUID, tagId: TagRaw['id']): Promise<void> {
     try {
-      await db.insert(itemTags).values({ itemId, tagId });
+      await db.insert(itemTags).values({ itemId, tagId }).onConflictDoNothing();
     } catch (e) {
       assertIsError(e);
-      if (isDuplicateEntryError(e)) {
-        throw new ItemTagAlreadyExists({ itemId, tagId });
-      }
       throw e;
     }
   }
 
-  async delete(db: DBConnection, itemId: Item['id'], tagId: Tag['id']): Promise<void> {
+  async delete(db: DBConnection, itemId: Item['id'], tagId: TagRaw['id']): Promise<void> {
     if (!itemId || !tagId) {
       throw new IllegalArgumentException(`Given 'itemId' or 'tagId' is undefined!`);
     }

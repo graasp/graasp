@@ -29,9 +29,8 @@ import {
   REDIS_PORT,
   REDIS_USERNAME,
 } from '../../../../utils/config';
-import { Member, assertIsMember } from '../../../member/entities/member';
+import { assertIsMember } from '../../../authentication';
 import { MOCK_CAPTCHA } from '../captcha/test/utils';
-import { MemberPassword } from './entities/password';
 import { encryptPassword } from './utils';
 
 async function login(

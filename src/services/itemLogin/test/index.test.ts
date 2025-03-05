@@ -16,21 +16,14 @@ import {
 } from '@graasp/sdk';
 
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
-import { AppDataSource } from '../../../plugins/datasource';
+import { AccountRaw, GuestRaw, Item } from '../../../drizzle/types';
+import { MinimalMember } from '../../../types';
 import { assertIsDefined } from '../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
 import { MemberCannotAdminItem } from '../../../utils/errors';
-import { Account } from '../../account/entities/account';
 import { encryptPassword } from '../../auth/plugins/password/utils';
-import { Item } from '../../item/entities/Item';
-import { ItemVisibility } from '../../item/plugins/itemVisibility/ItemVisibility';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
-import { ItemMembership } from '../../itemMembership/entities/ItemMembership';
-import { Member } from '../../member/entities/member';
 import { expectAccount, saveMember } from '../../member/test/fixtures/members';
-import { Guest } from '../entities/guest';
-import { GuestPassword } from '../entities/guestPassword';
-import { ItemLoginSchema as ItemLoginSchemaEntity } from '../entities/itemLoginSchema';
 import { CannotNestItemLoginSchema, ValidMemberSession } from '../errors';
 import { USERNAME_LOGIN } from './fixtures';
 
@@ -63,7 +56,7 @@ export async function saveItemLoginSchema({
     status,
   });
   const rawItemLoginSchema = await rawItemLoginSchemaRepository.save(itemLoginSchema);
-  let guest: Guest | undefined;
+  let guest: GuestRaw | undefined;
   if (memberName) {
     const guestF = GuestFactory({
       name: memberName,
@@ -80,15 +73,15 @@ export async function saveItemLoginSchema({
   return { itemLoginSchema: rawItemLoginSchema, guest };
 }
 
-const expectItemLogin = (member: Account, m: Account) => {
+const expectItemLogin = (member: AccountRaw, m: AccountRaw) => {
   expectAccount(member, m);
 };
 
 describe('Item Login Tests', () => {
   let app: FastifyInstance;
-  let actor: Member | undefined | null;
+  let actor: MinimalMember | undefined | null;
   let anotherItem: Item | null;
-  let member: Member | null;
+  let member: MinimalMember | null;
 
   beforeAll(async () => {
     ({ app } = await build({ member: null }));

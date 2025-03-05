@@ -6,16 +6,14 @@ import { FolderItemFactory, ItemType, ItemVisibilityType } from '@graasp/sdk';
 
 import build, { MOCK_LOGGER, clearDatabase, mockAuthenticate } from '../../../test/app';
 import { seedFromJson } from '../../../test/mocks/seed';
+import { MinimalMember } from '../../types';
 import { assertIsDefined } from '../../utils/assertions';
-import { buildRepositories } from '../../utils/repositories';
+import { assertIsMember } from '../authentication';
 import * as authorization from '../authorization';
-import { Actor, assertIsMember } from '../member/entities/member';
 import { saveMember } from '../member/test/fixtures/members';
 import { ThumbnailService } from '../thumbnail/service';
-import { FolderItem } from './entities/Item';
-import { ItemVisibility } from './plugins/itemVisibility/ItemVisibility';
+import { FolderItem } from './discrimination';
 import { ItemVisibilityRepository } from './plugins/itemVisibility/repository';
-import { ItemPublished } from './plugins/publication/published/entities/itemPublished';
 import { MeiliSearchWrapper } from './plugins/publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from './plugins/thumbnail/service';
 import { ItemService } from './service';
@@ -55,31 +53,28 @@ describe('Item Service', () => {
     it('return item if exists and pass validation', async () => {
       const actor = { id: v4() } as Actor;
       const item = FolderItemFactory() as unknown as FolderItem;
-      const repositories = buildRepositories();
       jest.spyOn(repositories.itemRepository, 'getOneOrThrow').mockResolvedValue(item);
       jest
         .spyOn(authorization, 'validatePermission')
         .mockResolvedValue({ itemMembership: null, visibilities: [] });
 
-      const result = await service.get(actor, repositories, item.id);
+      const result = await service.get(app.db, actor, item.id);
       expect(result).toEqual(item);
     });
     it('throw if item does not exists', async () => {
-      const actor = { id: v4() } as Actor;
+      const actor = { id: v4() };
       const item = FolderItemFactory() as unknown as FolderItem;
-      const repositories = buildRepositories();
       jest.spyOn(repositories.itemRepository, 'getOneOrThrow').mockRejectedValue(new Error());
 
-      await expect(() => service.get(actor, repositories, item.id)).rejects.toThrow();
+      await expect(() => service.get(app.db, actor, item.id)).rejects.toThrow();
     });
     it('throw if validation does not pass', async () => {
-      const actor = { id: v4() } as Actor;
+      const actor = { id: v4() } as MinimalMember;
       const item = FolderItemFactory() as unknown as FolderItem;
-      const repositories = buildRepositories();
       jest.spyOn(repositories.itemRepository, 'getOneOrThrow').mockResolvedValue(item);
       jest.spyOn(authorization, 'validatePermission').mockRejectedValue(new Error());
 
-      await expect(() => service.get(actor, repositories, item.id)).rejects.toThrow();
+      await expect(() => service.get(app.db, actor, item.id)).rejects.toThrow();
     });
   });
   describe('Copy', () => {
@@ -97,7 +92,7 @@ describe('Item Service', () => {
         .spyOn(authorization, 'validatePermission')
         .mockResolvedValue({ itemMembership, visibilities: [iv] });
 
-      await service.copy(actor, buildRepositories(), item.id);
+      await service.copy(app.db, actor, item.id);
       expect(visibilityCopyAllMock).toHaveBeenCalled();
     });
     it('Should copy thumbnails on item copy if original has thumbnails', async () => {
@@ -109,7 +104,7 @@ describe('Item Service', () => {
       jest
         .spyOn(authorization, 'validatePermission')
         .mockResolvedValue({ itemMembership: null, visibilities: [] });
-      await service.copy(actor, buildRepositories(), item.id);
+      await service.copy(app.db, actor, item.id);
       expect(mockedThumbnailService.copyFolder).toHaveBeenCalled();
     });
     it('Should not copy thumbnails on item copy if original has no thumbnails', async () => {
@@ -121,7 +116,7 @@ describe('Item Service', () => {
       jest
         .spyOn(authorization, 'validatePermission')
         .mockResolvedValue({ itemMembership: null, visibilities: [] });
-      await service.copy(buildRepositories(), item.id);
+      await service.copy(app.db, item.id);
       expect(mockedThumbnailService.copyFolder).not.toHaveBeenCalled();
     });
 
@@ -149,8 +144,9 @@ describe('Item Service', () => {
         .mockResolvedValue({ itemMembership, visibilities: [iv] });
 
       await service.copy(
+        app.db,
         actor,
-        buildRepositories(),
+
         unpublishedItem.id,
         publishedFolder as FolderItem,
       );
@@ -171,7 +167,6 @@ describe('Item Service', () => {
       mockAuthenticate(actor);
       assertIsDefined(actor);
       assertIsMember(actor);
-      const repositories = buildRepositories();
 
       // WHEN
       jest.spyOn(repositories.itemRepository, 'checkHierarchyDepth').mockImplementation(() => {
@@ -180,7 +175,7 @@ describe('Item Service', () => {
 
       // SHOULD
       await expect(() =>
-        service.post(actor, repositories, {
+        service.post(app.db, actor, {
           parentId: item.id,
           item: { name: 'item', type: ItemType.FOLDER },
         }),

@@ -8,7 +8,6 @@ import {
   Task,
   TaskStatus,
 } from 'meilisearch';
-import { DataSource, EntityManager } from 'typeorm';
 import { v4 } from 'uuid';
 
 import {
@@ -21,17 +20,18 @@ import {
   UUID,
 } from '@graasp/sdk';
 
+import {
+  Item,
+  ItemPublishedWithItem,
+  ItemVisibilityRaw,
+  ItemVisibilityWithItem,
+} from '../../../../../../drizzle/types';
 import { BaseLogger } from '../../../../../../logger';
-import * as repositoriesModule from '../../../../../../utils/repositories';
 import FileService from '../../../../../file/service';
 import { ItemMembershipRepository } from '../../../../../itemMembership/repository';
-import { Tag } from '../../../../../tag/Tag.entity';
-import { Item } from '../../../../entities/Item';
 import { ItemTestUtils } from '../../../../test/fixtures/items';
 import { ItemLikeRepository } from '../../../itemLike/repository';
-import { ItemVisibility } from '../../../itemVisibility/ItemVisibility';
 import { ItemTagRepository } from '../../../tag/ItemTag.repository';
-import { ItemPublished } from '../entities/itemPublished';
 import { MeiliSearchWrapper } from '../plugins/search/meilisearch';
 import { ItemPublishedRepository } from '../repositories/itemPublished';
 
@@ -50,7 +50,7 @@ const mockItemPublished = ({ id, path }: { id: string; path: string }) => {
     } as unknown as Item,
     createdAt: new Date(),
     updatedAt: new Date(),
-  } as unknown as ItemPublished;
+  } as unknown as ItemPublishedWithItem;
 };
 
 describe('MeilisearchWrapper', () => {
@@ -210,7 +210,7 @@ describe('MeilisearchWrapper', () => {
         {
           type: ItemVisibilityType.Hidden,
           item: { id: descendant.id, path: descendant.path } as Item,
-        } as ItemVisibility,
+        } as ItemVisibilityWithItem,
       ]);
 
       const addDocumentSpy = jest.spyOn(mockIndex, 'addDocuments');
@@ -339,7 +339,7 @@ describe('MeilisearchWrapper', () => {
         {
           type: ItemVisibilityType.Hidden,
           item: { id: descendant.id } as unknown as Item,
-        } as ItemVisibility,
+        } as ItemVisibilityRaw,
       ]);
 
       const addDocumentSpy = jest.spyOn(mockIndex, 'addDocuments');
@@ -388,7 +388,7 @@ describe('MeilisearchWrapper', () => {
         {
           type: ItemVisibilityType.Hidden,
           item: { id: descendant.id } as Item,
-        } as ItemVisibility,
+        } as ItemVisibilityRaw,
       ]);
 
       itemLikeRepositoryMock.getCountByItemId.mockResolvedValue(2);

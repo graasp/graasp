@@ -3,7 +3,7 @@ import { v4 } from 'uuid';
 import { EmailFrequency, MemberFactory } from '@graasp/sdk';
 
 import { client, db } from '../../drizzle/db';
-import { Member } from '../../drizzle/schema';
+import { MemberRaw } from '../../drizzle/types';
 import { MemberNotFound } from '../../utils/errors';
 import { MemberRepository } from './repository';
 import { expectMember, saveMember, saveMembers } from './test/fixtures/members';
@@ -11,9 +11,9 @@ import { expectMember, saveMember, saveMembers } from './test/fixtures/members';
 const memberRepository = new MemberRepository();
 
 const expectMembersById = (
-  members: Member[],
+  members: MemberRaw[],
   expectedMembers: {
-    [key: string]: Member;
+    [key: string]: MemberRaw;
   },
 ) => {
   for (const m of members) {

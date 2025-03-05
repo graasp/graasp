@@ -18,13 +18,15 @@ import {
 } from 'drizzle-orm/pg-core';
 import { eq, isNull } from 'drizzle-orm/sql';
 
-import { AccountType, CompleteMember, ItemSettings } from '@graasp/sdk';
+import { AccountType, CompleteMember, ItemSettings, ItemTypeUnion } from '@graasp/sdk';
 
 import { customNumeric, ltree } from './customTypes';
 import {
   accountTypeEnum,
   actionRequestExportFormatEnum,
   chatMentionStatusEnum,
+  itemLoginSchemaStatusEnum,
+  itemLoginSchemaTypeEnum,
   itemVisibilityEnum,
   permissionEnum,
   shortLinkPlatformEnum,
@@ -511,7 +513,6 @@ export const itemValidationReviews = pgTable(
     }).onDelete('set null'),
   ],
 );
-export type ItemValidationReview = typeof itemValidationReviews.$inferInsert;
 
 export const itemBookmarks = pgTable(
   'item_favorite',
@@ -537,7 +538,6 @@ export const itemBookmarks = pgTable(
     unique('favorite_key').on(table.memberId, table.itemId),
   ],
 );
-export type ItemBookmark = typeof itemBookmarks.$inferSelect;
 
 export const memberProfiles = pgTable(
   'member_profile',
@@ -687,7 +687,7 @@ export const itemsRaw = pgTable(
   {
     id: uuid().primaryKey().notNull(),
     name: varchar({ length: 500 }).notNull(),
-    type: varchar().default('folder').notNull(),
+    type: varchar().$type<ItemTypeUnion>().default('folder').notNull(),
     description: varchar({ length: 5000 }),
     path: ltree('path').notNull(),
     creatorId: uuid('creator_id'),
@@ -870,8 +870,7 @@ export const itemLoginSchemas = pgTable(
   'item_login_schema',
   {
     id: uuid().primaryKey().defaultRandom().notNull(),
-    // TODO: change to be an enum of the options
-    type: varchar({ length: 100 }).notNull(),
+    type: itemLoginSchemaTypeEnum().notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
     itemPath: ltree('item_path')
@@ -880,8 +879,7 @@ export const itemLoginSchemas = pgTable(
         onUpdate: 'cascade',
         onDelete: 'cascade',
       }),
-    // TODO: change to be an enum of the possible options
-    status: varchar({ length: 100 }).default('active').notNull(),
+    status: itemLoginSchemaStatusEnum().default('active').notNull(),
   },
   (table) => [unique('item-login-schema').on(table.itemPath)],
 );

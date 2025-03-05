@@ -11,13 +11,11 @@ import build, {
   mockAuthenticate,
   unmockAuthenticate,
 } from '../../../../../../../test/app';
-import { AppDataSource } from '../../../../../../plugins/datasource';
+import { Item } from '../../../../../../drizzle/types';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../../utils/config';
 import { ItemNotFound, MemberCannotAdminItem } from '../../../../../../utils/errors';
 import { saveMember } from '../../../../../member/test/fixtures/members';
-import { Item } from '../../../../entities/Item';
 import { ItemTestUtils } from '../../../../test/fixtures/items';
-import { ItemValidationGroup } from '../entities/ItemValidationGroup';
 import { ItemValidationGroupNotFound } from '../errors';
 import { ItemModeratorValidate, saveItemValidation, stubItemModerator } from './utils';
 

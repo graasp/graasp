@@ -5,8 +5,9 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { ActionTriggers } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../../../di/utils';
+import { db } from '../../../../../../../drizzle/db';
 import { MEILISEARCH_REBUILD_SECRET } from '../../../../../../../utils/config';
-import { ActionService } from '../../../../../../action/services/action.service';
+import { ActionService } from '../../../../../../action/action.service';
 import { optionalIsAuthenticated } from '../../../../../../auth/plugins/passport';
 import { getFacets, getMostLiked, getMostRecent, search } from './schemas';
 import { SearchService } from './service';

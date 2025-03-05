@@ -8,10 +8,10 @@ import {
 } from '@graasp/sdk';
 
 import { MOCK_LOGGER } from '../../../../../test/app';
-import { Repositories } from '../../../../utils/repositories';
-import { Member } from '../../../member/entities/member';
+import { Item } from '../../../../drizzle/types';
+import { MinimalMember } from '../../../../types';
 import { ThumbnailService } from '../../../thumbnail/service';
-import { DocumentItem, Item } from '../../entities/Item';
+import { DocumentItem } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
@@ -28,14 +28,12 @@ const documentService = new DocumentItemService(
 const id = v4();
 const MOCK_ITEM = DocumentItemFactory({ id }) as unknown as DocumentItem;
 
-const MOCK_MEMBER = {} as Member;
-const repositories = {
-  itemRepository: {
-    getOneOrThrow: async () => {
-      return MOCK_ITEM;
-    },
-  } as unknown as ItemRepository,
-} as Repositories;
+const MOCK_MEMBER = {} as MinimalMember;
+const itemRepository = {
+  getOneOrThrow: async () => {
+    return MOCK_ITEM;
+  },
+} as unknown as ItemRepository;
 
 describe('Document Service', () => {
   afterEach(() => {
@@ -50,13 +48,13 @@ describe('Document Service', () => {
           return {} as Item;
         });
 
-      await documentService.postWithOptions(MOCK_MEMBER, repositories, {
+      await documentService.postWithOptions(app.db, MOCK_MEMBER, {
         name: 'name',
         content: 'text',
       });
 
       // call to item service
-      expect(itemServicePostMock).toHaveBeenCalledWith(MOCK_MEMBER, repositories, {
+      expect(itemServicePostMock).toHaveBeenCalledWith(app.db, MOCK_MEMBER, {
         item: {
           name: 'name',
           description: undefined,
@@ -78,13 +76,13 @@ describe('Document Service', () => {
           return {} as Item;
         });
 
-      await documentService.postWithOptions(MOCK_MEMBER, repositories, {
+      await documentService.postWithOptions(app.db, MOCK_MEMBER, {
         name: 'name',
         content: 'mycontent<script>text</script>',
       });
 
       // call to item service
-      expect(itemServicePostMock).toHaveBeenCalledWith(MOCK_MEMBER, repositories, {
+      expect(itemServicePostMock).toHaveBeenCalledWith(app.db, MOCK_MEMBER, {
         item: {
           name: 'name',
           description: undefined,
@@ -117,10 +115,10 @@ describe('Document Service', () => {
         geolocation: { lat: 1, lng: 1 },
         previousItemId: v4(),
       };
-      await documentService.postWithOptions(MOCK_MEMBER, repositories, args);
+      await documentService.postWithOptions(app.db, MOCK_MEMBER, args);
 
       // call to item service
-      expect(itemServicePostMock).toHaveBeenCalledWith(MOCK_MEMBER, repositories, {
+      expect(itemServicePostMock).toHaveBeenCalledWith(app.db, MOCK_MEMBER, {
         item: {
           name: args.name,
           description: args.description,
@@ -144,18 +142,7 @@ describe('Document Service', () => {
     it('throw if item is not a document', async () => {
       const FOLDER_ITEM = FolderItemFactory();
       await expect(() =>
-        documentService.patchWithOptions(
-          MOCK_MEMBER,
-          {
-            itemRepository: {
-              getOneOrThrow: async () => {
-                return FOLDER_ITEM;
-              },
-            } as unknown as ItemRepository,
-          } as Repositories,
-          FOLDER_ITEM.id,
-          { name: 'name' },
-        ),
+        documentService.patchWithOptions(app.db, MOCK_MEMBER, FOLDER_ITEM.id, { name: 'name' }),
       ).rejects.toBeInstanceOf(WrongItemTypeError);
     });
     it('sanitize content', async () => {
@@ -170,10 +157,10 @@ describe('Document Service', () => {
       const args = {
         content: 'mycontent<script>script</script>',
       };
-      await documentService.patchWithOptions(MOCK_MEMBER, repositories, MOCK_ITEM.id, args);
+      await documentService.patchWithOptions(app.db, MOCK_MEMBER, MOCK_ITEM.id, args);
 
       // call to item service with initial item name
-      expect(itemServicePatchMock).toHaveBeenCalledWith(MOCK_MEMBER, repositories, MOCK_ITEM.id, {
+      expect(itemServicePatchMock).toHaveBeenCalledWith(app.db, MOCK_MEMBER, MOCK_ITEM.id, {
         name: MOCK_ITEM.name,
         type: ItemType.DOCUMENT,
         extra: {
@@ -201,10 +188,10 @@ describe('Document Service', () => {
         isRaw: true,
         flavor: DocumentItemExtraFlavor.Error,
       };
-      await documentService.patchWithOptions(MOCK_MEMBER, repositories, MOCK_ITEM.id, args);
+      await documentService.patchWithOptions(app.db, MOCK_MEMBER, MOCK_ITEM.id, args);
 
       // call to item service with initial item name
-      expect(itemServicePatchMock).toHaveBeenCalledWith(MOCK_MEMBER, repositories, MOCK_ITEM.id, {
+      expect(itemServicePatchMock).toHaveBeenCalledWith(app.db, MOCK_MEMBER, MOCK_ITEM.id, {
         name: args.name,
         type: ItemType.DOCUMENT,
         description: args.description,
@@ -220,12 +207,12 @@ describe('Document Service', () => {
     });
 
     it('Cannot update not found item given id', async () => {
-      jest.spyOn(repositories.itemRepository, 'getOneOrThrow').mockImplementation(() => {
+      jest.spyOn(itemRepository, 'getOneOrThrow').mockImplementation(() => {
         throw new Error();
       });
 
       await expect(() =>
-        documentService.patchWithOptions(MOCK_MEMBER, repositories, v4(), { name: 'name' }),
+        documentService.patchWithOptions(app.db, MOCK_MEMBER, v4(), { name: 'name' }),
       ).rejects.toThrow();
     });
   });

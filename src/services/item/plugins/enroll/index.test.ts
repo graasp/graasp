@@ -10,8 +10,7 @@ import build, {
   mockAuthenticate,
   unmockAuthenticate,
 } from '../../../../../test/app';
-import { buildRepositories } from '../../../../utils/repositories';
-import { Item } from '../../../item/entities/Item';
+import { AccountRaw, Item } from '../../../../drizzle/types';
 import { ItemTestUtils } from '../../../item/test/fixtures/items';
 import {
   CannotEnrollFrozenItemLoginSchema,
@@ -19,15 +18,14 @@ import {
 } from '../../../itemLogin/errors';
 import { saveItemLoginSchema } from '../../../itemLogin/test/index.test';
 import { expectMembership } from '../../../itemMembership/test/fixtures/memberships';
-import { Member } from '../../../member/entities/member';
 import { saveMember } from '../../../member/test/fixtures/members';
 
 const testUtils = new ItemTestUtils();
 
 describe('Enroll', () => {
   let app: FastifyInstance;
-  let member: Member;
-  let creator: Member;
+  let member: AccountRaw;
+  let creator: AccountRaw;
   let item: Item;
 
   beforeAll(async () => {
@@ -137,7 +135,6 @@ describe('Enroll', () => {
       expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
     });
     it('accepts when authenticated as the creator when there is no membership', async () => {
-      const { itemMembershipRepository } = buildRepositories();
       await itemMembershipRepository.deleteManyByItemPathAndAccount([
         { itemPath: item.path, accountId: creator.id },
       ]);

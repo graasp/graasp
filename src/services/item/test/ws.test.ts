@@ -4,9 +4,10 @@ import waitForExpect from 'wait-for-expect';
 import { HttpMethod, ItemOpFeedbackEvent as ItemOpFeedbackEventType } from '@graasp/sdk';
 
 import { clearDatabase } from '../../../../test/app';
+import { Item } from '../../../drizzle/types';
 import { TestWsClient } from '../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../websockets/test/ws-app';
-import { FolderItem, Item } from '../entities/Item';
+import { FolderItem } from '../discrimination';
 import {
   expectCopyFeedbackOp,
   expectDeleteFeedbackOp,
@@ -163,7 +164,7 @@ describe('Item websocket hooks', () => {
 
       let copied;
       await waitForExpect(async () => {
-        [copied] = await testUtils.itemRepository.getDescendants(newParent as FolderItem);
+        [copied] = await testUtils.itemRepository.getDescendants(app.db, newParent as FolderItem);
         expect(copied).toBeDefined();
       });
 

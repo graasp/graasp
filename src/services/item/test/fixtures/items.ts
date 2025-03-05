@@ -1,5 +1,3 @@
-import { Repository } from 'typeorm';
-
 import {
   AppItemFactory,
   DocumentItemFactory,
@@ -17,17 +15,13 @@ import {
   buildPathFromIds,
 } from '@graasp/sdk';
 
-import { Item, Member } from '../../../../drizzle/schema';
-import { AppDataSource } from '../../../../plugins/datasource';
-import { Guest } from '../../../itemLogin/entities/guest';
-import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
+import { Item, ItemMembershipRaw, ItemVisibilityRaw } from '../../../../drizzle/types';
+import { AuthenticatedUser, MinimalMember } from '../../../../types';
+import { isMember } from '../../../authentication';
 import { saveMember } from '../../../member/test/fixtures/members';
 import { ItemWrapper, PackedItem } from '../../ItemWrapper';
-import { DEFAULT_ORDER, ItemExtraMap } from '../../entities/Item';
-import { ItemVisibility } from '../../plugins/itemVisibility/ItemVisibility';
 import { ItemVisibilityRepository } from '../../plugins/itemVisibility/repository';
 import { setItemPublic } from '../../plugins/itemVisibility/test/fixtures';
-import { ItemPublished } from '../../plugins/publication/published/entities/itemPublished';
 import { RecycledItemDataRepository } from '../../plugins/recycled/repository';
 import { ItemRepository } from '../../repository';
 
@@ -51,7 +45,7 @@ export class ItemTestUtils {
   createItem(
     args?: Partial<Item> & {
       parentItem?: Item;
-      creator?: Member | null;
+      creator?: MinimalMember | null;
     },
   ): Item {
     let item;
@@ -107,7 +101,7 @@ export class ItemTestUtils {
     parentItem,
   }: {
     parentItem?: Item;
-    actor?: Member | null;
+    actor?: MinimalMember | null;
     item?: Partial<Item>;
   }) {
     const value = this.createItem({ ...item, creator: actor, parentItem });
@@ -120,7 +114,7 @@ export class ItemTestUtils {
     member,
   }: {
     parentItem?: Item;
-    member?: Member | null;
+    member?: MinimalMember | null;
     item?: Partial<Item>;
   }) => {
     const value = this.createItem({ ...item, creator: member, parentItem });
@@ -140,7 +134,7 @@ export class ItemTestUtils {
   }: {
     nb: number;
     parentItem: Item;
-    member?: Member | null;
+    member?: MinimalMember | null;
   }) => {
     for (let i = 0; i < nb; i++) {
       await this.saveItem({ actor: member, parentItem });
@@ -153,7 +147,7 @@ export class ItemTestUtils {
     permission = PermissionLevel.Admin,
   }: {
     item: Item;
-    account: Member | Guest;
+    account: AuthenticatedUser;
     permission?: PermissionLevel;
   }) => {
     return await itemMembershipRawRepository.save({
@@ -164,14 +158,14 @@ export class ItemTestUtils {
   };
 
   saveItemAndMembership = async (options: {
-    member?: Member | Guest;
+    member?: AuthenticatedUser;
     item?: Partial<Item>;
     permission?: PermissionLevel;
-    creator?: Member;
+    creator?: MinimalMember;
     parentItem?: Item;
   }): Promise<{
     item: Item;
-    itemMembership: ItemMembership;
+    itemMembership: ItemMembershipRaw;
     packedItem: PackedItem;
   }> => {
     const { item, permission, creator = null, parentItem, member } = options;
@@ -198,12 +192,12 @@ export class ItemTestUtils {
     };
   };
 
-  saveRecycledItem = async (member: Member, defaultItem?: Item) => {
+  saveRecycledItem = async (member: MinimalMember, defaultItem?: Item) => {
     let item = defaultItem;
     if (!item) {
       ({ item } = await this.saveItemAndMembership({ member }));
     }
-    await this.recycledItemDataRepository.addOne({
+    await this.recycledItemDataRepository.addOne(app.db, {
       itemPath: item.path,
       creatorId: member.id,
     });
@@ -211,10 +205,10 @@ export class ItemTestUtils {
     return { item };
   };
 
-  saveCollections = async (member: Member) => {
+  saveCollections = async (member: MinimalMember) => {
     const items: Item[] = [];
     const packedItems: PackedItem[] = [];
-    const visibilities: ItemVisibility[] = [];
+    const visibilities: ItemVisibilityRaw[] = [];
     for (let i = 0; i < 3; i++) {
       const { item, itemMembership } = await this.saveItemAndMembership({
         member,
@@ -268,7 +262,7 @@ export class ItemTestUtils {
 export const expectItem = (
   newItem: Partial<Item> | undefined | null,
   correctItem: Partial<Omit<Item, 'createdAt' | 'updatedAt' | 'creator'>> | undefined | null,
-  creator?: Member,
+  creator?: MinimalMember,
   parent?: Item,
 ) => {
   if (!newItem || !newItem.id) {
@@ -307,9 +301,9 @@ export const expectPackedItem = (
         Pick<PackedItem, 'permission'>)
     | undefined
     | null,
-  creator?: Member,
+  creator?: MinimalMember,
   parent?: Item,
-  visibilities?: ItemVisibility[],
+  visibilities?: ItemVisibilityRaw[],
 ) => {
   expectItem(newItem, correctItem, creator, parent);
 
@@ -334,7 +328,7 @@ export const expectManyItems = (
   correctItems: Partial<
     Pick<Item, 'id' | 'name' | 'description' | 'type' | 'extra' | 'settings'>
   >[],
-  creator?: Member,
+  creator?: MinimalMember,
   parent?: Item,
 ) => {
   expect(items).toHaveLength(correctItems.length);
@@ -352,9 +346,9 @@ export const expectManyPackedItems = (
     Pick<PackedItem, 'id' | 'name' | 'description' | 'type' | 'extra' | 'settings'>
   > &
     Pick<PackedItem, 'permission'>)[],
-  creator?: Member,
+  creator?: MinimalMember,
   parent?: Item,
-  visibilities?: ItemVisibility[],
+  visibilities?: ItemVisibilityRaw[],
 ) => {
   expect(items).toHaveLength(correctItems.length);
 

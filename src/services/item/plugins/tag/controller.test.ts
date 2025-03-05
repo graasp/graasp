@@ -10,19 +10,16 @@ import build, {
   mockAuthenticate,
   unmockAuthenticate,
 } from '../../../../../test/app';
-import { AppDataSource } from '../../../../plugins/datasource';
+import { Item, ItemTagRaw, TagRaw } from '../../../../drizzle/types';
 import { saveMember } from '../../../member/test/fixtures/members';
-import { Tag } from '../../../tag/Tag.entity';
-import { Item } from '../../entities/Item';
 import { ItemTestUtils } from '../../test/fixtures/items';
-import { ItemTag } from './ItemTag.entity';
 
 const testUtils = new ItemTestUtils();
 const tagRawRepository = AppDataSource.getRepository(Tag);
 const itemTagRawRepository = AppDataSource.getRepository(ItemTag);
 
-const createTagsForItem = async (item: Item, tags: Tag[]): Promise<ItemTag[]> => {
-  const itemTags: ItemTag[] = [];
+const createTagsForItem = async (item: Item, tags: TagRaw[]): Promise<ItemTagRaw[]> => {
+  const itemTags: ItemTagRaw[] = [];
   for (const t of tags) {
     itemTags.push(await itemTagRawRepository.save({ item, tag: t }));
   }
@@ -32,7 +29,7 @@ const createTagsForItem = async (item: Item, tags: Tag[]): Promise<ItemTag[]> =>
 describe('Item Tag Endpoints', () => {
   let app: FastifyInstance;
   let actor;
-  let tags: Tag[];
+  let tags: TagRaw[];
 
   beforeAll(async () => {
     ({ app } = await build({ member: null }));

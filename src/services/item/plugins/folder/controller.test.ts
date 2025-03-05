@@ -24,19 +24,16 @@ import build, {
 } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { resolveDependency } from '../../../../di/utils';
-import { AppDataSource } from '../../../../plugins/datasource';
 import { assertIsDefined } from '../../../../utils/assertions';
 import {
   MemberCannotAccess,
   MemberCannotWriteItem,
   TooManyChildren,
 } from '../../../../utils/errors';
-import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
-import { assertIsMember } from '../../../member/entities/member';
+import { assertIsMember } from '../../../authentication';
 import { WrongItemTypeError } from '../../errors';
 import { ItemTestUtils, expectItem } from '../../test/fixtures/items';
-import { ActionItemService } from '../action/service';
-import { ItemGeolocation } from '../geolocation/ItemGeolocation';
+import { ActionItemService } from '../action/action.service';
 import { FolderItemService } from './service';
 
 const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
@@ -144,7 +141,7 @@ describe('Folder routes tests', () => {
         await waitForPostCreation();
 
         // check item exists in db
-        const item = await testUtils.itemRepository.getOne(newItem.id);
+        const item = await testUtils.itemRepository.getOne(app.db, newItem.id);
         expect(item?.id).toEqual(newItem.id);
 
         // a membership is created for this item

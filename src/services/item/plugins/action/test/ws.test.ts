@@ -6,9 +6,9 @@ import { FastifyInstance } from 'fastify';
 import { HttpMethod, ItemOpFeedbackEvent as ItemOpFeedbackEventType } from '@graasp/sdk';
 
 import { clearDatabase } from '../../../../../../test/app';
+import { Item } from '../../../../../drizzle/types';
 import { TestWsClient } from '../../../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../../../websockets/test/ws-app';
-import { Item } from '../../../entities/Item';
 import { ItemTestUtils } from '../../../test/fixtures/items';
 import {
   ItemOpFeedbackErrorEvent,

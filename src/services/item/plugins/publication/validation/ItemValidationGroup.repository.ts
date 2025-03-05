@@ -1,9 +1,9 @@
 import { desc, eq } from 'drizzle-orm';
 import { singleton } from 'tsyringe';
 
-import { DBConnection } from '../../../../../../drizzle/db';
-import { type ItemValidationGroup, itemValidationGroups } from '../../../../../../drizzle/schema';
-import { ItemValidationGroupNotFound } from '../errors';
+import { DBConnection } from '../../../../../drizzle/db';
+import { type ItemValidationGroup, itemValidationGroups } from '../../../../../drizzle/schema';
+import { ItemValidationGroupNotFound } from './errors';
 
 @singleton()
 export class ItemValidationGroupRepository {

@@ -3,7 +3,6 @@ import fs from 'fs';
 import { StatusCodes } from 'http-status-codes';
 import fetch from 'node-fetch';
 import path from 'path';
-import { In } from 'typeorm';
 import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
@@ -16,15 +15,12 @@ import build, {
   unmockAuthenticate,
 } from '../../../../../../test/app';
 import { resolveDependency } from '../../../../../di/utils';
-import { AppDataSource } from '../../../../../plugins/datasource';
+import { InvitationRaw } from '../../../../../drizzle/types';
 import { MailerService } from '../../../../../plugins/mailer/mailer.service';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { MOCK_CAPTCHA } from '../../../../auth/plugins/captcha/test/utils';
-import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
-import { Member } from '../../../../member/entities/member';
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemTestUtils } from '../../../test/fixtures/items';
-import { Invitation } from '../entity';
 import { MissingGroupColumnInCSVError } from '../errors';
 import { createInvitations, saveInvitations } from './utils';
 
@@ -56,7 +52,7 @@ const mockEmail = () => {
   });
 };
 
-const expectInvitations = (invitations: Invitation[], correctInvitations: Invitation[]) => {
+const expectInvitations = (invitations: InvitationRaw[], correctInvitations: InvitationRaw[]) => {
   expect(invitations).toHaveLength(correctInvitations.length);
   for (const inv of invitations) {
     const correctInv = correctInvitations.find(({ id }) => id === inv.id);

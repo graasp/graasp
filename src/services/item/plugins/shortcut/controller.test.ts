@@ -12,14 +12,12 @@ import build, {
   unmockAuthenticate,
 } from '../../../../../test/app';
 import { resolveDependency } from '../../../../di/utils';
-import { AppDataSource } from '../../../../plugins/datasource';
+import { Item } from '../../../../drizzle/types';
 import { MemberCannotAccess, MemberCannotWriteItem } from '../../../../utils/errors';
-import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
 import { saveMember } from '../../../member/test/fixtures/members';
-import { Item } from '../../entities/Item';
 import { ItemService } from '../../service';
 import { ItemTestUtils, expectItem } from '../../test/fixtures/items';
-import { ActionItemService } from '../action/service';
+import { ActionItemService } from '../action/action.service';
 
 const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
 const testUtils = new ItemTestUtils();
@@ -92,7 +90,7 @@ describe('Shortcut routes tests', () => {
         await waitForPostCreation();
 
         // check item exists in db
-        const item = await testUtils.itemRepository.getOne(newItem.id);
+        const item = await testUtils.itemRepository.getOne(app.db, newItem.id);
         expect(item?.id).toEqual(newItem.id);
 
         // a membership is created for this item

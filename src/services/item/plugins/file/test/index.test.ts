@@ -1,9 +1,9 @@
 import { NotFound } from '@aws-sdk/client-s3';
+import { inArray } from 'drizzle-orm';
 import FormData from 'form-data';
 import fs from 'fs';
 import { StatusCodes } from 'http-status-codes';
 import path from 'path';
-import { In } from 'typeorm';
 
 import { FastifyInstance } from 'fastify';
 
@@ -15,7 +15,8 @@ import build, {
   unmockAuthenticate,
 } from '../../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants';
-import { AppDataSource } from '../../../../../plugins/datasource';
+import { db } from '../../../../../drizzle/db';
+import { Item } from '../../../../../drizzle/types';
 import {
   FILE_ITEM_TYPE,
   ITEMS_ROUTE_PREFIX,
@@ -30,10 +31,8 @@ import {
   UploadFileUnexpectedError,
 } from '../../../../file/utils/errors';
 import { ItemTestUtils, expectItem, expectManyItems } from '../../../../item/test/fixtures/items';
-import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { ThumbnailSizeFormat } from '../../../../thumbnail/constants';
-import { Item } from '../../../entities/Item';
 import { setItemPublic } from '../../itemVisibility/test/fixtures';
 import { DEFAULT_MAX_STORAGE } from '../utils/constants';
 import { StorageExceeded } from '../utils/errors';
@@ -198,8 +197,11 @@ describe('File Item routes tests', () => {
           expect(response.statusCode).toBe(StatusCodes.OK);
 
           // check item exists in db
-          const newItems = await testUtils.rawItemRepository.findBy({
-            id: In(items.map(({ id }) => id)),
+          const newItems = await db.query.itemsRaw.findMany({
+            where: inArray(
+              itemsRaw.id,
+              items.map(({ id }) => id),
+            ),
           });
           expectManyItems(items, newItems);
 
@@ -214,8 +216,11 @@ describe('File Item routes tests', () => {
             expect(item?.extra[FILE_ITEM_TYPE]).toBeTruthy();
           }
           // a membership is created for this item
-          const memberships = await itemMembershipRawRepository.findBy({
-            item: { id: In(items.map((i) => i.id)) },
+          const memberships = await db.query.itemMemberships.findBy({
+            where: inArray(
+              itemMemberships.itemPath,
+              items.map(({ path }) => path),
+            ),
           });
           for (const m of memberships) {
             expect(m?.permission).toEqual(PermissionLevel.Admin);

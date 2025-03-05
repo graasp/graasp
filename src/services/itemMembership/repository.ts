@@ -1,19 +1,31 @@
-import { inArray, isNotNull, ne } from 'drizzle-orm';
-import { and, eq, sql } from 'drizzle-orm/sql';
+import { SQL, asc, getTableColumns, inArray, isNull, ne, notInArray } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
+import { and, desc, eq, ilike, sql } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
-import { PermissionLevel, PermissionLevelCompare, getChildFromPath } from '@graasp/sdk';
+import {
+  PermissionLevel,
+  PermissionLevelCompare,
+  ResultOf,
+  UUID,
+  getChildFromPath,
+} from '@graasp/sdk';
 
-import { DBConnection } from '../../drizzle/db';
+import { DBConnection, db } from '../../drizzle/db';
 import { isAncestorOrSelf, isDescendantOrSelf } from '../../drizzle/operations';
-import { itemMemberships as itemMembershipTable, items } from '../../drizzle/schema';
+import {
+  accountsTable,
+  itemMemberships as itemMembershipTable,
+  items,
+  itemsRaw,
+} from '../../drizzle/schema';
 import {
   Item,
   ItemMembershipRaw,
   ItemMembershipWithItem,
   ItemMembershipWithItemAndAccount,
 } from '../../drizzle/types';
-import { AuthenticatedUser } from '../../types';
+import { AuthenticatedUser, MinimalMember } from '../../types';
 import {
   InvalidMembership,
   InvalidPermissionLevel,
@@ -390,32 +402,51 @@ export class ItemMembershipRepository {
     actor: AuthenticatedUser,
     { startWith }: { startWith?: string },
   ): Promise<string[]> {
-    let query = this.repository
-      .createQueryBuilder('im')
-      .select('item.name')
-      .leftJoin('im.item', 'item')
-      .leftJoin('item.creator', 'creator')
-      .where('im.account_id = :actorId', { actorId: actor.id })
-      // returns only top most item
-      .andWhere((qb) => {
-        const subQuery = qb
-          .subQuery()
-          .from(ItemMembership, 'im1')
-          .select('im1.item.path')
-          .where('im.item_path <@ im1.item_path')
-          .andWhere('im1.account_id = :actorId', { actorId: actor.id })
-          .orderBy('im1.item_path', 'ASC')
-          .limit(1);
-        return 'item.path =' + subQuery.getQuery();
-      });
+    const im = alias(itemMembershipTable, 'im');
+    const im1 = alias(itemMembershipTable, 'im1');
+
+    const andConditions = [
+      eq(im.accountId, actor.id),
+      eq(
+        items.path,
+        db
+          .select({ itemPath: im1.itemPath })
+          .from(im1)
+          .where(and(isDescendantOrSelf(im.itemPath, im1.itemPath), eq(im1.accountId, actor.id)))
+          .orderBy(asc(im1.itemPath))
+          .limit(1),
+      ),
+    ];
 
     if (startWith) {
-      query = query.andWhere('item.name ILIKE :startWith', {
-        startWith: `${startWith}%`,
-      });
+      andConditions.push(ilike(items.name, `${startWith}%`));
     }
-    const raw = await query.getRawMany();
-    return raw.map(({ item_name }) => item_name);
+
+    // TODO: does this work?
+    const result = await db
+      .select({ name: items.name })
+      .from(im)
+      .innerJoin(items, eq(im.itemPath, items.path))
+      .innerJoin(accountsTable, eq(items.creatorId, accountsTable.id))
+      .where(and(...andConditions));
+
+    // .select('item.name')
+    // .leftJoin('im.item', 'item')
+    // .leftJoin('item.creator', 'creator')
+    // .where('im.account_id = :actorId', { actorId: actor.id })
+    // returns only top most item
+    // .andWhere((qb) => {
+    //   const subQuery = qb;
+    // .subQuery()
+    // .from(ItemMembership, 'im1')
+    // .select('im1.item.path')
+    // .where('im.item_path <@ im1.item_path')
+    // .andWhere('im1.account_id = :actorId', { actorId: actor.id })
+    // .orderBy('im1.item_path', 'ASC')
+    // .limit(1);
+    // return 'item.path =' + subQuery.getQuery();
+    // });
+    return result.map(({ name }) => name);
   }
 
   async getForManyItems(
@@ -425,34 +456,38 @@ export class ItemMembershipRepository {
       accountId = undefined,
       withDeleted = false,
     }: { accountId?: UUID; withDeleted?: boolean } = {},
-  ): Promise<ResultOf<ItemMembership[]>> {
+  ): Promise<ResultOf<ItemMembershipWithItemAndAccount[]>> {
     if (items.length === 0) {
       return { data: {}, errors: [] };
     }
 
     const ids = items.map((i) => i.id);
-    const query = this.repository.createQueryBuilder('item_membership');
 
-    if (withDeleted) {
-      query.withDeleted();
+    const andConditions: SQL[] = [inArray(itemsRaw.id, ids)];
+
+    if (!withDeleted) {
+      andConditions.push(isNull(itemsRaw.deletedAt));
     }
 
-    query
-      .innerJoin('item', 'descendant', 'item_membership.item_path @> descendant.path')
-      .where('descendant.id in (:...ids)', { ids });
     if (accountId) {
-      query.andWhere('account.id = :accountId', { accountId });
+      andConditions.push(eq(itemMembershipTable.accountId, accountId));
     }
 
-    query
-      .leftJoinAndSelect('item_membership.item', 'item')
-      .leftJoinAndSelect('item_membership.account', 'account');
-
-    const memberships = await query.getMany();
+    const memberships = await db
+      .select()
+      .from(itemMembershipTable)
+      .innerJoin(accountsTable, eq(itemMembershipTable.accountId, accountsTable.id))
+      .innerJoin(itemsRaw, isAncestorOrSelf(itemMembershipTable.itemPath, itemsRaw.path))
+      .where(and(...andConditions));
+    const mappedMemberships = memberships.map(({ item, account, item_membership }) => ({
+      item,
+      account,
+      ...item_membership,
+    }));
 
     const mapByPath = mapById({
       keys: items.map(({ path }) => path),
-      findElement: (path) => memberships.filter(({ item }) => path.includes(item.path)),
+      findElement: (path) => mappedMemberships.filter(({ item }) => path.includes(item.path)),
       buildError: (path) => new ItemMembershipNotFound({ path }),
     });
 
@@ -466,48 +501,66 @@ export class ItemMembershipRepository {
 
   async getInheritedMany(
     db: DBConnection,
-    items: Item[],
+    inputItems: Item[],
     accountId: AccountId,
     considerLocal = false,
-  ): Promise<ResultOf<ItemMembership>> {
-    if (items.length === 0) {
+  ): Promise<ResultOf<ItemMembershipWithItemAndAccount[]>> {
+    if (inputItems.length === 0) {
       return { data: {}, errors: [] };
     }
 
-    const ids = items.map((i) => i.id);
+    const ids = inputItems.map((i) => i.id);
 
-    const query = this.repository
-      .createQueryBuilder('item_membership')
-      // Map each membership to the item it can affect
-      .innerJoin('item', 'descendant', 'item_membership.item_path @> descendant.path')
-      // Join for entity result
-      .leftJoinAndSelect('item_membership.account', 'account')
-      .leftJoinAndSelect('item_membership.item', 'item')
-      // Only from input
-      .where('descendant.id in (:...ids)', { ids: ids })
-      .andWhere('item_membership.account = :id', { id: accountId });
+    const andConditions = [
+      isNull(itemsRaw.deletedAt),
+      eq(itemMembershipTable.accountId, accountId),
+    ];
+
     if (!considerLocal) {
-      query.andWhere('item.id not in (:...ids)', { ids: ids });
+      andConditions.push(notInArray(itemsRaw.id, ids));
     }
+
+    const memberships = await db
+      .select({
+        ...getTableColumns(itemMembershipTable),
+        item: getTableColumns(itemsRaw),
+        account: getTableColumns(accountsTable),
+        // Keep only closest membership per descendant
+        descendantId: itemsRaw.id,
+      })
+      .from(itemMembershipTable)
+      .innerJoin(accountsTable, eq(itemMembershipTable.accountId, accountsTable.id))
+      // Map each membership to the item it can affect
+      .innerJoin(itemsRaw, isAncestorOrSelf(itemMembershipTable.itemPath, itemsRaw.path))
+      .where(and(...andConditions))
+      // Keep only closest membership per descendant
+      .orderBy(() => [asc(sql`descendant.id`), desc(sql`nlevel(${itemMembershipTable.itemPath})`)]);
+
+    // const query = this.repository
+    // .createQueryBuilder('item_membership')
+    // Map each membership to the item it can affect
+    // .innerJoin('item', 'descendant', 'item_membership.item_path @> descendant.path')
+    // Join for entity result
+    // .leftJoinAndSelect('item_membership.account', 'account')
+    // .leftJoinAndSelect('item_membership.item', 'item')
+    // Only from input
+    // .where('descendant.id in (:...ids)', { ids: ids })
+    // .andWhere('item_membership.account = :id', { id: accountId });
+
     // Keep only closest membership per descendant
-    query
-      .addSelect('descendant.id')
-      .distinctOn(['descendant.id'])
-      .orderBy('descendant.id')
-      .addOrderBy('nlevel(item_membership.item_path)', 'DESC');
+    // query.addSelect('descendant.id').distinctOn(['descendant.id']);
+    // .orderBy('descendant.id')
+    // .addOrderBy('nlevel(item_membership.item_path)', 'DESC');
 
-    // annoyingly, getMany removes duplicate entities, however in this case two items might be linked to the same effective membership
-    const memberships = await query.getRawAndEntities();
-
-    // map entities by id to avoid iterating on the result multiple times
-    const entityMap = new Map(memberships.entities.map((e) => [e.id, e]));
-    const itemIdToMemberships = new Map(
-      memberships.raw.map((e) => [e.descendant_id, entityMap.get(e.item_membership_id)]),
-    ); // unfortunately we lose type safety because of the raw
+    // // map entities by id to avoid iterating on the result multiple times
+    // const entityMap = new Map(memberships.entities.map((e) => [e.id, e]));
+    // const itemIdToMemberships = new Map(
+    //   memberships.raw.map((e) => [e.descendant_id, entityMap.get(e.item_membership_id)]),
+    // ); // unfortunately we lose type safety because of the raw
 
     const result = mapById({
       keys: ids,
-      findElement: (id) => itemIdToMemberships.get(id),
+      findElement: (id) => memberships.filter(({ descendantId }) => descendantId === id),
       buildError: (id) => new ItemMembershipNotFound({ id }),
     });
 
@@ -520,30 +573,47 @@ export class ItemMembershipRepository {
     itemPath: ItemPath,
     accountId: AccountId,
     considerLocal = false,
-  ): Promise<ItemMembership | null> {
-    const query = this.repository
-      .createQueryBuilder('item_membership')
-      .leftJoinAndSelect('item_membership.item', 'item')
-      .leftJoinAndSelect('item_membership.account', 'account')
-      .where('item_membership.account = :id', { id: accountId })
-      .andWhere('item_membership.item_path @> :path', { path: itemPath });
+  ): Promise<ItemMembershipWithItemAndAccount | null> {
+    const andConditions = [eq(itemMembershipTable.accountId, accountId)];
 
     if (!considerLocal) {
-      query.andWhere('item_membership.item_path != :path', { path: itemPath });
+      andConditions.push(ne(itemMembershipTable.itemPath, itemPath));
     }
 
-    // .limit(1) -> getOne()
-    const memberships = await query.orderBy('nlevel(item_membership.item_path)', 'DESC').getMany();
+    const memberships = await db
+      .select()
+      .from(itemMembershipTable)
+      .innerJoin(accountsTable, eq(itemMembershipTable.accountId, accountsTable.id))
+      .innerJoin(itemsRaw, isAncestorOrSelf(itemMembershipTable.itemPath, itemsRaw.path))
+      .where(and(...andConditions))
+      .orderBy(desc(sql`nlevel(${itemMembershipTable.itemPath})`));
+
+    const mappedMemberships = memberships.map(({ item, account, item_membership }) => ({
+      item,
+      account,
+      ...item_membership,
+    }));
+
+    // .createQueryBuilder('item_membership')
+    // .leftJoinAndSelect('item_membership.item', 'item')
+    // .leftJoinAndSelect('item_membership.account', 'account')
+    // .where('item_membership.account = :id', { id: accountId })
+    // .andWhere('item_membership.item_path @> :path', { path: itemPath });
+
+    // const memberships = await query.orderBy('nlevel(item_membership.item_path)', 'DESC').getMany();
 
     // TODO: optimize
     // order by array https://stackoverflow.com/questions/866465/order-by-the-in-value-list
     // order by https://stackoverflow.com/questions/17603907/order-by-enum-field-in-mysql
-    const result = memberships?.reduce((highest: ItemMembership | null, m: ItemMembership) => {
-      if (PermissionLevelCompare.gte(m.permission, highest?.permission ?? PermissionLevel.Read)) {
-        return m;
-      }
-      return highest;
-    }, null);
+    const result = mappedMemberships.reduce(
+      (highest: ItemMembershipWithItemAndAccount | null, m: ItemMembershipWithItemAndAccount) => {
+        if (PermissionLevelCompare.gte(m.permission, highest?.permission ?? PermissionLevel.Read)) {
+          return m;
+        }
+        return highest;
+      },
+      null,
+    );
 
     if (result) {
       return result;
@@ -557,7 +627,7 @@ export class ItemMembershipRepository {
     db: DBConnection,
     ids: string[],
     args: { throwOnError?: boolean } = { throwOnError: false },
-  ): Promise<ResultOf<ItemMembership>> {
+  ): Promise<ResultOf<ItemMembershipWithItemAndAccount>> {
     const result = await db.query.itemMemberships.findMany({
       where: inArray(itemMembershipTable.id, ids),
       with: {
@@ -577,47 +647,6 @@ export class ItemMembershipRepository {
     }
 
     return mappedMemberships;
-  }
-
-  async getSharedItems(
-    db: DBConnection,
-    actorId: string,
-    permission?: PermissionLevel,
-  ): Promise<Item[]> {
-    // TODO: refactor
-    let permissions: PermissionLevel[];
-    switch (permission) {
-      case PermissionLevel.Admin:
-        permissions = [PermissionLevel.Admin];
-        break;
-      case PermissionLevel.Write:
-        permissions = [PermissionLevel.Write, PermissionLevel.Admin];
-        break;
-      case PermissionLevel.Read:
-      default:
-        permissions = Object.values(PermissionLevel);
-        break;
-    }
-
-    // get items with given permission, without own items
-    const sharedMemberships = await db.query.itemMemberships.findMany({
-      where: and(
-        inArray(itemMembershipTable.permission, permissions),
-        eq(itemMembershipTable.accountId, actorId),
-      ),
-      with: {
-        item: {
-          where: (item) => and(isNotNull(item.creatorId), ne(item.creatorId, actorId)),
-        },
-      },
-    });
-    const items = sharedMemberships.map(({ item }) => item);
-    // TODO: optimize
-    // ignore children of shared parent
-    return items.filter(({ path }) => {
-      const hasParent = items.find((i) => path.includes(i.path + '.'));
-      return !hasParent;
-    });
   }
 
   // TODO: looks not used ?? Remove ?
@@ -683,7 +712,12 @@ export class ItemMembershipRepository {
       }
     }
 
-    tasks.push(this.repository.update(itemMembershipId, { permission }));
+    tasks.push(
+      db
+        .update(itemMembershipTable)
+        .set({ permission })
+        .where(eq(itemMembershipTable.id, itemMembershipId)),
+    );
     // TODO: optimize
     await Promise.all(tasks);
 
@@ -767,21 +801,31 @@ export class ItemMembershipRepository {
    * @param account Member used as `creator` for any new memberships
    * @returns Object with `inserts` and `deletes` arrays of memberships to create and delete after moving the item to the root. `deletes` will always be empty.
    */
-  async detachedMoveHousekeeping(item: Item, account: Account) {
+  async detachedMoveHousekeeping(item: Item, account: MinimalMember) {
     // Get the Id of the item when it will be moved to the root
     const index = item.path.lastIndexOf('.');
     const itemIdAsPath = item.path.slice(index + 1);
 
     // For each account that belongs to an ancestor of the element,
     // retrieve its best permission and the path to the deepest element (closest to the element).
-    const rows = (await this.repository
-      .createQueryBuilder('item_membership')
-      .select('account_id', 'accountId')
-      .addSelect('max(item_path::text)::ltree', 'itemPath') // Get the longest path
-      .addSelect('max(permission)', 'permission') // Get the best permission
-      .where('item_path @> :path', { path: item.path })
-      .groupBy('account_id')
-      .getRawMany()) as DetachedMoveHousekeepingType[];
+    const rows = await db
+      .select({
+        accountId: itemMembershipTable.accountId,
+        itemPath: sql`'max(item_path::text)::ltree'`,
+        permission: sql`max(permission)`,
+      })
+      .from(itemMembershipTable)
+      .where(isAncestorOrSelf(itemMembershipTable.itemPath, item.path))
+      .groupBy(itemMembershipTable.accountId);
+
+    // const rows = (await this.repository
+    //   .createQueryBuilder('item_membership')
+    //   .select('account_id', 'accountId')
+    //   .addSelect('max(item_path::text)::ltree', 'itemPath') // Get the longest path
+    //   .addSelect('max(permission)', 'permission') // Get the best permission
+    //   .where('item_path @> :path', { path: item.path })
+    //   .groupBy('account_id')
+    //   .getRawMany()) as DetachedMoveHousekeepingType[];
 
     return rows.reduce<ResultMoveHousekeeping>(
       (changes, row) => {
@@ -817,7 +861,12 @@ export class ItemMembershipRepository {
    * @param account Account used as `creator` for any new memberships
    * @param newParentItem Parent item to where `item` will be moved to
    */
-  async moveHousekeeping(db: DBConnection, item: Item, account: Account, newParentItem?: Item) {
+  async moveHousekeeping(
+    db: DBConnection,
+    item: Item,
+    account: MinimalMember,
+    newParentItem?: Item,
+  ) {
     if (!newParentItem) {
       // Moving to the root
       return this.detachedMoveHousekeeping(item, account);
@@ -832,7 +881,7 @@ export class ItemMembershipRepository {
     // itemIdAsPath is the path of the item without any parent
     const itemIdAsPath = index >= 0 ? item.path.slice(index + 1) : item.path;
 
-    const rows = (await this.repository.query(`
+    const rows = (await db.execute(sql<MoveHousekeepingType[]>`
       SELECT
         account_id AS "accountId",
         item_path AS "itemPath",
@@ -857,7 +906,7 @@ export class ItemMembershipRepository {
         ${getPermissionsAtItemSql(item.path, newParentItemPath, itemIdAsPath, parentItemPath)}
       ) AS t2
       ORDER BY account_id, nlevel(item_path), permission;
-    `)) as MoveHousekeepingType[];
+    `)) as unknown as MoveHousekeepingType[];
 
     return rows.reduce<ResultMoveHousekeeping>(
       (changes, row) => {

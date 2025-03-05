@@ -2,9 +2,9 @@ import { eq } from 'drizzle-orm';
 
 import { ItemValidationProcess, ItemValidationStatus } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../../../drizzle/db';
-import { type ItemValidation, itemValidations } from '../../../../../../drizzle/schema';
-import { ItemValidationGroupNotFound, ItemValidationNotFound } from '../errors';
+import { DBConnection } from '../../../../../drizzle/db';
+import { type ItemValidation, itemValidations } from '../../../../../drizzle/schema';
+import { ItemValidationGroupNotFound, ItemValidationNotFound } from './errors';
 
 export class ItemValidationRepository {
   async get(db: DBConnection, id: string): Promise<ItemValidation> {
@@ -39,27 +39,25 @@ export class ItemValidationRepository {
     itemValidationGroupId: string,
     process: ItemValidationProcess,
     status = ItemValidationStatus.Pending,
-  ): Promise<ItemValidation> {
-    return await db
-      .insert(itemValidations)
-      .values({
-        itemId,
-        itemValidationGroupId,
-        process,
-        status,
-      })
-      .returning();
+  ): Promise<{ id: ItemValidation['id'] }> {
+    return (
+      await db
+        .insert(itemValidations)
+        .values({
+          itemId,
+          itemValidationGroupId,
+          process,
+          status,
+        })
+        .returning({ id: itemValidations.id })
+    )[0];
   }
 
   async patch(
     db: DBConnection,
     itemValidationId: string,
     args: { result?: string; status: ItemValidationStatus },
-  ): Promise<ItemValidation> {
-    return await db
-      .update(itemValidations)
-      .set(args)
-      .where(eq(itemValidations.id, itemValidationId))
-      .returning();
+  ): Promise<void> {
+    await db.update(itemValidations).set(args).where(eq(itemValidations.id, itemValidationId));
   }
 }

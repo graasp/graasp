@@ -3,9 +3,8 @@ import { FastifyInstance } from 'fastify';
 import { PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { buildRepositories } from '../../../../../utils/repositories';
-import { Action } from '../../../../action/entities/action';
+import { ItemMembershipRaw } from '../../../../../drizzle/types';
+import { MinimalMember } from '../../../../../types';
 import { saveActions } from '../../../../action/test/fixtures/actions';
 import { saveChatMessages } from '../../../../chat/test/fixtures';
 import { saveAppActions } from '../../../../item/plugins/app/appAction/test/fixtures';
@@ -14,8 +13,6 @@ import { saveAppSettings } from '../../../../item/plugins/app/appSetting/test/fi
 import { saveItemFavorites } from '../../../../item/plugins/itemFavorite/test/fixtures';
 import { saveItemLikes } from '../../../../item/plugins/itemLike/test/utils';
 import { ItemTestUtils } from '../../../../item/test/fixtures/items';
-import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
-import { Member } from '../../../entities/member';
 import { saveMember } from '../../../test/fixtures/members';
 import { ExportMemberDataService } from '../service';
 import { RequestDataExportService } from '../utils/export.utils';
@@ -35,8 +32,8 @@ const checkNoMemberIdLeaks = <T>({
   randomUser,
 }: {
   results: T[];
-  exportingActor: Member;
-  randomUser: Member;
+  exportingActor: MinimalMember;
+  randomUser: MinimalMember;
 }) => {
   expect(results.length).toBeGreaterThan(0);
 
@@ -74,27 +71,25 @@ describe('DataMember Export', () => {
   });
 
   describe('Actions', () => {
-    const rawActionRepository = AppDataSource.getRepository(Action);
-
     it('member id is not leak', async () => {
       // save for exporting actor
-      await saveActions(rawActionRepository, [
+      await saveActions([
         { item, account: exportingActor },
         { item, account: exportingActor },
         { item, account: exportingActor },
       ]);
       // on item of random user
-      await saveActions(rawActionRepository, [
+      await saveActions([
         { item: itemOfRandomUser, account: exportingActor },
         { item: itemOfRandomUser, account: exportingActor },
         { item: itemOfRandomUser, account: exportingActor },
       ]);
 
       // noise: save for a random user
-      await saveActions(rawActionRepository, [{ item, account: randomUser }]);
-      await saveActions(rawActionRepository, [{ item: itemOfRandomUser, account: randomUser }]);
+      await saveActions([{ item, account: randomUser }]);
+      await saveActions([{ item: itemOfRandomUser, account: randomUser }]);
 
-      const results = await service.getActions(exportingActor, buildRepositories());
+      const results = await service.getActions(app.db, exportingActor);
       checkNoMemberIdLeaks({ results, exportingActor, randomUser });
     });
   });
@@ -110,7 +105,7 @@ describe('DataMember Export', () => {
       await saveAppActions({ item, member: randomUser });
       await saveAppActions({ item: itemOfRandomUser, member: randomUser });
 
-      const results = await service.getAppActions(exportingActor, buildRepositories());
+      const results = await service.getAppActions(app.db, exportingActor);
       checkNoMemberIdLeaks({ results, exportingActor, randomUser });
     });
   });
@@ -135,7 +130,7 @@ describe('DataMember Export', () => {
       // noise: for a random member
       await saveAppData({ item: itemOfRandomUser, creator: randomUser });
 
-      const results = await service.getAppData(exportingActor, buildRepositories());
+      const results = await service.getAppData(app.db, exportingActor);
       checkNoMemberIdLeaks({ results, exportingActor, randomUser });
     });
   });
@@ -149,7 +144,7 @@ describe('DataMember Export', () => {
         creator: randomUser,
       });
 
-      const results = await service.getAppSettings(exportingActor, buildRepositories());
+      const results = await service.getAppSettings(app.db, exportingActor);
       checkNoMemberIdLeaks({ results, exportingActor, randomUser });
     });
   });
@@ -165,13 +160,13 @@ describe('DataMember Export', () => {
     });
     describe('ChatMentions', () => {
       it('member id is not leak', async () => {
-        const results = await service.getChatMentions(exportingActor, buildRepositories());
+        const results = await service.getChatMentions(app.db, exportingActor);
         checkNoMemberIdLeaks({ results, exportingActor, randomUser });
       });
     });
     describe('ChatMessages', () => {
       it('member id is not leak', async () => {
-        const results = await service.getChatMessages(exportingActor, buildRepositories());
+        const results = await service.getChatMessages(app.db, exportingActor);
         checkNoMemberIdLeaks({ results, exportingActor, randomUser });
       });
     });
@@ -186,7 +181,7 @@ describe('DataMember Export', () => {
         await itemTestUtils.saveItem({ actor: randomUser });
         await itemTestUtils.saveItem({ actor: randomUser });
 
-        const results = await service.getItems(exportingActor, buildRepositories());
+        const results = await service.getItems(app.db, exportingActor);
         checkNoMemberIdLeaks({ results, exportingActor, randomUser });
       });
     });
@@ -208,7 +203,7 @@ describe('DataMember Export', () => {
           member: randomUser,
         });
 
-        const results = await service.getItemFavorites(exportingActor, buildRepositories());
+        const results = await service.getItemFavorites(app.db, exportingActor);
         checkNoMemberIdLeaks({ results, exportingActor, randomUser });
       });
     });
@@ -225,7 +220,7 @@ describe('DataMember Export', () => {
         // noise:
         await saveItemLikes(items, randomUser);
 
-        const results = await service.getItemLikes(exportingActor, buildRepositories());
+        const results = await service.getItemLikes(app.db, exportingActor);
         checkNoMemberIdLeaks({ results, exportingActor, randomUser });
       });
     });
@@ -243,7 +238,7 @@ describe('DataMember Export', () => {
           await itemTestUtils.saveItem({ actor: randomUser }),
         ];
 
-        const memberships: ItemMembership[] = [];
+        const memberships: ItemMembershipRaw[] = [];
 
         for (const item of actorItems) {
           const membership = await itemTestUtils.saveMembership({
@@ -272,7 +267,7 @@ describe('DataMember Export', () => {
           permission: PermissionLevel.Read,
         });
 
-        const results = await service.getItemsMemberShips(exportingActor, buildRepositories());
+        const results = await service.getItemsMemberShips(app.db, exportingActor);
         checkNoMemberIdLeaks({ results, exportingActor, randomUser });
       });
     });

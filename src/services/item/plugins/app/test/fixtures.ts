@@ -3,15 +3,11 @@ import { v4 } from 'uuid';
 import { HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { mockAuthenticate } from '../../../../../../test/app';
-import { AppDataSource } from '../../../../../plugins/datasource';
+import { AuthenticatedUser, MinimalMember } from '../../../../../types';
 import { APPS_PUBLISHER_ID, APP_ITEMS_PREFIX } from '../../../../../utils/config';
-import { Guest } from '../../../../itemLogin/entities/guest';
-import { Member } from '../../../../member/entities/member';
-import { Item } from '../../../entities/Item';
+import { FolderItem } from '../../../discrimination';
 import { ItemTestUtils } from '../../../test/fixtures/items';
 import { setItemPublic } from '../../itemVisibility/test/fixtures';
-import { App } from '../entities/app';
-import { Publisher } from '../entities/publisher';
 
 export const GRAASP_PUBLISHER = {
   id: APPS_PUBLISHER_ID,
@@ -74,7 +70,15 @@ export const MOCK_APPS = [
 ];
 
 export class AppTestUtils extends ItemTestUtils {
-  saveApp = ({ url, member, parentItem }: { url: string; member: Member; parentItem?: Item }) => {
+  saveApp = ({
+    url,
+    member,
+    parentItem,
+  }: {
+    url: string;
+    member: MinimalMember;
+    parentItem?: FolderItem;
+  }) => {
     return this.saveItemAndMembership({
       item: { type: ItemType.APP, extra: { [ItemType.APP]: { url } } },
       member,
@@ -94,11 +98,11 @@ export class AppTestUtils extends ItemTestUtils {
   // save apps, app settings, and get token
   setUp = async (
     app,
-    actor: Member | Guest,
-    creator: Member,
+    actor: AuthenticatedUser,
+    creator: MinimalMember,
     permission?: PermissionLevel,
     setPublic?: boolean,
-    parentItem?: Item,
+    parentItem?: FolderItem,
   ) => {
     const apps = await this.saveAppList();
     const chosenApp = apps[0];
@@ -123,7 +127,7 @@ export class AppTestUtils extends ItemTestUtils {
   };
 
   // Check that a user can't access to the app of another user using its JWT token
-  setUpForbidden = async (app, actor: Member, unauthorized: Member) => {
+  setUpForbidden = async (app, actor: MinimalMember, unauthorized: MinimalMember) => {
     const apps = await this.saveAppList();
     const graaspApp = apps[0];
     const unauthorizedApp = apps[1];

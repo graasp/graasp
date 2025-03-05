@@ -3,16 +3,12 @@ import { FastifyInstance } from 'fastify';
 import { PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
-import { AppDataSource } from '../../../../../plugins/datasource';
+import { ChatMentionRaw, ChatMessageRaw } from '../../../../../drizzle/types';
 import { ActionRepository } from '../../../../action/action.repository';
-import { Action } from '../../../../action/entities/action';
 import { saveActions } from '../../../../action/test/fixtures/actions';
-import { ChatMessage } from '../../../../chat/chatMessage';
-import { ChatMention } from '../../../../chat/plugins/mentions/chatMention';
 import { ChatMentionRepository } from '../../../../chat/plugins/mentions/repository';
 import { ChatMessageRepository } from '../../../../chat/repository';
 import { saveChatMessages } from '../../../../chat/test/fixtures';
-import { AppActionRepository } from '../../../../item/plugins/app/appAction/repository';
 import { saveAppActions } from '../../../../item/plugins/app/appAction/test/fixtures';
 import { AppDataRepository } from '../../../../item/plugins/app/appData/repository';
 import { saveAppData } from '../../../../item/plugins/app/appData/test/fixtures';
@@ -24,7 +20,6 @@ import { ItemLikeRepository } from '../../../../item/plugins/itemLike/repository
 import { saveItemLikes } from '../../../../item/plugins/itemLike/test/utils';
 import { ItemRepository } from '../../../../item/repository';
 import { ItemTestUtils } from '../../../../item/test/fixtures/items';
-import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
 import { ItemMembershipRepository } from '../../../../itemMembership/repository';
 import { saveMember } from '../../../test/fixtures/members';
 import {
@@ -72,25 +67,23 @@ describe('DataMember Export', () => {
   });
 
   describe('Actions', () => {
-    const rawActionRepository = AppDataSource.getRepository(Action);
-
     it('get all Actions for the member', async () => {
       // save for exporting actor
-      const actions = await saveActions(rawActionRepository, [
+      const actions = await saveActions([
         { item, account: exportingActor },
         { item, account: exportingActor },
         { item, account: exportingActor },
       ]);
       // on item of random user
-      const otherActions = await saveActions(rawActionRepository, [
+      const otherActions = await saveActions([
         { item: itemOfRandomUser, account: exportingActor },
         { item: itemOfRandomUser, account: exportingActor },
         { item: itemOfRandomUser, account: exportingActor },
       ]);
 
       // noise: save for a random user
-      await saveActions(rawActionRepository, [{ item, account: randomUser }]);
-      await saveActions(rawActionRepository, [{ item: itemOfRandomUser, account: randomUser }]);
+      await saveActions([{ item, account: randomUser }]);
+      await saveActions([{ item: itemOfRandomUser, account: randomUser }]);
 
       const results = await new ActionRepository().getForAccountExport(exportingActor.id);
       expectNoLeaksAndEquality(results, [...actions, ...otherActions], actionSchema);
@@ -157,8 +150,8 @@ describe('DataMember Export', () => {
   });
 
   describe('Chat', () => {
-    let chatMessages: ChatMessage[];
-    let chatMentions: ChatMention[];
+    let chatMessages: ChatMessageRaw[];
+    let chatMentions: ChatMentionRaw[];
 
     beforeEach(async () => {
       // exporting member mentions another user, so this mention data is for the random user only.
@@ -256,7 +249,7 @@ describe('DataMember Export', () => {
         await itemTestUtils.saveItem({ actor: randomUser }),
       ];
 
-      const memberships: ItemMembership[] = [];
+      const memberships: ItemMembershipRaw[] = [];
 
       for (const item of actorItems) {
         const membership = await itemTestUtils.saveMembership({

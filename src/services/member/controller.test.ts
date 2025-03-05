@@ -10,17 +10,15 @@ import { HttpMethod } from '@graasp/sdk';
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../test/app';
 import { buildFile, seedFromJson } from '../../../test/mocks/seed';
 import { resolveDependency } from '../../di/utils';
-import { AppDataSource } from '../../plugins/datasource';
 import { MailerService } from '../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../utils/assertions';
 import { EMAIL_CHANGE_JWT_SECRET } from '../../utils/config';
-import { Item } from '../item/entities/Item';
+import { assertIsMember } from '../authentication';
 import {
   FILE_METADATA_MAX_PAGE_SIZE,
   FILE_METADATA_MIN_PAGE,
   FILE_METADATA_MIN_PAGE_SIZE,
 } from './constants';
-import { Member, assertIsMember } from './entities/member';
 
 jest.mock('node-fetch');
 const memberRawRepository = AppDataSource.getRepository(Member);

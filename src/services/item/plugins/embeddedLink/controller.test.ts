@@ -12,9 +12,7 @@ import build, {
   mockAuthenticate,
   unmockAuthenticate,
 } from '../../../../../test/app';
-import { AppDataSource } from '../../../../plugins/datasource';
 import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN } from '../../../../utils/config';
-import { Guest } from '../../../itemLogin/entities/guest';
 import { saveMember } from '../../../member/test/fixtures/members';
 import { ItemTestUtils } from '../../test/fixtures/items';
 import { FETCH_RESULT, METADATA } from './test/fixtures';

@@ -8,12 +8,12 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../../test/app';
-import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { ShortLinkDuplication, ShortLinkLimitExceed } from '../../../../../utils/errors';
-import { saveMember } from '../../../../member/test/fixtures/members';
-import { ItemPublishedNotFound } from '../../publication/published/errors';
-import { saveItemValidation } from '../../publication/validation/test/utils';
+} from '../../../../../test/app';
+import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
+import { ShortLinkDuplication, ShortLinkLimitExceed } from '../../../../utils/errors';
+import { saveMember } from '../../../member/test/fixtures/members';
+import { ItemPublishedNotFound } from '../publication/published/errors';
+import { saveItemValidation } from '../publication/validation/test/utils';
 import {
   MOCK_ALIAS,
   MOCK_ITEM_ID,
@@ -26,7 +26,7 @@ import {
   injectGetAvailable,
   injectPatch,
   injectPost,
-} from './fixtures';
+} from './test/fixtures';
 
 const MOCK_FAKE_ALIAS = 'fake-alias';
 const testUtils = new ShortLinkTestUtils();
@@ -204,8 +204,6 @@ describe('Short links routes tests', () => {
         });
 
         it('Bad request if post short links with empty body', async () => {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-expect-error
           const response = await injectPost(app, {});
           expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
         });
@@ -256,8 +254,8 @@ describe('Short links routes tests', () => {
           const { item } = await testUtils.mockItemAndMemberships({
             // We have to define dates, otherwise it will be random dates.
             item: {
-              createdAt: new Date(),
-              updatedAt: new Date(),
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
             },
             itemCreator: actor,
             setPublic: true,
@@ -489,8 +487,6 @@ describe('Short links routes tests', () => {
           });
           expect(post.statusCode).toEqual(StatusCodes.OK);
 
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-expect-error
           const response = await injectPatch(app, MOCK_ALIAS, {});
           expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
         });
@@ -517,8 +513,6 @@ describe('Short links routes tests', () => {
           });
           expect(post.statusCode).toEqual(StatusCodes.OK);
 
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-expect-error
           const response = await injectPatch(app, MOCK_ALIAS, { not_valid: 0 });
           expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
         });
@@ -532,8 +526,6 @@ describe('Short links routes tests', () => {
           });
           expect(post.statusCode).toEqual(StatusCodes.OK);
 
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-expect-error
           const response = await injectPatch(app, MOCK_ALIAS, { itemId: MOCK_ITEM_ID });
           expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
         });
@@ -548,8 +540,6 @@ describe('Short links routes tests', () => {
           expect(post.statusCode).toEqual(StatusCodes.OK);
 
           const response = await injectPatch(app, MOCK_ALIAS, {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-expect-error
             platform: ShortLinkPlatform.Builder,
           });
           expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);

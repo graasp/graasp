@@ -1,15 +1,9 @@
-import { Repository } from 'typeorm';
-
 import { FastifyInstance } from 'fastify';
 
 import { FolderItemFactory, MemberFactory, PermissionLevel } from '@graasp/sdk';
 
 import build from '../../../../../../../test/app';
-import { ItemMembership } from '../../../../../itemMembership/entities/ItemMembership';
-import { Member } from '../../../../../member/entities/member';
-import { Item } from '../../../../entities/Item';
 import { expectManyItems } from '../../../../test/fixtures/items';
-import { ItemPublished } from '../entities/itemPublished';
 import { ItemPublishedRepository } from './itemPublished';
 
 describe('ItemPublishedRepository', () => {
@@ -55,7 +49,7 @@ describe('ItemPublishedRepository', () => {
         });
       }
 
-      const result = await repository.getForMember(creator.id);
+      const result = await repository.getForMember(app.db, creator.id);
       expectManyItems(result, items);
     });
   });
@@ -71,7 +65,7 @@ describe('ItemPublishedRepository', () => {
       const creator = await memberRawRepository.save(MemberFactory());
       const item = await itemRawRepository.save(FolderItemFactory({ creator }));
 
-      const result = await repository.touchUpdatedAt(item.path);
+      const result = await repository.touchUpdatedAt(app.db, item.path);
 
       expect(new Date(result).getTime() - new Date(updatedAt).getTime()).toBeLessThanOrEqual(200);
     });

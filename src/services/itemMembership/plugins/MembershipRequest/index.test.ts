@@ -11,20 +11,18 @@ import build, {
   unmockAuthenticate,
 } from '../../../../../test/app';
 import { resolveDependency } from '../../../../di/utils';
-import { AppDataSource } from '../../../../plugins/datasource';
+import { Item } from '../../../../drizzle/types';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
-import { Item } from '../../../item/entities/Item';
+import { MinimalMember } from '../../../../types';
 import { ItemTestUtils } from '../../../item/test/fixtures/items';
-import { Member } from '../../../member/entities/member';
 import { saveMember } from '../../../member/test/fixtures/members';
-import { ItemMembership } from '../../entities/ItemMembership';
 import { MembershipRequestRepository } from './repository';
 
 const testUtils = new ItemTestUtils();
 const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
 const membershipRequestRepository = new MembershipRequestRepository();
 
-function expectMemberRequestToBe(membershipRequest, member?: Member, item?: Item) {
+function expectMemberRequestToBe(membershipRequest, member?: MinimalMember, item?: Item) {
   // There is no use to this Id since we should use the Item Id and the Member Id. This assertion check that AJV is doing his job by removing it.
   expect(membershipRequest.id).toBeUndefined();
   expect(membershipRequest.createdAt).toBeDefined();
@@ -44,8 +42,8 @@ function expectMemberRequestToBe(membershipRequest, member?: Member, item?: Item
 
 describe('MembershipRequest', () => {
   let app: FastifyInstance;
-  let member: Member;
-  let creator: Member;
+  let member: MinimalMember;
+  let creator: MinimalMember;
   let item: Item;
 
   beforeAll(async () => {
@@ -83,7 +81,7 @@ describe('MembershipRequest', () => {
     });
     it('returns array with one request', async () => {
       const member = await saveMember();
-      membershipRequestRepository.post(member.id, item.id);
+      membershipRequestRepository.post(app.db, member.id, item.id);
 
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -98,7 +96,7 @@ describe('MembershipRequest', () => {
     it('returns array with all requests', async () => {
       const numberOfRequests = 3;
       for (let i = 0; i < numberOfRequests; i++) {
-        membershipRequestRepository.post((await saveMember()).id, item.id);
+        membershipRequestRepository.post(app.db, (await saveMember()).id, item.id);
       }
 
       const response = await app.inject({
@@ -114,7 +112,7 @@ describe('MembershipRequest', () => {
     it('does not returns requests of other items', async () => {
       const numberOfRequests = 3;
       for (let i = 0; i < numberOfRequests; i++) {
-        membershipRequestRepository.post((await saveMember()).id, item.id);
+        membershipRequestRepository.post(app.db, (await saveMember()).id, item.id);
       }
       const { item: anotherItem } = await testUtils.saveItemAndMembership({ member: creator });
 
@@ -196,7 +194,7 @@ describe('MembershipRequest', () => {
       expect(data.status).toEqual(MembershipRequestStatus.NotSubmittedOrDeleted);
     });
     it('returns pending if there is a request', async () => {
-      await membershipRequestRepository.post(member.id, item.id);
+      await membershipRequestRepository.post(app.db, member.id, item.id);
       const response = await app.inject({
         method: HttpMethod.Get,
         url: `/items/${item.id}/memberships/requests/own`,

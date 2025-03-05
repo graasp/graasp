@@ -119,15 +119,11 @@ export class ItemPublishedRepository {
     return [mappedResults, total];
   }
 
-  async post(db: DBConnection, creator: MinimalMember, item: Item): Promise<ItemPublishedRaw> {
-    const res = await db
-      .insert(publishedItems)
-      .values({
-        itemPath: item.path,
-        creatorId: creator.id,
-      })
-      .returning();
-    return res[0];
+  async post(db: DBConnection, creator: MinimalMember, item: Item): Promise<void> {
+    await db.insert(publishedItems).values({
+      itemPath: item.path,
+      creatorId: creator.id,
+    });
   }
 
   async deleteForItem(db: DBConnection, item: Item): Promise<ItemPublishedRaw> {

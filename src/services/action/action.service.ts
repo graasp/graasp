@@ -8,7 +8,7 @@ import { ClientManager, Context } from '@graasp/sdk';
 import { DBConnection } from '../../drizzle/db';
 import { Item } from '../../drizzle/types';
 import { BaseLogger } from '../../logger';
-import { AuthenticatedUser } from '../../types';
+import { MaybeUser } from '../../types';
 import { ItemService } from '../item/service';
 import { MemberRepository } from '../member/repository';
 import { MemberService } from '../member/service';
@@ -39,9 +39,9 @@ export class ActionService {
 
   async postMany(
     db: DBConnection,
-    actor: AuthenticatedUser,
+    actor: MaybeUser,
     request: FastifyRequest,
-    actions: { item: Item; type: string; extra: unknown }[],
+    actions: { item?: Item; type: string; extra: unknown }[],
   ): Promise<void> {
     const { headers } = request;
     // expand member to the full account

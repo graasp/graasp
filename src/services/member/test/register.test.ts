@@ -9,13 +9,10 @@ import { HttpMethod, MAX_USERNAME_LENGTH, MemberFactory, RecaptchaAction } from 
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
 import { mockCaptchaValidation } from '../../../../test/utils';
 import { resolveDependency } from '../../../di/utils';
-import { AppDataSource } from '../../../plugins/datasource';
 import { MailerService } from '../../../plugins/mailer/mailer.service';
 import { MOCK_CAPTCHA } from '../../auth/plugins/captcha/test/utils';
 import { Invitation } from '../../item/plugins/invitation/entity';
 import { saveInvitations } from '../../item/plugins/invitation/test/utils';
-import { ItemMembership } from '../../itemMembership/entities/ItemMembership';
-import { Member } from '../entities/member';
 import { expectMember, saveMember } from './fixtures/members';
 
 const invitationRawRepository = AppDataSource.getRepository(Invitation);

@@ -108,7 +108,7 @@ export class ItemMembershipService {
     account: AuthenticatedUser,
     item: ItemRaw,
     memberId: string,
-    permission: PermissionLevel,
+    permission: `${PermissionLevel}`,
     // membership: { permission: PermissionLevel; itemId: UUID; memberId: UUID },
   ) {
     const member = await this.memberRepository.get(db, memberId);
@@ -147,7 +147,7 @@ export class ItemMembershipService {
   async createMany(
     db: DBConnection,
     authenticatedUser: AuthenticatedUser,
-    memberships: { permission: PermissionLevel; accountId: UUID }[],
+    memberships: { permission: `${PermissionLevel}`; accountId: UUID }[],
     itemId: UUID,
   ) {
     // check memberships

@@ -12,22 +12,19 @@ import build, {
   unmockAuthenticate,
 } from '../../../../../../../test/app';
 import { resolveDependency } from '../../../../../../di/utils';
-import { AppDataSource } from '../../../../../../plugins/datasource';
+import { Item, ItemPublishedRaw } from '../../../../../../drizzle/types';
 import { MailerService } from '../../../../../../plugins/mailer/mailer.service';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../../utils/config';
 import { ItemNotFound, MemberCannotAdminItem } from '../../../../../../utils/errors';
 import { saveMember } from '../../../../../member/test/fixtures/members';
-import { Item } from '../../../../entities/Item';
 import {
   ItemTestUtils,
   expectItem,
   expectManyItems,
   expectManyPackedItems,
 } from '../../../../test/fixtures/items';
-import { ItemVisibility } from '../../../itemVisibility/ItemVisibility';
 import { ItemVisibilityNotFound } from '../../../itemVisibility/errors';
 import { saveItemValidation } from '../../validation/test/utils';
-import { ItemPublished } from '../entities/itemPublished';
 import { ItemPublishedNotFound } from '../errors';
 import { MeiliSearchWrapper } from '../plugins/search/meilisearch';
 import { ItemPublishedRepository } from '../repositories/itemPublished';
@@ -73,6 +70,7 @@ describe('Item Published', () => {
         const { item: parentItem } = await testUtils.saveItemAndMembership({ member });
         const { item } = await testUtils.saveItemAndMembership({ member, parentItem });
         await testUtils.itemVisibilityRepository.post(
+          app.db,
           member,
           parentItem,
           ItemVisibilityType.Public,
@@ -92,11 +90,13 @@ describe('Item Published', () => {
         const { item: otherParentItem } = await testUtils.saveItemAndMembership({ member });
         const { item } = await testUtils.saveItemAndMembership({ member, parentItem });
         await testUtils.itemVisibilityRepository.post(
+          app.db,
           member,
           parentItem,
           ItemVisibilityType.Public,
         );
         await testUtils.itemVisibilityRepository.post(
+          app.db,
           member,
           otherParentItem,
           ItemVisibilityType.Public,
@@ -112,7 +112,7 @@ describe('Item Published', () => {
           query: { itemId: [item.id, otherParentItem.id] },
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
-        const result = (await res.json().data) as { [key: string]: ItemPublished };
+        const result = (await res.json().data) as { [key: string]: ItemPublishedRaw };
         const items = Object.values(result).map((i) => i.item);
         expectManyItems(items as Item[], [otherParentItem, parentItem]);
       });
@@ -128,7 +128,12 @@ describe('Item Published', () => {
       it('Get publish info of public item that is not published yet returns null', async () => {
         const { item } = await testUtils.saveItemAndMembership({ member });
         // make item public
-        await testUtils.itemVisibilityRepository.post(member, item, ItemVisibilityType.Public);
+        await testUtils.itemVisibilityRepository.post(
+          app.db,
+          member,
+          item,
+          ItemVisibilityType.Public,
+        );
 
         const res = await app.inject({
           method: HttpMethod.Get,
@@ -438,7 +443,7 @@ describe('Item Published', () => {
           permission: PermissionLevel.Admin,
         });
         await rawRepository.save({ item, type: ItemVisibilityType.Public, creator: member });
-        await new ItemPublishedRepository().post(member, item);
+        await new ItemPublishedRepository().post(app.db, member, item);
 
         const indexSpy = jest.spyOn(MeiliSearchWrapper.prototype, 'deleteOne');
 
@@ -477,7 +482,7 @@ describe('Item Published', () => {
           permission: PermissionLevel.Write,
         });
         await rawRepository.save({ item, type: ItemVisibilityType.Public, creator: member });
-        await new ItemPublishedRepository().post(member, item);
+        await new ItemPublishedRepository().post(app.db, member, item);
 
         const res = await app.inject({
           method: HttpMethod.Delete,
@@ -494,7 +499,7 @@ describe('Item Published', () => {
           permission: PermissionLevel.Read,
         });
         await rawRepository.save({ item, type: ItemVisibilityType.Public, creator: member });
-        await new ItemPublishedRepository().post(member, item);
+        await new ItemPublishedRepository().post(app.db, member, item);
 
         const res = await app.inject({
           method: HttpMethod.Delete,

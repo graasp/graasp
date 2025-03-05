@@ -121,7 +121,7 @@ export class InvitationRepository {
     partialInvitations: InvitationInsertDTO[],
     itemPath: string,
     creator: AuthenticatedUser,
-  ): Promise<InvitationInsertDTO[]> {
+  ): Promise<void> {
     const data = partialInvitations.map((inv) => ({
       ...inv,
       // this normalisation is necessary because we match emails 1:1 and they are expeted to be in lowercase
@@ -133,24 +133,19 @@ export class InvitationRepository {
       where: isAncestorOrSelf(invitationsTable.itemPath, itemPath),
     });
 
-    return await db
-      .insert(invitationsTable)
-      .values(
-        data
-          .filter(
-            (i) =>
-              // exclude duplicate item-email combinations that are already invited
-              !existingEntries.find(
-                ({ email, item }) => email === i.email && item.path === itemPath,
-              ),
-          )
-          .map((inv) => ({
-            ...inv,
-            item: { path: itemPath },
-            creator,
-          })),
-      )
-      .returning();
+    await db.insert(invitationsTable).values(
+      data
+        .filter(
+          (i) =>
+            // exclude duplicate item-email combinations that are already invited
+            !existingEntries.find(({ email, item }) => email === i.email && item.path === itemPath),
+        )
+        .map((inv) => ({
+          ...inv,
+          item: { path: itemPath },
+          creator,
+        })),
+    );
   }
 
   async updateOne(

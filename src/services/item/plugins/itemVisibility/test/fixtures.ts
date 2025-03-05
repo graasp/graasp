@@ -1,12 +1,9 @@
-import { DeepPartial } from 'typeorm';
-
 import { ItemVisibilityType } from '@graasp/sdk';
 
-import { Member } from '../../../../member/entities/member';
-import { Item } from '../../../entities/Item';
-import { ItemVisibility } from '../ItemVisibility';
+import { Item } from '../../../../../drizzle/types';
+import { MinimalMember } from '../../../../../types';
 
-export const setItemPublic = async (item: Item, creator?: Member | null) => {
+export const setItemPublic = async (item: Item, creator?: MinimalMember | null) => {
   return ItemVisibility.save({ item, creator, type: ItemVisibilityType.Public });
 };
 

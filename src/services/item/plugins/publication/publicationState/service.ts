@@ -6,7 +6,7 @@ import { ItemWrapper } from '../../../ItemWrapper';
 import { ItemService } from '../../../service';
 import { ItemVisibilityRepository } from '../../itemVisibility/repository';
 import { ItemPublishedRepository } from '../published/repositories/itemPublished';
-import { ItemValidationGroupRepository } from '../validation/repositories/ItemValidationGroup';
+import { ItemValidationGroupRepository } from '../validation/ItemValidationGroup.repository';
 import { ValidationQueue } from '../validation/validationQueue';
 import { PublicationState } from './publicationState';
 
@@ -47,7 +47,7 @@ export class PublicationService {
       publicVisibility ? [publicVisibility] : [],
     ).packed();
     const validationGroup = await this.validationRepository.getLastForItem(db, itemId);
-    const publishedEntry = (await this.publishedRepository.getForItem(db, item)) ?? undefined;
+    const publishedEntry = (await this.publishedRepository.getForItem(db, item.path)) ?? undefined;
     const isValidationInProgress = await this.validationQueue.isInProgress(item.path);
 
     return new PublicationState(packedItem, {

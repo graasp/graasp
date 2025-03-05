@@ -2,11 +2,8 @@ import { v4 } from 'uuid';
 
 import { AppDataVisibility } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../../../../plugins/datasource';
-import { Account } from '../../../../../account/entities/account';
-import { Member } from '../../../../../member/entities/member';
-import { Item } from '../../../../entities/Item';
-import { AppData } from '../appData';
+import { AccountRaw, Item } from '../../../../../../drizzle/types';
+import { MinimalMember } from '../../../../../../types';
 
 export const GRAASP_PUBLISHER_ID = 'publisher-id';
 
@@ -72,8 +69,8 @@ export const saveAppData = async ({
   visibility,
 }: {
   item: Item;
-  creator: Member;
-  account?: Account;
+  creator: MinimalMember;
+  account?: AccountRaw;
   visibility?: AppDataVisibility;
 }) => {
   const defaultData = { type: 'some-type', data: { some: 'data' } };
