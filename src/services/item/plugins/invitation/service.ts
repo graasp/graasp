@@ -22,8 +22,8 @@ import { AuthorizationService } from '../../../authorization';
 import { ItemService } from '../../../item/service';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { ItemMembershipService } from '../../../itemMembership/service';
-import { MemberDTO } from '../../../member/repository';
-import { MemberService } from '../../../member/service';
+import { MemberService } from '../../../member/member.service';
+import { MemberDTO } from '../../../member/types';
 import { isItemType } from '../../discrimination';
 import { EMAIL_COLUMN_NAME, GROUP_COL_NAME, buildInvitationLink } from './constants';
 import {
@@ -111,7 +111,12 @@ export class InvitationService {
   }
 
   async getForItem(db: DBConnection, authenticatedUser: AuthenticatedUser, itemId: string) {
-    const item = await this.itemService.get(db, authenticatedUser, itemId, PermissionLevel.Admin);
+    const item = await this.itemService.basicItemService.get(
+      db,
+      authenticatedUser,
+      itemId,
+      PermissionLevel.Admin,
+    );
     return this.invitationRepository.getManyByItem(db, item.path);
   }
 
@@ -121,7 +126,12 @@ export class InvitationService {
     itemId: string,
     invitations: Pick<InvitationInsertDTO, 'permission' | 'email'>[],
   ) {
-    const item = await this.itemService.get(db, member, itemId, PermissionLevel.Admin);
+    const item = await this.itemService.basicItemService.get(
+      db,
+      member,
+      itemId,
+      PermissionLevel.Admin,
+    );
 
     await this.invitationRepository.addMany(db, invitations, item.path, member);
 
@@ -270,7 +280,7 @@ export class InvitationService {
     memberships: ItemMembershipRaw[];
     invitations: InvitationWithItem[];
   }> {
-    await this.itemService.get(db, actor, itemId, PermissionLevel.Admin);
+    await this.itemService.basicItemService.get(db, actor, itemId, PermissionLevel.Admin);
 
     return this._createMembershipsAndInvitationsForUserList(db, actor, invitations, itemId);
   }
@@ -285,7 +295,7 @@ export class InvitationService {
     verifyCSVFileFormat(file);
 
     // get the item, verify user has Admin access
-    await this.itemService.get(db, actor, itemId, PermissionLevel.Admin);
+    await this.itemService.basicItemService.get(db, actor, itemId, PermissionLevel.Admin);
 
     // parse CSV file
     const { rows, header } = await parseCSV(file.file);
@@ -325,10 +335,15 @@ export class InvitationService {
     verifyCSVFileFormat(file);
 
     // get parentItem
-    const parentItem = await this.itemService.get(db, actor, parentId, PermissionLevel.Admin);
+    const parentItem = await this.itemService.basicItemService.get(
+      db,
+      actor,
+      parentId,
+      PermissionLevel.Admin,
+    );
 
     // check that the template exists
-    const templateItem = await this.itemService.get(db, actor, templateId);
+    const templateItem = await this.itemService.basicItemService.get(db, actor, templateId);
     if (!templateItem.id) {
       throw new TemplateItemDoesNotExist();
     }

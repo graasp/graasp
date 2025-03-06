@@ -10,8 +10,8 @@ import { ItemNotFound } from '../../../../utils/errors';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
 import { AuthorizationService, matchOne } from '../../../authorization';
+import { BasicItemService } from '../../../item/basic.service';
 import { ItemRepository } from '../../../item/repository';
-import { ItemService } from '../../../item/service';
 import { ItemLoginSchemaExists } from '../../../itemLogin/errors';
 import { ItemLoginService } from '../../../itemLogin/service';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
@@ -27,7 +27,7 @@ import { MembershipRequestService } from './service';
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const membershipRequestService = resolveDependency(MembershipRequestService);
   const itemMembershipService = resolveDependency(ItemMembershipService);
-  const itemService = resolveDependency(ItemService);
+  const basicItemService = resolveDependency(BasicItemService);
   const itemRepository = resolveDependency(ItemRepository);
   const itemLoginService = resolveDependency(ItemLoginService);
   const authorizationService = resolveDependency(AuthorizationService);
@@ -48,7 +48,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
       await db.transaction(async (tx) => {
         // Check if the Item exists and the member has the required permission.
-        await itemService.get(tx, member, itemId, PermissionLevel.Admin);
+        await basicItemService.get(tx, member, itemId, PermissionLevel.Admin);
 
         const requests = await membershipRequestService.getAllByItem(tx, itemId);
         reply.send(requests);
@@ -141,7 +141,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
       await db.transaction(async (tx) => {
         // Check if the Item exists and the member has the required permission
-        await itemService.get(tx, member, itemId, PermissionLevel.Admin);
+        await basicItemService.get(tx, member, itemId, PermissionLevel.Admin);
 
         const requests = await membershipRequestService.deleteOne(tx, memberId, itemId);
         if (!requests) {

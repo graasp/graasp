@@ -7,8 +7,8 @@ import { DBConnection } from '../../../../drizzle/db';
 import { Item, ItemGeolocationRaw } from '../../../../drizzle/types';
 import { MaybeUser, MinimalMember } from '../../../../types';
 import { AuthorizationService } from '../../../authorization';
-import { ItemWrapper, PackedItem } from '../../ItemWrapper';
-import { ItemService } from '../../service';
+import { ItemWrapper, type PackedItem } from '../../ItemWrapper';
+import { BasicItemService } from '../../basic.service';
 import { ItemThumbnailService } from '../thumbnail/service';
 import { MissingGeolocationApiKey } from './errors';
 import { ItemGeolocationRepository } from './repository';
@@ -19,20 +19,20 @@ type PackedItemGeolocation = ItemGeolocationRaw & {
 
 @singleton()
 export class ItemGeolocationService {
-  private readonly itemService: ItemService;
+  private readonly basicItemService: BasicItemService;
   private readonly itemThumbnailService: ItemThumbnailService;
   private readonly authorizationService: AuthorizationService;
   private readonly geolocationKey: string;
   private readonly itemGeolocationRepository: ItemGeolocationRepository;
 
   constructor(
-    itemService: ItemService,
+    basicItemService: BasicItemService,
     itemThumbnailService: ItemThumbnailService,
     authorizationService: AuthorizationService,
     itemGeolocationRepository: ItemGeolocationRepository,
     @inject(GEOLOCATION_API_KEY_DI_KEY) geolocationKey: string,
   ) {
-    this.itemService = itemService;
+    this.basicItemService = basicItemService;
     this.itemThumbnailService = itemThumbnailService;
     this.authorizationService = authorizationService;
     this.itemGeolocationRepository = itemGeolocationRepository;
@@ -41,27 +41,18 @@ export class ItemGeolocationService {
 
   async delete(db: DBConnection, member: MinimalMember, itemId: Item['id']) {
     // check item exists and actor has permission
-    const item = await this.itemService.get(db, member, itemId, PermissionLevel.Write);
+    const item = await this.basicItemService.get(db, member, itemId, PermissionLevel.Write);
 
     return this.itemGeolocationRepository.delete(db, item);
   }
 
-  async getByItem(
-    db: DBConnection,
-    actor: MaybeUser,
-    itemId: Item['id'],
-  ): Promise<PackedItemGeolocation | null> {
+  async getByItem(db: DBConnection, actor: MaybeUser, itemId: Item['id']) {
     // check item exists and actor has permission
-    const item = await this.itemService.get(db, actor, itemId);
+    const item = await this.basicItemService.get(db, actor, itemId);
 
     const geoloc = await this.itemGeolocationRepository.getByItem(db, item.path);
 
-    if (geoloc) {
-      // return packed item of related item (could be parent)
-      const geolocPackedItem = await this.itemService.getPacked(db, actor, geoloc.item.id);
-      return { ...geoloc, item: geolocPackedItem };
-    }
-    return null;
+    return geoloc;
   }
 
   async getIn(
@@ -78,7 +69,7 @@ export class ItemGeolocationService {
   ): Promise<PackedItemGeolocation[]> {
     let parentItem: Item | undefined;
     if (query.parentItemId) {
-      parentItem = await this.itemService.get(db, actor, query.parentItemId);
+      parentItem = await this.basicItemService.get(db, actor, query.parentItemId);
     }
 
     const geoloc = await this.itemGeolocationRepository.getItemsIn(db, actor, query, parentItem);
@@ -136,7 +127,7 @@ export class ItemGeolocationService {
       Pick<Partial<ItemGeolocationRaw>, 'addressLabel' | 'helperLabel'>,
   ) {
     // check item exists and member has permission
-    const item = await this.itemService.get(db, member, itemId, PermissionLevel.Write);
+    const item = await this.basicItemService.get(db, member, itemId, PermissionLevel.Write);
 
     return this.itemGeolocationRepository.put(db, item.path, geolocation);
   }

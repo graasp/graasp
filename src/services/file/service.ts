@@ -1,6 +1,7 @@
 import contentDisposition from 'content-disposition';
 import { StatusCodes } from 'http-status-codes';
 import { Readable } from 'stream';
+import { singleton } from 'tsyringe';
 
 import { FastifyReply } from 'fastify';
 
@@ -26,7 +27,6 @@ import {
   UploadFileInvalidParameterError,
   UploadFileUnexpectedError,
 } from './utils/errors';
-import { fileRepositoryFactory } from './utils/factory';
 
 export type FileServiceConfig = {
   s3?: S3FileConfiguration;
@@ -39,10 +39,7 @@ class FileService {
   private readonly caching?: CachingService;
 
   constructor(repository: FileRepository, log: BaseLogger, caching?: CachingService) {
-    this.repository = fileRepositoryFactory(FILE_ITEM_TYPE, {
-      s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
-      local: FILE_ITEM_PLUGIN_OPTIONS,
-    });
+    this.repository = repository;
     this.caching = caching;
     this.logger = log;
   }

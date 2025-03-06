@@ -103,7 +103,7 @@ const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
       return db.transaction(async (tx) => {
         // validate write permission in parent if it exists
         if (parentId) {
-          const item = await itemService.get(tx, member, parentId);
+          const item = await itemService.basicItemService.get(tx, member, parentId);
           await authorizationService.validatePermission(tx, PermissionLevel.Write, member, item);
         }
 

@@ -8,6 +8,7 @@ import {
   MultiSearchParams,
   TypoTolerance,
 } from 'meilisearch';
+import { singleton } from 'tsyringe';
 
 import {
   DocumentItemExtra,
@@ -98,6 +99,7 @@ const TYPO_TOLERANCE: TypoTolerance = {
  * Handle search index business logic with Meilisearch
  * Ideally we try to keep the public method idempotent. You can "delete" unexisting items and indexing work for first indexation and for updates.
  */
+@singleton()
 export class MeiliSearchWrapper {
   private readonly meilisearchClient: MeiliSearch;
   private readonly indexDictionary: Record<string, Index<IndexItem>> = {};

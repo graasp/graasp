@@ -12,16 +12,9 @@ import { CachingService } from '../services/caching/service';
 import FileService from '../services/file/service';
 import { fileRepositoryFactory } from '../services/file/utils/factory';
 import { wrapEtherpadErrors } from '../services/item/plugins/etherpad/etherpad';
-import {
-  EtherpadItemService,
-  RandomPadNameFactory,
-} from '../services/item/plugins/etherpad/service';
+import { RandomPadNameFactory } from '../services/item/plugins/etherpad/service';
 import { EtherpadServiceConfig } from '../services/item/plugins/etherpad/serviceConfig';
-import FileItemService from '../services/item/plugins/file/service';
-import { H5PService } from '../services/item/plugins/html/h5p/service';
-import { ImportExportService } from '../services/item/plugins/importExport/service';
 import { SearchService } from '../services/item/plugins/publication/published/plugins/search/service';
-import { ItemService } from '../services/item/service';
 import {
   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
   FILE_ITEM_PLUGIN_OPTIONS,
@@ -87,18 +80,18 @@ export const registerDependencies = (instance: FastifyInstance) => {
     new CachingService(resolveDependency(Redis), 'file_service_url_caching'),
   );
   // Register the FileService to inject the CacheService.
-  // const fileRepository = fileRepositoryFactory(FILE_ITEM_TYPE, {
-  //   s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
-  //   local: FILE_ITEM_PLUGIN_OPTIONS,
-  // });
-  // registerValue(
-  //   FileService,
-  //   new FileService(
-  //     fileRepository,
-  //     resolveDependency(BaseLogger),
-  //     resolveDependency(FILE_SERVICE_URLS_CACHING_DI_KEY),
-  //   ),
-  // );
+  const fileRepository = fileRepositoryFactory(FILE_ITEM_TYPE, {
+    s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
+    local: FILE_ITEM_PLUGIN_OPTIONS,
+  });
+  registerValue(
+    FileService,
+    new FileService(
+      fileRepository,
+      resolveDependency(BaseLogger),
+      resolveDependency(FILE_SERVICE_URLS_CACHING_DI_KEY),
+    ),
+  );
 
   // register MeiliSearch and its wrapper.
   registerValue(
@@ -134,4 +127,24 @@ export const registerDependencies = (instance: FastifyInstance) => {
   );
 
   registerValue(ETHERPAD_NAME_FACTORY_DI_KEY, new RandomPadNameFactory());
+
+  registerValue(
+    MailerService,
+    new MailerService({
+      host: MAILER_CONFIG_SMTP_HOST,
+      port: MAILER_CONFIG_SMTP_PORT,
+      useSsl: MAILER_CONFIG_SMTP_USE_SSL,
+      username: MAILER_CONFIG_USERNAME,
+      password: MAILER_CONFIG_PASSWORD,
+      fromEmail: MAILER_CONFIG_FROM_EMAIL,
+    }),
+  );
+  // registerValue('MAIL_KEY', {
+  //   host: MAILER_CONFIG_SMTP_HOST,
+  //   port: MAILER_CONFIG_SMTP_PORT,
+  //   useSsl: MAILER_CONFIG_SMTP_USE_SSL,
+  //   username: MAILER_CONFIG_USERNAME,
+  //   password: MAILER_CONFIG_PASSWORD,
+  //   fromEmail: MAILER_CONFIG_FROM_EMAIL,
+  // });
 };

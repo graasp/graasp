@@ -25,7 +25,7 @@ import {
 import { InvalidAggregationError } from '../../../action/utils/errors';
 import { ChatMessageRepository } from '../../../chat/repository';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
-import { ItemService } from '../../service';
+import { BasicItemService } from '../../basic.service';
 import { AppActionRepository } from '../app/appAction/appAction.repository';
 import { AppDataRepository } from '../app/appData/repository';
 import { AppSettingRepository } from '../app/appSetting/repository';
@@ -34,7 +34,7 @@ import { ItemActionType } from './utils';
 
 @singleton()
 export class ActionItemService {
-  private readonly itemService: ItemService;
+  private readonly basicItemService: BasicItemService;
   private readonly actionService: ActionService;
   private readonly actionRepository: ActionRepository;
   private readonly appActionRepository: AppActionRepository;
@@ -45,7 +45,7 @@ export class ActionItemService {
 
   constructor(
     actionService: ActionService,
-    itemService: ItemService,
+    basicItemService: BasicItemService,
     actionRepository: ActionRepository,
     itemMembershipRepository: ItemMembershipRepository,
     appActionRepository: AppActionRepository,
@@ -53,7 +53,7 @@ export class ActionItemService {
     appDataRepository: AppDataRepository,
   ) {
     this.actionService = actionService;
-    this.itemService = itemService;
+    this.basicItemService = basicItemService;
     this.actionRepository = actionRepository;
     this.itemMembershipRepository = itemMembershipRepository;
     this.appActionRepository = appActionRepository;
@@ -75,7 +75,7 @@ export class ActionItemService {
     }
 
     // check right and get item
-    const item = await this.itemService.get(db, actor, itemId, PermissionLevel.Read);
+    const item = await this.basicItemService.get(db, actor, itemId, PermissionLevel.Read);
 
     // check permission
     const permission = (
@@ -161,7 +161,7 @@ export class ActionItemService {
     }
 
     // check right and get item
-    const item = await this.itemService.get(db, actor, payload.itemId, PermissionLevel.Read);
+    const item = await this.basicItemService.get(db, actor, payload.itemId, PermissionLevel.Read);
 
     // check permission
     const permission = actor
@@ -191,7 +191,13 @@ export class ActionItemService {
       permission === PermissionLevel.Admin ? allMemberships.map(({ account }) => account) : [actor];
 
     // get descendants items
-    const descendants = await this.itemService.getFilteredDescendants(db, actor, payload.itemId);
+    // TODO
+    const descendants = [];
+    // const descendants = await this.basicItemService.getFilteredDescendants(
+    //   db,
+    //   actor,
+    //   payload.itemId,
+    // );
 
     // chatbox for all items
     const chatMessages = await this.chatMessageRepository.getByItems(db, [

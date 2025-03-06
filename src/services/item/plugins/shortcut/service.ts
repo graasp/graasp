@@ -11,6 +11,7 @@ import { AuthorizationService } from '../../../authorization';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { ThumbnailService } from '../../../thumbnail/service';
 import { ItemWrapperService } from '../../ItemWrapper';
+import { BasicItemService } from '../../basic.service';
 import { ShortcutItem, isItemType } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../repository';
@@ -24,6 +25,7 @@ import { ItemThumbnailService } from '../thumbnail/service';
 @singleton()
 export class ShortcutItemService extends ItemService {
   constructor(
+    basicItemService: BasicItemService,
     thumbnailService: ThumbnailService,
     itemThumbnailService: ItemThumbnailService,
     itemMembershipRepository: ItemMembershipRepository,
@@ -47,6 +49,7 @@ export class ShortcutItemService extends ItemService {
       authorizationService,
       itemWrapperService,
       itemVisibilityRepository,
+      basicItemService,
       log,
     );
   }
@@ -64,7 +67,7 @@ export class ShortcutItemService extends ItemService {
     const { target, item, ...properties } = args;
     const { description, name: definedName } = item;
 
-    const targetItem = await super.get(db, member, target);
+    const targetItem = await this.basicItemService.get(db, member, target);
 
     // generate name from target item if not defined
     const name =

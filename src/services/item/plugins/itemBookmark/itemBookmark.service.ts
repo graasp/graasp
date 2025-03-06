@@ -8,6 +8,7 @@ import { MinimalMember } from '../../../../types';
 import { filterOutPackedItems } from '../../../authorization';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { PackedItem } from '../../ItemWrapper';
+import { BasicItemService } from '../../basic.service';
 import { ItemService } from '../../service';
 import { ItemVisibilityRepository } from '../itemVisibility/repository';
 import { ItemBookmarkRepository } from './itemBookmark.repository';
@@ -16,18 +17,18 @@ type PackedBookmarkedItem = ItemBookmarkRaw & { item: PackedItem };
 
 @singleton()
 export class BookmarkService {
-  private readonly itemService: ItemService;
+  private readonly basicItemService: BasicItemService;
   private readonly itemBookmarkRepository: ItemBookmarkRepository;
   private readonly itemMembershipRepository: ItemMembershipRepository;
   private readonly itemVisibilityRepository: ItemVisibilityRepository;
 
   constructor(
-    itemService: ItemService,
+    basicItemService: BasicItemService,
     itemBookmarkRepository: ItemBookmarkRepository,
     itemMembershipRepository: ItemMembershipRepository,
     itemVisibilityRepository: ItemVisibilityRepository,
   ) {
-    this.itemService = itemService;
+    this.basicItemService = basicItemService;
     this.itemBookmarkRepository = itemBookmarkRepository;
     this.itemMembershipRepository = itemMembershipRepository;
     this.itemVisibilityRepository = itemVisibilityRepository;
@@ -61,7 +62,7 @@ export class BookmarkService {
 
   async post(db: DBConnection, member: MinimalMember, itemId: string) {
     // get and check permissions
-    const item = await this.itemService.get(db, member, itemId, PermissionLevel.Read);
+    const item = await this.basicItemService.get(db, member, itemId, PermissionLevel.Read);
     return this.itemBookmarkRepository.post(db, item.id, member.id);
   }
 

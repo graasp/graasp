@@ -19,7 +19,8 @@ import { EXPORT_FILE_EXPIRATION, ZIP_MIMETYPE } from '../../../../action/constan
 import { buildActionFilePath, buildItemTmpFolder } from '../../../../action/utils/export';
 import { AuthorizationService } from '../../../../authorization';
 import FileService from '../../../../file/service';
-import { MemberService } from '../../../../member/service';
+import { MemberService } from '../../../../member/member.service';
+import { BasicItemService } from '../../../basic.service';
 import { ItemService } from '../../../service';
 import { ActionItemService } from '../action.service';
 import { ActionRequestExportRepository } from './repository';
@@ -28,7 +29,7 @@ import { ActionRequestExportRepository } from './repository';
 export class ActionRequestExportService {
   private readonly fileService: FileService;
   private readonly actionItemService: ActionItemService;
-  private readonly itemService: ItemService;
+  private readonly basicItemService: BasicItemService;
   private readonly authorizationService: AuthorizationService;
   private readonly mailerService: MailerService;
   private readonly memberService: MemberService;
@@ -37,12 +38,12 @@ export class ActionRequestExportService {
   constructor(
     actionItemService: ActionItemService,
     authorizationService: AuthorizationService,
-    itemService: ItemService,
+    basicItemService: BasicItemService,
     fileService: FileService,
     mailerService: MailerService,
   ) {
     this.actionItemService = actionItemService;
-    this.itemService = itemService;
+    this.basicItemService = basicItemService;
     this.authorizationService = authorizationService;
     this.fileService = fileService;
     this.mailerService = mailerService;
@@ -56,7 +57,7 @@ export class ActionRequestExportService {
   ) {
     // check member has admin access to the item
     const member = await this.memberService.get(db, minimalMember.id);
-    const item = await this.itemService.get(db, minimalMember, itemId);
+    const item = await this.basicItemService.get(db, minimalMember, itemId);
     await this.authorizationService.validatePermission(
       db,
       PermissionLevel.Admin,

@@ -6,6 +6,7 @@ import { resolveDependency } from '../../../../../di/utils';
 import { db } from '../../../../../drizzle/db';
 import { AuthorizationService } from '../../../../authorization';
 import { WebsocketService } from '../../../../websockets/ws-service';
+import { BasicItemService } from '../../../basic.service';
 import { ItemService } from '../../../service';
 import { AppActionService } from '../appAction/appAction.service';
 import { AppDataService } from '../appData/service';
@@ -26,13 +27,13 @@ import { checkItemIsApp } from './utils';
 function registerAppDataTopic(
   websockets: WebsocketService,
   appDataService: AppDataService,
-  itemService: ItemService,
+  basicItemService: BasicItemService,
 ) {
   const authorizationService = resolveDependency(AuthorizationService);
 
   websockets.register(appDataTopic, async (req) => {
     const { channel: id, member } = req;
-    const item = await itemService.get(db, member, id);
+    const item = await basicItemService.get(db, member, id);
     await authorizationService.validatePermission(db, PermissionLevel.Read, member, item);
     checkItemIsApp(item);
   });
@@ -63,12 +64,12 @@ function registerAppDataTopic(
 function registerAppActionTopic(
   websockets: WebsocketService,
   appActionService: AppActionService,
-  itemService: ItemService,
+  basicItemService: BasicItemService,
 ) {
   const authorizationService = resolveDependency(AuthorizationService);
   websockets.register(appActionsTopic, async (req) => {
     const { channel: id, member } = req;
-    const item = await itemService.get(db, member, id);
+    const item = await basicItemService.get(db, member, id);
     await authorizationService.validatePermission(db, PermissionLevel.Admin, member, item);
     checkItemIsApp(item);
   });
@@ -88,12 +89,12 @@ function registerAppActionTopic(
 function registerAppSettingsTopic(
   websockets: WebsocketService,
   appSettingService: AppSettingService,
-  itemService: ItemService,
+  basicItemService: BasicItemService,
 ) {
   const authorizationService = resolveDependency(AuthorizationService);
   websockets.register(appSettingsTopic, async (req) => {
     const { channel: id, member } = req;
-    const item = await itemService.get(db, member, id);
+    const item = await basicItemService.get(db, member, id);
     await authorizationService.validatePermission(db, PermissionLevel.Read, member, item);
     checkItemIsApp(item);
   });
@@ -131,8 +132,8 @@ export const appDataWsHooks: FastifyPluginAsync<GraaspPluginAppDataWsHooksOption
 ) => {
   const { websockets } = fastify;
   const { appDataService } = options;
-  const itemService = resolveDependency(ItemService);
-  registerAppDataTopic(websockets, appDataService, itemService);
+  const basicItemService = resolveDependency(BasicItemService);
+  registerAppDataTopic(websockets, appDataService, basicItemService);
 };
 
 interface GraaspPluginAppActionsWsHooksOptions {
@@ -148,8 +149,8 @@ export const appActionsWsHooks: FastifyPluginAsync<GraaspPluginAppActionsWsHooks
 ) => {
   const { websockets } = fastify;
   const { appActionService } = options;
-  const itemService = resolveDependency(ItemService);
-  registerAppActionTopic(websockets, appActionService, itemService);
+  const basicItemService = resolveDependency(BasicItemService);
+  registerAppActionTopic(websockets, appActionService, basicItemService);
 };
 
 interface GraaspPluginAppSettingsWsHooksOptions {
@@ -165,6 +166,6 @@ export const appSettingsWsHooks: FastifyPluginAsync<GraaspPluginAppSettingsWsHoo
 ) => {
   const { websockets } = fastify;
   const { appSettingService } = options;
-  const itemService = resolveDependency(ItemService);
-  registerAppSettingsTopic(websockets, appSettingService, itemService);
+  const basicItemService = resolveDependency(BasicItemService);
+  registerAppSettingsTopic(websockets, appSettingService, basicItemService);
 };

@@ -4,16 +4,19 @@ import { ItemVisibilityOptionsType, PermissionLevel } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
 import { MinimalMember } from '../../../../types';
-import { ItemService } from '../../service';
+import { BasicItemService } from '../../basic.service';
 import { ItemVisibilityRepository } from './repository';
 
 @singleton()
 export class ItemVisibilityService {
-  private readonly itemService: ItemService;
+  private readonly basicItemService: BasicItemService;
   private readonly itemVisibilityRepository: ItemVisibilityRepository;
 
-  constructor(itemService: ItemService, itemVisibilityRepository: ItemVisibilityRepository) {
-    this.itemService = itemService;
+  constructor(
+    basicItemService: BasicItemService,
+    itemVisibilityRepository: ItemVisibilityRepository,
+  ) {
+    this.basicItemService = basicItemService;
     this.itemVisibilityRepository = itemVisibilityRepository;
   }
 
@@ -23,7 +26,7 @@ export class ItemVisibilityService {
     id: string,
     visibilityType: ItemVisibilityOptionsType,
   ) {
-    const item = await this.itemService.get(db, member, id, PermissionLevel.Admin);
+    const item = await this.basicItemService.get(db, member, id, PermissionLevel.Admin);
     const newVisibility = await this.itemVisibilityRepository.post(
       db,
       member.id,
@@ -42,7 +45,7 @@ export class ItemVisibilityService {
     id: string,
     visibilityType: ItemVisibilityOptionsType,
   ) {
-    const item = await this.itemService.get(db, member, id, PermissionLevel.Admin);
+    const item = await this.basicItemService.get(db, member, id, PermissionLevel.Admin);
 
     await this.itemVisibilityRepository.deleteOne(db, item, visibilityType);
     return { item: { path: item.path } };

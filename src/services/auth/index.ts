@@ -13,7 +13,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     }
     fastify.register(magicLinkController);
     fastify.register(passwordController);
-    fastify.register(mobileController, { prefix: '/m' });
+    // fastify.register(mobileController, { prefix: '/m' });
   });
 };
 

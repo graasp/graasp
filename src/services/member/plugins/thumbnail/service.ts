@@ -12,7 +12,7 @@ import {
   ThumbnailService,
   ThumbnailServiceTransformer,
 } from '../../../thumbnail/service';
-import { MemberService } from '../../service';
+import { MemberService } from '../../member.service';
 
 @singleton()
 export class MemberThumbnailService {

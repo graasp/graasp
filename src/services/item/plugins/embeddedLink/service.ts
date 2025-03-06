@@ -21,6 +21,7 @@ import { AuthorizationService } from '../../../authorization';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { ThumbnailService } from '../../../thumbnail/service';
 import { ItemWrapperService } from '../../ItemWrapper';
+import { BasicItemService } from '../../basic.service';
 import { EmbeddedLinkItem, isItemType } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../repository';
@@ -81,6 +82,7 @@ export class EmbeddedLinkItemService extends ItemService {
     authorizationService: AuthorizationService,
     itemWrapperService: ItemWrapperService,
     itemVisibilityRepository: ItemVisibilityRepository,
+    basicItemService: BasicItemService,
     log: BaseLogger,
     @inject(IFRAMELY_API_DI_KEY) iframelyHrefOrigin: string,
   ) {
@@ -95,6 +97,7 @@ export class EmbeddedLinkItemService extends ItemService {
       authorizationService,
       itemWrapperService,
       itemVisibilityRepository,
+      basicItemService,
       log,
     );
     this.iframelyHrefOrigin = iframelyHrefOrigin;

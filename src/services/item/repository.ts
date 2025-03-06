@@ -46,7 +46,6 @@ import {
 } from '../../drizzle/schema';
 import {
   Item,
-  ItemInsertDTO,
   ItemRaw,
   ItemTypeEnumKeys,
   ItemTypeUnion,
@@ -93,6 +92,8 @@ type CreateItemBody = {
 
 @singleton()
 export class ItemRepository {
+  constructor() {}
+
   checkHierarchyDepth(item: Item, additionalNbLevel = 1): void {
     // check if hierarchy it too deep
     // adds nb of items to be created

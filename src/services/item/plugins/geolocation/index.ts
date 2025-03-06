@@ -10,6 +10,7 @@ import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/
 import { assertIsMember } from '../../../authentication';
 import { matchOne } from '../../../authorization';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
+import { ItemService } from '../../service';
 import {
   deleteGeolocation,
   geolocationReverse,
@@ -22,6 +23,7 @@ import { ItemGeolocationService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const itemGeolocationService = resolveDependency(ItemGeolocationService);
+  const itemService = resolveDependency(ItemService);
 
   fastify.register(async function (fastify: FastifyInstanceTypebox) {
     fastify.get(
@@ -31,7 +33,15 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         preHandler: optionalIsAuthenticated,
       },
       async ({ user, params }) => {
-        return itemGeolocationService.getByItem(db, user?.account, params.id);
+        const actor = user?.account;
+        const geoloc = await itemGeolocationService.getByItem(db, actor, params.id);
+
+        if (geoloc) {
+          // return packed item of related item (could be parent)
+          const geolocPackedItem = await itemService.getPacked(db, actor, geoloc.item.id);
+          return { ...geoloc, item: geolocPackedItem };
+        }
+        return null;
       },
     );
 

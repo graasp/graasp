@@ -27,10 +27,10 @@ function encodeFilename(name: string) {
 }
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const log = resolveDependency(BaseLogger);
-  const itemService = resolveDependency(ItemService);
-  const actionService = resolveDependency(ActionService);
-  const importExportService = resolveDependency(ImportExportService);
+  // const log = resolveDependency(BaseLogger);
+  // const itemService = resolveDependency(ItemService);
+  // const actionService = resolveDependency(ActionService);
+  // const importExportService = resolveDependency(ImportExportService);
 
   fastify.register(fastifyMultipart, {
     limits: {
@@ -43,120 +43,120 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
   });
 
-  fastify.post(
-    '/zip-import',
-    {
-      schema: zipImport,
-      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
-    },
-    async (request, reply) => {
-      const {
-        user,
-        log,
-        query: { parentId },
-      } = request;
-      const member = asDefined(user?.account);
-      assertIsMember(member);
+  // fastify.post(
+  //   '/zip-import',
+  //   {
+  //     schema: zipImport,
+  //     preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
+  //   },
+  //   async (request, reply) => {
+  //     const {
+  //       user,
+  //       log,
+  //       query: { parentId },
+  //     } = request;
+  //     const member = asDefined(user?.account);
+  //     assertIsMember(member);
 
-      log.debug('Import zip content');
+  //     log.debug('Import zip content');
 
-      const zipFile = await request.file();
+  //     const zipFile = await request.file();
 
-      if (!zipFile) {
-        throw new Error('Zip file is undefined');
-      }
+  //     if (!zipFile) {
+  //       throw new Error('Zip file is undefined');
+  //     }
 
-      // throw if file is not a zip
-      if (!ZIP_FILE_MIME_TYPES.includes(zipFile.mimetype)) {
-        throw new FileIsInvalidArchiveError(zipFile.mimetype);
-      }
+  //     // throw if file is not a zip
+  //     if (!ZIP_FILE_MIME_TYPES.includes(zipFile.mimetype)) {
+  //       throw new FileIsInvalidArchiveError(zipFile.mimetype);
+  //     }
 
-      // prepare zip before replying to keep the file stream open
-      const { folderPath, targetFolder } = await prepareZip(zipFile.file, log);
+  //     // prepare zip before replying to keep the file stream open
+  //     const { folderPath, targetFolder } = await prepareZip(zipFile.file, log);
 
-      // create items from folder
-      // does not wait
-      importExportService
-        .import(db, member, {
-          folderPath,
-          targetFolder,
-          parentId,
-        })
-        .catch((e) => {
-          log.error(e);
-        });
+  //     // create items from folder
+  //     // does not wait
+  //     importExportService
+  //       .import(db, member, {
+  //         folderPath,
+  //         targetFolder,
+  //         parentId,
+  //       })
+  //       .catch((e) => {
+  //         log.error(e);
+  //       });
 
-      reply.status(StatusCodes.ACCEPTED);
-    },
-  );
+  //     reply.status(StatusCodes.ACCEPTED);
+  //   },
+  // );
 
-  // download item
-  fastify.get(
-    '/:itemId/export',
-    {
-      schema: zipExport,
-      preHandler: optionalIsAuthenticated,
-    },
-    async (request, reply) => {
-      const {
-        user,
-        params: { itemId },
-      } = request;
-      const member = user?.account;
-      const item = await itemService.get(db, member, itemId);
+  // // download item
+  // fastify.get(
+  //   '/:itemId/export',
+  //   {
+  //     schema: zipExport,
+  //     preHandler: optionalIsAuthenticated,
+  //   },
+  //   async (request, reply) => {
+  //     const {
+  //       user,
+  //       params: { itemId },
+  //     } = request;
+  //     const member = user?.account;
+  //     const item = await itemService.get(db, member, itemId);
 
-      // trigger download action for a collection
-      const action = {
-        itemId: item.id,
-        type: ActionTriggers.ItemDownload,
-        extra: JSON.stringify({ itemId: item?.id }),
-        // FIX: this should be infered from the request ! add a parameter in the request
-        view: Context.Builder,
-      };
-      await actionService.postMany(db, member, request, [action]);
+  //     // trigger download action for a collection
+  //     const action = {
+  //       itemId: item.id,
+  //       type: ActionTriggers.ItemDownload,
+  //       extra: JSON.stringify({ itemId: item?.id }),
+  //       // FIX: this should be infered from the request ! add a parameter in the request
+  //       view: Context.Builder,
+  //     };
+  //     await actionService.postMany(db, member, request, [action]);
 
-      // allow browser to access content disposition
-      reply.header('Access-Control-Expose-Headers', 'Content-Disposition');
+  //     // allow browser to access content disposition
+  //     reply.header('Access-Control-Expose-Headers', 'Content-Disposition');
 
-      // return single file
-      if (item.type !== ItemType.FOLDER) {
-        const { stream, mimetype, name } = await importExportService.fetchItemData(
-          db,
-          member,
-          item,
-        );
+  //     // return single file
+  //     if (item.type !== ItemType.FOLDER) {
+  //       const { stream, mimetype, name } = await importExportService.fetchItemData(
+  //         db,
+  //         member,
+  //         item,
+  //       );
 
-        reply.raw.setHeader(
-          'Content-Disposition',
-          `attachment; filename="${encodeFilename(name)}"`,
-        );
-        reply.type(mimetype);
+  //       reply.raw.setHeader(
+  //         'Content-Disposition',
+  //         `attachment; filename="${encodeFilename(name)}"`,
+  //       );
+  //       reply.type(mimetype);
 
-        return stream;
-      }
+  //       return stream;
+  //     }
 
-      // generate archive stream
-      const archiveStream = await importExportService.export(
-        db,
-        member,
-        {
-          item,
-          reply,
-        },
-        log,
-      );
+  //     // generate archive stream
+  //     const archiveStream = await importExportService.export(
+  //       db,
+  //       member,
+  //       {
+  //         item,
+  //         reply,
+  //       },
+  //       log,
+  //     );
 
-      try {
-        reply.raw.setHeader('Content-Disposition', `filename="${encodeFilename(item.name)}.zip"`);
-      } catch (e) {
-        // TODO: send sentry error
-        log?.error(e);
-        reply.raw.setHeader('Content-Disposition', 'filename="download.zip"');
-      }
-      reply.type('application/octet-stream');
-      return archiveStream.outputStream;
-    },
-  );
+  //     try {
+  //       reply.raw.setHeader('Content-Disposition', `filename="${encodeFilename(item.name)}.zip"`);
+  //     } catch (e) {
+  //       // TODO: send sentry error
+  //       log?.error(e);
+  //       reply.raw.setHeader('Content-Disposition', 'filename="download.zip"');
+  //     }
+  //     reply.type('application/octet-stream');
+  //     return archiveStream.outputStream;
+  //   },
+  // );
 };
 
 export default plugin;

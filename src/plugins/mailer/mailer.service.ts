@@ -1,13 +1,5 @@
 import { Transporter, createTransport } from 'nodemailer';
 
-import {
-  MAILER_CONFIG_FROM_EMAIL,
-  MAILER_CONFIG_PASSWORD,
-  MAILER_CONFIG_SMTP_HOST,
-  MAILER_CONFIG_SMTP_PORT,
-  MAILER_CONFIG_SMTP_USE_SSL,
-  MAILER_CONFIG_USERNAME,
-} from '../../utils/config';
 import { applyLayout } from './layout';
 
 export interface Mail {
@@ -30,16 +22,7 @@ export class MailerService {
   private readonly fromEmail: string;
   private readonly transporter: Transporter;
 
-  constructor(
-    { host, port, useSsl, username, password, fromEmail }: MailerOptions = {
-      host: MAILER_CONFIG_SMTP_HOST,
-      port: MAILER_CONFIG_SMTP_PORT,
-      useSsl: MAILER_CONFIG_SMTP_USE_SSL,
-      username: MAILER_CONFIG_USERNAME,
-      password: MAILER_CONFIG_PASSWORD,
-      fromEmail: MAILER_CONFIG_FROM_EMAIL,
-    },
-  ) {
+  constructor({ host, port, useSsl, username, password, fromEmail }: MailerOptions) {
     this.fromEmail = fromEmail;
     this.transporter = createTransport({
       host,

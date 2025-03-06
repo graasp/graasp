@@ -9,6 +9,7 @@ import { BaseLogger } from '../../../../logger';
 import { MaybeUser, MinimalMember } from '../../../../types';
 import { AuthorizationService } from '../../../authorization';
 import { ThumbnailService } from '../../../thumbnail/service';
+import { BasicItemService } from '../../basic.service';
 import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
 import { DEFAULT_ITEM_THUMBNAIL_SIZES } from './constants';
@@ -17,6 +18,7 @@ import { ItemThumbnailSize, ItemsThumbnails } from './types';
 @injectable()
 export class ItemThumbnailService {
   private readonly thumbnailService: ThumbnailService;
+  private readonly basicItemService: BasicItemService;
   private readonly itemService: ItemService;
   private readonly logger: BaseLogger;
   private readonly authorizationService: AuthorizationService;
@@ -27,6 +29,7 @@ export class ItemThumbnailService {
     // This can be solved by refactoring the code or using the `delay` helper function.
     @inject(delay(() => ItemService)) itemService: ItemService,
     thumbnailService: ThumbnailService,
+    basicItemService: BasicItemService,
     @inject(delay(() => AuthorizationService))
     authorizationService: AuthorizationService,
     itemRepository: ItemRepository,
@@ -74,7 +77,7 @@ export class ItemThumbnailService {
     actor: MaybeUser,
     { size, itemId }: { size: string; itemId: string },
   ) {
-    const item = await this.itemService.get(db, actor, itemId);
+    const item = await this.basicItemService.get(db, actor, itemId);
 
     // item does not have thumbnail
     if (!item.settings.hasThumbnail) {
@@ -145,7 +148,7 @@ export class ItemThumbnailService {
     actor: MinimalMember,
     { itemId }: { itemId: string },
   ) {
-    await this.itemService.get(db, actor, itemId, PermissionLevel.Write);
+    await this.basicItemService.get(db, actor, itemId, PermissionLevel.Write);
     await Promise.all(
       Object.values(ThumbnailSize).map(async (size) => {
         this.thumbnailService.delete({ id: itemId, size });

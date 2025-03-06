@@ -17,14 +17,15 @@ import { AccountType, AuthenticatedUser, MaybeUser, MemberInfo } from '../../typ
 import { CannotDeleteOnlyAdmin, CannotModifyGuestItemMembership } from '../../utils/errors';
 import HookManager from '../../utils/hook';
 import { AuthorizationService } from '../authorization';
+import { BasicItemService } from '../item/basic.service';
 import { ItemService } from '../item/service';
-import { MemberRepository } from '../member/repository';
+import { MemberRepository } from '../member/member.repository';
 import { MembershipRequestRepository } from './plugins/MembershipRequest/repository';
 import { ItemMembershipRepository } from './repository';
 
 @singleton()
 export class ItemMembershipService {
-  private readonly itemService: ItemService;
+  private readonly basicItemService: BasicItemService;
   private readonly mailerService: MailerService;
   private readonly itemMembershipRepository: ItemMembershipRepository;
   private readonly authorizationService: AuthorizationService;
@@ -41,14 +42,14 @@ export class ItemMembershipService {
   }>();
 
   constructor(
-    itemService: ItemService,
+    basicItemService: BasicItemService,
     mailerService: MailerService,
     itemMembershipRepository: ItemMembershipRepository,
     authorizationService: AuthorizationService,
     memberRepository: MemberRepository,
     membershipRequestRepository: MembershipRequestRepository,
   ) {
-    this.itemService = itemService;
+    this.basicItemService = basicItemService;
     this.mailerService = mailerService;
     this.itemMembershipRepository = itemMembershipRepository;
     this.memberRepository = memberRepository;
@@ -88,7 +89,7 @@ export class ItemMembershipService {
   }
 
   async getForItem(db: DBConnection, maybeUser: MaybeUser, itemId: Item['id']) {
-    const item = await this.itemService.get(db, maybeUser, itemId);
+    const item = await this.basicItemService.get(db, maybeUser, itemId);
     const result = await this.itemMembershipRepository.getForItem(db, item);
 
     return result;
@@ -130,7 +131,12 @@ export class ItemMembershipService {
     membership: { permission: `${PermissionLevel}`; itemId: UUID; memberId: UUID },
   ) {
     // check memberships
-    const item = await this.itemService.get(db, actor, membership.itemId, PermissionLevel.Admin);
+    const item = await this.basicItemService.get(
+      db,
+      actor,
+      membership.itemId,
+      PermissionLevel.Admin,
+    );
 
     return this._create(db, actor, item, membership.memberId, membership.permission);
   }
@@ -142,7 +148,12 @@ export class ItemMembershipService {
     itemId: UUID,
   ) {
     // check memberships
-    const item = await this.itemService.get(db, authenticatedUser, itemId, PermissionLevel.Admin);
+    const item = await this.basicItemService.get(
+      db,
+      authenticatedUser,
+      itemId,
+      PermissionLevel.Admin,
+    );
 
     return Promise.all(
       memberships.map(async ({ accountId, permission }) => {

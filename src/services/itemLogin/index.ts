@@ -9,6 +9,7 @@ import { ItemNotFound } from '../../utils/errors';
 import { SESSION_KEY, isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
 import { assertIsMember } from '../authentication';
 import { AuthorizationService, matchOne } from '../authorization';
+import { BasicItemService } from '../item/basic.service';
 import { ItemRepository } from '../item/repository';
 import { ItemService } from '../item/service';
 import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
@@ -24,7 +25,7 @@ import { ItemLoginService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const itemLoginService = resolveDependency(ItemLoginService);
-  const itemService = resolveDependency(ItemService);
+  const basicItemService = resolveDependency(BasicItemService);
   const itemRepository = resolveDependency(ItemRepository);
   const authorizationService = resolveDependency(AuthorizationService);
 
@@ -64,7 +65,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async ({ user, params: { id: itemId } }) => {
       return await db.transaction(async (tx) => {
-        const item = await itemService.get(tx, user?.account, itemId, PermissionLevel.Admin);
+        const item = await basicItemService.get(tx, user?.account, itemId, PermissionLevel.Admin);
         const itemLoginSchema = await itemLoginService.getByItemPath(tx, item.path);
         if (!itemLoginSchema) {
           throw new ItemLoginSchemaNotFound({ itemId });
@@ -109,7 +110,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
       return await db.transaction(async (tx) => {
-        const item = await itemService.get(tx, member, itemId, PermissionLevel.Admin); // Validate permissions
+        const item = await basicItemService.get(tx, member, itemId, PermissionLevel.Admin); // Validate permissions
 
         await itemLoginService.updateOrCreate(tx, item.path, type, status);
       });
@@ -128,7 +129,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       return db.transaction(async (tx) => {
         try {
           // Validate permission
-          await itemService.get(tx, member, itemId, PermissionLevel.Admin);
+          await basicItemService.get(tx, member, itemId, PermissionLevel.Admin);
 
           const { id } = await itemLoginService.delete(tx, itemId);
           return id;

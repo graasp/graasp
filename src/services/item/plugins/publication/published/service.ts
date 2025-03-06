@@ -1,4 +1,4 @@
-import { singleton } from 'tsyringe';
+import { injectable } from 'tsyringe';
 
 import {
   ClientManager,
@@ -20,10 +20,10 @@ import HookManager from '../../../../../utils/hook';
 import { isMember } from '../../../../authentication';
 import { filterOutHiddenItems } from '../../../../authorization';
 import { ItemMembershipRepository } from '../../../../itemMembership/repository';
-import { MemberRepository } from '../../../../member/repository';
+import { MemberRepository } from '../../../../member/member.repository';
 import { ItemWrapperService } from '../../../ItemWrapper';
+import { BasicItemService } from '../../../basic.service';
 import { ItemRepository } from '../../../repository';
-import { ItemService } from '../../../service';
 import { ActionItemService } from '../../action/action.service';
 import { ItemVisibilityRepository } from '../../itemVisibility/repository';
 import {
@@ -38,10 +38,10 @@ interface ActionCount {
   actionCount: number;
 }
 
-@singleton()
+@injectable()
 export class ItemPublishedService {
   private readonly log: BaseLogger;
-  private readonly itemService: ItemService;
+  private readonly basicItemService: BasicItemService;
   private readonly meilisearchWrapper: MeiliSearchWrapper;
   private readonly mailerService: MailerService;
   private readonly itemMembershipRepository: ItemMembershipRepository;
@@ -61,7 +61,7 @@ export class ItemPublishedService {
   }>();
 
   constructor(
-    itemService: ItemService,
+    basicItemService: BasicItemService,
     mailerService: MailerService,
     meilisearchWrapper: MeiliSearchWrapper,
     itemVisibilityRepository: ItemVisibilityRepository,
@@ -74,7 +74,7 @@ export class ItemPublishedService {
     log: BaseLogger,
   ) {
     this.log = log;
-    this.itemService = itemService;
+    this.basicItemService = basicItemService;
     this.meilisearchWrapper = meilisearchWrapper;
     this.itemVisibilityRepository = itemVisibilityRepository;
     this.itemPublishedRepository = itemPublishedRepository;
@@ -124,7 +124,7 @@ export class ItemPublishedService {
   }
 
   async get(db: DBConnection, actor: MaybeUser, itemId: string) {
-    const item = await this.itemService.get(db, actor, itemId);
+    const item = await this.basicItemService.get(db, actor, itemId);
 
     // item should be public first
     await this.itemVisibilityRepository.getType(db, item.path, ItemVisibilityType.Public, {
@@ -152,7 +152,7 @@ export class ItemPublishedService {
     itemId: string,
     publicationStatus: PublicationStatus,
   ) {
-    const item = await this.itemService.get(db, member, itemId, PermissionLevel.Admin);
+    const item = await this.basicItemService.get(db, member, itemId, PermissionLevel.Admin);
 
     const itemPublished = await this.itemPublishedRepository.getForItem(db, item.path);
 
@@ -225,7 +225,7 @@ export class ItemPublishedService {
   }
 
   async delete(db: DBConnection, member: MinimalMember, itemId: string) {
-    const item = await this.itemService.get(db, member, itemId, PermissionLevel.Admin);
+    const item = await this.basicItemService.get(db, member, itemId, PermissionLevel.Admin);
 
     await this.hooks.runPreHooks('delete', member, db, { item });
 

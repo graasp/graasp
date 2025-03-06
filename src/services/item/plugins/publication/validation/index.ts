@@ -12,7 +12,7 @@ import { assertIsMember } from '../../../../authentication';
 import { matchOne } from '../../../../authorization';
 import { memberAccountRole } from '../../../../member/strategies/memberAccountRole';
 import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
-import { ItemService } from '../../../service';
+import { BasicItemService } from '../../../basic.service';
 import {
   ItemOpFeedbackErrorEvent,
   ItemOpFeedbackEvent,
@@ -20,7 +20,7 @@ import {
 } from '../../../ws/events';
 import { FolderItemService } from '../../folder/service';
 import { ItemPublishedService } from '../published/service';
-import { getItemValidationGroup, getLatestItemValidationGroup, validateItem } from './schemas';
+import { getLatestItemValidationGroup, validateItem } from './schemas';
 import { ItemValidationService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
@@ -28,7 +28,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
   const validationService = resolveDependency(ItemValidationService);
   const publishService = resolveDependency(ItemPublishedService);
-  const itemService = resolveDependency(ItemService);
+  const basicItemService = resolveDependency(BasicItemService);
   const folderItemService = resolveDependency(FolderItemService);
 
   // get validation status of given itemId
@@ -41,7 +41,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user, params: { itemId } }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      const item = await itemService.get(db, member, itemId);
+      const item = await basicItemService.get(db, member, itemId);
       return await validationService.getLastItemValidationGroupForItem(db, member, item);
     },
   );

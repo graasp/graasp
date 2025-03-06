@@ -22,7 +22,8 @@ import {
   MemberNotSignedUp,
   MemberWithoutPassword,
 } from '../../../../utils/errors';
-import { MemberDTO, MemberRepository } from '../../../member/repository';
+import { MemberRepository } from '../../../member/member.repository';
+import { MemberDTO } from '../../../member/types';
 import { SHORT_TOKEN_PARAM } from '../passport';
 import { PasswordConflict } from './errors';
 import { MemberPasswordRepository } from './memberPassword.repository';

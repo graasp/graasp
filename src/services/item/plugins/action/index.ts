@@ -111,7 +111,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
       }
 
       await db.transaction(async (tx) => {
-        const item = await itemService.get(tx, member, itemId);
+        const item = await itemService.basicItemService.get(tx, member, itemId);
         await actionService.postMany(tx, member, request, [
           {
             item,

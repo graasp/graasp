@@ -7,7 +7,7 @@ import { BaseLogger } from '../../../../logger';
 import { MemberInfo } from '../../../../types';
 import { MemberNotSignedUp } from '../../../../utils/errors';
 import { ActionRepository } from '../../../action/action.repository';
-import { MemberRepository } from '../../../member/repository';
+import { MemberRepository } from '../../../member/member.repository';
 import { AuthService } from '../../service';
 
 @singleton()

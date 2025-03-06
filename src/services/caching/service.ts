@@ -1,10 +1,12 @@
 import { hoursToSeconds } from 'date-fns';
 import { Redis } from 'ioredis';
+import { singleton } from 'tsyringe';
 
 import { ICachingService } from './interfaces';
 
 const EXPIRES_IN_SECONDS = hoursToSeconds(1);
 
+@singleton()
 export class CachingService implements ICachingService {
   private readonly redis: Redis;
   private readonly contextKey: string;

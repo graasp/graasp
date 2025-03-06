@@ -8,7 +8,7 @@ import { asDefined } from '../../../../utils/assertions';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
 import { matchOne } from '../../../authorization';
-import { MemberRepository } from '../../repository';
+import { MemberRepository } from '../../member.repository';
 import { memberAccountRole } from '../../strategies/memberAccountRole';
 import { exportMemberData } from './schemas/schemas';
 import { ExportMemberDataService } from './service';

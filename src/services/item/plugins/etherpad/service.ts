@@ -206,7 +206,7 @@ export class EtherpadItemService {
     itemId: string,
     mode: 'read' | 'write',
   ) {
-    const item = await this.itemService.get(db, account, itemId);
+    const item = await this.itemService.basicItemService.get(db, account, itemId);
 
     if (!isItemType(item, ItemType.ETHERPAD) || !item.extra?.etherpad) {
       throw new ItemMissingExtraError(item?.id);
@@ -352,7 +352,7 @@ export class EtherpadItemService {
     account: AuthenticatedUser,
     itemId: string,
   ): Promise<string> {
-    const item = await this.itemService.get(db, account, itemId);
+    const item = await this.itemService.basicItemService.get(db, account, itemId);
 
     if (!isItemType(item, ItemType.ETHERPAD) || !item.extra?.etherpad) {
       throw new ItemMissingExtraError(item?.id);

@@ -9,9 +9,7 @@ import { DBConnection } from '../../drizzle/db';
 import { Item } from '../../drizzle/types';
 import { BaseLogger } from '../../logger';
 import { MaybeUser } from '../../types';
-import { ItemService } from '../item/service';
-import { MemberRepository } from '../member/repository';
-import { MemberService } from '../member/service';
+import { MemberRepository } from '../member/member.repository';
 import { ActionRepository } from './action.repository';
 import { getGeolocationIp } from './utils/actions';
 
@@ -19,21 +17,15 @@ import { getGeolocationIp } from './utils/actions';
 export class ActionService {
   actionRepository: ActionRepository;
   memberRepository: MemberRepository;
-  itemService: ItemService;
-  memberService: MemberService;
   logger: BaseLogger;
 
   constructor(
     actionRepository: ActionRepository,
     memberRepository: MemberRepository,
-    itemService: ItemService,
-    memberService: MemberService,
     logger: BaseLogger,
   ) {
     this.actionRepository = actionRepository;
     this.memberRepository = memberRepository;
-    this.itemService = itemService;
-    this.memberService = memberService;
     this.logger = logger;
   }
 

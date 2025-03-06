@@ -6,6 +6,7 @@ import { DBConnection } from '../../drizzle/db';
 import { ChatMessageRaw } from '../../drizzle/types';
 import { AuthenticatedUser, MaybeUser } from '../../types';
 import HookManager from '../../utils/hook';
+import { BasicItemService } from '../item/basic.service';
 import { ItemService } from '../item/service';
 import { ChatMessageNotFound, MemberCannotDeleteMessage, MemberCannotEditMessage } from './errors';
 import { MentionService } from './plugins/mentions/service';
@@ -15,22 +16,22 @@ import { ChatMessageRepository } from './repository';
 export class ChatMessageService {
   hooks = new HookManager();
   private readonly mentionService: MentionService;
-  private readonly itemService: ItemService;
+  private readonly basicItemService: BasicItemService;
   private readonly chatMessageRepository: ChatMessageRepository;
 
   constructor(
-    itemService: ItemService,
+    basicItemService: BasicItemService,
     mentionService: MentionService,
     chatMessageRepository: ChatMessageRepository,
   ) {
-    this.itemService = itemService;
+    this.basicItemService = basicItemService;
     this.mentionService = mentionService;
     this.chatMessageRepository = chatMessageRepository;
   }
 
   async getForItem(db: DBConnection, actor: MaybeUser, itemId: string) {
     // check permission
-    await this.itemService.get(db, actor, itemId);
+    await this.basicItemService.get(db, actor, itemId);
 
     return await this.chatMessageRepository.getByItem(db, itemId);
   }
@@ -42,7 +43,7 @@ export class ChatMessageService {
     data: { body: string; mentions?: string[] },
   ) {
     // check permission
-    await this.itemService.get(db, actor, itemId);
+    await this.basicItemService.get(db, actor, itemId);
 
     const message = await this.chatMessageRepository.addOne(db, {
       itemId,
@@ -70,7 +71,7 @@ export class ChatMessageService {
     message: { body: string },
   ) {
     // check permission
-    await this.itemService.get(db, authenticatedUser, itemId);
+    await this.basicItemService.get(db, authenticatedUser, itemId);
 
     // check right to make sure that the user is editing his own message
     const messageContent = await this.chatMessageRepository.getOne(db, messageId);
@@ -102,7 +103,7 @@ export class ChatMessageService {
     messageId: string,
   ) {
     // check permission
-    await this.itemService.get(db, authenticatedUser, itemId);
+    await this.basicItemService.get(db, authenticatedUser, itemId);
 
     const messageContent = await this.chatMessageRepository.getOne(db, messageId);
     if (!messageContent) {
@@ -128,7 +129,7 @@ export class ChatMessageService {
   async clear(db: DBConnection, authenticatedUser: AuthenticatedUser, itemId: string) {
     // check rights for accessing the chat and sufficient right to clear the conversation
     // user should be an admin of the item
-    await this.itemService.get(db, authenticatedUser, itemId, PermissionLevel.Admin);
+    await this.basicItemService.get(db, authenticatedUser, itemId, PermissionLevel.Admin);
 
     await this.hooks.runPostHooks('clear', authenticatedUser, db, { itemId });
 

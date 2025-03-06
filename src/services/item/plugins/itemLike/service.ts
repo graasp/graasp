@@ -5,6 +5,7 @@ import { MaybeUser, MinimalMember } from '../../../../types';
 import { filterOutPackedItems } from '../../../authorization';
 import { ItemService } from '../../../item/service';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
+import { BasicItemService } from '../../basic.service';
 import { ItemVisibilityRepository } from '../itemVisibility/repository';
 import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
@@ -12,7 +13,7 @@ import { ItemLikeRepository } from './repository';
 
 @singleton()
 export class ItemLikeService {
-  private itemService: ItemService;
+  private basicItemService: BasicItemService;
   private itemLikeRepository: ItemLikeRepository;
   private itemPublishedRepository: ItemPublishedRepository;
   private readonly meilisearchClient: MeiliSearchWrapper;
@@ -20,14 +21,14 @@ export class ItemLikeService {
   private readonly itemVisibilityRepository: ItemVisibilityRepository;
 
   constructor(
-    itemService: ItemService,
+    basicItemService: BasicItemService,
     itemLikeRepository: ItemLikeRepository,
     itemPublishedRepository: ItemPublishedRepository,
     itemMembershipRepository: ItemMembershipRepository,
     itemVisibilityRepository: ItemVisibilityRepository,
     meilisearchClient: MeiliSearchWrapper,
   ) {
-    this.itemService = itemService;
+    this.basicItemService = basicItemService;
     this.itemLikeRepository = itemLikeRepository;
     this.itemPublishedRepository = itemPublishedRepository;
     this.meilisearchClient = meilisearchClient;
@@ -58,14 +59,14 @@ export class ItemLikeService {
   }
 
   async getForItem(db: DBConnection, actor: MaybeUser, itemId: string) {
-    await this.itemService.get(db, actor, itemId);
+    await this.basicItemService.get(db, actor, itemId);
 
     return this.itemLikeRepository.getByItemId(db, itemId);
   }
 
   async removeOne(db: DBConnection, member: MinimalMember, itemId: string) {
     // QUESTION: allow public to be liked?
-    const item = await this.itemService.get(db, member, itemId);
+    const item = await this.basicItemService.get(db, member, itemId);
 
     const result = await this.itemLikeRepository.deleteOneByCreatorAndItem(db, member.id, item.id);
 
@@ -81,7 +82,7 @@ export class ItemLikeService {
 
   async post(db: DBConnection, member: MinimalMember, itemId: string) {
     // QUESTION: allow public to be liked?
-    const item = await this.itemService.get(db, member, itemId);
+    const item = await this.basicItemService.get(db, member, itemId);
     const result = await this.itemLikeRepository.addOne(db, {
       creatorId: member.id,
       itemId: item.id,

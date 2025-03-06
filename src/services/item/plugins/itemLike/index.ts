@@ -11,12 +11,12 @@ import { assertIsMember } from '../../../authentication';
 import { matchOne } from '../../../authorization';
 import { memberAccountRole } from '../../../member/strategies/memberAccountRole';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { ItemService } from '../../service';
+import { BasicItemService } from '../../basic.service';
 import { create, deleteOne, getLikesForCurrentMember, getLikesForItem } from './schemas';
 import { ItemLikeService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const itemService = resolveDependency(ItemService);
+  const basicItemService = resolveDependency(BasicItemService);
   const itemLikeService = resolveDependency(ItemLikeService);
   const actionService = resolveDependency(ActionService);
 
@@ -59,7 +59,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       db.transaction(async (tx) => {
         await itemLikeService.post(tx, member, itemId);
         // action like item
-        const item = await itemService.get(tx, member, itemId);
+        const item = await basicItemService.get(tx, member, itemId);
         const action = {
           item,
           type: ActionTriggers.ItemLike,
@@ -87,7 +87,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       return db.transaction(async (tx) => {
         const newItemLike = await itemLikeService.removeOne(tx, member, itemId);
         // action unlike item
-        const item = await itemService.get(tx, member, itemId);
+        const item = await basicItemService.get(tx, member, itemId);
 
         const action = {
           item,

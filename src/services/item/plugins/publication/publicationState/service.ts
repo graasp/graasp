@@ -3,6 +3,7 @@ import { ItemVisibilityType, PermissionLevel } from '@graasp/sdk';
 import { DBConnection } from '../../../../../drizzle/db';
 import { AuthenticatedUser } from '../../../../../types';
 import { ItemWrapper } from '../../../ItemWrapper';
+import { BasicItemService } from '../../../basic.service';
 import { ItemService } from '../../../service';
 import { ItemVisibilityRepository } from '../../itemVisibility/repository';
 import { ItemPublishedRepository } from '../published/itemPublished.repository';
@@ -11,20 +12,20 @@ import { ValidationQueue } from '../validation/validationQueue';
 import { PublicationState } from './publicationState';
 
 export class PublicationService {
-  private readonly itemService: ItemService;
+  private readonly basicItemService: BasicItemService;
   private readonly itemVisibilityRepository: ItemVisibilityRepository;
   private readonly validationRepository: ItemValidationGroupRepository;
   private readonly publishedRepository: ItemPublishedRepository;
   private readonly validationQueue: ValidationQueue;
 
   constructor(
-    itemService: ItemService,
+    basicItemService: BasicItemService,
     itemVisibilityRepository: ItemVisibilityRepository,
     validationRepository: ItemValidationGroupRepository,
     publishedRepository: ItemPublishedRepository,
     validationQueue: ValidationQueue,
   ) {
-    this.itemService = itemService;
+    this.basicItemService = basicItemService;
     this.itemVisibilityRepository = itemVisibilityRepository;
     this.validationRepository = validationRepository;
     this.publishedRepository = publishedRepository;
@@ -32,7 +33,7 @@ export class PublicationService {
   }
 
   public async computeStateForItem(db: DBConnection, member: AuthenticatedUser, itemId: string) {
-    const item = await this.itemService.get(db, member, itemId, PermissionLevel.Admin);
+    const item = await this.basicItemService.get(db, member, itemId, PermissionLevel.Admin);
     const publicVisibility = await this.itemVisibilityRepository.getType(
       db,
       item.path,

@@ -30,34 +30,38 @@ export default async function (instance: FastifyInstance): Promise<void> {
   // register some dependencies manually
   registerDependencies(instance);
 
-  await instance
-    .register(fp(metaPlugin))
-    .register(fp(passportPlugin))
-    // need to be defined before member and item for auth check
-    .register(fp(authPlugin));
+  console.log('-----------htrgdfs');
+  await instance.register(fp(metaPlugin));
 
-  instance.register(async (instance) => {
-    // core API modules
-    await instance
-      // the websockets plugin must be registered before but in the same scope as the apis
-      // otherwise tests somehow bypass mocking the authentication through jest.spyOn(app, 'verifyAuthentication')
-      .register(fp(websocketsPlugin), {
-        prefix: '/ws',
-        redis: {
-          channelName: 'graasp-realtime-updates',
-          config: {
-            host: REDIS_HOST,
-            port: REDIS_PORT,
-            username: REDIS_USERNAME,
-            password: REDIS_PASSWORD,
-          },
-        },
-      })
-      .register(fp(MemberServiceApi))
-      .register(fp(ItemServiceApi))
-      .register(fp(ItemMembershipServiceApi))
-      .register(tagPlugin);
-  });
+  console.log('-----------wfwefwfef');
+  await instance.register(fp(passportPlugin));
+  // need to be defined before member and item for auth check
+
+  console.log('-----------hrtgdfvxc');
+  await instance.register(fp(authPlugin));
+
+  // await instance.register(async (instance) => {
+  //   // core API modules
+  //   await instance
+  //     // the websockets plugin must be registered before but in the same scope as the apis
+  //     // otherwise tests somehow bypass mocking the authentication through jest.spyOn(app, 'verifyAuthentication')
+  //     .register(fp(websocketsPlugin), {
+  //       prefix: '/ws',
+  //       redis: {
+  //         channelName: 'graasp-realtime-updates',
+  //         config: {
+  //           host: REDIS_HOST,
+  //           port: REDIS_PORT,
+  //           username: REDIS_USERNAME,
+  //           password: REDIS_PASSWORD,
+  //         },
+  //       },
+  //     })
+  //     .register(fp(MemberServiceApi))
+  //     .register(fp(ItemServiceApi))
+  //     .register(fp(ItemMembershipServiceApi))
+  //     .register(tagPlugin);
+  // });
 }
 
 // TODO: set fastify 'on close' handler, and disconnect from services there: db, ...

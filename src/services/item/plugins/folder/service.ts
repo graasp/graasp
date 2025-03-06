@@ -11,6 +11,7 @@ import { AuthorizationService } from '../../../authorization';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { ThumbnailService } from '../../../thumbnail/service';
 import { ItemWrapperService } from '../../ItemWrapper';
+import { BasicItemService } from '../../basic.service';
 import { FolderItem, isItemType } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../repository';
@@ -34,6 +35,7 @@ export class FolderItemService extends ItemService {
     authorizationService: AuthorizationService,
     itemWrapperService: ItemWrapperService,
     itemVisibilityRepository: ItemVisibilityRepository,
+    basicItemService: BasicItemService,
     log: BaseLogger,
   ) {
     super(
@@ -47,6 +49,7 @@ export class FolderItemService extends ItemService {
       authorizationService,
       itemWrapperService,
       itemVisibilityRepository,
+      basicItemService,
       log,
     );
   }
