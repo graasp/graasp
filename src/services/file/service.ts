@@ -6,7 +6,7 @@ import { BaseLogger } from '../../logger';
 import { CachingService } from '../caching/service';
 import { Actor } from '../member/entities/member';
 import { LocalFileConfiguration, S3FileConfiguration } from './interfaces/configuration';
-import { FileRepository, FileUpload } from './interfaces/fileRepository';
+import { FileRepository } from './interfaces/fileRepository';
 import { createSanitizedFile, sanitizeHtml } from './sanitize';
 import {
   CopyFileInvalidPathError,
@@ -57,23 +57,21 @@ class FileService {
       }
     });
 
-    const sanitizedFiles = await Promise.all(
-      data.map((fileInput) =>
-        this.sanitizeFile({ file: fileInput.file, mimetype: fileInput.mimetype }),
-      ),
-    );
-
-    const filesToUpload: FileUpload[] = [];
-    for (let i = 0; i < data.length; i++) {
-      filesToUpload.push({
-        fileStream: sanitizedFiles[i],
-        filepath: data[i].filepath,
-        memberId: account.id,
-        mimetype: data[i].mimetype,
-      });
-    }
-
     const filepaths = data.map((d) => d.filepath);
+    const filesToUpload = await Promise.all(
+      data.map(async (fileInput) => {
+        const sanitizedFile = await this.sanitizeFile({
+          file: fileInput.file,
+          mimetype: fileInput.mimetype,
+        });
+        return {
+          fileStream: sanitizedFile,
+          filepath: fileInput.filepath,
+          memberId: account.id,
+          mimetype: fileInput.mimetype,
+        };
+      }),
+    );
 
     try {
       await this.repository.uploadFiles(filesToUpload);
@@ -143,11 +141,11 @@ class FileService {
   }
 
   async deleteMany(filepaths: string[]) {
-    for (let i = 0; i < filepaths.length; i++) {
-      if (!filepaths[i].length) {
-        throw new DeleteFileInvalidPathError(filepaths[i]);
+    filepaths.forEach((filepath) => {
+      if (!filepath.length) {
+        throw new DeleteFileInvalidPathError(filepath);
       }
-    }
+    });
 
     await this.repository.deleteFiles(filepaths);
     await this.caching?.deleteMany(filepaths);
