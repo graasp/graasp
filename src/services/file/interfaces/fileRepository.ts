@@ -4,6 +4,14 @@ import { FastifyBaseLogger } from 'fastify';
 
 import { FileItemType } from '@graasp/sdk';
 
+export type FileUpload = {
+  fileStream: Readable;
+  memberId: string;
+  filepath: string;
+  mimetype?: string;
+  size?: string;
+};
+
 export interface FileRepository {
   get fileType(): FileItemType;
 
@@ -19,7 +27,8 @@ export interface FileRepository {
 
   copyFolder(args: { originalFolderPath: string; newFolderPath: string }): Promise<string>;
 
-  deleteFile(args: { filepath: string }): Promise<void>;
+  deleteFile(filepath: string): Promise<void>;
+  deleteFiles(filepaths: string[]): Promise<void>;
   deleteFolder(args: { folderPath: string }): Promise<void>;
 
   getFile(args: { filepath: string; id: string }, log?: FastifyBaseLogger): Promise<Readable>;
@@ -33,11 +42,7 @@ export interface FileRepository {
     log?: FastifyBaseLogger,
   ): Promise<string>;
 
-  uploadFile(args: {
-    fileStream: Readable;
-    memberId: string;
-    filepath: string;
-    mimetype?: string;
-    size?: string;
-  }): Promise<void>;
+  uploadFile(file: FileUpload): Promise<void>;
+
+  uploadFiles(files: FileUpload[]): Promise<void>;
 }

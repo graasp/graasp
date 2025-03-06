@@ -2,13 +2,12 @@ import fs from 'fs';
 import { copy as fseCopy } from 'fs-extra';
 import { access, copyFile, mkdir, rm } from 'fs/promises';
 import path from 'path';
-import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
 
 import { ItemType } from '@graasp/sdk';
 
 import { LocalFileConfiguration } from '../interfaces/configuration';
-import { FileRepository } from '../interfaces/fileRepository';
+import { FileRepository, FileUpload } from '../interfaces/fileRepository';
 import { LocalFileNotFound } from '../utils/errors';
 
 export class LocalFileRepository implements FileRepository {
@@ -59,11 +58,12 @@ export class LocalFileRepository implements FileRepository {
     return newFolderPath;
   }
 
-  // delete
-  async deleteFile({ filepath }: { filepath: string }): Promise<void> {
+  async deleteFile(filepath: string): Promise<void> {
     await rm(this.buildFullPath(filepath));
   }
-  // delete
+  async deleteFiles(filepaths: string[]): Promise<void> {
+    await Promise.all(filepaths.map((filepath) => rm(this.buildFullPath(filepath))));
+  }
   async deleteFolder({ folderPath }: { folderPath: string }): Promise<void> {
     await rm(this.buildFullPath(folderPath), { recursive: true });
   }
@@ -92,20 +92,22 @@ export class LocalFileRepository implements FileRepository {
   }
 
   // upload
-  async uploadFile({
-    fileStream,
-    filepath,
-  }: {
-    fileStream: Readable;
-    filepath: string;
-  }): Promise<void> {
-    const folderPath = path.dirname(this.buildFullPath(filepath));
-    // create folder
-    await mkdir(folderPath, {
-      recursive: true,
-    });
+  async uploadFile(file: FileUpload): Promise<void> {
+    await this.uploadFiles([file]);
+  }
 
-    // create file at path
-    await pipeline(fileStream, fs.createWriteStream(this.buildFullPath(filepath)));
+  async uploadFiles(files: FileUpload[]): Promise<void> {
+    await Promise.all(
+      files.map(async (file) => {
+        const folderPath = path.dirname(this.buildFullPath(file.filepath));
+        // create folder
+        await mkdir(folderPath, {
+          recursive: true,
+        });
+
+        // create file at path
+        return pipeline(file.fileStream, fs.createWriteStream(this.buildFullPath(file.filepath)));
+      }),
+    );
   }
 }

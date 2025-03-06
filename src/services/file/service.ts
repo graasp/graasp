@@ -6,7 +6,7 @@ import { BaseLogger } from '../../logger';
 import { CachingService } from '../caching/service';
 import { Actor } from '../member/entities/member';
 import { LocalFileConfiguration, S3FileConfiguration } from './interfaces/configuration';
-import { FileRepository } from './interfaces/fileRepository';
+import { FileRepository, FileUpload } from './interfaces/fileRepository';
 import { createSanitizedFile, sanitizeHtml } from './sanitize';
 import {
   CopyFileInvalidPathError,
@@ -40,30 +40,50 @@ class FileService {
   }
 
   async upload(account: Account, data: { file: Readable; filepath: string; mimetype?: string }) {
-    const { file, filepath, mimetype } = data;
+    const uploadedFiles = await this.uploadMany(account, [data]);
+    return uploadedFiles[0];
+  }
 
-    if (!file || !filepath) {
-      throw new UploadFileInvalidParameterError({
-        file,
-        filepath,
+  async uploadMany(
+    account: Account,
+    data: { file: Readable; filepath: string; mimetype?: string }[],
+  ) {
+    data.forEach((fileInput) => {
+      if (!fileInput.file || !fileInput.filepath) {
+        throw new UploadFileInvalidParameterError({
+          file: fileInput.file,
+          filepath: fileInput.filepath,
+        });
+      }
+    });
+
+    const sanitizedFiles = await Promise.all(
+      data.map((fileInput) =>
+        this.sanitizeFile({ file: fileInput.file, mimetype: fileInput.mimetype }),
+      ),
+    );
+
+    const filesToUpload: FileUpload[] = [];
+    for (let i = 0; i < data.length; i++) {
+      filesToUpload.push({
+        fileStream: sanitizedFiles[i],
+        filepath: data[i].filepath,
+        memberId: account.id,
+        mimetype: data[i].mimetype,
       });
     }
 
-    const sanitizedFile = await this.sanitizeFile({ file, mimetype });
+    const filepaths = data.map((d) => d.filepath);
 
     try {
-      await this.repository.uploadFile({
-        fileStream: sanitizedFile,
-        filepath,
-        memberId: account.id,
-        mimetype,
-      });
-      await this.caching?.delete(filepath);
+      await this.repository.uploadFiles(filesToUpload);
+
+      await this.caching?.deleteMany(filepaths);
     } catch (e) {
-      // rollback uploaded file
-      this.delete(filepath);
+      // rollback all uploaded files
+      this.deleteMany(filepaths);
       this.logger.error(e);
-      throw new UploadFileUnexpectedError({ mimetype, memberId: account.id });
+      throw new UploadFileUnexpectedError({ memberId: account.id });
     }
 
     return data;
@@ -119,11 +139,18 @@ class FileService {
   }
 
   async delete(filepath: string) {
-    if (!filepath.length) {
-      throw new DeleteFileInvalidPathError(filepath);
+    return this.deleteMany([filepath]);
+  }
+
+  async deleteMany(filepaths: string[]) {
+    for (let i = 0; i < filepaths.length; i++) {
+      if (!filepaths[i].length) {
+        throw new DeleteFileInvalidPathError(filepaths[i]);
+      }
     }
-    await this.repository.deleteFile({ filepath });
-    await this.caching?.delete(filepath);
+
+    await this.repository.deleteFiles(filepaths);
+    await this.caching?.deleteMany(filepaths);
   }
 
   async deleteFolder(folderPath: string) {
