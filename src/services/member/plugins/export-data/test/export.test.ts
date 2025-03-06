@@ -5,7 +5,7 @@ import { FastifyInstance } from 'fastify';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { TMP_FOLDER } from '../../../../../utils/config';
-import { saveItemFavorites } from '../../../../item/plugins/itemFavorite/test/fixtures';
+import { saveItemFavorites } from '../../../../item/plugins/itemBookmark/test/fixtures';
 import { ItemTestUtils } from '../../../../item/test/fixtures/items';
 import { saveMember } from '../../../test/fixtures/members';
 import { ExportMemberDataService } from '../service';

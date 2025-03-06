@@ -16,6 +16,7 @@ import { Item } from '../../../../drizzle/types';
 import { throwsIfParamIsInvalid } from '../../../../repositories/utils';
 import { MinimalMember } from '../../../../types';
 import { ITEMS_PAGE_SIZE_MAX } from '../../constants';
+import { FolderItem } from '../../discrimination';
 
 type CreateRecycledItemDataBody = { itemPath: string; creatorId: string };
 

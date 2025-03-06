@@ -6,8 +6,8 @@ import { DBConnection } from '../../../../drizzle/db';
 import { AuthenticatedUser, MaybeUser } from '../../../../types';
 import { TagRepository } from '../../../tag/Tag.repository';
 import { ItemService } from '../../service';
+import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
-import { ItemPublishedRepository } from '../publication/published/repositories/itemPublished';
 import { ItemTagRepository } from './ItemTag.repository';
 
 @singleton()

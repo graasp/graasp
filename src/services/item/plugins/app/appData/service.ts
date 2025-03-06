@@ -1,15 +1,25 @@
 import { inject, singleton } from 'tsyringe';
 
-import { AppDataVisibility, FileItemType, PermissionLevel, UUID } from '@graasp/sdk';
+import {
+  AppDataVisibility,
+  FileItemType,
+  PermissionLevel,
+  PermissionLevelCompare,
+  UUID,
+} from '@graasp/sdk';
 
 import { FILE_ITEM_TYPE_DI_KEY } from '../../../../../di/constants';
 import { DBConnection } from '../../../../../drizzle/db';
-import { Item, ItemMembershipRaw } from '../../../../../drizzle/types';
+import {
+  AppDataInsertDTO,
+  AppDataRaw,
+  Item,
+  ItemMembershipRaw,
+} from '../../../../../drizzle/types';
 import { AuthenticatedUser, MaybeUser } from '../../../../../types';
 import HookManager from '../../../../../utils/hook';
 import { AuthorizationService } from '../../../../authorization';
 import { ItemRepository } from '../../../repository';
-import { AppData } from './appData';
 import {
   AppDataNotAccessible,
   AppDataNotFound,
@@ -19,17 +29,17 @@ import {
 import { InputAppData } from './interfaces/app-data';
 import { AppDataRepository } from './repository';
 
-const ownAppDataAbility = (appData: AppData, actor: MaybeUser) => {
-  if (!appData.creator || !actor) {
+const ownAppDataAbility = (appData: AppDataRaw, actor: MaybeUser) => {
+  if (!actor) {
     return false;
   }
-  return appData.creator.id === actor.id;
+  return appData.creatorId === actor.id;
 };
 
 const itemVisibilityAppDataAbility = (
-  appData: AppData,
-  permission: PermissionLevel,
-  memberPermission?: PermissionLevel,
+  appData: AppDataRaw,
+  permission: `${PermissionLevel}`,
+  memberPermission?: `${PermissionLevel}`,
 ) => {
   if (appData.visibility === AppDataVisibility.Item) {
     // can always read an app data with visibility item
@@ -43,16 +53,9 @@ const itemVisibilityAppDataAbility = (
         return false;
       }
 
-      return permissionMapping[memberPermission].includes(permission);
+      return PermissionLevelCompare.gte(memberPermission, permission);
     }
   }
-};
-
-// TODO: factor out
-const permissionMapping = {
-  [PermissionLevel.Read]: [PermissionLevel.Read],
-  [PermissionLevel.Write]: [PermissionLevel.Read, PermissionLevel.Write],
-  [PermissionLevel.Admin]: [PermissionLevel.Read, PermissionLevel.Write, PermissionLevel.Admin],
 };
 
 @singleton()
@@ -64,16 +67,16 @@ export class AppDataService {
 
   hooks = new HookManager<{
     post: {
-      pre: { appData: Partial<InputAppData>; itemId: string };
-      post: { appData: AppData; itemId: string };
+      pre: { appData: InputAppData; itemId: string };
+      post: { appData: AppDataRaw; itemId: string };
     };
     patch: {
-      pre: { appData: Partial<AppData>; itemId: string };
-      post: { appData: AppData; itemId: string };
+      pre: { appData: Partial<AppDataRaw>; itemId: string };
+      post: { appData: AppDataRaw; itemId: string };
     };
     delete: {
       pre: { appDataId: string; itemId: string };
-      post: { appData: AppData; itemId: string };
+      post: { appData: AppDataRaw; itemId: string };
     };
   }>();
 
@@ -89,12 +92,7 @@ export class AppDataService {
     this.appDataRepository = appDataRepository;
   }
 
-  async post(
-    db: DBConnection,
-    account: AuthenticatedUser,
-    itemId: string,
-    body: Partial<InputAppData>,
-  ) {
+  async post(db: DBConnection, account: AuthenticatedUser, itemId: string, body: InputAppData) {
     // check item exists? let post fail?
     const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
@@ -119,16 +117,21 @@ export class AppDataService {
       itemId,
     });
 
-    const appData = await this.appDataRepository.addOne(db, {
+    const { id: appDataId } = await this.appDataRepository.addOne(db, {
       appData: completeData,
       itemId,
       actorId: account.id,
     });
-    await this.hooks.runPostHooks('post', account, db, {
-      appData,
-      itemId,
-    });
-    return appData;
+    if (appDataId) {
+      const appData = await this.appDataRepository.getOne(db, appDataId);
+      if (appData) {
+        await this.hooks.runPostHooks('post', account, db, {
+          appData,
+          itemId,
+        });
+      }
+      return appData;
+    }
   }
 
   async patch(
@@ -136,7 +139,7 @@ export class AppDataService {
     account: AuthenticatedUser,
     itemId: string,
     appDataId: string,
-    body: Partial<AppData>,
+    body: Partial<AppDataRaw>,
   ) {
     // check item exists? let post fail?
     const item = await this.itemRepository.getOneOrThrow(db, itemId);
@@ -173,11 +176,14 @@ export class AppDataService {
       itemId,
     });
 
-    const appData = await this.appDataRepository.updateOne(db, appDataId, body);
-    await this.hooks.runPostHooks('patch', account, db, {
-      appData,
-      itemId,
-    });
+    await this.appDataRepository.updateOne(db, appDataId, body);
+    const appData = await this.appDataRepository.getOne(db, appDataId);
+    if (appData) {
+      await this.hooks.runPostHooks('patch', account, db, {
+        appData,
+        itemId,
+      });
+    }
     return appData;
   }
 
@@ -263,10 +269,10 @@ export class AppDataService {
   }
 
   // TODO: check
-  async validateAppDataPermission(
+  private validateAppDataPermission(
     db: DBConnection,
     actor: MaybeUser,
-    appData: AppData,
+    appData: AppDataRaw,
     permission: PermissionLevel,
     inheritedMembership?: ItemMembershipRaw | null,
   ) {
@@ -274,7 +280,7 @@ export class AppDataService {
       ownAppDataAbility(appData, actor) ||
       itemVisibilityAppDataAbility(appData, permission, inheritedMembership?.permission) ||
       (inheritedMembership &&
-        permissionMapping[inheritedMembership.permission].includes(permission));
+        PermissionLevelCompare.gte(inheritedMembership.permission, permission));
 
     return isValid;
   }

@@ -14,8 +14,8 @@ import { AppDataRepository } from '../../../../item/plugins/app/appData/reposito
 import { saveAppData } from '../../../../item/plugins/app/appData/test/fixtures';
 import { AppSettingRepository } from '../../../../item/plugins/app/appSetting/repository';
 import { saveAppSettings } from '../../../../item/plugins/app/appSetting/test/fixtures';
-import { ItemBookmarkRepository } from '../../../../item/plugins/itemFavorite/itemBookmark.repository';
-import { saveItemFavorites } from '../../../../item/plugins/itemFavorite/test/fixtures';
+import { ItemBookmarkRepository } from '../../../../item/plugins/itemBookmark/itemBookmark.repository';
+import { saveItemFavorites } from '../../../../item/plugins/itemBookmark/test/fixtures';
 import { ItemLikeRepository } from '../../../../item/plugins/itemLike/repository';
 import { saveItemLikes } from '../../../../item/plugins/itemLike/test/utils';
 import { ItemRepository } from '../../../../item/repository';

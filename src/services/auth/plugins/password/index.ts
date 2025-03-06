@@ -187,7 +187,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           accountId: member.id,
           type: ActionTriggers.ResetPassword,
           view: Context.Auth,
-          extra: JSON.stringify('{}'),
+          extra: {},
         } satisfies ActionInsertDTO;
         // Do not await the action to be saved. It is not critical.
         actionService.postMany(db, member.toMaybeUser(), request, [action]);

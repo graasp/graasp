@@ -4,7 +4,6 @@ import { ItemType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../di/utils';
 import { DBConnection, db } from '../../../../../drizzle/db';
-import { Item } from '../../../../../drizzle/types';
 import { AuthenticatedUser } from '../../../../../types';
 import { asDefined } from '../../../../../utils/assertions';
 import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
@@ -24,14 +23,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.register(appSettingsWsHooks, { appSettingService });
 
   // copy app settings and related files on item copy
-  const hook = async (
-    actor: AuthenticatedUser,
-    db: DBConnection,
-    { original, copy }: { original: Item; copy: Item },
-  ) => {
+  const hook = async (actor: AuthenticatedUser, db: DBConnection, { original, copy }) => {
     if (original.type !== ItemType.APP || copy.type !== ItemType.APP) return;
 
-    await appSettingService.copyForItem(db, actor, original, copy);
+    await appSettingService.copyForItem(db, actor, original, copy.id);
   };
   itemService.hooks.setPostHook('copy', hook);
 

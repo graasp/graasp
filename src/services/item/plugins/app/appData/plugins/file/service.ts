@@ -7,7 +7,7 @@ import { MultipartFile } from '@fastify/multipart';
 import { AppDataVisibility, FileItemProperties, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../../../drizzle/db';
-import { Item } from '../../../../../../../drizzle/types';
+import { AppDataRaw, Item } from '../../../../../../../drizzle/types';
 import { AuthenticatedUser } from '../../../../../../../types';
 import FileService from '../../../../../../file/service';
 import { APP_DATA_TYPE_FILE } from '../../../constants';
@@ -106,7 +106,7 @@ class AppDataFileService {
     return result;
   }
 
-  async deleteOne(db: DBConnection, appData: AppData) {
+  async deleteOne(db: DBConnection, appData: AppDataRaw) {
     // TODO: check rights? but only use in posthook
     try {
       // delete file only if type is the current file type

@@ -5,8 +5,8 @@ import { FlagType } from '@graasp/sdk';
 import { DBConnection } from '../../../../drizzle/db';
 import { AuthenticatedUser } from '../../../../types';
 import { ItemService } from '../../service';
+import { ItemFlagRepository } from './itemFlag.repository';
 import { FlagOptionsType } from './itemFlag.types';
-import { ItemFlagRepository } from './repository';
 
 @singleton()
 export class ItemFlagService {

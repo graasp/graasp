@@ -1,17 +1,18 @@
 import { count, desc, eq, sql } from 'drizzle-orm';
 import { singleton } from 'tsyringe';
 
-import { DBConnection } from '../../../../../../drizzle/db';
-import { isAncestorOrSelf } from '../../../../../../drizzle/operations';
-import { items, membersView, publishedItems } from '../../../../../../drizzle/schema';
+import { DBConnection } from '../../../../../drizzle/db';
+import { isAncestorOrSelf } from '../../../../../drizzle/operations';
+import { items, membersView, publishedItems } from '../../../../../drizzle/schema';
 import {
   Item,
   ItemPublishedRaw,
   ItemPublishedWithItemWithCreator,
-} from '../../../../../../drizzle/types';
-import { MinimalMember } from '../../../../../../types';
-import { assertIsDefined } from '../../../../../../utils/assertions';
-import { ItemPublishedNotFound } from '../errors';
+  MemberRaw,
+} from '../../../../../drizzle/types';
+import { MinimalMember } from '../../../../../types';
+import { assertIsDefined } from '../../../../../utils/assertions';
+import { ItemPublishedNotFound } from './errors';
 
 @singleton()
 export class ItemPublishedRepository {
@@ -36,7 +37,7 @@ export class ItemPublishedRepository {
     assertIsDefined(entry);
     const mappedEntry = {
       ...entry.item_published,
-      item: { ...entry.item_view, creator: entry.members_view },
+      item: { ...entry.item_view, creator: entry.members_view as MemberRaw },
       // creator: entry.members_view,
     };
     return mappedEntry;
@@ -112,7 +113,7 @@ export class ItemPublishedRepository {
       .limit(pageSize);
     const mappedResults = results.map(({ item_published, item_view, members_view }) => ({
       ...item_published,
-      item: { ...item_view, creator: members_view },
+      item: { ...item_view, creator: members_view as MemberRaw },
     }));
     const total = (await db.select({ count: count() }).from(publishedItems))[0].count;
 

@@ -3,7 +3,7 @@ import { singleton } from 'tsyringe';
 import { PermissionLevel, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../drizzle/db';
-import { AppSettingInsertDTO, AppSettingRaw, Item } from '../../../../../drizzle/types';
+import { AppSettingInsertDTO, AppSettingRaw, Item, ItemRaw } from '../../../../../drizzle/types';
 import { AuthenticatedUser, MaybeUser } from '../../../../../types';
 import { UnauthorizedMember } from '../../../../../utils/errors';
 import HookManager from '../../../../../utils/hook';
@@ -135,7 +135,7 @@ export class AppSettingService {
     return this.appSettingRepository.getForItem(db, itemId, name);
   }
 
-  async copyForItem(db: DBConnection, actor: MaybeUser, original: Item, copy: Item) {
+  async copyForItem(db: DBConnection, actor: MaybeUser, original: Item, copyItemId: ItemRaw['id']) {
     if (!actor) {
       throw new UnauthorizedMember();
     }
@@ -146,17 +146,17 @@ export class AppSettingService {
         const copyData = {
           name: appSetting.name,
           data: appSetting.data,
-          itemId: copy.id,
+          itemId: copyItemId,
           creator: { id: actor.id },
         };
         await this.hooks.runPreHooks('copyMany', actor, db, {
           appSettings,
           originalItemId: original.id,
-          copyItemId: copy.id,
+          copyItemId: copyItemId,
         });
         const newSetting = await this.appSettingRepository.addOne(db, {
           ...copyData,
-          itemId: copy.id,
+          itemId: copyItemId,
           creatorId: appSetting.creatorId,
         });
         newAppSettings.push(newSetting);
@@ -164,7 +164,7 @@ export class AppSettingService {
       await this.hooks.runPostHooks('copyMany', actor, db, {
         appSettings: newAppSettings,
         originalItemId: original.id,
-        copyItemId: copy.id,
+        copyItemId: copyItemId,
       });
     } catch (err) {
       console.error(err);

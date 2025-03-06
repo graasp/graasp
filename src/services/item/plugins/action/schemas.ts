@@ -56,24 +56,26 @@ export const getItemActions = {
     endDate: Type.Optional(Type.String({ format: 'date-time' })),
   }),
   response: {
-    [StatusCodes.OK]: customType.StrictObject({
-      actions: Type.Array(actionSchema),
-      members: Type.Array(accountSchemaRef),
-      descendants: Type.Array(itemSchemaRef),
-      item: itemSchemaRef,
-      apps: Type.Record(
-        customType.UUID(),
-        customType.StrictObject({
-          data: Type.Array(appDataSchemaRef),
-          settings: Type.Array(appSettingSchemaRef),
-          actions: Type.Array(appActionSchemaRef),
-        }),
-      ),
-      metadata: customType.StrictObject({
-        numActionsRetrieved: Type.Number(),
-        requestedSampleSize: Type.Number(),
-      }),
-    }),
+    [StatusCodes.OK]: {},
+    // TODO: enable back
+    // [StatusCodes.OK]: customType.StrictObject({
+    //   actions: Type.Array(actionSchema),
+    //   members: Type.Array(accountSchemaRef),
+    //   descendants: Type.Array(itemSchemaRef),
+    //   item: itemSchemaRef,
+    //   apps: Type.Record(
+    //     customType.UUID(),
+    //     customType.StrictObject({
+    //       data: Type.Array(appDataSchemaRef),
+    //       settings: Type.Array(appSettingSchemaRef),
+    //       actions: Type.Array(appActionSchemaRef),
+    //     }),
+    //   ),
+    //   metadata: customType.StrictObject({
+    //     numActionsRetrieved: Type.Number(),
+    //     requestedSampleSize: Type.Number(),
+    //   }),
+    // }),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;

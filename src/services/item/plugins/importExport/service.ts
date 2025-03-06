@@ -5,6 +5,7 @@ import fetch from 'node-fetch';
 import path from 'path';
 import sanitize from 'sanitize-html';
 import { Readable } from 'stream';
+import { singleton } from 'tsyringe';
 import { ZipFile } from 'yazl';
 
 import { FastifyReply } from 'fastify';
@@ -32,6 +33,7 @@ import {
 import { UnexpectedExportError } from './errors';
 import { buildTextContent, getFilenameFromItem } from './utils';
 
+@singleton()
 export class ImportExportService {
   private readonly fileItemService: FileItemService;
   private readonly h5pService: H5PService;

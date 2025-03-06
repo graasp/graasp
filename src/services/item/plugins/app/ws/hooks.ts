@@ -7,7 +7,7 @@ import { db } from '../../../../../drizzle/db';
 import { AuthorizationService } from '../../../../authorization';
 import { WebsocketService } from '../../../../websockets/ws-service';
 import { ItemService } from '../../../service';
-import { AppActionService } from '../appAction/service';
+import { AppActionService } from '../appAction/appAction.service';
 import { AppDataService } from '../appData/service';
 import { AppSettingService } from '../appSetting/service';
 import {
@@ -73,12 +73,13 @@ function registerAppActionTopic(
     checkItemIsApp(item);
   });
 
+  // TODO ENABLE!!
   // on post app action, notify apps of new app action
-  appActionService.hooks.setPostHook('post', async (member, { appAction, itemId }) => {
-    if (itemId !== undefined) {
-      websockets.publish(appActionsTopic, itemId, AppActionEvent('post', appAction));
-    }
-  });
+  // appActionService.hooks.setPostHook('post', async (member, { appAction, itemId }) => {
+  //   if (itemId !== undefined) {
+  //     websockets.publish(appActionsTopic, itemId, AppActionEvent('post', appAction));
+  //   }
+  // });
 }
 
 /**

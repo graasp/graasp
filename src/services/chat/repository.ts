@@ -1,4 +1,4 @@
-import { asc, eq } from 'drizzle-orm/sql';
+import { asc, eq, inArray } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
 import { DBConnection } from '../../drizzle/db';
@@ -18,7 +18,7 @@ export class ChatMessageRepository {
    * Retrieves all the messages related to the given item
    * @param itemId Id of item to retrieve messages for
    */
-  async getByItem(db: DBConnection, itemId: string): Promise<ChatMessageRaw[]> {
+  async getByItem(db: DBConnection, itemId: string): Promise<ChatMessageWithCreatorAndItem[]> {
     throwsIfParamIsInvalid('itemId', itemId);
 
     return await db.query.chatMessagesTable.findMany({
@@ -32,21 +32,15 @@ export class ChatMessageRepository {
    * Retrieves all the messages related to the given items
    * @param itemIds Id of items to retrieve messages for
    */
-  // async getByItems(
-  //   db: DBConnection,
-  //   itemIds: string[],
-  // ): Promise<ResultOf<ChatMessage[]>> {
-  //   throwsIfParamIsInvalid('itemIds', itemIds);
+  async getByItems(db: DBConnection, itemIds: string[]): Promise<ChatMessageRaw[]> {
+    throwsIfParamIsInvalid('itemIds', itemIds);
 
-  //   const messages = await db.query.chatMessages.findMany({
-  //     where: inArray(chatMessages.itemId, itemIds),
-  //     with: { creator: true, item: true },
-  //   });
-  //   return mapById({
-  //     keys: itemIds,
-  //     findElement: (id) => messages.filter(({ item }) => item.id === id),
-  //   });
-  // }
+    const messages = await db.query.chatMessagesTable.findMany({
+      where: inArray(chatMessagesTable.itemId, itemIds),
+      with: { creator: true, item: true },
+    });
+    return messages;
+  }
 
   /**
    * Retrieves a message by its id

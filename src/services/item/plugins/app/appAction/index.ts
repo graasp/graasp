@@ -23,8 +23,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       { schema: create, preHandler: authenticateAppsJWT },
       async ({ user, params: { itemId }, body }) => {
         const member = asDefined(user?.account);
-        return db.transaction(async (tx) => {
-          return addMemberInAppAction(await appActionService.post(tx, member, itemId, body));
+        await db.transaction(async (tx) => {
+          addMemberInAppAction(await appActionService.post(tx, member, itemId, body));
         });
       },
     );

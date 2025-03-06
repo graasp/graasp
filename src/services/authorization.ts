@@ -1,4 +1,4 @@
-import { singleton } from 'tsyringe';
+import { injectable, singleton } from 'tsyringe';
 
 import { FastifyRequest, RouteGenericInterface, RouteHandlerMethod } from 'fastify';
 
@@ -25,7 +25,7 @@ const permissionMapping = {
   [PermissionLevel.Admin]: [PermissionLevel.Read, PermissionLevel.Write, PermissionLevel.Admin],
 };
 
-@singleton()
+@injectable()
 export class AuthorizationService {
   private readonly itemMembershipRepository: ItemMembershipRepository;
   private readonly itemVisibilityRepository: ItemVisibilityRepository;

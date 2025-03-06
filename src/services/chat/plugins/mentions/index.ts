@@ -29,9 +29,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     '/mentions/:mentionId',
     { schema: patchMention, preHandler: isAuthenticated },
     async ({ user, params: { mentionId }, body: { status } }) => {
-      return db.transaction(async (tx) => {
+      await db.transaction(async (tx) => {
         const member = asDefined(user?.account);
-        return await mentionService.patch(tx, member, mentionId, status);
+        await mentionService.patch(tx, member, mentionId, status);
       });
     },
   );
@@ -42,8 +42,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     { schema: deleteMention, preHandler: isAuthenticated },
     async ({ user, params: { mentionId } }) => {
       const member = asDefined(user?.account);
-      return db.transaction(async (tx) => {
-        return mentionService.deleteOne(tx, member, mentionId);
+      await db.transaction(async (tx) => {
+        await mentionService.deleteOne(tx, member, mentionId);
       });
     },
   );

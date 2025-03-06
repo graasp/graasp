@@ -4,7 +4,8 @@ import { singleton } from 'tsyringe';
 import { ExportActionsFormatting, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../drizzle/db';
-import { ActionRequestExport, actionRequestExports } from '../../../../../drizzle/schema';
+import { actionRequestExports } from '../../../../../drizzle/schema';
+import { ActionRequestExportRaw } from '../../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../../repositories/errors';
 import { DEFAULT_REQUEST_EXPORT_INTERVAL } from '../../../../action/constants';
 
@@ -16,8 +17,8 @@ export class ActionRequestExportRepository {
    */
   async addOne(
     db: DBConnection,
-    requestExport: Partial<ActionRequestExport>,
-  ): Promise<ActionRequestExport> {
+    requestExport: Partial<ActionRequestExportRaw>,
+  ): Promise<ActionRequestExportRaw> {
     const { memberId, itemPath } = requestExport;
     // expect memberId to be defined
     if (memberId == undefined || memberId == null) {
@@ -32,7 +33,6 @@ export class ActionRequestExportRepository {
       .values({
         memberId,
         itemPath,
-        // TODO: check that the date can be passed as a string and not as a Date object, otherwise we should call `.toISOString()` on it
         createdAt: requestExport.createdAt,
         format: requestExport.format,
       })
@@ -54,7 +54,7 @@ export class ActionRequestExportRepository {
       itemPath: string;
       format: ExportActionsFormatting;
     },
-  ): Promise<ActionRequestExport | undefined> {
+  ): Promise<ActionRequestExportRaw | undefined> {
     const lowerLimitDate = new Date(Date.now() - DEFAULT_REQUEST_EXPORT_INTERVAL);
     return await db.query.actionRequestExports.findFirst({
       where: and(

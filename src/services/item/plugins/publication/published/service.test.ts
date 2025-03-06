@@ -12,8 +12,8 @@ import { ItemRepository } from '../../../repository';
 import { ItemService } from '../../../service';
 import { ItemVisibilityRepository } from '../../itemVisibility/repository';
 import { ItemThumbnailService } from '../../thumbnail/service';
+import { ItemPublishedRepository } from './itemPublished.repository';
 import { MeiliSearchWrapper } from './plugins/search/meilisearch';
-import { ItemPublishedRepository } from './repositories/itemPublished';
 import { ItemPublishedService } from './service';
 
 const meiliSearchWrapper = {

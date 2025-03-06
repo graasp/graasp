@@ -84,10 +84,12 @@ const endpoints: FastifyPluginAsyncTypebox = async (fastify) => {
         params: { itemId },
         query: { mode = 'read' },
       } = request;
-      const member = asDefined(user?.account);
+      const account = asDefined(user?.account);
+      assertIsMember(account);
 
       const { cookie, padUrl } = await etherpadItemService.getEtherpadFromItem(
-        member,
+        db,
+        account,
         itemId,
         mode,
       );

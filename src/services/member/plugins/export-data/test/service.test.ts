@@ -10,7 +10,7 @@ import { saveChatMessages } from '../../../../chat/test/fixtures';
 import { saveAppActions } from '../../../../item/plugins/app/appAction/test/fixtures';
 import { saveAppData } from '../../../../item/plugins/app/appData/test/fixtures';
 import { saveAppSettings } from '../../../../item/plugins/app/appSetting/test/fixtures';
-import { saveItemFavorites } from '../../../../item/plugins/itemFavorite/test/fixtures';
+import { saveItemFavorites } from '../../../../item/plugins/itemBookmark/test/fixtures';
 import { saveItemLikes } from '../../../../item/plugins/itemLike/test/utils';
 import { ItemTestUtils } from '../../../../item/test/fixtures/items';
 import { saveMember } from '../../../test/fixtures/members';

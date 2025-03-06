@@ -19,7 +19,7 @@ const itemValidationGroupSchema = customType.StrictObject(
         id: customType.UUID(),
         process: customType.EnumString(Object.values(ItemValidationProcess)),
         status: customType.EnumString(Object.values(ItemValidationStatus)),
-        result: Type.String(),
+        result: customType.Nullable(Type.String()),
         createdAt: customType.DateTime(),
         updatedAt: customType.DateTime(),
       }),

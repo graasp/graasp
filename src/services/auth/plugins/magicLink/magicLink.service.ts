@@ -38,7 +38,7 @@ export class MagicLinkService {
           creatorId: member.id,
           type: ActionTriggers.MemberLogin,
           view: Context.Unknown,
-          extra: JSON.stringify({ type: 'email' }),
+          extra: { type: 'email' },
         },
       ];
       await this.actionRepository.postMany(db, actions);

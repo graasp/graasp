@@ -35,7 +35,11 @@ export class AppActionRepository {
     });
   }
 
-  async getForItem(db: DBConnection, itemId: string, filters: SingleItemGetFilter) {
+  async getForItem(
+    db: DBConnection,
+    itemId: string,
+    filters: SingleItemGetFilter,
+  ): Promise<AppActionWithItemAndAccount[]> {
     if (!itemId) {
       throw new IllegalArgumentException('The itemId must be defined');
     }

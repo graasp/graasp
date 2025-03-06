@@ -5,7 +5,7 @@ import { AuthenticatedUser } from '../../../../../types';
 import { ItemWrapper } from '../../../ItemWrapper';
 import { ItemService } from '../../../service';
 import { ItemVisibilityRepository } from '../../itemVisibility/repository';
-import { ItemPublishedRepository } from '../published/repositories/itemPublished';
+import { ItemPublishedRepository } from '../published/itemPublished.repository';
 import { ItemValidationGroupRepository } from '../validation/ItemValidationGroup.repository';
 import { ValidationQueue } from '../validation/validationQueue';
 import { PublicationState } from './publicationState';

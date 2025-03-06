@@ -3,15 +3,19 @@ import { singleton } from 'tsyringe';
 import { PermissionLevel } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
+import { ItemBookmarkRaw } from '../../../../drizzle/types';
 import { MinimalMember } from '../../../../types';
 import { filterOutPackedItems } from '../../../authorization';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
+import { PackedItem } from '../../ItemWrapper';
 import { ItemService } from '../../service';
 import { ItemVisibilityRepository } from '../itemVisibility/repository';
 import { ItemBookmarkRepository } from './itemBookmark.repository';
 
+type PackedBookmarkedItem = ItemBookmarkRaw & { item: PackedItem };
+
 @singleton()
-export class FavoriteService {
+export class BookmarkService {
   private readonly itemService: ItemService;
   private readonly itemBookmarkRepository: ItemBookmarkRepository;
   private readonly itemMembershipRepository: ItemMembershipRepository;
@@ -29,7 +33,7 @@ export class FavoriteService {
     this.itemVisibilityRepository = itemVisibilityRepository;
   }
 
-  async getOwn(db: DBConnection, member: MinimalMember): Promise<PackedItemFavorite[]> {
+  async getOwn(db: DBConnection, member: MinimalMember): Promise<PackedBookmarkedItem[]> {
     const favorites = await this.itemBookmarkRepository.getFavoriteForMember(db, member.id);
 
     // filter out items user might not have access to

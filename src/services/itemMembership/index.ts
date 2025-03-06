@@ -9,7 +9,7 @@ import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passpo
 import { matchOne } from '../authorization';
 import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
 import MembershipRequestAPI from './plugins/MembershipRequest';
-import { create, createMany, deleteOne, getManyItemMemberships, updateOne } from './schemas';
+import { create, deleteOne, getItemMembershipsForItem, updateOne } from './schemas';
 import { ItemMembershipService } from './service';
 import { membershipWsHooks } from './ws/hooks';
 
@@ -36,9 +36,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       // returns empty for item not found
       fastify.get(
         '/',
-        { schema: getManyItemMemberships, preHandler: optionalIsAuthenticated },
-        async ({ user, query: { itemId: ids } }) => {
-          return itemMembershipService.getForManyItems(db, user?.account, ids);
+        { schema: getItemMembershipsForItem, preHandler: optionalIsAuthenticated },
+        async ({ user, query: { itemId } }) => {
+          return itemMembershipService.getForItem(db, user?.account, itemId);
         },
       );
 
@@ -51,8 +51,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         },
         async ({ user, query: { itemId }, body }) => {
           const account = asDefined(user?.account);
-          return db.transaction((tx) => {
-            return itemMembershipService.create(tx, account, {
+          await db.transaction(async (tx) => {
+            await itemMembershipService.create(tx, account, {
               permission: body.permission,
               itemId,
               memberId: body.accountId,
@@ -61,23 +61,24 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         },
       );
 
-      // create many item memberships
-      fastify.post(
-        '/:itemId',
-        {
-          schema: createMany,
-          preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
-        },
-        async ({ user, params: { itemId }, body }) => {
-          const account = asDefined(user?.account);
-          // BUG: because we use this call to save csv member
-          // we have to return immediately
-          // solution: it's probably simpler to upload a csv and handle it in the back
-          return db.transaction((tx) => {
-            return itemMembershipService.createMany(tx, account, body.memberships, itemId);
-          });
-        },
-      );
+      // Not used?
+      // // create many item memberships
+      // fastify.post(
+      //   '/:itemId',
+      //   {
+      //     schema: createMany,
+      //     preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
+      //   },
+      //   async ({ user, params: { itemId }, body }) => {
+      //     const account = asDefined(user?.account);
+      //     // BUG: because we use this call to save csv member
+      //     // we have to return immediately
+      //     // solution: it's probably simpler to upload a csv and handle it in the back
+      //     return db.transaction((tx) => {
+      //       return itemMembershipService.createMany(tx, account, body.memberships, itemId);
+      //     });
+      //   },
+      // );
 
       // update item membership
       fastify.patch(
@@ -88,8 +89,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         },
         async ({ user, params: { id }, body }) => {
           const account = asDefined(user?.account);
-          return db.transaction((tx) => {
-            return itemMembershipService.patch(tx, account, id, body);
+          await db.transaction(async (tx) => {
+            await itemMembershipService.patch(tx, account, id, body);
           });
         },
       );
@@ -100,8 +101,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         { schema: deleteOne, preHandler: isAuthenticated },
         async ({ user, params: { id }, query: { purgeBelow } }) => {
           const account = asDefined(user?.account);
-          return db.transaction((tx) => {
-            return itemMembershipService.deleteOne(tx, account, id, {
+          await db.transaction(async (tx) => {
+            await itemMembershipService.deleteOne(tx, account, id, {
               purgeBelow,
             });
           });

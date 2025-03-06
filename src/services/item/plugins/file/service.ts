@@ -4,7 +4,7 @@ import { fromPath as convertPDFtoImageFromPath } from 'pdf2pic';
 import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
 import { withFile as withTmpFile } from 'tmp-promise';
-import { singleton } from 'tsyringe';
+import { delay, inject, singleton } from 'tsyringe';
 
 import {
   FileItemProperties,
@@ -16,6 +16,7 @@ import {
 } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
+import { Item } from '../../../../drizzle/types';
 import { MaybeUser, MinimalMember } from '../../../../types';
 import { asDefined } from '../../../../utils/assertions';
 import { AuthorizationService } from '../../../authorization';
@@ -39,6 +40,7 @@ class FileItemService {
 
   constructor(
     fileService: FileService,
+    @inject(delay(() => ItemService))
     itemService: ItemService,
     storageService: StorageService,
     itemThumbnailService: ItemThumbnailService,
@@ -61,7 +63,7 @@ class FileItemService {
 
   async upload(
     db: DBConnection,
-    actor: Member,
+    actor: MinimalMember,
     {
       description,
       parentId,
@@ -180,7 +182,7 @@ class FileItemService {
 
   async getUrl(
     db: DBConnection,
-    actor: Actor,
+    actor: MaybeUser,
     {
       itemId,
     }: {

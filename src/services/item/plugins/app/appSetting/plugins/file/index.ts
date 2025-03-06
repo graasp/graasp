@@ -3,7 +3,7 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../../../../di/utils';
 import { DBConnection, db } from '../../../../../../../drizzle/db';
-import { AppSettingRaw } from '../../../../../../../drizzle/types';
+import { AppSettingRaw, AppSettingWithItem } from '../../../../../../../drizzle/types';
 import { AuthenticatedUser, MinimalMember } from '../../../../../../../types';
 import { asDefined } from '../../../../../../../utils/assertions';
 import {
@@ -62,13 +62,13 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
     {
       appSettings,
     }: {
-      appSettings: AppSettingRaw[];
+      appSettings: AppSettingWithItem[];
       originalItemId: string;
       copyItemId: string;
     },
   ) => {
     // copy file only if content is a file
-    const isFileSetting = (a: AppSettingRaw) => a.data[fileService.fileType];
+    const isFileSetting = (a) => a.data[fileService.fileType];
     const toCopy = appSettings.filter(isFileSetting);
     if (toCopy.length) {
       await appSettingFileService.copyMany(db, actor, toCopy);

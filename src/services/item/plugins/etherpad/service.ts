@@ -12,6 +12,7 @@ import { BaseLogger } from '../../../../logger';
 import { AuthenticatedUser, MinimalMember } from '../../../../types';
 import { MemberCannotWriteItem } from '../../../../utils/errors';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
+import { EtherpadItem, isItemType } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
@@ -100,7 +101,7 @@ export class EtherpadItemService {
    */
   public async createEtherpadItem(
     db: DBConnection,
-    member: AuthenticatedUser,
+    member: MinimalMember,
     name: string,
     parentId?: string,
     initHtml?: string,

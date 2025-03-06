@@ -32,8 +32,8 @@ import { ItemMembershipRepository } from '../../../../../itemMembership/reposito
 import { ItemTestUtils } from '../../../../test/fixtures/items';
 import { ItemLikeRepository } from '../../../itemLike/repository';
 import { ItemTagRepository } from '../../../tag/ItemTag.repository';
+import { ItemPublishedRepository } from '../itemPublished.repository';
 import { MeiliSearchWrapper } from '../plugins/search/meilisearch';
-import { ItemPublishedRepository } from '../repositories/itemPublished';
 
 jest.unmock('../plugins/search/meilisearch');
 

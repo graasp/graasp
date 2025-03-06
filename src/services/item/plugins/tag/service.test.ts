@@ -7,8 +7,8 @@ import { Item, ItemPublishedRaw, TagRaw } from '../../../../drizzle/types';
 import { MinimalMember } from '../../../../types';
 import { TagRepository } from '../../../tag/Tag.repository';
 import { ItemService } from '../../service';
+import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
-import { ItemPublishedRepository } from '../publication/published/repositories/itemPublished';
 import { ItemTagRepository } from './ItemTag.repository';
 import { ItemTagService } from './service';
 

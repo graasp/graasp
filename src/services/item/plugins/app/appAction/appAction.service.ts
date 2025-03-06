@@ -62,6 +62,7 @@ export class AppActionService {
     if (!appAction) {
       throw new Error('expected to get app action on creation');
     }
+
     return appAction;
   }
 
@@ -100,7 +101,7 @@ export class AppActionService {
 
   async getForManyItems(
     db: DBConnection,
-    account: Account,
+    account: AuthenticatedUser,
     itemIds: string[],
     filters: ManyItemsGetFilter,
   ) {

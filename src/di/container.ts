@@ -81,36 +81,24 @@ export const registerDependencies = (instance: FastifyInstance) => {
     }),
   );
 
-  registerValue(
-    MailerService,
-    new MailerService({
-      host: MAILER_CONFIG_SMTP_HOST,
-      port: MAILER_CONFIG_SMTP_PORT,
-      useSsl: MAILER_CONFIG_SMTP_USE_SSL,
-      username: MAILER_CONFIG_USERNAME,
-      password: MAILER_CONFIG_PASSWORD,
-      fromEmail: MAILER_CONFIG_FROM_EMAIL,
-    }),
-  );
-
   // Register CachingService for the thumbnails urls.
   registerValue(
     FILE_SERVICE_URLS_CACHING_DI_KEY,
     new CachingService(resolveDependency(Redis), 'file_service_url_caching'),
   );
   // Register the FileService to inject the CacheService.
-  const fileRepository = fileRepositoryFactory(FILE_ITEM_TYPE, {
-    s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
-    local: FILE_ITEM_PLUGIN_OPTIONS,
-  });
-  registerValue(
-    FileService,
-    new FileService(
-      fileRepository,
-      resolveDependency(BaseLogger),
-      resolveDependency(FILE_SERVICE_URLS_CACHING_DI_KEY),
-    ),
-  );
+  // const fileRepository = fileRepositoryFactory(FILE_ITEM_TYPE, {
+  //   s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
+  //   local: FILE_ITEM_PLUGIN_OPTIONS,
+  // });
+  // registerValue(
+  //   FileService,
+  //   new FileService(
+  //     fileRepository,
+  //     resolveDependency(BaseLogger),
+  //     resolveDependency(FILE_SERVICE_URLS_CACHING_DI_KEY),
+  //   ),
+  // );
 
   // register MeiliSearch and its wrapper.
   registerValue(
@@ -146,15 +134,4 @@ export const registerDependencies = (instance: FastifyInstance) => {
   );
 
   registerValue(ETHERPAD_NAME_FACTORY_DI_KEY, new RandomPadNameFactory());
-
-  registerValue(
-    ImportExportService,
-    new ImportExportService(
-      resolveDependency(FileItemService),
-      resolveDependency(ItemService),
-      resolveDependency(H5PService),
-      resolveDependency(EtherpadItemService),
-      resolveDependency(BaseLogger),
-    ),
-  );
 };

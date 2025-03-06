@@ -133,7 +133,7 @@ class AppSettingFileService {
 
       // update new setting with file data
       await this.appSettingRepository.updateOne(db, appSetting.id, {
-        data: JSON.stringify(newFileData),
+        data: newFileData,
       });
     }
   }

@@ -44,19 +44,14 @@ export class MembershipRequestService {
   }
 
   async notifyAdmins(db: DBConnection, member: MinimalMember, item: Item) {
-    const adminMemberships = await this.itemMembershipRepository.getByItemPathAndPermission(
-      db,
-      item.path,
-      PermissionLevel.Admin,
-    );
+    const admins = await this.itemMembershipRepository.getAdminsForItem(db, item.path);
 
     const link = ClientManager.getInstance().getLinkByContext(
       Context.Builder,
       `/items/${item.id}/share`,
     );
 
-    for (const adminMembership of adminMemberships) {
-      const admin = adminMembership.account;
+    for (const admin of admins) {
       if (admin.type !== AccountType.Individual) {
         continue;
       }

@@ -10,7 +10,7 @@ import {
   GET_MOST_RECENT_ITEMS_MAXIMUM,
 } from '../../../../../../../utils/config';
 import { ItemService } from '../../../../../service';
-import { ItemPublishedRepository } from '../../repositories/itemPublished';
+import { ItemPublishedRepository } from '../../itemPublished.repository';
 import { ItemPublishedService } from '../../service';
 import { MeiliSearchWrapper } from './meilisearch';
 

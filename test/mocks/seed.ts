@@ -4,14 +4,26 @@ import { v4 } from 'uuid';
 
 import { CompleteMember, ItemType, PermissionLevel, buildPathFromIds } from '@graasp/sdk';
 
-import { Item, ItemWithCreator, MemberRaw } from '../../src/drizzle/types';
+import { db } from '../../src/drizzle/db';
+import {
+  accountsTable,
+  itemMemberships,
+  itemsRaw,
+  memberPasswords,
+  memberProfiles,
+} from '../../src/drizzle/schema';
+import {
+  Item,
+  ItemMembershipRaw,
+  ItemMembershipWithItemAndAccountAndCreator,
+  ItemWithCreator,
+  MemberProfileRaw,
+  MemberRaw,
+} from '../../src/drizzle/types';
 import { encryptPassword } from '../../src/services/auth/plugins/password/utils';
-import { ItemMembership } from '../../src/services/itemMembership/entities/ItemMembership';
-import { MemberProfile } from '../../src/services/member/plugins/profile/entities/profile';
 import { MaybeUser } from '../../src/types';
 import { ItemFactory } from '../factories/item.factory';
 import { MemberFactory } from '../factories/member.factory';
-import { seed } from './seed.drizzle';
 
 export type TableType<C extends BaseEntity, E> = {
   constructor: new () => C;
@@ -29,16 +41,16 @@ export type TableType<C extends BaseEntity, E> = {
 type SeedActor =
   | 'actor'
   | (Partial<CompleteMember> & {
-      profile?: Partial<MemberProfile>;
+      profile?: Partial<MemberProfileRaw>;
       password?: string;
     });
 type DataType = {
   actor?: SeedActor | null;
-  members?: (Partial<MemberRaw> & { profile?: Partial<MemberProfile> })[];
+  members?: (Partial<MemberRaw> & { profile?: Partial<MemberProfileRaw> })[];
   items?: ((Partial<ItemWithCreator> | { creator: SeedActor }) & {
     children?: (Partial<ItemWithCreator> | { creator: SeedActor })[];
     memberships?: (
-      | Partial<ItemMembership>
+      | Partial<ItemMembershipWithItemAndAccountAndCreator>
       | {
           account?: SeedActor;
           creator?: SeedActor;
@@ -77,38 +89,22 @@ const processActor = async ({ actor, items, members }: DataType) => {
   if (actor !== null) {
     // replace actor data with default values if actor is undefined or 'actor'
     const actorData = typeof actor === 'string' || !actor ? {} : actor;
-    createdActor = (
-      await seed({
-        accountsTable: {
-          factory: MemberFactory,
-          entities: [actorData],
-        },
-      })
-    ).accountsTable[0];
+    createdActor = (await db.insert(accountsTable).values(MemberFactory(actorData)).returning())[0];
 
     // a profile is defined
     if (actor && actor !== 'actor') {
       if (actor.profile) {
         actorProfile = (
-          await seed({
-            actorProfile: {
-              constructor: MemberProfile,
-              entities: [{ ...actor.profile, member: { id: createdActor.id } }],
-            },
-          })
-        ).actorProfile[0];
+          await db
+            .insert(memberProfiles)
+            .values({ ...actor.profile, memberId: createdActor.id })
+            .returning()
+        )[0];
       }
       if (actor.password) {
-        await seed({
-          actorPassword: {
-            constructor: MemberPasswordRaw,
-            entities: [
-              {
-                password: await encryptPassword(actor.password),
-                member: { id: createdActor.id },
-              },
-            ],
-          },
+        await db.insert(memberPasswords).values({
+          password: await encryptPassword(actor.password),
+          memberId: createdActor.id,
         });
       }
     }
@@ -188,9 +184,9 @@ export async function seedFromJson(data: DataType = {}) {
   const result: {
     actor: MaybeUser | undefined;
     items: Item[];
-    itemMemberships: ItemMembership[];
+    itemMemberships: ItemMembershipRaw[];
     members: MemberRaw[];
-    memberProfiles: MemberProfile[];
+    memberProfiles: MemberProfileRaw[];
   } = {
     items: [],
     actor: undefined,
@@ -206,46 +202,32 @@ export async function seedFromJson(data: DataType = {}) {
   // save members
   const membersEntities = generateIdForMembers(members);
   if (membersEntities) {
-    const membersAndProfiles = await seed({
-      members: {
-        factory: MemberFactory,
-        constructor: MemberRaw, // FIX: update to use own factory
-        entities: membersEntities,
-      },
-      memberProfiles: {
-        constructor: MemberProfile,
-        entities: membersEntities.map((m) => m.profile).filter(Boolean),
-      },
-    });
-    result.members = membersAndProfiles.members as MemberRaw[];
-    result.memberProfiles = membersAndProfiles.memberProfiles as MemberProfile[];
+    result.members = (await db
+      .insert(accountsTable)
+      .values(membersEntities.map((m) => MemberFactory(m)))
+      .returning()) as MemberRaw[];
+    result.memberProfiles = await db
+      .insert(memberProfiles)
+      .values(membersEntities.map((m) => m.profile).filter(Boolean))
+      .returning();
   }
 
   // save items
   const processedItems = generateIdAndPathForItems(items);
   if (processedItems) {
-    result.items = (
-      await seed({
-        items: {
-          factory: ItemFactory,
-          constructor: ItemFactory,
-          entities: processedItems,
-        },
-      })
-    ).items as Item[];
+    result.items = await db
+      .insert(itemsRaw)
+      .values(processedItems.map((i) => ItemFactory(i)))
+      .returning();
   }
 
   // save item memberships
   const itemMembershipsEntity = processItemMemberships(processedItems);
   if (itemMembershipsEntity) {
-    result.itemMemberships = (
-      await seed({
-        itemMemberships: {
-          constructor: ItemMembership,
-          entities: itemMembershipsEntity,
-        },
-      })
-    ).itemMemberships as ItemMembership[];
+    result.itemMemberships = await db
+      .insert(itemMemberships)
+      .values(itemMembershipsEntity)
+      .returning();
   }
 
   return result;

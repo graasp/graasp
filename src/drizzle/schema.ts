@@ -17,6 +17,7 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 import { eq, isNull } from 'drizzle-orm/sql';
+import geoip from 'geoip-lite';
 
 import { AccountType, CompleteMember, ItemSettings, ItemTypeUnion } from '@graasp/sdk';
 
@@ -27,6 +28,8 @@ import {
   chatMentionStatusEnum,
   itemLoginSchemaStatusEnum,
   itemLoginSchemaTypeEnum,
+  itemValidationProcessEnum,
+  itemValidationStatusEnum,
   itemVisibilityEnum,
   permissionEnum,
   shortLinkPlatformEnum,
@@ -330,7 +333,7 @@ export const appActions = pgTable(
     id: uuid().defaultRandom().primaryKey().notNull(),
     accountId: uuid('account_id').notNull(),
     itemId: uuid('item_id').notNull(),
-    data: jsonb().default({}).notNull(),
+    data: jsonb().$type<object>().default({}).notNull(),
     type: varchar({ length: 25 }).notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
   },
@@ -432,7 +435,7 @@ export const apps = pgTable(
     publisherId: uuid('publisher_id').notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
-    extra: jsonb().default({}).notNull(),
+    extra: jsonb().$type<object>().default({}).notNull(),
   },
   (table) => [
     foreignKey({
@@ -467,8 +470,8 @@ export const itemValidations = pgTable(
   {
     id: uuid().primaryKey().defaultRandom().notNull(),
     itemId: uuid('item_id').notNull(),
-    process: varchar().notNull(),
-    status: varchar().notNull(),
+    process: itemValidationProcessEnum().notNull(),
+    status: itemValidationStatusEnum().notNull(),
     result: varchar(),
     itemValidationGroupId: uuid('item_validation_group_id').notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
@@ -603,8 +606,8 @@ export const actionsTable = pgTable(
     id: uuid().primaryKey().defaultRandom().notNull(),
     view: varchar().notNull(),
     type: varchar().notNull(),
-    extra: jsonb().notNull(),
-    geolocation: text(),
+    extra: jsonb().$type<object>().notNull(),
+    geolocation: jsonb().$type<geoip.Lookup>(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     accountId: uuid('account_id'),
     itemId: uuid('item_id'),
@@ -680,7 +683,6 @@ export const actionRequestExports = pgTable(
     }).onDelete('cascade'),
   ],
 );
-export type ActionRequestExport = typeof actionRequestExports.$inferSelect;
 
 export const itemsRaw = pgTable(
   'item',
@@ -692,7 +694,7 @@ export const itemsRaw = pgTable(
     path: ltree('path').notNull(),
     creatorId: uuid('creator_id'),
     // TODO: fix type
-    extra: jsonb().notNull(),
+    extra: jsonb().$type<object>().notNull(),
     settings: jsonb().$type<ItemSettings>().notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),

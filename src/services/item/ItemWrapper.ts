@@ -4,11 +4,11 @@ import { ItemVisibilityType, ResultOf, ThumbnailsBySize } from '@graasp/sdk';
 
 import { DBConnection } from '../../drizzle/db';
 import {
-  Account,
   Item,
   ItemMembershipRaw,
   ItemVisibilityWithItem,
   ItemWithCreator,
+  MemberRaw,
 } from '../../drizzle/types';
 import { ItemMembershipRepository } from '../itemMembership/repository';
 import { ItemVisibilityRepository } from './plugins/itemVisibility/repository';
@@ -28,7 +28,7 @@ type GraaspItem = Pick<
   | 'settings'
   | 'lang'
 > & {
-  creator: Account;
+  creator: MemberRaw | null;
   // TODO: purposely remove geolocation -> lets create a new endpoint
   // geolocation: string
 };
@@ -138,7 +138,7 @@ export class ItemWrapperService {
    * @returns ResultOf<PackedItem>
    */
   mergeResult(
-    items: ResultOf<Item>,
+    items: ResultOf<ItemWithCreator>,
     memberships: ResultOf<ItemMembershipRaw | null>,
     visibilities?: ResultOf<ItemVisibilityWithItem[] | null>,
     itemsThumbnails?: ItemsThumbnails,

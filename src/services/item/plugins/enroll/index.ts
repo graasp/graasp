@@ -25,8 +25,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       assertIsMember(member);
       const { itemId } = params;
 
-      return await db.transaction(async (tx) => {
-        return await enrollService.enroll(tx, member, itemId);
+      await db.transaction(async (tx) => {
+        await enrollService.enroll(tx, member, itemId);
       });
     },
   );

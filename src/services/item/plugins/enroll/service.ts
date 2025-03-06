@@ -48,7 +48,7 @@ export class EnrollService {
       throw new ItemMembershipAlreadyExists();
     }
 
-    return await this.itemMembershipRepository.addOne(db, {
+    await this.itemMembershipRepository.addOne(db, {
       itemPath: item.path,
       permission: PermissionLevel.Read,
       accountId: member.id,

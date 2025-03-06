@@ -39,7 +39,7 @@ import { ItemVisibilityRepository } from '../../../../itemVisibility/repository'
 import { ItemTagRepository } from '../../../../tag/ItemTag.repository';
 import { stripHtml } from '../../../validation/utils';
 import { ItemPublishedNotFound } from '../../errors';
-import { ItemPublishedRepository } from '../../repositories/itemPublished';
+import { ItemPublishedRepository } from '../../itemPublished.repository';
 import { Hit } from './schemas';
 
 const ACTIVE_INDEX = 'itemIndex';
@@ -467,55 +467,58 @@ export class MeiliSearchWrapper {
     // Paginate with cursor through DB items (serializable transaction)
     // This is not executed in a HTTP request context so we can't rely on fastify to create a transaction at the controller level
     // SERIALIZABLE because we don't want other transaction to affect this one while it goes through the pages.
-    await db.transaction('SERIALIZABLE', async (tx) => {
-      const tasks: EnqueuedTask[] = [];
+    await db.transaction(
+      async (tx) => {
+        const tasks: EnqueuedTask[] = [];
 
-      // instanciate the itempublished repository to use the provided transaction manager
-      let currentPage = 1;
-      let total = 0;
-      while (currentPage === 1 || (currentPage - 1) * pageSize < total) {
-        // Retrieve a page (i.e. 20 items)
-        const [published, totalCount] = await this.itemPublishedRepository.getPaginatedItems(
-          tx,
-          currentPage,
-          pageSize,
-        );
-        this.logger.info(
-          `REBUILD INDEX: Page ${currentPage} - ${published.length} items - total count: ${totalCount}`,
-        );
-        total = totalCount;
-
-        // Index items (1 task per page)
-        try {
-          const task = await this.index(tx, published, ROTATING_INDEX);
-          this.logger.info(
-            `REBUILD INDEX: Pushing indexing task ${task.taskUid} (page ${currentPage})`,
+        // instanciate the itempublished repository to use the provided transaction manager
+        let currentPage = 1;
+        let total = 0;
+        while (currentPage === 1 || (currentPage - 1) * pageSize < total) {
+          // Retrieve a page (i.e. 20 items)
+          const [published, totalCount] = await this.itemPublishedRepository.getPaginatedItems(
+            tx,
+            currentPage,
+            pageSize,
           );
-          tasks.push(task);
-        } catch (e) {
-          this.logger.error(`REBUILD INDEX: Error during one rebuild index task: ${e}`);
-        }
+          this.logger.info(
+            `REBUILD INDEX: Page ${currentPage} - ${published.length} items - total count: ${totalCount}`,
+          );
+          total = totalCount;
 
-        currentPage++;
-      }
-      this.logger.info(`REBUILD INDEX: Waiting for ${tasks.length} tasks to terminate...`);
-      // Wait to be sure that everything is indexed
-      // We don't use `waitForTasks` directly because we want to be able to handle error
-      // for one task and still be able to await other tasks
-      for (const taskUid of tasks.map((t) => t.taskUid)) {
-        try {
-          await tmpIndex.waitForTask(taskUid, { timeOutMs: 60_000, intervalMs: 1000 });
-        } catch (e) {
-          if (e instanceof MeiliSearchTimeOutError) {
+          // Index items (1 task per page)
+          try {
+            const task = await this.index(tx, published, ROTATING_INDEX);
             this.logger.info(
-              `REBUILD INDEX: timeout from MeiliSearch while waiting for task ${taskUid}`,
+              `REBUILD INDEX: Pushing indexing task ${task.taskUid} (page ${currentPage})`,
             );
-          } else {
-            this.logger.warn(e);
+            tasks.push(task);
+          } catch (e) {
+            this.logger.error(`REBUILD INDEX: Error during one rebuild index task: ${e}`);
+          }
+
+          currentPage++;
+        }
+        this.logger.info(`REBUILD INDEX: Waiting for ${tasks.length} tasks to terminate...`);
+        // Wait to be sure that everything is indexed
+        // We don't use `waitForTasks` directly because we want to be able to handle error
+        // for one task and still be able to await other tasks
+        for (const taskUid of tasks.map((t) => t.taskUid)) {
+          try {
+            await tmpIndex.waitForTask(taskUid, { timeOutMs: 60_000, intervalMs: 1000 });
+          } catch (e) {
+            if (e instanceof MeiliSearchTimeOutError) {
+              this.logger.info(
+                `REBUILD INDEX: timeout from MeiliSearch while waiting for task ${taskUid}`,
+              );
+            } else {
+              this.logger.warn(e);
+            }
           }
         }
-      }
-    });
+      },
+      { isolationLevel: 'serializable' },
+    );
 
     // Swap tmp index with actual index
     this.logger.info(`REBUILD INDEX: Swapping indexes...`);

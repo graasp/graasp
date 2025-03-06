@@ -29,7 +29,7 @@ export class ItemValidationModerator {
   async validate(
     db: DBConnection,
     item: Item,
-    itemValidationGroup: ItemValidationGroupRaw,
+    itemValidationGroupId: ItemValidationGroupRaw['id'],
   ): Promise<ItemValidationStatus[]> {
     // execute each process on item
     const results = (
@@ -39,7 +39,7 @@ export class ItemValidationModerator {
             return await this.executeValidationProcess(
               db,
               item,
-              itemValidationGroup.id,
+              itemValidationGroupId,
               strategyExecutor,
             );
           } catch (error) {

@@ -53,12 +53,12 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ params, user }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return db.transaction(async (tx) => {
+      await db.transaction(async (tx) => {
         const item = await itemService.get(tx, member, params.itemId, PermissionLevel.Admin);
 
         const status = await publicationService.computeStateForItem(tx, member, item.id);
 
-        return itemPublishedService.post(tx, member, item, status);
+        await itemPublishedService.post(tx, member, item, status);
       });
     },
   );
@@ -72,8 +72,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ params, user }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return db.transaction(async (tx) => {
-        return itemPublishedService.delete(tx, member, params.itemId);
+      await db.transaction(async (tx) => {
+        await itemPublishedService.delete(tx, member, params.itemId);
       });
     },
   );

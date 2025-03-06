@@ -40,7 +40,7 @@ export const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           previousItemId,
           parentId,
         });
-        return newItem as ShortcutItem;
+        return newItem;
       });
 
       reply.send(newItem);
@@ -70,7 +70,7 @@ export const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
       const item = await db.transaction(async (tx) => {
         const item = await shortcutService.patch(tx, member, id, body);
-        return item as ShortcutItem;
+        return item;
       });
 
       reply.send(item);

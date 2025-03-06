@@ -34,7 +34,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       assertIsMember(member);
 
       const item = await db.transaction(async (tx) => {
-        const item = await folderItemService.post(tx, member, {
+        const item = await folderItemService.postWithOptions(tx, member, {
           // Because of an incoherence between the service and the schema, we need to cast the data to the correct type
           // This need to be fixed in issue #1288 https://github.com/graasp/graasp/issues/1288
           item: data,
@@ -86,7 +86,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         } = getPostItemPayloadFromFormData(formData);
 
         return await db.transaction(async (tx) => {
-          const item = await folderItemService.post(tx, member, {
+          const item = await folderItemService.postWithOptions(tx, member, {
             item: itemPayload,
             parentId,
             geolocation,

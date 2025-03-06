@@ -1,4 +1,3 @@
-import { formatISO } from 'date-fns';
 import { singleton } from 'tsyringe';
 
 import {
@@ -16,10 +15,8 @@ import { TRANSLATIONS } from '../../../../../langs/constants';
 import { BaseLogger } from '../../../../../logger';
 import { MailBuilder } from '../../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../../plugins/mailer/mailer.service';
-import { resultOfToList } from '../../../../../services/utils';
 import { MaybeUser, MinimalMember } from '../../../../../types';
 import HookManager from '../../../../../utils/hook';
-import { ActionRepository } from '../../../../action/action.repository';
 import { isMember } from '../../../../authentication';
 import { filterOutHiddenItems } from '../../../../authorization';
 import { ItemMembershipRepository } from '../../../../itemMembership/repository';
@@ -27,15 +24,15 @@ import { MemberRepository } from '../../../../member/repository';
 import { ItemWrapperService } from '../../../ItemWrapper';
 import { ItemRepository } from '../../../repository';
 import { ItemService } from '../../../service';
+import { ActionItemService } from '../../action/action.service';
 import { ItemVisibilityRepository } from '../../itemVisibility/repository';
-import { ItemThumbnailService } from '../../thumbnail/service';
 import {
   ItemIsNotValidated,
   ItemPublicationAlreadyExists,
   ItemTypeNotAllowedToPublish,
 } from './errors';
+import { ItemPublishedRepository } from './itemPublished.repository';
 import { MeiliSearchWrapper } from './plugins/search/meilisearch';
-import { ItemPublishedRepository } from './repositories/itemPublished';
 
 interface ActionCount {
   actionCount: number;
@@ -45,16 +42,15 @@ interface ActionCount {
 export class ItemPublishedService {
   private readonly log: BaseLogger;
   private readonly itemService: ItemService;
-  private readonly itemThumbnailService: ItemThumbnailService;
   private readonly meilisearchWrapper: MeiliSearchWrapper;
   private readonly mailerService: MailerService;
   private readonly itemMembershipRepository: ItemMembershipRepository;
   private readonly itemVisibilityRepository: ItemVisibilityRepository;
-  private readonly actionRepository: ActionRepository;
   private readonly itemWrapperService: ItemWrapperService;
   private readonly itemPublishedRepository: ItemPublishedRepository;
   private readonly itemRepository: ItemRepository;
   private readonly memberRepository: MemberRepository;
+  private readonly actionItemService: ActionItemService;
 
   hooks = new HookManager<{
     create: {
@@ -66,36 +62,34 @@ export class ItemPublishedService {
 
   constructor(
     itemService: ItemService,
-    itemThumbnailService: ItemThumbnailService,
     mailerService: MailerService,
     meilisearchWrapper: MeiliSearchWrapper,
     itemVisibilityRepository: ItemVisibilityRepository,
     itemMembershipRepository: ItemMembershipRepository,
     itemPublishedRepository: ItemPublishedRepository,
-    actionRepository: ActionRepository,
     itemWrapperService: ItemWrapperService,
     itemRepository: ItemRepository,
     memberRepository: MemberRepository,
+    actionItemService: ActionItemService,
     log: BaseLogger,
   ) {
     this.log = log;
     this.itemService = itemService;
-    this.itemThumbnailService = itemThumbnailService;
     this.meilisearchWrapper = meilisearchWrapper;
     this.itemVisibilityRepository = itemVisibilityRepository;
     this.itemPublishedRepository = itemPublishedRepository;
     this.itemMembershipRepository = itemMembershipRepository;
-    this.actionRepository = actionRepository;
     this.itemRepository = itemRepository;
     this.memberRepository = memberRepository;
     this.itemWrapperService = itemWrapperService;
     this.mailerService = mailerService;
+    this.actionItemService = actionItemService;
   }
 
   async _notifyContributors(db: DBConnection, actor: MinimalMember, item: Item): Promise<void> {
     // send email to contributors except yourself
-    const memberships = await this.itemMembershipRepository.getForManyItems(db, [item]);
-    const contributors = resultOfToList(memberships)[0]
+    const memberships = await this.itemMembershipRepository.getForItem(db, item);
+    const contributors = memberships
       .filter(
         ({ permission, account }) =>
           permission === PermissionLevel.Admin && account.id !== actor.id,
@@ -144,14 +138,10 @@ export class ItemPublishedService {
       return null;
     }
     // get views from the actions table
-    const totalViews = await this.actionRepository.getAggregationForItem(db, item.path, {
-      view: 'library',
-      types: ['collection-view'],
-      startDate: formatISO(publishedItem.createdAt),
-      endDate: formatISO(new Date()),
-    });
+    const totalViews = await this.actionItemService.getTotalViewsCountForItemPath(db, item.path);
     return {
       totalViews: (totalViews?.[0] as ActionCount)?.actionCount,
+      creator: publishedItem.item.creator,
       ...publishedItem,
     };
   }
@@ -170,7 +160,7 @@ export class ItemPublishedService {
       return itemPublished;
     }
 
-    return await this.post(db, member, item, publicationStatus, {
+    await this.post(db, member, item, publicationStatus, {
       canBePrivate: true,
     });
   }

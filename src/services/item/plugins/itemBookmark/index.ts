@@ -8,45 +8,42 @@ import { assertIsMember } from '../../../authentication';
 import { matchOne } from '../../../authorization';
 import { memberAccountRole } from '../../../member/strategies/memberAccountRole';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { FavoriteService } from './itemBookmark.service';
-import { create, deleteOne, getOwnFavorite } from './schemas';
+import { BookmarkService } from './itemBookmark.service';
+import { create, deleteOne, getOwnBookmark } from './schemas';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const favoriteService = resolveDependency(FavoriteService);
+  const bookmarkService = resolveDependency(BookmarkService);
 
-  // get favorites
   fastify.get(
     '/favorite',
-    { schema: getOwnFavorite, preHandler: [isAuthenticated, matchOne(memberAccountRole)] },
+    { schema: getOwnBookmark, preHandler: [isAuthenticated, matchOne(memberAccountRole)] },
     async ({ user }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return favoriteService.getOwn(db, member);
+      return bookmarkService.getOwn(db, member);
     },
   );
 
-  // insert favorite
   fastify.post(
     '/favorite/:itemId',
     { schema: create, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async ({ user, params: { itemId } }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return db.transaction(async (tx) => {
-        return favoriteService.post(tx, member, itemId);
+      await db.transaction(async (tx) => {
+        await bookmarkService.post(tx, member, itemId);
       });
     },
   );
 
-  // delete favorite
   fastify.delete(
     '/favorite/:itemId',
     { schema: deleteOne, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async ({ user, params: { itemId } }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return db.transaction(async (tx) => {
-        return favoriteService.delete(tx, member, itemId);
+      await db.transaction(async (tx) => {
+        await bookmarkService.delete(tx, member, itemId);
       });
     },
   );

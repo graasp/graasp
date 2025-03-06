@@ -151,17 +151,13 @@ export class ItemLoginService {
     return { id: refreshedMember.id, name: refreshedMember.name };
   }
 
-  async create(db: DBConnection, itemPath: string, type?: ItemSchemaTypeOptions) {
-    return this.itemLoginSchemaRepository.addOne(db, { itemPath, type });
-  }
-
-  async update(
+  async updateOrCreate(
     db: DBConnection,
-    itemLoginSchemaId: string,
+    itemPath: string,
     type?: ItemSchemaTypeOptions,
     status?: `${ItemLoginSchemaStatus}`,
   ) {
-    await this.itemLoginSchemaRepository.updateOne(db, itemLoginSchemaId, {
+    await this.itemLoginSchemaRepository.put(db, itemPath, {
       type,
       status,
     });

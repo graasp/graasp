@@ -94,7 +94,7 @@ export class ItemValidationService {
     const results = await Promise.all(
       items.map(async (currItem) => {
         try {
-          const validationResults = await this.contentModerator.validate(db, currItem, iVG);
+          const validationResults = await this.contentModerator.validate(db, currItem, iVG.id);
           return validationResults.every((v) => v === ItemValidationStatus.Success);
         } catch (e) {
           this.logger.error(e);

@@ -22,7 +22,7 @@ import { Item } from '../../../../../../../drizzle/types';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../../../utils/config';
 import { saveMember } from '../../../../../../member/test/fixtures/members';
 import { ItemTestUtils } from '../../../../../test/fixtures/items';
-import { ItemPublishedRepository } from '../../repositories/itemPublished';
+import { ItemPublishedRepository } from '../../itemPublished.repository';
 import { MeiliSearchWrapper } from './meilisearch';
 
 const testUtils = new ItemTestUtils();

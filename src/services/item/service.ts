@@ -1,5 +1,5 @@
 import { Readable } from 'stream';
-import { singleton } from 'tsyringe';
+import { delay, inject, injectable, singleton } from 'tsyringe';
 
 import {
   ItemType,
@@ -26,8 +26,10 @@ import {
   ItemGeolocationRaw,
   ItemMembershipRaw,
   ItemRaw,
+  ItemTypeUnion,
   ItemVisibilityWithItem,
   ItemWithCreator,
+  MinimalItemForInsert,
 } from '../../drizzle/types';
 import { BaseLogger } from '../../logger';
 import { AuthenticatedUser, MaybeUser, MinimalMember } from '../../types';
@@ -55,13 +57,13 @@ import { FolderItem, isItemType } from './discrimination';
 import { PartialItemGeolocation } from './plugins/geolocation/errors';
 import { ItemGeolocationRepository } from './plugins/geolocation/repository';
 import { ItemVisibilityRepository } from './plugins/itemVisibility/repository';
+import { ItemPublishedRepository } from './plugins/publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from './plugins/publication/published/plugins/search/meilisearch';
-import { ItemPublishedRepository } from './plugins/publication/published/repositories/itemPublished';
 import { ItemThumbnailService } from './plugins/thumbnail/service';
 import { ItemRepository } from './repository';
 import { ItemChildrenParams, ItemSearchParams } from './types';
 
-@singleton()
+@injectable()
 export class ItemService {
   private readonly log: BaseLogger;
   private readonly thumbnailService: ThumbnailService;
@@ -79,7 +81,7 @@ export class ItemService {
     create: { pre: { item: Partial<Item> }; post: { item: Item } };
     update: { pre: { item: Item }; post: { item: Item } };
     delete: { pre: { item: Item }; post: { item: Item } };
-    copy: { pre: { original: Item }; post: { original: Item; copy: Item } };
+    copy: { pre: { original: Item }; post: { original: Item; copy: MinimalItemForInsert } };
     move: {
       pre: {
         /** the item to be moved itself */
@@ -100,6 +102,7 @@ export class ItemService {
 
   constructor(
     thumbnailService: ThumbnailService,
+    @inject(delay(() => ItemThumbnailService))
     itemThumbnailService: ItemThumbnailService,
     itemMembershipRepository: ItemMembershipRepository,
     meilisearchWrapper: MeiliSearchWrapper,
@@ -306,7 +309,7 @@ export class ItemService {
     actor: MaybeUser,
     ids: string[],
   ): Promise<{
-    items: ResultOf<Item>;
+    items: ResultOf<ItemWithCreator>;
     itemMemberships: ResultOf<ItemMembershipRaw | null>;
     visibilities: ResultOf<ItemVisibilityWithItem[] | null>;
   }> {
@@ -433,7 +436,7 @@ export class ItemService {
     db: DBConnection,
     actor: MaybeUser,
     itemId: UUID,
-    options?: { types?: string[] },
+    options?: { types?: ItemTypeUnion[] },
   ) {
     const item = await this.get(db, actor, itemId);
 
@@ -468,7 +471,7 @@ export class ItemService {
     db: DBConnection,
     actor: MaybeUser,
     itemId: UUID,
-    options?: { showHidden?: boolean; types?: string[] },
+    options?: { showHidden?: boolean; types?: ItemTypeUnion[] },
   ) {
     const { descendants, item } = await this.getDescendants(db, actor, itemId, options);
     if (!descendants.length) {
@@ -649,7 +652,8 @@ export class ItemService {
     await this.hooks.runPostHooks('move', member, db, {
       source: item,
       sourceParentId: getParentFromPath(item.path),
-      destination: result,
+      // QUESTION: send notification for root item?
+      destination: result[0],
     });
 
     return { item, moved: result };
@@ -789,7 +793,7 @@ export class ItemService {
       });
 
       // copy hidden visibility
-      await this.itemVisibilityRepository.copyAll(db, member, original, copy, [
+      await this.itemVisibilityRepository.copyAll(db, member, original, copy.path, [
         ItemVisibilityType.Public,
       ]);
 

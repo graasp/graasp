@@ -77,8 +77,8 @@ export class ActionService {
       accountId: member?.id,
       geolocation: geolocation ?? undefined,
       view,
-      extra: JSON.stringify({}),
       ...a,
+      extra: a.extra ?? {},
     }));
 
     await this.actionRepository.postMany(db, completeActions);

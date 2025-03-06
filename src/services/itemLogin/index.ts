@@ -111,15 +111,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       return await db.transaction(async (tx) => {
         const item = await itemService.get(tx, member, itemId, PermissionLevel.Admin); // Validate permissions
 
-        // TODO: create function !
-        const schema = await itemLoginService.updateOrCreate(tx, item.path, type, status);
-        if (schema) {
-          // If exists, then update the existing one
-          return await itemLoginService.update(tx, schema.id, type, status);
-        } else {
-          // If not exists, then create a new one
-          return await itemLoginService.create(tx, item.path, type);
-        }
+        await itemLoginService.updateOrCreate(tx, item.path, type, status);
       });
     },
   );
@@ -138,7 +130,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           // Validate permission
           await itemService.get(tx, member, itemId, PermissionLevel.Admin);
 
-          const { id } = await itemLoginService.delete(tx, member, itemId);
+          const { id } = await itemLoginService.delete(tx, itemId);
           return id;
         } catch (e: unknown) {
           throw new ItemLoginSchemaNotFound({ itemId });

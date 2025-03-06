@@ -6,8 +6,8 @@ import { filterOutPackedItems } from '../../../authorization';
 import { ItemService } from '../../../item/service';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { ItemVisibilityRepository } from '../itemVisibility/repository';
+import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
-import { ItemPublishedRepository } from '../publication/published/repositories/itemPublished';
 import { ItemLikeRepository } from './repository';
 
 @singleton()

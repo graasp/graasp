@@ -8,6 +8,11 @@ import { Account } from '@graasp/sdk';
 
 import { BaseLogger } from '../../logger';
 import { MaybeUser, MinimalMember } from '../../types';
+import {
+  FILE_ITEM_PLUGIN_OPTIONS,
+  FILE_ITEM_TYPE,
+  S3_FILE_ITEM_PLUGIN_OPTIONS,
+} from '../../utils/config';
 import { CachingService } from '../caching/service';
 import { LocalFileConfiguration, S3FileConfiguration } from './interfaces/configuration';
 import { FileRepository } from './interfaces/fileRepository';
@@ -21,6 +26,7 @@ import {
   UploadFileInvalidParameterError,
   UploadFileUnexpectedError,
 } from './utils/errors';
+import { fileRepositoryFactory } from './utils/factory';
 
 export type FileServiceConfig = {
   s3?: S3FileConfiguration;
@@ -33,7 +39,10 @@ class FileService {
   private readonly caching?: CachingService;
 
   constructor(repository: FileRepository, log: BaseLogger, caching?: CachingService) {
-    this.repository = repository;
+    this.repository = fileRepositoryFactory(FILE_ITEM_TYPE, {
+      s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
+      local: FILE_ITEM_PLUGIN_OPTIONS,
+    });
     this.caching = caching;
     this.logger = log;
   }

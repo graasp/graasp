@@ -13,7 +13,6 @@ import {
   isNotNull,
   lte,
   ne,
-  or,
   sql,
 } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
@@ -42,9 +41,19 @@ import {
   itemMemberships,
   items,
   itemsRaw,
+  membersView,
   publishedItems,
 } from '../../drizzle/schema';
-import { Item, ItemRaw, ItemTypeEnumKeys, ItemWithCreator } from '../../drizzle/types';
+import {
+  Item,
+  ItemInsertDTO,
+  ItemRaw,
+  ItemTypeEnumKeys,
+  ItemTypeUnion,
+  ItemWithCreator,
+  MemberRaw,
+  MinimalItemForInsert,
+} from '../../drizzle/types';
 import { IllegalArgumentException } from '../../repositories/errors';
 import { AuthenticatedUser, MaybeUser, MinimalMember } from '../../types';
 import { assertIsDefined } from '../../utils/assertions';
@@ -93,7 +102,7 @@ export class ItemRepository {
     }
   }
 
-  async checkNumberOfDescendants(db: DBConnection, item: Item, maximum: number): void {
+  async checkNumberOfDescendants(db: DBConnection, item: Item, maximum: number): Promise<void> {
     // check how "big the tree is" below the item
 
     const [{ count: numberOfDescendants }] = await db
@@ -118,9 +127,14 @@ export class ItemRepository {
     settings?: Item['settings'];
     creator: MinimalMember;
     lang?: Item['lang'];
-    parent?: Item;
+    parent?: {
+      type: ItemRaw['type'];
+      id: ItemRaw['id'];
+      path: ItemRaw['path'];
+      lang?: ItemRaw['lang'];
+    };
     order?: ItemRaw['order'];
-  }): Omit<ItemRaw, 'createdAt' | 'updatedAt' | 'order'> & { order?: ItemRaw['order'] } {
+  }): MinimalItemForInsert {
     const {
       name,
       description = null,
@@ -137,9 +151,7 @@ export class ItemRepository {
       throw new ItemNotFolder({ id: parent.id });
     }
 
-    // TODO: extra
-    // folder's extra can be empty
-    let parsedExtra: ItemExtraUnion = extra ? JSON.parse(JSON.stringify(extra)) : {};
+    let parsedExtra = extra ? JSON.parse(JSON.stringify(extra)) : {};
     const id = v4();
 
     // if item is a folder and the extra is empty
@@ -180,7 +192,7 @@ export class ItemRepository {
     const { account, item_view } = results[0];
     return {
       ...item_view,
-      creator: account,
+      creator: account as MemberRaw,
     };
   }
 
@@ -198,7 +210,7 @@ export class ItemRepository {
     }
     return {
       ...result[0].item_view,
-      creator: result[0].account,
+      creator: result[0].account as MemberRaw,
     };
   }
 
@@ -235,7 +247,7 @@ export class ItemRepository {
 
     return result.map(({ account, item_view }) => ({
       ...item_view,
-      creator: account,
+      creator: account as MemberRaw,
     }));
   }
 
@@ -244,7 +256,7 @@ export class ItemRepository {
     actor: MaybeUser,
     parent: Item,
     params?: ItemChildrenParams,
-  ): Promise<Item[]> {
+  ): Promise<ItemWithCreator[]> {
     if (parent.type !== ItemType.FOLDER) {
       throw new ItemNotFolder({ id: parent.id });
     }
@@ -260,34 +272,35 @@ export class ItemRepository {
       andConditions.push(inArray(items.type, types));
     }
 
-    const allKeywords = params?.keywords?.filter((s) => s && s.length);
-    if (allKeywords?.length) {
-      const keywordsString = allKeywords.join(' ');
+    // TODO: enable back
+    // const allKeywords = params?.keywords?.filter((s) => s && s.length);
+    // if (allKeywords?.length) {
+    //   const keywordsString = allKeywords.join(' ');
 
-      // search in english by default
-      const matchEnglishSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery('english', ${keywordsString})`;
+    //   // search in english by default
+    //   const matchEnglishSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery('english', ${keywordsString})`;
 
-      // no dictionary
-      const matchSimpleSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery('simple', ${keywordsString})`;
+    //   // no dictionary
+    //   const matchSimpleSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery('simple', ${keywordsString})`;
 
-      // raw words search
-      const matchRawWordSearchConditions = allKeywords.map((k) => ilike(items.name, `%${k}%`));
+    //   // raw words search
+    //   const matchRawWordSearchConditions = allKeywords.map((k) => ilike(items.name, `%${k}%`));
 
-      const searchConditions = [
-        matchEnglishSearchCondition,
-        matchSimpleSearchCondition,
-        ...matchRawWordSearchConditions,
-      ];
+    //   const searchConditions = [
+    //     matchEnglishSearchCondition,
+    //     matchSimpleSearchCondition,
+    //     ...matchRawWordSearchConditions,
+    //   ];
 
-      // search by member lang
-      const memberLang = actor && isMember(actor) ? actor?.lang : DEFAULT_LANG;
-      if (memberLang && ALLOWED_SEARCH_LANGS[memberLang]) {
-        const matchMemberLangSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery(${ALLOWED_SEARCH_LANGS[memberLang]}, ${keywordsString})`;
-        searchConditions.push(matchMemberLangSearchCondition);
-      }
+    //   // search by member lang
+    //   const memberLang = actor && isMember(actor) ? actor?.lang : DEFAULT_LANG;
+    //   if (memberLang && ALLOWED_SEARCH_LANGS[memberLang]) {
+    //     const matchMemberLangSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery(${ALLOWED_SEARCH_LANGS[memberLang]}, ${keywordsString})`;
+    //     searchConditions.push(matchMemberLangSearchCondition);
+    //   }
 
-      andConditions.push(or(...searchConditions));
-    }
+    //   andConditions.push(or(...searchConditions));
+    // }
 
     // use createdAt for ordering by default
     // or use order for ordering
@@ -305,13 +318,13 @@ export class ItemRepository {
     const result = await db
       .select()
       .from(items)
-      .leftJoin(accountsTable, eq(items.creatorId, accountsTable.id))
+      .leftJoin(membersView, eq(items.creatorId, membersView.id))
       .where(and(...andConditions))
       .orderBy(() => orderByValues);
 
-    return result.map(({ item_view, account }) => ({
+    return result.map(({ item_view, members_view }) => ({
       ...item_view,
-      creator: account,
+      creator: members_view as MemberRaw,
     }));
   }
 
@@ -343,7 +356,7 @@ export class ItemRepository {
   async getDescendants(
     db: DBConnection,
     item: FolderItem,
-    options?: { ordered?: boolean; types?: string[] },
+    options?: { ordered?: boolean; types?: ItemTypeUnion[] },
   ): Promise<ItemWithCreator[]> {
     // TODO: LEVEL depth
     const { ordered = true, types } = options ?? {};
@@ -365,23 +378,23 @@ export class ItemRepository {
     const result = await db
       .select()
       .from(items)
-      .leftJoin(accountsTable, eq(items.creatorId, accountsTable.id))
+      .leftJoin(membersView, eq(items.creatorId, membersView.id))
       .where(and(...whereConditions))
       .orderBy(asc(items.path));
 
-    const descendants = result.map(({ account, item_view }) => ({
+    const descendants = result.map(({ members_view, item_view }) => ({
       ...item_view,
-      creator: account,
+      creator: members_view as MemberRaw,
     }));
 
-    return sortChildrenForTreeWith(descendants, item);
+    return sortChildrenForTreeWith<ItemWithCreator>(descendants, item);
   }
 
   async getMany(
     db: DBConnection,
     ids: string[],
     args: { throwOnError?: boolean; withDeleted?: boolean } = {},
-  ): Promise<ResultOf<Item>> {
+  ): Promise<ResultOf<ItemWithCreator>> {
     if (!ids.length) {
       return { data: {}, errors: [] };
     }
@@ -396,7 +409,7 @@ export class ItemRepository {
         .where(inArray(items.id, ids))
     ).map(({ account, item_view }) => ({
       ...item_view,
-      creator: account,
+      creator: account as MemberRaw,
     }));
 
     const mappedResult = mapById({
@@ -548,7 +561,7 @@ export class ItemRepository {
       parent: parentItem,
     });
 
-    const result = await db.insert(itemsRaw).values(newItem).returning();
+    const result = await db.insert(itemsRaw).values([newItem]).returning();
 
     return result[0];
   }
@@ -559,10 +572,10 @@ export class ItemRepository {
     item: Item,
     creator: MinimalMember,
     siblingsName: string[],
-    parentItem?: Item,
+    parentItem?: FolderItem,
   ): Promise<{
     copyRoot: Item;
-    treeCopyMap: Map<string, { original: Item; copy: Item }>;
+    treeCopyMap: Map<string, { original: Item; copy: MinimalItemForInsert }>;
   }> {
     // cannot copy inside non folder item
     if (parentItem && parentItem.type !== ItemType.FOLDER) {
@@ -596,12 +609,12 @@ export class ItemRepository {
    */
   private async _copy(
     db: DBConnection,
-    original: ItemRaw,
+    original: Item,
     creator: MinimalMember,
     siblingsName: string[],
     parentItem?: FolderItem,
   ) {
-    const old2New = new Map<string, { copy: ItemRaw; original: ItemRaw }>();
+    const old2New = new Map<string, { copy: MinimalItemForInsert; original: Item }>();
 
     // get next order value
     const order = await this.getNextOrderCount(db, parentItem?.path);
@@ -632,13 +645,13 @@ export class ItemRepository {
     db: DBConnection,
     original: FolderItem,
     creator: MinimalMember,
-    old2New: Map<string, { copy: Item; original: Item }>,
+    old2New: Map<string, { copy: MinimalItemForInsert; original: Item }>,
   ): Promise<void> {
     const descendants = await this.getDescendants(db, original, {
       ordered: true,
     });
-    for (let i = 0; i < descendants.length; i++) {
-      const original = descendants[i];
+    for (const element of descendants) {
+      const original = element;
       const { id, path } = original;
 
       // process to get copy of direct parent
@@ -824,7 +837,7 @@ export class ItemRepository {
 
     return result.map(({ item_view, account }) => ({
       ...item_view,
-      creator: account,
+      creator: account as MemberRaw,
     }));
   }
 
@@ -952,7 +965,7 @@ export class ItemRepository {
    * @param parentPath scope of the order
    * @returns {number|null} first valid order value, can be `null` for root
    */
-  async getFirstOrderValue(db: DBConnection, parentPath?: Item['path']): Promise<number> {
+  async getFirstOrderValue(db: DBConnection, parentPath?: Item['path']): Promise<number | null> {
     // no order for root
     if (!parentPath) {
       return null;

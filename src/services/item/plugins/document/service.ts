@@ -7,10 +7,17 @@ import { DBConnection } from '../../../../drizzle/db';
 import { Item } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { MinimalMember } from '../../../../types';
+import { AuthorizationService } from '../../../authorization';
+import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { ThumbnailService } from '../../../thumbnail/service';
+import { ItemWrapperService } from '../../ItemWrapper';
+import { DocumentItem, isItemType } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
+import { ItemGeolocationRepository } from '../geolocation/repository';
+import { ItemVisibilityRepository } from '../itemVisibility/repository';
+import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../thumbnail/service';
 
@@ -21,11 +28,29 @@ export class DocumentItemService extends ItemService {
   constructor(
     thumbnailService: ThumbnailService,
     itemThumbnailService: ItemThumbnailService,
+    itemMembershipRepository: ItemMembershipRepository,
     meilisearchWrapper: MeiliSearchWrapper,
     itemRepository: ItemRepository,
+    itemPublishedRepository: ItemPublishedRepository,
+    itemGeolocationRepository: ItemGeolocationRepository,
+    authorizationService: AuthorizationService,
+    itemWrapperService: ItemWrapperService,
+    itemVisibilityRepository: ItemVisibilityRepository,
     log: BaseLogger,
   ) {
-    super(thumbnailService, itemThumbnailService, meilisearchWrapper, itemRepository, log);
+    super(
+      thumbnailService,
+      itemThumbnailService,
+      itemMembershipRepository,
+      meilisearchWrapper,
+      itemRepository,
+      itemPublishedRepository,
+      itemGeolocationRepository,
+      authorizationService,
+      itemWrapperService,
+      itemVisibilityRepository,
+      log,
+    );
   }
 
   /**
@@ -93,12 +118,12 @@ export class DocumentItemService extends ItemService {
 
   async patchWithOptions(
     db: DBConnection,
-    member: Member,
+    member: MinimalMember,
     itemId: UUID,
     args: Partial<Pick<Item, 'name' | 'description' | 'lang'>> &
       Partial<DocumentItemExtraProperties>,
   ): Promise<DocumentItem> {
-    const item = await this.itemRepository.getOneOrThrow(itemId);
+    const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
     // check item is document
     if (!isItemType(item, ItemType.DOCUMENT)) {

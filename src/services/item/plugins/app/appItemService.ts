@@ -3,12 +3,20 @@ import { singleton } from 'tsyringe';
 import { ItemGeolocation, ItemType, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
+import { Item } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
-import { AuthenticatedUser } from '../../../../types';
+import { MinimalMember } from '../../../../types';
+import { AuthorizationService } from '../../../authorization';
+import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { ThumbnailService } from '../../../thumbnail/service';
-import { isItemType } from '../../discrimination';
+import { ItemWrapperService } from '../../ItemWrapper';
+import { AppItem, isItemType } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
+import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
+import { ItemGeolocationRepository } from '../geolocation/repository';
+import { ItemVisibilityRepository } from '../itemVisibility/repository';
+import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../thumbnail/service';
 
@@ -17,15 +25,34 @@ export class AppItemService extends ItemService {
   constructor(
     thumbnailService: ThumbnailService,
     itemThumbnailService: ItemThumbnailService,
+    itemMembershipRepository: ItemMembershipRepository,
     meilisearchWrapper: MeiliSearchWrapper,
+    itemRepository: ItemRepository,
+    itemPublishedRepository: ItemPublishedRepository,
+    itemGeolocationRepository: ItemGeolocationRepository,
+    authorizationService: AuthorizationService,
+    itemWrapperService: ItemWrapperService,
+    itemVisibilityRepository: ItemVisibilityRepository,
     log: BaseLogger,
   ) {
-    super(thumbnailService, itemThumbnailService, meilisearchWrapper, log);
+    super(
+      thumbnailService,
+      itemThumbnailService,
+      itemMembershipRepository,
+      meilisearchWrapper,
+      itemRepository,
+      itemPublishedRepository,
+      itemGeolocationRepository,
+      authorizationService,
+      itemWrapperService,
+      itemVisibilityRepository,
+      log,
+    );
   }
 
   async postWithOptions(
     db: DBConnection,
-    member: AuthenticatedUser,
+    member: MinimalMember,
     args: Partial<Pick<Item, 'description' | 'lang'>> &
       Pick<Item, 'name'> & {
         url: string;
@@ -51,7 +78,7 @@ export class AppItemService extends ItemService {
 
   async patch(
     db: DBConnection,
-    member: Member,
+    member: MinimalMember,
     itemId: UUID,
     args: Partial<Pick<Item, 'name' | 'description' | 'lang' | 'settings'>>,
   ): Promise<AppItem> {

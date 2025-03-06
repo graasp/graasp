@@ -64,8 +64,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         throw new NoInvitationReceivedFound();
       }
 
-      return db.transaction(async (tx) => {
-        return await invitationService.shareItem(tx, member, params.id, invitations);
+      await db.transaction(async (tx) => {
+        await invitationService.shareItem(tx, member, params.id, invitations);
       });
     },
   );
@@ -102,7 +102,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         const { id: itemId } = params;
         const { templateId } = query;
 
-        return await db.transaction(
+        await db.transaction(
           async (tx) =>
             await invitationService.createStructureForCSVAndTemplate(
               tx,
@@ -141,7 +141,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
         // destructure query params
         const { id: itemId } = params;
-        return await db.transaction(
+        await db.transaction(
           async (tx) =>
             await invitationService.importUsersWithCSV(tx, member, itemId, uploadedFile),
         );

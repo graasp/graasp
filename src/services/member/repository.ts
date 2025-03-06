@@ -87,7 +87,7 @@ export class MemberDTO {
       // HACK: email should always exist but the columns is not marked as nonNull
       email: this.member.email!,
       lang: this.member.extra.lang ?? DEFAULT_LANG,
-      enableSaveActions: this.member.extra.enableSaveActions,
+      enableSaveActions: this.member.enableSaveActions,
     };
   }
 

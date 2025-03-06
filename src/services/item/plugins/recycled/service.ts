@@ -98,18 +98,22 @@ export class RecycledBinService {
 
     // since the subtree is currently soft-deleted before recovery, need withDeleted=true
 
+    let allDescendants: Item[] = [];
     for (const item of items) {
       await this.hooks.runPreHooks('restore', member, db, { item, isRestoredRoot: true });
-    }
-    const descendants = await this.recycledItemRepository.getDeletedDescendants(db, items);
-    for (const d of descendants) {
-      await this.hooks.runPreHooks('restore', member, db, {
-        item: d,
-        isRestoredRoot: false,
-      });
+      if (isItemType(item, ItemType.FOLDER)) {
+        const descendants = await this.recycledItemRepository.getDeletedDescendants(db, item);
+        for (const d of descendants) {
+          await this.hooks.runPreHooks('restore', member, db, {
+            item: d,
+            isRestoredRoot: false,
+          });
+        }
+        allDescendants = allDescendants.concat(descendants);
+      }
     }
 
-    await this.itemRepository.recover(db, [...descendants, ...items]);
+    await this.itemRepository.recover(db, [...allDescendants, ...items]);
     await this.recycledItemRepository.deleteManyByItemPath(
       db,
       items.map((item) => item.path),
@@ -121,7 +125,7 @@ export class RecycledBinService {
         isRestoredRoot: true,
       });
     }
-    for (const d of descendants) {
+    for (const d of allDescendants) {
       await this.hooks.runPostHooks('restore', member, db, {
         item: d,
         isRestoredRoot: false,

@@ -120,10 +120,10 @@ export class AppService {
     actor: AuthenticatedUser,
     item: Item,
   ): Promise<MinimalAccount[]> {
-    const memberships = await this.itemMembershipRepository.getForManyItems(db, [item]);
+    const memberships = await this.itemMembershipRepository.getForItem(db, item);
     // get members only without duplicate
     return uniqBy(
-      memberships.data[item.id].map(({ account }) => account),
+      memberships.map(({ account }) => account),
       ({ id }: { id: string }) => id,
     );
   }

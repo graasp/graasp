@@ -17,7 +17,7 @@ import {
   memberItemsTopic,
 } from '../../../../ws/events';
 import { expectValidateFeedbackOp } from '../../../action/test/utils';
-import { ItemValidationGroupRepository } from '../repositories/ItemValidationGroup';
+import { ItemValidationGroupRepository } from '../ItemValidationGroup.repository';
 import { saveItemValidation } from './utils';
 
 const testUtils = new ItemTestUtils();

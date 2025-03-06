@@ -28,7 +28,7 @@ import itemGeolocationPlugin from './plugins/geolocation/index';
 import graaspH5PPlugin from './plugins/html/h5p';
 import graaspZipPlugin from './plugins/importExport';
 import graaspInvitationsPlugin from './plugins/invitation';
-import graaspFavoritePlugin from './plugins/itemFavorite';
+import graaspFavoritePlugin from './plugins/itemBookmark';
 import graaspItemFlags from './plugins/itemFlag';
 import graaspItemLikes from './plugins/itemLike';
 import graaspItemVisibility from './plugins/itemVisibility';

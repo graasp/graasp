@@ -23,7 +23,7 @@ import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from 
 import { ActionItemService } from './action.service';
 import { CannotPostAction } from './errors';
 import { ActionRequestExportService } from './requestExport/service';
-import { exportActions, getAggregateActions, getItemActions, postAction } from './schemas';
+import { exportActions, getItemActions, postAction } from './schemas';
 
 export interface GraaspActionsOptions {
   shouldSave?: boolean;
@@ -50,46 +50,43 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
       preHandler: isAuthenticated,
     },
     async ({ user, params: { id }, query }) => {
+      const authenticatedUser = asDefined(user?.account);
       // remove itemMemberships from return
-      const { itemMemberships: _, ...result } = await actionItemService.getBaseAnalyticsForItem(
-        db,
-        user?.account,
-        {
-          sampleSize: query.requestedSampleSize,
-          itemId: id,
-          view: query.view?.toLowerCase(),
-          startDate: query.startDate,
-          endDate: query.endDate,
-        },
-      );
+      const result = await actionItemService.getBaseAnalyticsForItem(db, authenticatedUser, {
+        sampleSize: query.requestedSampleSize,
+        itemId: id,
+        view: query.view?.toLowerCase(),
+        startDate: query.startDate,
+        endDate: query.endDate,
+      });
       return result;
     },
   );
 
   // get actions aggregate data matching the given `id`
-  fastify.get(
-    '/:id/actions/aggregation',
-    {
-      schema: getAggregateActions,
-      preHandler: isAuthenticated,
-    },
-    async ({ user, params: { id }, query }) => {
-      return actionItemService.getAnalyticsAggregation(db, user?.account, {
-        sampleSize: query.requestedSampleSize,
-        itemId: id,
-        view: query.view?.toLowerCase(),
-        type: query.type,
-        countGroupBy: query.countGroupBy,
-        aggregationParams: {
-          aggregateFunction: query.aggregateFunction,
-          aggregateMetric: query.aggregateMetric,
-          aggregateBy: query.aggregateBy,
-        },
-        startDate: query.startDate,
-        endDate: query.endDate,
-      });
-    },
-  );
+  // fastify.get(
+  //   '/:id/actions/aggregation',
+  //   {
+  //     schema: getAggregateActions,
+  //     preHandler: isAuthenticated,
+  //   },
+  //   async ({ user, params: { id }, query }) => {
+  //     return actionItemService.getAnalyticsAggregation(db, user?.account, {
+  //       sampleSize: query.requestedSampleSize,
+  //       itemId: id,
+  //       view: query.view?.toLowerCase(),
+  //       type: query.type,
+  //       countGroupBy: query.countGroupBy,
+  //       aggregationParams: {
+  //         aggregateFunction: query.aggregateFunction,
+  //         aggregateMetric: query.aggregateMetric,
+  //         aggregateBy: query.aggregateBy,
+  //       },
+  //       startDate: query.startDate,
+  //       endDate: query.endDate,
+  //     });
+  //   },
+  // );
 
   fastify.post(
     '/:id/actions',
@@ -117,7 +114,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
         const item = await itemService.get(tx, member, itemId);
         await actionService.postMany(tx, member, request, [
           {
-            itemId: item.id,
+            item,
             type,
             extra: JSON.stringify(extra),
             // FIX: define the view !

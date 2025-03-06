@@ -14,10 +14,11 @@ import {
 
 import build, { clearDatabase } from '../../../test/app';
 import seed from '../../../test/mocks/seed';
+import { MaybeUser } from '../../types';
 
 describe('Item controller', () => {
   let app: FastifyInstance;
-  let actor: Actor;
+  let actor: MaybeUser;
   beforeAll(async () => {
     ({ app, actor } = await build());
   });

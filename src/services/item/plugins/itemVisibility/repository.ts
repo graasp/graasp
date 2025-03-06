@@ -289,7 +289,7 @@ export class ItemVisibilityRepository {
     db: DBConnection,
     creator: MinimalMember,
     original: Item,
-    copy: Item,
+    copyPath: Item['path'],
     excludeTypes?: ItemVisibilityOptionsType[],
   ): Promise<void> {
     const originalVisibilities = await this.getByItemPath(db, original.path);
@@ -299,7 +299,7 @@ export class ItemVisibilityRepository {
         .values(
           originalVisibilities
             .filter((visibility) => !excludeTypes?.includes(visibility.type))
-            .map(({ type }) => ({ itemPath: copy.path, type, creator })),
+            .map(({ type }) => ({ itemPath: copyPath, type, creator })),
         );
       // await this.repository.insert(
       //   itemVisibilities

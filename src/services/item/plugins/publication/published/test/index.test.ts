@@ -26,8 +26,8 @@ import {
 import { ItemVisibilityNotFound } from '../../../itemVisibility/errors';
 import { saveItemValidation } from '../../validation/test/utils';
 import { ItemPublishedNotFound } from '../errors';
+import { ItemPublishedRepository } from '../itemPublished.repository';
 import { MeiliSearchWrapper } from '../plugins/search/meilisearch';
-import { ItemPublishedRepository } from '../repositories/itemPublished';
 
 const testUtils = new ItemTestUtils();
 

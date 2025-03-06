@@ -70,10 +70,9 @@ const plugin: FastifyPluginAsyncTypebox<GraaspChatPluginOptions> = async (fastif
           body,
         } = request;
         const account = asDefined(user?.account);
-        return await db.transaction(async (tx) => {
+        await db.transaction(async (tx) => {
           const message = await chatService.postOne(tx, account, itemId, body);
           await actionChatService.postPostMessageAction(tx, request, message);
-          return message;
         });
       },
     );
@@ -95,11 +94,10 @@ const plugin: FastifyPluginAsyncTypebox<GraaspChatPluginOptions> = async (fastif
           body,
         } = request;
         try {
-          return await db.transaction(async (tx) => {
+          await db.transaction(async (tx) => {
             const member = asDefined(user?.account);
             const message = await chatService.patchOne(tx, member, itemId, messageId, body);
             await actionChatService.postPatchMessageAction(tx, request, message);
-            return message;
           });
         } catch (e: unknown) {
           throw new ChatMessageNotFound(messageId);
@@ -149,8 +147,6 @@ const plugin: FastifyPluginAsyncTypebox<GraaspChatPluginOptions> = async (fastif
           await chatService.clear(tx, member, itemId);
           await actionChatService.postClearMessageAction(tx, request, itemId);
         });
-
-        return;
       },
     );
   });

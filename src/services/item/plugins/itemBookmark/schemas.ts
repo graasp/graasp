@@ -10,7 +10,7 @@ import { packedItemSchemaRef } from '../../schemas.packed';
 
 const favoriteSchemaRef = registerSchemaAsRef(
   'favorite',
-  'Favorite',
+  'Bookmark',
   customType.StrictObject(
     {
       id: customType.UUID(),
@@ -23,9 +23,9 @@ const favoriteSchemaRef = registerSchemaAsRef(
   ),
 );
 
-const packedFavoriteSchemaRef = registerSchemaAsRef(
-  'packedFavorite',
-  'Packed Favorite',
+const packedBookmarkSchemaRef = registerSchemaAsRef(
+  'packedBookmark',
+  'Packed Bookmark',
   customType.StrictObject(
     {
       // Object definition
@@ -39,20 +39,20 @@ const packedFavoriteSchemaRef = registerSchemaAsRef(
   ),
 );
 
-export const getOwnFavorite = {
-  operationId: 'getOwnFavorite',
+export const getOwnBookmark = {
+  operationId: 'getOwnBookmark',
   tags: ['favorite'],
   summary: 'Get all bookmarked instances of the current member',
   description: 'Get all bookmarked instances of the current member',
 
   response: {
-    [StatusCodes.OK]: Type.Array(packedFavoriteSchemaRef),
+    [StatusCodes.OK]: Type.Array(packedBookmarkSchemaRef),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
 export const create = {
-  operationId: 'createFavorite',
+  operationId: 'createBookmark',
   tags: ['favorite'],
   summary: 'Bookmark item',
   description: 'Bookmark item',
@@ -67,7 +67,7 @@ export const create = {
 } as const satisfies FastifySchema;
 
 export const deleteOne = {
-  operationId: 'deleteFavorite',
+  operationId: 'deleteBookmark',
   tags: ['favorite'],
   summary: 'Remove item from bookmarks',
   description: 'Remove item from bookmarks',

@@ -1,5 +1,5 @@
 import { Readable } from 'stream';
-import { delay, inject, singleton } from 'tsyringe';
+import { delay, inject, injectable, singleton } from 'tsyringe';
 
 import { PermissionLevel, ThumbnailSize } from '@graasp/sdk';
 
@@ -14,7 +14,7 @@ import { ItemService } from '../../service';
 import { DEFAULT_ITEM_THUMBNAIL_SIZES } from './constants';
 import { ItemThumbnailSize, ItemsThumbnails } from './types';
 
-@singleton()
+@injectable()
 export class ItemThumbnailService {
   private readonly thumbnailService: ThumbnailService;
   private readonly itemService: ItemService;
@@ -27,6 +27,7 @@ export class ItemThumbnailService {
     // This can be solved by refactoring the code or using the `delay` helper function.
     @inject(delay(() => ItemService)) itemService: ItemService,
     thumbnailService: ThumbnailService,
+    @inject(delay(() => AuthorizationService))
     authorizationService: AuthorizationService,
     itemRepository: ItemRepository,
     logger: BaseLogger,

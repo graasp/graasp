@@ -55,7 +55,7 @@ export type MaybeUser = AuthenticatedUser | undefined;
 export type MemberInfo = MinimalMember & {
   lang: string;
   email: string;
-  enableSaveActions?: boolean;
+  enableSaveActions?: boolean | null;
 };
 
 export type IdParam = {

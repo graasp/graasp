@@ -1,11 +1,11 @@
-import { Account } from '../../../../drizzle/schema';
+import { MinimalAccount } from '../../../../drizzle/types';
 
 /**
  * Add legacy property `member` to an app data
  * @param appData
  * @returns appData with an additional key `member`
  */
-export const addMemberInAppData = <T extends { account: Account }>(ad: T) => ({
+export const addMemberInAppData = <T extends { account: MinimalAccount }>(ad: T) => ({
   member: ad.account,
   ...ad,
 });
@@ -15,7 +15,7 @@ export const addMemberInAppData = <T extends { account: Account }>(ad: T) => ({
  * @param appAction
  * @returns appData with an additional key `member`
  */
-export const addMemberInAppAction = <T extends { account: Account }>(aa: T) => ({
+export const addMemberInAppAction = <T extends { account: MinimalAccount }>(aa: T) => ({
   member: aa.account,
   ...aa,
 });

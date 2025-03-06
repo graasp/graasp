@@ -18,12 +18,15 @@ import {
   itemMemberships as itemMembershipTable,
   items,
   itemsRaw,
+  membersView,
 } from '../../drizzle/schema';
 import {
   Item,
   ItemMembershipRaw,
   ItemMembershipWithItem,
   ItemMembershipWithItemAndAccount,
+  ItemMembershipWithItemAndCompleteAccount,
+  MemberRaw,
 } from '../../drizzle/types';
 import { AuthenticatedUser, MinimalMember } from '../../types';
 import {
@@ -47,7 +50,7 @@ type CreateItemMembershipBody = {
   creatorId?: CreatorId;
   permission: `${PermissionLevel}`;
 };
-type UpdateItemMembershipBody = { permission: PermissionLevel };
+type UpdateItemMembershipBody = { permission: `${PermissionLevel}` };
 type KeyCompositionItemMembership = {
   itemPath: ItemPath;
   accountId: AccountId;
@@ -101,7 +104,7 @@ export class ItemMembershipRepository {
     db: DBConnection,
     itemMembershipId: string,
     args: { purgeBelow?: boolean } = { purgeBelow: true },
-  ): Promise<ItemMembershipRaw> {
+  ): Promise<void> {
     const itemMembership = await db.query.itemMemberships.findFirst({
       where: eq(itemMembershipTable.id, itemMembershipId),
     });
@@ -129,7 +132,6 @@ export class ItemMembershipRepository {
       }
     }
     await db.delete(itemMembershipTable).where(eq(itemMembershipTable.id, itemMembershipId));
-    return itemMembership;
   }
 
   /**
@@ -449,6 +451,27 @@ export class ItemMembershipRepository {
     return result.map(({ name }) => name);
   }
 
+  async getForItem(
+    db: DBConnection,
+    item: Item,
+  ): Promise<ItemMembershipWithItemAndCompleteAccount[]> {
+    const andConditions: SQL[] = [eq(itemsRaw.id, item.id)];
+
+    const memberships = await db
+      .select()
+      .from(itemMembershipTable)
+      .innerJoin(accountsTable, eq(itemMembershipTable.accountId, accountsTable.id))
+      .innerJoin(itemsRaw, isAncestorOrSelf(itemMembershipTable.itemPath, itemsRaw.path))
+      .where(and(...andConditions));
+    const mappedMemberships = memberships.map(({ item, account, item_membership }) => ({
+      item,
+      account,
+      ...item_membership,
+    })) as ItemMembershipWithItemAndCompleteAccount[];
+
+    return mappedMemberships;
+  }
+
   async getForManyItems(
     db: DBConnection,
     items: Item[],
@@ -504,7 +527,7 @@ export class ItemMembershipRepository {
     inputItems: Item[],
     accountId: AccountId,
     considerLocal = false,
-  ): Promise<ResultOf<ItemMembershipWithItemAndAccount[]>> {
+  ): Promise<ResultOf<ItemMembershipWithItemAndAccount>> {
     if (inputItems.length === 0) {
       return { data: {}, errors: [] };
     }
@@ -560,7 +583,7 @@ export class ItemMembershipRepository {
 
     const result = mapById({
       keys: ids,
-      findElement: (id) => memberships.filter(({ descendantId }) => descendantId === id),
+      findElement: (id) => memberships.find(({ descendantId }) => descendantId === id),
       buildError: (id) => new ItemMembershipNotFound({ id }),
     });
 
@@ -623,48 +646,43 @@ export class ItemMembershipRepository {
     return null;
   }
 
-  async getMany(
-    db: DBConnection,
-    ids: string[],
-    args: { throwOnError?: boolean } = { throwOnError: false },
-  ): Promise<ResultOf<ItemMembershipWithItemAndAccount>> {
-    const result = await db.query.itemMemberships.findMany({
-      where: inArray(itemMembershipTable.id, ids),
-      with: {
-        account: true,
-        item: true,
-      },
-    });
+  // async getMany(
+  //   db: DBConnection,
+  //   ids: string[],
+  //   args: { throwOnError?: boolean } = { throwOnError: false },
+  // ): Promise<ResultOf<ItemMembershipWithItemAndAccount>> {
+  //   const result = await db.query.itemMemberships.findMany({
+  //     where: inArray(itemMembershipTable.id, ids),
+  //     with: {
+  //       account: true,
+  //       item: true,
+  //     },
+  //   });
 
-    const mappedMemberships = mapById({
-      keys: ids,
-      findElement: (id) => result.find(({ id: thisId }) => id === thisId),
-      buildError: (id) => new ItemMembershipNotFound({ id }),
-    });
+  //   const mappedMemberships = mapById({
+  //     keys: ids,
+  //     findElement: (id) => result.find(({ id: thisId }) => id === thisId),
+  //     buildError: (id) => new ItemMembershipNotFound({ id }),
+  //   });
 
-    if (args.throwOnError && mappedMemberships.errors.length) {
-      throw mappedMemberships.errors[0];
-    }
+  //   if (args.throwOnError && mappedMemberships.errors.length) {
+  //     throw mappedMemberships.errors[0];
+  //   }
 
-    return mappedMemberships;
-  }
+  //   return mappedMemberships;
+  // }
 
-  // TODO: looks not used ?? Remove ?
-  async getByItemPathAndPermission(
-    db: DBConnection,
-    itemPath: string,
-    permission: PermissionLevel,
-  ): Promise<ItemMembershipWithItemAndAccount[]> {
-    return await db.query.itemMemberships.findMany({
-      where: and(
-        isAncestorOrSelf(itemMembershipTable.itemPath, itemPath),
-        eq(itemMembershipTable.permission, permission),
-      ),
-      with: {
-        account: true,
-        item: true,
-      },
-    });
+  async getAdminsForItem(db: DBConnection, itemPath: string): Promise<MemberRaw[]> {
+    return await db
+      .select(getTableColumns(accountsTable))
+      .from(itemMembershipTable)
+      .innerJoin(membersView, eq(membersView.id, itemMembershipTable.accountId))
+      .where(
+        and(
+          isAncestorOrSelf(itemMembershipTable.itemPath, itemPath),
+          eq(itemMembershipTable.permission, PermissionLevel.Admin),
+        ),
+      );
   }
 
   async updateOne(
@@ -811,8 +829,8 @@ export class ItemMembershipRepository {
     const rows = await db
       .select({
         accountId: itemMembershipTable.accountId,
-        itemPath: sql`'max(item_path::text)::ltree'`,
-        permission: sql`max(permission)`,
+        itemPath: sql<Item['path']>`'max(item_path::text)::ltree'`,
+        permission: sql<PermissionLevel>`max(permission)`,
       })
       .from(itemMembershipTable)
       .where(isAncestorOrSelf(itemMembershipTable.itemPath, item.path))

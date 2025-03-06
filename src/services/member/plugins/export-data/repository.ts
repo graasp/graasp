@@ -19,7 +19,7 @@ import {
   AppActionWithItem,
   AppDataWithItem,
   AppSettingWithItem,
-  ChatMentionRaw,
+  ChatMentionWithMessage,
   ChatMessageWithItem,
   Item,
   ItemLikeWithItem,
@@ -60,7 +60,6 @@ export class ExportDataRepository {
     }
 
     return await db.query.itemMemberships.findMany({
-      columns: { creatorId: false },
       where: eq(itemMemberships.accountId, accountId),
       orderBy: desc(itemMemberships.updatedAt),
       with: {
@@ -74,7 +73,7 @@ export class ExportDataRepository {
    * @param accountId ID of the account to retrieve the data.
    * @returns an array of the chat mentions.
    */
-  async getChatMentions(db: DBConnection, accountId: string): Promise<ChatMentionRaw[]> {
+  async getChatMentions(db: DBConnection, accountId: string): Promise<ChatMentionWithMessage[]> {
     if (!accountId) {
       throw new NoChatMentionForMember({ accountId });
     }

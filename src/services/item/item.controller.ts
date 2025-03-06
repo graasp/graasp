@@ -15,7 +15,7 @@ import { memberAccountRole } from '../member/strategies/memberAccountRole';
 import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
 import { ITEMS_PAGE_SIZE } from './constants';
 import { ActionItemService } from './plugins/action/action.service';
-import { copyMany, deleteMany, getOwn, getShared, moveMany, reorder, updateOne } from './schemas';
+import { copyMany, deleteMany, moveMany, reorder, updateOne } from './schemas';
 import { create, createWithThumbnail } from './schemas.create';
 import {
   getAccessible,
@@ -30,6 +30,8 @@ import { getPostItemPayloadFromFormData } from './utils';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from './ws/events';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
+  const { websockets } = fastify;
+
   const itemService = resolveDependency(ItemService);
   const actionItemService = resolveDependency(ActionItemService);
 
@@ -319,7 +321,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           websockets.publish(
             memberItemsTopic,
             member.id,
-            ItemOpFeedbackEvent('move', ids, { items, moved }),
+            // TODO: Fix content
+            ItemOpFeedbackEvent('move', ids, { items, moved: moved[0] }),
           );
         })
         .catch((e) => {

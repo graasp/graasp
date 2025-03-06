@@ -28,7 +28,7 @@ export class ChatMessageService {
     this.chatMessageRepository = chatMessageRepository;
   }
 
-  async getForItem(db: DBConnection, actor: MaybeUser, itemId: string): Promise<ChatMessageRaw[]> {
+  async getForItem(db: DBConnection, actor: MaybeUser, itemId: string) {
     // check permission
     await this.itemService.get(db, actor, itemId);
 

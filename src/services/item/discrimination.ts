@@ -13,7 +13,7 @@ export type S3FileItem = ItemWithType<typeof ItemType.S3_FILE>;
 export type ShortcutItem = ItemWithType<typeof ItemType.SHORTCUT>;
 
 export const isItemType = <T extends ItemTypeEnumKeys>(
-  item: Item,
+  item: { type: Item['type'] },
   type: T,
 ): item is ItemWithType<T> => {
   return item.type === type;

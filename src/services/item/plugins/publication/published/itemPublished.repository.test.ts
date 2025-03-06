@@ -2,9 +2,9 @@ import { FastifyInstance } from 'fastify';
 
 import { FolderItemFactory, MemberFactory, PermissionLevel } from '@graasp/sdk';
 
-import build from '../../../../../../../test/app';
-import { expectManyItems } from '../../../../test/fixtures/items';
-import { ItemPublishedRepository } from './itemPublished';
+import build from '../../../../../../test/app';
+import { expectManyItems } from '../../../test/fixtures/items';
+import { ItemPublishedRepository } from './itemPublished.repository';
 
 describe('ItemPublishedRepository', () => {
   let app: FastifyInstance;

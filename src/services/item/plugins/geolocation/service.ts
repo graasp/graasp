@@ -4,15 +4,18 @@ import { PermissionLevel } from '@graasp/sdk';
 
 import { GEOLOCATION_API_KEY_DI_KEY } from '../../../../di/constants';
 import { DBConnection } from '../../../../drizzle/db';
-import { Item } from '../../../../drizzle/types';
+import { Item, ItemGeolocationRaw } from '../../../../drizzle/types';
 import { MaybeUser, MinimalMember } from '../../../../types';
 import { AuthorizationService } from '../../../authorization';
-import { ItemWrapper } from '../../ItemWrapper';
+import { ItemWrapper, PackedItem } from '../../ItemWrapper';
 import { ItemService } from '../../service';
 import { ItemThumbnailService } from '../thumbnail/service';
-import { ItemGeolocation, PackedItemGeolocation } from './ItemGeolocation';
 import { MissingGeolocationApiKey } from './errors';
 import { ItemGeolocationRepository } from './repository';
+
+type PackedItemGeolocation = ItemGeolocationRaw & {
+  item: PackedItem;
+};
 
 @singleton()
 export class ItemGeolocationService {
@@ -66,10 +69,10 @@ export class ItemGeolocationService {
     actor: MaybeUser,
     query: {
       parentItemId?: Item['id'];
-      lat1?: ItemGeolocation['lat'];
-      lat2?: ItemGeolocation['lat'];
-      lng1?: ItemGeolocation['lng'];
-      lng2?: ItemGeolocation['lng'];
+      lat1?: ItemGeolocationRaw['lat'];
+      lat2?: ItemGeolocationRaw['lat'];
+      lng1?: ItemGeolocationRaw['lng'];
+      lng2?: ItemGeolocationRaw['lng'];
       keywords?: string[];
     },
   ): Promise<PackedItemGeolocation[]> {
@@ -78,7 +81,7 @@ export class ItemGeolocationService {
       parentItem = await this.itemService.get(db, actor, query.parentItemId);
     }
 
-    const geoloc = await this.itemGeolocationRepository.getItemsIn(actor, query, parentItem);
+    const geoloc = await this.itemGeolocationRepository.getItemsIn(db, actor, query, parentItem);
 
     // check if there are any items with a geolocation, if not return early
     const itemsWithGeoloc = geoloc.map(({ item }) => item);
@@ -129,8 +132,8 @@ export class ItemGeolocationService {
     db: DBConnection,
     member: MinimalMember,
     itemId: Item['id'],
-    geolocation: Pick<ItemGeolocation, 'lat' | 'lng'> &
-      Pick<Partial<ItemGeolocation>, 'addressLabel' | 'helperLabel'>,
+    geolocation: Pick<ItemGeolocationRaw, 'lat' | 'lng'> &
+      Pick<Partial<ItemGeolocationRaw>, 'addressLabel' | 'helperLabel'>,
   ) {
     // check item exists and member has permission
     const item = await this.itemService.get(db, member, itemId, PermissionLevel.Write);
@@ -140,7 +143,7 @@ export class ItemGeolocationService {
 
   async getAddressFromCoordinates(
     db: DBConnection,
-    query: Pick<ItemGeolocation, 'lat' | 'lng'> & { lang?: string },
+    query: Pick<ItemGeolocationRaw, 'lat' | 'lng'> & { lang?: string },
   ) {
     if (!this.geolocationKey) {
       throw new MissingGeolocationApiKey();

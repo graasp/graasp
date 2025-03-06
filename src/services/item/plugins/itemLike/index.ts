@@ -56,8 +56,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       } = request;
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return db.transaction(async (tx) => {
-        const newItemLike = await itemLikeService.post(tx, member, itemId);
+      db.transaction(async (tx) => {
+        await itemLikeService.post(tx, member, itemId);
         // action like item
         const item = await itemService.get(tx, member, itemId);
         const action = {
@@ -68,7 +68,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           },
         };
         await actionService.postMany(tx, member, request, [action]);
-        return newItemLike;
       });
     },
   );

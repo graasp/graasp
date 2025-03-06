@@ -3,20 +3,17 @@ import { singleton } from 'tsyringe';
 
 import { FastifyRequest } from 'fastify';
 
-import {
-  AggregateBy,
-  AggregateFunction,
-  AggregateMetric,
-  Context,
-  CountGroupBy,
-  ItemType,
-  PermissionLevel,
-  UUID,
-} from '@graasp/sdk';
+import { Context, ItemType, PermissionLevel, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { ActionWithItem, Item } from '../../../../drizzle/types';
-import { AuthenticatedUser, MaybeUser } from '../../../../types';
+import {
+  ActionWithItem,
+  AppActionRaw,
+  AppDataRaw,
+  AppSettingRaw,
+  Item,
+} from '../../../../drizzle/types';
+import { AuthenticatedUser } from '../../../../types';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { ActionRepository } from '../../../action/action.repository';
 import { ActionService } from '../../../action/action.service';
@@ -30,10 +27,9 @@ import { ChatMessageRepository } from '../../../chat/repository';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { ItemService } from '../../service';
 import { AppActionRepository } from '../app/appAction/appAction.repository';
-import { AppData } from '../app/appData/appData';
 import { AppDataRepository } from '../app/appData/repository';
 import { AppSettingRepository } from '../app/appSetting/repository';
-import { BaseAnalytics } from './base-analytics';
+// import { BaseAnalytics } from './base-analytics';
 import { ItemActionType } from './utils';
 
 @singleton()
@@ -106,47 +102,47 @@ export class ActionItemService {
     });
   }
 
-  async getAnalyticsAggregation(
-    db: DBConnection,
-    actor: MaybeUser,
-    payload: {
-      itemId: string;
-      sampleSize?: number;
-      view?: string;
-      type?: string[];
-      countGroupBy: CountGroupBy[];
-      aggregationParams?: {
-        aggregateFunction: AggregateFunction;
-        aggregateMetric: AggregateMetric;
-        aggregateBy?: AggregateBy[];
-      };
-      startDate?: string;
-      endDate?: string;
-    },
-  ) {
-    // check rights
-    const item = await this.itemService.get(db, actor, payload.itemId, PermissionLevel.Read);
+  // async getAnalyticsAggregation(
+  //   db: DBConnection,
+  //   actor: MaybeUser,
+  //   payload: {
+  //     itemId: string;
+  //     sampleSize?: number;
+  //     view?: string;
+  //     type?: string[];
+  //     countGroupBy: CountGroupBy[];
+  //     aggregationParams?: {
+  //       aggregateFunction: AggregateFunction;
+  //       aggregateMetric: AggregateMetric;
+  //       aggregateBy?: AggregateBy[];
+  //     };
+  //     startDate?: string;
+  //     endDate?: string;
+  //   },
+  // ) {
+  //   // check rights
+  //   const item = await this.itemService.get(db, actor, payload.itemId, PermissionLevel.Read);
 
-    if (payload.startDate && payload.endDate && isBefore(payload.endDate, payload.startDate)) {
-      throw new InvalidAggregationError('start date should be before end date');
-    }
-    // get actions aggregation
-    const aggregateActions = await this.actionRepository.getAggregationForItem(
-      db,
-      item.path,
-      {
-        sampleSize: payload.sampleSize,
-        view: payload.view,
-        types: payload.type,
-        startDate: payload.startDate,
-        endDate: payload.endDate,
-      },
-      payload.countGroupBy,
-      payload.aggregationParams,
-    );
+  //   if (payload.startDate && payload.endDate && isBefore(payload.endDate, payload.startDate)) {
+  //     throw new InvalidAggregationError('start date should be before end date');
+  //   }
+  //   // get actions aggregation
+  //   const aggregateActions = await this.actionRepository.getAggregationForItem(
+  //     db,
+  //     item.path,
+  //     {
+  //       sampleSize: payload.sampleSize,
+  //       view: payload.view,
+  //       types: payload.type,
+  //       startDate: payload.startDate,
+  //       endDate: payload.endDate,
+  //     },
+  //     payload.countGroupBy,
+  //     payload.aggregationParams,
+  //   );
 
-    return aggregateActions;
-  }
+  //   return aggregateActions;
+  // }
 
   async getBaseAnalyticsForItem(
     db: DBConnection,
@@ -158,7 +154,7 @@ export class ActionItemService {
       startDate?: string;
       endDate?: string;
     },
-  ): Promise<BaseAnalytics> {
+  ) {
     // prevent access from unautorized members
     if (!actor) {
       throw new UnauthorizedMember();
@@ -186,8 +182,7 @@ export class ActionItemService {
     });
 
     // get memberships
-    const inheritedMemberships =
-      (await this.itemMembershipRepository.getForManyItems(db, [item])).data?.[item.id] ?? [];
+    const inheritedMemberships = await this.itemMembershipRepository.getForItem(db, item);
     // TODO: use db argument passed from the transaction
     const itemMemberships = await this.itemMembershipRepository.getAllBellowItemPath(db, item.path);
     const allMemberships = [...inheritedMemberships, ...itemMemberships];
@@ -199,21 +194,17 @@ export class ActionItemService {
     const descendants = await this.itemService.getFilteredDescendants(db, actor, payload.itemId);
 
     // chatbox for all items
-    const chatMessages = Object.values(
-      (
-        await this.chatMessageRepository.getByItems(db, [
-          payload.itemId,
-          ...descendants.map(({ id }) => id),
-        ])
-      ).data,
-    ).flat() as ChatMessage[];
+    const chatMessages = await this.chatMessageRepository.getByItems(db, [
+      payload.itemId,
+      ...descendants.map(({ id }) => id),
+    ]);
 
     // get for all app-item
     const apps: {
       [key: UUID]: {
-        data: AppData[];
-        settings: AppSetting[];
-        actions: AppAction[];
+        data: AppDataRaw[];
+        settings: AppSettingRaw[];
+        actions: AppActionRaw[];
       };
     } = {};
     const appItems = [item, ...descendants].filter(({ type }) => type === ItemType.APP);
@@ -237,20 +228,22 @@ export class ActionItemService {
       };
     }
 
+    return { item };
+
     // set all data in last task's result
-    return new BaseAnalytics({
-      item,
-      descendants,
-      actions,
-      members,
-      itemMemberships: allMemberships,
-      chatMessages,
-      apps,
-      metadata: {
-        numActionsRetrieved: actions.length,
-        requestedSampleSize: payload.sampleSize ?? MAX_ACTIONS_SAMPLE_SIZE,
-      },
-    });
+    // return new BaseAnalytics({
+    //   item,
+    //   descendants,
+    //   actions,
+    //   members,
+    //   itemMemberships: allMemberships,
+    //   chatMessages,
+    //   apps,
+    //   metadata: {
+    //     numActionsRetrieved: actions.length,
+    //     requestedSampleSize: payload.sampleSize ?? MAX_ACTIONS_SAMPLE_SIZE,
+    //   },
+    // });
   }
 
   async postPostAction(db: DBConnection, request: FastifyRequest, item: Item) {
@@ -260,15 +253,7 @@ export class ActionItemService {
       type: ItemActionType.Create,
       extra: { itemId: item.id },
     };
-    await this.actionService.postMany(
-      db,
-      user?.account,
-      request,
-      // FIX: !!!!
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
-      [action],
-    );
+    await this.actionService.postMany(db, user?.account, request, [action]);
   }
 
   async postPatchAction(db: DBConnection, request: FastifyRequest, item: Item) {
@@ -280,15 +265,7 @@ export class ActionItemService {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       extra: { itemId: item.id, body: request.body as any },
     };
-    await this.actionService.postMany(
-      db,
-      user?.account,
-      request,
-      // FIX: !!!!
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
-      [action],
-    );
+    await this.actionService.postMany(db, user?.account, request, [action]);
   }
 
   async postManyDeleteAction(db: DBConnection, request: FastifyRequest, items: Item[]) {
@@ -298,15 +275,7 @@ export class ActionItemService {
       type: ItemActionType.Delete,
       extra: { itemId: item.id },
     }));
-    await this.actionService.postMany(
-      db,
-      user?.account,
-      request,
-      // FIX: !!!!
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
-      actions,
-    );
+    await this.actionService.postMany(db, user?.account, request, actions);
   }
 
   async postManyMoveAction(db: DBConnection, request: FastifyRequest, items: Item[]) {
@@ -330,14 +299,17 @@ export class ActionItemService {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       extra: { itemId: item.id, body: request.body as any },
     }));
-    await this.actionService.postMany(
-      db,
-      user?.account,
-      request,
-      // FIX: !!!!
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
-      actions,
-    );
+    await this.actionService.postMany(db, user?.account, request, actions);
+  }
+
+  // TODO
+  async getTotalViewsCountForItemPath(db, itemPath) {
+    // {
+    //   view: 'library',
+    //   types: ['collection-view'],
+    //   startDate: formatISO(publishedItem.createdAt),
+    //   endDate: formatISO(new Date()),
+    // }
+    return 5555;
   }
 }

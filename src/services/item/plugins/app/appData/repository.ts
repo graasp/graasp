@@ -4,7 +4,7 @@ import { and, eq, or } from 'drizzle-orm/sql';
 import { AppDataVisibility, FileItemType, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../drizzle/db';
-import { AppDataInsertRaw, appDatas } from '../../../../../drizzle/schema';
+import { appDatas } from '../../../../../drizzle/schema';
 import {
   Account,
   AppDataInsertDTO,
@@ -26,6 +26,7 @@ export class AppDataRepository {
     return await db
       .insert(appDatas)
       .values({
+        visibility: AppDataVisibility.Member,
         ...appData,
         itemId,
         creatorId: actorId,
@@ -34,11 +35,7 @@ export class AppDataRepository {
       .returning()[0];
   }
 
-  async updateOne(
-    db: DBConnection,
-    appDataId: string,
-    body: AppDataInsertRaw,
-  ): Promise<AppDataInsertDTO> {
+  async updateOne(db: DBConnection, appDataId: string, body: Partial<AppDataRaw>): Promise<void> {
     // we shouldn't update file data
     const originalData = await db.query.appDatas.findFirst({ where: eq(appDatas.id, appDataId) });
 
@@ -51,7 +48,7 @@ export class AppDataRepository {
       throw new PreventUpdateAppDataFile(originalData.id);
     }
 
-    return await db.update(appDatas).set(body).where(eq(appDatas.id, appDataId)).returning()[0];
+    await db.update(appDatas).set(body).where(eq(appDatas.id, appDataId));
   }
 
   async getOne(
@@ -72,8 +69,8 @@ export class AppDataRepository {
       accountId?: Account['id'];
       type?: string;
     } = {},
-    permission?: PermissionLevel,
-  ): Promise<AppDataRaw[]> {
+    permission?: `${PermissionLevel}`,
+  ): Promise<AppDataWithItemAndAccountAndCreator[]> {
     const { accountId, type } = filters;
 
     const andConditions: (SQL | undefined)[] = [eq(appDatas.itemId, itemId)];

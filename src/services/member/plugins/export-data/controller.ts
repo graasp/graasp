@@ -2,8 +2,6 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { DEFAULT_LANG } from '@graasp/translations';
-
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
@@ -32,14 +30,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       // get member info such as email and lang
       const member = await memberRepository.get(db, authedUser.id);
       db.transaction(async (tx) => {
-        await exportMemberDataService.requestDataExport(tx, {
-          ...member,
-          // HACK: the return from the member repo should define the email as non-nullable for members
-          email: member.email!,
-          type: 'individual',
-          isValidated: member.isValidated ?? false,
-          lang: member.extra.lang ?? DEFAULT_LANG,
-        });
+        await exportMemberDataService.requestDataExport(tx, member.toMemberInfo());
       });
 
       // reply no content and let the server create the archive and send the mail

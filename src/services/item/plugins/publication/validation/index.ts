@@ -46,19 +46,19 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
   );
 
-  // get validation group
-  fastify.get(
-    '/:itemId/validations/:itemValidationGroupId',
-    {
-      schema: getItemValidationGroup,
-      preHandler: [isAuthenticated, matchOne(memberAccountRole)],
-    },
-    async ({ user, params: { itemValidationGroupId } }) => {
-      const member = asDefined(user?.account);
-      assertIsMember(member);
-      return await validationService.getItemValidationGroup(db, member, itemValidationGroupId);
-    },
-  );
+  // // get validation group
+  // fastify.get(
+  //   '/:itemId/validations/:itemValidationGroupId',
+  //   {
+  //     schema: getItemValidationGroup,
+  //     preHandler: [isAuthenticated, matchOne(memberAccountRole)],
+  //   },
+  //   async ({ user, params: { itemValidationGroupId } }) => {
+  //     const member = asDefined(user?.account);
+  //     assertIsMember(member);
+  //     return await validationService.getItemValidationGroup(db, member, itemValidationGroupId);
+  //   },
+  // );
 
   // validate item with given itemId in param
   fastify.post(
@@ -79,7 +79,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       db.transaction(async (tx) => {
         // get item and check permission
         // only folder items are allowed as root for validation
-        const item = await folderItemService.get(tx, member, itemId, PermissionLevel.Admin);
+        const item = await folderItemService.getFolder(tx, member, itemId, PermissionLevel.Admin);
 
         const notifyOnValidationChanges = () => {
           websockets.publish(

@@ -29,3 +29,15 @@ export const itemLoginSchemaTypeEnum = pgEnum('item_login_schema_status', [
   'anonymous',
   'anonymous+password',
 ]);
+
+export const itemValidationProcessEnum = pgEnum('item_validation_process', [
+  'bad-words-detection',
+  'image-classification',
+]);
+
+export const itemValidationStatusEnum = pgEnum('item_validation_status', [
+  'success',
+  'failure',
+  'pending',
+  'pending-manual',
+]);

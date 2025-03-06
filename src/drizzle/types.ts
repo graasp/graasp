@@ -4,15 +4,19 @@ import {
   EtherpadItemExtra,
   FolderItemExtra,
   H5PItemExtra,
+  ItemSettings,
   LinkItemExtra,
+  LinkItemSettings,
   LocalFileItemExtra,
   S3FileItemExtra,
   ShortcutItemExtra,
   UnionOfConst,
 } from '@graasp/sdk';
 
+import { MinimalGuest, MinimalMember } from '../types';
 import {
   accountsTable,
+  actionRequestExports,
   actionsTable,
   appActions,
   appDatas,
@@ -120,15 +124,39 @@ export type ItemExtraMap = {
   [ItemType.SHORTCUT]: ShortcutItemExtra;
 };
 
+export type ItemSettingsMap = {
+  [ItemType.APP]: ItemSettings;
+  [ItemType.DOCUMENT]: ItemSettings;
+  [ItemType.ETHERPAD]: ItemSettings;
+  [ItemType.FOLDER]: ItemSettings;
+  [ItemType.H5P]: ItemSettings;
+  [ItemType.LINK]: LinkItemSettings;
+  [ItemType.LOCAL_FILE]: ItemSettings;
+  [ItemType.S3_FILE]: ItemSettings;
+  [ItemType.SHORTCUT]: ItemSettings;
+};
+
 // local type alias to simplify the notation
 export type ItemTypeEnumKeys = keyof ItemExtraMap;
 
-export type ItemWithType<TExtra extends ItemTypeEnumKeys> = Item & {
-  extra: ItemExtraMap[TExtra];
+export type ItemWithType<T extends ItemTypeEnumKeys> = Item & {
+  extra: ItemExtraMap[T];
+  settings: ItemSettingsMap[T];
 };
 // note: cannot combine nicely Item and ItemWithCreator when defined with omit
 // export type ItemWithCreator = Omit<Item, 'creatorId'> & { creator: Account };
-export type ItemWithCreator = ItemRaw & { creator: Account | null };
+export type ItemWithCreator = ItemRaw & { creator: MemberRaw | null };
+
+// item created by the server with necessary properties
+export type MinimalItemForInsert = {
+  id: ItemRaw['id'];
+  name: ItemRaw['name'];
+  type: ItemRaw['type'];
+  path: ItemRaw['path'];
+  extra: ItemRaw['extra'];
+  settings: ItemRaw['settings'];
+  order?: ItemRaw['order'];
+};
 
 // --- ItemVisibilities
 export type ItemVisibilityRaw = typeof itemVisibilities.$inferSelect;
@@ -163,15 +191,18 @@ export type ActionWithItemAndAccount = ActionWithItem & {
 export type ChatMessageInsertDTO = typeof chatMessagesTable.$inferInsert;
 export type ChatMessageRaw = typeof chatMessagesTable.$inferSelect;
 export type ChatMessageWithItem = ChatMessageRaw & { item: Item };
-export type ChatMessageWithCreator = Omit<ChatMessageRaw, 'creatorId'> & {
+export type ChatMessageWithCreator = ChatMessageRaw & {
   creator: NullableAccount;
 };
-export type ChatMessageWithCreatorAndItem = Omit<ChatMessageWithCreator, 'itemId'> & {
+export type ChatMessageWithCreatorAndItem = ChatMessageWithCreator & {
   item: Item;
 };
 
 // --- ChatMentions
 export type ChatMentionRaw = typeof chatMentionsTable.$inferSelect;
+export type ChatMentionWithMessage = ChatMentionRaw & {
+  message: ChatMessageRaw;
+};
 export type ChatMentionWithMessageAndCreator = Omit<ChatMentionRaw, 'accountId' | 'messageId'> & {
   account: MinimalAccount;
   message: ChatMessageRaw;
@@ -197,11 +228,16 @@ export type ItemTagRaw = typeof itemTags.$inferSelect;
 
 // --- ItemMembership
 export type ItemMembershipRaw = typeof itemMemberships.$inferSelect;
-export type ItemMembershipWithItem = Omit<ItemMembershipRaw, 'itemPath'> & {
+export type ItemMembershipWithItem = ItemMembershipRaw & {
   item: ItemRaw;
 };
-export type ItemMembershipWithItemAndAccount = Omit<ItemMembershipWithItem, 'accountId'> & {
+export type ItemMembershipWithItemAndAccount = ItemMembershipWithItem & {
+  // TODO: special type for get memberships - needs email
   account: AccountRaw;
+};
+export type ItemMembershipWithItemAndCompleteAccount = ItemMembershipWithItem & {
+  // TODO: special type for get memberships - needs email
+  account: MinimalGuest | (MinimalMember & { email: string });
 };
 export type ItemMembershipWithItemAndAccountAndCreator = Omit<
   ItemMembershipWithItem,
@@ -254,17 +290,25 @@ export type ItemLikeWithItemAndAccount = ItemLikeWithItem & { creator: Account }
 // --- ItemGeolocation
 export type ItemGeolocationRaw = typeof itemGeolocations.$inferSelect;
 export type ItemGeolocationWithItem = ItemGeolocationRaw & { item: Item };
-export type ItemGeolocationWithItemAndCreator = ItemGeolocationRaw & {
-  item: Item;
-  creator: Account;
+export type ItemGeolocationWithItemWithCreator = ItemGeolocationRaw & {
+  item: ItemWithCreator;
 };
 
 // --- ItemValidation
 export type ItemValidationRaw = typeof itemValidations.$inferSelect;
+export type ItemValidationWithItem = ItemValidationRaw & { item: Item };
 export type ItemValidationInsertDTO = typeof itemValidations.$inferInsert;
 
 // --- ItemValidationGroup
 export type ItemValidationGroupRaw = typeof itemValidationGroups.$inferSelect;
+export type ItemValidationGroupWithItemAndValidations = ItemValidationGroupRaw & {
+  item: Item;
+  itemValidations: ItemValidationRaw[];
+};
+export type ItemValidationGroupWithItemAndValidationsWithItem = ItemValidationGroupRaw & {
+  item: Item;
+  itemValidations: ItemValidationWithItem[];
+};
 export type ItemValidationGroupInsertDTO = typeof itemValidationGroups.$inferInsert;
 
 // --- ItemValidationReview
@@ -285,3 +329,5 @@ export type ItemBookmarkRawWithItemAndAccount = ItemBookmarkRaw & {
 
 // --- MemberProfile
 export type MemberProfileRaw = typeof memberProfiles.$inferSelect;
+
+export type ActionRequestExportRaw = typeof actionRequestExports.$inferSelect;

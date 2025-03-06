@@ -31,8 +31,8 @@ const appDataPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
       },
       async ({ user, params: { itemId }, body }) => {
         const member = asDefined(user?.account);
-        return db.transaction(async (tx) => {
-          return addMemberInAppData(await appDataService.post(tx, member, itemId, body));
+        await db.transaction(async (tx) => {
+          await appDataService.post(tx, member, itemId, body);
         });
       },
     );
@@ -43,10 +43,8 @@ const appDataPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
       { schema: updateOne, preHandler: authenticateAppsJWT },
       async ({ user, params: { itemId, id: appDataId }, body }) => {
         const member = asDefined(user?.account);
-        return db.transaction(async (tx) => {
-          return addMemberInAppData(
-            await appDataService.patch(tx, member, itemId, appDataId, body),
-          );
+        await db.transaction(async (tx) => {
+          appDataService.patch(tx, member, itemId, appDataId, body);
         });
       },
     );
@@ -70,9 +68,8 @@ const appDataPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
       { schema: getForOne, preHandler: authenticateAppsJWT },
       async ({ user, params: { itemId }, query }) => {
         const member = asDefined(user?.account);
-        return (await appDataService.getForItem(db, member, itemId, query.type)).map(
-          addMemberInAppData,
-        );
+        const appData = await appDataService.getForItem(db, member, itemId, query.type);
+        return appData.map(addMemberInAppData);
       },
     );
   });

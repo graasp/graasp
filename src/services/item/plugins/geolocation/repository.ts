@@ -2,7 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import { iso1A2Code } from '@rapideditor/country-coder';
-import { SQL, and, between, desc, eq, ilike, or, sql } from 'drizzle-orm';
+import { SQL, and, between, desc, eq } from 'drizzle-orm';
 import fetch from 'node-fetch';
 
 import { DEFAULT_LANG } from '@graasp/translations';
@@ -14,10 +14,11 @@ import {
   Item,
   ItemGeolocationRaw,
   ItemGeolocationWithItem,
-  ItemGeolocationWithItemAndCreator,
+  ItemGeolocationWithItemWithCreator,
+  MemberRaw,
 } from '../../../../drizzle/types';
 import { MaybeUser } from '../../../../types';
-import { ALLOWED_SEARCH_LANGS, GEOLOCATION_API_HOST } from '../../../../utils/config';
+import { GEOLOCATION_API_HOST } from '../../../../utils/config';
 import { MissingGeolocationSearchParams } from './errors';
 
 export class ItemGeolocationRepository {
@@ -26,7 +27,11 @@ export class ItemGeolocationRepository {
    * @param original original item
    * @param copy copied item
    */
-  async copy(db: DBConnection, original: Item, copy: Item): Promise<void> {
+  async copy(
+    db: DBConnection,
+    original: { path: Item['path'] },
+    copy: { path: Item['path'] },
+  ): Promise<void> {
     const geoloc = await this.getByItem(db, original.path);
     if (geoloc) {
       await db.insert(itemGeolocations).values({
@@ -75,7 +80,7 @@ export class ItemGeolocationRepository {
       keywords?: string[];
     },
     parentItem?: Item,
-  ): Promise<ItemGeolocationWithItemAndCreator[]> {
+  ): Promise<ItemGeolocationWithItemWithCreator[]> {
     // should include at least parentItem or all lat/lng
     if (
       !parentItem &&
@@ -117,47 +122,47 @@ export class ItemGeolocationRepository {
 
     // .where('path ~ ${${parent.path}.*{1}}', { path: `${parent.path}.*{1}` });
 
-    const allKeywords = keywords?.filter((s) => s && s.length);
-    if (allKeywords?.length) {
-      const keywordsString = allKeywords.join(' ');
+    // TODO
+    // const allKeywords = keywords?.filter((s) => s && s.length);
+    // if (allKeywords?.length) {
+    //   const keywordsString = allKeywords.join(' ');
 
-      // search in english by default
-      const matchEnglishSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery('english', ${keywordsString})`;
+    //   // search in english by default
+    //   const matchEnglishSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery('english', ${keywordsString})`;
 
-      // no dictionary
-      const matchSimpleSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery('simple', ${keywordsString})`;
+    //   // no dictionary
+    //   const matchSimpleSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery('simple', ${keywordsString})`;
 
-      // raw words search
-      const matchRawWordSearchConditions = allKeywords.map((k) => ilike(items.name, `%${k}%`));
+    //   // raw words search
+    //   const matchRawWordSearchConditions = allKeywords.map((k) => ilike(items.name, `%${k}%`));
 
-      const searchConditions = [
-        matchEnglishSearchCondition,
-        matchSimpleSearchCondition,
-        ...matchRawWordSearchConditions,
-      ];
+    //   const searchConditions = [
+    //     matchEnglishSearchCondition,
+    //     matchSimpleSearchCondition,
+    //     ...matchRawWordSearchConditions,
+    //   ];
 
-      // search by member lang
-      const memberLang = actor && isMember(actor) ? actor?.lang : DEFAULT_LANG;
-      if (memberLang && ALLOWED_SEARCH_LANGS[memberLang]) {
-        const matchMemberLangSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery(${ALLOWED_SEARCH_LANGS[memberLang]}, ${keywordsString})`;
-        searchConditions.push(matchMemberLangSearchCondition);
-      }
+    //   // search by member lang
+    //   const memberLang = actor && isMember(actor) ? actor?.lang : DEFAULT_LANG;
+    //   if (memberLang && ALLOWED_SEARCH_LANGS[memberLang]) {
+    //     const matchMemberLangSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery(${ALLOWED_SEARCH_LANGS[memberLang]}, ${keywordsString})`;
+    //     searchConditions.push(matchMemberLangSearchCondition);
+    //   }
 
-      andConditions.push(or(...searchConditions));
-    }
+    //   andConditions.push(or(...searchConditions));
+    // }
 
     const result = await db
       .select()
       .from(itemGeolocations)
       // use view to filter out recycled items
-      .leftJoin(items, eq(items.path, itemGeolocations.itemPath))
+      .innerJoin(items, eq(items.path, itemGeolocations.itemPath))
       .leftJoin(accountsTable, eq(items.creatorId, accountsTable.id))
       .where(and(...andConditions));
 
     return result.map(({ item_view, account, item_geolocation }) => ({
       ...item_geolocation,
-      item: item_view,
-      creator: account,
+      item: { ...item_view, creator: account as MemberRaw },
     }));
   }
 

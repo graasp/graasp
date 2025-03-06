@@ -586,40 +586,6 @@ describe('ItemRepository', () => {
       expect(await itemRepository.getNumberOfLevelsToFarthestChild(child)).toEqual(0);
     });
   });
-  describe('getOwn', () => {
-    it('return own items', async () => {
-      const {
-        actor,
-        items: [A, _A1, B, _B1],
-      } = await seedFromJson({
-        items: [
-          {
-            creator: 'actor',
-            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-            children: [{}],
-          },
-          {
-            creator: 'actor',
-            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-            children: [{}],
-          },
-          {
-            name: 'not creator',
-            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-          },
-          {
-            name: 'not membership',
-            creator: 'actor',
-          },
-        ],
-      });
-      assertIsDefined(actor);
-      assertIsMember(actor);
-      const result = await itemRepository.getOwn(actor.id);
-      expect(result).toHaveLength(2);
-      expectManyItems(result, [A, B]);
-    });
-  });
   describe('move', () => {
     it('move item to root', async () => {
       const {

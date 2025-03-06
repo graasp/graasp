@@ -119,7 +119,7 @@ export class InvitationService {
     db: DBConnection,
     member: AuthenticatedUser,
     itemId: string,
-    invitations: InvitationInsertDTO[],
+    invitations: Pick<InvitationInsertDTO, 'permission' | 'email'>[],
   ) {
     const item = await this.itemService.get(db, member, itemId, PermissionLevel.Admin);
 

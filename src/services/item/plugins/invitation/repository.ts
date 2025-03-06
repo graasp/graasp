@@ -118,7 +118,7 @@ export class InvitationRepository {
    */
   async addMany(
     db: DBConnection,
-    partialInvitations: InvitationInsertDTO[],
+    partialInvitations: Pick<InvitationInsertDTO, 'permission' | 'email'>[],
     itemPath: string,
     creator: AuthenticatedUser,
   ): Promise<void> {
@@ -142,7 +142,7 @@ export class InvitationRepository {
         )
         .map((inv) => ({
           ...inv,
-          item: { path: itemPath },
+          itemPath,
           creator,
         })),
     );

@@ -62,7 +62,7 @@ export const unpublishItem = {
     itemId: customType.UUID(),
   }),
   response: {
-    [StatusCodes.OK]: publishEntry,
+    [StatusCodes.OK]: Type.Null(),
     '4xx': errorSchemaRef,
   },
 };

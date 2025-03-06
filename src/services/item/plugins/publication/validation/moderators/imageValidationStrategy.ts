@@ -5,6 +5,7 @@ import { ItemType, ItemValidationProcess, ItemValidationStatus, getMimetype } fr
 import { IMAGE_CLASSIFIER_API_DI_KEY } from '../../../../../../di/constants';
 import { Item } from '../../../../../../drizzle/types';
 import FileService from '../../../../../file/service';
+import { isItemType } from '../../../../discrimination';
 import { InvalidFileItemError } from '../errors';
 import { classifyImage } from '../processes/imageClassification';
 import { isImage } from '../utils';
@@ -34,7 +35,9 @@ export class ImageValidationStrategy implements ValidationStrategy {
       throw new InvalidFileItemError(item);
     }
 
-    const { path: filepath } = item.type === ItemType.S3_FILE ? item.extra.s3File : item.extra.file;
+    const { path: filepath } = isItemType(item, ItemType.S3_FILE)
+      ? item.extra.s3File
+      : item.extra.file;
 
     // return url
     const url = await this.fileService.getUrl({
