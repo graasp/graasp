@@ -1,26 +1,17 @@
 import { and, eq, inArray } from 'drizzle-orm/sql';
-import { injectable, singleton } from 'tsyringe';
+import { singleton } from 'tsyringe';
 
 import { AccountType, ResultOf, UUID } from '@graasp/sdk';
 
 import { type DBConnection } from '../../drizzle/db';
 import { accountsTable, membersView } from '../../drizzle/schema';
 import { AccountInsertDTO, MemberCreationDTO } from '../../drizzle/types';
-import { BaseLogger } from '../../logger';
 import { MemberNotFound } from '../../utils/errors';
 import { mapById } from '../utils';
 import { MemberDTO } from './types';
 
 @singleton()
 export class MemberRepository {
-  private readonly log: BaseLogger;
-
-  constructor(log: BaseLogger) {
-    console.log('oijwefwleknf -----------------');
-    // empty
-    this.log = log;
-  }
-
   async deleteOne(db: DBConnection, id: string) {
     // need to use the accounts table as we can not delete from a view (membersView)
     await db

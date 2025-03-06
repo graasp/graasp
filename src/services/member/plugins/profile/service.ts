@@ -1,3 +1,5 @@
+import { singleton } from 'tsyringe';
+
 import { UUID } from '@graasp/sdk';
 
 import { db } from '../../../../drizzle/db';
@@ -5,6 +7,7 @@ import { MinimalMember } from '../../../../types';
 import { MemberProfileRepository } from './repository';
 import { IMemberProfile } from './types';
 
+@singleton()
 export class MemberProfileService {
   private readonly memberProfileRepository: MemberProfileRepository;
 
