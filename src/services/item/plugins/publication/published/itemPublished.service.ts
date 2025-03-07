@@ -1,4 +1,4 @@
-import { injectable } from 'tsyringe';
+import { injectable, singleton } from 'tsyringe';
 
 import {
   ClientManager,
@@ -18,7 +18,7 @@ import { MailerService } from '../../../../../plugins/mailer/mailer.service';
 import { MaybeUser, MinimalMember } from '../../../../../types';
 import HookManager from '../../../../../utils/hook';
 import { isMember } from '../../../../authentication';
-import { filterOutHiddenItems } from '../../../../authorization';
+import { filterOutHiddenItems } from '../../../../authorization.utils';
 import { ItemMembershipRepository } from '../../../../itemMembership/repository';
 import { MemberRepository } from '../../../../member/member.repository';
 import { ItemWrapperService } from '../../../ItemWrapper';
@@ -38,7 +38,7 @@ interface ActionCount {
   actionCount: number;
 }
 
-@injectable()
+@singleton()
 export class ItemPublishedService {
   private readonly log: BaseLogger;
   private readonly basicItemService: BasicItemService;

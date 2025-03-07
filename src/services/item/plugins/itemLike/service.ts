@@ -2,8 +2,7 @@ import { singleton } from 'tsyringe';
 
 import { DBConnection } from '../../../../drizzle/db';
 import { MaybeUser, MinimalMember } from '../../../../types';
-import { filterOutPackedItems } from '../../../authorization';
-import { ItemService } from '../../../item/service';
+import { filterOutPackedItems } from '../../../authorization.utils';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { BasicItemService } from '../../basic.service';
 import { ItemVisibilityRepository } from '../itemVisibility/repository';

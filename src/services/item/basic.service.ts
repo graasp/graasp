@@ -43,12 +43,12 @@ import {
   UnauthorizedMember,
 } from '../../utils/errors';
 import HookManager from '../../utils/hook';
+import { AuthorizationService } from '../authorization';
 import {
-  AuthorizationService,
   filterOutItems,
   filterOutPackedDescendants,
   filterOutPackedItems,
-} from '../authorization';
+} from '../authorization.utils';
 import { ItemMembershipRepository } from '../itemMembership/repository';
 import { ThumbnailService } from '../thumbnail/service';
 import { ItemWrapper, ItemWrapperService, PackedItem } from './ItemWrapper';
@@ -78,27 +78,28 @@ export class BasicItemService {
   //   private readonly itemVisibilityRepository: ItemVisibilityRepository;
 
   constructor(
+    itemRepository: ItemRepository,
+    authorizationService: AuthorizationService,
     // thumbnailService: ThumbnailService,
     // @inject(delay(() => ItemThumbnailService))
     // itemThumbnailService: ItemThumbnailService,
     // itemMembershipRepository: ItemMembershipRepository,
     // meilisearchWrapper: MeiliSearchWrapper,
-    itemRepository: ItemRepository,
     // itemPublishedRepository: ItemPublishedRepository,
     // itemGeolocationRepository: ItemGeolocationRepository,
-    authorizationService: AuthorizationService,
     // itemWrapperService: ItemWrapperService,
     // itemVisibilityRepository: ItemVisibilityRepository,
     // log: BaseLogger,
   ) {
+    this.itemRepository = itemRepository;
+    this.authorizationService = authorizationService;
+
     // this.thumbnailService = thumbnailService;
     // this.itemThumbnailService = itemThumbnailService;
     // this.itemMembershipRepository = itemMembershipRepository;
     // this.meilisearchWrapper = meilisearchWrapper;
     // this.itemPublishedRepository = itemPublishedRepository;
     // this.itemGeolocationRepository = itemGeolocationRepository;
-    this.itemRepository = itemRepository;
-    this.authorizationService = authorizationService;
     // this.itemWrapperService = itemWrapperService;
     // this.itemVisibilityRepository = itemVisibilityRepository;
     // this.log = log;

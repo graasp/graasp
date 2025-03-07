@@ -16,7 +16,7 @@ import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { BasicItemService } from '../../basic.service';
 import { ItemPublishedNotFound } from '../publication/published/errors';
-import { ItemPublishedService } from '../publication/published/service';
+import { ItemPublishedService } from '../publication/published/itemPublished.service';
 import { ShortLinkDTO } from './dto/ShortLinkDTO';
 import { ShortLinkRepository } from './repository';
 

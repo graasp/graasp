@@ -1,16 +1,18 @@
+import { singleton } from 'tsyringe';
+
 import { ItemVisibilityType, PermissionLevel } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../drizzle/db';
 import { AuthenticatedUser } from '../../../../../types';
 import { ItemWrapper } from '../../../ItemWrapper';
 import { BasicItemService } from '../../../basic.service';
-import { ItemService } from '../../../service';
 import { ItemVisibilityRepository } from '../../itemVisibility/repository';
 import { ItemPublishedRepository } from '../published/itemPublished.repository';
 import { ItemValidationGroupRepository } from '../validation/ItemValidationGroup.repository';
 import { ValidationQueue } from '../validation/validationQueue';
 import { PublicationState } from './publicationState';
 
+@singleton()
 export class PublicationService {
   private readonly basicItemService: BasicItemService;
   private readonly itemVisibilityRepository: ItemVisibilityRepository;

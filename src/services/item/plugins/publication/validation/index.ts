@@ -19,7 +19,7 @@ import {
   memberItemsTopic,
 } from '../../../ws/events';
 import { FolderItemService } from '../../folder/service';
-import { ItemPublishedService } from '../published/service';
+import { ItemPublishedService } from '../published/itemPublished.service';
 import { getLatestItemValidationGroup, validateItem } from './schemas';
 import { ItemValidationService } from './service';
 

@@ -24,7 +24,7 @@ const chatBotPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       const jwtItemId = asDefined(user?.app).item.id;
       if (jwtItemId !== itemId) {
-        await itemService.get(db, member, itemId);
+        await itemService.basicItemService.get(db, member, itemId);
         throw new InvalidJWTItem(jwtItemId ?? '<EMPTY>', itemId);
       }
       // default to 3.5 turbo / or the version specified in the env variable

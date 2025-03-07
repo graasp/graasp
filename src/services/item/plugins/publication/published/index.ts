@@ -10,10 +10,10 @@ import { assertIsMember } from '../../../../authentication';
 import { matchOne } from '../../../../authorization';
 import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
 import { ItemService } from '../../../service';
-import { PublicationService } from '../publicationState/service';
+import { PublicationService } from '../publicationState/publication.service';
+import { ItemPublishedService } from './itemPublished.service';
 import graaspSearchPlugin from './plugins/search';
 import { getCollectionsForMember, getInformations, publishItem, unpublishItem } from './schemas';
-import { ItemPublishedService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const itemPublishedService = resolveDependency(ItemPublishedService);
@@ -54,7 +54,12 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
       await db.transaction(async (tx) => {
-        const item = await itemService.get(tx, member, params.itemId, PermissionLevel.Admin);
+        const item = await itemService.basicItemService.get(
+          tx,
+          member,
+          params.itemId,
+          PermissionLevel.Admin,
+        );
 
         const status = await publicationService.computeStateForItem(tx, member, item.id);
 

@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import fastifyPassport from '@fastify/passport';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
-import { FastifyInstance, FastifyPluginAsync, PassportUser } from 'fastify';
+import { PassportUser } from 'fastify';
 
 import { ClientManager, Context, RecaptchaAction } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
@@ -24,109 +24,108 @@ import { auth, login, register } from './schemas';
 const ERROR_SEARCH_PARAM = 'error';
 const ERROR_SEARCH_PARAM_HAS_ERROR = 'true';
 
-const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
+const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const memberService = resolveDependency(MemberService);
   const magicLinkService = resolveDependency(MagicLinkService);
-  // const invitationService = resolveDependency(InvitationService);
+  const invitationService = resolveDependency(InvitationService);
 
-  // register
-  // fastify.post(
-  //   '/register',
-  //   { schema: register, preHandler: captchaPreHandler(RecaptchaAction.SignUp) },
-  //   async (request, reply) => {
-  //     const {
-  //       body,
-  //       query: { lang = DEFAULT_LANG },
-  //     } = request;
-  //     const { url } = body;
-  //     return db.transaction(async (tx) => {
-  //       try {
-  //         // we use member service to allow post hook for invitation
-  //         const member = await memberService.post(tx, body, lang);
-  //         await magicLinkService.sendRegisterMail(member.toMemberInfo(), url);
+  fastify.post(
+    '/register',
+    { schema: register, preHandler: captchaPreHandler(RecaptchaAction.SignUp) },
+    async (request, reply) => {
+      const {
+        body,
+        query: { lang = DEFAULT_LANG },
+      } = request;
+      const { url } = body;
+      return db.transaction(async (tx) => {
+        try {
+          // we use member service to allow post hook for invitation
+          const member = await memberService.post(tx, body, lang);
+          await magicLinkService.sendRegisterMail(member.toMemberInfo(), url);
 
-  //         // transform memberships from existing invitations
-  //         await invitationService.createToMemberships(tx, member);
+          // transform memberships from existing invitations
+          await invitationService.createToMemberships(tx, member);
 
-  //         reply.status(StatusCodes.NO_CONTENT);
-  //       } catch (e) {
-  //         if (!(e instanceof MemberAlreadySignedUp)) {
-  //           throw e;
-  //         }
-  //         // send login email
-  //         await magicLinkService.login(tx, body, lang);
-  //         reply.status(StatusCodes.NO_CONTENT);
-  //       }
-  //     });
-  //   },
-  // );
+          reply.status(StatusCodes.NO_CONTENT);
+        } catch (e) {
+          if (!(e instanceof MemberAlreadySignedUp)) {
+            throw e;
+          }
+          // send login email
+          await magicLinkService.login(tx, body, lang);
+          reply.status(StatusCodes.NO_CONTENT);
+        }
+      });
+    },
+  );
 
-  // // login
-  // fastify.post(
-  //   '/login',
-  //   {
-  //     schema: login,
-  //     preHandler: captchaPreHandler(RecaptchaAction.SignIn),
-  //   },
-  //   async (request, reply) => {
-  //     const { body } = request;
-  //     const { url } = body;
+  // login
+  fastify.post(
+    '/login',
+    {
+      schema: login,
+      preHandler: captchaPreHandler(RecaptchaAction.SignIn),
+    },
+    async (request, reply) => {
+      const { body } = request;
+      const { url } = body;
 
-  //     await magicLinkService.login(db, body, url);
-  //     reply.status(StatusCodes.NO_CONTENT);
-  //   },
-  // );
+      await magicLinkService.login(db, body, url);
+      reply.status(StatusCodes.NO_CONTENT);
+    },
+  );
 
-  // // authenticate
-  // fastify.get(
-  //   '/auth',
-  //   {
-  //     schema: auth,
-  //     preHandler: fastifyPassport.authenticate(
-  //       PassportStrategy.WebMagicLink,
-  //       async (request, reply, err, user?: PassportUser, info?: PassportInfo) => {
-  //         // This function is called after the strategy has been executed.
-  //         // It is necessary, so we match the behavior of the original implementation.
-  //         if (!user || err) {
-  //           // Authentication failed
-  //           const target = ClientManager.getInstance().getURLByContext(Context.Auth);
-  //           target.searchParams.set(ERROR_SEARCH_PARAM, ERROR_SEARCH_PARAM_HAS_ERROR);
-  //           reply.redirect(StatusCodes.SEE_OTHER, target.toString());
-  //         } else {
-  //           request.logIn(user, { session: true });
-  //           request.authInfo = info;
-  //         }
-  //       },
-  //     ),
-  //   },
-  //   async (request, reply) => {
-  //     const {
-  //       user,
-  //       authInfo,
-  //       query: { url },
-  //       log,
-  //     } = request;
-  //     const member = asDefined(user?.account);
-  //     const redirectionLink = getRedirectionLink(log, url ? decodeURIComponent(url) : undefined);
-  //     await db.transaction(async (tx) => {
-  //       await memberService.refreshLastAuthenticatedAt(tx, member.id);
-  //       // on auth, if the user used the email sign in, its account gets validated
-  //       if (authInfo?.emailValidation && isMember(member) && !member.isValidated) {
-  //         await memberService.validate(tx, member.id);
-  //       }
-  //     });
-  //     reply.redirect(StatusCodes.SEE_OTHER, redirectionLink);
-  //   },
-  // );
+  // authenticate
+  fastify.get(
+    '/auth',
+    {
+      schema: auth,
+      preHandler: fastifyPassport.authenticate(
+        PassportStrategy.WebMagicLink,
+        async (request, reply, err, user?: PassportUser, info?: PassportInfo) => {
+          // This function is called after the strategy has been executed.
+          // It is necessary, so we match the behavior of the original implementation.
+          if (!user || err) {
+            // Authentication failed
+            const target = ClientManager.getInstance().getURLByContext(Context.Auth);
+            target.searchParams.set(ERROR_SEARCH_PARAM, ERROR_SEARCH_PARAM_HAS_ERROR);
+            reply.redirect(StatusCodes.SEE_OTHER, target.toString());
+          } else {
+            request.logIn(user, { session: true });
+            request.authInfo = info;
+          }
+        },
+      ),
+    },
+    async (request, reply) => {
+      const {
+        user,
+        authInfo,
+        query: { url },
+        log,
+      } = request;
+      const member = asDefined(user?.account);
+      const redirectionLink = getRedirectionLink(log, url ? decodeURIComponent(url) : undefined);
+      await db.transaction(async (tx) => {
+        await memberService.refreshLastAuthenticatedAt(tx, member.id);
+        // on auth, if the user used the email sign in, its account gets validated
+        if (authInfo?.emailValidation && isMember(member) && !member.isValidated) {
+          await memberService.validate(tx, member.id);
+        }
+      });
+      reply.redirect(StatusCodes.SEE_OTHER, redirectionLink);
+    },
+  );
 
-  // // logout
-  // fastify.get('/logout', async (request, reply) => {
-  //   // logout user, so subsequent calls can not make use of the current user.
-  //   request.logout();
-  //   // remove session so the cookie is removed by the browser
-  //   request.session.delete();
-  //   reply.status(StatusCodes.NO_CONTENT);
-  // });
+  // logout
+  fastify.get('/logout', async (request, reply) => {
+    // logout user, so subsequent calls can not make use of the current user.
+    request.logout();
+    // remove session so the cookie is removed by the browser
+    request.session.delete();
+    reply.status(StatusCodes.NO_CONTENT);
+  });
 };
 
 export default plugin;

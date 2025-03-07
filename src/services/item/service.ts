@@ -40,12 +40,12 @@ import {
   UnauthorizedMember,
 } from '../../utils/errors';
 import HookManager from '../../utils/hook';
+import { AuthorizationService } from '../authorization';
 import {
-  AuthorizationService,
   filterOutItems,
   filterOutPackedDescendants,
   filterOutPackedItems,
-} from '../authorization';
+} from '../authorization.utils';
 import { ItemMembershipRepository } from '../itemMembership/repository';
 import { ThumbnailService } from '../thumbnail/service';
 import { ItemWrapper, ItemWrapperService, PackedItem } from './ItemWrapper';

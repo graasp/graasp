@@ -120,14 +120,14 @@ const plugin: FastifyPluginAsyncTypebox<AppsPluginOptions> = async (fastify, opt
       // register app data plugin
       fastify.register(appDataPlugin);
 
-      // // register app action plugin
-      // fastify.register(appActionPlugin);
+      // register app action plugin
+      fastify.register(appActionPlugin);
 
-      // // register app settings plugin
-      // fastify.register(appSettingPlugin);
+      // register app settings plugin
+      fastify.register(appSettingPlugin);
 
-      // // register app chatbot plugin
-      // fastify.register(chatBotPlugin);
+      // register app chatbot plugin
+      fastify.register(chatBotPlugin);
     });
   });
 };

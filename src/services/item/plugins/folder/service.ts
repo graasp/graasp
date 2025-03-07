@@ -60,7 +60,7 @@ export class FolderItemService extends ItemService {
     itemId: Item['id'],
     permission?: PermissionLevel,
   ): Promise<FolderItem> {
-    const item = await super.get(db, member, itemId, permission);
+    const item = await this.basicItemService.get(db, member, itemId, permission);
     if (!isItemType(item, ItemType.FOLDER)) {
       throw new WrongItemTypeError(item.type);
     }

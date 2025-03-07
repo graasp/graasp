@@ -11,7 +11,7 @@ import {
 } from '../../../../../../../utils/config';
 import { ItemService } from '../../../../../service';
 import { ItemPublishedRepository } from '../../itemPublished.repository';
-import { ItemPublishedService } from '../../service';
+import { ItemPublishedService } from '../../itemPublished.service';
 import { MeiliSearchWrapper } from './meilisearch';
 
 type SearchFilters = Partial<{

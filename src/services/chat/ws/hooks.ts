@@ -15,7 +15,7 @@ export function registerChatWsHooks(
   websockets.register(itemChatTopic, async (req) => {
     const { channel: itemId, member } = req;
     // item must exist with read permission, else exception is thrown
-    await itemService.get(db, member, itemId, PermissionLevel.Read);
+    await itemService.basicItemService.get(db, member, itemId, PermissionLevel.Read);
   });
 
   // on new chat message published, broadcast to item chat channel

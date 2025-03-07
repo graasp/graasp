@@ -12,7 +12,7 @@ import { TMP_FOLDER } from '../../../../../utils/config';
 import { AuthorizationService } from '../../../../authorization';
 import { FolderItem } from '../../../discrimination';
 import { ItemRepository } from '../../../repository';
-import { ItemPublishedService } from '../published/service';
+import { ItemPublishedService } from '../published/itemPublished.service';
 import { ItemValidationGroupRepository } from './ItemValidationGroup.repository';
 import { ItemValidationModerator } from './moderators/itemValidationModerator';
 import { ValidationQueue } from './validationQueue';

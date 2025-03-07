@@ -5,11 +5,10 @@ import { PermissionLevel } from '@graasp/sdk';
 import { DBConnection } from '../../../../drizzle/db';
 import { ItemBookmarkRaw } from '../../../../drizzle/types';
 import { MinimalMember } from '../../../../types';
-import { filterOutPackedItems } from '../../../authorization';
+import { filterOutPackedItems } from '../../../authorization.utils';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { PackedItem } from '../../ItemWrapper';
 import { BasicItemService } from '../../basic.service';
-import { ItemService } from '../../service';
 import { ItemVisibilityRepository } from '../itemVisibility/repository';
 import { ItemBookmarkRepository } from './itemBookmark.repository';
 

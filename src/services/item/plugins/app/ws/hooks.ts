@@ -97,7 +97,7 @@ export const appDataWsHooks: FastifyPluginAsync<GraaspPluginAppDataWsHooksOption
    */
   const authorizationService = resolveDependency(AuthorizationService);
   const basicItemService = resolveDependency(BasicItemService);
-  // const appDataService = resolveDependency(AppDataService);
+  const appDataService = resolveDependency(AppDataService);
 
   websockets.register(appDataTopic, async (req) => {
     const { channel: id, member } = req;
@@ -107,23 +107,23 @@ export const appDataWsHooks: FastifyPluginAsync<GraaspPluginAppDataWsHooksOption
   });
 
   // on post app data, notify apps of new app data
-  // appDataService.hooks.setPostHook('post', async (member, thisDb, { appData, itemId }) => {
-  //   if (itemId !== undefined && appData.visibility === AppDataVisibility.Item) {
-  //     websockets.publish(appDataTopic, itemId, AppDataEvent('post', appData));
-  //   }
-  // });
+  appDataService.hooks.setPostHook('post', async (member, thisDb, { appData, itemId }) => {
+    if (itemId !== undefined && appData.visibility === AppDataVisibility.Item) {
+      websockets.publish(appDataTopic, itemId, AppDataEvent('post', appData));
+    }
+  });
 
-  // appDataService.hooks.setPostHook('patch', async (member, thisDb, { appData, itemId }) => {
-  //   if (itemId !== undefined && appData.visibility === AppDataVisibility.Item) {
-  //     websockets.publish(appDataTopic, itemId, AppDataEvent('patch', appData));
-  //   }
-  // });
+  appDataService.hooks.setPostHook('patch', async (member, thisDb, { appData, itemId }) => {
+    if (itemId !== undefined && appData.visibility === AppDataVisibility.Item) {
+      websockets.publish(appDataTopic, itemId, AppDataEvent('patch', appData));
+    }
+  });
 
-  // appDataService.hooks.setPostHook('delete', async (member, thisDb, { appData, itemId }) => {
-  //   if (itemId !== undefined && appData.visibility === AppDataVisibility.Item) {
-  //     websockets.publish(appDataTopic, itemId, AppDataEvent('delete', appData));
-  //   }
-  // });
+  appDataService.hooks.setPostHook('delete', async (member, thisDb, { appData, itemId }) => {
+    if (itemId !== undefined && appData.visibility === AppDataVisibility.Item) {
+      websockets.publish(appDataTopic, itemId, AppDataEvent('delete', appData));
+    }
+  });
 };
 
 interface GraaspPluginAppActionsWsHooksOptions {
