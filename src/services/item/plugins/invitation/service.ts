@@ -48,6 +48,7 @@ export class InvitationService {
   private readonly itemMembershipService: ItemMembershipService;
   private readonly authorizationService: AuthorizationService;
   private readonly invitationRepository: InvitationRepository;
+  private readonly itemMembershipRepository: ItemMembershipRepository;
 
   constructor(
     log: BaseLogger,
@@ -57,6 +58,7 @@ export class InvitationService {
     itemMembershipService: ItemMembershipService,
     authorizationService: AuthorizationService,
     invitationRepository: InvitationRepository,
+    itemMembershipRepository: ItemMembershipRepository,
   ) {
     this.log = log;
     this.mailerService = mailerService;
@@ -65,6 +67,7 @@ export class InvitationService {
     this.itemMembershipService = itemMembershipService;
     this.authorizationService = authorizationService;
     this.invitationRepository = invitationRepository;
+    this.itemMembershipRepository = itemMembershipRepository;
   }
 
   async sendInvitationEmail({
@@ -201,13 +204,15 @@ export class InvitationService {
   async createToMemberships(db: DBConnection, member: MemberDTO) {
     // invitations to memberships is triggered on register: no actor available
     const invitations = await this.invitationRepository.getManyByEmail(db, member.email);
-    const memberships = invitations.map(({ permission, item }) => ({
-      itemPath: item.path,
-      accountId: member.id,
-      permission,
-    }));
-    await new ItemMembershipRepository().addMany(db, memberships);
-    await this.invitationRepository.deleteManyByEmail(db, member.email);
+    if (invitations.length) {
+      const memberships = invitations.map(({ permission, item }) => ({
+        itemPath: item.path,
+        accountId: member.id,
+        permission,
+      }));
+      await this.itemMembershipRepository.addMany(db, memberships);
+      await this.invitationRepository.deleteManyByEmail(db, member.email);
+    }
   }
 
   async _partitionExistingUsersAndNewUsers(

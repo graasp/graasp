@@ -46,19 +46,14 @@ export class MemberRepository {
     });
   }
 
-  async getByEmail(
-    db: DBConnection,
-    emailString: string,
-    args: { shouldExist?: boolean } = {},
-  ): Promise<MemberDTO> {
+  async getByEmail(db: DBConnection, emailString: string): Promise<MemberDTO | null> {
     const email = emailString.toLowerCase();
     const member = await db.select().from(membersView).where(eq(membersView.email, email));
 
-    if (args.shouldExist) {
-      if (member.length !== 1) {
-        throw new MemberNotFound({ email });
-      }
+    if (!member.length) {
+      return null;
     }
+
     return new MemberDTO(member[0]);
   }
 
