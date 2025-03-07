@@ -25,12 +25,6 @@ export class AuthorizationService {
   private readonly itemMembershipRepository: ItemMembershipRepository;
   private readonly itemVisibilityRepository: ItemVisibilityRepository;
 
-  log;
-
-  // constructor(log: BaseLogger) {
-  //   this.log = log;
-  // }
-
   constructor(
     itemMembershipRepository: ItemMembershipRepository,
     itemVisibilityRepository: ItemVisibilityRepository,
@@ -50,7 +44,7 @@ export class AuthorizationService {
   public async validatePermissionMany(
     db: DBConnection,
     permission: PermissionLevel,
-    actor: MaybeUser,
+    actor: { id: string } | undefined,
     items: Item[],
   ): Promise<{
     itemMemberships: ResultOf<ItemMembershipRaw | null>;
@@ -153,7 +147,7 @@ export class AuthorizationService {
   public async validatePermission(
     db: DBConnection,
     permission: PermissionLevel,
-    actor: MaybeUser,
+    actor: { id: string } | undefined,
     item: Item,
   ): Promise<{
     itemMembership: ItemMembershipRaw | null;
