@@ -10,4 +10,6 @@ export interface ICachingService {
   ): Promise<string | null>;
 
   delete(filePath: string): Promise<void>;
+
+  deleteMany(filePaths: string[]): Promise<void>;
 }

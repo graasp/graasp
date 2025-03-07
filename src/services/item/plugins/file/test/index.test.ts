@@ -53,7 +53,7 @@ const testUtils = new ItemTestUtils();
 const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
 const itemRawRepository = AppDataSource.getRepository(Item);
 
-const deleteObjectMock = jest.fn(async () => console.debug('deleteObjectMock'));
+const deleteObjectsMock = jest.fn(async () => console.debug('deleteObjects'));
 const copyObjectMock = jest.fn(async () => console.debug('copyObjectMock'));
 const headObjectMock = jest.fn(async () => ({ ContentLength: 10 }));
 const uploadDoneMock = jest.fn(async () => console.debug('aws s3 storage upload'));
@@ -66,7 +66,7 @@ jest.mock('@aws-sdk/client-s3', () => {
     S3: function () {
       return {
         copyObject: copyObjectMock,
-        deleteObject: deleteObjectMock,
+        deleteObjects: deleteObjectsMock,
         headObject: headObjectMock,
       };
     },
@@ -362,7 +362,7 @@ describe('File Item routes tests', () => {
           });
 
           expect(response.json().errors[0].message).toEqual(new UploadEmptyFileError().message);
-          expect(deleteObjectMock).toHaveBeenCalled();
+          expect(deleteObjectsMock).toHaveBeenCalled();
         });
       });
 
@@ -395,7 +395,7 @@ describe('File Item routes tests', () => {
           expect(uploadDoneMock).toHaveBeenCalledTimes(
             Object.values(ThumbnailSizeFormat).length + 2,
           );
-          expect(deleteObjectMock).toHaveBeenCalledTimes(1);
+          expect(deleteObjectsMock).toHaveBeenCalledTimes(1);
 
           // one empty file error
           expect(response.json().errors[0].message).toEqual(new UploadEmptyFileError().message);
@@ -613,7 +613,7 @@ describe('File Item routes tests', () => {
 
         await new Promise(async (done) => {
           setTimeout(async () => {
-            await expect(deleteObjectMock).not.toHaveBeenCalled();
+            await expect(deleteObjectsMock).not.toHaveBeenCalled();
 
             done(true);
           }, MULTIPLE_ITEMS_LOADING_TIME);
@@ -632,7 +632,7 @@ describe('File Item routes tests', () => {
 
         await new Promise(async (done) => {
           setTimeout(async () => {
-            await expect(deleteObjectMock).toHaveBeenCalled();
+            await expect(deleteObjectsMock).toHaveBeenCalled();
 
             done(true);
           }, MULTIPLE_ITEMS_LOADING_TIME);
