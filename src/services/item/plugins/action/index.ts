@@ -10,9 +10,8 @@ import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import { ALLOWED_ORIGINS } from '../../../../utils/config';
 import { ActionService } from '../../../action/action.service';
-import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
-import { matchOne } from '../../../authorization';
 import {
   LocalFileConfiguration,
   S3FileConfiguration,

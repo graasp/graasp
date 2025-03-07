@@ -152,12 +152,15 @@ const generateIdAndPathForItems = (
  * @returns flat map of all memberships of the tree
  */
 const processItemMemberships = (items: DataType['items'] = []) => {
-  return items
-    ?.flatMap((i) => i.memberships?.map((im) => ({ ...im, item: i })) ?? [])
-    ?.map((im) => ({
-      permission: PermissionLevel.Admin,
-      ...im,
-    }));
+  return (
+    items
+      // TODO: fix
+      ?.flatMap((i) => i.memberships?.map((im) => ({ ...im, itemPath: (i as any).path })) ?? [])
+      ?.map((im) => ({
+        permission: PermissionLevel.Admin,
+        ...im,
+      }))
+  );
 };
 
 /**
@@ -168,7 +171,7 @@ const processItemMemberships = (items: DataType['items'] = []) => {
 function generateIdForMembers(members?: DataType['members']) {
   return members?.map((m) => {
     const id = v4();
-    return { id, ...m, profile: { ...m.profile, member: { id } } };
+    return { id, ...m, profile: { ...m.profile, memberId: id } };
   });
 }
 
@@ -201,7 +204,7 @@ export async function seedFromJson(data: DataType = {}) {
 
   // save members
   const membersEntities = generateIdForMembers(members);
-  if (membersEntities) {
+  if (membersEntities?.length) {
     result.members = (await db
       .insert(accountsTable)
       .values(membersEntities.map((m) => MemberFactory(m)))
@@ -214,7 +217,7 @@ export async function seedFromJson(data: DataType = {}) {
 
   // save items
   const processedItems = generateIdAndPathForItems(items);
-  if (processedItems) {
+  if (processedItems.length) {
     result.items = await db
       .insert(itemsRaw)
       .values(processedItems.map((i) => ItemFactory(i)))
@@ -223,10 +226,11 @@ export async function seedFromJson(data: DataType = {}) {
 
   // save item memberships
   const itemMembershipsEntity = processItemMemberships(processedItems);
-  if (itemMembershipsEntity) {
+  if (itemMembershipsEntity.length) {
     result.itemMemberships = await db
       .insert(itemMemberships)
-      .values(itemMembershipsEntity)
+      // TODO
+      .values(itemMembershipsEntity as any)
       .returning();
   }
 

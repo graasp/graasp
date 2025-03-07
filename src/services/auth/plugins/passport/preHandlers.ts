@@ -1,5 +1,7 @@
 import fastifyPassport from '@fastify/passport';
+import { FastifyRequest, RouteGenericInterface, RouteHandlerMethod } from 'fastify';
 
+import { InsufficientPermission } from '../../../../utils/errors';
 import { PassportStrategy } from './strategies';
 
 /**
@@ -91,3 +93,33 @@ export const guestAuthenticateAppsJWT = fastifyPassport.authenticate(
     session: false,
   },
 );
+
+/**
+ * Pre-handler function that checks if the user meets at least one of the specified access preconditions.
+ * @param strategies The array of role strategies to check for access.
+ * @throws {InsufficientPermission} If user does not satisfy any of the preconditions.
+ * @throws {GraaspAuthError} If only one role strategy is provided and it failed with a provided error.
+ */
+export function matchOne<R extends RouteGenericInterface>(
+  ...strategies: RessourceAuthorizationStrategy<R>[]
+): RouteHandlerMethod {
+  return async (req: FastifyRequest<R>) => {
+    if (!strategies.some((strategy) => strategy.test(req))) {
+      // If none of the strategies pass, throw an error.
+
+      // If only one strategy is provided, throw that error. Otherwise, throw a generic error.
+      if (strategies.length === 1 && strategies[0].error) {
+        throw new strategies[0].error();
+      } else {
+        throw new InsufficientPermission();
+      }
+    }
+  };
+}
+
+export type RessourceAuthorizationStrategy<
+  R extends RouteGenericInterface = RouteGenericInterface,
+> = {
+  test: (req: FastifyRequest<R>) => boolean;
+  error?: new () => Error;
+};

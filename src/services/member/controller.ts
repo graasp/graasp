@@ -9,10 +9,10 @@ import { CannotModifyOtherMembers } from '../../utils/errors';
 import {
   authenticateEmailChange,
   isAuthenticated,
+  matchOne,
   optionalIsAuthenticated,
 } from '../auth/plugins/passport';
 import { assertIsMember } from '../authentication';
-import { matchOne } from '../authorization';
 import FileService from '../file/service';
 import {
   FILE_METADATA_MAX_PAGE_SIZE,

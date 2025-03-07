@@ -24,8 +24,8 @@ const itemPublishedRepository = {} as ItemPublishedRepository;
 
 const itemPublishedService = new ItemPublishedService(
   {} as BasicItemService,
-  {} as ItemThumbnailService,
   {} as MailerService,
+  // {} as ItemThumbnailService,
   meiliSearchWrapper,
   {} as ItemVisibilityRepository,
   {} as ItemMembershipRepository,

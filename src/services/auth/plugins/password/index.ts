@@ -10,7 +10,6 @@ import { ActionInsertDTO } from '../../../../drizzle/types';
 import { asDefined } from '../../../../utils/assertions';
 import { LOGIN_TOKEN_EXPIRATION_IN_MINUTES, PUBLIC_URL } from '../../../../utils/config';
 import { ActionService } from '../../../action/action.service';
-import { matchOne } from '../../../authorization';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { getRedirectionLink } from '../../utils';
 import captchaPreHandler from '../captcha';
@@ -19,6 +18,7 @@ import {
   authenticatePassword,
   authenticatePasswordReset,
   isAuthenticated,
+  matchOne,
 } from '../passport';
 import {
   getMembersCurrentPasswordStatus,

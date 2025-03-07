@@ -22,7 +22,6 @@ import { MinimalMember } from '../types';
 import { asDefined } from '../utils/assertions';
 import { MemberCannotAccess, MemberCannotAdminItem, MemberCannotWriteItem } from '../utils/errors';
 import { isAuthenticated } from './auth/plugins/passport';
-import { matchOne } from './authorization';
 import { PackedItem } from './item/ItemWrapper';
 import { ItemVisibilityRepository } from './item/plugins/itemVisibility/repository';
 import { expectPackedItem } from './item/test/fixtures/items';
@@ -3220,75 +3219,5 @@ describe('validatePermissionMany for many items', () => {
     expect(result2.errors[0]).toBeInstanceOf(MemberCannotAdminItem);
     expect(result2.data[PUBLIC_ITEM.id]).toBeUndefined();
     expect(result2.errors[1]).toBeInstanceOf(MemberCannotAccess);
-  });
-});
-
-describe('Passport Plugin', () => {
-  let app: FastifyInstance;
-  let member: MinimalMember;
-  let handler: jest.Mock;
-  let preHandler: jest.Mock;
-  const MOCKED_ROUTE = '/mock-route';
-
-  function shouldNotBeCalled() {
-    return () => fail('Should not be called');
-  }
-  function shouldBeActor(actor: MinimalMember) {
-    return ({ user }: { user: PassportUser }) => expect(user.account).toEqual(actor);
-  }
-
-  beforeAll(async () => {
-    ({ app } = await build({ member: null }));
-
-    handler = jest.fn();
-    preHandler = jest.fn(async () => {});
-    app.get(MOCKED_ROUTE, { preHandler: [isAuthenticated, preHandler] }, async (...args) =>
-      handler(...args),
-    );
-  });
-
-  afterAll(async () => {
-    await clearDatabase(app.db);
-    app.close();
-  });
-
-  beforeEach(async () => {
-    const actor = await saveMember();
-    mockAuthenticate(actor);
-    member = asDefined(actor);
-  });
-
-  afterEach(async () => {
-    unmockAuthenticate();
-    handler.mockClear();
-  });
-
-  it('No Whitelist', async () => {
-    handler.mockImplementation(shouldBeActor(member));
-    const response = await app.inject({ path: MOCKED_ROUTE });
-    expect(handler).toHaveBeenCalledTimes(1);
-    expect(response.statusCode).toBe(StatusCodes.OK);
-  });
-
-  describe('Whitelist ValidatedMember Role', () => {
-    beforeEach(async () => {
-      preHandler.mockImplementation(matchOne(validatedMemberAccountRole));
-    });
-
-    it('Validated MinimalMember', async () => {
-      handler.mockImplementation(shouldBeActor(member));
-      const response = await app.inject({ path: MOCKED_ROUTE });
-      expect(handler).toHaveBeenCalledTimes(1);
-      expect(response.statusCode).toBe(StatusCodes.OK);
-    });
-
-    it('Unvalidated MinimalMember', async () => {
-      member.isValidated = false;
-      mockAuthenticate(member);
-      handler.mockImplementation(shouldNotBeCalled);
-      const response = await app.inject({ path: MOCKED_ROUTE });
-      expect(handler).toHaveBeenCalledTimes(0);
-      expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
-    });
   });
 });

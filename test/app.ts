@@ -9,7 +9,6 @@ import { resetDependencies } from '../src/di/utils';
 import { BaseLogger } from '../src/logger';
 import ajvFormats from '../src/schemas/ajvFormats';
 import { PassportStrategy } from '../src/services/auth/plugins/passport';
-import { saveMember } from '../src/services/member/test/fixtures/members';
 import { DB_TEST_SCHEMA } from './constants';
 
 const originalSessionStrategy = fastifyPassport.strategy(PassportStrategy.Session)!;
@@ -71,15 +70,7 @@ const build = async ({ member }: { member?: null } = {}) => {
   // drop all the database and synchronize schemas
   // await db.(true);
 
-  const savedMember = member !== null ? await saveMember(member) : undefined;
-  if (savedMember) {
-    mockAuthenticate(savedMember);
-  } else {
-    // Set the original session strategy back
-    unmockAuthenticate();
-  }
-
-  return { app, actor: savedMember };
+  return { app };
 };
 
 export const clearDatabase = async (db: DataSource) => {

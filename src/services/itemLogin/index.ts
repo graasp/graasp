@@ -6,9 +6,14 @@ import { resolveDependency } from '../../di/utils';
 import { db } from '../../drizzle/db';
 import { asDefined } from '../../utils/assertions';
 import { ItemNotFound } from '../../utils/errors';
-import { SESSION_KEY, isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
+import {
+  SESSION_KEY,
+  isAuthenticated,
+  matchOne,
+  optionalIsAuthenticated,
+} from '../auth/plugins/passport';
 import { assertIsMember } from '../authentication';
-import { AuthorizationService, matchOne } from '../authorization';
+import { AuthorizationService } from '../authorization';
 import { BasicItemService } from '../item/basic.service';
 import { ItemRepository } from '../item/repository';
 import { ItemService } from '../item/service';

@@ -4,9 +4,8 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../di/utils';
 import { asDefined } from '../../../../utils/assertions';
-import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
-import { matchOne } from '../../../authorization';
 import { validatedMemberAccountRole } from '../../strategies/validatedMemberAccountRole';
 import { MemberProfileNotFound } from './errors';
 import { createOwnProfile, getOwnProfile, getProfileForMember, updateOwnProfile } from './schemas';
