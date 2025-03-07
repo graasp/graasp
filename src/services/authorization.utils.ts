@@ -141,17 +141,20 @@ export const filterOutPackedDescendants = async (
         const permission = PermissionLevelCompare.getHighest(permissions);
         const itemVisibilities = visibilities.filter((t) => item.path.includes(t.item.path));
 
-        return new ItemWrapper(
+        const packedItem = new ItemWrapper(
           item,
           permission ? { permission } : undefined,
           itemVisibilities,
           itemsThumbnails?.[item.id],
         ).packed();
+        return packedItem;
       })
       .filter((i) => {
         if (i.hidden && !showHidden) {
           return false;
         }
+
+        // console.log(i);
 
         // return item if has at least write permission or is not hidden
         return (

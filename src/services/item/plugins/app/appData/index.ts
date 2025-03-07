@@ -1,3 +1,5 @@
+import { StatusCodes } from 'http-status-codes';
+
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../../di/utils';
@@ -41,11 +43,12 @@ const appDataPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
     fastify.patch(
       '/:itemId/app-data/:id',
       { schema: updateOne, preHandler: authenticateAppsJWT },
-      async ({ user, params: { itemId, id: appDataId }, body }) => {
+      async ({ user, params: { itemId, id: appDataId }, body }, reply) => {
         const member = asDefined(user?.account);
         await db.transaction(async (tx) => {
-          appDataService.patch(tx, member, itemId, appDataId, body);
+          await appDataService.patch(tx, member, itemId, appDataId, body);
         });
+        reply.status(StatusCodes.NO_CONTENT);
       },
     );
 

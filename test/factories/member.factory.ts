@@ -18,16 +18,19 @@ function BaseAccountFactory<T extends AccountTypeOptions>(
   };
 }
 
-export const MemberFactory = (m: Partial<MemberRaw> = {}) => ({
+export const MemberFactory = (m: Partial<MemberRaw> = {}): MemberRaw => ({
   extra: faker.helpers.arrayElement([{ lang: faker.helpers.arrayElement(['en', 'fr', 'de']) }, {}]),
   ...BaseAccountFactory({ type: AccountType.Individual }),
   email: faker.internet.email().toLowerCase(),
   ...m,
   enableSaveActions: m.enableSaveActions ?? true,
   isValidated: m.isValidated ?? true,
+  // TODO: update for external use out of db seed
+  lastAuthenticatedAt: new Date().toISOString(),
+  userAgreementsDate: new Date().toISOString(),
 });
 
-export const GuestFactory = (g: Partial<GuestRaw> & Pick<GuestRaw, 'itemLoginSchema'>) => ({
+export const GuestFactory = (g: Partial<GuestRaw> & Pick<GuestRaw, 'itemLoginSchemaId'>) => ({
   ...BaseAccountFactory({ type: AccountType.Guest }),
   ...g,
 });

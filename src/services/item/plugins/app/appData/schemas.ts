@@ -70,7 +70,7 @@ export const create = {
     accountId: Type.Optional(customType.UUID()),
   }),
   response: {
-    [StatusCodes.OK]: appDataWithLegacyPropsSchemaRef,
+    [StatusCodes.NO_CONTENT]: Type.Null(),
     '4xx': errorSchemaRef,
   },
 };

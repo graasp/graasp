@@ -8,13 +8,13 @@ import { MailerService } from '../../../../../plugins/mailer/mailer.service';
 import { ActionRepository } from '../../../../action/action.repository';
 import { ItemMembershipRepository } from '../../../../itemMembership/repository';
 import { ItemWrapperService } from '../../../ItemWrapper';
+import { BasicItemService } from '../../../basic.service';
 import { ItemRepository } from '../../../repository';
-import { ItemService } from '../../../service';
 import { ItemVisibilityRepository } from '../../itemVisibility/repository';
 import { ItemThumbnailService } from '../../thumbnail/service';
 import { ItemPublishedRepository } from './itemPublished.repository';
+import { ItemPublishedService } from './itemPublished.service';
 import { MeiliSearchWrapper } from './plugins/search/meilisearch';
-import { ItemPublishedService } from './service';
 
 const meiliSearchWrapper = {
   updateItem: jest.fn(),
@@ -23,7 +23,7 @@ const meiliSearchWrapper = {
 const itemPublishedRepository = {} as ItemPublishedRepository;
 
 const itemPublishedService = new ItemPublishedService(
-  {} as ItemService,
+  {} as BasicItemService,
   {} as ItemThumbnailService,
   {} as MailerService,
   meiliSearchWrapper,
