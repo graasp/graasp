@@ -5388,7 +5388,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"content-disposition@npm:0.5.4, content-disposition@npm:^0.5.3":
+"content-disposition@npm:^0.5.3":
   version: 0.5.4
   resolution: "content-disposition@npm:0.5.4"
   dependencies:
@@ -7509,7 +7509,6 @@ __metadata:
     bullmq: "npm:5.18.0"
     checksum: "npm:1.0.0"
     concurrently: "npm:9.0.1"
-    content-disposition: "npm:0.5.4"
     date-fns: "npm:3.6.0"
     dir-compare: "npm:5.0.0"
     dotenv: "npm:16.4.7"

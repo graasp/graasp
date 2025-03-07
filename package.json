@@ -77,7 +77,6 @@
     "bad-words": "3.0.4",
     "bcrypt": "5.1.1",
     "bullmq": "5.18.0",
-    "content-disposition": "0.5.4",
     "date-fns": "3.6.0",
     "dotenv": "16.4.7",
     "extract-zip": "2.0.1",
