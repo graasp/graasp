@@ -5,7 +5,7 @@ import { EmailFrequency, MemberFactory } from '@graasp/sdk';
 import { client, db } from '../../drizzle/db';
 import { MemberRaw } from '../../drizzle/types';
 import { MemberNotFound } from '../../utils/errors';
-import { MemberRepository } from './repository';
+import { MemberRepository } from './member.repository';
 import { expectMember, saveMember, saveMembers } from './test/fixtures/members';
 
 const memberRepository = new MemberRepository();

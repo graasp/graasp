@@ -72,6 +72,8 @@ type MoveHousekeepingType = DetachedMoveHousekeepingType & {
 
 @singleton()
 export class ItemMembershipRepository {
+  constructor() {}
+
   async getOne(db: DBConnection, id: string): Promise<ItemMembershipRaw | undefined> {
     const res = await db.query.itemMemberships.findFirst({
       where: eq(itemMembershipTable.id, id),

@@ -7,12 +7,10 @@ import { db } from '../../../../../drizzle/db';
 import { AuthorizationService } from '../../../../authorization';
 import { WebsocketService } from '../../../../websockets/ws-service';
 import { BasicItemService } from '../../../basic.service';
-import { ItemService } from '../../../service';
 import { AppActionService } from '../appAction/appAction.service';
-import { AppDataService } from '../appData/service';
+import { AppDataService } from '../appData/appData.service';
 import { AppSettingService } from '../appSetting/service';
 import {
-  AppActionEvent,
   AppDataEvent,
   AppSettingEvent,
   appActionsTopic,
@@ -20,43 +18,6 @@ import {
   appSettingsTopic,
 } from './events';
 import { checkItemIsApp } from './utils';
-
-/**
- * helper to register app data topic
- */
-function registerAppDataTopic(
-  websockets: WebsocketService,
-  appDataService: AppDataService,
-  basicItemService: BasicItemService,
-) {
-  const authorizationService = resolveDependency(AuthorizationService);
-
-  websockets.register(appDataTopic, async (req) => {
-    const { channel: id, member } = req;
-    const item = await basicItemService.get(db, member, id);
-    await authorizationService.validatePermission(db, PermissionLevel.Read, member, item);
-    checkItemIsApp(item);
-  });
-
-  // on post app data, notify apps of new app data
-  appDataService.hooks.setPostHook('post', async (member, thisDb, { appData, itemId }) => {
-    if (itemId !== undefined && appData.visibility === AppDataVisibility.Item) {
-      websockets.publish(appDataTopic, itemId, AppDataEvent('post', appData));
-    }
-  });
-
-  appDataService.hooks.setPostHook('patch', async (member, thisDb, { appData, itemId }) => {
-    if (itemId !== undefined && appData.visibility === AppDataVisibility.Item) {
-      websockets.publish(appDataTopic, itemId, AppDataEvent('patch', appData));
-    }
-  });
-
-  appDataService.hooks.setPostHook('delete', async (member, thisDb, { appData, itemId }) => {
-    if (itemId !== undefined && appData.visibility === AppDataVisibility.Item) {
-      websockets.publish(appDataTopic, itemId, AppDataEvent('delete', appData));
-    }
-  });
-}
 
 /**
  * helper to register app action topic
@@ -128,12 +89,41 @@ interface GraaspPluginAppDataWsHooksOptions {
  */
 export const appDataWsHooks: FastifyPluginAsync<GraaspPluginAppDataWsHooksOptions> = async (
   fastify,
-  options,
 ) => {
   const { websockets } = fastify;
-  const { appDataService } = options;
+
+  /**
+   * helper to register app data topic
+   */
+  const authorizationService = resolveDependency(AuthorizationService);
   const basicItemService = resolveDependency(BasicItemService);
-  registerAppDataTopic(websockets, appDataService, basicItemService);
+  // const appDataService = resolveDependency(AppDataService);
+
+  websockets.register(appDataTopic, async (req) => {
+    const { channel: id, member } = req;
+    const item = await basicItemService.get(db, member, id);
+    await authorizationService.validatePermission(db, PermissionLevel.Read, member, item);
+    checkItemIsApp(item);
+  });
+
+  // on post app data, notify apps of new app data
+  // appDataService.hooks.setPostHook('post', async (member, thisDb, { appData, itemId }) => {
+  //   if (itemId !== undefined && appData.visibility === AppDataVisibility.Item) {
+  //     websockets.publish(appDataTopic, itemId, AppDataEvent('post', appData));
+  //   }
+  // });
+
+  // appDataService.hooks.setPostHook('patch', async (member, thisDb, { appData, itemId }) => {
+  //   if (itemId !== undefined && appData.visibility === AppDataVisibility.Item) {
+  //     websockets.publish(appDataTopic, itemId, AppDataEvent('patch', appData));
+  //   }
+  // });
+
+  // appDataService.hooks.setPostHook('delete', async (member, thisDb, { appData, itemId }) => {
+  //   if (itemId !== undefined && appData.visibility === AppDataVisibility.Item) {
+  //     websockets.publish(appDataTopic, itemId, AppDataEvent('delete', appData));
+  //   }
+  // });
 };
 
 interface GraaspPluginAppActionsWsHooksOptions {

@@ -65,69 +65,69 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       }
 
       // // plugins that don't require authentication
-      fastify.register(graaspItemLogin);
+      // fastify.register(graaspItemLogin);
 
-      fastify.register(graaspFavoritePlugin);
+      // fastify.register(graaspFavoritePlugin);
 
-      fastify.register(graaspItemPublish);
+      // fastify.register(graaspItemPublish);
 
-      fastify.register(graaspShortcutPlugin);
+      // fastify.register(graaspShortcutPlugin);
 
-      fastify.register(thumbnailsPlugin);
+      // fastify.register(thumbnailsPlugin);
 
-      fastify.register(graaspFileItem, {});
+      // fastify.register(graaspFileItem, {});
 
-      fastify.register(graaspItemVisibility);
+      // fastify.register(graaspItemVisibility);
 
-      fastify.register(graaspFolderItem);
+      // fastify.register(graaspFolderItem);
 
-      fastify.register(graaspAppItem);
+      // fastify.register(graaspAppItem);
 
-      fastify.register(ShortLinkService, {
-        prefix: SHORT_LINKS_ROUTE_PREFIX,
-      });
+      // fastify.register(ShortLinkService, {
+      //   prefix: SHORT_LINKS_ROUTE_PREFIX,
+      // });
 
-      fastify.register(graaspItemPublicationState);
+      // fastify.register(graaspItemPublicationState);
 
-      // core routes - require authentication
-      fastify.register(async function (fastify) {
-        fastify.register(itemWsHooks);
+      // // core routes - require authentication
+      // fastify.register(async function (fastify) {
+      //   fastify.register(itemWsHooks);
 
-        // H5P plugin must be registered before ZIP
-        fastify.register(graaspH5PPlugin);
+      //   // H5P plugin must be registered before ZIP
+      //   fastify.register(graaspH5PPlugin);
 
-        fastify.register(graaspEtherpadPlugin);
+      //   fastify.register(graaspEtherpadPlugin);
 
-        fastify.register(graaspZipPlugin);
+      //   fastify.register(graaspZipPlugin);
 
-        fastify.register(graaspEmbeddedLinkItem, {
-          prefix: PREFIX_EMBEDDED_LINK,
-        });
+      //   fastify.register(graaspEmbeddedLinkItem, {
+      //     prefix: PREFIX_EMBEDDED_LINK,
+      //   });
 
-        fastify.register(graaspDocumentItem, { prefix: PREFIX_DOCUMENT });
+      //   fastify.register(graaspDocumentItem, { prefix: PREFIX_DOCUMENT });
 
-        fastify.register(graaspInvitationsPlugin);
+      //   fastify.register(graaspInvitationsPlugin);
 
-        fastify.register(graaspEnrollPlugin);
+      //   fastify.register(graaspEnrollPlugin);
 
-        fastify.register(graaspItemFlags);
+      //   fastify.register(graaspItemFlags);
 
-        fastify.register(graaspRecycledItemData);
+      //   fastify.register(graaspRecycledItemData);
 
-        fastify.register(graaspValidationPlugin);
+      //   fastify.register(graaspValidationPlugin);
 
-        fastify.register(graaspItemLikes);
+      //   fastify.register(graaspItemLikes);
 
-        fastify.register(fp(graaspChatbox));
+      //   fastify.register(fp(graaspChatbox));
 
-        fastify.register(actionItemPlugin);
+      //   fastify.register(actionItemPlugin);
 
-        fastify.register(itemGeolocationPlugin);
+      //   fastify.register(itemGeolocationPlugin);
 
-        fastify.register(graaspItemTagPlugin);
+      //   fastify.register(graaspItemTagPlugin);
 
-        fastify.register(itemController);
-      });
+      //   fastify.register(itemController);
+      // });
     },
     { prefix: ITEMS_ROUTE_PREFIX },
   );

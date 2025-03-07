@@ -10,12 +10,7 @@ import {
 
 import { FILE_ITEM_TYPE_DI_KEY } from '../../../../../di/constants';
 import { DBConnection } from '../../../../../drizzle/db';
-import {
-  AppDataInsertDTO,
-  AppDataRaw,
-  Item,
-  ItemMembershipRaw,
-} from '../../../../../drizzle/types';
+import { AppDataRaw, Item, ItemMembershipRaw } from '../../../../../drizzle/types';
 import { AuthenticatedUser, MaybeUser } from '../../../../../types';
 import HookManager from '../../../../../utils/hook';
 import { AuthorizationService } from '../../../../authorization';

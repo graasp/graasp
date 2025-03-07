@@ -8,43 +8,35 @@ import { DBConnection } from '../../../../drizzle/db';
 import { Item, MinimalAccount } from '../../../../drizzle/types';
 import { AuthenticatedUser, MaybeUser } from '../../../../types';
 import { APPS_JWT_SECRET } from '../../../../utils/config';
-import { AccountRepository } from '../../../account/account.repository';
 import { AuthorizationService } from '../../../authorization';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { ItemRepository } from '../../repository';
-import { ItemService } from '../../service';
+import { DEFAULT_JWT_EXPIRATION } from './constants';
 import { PublisherRepository } from './publisherRepository';
 import { AppRepository } from './repository';
 import { checkTargetItemAndTokenItemMatch } from './utils';
 
 @singleton()
 export class AppService {
-  private readonly itemService: ItemService;
   private readonly jwtExpiration: number;
   private readonly authorizationService: AuthorizationService;
   private readonly itemMembershipRepository: ItemMembershipRepository;
   private readonly itemRepository: ItemRepository;
   private readonly appRepository: AppRepository;
-  private readonly accountRepository: AccountRepository;
   private readonly publisherRepository: PublisherRepository;
 
   constructor(
-    itemService: ItemService,
-    jwtExpiration: number,
     authorizationService: AuthorizationService,
     itemMembershipRepository: ItemMembershipRepository,
     itemRepository: ItemRepository,
     appRepository: AppRepository,
-    accountRepository: AccountRepository,
     publisherRepository: PublisherRepository,
   ) {
-    this.itemService = itemService;
     this.authorizationService = authorizationService;
-    this.jwtExpiration = jwtExpiration;
+    this.jwtExpiration = DEFAULT_JWT_EXPIRATION;
     this.itemRepository = itemRepository;
     this.appRepository = appRepository;
     this.itemMembershipRepository = itemMembershipRepository;
-    this.accountRepository = accountRepository;
     this.publisherRepository = publisherRepository;
   }
 

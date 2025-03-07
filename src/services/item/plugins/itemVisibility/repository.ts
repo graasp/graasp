@@ -19,6 +19,8 @@ import {
 
 @singleton()
 export class ItemVisibilityRepository {
+  constructor() {}
+
   async getType(
     db: DBConnection,
     itemPath: Item['path'],

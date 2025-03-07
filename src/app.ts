@@ -54,8 +54,8 @@ export default async function (instance: FastifyInstance): Promise<void> {
           },
         },
       })
-      .register(fp(MemberServiceApi));
-    // .register(fp(ItemServiceApi))
+      .register(fp(MemberServiceApi))
+      .register(fp(ItemServiceApi));
     // .register(fp(ItemMembershipServiceApi))
     // .register(tagPlugin);
   });

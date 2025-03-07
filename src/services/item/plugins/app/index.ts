@@ -12,12 +12,12 @@ import {
   isAuthenticated,
   optionalIsAuthenticated,
 } from '../../../auth/plugins/passport';
+import { AppService } from './app.service';
 import appActionPlugin from './appAction';
 import appDataPlugin from './appData';
 import appSettingPlugin from './appSetting';
 import chatBotPlugin from './chatBot/chatBot.controller';
 import { generateToken, getContext, getList, getOwnMostUsedApps } from './schemas';
-import { AppService } from './service';
 import { AppsPluginOptions } from './types';
 
 const plugin: FastifyPluginAsyncTypebox<AppsPluginOptions> = async (fastify, options) => {
@@ -120,14 +120,14 @@ const plugin: FastifyPluginAsyncTypebox<AppsPluginOptions> = async (fastify, opt
       // register app data plugin
       fastify.register(appDataPlugin);
 
-      // register app action plugin
-      fastify.register(appActionPlugin);
+      // // register app action plugin
+      // fastify.register(appActionPlugin);
 
-      // register app settings plugin
-      fastify.register(appSettingPlugin);
+      // // register app settings plugin
+      // fastify.register(appSettingPlugin);
 
-      // register app chatbot plugin
-      fastify.register(chatBotPlugin);
+      // // register app chatbot plugin
+      // fastify.register(chatBotPlugin);
     });
   });
 };

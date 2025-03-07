@@ -11,9 +11,9 @@ import { AppDataRaw, Item } from '../../../../../../../drizzle/types';
 import { AuthenticatedUser } from '../../../../../../../types';
 import FileService from '../../../../../../file/service';
 import { APP_DATA_TYPE_FILE } from '../../../constants';
+import { AppDataService } from '../../appData.service';
 import { NotAppDataFile } from '../../errors';
 import { AppDataRepository } from '../../repository';
-import { AppDataService } from '../../service';
 
 @singleton()
 class AppDataFileService {

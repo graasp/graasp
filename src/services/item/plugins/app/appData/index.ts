@@ -7,9 +7,9 @@ import { asDefined } from '../../../../../utils/assertions';
 import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
 import { addMemberInAppData } from '../legacy';
 import { appDataWsHooks } from '../ws/hooks';
+import { AppDataService } from './appData.service';
 import appDataFilePlugin from './plugins/file';
 import { create, deleteOne, getForOne, updateOne } from './schemas';
-import { AppDataService } from './service';
 
 const appDataPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const appDataService = resolveDependency(AppDataService);

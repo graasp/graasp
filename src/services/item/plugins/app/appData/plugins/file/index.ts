@@ -12,7 +12,7 @@ import {
   UploadEmptyFileError,
   UploadFileUnexpectedError,
 } from '../../../../../../file/utils/errors';
-import { AppDataService } from '../../service';
+import { AppDataService } from '../../appData.service';
 import { download, upload } from './schema';
 import AppDataFileService from './service';
 
