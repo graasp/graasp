@@ -17,9 +17,15 @@ export class MagicLinkService {
   private readonly memberRepository: MemberRepository;
   private readonly actionRepository: ActionRepository;
 
-  constructor(authService: AuthService, log: BaseLogger, memberRepository: MemberRepository) {
+  constructor(
+    authService: AuthService,
+    log: BaseLogger,
+    memberRepository: MemberRepository,
+    actionRepository: ActionRepository,
+  ) {
     this.authService = authService;
     this.memberRepository = memberRepository;
+    this.actionRepository = actionRepository;
     this.log = log;
   }
 
