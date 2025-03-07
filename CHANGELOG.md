@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.64.1](https://github.com/graasp/graasp/compare/v1.64.0...v1.64.1) (2025-03-07)
+
+
+### Bug Fixes
+
+* **file:** keep extension on copy, remove content-disposition and cache control ([#1785](https://github.com/graasp/graasp/issues/1785)) ([1fa4202](https://github.com/graasp/graasp/commit/1fa4202566239076a8b8290591aa1a0a527cd3c9))
+
 ## [1.64.0](https://github.com/graasp/graasp/compare/v1.63.0...v1.64.0) (2025-03-03)
 
 
