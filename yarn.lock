@@ -3901,19 +3901,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:20.14.13":
-  version: 20.14.13
-  resolution: "@types/node@npm:20.14.13"
-  dependencies:
-    undici-types: "npm:~5.26.4"
-  checksum: 10/749160b6bd9866e6169cb1a222e75aaf81da3868af1fda1e1e66d33c7e182be381f98a42b7d231fddf470f6389f2052ee842e776b3fdc677df798b933617866d
-  languageName: node
-  linkType: hard
-
 "@types/node@npm:20.5.1":
   version: 20.5.1
   resolution: "@types/node@npm:20.5.1"
   checksum: 10/e91034ba7eda82171dff73d3b30f584941400a5611b45d73a4d8159dc1fc309d4f1a423fbe84fd22d1ba7833383ee299c81ace6fab035c17affd0f4f0cbe7a89
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:22.13.10":
+  version: 22.13.10
+  resolution: "@types/node@npm:22.13.10"
+  dependencies:
+    undici-types: "npm:~6.20.0"
+  checksum: 10/57dc6a5e0110ca9edea8d7047082e649fa7fa813f79e4a901653b9174141c622f4336435648baced5b38d9f39843f404fa2d8d7a10981610da26066bc8caab48
   languageName: node
   linkType: hard
 
@@ -7490,7 +7490,7 @@ __metadata:
     "@types/lodash.partition": "npm:^4"
     "@types/mime": "npm:3.0.4"
     "@types/mmmagic": "npm:0.4.33"
-    "@types/node": "npm:20.14.13"
+    "@types/node": "npm:22.13.10"
     "@types/node-fetch": "npm:2"
     "@types/nodemailer": "npm:6.4.15"
     "@types/papaparse": "npm:5.3.14"
@@ -12841,6 +12841,13 @@ __metadata:
   version: 5.26.5
   resolution: "undici-types@npm:5.26.5"
   checksum: 10/0097779d94bc0fd26f0418b3a05472410408877279141ded2bd449167be1aed7ea5b76f756562cb3586a07f251b90799bab22d9019ceba49c037c76445f7cddd
+  languageName: node
+  linkType: hard
+
+"undici-types@npm:~6.20.0":
+  version: 6.20.0
+  resolution: "undici-types@npm:6.20.0"
+  checksum: 10/583ac7bbf4ff69931d3985f4762cde2690bb607844c16a5e2fbb92ed312fe4fa1b365e953032d469fa28ba8b224e88a595f0b10a449332f83fa77c695e567dbe
   languageName: node
   linkType: hard
 
