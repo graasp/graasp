@@ -9,7 +9,6 @@ import { asDefined } from '../../../../utils/assertions';
 import { THUMBNAILS_ROUTE_PREFIX } from '../../../../utils/config';
 import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
-import FileService from '../../../file/service';
 import { UploadFileUnexpectedError } from '../../../file/utils/errors';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
@@ -25,7 +24,6 @@ type GraaspThumbnailsOptions = {
 const plugin: FastifyPluginAsyncTypebox<GraaspThumbnailsOptions> = async (fastify, options) => {
   const { maxFileSize = DEFAULT_MAX_FILE_SIZE } = options;
 
-  const fileService = resolveDependency(FileService);
   const itemThumbnailService = resolveDependency(ItemThumbnailService);
 
   fastify.register(fastifyMultipart, {
@@ -96,7 +94,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspThumbnailsOptions> = async (fastif
       if (!url) {
         return null;
       } else {
-        fileService.setHeaders({ reply, url, id: itemId, replyUrl: true });
+        reply.status(StatusCodes.OK).send(url);
       }
     },
   );

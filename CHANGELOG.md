@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.64.0](https://github.com/graasp/graasp/compare/v1.63.0...v1.64.0) (2025-03-03)
+
+
+### Features
+
+* add patch file ([#1762](https://github.com/graasp/graasp/issues/1762)) ([a15b911](https://github.com/graasp/graasp/commit/a15b911298f05a67cb35427597f2266570e31aeb))
+* **etherpad:** allow readerPermission on create, item props in update ([#1780](https://github.com/graasp/graasp/issues/1780)) ([13645e0](https://github.com/graasp/graasp/commit/13645e0fc97a8520fc0fc3a3dc1426223c4b8dfb))
+* **item:** add postMany and refactor post ([#1765](https://github.com/graasp/graasp/issues/1765)) ([aad8c9a](https://github.com/graasp/graasp/commit/aad8c9aecccf72a8770a566ab3c06a92ecec0430))
+
+
+### Bug Fixes
+
+* allow link settings to be patched ([#1770](https://github.com/graasp/graasp/issues/1770)) ([8fdcb9d](https://github.com/graasp/graasp/commit/8fdcb9daf6e733fdb20d4643f5f4219858130a15))
+
 ## [1.63.0](https://github.com/graasp/graasp/compare/v1.62.0...v1.63.0) (2025-02-18)
 
 

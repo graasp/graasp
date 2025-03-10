@@ -1,13 +1,21 @@
 import { NotFound } from '@aws-sdk/client-s3';
+import assert from 'assert';
 import { inArray } from 'drizzle-orm';
 import FormData from 'form-data';
 import fs from 'fs';
-import { StatusCodes } from 'http-status-codes';
+import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import path from 'path';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType, MaxWidth, PermissionLevel, S3FileItemExtra } from '@graasp/sdk';
+import {
+  DescriptionPlacement,
+  HttpMethod,
+  ItemType,
+  MaxWidth,
+  PermissionLevel,
+  S3FileItemExtra,
+} from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -15,6 +23,7 @@ import build, {
   unmockAuthenticate,
 } from '../../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants';
+import { buildFile, seedFromJson } from '../../../../../../test/mocks/seed';
 import { db } from '../../../../../drizzle/db';
 import { Item } from '../../../../../drizzle/types';
 import {
@@ -30,7 +39,7 @@ import {
   UploadEmptyFileError,
   UploadFileUnexpectedError,
 } from '../../../../file/utils/errors';
-import { ItemTestUtils, expectItem, expectManyItems } from '../../../../item/test/fixtures/items';
+import { expectItem, expectManyItems } from '../../../../item/test/fixtures/items';
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { ThumbnailSizeFormat } from '../../../../thumbnail/constants';
 import { setItemPublic } from '../../itemVisibility/test/fixtures';
@@ -41,6 +50,7 @@ import { StorageExceeded } from '../utils/errors';
 
 const testUtils = new ItemTestUtils();
 const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
+const itemRawRepository = AppDataSource.getRepository(Item);
 
 const deleteObjectMock = jest.fn(async () => console.debug('deleteObjectMock'));
 const copyObjectMock = jest.fn(async () => console.debug('copyObjectMock'));
@@ -456,8 +466,8 @@ describe('File Item routes tests', () => {
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/download`,
         });
 
-        expect(response.statusCode).toBe(StatusCodes.MOVED_TEMPORARILY);
-        expect(response.headers.location).toBe(MOCK_SIGNED_URL);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        expect(response.body).toBe(MOCK_SIGNED_URL);
       });
     });
 
@@ -473,20 +483,10 @@ describe('File Item routes tests', () => {
         }));
       });
       describe('Without error', () => {
-        it('Redirect to file item', async () => {
-          const response = await app.inject({
-            method: HttpMethod.Get,
-            url: `${ITEMS_ROUTE_PREFIX}/${item.id}/download`,
-          });
-
-          expect(response.statusCode).toBe(StatusCodes.MOVED_TEMPORARILY);
-          expect(response.headers.location).toBe(MOCK_SIGNED_URL);
-        });
-
         it('Return file url of item', async () => {
           const response = await app.inject({
             method: HttpMethod.Get,
-            url: `${ITEMS_ROUTE_PREFIX}/${item.id}/download?replyUrl=true`,
+            url: `${ITEMS_ROUTE_PREFIX}/${item.id}/download`,
           });
 
           expect(response.statusCode).toBe(StatusCodes.OK);
@@ -733,6 +733,235 @@ describe('File Item routes tests', () => {
             done(true);
           }, MULTIPLE_ITEMS_LOADING_TIME);
         });
+      });
+    });
+  });
+
+  describe('PATCH /items/files/:id', () => {
+    it('Throws if signed out', async () => {
+      const {
+        items: [item],
+      } = await seedFromJson({
+        actor: null,
+        items: [{ type: ItemType.LOCAL_FILE }],
+      });
+
+      const response = await app.inject({
+        method: HttpMethod.Patch,
+        url: `/items/files/${item.id}`,
+        payload: { name: 'new name' },
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    });
+
+    describe('Signed In', () => {
+      it('Update successfully', async () => {
+        const {
+          items: [item],
+          actor,
+        } = await seedFromJson({
+          items: [buildFile('actor')],
+        });
+        mockAuthenticate(actor);
+
+        const payload = {
+          name: 'new name',
+          extra: {
+            [ItemType.LOCAL_FILE]: {},
+          },
+          settings: {
+            hasThumbnail: true,
+          },
+        };
+
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `/items/files/${item.id}`,
+          payload,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
+
+        const savedItem = await itemRawRepository.findOneBy({ id: item.id });
+        // this test a bit how we deal with extra: it replaces existing keys
+        expectItem(savedItem, {
+          ...item,
+          ...payload,
+          extra: item.extra,
+        });
+      });
+
+      it('Update successfully new language', async () => {
+        const {
+          items: [item],
+          actor,
+        } = await seedFromJson({
+          items: [buildFile('actor')],
+        });
+        mockAuthenticate(actor);
+
+        const payload = {
+          lang: 'fr',
+        };
+
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `/items/files/${item.id}`,
+          payload,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
+
+        const savedItem = await itemRawRepository.findOneBy({ id: item.id });
+        // this test a bit how we deal with extra: it replaces existing keys
+        expectItem(savedItem, {
+          ...item,
+          ...payload,
+          extra: item.extra,
+        });
+      });
+
+      it('Update successfully description placement above', async () => {
+        const {
+          items: [item],
+          actor,
+        } = await seedFromJson({
+          items: [buildFile('actor')],
+        });
+        mockAuthenticate(actor);
+
+        const payload = {
+          settings: {
+            ...item.settings,
+            descriptionPlacement: DescriptionPlacement.ABOVE,
+          },
+        };
+
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `/items/files/${item.id}`,
+          payload,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
+
+        const savedItem = await itemRawRepository.findOneBy({ id: item.id });
+        assert(savedItem);
+
+        // this test a bit how we deal with extra: it replaces existing keys
+        expectItem(savedItem, {
+          ...item,
+          ...payload,
+        });
+        expect(savedItem.settings.descriptionPlacement).toBe(DescriptionPlacement.ABOVE);
+        expect(savedItem.settings.hasThumbnail).toBeFalsy();
+      });
+
+      it('Filter out bad setting when updating', async () => {
+        const {
+          items: [item],
+          actor,
+        } = await seedFromJson({
+          items: [buildFile('actor')],
+        });
+        mockAuthenticate(actor);
+
+        const BAD_SETTING = { INVALID: 'Not a valid setting' };
+        const VALID_SETTING = { descriptionPlacement: DescriptionPlacement.ABOVE };
+        const payload = {
+          settings: {
+            ...item.settings,
+            ...VALID_SETTING,
+            ...BAD_SETTING,
+          },
+        };
+
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `/items/files/${item.id}`,
+          payload,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
+
+        const savedItem = await itemRawRepository.findOneBy({ id: item.id });
+        assert(savedItem);
+
+        // this test a bit how we deal with extra: it replaces existing keys
+        expectItem(savedItem, {
+          ...item,
+          ...payload,
+          settings: VALID_SETTING,
+        });
+        expect(savedItem.settings.descriptionPlacement).toBe(VALID_SETTING.descriptionPlacement);
+        expect(Object.keys(savedItem.settings)).not.toContain(Object.keys(BAD_SETTING)[0]);
+      });
+
+      it('Bad request if id is invalid', async () => {
+        const payload = {
+          name: 'new name',
+        };
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: '/items/files/invalid-id',
+          payload,
+        });
+
+        expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
+        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      });
+
+      it('Cannot update item if does not have membership', async () => {
+        const {
+          items: [item],
+          actor,
+        } = await seedFromJson({
+          items: [
+            {
+              type: ItemType.LOCAL_FILE,
+            },
+          ],
+        });
+        mockAuthenticate(actor);
+
+        const payload = {
+          name: 'new name',
+        };
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `/items/files/${item.id}`,
+          payload,
+        });
+
+        expect(response.json()).toEqual(new MemberCannotAccess(item.id));
+        expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
+      });
+      it('Cannot update item if has only read membership', async () => {
+        const {
+          items: [item],
+          actor,
+        } = await seedFromJson({
+          items: [
+            {
+              ...buildFile({ name: 'bob' }),
+              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            },
+          ],
+        });
+        mockAuthenticate(actor);
+
+        const payload = {
+          name: 'new name',
+        };
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `/items/files/${item.id}`,
+          payload,
+        });
+
+        expect(response.json()).toEqual(new MemberCannotWriteItem(item.id));
+        expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
       });
     });
   });

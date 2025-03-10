@@ -1,6 +1,8 @@
 // This import is necessary so we only download needed langage. eslint can't find the import because it's dynamic.
 // eslint-disable-next-line import/no-unresolved
 import { faker } from '@faker-js/faker/locale/en';
+import { eq } from 'drizzle-orm/sql';
+import { In } from 'typeorm';
 import { v4 } from 'uuid';
 
 import {
@@ -14,7 +16,7 @@ import {
 import { ItemFactory } from '../../../test/factories/item.factory';
 import { buildFile, seedFromJson } from '../../../test/mocks/seed';
 import { db } from '../../drizzle/db';
-import { publishedItems, recycledItemDatas } from '../../drizzle/schema';
+import { itemsRaw, publishedItems, recycledItemDatas } from '../../drizzle/schema';
 import { Item } from '../../drizzle/types';
 import { assertIsDefined } from '../../utils/assertions';
 import {
@@ -25,6 +27,7 @@ import {
   TooManyDescendants,
 } from '../../utils/errors';
 import { expectMember } from '../member/test/fixtures/members';
+import { ItemPublishedRepository } from './plugins/publication/published/itemPublished.repository';
 import { RecycledItemDataRepository } from './plugins/recycled/repository';
 import { ItemRepository } from './repository';
 import { expectItem, expectManyItems } from './test/fixtures/items';
@@ -32,12 +35,7 @@ import { expectItem, expectManyItems } from './test/fixtures/items';
 const alphabeticalOrder = (a: string, b: string) => a.localeCompare(b);
 
 // TODO: remove when this can be handled by the seed
-async function saveRecycledItem(
-  recycledItemRepository: RecycledItemDataRepository,
-  rawItemRepository: Repository<Item>,
-  item: Item,
-  creatorId: string,
-) {
+async function saveRecycledItem(item: Item, creatorId: string) {
   await db.insert(recycledItemDatas).values({ itemPath: item.path, creatorId });
   await db
     .update(itemsRaw)
@@ -79,7 +77,7 @@ const saveCollections = async () => {
 
 // TODO: remove when this when we use drizzle
 const getOrderForItemId = async (
-  rawItemRepository: Repository<Item>,
+  rawItemRepository: ItemRepository,
   itemId: Item['id'],
 ): Promise<number | null> => {
   const order = (await rawItemRepository
@@ -98,8 +96,8 @@ const getOrderForItemId = async (
 };
 
 describe('ItemRepository', () => {
-  let itemRawRepository: Repository<Item>;
-  let rawItemPublishedRepository: Repository<ItemPublished>;
+  let itemRawRepository: ItemRepository;
+  let rawItemPublishedRepository: ItemPublishedRepository;
   let itemRepository: ItemRepository;
   let recycledItemRepository: RecycledItemDataRepository;
 
@@ -829,6 +827,78 @@ describe('ItemRepository', () => {
       const insertedItemPaths = insertedItems.map((i) => i.path);
 
       const itemsInDB = await itemRawRepository.find({
+        where: { name: In(insertedItemNames) },
+        relations: { creator: true },
+      });
+      const itemNamesInDB = itemsInDB.map((i) => i.name);
+      const itemTypesInDB = insertedItems.map((i) => i.type);
+      const itemCreatorIdsInDB = insertedItems.map((i) => i.creator?.id);
+      const itemPathsInDB = insertedItems.map((i) => i.path);
+
+      expect(itemNamesInDB.sort(alphabeticalOrder)).toEqual(
+        insertedItemNames.sort(alphabeticalOrder),
+      );
+      expect(itemTypesInDB.sort(alphabeticalOrder)).toEqual(
+        insertedItemTypes.sort(alphabeticalOrder),
+      );
+      expect(itemCreatorIdsInDB.sort(alphabeticalOrder)).toEqual(
+        insertedItemCreatorIds.sort(alphabeticalOrder),
+      );
+      expect(itemPathsInDB.sort(alphabeticalOrder)).toEqual(
+        insertedItemPaths.sort(alphabeticalOrder),
+      );
+      expect(itemPathsInDB.every((path) => path.includes(`${parentItem.path}.`))).toBeTruthy();
+    });
+  });
+  describe('postMany', () => {
+    it('post many', async () => {
+      const items = Array.from(
+        { length: 15 },
+        (_v, idx) =>
+          ItemFactory({ id: `item${idx}`, type: ItemType.FOLDER, creator: actor }) as Item,
+      );
+
+      const insertedItems = await itemRepository.addMany(items, actor);
+      const insertedItemNames = insertedItems.map((i) => i.name);
+      const insertedItemTypes = insertedItems.map((i) => i.type);
+      const insertedItemCreatorIds = insertedItems.map((i) => i.creator?.id);
+
+      const itemsInDB = await testUtils.rawItemRepository.find({
+        where: { name: In(insertedItemNames) },
+        relations: { creator: true },
+      });
+      const itemNamesInDB = itemsInDB.map((i) => i.name);
+      const itemTypesInDB = insertedItems.map((i) => i.type);
+      const itemCreatorIdsInDB = insertedItems.map((i) => i.creator?.id);
+      const itemPathsInDb = insertedItems.map((i) => i.path);
+
+      expect(itemNamesInDB.sort(alphabeticalOrder)).toEqual(
+        insertedItemNames.sort(alphabeticalOrder),
+      );
+      expect(itemTypesInDB.sort(alphabeticalOrder)).toEqual(
+        insertedItemTypes.sort(alphabeticalOrder),
+      );
+      expect(itemCreatorIdsInDB.sort(alphabeticalOrder)).toEqual(
+        insertedItemCreatorIds.sort(alphabeticalOrder),
+      );
+      expect(itemPathsInDb.every((path) => !path.includes('.'))).toBeTruthy();
+    });
+    it('post many with parent item', async () => {
+      const parentItem = await testUtils.saveItem({ actor });
+
+      const items = Array.from(
+        { length: 15 },
+        (_v, idx) =>
+          ItemFactory({ name: `item${idx}`, type: ItemType.FOLDER, creator: actor }) as Item,
+      );
+
+      const insertedItems = await itemRepository.addMany(items, actor, parentItem);
+      const insertedItemNames = insertedItems.map((i) => i.name);
+      const insertedItemTypes = insertedItems.map((i) => i.type);
+      const insertedItemCreatorIds = insertedItems.map((i) => i.creator?.id);
+      const insertedItemPaths = insertedItems.map((i) => i.path);
+
+      const itemsInDB = await testUtils.rawItemRepository.find({
         where: { name: In(insertedItemNames) },
         relations: { creator: true },
       });

@@ -30,14 +30,14 @@ const endpoints: FastifyPluginAsyncTypebox = async (fastify) => {
     async (request) => {
       const {
         user,
+        body,
         query: { parentId },
-        body: { name },
       } = request;
       const member = asDefined(user?.account);
       assertIsMember(member);
 
-      return await db.transaction(async (tx) => {
-        return await etherpadItemService.createEtherpadItem(tx, member, name, parentId);
+      return await db.transaction(async (manager) => {
+        return await etherpadItemService.createEtherpadItem(tx, member, body, parentId);
       });
     },
   );
@@ -55,15 +55,13 @@ const endpoints: FastifyPluginAsyncTypebox = async (fastify) => {
       const {
         user,
         params: { id },
-        body: { readerPermission },
+        body,
       } = request;
       const member = asDefined(user?.account);
       assertIsMember(member);
 
       await db.transaction(async (tx) => {
-        return await etherpadItemService.patchWithOptions(tx, member, id, {
-          readerPermission,
-        });
+        return await etherpadItemService.patchWithOptions(tx, member, id, body);
       });
       reply.status(StatusCodes.NO_CONTENT);
     },

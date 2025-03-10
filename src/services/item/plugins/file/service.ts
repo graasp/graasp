@@ -10,6 +10,7 @@ import {
   FileItemProperties,
   ItemType,
   MAX_ITEM_NAME_LENGTH,
+  Member,
   MimeTypes,
   PermissionLevel,
   getFileExtension,
@@ -23,39 +24,42 @@ import { AuthorizationService } from '../../../authorization';
 import FileService from '../../../file/service';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { StorageService } from '../../../member/plugins/storage/service';
+import { ThumbnailService } from '../../../thumbnail/service';
 import { randomHexOf4 } from '../../../utils';
 import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
 import { readPdfContent } from '../../utils';
+import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../thumbnail/service';
 
 @singleton()
-class FileItemService {
+class FileItemService extends ItemService {
   private readonly fileService: FileService;
-  private readonly itemService: ItemService;
   private readonly storageService: StorageService;
   private readonly itemThumbnailService: ItemThumbnailService;
   private readonly authorizationService: AuthorizationService;
   private readonly itemRepository: ItemRepository;
 
   constructor(
+    thumbnailService: ThumbnailService,
     fileService: FileService,
     @inject(delay(() => ItemService))
     itemService: ItemService,
     storageService: StorageService,
+    meilisearchWrapper: MeiliSearchWrapper,
     itemThumbnailService: ItemThumbnailService,
     authorizationService: AuthorizationService,
     itemRepository: ItemRepository,
   ) {
+    super(thumbnailService, itemThumbnailService, meilisearchWrapper, log);
     this.fileService = fileService;
-    this.itemService = itemService;
     this.storageService = storageService;
     this.itemThumbnailService = itemThumbnailService;
     this.authorizationService = authorizationService;
     this.itemRepository = itemRepository;
   }
 
-  public buildFilePath(extension?: string) {
+  public buildFilePath(extension: string = '') {
     // TODO: CHANGE ??
     const filepath = `${randomHexOf4()}/${randomHexOf4()}/${randomHexOf4()}-${Date.now()}${extension}`;
     return path.join('files', filepath);
@@ -202,11 +206,10 @@ class FileItemService {
     return result;
   }
 
-  async copy(db: DBConnection, member: MinimalMember, { copy }: { original; copy }) {
+  async copyFile(db: DBConnection, member: MinimalMember, { copy }: { original; copy }) {
     const { id, extra } = copy; // full copy with new `id`
-    const { path: originalPath, mimetype } = extra[this.fileService.fileType];
-    // filenames are not used
-    const newFilePath = this.buildFilePath();
+    const { path: originalPath, mimetype, name } = extra[this.fileService.fileType];
+    const newFilePath = this.buildFilePath(getFileExtension(name));
 
     const data = {
       newId: id,
@@ -232,6 +235,22 @@ class FileItemService {
         extra: { file: { ...extra.s3File, path: filepath } },
       });
     }
+  }
+
+  async update(
+    db: DBConnection,
+    member: Member,
+    itemId: Item['id'],
+    body: Partial<Pick<Item, 'name' | 'description' | 'settings' | 'lang'>>,
+  ) {
+    const item = await this.itemRepository.getOneOrThrow(db, itemId);
+
+    // check item is file
+    if (!([ItemType.LOCAL_FILE, ItemType.S3_FILE] as Item['type'][]).includes(item.type)) {
+      throw new WrongItemTypeError(item.type);
+    }
+
+    await super.patch(db, member, item.id, body);
   }
 }
 

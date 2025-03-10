@@ -2,21 +2,28 @@ import { faker } from '@faker-js/faker';
 import { BaseEntity } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { CompleteMember, ItemType, PermissionLevel, buildPathFromIds } from '@graasp/sdk';
+import {
+  ItemType,
+  ItemVisibilityType,
+  PermissionLevel,
+  buildPathFromIds,
+  getIdsFromPath,
+} from '@graasp/sdk';
 
 import { db } from '../../src/drizzle/db';
 import {
   accountsTable,
   itemMemberships,
+  itemVisibilities,
   itemsRaw,
   memberPasswords,
   memberProfiles,
 } from '../../src/drizzle/schema';
 import {
+  AccountRaw,
   Item,
   ItemMembershipRaw,
-  ItemMembershipWithItemAndAccountAndCreator,
-  ItemWithCreator,
+  ItemVisibilityRaw,
   MemberProfileRaw,
   MemberRaw,
 } from '../../src/drizzle/types';
@@ -38,44 +45,74 @@ export type TableType<C extends BaseEntity, E> = {
     }
 );
 
-type SeedActor =
-  | 'actor'
-  | (Partial<CompleteMember> & {
-      profile?: Partial<MemberProfileRaw>;
-      password?: string;
-    });
+const ACTOR_STRING = 'actor';
+type SeedActor = Partial<MemberRaw> & { profile?: Partial<MemberProfileRaw>; password?: string };
+type ReferencedSeedActor = 'actor' | SeedActor;
+type SeedMember = Partial<MemberRaw> & { profile?: Partial<MemberProfileRaw> };
+type SeedMembership<M = SeedMember> = Partial<Omit<ItemMembershipRaw, 'creator' | 'account'>> & {
+  account?: M;
+  creator?: M;
+  permission?: PermissionLevel;
+};
+type SeedItem<M = SeedMember> = (Partial<Omit<Item, 'creator'>> & { creator?: M | null }) & {
+  children?: SeedItem<M>[];
+  memberships?: SeedMembership<M>[];
+  isPublic?: boolean;
+  isHidden?: boolean;
+};
 type DataType = {
   actor?: SeedActor | null;
-  members?: (Partial<MemberRaw> & { profile?: Partial<MemberProfileRaw> })[];
-  items?: ((Partial<ItemWithCreator> | { creator: SeedActor }) & {
-    children?: (Partial<ItemWithCreator> | { creator: SeedActor })[];
-    memberships?: (
-      | Partial<ItemMembershipWithItemAndAccountAndCreator>
-      | {
-          account?: SeedActor;
-          creator?: SeedActor;
-          permission?: PermissionLevel;
-        }
-    )[];
-  })[];
+  members?: SeedMember[];
+  items?: SeedItem<ReferencedSeedActor | SeedMember>[];
 };
 
-const replaceActorInItems = (createdActor?: MaybeUser, items?: DataType['items']) => {
+const replaceActorInItems = (createdActor?: MemberRaw, items?: DataType['items']): SeedItem[] => {
   if (!items?.length) {
     return [];
   }
 
   return items.map((i) => ({
     ...i,
-    creator: i.creator === 'actor' ? createdActor : (i.creator ?? null),
+    creator: i.creator === ACTOR_STRING ? createdActor : (i.creator ?? null),
     memberships: i.memberships?.map((m) => ({
       ...m,
-      account: m.account === 'actor' ? createdActor : m.account,
-      creator: m.creator === 'actor' ? createdActor : m.creator,
+      account: m.account === ACTOR_STRING ? createdActor : m.account,
+      creator: m.creator === ACTOR_STRING ? createdActor : m.creator,
     })),
     children: replaceActorInItems(createdActor, i.children),
   }));
 };
+
+function getNameIfExists(i?: object | null | string) {
+  if (i && typeof i == 'object' && 'name' in i) {
+    return i.name;
+  }
+  return null;
+}
+
+function replaceAccountInItems(createdAccount: AccountRaw, items?: DataType['items']) {
+  if (!items?.length) {
+    return [];
+  }
+
+  return items.map((i) => {
+    const memberships = i.memberships?.map((m) => {
+      return {
+        ...m,
+        account: getNameIfExists(m.account) === createdAccount.name ? createdAccount : m.account,
+        creator: getNameIfExists(m.creator) === createdAccount.name ? createdAccount : m.creator,
+      };
+    });
+
+    return {
+      ...i,
+      creator:
+        getNameIfExists(i.creator) === createdAccount.name ? createdAccount : (i.creator ?? null),
+      memberships,
+      children: replaceAccountInItems(createdAccount, i.children),
+    };
+  });
+}
 
 /**
  * Generate actor given properties or a random actor. Replace the created actor in the data for further reference.
@@ -92,7 +129,7 @@ const processActor = async ({ actor, items, members }: DataType) => {
     createdActor = (await db.insert(accountsTable).values(MemberFactory(actorData)).returning())[0];
 
     // a profile is defined
-    if (actor && actor !== 'actor') {
+    if (actor) {
       if (actor.profile) {
         actorProfile = (
           await db
@@ -133,15 +170,16 @@ const generateIdAndPathForItems = (
 
   return items.flatMap((i) => {
     const id = v4();
-    const path = buildPathFromIds(...([parent?.id, id].filter(Boolean) as string[]));
+    const ids = parent ? [...getIdsFromPath(parent.path), id] : [id];
+    const path = buildPathFromIds(...ids);
     const { children, ...allprops } = i;
 
-    const fullParent = {
+    const currentFullItem = {
       id,
       path,
       ...allprops,
     };
-    return [fullParent, ...generateIdAndPathForItems(children, fullParent)];
+    return [currentFullItem, ...generateIdAndPathForItems(children, currentFullItem)];
   });
 };
 
@@ -165,14 +203,111 @@ const processItemMemberships = (items: DataType['items'] = []) => {
 
 /**
  * Generate ids for members, necessary to further references (for example when creating profiles)
- * @param members
+ * Only unique accounts will be created based on their name
+ * @param members standalone members to be created
+ * @param items items whose creator and memberships' accounts should be created.
  * @returns members' data with generated id
  */
-function generateIdForMembers(members?: DataType['members']) {
-  return members?.map((m) => {
-    const id = v4();
-    return { id, ...m, profile: { ...m.profile, memberId: id } };
+function generateIdForMembers({
+  members = [],
+  items = [],
+}: {
+  items?: SeedItem[];
+  members?: SeedMember[];
+}) {
+  // get all unique members
+  const allMembers = [
+    ...members,
+    ...items.flatMap((i) => {
+      // get all account from all memberships
+      const accountsFromMemberships = (i.memberships ?? [])?.reduce<SeedMember[]>((acc, m) => {
+        if (!m.account) {
+          return acc;
+        }
+        return [...acc, m.account];
+      }, []);
+      // get creator of membership
+      return i.creator ? accountsFromMemberships.concat([i.creator]) : accountsFromMemberships;
+    }),
+  ].filter((m, index, array) => {
+    // return unique member by name
+    if (m && 'name' in m) {
+      return array.findIndex((a) => a && 'name' in a && a?.name === m.name) === index;
+    }
+    // member should be created
+    if (m) {
+      return true;
+    }
+    return false;
   });
+
+  const d = allMembers.map((m) => {
+    const id = v4();
+    return {
+      id,
+      ...m,
+      profile: 'profile' in m ? { ...m.profile, member: { id } } : undefined,
+    };
+  });
+  return d;
+}
+
+/**
+ * Given data, save needed and unique members and their related entities (eg. profile)
+ * @param members standalone members to be created
+ * @param items items whose creator and memberships' accounts should be created
+ * @returns members, memberProfiles and items filled with related account's data
+ */
+async function processMembers({
+  actor,
+  items = [],
+  members = [],
+}: {
+  actor?: MaybeUser;
+  items?: SeedItem[];
+  members?: SeedMember[];
+}) {
+  const membersWithIds = generateIdForMembers({ items, members })
+    // ignore actor if it is defined
+    .filter((m) => (actor ? m.id !== actor.id : true));
+
+  if (membersWithIds) {
+    const savedMembers = (await db
+      .insert(accountsTable)
+      .values(membersWithIds.map((m) => MemberFactory(m)))
+      .returning()) as MemberRaw[];
+
+    const processedItems = (savedMembers as MemberRaw[]).reduce(
+      (acc, m) => replaceAccountInItems(m, acc),
+      items,
+    );
+    return {
+      members: savedMembers as MemberRaw[],
+      memberProfiles: await db
+        .insert(memberProfiles)
+        .values(membersWithIds.map((m) => m.profile).filter(Boolean))
+        .returning(),
+      items: processedItems,
+    };
+  }
+  return { members: [], memberProfiles: [], items: [] };
+}
+
+async function createItemVisibilities(items: (SeedItem & { path: string })[]) {
+  const visibilities = items.reduce<{ item: { path: string }; type: ItemVisibilityType }[]>(
+    (acc, { path, isHidden, isPublic }) => {
+      if (isHidden) {
+        acc.push({ item: { path }, type: ItemVisibilityType.Hidden });
+      }
+      if (isPublic) {
+        acc.push({ item: { path }, type: ItemVisibilityType.Public });
+      }
+      return acc;
+    },
+    [],
+  );
+
+  return await db.insert(itemVisibilities).values(visibilities).returning();
 }
 
 /**
@@ -190,47 +325,52 @@ export async function seedFromJson(data: DataType = {}) {
     itemMemberships: ItemMembershipRaw[];
     members: MemberRaw[];
     memberProfiles: MemberProfileRaw[];
+    itemVisibilities: ItemVisibilityRaw[];
   } = {
     items: [],
     actor: undefined,
     itemMemberships: [],
     members: [],
     memberProfiles: [],
+    itemVisibilities: [],
   };
 
-  const { items, actor, members, actorProfile } = await processActor(data);
+  const { items: itemsWithActor, actor, members, actorProfile } = await processActor(data);
   result.actor = actor;
   result.memberProfiles = actorProfile ? [actorProfile] : [];
 
-  // save members
-  const membersEntities = generateIdForMembers(members);
-  if (membersEntities?.length) {
-    result.members = (await db
-      .insert(accountsTable)
-      .values(membersEntities.map((m) => MemberFactory(m)))
-      .returning()) as MemberRaw[];
-    result.memberProfiles = await db
-      .insert(memberProfiles)
-      .values(membersEntities.map((m) => m.profile).filter(Boolean))
-      .returning();
-  }
+  // save members and their relations
+  const {
+    members: membersWithIds,
+    memberProfiles,
+    items: itemsWithAccounts,
+  } = await processMembers({
+    items: itemsWithActor,
+    members,
+    actor,
+  });
+  result.members = membersWithIds;
+  result.memberProfiles = result.memberProfiles.concat(memberProfiles);
 
   // save items
-  const processedItems = generateIdAndPathForItems(items);
-  if (processedItems.length) {
+  const processedItems = generateIdAndPathForItems(itemsWithAccounts);
+  if (processedItems) {
     result.items = await db
       .insert(itemsRaw)
       .values(processedItems.map((i) => ItemFactory(i)))
       .returning();
   }
 
+  // save item visibilities
+  result.itemVisibilities = await createItemVisibilities(processedItems);
+
   // save item memberships
-  const itemMembershipsEntity = processItemMemberships(processedItems);
-  if (itemMembershipsEntity.length) {
+  const itemMembershipsEntities = processItemMemberships(processedItems);
+  if (itemMembershipsEntities.length) {
     result.itemMemberships = await db
       .insert(itemMemberships)
       // TODO
-      .values(itemMembershipsEntity as any)
+      .values(itemMembershipsEntities)
       .returning();
   }
 
@@ -242,7 +382,7 @@ export async function seedFromJson(data: DataType = {}) {
  * @param member creator of the file
  * @returns file item structure
  */
-export function buildFile(member: SeedActor) {
+export function buildFile(member: ReferencedSeedActor) {
   return {
     type: ItemType.S3_FILE,
     extra: {

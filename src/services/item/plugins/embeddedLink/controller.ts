@@ -1,17 +1,11 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { ItemType } from '@graasp/sdk';
-
 import { resolveDependency } from '../../../../di/utils';
-import { DBConnection, db } from '../../../../drizzle/db';
-import { Item } from '../../../../drizzle/types';
-import { AuthenticatedUser } from '../../../../types';
+import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import { isAuthenticated, matchOne } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { isItemType } from '../../discrimination';
-import { ItemService } from '../../service';
 import { ActionItemService } from '../action/action.service';
 import { createLink, getLinkMetadata, updateLink } from './schemas';
 import { EmbeddedLinkItemService } from './service';
@@ -19,7 +13,6 @@ import { ensureProtocol } from './utils';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { log } = fastify;
-  const itemService = resolveDependency(ItemService);
   const embeddedLinkService = resolveDependency(EmbeddedLinkItemService);
   const actionItemService = resolveDependency(ActionItemService);
 
@@ -93,40 +86,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       });
     },
   );
-
-  // necessary for legacy POST /items to work with links
-  // remove when POST /items is removed
-  // register pre create handler to pre fetch link metadata
-  const hook = async (_actor: AuthenticatedUser, _db: DBConnection, { item }: { item: Item }) => {
-    // if the extra is undefined or it does not contain the embedded link extra key, exit
-    if (!item.extra || (item && !isItemType(item, ItemType.LINK))) {
-      return;
-    }
-    const { embeddedLink } = item.extra;
-
-    const { url } = embeddedLink;
-    const { description, html, thumbnails, icons } = await embeddedLinkService.getLinkMetadata(url);
-
-    if (description) {
-      embeddedLink.description = description;
-    }
-    if (html) {
-      embeddedLink.html = html;
-    }
-
-    embeddedLink.thumbnails = thumbnails;
-    embeddedLink.icons = icons;
-
-    // default settings
-    item.settings = {
-      showLinkButton: true,
-      showLinkIframe: false,
-      ...(item.settings ?? {}),
-    };
-  };
-
-  itemService.hooks.setPreHook('create', hook);
-  itemService.hooks.setPreHook('update', hook);
 };
 
 export default plugin;

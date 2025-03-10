@@ -4,7 +4,7 @@ import { asDefined } from '../../../../../utils/assertions';
 import { getMemberActions } from '../../../../action/test/fixtures/actions';
 import { saveActions } from '../../../../item/plugins/action/test/fixtures/actions';
 import { ItemService } from '../../../../item/service';
-import { MemberService } from '../../../service';
+import { MemberService } from '../../../member.service';
 import { ActionMemberService } from '../service';
 import { generateActionsWithItems } from './utils';
 

@@ -18,8 +18,8 @@ import {
   MemberRaw,
 } from '../../../../drizzle/types';
 import { MaybeUser } from '../../../../types';
-import { GEOLOCATION_API_HOST } from '../../../../utils/config';
-import { MissingGeolocationSearchParams } from './errors';
+import { ALLOWED_SEARCH_LANGS, GEOLOCATION_API_HOST } from '../../../../utils/config';
+import { MissingGeolocationSearchParams, PartialItemGeolocation } from './errors';
 
 export class ItemGeolocationRepository {
   /**
@@ -195,6 +195,12 @@ export class ItemGeolocationRepository {
     geolocation: Pick<ItemGeolocationRaw, 'lat' | 'lng'> &
       Pick<Partial<ItemGeolocationRaw>, 'addressLabel' | 'helperLabel'>,
   ): Promise<void> {
+    // lat and lng should exist together
+    const { lat, lng } = geolocation || {};
+    if ((lat && !lng) || (lng && !lat)) {
+      throw new PartialItemGeolocation({ lat, lng });
+    }
+
     // country might not exist because the point is outside borders
     const country = iso1A2Code([geolocation.lng, geolocation.lat]);
 

@@ -92,13 +92,16 @@ export const updateLink = {
     id: customType.UUID(),
   }),
   body: Type.Partial(
-    Type.Composite([
-      Type.Pick(embeddedLinkSchema, ['name', 'description', 'lang', 'settings']),
+    Type.Composite(
+      [
+        Type.Pick(itemSchema, ['name', 'description', 'lang', 'settings']),
 
-      // flat config for links
-      customType.StrictObject({ url: Type.String({ format: 'uri' }) }),
-      linkSettingsSchema,
-    ]),
+        // flat config for links
+        customType.StrictObject({ url: Type.String({ format: 'uri' }) }),
+        linkSettingsSchema,
+      ],
+      { additionalProperties: false },
+    ),
     { minProperties: 1 },
   ),
   response: { [StatusCodes.OK]: embeddedLinkSchema, '4xx': errorSchemaRef },

@@ -3,9 +3,10 @@ import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType, MAX_USERNAME_LENGTH, MemberFactory } from '@graasp/sdk';
+import { HttpMethod, ItemType, MAX_USERNAME_LENGTH } from '@graasp/sdk';
 
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
+import { MemberFactory } from '../../../../test/factories/member.factory';
 import { seedFromJson } from '../../../../test/mocks/seed';
 import { DEFAULT_MAX_STORAGE } from '../../../services/item/plugins/file/utils/constants';
 import { assertIsDefined } from '../../../utils/assertions';
@@ -39,7 +40,7 @@ describe('Member routes tests', () => {
       const { actor } = await seedFromJson({
         actor: MemberFactory({
           isValidated: false,
-          lastAuthenticatedAt: new Date().toISOString(),
+          lastAuthenticatedAt: new Date(),
         }),
       });
 

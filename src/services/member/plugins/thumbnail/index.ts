@@ -10,7 +10,6 @@ import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
-import FileService from '../../../file/service';
 import { UploadEmptyFileError, UploadFileUnexpectedError } from '../../../file/utils/errors';
 import { validatedMemberAccountRole } from '../../strategies/validatedMemberAccountRole';
 import { download, upload } from './schemas';
@@ -24,7 +23,6 @@ type GraaspThumbnailsOptions = {
 
 const plugin: FastifyPluginAsyncTypebox<GraaspThumbnailsOptions> = async (fastify, options) => {
   const { maxFileSize = MAX_THUMBNAIL_SIZE } = options;
-  const fileService = resolveDependency(FileService);
   const thumbnailService = resolveDependency(MemberThumbnailService);
 
   fastify.register(fastifyMultipart, {
@@ -83,7 +81,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspThumbnailsOptions> = async (fastif
       schema: download,
       preHandler: optionalIsAuthenticated,
     },
-    async ({ params: { size, id: memberId }, query: { replyUrl } }, reply) => {
+    async ({ params: { size, id: memberId } }, reply) => {
       const url = await thumbnailService.getUrl(db, {
         memberId,
         size,
@@ -92,7 +90,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspThumbnailsOptions> = async (fastif
       if (!url) {
         reply.status(StatusCodes.NO_CONTENT);
       } else {
-        fileService.setHeaders({ reply, replyUrl, url, id: memberId });
+        reply.status(StatusCodes.OK).send(url);
       }
     },
   );

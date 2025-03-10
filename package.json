@@ -1,6 +1,6 @@
 {
   "name": "graasp",
-  "version": "1.63.0",
+  "version": "1.64.0",
   "engines": {
     "node": ">=22.0.0"
   },
@@ -66,7 +66,7 @@
     "@fastify/type-provider-typebox": "4.1.0",
     "@fastify/websocket": "7.2.0",
     "@graasp/etherpad-api": "2.1.1",
-    "@graasp/sdk": "github:graasp/graasp-sdk#update-itemVisibility-to-const",
+    "@graasp/sdk": "5.10.1",
     "@graasp/translations": "1.42.0",
     "@rapideditor/country-coder": "5.2.2",
     "@sentry/node": "7.119.2",
@@ -77,7 +77,6 @@
     "bad-words": "3.0.4",
     "bcrypt": "5.1.1",
     "bullmq": "5.18.0",
-    "content-disposition": "0.5.4",
     "date-fns": "3.6.0",
     "dotenv": "16.4.7",
     "drizzle-orm": "0.39.3",

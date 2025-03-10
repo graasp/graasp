@@ -2,9 +2,8 @@ import { ItemVisibilityType, PermissionLevel } from '@graasp/sdk';
 
 import { ItemVisibilityFactory } from '../../test/factories/itemVisibility.factory';
 import { DBConnection } from '../drizzle/db';
-import { Account, Item, ItemMembershipWithItemAndAccount } from '../drizzle/types';
+import { Item, ItemMembershipWithItemAndAccount } from '../drizzle/types';
 import { ItemMembershipRepository } from '../services/itemMembership/repository';
-import { MinimalMember } from '../types';
 import { MemberCannotAccess, MemberCannotAdminItem, MemberCannotWriteItem } from '../utils/errors';
 import { AuthorizationService } from './authorization';
 import { ItemVisibilityRepository } from './item/plugins/itemVisibility/repository';
@@ -13,7 +12,7 @@ const MOCK_DB = {} as unknown as DBConnection;
 
 const OWNER = { id: 'owner', name: 'owner' };
 const SHARED_MEMBER = { id: 'shared', name: 'shared' };
-const OTHER_MEMBER = { id: 'other', name: 'other' } ;
+const OTHER_MEMBER = { id: 'other', name: 'other' };
 const ITEM = { id: 'item' } as Item;
 
 const ownerMembership = {
@@ -27,7 +26,6 @@ const buildSharedMembership = (permission: PermissionLevel, item: Item = ITEM) =
 
 const itemMembershipRepository = new ItemMembershipRepository();
 const itemVisibilityRepository = new ItemVisibilityRepository();
-
 
 const authorizationService = new AuthorizationService(
   itemMembershipRepository,
@@ -1460,8 +1458,7 @@ describe('validatePermissionMany for no items', () => {
     });
 
     jest.spyOn(itemMembershipRepository, 'getInheritedMany').mockResolvedValue({
-      data: { 
-      },
+      data: {},
       errors: [],
     });
 
@@ -3197,7 +3194,6 @@ describe('validatePermissionMany for one item', () => {
 });
 
 describe('validatePermissionMany for many items', () => {
-
   const SHARED_ITEM = { id: 'shared-item' } as Item;
   const PUBLIC_ITEM = { id: 'public-item' } as Item;
 

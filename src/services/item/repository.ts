@@ -391,6 +391,36 @@ export class ItemRepository {
     return sortChildrenForTreeWith<ItemWithCreator>(descendants, item);
   }
 
+  async getManyDescendants(
+    items: Item[],
+    { withDeleted = false }: { withDeleted?: boolean } = {},
+  ): Promise<Item[]> {
+    // TODO: LEVEL depth
+    if (items.length === 0) {
+      return [];
+    }
+    const query = this.repository.createQueryBuilder('item');
+
+    if (withDeleted) {
+      query.withDeleted();
+    }
+
+    query.leftJoinAndSelect('item.creator', 'creator').where('item.id NOT IN(:...ids)', {
+      ids: items.map(({ id }) => id),
+    });
+
+    query.andWhere(
+      new Brackets((q) => {
+        items.forEach((item) => {
+          const key = `path_${item.path}`;
+          q.orWhere(`item.path <@ :${key}`, { [key]: item.path });
+        });
+      }),
+    );
+
+    return query.getMany();
+  }
+
   async getMany(
     db: DBConnection,
     ids: string[],
@@ -401,6 +431,10 @@ export class ItemRepository {
     }
 
     const { throwOnError = false } = args;
+
+    // TODO: needed??
+    // withDeleted: Boolean(args.withDeleted),
+    // order: args.ordered ? { order: 'ASC' } : {},
 
     const result = (
       await db
@@ -565,6 +599,22 @@ export class ItemRepository {
     const result = await db.insert(itemsRaw).values([newItem]).returning();
 
     return result[0];
+  }
+
+  public async addMany(
+    items: (Partial<Item> & Pick<Item, 'name' | 'type'>)[],
+    creator: Member,
+    parent?: Item,
+  ) {
+    const newItems = items.map((item) =>
+      this.createOne({
+        ...item,
+        creator,
+        parent,
+      }),
+    );
+
+    return await super.insertMany(newItems);
   }
 
   /////// -------- COPY
