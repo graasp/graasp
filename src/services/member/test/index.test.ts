@@ -15,13 +15,11 @@ import { MemberNotFound } from '../../../utils/errors';
 import { assertIsMember } from '../../authentication';
 import { setupGuest } from './setup';
 
-const rawRepository = AppDataSource.getRepository(Member);
-
 describe('Member routes tests', () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
-    ({ app } = await build({ member: null }));
+    ({ app } = await build());
   });
 
   afterAll(async () => {

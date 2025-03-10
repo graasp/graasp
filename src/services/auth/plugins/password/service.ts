@@ -152,7 +152,6 @@ export class MemberPasswordService {
     email: string,
   ): Promise<{ token: string; member: MemberInfo } | undefined> {
     const member = await this.memberRepository.getByEmail(db, email);
-
     if (!member) {
       return;
     }

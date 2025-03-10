@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { compare } from 'bcrypt';
+import { eq } from 'drizzle-orm';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import { Redis } from 'ioredis';
 import { sign } from 'jsonwebtoken';
@@ -8,7 +9,7 @@ import waitForExpect from 'wait-for-expect';
 
 import { FastifyInstance, LightMyRequestResponse } from 'fastify';
 
-import { HttpMethod, RecaptchaAction, UUID } from '@graasp/sdk';
+import { HttpMethod, RecaptchaAction } from '@graasp/sdk';
 import { FAILURE_MESSAGES } from '@graasp/translations';
 
 import build, {
@@ -16,10 +17,12 @@ import build, {
   mockAuthenticate,
   unmockAuthenticate,
 } from '../../../../../test/app';
-import { MemberFactory } from '../../../../../test/factories/member.factory';
-import seed, { seedFromJson } from '../../../../../test/mocks/seed';
+import { seedFromJson } from '../../../../../test/mocks/seed';
 import { TOKEN_REGEX, mockCaptchaValidationOnce } from '../../../../../test/utils';
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
+import { memberPasswords } from '../../../../drizzle/schema';
+import { MemberRaw } from '../../../../drizzle/types';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../../../utils/assertions';
 import {
@@ -29,9 +32,8 @@ import {
   REDIS_PORT,
   REDIS_USERNAME,
 } from '../../../../utils/config';
-import { assertIsMember } from '../../../authentication';
+import { assertIsMember, assertIsMemberForTest } from '../../../authentication';
 import { MOCK_CAPTCHA } from '../captcha/test/utils';
-import { encryptPassword } from './utils';
 
 async function login(
   app: FastifyInstance,
@@ -54,7 +56,11 @@ describe('Login with password', () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
-    ({ app } = await build({ member: null }));
+    ({ app } = await build());
+  });
+
+  afterAll(() => {
+    app.close();
   });
 
   beforeEach(() => {
@@ -212,13 +218,12 @@ describe('Login with password', () => {
 
 describe('Reset Password', () => {
   let app: FastifyInstance;
-  let entities: { id: string; email: string; password?: string }[];
   let mailerService: MailerService;
   let mockSendEmail: jest.SpyInstance;
   let mockRedisSetEx: jest.SpyInstance;
 
   beforeAll(async () => {
-    ({ app } = await build({ member: null }));
+    ({ app } = await build());
     mailerService = resolveDependency(MailerService);
     mockSendEmail = jest
       .spyOn(mailerService, 'sendRaw')
@@ -227,59 +232,30 @@ describe('Reset Password', () => {
   });
 
   afterAll(async () => {
-    await clearDatabase(app.db);
+    await clearDatabase(db);
+    app.close();
   });
 
   beforeEach(async () => {
     jest.clearAllMocks();
     // eslint-disable-next-line import/no-named-as-default-member
     nock.cleanAll();
-
-    // Seed the database with members and passwords
-    entities = [
-      {
-        id: faker.string.uuid(),
-        password: faker.internet.password({ prefix: '!1Aa' }),
-        email: faker.internet.email().toLowerCase(),
-      },
-      {
-        id: faker.string.uuid(),
-        password: faker.internet.password({ prefix: '!1Aa' }),
-        email: faker.internet.email().toLowerCase(),
-      },
-      {
-        id: faker.string.uuid(),
-        email: faker.internet.email().toLowerCase(),
-      },
-    ];
-    await seed({
-      members: {
-        constructor: Member,
-        factory: MemberFactory,
-        entities: entities.map((e) => ({ id: e.id, email: e.email })),
-      },
-      passwords: {
-        constructor: MemberPassword,
-        entities: await Promise.all(
-          entities
-            .filter((e) => e.password)
-            .map(async (e) => ({
-              member: e.id,
-              password: await encryptPassword(e.password!),
-            })),
-        ),
-      },
-    });
+    mockRedisSetEx.mockClear();
   });
 
   describe('POST Reset Password Request Route', () => {
     it('Create a password request', async () => {
+      const { actor: member } = await seedFromJson({
+        actor: { password: faker.internet.password({ prefix: '!1Aa' }) },
+      });
+      assertIsDefined(member);
+
       mockCaptchaValidationOnce(RecaptchaAction.ResetPassword);
       const response = await app.inject({
         method: 'POST',
         url: '/password/reset',
         payload: {
-          email: entities[0].email,
+          email: member.email,
           captcha: MOCK_CAPTCHA,
         },
       });
@@ -288,7 +264,7 @@ describe('Reset Password', () => {
       // Wait for the mail to be sent
       await waitForExpect(() => {
         expect(mockSendEmail).toHaveBeenCalledTimes(1);
-        expect(mockSendEmail.mock.calls[0][1]).toBe(entities[0].email);
+        expect(mockSendEmail.mock.calls[0][1]).toBe(member.email);
       });
     });
 
@@ -310,12 +286,14 @@ describe('Reset Password', () => {
       });
     });
     it('Create a password request to a user without a password', async () => {
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
       mockCaptchaValidationOnce(RecaptchaAction.ResetPassword);
       const response = await app.inject({
         method: 'POST',
         url: '/password/reset',
         payload: {
-          email: entities[2].email,
+          email: actor.email,
           captcha: MOCK_CAPTCHA,
         },
       });
@@ -327,12 +305,14 @@ describe('Reset Password', () => {
       });
     });
     it('Create a password request with an invalid captcha', async () => {
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
       mockCaptchaValidationOnce(RecaptchaAction.SignIn);
       const response = await app.inject({
         method: 'POST',
         url: '/password/reset',
         payload: {
-          email: entities[0].email,
+          email: actor.email,
           captcha: 'bad captcha',
         },
       });
@@ -346,30 +326,175 @@ describe('Reset Password', () => {
   });
 
   describe('PATCH Reset Password Request Route', () => {
-    let token: string;
+    describe('member has previously sent a request', () => {
+      let token: string;
+      let member: MemberRaw;
+      const password = faker.internet.password({ prefix: '!1Aa' });
 
-    beforeEach(async () => {
+      beforeEach(async () => {
+        const { actor } = await seedFromJson({
+          actor: {
+            password,
+          },
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        member = actor;
+        mockCaptchaValidationOnce(RecaptchaAction.ResetPassword);
+
+        // insert request in caching for patch to work
+        const response = await app.inject({
+          method: 'POST',
+          url: '/password/reset',
+          payload: {
+            email: actor.email,
+            captcha: MOCK_CAPTCHA,
+          },
+        });
+        expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
+
+        // Wait for the mail to be sent
+        await waitForExpect(() => {
+          expect(mockSendEmail).toHaveBeenCalledTimes(1);
+          expect(mockSendEmail.mock.calls[0][1]).toBe(actor.email);
+        });
+        token = mockSendEmail.mock.calls[0][3].match(TOKEN_REGEX)[1];
+      });
+
+      it('Reset password', async () => {
+        const newPassword = faker.internet.password({ prefix: '!1Aa' });
+        const responseReset = await app.inject({
+          method: 'PATCH',
+          url: '/password/reset',
+          payload: {
+            password: newPassword,
+          },
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        });
+        expect(responseReset.statusCode).toBe(StatusCodes.NO_CONTENT);
+
+        // Try to login with the new password
+        const responseLogin = await login(app, member.email, newPassword);
+        expect(responseLogin.statusCode).toBe(StatusCodes.SEE_OTHER);
+
+        // Try to login with the old password
+        const responseLoginOld = await login(app, member.email, password);
+        expect(responseLoginOld.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+
+        // Try to login with a wrong password
+        const responseLoginWrong = await login(
+          app,
+          member.email,
+          faker.internet.password({ prefix: '!1Aa' }),
+        );
+        expect(responseLoginWrong.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+
+        // Try to login with a different user
+        const anotherPassword = faker.internet.password({ prefix: '!1Aa' });
+        const { actor: anotherMember } = await seedFromJson({
+          actor: {
+            password: anotherPassword,
+          },
+        });
+        assertIsDefined(anotherMember);
+        assertIsMemberForTest(anotherMember);
+        const responseLoginDifferent = await login(app, anotherMember.email, anotherPassword);
+        expect(responseLoginDifferent.statusCode).toBe(StatusCodes.SEE_OTHER);
+
+        // token should be single use
+        const responseSecondReset = await app.inject({
+          method: 'PATCH',
+          url: '/password/reset',
+          payload: {
+            password: `${newPassword}a`,
+          },
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        });
+        expect(responseSecondReset.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+      });
+
+      it('Reset password with an invalid token', async () => {
+        const newPassword = faker.internet.password({ prefix: '!1Aa' });
+        const response = await app.inject({
+          method: 'PATCH',
+          url: '/password/reset',
+          payload: {
+            password: newPassword,
+          },
+          headers: {
+            Authorization: `Bearer ${sign({}, 'invalid-token')}`,
+          },
+        });
+        expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+
+        // Try to login with the new password
+        const responseLogin = await login(app, member.email, newPassword);
+        expect(responseLogin.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+      });
+
+      it('Reset password without token', async () => {
+        const newPassword = faker.internet.password({ prefix: '!1Aa' });
+        const response = await app.inject({
+          method: 'PATCH',
+          url: '/password/reset',
+          payload: {
+            password: newPassword,
+          },
+        });
+        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+
+        // Try to login with the new password
+        const responseLogin = await login(app, member.email, newPassword);
+        expect(responseLogin.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+      });
+    });
+
+    it('Reset password with an expired token', async () => {
+      const { actor: expiredMember } = await seedFromJson({
+        actor: {
+          password: faker.internet.password({ prefix: '!1Aa' }),
+        },
+      });
+      assertIsDefined(expiredMember);
+      assertIsMemberForTest(expiredMember);
+
+      // Overwrite the setex method to test the expiration
+      jest.spyOn(Redis.prototype, 'setex').mockImplementationOnce((key, seconds, value) => {
+        expect(seconds).toBe(PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES * 60);
+        const redis = new Redis({
+          host: REDIS_HOST,
+          port: REDIS_PORT,
+          username: REDIS_USERNAME,
+          password: REDIS_PASSWORD,
+        });
+        return redis.setex(key, 1, value);
+      });
+
       mockCaptchaValidationOnce(RecaptchaAction.ResetPassword);
-      const response = await app.inject({
+      const responseCreateReset = await app.inject({
         method: 'POST',
         url: '/password/reset',
         payload: {
-          email: entities[0].email,
+          email: expiredMember.email,
           captcha: MOCK_CAPTCHA,
         },
       });
-      expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
+      expect(responseCreateReset.statusCode).toBe(StatusCodes.NO_CONTENT);
 
       // Wait for the mail to be sent
-
       await waitForExpect(() => {
         expect(mockSendEmail).toHaveBeenCalledTimes(1);
-        expect(mockSendEmail.mock.calls[0][1]).toBe(entities[0].email);
+        expect(mockSendEmail.mock.calls[0][1]).toBe(expiredMember.email);
       });
-      token = mockSendEmail.mock.calls[0][3].match(TOKEN_REGEX)[1];
-    });
+      const expiredToken = mockSendEmail.mock.calls[0][3].match(TOKEN_REGEX)[1];
 
-    it('Reset password', async () => {
+      // Wait for the token to expire
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
       const newPassword = faker.internet.password({ prefix: '!1Aa' });
       const responseReset = await app.inject({
         method: 'PATCH',
@@ -378,197 +503,54 @@ describe('Reset Password', () => {
           password: newPassword,
         },
         headers: {
-          authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${expiredToken}`,
         },
       });
-      expect(responseReset.statusCode).toBe(StatusCodes.NO_CONTENT);
+      expect(responseReset.statusCode).toBe(StatusCodes.UNAUTHORIZED);
 
       // Try to login with the new password
-      const responseLogin = await login(app, entities[0].email, newPassword);
-      expect(responseLogin.statusCode).toBe(StatusCodes.SEE_OTHER);
-
-      // Try to login with the old password
-
-      const responseLoginOld = await login(app, entities[0].email, entities[0].password!);
-      expect(responseLoginOld.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-
-      // Try to login with a wrong password
-      const responseLoginWrong = await login(
-        app,
-        entities[0].email,
-        faker.internet.password({ prefix: '!1Aa' }),
-      );
-      expect(responseLoginWrong.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-
-      // Try to login with a different user
-      const responseLoginDifferent = await login(app, entities[1].email, entities[1].password!);
-      expect(responseLoginDifferent.statusCode).toBe(StatusCodes.SEE_OTHER);
-
-      // Set new password to the entities array
-      entities[0].password = newPassword;
-
-      // token should be single use
-      const responseSecondReset = await app.inject({
-        method: 'PATCH',
-        url: '/password/reset',
-        payload: {
-          password: `${newPassword}a`,
-        },
-        headers: {
-          authorization: `Bearer ${token}`,
-        },
-      });
-      expect(responseSecondReset.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-    });
-
-    it('Reset password with an invalid token', async () => {
-      const newPassword = faker.internet.password({ prefix: '!1Aa' });
-      const response = await app.inject({
-        method: 'PATCH',
-        url: '/password/reset',
-        payload: {
-          password: newPassword,
-        },
-        headers: {
-          Authorization: `Bearer ${sign({}, 'invalid-token')}`,
-        },
-      });
-      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-
-      // Try to login with the new password
-      const responseLogin = await login(app, entities[0].email, newPassword);
+      const responseLogin = await login(app, expiredMember.email, newPassword);
       expect(responseLogin.statusCode).toBe(StatusCodes.UNAUTHORIZED);
     });
-
-    it('Reset password without token', async () => {
-      const newPassword = faker.internet.password({ prefix: '!1Aa' });
-      const response = await app.inject({
-        method: 'PATCH',
-        url: '/password/reset',
-        payload: {
-          password: newPassword,
-        },
-      });
-      expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-
-      // Try to login with the new password
-      const responseLogin = await login(app, entities[0].email, newPassword);
-      expect(responseLogin.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-    });
-  });
-
-  it('Reset password with an expired token', async () => {
-    // Overwrite the setex method to test the expiration
-    mockRedisSetEx.mockImplementationOnce((key, seconds, value) => {
-      expect(seconds).toBe(PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES * 60);
-      const redis = new Redis({
-        host: REDIS_HOST,
-        port: REDIS_PORT,
-        username: REDIS_USERNAME,
-        password: REDIS_PASSWORD,
-      });
-      return redis.setex(key, 1, value);
-    });
-
-    mockCaptchaValidationOnce(RecaptchaAction.ResetPassword);
-    const responseCreateReset = await app.inject({
-      method: 'POST',
-      url: '/password/reset',
-      payload: {
-        email: entities[0].email,
-        captcha: MOCK_CAPTCHA,
-      },
-    });
-    expect(responseCreateReset.statusCode).toBe(StatusCodes.NO_CONTENT);
-
-    // Wait for the token to expire
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    expect(mockSendEmail).toHaveBeenCalledTimes(1);
-    expect(mockSendEmail.mock.calls[0][1]).toBe(entities[0].email);
-    const token = mockSendEmail.mock.calls[0][3].match(TOKEN_REGEX)[1];
-
-    const newPassword = faker.internet.password({ prefix: '!1Aa' });
-    const responseReset = await app.inject({
-      method: 'PATCH',
-      url: '/password/reset',
-      payload: {
-        password: newPassword,
-      },
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    expect(responseReset.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-
-    // Try to login with the new password
-    const responseLogin = await login(app, entities[0].email, newPassword);
-    expect(responseLogin.statusCode).toBe(StatusCodes.UNAUTHORIZED);
   });
 });
 
 describe('Set Password', () => {
   let app: FastifyInstance;
-  let entities: { id: UUID; password?: string; email: string }[];
+
   beforeAll(async () => {
-    ({ app } = await build({ member: null }));
+    ({ app } = await build());
   });
 
   afterAll(async () => {
-    await clearDatabase(app.db);
+    await clearDatabase(db);
+    //  app.close();
   });
 
   beforeEach(async () => {
     jest.clearAllMocks();
+  });
 
-    // Seed the database with members and passwords
-    entities = [
-      {
-        id: faker.string.uuid(),
-        email: faker.internet.email().toLowerCase(),
-      },
-      {
-        id: faker.string.uuid(),
-        password: faker.internet.password({ prefix: '!1Aa' }),
-        email: faker.internet.email().toLowerCase(),
-      },
-    ];
-    await seed({
-      members: {
-        constructor: Member,
-        factory: MemberFactory,
-        entities: entities.map((e) => ({ id: e.id, email: e.email })),
-      },
-      passwords: {
-        constructor: MemberPassword,
-        entities: await Promise.all(
-          entities
-            .filter((e) => e.password)
-            .map(async (e) => ({
-              member: e.id,
-              password: await encryptPassword(e.password!),
-            })),
-        ),
-      },
-    });
+  afterEach(() => {
+    unmockAuthenticate();
   });
 
   it('Throws when signed out', async () => {
-    const newPassword = faker.internet.password({ prefix: '!1Aa' });
-    unmockAuthenticate();
     const response = await app.inject({
       method: HttpMethod.Post,
       url: '/password',
       payload: {
-        password: newPassword,
+        password: faker.internet.password({ prefix: '!1Aa' }),
       },
     });
     expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
   });
 
   it('Set new password', async () => {
+    const { actor: currentMember } = await seedFromJson();
+    assertIsDefined(currentMember);
+    assertIsMemberForTest(currentMember);
     const newPassword = faker.internet.password({ prefix: '!1Aa' });
-    const currentMember = await Member.findOneByOrFail({ id: entities[0].id });
     mockAuthenticate(currentMember);
     const response = await app.inject({
       method: HttpMethod.Post,
@@ -578,16 +560,21 @@ describe('Set Password', () => {
       },
     });
     expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
-    const savedPasswordEntity = await MemberPassword.findOneByOrFail({
-      member: { id: currentMember.id },
+    const savedPasswordEntity = await db.query.memberPasswords.findFirst({
+      where: eq(memberPasswords.memberId, currentMember.id),
     });
+    assertIsDefined(savedPasswordEntity);
     const areTheSame = await compare(newPassword, savedPasswordEntity.password);
     expect(areTheSame).toBeTruthy();
   });
 
   it('Fail to set new password when already exists', async () => {
+    const { actor: currentMember } = await seedFromJson({
+      actor: { password: faker.internet.password({ prefix: '!1Aa' }) },
+    });
+    assertIsDefined(currentMember);
+    assertIsMemberForTest(currentMember);
     const newPassword = faker.internet.password({ prefix: '!1Aa' });
-    const currentMember = await Member.findOneByOrFail({ id: entities[1].id });
     mockAuthenticate(currentMember);
     const response = await app.inject({
       method: HttpMethod.Post,
@@ -597,17 +584,20 @@ describe('Set Password', () => {
       },
     });
     expect(response.statusCode).toBe(StatusCodes.CONFLICT);
-    const savedPasswordEntity = await MemberPassword.findOneByOrFail({
-      member: { id: currentMember.id },
+    const savedPasswordEntity = await db.query.memberPasswords.findFirst({
+      where: eq(memberPasswords.memberId, currentMember.id),
     });
+    assertIsDefined(savedPasswordEntity);
     const areTheSame = await compare(newPassword, savedPasswordEntity.password);
     // the password should not have been changed
     expect(areTheSame).toBeFalsy();
   });
 
   it('Weak password fails', async () => {
+    const { actor: currentMember } = await seedFromJson();
+    assertIsDefined(currentMember);
+    assertIsMemberForTest(currentMember);
     const newPassword = 'weak';
-    const currentMember = await Member.findOneByOrFail({ id: entities[0].id });
     mockAuthenticate(currentMember);
     const response = await app.inject({
       method: HttpMethod.Post,
@@ -622,13 +612,14 @@ describe('Set Password', () => {
 
 describe('Update Password', () => {
   let app: FastifyInstance;
-  let entities: { id: UUID; password?: string; email: string }[];
+
   beforeAll(async () => {
-    ({ app } = await build({ member: null }));
+    ({ app } = await build());
   });
 
   afterAll(async () => {
-    await clearDatabase(app.db);
+    await clearDatabase(db);
+    app.close();
   });
 
   afterEach(() => {
@@ -637,38 +628,6 @@ describe('Update Password', () => {
 
   beforeEach(async () => {
     jest.clearAllMocks();
-
-    // Seed the database with members and passwords
-    entities = [
-      {
-        id: faker.string.uuid(),
-        password: faker.internet.password({ prefix: '!1Aa' }),
-        email: faker.internet.email().toLowerCase(),
-      },
-      {
-        id: faker.string.uuid(),
-        password: faker.internet.password({ prefix: '!1Aa' }),
-        email: faker.internet.email().toLowerCase(),
-      },
-    ];
-    await seed({
-      members: {
-        constructor: Member,
-        factory: MemberFactory,
-        entities: entities.map((e) => ({ id: e.id, email: e.email })),
-      },
-      passwords: {
-        constructor: MemberPassword,
-        entities: await Promise.all(
-          entities
-            .filter((e) => e.password)
-            .map(async (e) => ({
-              member: e.id,
-              password: await encryptPassword(e.password!),
-            })),
-        ),
-      },
-    });
   });
 
   it('Throws when signed out', async () => {
@@ -686,9 +645,11 @@ describe('Update Password', () => {
   });
 
   it('Update with new password', async () => {
-    const currentPassword = entities[0].password;
+    const currentPassword = faker.internet.password({ prefix: '!1Aa' });
+    const { actor: currentMember } = await seedFromJson({ actor: { password: currentPassword } });
+    assertIsDefined(currentMember);
+    assertIsMemberForTest(currentMember);
     const newPassword = faker.internet.password({ prefix: '!1Aa' });
-    const currentMember = await Member.findOneByOrFail({ id: entities[0].id });
     mockAuthenticate(currentMember);
     const response = await app.inject({
       method: HttpMethod.Patch,
@@ -699,17 +660,22 @@ describe('Update Password', () => {
       },
     });
     expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
-    const savedPasswordEntity = await MemberPassword.findOneByOrFail({
-      member: { id: currentMember.id },
+    const savedPasswordEntity = await db.query.memberPasswords.findFirst({
+      where: eq(memberPasswords.memberId, currentMember.id),
     });
+    assertIsDefined(savedPasswordEntity);
     const areTheSame = await compare(newPassword, savedPasswordEntity.password);
     expect(areTheSame).toBeTruthy();
   });
 
   it('Fail to update password when current does not match', async () => {
-    const newPassword = faker.internet.password({ prefix: '!1Aa' });
     const currentPassword = faker.internet.password({ prefix: '!1Aa' });
-    const currentMember = await Member.findOneByOrFail({ id: entities[1].id });
+    const { actor: currentMember } = await seedFromJson({
+      actor: { password: faker.internet.password({ prefix: '!1Aa' }) },
+    });
+    assertIsDefined(currentMember);
+    assertIsMemberForTest(currentMember);
+    const newPassword = faker.internet.password({ prefix: '!1Aa' });
     mockAuthenticate(currentMember);
     const response = await app.inject({
       method: HttpMethod.Patch,
@@ -720,18 +686,21 @@ describe('Update Password', () => {
       },
     });
     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-    const savedPasswordEntity = await MemberPassword.findOneByOrFail({
-      member: { id: currentMember.id },
+    const savedPasswordEntity = await db.query.memberPasswords.findFirst({
+      where: eq(memberPasswords.memberId, currentMember.id),
     });
+    assertIsDefined(savedPasswordEntity);
     const areTheSame = await compare(newPassword, savedPasswordEntity.password);
     // the password should not have been changed
     expect(areTheSame).toBeFalsy();
   });
 
   it('Fail to update password when current is empty', async () => {
-    const newPassword = faker.internet.password({ prefix: '!1Aa' });
-    const currentMember = await Member.findOneByOrFail({ id: entities[1].id });
+    const { actor: currentMember } = await seedFromJson();
+    assertIsDefined(currentMember);
+    assertIsMemberForTest(currentMember);
     mockAuthenticate(currentMember);
+    const newPassword = faker.internet.password({ prefix: '!1Aa' });
     const response = await app.inject({
       method: HttpMethod.Patch,
       url: '/password',
@@ -741,25 +710,20 @@ describe('Update Password', () => {
       },
     });
     expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-    const savedPasswordEntity = await MemberPassword.findOneByOrFail({
-      member: { id: currentMember.id },
-    });
-    const areTheSame = await compare(newPassword, savedPasswordEntity.password);
-    // the password should not have been changed
-    expect(areTheSame).toBeFalsy();
   });
 
   it('Weak password fails', async () => {
-    const newPassword = 'weak';
-    const currentPassword = entities[0].password;
-    const currentMember = await Member.findOneByOrFail({ id: entities[0].id });
+    const currentPassword = faker.internet.password({ prefix: '!1Aa' });
+    const { actor: currentMember } = await seedFromJson({ actor: { password: currentPassword } });
+    assertIsDefined(currentMember);
+    assertIsMemberForTest(currentMember);
     mockAuthenticate(currentMember);
     const response = await app.inject({
       method: HttpMethod.Patch,
       url: '/password',
       payload: {
         currentPassword,
-        password: newPassword,
+        password: 'weak',
       },
     });
     expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -770,7 +734,7 @@ describe('GET members current password status', () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
-    ({ app } = await build({ member: null }));
+    ({ app } = await build());
   });
 
   afterEach(async () => {
@@ -821,11 +785,11 @@ describe('Flow tests', () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
-    ({ app } = await build({ member: null }));
+    ({ app } = await build());
   });
 
   afterAll(async () => {
-    await clearDatabase(app.db);
+    await clearDatabase(db);
     app.close();
   });
 

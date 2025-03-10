@@ -177,9 +177,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         body: { password },
       } = request;
       const uuid = asDefined(user?.passwordResetRedisKey);
+      const member = await memberPasswordService.getMemberByPasswordResetUuid(db, uuid);
       await memberPasswordService.applyReset(db, password, uuid);
       try {
-        const member = await memberPasswordService.getMemberByPasswordResetUuid(db, uuid);
         reply.status(StatusCodes.NO_CONTENT);
 
         // Log the action
@@ -191,8 +191,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         } satisfies ActionInsertDTO;
         // Do not await the action to be saved. It is not critical.
         actionService.postMany(db, member.toMaybeUser(), request, [action]);
-      } catch {
+      } catch (e) {
         // do nothing
+        console.error(e);
       }
     },
   );
