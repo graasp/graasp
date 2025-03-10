@@ -1,40 +1,23 @@
-import { inArray } from 'drizzle-orm';
+import { faker } from '@faker-js/faker';
 import { StatusCodes } from 'http-status-codes';
 
 import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, TagCategory } from '@graasp/sdk';
 
-import build, { unmockAuthenticate } from '../../../test/app';
+import build, { clearDatabase, unmockAuthenticate } from '../../../test/app';
+import { seedFromJson } from '../../../test/mocks/seed';
 import { db } from '../../drizzle/db';
-import { Tag, itemTags as itemTagsTable, tags as tagsTable } from '../../drizzle/schema';
-import { ItemTagRaw } from '../../drizzle/types';
-import { ItemTestUtils } from '../item/test/fixtures/items';
-import { saveMember } from '../member/test/fixtures/members';
-
-const testUtils = new ItemTestUtils();
 
 describe('Tag Endpoints', () => {
   let app: FastifyInstance;
-  let tags: Tag[];
 
   beforeAll(async () => {
-    ({ app } = await build({ member: null }));
-    const tagsToInsert = [
-      { name: 'tag1', category: TagCategory.Discipline },
-      { name: 'tag2', category: TagCategory.Discipline },
-      { name: 'tag3', category: TagCategory.Level },
-    ];
-    await db.insert(tagsTable).values(tagsToInsert).onConflictDoNothing();
-    tags = await db.query.tags.findMany({
-      where: inArray(
-        tagsTable.name,
-        tagsToInsert.map((t) => t.name),
-      ),
-    });
+    ({ app } = await build());
   });
 
   afterAll(async () => {
+    await clearDatabase(db);
     app.close();
   });
 
@@ -64,20 +47,23 @@ describe('Tag Endpoints', () => {
     });
 
     it('Return count', async () => {
-      const member = await saveMember();
-      const { item } = await testUtils.savePublicItem({ member });
-
-      const itemTags: ItemTagRaw[] = [];
-      for (const t of tags) {
-        itemTags.push(
-          await db.insert(itemTagsTable).values({ itemId: item.id, tagId: t.id }).returning()[0],
-        );
-      }
+      const commonString = faker.word.sample(1);
+      const { tags } = await seedFromJson({
+        items: [
+          {
+            tags: [
+              { name: commonString + faker.number.bigInt(), category: TagCategory.Discipline },
+              { name: commonString + faker.number.bigInt(), category: TagCategory.Discipline },
+              { name: commonString + faker.number.bigInt(), category: TagCategory.Level },
+            ],
+          },
+        ],
+      });
 
       const response = await app.inject({
         method: HttpMethod.Get,
         url: `/tags`,
-        query: { search: 'tag', category: TagCategory.Discipline },
+        query: { search: commonString, category: TagCategory.Discipline },
       });
 
       expect(response.statusCode).toBe(StatusCodes.OK);

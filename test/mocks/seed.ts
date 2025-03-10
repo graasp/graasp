@@ -19,10 +19,12 @@ import {
   guestPasswords,
   itemLoginSchemas,
   itemMemberships,
+  itemTags as itemTagsTable,
   itemVisibilities,
   itemsRaw,
   memberPasswords,
   memberProfiles,
+  tags as tagsTable,
 } from '../../src/drizzle/schema';
 import {
   AccountRaw,
@@ -31,13 +33,15 @@ import {
   ItemLoginSchemaRaw,
   ItemMembershipRaw,
   ItemRaw,
+  ItemTagRaw,
   ItemVisibilityRaw,
   MemberProfileRaw,
   MemberRaw,
+  TagRaw,
 } from '../../src/drizzle/types';
 import { encryptPassword } from '../../src/services/auth/plugins/password/utils';
 import { ItemFactory } from '../factories/item.factory';
-import { AccountFactory, GuestFactory, MemberFactory } from '../factories/member.factory';
+import { GuestFactory, MemberFactory } from '../factories/member.factory';
 
 export type TableType<C extends BaseEntity, E> = {
   constructor: new () => C;
@@ -66,6 +70,7 @@ type SeedItem<M = SeedMember> = (Partial<Omit<Item, 'creator'>> & { creator?: M 
   memberships?: SeedMembership<M>[];
   isPublic?: boolean;
   isHidden?: boolean;
+  tags?: Pick<TagRaw, 'name' | 'category'>[];
   itemLoginSchema?: Partial<ItemLoginSchemaRaw> & {
     guests?: (Partial<GuestRaw> & { password?: string })[];
   };
@@ -74,6 +79,7 @@ type DataType = {
   actor?: SeedActor | null;
   members?: SeedMember[];
   items?: SeedItem<ReferencedSeedActor | SeedMember>[];
+  tags?: Pick<TagRaw, 'name' | 'category'>[];
 };
 
 const replaceActorInItems = (createdActor?: AccountRaw, items?: DataType['items']): SeedItem[] => {
@@ -432,6 +438,8 @@ export async function seedFromJson(data: DataType = {}) {
     itemVisibilities: ItemVisibilityRaw[];
     itemLoginSchemas: ItemLoginSchemaRaw[];
     guests: GuestRaw[];
+    tags: TagRaw[];
+    itemTags: ItemTagRaw[];
   } = {
     items: [],
     actor: undefined,
@@ -441,6 +449,8 @@ export async function seedFromJson(data: DataType = {}) {
     itemVisibilities: [],
     itemLoginSchemas: [],
     guests: [],
+    tags: [],
+    itemTags: [],
   };
 
   const { items: itemsWithActor, actor, members, actorProfile } = await processActor(data);
@@ -489,6 +499,25 @@ export async function seedFromJson(data: DataType = {}) {
   result.itemLoginSchemas = itemLoginSchemas;
   result.guests = guests;
   result.itemMemberships = result.itemMemberships.concat(guestItemMemberships);
+
+  // save tags
+  if (data.tags?.length) {
+    result.tags = await db.insert(tagsTable).values(data.tags).returning();
+  }
+
+  const itemTags = processedItems.flatMap((item) =>
+    item.tags ? item.tags.map((t) => ({ ...t, itemId: item.id })) : [],
+  );
+  if (itemTags.length) {
+    for (const it of itemTags) {
+      const tag = (await db.insert(tagsTable).values(it).returning())[0];
+      result.tags.push(tag);
+      const itemTag = (
+        await db.insert(itemTagsTable).values({ tagId: tag.id, itemId: it.itemId }).returning()
+      )[0];
+      result.itemTags.push(itemTag);
+    }
+  }
 
   return result;
 }
