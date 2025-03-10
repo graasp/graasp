@@ -36,7 +36,7 @@ export const saveMembers = async (
 
 export const expectMember = (
   m: MemberRaw | undefined | null,
-  validation: Partial<MemberRaw> & Pick<MemberRaw, 'name' | 'email'>,
+  validation: Partial<Pick<MemberRaw, 'type' | 'extra'>> & Pick<MemberRaw, 'name' | 'email'>,
 ) => {
   if (!m) {
     throw 'member does not exist';

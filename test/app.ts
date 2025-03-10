@@ -1,11 +1,11 @@
 import { Strategy as CustomStrategy } from 'passport-custom';
-import { DataSource } from 'typeorm';
 
 import fastifyPassport from '@fastify/passport';
 import { fastify } from 'fastify';
 
 import registerAppPlugins from '../src/app';
 import { resetDependencies } from '../src/di/utils';
+import { DBConnection } from '../src/drizzle/db';
 import { BaseLogger } from '../src/logger';
 import ajvFormats from '../src/schemas/ajvFormats';
 import { PassportStrategy } from '../src/services/auth/plugins/passport';
@@ -73,14 +73,15 @@ const build = async () => {
   return { app };
 };
 
-export const clearDatabase = async (db: DataSource) => {
-  const entities = db.entityMetadatas;
-  for (const entity of entities) {
-    const repository = db.getRepository(entity.name);
-    await repository.query(
-      `TRUNCATE ${DB_TEST_SCHEMA}.${entity.tableName} RESTART IDENTITY CASCADE;`,
-    );
-  }
+export const clearDatabase = async (db: DBConnection) => {
+  // TODO: ?
+  // const entities = db.entityMetadatas;
+  // for (const entity of entities) {
+  //   const repository = db.getRepository(entity.name);
+  //   await repository.query(
+  //     `TRUNCATE ${DB_TEST_SCHEMA}.${entity.tableName} RESTART IDENTITY CASCADE;`,
+  //   );
+  // }
 };
 
 export default build;

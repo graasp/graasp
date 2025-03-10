@@ -129,7 +129,7 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   fastifyPassport.registerUserDeserializer(async (uuid: string, _req): Promise<PassportUser> => {
     const account = await accountRepository.get(db, uuid);
 
-    return { account: account?.toMaybeUser() };
+    return { account: account.toMaybeUser() };
   });
 };
 export default plugin;

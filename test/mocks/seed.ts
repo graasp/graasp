@@ -6,6 +6,7 @@ import {
   ItemLoginSchemaStatus,
   ItemLoginSchemaType,
   ItemType,
+  ItemVisibilityOptionsType,
   ItemVisibilityType,
   PermissionLevel,
   buildPathFromIds,
@@ -15,6 +16,7 @@ import {
 import { db } from '../../src/drizzle/db';
 import {
   accountsTable,
+  guestPasswords,
   itemLoginSchemas,
   itemMemberships,
   itemVisibilities,
@@ -28,14 +30,14 @@ import {
   Item,
   ItemLoginSchemaRaw,
   ItemMembershipRaw,
+  ItemRaw,
   ItemVisibilityRaw,
   MemberProfileRaw,
   MemberRaw,
 } from '../../src/drizzle/types';
 import { encryptPassword } from '../../src/services/auth/plugins/password/utils';
-import { MaybeUser } from '../../src/types';
 import { ItemFactory } from '../factories/item.factory';
-import { GuestFactory, MemberFactory } from '../factories/member.factory';
+import { AccountFactory, GuestFactory, MemberFactory } from '../factories/member.factory';
 
 export type TableType<C extends BaseEntity, E> = {
   constructor: new () => C;
@@ -51,12 +53,12 @@ export type TableType<C extends BaseEntity, E> = {
 );
 
 const ACTOR_STRING = 'actor';
-type SeedActor = Partial<MemberRaw> & { profile?: Partial<MemberProfileRaw>; password?: string };
+type SeedActor = Partial<AccountRaw> & { profile?: Partial<MemberProfileRaw>; password?: string };
 type ReferencedSeedActor = 'actor' | SeedActor;
 type SeedMember = Partial<MemberRaw> & { profile?: Partial<MemberProfileRaw> };
 type SeedMembership<M = SeedMember> = Partial<Omit<ItemMembershipRaw, 'creator' | 'account'>> & {
-  account?: M;
-  creator?: M;
+  account: M;
+  creator?: M | null;
   permission?: PermissionLevel;
 };
 type SeedItem<M = SeedMember> = (Partial<Omit<Item, 'creator'>> & { creator?: M | null }) & {
@@ -74,18 +76,18 @@ type DataType = {
   items?: SeedItem<ReferencedSeedActor | SeedMember>[];
 };
 
-const replaceActorInItems = (createdActor?: MemberRaw, items?: DataType['items']): SeedItem[] => {
+const replaceActorInItems = (createdActor?: AccountRaw, items?: DataType['items']): SeedItem[] => {
   if (!items?.length) {
     return [];
   }
 
   return items.map((i) => ({
     ...i,
-    creator: i.creator === ACTOR_STRING ? createdActor : (i.creator ?? null),
+    creator: i.creator === ACTOR_STRING ? (createdActor as any) : (i.creator ?? null),
     memberships: i.memberships?.map((m) => ({
       ...m,
-      account: m.account === ACTOR_STRING ? createdActor : m.account,
-      creator: m.creator === ACTOR_STRING ? createdActor : m.creator,
+      account: m.account === ACTOR_STRING ? (createdActor as any) : m.account,
+      creator: m.creator === ACTOR_STRING ? (createdActor as any) : (m.creator ?? null),
     })),
     children: replaceActorInItems(createdActor, i.children),
   }));
@@ -129,16 +131,17 @@ function replaceAccountInItems(createdAccount: AccountRaw, items?: DataType['ite
  */
 const processActor = async ({ actor, items, members }: DataType) => {
   // create actor if not null
-  let createdActor;
+  let createdActor: AccountRaw | null = null;
   let actorProfile;
+  let processedItems;
   if (actor !== null) {
     // replace actor data with default values if actor is undefined or 'actor'
-    const actorData = typeof actor === 'string' || !actor ? {} : actor;
+    const actorData: Partial<AccountRaw> = typeof actor === 'string' || !actor ? {} : actor;
     createdActor = (await db.insert(accountsTable).values(MemberFactory(actorData)).returning())[0];
 
     // a profile is defined
-    if (actor) {
-      if (actor.profile) {
+    if (actorData) {
+      if (actor?.profile) {
         actorProfile = (
           await db
             .insert(memberProfiles)
@@ -146,17 +149,16 @@ const processActor = async ({ actor, items, members }: DataType) => {
             .returning()
         )[0];
       }
-      if (actor.password) {
+      if (actor?.password) {
         await db.insert(memberPasswords).values({
           password: await encryptPassword(actor.password),
           memberId: createdActor.id,
         });
       }
     }
+    // replace 'actor' in entities
+    processedItems = replaceActorInItems(createdActor, items);
   }
-
-  // replace 'actor' in entities
-  const processedItems = replaceActorInItems(createdActor, items);
 
   return { actor: createdActor, items: processedItems, members, actorProfile };
 };
@@ -175,7 +177,6 @@ const generateIdAndPathForItems = (
   if (!items?.length) {
     return [];
   }
-
   return items.flatMap((i) => {
     const id = v4();
     const ids = parent ? [...getIdsFromPath(parent.path), id] : [id];
@@ -201,11 +202,11 @@ const processItemMemberships = (items: DataType['items'] = []) => {
   return (
     items
       // TODO: fix
-      ?.flatMap((i) => i.memberships?.map((im) => ({ ...im, itemPath: (i as any).path })) ?? [])
+      ?.flatMap((i) => i.memberships?.map((im) => ({ ...im, itemPath: i.path })) ?? [])
       ?.map((im) => ({
         permission: PermissionLevel.Admin,
         ...im,
-      }))
+      })) as ItemMembershipRaw[]
   );
 };
 
@@ -254,7 +255,7 @@ function generateIdForMembers({
     return {
       id,
       ...m,
-      profile: 'profile' in m ? { ...m.profile, member: { id } } : undefined,
+      profile: 'profile' in m ? { ...m.profile, memberId: id } : undefined,
     };
   });
   return d;
@@ -271,7 +272,7 @@ async function processMembers({
   items = [],
   members = [],
 }: {
-  actor?: MaybeUser;
+  actor?: AccountRaw | null;
   items?: SeedItem[];
   members?: SeedMember[];
 }) {
@@ -279,43 +280,44 @@ async function processMembers({
     // ignore actor if it is defined
     .filter((m) => (actor ? m.id !== actor.id : true));
 
-  if (membersWithIds) {
-    const savedMembers = (await db
+  if (membersWithIds.length) {
+    const savedMembers = await db
       .insert(accountsTable)
       .values(membersWithIds.map((m) => MemberFactory(m)))
-      .returning()) as MemberRaw[];
-
-    const processedItems = (savedMembers as MemberRaw[]).reduce(
-      (acc, m) => replaceAccountInItems(m, acc),
-      items,
-    );
+      .returning();
+    const profiles = membersWithIds.map((m) => m.profile).filter(Boolean) as MemberProfileRaw[];
+    const savedMemberProfiles = profiles.length
+      ? await db.insert(memberProfiles).values(profiles).returning()
+      : [];
+    const processedItems = savedMembers.reduce((acc, m) => replaceAccountInItems(m, acc), items);
     return {
       members: savedMembers as MemberRaw[],
-      memberProfiles: await db
-        .insert(memberProfiles)
-        .values(membersWithIds.map((m) => m.profile).filter(Boolean))
-        .returning(),
+      memberProfiles: savedMemberProfiles,
       items: processedItems,
     };
   }
-  return { members: [], memberProfiles: [], items: [] };
+  return { members: [], memberProfiles: [], items };
 }
 
 async function createItemVisibilities(items: (SeedItem & { path: string })[]) {
-  const visibilities = items.reduce<{ item: { path: string }; type: ItemVisibilityType }[]>(
+  const visibilities = items.reduce<{ itemPath: string; type: ItemVisibilityOptionsType }[]>(
     (acc, { path, isHidden, isPublic }) => {
       if (isHidden) {
-        acc.push({ item: { path }, type: ItemVisibilityType.Hidden });
+        acc.push({ itemPath: path, type: ItemVisibilityType.Hidden });
       }
       if (isPublic) {
-        acc.push({ item: { path }, type: ItemVisibilityType.Public });
+        acc.push({ itemPath: path, type: ItemVisibilityType.Public });
       }
       return acc;
     },
     [],
   );
 
-  return await db.insert(itemVisibilities).values(visibilities).returning();
+  if (visibilities.length) {
+    return await db.insert(itemVisibilities).values(visibilities).returning();
+  }
+
+  return [];
 }
 
 /**
@@ -328,7 +330,7 @@ async function createItemLoginSchemasAndGuests(items: (SeedItem & { path: string
   const itemLoginSchemasData = items.reduce<
     {
       id: string;
-      item: { path: string };
+      itemPath: string;
       status: ItemLoginSchemaRaw['status'];
       type: ItemLoginSchemaRaw['type'];
       guests?: (Partial<GuestRaw> & { password?: string })[];
@@ -336,7 +338,7 @@ async function createItemLoginSchemasAndGuests(items: (SeedItem & { path: string
   >((acc, { path, itemLoginSchema }) => {
     if (itemLoginSchema) {
       acc.push({
-        item: { path },
+        itemPath: path,
         id: v4(),
         type: ItemLoginSchemaType.Username,
         status: ItemLoginSchemaStatus.Active,
@@ -345,57 +347,65 @@ async function createItemLoginSchemasAndGuests(items: (SeedItem & { path: string
     }
     return acc;
   }, []);
-  const itemLoginSchemasValues = await db
-    .insert()
-    .from(itemLoginSchemas)
-    .values(itemLoginSchemasData);
+  let itemLoginSchemasValues: ItemLoginSchemaRaw[] = [];
+  if (itemLoginSchemasData.length) {
+    itemLoginSchemasValues = await db
+      .insert(itemLoginSchemas)
+      .values(itemLoginSchemasData)
+      .returning();
+  }
 
   // save pre-registered guests
   // feed item login schema in guests' data
   // keep track of password and item for later use
   const guestsData = itemLoginSchemasData.reduce<
-    (ReturnType<typeof GuestFactory> & { password?: string; item: { path: string } })[]
-  >((acc, { id, guests, item }) => {
+    (ReturnType<typeof GuestFactory> & { password?: string; itemPath: string })[]
+  >((acc, { id, guests, itemPath }) => {
     if (guests) {
       return acc.concat(
         guests.map(({ password, ...g }) => ({
           ...GuestFactory({ ...g, itemLoginSchemaId: id }),
           password,
-          item,
+          itemPath,
         })),
       );
     }
     return acc;
   }, []);
-  const guests = await db.insert().from(accountsTable).values(guestsData);
+  let guests: GuestRaw[] = [];
+  let memberships: ItemMembershipRaw[] = [];
+  if (guestsData.length) {
+    guests = (await db.insert(accountsTable).values(guestsData).returning()) as GuestRaw[];
 
-  // save guest passwords
-  const guestPasswords: { guest: { id: string }; password: string }[] = [];
-  for (const { id, password } of guestsData) {
-    if (password) {
-      guestPasswords.push({ guest: { id }, password: await encryptPassword(password) });
+    // save guest passwords
+    const guestPasswordsValues: { guest: { id: string }; password: string }[] = [];
+    for (const { id, password } of guestsData) {
+      if (password) {
+        guestPasswordsValues.push({ guest: { id }, password: await encryptPassword(password) });
+      }
     }
-  }
-  await db.insert().from(guestPasswords).values(guestPasswords);
+    if (guestPasswordsValues.length) {
+      await db.insert(guestPasswords).values(guestPasswordsValues);
+    }
 
-  // save guest memberships
-  const guestMemberships = guestsData.reduce<
-    {
-      account: { id: string };
-      permission: PermissionLevel;
-      item: { path: string };
-    }[]
-  >((acc, { id, item: { path } }) => {
-    return acc.concat([
+    // save guest memberships
+    const guestMemberships = guestsData.reduce<
       {
-        account: { id },
-        permission: PermissionLevel.Read,
-        item: { path },
-      },
-    ]);
-  }, []);
-
-  const memberships = await db.insert().from(itemMemberships).values(guestMemberships);
+        accountId: string;
+        permission: PermissionLevel;
+        itemPath: string;
+      }[]
+    >((acc, { id, itemPath: path }) => {
+      return acc.concat([
+        {
+          accountId: id,
+          permission: PermissionLevel.Read,
+          itemPath: path,
+        },
+      ]);
+    }, []);
+    memberships = await db.insert(itemMemberships).values(guestMemberships).returning();
+  }
 
   return {
     itemLoginSchemas: itemLoginSchemasValues,
@@ -414,8 +424,8 @@ async function createItemLoginSchemasAndGuests(items: (SeedItem & { path: string
  */
 export async function seedFromJson(data: DataType = {}) {
   const result: {
-    actor: MaybeUser | undefined;
-    items: Item[];
+    actor: AccountRaw | undefined | null;
+    items: ItemRaw[];
     itemMemberships: ItemMembershipRaw[];
     members: MemberRaw[];
     memberProfiles: MemberProfileRaw[];
@@ -452,7 +462,7 @@ export async function seedFromJson(data: DataType = {}) {
 
   // save items
   const processedItems = generateIdAndPathForItems(itemsWithAccounts);
-  if (processedItems) {
+  if (processedItems.length) {
     result.items = await db
       .insert(itemsRaw)
       .values(processedItems.map((i) => ItemFactory(i)))

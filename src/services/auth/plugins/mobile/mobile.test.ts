@@ -54,13 +54,13 @@ describe('Mobile Endpoints', () => {
   let mailerService: MailerService;
 
   beforeEach(async () => {
-    ({ app } = await build({ member: null }));
+    ({ app } = await build());
     mailerService = resolveDependency(MailerService);
   });
 
   afterEach(async () => {
     jest.clearAllMocks();
-    await clearDatabase(app.db);
+    await clearDatabase(db);
     app.close();
   });
 

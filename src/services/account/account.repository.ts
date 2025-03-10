@@ -25,6 +25,10 @@ export class AccountDTO {
     return this.account?.extra.hasAvatar ?? false;
   }
 
+  exists(): boolean {
+    return Boolean(this.account);
+  }
+
   toMaybeUser(): MaybeUser {
     if (this.account) {
       if (this.account.type === AccountType.Individual) {
@@ -48,13 +52,11 @@ export class AccountDTO {
 
 @singleton()
 export class AccountRepository {
-  async get(db: DBConnection, id: string) {
-    if (!id) {
-      return undefined;
-    }
+  async get(db: DBConnection, id: string): Promise<AccountDTO> {
     const result = await db.query.accountsTable.findFirst({
       where: eq(accountsTable.id, id),
     });
+
     return new AccountDTO(result);
   }
 }

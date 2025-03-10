@@ -18,7 +18,7 @@ function BaseAccountFactory<T extends AccountTypeOptions>(
   };
 }
 
-export const MemberFactory = (m: Partial<MemberRaw> = {}): MemberRaw => {
+export const MemberFactory = (m: Partial<AccountRaw> = {}): MemberRaw => {
   const isValidated = m.isValidated ?? true;
   const baseAccount = BaseAccountFactory({
     type: AccountType.Individual,
@@ -36,7 +36,11 @@ export const MemberFactory = (m: Partial<MemberRaw> = {}): MemberRaw => {
     userAgreementsDate: m.userAgreementsDate ?? faker.date.anytime().toISOString(),
     ...baseAccount,
     ...m,
-    email: m.email ?? baseAccount.email ?? faker.internet.email().toLowerCase(),
+    email:
+      m.email?.toLowerCase() ??
+      baseAccount.email?.toLowerCase() ??
+      faker.internet.email().toLowerCase(),
+    type: AccountType.Individual,
   };
 };
 

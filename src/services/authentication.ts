@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { AccountRaw } from '../drizzle/types';
+import { AccountRaw, MemberRaw } from '../drizzle/types';
 import { AccountType, AuthenticatedUser, MinimalGuest, MinimalMember } from '../types';
 import { NotMember } from './member/error';
 
@@ -15,10 +15,26 @@ export function isGuest(account: AuthenticatedUser | AccountRaw): account is Min
 }
 
 export function assertIsMember<Err extends Error, Args extends unknown[]>(
-  account: AuthenticatedUser,
+  account: AuthenticatedUser | AccountRaw,
   error?: new (...args: Args) => Err,
   ...args: Args
 ): asserts account is MinimalMember {
+  if (account.type !== AccountType.Individual) {
+    if (error) {
+      throw new error(...args);
+    } else {
+      const defaultError = new NotMember();
+      defaultError.statusCode = StatusCodes.INTERNAL_SERVER_ERROR;
+      throw defaultError;
+    }
+  }
+}
+
+export function assertIsMemberForTest<Err extends Error, Args extends unknown[]>(
+  account: AuthenticatedUser | Omit<AccountRaw, 'itemLoginSchemaId'>,
+  error?: new (...args: Args) => Err,
+  ...args: Args
+): asserts account is MemberRaw {
   if (account.type !== AccountType.Individual) {
     if (error) {
       throw new error(...args);

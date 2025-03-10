@@ -46,7 +46,7 @@ export default (
         //-- Fetch Member Data --//
         try {
           const account = await accountRepository.get(db, sub);
-          if (account) {
+          if (account.exists()) {
             // Token has been validated
             return done(null, { account: account.toMaybeUser() }, { emailValidation });
           } else {

@@ -37,7 +37,7 @@ export default (
         // Fetch Member datas
         const account = await accountRepository.get(db, accountId);
         // Member can be undefined if authorized.
-        if (strict && !account) {
+        if (strict && !account.exists()) {
           return done(new UnauthorizedMember(), false);
         }
 
@@ -45,7 +45,7 @@ export default (
         try {
           const item = await itemRepository.getOneOrThrow(db, itemId);
           return done(null, {
-            account: account?.toMaybeUser(),
+            account: account.toMaybeUser(),
             app: {
               item,
               origin,

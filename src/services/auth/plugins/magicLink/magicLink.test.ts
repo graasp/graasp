@@ -16,7 +16,7 @@ import {
 } from '@graasp/sdk';
 import { FAILURE_MESSAGES } from '@graasp/translations';
 
-import build from '../../../../../test/app';
+import build, { clearDatabase } from '../../../../../test/app';
 import { MemberFactory } from '../../../../../test/factories/member.factory';
 import { URL_REGEX } from '../../../../../test/utils';
 import { resolveDependency } from '../../../../di/utils';
@@ -50,13 +50,12 @@ describe('Auth routes tests', () => {
   });
 
   afterAll(async () => {
-    // await clearDatabase(app.db);
+    await clearDatabase(db);
     app.close();
   });
 
   afterEach(async () => {
     jest.clearAllMocks();
-    // await clearDatabase(app.db);
   });
 
   describe('POST /login', () => {

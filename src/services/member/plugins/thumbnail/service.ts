@@ -59,7 +59,7 @@ export class MemberThumbnailService {
   async getUrl(db: DBConnection, { size, memberId }: { memberId: string; size: string }) {
     const account = await this.accountRepository.get(db, memberId);
 
-    if (!account) {
+    if (!account.exists()) {
       throw new AccountNotFound(memberId);
     }
 

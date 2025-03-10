@@ -25,7 +25,7 @@ export default (
       async ({ sub }, done: StrictVerifiedCallback) => {
         try {
           const account = await accountRepository.get(db, sub);
-          if (account) {
+          if (account.exists()) {
             // Token has been validated
             return done(null, { account: account.toMaybeUser() });
           } else {
