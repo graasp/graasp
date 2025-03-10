@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.65.0](https://github.com/graasp/graasp/compare/v1.64.0...v1.65.0) (2025-03-10)
+
+
+### Features
+
+* **file-upload:** add the possibility to delete and upload many files ([#1786](https://github.com/graasp/graasp/issues/1786)) ([3f75867](https://github.com/graasp/graasp/commit/3f75867b7032db814c41644b5f86815e322b75f1))
+
+
+### Bug Fixes
+
+* **file:** keep extension on copy, remove content-disposition and cache control ([#1785](https://github.com/graasp/graasp/issues/1785)) ([1fa4202](https://github.com/graasp/graasp/commit/1fa4202566239076a8b8290591aa1a0a527cd3c9))
+
 ## [1.64.0](https://github.com/graasp/graasp/compare/v1.63.0...v1.64.0) (2025-03-03)
 
 
