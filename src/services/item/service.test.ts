@@ -8,20 +8,17 @@ import { FolderItemFactory, ItemGeolocation, ItemType, ItemVisibilityType } from
 
 import build, { MOCK_LOGGER, clearDatabase, mockAuthenticate } from '../../../test/app';
 import { seedFromJson } from '../../../test/mocks/seed';
+import { MinimalMember } from '../../types';
 import { assertIsDefined } from '../../utils/assertions';
-import { buildRepositories } from '../../utils/repositories';
+import { assertIsMember } from '../authentication';
 import * as authorization from '../authorization';
-import { Actor, assertIsMember } from '../member/entities/member';
 import { saveMember } from '../member/test/fixtures/members';
 import { ThumbnailService } from '../thumbnail/service';
-import { FolderItem, Item } from './entities/Item';
-import { ItemVisibility } from './plugins/itemVisibility/ItemVisibility';
+import { FolderItem } from './discrimination';
 import { ItemVisibilityRepository } from './plugins/itemVisibility/repository';
-import { ItemPublished } from './plugins/publication/published/entities/itemPublished';
 import { MeiliSearchWrapper } from './plugins/publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from './plugins/thumbnail/service';
 import { ItemService } from './service';
-import { ItemTestUtils } from './test/fixtures/items';
 
 const testUtils = new ItemTestUtils();
 const mockedThumbnailService = {
@@ -56,7 +53,6 @@ describe('Item Service', () => {
     it('return item if exists and pass validation', async () => {
       const actor = { id: v4() } as Actor;
       const item = FolderItemFactory() as unknown as FolderItem;
-      const repositories = buildRepositories();
       jest.spyOn(repositories.itemRepository, 'getOneOrThrow').mockResolvedValue(item);
       jest
         .spyOn(authorization, 'validatePermission')
@@ -66,17 +62,15 @@ describe('Item Service', () => {
       expect(result).toEqual(item);
     });
     it('throw if item does not exists', async () => {
-      const actor = { id: v4() } as Actor;
+      const actor = { id: v4() };
       const item = FolderItemFactory() as unknown as FolderItem;
-      const repositories = buildRepositories();
       jest.spyOn(repositories.itemRepository, 'getOneOrThrow').mockRejectedValue(new Error());
 
       await expect(() => itemService.get(actor, repositories, item.id)).rejects.toThrow();
     });
     it('throw if validation does not pass', async () => {
-      const actor = { id: v4() } as Actor;
+      const actor = { id: v4() } as MinimalMember;
       const item = FolderItemFactory() as unknown as FolderItem;
-      const repositories = buildRepositories();
       jest.spyOn(repositories.itemRepository, 'getOneOrThrow').mockResolvedValue(item);
       jest.spyOn(authorization, 'validatePermission').mockRejectedValue(new Error());
 
@@ -296,7 +290,9 @@ describe('Item Service', () => {
         item: { name: 'unpublishedItem' },
       });
 
-      const { item: publishedFolder } = await testUtils.saveItemAndMembership({ member: actor });
+      const { item: publishedFolder } = await testUtils.saveItemAndMembership({
+        member: actor,
+      });
       const iv = await app.db.getRepository(ItemVisibility).save({
         item: publishedFolder,
         type: ItemVisibilityType.Public,
@@ -310,7 +306,7 @@ describe('Item Service', () => {
 
       await itemService.copy(
         actor,
-        buildRepositories(),
+
         unpublishedItem.id,
         publishedFolder as FolderItem,
       );
@@ -331,7 +327,6 @@ describe('Item Service', () => {
       mockAuthenticate(actor);
       assertIsDefined(actor);
       assertIsMember(actor);
-      const repositories = buildRepositories();
 
       // WHEN
       jest.spyOn(repositories.itemRepository, 'checkHierarchyDepth').mockImplementation(() => {

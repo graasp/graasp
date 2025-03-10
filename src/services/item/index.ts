@@ -12,7 +12,7 @@ import {
 } from '../../utils/config';
 import graaspChatbox from '../chat';
 import graaspItemLogin from '../itemLogin';
-import itemController from './controller';
+import itemController from './item.controller';
 import actionItemPlugin from './plugins/action';
 import graaspApps from './plugins/app';
 import { plugin as graaspAppItem } from './plugins/app/controller';
@@ -28,7 +28,7 @@ import itemGeolocationPlugin from './plugins/geolocation/index';
 import graaspH5PPlugin from './plugins/html/h5p';
 import graaspZipPlugin from './plugins/importExport';
 import graaspInvitationsPlugin from './plugins/invitation';
-import graaspFavoritePlugin from './plugins/itemFavorite';
+import graaspFavoritePlugin from './plugins/itemBookmark';
 import graaspItemFlags from './plugins/itemFlag';
 import graaspItemLikes from './plugins/itemLike';
 import graaspItemVisibility from './plugins/itemVisibility';
@@ -51,7 +51,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   // this needs to execute before 'create()' and 'updateOne()' are called
   // because graaspApps extends the schemas
-  fastify.register(graaspApps, {
+  await fastify.register(graaspApps, {
     jwtSecret: APPS_JWT_SECRET,
     prefix: APP_ITEMS_PREFIX,
     publisherId: APPS_PUBLISHER_ID,
@@ -64,7 +64,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.register(fastifyCors, fastify.corsPluginOptions);
       }
 
-      // // plugins that don't require authentication
+      // plugins that don't require authentication
       fastify.register(graaspItemLogin);
 
       fastify.register(graaspFavoritePlugin);

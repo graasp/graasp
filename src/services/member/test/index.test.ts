@@ -8,21 +8,18 @@ import { HttpMethod, ItemType, MAX_USERNAME_LENGTH } from '@graasp/sdk';
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
 import { MemberFactory } from '../../../../test/factories/member.factory';
 import { seedFromJson } from '../../../../test/mocks/seed';
-import { AppDataSource } from '../../../plugins/datasource';
 import { DEFAULT_MAX_STORAGE } from '../../../services/item/plugins/file/utils/constants';
 import { assertIsDefined } from '../../../utils/assertions';
 import { FILE_ITEM_TYPE } from '../../../utils/config';
 import { MemberNotFound } from '../../../utils/errors';
-import { Member, assertIsMember } from '../entities/member';
+import { assertIsMember } from '../../authentication';
 import { setupGuest } from './setup';
-
-const rawRepository = AppDataSource.getRepository(Member);
 
 describe('Member routes tests', () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
-    ({ app } = await build({ member: null }));
+    ({ app } = await build());
   });
 
   afterAll(async () => {

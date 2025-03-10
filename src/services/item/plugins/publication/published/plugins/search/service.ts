@@ -3,19 +3,20 @@ import { singleton } from 'tsyringe';
 
 import { TagCategory, UUID } from '@graasp/sdk';
 
+import { TagRaw } from '../../../../../../../drizzle/types';
 import { BaseLogger } from '../../../../../../../logger';
 import {
   GET_MOST_LIKED_ITEMS_MAXIMUM,
   GET_MOST_RECENT_ITEMS_MAXIMUM,
 } from '../../../../../../../utils/config';
-import { Tag } from '../../../../../../tag/Tag.entity';
 import { ItemService } from '../../../../../service';
-import { ItemPublishedService } from '../../service';
+import { ItemPublishedRepository } from '../../itemPublished.repository';
+import { ItemPublishedService } from '../../itemPublished.service';
 import { MeiliSearchWrapper } from './meilisearch';
 
 type SearchFilters = Partial<{
   query?: string;
-  tags: Partial<{ [key in TagCategory]: Tag['name'][] }>;
+  tags: Partial<{ [key in TagCategory]: TagRaw['name'][] }>;
   langs: string[];
   isPublishedRoot: boolean;
   creatorId?: UUID;
@@ -29,15 +30,18 @@ type SearchFilters = Partial<{
 export class SearchService {
   private readonly meilisearchClient: MeiliSearchWrapper;
   private readonly logger: BaseLogger;
+  private readonly itemPublishedRepository: ItemPublishedRepository;
 
   constructor(
     itemService: ItemService,
     itemPublishedService: ItemPublishedService,
     meilisearchClient: MeiliSearchWrapper,
+    itemPublishedRepository: ItemPublishedRepository,
     logger: BaseLogger,
   ) {
     this.meilisearchClient = meilisearchClient;
     this.logger = logger;
+    this.itemPublishedRepository = itemPublishedRepository;
     this.registerSearchHooks(itemService, itemPublishedService);
   }
 
@@ -87,7 +91,12 @@ export class SearchService {
 
   async search(body: Omit<MultiSearchQuery, 'filter' | 'indexUid' | 'q'> & SearchFilters) {
     const { tags, langs, isPublishedRoot, query, creatorId, ...q } = body;
-    const filters = this.buildFilters({ creatorId, tags, langs, isPublishedRoot });
+    const filters = this.buildFilters({
+      creatorId,
+      tags,
+      langs,
+      isPublishedRoot,
+    });
 
     // User input needs escaping? Or safe to send to meilisearch? WARNING: search currently done with master key, but search is only exposed endpoint
     const updatedQueries = {
@@ -141,9 +150,9 @@ export class SearchService {
   ) {
     // Update index when itemPublished changes ------------------------------------------
 
-    itemPublishedService.hooks.setPostHook('delete', async (member, repositories, { item }) => {
+    itemPublishedService.hooks.setPostHook('delete', async (member, db, { item }) => {
       try {
-        await this.meilisearchClient.deleteOne(item, repositories);
+        await this.meilisearchClient.deleteOne(db, item);
       } catch {
         this.logger.error('Error during indexation, Meilisearch may be down');
       }
@@ -153,41 +162,41 @@ export class SearchService {
 
     // Update index when item changes ------------------------------------------
 
-    itemService.hooks.setPostHook('delete', async (member, repositories, { item }) => {
+    itemService.hooks.setPostHook('delete', async (member, db, { item }) => {
       try {
-        await this.meilisearchClient.deleteOne(item, repositories);
+        await this.meilisearchClient.deleteOne(db, item);
       } catch {
         this.logger.error('Error during indexation, Meilisearch may be down');
       }
     });
 
-    itemService.hooks.setPostHook('update', async (member, repositories, { item }) => {
+    itemService.hooks.setPostHook('update', async (member, db, { item }) => {
       try {
         // Check if the item is published (or has published parent)
-        const published = await repositories.itemPublishedRepository.getForItem(item);
+        const published = await this.itemPublishedRepository.getForItem(db, item.path);
 
         if (!published) {
           return;
         }
         // update index
-        await this.meilisearchClient.indexOne(published, repositories);
+        await this.meilisearchClient.indexOne(db, published);
       } catch (e) {
         this.logger.error('Error during indexation, Meilisearch may be down');
       }
     });
 
-    itemService.hooks.setPostHook('move', async (member, repositories, { destination }) => {
+    itemService.hooks.setPostHook('move', async (member, db, { destination }) => {
       try {
         // Check if published from moved item up to tree root
-        const published = await repositories.itemPublishedRepository.getForItem(destination);
+        const published = await this.itemPublishedRepository.getForItem(db, destination.path);
 
         if (published) {
           // destination or moved item is published, we must update the index
           // update index from published
-          await this.meilisearchClient.indexOne(published, repositories);
+          await this.meilisearchClient.indexOne(db, published);
         } else {
           // nothing published, we must delete if it exists in index
-          await this.meilisearchClient.deleteOne(destination, repositories);
+          await this.meilisearchClient.deleteOne(db, destination);
         }
       } catch (e) {
         this.logger.error('Error during indexation, Meilisearch may be down');

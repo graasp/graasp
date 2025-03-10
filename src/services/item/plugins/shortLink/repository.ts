@@ -1,4 +1,4 @@
-import { EntityManager } from 'typeorm';
+import { and, asc, count, eq } from 'drizzle-orm';
 
 import {
   ShortLink as CreateShortLink,
@@ -7,83 +7,70 @@ import {
   UpdateShortLink,
 } from '@graasp/sdk';
 
-import { MutableRepository } from '../../../../repositories/MutableRepository';
-import {
-  EntryNotFoundAfterUpdateException,
-  UpdateException,
-} from '../../../../repositories/errors';
+import { DBConnection } from '../../../../drizzle/db';
+import { shortLinks } from '../../../../drizzle/schema';
+import { ShortLinkInsertDTO, ShortLinkRaw, ShortLinkWithItem } from '../../../../drizzle/types';
+import { UpdateException } from '../../../../repositories/errors';
+import { throwsIfParamIsInvalid } from '../../../../repositories/utils';
 import { assertIsError } from '../../../../utils/assertions';
-import {
-  ShortLinkDuplication,
-  ShortLinkLimitExceed,
-  ShortLinkNotFound,
-} from '../../../../utils/errors';
-import { isDuplicateEntryError } from '../../../../utils/typeormError';
-import { ShortLink } from './entities/ShortLink';
+import { ShortLinkLimitExceed, ShortLinkNotFound } from '../../../../utils/errors';
 
 type CreateShortLinkBody = CreateShortLink;
 type UpdateShortLinkBody = UpdateShortLink;
-const PRIMARY_KEY = 'alias';
 
-export class ShortLinkRepository extends MutableRepository<ShortLink, UpdateShortLinkBody> {
-  constructor(manager?: EntityManager) {
-    super(PRIMARY_KEY, ShortLink, manager);
-  }
-
-  async addOne({ alias, platform, itemId }: CreateShortLinkBody): Promise<ShortLink> {
-    super.throwsIfPKIsInvalid(alias);
-    if ((await this.countByItemAndPlatform(itemId, platform)) > 0) {
+export class ShortLinkRepository {
+  async addOne(
+    db: DBConnection,
+    { alias, platform, itemId }: CreateShortLinkBody,
+  ): Promise<ShortLinkRaw> {
+    throwsIfParamIsInvalid('alias', alias);
+    if ((await this.countByItemAndPlatform(db, itemId, platform)) > 0) {
       throw new ShortLinkLimitExceed(itemId, platform);
     }
 
     try {
-      return await super.insert({ alias, platform, item: { id: itemId } });
+      const res = await db
+        .insert(shortLinks)
+        .values({ alias, platform, itemId })
+        .onConflictDoNothing()
+        .returning();
+
+      return res[0];
     } catch (e) {
       assertIsError(e);
-      if (isDuplicateEntryError(e)) {
-        throw new ShortLinkDuplication(alias);
-      }
       throw e;
     }
   }
 
   private async countByItemAndPlatform(
+    db: DBConnection,
     itemId: string,
     platform: UnionOfConst<typeof ShortLinkPlatform>,
   ): Promise<number> {
-    super.throwsIfParamIsInvalid('itemId', itemId);
-    super.throwsIfParamIsInvalid('platform', platform);
+    throwsIfParamIsInvalid('itemId', itemId);
+    throwsIfParamIsInvalid('platform', platform);
 
-    return await this.repository.count({
-      where: {
-        item: {
-          id: itemId,
-        },
-        platform,
-      },
+    const result = await db
+      .select({ count: count() })
+      .from(shortLinks)
+      .where(and(eq(shortLinks.itemId, itemId), eq(shortLinks.platform, platform)));
+
+    return result[0].count;
+  }
+
+  async getByItem(db: DBConnection, itemId: string): Promise<ShortLinkRaw[]> {
+    throwsIfParamIsInvalid('itemId', itemId);
+
+    return await db.query.shortLinks.findMany({
+      where: eq(shortLinks.itemId, itemId),
+      orderBy: asc(shortLinks.createdAt),
     });
   }
 
-  async getByItem(itemId: string): Promise<ShortLink[]> {
-    super.throwsIfParamIsInvalid('itemId', itemId);
-
-    return await this.repository.find({
-      where: {
-        item: {
-          id: itemId,
-        },
-      },
-      order: {
-        createdAt: 'ASC',
-      },
-    });
-  }
-
-  async getOne(alias: string): Promise<ShortLink> {
-    const shortLink = await super.findOne(alias, {
-      relations: {
-        item: true,
-      },
+  async getOne(db: DBConnection, alias: string): Promise<ShortLinkWithItem> {
+    const shortLink = await db.query.shortLinks.findFirst({
+      where: eq(shortLinks.alias, alias),
+      with: { item: true },
     });
 
     if (!shortLink) {
@@ -93,30 +80,36 @@ export class ShortLinkRepository extends MutableRepository<ShortLink, UpdateShor
     return shortLink;
   }
 
-  async updateOne(alias: string, entity: UpdateShortLinkBody): Promise<ShortLink> {
+  async updateOne(
+    db: DBConnection,
+    alias: string,
+    entity: UpdateShortLinkBody,
+  ): Promise<ShortLinkInsertDTO> {
     // Because we are updating the alias, which is the PK, we cannot use the super.updateOne method.
-    this.throwsIfPKIsInvalid(alias);
+    throwsIfParamIsInvalid('alias', alias);
 
     try {
-      await this.repository.update({ alias }, entity);
+      const res = await db
+        .update(shortLinks)
+        .set(entity)
+        .where(eq(shortLinks.alias, alias))
+        .returning();
 
-      const updatedEntity = await this.getOne(entity.alias);
-
+      const updatedEntity = res.at(0);
       // Could happen if the given pk doesn't exist, because update does not check if entity exists.
       if (!updatedEntity) {
-        throw new EntryNotFoundAfterUpdateException(this.entity);
+        throw new Error('entity not found after Update');
       }
 
       return updatedEntity;
     } catch (e) {
       assertIsError(e);
-      if (isDuplicateEntryError(e)) {
-        throw new ShortLinkDuplication(alias);
-      }
-      if (e instanceof EntryNotFoundAfterUpdateException) {
-        throw e;
-      }
+
       throw new UpdateException(e.message);
     }
+  }
+
+  async deleteOne(db: DBConnection, alias: string): Promise<void> {
+    await db.delete(shortLinks).where(eq(shortLinks.alias, alias)).returning();
   }
 }

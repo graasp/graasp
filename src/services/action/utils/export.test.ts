@@ -6,64 +6,58 @@ import { FastifyInstance } from 'fastify';
 
 import { Context, ExportActionsFormatting } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../test/app';
-import { AppDataSource } from '../../../plugins/datasource';
+import build from '../../../../test/app';
+import { db } from '../../../drizzle/db';
+import { actionsTable, chatMessagesTable } from '../../../drizzle/schema';
+import { MemberRaw } from '../../../drizzle/types';
 import { TMP_FOLDER } from '../../../utils/config';
-import { ChatMessage } from '../../chat/chatMessage';
-import { Item } from '../../item/entities/Item';
 import { BaseAnalytics } from '../../item/plugins/action/base-analytics';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
-import { Member } from '../../member/entities/member';
 import { saveMember } from '../../member/test/fixtures/members';
-import { Action } from '../entities/action';
 import { exportActionsInArchive } from './export';
 
 const testUtils = new ItemTestUtils();
 
-const rawActionRepository = AppDataSource.getRepository(Action);
-const rawChatMessageRepository = AppDataSource.getRepository(ChatMessage);
-
-const createDummyAction = async ({
-  item,
-  member,
-  view,
-}: {
-  item: Item;
-  member: Member;
-  view: Context;
-}): Promise<Action> => {
-  return rawActionRepository.save({
-    id: v4(),
-    item,
-    member,
-    view,
-    type: 'type',
-    extra: { itemId: item?.id },
-  });
-};
-
-const setUpActions = async (app: FastifyInstance, member: Member) => {
+const setUpActions = async (app: FastifyInstance, member: MemberRaw) => {
   const itemId = v4();
   const views = Object.values(Context);
   const { item, itemMembership } = await testUtils.saveItemAndMembership({
     item: { id: itemId, name: 'item-name' },
     member,
   });
-  const actions: Action[] = [
-    await createDummyAction({ item, member, view: views[0] }),
-    await createDummyAction({ item, member, view: views[0] }),
-    await createDummyAction({ item, member, view: views[0] }),
-  ];
-  const chatMessages: ChatMessage[] = [];
-  chatMessages.push(
-    await rawChatMessageRepository.save({ item, creator: member, body: 'some-text' }),
-  );
-  chatMessages.push(
-    await rawChatMessageRepository.save({ item, creator: member, body: 'some-text-1' }),
-  );
-  chatMessages.push(
-    await rawChatMessageRepository.save({ item, creator: member, body: 'some-text-2' }),
-  );
+  const actions = await db
+    .insert(actionsTable)
+    .values(
+      Array.from(Array(3)).map((_) => ({
+        view: views[0],
+        type: 'type',
+        extra: JSON.stringify({ itemId: item.id }),
+        itemId: item.id,
+        accountId: member.id,
+      })),
+    )
+    .returning();
+
+  const chatMessages = await db
+    .insert(chatMessagesTable)
+    .values([
+      {
+        itemId: item.id,
+        creatorId: member.id,
+        body: 'some-text',
+      },
+      {
+        itemId: item.id,
+        creatorId: member.id,
+        body: 'some-text-1',
+      },
+      {
+        itemId: item.id,
+        creatorId: member.id,
+        body: 'some-text-2',
+      },
+    ])
+    .returning();
   const baseAnalytics = new BaseAnalytics({
     actions,
     members: [member],
@@ -89,7 +83,6 @@ describe('exportActionsInArchive', () => {
 
   afterEach(async () => {
     jest.clearAllMocks();
-    await clearDatabase(app.db);
     app.close();
   });
 

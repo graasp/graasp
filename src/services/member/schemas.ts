@@ -156,8 +156,12 @@ export const getStorage = {
   response: {
     [StatusCodes.OK]: customType.StrictObject(
       {
-        current: Type.Integer({ description: 'Current amount of storage used' }),
-        maximum: Type.Integer({ description: 'Maximum amount of storage available' }),
+        current: Type.Integer({
+          description: 'Current amount of storage used',
+        }),
+        maximum: Type.Integer({
+          description: 'Maximum amount of storage available',
+        }),
       },
       { description: 'Successful Response' },
     ),
@@ -172,7 +176,10 @@ export const getStorageFiles = {
   description: 'Get files data counted in storage of current member.',
 
   querystring: customType.Pagination({
-    page: Type.Integer({ minimum: FILE_METADATA_MIN_PAGE, default: FILE_METADATA_MIN_PAGE }),
+    page: Type.Integer({
+      minimum: FILE_METADATA_MIN_PAGE,
+      default: FILE_METADATA_MIN_PAGE,
+    }),
     pageSize: Type.Integer({ default: FILE_METADATA_DEFAULT_PAGE_SIZE }),
   }),
   response: {

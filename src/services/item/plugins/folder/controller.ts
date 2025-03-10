@@ -2,20 +2,18 @@ import { fastifyMultipart } from '@fastify/multipart';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
 import { FastifyInstanceTypebox } from '../../../../plugins/typebox';
 import { asDefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
-import { isAuthenticated } from '../../../auth/plugins/passport';
-import { matchOne } from '../../../authorization';
-import { assertIsMember } from '../../../member/entities/member';
+import { isAuthenticated, matchOne } from '../../../auth/plugins/passport';
+import { assertIsMember } from '../../../authentication';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { getPostItemPayloadFromFormData } from '../../utils';
-import { ActionItemService } from '../action/service';
+import { ActionItemService } from '../action/action.service';
 import { createFolder, createFolderWithThumbnail, updateFolder } from './schemas';
 import { FolderItemService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { db } = fastify;
   const folderItemService = resolveDependency(FolderItemService);
   const actionItemService = resolveDependency(ActionItemService);
 
@@ -34,9 +32,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
 
-      const item = await db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-        const item = await folderItemService.post(member, repositories, {
+      const item = await db.transaction(async (tx) => {
+        const item = await folderItemService.postWithOptions(tx, member, {
           // Because of an incoherence between the service and the schema, we need to cast the data to the correct type
           // This need to be fixed in issue #1288 https://github.com/graasp/graasp/issues/1288
           item: data,
@@ -50,10 +47,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       reply.send(item);
 
       // background operations
-      await actionItemService.postPostAction(request, buildRepositories(), item);
-      await db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-        await folderItemService.rescaleOrderForParent(member, repositories, item);
+      await actionItemService.postPostAction(db, request, item);
+      await db.transaction(async (tx) => {
+        await folderItemService.rescaleOrderForParent(tx, member, item);
       });
     },
   );
@@ -88,15 +84,14 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           thumbnail,
         } = getPostItemPayloadFromFormData(formData);
 
-        return await db.transaction(async (manager) => {
-          const repositories = buildRepositories(manager);
-          const item = await folderItemService.post(member, repositories, {
+        return await db.transaction(async (tx) => {
+          const item = await folderItemService.postWithOptions(tx, member, {
             item: itemPayload,
             parentId,
             geolocation,
             thumbnail,
           });
-          await actionItemService.postPostAction(request, repositories, item);
+          await actionItemService.postPostAction(tx, request, item);
           return item;
         });
       },
@@ -117,10 +112,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       } = request;
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return await db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-        const item = await folderItemService.patch(member, repositories, id, body);
-        await actionItemService.postPatchAction(request, repositories, item);
+      return await db.transaction(async (tx) => {
+        const item = await folderItemService.patch(tx, member, id, body);
+        await actionItemService.postPatchAction(tx, request, item);
         return item;
       });
     },

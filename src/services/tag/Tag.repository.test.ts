@@ -1,40 +1,32 @@
-import { DataSource, Repository } from 'typeorm';
+import { and, eq } from 'drizzle-orm/sql';
 import { v4 } from 'uuid';
 
 import { TagCategory, TagFactory } from '@graasp/sdk';
 
-import { AppDataSource } from '../../plugins/datasource';
+import { client, db } from '../../drizzle/db';
+import { tags } from '../../drizzle/schema';
 import { IllegalArgumentException } from '../../repositories/errors';
-import { Tag } from './Tag.entity';
 import { TagRepository } from './Tag.repository';
 import { saveTag } from './fixtures/utils';
 
+const repository = new TagRepository();
+
 describe('Tag Repository', () => {
-  let db: DataSource;
-
-  let repository: TagRepository;
-  let tagRawRepository: Repository<Tag>;
-
   beforeAll(async () => {
-    db = await AppDataSource.initialize();
-    await db.runMigrations();
-    repository = new TagRepository(db.manager);
-    tagRawRepository = db.getRepository(Tag);
+    await client.connect();
   });
-
   afterAll(async () => {
-    await db.dropDatabase();
-    await db.destroy();
+    await client.end();
   });
 
   describe('get', () => {
     it('throw for invalid id', async () => {
-      await expect(() => repository.get(undefined!)).rejects.toBeInstanceOf(
+      await expect(() => repository.get(db, undefined!)).rejects.toBeInstanceOf(
         IllegalArgumentException,
       );
     });
     it('Return null for non-existing tag', async () => {
-      expect(await repository.get(v4())).toBeNull();
+      expect(await repository.get(db, v4())).toBeUndefined();
     });
     it('get tag', async () => {
       // noise
@@ -45,7 +37,7 @@ describe('Tag Repository', () => {
       // noise
       await saveTag({ category: TagCategory.ResourceType });
 
-      const result = await repository.get(tag.id);
+      const result = await repository.get(db, tag.id);
       expect(result!.id).toEqual(tag.id);
       expect(result!.name).toEqual(tag.name);
       expect(result!.category).toEqual(tag.category);
@@ -55,14 +47,16 @@ describe('Tag Repository', () => {
   describe('addOne', () => {
     it('throw for invalid category', async () => {
       await expect(() =>
-        repository.addOneIfDoesNotExist(TagFactory({ category: 'category' as never })),
+        repository.addOneIfDoesNotExist(db, TagFactory({ category: 'category' as never })),
       ).rejects.toThrow();
     });
     it('insert tag', async () => {
       const tag = TagFactory();
-      await repository.addOne(tag);
+      await repository.addOne(db, tag);
 
-      const result = await tagRawRepository.findOneBy({ name: tag.name, category: tag.category });
+      const result = await db.query.tags.findFirst({
+        where: and(eq(tags.name, tag.name), eq(tags.category, tag.category)),
+      });
       expect(result!.name).toEqual(tag.name);
       expect(result!.category).toEqual(tag.category);
     });
@@ -71,19 +65,19 @@ describe('Tag Repository', () => {
       await saveTag(tag);
 
       const tagToAdd = TagFactory({ name: 'my     name1', category: TagCategory.Discipline });
-      await expect(() => repository.addOne(tagToAdd)).rejects.toThrow();
+      await expect(() => repository.addOne(db, tagToAdd)).rejects.toThrow();
     });
   });
 
   describe('addOneIfDoesNotExist', () => {
     it('throw for invalid category', async () => {
       await expect(() =>
-        repository.addOneIfDoesNotExist(TagFactory({ category: 'category' as never })),
+        repository.addOneIfDoesNotExist(db, TagFactory({ category: 'category' as never })),
       ).rejects.toThrow();
     });
     it('insert tag and return', async () => {
       const tag = TagFactory();
-      const result = await repository.addOneIfDoesNotExist(tag);
+      const result = await repository.addOneIfDoesNotExist(db, tag);
 
       expect(result.name).toEqual(tag.name);
       expect(result.category).toEqual(tag.category);
@@ -92,7 +86,7 @@ describe('Tag Repository', () => {
       const tagInfo = TagFactory();
       const tag = await saveTag(tagInfo);
 
-      const result = await repository.addOneIfDoesNotExist(tagInfo);
+      const result = await repository.addOneIfDoesNotExist(db, tagInfo);
 
       expect(result.id).toEqual(tag.id);
       expect(result.name).toEqual(tag.name);
@@ -105,7 +99,7 @@ describe('Tag Repository', () => {
         category: TagCategory.Discipline,
       };
 
-      const result = await repository.addOneIfDoesNotExist(tagNotSanitized);
+      const result = await repository.addOneIfDoesNotExist(db, tagNotSanitized);
       expect(result.id).toEqual(tag.id);
       expect(result.name).toEqual(tag.name);
       expect(result.category).toEqual(tag.category);

@@ -6,7 +6,6 @@ import { FastifySchema } from 'fastify';
 import { customType, registerSchemaAsRef } from '../../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../../schemas/global';
 import { nullableMemberSchemaRef } from '../../../../member/schemas';
-import { itemSchemaRef } from '../../../schemas';
 
 export const appSettingSchemaRef = registerSchemaAsRef(
   'appSetting',
@@ -15,7 +14,6 @@ export const appSettingSchemaRef = registerSchemaAsRef(
     {
       id: customType.UUID(),
       name: Type.String(),
-      item: itemSchemaRef,
       data: Type.Object({}, { additionalProperties: true }),
       creator: Type.Optional(nullableMemberSchemaRef),
       createdAt: customType.DateTime(),

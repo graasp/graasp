@@ -4,10 +4,9 @@ import { v4 } from 'uuid';
 import { FolderItemFactory, ItemType } from '@graasp/sdk';
 
 import { MOCK_LOGGER } from '../../../../../test/app';
-import { Repositories } from '../../../../utils/repositories';
-import { Member } from '../../../member/entities/member';
+import { Item } from '../../../../drizzle/types';
+import { MinimalMember } from '../../../../types';
 import { ThumbnailService } from '../../../thumbnail/service';
-import { Item } from '../../entities/Item';
 import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
@@ -23,14 +22,12 @@ const shortcutService = new ShortcutItemService(
 const id = v4();
 const MOCK_ITEM = { id, type: ItemType.SHORTCUT } as Item;
 
-const MOCK_MEMBER = { extra: { lang: 'en' } } as Member;
-const repositories = {
-  itemRepository: {
-    getOneOrThrow: async () => {
-      return MOCK_ITEM;
-    },
-  } as unknown as ItemRepository,
-} as Repositories;
+const MOCK_MEMBER = { extra: { lang: 'en' } } as MinimalMember;
+const itemRepository = {
+  getOneOrThrow: async () => {
+    return MOCK_ITEM;
+  },
+} as unknown as ItemRepository;
 
 describe('Shortcut Service', () => {
   afterEach(() => {
@@ -49,12 +46,12 @@ describe('Shortcut Service', () => {
       });
 
       const target = v4();
-      await shortcutService.postWithOptions(MOCK_MEMBER, repositories, {
+      await shortcutService.postWithOptions(app.db, MOCK_MEMBER, {
         target,
         item: { name: 'name', description: 'description' },
       });
 
-      expect(itemServicePostMock).toHaveBeenCalledWith(MOCK_MEMBER, repositories, {
+      expect(itemServicePostMock).toHaveBeenCalledWith(MOCK_MEMBER, {
         item: {
           name: 'name',
           description: 'description',
@@ -74,12 +71,12 @@ describe('Shortcut Service', () => {
         return targetItem;
       });
 
-      await shortcutService.postWithOptions(MOCK_MEMBER, repositories, {
+      await shortcutService.postWithOptions(app.db, MOCK_MEMBER, {
         target: targetItem.id,
         item: {},
       });
 
-      expect(itemServicePostMock).toHaveBeenCalledWith(MOCK_MEMBER, repositories, {
+      expect(itemServicePostMock).toHaveBeenCalledWith(MOCK_MEMBER, {
         item: {
           // eslint-disable-next-line import/no-named-as-default-member
           name: i18next.t('DEFAULT_SHORTCUT_NAME', {
@@ -96,7 +93,7 @@ describe('Shortcut Service', () => {
       jest.spyOn(ItemService.prototype, 'get').mockRejectedValue(new Error());
 
       await expect(() =>
-        shortcutService.postWithOptions(MOCK_MEMBER, repositories, {
+        shortcutService.postWithOptions(app.db, MOCK_MEMBER, {
           target: v4(),
           item: { name: 'name', description: 'description' },
         }),
@@ -106,7 +103,7 @@ describe('Shortcut Service', () => {
   describe('patch', () => {
     it('throw if item is not a shortcut', async () => {
       await expect(() =>
-        shortcutService.patch(MOCK_MEMBER, repositories, MOCK_ITEM.id, { name: 'name' }),
+        shortcutService.patch(app.db, MOCK_MEMBER, MOCK_ITEM.id, { name: 'name' }),
       ).rejects.toThrow();
     });
     it('use item service patch', async () => {
@@ -116,20 +113,20 @@ describe('Shortcut Service', () => {
           return MOCK_ITEM;
         });
 
-      await shortcutService.patch(MOCK_MEMBER, repositories, MOCK_ITEM.id, { name: 'name' });
+      await shortcutService.patch(app.db, MOCK_MEMBER, MOCK_ITEM.id, { name: 'name' });
 
-      expect(itemServicePatchMock).toHaveBeenCalledWith(MOCK_MEMBER, repositories, MOCK_ITEM.id, {
+      expect(itemServicePatchMock).toHaveBeenCalledWith(MOCK_MEMBER, MOCK_ITEM.id, {
         name: 'name',
       });
     });
 
     it('Cannot update not found item given id', async () => {
-      jest.spyOn(repositories.itemRepository, 'getOneOrThrow').mockImplementation(() => {
+      jest.spyOn(itemRepository, 'getOneOrThrow').mockImplementation(() => {
         throw new Error();
       });
 
       await expect(() =>
-        shortcutService.patch(MOCK_MEMBER, repositories, v4(), { name: 'name' }),
+        shortcutService.patch(app.db, MOCK_MEMBER, v4(), { name: 'name' }),
       ).rejects.toThrow();
     });
   });

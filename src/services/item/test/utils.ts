@@ -1,12 +1,12 @@
 import { MAX_TREE_LEVELS } from '@graasp/sdk';
 
-import { Member } from '../../member/entities/member';
-import { Item } from '../entities/Item';
+import { Item } from '../../../drizzle/types';
+import { MaybeUser } from '../../../types';
 import { ItemTestUtils } from './fixtures/items';
 
 const testUtils = new ItemTestUtils();
 
-export const saveUntilMaxDescendants = async (parent: Item, actor: Member) => {
+export const saveUntilMaxDescendants = async (parent: Item, actor: MaybeUser) => {
   // save maximum depth
   // TODO: DYNAMIC
   let currentParent = parent;

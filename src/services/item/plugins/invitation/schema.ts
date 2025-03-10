@@ -18,7 +18,7 @@ export const invitationSchemaRef = registerSchemaAsRef(
       id: customType.UUID(),
       email: Type.String({ format: 'email' }),
       name: Type.Optional(customType.Nullable(Type.String())),
-      permission: Type.Enum(PermissionLevel),
+      permission: customType.EnumString(Object.values(PermissionLevel)),
       item: itemSchemaRef,
       createdAt: customType.DateTime(),
       updatedAt: customType.DateTime(),

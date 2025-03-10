@@ -1,11 +1,11 @@
 import { fastifyMultipart } from '@fastify/multipart';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { HttpMethod } from '@graasp/sdk';
-
 import { resolveDependency } from '../../../../../../../di/utils';
+import { DBConnection, db } from '../../../../../../../drizzle/db';
+import { AppSettingRaw, AppSettingWithItem } from '../../../../../../../drizzle/types';
+import { AuthenticatedUser, MinimalMember } from '../../../../../../../types';
 import { asDefined } from '../../../../../../../utils/assertions';
-import { Repositories, buildRepositories } from '../../../../../../../utils/repositories';
 import {
   authenticateAppsJWT,
   guestAuthenticateAppsJWT,
@@ -16,9 +16,7 @@ import {
   UploadEmptyFileError,
   UploadFileUnexpectedError,
 } from '../../../../../../file/utils/errors';
-import { Actor, Member } from '../../../../../../member/entities/member';
 import { DEFAULT_MAX_FILE_SIZE } from '../../../../file/utils/constants';
-import { AppSetting } from '../../appSettings';
 import { PreventUpdateAppSettingFile } from '../../errors';
 import type { AppSettingService } from '../../service';
 import { download, upload } from './schema';
@@ -31,8 +29,6 @@ export interface GraaspPluginFileOptions {
 
 const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fastify, options) => {
   const { maxFileSize = DEFAULT_MAX_FILE_SIZE, appSettingService } = options;
-
-  const { db } = fastify;
 
   const fileService = resolveDependency(FileService);
   const appSettingFileService = resolveDependency(AppSettingFileService);
@@ -51,34 +47,40 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
 
   // register post delete handler to remove the file object after item delete
   const deleteHook = async (
-    actor: Actor,
-    repositories: Repositories,
-    { appSetting }: { appSetting: AppSetting; itemId: string },
+    actor: AuthenticatedUser,
+    db: DBConnection,
+    { appSetting }: { appSetting: AppSettingRaw; itemId: string },
   ) => {
-    await appSettingFileService.deleteOne(actor, repositories, appSetting);
+    await appSettingFileService.deleteOne(db, actor, appSetting);
   };
   appSettingService.hooks.setPostHook('delete', deleteHook);
 
   // app setting copy hook
   const hook = async (
-    actor: Member,
-    repositories: Repositories,
-    { appSettings }: { appSettings: AppSetting[]; originalItemId: string; copyItemId: string },
+    actor: MinimalMember,
+    db: DBConnection,
+    {
+      appSettings,
+    }: {
+      appSettings: AppSettingWithItem[];
+      originalItemId: string;
+      copyItemId: string;
+    },
   ) => {
     // copy file only if content is a file
-    const isFileSetting = (a: AppSetting) => a.data[fileService.fileType];
+    const isFileSetting = (a) => a.data[fileService.fileType];
     const toCopy = appSettings.filter(isFileSetting);
     if (toCopy.length) {
-      await appSettingFileService.copyMany(actor, repositories, toCopy);
+      await appSettingFileService.copyMany(db, actor, toCopy);
     }
   };
   appSettingService.hooks.setPostHook('copyMany', hook);
 
   // prevent patch on app setting file
   const patchPreHook = async (
-    _actor: Actor,
-    _repositories: Repositories,
-    { appSetting }: { appSetting: Partial<AppSetting> },
+    _actor: MinimalMember,
+    _db: DBConnection,
+    { appSetting }: { appSetting: Partial<AppSettingRaw> },
   ) => {
     if (appSetting?.data) {
       if (appSetting.data[fileService.fileType]) {
@@ -88,21 +90,20 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
   };
   appSettingService.hooks.setPreHook('patch', patchPreHook);
 
-  fastify.route({
-    method: HttpMethod.Post,
-    url: '/app-settings/upload',
-    schema: upload,
-    preHandler: guestAuthenticateAppsJWT,
-    handler: async (request) => {
+  fastify.post(
+    '/app-settings/upload',
+    {
+      schema: upload,
+      preHandler: guestAuthenticateAppsJWT,
+    },
+    async (request) => {
       const { user } = request;
       const account = asDefined(user?.account);
       const app = asDefined(user?.app);
       // TODO: if one file fails, keep other files??? APPLY ROLLBACK
       // THEN WE SHOULD MOVE THE TRANSACTION
       return db
-        .transaction(async (manager) => {
-          const repositories = buildRepositories(manager);
-
+        .transaction(async (tx) => {
           // const files = request.files();
           // files are saved in temporary folder in disk, they are removed when the response ends
           // necessary to get file size -> can use stream busboy only otherwise
@@ -110,7 +111,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
           if (!file) {
             throw new UploadEmptyFileError();
           }
-          return appSettingFileService.upload(account, repositories, file, app.item);
+          return appSettingFileService.upload(tx, account, file, app.item);
         })
         .catch((e) => {
           console.error(e);
@@ -123,7 +124,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
           throw new UploadFileUnexpectedError(e);
         });
     },
-  });
+  );
 
   fastify.get(
     '/app-settings/:id/download',
@@ -140,7 +141,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
       const app = asDefined(user?.app);
 
       return appSettingFileService
-        .download(member, buildRepositories(), { item: app.item, appSettingId })
+        .download(db, member, { item: app.item, appSettingId })
         .catch((e) => {
           if (e.code) {
             throw e;

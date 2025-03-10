@@ -6,30 +6,36 @@ import { MultipartFile } from '@fastify/multipart';
 
 import { AppDataVisibility, FileItemProperties, UUID } from '@graasp/sdk';
 
-import { Repositories } from '../../../../../../../utils/repositories';
-import { Account } from '../../../../../../account/entities/account';
+import { DBConnection } from '../../../../../../../drizzle/db';
+import { AppDataRaw, Item } from '../../../../../../../drizzle/types';
+import { AuthenticatedUser } from '../../../../../../../types';
 import FileService from '../../../../../../file/service';
-import { Item } from '../../../../../entities/Item';
 import { APP_DATA_TYPE_FILE } from '../../../constants';
-import { AppData } from '../../appData';
+import { AppDataService } from '../../appData.service';
 import { NotAppDataFile } from '../../errors';
-import { AppDataService } from '../../service';
+import { AppDataRepository } from '../../repository';
 
 @singleton()
 class AppDataFileService {
   private readonly appDataService: AppDataService;
   private readonly fileService: FileService;
+  private readonly appDataRepository: AppDataRepository;
 
   buildFilePath(itemId: UUID, appDataId: UUID) {
     return path.join('apps', 'app-data', itemId, appDataId);
   }
 
-  constructor(appDataService: AppDataService, fileService: FileService) {
+  constructor(
+    appDataService: AppDataService,
+    fileService: FileService,
+    appDataRepository: AppDataRepository,
+  ) {
     this.appDataService = appDataService;
     this.fileService = fileService;
+    this.appDataRepository = appDataRepository;
   }
 
-  async upload(account: Account, repositories: Repositories, file: MultipartFile, item: Item) {
+  async upload(db: DBConnection, account: AuthenticatedUser, file: MultipartFile, item: Item) {
     const { filename, mimetype, file: stream } = file;
     const appDataId = v4();
     const filepath = this.buildFilePath(item.id, appDataId); // parentId, filename
@@ -63,7 +69,7 @@ class AppDataFileService {
 
     // const name = filename.substring(0, ORIGINAL_FILENAME_TRUNCATE_LIMIT);
 
-    const appData = await repositories.appDataRepository.addOne({
+    const appData = await this.appDataRepository.addOne(db, {
       itemId: item.id,
       actorId: account.id,
       appData: {
@@ -80,12 +86,12 @@ class AppDataFileService {
   }
 
   async download(
-    account: Account,
-    repositories: Repositories,
+    db: DBConnection,
+    account: AuthenticatedUser,
     { item, appDataId }: { item: Item; appDataId: UUID },
   ) {
     // get app data and check it is a file
-    const appData = await this.appDataService.get(account, repositories, item, appDataId);
+    const appData = await this.appDataService.get(db, account, item, appDataId);
     const fileProp = appData.data[this.fileService.fileType] as FileItemProperties;
     if (!fileProp) {
       throw new NotAppDataFile(appData);
@@ -100,7 +106,7 @@ class AppDataFileService {
     return result;
   }
 
-  async deleteOne(appData: AppData) {
+  async deleteOne(db: DBConnection, appData: AppDataRaw) {
     // TODO: check rights? but only use in posthook
     try {
       // delete file only if type is the current file type

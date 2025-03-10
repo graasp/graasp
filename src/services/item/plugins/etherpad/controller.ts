@@ -5,18 +5,16 @@ import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
-import { isAuthenticated } from '../../../auth/plugins/passport';
-import { matchOne } from '../../../authorization';
-import { assertIsMember } from '../../../member/entities/member';
+import { isAuthenticated, matchOne } from '../../../auth/plugins/passport';
+import { assertIsMember } from '../../../authentication';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { ItemService } from '../../service';
 import { createEtherpad, getEtherpadFromItem, updateEtherpad } from './schemas';
 import { EtherpadItemService } from './service';
 
 const endpoints: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { db } = fastify;
   const itemService = resolveDependency(ItemService);
   const etherpadItemService = resolveDependency(EtherpadItemService);
 
@@ -38,13 +36,8 @@ const endpoints: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
 
-      return await db.transaction(async (manager) => {
-        return await etherpadItemService.createEtherpadItem(
-          member,
-          buildRepositories(manager),
-          body,
-          parentId,
-        );
+      return await db.transaction(async (tx) => {
+        return await etherpadItemService.createEtherpadItem(tx, member, body, parentId);
       });
     },
   );
@@ -67,13 +60,8 @@ const endpoints: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
 
-      await db.transaction(async (manager) => {
-        return await etherpadItemService.patchWithOptions(
-          member,
-          buildRepositories(manager),
-          id,
-          body,
-        );
+      await db.transaction(async (tx) => {
+        return await etherpadItemService.patchWithOptions(tx, member, id, body);
       });
       reply.status(StatusCodes.NO_CONTENT);
     },
@@ -81,9 +69,8 @@ const endpoints: FastifyPluginAsyncTypebox = async (fastify) => {
 
   /**
    * Etherpad view in given mode (read or write)
-   * Access should be granted if and only if the user has at least write
-   * access to the item. If user only has read permission, then the pad
-   * should be displayed in read-only mode
+   * Access should be granted if and only if the user has at least write access to the item.
+   * If user only has read permission, then the pad should be displayed in read-only mode.
    */
   fastify.get(
     '/view/:itemId',
@@ -94,10 +81,12 @@ const endpoints: FastifyPluginAsyncTypebox = async (fastify) => {
         params: { itemId },
         query: { mode = 'read' },
       } = request;
-      const member = asDefined(user?.account);
+      const account = asDefined(user?.account);
+      assertIsMember(account);
 
       const { cookie, padUrl } = await etherpadItemService.getEtherpadFromItem(
-        member,
+        db,
+        account,
         itemId,
         mode,
       );
@@ -110,7 +99,7 @@ const endpoints: FastifyPluginAsyncTypebox = async (fastify) => {
   /**
    * Delete etherpad on item delete
    */
-  itemService.hooks.setPreHook('delete', async (actor, repositories, { item }) => {
+  itemService.hooks.setPreHook('delete', async (actor, _db, { item }) => {
     if (!actor) {
       return;
     }
@@ -120,7 +109,7 @@ const endpoints: FastifyPluginAsyncTypebox = async (fastify) => {
   /**
    * Copy etherpad on item copy
    */
-  itemService.hooks.setPreHook('copy', async (actor, repositories, { original: item }) => {
+  itemService.hooks.setPreHook('copy', async (actor, _db, { original: item }) => {
     if (!actor) {
       return;
     }

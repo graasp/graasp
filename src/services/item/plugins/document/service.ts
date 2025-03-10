@@ -3,13 +3,22 @@ import { singleton } from 'tsyringe';
 
 import { DocumentItemExtraProperties, ItemGeolocation, ItemType, UUID } from '@graasp/sdk';
 
+import { DBConnection } from '../../../../drizzle/db';
+import { Item } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
-import { Repositories } from '../../../../utils/repositories';
-import { Member } from '../../../member/entities/member';
+import { MinimalMember } from '../../../../types';
+import { AuthorizationService } from '../../../authorization';
+import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { ThumbnailService } from '../../../thumbnail/service';
-import { DocumentItem, Item, isItemType } from '../../entities/Item';
+import { ItemWrapperService } from '../../ItemWrapper';
+import { BasicItemService } from '../../basic.service';
+import { DocumentItem, isItemType } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
+import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
+import { ItemGeolocationRepository } from '../geolocation/repository';
+import { ItemVisibilityRepository } from '../itemVisibility/repository';
+import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../thumbnail/service';
 
@@ -20,10 +29,31 @@ export class DocumentItemService extends ItemService {
   constructor(
     thumbnailService: ThumbnailService,
     itemThumbnailService: ItemThumbnailService,
+    itemMembershipRepository: ItemMembershipRepository,
     meilisearchWrapper: MeiliSearchWrapper,
+    itemRepository: ItemRepository,
+    itemPublishedRepository: ItemPublishedRepository,
+    itemGeolocationRepository: ItemGeolocationRepository,
+    authorizationService: AuthorizationService,
+    itemWrapperService: ItemWrapperService,
+    itemVisibilityRepository: ItemVisibilityRepository,
+    basicItemService: BasicItemService,
     log: BaseLogger,
   ) {
-    super(thumbnailService, itemThumbnailService, meilisearchWrapper, log);
+    super(
+      thumbnailService,
+      itemThumbnailService,
+      itemMembershipRepository,
+      meilisearchWrapper,
+      itemRepository,
+      itemPublishedRepository,
+      itemGeolocationRepository,
+      authorizationService,
+      itemWrapperService,
+      itemVisibilityRepository,
+      basicItemService,
+      log,
+    );
   }
 
   /**
@@ -61,8 +91,8 @@ export class DocumentItemService extends ItemService {
   }
 
   async postWithOptions(
-    member: Member,
-    repositories: Repositories,
+    db: DBConnection,
+    member: MinimalMember,
     args: {
       name: Item['name'];
       content: DocumentItemExtraProperties['content'];
@@ -83,22 +113,20 @@ export class DocumentItemService extends ItemService {
         flavor,
       }),
     );
-    return (await this.post(member, repositories, {
+    return (await this.post(db, member, {
       item: newItem,
       ...options,
     })) as DocumentItem;
   }
 
   async patchWithOptions(
-    member: Member,
-    repositories: Repositories,
+    db: DBConnection,
+    member: MinimalMember,
     itemId: UUID,
     args: Partial<Pick<Item, 'name' | 'description' | 'lang'>> &
       Partial<DocumentItemExtraProperties>,
   ): Promise<DocumentItem> {
-    const { itemRepository } = repositories;
-
-    const item = await itemRepository.getOneOrThrow(itemId);
+    const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
     // check item is document
     if (!isItemType(item, ItemType.DOCUMENT)) {
@@ -119,6 +147,6 @@ export class DocumentItemService extends ItemService {
         item.extra.document,
       ),
     );
-    return (await this.patch(member, repositories, itemId, newItem)) as DocumentItem;
+    return (await this.patch(db, member, itemId, newItem)) as DocumentItem;
   }
 }

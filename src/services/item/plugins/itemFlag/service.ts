@@ -2,28 +2,39 @@ import { singleton } from 'tsyringe';
 
 import { FlagType } from '@graasp/sdk';
 
-import { Repositories } from '../../../../utils/repositories';
-import { Account } from '../../../account/entities/account';
-import { ItemService } from '../../service';
+import { DBConnection } from '../../../../drizzle/db';
+import { AuthenticatedUser } from '../../../../types';
+import { BasicItemService } from '../../basic.service';
+import { ItemFlagRepository } from './itemFlag.repository';
+import { FlagOptionsType } from './itemFlag.types';
 
 @singleton()
 export class ItemFlagService {
-  private readonly itemService: ItemService;
+  private readonly basicItemService: BasicItemService;
+  private readonly itemFlagRepository: ItemFlagRepository;
 
-  constructor(itemService: ItemService) {
-    this.itemService = itemService;
+  constructor(basicItemService: BasicItemService, itemFlagRepository: ItemFlagRepository) {
+    this.basicItemService = basicItemService;
+    this.itemFlagRepository = itemFlagRepository;
   }
 
   async getAllFlagTypes() {
     return Object.values(FlagType);
   }
 
-  async post(account: Account, repositories: Repositories, itemId: string, flagType: FlagType) {
-    const { itemFlagRepository } = repositories;
-
+  async post(
+    db: DBConnection,
+    actor: AuthenticatedUser,
+    itemId: string,
+    flagType: FlagOptionsType,
+  ) {
     // only register member can report
-    await this.itemService.get(account, repositories, itemId);
+    await this.basicItemService.get(db, actor, itemId);
 
-    return itemFlagRepository.addOne({ flagType, creator: account, itemId });
+    return this.itemFlagRepository.addOne(db, {
+      flagType,
+      creatorId: actor.id,
+      itemId,
+    });
   }
 }

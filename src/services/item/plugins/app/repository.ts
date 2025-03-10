@@ -1,43 +1,53 @@
-import { ArrayContains, EntityManager } from 'typeorm';
+import { and, arrayContains, count, desc, eq, sql } from 'drizzle-orm/sql';
 
 import { AuthTokenSubject } from '@graasp/sdk';
 
-import { AbstractRepository } from '../../../../repositories/AbstractRepository';
-import { App } from './entities/app';
+import { DBConnection } from '../../../../drizzle/db';
+import { apps, items, publishers } from '../../../../drizzle/schema';
+import { AppRaw } from '../../../../drizzle/types';
 import { InvalidApplicationOrigin } from './errors';
 
-export class AppRepository extends AbstractRepository<App> {
-  constructor(manager?: EntityManager) {
-    super(App, manager);
-  }
-  async getAll(publisherId?: string) {
-    // undefined should get all
-    return await this.repository.findBy({ publisher: { id: publisherId } });
+export class AppRepository {
+  async getAll(db: DBConnection, publisherId: string): Promise<AppRaw[]> {
+    return await db.query.apps.findMany({
+      where: eq(apps.publisherId, publisherId),
+    });
   }
 
-  async getMostUsedApps(memberId: string): Promise<{ url: string; name: string; count: number }[]> {
-    const data = await this.repository
-      .createQueryBuilder('app')
+  async getMostUsedApps(
+    db: DBConnection,
+    memberId: string,
+  ): Promise<{ url: string; name: string; count: number }[]> {
+    const data = await db
+      .select({ url: apps.url, name: apps.name, count: count(items.id) })
+      .from(apps)
       .innerJoin(
-        'item',
-        'item',
-        "item.extra::json->'app'->>'url' = app.url AND item.creator_id = :memberId",
-        { memberId },
+        items,
+        and(eq(sql`${items.extra}::json->'app'->>'url'`, apps.url), eq(items.creatorId, memberId)),
       )
-      .select('app.url', 'url')
-      .addSelect('app.name', 'name')
-      .addSelect('COUNT(item.id)', 'count')
-      .groupBy('app.id, app.url, app.name')
-      .orderBy('count', 'DESC')
-      .getRawMany();
+      // TODO: verify
+      .groupBy(apps.id)
+      // .groupBy((t) => [t.id, t.url, t.name])
+      .orderBy(desc(sql.raw('count')));
+
     return data;
   }
 
-  async isValidAppOrigin(appDetails: { key: string; origin: string }) {
-    const valid = await this.repository.findOneBy({
-      key: appDetails.key,
-      publisher: { origins: ArrayContains([appDetails.origin]) },
-    });
+  async isValidAppOrigin(
+    db: DBConnection,
+    appDetails: { key: string; origin: string },
+  ): Promise<void> {
+    const valid = await db
+      .select()
+      .from(apps)
+      .where(eq(apps.key, appDetails.key))
+      .rightJoin(
+        publishers,
+        and(
+          eq(publishers.id, apps.publisherId),
+          arrayContains(publishers.origins, [appDetails.origin]),
+        ),
+      );
     if (!valid) {
       throw new InvalidApplicationOrigin();
     }

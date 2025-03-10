@@ -10,19 +10,23 @@ import build, {
   mockAuthenticate,
   unmockAuthenticate,
 } from '../../../../../../test/app';
+import { ItemLikeRaw, ItemLikeWithItemAndAccount } from '../../../../../drizzle/types';
+import { MinimalMember } from '../../../../../types';
 import { MemberCannotAccess } from '../../../../../utils/errors';
-import { Member } from '../../../../member/entities/member';
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemTestUtils, expectManyPackedItems } from '../../../test/fixtures/items';
 import { setItemPublic } from '../../itemVisibility/test/fixtures';
 import { ItemLikeNotFound } from '../errors';
-import { ItemLike } from '../itemLike';
 import { ItemLikeRepository } from '../repository';
 import { saveItemLikes } from './utils';
 
 const testUtils = new ItemTestUtils();
 
-export const expectItemLike = (newLike: ItemLike, correctLike: ItemLike, creator?: Member) => {
+export const expectItemLike = (
+  newLike: ItemLikeWithItemAndAccount,
+  correctLike: ItemLikeWithItemAndAccount,
+  creator?: MinimalMember,
+) => {
   expect(newLike.item.id).toEqual(correctLike.item.id);
 
   if (newLike.creator && creator) {
@@ -31,9 +35,9 @@ export const expectItemLike = (newLike: ItemLike, correctLike: ItemLike, creator
 };
 
 export const expectManyItemLikes = (
-  newLikes: ItemLike[],
-  correctLikes: ItemLike[],
-  creator?: Member,
+  newLikes: ItemLikeRaw[],
+  correctLikes: ItemLikeRaw[],
+  creator?: MinimalMember,
 ) => {
   expect(newLikes).toHaveLength(correctLikes.length);
   newLikes.forEach((l) => {

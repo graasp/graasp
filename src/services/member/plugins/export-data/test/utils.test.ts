@@ -6,7 +6,6 @@ import {
   STRING_TYPE,
   buildObjectSchema,
 } from '../utils/schema.utils';
-import { schemaToSelectMapper } from '../utils/selection.utils';
 
 const simpleSchema = (options?: BuildSchemaOptions) =>
   buildObjectSchema(
@@ -197,29 +196,6 @@ describe('Test utils', () => {
       };
 
       expect(schemaWithReference()).toEqual(expectedSchema);
-    });
-  });
-
-  describe('Selection utils', () => {
-    const expectedSelection = {
-      id: true,
-      name: true,
-      external: { id: true, name: true, createdAt: true },
-      extra: {},
-    };
-
-    it('Generates selection correctly', () => {
-      expect(schemaToSelectMapper(schemaWithReference())).toEqual(expectedSelection);
-    });
-    it('Generates selection correctly without required props', () => {
-      expect(schemaToSelectMapper(schemaWithReference({ requiredProps: [] }))).toEqual(
-        expectedSelection,
-      );
-    });
-    it('Generates selection correctly with nullable props', () => {
-      expect(schemaToSelectMapper(schemaWithReference({ nullable: true }))).toEqual(
-        expectedSelection,
-      );
     });
   });
 });

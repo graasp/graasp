@@ -52,6 +52,8 @@ export const createOwnProfile = {
   response: {
     [StatusCodes.CREATED]: profileMemberSchemaRef,
     [StatusCodes.UNAUTHORIZED]: errorSchemaRef,
+    // creation issue
+    [StatusCodes.INTERNAL_SERVER_ERROR]: errorSchemaRef,
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;

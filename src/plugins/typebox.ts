@@ -65,7 +65,7 @@ export const schemaRegisterPlugin: FastifyPluginAsyncTypebox = async (fastify) =
  */
 export const customType = {
   DateTime: (options?: UnsafeOptions) =>
-    Type.Unsafe<Date>({ ...options, type: 'string', format: 'date-time' }),
+    Type.Unsafe<string>({ ...options, type: 'string', format: 'date-time' }),
   UUID: (options?: StringOptions) => Type.String({ ...options, format: 'uuid' }),
   Username: (options?: StringOptions) =>
     Type.String({

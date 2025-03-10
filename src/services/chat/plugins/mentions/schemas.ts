@@ -12,7 +12,7 @@ import { MentionStatus } from '@graasp/sdk';
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
 import { accountSchemaRef } from '../../../account/schemas';
-import { chatMessageSchemaRef } from '../../schemas';
+import { rawChatMessageSchemaRef } from '../../schemas';
 
 export const minimalChatMentionSchemaRef = registerSchemaAsRef(
   'minimalChatMention',
@@ -23,7 +23,7 @@ export const minimalChatMentionSchemaRef = registerSchemaAsRef(
       account: accountSchemaRef,
       createdAt: customType.DateTime(),
       updatedAt: customType.DateTime(),
-      status: Type.Enum(MentionStatus),
+      status: customType.EnumString(Object.values(MentionStatus)),
     },
     {
       description: 'Mention of a user in a chat, without message',
@@ -38,7 +38,7 @@ export const completeChatMentionSchemaRef = registerSchemaAsRef(
     [
       minimalChatMentionSchemaRef,
       customType.StrictObject({
-        message: chatMessageSchemaRef,
+        message: rawChatMessageSchemaRef,
       }),
     ],
     {

@@ -3,14 +3,8 @@ import { FastifyInstance } from 'fastify';
 import { FolderItemFactory } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
-import { AppDataSource } from '../../../../plugins/datasource';
-import { Account } from '../../../account/entities/account';
-import { Action } from '../../../action/entities/action';
-import { ChatMessage } from '../../../chat/chatMessage';
-import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
-import { Member } from '../../../member/entities/member';
+import { AccountRaw, ActionRaw, Item, ItemMembershipRaw } from '../../../../drizzle/types';
 import { saveMembers } from '../../../member/test/fixtures/members';
-import { Item } from '../../entities/Item';
 import { saveAppActions } from '../app/appAction/test/fixtures';
 import { saveAppData } from '../app/appData/test/fixtures';
 import { saveAppSettings } from '../app/appSetting/test/fixtures';
@@ -20,14 +14,14 @@ const rawItemRepository = AppDataSource.getRepository(Item);
 const rawChatMessageRepository = AppDataSource.getRepository(ChatMessage);
 
 const descendants: Item[] = [];
-const actions: Action[] = [];
-const itemMemberships: ItemMembership[] = [];
+const actions: ActionRaw[] = [];
+const itemMemberships: ItemMembershipRaw[] = [];
 const metadata = {
   numActionsRetrieved: 0,
   requestedSampleSize: 0,
 };
 
-const expectMinimalAccountOrUndefined = (account?: Partial<Account> | null) => {
+const expectMinimalAccountOrUndefined = (account?: Partial<AccountRaw> | null) => {
   if (!account) {
     return;
   }
@@ -81,7 +75,7 @@ describe('Base Analytics', () => {
     });
 
     for (const m of members) {
-      const member = analytics.members.find((me) => me.name === m.name) as Member | undefined;
+      const member = analytics.members.find((me) => me.name === m.name) as AccountRaw | undefined;
       // lang exists
       if (m?.extra?.lang) {
         expect(member?.extra.lang).toBeTruthy();

@@ -27,7 +27,7 @@ const rawGuestRepository = AppDataSource.getRepository(Guest);
 const rawItemMembershipRepository = AppDataSource.getRepository(ItemMembership);
 const rawItemLoginSchemaRepository = AppDataSource.getRepository(ItemLoginSchemaEntity);
 
-const expectItemLogin = (member: Account, m: Account) => {
+const expectItemLogin = (member: AccountRaw, m: AccountRaw) => {
   expectAccount(member, m);
 };
 

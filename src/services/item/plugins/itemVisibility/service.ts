@@ -1,51 +1,53 @@
 import { singleton } from 'tsyringe';
 
-import { ItemVisibilityType, PermissionLevel } from '@graasp/sdk';
+import { ItemVisibilityOptionsType, PermissionLevel } from '@graasp/sdk';
 
-import { Repositories } from '../../../../utils/repositories';
-import { Member } from '../../../member/entities/member';
-import { ItemService } from '../../service';
+import { DBConnection } from '../../../../drizzle/db';
+import { MinimalMember } from '../../../../types';
+import { BasicItemService } from '../../basic.service';
+import { ItemVisibilityRepository } from './repository';
 
 @singleton()
 export class ItemVisibilityService {
-  private readonly itemService: ItemService;
+  private readonly basicItemService: BasicItemService;
+  private readonly itemVisibilityRepository: ItemVisibilityRepository;
 
-  constructor(itemService: ItemService) {
-    this.itemService = itemService;
-  }
-
-  async has(
-    { itemVisibilityRepository }: Repositories,
-    path: string,
-    visibilityType: ItemVisibilityType,
+  constructor(
+    basicItemService: BasicItemService,
+    itemVisibilityRepository: ItemVisibilityRepository,
   ) {
-    return await itemVisibilityRepository.getType(path, visibilityType);
+    this.basicItemService = basicItemService;
+    this.itemVisibilityRepository = itemVisibilityRepository;
   }
 
   async post(
-    member: Member,
-    repositories: Repositories,
+    db: DBConnection,
+    member: MinimalMember,
     id: string,
-    visibilityType: ItemVisibilityType,
+    visibilityType: ItemVisibilityOptionsType,
   ) {
-    const { itemVisibilityRepository } = repositories;
-    const item = await this.itemService.get(member, repositories, id, PermissionLevel.Admin);
+    const item = await this.basicItemService.get(db, member, id, PermissionLevel.Admin);
+    const newVisibility = await this.itemVisibilityRepository.post(
+      db,
+      member.id,
+      item.path,
+      visibilityType,
+    );
     return {
-      ...(await itemVisibilityRepository.post(member, item, visibilityType)),
+      ...newVisibility,
       item: { path: item.path },
     };
   }
 
   async deleteOne(
-    member: Member,
-    repositories: Repositories,
+    db: DBConnection,
+    member: MinimalMember,
     id: string,
-    visibilityType: ItemVisibilityType,
+    visibilityType: ItemVisibilityOptionsType,
   ) {
-    const { itemVisibilityRepository } = repositories;
-    const item = await this.itemService.get(member, repositories, id, PermissionLevel.Admin);
+    const item = await this.basicItemService.get(db, member, id, PermissionLevel.Admin);
 
-    await itemVisibilityRepository.deleteOne(item, visibilityType);
+    await this.itemVisibilityRepository.deleteOne(db, item, visibilityType);
     return { item: { path: item.path } };
   }
 }

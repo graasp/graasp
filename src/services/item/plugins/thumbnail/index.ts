@@ -4,13 +4,12 @@ import { fastifyMultipart } from '@fastify/multipart';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import { THUMBNAILS_ROUTE_PREFIX } from '../../../../utils/config';
-import { buildRepositories } from '../../../../utils/repositories';
-import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
-import { matchOne } from '../../../authorization';
+import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import { assertIsMember } from '../../../authentication';
 import { UploadFileUnexpectedError } from '../../../file/utils/errors';
-import { assertIsMember } from '../../../member/entities/member';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
 import { deleteSchema, download, upload } from './schemas';
@@ -24,7 +23,6 @@ type GraaspThumbnailsOptions = {
 
 const plugin: FastifyPluginAsyncTypebox<GraaspThumbnailsOptions> = async (fastify, options) => {
   const { maxFileSize = DEFAULT_MAX_FILE_SIZE } = options;
-  const { db } = fastify;
 
   const itemThumbnailService = resolveDependency(ItemThumbnailService);
 
@@ -55,7 +53,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspThumbnailsOptions> = async (fastif
       const member = asDefined(user?.account);
       assertIsMember(member);
       return db
-        .transaction(async (manager) => {
+        .transaction(async (tx) => {
           // const files = request.files();
           // files are saved in temporary folder in disk, they are removed when the response ends
           // necessary to get file size -> can use stream busboy only otherwise
@@ -66,7 +64,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspThumbnailsOptions> = async (fastif
             throw new UploadFileNotImageError();
           }
 
-          await itemThumbnailService.upload(member, buildRepositories(manager), itemId, file.file);
+          await itemThumbnailService.upload(tx, member, itemId, file.file);
 
           reply.status(StatusCodes.NO_CONTENT);
         })
@@ -88,7 +86,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspThumbnailsOptions> = async (fastif
       preHandler: optionalIsAuthenticated,
     },
     async ({ user, params: { size, id: itemId } }, reply) => {
-      const url = await itemThumbnailService.getUrl(user?.account, buildRepositories(), {
+      const url = await itemThumbnailService.getUrl(db, user?.account, {
         itemId,
         size,
       });
@@ -103,7 +101,10 @@ const plugin: FastifyPluginAsyncTypebox<GraaspThumbnailsOptions> = async (fastif
 
   fastify.delete(
     `/:id${THUMBNAILS_ROUTE_PREFIX}`,
-    { schema: deleteSchema, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
+    {
+      schema: deleteSchema,
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
+    },
     async (request, reply) => {
       const {
         user,
@@ -111,7 +112,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspThumbnailsOptions> = async (fastif
       } = request;
       const member = asDefined(user?.account);
       assertIsMember(member);
-      await itemThumbnailService.deleteAllThumbnailSizes(member, buildRepositories(), {
+      await itemThumbnailService.deleteAllThumbnailSizes(db, member, {
         itemId,
       });
       reply.status(StatusCodes.NO_CONTENT);

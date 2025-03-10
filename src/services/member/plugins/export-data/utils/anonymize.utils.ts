@@ -1,7 +1,6 @@
 import fastJson from 'fast-json-stringify';
 
-import { ChatMessage } from '../../../../chat/chatMessage';
-import { ChatMention } from '../../../../chat/plugins/mentions/chatMention';
+import { ChatMentionWithMessage, ChatMessageRaw } from '../../../../../drizzle/types';
 
 const ANONYMIZED_ID = 'anonymous-id';
 const CURRENT_ACTOR_ID = 'you';
@@ -19,7 +18,7 @@ export const anonymizeMentionsMessage = ({
   results,
   exportingActorId,
 }: {
-  results: ChatMention[];
+  results: ChatMentionWithMessage[];
   exportingActorId: string;
 }) => {
   return results.map((r) => {
@@ -38,7 +37,7 @@ export const anonymizeMessages = ({
   results,
   exportingActorId,
 }: {
-  results: ChatMessage[];
+  results: ChatMessageRaw[];
   exportingActorId: string;
 }) => {
   return results.map((r) => ({

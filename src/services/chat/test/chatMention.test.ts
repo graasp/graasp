@@ -1,5 +1,4 @@
 import { StatusCodes } from 'http-status-codes';
-import { In } from 'typeorm';
 import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
@@ -7,23 +6,21 @@ import { FastifyInstance } from 'fastify';
 import { HttpMethod, MentionStatus } from '@graasp/sdk';
 
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
-import { AppDataSource } from '../../../plugins/datasource';
+import { ChatMentionRaw } from '../../../drizzle/types';
+import { MaybeUser, MinimalMember } from '../../../types';
 import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
-import { Actor, Member } from '../../member/entities/member';
 import { saveMember } from '../../member/test/fixtures/members';
-import { ChatMessage } from '../chatMessage';
 import { ChatMentionNotFound, MemberCannotAccessMention } from '../errors';
-import { ChatMention } from '../plugins/mentions/chatMention';
 import { saveItemWithChatMessages } from './chatMessage.test';
 
 const adminRepository = AppDataSource.getRepository(ChatMention);
 
 // create item, chat messages from another member and members
 // as well as mentions of actor
-const saveItemWithChatMessagesAndMentions = async (actor: Actor) => {
+const saveItemWithChatMessagesAndMentions = async (actor: MaybeUser) => {
   const otherActor = await saveMember();
   const { item, chatMessages, members } = await saveItemWithChatMessages(otherActor);
-  const chatMentions: ChatMention[] = [];
+  const chatMentions: ChatMentionRaw[] = [];
   for (const c of chatMessages) {
     chatMentions.push(await adminRepository.save({ account: actor, message: c }));
   }
@@ -31,8 +28,8 @@ const saveItemWithChatMessagesAndMentions = async (actor: Actor) => {
 };
 
 export const expectChatMentions = (
-  mentions: ChatMention[],
-  correctMentions: ChatMention[],
+  mentions: ChatMentionRaw[],
+  correctMentions: ChatMentionRaw[],
   relations: { account?: boolean; message?: { item?: boolean; creator?: boolean } } = {},
 ) => {
   const relationsMessageCreator = relations?.message?.creator ?? true;
@@ -205,9 +202,9 @@ describe('Chat Mention tests', () => {
     });
 
     describe('Signed In', () => {
-      let chatMentions: ChatMention[];
-      let chatMessages: ChatMessage[];
-      let members: Member[];
+      let chatMentions: ChatMentionRaw[];
+      let chatMessages: ChatMentionRaw[];
+      let members: MinimalMember[];
 
       beforeEach(async () => {
         const actor = await saveMember();
@@ -276,9 +273,9 @@ describe('Chat Mention tests', () => {
     });
 
     describe('Signed In', () => {
-      let chatMentions: ChatMention[];
-      let chatMessages: ChatMessage[];
-      let members: Member[];
+      let chatMentions: ChatMentionRaw[];
+      let chatMessages: ChatMessageRaw[];
+      let members: MinimalMember[];
 
       beforeEach(async () => {
         const actor = await saveMember();
@@ -289,7 +286,7 @@ describe('Chat Mention tests', () => {
 
       it('Delete all successfully', async () => {
         // more messages
-        const otherMessages: ChatMention[] = [];
+        const otherMessages: ChatMentionRaw[] = [];
         const message = chatMessages[0];
         otherMessages.push(await adminRepository.save({ message, account: members[0] }));
         otherMessages.push(await adminRepository.save({ message, account: members[1] }));

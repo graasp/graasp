@@ -4,7 +4,6 @@ import waitForExpect from 'wait-for-expect';
 import { HttpMethod } from '@graasp/sdk';
 
 import { clearDatabase } from '../../../../../../test/app';
-import { AppDataSource } from '../../../../../plugins/datasource';
 import { TestWsClient } from '../../../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../../../websockets/test/ws-app';
 import { ItemTestUtils } from '../../../test/fixtures/items';
@@ -14,7 +13,6 @@ import {
   ItemOpFeedbackEvent,
   memberItemsTopic,
 } from '../../../ws/events';
-import { RecycledItemData } from '../RecycledItemData';
 import { RecycledItemDataRepository } from '../repository';
 
 const recycledItemDataRawRepository = AppDataSource.getRepository(RecycledItemData);

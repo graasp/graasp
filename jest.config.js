@@ -1,3 +1,7 @@
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { config } = require('dotenv');
+config({ path: '.env.test', override: true });
+
 module.exports = {
   moduleFileExtensions: ['ts', 'js', 'json', 'node'],
   transform: {

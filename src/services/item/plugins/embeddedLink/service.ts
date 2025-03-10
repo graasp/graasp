@@ -13,13 +13,22 @@ import {
 } from '@graasp/sdk';
 
 import { IFRAMELY_API_DI_KEY } from '../../../../di/constants';
+import { DBConnection } from '../../../../drizzle/db';
+import { Item } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
-import { Repositories } from '../../../../utils/repositories';
-import { Member } from '../../../member/entities/member';
+import { MinimalMember } from '../../../../types';
+import { AuthorizationService } from '../../../authorization';
+import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { ThumbnailService } from '../../../thumbnail/service';
-import { EmbeddedLinkItem, Item, isItemType } from '../../entities/Item';
+import { ItemWrapperService } from '../../ItemWrapper';
+import { BasicItemService } from '../../basic.service';
+import { EmbeddedLinkItem, isItemType } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
+import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
+import { ItemGeolocationRepository } from '../geolocation/repository';
+import { ItemVisibilityRepository } from '../itemVisibility/repository';
+import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../thumbnail/service';
 import { InvalidUrl } from './errors';
@@ -65,11 +74,32 @@ export class EmbeddedLinkItemService extends ItemService {
   constructor(
     thumbnailService: ThumbnailService,
     itemThumbnailService: ItemThumbnailService,
+    itemMembershipRepository: ItemMembershipRepository,
     meilisearchWrapper: MeiliSearchWrapper,
+    itemRepository: ItemRepository,
+    itemPublishedRepository: ItemPublishedRepository,
+    itemGeolocationRepository: ItemGeolocationRepository,
+    authorizationService: AuthorizationService,
+    itemWrapperService: ItemWrapperService,
+    itemVisibilityRepository: ItemVisibilityRepository,
+    basicItemService: BasicItemService,
     log: BaseLogger,
     @inject(IFRAMELY_API_DI_KEY) iframelyHrefOrigin: string,
   ) {
-    super(thumbnailService, itemThumbnailService, meilisearchWrapper, log);
+    super(
+      thumbnailService,
+      itemThumbnailService,
+      itemMembershipRepository,
+      meilisearchWrapper,
+      itemRepository,
+      itemPublishedRepository,
+      itemGeolocationRepository,
+      authorizationService,
+      itemWrapperService,
+      itemVisibilityRepository,
+      basicItemService,
+      log,
+    );
     this.iframelyHrefOrigin = iframelyHrefOrigin;
   }
 
@@ -188,8 +218,8 @@ export class EmbeddedLinkItemService extends ItemService {
   }
 
   async postWithOptions(
-    member: Member,
-    repositories: Repositories,
+    db: DBConnection,
+    member: MinimalMember,
     args: Partial<Pick<Item, 'description' | 'lang'>> &
       Pick<Item, 'name'> & {
         url: string;
@@ -209,15 +239,15 @@ export class EmbeddedLinkItemService extends ItemService {
       { showLinkButton, showLinkIframe },
       { embeddedLink },
     );
-    return (await super.post(member, repositories, {
+    return (await super.post(db, member, {
       item: newItem,
       ...options,
     })) as EmbeddedLinkItem;
   }
 
   async patchWithOptions(
-    member: Member,
-    repositories: Repositories,
+    db: DBConnection,
+    member: MinimalMember,
     itemId: UUID,
     args: Partial<Pick<Item, 'name' | 'description' | 'lang' | 'settings'>> & {
       url?: string;
@@ -225,9 +255,7 @@ export class EmbeddedLinkItemService extends ItemService {
       showLinkButton?: boolean;
     },
   ): Promise<EmbeddedLinkItem> {
-    const { itemRepository } = repositories;
-
-    const item = await itemRepository.getOneOrThrow(itemId);
+    const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
     // check item is link
     if (!isItemType(item, ItemType.LINK)) {
@@ -253,6 +281,6 @@ export class EmbeddedLinkItemService extends ItemService {
         embeddedLink,
       },
     );
-    return (await super.patch(member, repositories, itemId, newItem)) as EmbeddedLinkItem;
+    return (await super.patch(db, member, itemId, newItem)) as EmbeddedLinkItem;
   }
 }

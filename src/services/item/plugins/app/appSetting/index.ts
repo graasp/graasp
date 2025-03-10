@@ -3,13 +3,12 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { ItemType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../di/utils';
+import { DBConnection, db } from '../../../../../drizzle/db';
+import { AuthenticatedUser } from '../../../../../types';
 import { asDefined } from '../../../../../utils/assertions';
-import { Repositories, buildRepositories } from '../../../../../utils/repositories';
-import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
-import { matchOne } from '../../../../authorization';
-import { Actor, assertIsMember } from '../../../../member/entities/member';
+import { authenticateAppsJWT, matchOne } from '../../../../auth/plugins/passport';
+import { assertIsMember } from '../../../../authentication';
 import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
-import { Item } from '../../../entities/Item';
 import { ItemService } from '../../../service';
 import { appSettingsWsHooks } from '../ws/hooks';
 import appSettingFilePlugin from './plugins/file';
@@ -17,22 +16,16 @@ import { create, deleteOne, getForOne, updateOne } from './schemas';
 import { AppSettingService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { db } = fastify;
-
   const itemService = resolveDependency(ItemService);
   const appSettingService = resolveDependency(AppSettingService);
 
   fastify.register(appSettingsWsHooks, { appSettingService });
 
   // copy app settings and related files on item copy
-  const hook = async (
-    actor: Actor,
-    repositories: Repositories,
-    { original, copy }: { original: Item; copy: Item },
-  ) => {
+  const hook = async (actor: AuthenticatedUser, db: DBConnection, { original, copy }) => {
     if (original.type !== ItemType.APP || copy.type !== ItemType.APP) return;
 
-    await appSettingService.copyForItem(actor, repositories, original, copy);
+    await appSettingService.copyForItem(db, actor, original, copy.id);
   };
   itemService.hooks.setPostHook('copy', hook);
 
@@ -48,8 +41,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user, params: { itemId }, body }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return db.transaction(async (manager) => {
-        return appSettingService.post(member, buildRepositories(manager), itemId, body);
+      return db.transaction(async (tx) => {
+        return await appSettingService.post(tx, member, itemId, body);
       });
     },
   );
@@ -64,14 +57,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user, params: { itemId, id: appSettingId }, body }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return db.transaction(async (manager) => {
-        return appSettingService.patch(
-          member,
-          buildRepositories(manager),
-          itemId,
-          appSettingId,
-          body,
-        );
+      return db.transaction(async (tx) => {
+        return appSettingService.patch(tx, member, itemId, appSettingId, body);
       });
     },
   );
@@ -86,13 +73,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user, params: { itemId, id: appSettingId } }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return db.transaction(async (manager) => {
-        return appSettingService.deleteOne(
-          member,
-          buildRepositories(manager),
-          itemId,
-          appSettingId,
-        );
+      await db.transaction(async (tx) => {
+        await appSettingService.deleteOne(tx, member, itemId, appSettingId);
       });
     },
   );
@@ -102,7 +84,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     '/:itemId/app-settings',
     { schema: getForOne, preHandler: authenticateAppsJWT },
     async ({ user, params: { itemId }, query: { name } }) => {
-      return appSettingService.getForItem(user?.account, buildRepositories(), itemId, name);
+      return appSettingService.getForItem(db, user?.account, itemId, name);
     },
   );
 };

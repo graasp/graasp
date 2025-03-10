@@ -1,7 +1,7 @@
 /**
  * Chat websocket events are registered under these topics
  */
-import { ChatMessage } from '../chatMessage';
+import { ChatMessageRaw } from '../../../drizzle/types';
 
 // item chat messages
 export const itemChatTopic = 'chat/item';
@@ -12,7 +12,7 @@ export const itemChatTopic = 'chat/item';
 interface ChatEvent {
   kind: string;
   op: string;
-  message?: ChatMessage;
+  message?: ChatMessageRaw;
 }
 
 /**
@@ -21,7 +21,7 @@ interface ChatEvent {
 interface ItemChatEvent extends ChatEvent {
   kind: 'item';
   op: 'publish' | 'delete' | 'update' | 'clear';
-  message?: ChatMessage;
+  message?: ChatMessageRaw;
 }
 
 /**
@@ -33,7 +33,7 @@ interface ItemChatEvent extends ChatEvent {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const ItemChatEvent = (
   op: ItemChatEvent['op'],
-  message?: ChatMessage,
+  message?: ChatMessageRaw,
 ): // eslint-disable-next-line @typescript-eslint/no-unused-vars
 ItemChatEvent => ({
   kind: 'item',

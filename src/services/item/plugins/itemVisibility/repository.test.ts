@@ -3,9 +3,7 @@ import { FastifyInstance } from 'fastify';
 import { ItemVisibilityType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
-import { AppDataSource } from '../../../../plugins/datasource';
 import { ItemTestUtils, expectItem } from '../../test/fixtures/items';
-import { ItemVisibility } from './ItemVisibility';
 import { ItemVisibilityRepository } from './repository';
 
 const rawRepository = AppDataSource.getRepository(ItemVisibility);
@@ -35,7 +33,7 @@ describe('getManyBelowAndSelf', () => {
     // noise should not be returned
     await rawRepository.save({ type: ItemVisibilityType.Public, item });
 
-    const visibilities = await repository.getManyBelowAndSelf(item, visibilityTypes);
+    const visibilities = await repository.getManyBelowAndSelf(app.db, item, visibilityTypes);
 
     expect(visibilities).toHaveLength(0);
   });
@@ -45,7 +43,7 @@ describe('getManyBelowAndSelf', () => {
     const visibilityTypes = [ItemVisibilityType.Hidden, ItemVisibilityType.Public];
     const visibility = await rawRepository.save({ type: ItemVisibilityType.Public, item });
 
-    const visibilities = await repository.getManyBelowAndSelf(item, visibilityTypes);
+    const visibilities = await repository.getManyBelowAndSelf(app.db, item, visibilityTypes);
 
     expect(visibilities).toHaveLength(1);
     expect(visibilities[0].type).toEqual(visibility.type);
@@ -62,7 +60,7 @@ describe('getManyBelowAndSelf', () => {
     const tag1 = await rawRepository.save({ type: ItemVisibilityType.Public, item });
     const tag2 = await rawRepository.save({ type: ItemVisibilityType.Public, item: child });
 
-    const visibilities = await repository.getManyBelowAndSelf(item, visibilityTypes);
+    const visibilities = await repository.getManyBelowAndSelf(app.db, item, visibilityTypes);
 
     expect(visibilities).toHaveLength(2);
     visibilities.forEach((t) => {
