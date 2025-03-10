@@ -11,7 +11,6 @@ import fs from 'fs';
 import { StatusCodes } from 'http-status-codes';
 import fetch from 'node-fetch';
 import path from 'path';
-import { Readable } from 'stream';
 
 import { FastifyBaseLogger } from 'fastify';
 
@@ -19,7 +18,7 @@ import { ItemType, UUID } from '@graasp/sdk';
 
 import { S3_FILE_ITEM_HOST, TMP_FOLDER } from '../../../utils/config';
 import { S3FileConfiguration } from '../interfaces/configuration';
-import { FileRepository } from '../interfaces/fileRepository';
+import { FileRepository, FileUpload } from '../interfaces/fileRepository';
 import { S3_PRESIGNED_EXPIRATION } from '../utils/constants';
 import {
   DownloadFileUnexpectedError,
@@ -135,11 +134,24 @@ export class S3FileRepository implements FileRepository {
     return newFolderPath;
   }
 
-  async deleteFile({ filepath }: { filepath: string }): Promise<void> {
+  async deleteFile(filepath: string): Promise<void> {
     const { s3Bucket: bucket } = this.options;
     await this.s3Instance.deleteObject({
       Bucket: bucket,
       Key: filepath,
+    });
+  }
+
+  async deleteFiles(filepaths: string[]): Promise<void> {
+    const { s3Bucket: bucket } = this.options;
+    const keys = filepaths.map((filepath) => {
+      return { Key: filepath };
+    });
+    await this.s3Instance.deleteObjects({
+      Bucket: bucket,
+      Delete: {
+        Objects: keys,
+      },
     });
   }
 
@@ -286,40 +298,37 @@ export class S3FileRepository implements FileRepository {
     return metadata;
   }
 
-  async uploadFile({
-    fileStream,
-    memberId,
-    filepath,
-    mimetype,
-  }: {
-    fileStream: Readable;
-    memberId: string;
-    filepath: string;
-    mimetype?: string;
-    size?: string;
-  }): Promise<void> {
+  async uploadFile(file: FileUpload): Promise<void> {
+    await this.uploadFiles([file]);
+  }
+
+  async uploadFiles(files: FileUpload[]): Promise<void> {
     const { s3Bucket: bucket } = this.options;
 
-    const params = {
-      Bucket: bucket,
-      Key: filepath,
-      Metadata: {
-        member: memberId,
-        // item: id <- cannot add item id
-      },
-      Body: fileStream,
-      ContentType: mimetype,
-    };
+    const params = files.map((file) => {
+      return {
+        Bucket: bucket,
+        Key: file.filepath,
+        Metadata: {
+          member: file.memberId,
+          // item: id <- cannot add item id
+        },
+        Body: file.fileStream,
+        ContentType: file.mimetype,
+      };
+    });
 
-    const upload = new Upload({
-      client: this.s3Instance,
-      params: params,
-      partSize: 5 * 1024 * 1024, // Minimum part size defined by s3 is 5MB
-      queueSize: 1, // This will limit the buffer to the size of one part size
+    const uploads = params.map((param) => {
+      return new Upload({
+        client: this.s3Instance,
+        params: param,
+        partSize: 5 * 1024 * 1024, // Minimum part size defined by s3 is 5MB
+        queueSize: 4, // Adjust this to fit our needs, currently at the default value
+      });
     });
 
     try {
-      await upload.done();
+      await Promise.all(uploads.map((upload) => upload.done()));
 
       console.debug('Upload successfully');
     } catch (err) {

@@ -26,6 +26,7 @@ const textPath = path.resolve(__dirname, './test/fixtures/emptyFile');
 const testUtils = new ItemTestUtils();
 
 const deleteObjectMock = jest.fn(async () => console.debug('deleteObjectMock'));
+const deleteObjectsMock = jest.fn(async () => console.debug('deleteObjectsMock'));
 const copyObjectMock = jest.fn(async () => console.debug('copyObjectMock'));
 const headObjectMock = jest.fn(async () => ({ ContentLength: 10 }));
 const uploadDoneMock = jest.fn(async () => console.debug('aws s3 storage upload'));
@@ -37,6 +38,7 @@ jest.mock('@aws-sdk/client-s3', () => {
       return {
         copyObject: copyObjectMock,
         deleteObject: deleteObjectMock,
+        deleteObjects: deleteObjectsMock,
         headObject: headObjectMock,
       };
     },
