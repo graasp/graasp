@@ -373,11 +373,6 @@ describe('Item Login Tests', () => {
     });
 
     describe('ItemLogin Schema Status', () => {
-      // beforeEach(async () => {
-      //   member = await saveMember();
-      //   ({ item: anotherItem } = await testUtils.saveItemAndMembership({ member }));
-      // });
-
       it('Cannot register in frozen ItemLogin', async () => {
         const {
           items: [item],
