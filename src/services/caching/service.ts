@@ -50,4 +50,9 @@ export class CachingService implements ICachingService {
   async delete(key: string) {
     await this.redis.del(this.buildRedisKey(key));
   }
+
+  async deleteMany(keys: string[]) {
+    const redisKeys = keys.map((key) => this.buildRedisKey(key));
+    await this.redis.del(redisKeys);
+  }
 }

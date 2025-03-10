@@ -28,4 +28,8 @@ export class CachingService implements ICachingService {
   async delete(filePath: string) {
     this.cache.delete(filePath);
   }
+
+  async deleteMany(filePaths: string[]) {
+    filePaths.forEach((filepath) => this.cache.delete(filepath));
+  }
 }

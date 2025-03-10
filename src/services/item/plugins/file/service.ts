@@ -10,7 +10,6 @@ import {
   FileItemProperties,
   ItemType,
   MAX_ITEM_NAME_LENGTH,
-  Member,
   MimeTypes,
   PermissionLevel,
   getFileExtension,
@@ -18,17 +17,25 @@ import {
 
 import { DBConnection } from '../../../../drizzle/db';
 import { Item } from '../../../../drizzle/types';
+import { BaseLogger } from '../../../../logger';
 import { MaybeUser, MinimalMember } from '../../../../types';
 import { asDefined } from '../../../../utils/assertions';
 import { AuthorizationService } from '../../../authorization';
 import FileService from '../../../file/service';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
+import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { StorageService } from '../../../member/plugins/storage/service';
 import { ThumbnailService } from '../../../thumbnail/service';
 import { randomHexOf4 } from '../../../utils';
+import { ItemWrapperService } from '../../ItemWrapper';
+import { BasicItemService } from '../../basic.service';
+import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
 import { readPdfContent } from '../../utils';
+import { ItemGeolocationRepository } from '../geolocation/repository';
+import { ItemVisibilityRepository } from '../itemVisibility/repository';
+import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../thumbnail/service';
 
@@ -36,27 +43,40 @@ import { ItemThumbnailService } from '../thumbnail/service';
 class FileItemService extends ItemService {
   private readonly fileService: FileService;
   private readonly storageService: StorageService;
-  private readonly itemThumbnailService: ItemThumbnailService;
-  private readonly authorizationService: AuthorizationService;
-  private readonly itemRepository: ItemRepository;
 
   constructor(
     thumbnailService: ThumbnailService,
     fileService: FileService,
-    @inject(delay(() => ItemService))
-    itemService: ItemService,
     storageService: StorageService,
     meilisearchWrapper: MeiliSearchWrapper,
+    @inject(delay(() => ItemThumbnailService))
     itemThumbnailService: ItemThumbnailService,
     authorizationService: AuthorizationService,
     itemRepository: ItemRepository,
+    itemMembershipRepository: ItemMembershipRepository,
+    itemPublishedRepository: ItemPublishedRepository,
+    itemGeolocationRepository: ItemGeolocationRepository,
+    itemWrapperService: ItemWrapperService,
+    itemVisibilityRepository: ItemVisibilityRepository,
+    basicItemService: BasicItemService,
+    log: BaseLogger,
   ) {
-    super(thumbnailService, itemThumbnailService, meilisearchWrapper, log);
+    super(
+      thumbnailService,
+      itemThumbnailService,
+      itemMembershipRepository,
+      meilisearchWrapper,
+      itemRepository,
+      itemPublishedRepository,
+      itemGeolocationRepository,
+      authorizationService,
+      itemWrapperService,
+      itemVisibilityRepository,
+      basicItemService,
+      log,
+    );
     this.fileService = fileService;
     this.storageService = storageService;
-    this.itemThumbnailService = itemThumbnailService;
-    this.authorizationService = authorizationService;
-    this.itemRepository = itemRepository;
   }
 
   public buildFilePath(extension: string = '') {
@@ -136,7 +156,7 @@ class FileItemService extends ItemService {
         creator: actor,
       };
 
-      const newItem = await this.itemService.post(db, actor, {
+      const newItem = await super.post(db, actor, {
         item,
         parentId,
         previousItemId,
@@ -239,7 +259,7 @@ class FileItemService extends ItemService {
 
   async update(
     db: DBConnection,
-    member: Member,
+    member: MinimalMember,
     itemId: Item['id'],
     body: Partial<Pick<Item, 'name' | 'description' | 'settings' | 'lang'>>,
   ) {

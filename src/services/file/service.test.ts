@@ -82,14 +82,10 @@ describe('FileService', () => {
   });
 
   describe('upload', () => {
-    const uploadPayload = {
-      file: {} as unknown as ReadStream,
-      size: 10,
-      filepath: 'filepath',
-    };
+    const uploadPayload = { file: {} as unknown as Readable, size: 10, filepath: 'filepath' };
 
     it('upload successfully', async () => {
-      const uploadFileMock = jest.spyOn(s3Repository, 'uploadFile').mockImplementation(doNothing);
+      const uploadFileMock = jest.spyOn(s3Repository, 'uploadFiles').mockImplementation(doNothing);
       expect((await s3FileService.upload(member, uploadPayload)).file).toBeTruthy();
       expect(uploadFileMock).toHaveBeenCalled();
     });
@@ -98,7 +94,7 @@ describe('FileService', () => {
       // Define the mock implementations.
       jest.spyOn(s3Repository, 'getUrl').mockImplementation(getRandomUrl);
       jest.spyOn(s3Repository, 'deleteFile').mockImplementation(doNothing);
-      jest.spyOn(s3Repository, 'uploadFile').mockImplementation(doNothing);
+      jest.spyOn(s3Repository, 'uploadFiles').mockImplementation(doNothing);
 
       // Upload a file.
       expect((await s3FileService.upload(member, uploadPayload)).file).toBeTruthy();
@@ -116,13 +112,27 @@ describe('FileService', () => {
     });
 
     it('upload failure will delete file', async () => {
-      const uploadFileMock = jest.spyOn(s3Repository, 'uploadFile').mockRejectedValue('error');
-      const deleteFileMock = jest.spyOn(s3Repository, 'deleteFile').mockImplementation(doNothing);
+      const uploadFileMock = jest.spyOn(s3Repository, 'uploadFiles').mockRejectedValue('error');
+      const deleteFileMock = jest.spyOn(s3Repository, 'deleteFiles').mockImplementation(doNothing);
       await expect(s3FileService.upload(member, uploadPayload)).rejects.toMatchObject(
         new UploadFileUnexpectedError(expect.anything()),
       );
       expect(uploadFileMock).toHaveBeenCalled();
       expect(deleteFileMock).toHaveBeenCalled();
+    });
+
+    it('upload several files', async () => {
+      const uploadFilesMock = jest.spyOn(s3Repository, 'uploadFiles').mockImplementation(doNothing);
+
+      const uploadPayload = Array.from({ length: 10 }, (_v, idx) => {
+        return { file: {} as unknown as Readable, size: idx * 10, filepath: `filepath${idx}` };
+      });
+
+      const result = await s3FileService.uploadMany(member, uploadPayload);
+
+      expect(result.length).toEqual(uploadPayload.length);
+      expect(result.every((res) => res.file)).toBeTruthy();
+      expect(uploadFilesMock).toHaveBeenCalled();
     });
   });
 
@@ -173,7 +183,7 @@ describe('FileService', () => {
 
   describe('delete', () => {
     it('delete successfully', async () => {
-      const deleteMock = jest.spyOn(s3Repository, 'deleteFile').mockImplementation(doNothing);
+      const deleteMock = jest.spyOn(s3Repository, 'deleteFiles').mockImplementation(doNothing);
       await s3FileService.delete('filepath');
       expect(deleteMock).toHaveBeenCalled();
     });
@@ -181,7 +191,7 @@ describe('FileService', () => {
     it('deleting file also remove in the cache', async () => {
       // Define the mock implementations.
       jest.spyOn(s3Repository, 'getUrl').mockImplementation(getRandomUrl);
-      jest.spyOn(s3Repository, 'deleteFile').mockImplementation(doNothing);
+      jest.spyOn(s3Repository, 'deleteFiles').mockImplementation(doNothing);
 
       // Verify the cache.
       const downloadPayload = { path: 'filepath', id: 'id' };
@@ -194,8 +204,48 @@ describe('FileService', () => {
       expect(await s3FileService.getUrl(downloadPayload)).not.toBe(url);
     });
 
+    it('delete many removes all files in the cache', async () => {
+      jest.spyOn(s3Repository, 'uploadFiles').mockImplementation(doNothing);
+      jest.spyOn(s3Repository, 'getUrl').mockImplementation(getRandomUrl);
+      jest.spyOn(s3Repository, 'deleteFiles').mockImplementation(doNothing);
+
+      // Upload files
+      const uploadPayload = Array.from({ length: 10 }, (_v, idx) => {
+        return { file: {} as unknown as Readable, size: idx * 10, filepath: `filepath${idx}` };
+      });
+      const filepaths = uploadPayload.map((payload) => payload.filepath);
+
+      await s3FileService.uploadMany(member, uploadPayload);
+
+      // Verify cache
+      const urls = await Promise.all(
+        filepaths.map((filepath) => s3FileService.getUrl({ path: filepath })),
+      );
+      const urlsAgain = await Promise.all(
+        filepaths.map((filepath) => s3FileService.getUrl({ path: filepath })),
+      );
+      expect(urls).toEqual(urlsAgain);
+
+      await s3FileService.deleteMany(filepaths);
+
+      // Verify that all the urls are removed from cache
+      const urlsAfterDelete = await Promise.all(
+        filepaths.map((filepath) => s3FileService.getUrl({ path: filepath })),
+      );
+      expect(urlsAfterDelete.every((url, idx) => url !== urlsAgain[idx])).toBeTruthy();
+    });
+
     it('empty path throws', async () => {
       await expect(s3FileService.delete('')).rejects.toMatchObject(
+        new DeleteFileInvalidPathError(expect.anything()),
+      );
+    });
+
+    it('one invalid file causes an error when deleting many', async () => {
+      const filepaths = Array.from({ length: 10 }, (_v, idx) => `filepath${idx}`);
+      filepaths.push('');
+
+      await expect(s3FileService.deleteMany(filepaths)).rejects.toMatchObject(
         new DeleteFileInvalidPathError(expect.anything()),
       );
     });

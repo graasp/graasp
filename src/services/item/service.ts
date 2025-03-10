@@ -1,5 +1,5 @@
 import { Readable } from 'stream';
-import { delay, inject, injectable, singleton } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import {
   ItemType,
@@ -66,12 +66,12 @@ export class ItemService {
   private readonly log: BaseLogger;
   private readonly thumbnailService: ThumbnailService;
   private readonly meilisearchWrapper: MeiliSearchWrapper;
-  private readonly itemThumbnailService: ItemThumbnailService;
+  protected readonly itemThumbnailService: ItemThumbnailService;
   private readonly itemMembershipRepository: ItemMembershipRepository;
   private readonly itemGeolocationRepository: ItemGeolocationRepository;
   private readonly itemPublishedRepository: ItemPublishedRepository;
   protected readonly itemRepository: ItemRepository;
-  private readonly authorizationService: AuthorizationService;
+  protected readonly authorizationService: AuthorizationService;
   private readonly itemWrapperService: ItemWrapperService;
   private readonly itemVisibilityRepository: ItemVisibilityRepository;
   public readonly basicItemService: BasicItemService;

@@ -4,7 +4,7 @@ import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
-import { DiscriminatedItem, HttpMethod, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
 import { seedFromJson } from '../../../../test/mocks/seed';
@@ -23,14 +23,10 @@ import {
   ModifyExistingMembership,
 } from '../../../utils/errors';
 import { setItemPublic } from '../../item/plugins/itemVisibility/test/fixtures';
-import { ItemTestUtils } from '../../item/test/fixtures/items';
-import { saveItemLoginSchema } from '../../itemLogin/test/index.test';
-import { saveMember } from '../../member/test/fixtures/members';
 import { MembershipRequestRepository } from '../plugins/MembershipRequest/repository';
 import { ItemMembershipRepository } from '../repository';
 import { expectMembership } from './fixtures/memberships';
 
-const testUtils = new ItemTestUtils();
 const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
 const membershipRequestRepository = new MembershipRequestRepository();
 const itemMembershipRepository = new ItemMembershipRepository();
@@ -952,42 +948,36 @@ describe('Membership routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
 
-      // TODO: update with seed once item login schema is handled
       it('Cannot modify a Guest account permission', async () => {
-        const { actor } = await seedFromJson({});
+        const {
+          actor,
+          guests: [guest],
+          itemMemberships: [_actorMembership, guestMembership],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor' }],
+              itemLoginSchema: { guests: [{ name: faker.internet.userName() }] },
+            },
+          ],
+        });
         mockAuthenticate(actor);
         assertIsDefined(actor);
         assertIsMember(actor);
-
-        const { item } = await testUtils.saveItemAndMembership({ member: actor });
-
-        const { guest: member } = await saveItemLoginSchema({
-          item: item as unknown as DiscriminatedItem,
-          memberName: faker.internet.userName(),
-        });
-        assertIsDefined(member);
-
-        const membership = await testUtils.saveMembership({
-          permission: PermissionLevel.Write,
-          item,
-          account: member,
-        });
-        const initialCount = await itemMembershipRawRepository.count();
+        assertIsDefined(guest);
 
         const newMembership = {
           permission: PermissionLevel.Admin,
-          accountId: member.id,
+          accountId: guest.id,
         };
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/item-memberships/${membership.id}`,
+          url: `/item-memberships/${guestMembership.id}`,
           payload: newMembership,
         });
 
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-        const newCount = await itemMembershipRawRepository.count();
-        expect(newCount).toEqual(initialCount);
       });
     });
   });

@@ -3,6 +3,8 @@ import { BaseEntity } from 'typeorm';
 import { v4 } from 'uuid';
 
 import {
+  ItemLoginSchemaStatus,
+  ItemLoginSchemaType,
   ItemType,
   ItemVisibilityType,
   PermissionLevel,
@@ -13,6 +15,7 @@ import {
 import { db } from '../../src/drizzle/db';
 import {
   accountsTable,
+  itemLoginSchemas,
   itemMemberships,
   itemVisibilities,
   itemsRaw,
@@ -21,7 +24,9 @@ import {
 } from '../../src/drizzle/schema';
 import {
   AccountRaw,
+  GuestRaw,
   Item,
+  ItemLoginSchemaRaw,
   ItemMembershipRaw,
   ItemVisibilityRaw,
   MemberProfileRaw,
@@ -30,7 +35,7 @@ import {
 import { encryptPassword } from '../../src/services/auth/plugins/password/utils';
 import { MaybeUser } from '../../src/types';
 import { ItemFactory } from '../factories/item.factory';
-import { MemberFactory } from '../factories/member.factory';
+import { GuestFactory, MemberFactory } from '../factories/member.factory';
 
 export type TableType<C extends BaseEntity, E> = {
   constructor: new () => C;
@@ -59,6 +64,9 @@ type SeedItem<M = SeedMember> = (Partial<Omit<Item, 'creator'>> & { creator?: M 
   memberships?: SeedMembership<M>[];
   isPublic?: boolean;
   isHidden?: boolean;
+  itemLoginSchema?: Partial<ItemLoginSchemaRaw> & {
+    guests?: (Partial<GuestRaw> & { password?: string })[];
+  };
 };
 type DataType = {
   actor?: SeedActor | null;
@@ -311,6 +319,92 @@ async function createItemVisibilities(items: (SeedItem & { path: string })[]) {
 }
 
 /**
+ * Create item login schema, related guests, their passwords and memberships given items definition
+ * @param items.itemLoginSchema defined by status, type, as well as guests and their passwords
+ * @returns item login schema, guests, and related item memberships
+ */
+async function createItemLoginSchemasAndGuests(items: (SeedItem & { path: string })[]) {
+  // generate item login schema objects, with id so it can be references for guests later
+  const itemLoginSchemasData = items.reduce<
+    {
+      id: string;
+      item: { path: string };
+      status: ItemLoginSchemaRaw['status'];
+      type: ItemLoginSchemaRaw['type'];
+      guests?: (Partial<GuestRaw> & { password?: string })[];
+    }[]
+  >((acc, { path, itemLoginSchema }) => {
+    if (itemLoginSchema) {
+      acc.push({
+        item: { path },
+        id: v4(),
+        type: ItemLoginSchemaType.Username,
+        status: ItemLoginSchemaStatus.Active,
+        ...itemLoginSchema,
+      });
+    }
+    return acc;
+  }, []);
+  const itemLoginSchemasValues = await db
+    .insert()
+    .from(itemLoginSchemas)
+    .values(itemLoginSchemasData);
+
+  // save pre-registered guests
+  // feed item login schema in guests' data
+  // keep track of password and item for later use
+  const guestsData = itemLoginSchemasData.reduce<
+    (ReturnType<typeof GuestFactory> & { password?: string; item: { path: string } })[]
+  >((acc, { id, guests, item }) => {
+    if (guests) {
+      return acc.concat(
+        guests.map(({ password, ...g }) => ({
+          ...GuestFactory({ ...g, itemLoginSchemaId: id }),
+          password,
+          item,
+        })),
+      );
+    }
+    return acc;
+  }, []);
+  const guests = await db.insert().from(accountsTable).values(guestsData);
+
+  // save guest passwords
+  const guestPasswords: { guest: { id: string }; password: string }[] = [];
+  for (const { id, password } of guestsData) {
+    if (password) {
+      guestPasswords.push({ guest: { id }, password: await encryptPassword(password) });
+    }
+  }
+  await db.insert().from(guestPasswords).values(guestPasswords);
+
+  // save guest memberships
+  const guestMemberships = guestsData.reduce<
+    {
+      account: { id: string };
+      permission: PermissionLevel;
+      item: { path: string };
+    }[]
+  >((acc, { id, item: { path } }) => {
+    return acc.concat([
+      {
+        account: { id },
+        permission: PermissionLevel.Read,
+        item: { path },
+      },
+    ]);
+  }, []);
+
+  const memberships = await db.insert().from(itemMemberships).values(guestMemberships);
+
+  return {
+    itemLoginSchemas: itemLoginSchemasValues,
+    guests,
+    itemMemberships: memberships,
+  };
+}
+
+/**
  * Given seed object, save them in the database for initialization of a test
  * @param data
  * - actor: if not null, will create an actor with defined values, or a random actor if null
@@ -326,6 +420,8 @@ export async function seedFromJson(data: DataType = {}) {
     members: MemberRaw[];
     memberProfiles: MemberProfileRaw[];
     itemVisibilities: ItemVisibilityRaw[];
+    itemLoginSchemas: ItemLoginSchemaRaw[];
+    guests: GuestRaw[];
   } = {
     items: [],
     actor: undefined,
@@ -333,6 +429,8 @@ export async function seedFromJson(data: DataType = {}) {
     members: [],
     memberProfiles: [],
     itemVisibilities: [],
+    itemLoginSchemas: [],
+    guests: [],
   };
 
   const { items: itemsWithActor, actor, members, actorProfile } = await processActor(data);
@@ -361,9 +459,6 @@ export async function seedFromJson(data: DataType = {}) {
       .returning();
   }
 
-  // save item visibilities
-  result.itemVisibilities = await createItemVisibilities(processedItems);
-
   // save item memberships
   const itemMembershipsEntities = processItemMemberships(processedItems);
   if (itemMembershipsEntities.length) {
@@ -373,6 +468,17 @@ export async function seedFromJson(data: DataType = {}) {
       .values(itemMembershipsEntities)
       .returning();
   }
+
+  // save item visibilities
+  result.itemVisibilities = await createItemVisibilities(processedItems);
+  const {
+    itemLoginSchemas,
+    guests,
+    itemMemberships: guestItemMemberships,
+  } = await createItemLoginSchemasAndGuests(processedItems);
+  result.itemLoginSchemas = itemLoginSchemas;
+  result.guests = guests;
+  result.itemMemberships = result.itemMemberships.concat(guestItemMemberships);
 
   return result;
 }

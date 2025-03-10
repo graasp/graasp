@@ -1,15 +1,10 @@
 import { Readable } from 'stream';
 import { singleton } from 'tsyringe';
 
-import { Account, Member } from '@graasp/sdk';
+import { Account } from '@graasp/sdk';
 
 import { BaseLogger } from '../../logger';
 import { MaybeUser, MinimalMember } from '../../types';
-import {
-  FILE_ITEM_PLUGIN_OPTIONS,
-  FILE_ITEM_TYPE,
-  S3_FILE_ITEM_PLUGIN_OPTIONS,
-} from '../../utils/config';
 import { CachingService } from '../caching/service';
 import { LocalFileConfiguration, S3FileConfiguration } from './interfaces/configuration';
 import { FileRepository } from './interfaces/fileRepository';
@@ -49,30 +44,48 @@ class FileService {
   }
 
   async upload(account: Account, data: { file: Readable; filepath: string; mimetype?: string }) {
-    const { file, filepath, mimetype } = data;
+    const uploadedFiles = await this.uploadMany(account, [data]);
+    return uploadedFiles[0];
+  }
 
-    if (!file || !filepath) {
-      throw new UploadFileInvalidParameterError({
-        file,
-        filepath,
-      });
-    }
+  async uploadMany(
+    account: Account,
+    data: { file: Readable; filepath: string; mimetype?: string }[],
+  ) {
+    data.forEach((fileInput) => {
+      if (!fileInput.file || !fileInput.filepath) {
+        throw new UploadFileInvalidParameterError({
+          file: fileInput.file,
+          filepath: fileInput.filepath,
+        });
+      }
+    });
 
-    const sanitizedFile = await this.sanitizeFile({ file, mimetype });
+    const filepaths = data.map((d) => d.filepath);
+    const filesToUpload = await Promise.all(
+      data.map(async (fileInput) => {
+        const sanitizedFile = await this.sanitizeFile({
+          file: fileInput.file,
+          mimetype: fileInput.mimetype,
+        });
+        return {
+          fileStream: sanitizedFile,
+          filepath: fileInput.filepath,
+          memberId: account.id,
+          mimetype: fileInput.mimetype,
+        };
+      }),
+    );
 
     try {
-      await this.repository.uploadFile({
-        fileStream: sanitizedFile,
-        filepath,
-        memberId: account.id,
-        mimetype,
-      });
-      await this.caching?.delete(filepath);
+      await this.repository.uploadFiles(filesToUpload);
+
+      await this.caching?.deleteMany(filepaths);
     } catch (e) {
-      // rollback uploaded file
-      this.delete(filepath);
+      // rollback all uploaded files
+      this.deleteMany(filepaths);
       this.logger.error(e);
-      throw new UploadFileUnexpectedError({ mimetype, memberId: account.id });
+      throw new UploadFileUnexpectedError({ memberId: account.id });
     }
 
     return data;
@@ -128,11 +141,18 @@ class FileService {
   }
 
   async delete(filepath: string) {
-    if (!filepath.length) {
-      throw new DeleteFileInvalidPathError(filepath);
-    }
-    await this.repository.deleteFile({ filepath });
-    await this.caching?.delete(filepath);
+    return this.deleteMany([filepath]);
+  }
+
+  async deleteMany(filepaths: string[]) {
+    filepaths.forEach((filepath) => {
+      if (!filepath.length) {
+        throw new DeleteFileInvalidPathError(filepath);
+      }
+    });
+
+    await this.repository.deleteFiles(filepaths);
+    await this.caching?.deleteMany(filepaths);
   }
 
   async deleteFolder(folderPath: string) {

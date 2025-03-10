@@ -3,45 +3,31 @@ import { v4 as uuid } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
-import { DiscriminatedItem, HttpMethod, ItemLoginSchemaStatus, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, ItemLoginSchemaStatus, PermissionLevel } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
 } from '../../../../../test/app';
-import { AccountRaw, Item } from '../../../../drizzle/types';
-import { ItemTestUtils } from '../../../item/test/fixtures/items';
+import { seedFromJson } from '../../../../../test/mocks/seed';
+import { assertIsDefined } from '../../../../utils/assertions';
 import {
   CannotEnrollFrozenItemLoginSchema,
   CannotEnrollItemWithoutItemLoginSchema,
 } from '../../../itemLogin/errors';
-import { saveItemLoginSchema } from '../../../itemLogin/test/index.test';
 import { expectMembership } from '../../../itemMembership/test/fixtures/memberships';
-import { saveMember } from '../../../member/test/fixtures/members';
-
-const testUtils = new ItemTestUtils();
 
 describe('Enroll', () => {
   let app: FastifyInstance;
-  let member: AccountRaw;
-  let creator: AccountRaw;
-  let item: Item;
 
   beforeAll(async () => {
     ({ app } = await build({ member: null }));
   });
 
-  beforeEach(async () => {
-    member = await saveMember();
-    creator = await saveMember();
-    ({ item } = await testUtils.saveItemAndMembership({ member: creator }));
-    // We're forced to cast to the DiscriminatedItem type because of the ItemLoginSchemaFactory from Graasp SDK
-    await saveItemLoginSchema({ item: item as unknown as DiscriminatedItem });
-  });
-
   afterEach(async () => {
     jest.clearAllMocks();
+    unmockAuthenticate();
   });
 
   afterAll(async () => {
@@ -51,7 +37,15 @@ describe('Enroll', () => {
 
   describe('Create Enroll', () => {
     it('returns valid object when successful', async () => {
-      mockAuthenticate(member);
+      const {
+        items: [item],
+        actor,
+      } = await seedFromJson({
+        items: [{ itemLoginSchema: {} }],
+      });
+      mockAuthenticate(actor);
+      assertIsDefined(actor);
+      assertIsMember(actor);
 
       const response = await app.inject({
         method: HttpMethod.Post,
@@ -61,22 +55,27 @@ describe('Enroll', () => {
       expect(response.statusCode).toBe(StatusCodes.OK);
       const itemMembership = await response.json();
       expectMembership(itemMembership, {
-        creator: member,
+        creator: actor,
         item,
         permission: PermissionLevel.Read,
-        account: member,
+        account: actor,
       });
     });
 
     it('rejects when item login schema is frozen', async () => {
-      const { item: anotherItem } = await testUtils.saveItemAndMembership({ member: creator });
-      // We're forced to cast to the DiscriminatedItem type because of the ItemLoginSchemaFactory from Graasp SDK
-      await saveItemLoginSchema({
-        item: anotherItem as unknown as DiscriminatedItem,
-        status: ItemLoginSchemaStatus.Freeze,
+      const {
+        actor,
+        items: [anotherItem],
+      } = await seedFromJson({
+        items: [
+          {
+            itemLoginSchema: {
+              status: ItemLoginSchemaStatus.Freeze,
+            },
+          },
+        ],
       });
-
-      mockAuthenticate(member);
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: HttpMethod.Post,
@@ -88,14 +87,20 @@ describe('Enroll', () => {
     });
 
     it('rejects when item login schema is disabled, should not leak that there was an item login schema before.', async () => {
-      const { item: anotherItem } = await testUtils.saveItemAndMembership({ member: creator });
-      // We're forced to cast to the DiscriminatedItem type because of the ItemLoginSchemaFactory from Graasp SDK
-      await saveItemLoginSchema({
-        item: anotherItem as unknown as DiscriminatedItem,
-        status: ItemLoginSchemaStatus.Disabled,
+      const {
+        actor,
+        items: [anotherItem],
+      } = await seedFromJson({
+        items: [
+          {
+            itemLoginSchema: {
+              status: ItemLoginSchemaStatus.Disabled,
+            },
+          },
+        ],
       });
 
-      mockAuthenticate(member);
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: HttpMethod.Post,
@@ -108,6 +113,11 @@ describe('Enroll', () => {
 
     it('rejects when unauthenticated', async () => {
       unmockAuthenticate();
+      const {
+        items: [item],
+      } = await seedFromJson({
+        items: [{ itemLoginSchema: {} }],
+      });
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/items/${item.id}/enroll`,
@@ -125,7 +135,8 @@ describe('Enroll', () => {
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
     });
     it('rejects when item does not exist', async () => {
-      mockAuthenticate(member);
+      const { actor } = await seedFromJson();
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: HttpMethod.Post,
@@ -135,10 +146,15 @@ describe('Enroll', () => {
       expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
     });
     it('accepts when authenticated as the creator when there is no membership', async () => {
-      await itemMembershipRepository.deleteManyByItemPathAndAccount([
-        { itemPath: item.path, accountId: creator.id },
-      ]);
-      mockAuthenticate(creator);
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [{ creator: 'actor', itemLoginSchema: {} }],
+      });
+      mockAuthenticate(actor);
+      assertIsDefined(actor);
+      assertIsMember(actor);
 
       const response = await app.inject({
         method: HttpMethod.Post,
@@ -148,14 +164,22 @@ describe('Enroll', () => {
       expect(response.statusCode).toBe(StatusCodes.OK);
       const itemMembership = await response.json();
       expectMembership(itemMembership, {
-        creator,
+        creator: actor,
         item,
         permission: PermissionLevel.Read,
-        account: creator,
+        account: actor,
       });
     });
     it('rejects when authenticated as the creator with membership', async () => {
-      mockAuthenticate(creator);
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [{ creator: 'actor', memberships: [{ account: 'actor' }], itemLoginSchema: {} }],
+      });
+      mockAuthenticate(actor);
+      assertIsDefined(actor);
+      assertIsMember(actor);
 
       const response = await app.inject({
         method: HttpMethod.Post,
@@ -165,11 +189,13 @@ describe('Enroll', () => {
       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
     });
     it('rejects when already have a membership', async () => {
-      await testUtils.saveMembership({
-        item,
-        account: member,
+      const {
+        items: [item],
+        actor,
+      } = await seedFromJson({
+        items: [{ memberships: [{ account: 'actor' }], itemLoginSchema: {} }],
       });
-      mockAuthenticate(member);
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: HttpMethod.Post,
@@ -180,12 +206,17 @@ describe('Enroll', () => {
     });
 
     it('rejects when there is no item login schema', async () => {
-      const { item: anotherItem } = await testUtils.saveItemAndMembership({ member: creator });
-      mockAuthenticate(member);
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [{ creator: 'actor' }],
+      });
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/items/${anotherItem.id}/enroll`,
+        url: `/items/${item.id}/enroll`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
