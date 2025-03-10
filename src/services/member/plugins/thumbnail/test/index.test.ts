@@ -8,11 +8,14 @@ import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
-import { DiscriminatedItem, HttpMethod, MemberFactory, ThumbnailSize } from '@graasp/sdk';
+import { HttpMethod, MemberFactory, ThumbnailSize } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
-import { ItemTestUtils } from '../../../../item/test/fixtures/items';
-import { saveItemLoginSchema } from '../../../../itemLogin/test/index.test';
+import build, {
+  clearDatabase,
+  mockAuthenticate,
+  unmockAuthenticate,
+} from '../../../../../../test/app';
+import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { saveMember } from '../../../test/fixtures/members';
 import { UploadFileNotImageError } from '../utils/errors';
 
@@ -61,6 +64,7 @@ describe('Thumbnail Plugin Tests', () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
     app.close();
+    unmockAuthenticate();
   });
 
   describe('GET /:id/avatar/:size', () => {
@@ -141,11 +145,13 @@ describe('Thumbnail Plugin Tests', () => {
     });
 
     it('Return empty response for guest', async () => {
-      const { item } = await new ItemTestUtils().saveItemAndMembership({});
-      const { guest } = await saveItemLoginSchema({
-        item: item as unknown as DiscriminatedItem,
-        memberName: faker.person.firstName(),
+      const {
+        guests: [guest],
+      } = await seedFromJson({
+        items: [{ itemLoginSchema: { guests: [{ name: faker.person.firstName() }] } }],
       });
+      mockAuthenticate(guest);
+
       for (const size of Object.values(ThumbnailSize)) {
         const response = await app.inject({
           method: HttpMethod.Get,

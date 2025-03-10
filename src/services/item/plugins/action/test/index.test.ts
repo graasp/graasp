@@ -9,7 +9,6 @@ import {
   ActionTriggers,
   ClientManager,
   Context,
-  DiscriminatedItem,
   HttpMethod,
   ItemType,
   PermissionLevel,
@@ -20,12 +19,14 @@ import build, {
   mockAuthenticate,
   unmockAuthenticate,
 } from '../../../../../../test/app';
+import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { resolveDependency } from '../../../../../di/utils';
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { MailerService } from '../../../../../plugins/mailer/service';
+import { assertIsDefined } from '../../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { Action } from '../../../../action/entities/action';
-import { saveItemLoginSchema } from '../../../../itemLogin/test/index.test';
+import { assertIsMember } from '../../../../member/entities/member';
 import { saveMember, saveMembers } from '../../../../member/test/fixtures/members';
 import { ItemTestUtils } from '../../../test/fixtures/items';
 import { saveAppActions } from '../../app/appAction/test/fixtures';
@@ -648,29 +649,21 @@ describe('Action Plugin Tests', () => {
   });
 
   describe('GET /:id/actions', () => {
-    beforeEach(async () => {
-      actor = await saveMember();
-      mockAuthenticate(actor);
-    });
-
     it('Succeed if the user has READ permission', async () => {
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Read }] }],
+      });
+      mockAuthenticate(actor);
+      assertIsDefined(actor);
+      assertIsMember(actor);
+
       const members = await saveMembers();
-      const { item } = await testUtils.saveItemAndMembership({ member: members[0] });
-      await testUtils.saveMembership({
-        item,
-        account: actor,
-        permission: PermissionLevel.Read,
-      });
-      const { guest } = await saveItemLoginSchema({
-        item: item as unknown as DiscriminatedItem,
-        memberName: faker.internet.userName(),
-      });
-
-      expect(guest).toBeDefined();
-
       await saveActions(item, members);
       await rawActionRepository.save(
-        getDummyAction(Context.Player, ActionTriggers.CollapseItem, new Date(), guest!, item),
+        getDummyAction(Context.Player, ActionTriggers.CollapseItem, new Date(), actor, item),
       );
 
       const parameters = {
