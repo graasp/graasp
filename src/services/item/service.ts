@@ -192,16 +192,22 @@ export class ItemService {
     }[],
     createdItems: Item[],
   ) {
-    // get the ordered items from the db
-    // to get them in the same order as the input item array
     const insertedItems = await this.itemRepository.getMany(
       db,
       createdItems.map((i) => i.id),
-      { ordered: true },
     );
 
-    // construct geolocation and thumbnail maps
+    // order items from the db
+    // to get them in the same order as the input item array
+    // TODO: CHECK!!
     const orderedItems = Object.values(insertedItems.data);
+    orderedItems.sort((a, b) => {
+      const aIdx = inputItems.findIndex((i) => i.item.id === a.id);
+      const bIdx = inputItems.findIndex((i) => i.item.id === b.id);
+      return aIdx > bIdx ? 1 : -1;
+    });
+
+    // construct geolocation and thumbnail maps
     const geolocations = {};
     const thumbnails = {};
     for (let i = 0; i < inputItems.length; i++) {
@@ -217,7 +223,7 @@ export class ItemService {
     }
 
     // register geolocations
-    await this.saveGeolocations(this.itemGeolocationRepository, geolocations);
+    await this.saveGeolocations(db, this.itemGeolocationRepository, geolocations);
 
     // upload thumbnails
     return this.uploadThumbnails(db, member, createdItems, thumbnails);
@@ -263,13 +269,13 @@ export class ItemService {
    */
   private async createItemsWithParent(
     db: DBConnection,
-    member: Member,
-    items: (Partial<Item> & Pick<Item, 'name' | 'type'>)[],
+    member: MinimalMember,
+    items: (Partial<ItemRaw> & Pick<ItemRaw, 'name' | 'type'>)[],
     parentId: string,
     previousItemId?: string,
   ) {
     this.log.debug(`verify parent ${parentId} exists and the member has permission over it`);
-    const parentItem = await this.get(db, member, parentId, PermissionLevel.Write);
+    const parentItem = await this.basicItemService.get(db, member, parentId, PermissionLevel.Write);
     const inheritedMembership = await this.itemMembershipRepository.getInherited(
       db,
       parentItem.path,
@@ -294,9 +300,9 @@ export class ItemService {
     // else define order from given previous item id
     let order;
     if (!previousItemId) {
-      order = await this.itemRepository.getFirstOrderValue(parentItem.path);
+      order = await this.itemRepository.getFirstOrderValue(db, parentItem.path);
     } else {
-      order = await this.itemRepository.getNextOrderCount(parentItem.path, previousItemId);
+      order = await this.itemRepository.getNextOrderCount(db, parentItem.path, previousItemId);
     }
     for (let i = 0; i < items.length; i++) {
       items[i] = { ...items[i], order };
@@ -326,12 +332,12 @@ export class ItemService {
   private async createItemsAndMemberships(
     db: DBConnection,
     member: MinimalMember,
-    items: (Partial<Item> & Pick<Item, 'name' | 'type'>)[],
+    items: (Partial<ItemRaw> & Pick<ItemRaw, 'name' | 'type'>)[],
     inheritedMembership: ItemMembershipRaw | null,
     parentItem?: Item,
   ) {
     this.log.debug(`create items ${items.map((item) => item.name)}`);
-    const createdItems = await this.itemRepository.addMany(items, member, parentItem);
+    const createdItems = await this.itemRepository.addMany(db, items, member, parentItem);
     this.log.debug(`items ${items.map((item) => item.name)} are created: ${createdItems}`);
 
     // create membership if inherited is less than admin
@@ -359,6 +365,7 @@ export class ItemService {
    * @param geolocations Key-value map with the item path ID as key
    */
   private async saveGeolocations(
+    db: DBConnection,
     itemGeolocationRepository: ItemGeolocationRepository,
     geolocations: { [key: string]: Pick<ItemGeolocationRaw, 'lat' | 'lng'> },
   ) {
@@ -366,7 +373,7 @@ export class ItemService {
       Object.keys(geolocations).map(async (itemPath) => {
         const geolocation = geolocations[itemPath];
         if (geolocation) {
-          return itemGeolocationRepository.put(itemPath, geolocations[itemPath]);
+          return itemGeolocationRepository.put(db, itemPath, geolocations[itemPath]);
         }
       }),
     );
@@ -404,7 +411,10 @@ export class ItemService {
   private async indexItemsForSearch(db: DBConnection, items: Item[]) {
     try {
       // Check if the item is published (or has published parent)
-      const { data: publishedInfo } = await this.itemPublishedRepository.getForItems(db, items);
+      const publishedInfo = await this.itemPublishedRepository.getForItems(
+        db,
+        items.map((i) => i.path),
+      );
 
       if (publishedInfo.length) {
         return;

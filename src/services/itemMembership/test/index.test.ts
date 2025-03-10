@@ -22,6 +22,7 @@ import {
   MemberCannotAdminItem,
   ModifyExistingMembership,
 } from '../../../utils/errors';
+import { assertIsMember } from '../../authentication';
 import { setItemPublic } from '../../item/plugins/itemVisibility/test/fixtures';
 import { MembershipRequestRepository } from '../plugins/MembershipRequest/repository';
 import { ItemMembershipRepository } from '../repository';

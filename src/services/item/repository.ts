@@ -391,35 +391,61 @@ export class ItemRepository {
     return sortChildrenForTreeWith<ItemWithCreator>(descendants, item);
   }
 
-  async getManyDescendants(
-    items: Item[],
-    { withDeleted = false }: { withDeleted?: boolean } = {},
-  ): Promise<Item[]> {
-    // TODO: LEVEL depth
-    if (items.length === 0) {
-      return [];
-    }
-    const query = this.repository.createQueryBuilder('item');
+  // async getManyDescendants(
+  //   db: DBConnection,
+  //   items: Item[],
+  //   { withDeleted = false }: { withDeleted?: boolean } = {},
+  // ): Promise<Item[]> {
+  //   // TODO: LEVEL depth
+  //   if (items.length === 0) {
+  //     return [];
+  //   }
+  //   const query = this.repository.createQueryBuilder('item');
 
-    if (withDeleted) {
-      query.withDeleted();
-    }
+  //   if (withDeleted) {
+  //     query.withDeleted();
+  //   }
 
-    query.leftJoinAndSelect('item.creator', 'creator').where('item.id NOT IN(:...ids)', {
-      ids: items.map(({ id }) => id),
-    });
+  //   // query.leftJoinAndSelect('item.creator', 'creator').where('item.id NOT IN(:...ids)', {
+  //   //   ids: items.map(({ id }) => id),
+  //   // });
 
-    query.andWhere(
-      new Brackets((q) => {
-        items.forEach((item) => {
-          const key = `path_${item.path}`;
-          q.orWhere(`item.path <@ :${key}`, { [key]: item.path });
-        });
-      }),
-    );
+  //   // query.andWhere(
+  //   //   new Brackets((q) => {
+  //   //     items.forEach((item) => {
+  //   //       const key = `path_${item.path}`;
+  //   //       q.orWhere(`item.path <@ :${key}`, { [key]: item.path });
+  //   //     });
+  //   //   }),
+  //   // );
 
-    return query.getMany();
-  }
+  //   return query.getMany();
+
+  //   const whereConditions = [isDescendantOrSelf(items.path, item.path), ne(items.id, item.id)];
+
+  //   // TODO: no need with drizzle
+  //   // need order column to further sort in this function or afterwards
+  //   // if (ordered || selectOrder) {
+  //   //   query.addSelect('item.order');
+  //   // }
+  //   // if (!ordered) {
+  //   //   return query.getMany();
+  //   // }
+
+  //   const result = await db
+  //     .select()
+  //     .from(items)
+  //     .leftJoin(membersView, eq(items.creatorId, membersView.id))
+  //     .where(and(...whereConditions))
+  //     .orderBy(asc(items.path));
+
+  //   const descendants = result.map(({ members_view, item_view }) => ({
+  //     ...item_view,
+  //     creator: members_view as MemberRaw,
+  //   }));
+
+  //   return sortChildrenForTreeWith<ItemWithCreator>(descendants, item);
+  // }
 
   async getMany(
     db: DBConnection,
@@ -602,10 +628,11 @@ export class ItemRepository {
   }
 
   public async addMany(
+    db: DBConnection,
     items: (Partial<Item> & Pick<Item, 'name' | 'type'>)[],
-    creator: Member,
+    creator: MinimalMember,
     parent?: Item,
-  ) {
+  ): Promise<ItemRaw[]> {
     const newItems = items.map((item) =>
       this.createOne({
         ...item,
@@ -614,7 +641,9 @@ export class ItemRepository {
       }),
     );
 
-    return await super.insertMany(newItems);
+    const result = await db.insert(itemsRaw).values(newItems).returning();
+
+    return result;
   }
 
   /////// -------- COPY

@@ -8,7 +8,7 @@ import { FileItemProperties, PermissionLevel, getFileExtension } from '@graasp/s
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { Item } from '../../../../drizzle/types';
-import { asDefined } from '../../../../utils/assertions';
+import { asDefined, assertIsDefined } from '../../../../utils/assertions';
 import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { assertIsMember, isMember } from '../../../authentication';
 import { AuthorizationService } from '../../../authorization';
@@ -100,7 +100,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
     if (!id || type !== fileService.fileType) {
       return;
     }
-    await fileItemService.copy(thisDb, actor, { original, copy });
+    await fileItemService.copyFile(thisDb, actor, { original, copy });
   });
 
   fastify.post('/upload', {
@@ -208,14 +208,14 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
       schema: updateFile,
       preHandler: isAuthenticated,
     },
-    async (request, reply) => {
-      const {
-        user,
-        params: { id: itemId },
-        body,
-      } = request;
+    async ({ user, params: { id: itemId }, body }, reply) => {
+      const member = user?.account;
+      assertIsDefined(member);
+      assertIsMember(member);
 
-      await fileItemService.update(user?.account, buildRepositories(), itemId, body);
+      await db.transaction(async (tx) => {
+        await fileItemService.update(tx, member, itemId, body);
+      });
 
       reply.status(StatusCodes.NO_CONTENT);
     },

@@ -162,7 +162,7 @@ export class SearchService {
 
     // Update index when item changes ------------------------------------------
 
-    itemService.hooks.setPostHook('delete', async (member, repositories, { item }) => {
+    itemService.hooks.setPostHook('delete', async (member, db, { item }) => {
       try {
         await this.meilisearchClient.deleteOne(db, item);
       } catch {

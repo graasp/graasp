@@ -16,7 +16,8 @@ export const saveMember = async (m = MemberFactory()) => {
     .returning();
   const savedMember = res[0];
   assertIsDefined(savedMember);
-  assertIsMember(savedMember);
+  // TODO: FIX TYPES
+  assertIsMember(savedMember as any);
   // ensure member email is typed as string and not null
   const email = savedMember.email;
   if (!email) {

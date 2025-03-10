@@ -36,7 +36,7 @@ const endpoints: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
 
-      return await db.transaction(async (manager) => {
+      return await db.transaction(async (tx) => {
         return await etherpadItemService.createEtherpadItem(tx, member, body, parentId);
       });
     },

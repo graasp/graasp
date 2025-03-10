@@ -41,7 +41,7 @@ export function unmockAuthenticate() {
   }
 }
 
-const build = async ({ member }: { member?: null } = {}) => {
+const build = async () => {
   // Reset dependencies before each test to ensure
   // having new singleton instances in every tests.
   resetDependencies();

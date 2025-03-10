@@ -1,5 +1,7 @@
-import { count, desc, eq, sql } from 'drizzle-orm';
+import { count, desc, eq, inArray, sql } from 'drizzle-orm';
 import { singleton } from 'tsyringe';
+
+import { isDescendantOf } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../drizzle/db';
 import { isAncestorOrSelf } from '../../../../../drizzle/operations';
@@ -43,26 +45,21 @@ export class ItemPublishedRepository {
     return mappedEntry;
   }
 
-  // async getForItems(db: DBConnection, items: Item[]) {
-  //   const paths = items.map((i) => i.path);
-  //   const ids = items.map((i) => i.id);
-  //   const entries = await db.query.publishedItems.findMany({
-  //     with:{item:}
-  //   })
-  //     .createQueryBuilder('pi')
-  //     .innerJoinAndSelect('pi.item', 'item', 'pi.item @> ARRAY[:...paths]::ltree[]', {
-  //       paths,
-  //     })
-  //     .innerJoinAndSelect('pi.creator', 'member')
-  //     .getMany();
+  async getForItems(
+    db: DBConnection,
+    itemPaths: Item['path'][],
+  ): Promise<ItemPublishedWithItemWithCreator[]> {
+    const result = await db
+      .select()
+      .from(publishedItems)
+      .innerJoin(items, inArray(publishedItems.itemPath, itemPaths))
+      .leftJoin(membersView, eq(items.creatorId, membersView.id));
 
-  //   return mapById({
-  //     keys: ids,
-  //     findElement: (id) =>
-  //       entries.find((e) => items.find((i) => i.id === id)?.path.startsWith(e.item.path)),
-  //     buildError: (id) => new ItemPublishedNotFound(id),
-  //   });
-  // }
+    return result.map(({ item_published, item_view, members_view }) => ({
+      item: { ...item_view, creator: members_view as MemberRaw },
+      ...item_published,
+    }));
+  }
 
   // async getForMember(db: DBConnection, memberId: string): Promise<Item[]> {
   //   const itemPublished = await this.repository

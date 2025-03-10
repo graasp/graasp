@@ -11,13 +11,13 @@ import {
   ClientManager,
   Context,
   HttpMethod,
-  MemberFactory,
   RecaptchaAction,
   RecaptchaActionType,
 } from '@graasp/sdk';
 import { FAILURE_MESSAGES } from '@graasp/translations';
 
-import build, { clearDatabase } from '../../../../../test/app';
+import build from '../../../../../test/app';
+import { MemberFactory } from '../../../../../test/factories/member.factory';
 import { URL_REGEX } from '../../../../../test/utils';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
@@ -44,15 +44,19 @@ describe('Auth routes tests', () => {
   let app: FastifyInstance;
   let mailerService: MailerService;
 
-  beforeEach(async () => {
-    ({ app } = await build({ member: null }));
+  beforeAll(async () => {
+    ({ app } = await build());
     mailerService = resolveDependency(MailerService);
+  });
+
+  afterAll(async () => {
+    // await clearDatabase(app.db);
+    app.close();
   });
 
   afterEach(async () => {
     jest.clearAllMocks();
-    await clearDatabase(app.db);
-    app.close();
+    // await clearDatabase(app.db);
   });
 
   describe('POST /login', () => {
@@ -90,7 +94,7 @@ describe('Auth routes tests', () => {
     });
 
     it('Sign In does send not found on non-existing email', async () => {
-      const email = 'some@email.com';
+      const email = faker.internet.email();
 
       const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
       const response = await app.inject({
@@ -101,7 +105,6 @@ describe('Auth routes tests', () => {
 
       expect(mockSendEmail).not.toHaveBeenCalled();
       expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
-      app.close();
     });
 
     it('Bad request for invalid email', async () => {
@@ -118,7 +121,7 @@ describe('Auth routes tests', () => {
 
     it('Bad request for non registered email', async () => {
       // email is not registered
-      const email = 'tim@graasp.org';
+      const email = faker.internet.email();
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/login',
