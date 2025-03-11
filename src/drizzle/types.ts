@@ -90,10 +90,8 @@ export type ItemInsertDTO = typeof itemsRaw.$inferInsert;
  */
 export type ItemRaw = typeof items.$inferSelect;
 
-/**
- * Utility type for consumers. This should be prefered over the raw return type
- */
-export type Item = Omit<ItemRaw, 'order'>;
+// TODO: RENAME
+export type Item = ItemRaw;
 export type NullableItem = Item | null;
 
 /**

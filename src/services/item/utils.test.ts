@@ -1,13 +1,10 @@
-import { FolderItemFactory } from '@graasp/sdk';
-
+import { ItemFactory } from '../../../test/factories/item.factory';
 import { FolderItem } from './discrimination';
 import { sortChildrenForTreeWith } from './utils';
 
 const buildFolderItem = (args: { parentItem?: FolderItem; order: number }) => {
-  const item = FolderItemFactory(args) as unknown as FolderItem;
-  // set order that is backend only data
-  item.order = args.order;
-  return item;
+  const item = ItemFactory({ order: args.order, parentPath: args.parentItem?.path });
+  return item as FolderItem;
 };
 
 describe('sortChildrenForTreeWith', () => {
