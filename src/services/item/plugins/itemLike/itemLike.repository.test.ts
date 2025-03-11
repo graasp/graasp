@@ -21,9 +21,9 @@ describe('ItemLike Repository', () => {
 
   describe('getByItemIdId', () => {
     it('throw for invalid id', async () => {
-      await expect(
-        async () => await repository.getByItemId(db, undefined!),
-      ).rejects.toBeInstanceOf(IllegalArgumentException);
+      await expect(async () => await repository.getByItemId(db, undefined!)).rejects.toBeInstanceOf(
+        IllegalArgumentException,
+      );
     });
     it('Return empty array for non-existing item', async () => {
       expect(await repository.getByItemId(db, v4())).toEqual([]);
@@ -51,18 +51,16 @@ describe('ItemLike Repository', () => {
       expect(result).toHaveLength(2);
       likes.forEach((like) => {
         // should contain item
-        expect(result.find(({ id }) => id === like.id)!.item.id).toEqual(
-          like.itemId,
-        );
+        expect(result.find(({ id }) => id === like.id)!.item.id).toEqual(like.itemId);
       });
     });
   });
 
   describe('getCountByItemId', () => {
     it('throw for invalid id', async () => {
-      await expect(() =>
-        repository.getCountByItemId(db, undefined!),
-      ).rejects.toBeInstanceOf(IllegalArgumentException);
+      await expect(() => repository.getCountByItemId(db, undefined!)).rejects.toBeInstanceOf(
+        IllegalArgumentException,
+      );
     });
     it('Return 0 for non-existing item', async () => {
       expect(await repository.getCountByItemId(db, v4())).toEqual(0);

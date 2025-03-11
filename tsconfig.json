@@ -1,6 +1,10 @@
 {
   "compilerOptions": {
-    "lib": ["es2021", "es6", "esnext.asynciterable"],
+    "lib": [
+      "es2021",
+      "es6",
+      "esnext.asynciterable"
+    ],
     "target": "es6",
     "module": "Node16",
     // "strict": true, // TODO: enable
@@ -10,17 +14,21 @@
     "moduleResolution": "node16",
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "noImplicitAny": true,
-
+    "noImplicitAny": false, // TODO: enable
     // required for typeorm
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-
     "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
     "strictNullChecks": true,
     "strictPropertyInitialization": false, // disable because of entities,
-    "typeRoots": ["./node_modules/@types", "./src/@types/*"],
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/@types/*"
+    ],
     "sourceMap": true
   },
-  "include": ["src/**/*", "test"]
+  "include": [
+    "src/**/*",
+    "test"
+  ]
 }

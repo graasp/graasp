@@ -1,10 +1,12 @@
 import { faker } from '@faker-js/faker';
+import { BaseEntity } from 'typeorm';
 import { v4 } from 'uuid';
 
 import {
   ItemLoginSchemaStatus,
   ItemLoginSchemaType,
   ItemType,
+  ItemVisibilityOptionsType,
   ItemVisibilityType,
   PermissionLevel,
   buildPathFromIds,
@@ -41,6 +43,19 @@ import { encryptPassword } from '../../src/services/auth/plugins/password/utils'
 import { ItemFactory } from '../factories/item.factory';
 import { GuestFactory, MemberFactory } from '../factories/member.factory';
 
+export type TableType<C extends BaseEntity, E> = {
+  constructor: new () => C;
+} & (
+  | {
+      factory: (e: Partial<E>) => E;
+      entities: Partial<E>[];
+    }
+  | {
+      factory?: never;
+      entities: E[];
+    }
+);
+
 const ACTOR_STRING = 'actor';
 type SeedActor = Partial<AccountRaw> & { profile?: Partial<MemberProfileRaw>; password?: string };
 type ReferencedSeedActor = 'actor' | SeedActor;
@@ -67,10 +82,7 @@ type DataType = {
   tags?: Pick<TagRaw, 'name' | 'category'>[];
 };
 
-const replaceActorInItems = (
-  createdActor: MemberRaw,
-  items?: ItemSpec<AccountSpec>[],
-): ItemSpec<ResolvedActorSpec>[] => {
+const replaceActorInItems = (createdActor?: AccountRaw, items?: DataType['items']): SeedItem[] => {
   if (!items?.length) {
     return [];
   }
@@ -80,8 +92,8 @@ const replaceActorInItems = (
     creator: i.creator === ACTOR_STRING ? (createdActor as any) : (i.creator ?? null),
     memberships: i.memberships?.map((m) => ({
       ...m,
-      account: m.account === 'actor' ? createdActor : m.account,
-      creator: m.creator === 'actor' ? createdActor : (m.creator ?? null),
+      account: m.account === ACTOR_STRING ? (createdActor as any) : m.account,
+      creator: m.creator === ACTOR_STRING ? (createdActor as any) : (m.creator ?? null),
     })),
     children: replaceActorInItems(createdActor, i.children),
   }));
@@ -134,15 +146,13 @@ const processActor = async ({
   items: SeedItem<SeedMember>[];
 }> => {
   // create actor if not null
-  let createdActor: MemberRaw | null = null;
+  let createdActor: AccountRaw | null = null;
   let actorProfile;
   let processedItems;
   if (actor !== null) {
-    // replace actor data with default values if actor is undefined or special 'actor'
-    const actorData = actor === 'actor' || !actor ? {} : actor;
-    createdActor = (
-      await db.insert(accountsTable).values(MemberFactory(actorData)).returning()
-    )[0] as MemberRaw; // necessary cast since the tables are ill-defined for the email and type properties
+    // replace actor data with default values if actor is undefined or 'actor'
+    const actorData: Partial<AccountRaw> = typeof actor === 'string' || !actor ? {} : actor;
+    createdActor = (await db.insert(accountsTable).values(MemberFactory(actorData)).returning())[0];
 
     // a profile is defined
     if (actorData) {
@@ -179,9 +189,9 @@ const processActor = async ({
  * @returns flat array of all items
  */
 const generateIdAndPathForItems = (
-  items: ItemSpec<ResolvedActorSpec, ResolvedActorSpec | null>[] | undefined,
+  items: DataType['items'],
   parent?: { id: string; path: string },
-): Omit<ItemSpec<ResolvedActorSpec, ResolvedActorSpec | null>, 'children'>[] => {
+) => {
   if (!items?.length) {
     return [];
   }
@@ -444,7 +454,7 @@ export async function seedFromJson(data: DataType = {}) {
     itemTags: ItemTagRaw[];
   } = {
     items: [],
-    actor: null,
+    actor: undefined,
     itemMemberships: [],
     members: [],
     memberProfiles: [],
