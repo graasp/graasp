@@ -67,54 +67,6 @@ type DataType = {
   tags?: Pick<TagRaw, 'name' | 'category'>[];
 };
 
-type AutoActor = 'actor';
-type MemberInputSpec = Partial<MemberRaw> & {
-  profile?: MemberProfileInsertDTO;
-  password?: string;
-};
-type ActorInputSpec =
-  // specifying all required properties to create a member
-  | MemberInputSpec
-  // use the special `actor` string to get the same user in multiple places
-  | AutoActor
-  // do not want a member
-  | null;
-type AccountSpec = MemberInputSpec | AutoActor;
-type ResolvedActorSpec = MemberInputSpec | MemberRaw;
-
-type BasicItemSpec<Creator> = Partial<ItemInsertDTO> & { creator?: Creator };
-type BasicItemInputSpec = BasicItemSpec<ActorInputSpec>;
-type MembershipSpec<Actor> = Partial<ItemMembershipInsertDTO> & {
-  creator?: Actor | null;
-  account: Actor;
-};
-
-type MembershipInputSpec = Partial<ItemMembershipInsertDTO> & {
-  creator?: ActorInputSpec;
-  account: AccountSpec;
-};
-type ItemSpec<Actor> = BasicItemSpec<Actor | null> & {
-  children?: ItemSpec<Actor>[];
-  memberships?: MembershipSpec<Actor>[];
-};
-type ItemInputSpec = BasicItemInputSpec & {
-  children?: ItemInputSpec[];
-  memberships?: MembershipInputSpec[];
-};
-
-type InputSpec = {
-  actor?: ActorInputSpec;
-  members?: MemberInputSpec[];
-  items?: ItemInputSpec[];
-};
-type OutputSpec = {
-  actor: MemberRaw | null;
-  items: Item[];
-  itemMemberships: ItemMembershipRaw[];
-  members: MemberRaw[];
-  memberProfiles: MemberProfileRaw[];
-};
-
 const replaceActorInItems = (
   createdActor: MemberRaw,
   items?: ItemSpec<AccountSpec>[],
