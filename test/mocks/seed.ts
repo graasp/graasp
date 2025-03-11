@@ -63,7 +63,7 @@ type SeedMember = Partial<MemberRaw> & { profile?: Partial<MemberProfileRaw> };
 type SeedMembership<M = SeedMember> = Partial<Omit<ItemMembershipRaw, 'creator' | 'account'>> & {
   account: M;
   creator?: M | null;
-  permission?: PermissionLevel;
+  permission?: `${PermissionLevel}`;
 };
 type SeedItem<M = SeedMember> = (Partial<Omit<Item, 'creator'>> & { creator?: M | null }) & {
   children?: SeedItem<M>[];
