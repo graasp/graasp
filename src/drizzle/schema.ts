@@ -19,7 +19,12 @@ import {
 import { eq, isNull } from 'drizzle-orm/sql';
 import geoip from 'geoip-lite';
 
-import { AccountType, CompleteMember, ItemSettings, ItemTypeUnion } from '@graasp/sdk';
+import {
+  AccountType,
+  CompleteMember,
+  ItemSettings,
+  ItemTypeUnion,
+} from '@graasp/sdk';
 
 import { customNumeric, ltree } from './customTypes';
 import {
@@ -50,7 +55,9 @@ export const publishedItems = pgTable(
   'item_published',
   {
     id: uuid().primaryKey().defaultRandom().notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
     creatorId: uuid('creator_id').references(() => accountsTable.id, {
       onDelete: 'set null',
     }),
@@ -60,7 +67,9 @@ export const publishedItems = pgTable(
         onUpdate: 'cascade',
         onDelete: 'cascade',
       }),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
     index('IDX_gist_item_published_path').using(
@@ -88,8 +97,12 @@ export const itemMemberships = pgTable(
     accountId: uuid('account_id')
       .notNull()
       .references(() => accountsTable.id, { onDelete: 'cascade' }),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
     index('IDX_5ac5bdde333fca6bbeaf177ef9').using(
@@ -122,8 +135,12 @@ export const memberPasswords = pgTable(
   {
     id: uuid().primaryKey().defaultRandom().notNull(),
     password: varchar({ length: 100 }).notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
     memberId: uuid('member_id').references(() => accountsTable.id, {
       onDelete: 'cascade',
     }),
@@ -136,7 +153,9 @@ export const recycledItemDatas = pgTable(
   'recycled_item_data',
   {
     id: uuid().primaryKey().defaultRandom().notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
     creatorId: uuid('creator_id'),
     itemPath: ltree('item_path').notNull(),
   },
@@ -161,12 +180,17 @@ export const itemLikes = pgTable(
   'item_like',
   {
     id: uuid().primaryKey().defaultRandom().notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
     creatorId: uuid('creator_id').notNull(),
     itemId: uuid('item_id').notNull(),
   },
   (table) => [
-    index('IDX_item_like_item').using('btree', table.itemId.asc().nullsLast().op('uuid_ops')),
+    index('IDX_item_like_item').using(
+      'btree',
+      table.itemId.asc().nullsLast().op('uuid_ops'),
+    ),
     foreignKey({
       columns: [table.creatorId],
       foreignColumns: [accountsTable.id],
@@ -188,7 +212,9 @@ export const itemFlags = pgTable(
     type: varchar().notNull(),
     creatorId: uuid('creator_id'),
     itemId: uuid('item_id'),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
     foreignKey({
@@ -213,7 +239,9 @@ export const itemCategories = pgTable(
     creatorId: uuid('creator_id'),
     itemPath: ltree('item_path').notNull(),
     categoryId: uuid('category_id').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
     foreignKey({
@@ -243,8 +271,12 @@ export const chatMessagesTable = pgTable(
     id: uuid().defaultRandom().primaryKey().notNull(),
     itemId: uuid('item_id').notNull(),
     creatorId: uuid('creator_id'),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
     body: varchar({ length: 500 }).notNull(),
   },
   (table) => [
@@ -271,8 +303,12 @@ export const chatMentionsTable = pgTable(
     accountId: uuid('account_id')
       .references(() => accountsTable.id)
       .notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
     status: chatMentionStatusEnum().default('unread').notNull(),
   },
   (table) => [
@@ -299,8 +335,12 @@ export const appDatas = pgTable(
     type: varchar({ length: 25 }).notNull(),
     creatorId: uuid('creator_id'),
     visibility: varchar().notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
     index('IDX_6079b3bb63c13f815f7dd8d8a2').using(
@@ -335,7 +375,9 @@ export const appActions = pgTable(
     itemId: uuid('item_id').notNull(),
     data: jsonb().$type<object>().default({}).notNull(),
     type: varchar({ length: 25 }).notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
     foreignKey({
@@ -359,8 +401,12 @@ export const appSettings = pgTable(
     creatorId: uuid('creator_id'),
     name: varchar().notNull(),
     data: jsonb().$type<object>().default({}).notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
     index('IDX_61546c650608c1e68789c64915').using(
@@ -392,8 +438,12 @@ export const invitationsTable = pgTable(
     name: varchar({ length: 100 }),
     email: varchar({ length: 100 }).notNull(),
     permission: permissionEnum().notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
     foreignKey({
@@ -418,8 +468,12 @@ export const publishers = pgTable(
     id: uuid().primaryKey().defaultRandom().notNull(),
     name: varchar({ length: 250 }).notNull(),
     origins: text().array().notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [unique('publisher_name_key').on(table.name)],
 );
@@ -433,8 +487,12 @@ export const apps = pgTable(
     description: varchar({ length: 250 }).notNull(),
     url: varchar({ length: 250 }).notNull(),
     publisherId: uuid('publisher_id').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
     extra: jsonb().$type<object>().default({}).notNull(),
   },
   (table) => [
@@ -454,7 +512,9 @@ export const itemValidationGroups = pgTable(
   {
     id: uuid().primaryKey().notNull().defaultRandom(),
     itemId: uuid('item_id').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
     foreignKey({
@@ -474,8 +534,12 @@ export const itemValidations = pgTable(
     status: itemValidationStatusEnum().notNull(),
     result: varchar(),
     itemValidationGroupId: uuid('item_validation_group_id').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
     foreignKey({
@@ -500,8 +564,12 @@ export const itemValidationReviews = pgTable(
     reviewerId: uuid('reviewer_id'),
     status: varchar().notNull(),
     reason: varchar(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
     foreignKey({
@@ -521,7 +589,9 @@ export const itemBookmarks = pgTable(
   'item_favorite',
   {
     id: uuid().primaryKey().defaultRandom().notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
     memberId: uuid('member_id').notNull(),
     itemId: uuid('item_id').notNull(),
   },
@@ -551,8 +621,12 @@ export const memberProfiles = pgTable(
     facebookId: varchar({ length: 100 }),
     linkedinId: varchar({ length: 100 }),
     twitterId: varchar({ length: 100 }),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
     deletedAt: timestamp('deleted_at', { mode: 'string' }),
     memberId: uuid('member_id')
       .notNull()
@@ -608,7 +682,9 @@ export const actionsTable = pgTable(
     type: varchar().notNull(),
     extra: jsonb().$type<object>().notNull(),
     geolocation: jsonb().$type<geoip.Lookup>(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
     accountId: uuid('account_id'),
     itemId: uuid('item_id'),
   },
@@ -617,7 +693,10 @@ export const actionsTable = pgTable(
       'btree',
       table.itemId.asc().nullsLast().op('uuid_ops'),
     ),
-    index('IDX_action_account_id').using('btree', table.accountId.asc().nullsLast().op('uuid_ops')),
+    index('IDX_action_account_id').using(
+      'btree',
+      table.accountId.asc().nullsLast().op('uuid_ops'),
+    ),
     // FIX: We should probably cascade on delete, as there is not reason why we would want to keep the actions around after item deletion
     // Eventually if we wanted to keep a trace of the things that happened to the capsule for debugging and internal analysis,
     // but then we should probably keep them somewhere else and only store user/educational actions in here.
@@ -634,15 +713,19 @@ export const actionsTable = pgTable(
   ],
 );
 
-export const itemGeolocations = pgTable(
+export const itemGeolocationsTable = pgTable(
   'item_geolocation',
   {
     id: uuid().primaryKey().defaultRandom().notNull(),
     lat: doublePrecision().notNull(),
     lng: doublePrecision().notNull(),
     country: varchar({ length: 4 }),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
     itemPath: ltree('item_path').notNull(),
     addressLabel: varchar({ length: 300 }),
     helperLabel: varchar({ length: 300 }),
@@ -663,7 +746,9 @@ export const actionRequestExports = pgTable(
   'action_request_export',
   {
     id: uuid().primaryKey().defaultRandom().notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
     memberId: uuid('member_id').notNull(),
     itemPath: ltree('item_path'),
     format: actionRequestExportFormatEnum().default('json').notNull(),
@@ -696,8 +781,12 @@ export const itemsRaw = pgTable(
     // TODO: fix type
     extra: jsonb().$type<object>().notNull(),
     settings: jsonb().$type<ItemSettings>().notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
     deletedAt: timestamp('deleted_at', { mode: 'string' }), // HACK: the softdeletion mechanism relies on the deletedAt being null or having a date
     lang: varchar().default('en').notNull(),
     // TODO: failed to parse database type 'tsvector'
@@ -750,7 +839,10 @@ export const itemsRaw = pgTable(
     //   'gin',
     //   table.searchDocument.asc().nullsLast().op('tsvector_ops'),
     // ),
-    index('IDX_gist_item_path').using('gist', table.path.asc().nullsLast().op('gist_ltree_ops')),
+    index('IDX_gist_item_path').using(
+      'gist',
+      table.path.asc().nullsLast().op('gist_ltree_ops'),
+    ),
     foreignKey({
       columns: [table.creatorId],
       foreignColumns: [accountsTable.id],
@@ -771,7 +863,9 @@ export const membershipRequests = pgTable(
   'membership_request',
   {
     id: uuid().primaryKey().defaultRandom().notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
     memberId: uuid('member_id').notNull(),
     itemId: uuid('item_id').notNull(),
   },
@@ -786,7 +880,10 @@ export const membershipRequests = pgTable(
       foreignColumns: [itemsRaw.id],
       name: 'FK_membership_request_item_id',
     }).onDelete('cascade'),
-    unique('UQ_membership_request_item-member').on(table.memberId, table.itemId),
+    unique('UQ_membership_request_item-member').on(
+      table.memberId,
+      table.itemId,
+    ),
   ],
 );
 
@@ -800,8 +897,12 @@ export const accountsTable = pgTable(
     //, '{}', true
     extra: jsonb().$type<CompleteMember['extra']>().default({}).notNull(),
     type: accountTypeEnum().default('individual').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
     userAgreementsDate: timestamp('user_agreements_date', { mode: 'string' }),
     enableSaveActions: boolean('enable_save_actions').default(true),
     lastAuthenticatedAt: timestamp('last_authenticated_at', { mode: 'string' }),
@@ -814,15 +915,27 @@ export const accountsTable = pgTable(
     ),
   },
   (table) => [
-    index('IDX_account_type').using('btree', table.type.asc().nullsLast().op('text_ops')),
-    unique('UQ_account_name_item_login_schema_id').on(table.name, table.itemLoginSchemaId),
+    index('IDX_account_type').using(
+      'btree',
+      table.type.asc().nullsLast().op('text_ops'),
+    ),
+    unique('UQ_account_name_item_login_schema_id').on(
+      table.name,
+      table.itemLoginSchemaId,
+    ),
     unique('member_email_key1').on(table.email),
     check(
       'CHK_account_is_validated',
       sql`(is_validated IS NOT NULL) OR ((type)::text <> 'individual'::text)`,
     ),
-    check('CHK_account_email', sql`(email IS NOT NULL) OR ((type)::text <> 'individual'::text)`),
-    check('CHK_account_extra', sql`(extra IS NOT NULL) OR ((type)::text <> 'individual'::text)`),
+    check(
+      'CHK_account_email',
+      sql`(email IS NOT NULL) OR ((type)::text <> 'individual'::text)`,
+    ),
+    check(
+      'CHK_account_extra',
+      sql`(extra IS NOT NULL) OR ((type)::text <> 'individual'::text)`,
+    ),
     check(
       'CHK_account_enable_save_actions',
       sql`(enable_save_actions IS NOT NULL) OR ((type)::text <> 'individual'::text)`,
@@ -840,14 +953,22 @@ export const membersView = pgView('members_view').as((qb) =>
   qb
     .select(membersColumns)
     .from(accountsTable)
-    .where(and(eq(accountsTable.type, AccountType.Individual), isNotNull(accountsTable.email))),
+    .where(
+      and(
+        eq(accountsTable.type, AccountType.Individual),
+        isNotNull(accountsTable.email),
+      ),
+    ),
 );
 export const guestsView = pgView('guests_view').as((qb) =>
   qb
     .select(guestColumns)
     .from(accountsTable)
     .where(
-      and(eq(accountsTable.type, AccountType.Guest), isNotNull(accountsTable.itemLoginSchemaId)),
+      and(
+        eq(accountsTable.type, AccountType.Guest),
+        isNotNull(accountsTable.itemLoginSchemaId),
+      ),
     ),
 );
 
@@ -856,8 +977,12 @@ export const guestPasswords = pgTable(
   {
     id: uuid().primaryKey().defaultRandom().notNull(),
     password: varchar({ length: 100 }).notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
     guestId: uuid('guest_id'),
   },
   (table) => [
@@ -875,8 +1000,12 @@ export const itemLoginSchemas = pgTable(
   {
     id: uuid().primaryKey().defaultRandom().notNull(),
     type: itemLoginSchemaTypeEnum().notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
     itemPath: ltree('item_path')
       .notNull()
       .references(() => itemsRaw.path, {
@@ -895,7 +1024,9 @@ export const itemVisibilities = pgTable(
     type: itemVisibilityEnum().notNull(),
     itemPath: ltree('item_path').notNull(),
     creatorId: uuid('creator_id'),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
     index('IDX_gist_item_visibility_path').using(
@@ -939,7 +1070,10 @@ export const itemTags = pgTable(
     itemId: uuid('item_id').notNull(),
   },
   (table) => [
-    index('IDX_item_tag_item').using('btree', table.itemId.asc().nullsLast().op('uuid_ops')),
+    index('IDX_item_tag_item').using(
+      'btree',
+      table.itemId.asc().nullsLast().op('uuid_ops'),
+    ),
     foreignKey({
       columns: [table.tagId],
       foreignColumns: [tags.id],

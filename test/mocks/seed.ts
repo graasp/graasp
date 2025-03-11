@@ -1,12 +1,10 @@
 import { faker } from '@faker-js/faker';
-import { BaseEntity } from 'typeorm';
 import { v4 } from 'uuid';
 
 import {
   ItemLoginSchemaStatus,
   ItemLoginSchemaType,
   ItemType,
-  ItemVisibilityOptionsType,
   ItemVisibilityType,
   PermissionLevel,
   buildPathFromIds,
@@ -43,19 +41,6 @@ import { encryptPassword } from '../../src/services/auth/plugins/password/utils'
 import { ItemFactory } from '../factories/item.factory';
 import { GuestFactory, MemberFactory } from '../factories/member.factory';
 
-export type TableType<C extends BaseEntity, E> = {
-  constructor: new () => C;
-} & (
-  | {
-      factory: (e: Partial<E>) => E;
-      entities: Partial<E>[];
-    }
-  | {
-      factory?: never;
-      entities: E[];
-    }
-);
-
 const ACTOR_STRING = 'actor';
 type SeedActor = Partial<AccountRaw> & { profile?: Partial<MemberProfileRaw>; password?: string };
 type ReferencedSeedActor = 'actor' | SeedActor;
@@ -82,7 +67,58 @@ type DataType = {
   tags?: Pick<TagRaw, 'name' | 'category'>[];
 };
 
-const replaceActorInItems = (createdActor?: AccountRaw, items?: DataType['items']): SeedItem[] => {
+type AutoActor = 'actor';
+type MemberInputSpec = Partial<MemberRaw> & {
+  profile?: MemberProfileInsertDTO;
+  password?: string;
+};
+type ActorInputSpec =
+  // specifying all required properties to create a member
+  | MemberInputSpec
+  // use the special `actor` string to get the same user in multiple places
+  | AutoActor
+  // do not want a member
+  | null;
+type AccountSpec = MemberInputSpec | AutoActor;
+type ResolvedActorSpec = MemberInputSpec | MemberRaw;
+
+type BasicItemSpec<Creator> = Partial<ItemInsertDTO> & { creator?: Creator };
+type BasicItemInputSpec = BasicItemSpec<ActorInputSpec>;
+type MembershipSpec<Actor> = Partial<ItemMembershipInsertDTO> & {
+  creator?: Actor | null;
+  account: Actor;
+};
+
+type MembershipInputSpec = Partial<ItemMembershipInsertDTO> & {
+  creator?: ActorInputSpec;
+  account: AccountSpec;
+};
+type ItemSpec<Actor> = BasicItemSpec<Actor | null> & {
+  children?: ItemSpec<Actor>[];
+  memberships?: MembershipSpec<Actor>[];
+};
+type ItemInputSpec = BasicItemInputSpec & {
+  children?: ItemInputSpec[];
+  memberships?: MembershipInputSpec[];
+};
+
+type InputSpec = {
+  actor?: ActorInputSpec;
+  members?: MemberInputSpec[];
+  items?: ItemInputSpec[];
+};
+type OutputSpec = {
+  actor: MemberRaw | null;
+  items: Item[];
+  itemMemberships: ItemMembershipRaw[];
+  members: MemberRaw[];
+  memberProfiles: MemberProfileRaw[];
+};
+
+const replaceActorInItems = (
+  createdActor: MemberRaw,
+  items?: ItemSpec<AccountSpec>[],
+): ItemSpec<ResolvedActorSpec>[] => {
   if (!items?.length) {
     return [];
   }
@@ -92,8 +128,8 @@ const replaceActorInItems = (createdActor?: AccountRaw, items?: DataType['items'
     creator: i.creator === ACTOR_STRING ? (createdActor as any) : (i.creator ?? null),
     memberships: i.memberships?.map((m) => ({
       ...m,
-      account: m.account === ACTOR_STRING ? (createdActor as any) : m.account,
-      creator: m.creator === ACTOR_STRING ? (createdActor as any) : (m.creator ?? null),
+      account: m.account === 'actor' ? createdActor : m.account,
+      creator: m.creator === 'actor' ? createdActor : (m.creator ?? null),
     })),
     children: replaceActorInItems(createdActor, i.children),
   }));
@@ -146,13 +182,15 @@ const processActor = async ({
   items: SeedItem<SeedMember>[];
 }> => {
   // create actor if not null
-  let createdActor: AccountRaw | null = null;
+  let createdActor: MemberRaw | null = null;
   let actorProfile;
   let processedItems;
   if (actor !== null) {
-    // replace actor data with default values if actor is undefined or 'actor'
-    const actorData: Partial<AccountRaw> = typeof actor === 'string' || !actor ? {} : actor;
-    createdActor = (await db.insert(accountsTable).values(MemberFactory(actorData)).returning())[0];
+    // replace actor data with default values if actor is undefined or special 'actor'
+    const actorData = actor === 'actor' || !actor ? {} : actor;
+    createdActor = (
+      await db.insert(accountsTable).values(MemberFactory(actorData)).returning()
+    )[0] as MemberRaw; // necessary cast since the tables are ill-defined for the email and type properties
 
     // a profile is defined
     if (actorData) {
@@ -189,9 +227,9 @@ const processActor = async ({
  * @returns flat array of all items
  */
 const generateIdAndPathForItems = (
-  items: DataType['items'],
+  items: ItemSpec<ResolvedActorSpec, ResolvedActorSpec | null>[] | undefined,
   parent?: { id: string; path: string },
-) => {
+): Omit<ItemSpec<ResolvedActorSpec, ResolvedActorSpec | null>, 'children'>[] => {
   if (!items?.length) {
     return [];
   }
@@ -454,7 +492,7 @@ export async function seedFromJson(data: DataType = {}) {
     itemTags: ItemTagRaw[];
   } = {
     items: [],
-    actor: undefined,
+    actor: null,
     itemMemberships: [],
     members: [],
     memberProfiles: [],

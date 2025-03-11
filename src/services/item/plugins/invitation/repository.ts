@@ -7,8 +7,8 @@ import { invitationsTable } from '../../../../drizzle/schema';
 import {
   InvitationInsertDTO,
   InvitationRaw,
-  InvitationWIthItemAndCreator,
   InvitationWithItem,
+  InvitationWithItemAndCreator,
   Item,
   MemberRaw,
 } from '../../../../drizzle/types';
@@ -50,7 +50,10 @@ export class InvitationRepository {
   //     .returning();
   // }
 
-  async getOne(db: DBConnection, id: string): Promise<InvitationWithItem | undefined> {
+  async getOne(
+    db: DBConnection,
+    id: string,
+  ): Promise<InvitationWithItem | undefined> {
     throwsIfParamIsInvalid('id', id);
     return await db.query.invitationsTable.findFirst({
       with: { item: true },
@@ -66,12 +69,15 @@ export class InvitationRepository {
     db: DBConnection,
     id: string,
     creatorId: CreatorId,
-  ): Promise<InvitationWIthItemAndCreator> {
+  ): Promise<InvitationWithItemAndCreator> {
     throwsIfParamIsInvalid('id', id);
     throwsIfParamIsInvalid('creatorId', creatorId);
 
     const entity = await db.query.invitationsTable.findFirst({
-      where: and(eq(invitationsTable.id, id), eq(invitationsTable.creatorId, creatorId)),
+      where: and(
+        eq(invitationsTable.id, id),
+        eq(invitationsTable.creatorId, creatorId),
+      ),
       with: {
         item: true,
         creator: true,
@@ -89,7 +95,10 @@ export class InvitationRepository {
    * Get invitations for item path and below
    * @param itemPath Item path
    */
-  async getManyByItem(db: DBConnection, itemPath: ItemPath): Promise<InvitationWithItem[]> {
+  async getManyByItem(
+    db: DBConnection,
+    itemPath: ItemPath,
+  ): Promise<InvitationWithItem[]> {
     throwsIfParamIsInvalid('itemPath', itemPath);
 
     return await db.query.invitationsTable.findMany({
@@ -98,7 +107,10 @@ export class InvitationRepository {
     });
   }
 
-  async getManyByEmail(db: DBConnection, email: Email): Promise<InvitationWithItem[]> {
+  async getManyByEmail(
+    db: DBConnection,
+    email: Email,
+  ): Promise<InvitationWithItem[]> {
     throwsIfParamIsInvalid('email', email);
     const lowercaseEmail = email.toLowerCase();
 
@@ -138,7 +150,9 @@ export class InvitationRepository {
         .filter(
           (i) =>
             // exclude duplicate item-email combinations that are already invited
-            !existingEntries.find(({ email, item }) => email === i.email && item.path === itemPath),
+            !existingEntries.find(
+              ({ email, item }) => email === i.email && item.path === itemPath,
+            ),
         )
         .map((inv) => ({
           ...inv,
@@ -167,6 +181,8 @@ export class InvitationRepository {
   }
 
   async delete(db: DBConnection, invitationId: string): Promise<void> {
-    await db.delete(invitationsTable).where(eq(invitationsTable.id, invitationId));
+    await db
+      .delete(invitationsTable)
+      .where(eq(invitationsTable.id, invitationId));
   }
 }
