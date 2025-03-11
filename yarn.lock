@@ -2447,17 +2447,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fastify/error@npm:4.0.0, @fastify/error@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "@fastify/error@npm:4.0.0"
+  checksum: 10/9afdb1262fbd57e1c922cd7b3326c45d2ca018456030669dcad76feda60df894a3c25b9d019cd050ffc3686a0de938799be826328ab2d74257941788c7f642e7
+  languageName: node
+  linkType: hard
+
 "@fastify/error@npm:^3.0.0, @fastify/error@npm:^3.3.0, @fastify/error@npm:^3.4.0":
   version: 3.4.1
   resolution: "@fastify/error@npm:3.4.1"
   checksum: 10/4d63660f7d4a0d6091abf869208d30898bde82f513ca7be542243d9d740df743dd4be293e7db30858fca612dd512d28a818ea06dc674e06b445278fcefcdda92
-  languageName: node
-  linkType: hard
-
-"@fastify/error@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "@fastify/error@npm:4.0.0"
-  checksum: 10/9afdb1262fbd57e1c922cd7b3326c45d2ca018456030669dcad76feda60df894a3c25b9d019cd050ffc3686a0de938799be826328ab2d74257941788c7f642e7
   languageName: node
   linkType: hard
 
@@ -5631,6 +5631,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bindings@npm:1.5.0":
+  version: 1.5.0
+  resolution: "bindings@npm:1.5.0"
+  dependencies:
+    file-uri-to-path: "npm:1.0.0"
+  checksum: 10/593d5ae975ffba15fbbb4788fe5abd1e125afbab849ab967ab43691d27d6483751805d98cb92f7ac24a2439a8a8678cd0131c535d5d63de84e383b0ce2786133
+  languageName: node
+  linkType: hard
+
 "bowser@npm:^2.11.0":
   version: 2.11.0
   resolution: "bowser@npm:2.11.0"
@@ -8053,6 +8062,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"file-uri-to-path@npm:1.0.0":
+  version: 1.0.0
+  resolution: "file-uri-to-path@npm:1.0.0"
+  checksum: 10/b648580bdd893a008c92c7ecc96c3ee57a5e7b6c4c18a9a09b44fb5d36d79146f8e442578bc0e173dc027adf3987e254ba1dfd6e3ec998b7c282873010502144
+  languageName: node
+  linkType: hard
+
 "filelist@npm:^1.0.4":
   version: 1.0.4
   resolution: "filelist@npm:1.0.4"
@@ -8684,6 +8700,7 @@ __metadata:
     "@faker-js/faker": "npm:9.0.3"
     "@fastify/busboy": "npm:3.0.0"
     "@fastify/cors": "npm:9.0.1"
+    "@fastify/error": "npm:4.0.0"
     "@fastify/forwarded": "npm:3.0.0"
     "@fastify/helmet": "npm:11.1.1"
     "@fastify/multipart": "npm:8.3.0"
@@ -8780,6 +8797,7 @@ __metadata:
     pdf-text-reader: "npm:3.0.2"
     pdf2pic: "npm:3.1.3"
     pg: "npm:8.13.3"
+    pg-native: "npm:3.2.2"
     pino-pretty: "npm:11.2.2"
     prettier: "npm:3.3.3"
     reflect-metadata: "npm:0.2.2"
@@ -10514,6 +10532,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"libpq@npm:1.8.14":
+  version: 1.8.14
+  resolution: "libpq@npm:1.8.14"
+  dependencies:
+    bindings: "npm:1.5.0"
+    nan: "npm:2.22.0"
+    node-gyp: "npm:latest"
+  checksum: 10/9e3d296e847d384e948d7813e03f027d87c7afc3002c07c93da22784543b5d9c431006303738a667e76f152b2894c0e33d077a09dc6f88d271af0db4bbcfb6aa
+  languageName: node
+  linkType: hard
+
 "lie@npm:3.1.1":
   version: 3.1.1
   resolution: "lie@npm:3.1.1"
@@ -11289,6 +11318,15 @@ __metadata:
     object-assign: "npm:^4.0.1"
     thenify-all: "npm:^1.0.0"
   checksum: 10/8427de0ece99a07e9faed3c0c6778820d7543e3776f9a84d22cf0ec0a8eb65f6e9aee9c9d353ff9a105ff62d33a9463c6ca638974cc652ee8140cd1e35951c87
+  languageName: node
+  linkType: hard
+
+"nan@npm:2.22.0":
+  version: 2.22.0
+  resolution: "nan@npm:2.22.0"
+  dependencies:
+    node-gyp: "npm:latest"
+  checksum: 10/ab165ba910e549fcc21fd561a33f534d86e81ae36c97b1019dcfe506b09692ff867c97794a54b49c9a83b8b485f529f0f58d24966c3a11863c97dc70814f4d50
   languageName: node
   linkType: hard
 
@@ -12108,6 +12146,16 @@ __metadata:
   version: 1.0.1
   resolution: "pg-int8@npm:1.0.1"
   checksum: 10/a1e3a05a69005ddb73e5f324b6b4e689868a447c5fa280b44cd4d04e6916a344ac289e0b8d2695d66e8e89a7fba023affb9e0e94778770ada5df43f003d664c9
+  languageName: node
+  linkType: hard
+
+"pg-native@npm:3.2.2":
+  version: 3.2.2
+  resolution: "pg-native@npm:3.2.2"
+  dependencies:
+    libpq: "npm:1.8.14"
+    pg-types: "npm:^2.1.0"
+  checksum: 10/c640ce5f122226f1035aa59f3be14881d56d3ec39b0fa872e265e44c2bfff5a617725578939f2712d71087188c173eb02fa212b72b41a69e431697fd7c63aac5
   languageName: node
   linkType: hard
 

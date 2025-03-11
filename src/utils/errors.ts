@@ -1,5 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 
+import createError from '@fastify/error';
+
 import { ErrorFactory } from '@graasp/sdk';
 import { FAILURE_MESSAGES } from '@graasp/translations';
 
@@ -152,18 +154,9 @@ export class InvalidMoveTarget extends CoreError {
     );
   }
 }
-export class MemberNotFound extends CoreError {
-  constructor(data?: { email?: string; id?: string }) {
-    super(
-      {
-        code: 'GERR013',
-        statusCode: StatusCodes.NOT_FOUND,
-        message: FAILURE_MESSAGES.MEMBER_NOT_FOUND,
-      },
-      data,
-    );
-  }
-}
+
+export const MemberNotFound = createError('GERR013', 'MEMBER_NOT_FOUND', StatusCodes.NOT_FOUND);
+
 export class CannotModifyOtherMembers extends CoreError {
   constructor(member: { id: string }) {
     super(
