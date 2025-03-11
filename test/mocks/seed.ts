@@ -135,7 +135,16 @@ function replaceAccountInItems(createdAccount: AccountRaw, items?: DataType['ite
  * @param seed that contains the actor properties
  * @returns seed with references to the created actor
  */
-const processActor = async ({ actor, items, members }: DataType) => {
+const processActor = async ({
+  actor,
+  items,
+  members,
+}: DataType): Promise<{
+  actor: AccountRaw | null;
+  members?: SeedMember[];
+  actorProfile?: MemberProfileRaw;
+  items: SeedItem<SeedMember>[];
+}> => {
   // create actor if not null
   let createdActor: AccountRaw | null = null;
   let actorProfile;
@@ -164,6 +173,9 @@ const processActor = async ({ actor, items, members }: DataType) => {
     }
     // replace 'actor' in entities
     processedItems = replaceActorInItems(createdActor, items);
+  } else {
+    // pass through
+    processedItems = items;
   }
 
   return { actor: createdActor, items: processedItems, members, actorProfile };
@@ -211,6 +223,7 @@ const processItemMemberships = (items: DataType['items'] = []) => {
       ?.flatMap((i) => i.memberships?.map((im) => ({ ...im, itemPath: i.path })) ?? [])
       ?.map((im) => ({
         permission: PermissionLevel.Admin,
+        accountId: (im.account as any).id,
         ...im,
       })) as ItemMembershipRaw[]
   );
@@ -285,7 +298,6 @@ async function processMembers({
   const membersWithIds = generateIdForMembers({ items, members })
     // ignore actor if it is defined
     .filter((m) => (actor ? m.id !== actor.id : true));
-
   if (membersWithIds.length) {
     const savedMembers = await db
       .insert(accountsTable)
@@ -456,7 +468,6 @@ export async function seedFromJson(data: DataType = {}) {
   const { items: itemsWithActor, actor, members, actorProfile } = await processActor(data);
   result.actor = actor;
   result.memberProfiles = actorProfile ? [actorProfile] : [];
-
   // save members and their relations
   const {
     members: membersWithIds,
@@ -475,7 +486,7 @@ export async function seedFromJson(data: DataType = {}) {
   if (processedItems.length) {
     result.items = await db
       .insert(itemsRaw)
-      .values(processedItems.map((i) => ItemFactory(i)))
+      .values(processedItems.map((i) => ItemFactory({ ...i, creatorId: i.creator?.id })))
       .returning();
   }
 

@@ -17,5 +17,7 @@ export const client = new Client({
 export const db = drizzle({
   client,
   schema: { ...schema, ...relations, ...enums },
+  // TODO: remove
+  logger: true,
 });
 export type DBConnection = Omit<typeof db, '$client'>;

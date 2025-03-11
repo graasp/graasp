@@ -851,11 +851,22 @@ export class ItemRepository {
     const limit = Math.min(pageSize, FILE_METADATA_MAX_PAGE_SIZE);
     const skip = (page - 1) * limit;
 
-    const parent = alias(items, 'parent');
+    // bug: it is important to select manually the fields we need, as alias on a view does not automatically generate the correct return values (wrong alias name)
+    const parentTable = alias(items, 'parent');
     const result = await db
-      .select()
+      .select({
+        id: items.id,
+        name: items.name,
+        updatedAt: items.updatedAt,
+        extra: items.extra,
+        parentId: sql<string>`parent.id`,
+        parentName: sql<string>`parent.name`,
+      })
       .from(items)
-      .leftJoin(parent, eq(parent.path, sql`subpath(${items.path}, 0, nlevel(${items.path}) - 1)`))
+      .leftJoin(
+        parentTable,
+        sql`${parentTable.path} = subpath(${items.path}, 0, (nlevel(${items.path}) - 1))`,
+      )
       // .leftJoinAndSelect(
       //   'item',
       //   'parent',
@@ -864,19 +875,17 @@ export class ItemRepository {
       .where(and(eq(items.creatorId, memberId), eq(items.type, itemType)))
       .offset(skip)
       // order by size
-      // .orderBy(desc(sql`(${items.extra}::json -> :type ->> 'size')::decimal`))
+      .orderBy(desc(sql`(${items.extra}::json -> ${itemType} ->> 'size')::decimal`))
       .limit(limit);
 
-    const entities = result.map(({ item_view, parent }) => ({
-      id: item_view.id,
-      name: item_view.name,
-      updatedAt: item_view.updatedAt,
-      size: item_view.extra[itemType].size,
-      path: item_view.extra[itemType].path,
-      parent: parent
+    const entities = result.map(({ parentName, parentId, extra, ...item }) => ({
+      ...item,
+      size: extra[itemType].size,
+      path: extra[itemType].path,
+      parent: parentId
         ? {
-            id: parent.id,
-            name: parent.name,
+            id: parentId,
+            name: parentName,
           }
         : undefined,
     }));
