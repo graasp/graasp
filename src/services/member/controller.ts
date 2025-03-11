@@ -4,8 +4,10 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../di/utils';
 import { db } from '../../drizzle/db';
+import { AccountType } from '../../types';
 import { asDefined, assertIsDefined } from '../../utils/assertions';
 import { CannotModifyOtherMembers } from '../../utils/errors';
+import { AccountRepository } from '../account/account.repository';
 import {
   authenticateEmailChange,
   isAuthenticated,
@@ -34,20 +36,30 @@ import {
   updateOne,
 } from './schemas';
 import { memberAccountRole } from './strategies/memberAccountRole';
+import { CurrentMember } from './types';
 
 const controller: FastifyPluginAsyncTypebox = async (fastify) => {
   const fileService = resolveDependency(FileService);
   const memberService = resolveDependency(MemberService);
+  const accountRepository = resolveDependency(AccountRepository);
   const storageService = resolveDependency(StorageService);
 
   // get current
-  fastify.get('/current', { schema: getCurrent, preHandler: isAuthenticated }, async ({ user }) => {
-    if (user?.account) {
-      const member = await memberService.get(db, user?.account?.id);
-      return member.toCurrent();
-    }
-    return undefined;
-  });
+  fastify.get(
+    '/current',
+    {
+      schema: getCurrent,
+      preHandler: isAuthenticated,
+    },
+    async ({ user }) => {
+      if (user?.account) {
+        const account = await accountRepository.get(db, user?.account?.id);
+        // TODO: this type is wrong. Should accountRepository.get return either MemberDTO or GuestDTO (implementing AccountDTO)?
+        return account.toCurrent() as any;
+      }
+      return null;
+    },
+  );
   // get current member storage and its limits
   fastify.get(
     '/current/storage',

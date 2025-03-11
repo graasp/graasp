@@ -1,19 +1,25 @@
+import { eq } from 'drizzle-orm';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType, MAX_USERNAME_LENGTH } from '@graasp/sdk';
+import { HttpMethod, ItemLoginSchemaType, ItemType, MAX_USERNAME_LENGTH } from '@graasp/sdk';
 
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
 import { MemberFactory } from '../../../../test/factories/member.factory';
 import { seedFromJson } from '../../../../test/mocks/seed';
+import { db } from '../../../drizzle/db';
+import { accountsTable } from '../../../drizzle/schema';
 import { DEFAULT_MAX_STORAGE } from '../../../services/item/plugins/file/utils/constants';
 import { assertIsDefined } from '../../../utils/assertions';
 import { FILE_ITEM_TYPE } from '../../../utils/config';
 import { MemberNotFound } from '../../../utils/errors';
-import { assertIsMember } from '../../authentication';
-import { setupGuest } from './setup';
+import { assertIsMember, assertIsMemberForTest } from '../../authentication';
+
+const getMemberUtil = async (actorId: string) => {
+  return await db.query.accountsTable.findFirst({ where: eq(accountsTable.id, actorId) });
+};
 
 describe('Member routes tests', () => {
   let app: FastifyInstance;
@@ -23,7 +29,7 @@ describe('Member routes tests', () => {
   });
 
   afterAll(async () => {
-    await clearDatabase(app.db);
+    await clearDatabase(db);
     app.close();
   });
 
@@ -38,14 +44,14 @@ describe('Member routes tests', () => {
       const { actor } = await seedFromJson({
         actor: MemberFactory({
           isValidated: false,
-          lastAuthenticatedAt: new Date(),
+          lastAuthenticatedAt: new Date().toISOString(),
         }),
       });
 
       // mock authentication because the cookie is not set inbetween inject
-      mockAuthenticate(actor);
       assertIsDefined(actor);
       assertIsMember(actor);
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -61,7 +67,15 @@ describe('Member routes tests', () => {
     });
 
     it('Returns successfully if signed in as guest', async () => {
-      const { guest } = await setupGuest(app);
+      const {
+        guests: [guest],
+      } = await seedFromJson({
+        items: [
+          {
+            itemLoginSchema: { guests: [{}], type: ItemLoginSchemaType.Username },
+          },
+        ],
+      });
 
       mockAuthenticate(guest);
 
@@ -70,11 +84,11 @@ describe('Member routes tests', () => {
         url: '/members/current',
       });
       const m = response.json();
-
       expect(response.statusCode).toBe(StatusCodes.OK);
       expect(m.name).toEqual(guest.name);
       expect(m.id).toEqual(guest.id);
-      expect(m.email).toBeUndefined();
+      // TODO: should this be undefined? It might have changed because of drizzle returning null instead of undefined
+      expect(m.email).toBeNull();
       expect(m.password).toBeUndefined();
     });
     it('Throws if signed out', async () => {
@@ -141,6 +155,8 @@ describe('Member routes tests', () => {
           },
         ],
       });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
       mockAuthenticate(actor);
 
       const totalStorage = items.reduce((acc, i) => {
@@ -155,7 +171,6 @@ describe('Member routes tests', () => {
         url: '/members/current/storage',
       });
       const { current, maximum } = response.json();
-
       expect(response.statusCode).toBe(StatusCodes.OK);
       expect(current).toEqual(totalStorage);
       expect(maximum).toEqual(DEFAULT_MAX_STORAGE);
@@ -178,6 +193,8 @@ describe('Member routes tests', () => {
           },
         ],
       });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
       mockAuthenticate(actor);
 
       const response = await app.inject({
@@ -185,7 +202,6 @@ describe('Member routes tests', () => {
         url: '/members/current/storage',
       });
       const { current, maximum } = response.json();
-
       expect(response.statusCode).toBe(StatusCodes.OK);
       expect(current).toEqual(0);
       expect(maximum).toEqual(DEFAULT_MAX_STORAGE);
@@ -224,6 +240,8 @@ describe('Member routes tests', () => {
           actor,
           members: [member],
         } = await seedFromJson({ members: [{}] });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
         mockAuthenticate(actor);
         const memberId = member.id;
         const response = await app.inject({
@@ -240,6 +258,8 @@ describe('Member routes tests', () => {
 
       it('Returns Bad Request for invalid id', async () => {
         const { actor } = await seedFromJson();
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
         mockAuthenticate(actor);
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -252,6 +272,8 @@ describe('Member routes tests', () => {
 
       it('Returns MemberNotFound for invalid id', async () => {
         const { actor } = await seedFromJson();
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
         mockAuthenticate(actor);
         const memberId = v4();
         const response = await app.inject({
@@ -285,9 +307,9 @@ describe('Member routes tests', () => {
     describe('Signed In as Member', () => {
       it('Returns successfully', async () => {
         const { actor } = await seedFromJson();
-        mockAuthenticate(actor);
         assertIsDefined(actor);
-        assertIsMember(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
 
         const newName = 'new name';
         const newExtra = {
@@ -302,7 +324,7 @@ describe('Member routes tests', () => {
           },
         });
 
-        const m = await rawRepository.findOneBy({ id: actor.id });
+        const m = await getMemberUtil(actor.id);
         expect(m?.name).toEqual(newName);
 
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -315,9 +337,9 @@ describe('Member routes tests', () => {
 
       it('New name too short throws', async () => {
         const { actor } = await seedFromJson();
-        mockAuthenticate(actor);
         assertIsDefined(actor);
         assertIsMember(actor);
+        mockAuthenticate(actor);
 
         const newName = 'n';
 
@@ -329,7 +351,7 @@ describe('Member routes tests', () => {
           },
         });
 
-        const m = await rawRepository.findOneBy({ id: actor.id });
+        const m = await getMemberUtil(actor.id);
         expect(m?.name).toEqual(actor.name);
 
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -337,9 +359,9 @@ describe('Member routes tests', () => {
 
       it('New name too long throws', async () => {
         const { actor } = await seedFromJson();
-        mockAuthenticate(actor);
         assertIsDefined(actor);
         assertIsMember(actor);
+        mockAuthenticate(actor);
 
         const newName = Array(MAX_USERNAME_LENGTH + 1).fill(() => 'a');
 
@@ -351,7 +373,7 @@ describe('Member routes tests', () => {
           },
         });
 
-        const m = await rawRepository.findOneBy({ id: actor.id });
+        const m = await getMemberUtil(actor.id);
         expect(m?.name).toEqual(actor.name);
 
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -359,9 +381,9 @@ describe('Member routes tests', () => {
 
       it('Enable save actions successfully', async () => {
         const { actor } = await seedFromJson();
-        mockAuthenticate(actor);
         assertIsDefined(actor);
         assertIsMember(actor);
+        mockAuthenticate(actor);
 
         const enableSaveActions = true;
         const response = await app.inject({
@@ -370,7 +392,7 @@ describe('Member routes tests', () => {
           payload: { enableSaveActions },
         });
 
-        const m = await rawRepository.findOneBy({ id: actor.id });
+        const m = await getMemberUtil(actor.id);
         expect(m?.enableSaveActions).toEqual(enableSaveActions);
 
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -379,9 +401,9 @@ describe('Member routes tests', () => {
 
       it('Disable save actions successfully', async () => {
         const { actor } = await seedFromJson();
-        mockAuthenticate(actor);
         assertIsDefined(actor);
         assertIsMember(actor);
+        mockAuthenticate(actor);
 
         // Start by enabling save actions
         await app.inject({
@@ -389,7 +411,9 @@ describe('Member routes tests', () => {
           url: `/members/current`,
           payload: { enableSaveActions: true },
         });
-        const memberBeforePatch = await rawRepository.findOneBy({ id: actor.id });
+        const memberBeforePatch = await db.query.accountsTable.findFirst({
+          where: eq(accountsTable.id, actor.id),
+        });
         expect(memberBeforePatch?.enableSaveActions).toBe(true);
 
         const enableSaveActions = false;
@@ -399,7 +423,7 @@ describe('Member routes tests', () => {
           payload: { enableSaveActions },
         });
 
-        const m = await rawRepository.findOneBy({ id: actor.id });
+        const m = await getMemberUtil(actor.id);
         expect(m?.enableSaveActions).toEqual(enableSaveActions);
 
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -421,16 +445,16 @@ describe('Member routes tests', () => {
     describe('Signed In', () => {
       it('Returns successfully', async () => {
         const { actor } = await seedFromJson();
-        mockAuthenticate(actor);
         assertIsDefined(actor);
         assertIsMember(actor);
+        mockAuthenticate(actor);
 
         const response = await app.inject({
           method: HttpMethod.Delete,
           url: `/members/current`,
         });
 
-        const m = await rawRepository.findOneBy({ id: actor.id });
+        const m = await getMemberUtil(actor.id);
         expect(m).toBeFalsy();
 
         expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);

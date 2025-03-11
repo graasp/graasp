@@ -24,21 +24,22 @@ import {
 } from '../../../utils/errors';
 import { assertIsMember } from '../../authentication';
 import { setItemPublic } from '../../item/plugins/itemVisibility/test/fixtures';
-import { MembershipRequestRepository } from '../plugins/MembershipRequest/repository';
-import { ItemMembershipRepository } from '../repository';
 import { expectMembership } from './fixtures/memberships';
-
-const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
-const membershipRequestRepository = new MembershipRequestRepository();
-const itemMembershipRepository = new ItemMembershipRepository();
 
 describe('Membership routes tests', () => {
   let app: FastifyInstance;
-  let actor: MaybeUser;
+
+  beforeAll(async () => {
+    ({ app } = await build());
+  });
 
   afterEach(async () => {
     jest.clearAllMocks();
     unmockAuthenticate();
+  });
+  afterAll(async () => {
+    await clearDatabase(db);
+    app.close();
   });
 
   describe('GET /item-memberships?itemId=<itemId>', () => {

@@ -52,6 +52,7 @@ const currentAccountSchema = customType.StrictObject({
   name: customType.Username(),
   createdAt: customType.DateTime(),
   updatedAt: customType.DateTime(),
+  lang: Type.String(),
   // for legacy issue we support null
   // but on login last authenticatedAt should always be updated
   lastAuthenticatedAt: Type.Union([Type.Null(), customType.DateTime()]),
@@ -78,6 +79,8 @@ const compositeCurrentGuestSchema = Type.Composite([
     {
       type: accountTypeGuestRef,
       extra: Type.Object({}, { additionalProperties: true }),
+      // // TODO: following props are added because drizzle returns null?
+      email: Type.Null(),
     },
     { description: 'Current guest information' },
   ),

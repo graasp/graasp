@@ -834,12 +834,12 @@ export class ItemRepository {
   ): Promise<number> {
     const result = await db
       .select({
-        total: sql<string>`SUM(((item.extra::jsonb->'${itemType}')::jsonb->'size')::bigint)`,
+        total: sql<string>`SUM(((${items.extra}::jsonb->${itemType})::jsonb->'size')::bigint)`,
       })
       .from(items)
       .where(and(eq(items.creatorId, memberId), eq(items.type, itemType)));
     const [{ total }] = result;
-    return parseInt(total);
+    return parseInt(total ?? 0);
   }
 
   async getFilesMetadata(
