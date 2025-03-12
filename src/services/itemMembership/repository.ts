@@ -902,7 +902,8 @@ export class ItemMembershipRepository {
     // itemIdAsPath is the path of the item without any parent
     const itemIdAsPath = index >= 0 ? item.path.slice(index + 1) : item.path;
 
-    const rows = (await db.execute(sql<MoveHousekeepingType[]>`
+    const { rows } = await db.execute(
+      sql.raw(`
       SELECT
         account_id AS "accountId",
         item_path AS "itemPath",
@@ -927,9 +928,10 @@ export class ItemMembershipRepository {
         ${getPermissionsAtItemSql(item.path, newParentItemPath, itemIdAsPath, parentItemPath)}
       ) AS t2
       ORDER BY account_id, nlevel(item_path), permission;
-    `)) as unknown as MoveHousekeepingType[];
+    `),
+    );
 
-    return rows.reduce<ResultMoveHousekeeping>(
+    return (rows as unknown as MoveHousekeepingType[]).reduce<ResultMoveHousekeeping>(
       (changes, row) => {
         const { accountId, itemPath, permission, action, inherited, action2IgnoreInherited } = row;
 

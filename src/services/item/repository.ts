@@ -572,8 +572,8 @@ export class ItemRepository {
     //   (Paths in memberships will be updated automatically -
     //    ON UPDATE CASCADE in item_membership's fk from `item_path` to item's `path`)
     const pathSql = parentItem
-      ? `'${parentItem.path}' || subpath(path, nlevel('${item.path}') - 1)`
-      : `subpath(path, nlevel('${item.path}') - 1)`;
+      ? sql`${parentItem.path} || subpath(${itemsRaw.path}, nlevel(${item.path}) - 1)`
+      : sql`subpath(${itemsRaw.path}, nlevel(${item.path}) - 1)`;
 
     // get new order value
     const order = await this.getNextOrderCount(db, parentItem?.path);
@@ -581,7 +581,7 @@ export class ItemRepository {
     return await db
       .update(itemsRaw)
       .set({ path: pathSql, order })
-      .where(isDescendantOrSelf(items.path, item.path))
+      .where(isDescendantOrSelf(itemsRaw.path, item.path))
       .returning();
     // this.repository
     //   .createQueryBuilder('item')
@@ -1032,7 +1032,9 @@ export class ItemRepository {
 
     const result = await db
       .select({
-        next: sql`(item.order + (lead(item.order, 1, item.order + ( ${DEFAULT_ORDER} *2)) OVER (ORDER BY item.order)))/2`,
+        next: sql`(${items.order} + (lead(${items.order}, 1, ${items.order} + ( ${DEFAULT_ORDER} *2)) OVER (ORDER BY ${items.order})))/2`.as(
+          'next',
+        ),
       })
       .from(items)
       .where(and(...whereConditions))
@@ -1126,7 +1128,7 @@ export class ItemRepository {
       // can update in disorder
       await Promise.all(
         values.map(async (i) => {
-          return await db.update(itemsRaw).set(i).where(eq(items.id, i.id));
+          return await db.update(itemsRaw).set(i).where(eq(itemsRaw.id, i.id));
         }),
       );
     }

@@ -753,9 +753,10 @@ export class ItemService {
       source: item,
       destinationParent: parentItem,
     });
+    console.log('rhtp9ij34ref');
 
     const result = await this._move(db, member, item, parentItem);
-
+    console.log('eroijenrlg');
     await this.hooks.runPostHooks('move', member, db, {
       source: item,
       sourceParentId: getParentFromPath(item.path),
@@ -779,7 +780,7 @@ export class ItemService {
     }
 
     const results = await Promise.all(itemIds.map((id) => this.move(db, member, id, parentItem)));
-
+    console.log('owbkhsfpwe');
     // newly moved items needs rescaling since they are added in parallel
     if (parentItem) {
       await this.itemRepository.rescaleOrder(db, member, parentItem);
@@ -811,17 +812,20 @@ export class ItemService {
       actor,
       parentItem,
     );
+    console.log('w3ioejrnksf');
 
     const result = await this.itemRepository.move(db, item, parentItem);
-
+    console.log('foijwnkr');
     // adjust memberships to keep the constraints
     if (inserts.length) {
       await this.itemMembershipRepository.addMany(db, inserts);
     }
+    console.log('hztrgfdv');
+
     if (deletes.length) {
       await this.itemMembershipRepository.deleteManyByItemPathAndAccount(db, deletes);
     }
-
+    console.log('293u8weriojk');
     return result;
   }
 

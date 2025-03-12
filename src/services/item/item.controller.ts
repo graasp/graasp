@@ -311,12 +311,21 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       } = request;
       const member = asDefined(user?.account);
       assertIsMember(member);
-      db.transaction(async (tsx) => {
-        const results = await itemService.moveMany(tsx, member, ids, parentId);
-        await actionItemService.postManyMoveAction(tsx, request, results.items);
-        return results;
-      })
+
+      reply.status(StatusCodes.ACCEPTED);
+      reply.send(ids);
+
+      await db
+        .transaction(async (tsx) => {
+          console.log('gterdf');
+          const results = await itemService.moveMany(tsx, member, ids, parentId);
+          console.log('h5e4trgdf');
+          await actionItemService.postManyMoveAction(tsx, request, results.items);
+          console.log('woefijkm');
+          return results;
+        })
         .then(({ items, moved }) => {
+          console.log('uzth6rt5ergfdv');
           websockets.publish(
             memberItemsTopic,
             member.id,
@@ -325,11 +334,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           );
         })
         .catch((e) => {
+          console.log('efsrd');
           log.error(e);
           websockets.publish(memberItemsTopic, member.id, ItemOpFeedbackErrorEvent('move', ids, e));
         });
-      reply.status(StatusCodes.ACCEPTED);
-      return ids;
     },
   );
 

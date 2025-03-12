@@ -259,7 +259,9 @@ export class ActionItemService {
       type: ItemActionType.Create,
       extra: { itemId: item.id },
     };
+    console.log('wrgoijl');
     await this.actionService.postMany(db, user?.account, request, [action]);
+    console.log('qwoit');
   }
 
   async postPatchAction(db: DBConnection, request: FastifyRequest, item: Item) {
