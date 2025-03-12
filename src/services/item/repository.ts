@@ -1,4 +1,4 @@
-import { getTableColumns, getViewSelectedFields, isNull } from 'drizzle-orm';
+import { isNull } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import {
   SQL,
@@ -38,6 +38,7 @@ import { DBConnection } from '../../drizzle/db';
 import { isAncestorOrSelf, isDescendantOrSelf, isDirectChild } from '../../drizzle/operations';
 import {
   accountsTable,
+  itemColumns,
   itemMemberships,
   items,
   itemsRaw,
@@ -55,8 +56,6 @@ import {
 } from '../../drizzle/types';
 import { IllegalArgumentException } from '../../repositories/errors';
 import { AuthenticatedUser, MaybeUser, MinimalMember } from '../../types';
-import { assertIsDefined } from '../../utils/assertions';
-import { ALLOWED_SEARCH_LANGS } from '../../utils/config';
 import {
   HierarchyTooDeep,
   InvalidMoveTarget,
@@ -65,7 +64,6 @@ import {
   TooManyDescendants,
   UnexpectedError,
 } from '../../utils/errors';
-import { isMember } from '../authentication';
 import {
   FILE_METADATA_DEFAULT_PAGE_SIZE,
   FILE_METADATA_MAX_PAGE_SIZE,
@@ -141,7 +139,7 @@ export class ItemRepository {
       lang?: ItemRaw['lang'];
     };
     order?: ItemRaw['order'];
-  }): MinimalItemForInsert {
+  }) {
     const {
       name,
       description = null,
@@ -187,7 +185,7 @@ export class ItemRepository {
   }
 
   // TODO: note: removed , options = { withDeleted: false }
-  async getOne(db: DBConnection, id: string): Promise<ItemWithCreator> {
+  async getOne(db: DBConnection, id: string): Promise<ItemWithCreator | null> {
     const results = await db
       .select()
       .from(items)
@@ -195,7 +193,10 @@ export class ItemRepository {
       .where(eq(items.id, id))
       .limit(1);
 
-    assertIsDefined(results[0]);
+    if (results.length !== 1) {
+      return null;
+    }
+
     const { account, item_view } = results[0];
     return {
       ...item_view,
@@ -348,7 +349,7 @@ export class ItemRepository {
 
     const itemNames = await db
       .select({ name: items.name })
-      .from(itemsRaw)
+      .from(items)
       .where(and(...whereConditions));
     return itemNames.map(({ name }) => name);
   }
@@ -541,7 +542,7 @@ export class ItemRepository {
     //   .getMany();
   }
 
-  async move(db: DBConnection, item: Item, parentItem?: Item): Promise<Item[]> {
+  async move(db: DBConnection, item: Item, parentItem?: Item): Promise<Item> {
     if (parentItem) {
       // attaching tree to new parent item
       const { id: parentItemId, path: parentItemPath } = parentItem;
@@ -578,11 +579,12 @@ export class ItemRepository {
     // get new order value
     const order = await this.getNextOrderCount(db, parentItem?.path);
 
-    return await db
+    const res = await db
       .update(itemsRaw)
       .set({ path: pathSql, order })
       .where(isDescendantOrSelf(itemsRaw.path, item.path))
       .returning();
+    return res[0];
     // this.repository
     //   .createQueryBuilder('item')
     //   .update()
@@ -628,7 +630,7 @@ export class ItemRepository {
       parent: parentItem,
     });
 
-    const result = await db.insert(itemsRaw).values([newItem]).returning();
+    const result = await db.insert(itemsRaw).values(newItem).returning();
 
     return result[0];
   }
@@ -1029,10 +1031,9 @@ export class ItemRepository {
         }
       }
     }
-
     const result = await db
       .select({
-        next: sql`(${items.order} + (lead(${items.order}, 1, ${items.order} + ( ${DEFAULT_ORDER} *2)) OVER (ORDER BY ${items.order})))/2`.as(
+        next: sql<number>`(${items.order} + (lead(${items.order}, 1, ${items.order} + ( ${DEFAULT_ORDER} *2)) OVER (ORDER BY ${items.order})))/2`.as(
           'next',
         ),
       })
@@ -1095,7 +1096,7 @@ export class ItemRepository {
     } else {
       order = await this.getNextOrderCount(db, parentPath, previousItemId);
     }
-    await db.update(itemsRaw).set({ order }).where(eq(items.id, item.id));
+    await db.update(itemsRaw).set({ order }).where(eq(itemsRaw.id, item.id));
 
     // TODO: optimize
     return await this.getOneOrThrow(db, item.id);
@@ -1177,7 +1178,7 @@ export class ItemRepository {
     // TODO: use (getViewSelectedFields(items)); to use item view
     const itemAndOrderedMemberships = db
       .select({
-        ...getTableColumns(itemsRaw),
+        ...itemColumns,
         rNb: sql`row_number() OVER (ORDER BY path)`.as('row_number'),
       })
       .from(itemsRaw)

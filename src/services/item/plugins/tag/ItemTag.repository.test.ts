@@ -75,7 +75,7 @@ describe('ItemTag Repository', () => {
       expect(tags.find(({ name }) => tag1.name === name)!.count).toEqual(2);
     });
 
-    // FIX: we do not allow searching witout category
+    // FIXME: we do not allow searching witout category
     it.skip('get count for tags given search without category', async () => {
       // const tag = await saveTag();
       // const item = await saveItem(FolderItemFactory({ creator: null }));

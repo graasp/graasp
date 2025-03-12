@@ -27,7 +27,7 @@ import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../test/constants';
 import { seedFromJson } from '../../../../test/mocks/seed';
 import { resolveDependency } from '../../../di/utils';
 import { db } from '../../../drizzle/db';
-import { itemGeolocations, itemMemberships, itemsRaw } from '../../../drizzle/schema';
+import { itemGeolocationsTable, itemMemberships, itemsRaw } from '../../../drizzle/schema';
 import { Item } from '../../../drizzle/types';
 import { MinimalMember } from '../../../types';
 import { assertIsDefined } from '../../../utils/assertions';

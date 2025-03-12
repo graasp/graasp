@@ -16,18 +16,12 @@ export class ExpectedEnvVariable extends Error {
 
 export const CoreError = ErrorFactory('core');
 
-export class ItemNotFound extends CoreError {
-  constructor(itemId: string) {
-    super(
-      {
-        code: 'GERR001',
-        statusCode: StatusCodes.NOT_FOUND,
-        message: FAILURE_MESSAGES.ITEM_NOT_FOUND,
-      },
-      itemId,
-    );
-  }
-}
+export const ItemNotFound = createError(
+  'GERR001',
+  FAILURE_MESSAGES.ITEM_NOT_FOUND,
+  StatusCodes.NOT_FOUND,
+);
+
 export class MemberCannotReadItem extends CoreError {
   constructor(itemId: string) {
     super(
