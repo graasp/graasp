@@ -6,6 +6,7 @@ import { DBConnection } from '../../drizzle/db';
 import {
   Item,
   ItemMembershipRaw,
+  ItemVisibilityRaw,
   ItemVisibilityWithItem,
   ItemWithCreator,
   MemberRaw,
@@ -36,21 +37,21 @@ type GraaspItem = Pick<
 export type PackedItem = GraaspItem & {
   // permission can be undefined because the item is public
   permission: ItemMembershipRaw['permission'] | null;
-  hidden?: ItemVisibilityWithItem;
-  public?: ItemVisibilityWithItem;
+  hidden?: ItemVisibilityRaw;
+  public?: ItemVisibilityRaw;
   thumbnails?: ThumbnailsBySize;
 };
 
 export class ItemWrapper {
   item: ItemWithCreator;
   actorPermission?: { permission: ItemMembershipRaw['permission'] } | null;
-  visibilities?: ItemVisibilityWithItem[] | null;
+  visibilities?: ItemVisibilityRaw[] | null;
   private readonly thumbnails?: ThumbnailsBySize;
 
   constructor(
     item: ItemWithCreator,
     im?: { permission: ItemMembershipRaw['permission'] } | null,
-    visibilities?: ItemVisibilityWithItem[] | null,
+    visibilities?: ItemVisibilityRaw[] | null,
     thumbnails?: ThumbnailsBySize,
   ) {
     this.item = item;
@@ -66,7 +67,7 @@ export class ItemWrapper {
   packed(): PackedItem {
     // sort visibilities to retrieve the most restrictive (highest) visibility first
     if (this.visibilities) {
-      this.visibilities.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
+      this.visibilities.sort((a, b) => (a.itemPath.length > b.itemPath.length ? 1 : -1));
     }
 
     return {
@@ -104,7 +105,7 @@ export class ItemWrapperService {
   merge(
     items: ItemWithCreator[],
     memberships: ResultOf<ItemMembershipRaw | null>,
-    visibilities?: ResultOf<ItemVisibilityWithItem[] | null>,
+    visibilities?: ResultOf<ItemVisibilityRaw[] | null>,
     itemsThumbnails?: ItemsThumbnails,
   ): PackedItem[] {
     const data: PackedItem[] = [];
@@ -116,7 +117,7 @@ export class ItemWrapperService {
       // sort visibilities to retrieve the most restrictive (highest) visibility first
       const itemVisibilities = visibilities?.data?.[i.id];
       if (itemVisibilities) {
-        itemVisibilities.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
+        itemVisibilities.sort((a, b) => (a.itemPath.length > b.itemPath.length ? 1 : -1));
       }
 
       data.push({
@@ -140,7 +141,7 @@ export class ItemWrapperService {
   mergeResult(
     items: ResultOf<ItemWithCreator>,
     memberships: ResultOf<ItemMembershipRaw | null>,
-    visibilities?: ResultOf<ItemVisibilityWithItem[] | null>,
+    visibilities?: ResultOf<ItemVisibilityRaw[] | null>,
     itemsThumbnails?: ItemsThumbnails,
   ): ResultOf<PackedItem> {
     const data: ResultOf<PackedItem>['data'] = {};
@@ -152,7 +153,7 @@ export class ItemWrapperService {
       // sort visibilities to retrieve the most restrictive (highest) visibility first
       const itemVisibilities = visibilities?.data?.[i.id];
       if (itemVisibilities) {
-        itemVisibilities.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
+        itemVisibilities.sort((a, b) => (a.itemPath.length > b.itemPath.length ? 1 : -1));
       }
 
       data[i.id] = {
@@ -169,7 +170,7 @@ export class ItemWrapperService {
 
   async createPackedItems(
     db: DBConnection,
-    items: Item[],
+    items: ItemWithCreator[],
     memberships?: ResultOf<ItemMembershipRaw[]>,
     { withDeleted = false }: { withDeleted?: boolean } = {},
   ): Promise<PackedItem[]> {
@@ -187,8 +188,10 @@ export class ItemWrapperService {
       (await this.itemMembershipRepository.getForManyItems(db, items, {
         withDeleted,
       }));
+    console.log('rtjzg');
 
     const itemsThumbnails = await this.itemThumbnailService.getUrlsByItems(items);
+    console.log('kujhzfgb');
 
     return items.map((item) => {
       const permission = m.data[item.id][0]?.permission;
@@ -199,6 +202,7 @@ export class ItemWrapperService {
       if (itemVisibilities) {
         itemVisibilities.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
       }
+      console.log('weroiherg');
 
       return {
         ...item,

@@ -259,7 +259,7 @@ export class ItemVisibilityRepository {
     const visibilities = await db
       .select()
       .from(itemVisibilities)
-      .innerJoin(itemsRaw, eq(itemVisibilities.itemPath, items.path))
+      .innerJoin(itemsRaw, eq(itemVisibilities.itemPath, itemsRaw.path))
       .where(and(pathsCondition, deletedCondition));
 
     const transformedVisibilities = visibilities.map(({ item, item_visibility }) => ({

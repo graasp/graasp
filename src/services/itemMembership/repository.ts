@@ -544,7 +544,7 @@ export class ItemMembershipRepository {
     if (!considerLocal) {
       andConditions.push(notInArray(itemsRaw.id, ids));
     }
-
+    console.log('weoif');
     const memberships = await db
       .select({
         ...getTableColumns(itemMembershipTable),
@@ -559,7 +559,8 @@ export class ItemMembershipRepository {
       .innerJoin(itemsRaw, isAncestorOrSelf(itemMembershipTable.itemPath, itemsRaw.path))
       .where(and(...andConditions))
       // Keep only closest membership per descendant
-      .orderBy(() => [asc(sql`descendant.id`), desc(sql`nlevel(${itemMembershipTable.itemPath})`)]);
+      .orderBy(() => [asc(itemsRaw.id), desc(sql`nlevel(${itemMembershipTable.itemPath})`)]);
+    console.log('kujtzhfg');
 
     // const query = this.repository
     // .createQueryBuilder('item_membership')

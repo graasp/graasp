@@ -1,4 +1,4 @@
-import { getTableColumns } from 'drizzle-orm';
+import { getTableColumns, getViewSelectedFields, isNull } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import {
   SQL,
@@ -1141,7 +1141,7 @@ export class ItemRepository {
       types,
     }: ItemSearchParams,
     pagination: Pagination,
-  ): Promise<Paginated<Item>> {
+  ): Promise<Paginated<ItemWithCreator>> {
     const { page, pageSize } = pagination;
     const limit = Math.min(pageSize, ITEMS_PAGE_SIZE_MAX);
     const skip = (page - 1) * limit;
@@ -1155,17 +1155,19 @@ export class ItemRepository {
     // ;
 
     // for account, get all direct items that have permissions, ordered by path
+    // TODO: use (getViewSelectedFields(items)); to use item view
     const itemAndOrderedMemberships = db
       .select({
         ...getTableColumns(itemsRaw),
-        rNb: sql`row_number() OVER (ORDER BY path)`,
+        rNb: sql`row_number() OVER (ORDER BY path)`.as('row_number'),
       })
-      .from(items)
+      .from(itemsRaw)
       .innerJoin(
         itemMemberships,
-        and(eq(itemMemberships.itemPath, items.path), eq(itemMemberships.accountId, account.id)),
+        and(eq(itemMemberships.itemPath, itemsRaw.path), eq(itemMemberships.accountId, account.id)),
       )
-      .orderBy(asc(items.path));
+      .where(isNull(itemsRaw.deletedAt))
+      .orderBy(asc(itemsRaw.path));
 
     const iom = itemAndOrderedMemberships.as('item_and_ordered_membership');
     const join = itemAndOrderedMemberships.as('join');
@@ -1175,6 +1177,7 @@ export class ItemRepository {
     const result = await db
       .select()
       .from(iom)
+      .leftJoin(membersView, eq(iom.creatorId, membersView.id))
       .where(
         lte(
           iom.rNb,
@@ -1188,10 +1191,29 @@ export class ItemRepository {
       )
       .orderBy(desc(iom.updatedAt));
 
+    // TODO: optimize
+    const [{ totalCount }] = await db
+      .select({ totalCount: count() })
+      .from(iom)
+      .where(
+        lte(
+          iom.rNb,
+          db
+            .select({ rNb: join.rNb })
+            .from(join)
+            .where(isAncestorOrSelf(join.path, iom.path))
+            .orderBy(asc(join.rNb))
+            .limit(1),
+        ),
+      );
+
     // TODO: pagination
     return {
-      data: result,
-      totalCount: 239,
+      data: result.map(({ item_and_ordered_membership, members_view }) => ({
+        ...item_and_ordered_membership,
+        creator: members_view as MemberRaw | null,
+      })),
+      totalCount,
       pagination: { page, pageSize },
     };
 

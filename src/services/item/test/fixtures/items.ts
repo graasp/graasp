@@ -1,6 +1,6 @@
 import { ItemVisibilityType, ThumbnailSize, buildPathFromIds } from '@graasp/sdk';
 
-import { Item, ItemVisibilityWithItem } from '../../../../drizzle/types';
+import { Item, ItemVisibilityRaw, ItemVisibilityWithItem } from '../../../../drizzle/types';
 import { MinimalMember } from '../../../../types';
 import { PackedItem } from '../../ItemWrapper';
 
@@ -280,7 +280,7 @@ export const expectPackedItem = (
     | null,
   creator?: MinimalMember,
   parent?: Item,
-  visibilities?: Pick<ItemVisibilityWithItem, 'id' | 'type' | 'item'>[],
+  visibilities?: Pick<ItemVisibilityRaw, 'id' | 'type' | 'itemPath'>[],
 ) => {
   expectItem(newItem, correctItem, creator, parent);
 
@@ -290,13 +290,13 @@ export const expectPackedItem = (
   if (pVisibility) {
     expect(newItem!.public!.type).toEqual(pVisibility.type);
     expect(newItem!.public!.id).toEqual(pVisibility.id);
-    expect(newItem!.public!.item!.id).toEqual(pVisibility.item.id);
+    expect(newItem!.public!.itemPath).toEqual(pVisibility.itemPath);
   }
   const hVisibility = visibilities?.find((t) => t.type === ItemVisibilityType.Hidden);
   if (hVisibility) {
     expect(newItem!.hidden!.type).toEqual(hVisibility.type);
     expect(newItem!.hidden!.id).toEqual(hVisibility.id);
-    expect(newItem!.hidden!.item!.id).toEqual(hVisibility.item.id);
+    expect(newItem!.hidden!.itemPath).toEqual(hVisibility.itemPath);
   }
 };
 
@@ -325,14 +325,14 @@ export const expectManyPackedItems = (
     Pick<PackedItem, 'permission'>)[],
   creator?: MinimalMember,
   parent?: Item,
-  visibilities?: ItemVisibilityWithItem[],
+  visibilities?: ItemVisibilityRaw[],
 ) => {
   expect(items).toHaveLength(correctItems.length);
 
-  items.forEach(({ id }) => {
+  items.forEach(({ id, path }) => {
     const item = items.find(({ id: thisId }) => thisId === id);
     const correctItem = correctItems.find(({ id: thisId }) => thisId === id);
-    const tVisibilities = visibilities?.filter((t) => t.item.id === id);
+    const tVisibilities = visibilities?.filter((t) => t.itemPath === path);
     expectPackedItem(item, correctItem, creator, parent, tVisibilities);
   });
 };

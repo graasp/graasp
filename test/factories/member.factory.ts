@@ -29,7 +29,6 @@ export const MemberFactory = (m: Partial<AccountRaw> = {}): MemberRaw => {
       {},
     ]),
     enableSaveActions: m.enableSaveActions ?? true,
-    isValidated,
     lastAuthenticatedAt: isValidated
       ? (m.lastAuthenticatedAt ?? faker.date.anytime().toISOString())
       : null,
@@ -41,6 +40,7 @@ export const MemberFactory = (m: Partial<AccountRaw> = {}): MemberRaw => {
       baseAccount.email?.toLowerCase() ??
       faker.internet.email().toLowerCase(),
     type: AccountType.Individual,
+    isValidated,
   };
 };
 

@@ -483,6 +483,7 @@ export class ItemService {
     );
 
     const packedItems = await this.itemWrapperService.createPackedItems(db, items);
+    console.log(packedItems);
     return { data: packedItems, totalCount, pagination };
   }
 

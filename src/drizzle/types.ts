@@ -68,6 +68,7 @@ export type MemberCreationDTO = typeof membersView.$inferSelect & {
 export type MemberRaw = Omit<typeof membersView.$inferSelect, 'type'> & {
   type: 'individual';
   email: string;
+  isValidated: boolean;
 };
 
 export type ItemLoginSchemaRaw = typeof itemLoginSchemas.$inferSelect;
@@ -158,7 +159,7 @@ export type MinimalItemForInsert = {
 
 // --- ItemVisibilities
 export type ItemVisibilityRaw = typeof itemVisibilities.$inferSelect;
-export type ItemVisibilityWithItem = Omit<typeof itemVisibilities.$inferSelect, 'itemPath'> & {
+export type ItemVisibilityWithItem = ItemVisibilityRaw & {
   item: Item;
 };
 

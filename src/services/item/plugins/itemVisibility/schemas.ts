@@ -6,7 +6,6 @@ import { ItemVisibilityType } from '@graasp/sdk';
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
 import { nullableMemberSchemaRef } from '../../../member/schemas';
-import { itemSchemaRef } from '../../schemas';
 
 export const itemVisibilitySchemaRef = registerSchemaAsRef(
   'itemVisibility',
@@ -15,7 +14,7 @@ export const itemVisibilitySchemaRef = registerSchemaAsRef(
     {
       id: customType.UUID(),
       type: customType.EnumString(Object.values(ItemVisibilityType)),
-      item: itemSchemaRef,
+      itemPath: Type.String(),
       creator: Type.Optional(nullableMemberSchemaRef),
       createdAt: customType.DateTime(),
     },
