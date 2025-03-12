@@ -125,6 +125,7 @@ CREATE VIEW "public"."members_view" AS (
       and "account"."email" is not null
     )
 );
+
 --> manually created!!
 --> statement-breakpoint
 CREATE VIEW "public"."guests_view" AS (

@@ -25,8 +25,7 @@ export class MemberRepository {
     if (!id) {
       throw new MemberNotFound({ id });
     }
-    const m = await db.select().from(membersView).where(eq(membersView.id, id));
-
+    const m = await db.select().from(membersView).where(eq(membersView.id, id)).limit(1);
     if (!m.length) {
       throw new MemberNotFound({ id });
     }

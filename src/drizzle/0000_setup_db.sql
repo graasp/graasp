@@ -1,4 +1,4 @@
--- CREATE schema "public";
+CREATE schema "public";
 -- setup required extensions for the database
 CREATE EXTENSION "ltree" with schema "public";
 --> statement-breakpoint
@@ -18,26 +18,6 @@ CREATE TYPE "public"."short_link_platform_enum" AS ENUM('builder', 'player', 'li
 CREATE TYPE "public"."tag_category_enum" AS ENUM('level', 'discipline', 'resource-type');
 --> statement-breakpoint
 CREATE TYPE "public"."permission_enum" AS ENUM('read', 'write', 'admin');
---> statement-breakpoint
-CREATE TYPE "public"."account_type_enum" AS ENUM('individual', 'guest');
---> statement-breakpoint
-CREATE TYPE "public"."item_login_schema_type" AS ENUM(
-  'username',
-  'username+password',
-  'anonymous',
-  'anonymous+password'
-);
---> statement-breakpoint
-CREATE TYPE "public"."item_login_schema_status" AS ENUM('active', 'freeze', 'disabled');
---> statement-breakpoint
-CREATE TYPE "public"."item_validation_process" AS ENUM('bad-words-detection', 'image-classification');
---> statement-breakpoint
-CREATE TYPE "public"."item_validation_status" AS ENUM(
-  'success',
-  'failure',
-  'pending',
-  'pending-manual'
-);
 --> statement-breakpoint
 CREATE TABLE "item_published" (
   "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
@@ -111,7 +91,7 @@ CREATE TABLE "category" (
 --> statement-breakpoint
 CREATE TABLE "chat_message" (
   "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-  "item_id" uuid NOT NULL,
+  "item_id" uuid,
   "creator_id" uuid,
   "created_at" timestamp DEFAULT now() NOT NULL,
   "updated_at" timestamp DEFAULT now() NOT NULL,
@@ -120,8 +100,8 @@ CREATE TABLE "chat_message" (
 --> statement-breakpoint
 CREATE TABLE "chat_mention" (
   "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-  "message_id" uuid NOT NULL,
-  "account_id" uuid NOT NULL,
+  "message_id" uuid,
+  "account_id" uuid,
   "created_at" timestamp DEFAULT now() NOT NULL,
   "updated_at" timestamp DEFAULT now() NOT NULL,
   "status" "chat_mention_status_enum" DEFAULT 'unread' NOT NULL
@@ -131,7 +111,7 @@ CREATE TABLE "app_data" (
   "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
   "account_id" uuid NOT NULL,
   "item_id" uuid NOT NULL,
-  "data" jsonb DEFAULT '{}'::jsonb NOT NULL,
+  "data" text DEFAULT '{}' NOT NULL,
   "type" varchar(25) NOT NULL,
   "creator_id" uuid,
   "visibility" varchar NOT NULL,
@@ -143,7 +123,7 @@ CREATE TABLE "app_action" (
   "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
   "account_id" uuid NOT NULL,
   "item_id" uuid NOT NULL,
-  "data" jsonb DEFAULT '{}'::jsonb NOT NULL,
+  "data" text DEFAULT '{}' NOT NULL,
   "type" varchar(25) NOT NULL,
   "created_at" timestamp DEFAULT now() NOT NULL
 );
@@ -153,7 +133,7 @@ CREATE TABLE "app_setting" (
   "item_id" uuid NOT NULL,
   "creator_id" uuid,
   "name" varchar NOT NULL,
-  "data" jsonb DEFAULT '{}'::jsonb NOT NULL,
+  "data" text DEFAULT '{}' NOT NULL,
   "created_at" timestamp DEFAULT now() NOT NULL,
   "updated_at" timestamp DEFAULT now() NOT NULL
 );
@@ -188,7 +168,7 @@ CREATE TABLE "app" (
   "publisher_id" uuid NOT NULL,
   "created_at" timestamp DEFAULT now() NOT NULL,
   "updated_at" timestamp DEFAULT now() NOT NULL,
-  "extra" jsonb DEFAULT '{}'::jsonb NOT NULL,
+  "extra" text DEFAULT '{}' NOT NULL,
   CONSTRAINT "app_key_key" UNIQUE("key"),
   CONSTRAINT "UQ_f36adbb7b096ceeb6f3e80ad14c" UNIQUE("name"),
   CONSTRAINT "app_url_key" UNIQUE("url")
@@ -203,8 +183,8 @@ CREATE TABLE "item_validation_group" (
 CREATE TABLE "item_validation" (
   "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
   "item_id" uuid NOT NULL,
-  "process" item_validation_process NOT NULL,
-  "status" item_validation_status NOT NULL,
+  "process" varchar NOT NULL,
+  "status" varchar NOT NULL,
   "result" varchar,
   "item_validation_group_id" uuid NOT NULL,
   "created_at" timestamp DEFAULT now() NOT NULL,
@@ -260,8 +240,8 @@ CREATE TABLE "action" (
   "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
   "view" varchar NOT NULL,
   "type" varchar NOT NULL,
-  "extra" jsonb NOT NULL,
-  "geolocation" jsonb,
+  "extra" text NOT NULL,
+  "geolocation" text,
   "created_at" timestamp DEFAULT now() NOT NULL,
   "account_id" uuid,
   "item_id" uuid
@@ -687,8 +667,8 @@ CREATE TABLE "account" (
   "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
   "name" varchar(100) NOT NULL,
   "email" varchar(150),
-  "extra" jsonb DEFAULT '{}',
-  "type" account_type_enum DEFAULT 'individual' NOT NULL,
+  "extra" text DEFAULT '{}',
+  "type" varchar DEFAULT 'individual' NOT NULL,
   "created_at" timestamp DEFAULT now() NOT NULL,
   "updated_at" timestamp DEFAULT now() NOT NULL,
   "user_agreements_date" timestamp,
@@ -727,11 +707,11 @@ CREATE TABLE "guest_password" (
 --> statement-breakpoint
 CREATE TABLE "item_login_schema" (
   "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-  "type" item_login_schema_type NOT NULL,
+  "type" varchar(100) NOT NULL,
   "created_at" timestamp DEFAULT now() NOT NULL,
   "updated_at" timestamp DEFAULT now() NOT NULL,
   "item_path" "ltree" NOT NULL,
-  "status" item_login_schema_status DEFAULT 'active' NOT NULL,
+  "status" varchar(100) DEFAULT 'active' NOT NULL,
   CONSTRAINT "item-login-schema" UNIQUE("item_path")
 );
 --> statement-breakpoint
@@ -931,12 +911,6 @@ ADD CONSTRAINT "FK_16ab8afb42f763f7cbaa4bff66a" FOREIGN KEY ("tag_id") REFERENCE
 ALTER TABLE "item_tag"
 ADD CONSTRAINT "FK_39b492fda03c7ac846afe164b58" FOREIGN KEY ("item_id") REFERENCES "public"."item"("id") ON DELETE cascade ON UPDATE no action;
 --> statement-breakpoint
-ALTER TABLE "chat_mention"
-ADD CONSTRAINT "chat_mention_message_id_chat_message_id_fk" FOREIGN KEY ("message_id") REFERENCES "public"."chat_message"("id") ON DELETE no action ON UPDATE no action;
---> statement-breakpoint
-ALTER TABLE "chat_mention"
-ADD CONSTRAINT "chat_mention_account_id_account_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."account"("id") ON DELETE no action ON UPDATE no action;
---> statement-breakpoint
 CREATE INDEX "IDX_gist_item_published_path" ON "item_published" USING gist ("item_path" gist_ltree_ops);
 --> statement-breakpoint
 CREATE INDEX "IDX_5ac5bdde333fca6bbeaf177ef9" ON "item_membership" USING btree ("permission" enum_ops);
@@ -969,13 +943,8 @@ CREATE INDEX "IDX_bdc46717fadc2f04f3093e51fd" ON "item" USING btree ("creator_id
 --> statement-breakpoint
 CREATE INDEX "IDX_gist_item_path" ON "item" USING gist ("path" gist_ltree_ops);
 --> statement-breakpoint
-CREATE INDEX "IDX_account_type" ON "account" USING btree ("type" enum_ops);
+CREATE INDEX "IDX_account_type" ON "account" USING btree ("type" text_ops);
 --> statement-breakpoint
 CREATE INDEX "IDX_gist_item_visibility_path" ON "item_visibility" USING gist ("item_path" gist_ltree_ops);
 --> statement-breakpoint
 CREATE INDEX "IDX_item_tag_item" ON "item_tag" USING btree ("item_id" uuid_ops);
-ALTER TABLE "invitation"
-ADD CONSTRAINT "invitation_creator_id_account_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."account"("id") ON DELETE no action ON UPDATE no action;
---> statement-breakpoint
-ALTER TABLE "item_tag"
-ADD CONSTRAINT "UQ_item_tag" UNIQUE("tag_id", "item_id");

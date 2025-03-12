@@ -16,7 +16,7 @@ import {
   itemBookmarks,
   itemCategories,
   itemFlags,
-  itemGeolocationsTable,
+  itemGeolocations,
   itemLikes,
   itemLoginSchemas,
   itemMemberships,
@@ -103,7 +103,7 @@ export const itemRelations = relations(itemsRaw, ({ one, many }) => ({
   itemBookmarks: many(itemBookmarks),
   shortLinks: many(shortLinks),
   actions: many(actionsTable),
-  itemGeolocations: many(itemGeolocationsTable),
+  itemGeolocations: many(itemGeolocations),
   actionRequestExports: many(actionRequestExports),
   account: one(accountsTable, {
     fields: [itemsRaw.creatorId],
@@ -342,9 +342,9 @@ export const actionRelations = relations(actionsTable, ({ one }) => ({
   }),
 }));
 
-export const itemGeolocationRelations = relations(itemGeolocationsTable, ({ one }) => ({
+export const itemGeolocationRelations = relations(itemGeolocations, ({ one }) => ({
   item: one(itemsRaw, {
-    fields: [itemGeolocationsTable.itemPath],
+    fields: [itemGeolocations.itemPath],
     references: [itemsRaw.path],
   }),
 }));

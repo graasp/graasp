@@ -4,7 +4,7 @@ import { PermissionLevel, TagCategory, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
 import { AuthenticatedUser, MaybeUser } from '../../../../types';
-import { TagRepository } from '../../../tag/tag.repository';
+import { TagRepository } from '../../../tag/Tag.repository';
 import { BasicItemService } from '../../basic.service';
 import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
