@@ -74,7 +74,13 @@ import {
 import { mapById } from '../utils';
 import { DEFAULT_ORDER, IS_COPY_REGEX, ITEMS_PAGE_SIZE_MAX } from './constants';
 import { FolderItem, isItemType } from './discrimination';
-import { ItemChildrenParams, ItemSearchParams, Ordering, SortBy } from './types';
+import {
+  ItemChildrenParams,
+  ItemSearchParams,
+  Ordering,
+  SortBy,
+  orderingToUpperCase,
+} from './types';
 import { sortChildrenForTreeWith } from './utils';
 
 const DEFAULT_COPY_SUFFIX = ' (2)';
@@ -1154,6 +1160,17 @@ export class ItemRepository {
     // order by iom.updated_at desc
     // ;
 
+    const andConditions = [isNull(itemsRaw.deletedAt)];
+    if (creatorId) {
+      andConditions.push(eq(itemsRaw.creatorId, creatorId));
+    }
+    if (permissions?.length) {
+      andConditions.push(inArray(itemMemberships.permission, permissions));
+    }
+    if (types?.length) {
+      andConditions.push(inArray(itemsRaw.type, types));
+    }
+
     // for account, get all direct items that have permissions, ordered by path
     // TODO: use (getViewSelectedFields(items)); to use item view
     const itemAndOrderedMemberships = db
@@ -1166,13 +1183,40 @@ export class ItemRepository {
         itemMemberships,
         and(eq(itemMemberships.itemPath, itemsRaw.path), eq(itemMemberships.accountId, account.id)),
       )
-      .where(isNull(itemsRaw.deletedAt))
+      .where(and(...andConditions))
       .orderBy(asc(itemsRaw.path));
 
     const iom = itemAndOrderedMemberships.as('item_and_ordered_membership');
     const join = itemAndOrderedMemberships.as('join');
 
-    // TODO: CHECK THIS WORKS + COMPLETE WITH SEARCH AND EVERYTHING
+    let orderBy = desc(iom.updatedAt);
+    if (sortBy) {
+      // map strings to correct sort by column
+      let mappedSortBy;
+      switch (sortBy) {
+        case SortBy.ItemType:
+          mappedSortBy = iom.type;
+          break;
+        case SortBy.ItemUpdatedAt:
+          mappedSortBy = iom.updatedAt;
+          break;
+        case SortBy.ItemCreatedAt:
+          mappedSortBy = iom.createdAt;
+          break;
+        case SortBy.ItemName:
+          mappedSortBy = iom.name;
+          break;
+        case SortBy.ItemCreatorName:
+          mappedSortBy = membersView.name;
+          break;
+      }
+      if (mappedSortBy) {
+        orderBy =
+          orderingToUpperCase(ordering) === Ordering.ASC ? asc(mappedSortBy) : desc(mappedSortBy);
+      }
+    }
+
+    // TODO: COMPLETE WITH SEARCH AND EVERYTHING
     // select top most items from above subquery
     const result = await db
       .select()
@@ -1189,7 +1233,9 @@ export class ItemRepository {
             .limit(1),
         ),
       )
-      .orderBy(desc(iom.updatedAt));
+      .orderBy(orderBy)
+      .offset(skip)
+      .limit(limit);
 
     // TODO: optimize
     const [{ totalCount }] = await db
