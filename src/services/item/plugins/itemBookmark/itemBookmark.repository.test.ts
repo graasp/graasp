@@ -1,115 +1,114 @@
 import { v4 } from 'uuid';
 
-import { clearDatabase } from '../../../../../test/app';
-import { ItemBookmarkRaw } from '../../../../drizzle/types';
+import { seedFromJson } from '../../../../../test/mocks/seed';
+import { client, db } from '../../../../drizzle/db';
+import { itemBookmarks } from '../../../../drizzle/schema';
+import { assertIsDefined } from '../../../../utils/assertions';
 import { saveMember } from '../../../member/test/fixtures/members';
-import { ItemTestUtils } from '../../test/fixtures/items';
 import { DuplicateBookmarkError, ItemBookmarkNotFound } from './errors';
 import { ItemBookmarkRepository } from './itemBookmark.repository';
 
-const testUtils = new ItemTestUtils();
+const repository = new ItemBookmarkRepository();
 
-describe('FavoriteRepository', () => {
-  let actor;
-  let favorites: ItemBookmarkRaw[];
+async function prepareTest() {
+  const { items, actor } = await seedFromJson({
+    items: [{ creator: 'actor' }, { creator: 'actor' }],
+  });
+  expect(actor).toBeDefined();
+  assertIsDefined(actor);
+  const favorites = await db
+    .insert(itemBookmarks)
+    .values(items.map((i) => ({ itemId: i.id, memberId: actor.id })))
+    .returning();
 
-  beforeEach(async () => {
-    const r = new ItemBookmarkRepository();
-    const rawRepository = AppDataSource.getRepository(ItemFavorite);
-    const item1 = await testUtils.saveItem({ actor });
-    const item2 = await testUtils.saveItem({ actor });
-    favorites = [
-      await rawRepository.save({ item: item1, member: actor }),
-      await rawRepository.save({ item: item2, member: actor }),
-    ];
+  // noise
+  const m1 = await saveMember();
+  await repository.post(db, items[0].id, m1.id);
 
-    // noise
-    const m1 = await saveMember();
-    await r.post(app.db, item1.id, m1.id);
+  return { favorites, items, actor };
+}
+
+describe('ItemBookmark Repository', () => {
+  beforeAll(async () => {
+    await client.connect();
   });
 
-  afterEach(async () => {
-    jest.clearAllMocks();
-    await clearDatabase(app.db);
-    actor = null;
-    favorites = [];
-    app.close();
+  afterAll(async () => {
+    await client.end();
   });
 
   describe('get', () => {
     it('returns favorite by id', async () => {
-      const r = new ItemBookmarkRepository();
+      const { favorites } = await prepareTest();
       const f = favorites[0];
-      const result = await r.get(f.id);
-      expect(result).toMatchObject({
-        item: expect.objectContaining({ id: f.item.id }),
-      });
+      const result = await repository.get(db, f.id);
+      expect(result.item.id).toEqual(f.itemId);
     });
 
     it('throws if id is undefined', async () => {
-      const r = new ItemBookmarkRepository();
-
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      await expect(r.get(app.db, undefined!)).rejects.toMatchObject(new ItemBookmarkRepository());
+      await expect(
+        async () =>
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          await repository.get(db, undefined!),
+      ).rejects.toMatchObject(new ItemBookmarkRepository());
     });
 
     it('throws if favorite does not exist', async () => {
-      const r = new ItemBookmarkRepository();
       const id = v4();
-      await expect(r.get(app.db, id)).rejects.toMatchObject(new ItemBookmarkRepository(id));
+      await expect(async () => await repository.get(db, id)).rejects.toThrow(
+        new ItemBookmarkNotFound(id),
+      );
     });
   });
 
   describe('getFavoriteForMember', () => {
     it('returns all favorites for member', async () => {
-      const r = new ItemBookmarkRepository();
-
-      const result = await r.getFavoriteForMember(app.db, actor.id);
+      const { actor, favorites } = await prepareTest();
+      const result = await repository.getFavoriteForMember(db, actor.id);
       expect(result).toHaveLength(favorites.length);
       for (const f of favorites) {
-        expect(result).toContainEqual(
-          expect.objectContaining({
-            item: expect.objectContaining({
-              id: f.item.id,
-              creator: expect.objectContaining({ id: f.item?.creator?.id }),
-            }),
-          }),
-        );
+        const match = result.find((r) => r.id === f.id);
+        expect(match).toBeDefined();
+        expect(match?.item.id).toEqual(f.itemId);
+        // creator is not included in the return
       }
     });
 
     it('returns empty array if no favorite', async () => {
-      const r = new ItemBookmarkRepository();
-
-      const result = await r.getFavoriteForMember(app.db, v4());
+      const result = await repository.getFavoriteForMember(db, v4());
       expect(result).toHaveLength(0);
     });
   });
 
   describe('post', () => {
     it('save and return favorite', async () => {
-      const r = new ItemBookmarkRepository();
-      const item = await testUtils.saveItem({ actor });
+      const { actor } = await prepareTest();
+      // create a new item
+      const {
+        items: [item],
+      } = await seedFromJson({ items: [{}] });
 
       // returned value
-      const result = await r.post(app.db, item.id, actor.id);
-      expect(result).toMatchObject({
-        item: expect.objectContaining({ id: item.id }),
-      });
-
+      const result = await repository.post(db, item.id, actor.id);
+      expect(result).toBeDefined();
+      expect(result.itemId).toEqual(item.id);
+      assertIsDefined(result);
+      const resId = result.id;
+      assertIsDefined(resId);
       // saved value
-      expect(await r.get(result.id)).toMatchObject({
+      expect(await repository.get(db, resId)).toMatchObject({
         item: expect.objectContaining({ id: item.id }),
       });
     });
 
     it('throws if duplicate', async () => {
-      const r = new ItemBookmarkRepository();
-
-      await expect(r.post(favorites[0].item.id, favorites[0].member.id)).rejects.toMatchObject(
+      const { favorites } = await prepareTest();
+      await expect(
+        async () => await repository.post(db, favorites[0].itemId, favorites[0].memberId),
+      ).rejects.toThrow(
         new DuplicateBookmarkError({
-          itemId: favorites[0].item.id,
-          memberId: favorites[0].member.id,
+          itemId: favorites[0].itemId,
+          memberId: favorites[0].memberId,
         }),
       );
     });
@@ -117,22 +116,26 @@ describe('FavoriteRepository', () => {
 
   describe('deleteOne', () => {
     it('delete favorite', async () => {
-      const r = new ItemBookmarkRepository();
+      const { favorites } = await prepareTest();
       const f = favorites[0];
       // returned value
-      const result = await r.deleteOne(app.db, f.item.id, f.member.id);
-      expect(result).toEqual(f.item.id);
+      const result = await repository.deleteOne(db, f.itemId, f.memberId);
+      expect(result).toEqual(f.itemId);
 
       // saved value
-      await expect(r.get(f.id)).rejects.toMatchObject(new ItemBookmarkNotFound(f.id));
+      await expect(async () => await repository.get(db, f.id)).rejects.toThrow(
+        new ItemBookmarkNotFound(f.id),
+      );
     });
 
     it('do nothing if no favorite exists', async () => {
-      const r = new ItemBookmarkRepository();
-      const item = await testUtils.saveItem({ actor });
-
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({ items: [{}] });
+      assertIsDefined(actor);
       // returned value
-      const result = await r.deleteOne(app.db, item.id, actor.id);
+      const result = await repository.deleteOne(db, item.id, actor.id);
       expect(result).toEqual(item.id);
     });
   });
