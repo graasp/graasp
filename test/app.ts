@@ -9,7 +9,6 @@ import { DBConnection } from '../src/drizzle/db';
 import { BaseLogger } from '../src/logger';
 import ajvFormats from '../src/schemas/ajvFormats';
 import { PassportStrategy } from '../src/services/auth/plugins/passport';
-import { DB_TEST_SCHEMA } from './constants';
 
 const originalSessionStrategy = fastifyPassport.strategy(PassportStrategy.Session)!;
 let originalStrictSessionStrategy;

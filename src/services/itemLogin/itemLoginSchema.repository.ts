@@ -80,6 +80,11 @@ export class ItemLoginSchemaRepository {
   ): Promise<void> {
     const itemLoginSchema = await this.getOneByItemPath(db, itemPath);
     if (itemLoginSchema) {
+      // cannot update item login schema if it is requested from the child
+      if (itemLoginSchema.itemPath !== itemPath) {
+        throw new CannotNestItemLoginSchema(itemLoginSchema.itemPath);
+      }
+
       await db
         .update(itemLoginSchemas)
         .set({ type, status })

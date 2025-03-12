@@ -396,10 +396,10 @@ async function createItemLoginSchemasAndGuests(items: (SeedItem & { path: string
     guests = (await db.insert(accountsTable).values(guestsData).returning()) as GuestRaw[];
 
     // save guest passwords
-    const guestPasswordsValues: { guest: { id: string }; password: string }[] = [];
+    const guestPasswordsValues: { guestId: string; password: string }[] = [];
     for (const { id, password } of guestsData) {
       if (password) {
-        guestPasswordsValues.push({ guest: { id }, password: await encryptPassword(password) });
+        guestPasswordsValues.push({ guestId: id, password: await encryptPassword(password) });
       }
     }
     if (guestPasswordsValues.length) {

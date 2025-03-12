@@ -833,7 +833,9 @@ export const accountsTable = pgTable(
 // TODO: materialized?? check
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const { itemLoginSchemaId, ...membersColumns } = getTableColumns(accountsTable);
-const { ...guestColumns } = getTableColumns(accountsTable);
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const { email, userAgreementsDate, enableSaveActions, ...guestColumns } =
+  getTableColumns(accountsTable);
 export const membersView = pgView('members_view').as((qb) =>
   qb
     .select(membersColumns)

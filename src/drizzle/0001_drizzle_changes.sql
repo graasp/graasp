@@ -125,3 +125,21 @@ CREATE VIEW "public"."members_view" AS (
       and "account"."email" is not null
     )
 );
+--> manually created!!
+--> statement-breakpoint
+CREATE VIEW "public"."guests_view" AS (
+  select "id",
+    "name", 
+    "extra",
+    "type",
+    "created_at",
+    "updated_at",
+    "last_authenticated_at",
+    "is_validated",
+    "item_login_schema_id"
+  from "account"
+  where (
+      "account"."type" = 'guest'
+      and "account"."item_login_schema_id" is not null
+    )
+);

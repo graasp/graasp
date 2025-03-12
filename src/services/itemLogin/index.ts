@@ -131,11 +131,11 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user, params: { id: itemId } }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return db.transaction(async (tx) => {
-        try {
-          // Validate permission
-          await basicItemService.get(tx, member, itemId, PermissionLevel.Admin);
 
+      return db.transaction(async (tx) => {
+        // Validate permission
+        await basicItemService.get(tx, member, itemId, PermissionLevel.Admin);
+        try {
           const { id } = await itemLoginService.delete(tx, itemId);
           return id;
         } catch (e: unknown) {

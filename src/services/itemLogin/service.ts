@@ -79,7 +79,6 @@ export class ItemLoginService {
     { username, password }: { username: string; password?: string },
   ): Promise<MinimalAccount> {
     const item = await this.itemRepository.getOneOrThrow(db, itemId);
-
     // initial validation
     // this throws if does not exist
     const itemLoginSchema = await this.itemLoginSchemaRepository.getOneByItemPath(db, item.path);
@@ -95,7 +94,6 @@ export class ItemLoginService {
     let guestAccount = existingAccount
       ? { id: existingAccount.id, name: existingAccount.name }
       : undefined;
-
     // reuse existing item login for this user
     if (guestAccount && loginSchemaRequiresPassword(itemLoginSchema.type)) {
       password = asDefined(password, MissingCredentialsForLoginSchema);
@@ -147,7 +145,6 @@ export class ItemLoginService {
       db,
       guestAccount.id,
     );
-
     return { id: refreshedMember.id, name: refreshedMember.name };
   }
 

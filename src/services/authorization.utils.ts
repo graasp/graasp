@@ -154,8 +154,6 @@ export const filterOutPackedDescendants = async (
           return false;
         }
 
-        // console.log(i);
-
         // return item if has at least write permission or is not hidden
         return (
           (i.permission && PermissionLevelCompare.gte(i.permission, PermissionLevel.Write)) ||

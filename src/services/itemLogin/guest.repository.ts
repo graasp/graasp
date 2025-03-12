@@ -16,17 +16,18 @@ export class GuestRepository {
     item: Item,
     username: string,
   ): Promise<GuestWithItemLoginSchema | undefined> {
+    // TODO: use guestsView
     const res = await db
       .select()
       .from(guestsView)
-      .where(eq(guestsView.name, username))
-      .leftJoin(
+      .innerJoin(
         itemLoginSchemas,
         and(
           eq(itemLoginSchemas.id, guestsView.itemLoginSchemaId),
           isAncestorOrSelf(itemLoginSchemas.itemPath, item.path),
         ),
-      );
+      )
+      .where(eq(guestsView.name, username));
     const guest = res.at(0);
     if (!guest) {
       return undefined;
@@ -42,7 +43,10 @@ export class GuestRepository {
     db: DBConnection,
     guestData: { name: string; itemLoginSchemaId: string },
   ): Promise<GuestRaw> {
-    const res = await db.insert(accountsTable).values(guestData).returning();
+    const res = await db
+      .insert(accountsTable)
+      .values({ ...guestData, type: AccountType.Guest })
+      .returning();
     const guest = res.at(0);
     if (!res) {
       throw new Error('Could not find created entitiy');

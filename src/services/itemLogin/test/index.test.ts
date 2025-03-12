@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker';
+import { and, eq } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 
 import { FastifyInstance } from 'fastify';
@@ -12,34 +13,49 @@ import {
 
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
 import { seedFromJson } from '../../../../test/mocks/seed';
-import { AppDataSource } from '../../../plugins/datasource';
+import { db } from '../../../drizzle/db';
+import { guestsView, itemLoginSchemas, itemMemberships } from '../../../drizzle/schema';
 import { assertIsDefined } from '../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
 import { MemberCannotAdminItem } from '../../../utils/errors';
-import { Account } from '../../account/entities/account';
-import { ItemMembership } from '../../itemMembership/entities/ItemMembership';
+import { assertIsMemberForTest } from '../../authentication';
 import { expectAccount } from '../../member/test/fixtures/members';
-import { Guest } from '../entities/guest';
-import { ItemLoginSchema as ItemLoginSchemaEntity } from '../entities/itemLoginSchema';
 import { CannotNestItemLoginSchema, ValidMemberSession } from '../errors';
 
-const rawGuestRepository = AppDataSource.getRepository(Guest);
-const rawItemMembershipRepository = AppDataSource.getRepository(ItemMembership);
-const rawItemLoginSchemaRepository = AppDataSource.getRepository(ItemLoginSchemaEntity);
+const getGuest = async ({
+  name,
+  itemLoginSchemaId,
+}: {
+  name: string;
+  itemLoginSchemaId?: string;
+}) => {
+  const conditions = [eq(guestsView.name, name)];
+  if (itemLoginSchemaId) {
+    conditions.push(eq(guestsView.itemLoginSchemaId, itemLoginSchemaId));
+  }
+  return (
+    await db
+      .select()
+      .from(guestsView)
+      .where(and(...conditions))
+  )[0];
+};
 
-const expectItemLogin = (member: AccountRaw, m: AccountRaw) => {
-  expectAccount(member, m);
+const getItemLoginSchemaById = async (ilsId) => {
+  return await db.query.itemLoginSchemas.findFirst({
+    where: eq(itemLoginSchemas.id, ilsId),
+  });
 };
 
 describe('Item Login Tests', () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
-    ({ app } = await build({ member: null }));
+    ({ app } = await build());
   });
 
   afterAll(async () => {
-    await clearDatabase(app.db);
+    await clearDatabase(db);
     app.close();
   });
 
@@ -121,6 +137,8 @@ describe('Item Login Tests', () => {
           },
         ],
       });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
       mockAuthenticate(actor);
 
       const res = await app.inject({
@@ -144,6 +162,8 @@ describe('Item Login Tests', () => {
           },
         ],
       });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
       mockAuthenticate(actor);
 
       const res = await app.inject({
@@ -213,6 +233,8 @@ describe('Item Login Tests', () => {
             },
           ],
         });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
         mockAuthenticate(actor);
 
         const res = await app.inject({
@@ -241,6 +263,8 @@ describe('Item Login Tests', () => {
             },
           ],
         });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
         mockAuthenticate(actor);
 
         const res = await app.inject({
@@ -268,6 +292,8 @@ describe('Item Login Tests', () => {
             },
           ],
         });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
         mockAuthenticate(actor);
 
         const res = await app.inject({
@@ -297,6 +323,8 @@ describe('Item Login Tests', () => {
             },
           ],
         });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
         mockAuthenticate(actor);
 
         const res = await app.inject({
@@ -325,6 +353,8 @@ describe('Item Login Tests', () => {
             },
           ],
         });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
         mockAuthenticate(actor);
 
         const res = await app.inject({
@@ -361,6 +391,8 @@ describe('Item Login Tests', () => {
             },
           ],
         });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
         mockAuthenticate(actor);
 
         const res = await app.inject({
@@ -484,9 +516,9 @@ describe('Item Login Tests', () => {
         const member = res.json();
 
         // membership is saved on the right path
-        const membership = await rawItemMembershipRepository.findOne({
-          where: { account: { id: member.id } },
-          relations: { item: true, account: true },
+        const membership = await db.query.itemMemberships.findFirst({
+          where: eq(itemMemberships.accountId, member.id),
+          with: { item: true, account: true },
         });
         expect(membership?.item.path).toEqual(parentItem.path);
 
@@ -511,6 +543,7 @@ describe('Item Login Tests', () => {
           it('Successfully create item login with username', async () => {
             const {
               items: [item],
+              itemLoginSchemas: [ils],
             } = await seedFromJson({
               items: [
                 {
@@ -528,12 +561,8 @@ describe('Item Login Tests', () => {
             });
 
             expect(res.statusCode).toBe(StatusCodes.OK);
-            const guestInDb = await rawGuestRepository.findBy({
-              name: payload.username,
-              itemLoginSchema: { item: { path: item.path } },
-            });
-            expect(guestInDb).toHaveLength(1);
-            expect(guestInDb[0].lastAuthenticatedAt).toBeDefined();
+            const guestInDb = await getGuest({ name: payload.username, itemLoginSchemaId: ils.id });
+            expect(guestInDb.lastAuthenticatedAt).toBeDefined();
             expect(res.json().name).toEqual(payload.username);
           });
 
@@ -549,7 +578,9 @@ describe('Item Login Tests', () => {
                   itemLoginSchema: {
                     guests: [
                       {
-                        lastAuthenticatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+                        lastAuthenticatedAt: new Date(
+                          Date.now() - 24 * 60 * 60 * 1000,
+                        ).toISOString(),
                       },
                     ],
                   },
@@ -567,20 +598,21 @@ describe('Item Login Tests', () => {
 
             expect(res.statusCode).toBe(StatusCodes.OK);
             const member = res.json();
-            expectItemLogin(member, guest);
+            expectAccount(member, guest);
 
-            const guestInDb = await rawGuestRepository.findBy({
+            const guestInDb = await getGuest({
               name: guest.name,
-              itemLoginSchema: { id: itemLoginSchema.id },
+              itemLoginSchemaId: itemLoginSchema.id,
             });
-            expect(guestInDb).toHaveLength(1);
             // last authenticated got updated
+            assertIsDefined(guestInDb.lastAuthenticatedAt);
+            assertIsDefined(guest.lastAuthenticatedAt);
             expect(
-              new Date(guestInDb[0].lastAuthenticatedAt) > new Date(guest.lastAuthenticatedAt),
+              new Date(guestInDb.lastAuthenticatedAt) > new Date(guest.lastAuthenticatedAt),
             ).toEqual(true);
             // last authenticated is within last minute
             expect(
-              new Date(guestInDb[0].lastAuthenticatedAt) > new Date(Date.now() - 60 * 1000),
+              new Date(guestInDb.lastAuthenticatedAt) > new Date(Date.now() - 60 * 1000),
             ).toEqual(true);
           });
 
@@ -607,7 +639,7 @@ describe('Item Login Tests', () => {
             });
 
             const member = res.json();
-            expectItemLogin(member, guest);
+            expectAccount(member, guest);
 
             expect(res.statusCode).toBe(StatusCodes.OK);
           });
@@ -674,9 +706,8 @@ describe('Item Login Tests', () => {
               url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login`,
               payload: { username: 'bob', password: 'alice' },
             });
-
             expect(res.statusCode).toBe(StatusCodes.OK);
-            expectItemLogin(res.json(), guest);
+            expectAccount(res.json(), guest);
           });
 
           it('Throws if item login with username and wrong password', async () => {
@@ -738,6 +769,7 @@ describe('Item Login Tests', () => {
         const {
           actor,
           items: [item],
+          itemLoginSchemas: [ils],
         } = await seedFromJson({
           items: [
             {
@@ -748,6 +780,8 @@ describe('Item Login Tests', () => {
             },
           ],
         });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
         mockAuthenticate(actor);
 
         const res = await app.inject({
@@ -757,9 +791,7 @@ describe('Item Login Tests', () => {
         });
 
         expect(res.statusCode).toBe(StatusCodes.OK);
-        const itemLoginSchema = await rawItemLoginSchemaRepository.findOneBy({
-          item: { id: item.id },
-        });
+        const itemLoginSchema = await getItemLoginSchemaById(ils.id);
         assertIsDefined(itemLoginSchema);
         expect(itemLoginSchema.type).toEqual(ItemLoginSchemaType.Username);
         expect(itemLoginSchema.status).toEqual(ItemLoginSchemaStatus.Active);
@@ -769,6 +801,7 @@ describe('Item Login Tests', () => {
         const {
           actor,
           items: [item],
+          itemLoginSchemas: [ils],
         } = await seedFromJson({
           items: [
             {
@@ -780,6 +813,8 @@ describe('Item Login Tests', () => {
             },
           ],
         });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
         mockAuthenticate(actor);
 
         const newType = ItemLoginSchemaType.Username;
@@ -790,10 +825,7 @@ describe('Item Login Tests', () => {
         });
 
         expect(res.statusCode).toBe(StatusCodes.OK);
-        expect(res.json().type).toEqual(newType);
-        const itemLoginSchema = await rawItemLoginSchemaRepository.findOneBy({
-          item: { id: item.id },
-        });
+        const itemLoginSchema = await getItemLoginSchemaById(ils.id);
         assertIsDefined(itemLoginSchema);
         expect(itemLoginSchema.type).toEqual(newType);
         expect(itemLoginSchema.status).toEqual(ItemLoginSchemaStatus.Freeze);
@@ -802,6 +834,7 @@ describe('Item Login Tests', () => {
         const {
           actor,
           items: [item],
+          itemLoginSchemas: [ils],
         } = await seedFromJson({
           items: [
             {
@@ -813,6 +846,8 @@ describe('Item Login Tests', () => {
             },
           ],
         });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
         mockAuthenticate(actor);
 
         const newType = ItemLoginSchemaType.Username;
@@ -823,10 +858,7 @@ describe('Item Login Tests', () => {
         });
 
         expect(res.statusCode).toBe(StatusCodes.OK);
-        expect(res.json().type).toEqual(newType);
-        const itemLoginSchema = await rawItemLoginSchemaRepository.findOneBy({
-          item: { id: item.id },
-        });
+        const itemLoginSchema = await getItemLoginSchemaById(ils.id);
         assertIsDefined(itemLoginSchema);
         expect(itemLoginSchema.type).toEqual(newType);
         expect(itemLoginSchema.status).toEqual(ItemLoginSchemaStatus.Disabled);
@@ -836,6 +868,7 @@ describe('Item Login Tests', () => {
         const {
           actor,
           items: [item],
+          itemLoginSchemas: [ils],
         } = await seedFromJson({
           items: [
             {
@@ -847,6 +880,8 @@ describe('Item Login Tests', () => {
             },
           ],
         });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
         mockAuthenticate(actor);
 
         const newStatus = ItemLoginSchemaStatus.Freeze;
@@ -857,10 +892,7 @@ describe('Item Login Tests', () => {
         });
 
         expect(res.statusCode).toBe(StatusCodes.OK);
-        expect(res.json().status).toEqual(newStatus);
-        const itemLoginSchema = await rawItemLoginSchemaRepository.findOneBy({
-          item: { id: item.id },
-        });
+        const itemLoginSchema = await getItemLoginSchemaById(ils.id);
         assertIsDefined(itemLoginSchema);
         expect(itemLoginSchema.type).toEqual(ItemLoginSchemaType.Username);
         expect(itemLoginSchema.status).toEqual(newStatus);
@@ -870,6 +902,7 @@ describe('Item Login Tests', () => {
         const {
           actor,
           items: [item],
+          itemLoginSchemas: [ils],
         } = await seedFromJson({
           items: [
             {
@@ -881,6 +914,8 @@ describe('Item Login Tests', () => {
             },
           ],
         });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
         mockAuthenticate(actor);
 
         const newPayload = {
@@ -894,10 +929,7 @@ describe('Item Login Tests', () => {
         });
 
         expect(res.statusCode).toBe(StatusCodes.OK);
-        expect(res.json()).toMatchObject(newPayload);
-        const itemLoginSchema = await rawItemLoginSchemaRepository.findOneBy({
-          item: { id: item.id },
-        });
+        const itemLoginSchema = await getItemLoginSchemaById(ils.id);
         assertIsDefined(itemLoginSchema);
         expect(itemLoginSchema.type).toEqual(newPayload.type);
         expect(itemLoginSchema.status).toEqual(newPayload.status);
@@ -915,6 +947,8 @@ describe('Item Login Tests', () => {
             },
           ],
         });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
         mockAuthenticate(actor);
 
         const res = await app.inject({
@@ -939,6 +973,8 @@ describe('Item Login Tests', () => {
             },
           ],
         });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
         mockAuthenticate(actor);
 
         const res = await app.inject({
@@ -1020,6 +1056,7 @@ describe('Item Login Tests', () => {
           actor,
           items: [item],
           guests: [guest],
+          itemLoginSchemas: [ils],
         } = await seedFromJson({
           items: [
             {
@@ -1028,9 +1065,11 @@ describe('Item Login Tests', () => {
             },
           ],
         });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
         mockAuthenticate(actor);
 
-        expect(await rawGuestRepository.findOneBy({ name: guest.name })).toBeDefined();
+        expect(await getGuest({ name: guest.name })).toBeDefined();
 
         const res = await app.inject({
           method: HttpMethod.Delete,
@@ -1039,13 +1078,11 @@ describe('Item Login Tests', () => {
         expect(res.statusCode).toBe(StatusCodes.OK);
 
         // item login schema should not exist anymore
-        const itemLoginSchema = await rawItemLoginSchemaRepository.findOneBy({
-          item: { id: item.id },
-        });
-        expect(itemLoginSchema).toBeNull();
+        const itemLoginSchema = await getItemLoginSchemaById(ils.id);
+        expect(itemLoginSchema).toBeUndefined();
 
         // related item login should be deleted
-        expect(await rawGuestRepository.findOneBy({ name: guest.name })).toBeNull();
+        expect(await getGuest({ name: guest.name })).toBeUndefined();
       });
 
       it('Cannot delete item login schema if have write permission', async () => {
@@ -1060,6 +1097,8 @@ describe('Item Login Tests', () => {
             },
           ],
         });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
         mockAuthenticate(actor);
 
         const res = await app.inject({
