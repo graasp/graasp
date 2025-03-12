@@ -7,8 +7,8 @@ import { invitationsTable } from '../../../../drizzle/schema';
 import {
   InvitationInsertDTO,
   InvitationRaw,
-  InvitationWIthItemAndCreator,
   InvitationWithItem,
+  InvitationWithItemAndCreator,
   Item,
   MemberRaw,
 } from '../../../../drizzle/types';
@@ -66,7 +66,7 @@ export class InvitationRepository {
     db: DBConnection,
     id: string,
     creatorId: CreatorId,
-  ): Promise<InvitationWIthItemAndCreator> {
+  ): Promise<InvitationWithItemAndCreator> {
     throwsIfParamIsInvalid('id', id);
     throwsIfParamIsInvalid('creatorId', creatorId);
 

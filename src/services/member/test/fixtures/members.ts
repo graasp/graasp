@@ -16,15 +16,14 @@ export const saveMember = async (m = MemberFactory()) => {
     .returning();
   const savedMember = res[0];
   assertIsDefined(savedMember);
-  // TODO: FIX TYPES
-  assertIsMember(savedMember as any);
+  assertIsMember(savedMember);
   // ensure member email is typed as string and not null
   const email = savedMember.email;
   if (!email) {
     throw new Error('saved member email is not defined');
   }
   // this ensures the type of the email property is `string` and not `string | null`
-  return { ...savedMember, email };
+  return { ...savedMember, email, type: 'individual' as const };
 };
 
 export const saveMembers = async (
@@ -36,15 +35,15 @@ export const saveMembers = async (
 
 export const expectMember = (
   m: MemberRaw | undefined | null,
-  validation: Partial<Pick<MemberRaw, 'type' | 'extra'>> & Pick<MemberRaw, 'name' | 'email'>,
+  expectation: Partial<Pick<MemberRaw, 'type' | 'extra'>> & Pick<MemberRaw, 'name' | 'email'>,
 ) => {
   if (!m) {
     throw 'member does not exist';
   }
-  expect(m.name).toEqual(validation.name);
-  expect(m.email).toEqual(validation.email);
-  expect(m.type).toEqual(validation.type ?? AccountType.Individual);
-  expect(m.extra).toEqual(validation.extra ?? { lang: DEFAULT_LANG });
+  expect(m.name).toEqual(expectation.name);
+  expect(m.email).toEqual(expectation.email);
+  expect(m.type).toEqual(expectation.type ?? AccountType.Individual);
+  expect(m.extra).toEqual(expectation.extra ?? { lang: DEFAULT_LANG });
 };
 
 export const expectAccount = (

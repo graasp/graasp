@@ -1,75 +1,82 @@
-import { FastifyInstance } from 'fastify';
+import { ItemVisibilityOptionsType, ItemVisibilityType } from '@graasp/sdk';
 
-import { ItemVisibilityType } from '@graasp/sdk';
-
-import build, { clearDatabase } from '../../../../../test/app';
-import { ItemTestUtils, expectItem } from '../../test/fixtures/items';
+import { seedFromJson } from '../../../../../test/mocks/seed';
+import { client, db } from '../../../../drizzle/db';
+import { itemVisibilities } from '../../../../drizzle/schema';
+import { expectItem } from '../../test/fixtures/items';
 import { ItemVisibilityRepository } from './repository';
 
-const rawRepository = AppDataSource.getRepository(ItemVisibility);
 const repository = new ItemVisibilityRepository();
-const testUtils = new ItemTestUtils();
+
+async function saveVisibility({
+  type,
+  itemPath,
+}: {
+  type: ItemVisibilityOptionsType;
+  itemPath: string;
+}) {
+  const res = await db.insert(itemVisibilities).values({ type, itemPath }).returning();
+  return res[0];
+}
 
 describe('getManyBelowAndSelf', () => {
-  let app: FastifyInstance;
-  let actor;
-
   beforeAll(async () => {
-    ({ app, actor } = await build());
-  });
-
-  afterEach(async () => {
-    jest.clearAllMocks();
+    await client.connect();
   });
 
   afterAll(async () => {
-    await clearDatabase(app.db);
-    app.close();
+    await client.end();
   });
 
   it('get empty', async () => {
-    const { item } = await testUtils.saveItemAndMembership({ member: actor });
+    const {
+      items: [item],
+    } = await seedFromJson({ items: [{}] });
     const visibilityTypes = [ItemVisibilityType.Hidden];
     // noise should not be returned
-    await rawRepository.save({ type: ItemVisibilityType.Public, item });
+    await saveVisibility({ type: ItemVisibilityType.Public, itemPath: item.path });
 
-    const visibilities = await repository.getManyBelowAndSelf(app.db, item, visibilityTypes);
+    const visibilities = await repository.getManyBelowAndSelf(db, item, visibilityTypes);
 
     expect(visibilities).toHaveLength(0);
   });
 
   it("get self's visibilities", async () => {
-    const { item } = await testUtils.saveItemAndMembership({ member: actor });
+    const {
+      items: [item],
+    } = await seedFromJson({ items: [{}] });
     const visibilityTypes = [ItemVisibilityType.Hidden, ItemVisibilityType.Public];
-    const visibility = await rawRepository.save({ type: ItemVisibilityType.Public, item });
+    const visibility = await saveVisibility({
+      type: ItemVisibilityType.Public,
+      itemPath: item.path,
+    });
 
-    const visibilities = await repository.getManyBelowAndSelf(app.db, item, visibilityTypes);
+    const visibilities = await repository.getManyBelowAndSelf(db, item, visibilityTypes);
 
     expect(visibilities).toHaveLength(1);
     expect(visibilities[0].type).toEqual(visibility.type);
-    expectItem(visibilities[0].item, visibility.item);
+    expectItem(visibilities[0].item, item);
   });
 
   it('get self and parents', async () => {
-    const { item } = await testUtils.saveItemAndMembership({ member: actor });
-    const child = await testUtils.saveItem({ actor, parentItem: item });
-    await testUtils.saveItem({ actor, parentItem: item });
-    await testUtils.saveItem({ actor, parentItem: item });
-
+    const { items } = await seedFromJson({ items: [{ children: [{}, {}, {}] }] });
+    const item = items[0];
+    const child = items[1];
     const visibilityTypes = [ItemVisibilityType.Hidden, ItemVisibilityType.Public];
-    const tag1 = await rawRepository.save({ type: ItemVisibilityType.Public, item });
-    const tag2 = await rawRepository.save({ type: ItemVisibilityType.Public, item: child });
 
-    const visibilities = await repository.getManyBelowAndSelf(app.db, item, visibilityTypes);
+    const tag1 = await saveVisibility({ type: ItemVisibilityType.Public, itemPath: item.path });
+    const tag2 = await saveVisibility({ type: ItemVisibilityType.Public, itemPath: child.path });
+
+    const visibilities = await repository.getManyBelowAndSelf(db, item, visibilityTypes);
 
     expect(visibilities).toHaveLength(2);
     visibilities.forEach((t) => {
       if (tag1.id === t.id) {
         expect(t.type).toEqual(tag1.type);
-        expectItem(t.item, tag1.item);
+        expectItem(t.item, item);
       } else if (tag2.id === t.id) {
         expect(t.type).toEqual(tag2.type);
-        expectItem(t.item, tag2.item);
+        expectItem(t.item, child);
       } else {
         throw new Error('error in visibility');
       }
