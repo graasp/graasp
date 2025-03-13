@@ -40,7 +40,7 @@ export class MembershipRequestService {
 
     const link = ClientManager.getInstance().getLinkByContext(
       Context.Builder,
-      `/items/${item.id}/share`,
+      `items/${item.id}/share`,
     );
 
     for (const adminMembership of adminMemberships) {
