@@ -51,7 +51,7 @@ export class GuestRepository {
     if (!res) {
       throw new Error('Could not find created entitiy');
     }
-    // FIX: casting is ugly because db table schema allows nullables...
+    // FIXME: casting is ugly because db table schema allows nullables...
     return { ...guest, type: AccountType.Guest } as GuestRaw;
   }
 

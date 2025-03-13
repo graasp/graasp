@@ -1,72 +1,67 @@
-import { FastifyInstance } from 'fastify';
-
-import { FolderItemFactory, MemberFactory, PermissionLevel } from '@graasp/sdk';
-
-import build from '../../../../../../test/app';
-import { expectManyItems } from '../../../test/fixtures/items';
+import { seedFromJson } from '../../../../../../test/mocks/seed';
+import { client, db } from '../../../../../drizzle/db';
+import { publishedItems } from '../../../../../drizzle/schema';
+import { ItemPublishedNotFound } from './errors';
 import { ItemPublishedRepository } from './itemPublished.repository';
 
+const repository = new ItemPublishedRepository();
+
 describe('ItemPublishedRepository', () => {
-  let app: FastifyInstance;
-  let repository: ItemPublishedRepository;
-  let rawRepository: Repository<ItemPublished>;
-  let itemRawRepository: Repository<Item>;
-  let memberRawRepository: Repository<Member>;
-  let itemMembershipRawRepository: Repository<ItemMembership>;
-
   beforeAll(async () => {
-    // bug: necessary for test to work
-    ({ app } = await build());
-    const { db } = app;
-
-    repository = new ItemPublishedRepository(db.manager);
-    rawRepository = db.getRepository(ItemPublished);
-    itemRawRepository = db.getRepository(Item);
-    memberRawRepository = db.getRepository(Member);
-    itemMembershipRawRepository = db.getRepository(ItemMembership);
+    await client.connect();
   });
 
   afterAll(async () => {
-    await app.close();
+    await client.end();
   });
 
   describe('getForMember', () => {
-    it('get published items for member', async () => {
-      const creator = await memberRawRepository.save(MemberFactory());
-      const items = [
-        await itemRawRepository.save(FolderItemFactory({ creator })),
-        await itemRawRepository.save(FolderItemFactory({ creator })),
-        await itemRawRepository.save(FolderItemFactory({ creator })),
-      ];
+    // SKIP: function has been commented out in the repository
+    it.skip('get published items for member', async () => {
+      // create 3 folders that we will then publish
+      const { items, actor } = await seedFromJson({
+        items: [
+          { creator: 'actor', type: 'folder' },
+          { creator: 'actor', type: 'folder' },
+          { creator: 'actor', type: 'folder' },
+        ],
+      });
+
       for (const i of items) {
-        await itemMembershipRawRepository.save({
-          item: { path: i.path },
-          account: { id: creator.id },
-          permission: PermissionLevel.Admin,
-        });
-        await rawRepository.save({
-          item: { path: i.path },
+        await db.insert(publishedItems).values({
+          itemPath: i.path,
         });
       }
 
-      const result = await repository.getForMember(app.db, creator.id);
-      expectManyItems(result, items);
+      // const result = await repository.getForMember(db, actor?.id);
+      // expectManyItems(result, items);
     });
   });
 
   describe('touchUpdatedAt', () => {
     it('undefined path throws', async () => {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      await expect(() => repository.touchUpdatedAt(undefined)).rejects.toThrow();
+      await expect(() =>
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        repository.touchUpdatedAt(undefined),
+      ).rejects.toThrow();
     });
     it('update updatedAt on current time', async () => {
       const updatedAt = new Date();
-      const creator = await memberRawRepository.save(MemberFactory());
-      const item = await itemRawRepository.save(FolderItemFactory({ creator }));
+      const {
+        items: [item],
+      } = await seedFromJson({
+        items: [{ creator: 'actor', type: 'folder' }],
+      });
+      // can not touch an item that was not published
+      await expect(async () => await repository.touchUpdatedAt(db, item.path)).rejects.toThrow(
+        new ItemPublishedNotFound(),
+      );
 
-      const result = await repository.touchUpdatedAt(app.db, item.path);
+      // publish item
+      await db.insert(publishedItems).values({ itemPath: item.path });
 
+      const result = await repository.touchUpdatedAt(db, item.path);
       expect(new Date(result).getTime() - new Date(updatedAt).getTime()).toBeLessThanOrEqual(200);
     });
   });

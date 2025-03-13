@@ -4,7 +4,8 @@ import { v4 } from 'uuid';
 import { FolderItemFactory, TagCategory } from '@graasp/sdk';
 
 import { client, db } from '../../../../drizzle/db';
-import { ItemInsertDTO, itemTags, itemsRaw } from '../../../../drizzle/schema';
+import { itemTags, itemsRaw } from '../../../../drizzle/schema';
+import { ItemInsertDTO } from '../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../repositories/errors';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { saveTag } from '../../../tag/fixtures/utils';
@@ -74,7 +75,7 @@ describe('ItemTag Repository', () => {
       expect(tags.find(({ name }) => tag1.name === name)!.count).toEqual(2);
     });
 
-    // FIX: we do not allow searching witout category
+    // FIXME: we do not allow searching witout category
     it.skip('get count for tags given search without category', async () => {
       // const tag = await saveTag();
       // const item = await saveItem(FolderItemFactory({ creator: null }));
@@ -113,7 +114,9 @@ describe('ItemTag Repository', () => {
 
       // last tags in the array are the most used
       for (const t of tags.slice(-TAG_COUNT_MAX_RESULTS)) {
-        expect(result.find(({ name }) => t.name === name)!.count).toBeGreaterThan(1);
+        const res = result.find(({ name }) => t.name === name);
+        expect(res).toBeDefined();
+        expect(res?.count).toBeGreaterThan(1);
       }
     });
   });
@@ -187,8 +190,8 @@ describe('ItemTag Repository', () => {
       const item = await saveItem(FolderItemFactory({ creator: null }));
       await saveItemTag({ tagId: tag.id, itemId: item.id });
 
-      await expect(() => repository.create(db, item.id, tag.id)).rejects.toBeInstanceOf(
-        ItemTagAlreadyExists,
+      await expect(async () => await repository.create(db, item.id, tag.id)).rejects.toThrow(
+        new ItemTagAlreadyExists({ itemId: item.id, tagId: tag.id }),
       );
     });
   });

@@ -1,5 +1,4 @@
 import { faker } from '@faker-js/faker';
-import { BaseEntity } from 'typeorm';
 import { v4 } from 'uuid';
 
 import {
@@ -42,19 +41,6 @@ import {
 import { encryptPassword } from '../../src/services/auth/plugins/password/utils';
 import { ItemFactory } from '../factories/item.factory';
 import { GuestFactory, MemberFactory } from '../factories/member.factory';
-
-export type TableType<C extends BaseEntity, E> = {
-  constructor: new () => C;
-} & (
-  | {
-      factory: (e: Partial<E>) => E;
-      entities: Partial<E>[];
-    }
-  | {
-      factory?: never;
-      entities: E[];
-    }
-);
 
 const ACTOR_STRING = 'actor';
 type SeedActor = Partial<AccountRaw> & { profile?: Partial<MemberProfileRaw>; password?: string };

@@ -10,7 +10,7 @@ import {
   ItemBookmarkRawWithItemAndAccount,
 } from '../../../../drizzle/types';
 import { MemberIdentifierNotFound } from '../../../itemLogin/errors';
-import { ItemBookmarkNotFound } from './errors';
+import { DuplicateBookmarkError, ItemBookmarkNotFound } from './errors';
 
 @singleton()
 export class ItemBookmarkRepository {
@@ -77,15 +77,16 @@ export class ItemBookmarkRepository {
   }
 
   async post(db: DBConnection, itemId: string, memberId: string): Promise<ItemBookmarkInsertDTO> {
-    const createdFavorite = await db
+    const createdBookmark = await db
       .insert(itemBookmarks)
       .values({ itemId, memberId })
       .returning()
       .onConflictDoNothing();
-    if (createdFavorite.length != 1) {
-      throw new Error('expected to create a single favorite');
+    if (createdBookmark.length === 0) {
+      throw new DuplicateBookmarkError({ itemId, memberId });
     }
-    return createdFavorite[0];
+
+    return createdBookmark[0];
   }
 
   async deleteOne(db: DBConnection, itemId: string, memberId: string): Promise<Item['id']> {

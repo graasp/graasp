@@ -3,7 +3,7 @@ import { v4 } from 'uuid';
 import { TagFactory } from '@graasp/sdk';
 
 import { Item, ItemLikeRaw, ItemPublishedRaw, TagRaw } from '../../../../drizzle/types';
-import { TagRepository } from '../../../tag/Tag.repository';
+import { TagRepository } from '../../../tag/tag.repository';
 import { ItemService } from '../../service';
 import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';

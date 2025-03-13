@@ -1,4 +1,5 @@
-import { and, asc, eq, ilike } from 'drizzle-orm/sql';
+import { getTableColumns } from 'drizzle-orm';
+import { and, asc, desc, eq, ilike } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
 import { UUID } from '@graasp/sdk';
@@ -7,9 +8,9 @@ import { DBConnection } from '../../../../drizzle/db';
 import { itemTags, tags } from '../../../../drizzle/schema';
 import { Item, TagRaw } from '../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../repositories/errors';
-import { assertIsError } from '../../../../utils/assertions';
 import { TagCategoryOptions, TagCount } from '../../../tag/schemas';
 import { TAG_COUNT_MAX_RESULTS } from './constants';
+import { ItemTagAlreadyExists } from './errors';
 
 @singleton()
 export class ItemTagRepository {
@@ -18,12 +19,17 @@ export class ItemTagRepository {
       throw new IllegalArgumentException(`The given 'itemId' is undefined!`);
     }
 
-    const result = await db.query.itemTags.findMany({
-      where: eq(itemTags.itemId, itemId),
-      with: { tag: true },
-      orderBy: [asc(tags.category), asc(tags.name)],
-    });
-    return result.map(({ tag }) => tag);
+    const result = await db
+      .select(
+        // only take the tags columns
+        getTableColumns(tags),
+      )
+      .from(tags)
+      .leftJoin(itemTags, eq(tags.id, itemTags.tagId))
+      .where(eq(itemTags.itemId, itemId))
+      .orderBy(asc(tags.category), asc(tags.name));
+
+    return result;
   }
 
   async getCountBy(
@@ -39,16 +45,17 @@ export class ItemTagRepository {
     if (!search) {
       throw new IllegalArgumentException(`search is invalid: "${search}"`);
     }
+    const selectCols = {
+      id: tags.id,
+      name: tags.name,
+      category: tags.category,
+      count: db.$count(itemTags, eq(itemTags.tagId, tags.id)),
+    };
     const res = await db
-      .select({
-        id: tags.id,
-        name: tags.name,
-        category: tags.category,
-        count: db.$count(itemTags, eq(itemTags.tagId, tags.id)),
-      })
+      .select(selectCols)
       .from(tags)
       .where(and(ilike(tags.name, `%${search}%`), eq(tags.category, category)))
-      // TODO: add the orderBy count desc
+      .orderBy(desc(selectCols.count))
       .limit(TAG_COUNT_MAX_RESULTS);
 
     // const q = this.repository
@@ -78,10 +85,9 @@ export class ItemTagRepository {
 
   async create(db: DBConnection, itemId: UUID, tagId: TagRaw['id']): Promise<void> {
     try {
-      await db.insert(itemTags).values({ itemId, tagId }).onConflictDoNothing();
+      await db.insert(itemTags).values({ itemId, tagId });
     } catch (e) {
-      assertIsError(e);
-      throw e;
+      throw new ItemTagAlreadyExists({ itemId, tagId });
     }
   }
 

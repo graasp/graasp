@@ -55,7 +55,7 @@ export class ChatMentionRepository {
     return mention;
   }
 
-  // FIX: Not used ??
+  // FIXME: Not used ??
   /**
    * Return chat mentions by id
    * @param ids ids of the chat mentions

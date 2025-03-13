@@ -147,7 +147,14 @@ export class ItemPublishedRepository {
 
   async touchUpdatedAt(db: DBConnection, path: Item['path']): Promise<string> {
     const updatedAt = new Date().toISOString();
-    await db.update(publishedItems).set({ updatedAt }).where(eq(publishedItems.itemPath, path));
+    const res = await db
+      .update(publishedItems)
+      .set({ updatedAt })
+      .where(eq(publishedItems.itemPath, path))
+      .returning();
+    if (res.length !== 1) {
+      throw new ItemPublishedNotFound();
+    }
     return updatedAt;
   }
 }

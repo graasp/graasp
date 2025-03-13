@@ -6,8 +6,8 @@ import { TagCategory, TagFactory } from '@graasp/sdk';
 import { client, db } from '../../drizzle/db';
 import { tags } from '../../drizzle/schema';
 import { IllegalArgumentException } from '../../repositories/errors';
-import { TagRepository } from './Tag.repository';
 import { saveTag } from './fixtures/utils';
+import { TagRepository } from './tag.repository';
 
 const repository = new TagRepository();
 
