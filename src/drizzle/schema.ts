@@ -583,7 +583,6 @@ export const memberProfiles = pgTable(
     twitterId: varchar({ length: 100 }),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
-    deletedAt: timestamp('deleted_at', { mode: 'string' }),
     memberId: uuid('member_id')
       .notNull()
       .references(() => accountsTable.id),
@@ -636,7 +635,7 @@ export const actionsTable = pgTable(
     id: uuid().primaryKey().defaultRandom().notNull(),
     view: varchar().notNull(),
     type: varchar().notNull(),
-    extra: jsonb().$type<object>().notNull(),
+    extra: jsonb().$type<object>().default({}).notNull(),
     geolocation: jsonb().$type<geoip.Lookup>(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     accountId: uuid('account_id'),
@@ -724,8 +723,8 @@ export const itemsRaw = pgTable(
     path: ltree('path').notNull(),
     creatorId: uuid('creator_id'),
     // TODO: fix type
-    extra: jsonb().$type<object>().notNull(),
-    settings: jsonb().$type<ItemSettings>().notNull(),
+    extra: jsonb().$type<object>().default({}).notNull(),
+    settings: jsonb().$type<ItemSettings>().default({}).notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
     deletedAt: timestamp('deleted_at', { mode: 'string' }), // HACK: the softdeletion mechanism relies on the deletedAt being null or having a date
