@@ -6,7 +6,7 @@ import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../.
 import { db } from '../../drizzle/db';
 import { BaseLogger } from '../../logger';
 import { MailerService } from '../../plugins/mailer/mailer.service';
-import { ItemGeolocationRepository } from '../item/plugins/geolocation/repository';
+import { ItemGeolocationRepository } from '../item/plugins/geolocation/geolocation.repository';
 import { MeiliSearchWrapper } from '../item/plugins/publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../item/plugins/thumbnail/service';
 import { ItemRepository } from '../item/repository';

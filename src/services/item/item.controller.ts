@@ -317,24 +317,19 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
       await db
         .transaction(async (tsx) => {
-          console.log('gterdf');
           const results = await itemService.moveMany(tsx, member, ids, parentId);
-          console.log('h5e4trgdf');
           await actionItemService.postManyMoveAction(tsx, request, results.items);
-          console.log('woefijkm');
           return results;
         })
         .then(({ items, moved }) => {
-          console.log('uzth6rt5ergfdv');
           websockets.publish(
             memberItemsTopic,
             member.id,
             // TODO: Fix content
-            ItemOpFeedbackEvent('move', ids, { items, moved: moved[0] }),
+            ItemOpFeedbackEvent('move', ids, { items, moved }),
           );
         })
         .catch((e) => {
-          console.log('efsrd');
           log.error(e);
           websockets.publish(memberItemsTopic, member.id, ItemOpFeedbackErrorEvent('move', ids, e));
         });

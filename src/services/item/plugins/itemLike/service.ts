@@ -8,7 +8,7 @@ import { BasicItemService } from '../../basic.service';
 import { ItemVisibilityRepository } from '../itemVisibility/repository';
 import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
-import { ItemLikeRepository } from './repository';
+import { ItemLikeRepository } from './itemLike.repository';
 
 @singleton()
 export class ItemLikeService {

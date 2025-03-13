@@ -35,7 +35,7 @@ import FileService from '../../../../../../file/service';
 import { isItemType } from '../../../../../discrimination';
 import { ItemRepository } from '../../../../../repository';
 import { readPdfContent } from '../../../../../utils';
-import { ItemLikeRepository } from '../../../../itemLike/repository';
+import { ItemLikeRepository } from '../../../../itemLike/itemLike.repository';
 import { ItemVisibilityRepository } from '../../../../itemVisibility/repository';
 import { ItemTagRepository } from '../../../../tag/ItemTag.repository';
 import { stripHtml } from '../../../validation/utils';

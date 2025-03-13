@@ -140,8 +140,8 @@ describe('Item routes tests', () => {
         expect(response1.statusCode).toBe(StatusCodes.BAD_REQUEST);
         // no item nor geolocation is created
         expect(
-          await db.query.itemGeolocations.findFirst({
-            where: eq(itemGeolocations.itemPath, payload.path),
+          await db.query.itemGeolocationsTable.findFirst({
+            where: eq(itemGeolocationsTable.itemPath, payload.path),
           }),
         ).toBeUndefined();
       });
@@ -349,8 +349,8 @@ describe('Item routes tests', () => {
         await waitForPostCreation();
 
         expect(
-          await db.query.itemGeolocations.findFirst({
-            where: eq(itemGeolocations.itemPath, newItem.path),
+          await db.query.itemGeolocationsTable.findFirst({
+            where: eq(itemGeolocationsTable.itemPath, newItem.path),
           }),
         ).toBeDefined();
       });

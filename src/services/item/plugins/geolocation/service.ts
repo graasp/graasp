@@ -11,7 +11,7 @@ import { ItemWrapper, type PackedItem } from '../../ItemWrapper';
 import { BasicItemService } from '../../basic.service';
 import { ItemThumbnailService } from '../thumbnail/service';
 import { MissingGeolocationApiKey } from './errors';
-import { ItemGeolocationRepository } from './repository';
+import { ItemGeolocationRepository } from './geolocation.repository';
 
 type PackedItemGeolocation = ItemGeolocationRaw & {
   item: PackedItem;

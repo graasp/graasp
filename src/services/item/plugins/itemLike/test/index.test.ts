@@ -17,7 +17,7 @@ import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemTestUtils, expectManyPackedItems } from '../../../test/fixtures/items';
 import { setItemPublic } from '../../itemVisibility/test/fixtures';
 import { ItemLikeNotFound } from '../errors';
-import { ItemLikeRepository } from '../repository';
+import { ItemLikeRepository } from '../itemLike.repository';
 import { saveItemLikes } from './utils';
 
 const testUtils = new ItemTestUtils();

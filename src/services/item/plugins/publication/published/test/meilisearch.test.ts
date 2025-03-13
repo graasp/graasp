@@ -30,7 +30,7 @@ import { BaseLogger } from '../../../../../../logger';
 import FileService from '../../../../../file/service';
 import { ItemMembershipRepository } from '../../../../../itemMembership/repository';
 import { ItemTestUtils } from '../../../../test/fixtures/items';
-import { ItemLikeRepository } from '../../../itemLike/repository';
+import { ItemLikeRepository } from '../../../itemLike/itemLike.repository';
 import { ItemTagRepository } from '../../../tag/ItemTag.repository';
 import { ItemPublishedRepository } from '../itemPublished.repository';
 import { MeiliSearchWrapper } from '../plugins/search/meilisearch';

@@ -1,6 +1,6 @@
 import { Item, ItemLikeRaw } from '../../../../../drizzle/types';
 import { MinimalMember } from '../../../../../types';
-import { ItemLikeRepository } from '../repository';
+import { ItemLikeRepository } from '../itemLike.repository';
 
 export const saveItemLikes = async (items: Item[], member: MinimalMember) => {
   const likes: ItemLikeRaw[] = [];

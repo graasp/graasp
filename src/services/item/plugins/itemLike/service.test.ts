@@ -7,7 +7,7 @@ import { TagRepository } from '../../../tag/tag.repository';
 import { ItemService } from '../../service';
 import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
-import { ItemLikeRepository } from './repository';
+import { ItemLikeRepository } from './itemLike.repository';
 import { ItemLikeService } from './service';
 
 const itemService = { get: jest.fn() as ItemService['get'] } as ItemService;

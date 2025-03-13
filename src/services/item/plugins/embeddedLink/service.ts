@@ -26,7 +26,7 @@ import { EmbeddedLinkItem, isItemType } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
-import { ItemGeolocationRepository } from '../geolocation/repository';
+import { ItemGeolocationRepository } from '../geolocation/geolocation.repository';
 import { ItemVisibilityRepository } from '../itemVisibility/repository';
 import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';

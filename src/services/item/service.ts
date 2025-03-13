@@ -53,7 +53,7 @@ import { ItemWrapper, ItemWrapperService, PackedItem } from './ItemWrapper';
 import { BasicItemService } from './basic.service';
 import { DEFAULT_ORDER, IS_COPY_REGEX, MAX_COPY_SUFFIX_LENGTH } from './constants';
 import { FolderItem, isItemType } from './discrimination';
-import { ItemGeolocationRepository } from './plugins/geolocation/repository';
+import { ItemGeolocationRepository } from './plugins/geolocation/geolocation.repository';
 import { ItemVisibilityRepository } from './plugins/itemVisibility/repository';
 import { ItemPublishedRepository } from './plugins/publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from './plugins/publication/published/plugins/search/meilisearch';
@@ -780,7 +780,6 @@ export class ItemService {
     }
 
     const results = await Promise.all(itemIds.map((id) => this.move(db, member, id, parentItem)));
-    console.log('owbkhsfpwe');
     // newly moved items needs rescaling since they are added in parallel
     if (parentItem) {
       await this.itemRepository.rescaleOrder(db, member, parentItem);
