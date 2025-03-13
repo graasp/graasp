@@ -5,13 +5,12 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import fp from 'fastify-plugin';
 
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
 import { FastifyInstanceTypebox } from '../../../../plugins/typebox';
 import { isNonEmptyArray } from '../../../../types';
 import { asDefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
-import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
-import { matchOne } from '../../../authorization';
-import { assertIsMember } from '../../../member/entities/member';
+import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import { assertIsMember } from '../../../authentication';
 import { memberAccountRole } from '../../../member/strategies/memberAccountRole';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { MAX_FILE_SIZE } from './constants';
@@ -29,7 +28,6 @@ import {
 import { InvitationService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { db } = fastify;
   const invitationService = resolveDependency(InvitationService);
 
   // register multipart plugin for use in the invitations API
@@ -41,7 +39,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     { schema: getById, preHandler: optionalIsAuthenticated },
     async ({ user, params }) => {
       const { id } = params;
-      return await invitationService.get(user?.account, buildRepositories(), id);
+      return await invitationService.get(db, user?.account, id);
     },
   );
 
@@ -65,10 +63,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         throw new NoInvitationReceivedFound();
       }
 
-      return db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-
-        return await invitationService.shareItem(member, repositories, params.id, invitations);
+      await db.transaction(async (tx) => {
+        await invitationService.shareItem(tx, member, params.id, invitations);
       });
     },
   );
@@ -105,11 +101,11 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         const { id: itemId } = params;
         const { templateId } = query;
 
-        return await db.transaction(
-          async (manager) =>
+        await db.transaction(
+          async (tx) =>
             await invitationService.createStructureForCSVAndTemplate(
+              tx,
               member,
-              buildRepositories(manager),
               itemId,
               templateId,
               uploadedFile,
@@ -144,14 +140,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
         // destructure query params
         const { id: itemId } = params;
-        return await db.transaction(
-          async (manager) =>
-            await invitationService.importUsersWithCSV(
-              member,
-              buildRepositories(manager),
-              itemId,
-              uploadedFile,
-            ),
+        await db.transaction(
+          async (tx) =>
+            await invitationService.importUsersWithCSV(tx, member, itemId, uploadedFile),
         );
       },
     );
@@ -160,23 +151,29 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   // get all invitations for an item
   fastify.get(
     '/:id/invitations',
-    { schema: getForItem, preHandler: [isAuthenticated, matchOne(memberAccountRole)] },
+    {
+      schema: getForItem,
+      preHandler: [isAuthenticated, matchOne(memberAccountRole)],
+    },
     async ({ user, params: { id: itemId } }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return invitationService.getForItem(member, buildRepositories(), itemId);
+      return invitationService.getForItem(db, member, itemId);
     },
   );
 
   // update invitation
   fastify.patch(
     '/:id/invitations/:invitationId',
-    { schema: updateOne, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
+    {
+      schema: updateOne,
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
+    },
     async ({ user, params: { invitationId }, body }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return db.transaction(async (manager) => {
-        return invitationService.patch(member, buildRepositories(manager), invitationId, body);
+      return db.transaction(async (tx) => {
+        return invitationService.patch(tx, member, invitationId, body);
       });
     },
   );
@@ -184,12 +181,15 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   // delete invitation
   fastify.delete(
     '/:id/invitations/:invitationId',
-    { schema: deleteOne, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
+    {
+      schema: deleteOne,
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
+    },
     async ({ user, params: { invitationId } }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      await db.transaction(async (manager) => {
-        await invitationService.delete(member, buildRepositories(manager), invitationId);
+      await db.transaction(async (tx) => {
+        await invitationService.delete(tx, member, invitationId);
       });
       return invitationId;
     },
@@ -198,11 +198,14 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   // resend invitation mail
   fastify.post(
     '/:id/invitations/:invitationId/send',
-    { schema: sendOne, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
+    {
+      schema: sendOne,
+      preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
+    },
     async ({ user, params: { invitationId } }, reply) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      await invitationService.resend(member, buildRepositories(), invitationId);
+      await invitationService.resend(db, member, invitationId);
       reply.status(StatusCodes.NO_CONTENT);
     },
   );

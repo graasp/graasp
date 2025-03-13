@@ -4,33 +4,29 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { AuthTokenSubject } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
 import { FastifyInstanceTypebox } from '../../../../plugins/typebox';
 import { asDefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
 import {
   guestAuthenticateAppsJWT,
   isAuthenticated,
   optionalIsAuthenticated,
 } from '../../../auth/plugins/passport';
-import { ItemService } from '../../service';
+import { AppService } from './app.service';
 import appActionPlugin from './appAction';
 import appDataPlugin from './appData';
 import appSettingPlugin from './appSetting';
-import chatBotPlugin from './chatBot';
-import { DEFAULT_JWT_EXPIRATION } from './constants';
+import chatBotPlugin from './chatBot/chatBot.controller';
 import { generateToken, getContext, getList, getOwnMostUsedApps } from './schemas';
-import { AppService } from './service';
 import { AppsPluginOptions } from './types';
 
 const plugin: FastifyPluginAsyncTypebox<AppsPluginOptions> = async (fastify, options) => {
-  const { jwtSecret, jwtExpiration = DEFAULT_JWT_EXPIRATION, publisherId } = options;
+  const { jwtSecret, publisherId } = options;
 
   if (!jwtSecret) {
     throw new Error('jwtSecret is not defined!');
   }
-  const itemService = resolveDependency(ItemService);
-
-  const appService = new AppService(itemService, jwtExpiration);
+  const appService = resolveDependency(AppService);
 
   // API endpoints
   fastify.register(async function (fastify: FastifyInstanceTypebox) {
@@ -40,7 +36,7 @@ const plugin: FastifyPluginAsyncTypebox<AppsPluginOptions> = async (fastify, opt
     // proper authentication
     const { corsPluginOptions } = fastify;
     if (corsPluginOptions) {
-      const allowedOrigins = await appService.getAllValidAppOrigins(buildRepositories());
+      const allowedOrigins = await appService.getAllValidAppOrigins(db);
 
       const graaspAndAppsOrigins = corsPluginOptions.origin.concat(allowedOrigins);
       fastify.register(
@@ -52,7 +48,7 @@ const plugin: FastifyPluginAsyncTypebox<AppsPluginOptions> = async (fastify, opt
     fastify.register(async function (fastify: FastifyInstanceTypebox) {
       // get all apps
       fastify.get('/list', { schema: getList }, async () => {
-        return appService.getAllApps(buildRepositories(), publisherId);
+        return appService.getAllApps(db, publisherId);
       });
 
       fastify.get(
@@ -60,7 +56,7 @@ const plugin: FastifyPluginAsyncTypebox<AppsPluginOptions> = async (fastify, opt
         { schema: getOwnMostUsedApps, preHandler: isAuthenticated },
         async ({ user }) => {
           const member = asDefined(user?.account);
-          return appService.getMostUsedApps(member, buildRepositories());
+          return appService.getMostUsedApps(db, member);
         },
       );
 
@@ -75,7 +71,7 @@ const plugin: FastifyPluginAsyncTypebox<AppsPluginOptions> = async (fastify, opt
             body,
           } = request;
 
-          return appService.getApiAccessToken(user?.account, buildRepositories(), itemId, body);
+          return appService.getApiAccessToken(db, user?.account, itemId, body);
         },
       );
 
@@ -110,18 +106,14 @@ const plugin: FastifyPluginAsyncTypebox<AppsPluginOptions> = async (fastify, opt
         { schema: getContext, preHandler: guestAuthenticateAppsJWT },
         async ({ user, params: { itemId } }) => {
           const app = asDefined(user?.app);
+          const actor = user?.account;
           const requestDetails: AuthTokenSubject = {
-            accountId: user?.account?.id,
+            accountId: actor?.id,
             itemId: app.item.id,
             origin: app.origin,
             key: app.key,
           };
-          return appService.getContext(
-            requestDetails.accountId,
-            buildRepositories(),
-            itemId,
-            requestDetails,
-          );
+          return appService.getContext(db, actor, itemId, requestDetails);
         },
       );
 

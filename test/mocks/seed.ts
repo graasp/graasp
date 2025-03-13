@@ -1,115 +1,85 @@
 import { faker } from '@faker-js/faker';
-import { BaseEntity, DataSource } from 'typeorm';
 import { v4 } from 'uuid';
 
 import {
   ItemLoginSchemaStatus,
   ItemLoginSchemaType,
   ItemType,
+  ItemVisibilityOptionsType,
   ItemVisibilityType,
   PermissionLevel,
   buildPathFromIds,
   getIdsFromPath,
 } from '@graasp/sdk';
 
-import { AppDataSource } from '../../src/plugins/datasource';
-import { Account } from '../../src/services/account/entities/account';
-import { MemberPassword } from '../../src/services/auth/plugins/password/entities/password';
+import { db } from '../../src/drizzle/db';
+import {
+  accountsTable,
+  guestPasswords,
+  itemLoginSchemas,
+  itemMemberships,
+  itemTags as itemTagsTable,
+  itemVisibilities,
+  itemsRaw,
+  memberPasswords,
+  memberProfiles,
+  tags as tagsTable,
+} from '../../src/drizzle/schema';
+import {
+  AccountRaw,
+  GuestRaw,
+  Item,
+  ItemLoginSchemaRaw,
+  ItemMembershipRaw,
+  ItemRaw,
+  ItemTagRaw,
+  ItemVisibilityRaw,
+  MemberProfileRaw,
+  MemberRaw,
+  TagRaw,
+} from '../../src/drizzle/types';
 import { encryptPassword } from '../../src/services/auth/plugins/password/utils';
-import { Item } from '../../src/services/item/entities/Item';
-import { ItemVisibility } from '../../src/services/item/plugins/itemVisibility/ItemVisibility';
-import { Guest } from '../../src/services/itemLogin/entities/guest';
-import { GuestPassword } from '../../src/services/itemLogin/entities/guestPassword';
-import { ItemLoginSchema } from '../../src/services/itemLogin/entities/itemLoginSchema';
-import { ItemMembership } from '../../src/services/itemMembership/entities/ItemMembership';
-import { Actor, Member } from '../../src/services/member/entities/member';
-import { MemberProfile } from '../../src/services/member/plugins/profile/entities/profile';
 import { ItemFactory } from '../factories/item.factory';
 import { GuestFactory, MemberFactory } from '../factories/member.factory';
-import defaultDatas from './sampledatas';
-
-export type TableType<C extends BaseEntity, E> = {
-  constructor: new () => C;
-} & (
-  | {
-      factory: (e: Partial<E>) => E;
-      entities: Partial<E>[];
-    }
-  | {
-      factory?: never;
-      entities: E[];
-    }
-);
-
-/**
- * Push datas in Database with TypeOrm.
- * Use the constructors and the datas given in parameter to build BaseEntity object and save them on the Postgresql Database.
- * Integrity constraints are checked on the database, and will throw an exception if needed.
- * @param datas Datas to be pushed. Should contains constructor to build BaseEntity objects and sometimes Factory function to have default data.
- * @returns saved instances
- */
-export default async function seed(
-  datas: { [K in string]: TableType<BaseEntity, object> } = defaultDatas,
-) {
-  // Initialise Database
-  const db: DataSource = AppDataSource;
-  if (!AppDataSource.isInitialized) {
-    await AppDataSource.initialize();
-  }
-  const result: { [K in keyof typeof datas]: BaseEntity[] } = {};
-  // Begin transation.
-  await db.transaction(async (manager) => {
-    for (const key in datas) {
-      const table = datas[key];
-      const entities: BaseEntity[] = [];
-      for (const mockEntity of table.entities) {
-        const entity: BaseEntity = new table.constructor();
-        Object.assign(entity, table.factory ? table.factory(mockEntity) : mockEntity);
-        const e = await manager.save(entity);
-        entities.push(e);
-      }
-      result[key] = entities;
-    }
-  });
-  return result;
-}
 
 const ACTOR_STRING = 'actor';
-type SeedActor = Partial<Member> & { profile?: Partial<MemberProfile>; password?: string };
+type SeedActor = Partial<AccountRaw> & { profile?: Partial<MemberProfileRaw>; password?: string };
 type ReferencedSeedActor = 'actor' | SeedActor;
-type SeedMember = Partial<Member> & { profile?: Partial<MemberProfile> };
-type SeedMembership<M = SeedMember> = Partial<Omit<ItemMembership, 'creator' | 'account'>> & {
-  account?: M;
-  creator?: M;
-  permission?: PermissionLevel;
+type SeedMember = Partial<MemberRaw> & { profile?: Partial<MemberProfileRaw> };
+type SeedMembership<M = SeedMember> = Partial<Omit<ItemMembershipRaw, 'creator' | 'account'>> & {
+  account: M;
+  creator?: M | null;
+  permission?: `${PermissionLevel}`;
 };
 type SeedItem<M = SeedMember> = (Partial<Omit<Item, 'creator'>> & { creator?: M | null }) & {
   children?: SeedItem<M>[];
   memberships?: SeedMembership<M>[];
   isPublic?: boolean;
   isHidden?: boolean;
-  itemLoginSchema?: Partial<ItemLoginSchema> & {
-    guests?: (Partial<Guest> & { password?: string })[];
+  tags?: Pick<TagRaw, 'name' | 'category'>[];
+  itemLoginSchema?: Partial<ItemLoginSchemaRaw> & {
+    guests?: (Partial<GuestRaw> & { password?: string })[];
   };
 };
 type DataType = {
   actor?: SeedActor | null;
   members?: SeedMember[];
   items?: SeedItem<ReferencedSeedActor | SeedMember>[];
+  tags?: Pick<TagRaw, 'name' | 'category'>[];
 };
 
-const replaceActorInItems = (createdActor?: Member, items?: DataType['items']): SeedItem[] => {
+const replaceActorInItems = (createdActor?: AccountRaw, items?: DataType['items']): SeedItem[] => {
   if (!items?.length) {
     return [];
   }
 
   return items.map((i) => ({
     ...i,
-    creator: i.creator === ACTOR_STRING ? createdActor : (i.creator ?? null),
+    creator: i.creator === ACTOR_STRING ? (createdActor as any) : (i.creator ?? null),
     memberships: i.memberships?.map((m) => ({
       ...m,
-      account: m.account === ACTOR_STRING ? createdActor : m.account,
-      creator: m.creator === ACTOR_STRING ? createdActor : m.creator,
+      account: m.account === ACTOR_STRING ? (createdActor as any) : m.account,
+      creator: m.creator === ACTOR_STRING ? (createdActor as any) : (m.creator ?? null),
     })),
     children: replaceActorInItems(createdActor, i.children),
   }));
@@ -122,7 +92,7 @@ function getNameIfExists(i?: object | null | string) {
   return null;
 }
 
-function replaceAccountInItems(createdAccount: Account, items?: DataType['items']) {
+function replaceAccountInItems(createdAccount: AccountRaw, items?: DataType['items']) {
   if (!items?.length) {
     return [];
   }
@@ -151,50 +121,48 @@ function replaceAccountInItems(createdAccount: Account, items?: DataType['items'
  * @param seed that contains the actor properties
  * @returns seed with references to the created actor
  */
-const processActor = async ({ actor, items, members }: DataType) => {
+const processActor = async ({
+  actor,
+  items,
+  members,
+}: DataType): Promise<{
+  actor: AccountRaw | null;
+  members?: SeedMember[];
+  actorProfile?: MemberProfileRaw;
+  items: SeedItem<SeedMember>[];
+}> => {
   // create actor if not null
-  let createdActor;
+  let createdActor: AccountRaw | null = null;
   let actorProfile;
+  let processedItems;
   if (actor !== null) {
     // replace actor data with default values if actor is undefined or 'actor'
-    const actorData = !actor ? {} : actor;
-    createdActor = (
-      await seed({
-        actor: {
-          factory: MemberFactory,
-          constructor: Member,
-          entities: [actorData],
-        },
-      })
-    ).actor[0];
+    const actorData: Partial<AccountRaw> = typeof actor === 'string' || !actor ? {} : actor;
+    createdActor = (await db.insert(accountsTable).values(MemberFactory(actorData)).returning())[0];
 
     // a profile is defined
-    if (actor) {
-      if (actor.profile) {
+    if (actorData) {
+      if (actor?.profile) {
         actorProfile = (
-          await seed({
-            actorProfile: {
-              constructor: MemberProfile,
-              entities: [{ ...actor.profile, member: { id: createdActor.id } }],
-            },
-          })
-        ).actorProfile[0];
+          await db
+            .insert(memberProfiles)
+            .values({ ...actor.profile, memberId: createdActor.id })
+            .returning()
+        )[0];
       }
-      if (actor.password) {
-        await seed({
-          actorPassword: {
-            constructor: MemberPassword,
-            entities: [
-              { password: await encryptPassword(actor.password), member: { id: createdActor.id } },
-            ],
-          },
+      if (actor?.password) {
+        await db.insert(memberPasswords).values({
+          password: await encryptPassword(actor.password),
+          memberId: createdActor.id,
         });
       }
     }
+    // replace 'actor' in entities
+    processedItems = replaceActorInItems(createdActor, items);
+  } else {
+    // pass through
+    processedItems = items;
   }
-
-  // replace 'actor' in entities
-  const processedItems = replaceActorInItems(createdActor, items);
 
   return { actor: createdActor, items: processedItems, members, actorProfile };
 };
@@ -213,7 +181,6 @@ const generateIdAndPathForItems = (
   if (!items?.length) {
     return [];
   }
-
   return items.flatMap((i) => {
     const id = v4();
     const ids = parent ? [...getIdsFromPath(parent.path), id] : [id];
@@ -236,12 +203,16 @@ const generateIdAndPathForItems = (
  * @returns flat map of all memberships of the tree
  */
 const processItemMemberships = (items: DataType['items'] = []) => {
-  return items
-    ?.flatMap((i) => i.memberships?.map((im) => ({ ...im, item: i })) ?? [])
-    ?.map((im) => ({
-      permission: PermissionLevel.Admin,
-      ...im,
-    }));
+  return (
+    items
+      // TODO: fix
+      ?.flatMap((i) => i.memberships?.map((im) => ({ ...im, itemPath: i.path })) ?? [])
+      ?.map((im) => ({
+        permission: PermissionLevel.Admin,
+        accountId: (im.account as any).id,
+        ...im,
+      })) as ItemMembershipRaw[]
+  );
 };
 
 /**
@@ -263,7 +234,7 @@ function generateIdForMembers({
     ...members,
     ...items.flatMap((i) => {
       // get all account from all memberships
-      const accountsFromMemberships = (i.memberships ?? [])?.reduce((acc, m) => {
+      const accountsFromMemberships = (i.memberships ?? [])?.reduce<SeedMember[]>((acc, m) => {
         if (!m.account) {
           return acc;
         }
@@ -289,7 +260,7 @@ function generateIdForMembers({
     return {
       id,
       ...m,
-      profile: 'profile' in m ? { ...m.profile, member: { id } } : undefined,
+      profile: 'profile' in m ? { ...m.profile, memberId: id } : undefined,
     };
   });
   return d;
@@ -306,61 +277,51 @@ async function processMembers({
   items = [],
   members = [],
 }: {
-  actor?: Actor;
+  actor?: AccountRaw | null;
   items?: SeedItem[];
   members?: SeedMember[];
 }) {
   const membersWithIds = generateIdForMembers({ items, members })
     // ignore actor if it is defined
     .filter((m) => (actor ? m.id !== actor.id : true));
-
-  if (membersWithIds) {
-    const { memberProfiles, savedMembers } = await seed({
-      savedMembers: {
-        factory: MemberFactory,
-        constructor: Member,
-        entities: membersWithIds,
-      },
-      memberProfiles: {
-        constructor: MemberProfile,
-        entities: membersWithIds.map((m) => m.profile).filter(Boolean) as Partial<MemberProfile>[],
-      },
-    });
-    const processedItems = (savedMembers as Member[]).reduce(
-      (acc, m) => replaceAccountInItems(m, acc),
-      items,
-    );
+  if (membersWithIds.length) {
+    const savedMembers = await db
+      .insert(accountsTable)
+      .values(membersWithIds.map((m) => MemberFactory(m)))
+      .returning();
+    const profiles = membersWithIds.map((m) => m.profile).filter(Boolean) as MemberProfileRaw[];
+    const savedMemberProfiles = profiles.length
+      ? await db.insert(memberProfiles).values(profiles).returning()
+      : [];
+    const processedItems = savedMembers.reduce((acc, m) => replaceAccountInItems(m, acc), items);
     return {
-      members: savedMembers as Member[],
-      memberProfiles: memberProfiles as MemberProfile[],
+      members: savedMembers as MemberRaw[],
+      memberProfiles: savedMemberProfiles,
       items: processedItems,
     };
   }
-  return { members: [], memberProfiles: [], items: [] };
+  return { members: [], memberProfiles: [], items };
 }
 
 async function createItemVisibilities(items: (SeedItem & { path: string })[]) {
-  const visibilities = items.reduce<{ item: { path: string }; type: ItemVisibilityType }[]>(
+  const visibilities = items.reduce<{ itemPath: string; type: ItemVisibilityOptionsType }[]>(
     (acc, { path, isHidden, isPublic }) => {
       if (isHidden) {
-        acc.push({ item: { path }, type: ItemVisibilityType.Hidden });
+        acc.push({ itemPath: path, type: ItemVisibilityType.Hidden });
       }
       if (isPublic) {
-        acc.push({ item: { path }, type: ItemVisibilityType.Public });
+        acc.push({ itemPath: path, type: ItemVisibilityType.Public });
       }
       return acc;
     },
     [],
   );
 
-  return (
-    await seed({
-      visibilities: {
-        constructor: ItemVisibility,
-        entities: visibilities,
-      },
-    })
-  ).visibilities as ItemVisibility[];
+  if (visibilities.length) {
+    return await db.insert(itemVisibilities).values(visibilities).returning();
+  }
+
+  return [];
 }
 
 /**
@@ -373,15 +334,15 @@ async function createItemLoginSchemasAndGuests(items: (SeedItem & { path: string
   const itemLoginSchemasData = items.reduce<
     {
       id: string;
-      item: { path: string };
-      status: ItemLoginSchema['status'];
-      type: ItemLoginSchema['type'];
-      guests?: (Partial<Guest> & { password?: string })[];
+      itemPath: string;
+      status: ItemLoginSchemaRaw['status'];
+      type: ItemLoginSchemaRaw['type'];
+      guests?: (Partial<GuestRaw> & { password?: string })[];
     }[]
   >((acc, { path, itemLoginSchema }) => {
     if (itemLoginSchema) {
       acc.push({
-        item: { path },
+        itemPath: path,
         id: v4(),
         type: ItemLoginSchemaType.Username,
         status: ItemLoginSchemaStatus.Active,
@@ -390,74 +351,70 @@ async function createItemLoginSchemasAndGuests(items: (SeedItem & { path: string
     }
     return acc;
   }, []);
-  const { itemLoginSchemas } = await seed({
-    itemLoginSchemas: {
-      constructor: ItemLoginSchema,
-      entities: itemLoginSchemasData,
-    },
-  });
+  let itemLoginSchemasValues: ItemLoginSchemaRaw[] = [];
+  if (itemLoginSchemasData.length) {
+    itemLoginSchemasValues = await db
+      .insert(itemLoginSchemas)
+      .values(itemLoginSchemasData)
+      .returning();
+  }
 
   // save pre-registered guests
   // feed item login schema in guests' data
   // keep track of password and item for later use
   const guestsData = itemLoginSchemasData.reduce<
-    (ReturnType<typeof GuestFactory> & { password?: string; item: { path: string } })[]
-  >((acc, { id, guests, item }) => {
+    (ReturnType<typeof GuestFactory> & { password?: string; itemPath: string })[]
+  >((acc, { id, guests, itemPath }) => {
     if (guests) {
       return acc.concat(
         guests.map(({ password, ...g }) => ({
-          ...GuestFactory({ ...g, itemLoginSchema: { id } }),
+          ...GuestFactory({ ...g, itemLoginSchemaId: id }),
           password,
-          item,
+          itemPath,
         })),
       );
     }
     return acc;
   }, []);
-  const { guests } = await seed({
-    guests: {
-      constructor: Account,
-      entities: guestsData,
-    },
-  });
+  let guests: GuestRaw[] = [];
+  let memberships: ItemMembershipRaw[] = [];
+  if (guestsData.length) {
+    guests = (await db.insert(accountsTable).values(guestsData).returning()) as GuestRaw[];
 
-  // save guest memberships and guest passwords
-  const guestPasswords: { guest: { id: string }; password: string }[] = [];
-  for (const { id, password } of guestsData) {
-    if (password) {
-      guestPasswords.push({ guest: { id }, password: await encryptPassword(password) });
+    // save guest passwords
+    const guestPasswordsValues: { guestId: string; password: string }[] = [];
+    for (const { id, password } of guestsData) {
+      if (password) {
+        guestPasswordsValues.push({ guestId: id, password: await encryptPassword(password) });
+      }
     }
-  }
-  const guestMemberships = guestsData.reduce<
-    {
-      account: { id: string };
-      permission: PermissionLevel;
-      item: { path: string };
-    }[]
-  >((acc, { id, item: { path } }) => {
-    return acc.concat([
+    if (guestPasswordsValues.length) {
+      await db.insert(guestPasswords).values(guestPasswordsValues);
+    }
+
+    // save guest memberships
+    const guestMemberships = guestsData.reduce<
       {
-        account: { id },
-        permission: PermissionLevel.Read,
-        item: { path },
-      },
-    ]);
-  }, []);
-  const passwordAndMemberships = await seed({
-    guestPasswords: {
-      constructor: GuestPassword,
-      entities: guestPasswords,
-    },
-    memberships: {
-      constructor: ItemMembership,
-      entities: guestMemberships,
-    },
-  });
+        accountId: string;
+        permission: PermissionLevel;
+        itemPath: string;
+      }[]
+    >((acc, { id, itemPath: path }) => {
+      return acc.concat([
+        {
+          accountId: id,
+          permission: PermissionLevel.Read,
+          itemPath: path,
+        },
+      ]);
+    }, []);
+    memberships = await db.insert(itemMemberships).values(guestMemberships).returning();
+  }
 
   return {
-    itemLoginSchemas: itemLoginSchemas as ItemLoginSchema[],
-    guests: guests as Guest[],
-    itemMemberships: passwordAndMemberships.memberships as ItemMembership[],
+    itemLoginSchemas: itemLoginSchemasValues,
+    guests,
+    itemMemberships: memberships,
   };
 }
 
@@ -471,14 +428,16 @@ async function createItemLoginSchemasAndGuests(items: (SeedItem & { path: string
  */
 export async function seedFromJson(data: DataType = {}) {
   const result: {
-    actor: Actor | undefined;
-    items: Item[];
-    itemMemberships: ItemMembership[];
-    members: Member[];
-    memberProfiles: MemberProfile[];
-    itemVisibilities: ItemVisibility[];
-    itemLoginSchemas: ItemLoginSchema[];
-    guests: Guest[];
+    actor: AccountRaw | undefined | null;
+    items: ItemRaw[];
+    itemMemberships: ItemMembershipRaw[];
+    members: MemberRaw[];
+    memberProfiles: MemberProfileRaw[];
+    itemVisibilities: ItemVisibilityRaw[];
+    itemLoginSchemas: ItemLoginSchemaRaw[];
+    guests: GuestRaw[];
+    tags: TagRaw[];
+    itemTags: ItemTagRaw[];
   } = {
     items: [],
     actor: undefined,
@@ -488,12 +447,13 @@ export async function seedFromJson(data: DataType = {}) {
     itemVisibilities: [],
     itemLoginSchemas: [],
     guests: [],
+    tags: [],
+    itemTags: [],
   };
 
   const { items: itemsWithActor, actor, members, actorProfile } = await processActor(data);
   result.actor = actor;
   result.memberProfiles = actorProfile ? [actorProfile] : [];
-
   // save members and their relations
   const {
     members: membersWithIds,
@@ -509,29 +469,21 @@ export async function seedFromJson(data: DataType = {}) {
 
   // save items
   const processedItems = generateIdAndPathForItems(itemsWithAccounts);
-  if (processedItems) {
-    result.items = (
-      await seed({
-        items: {
-          factory: ItemFactory,
-          constructor: Item,
-          entities: processedItems,
-        },
-      })
-    ).items as Item[];
+  if (processedItems.length) {
+    result.items = await db
+      .insert(itemsRaw)
+      .values(processedItems.map((i) => ItemFactory({ ...i, creatorId: i.creator?.id })))
+      .returning();
   }
 
   // save item memberships
   const itemMembershipsEntities = processItemMemberships(processedItems);
-  if (itemMembershipsEntities) {
-    result.itemMemberships = (
-      await seed({
-        itemMemberships: {
-          constructor: ItemMembership,
-          entities: itemMembershipsEntities,
-        },
-      })
-    ).itemMemberships as ItemMembership[];
+  if (itemMembershipsEntities.length) {
+    result.itemMemberships = await db
+      .insert(itemMemberships)
+      // TODO
+      .values(itemMembershipsEntities)
+      .returning();
   }
 
   // save item visibilities
@@ -544,6 +496,25 @@ export async function seedFromJson(data: DataType = {}) {
   result.itemLoginSchemas = itemLoginSchemas;
   result.guests = guests;
   result.itemMemberships = result.itemMemberships.concat(guestItemMemberships);
+
+  // save tags
+  if (data.tags?.length) {
+    result.tags = await db.insert(tagsTable).values(data.tags).returning();
+  }
+
+  const itemTags = processedItems.flatMap((item) =>
+    item.tags ? item.tags.map((t) => ({ ...t, itemId: item.id })) : [],
+  );
+  if (itemTags.length) {
+    for (const it of itemTags) {
+      const tag = (await db.insert(tagsTable).values(it).returning())[0];
+      result.tags.push(tag);
+      const itemTag = (
+        await db.insert(itemTagsTable).values({ tagId: tag.id, itemId: it.itemId }).returning()
+      )[0];
+      result.itemTags.push(itemTag);
+    }
+  }
 
   return result;
 }

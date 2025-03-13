@@ -1,14 +1,18 @@
 import { singleton } from 'tsyringe';
 
-import { TagCategory } from '@graasp/sdk';
-
-import { Repositories } from '../../utils/repositories';
+import { DBConnection } from '../../drizzle/db';
+import { ItemTagRepository } from '../item/plugins/tag/ItemTag.repository';
+import { TagCategoryOptions } from './schemas';
 
 @singleton()
 export class TagService {
-  async getCountBy(repositories: Repositories, search: string, category?: TagCategory) {
-    const { itemTagRepository } = repositories;
+  private readonly itemTagRepository: ItemTagRepository;
 
-    return await itemTagRepository.getCountBy({ search, category });
+  constructor(itemTagRepository: ItemTagRepository) {
+    this.itemTagRepository = itemTagRepository;
+  }
+
+  async getCountBy(db: DBConnection, search: string, category: TagCategoryOptions) {
+    return await this.itemTagRepository.getCountBy(db, { search, category });
   }
 }

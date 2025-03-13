@@ -1,12 +1,11 @@
 import { Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
-import { FlagType } from '@graasp/sdk';
-
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
 import { nullableAccountSchemaRef } from '../../../account/schemas';
 import { itemSchemaRef } from '../../schemas';
+import { FlagType } from './itemFlag.types';
 
 export const itemFlagSchemaRef = registerSchemaAsRef(
   'itemFlag',
@@ -15,7 +14,7 @@ export const itemFlagSchemaRef = registerSchemaAsRef(
     {
       id: customType.UUID(),
       item: itemSchemaRef,
-      type: Type.Enum(FlagType),
+      type: customType.EnumString(Object.values(FlagType)),
       creator: nullableAccountSchemaRef,
       createdAt: customType.DateTime(),
     },
@@ -39,7 +38,13 @@ const create = {
     type: Type.Enum(FlagType),
   }),
   response: {
-    [StatusCodes.CREATED]: itemFlagSchemaRef,
+    [StatusCodes.CREATED]: customType.StrictObject({
+      id: customType.UUID(),
+      type: customType.EnumString(Object.values(FlagType)),
+      createdAt: customType.DateTime(),
+      itemId: customType.Nullable(customType.UUID()),
+      creatorId: customType.Nullable(customType.UUID()),
+    }),
     '4xx': errorSchemaRef,
   },
 };
@@ -52,7 +57,9 @@ const getFlagTypes = {
   description: 'Get available flag types.',
 
   response: {
-    [StatusCodes.OK]: Type.Array(Type.Enum(FlagType), { description: 'Successful Response' }),
+    [StatusCodes.OK]: Type.Array(Type.Enum(FlagType), {
+      description: 'Successful Response',
+    }),
     '4xx': errorSchemaRef,
   },
 };

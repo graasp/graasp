@@ -11,19 +11,16 @@ import build, {
   unmockAuthenticate,
 } from '../../../../../../test/app';
 import { seedFromJson } from '../../../../../../test/mocks/seed';
-import { AppDataSource } from '../../../../../plugins/datasource';
+import { ItemVisibilityRaw } from '../../../../../drizzle/types';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { ItemVisibility } from '../ItemVisibility';
 import {
   CannotModifyParentVisibility,
   ConflictingVisibilitiesInTheHierarchy,
   ItemVisibilityNotFound,
 } from '../errors';
 
-const rawItemTagRepository = AppDataSource.getRepository(ItemVisibility);
-
 export const saveTagsForItem = async ({ item, creator }) => {
-  const itemVisibilities: ItemVisibility[] = [];
+  const itemVisibilities: ItemVisibilityRaw[] = [];
   itemVisibilities.push(
     await rawItemTagRepository.save({ item, creator, type: ItemVisibilityType.Hidden }),
   );

@@ -18,14 +18,11 @@ import build, {
   mockAuthenticate,
   unmockAuthenticate,
 } from '../../../../../../../../test/app';
-import { AppDataSource } from '../../../../../../../plugins/datasource';
+import { Item } from '../../../../../../../drizzle/types';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../../../utils/config';
 import { saveMember } from '../../../../../../member/test/fixtures/members';
-import { Item } from '../../../../../entities/Item';
 import { ItemTestUtils } from '../../../../../test/fixtures/items';
-import { ItemVisibility } from '../../../../itemVisibility/ItemVisibility';
-import { ItemPublished } from '../../entities/itemPublished';
-import { ItemPublishedRepository } from '../../repositories/itemPublished';
+import { ItemPublishedRepository } from '../../itemPublished.repository';
 import { MeiliSearchWrapper } from './meilisearch';
 
 const testUtils = new ItemTestUtils();
@@ -242,7 +239,7 @@ describe('Collection Search endpoints', () => {
           permission: PermissionLevel.Admin,
         }));
         await rawRepository.save({ item, type: ItemVisibilityType.Public, creator: actor });
-        await new ItemPublishedRepository().post(actor, item);
+        await new ItemPublishedRepository().post(app.db, actor, item);
 
         ({ item: publishedFolder } = await testUtils.saveItemAndMembership({ member: actor }));
         await rawRepository.save({

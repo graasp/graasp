@@ -9,9 +9,7 @@ import build, {
   mockAuthenticate,
   unmockAuthenticate,
 } from '../../../../../test/app';
-import { AppDataSource } from '../../../../plugins/datasource';
-import { Guest } from '../../../itemLogin/entities/guest';
-import { Member } from '../../../member/entities/member';
+import { MaybeUser } from '../../../../types';
 import { saveMember } from '../../../member/test/fixtures/members';
 import { ItemTestUtils } from '../../test/fixtures/items';
 
@@ -20,7 +18,7 @@ const rawGuestRepository = AppDataSource.getRepository(Guest);
 
 describe('Document Item tests', () => {
   let app: FastifyInstance;
-  let actor: Member | undefined;
+  let actor: MaybeUser;
 
   beforeAll(async () => {
     ({ app } = await build({ member: null }));

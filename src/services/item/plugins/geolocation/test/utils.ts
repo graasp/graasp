@@ -1,9 +1,8 @@
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { ItemGeolocation, PackedItemGeolocation } from '../ItemGeolocation';
+import { ItemGeolocationRaw } from '../../../../../drizzle/types';
 
 export const expectItemGeolocations = (
-  results: ItemGeolocation[] | null,
-  expected: ItemGeolocation[],
+  results: ItemGeolocationRaw[] | null,
+  expected: ItemGeolocationRaw[],
 ) => {
   for (const ig of expected) {
     expect(results).toContainEqual(

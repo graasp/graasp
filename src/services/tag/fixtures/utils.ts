@@ -1,10 +1,10 @@
+import { and, eq } from 'drizzle-orm/sql';
+
 import { TagCategory, TagFactory } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../plugins/datasource';
+import { db } from '../../../drizzle/db';
+import { tags } from '../../../drizzle/schema';
 import { assertIsDefined } from '../../../utils/assertions';
-import { Tag } from '../Tag.entity';
-
-const tagRawRepository = AppDataSource.getRepository(Tag);
 
 /**
  * Add and return a tag, does not throw in case of duplicata
@@ -15,9 +15,14 @@ const tagRawRepository = AppDataSource.getRepository(Tag);
 export async function saveTag(args: { name?: string; category?: TagCategory } = {}) {
   const tag = TagFactory(args);
   try {
-    return await tagRawRepository.save(tag);
-  } catch (e) {
-    const t = await tagRawRepository.findOneBy(args);
+    const res = await db.insert(tags).values(tag).returning();
+    const t = res[0];
+    assertIsDefined(t);
+    return t;
+  } catch {
+    const t = await db.query.tags.findFirst({
+      where: and(eq(tags.name, tag.name), eq(tags.category, tag.category)),
+    });
     assertIsDefined(t);
     return t;
   }

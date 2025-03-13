@@ -3,26 +3,22 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { PermissionLevel } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../di/utils';
+import { db } from '../../../../../drizzle/db';
 import { asDefined } from '../../../../../utils/assertions';
-import { buildRepositories } from '../../../../../utils/repositories';
-import { isAuthenticated, optionalIsAuthenticated } from '../../../../auth/plugins/passport';
-import { matchOne } from '../../../../authorization';
-import { assertIsMember } from '../../../../member/entities/member';
+import {
+  isAuthenticated,
+  matchOne,
+  optionalIsAuthenticated,
+} from '../../../../auth/plugins/passport';
+import { assertIsMember } from '../../../../authentication';
 import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
 import { ItemService } from '../../../service';
-import { PublicationService } from '../publicationState/service';
+import { PublicationService } from '../publicationState/publication.service';
+import { ItemPublishedService } from './itemPublished.service';
 import graaspSearchPlugin from './plugins/search';
-import {
-  getCollectionsForMember,
-  getInformations,
-  getManyInformations,
-  publishItem,
-  unpublishItem,
-} from './schemas';
-import { ItemPublishedService } from './service';
+import { getCollectionsForMember, getInformations, publishItem, unpublishItem } from './schemas';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { db } = fastify;
   const itemPublishedService = resolveDependency(ItemPublishedService);
   const publicationService = resolveDependency(PublicationService);
   const itemService = resolveDependency(ItemService);
@@ -36,7 +32,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       preHandler: optionalIsAuthenticated,
     },
     async ({ user, params: { memberId } }) => {
-      return itemPublishedService.getItemsForMember(user?.account, buildRepositories(), memberId);
+      return itemPublishedService.getItemsForMember(db, user?.account, memberId);
     },
   );
 
@@ -47,18 +43,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       schema: getInformations,
     },
     async ({ params, user }) => {
-      return itemPublishedService.get(user?.account, buildRepositories(), params.itemId);
-    },
-  );
-
-  fastify.get(
-    '/collections/informations',
-    {
-      preHandler: optionalIsAuthenticated,
-      schema: getManyInformations,
-    },
-    async ({ user, query: { itemId } }) => {
-      return itemPublishedService.getMany(user?.account, buildRepositories(), itemId);
+      return itemPublishedService.get(db, user?.account, params.itemId);
     },
   );
 
@@ -71,18 +56,17 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ params, user }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-        const item = await itemService.get(
+      await db.transaction(async (tx) => {
+        const item = await itemService.basicItemService.get(
+          tx,
           member,
-          repositories,
           params.itemId,
           PermissionLevel.Admin,
         );
 
-        const status = await publicationService.computeStateForItem(member, repositories, item.id);
+        const status = await publicationService.computeStateForItem(tx, member, item.id);
 
-        return itemPublishedService.post(member, repositories, item, status);
+        await itemPublishedService.post(tx, member, item, status);
       });
     },
   );
@@ -96,8 +80,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ params, user }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return db.transaction(async (manager) => {
-        return itemPublishedService.delete(member, buildRepositories(manager), params.itemId);
+      await db.transaction(async (tx) => {
+        await itemPublishedService.delete(tx, member, params.itemId);
       });
     },
   );

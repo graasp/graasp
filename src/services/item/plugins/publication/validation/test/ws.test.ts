@@ -6,10 +6,10 @@ import { FastifyInstance } from 'fastify';
 import { HttpMethod, ItemOpFeedbackEvent as ItemOpFeedbackEventType } from '@graasp/sdk';
 
 import { clearDatabase } from '../../../../../../../test/app';
+import { Item } from '../../../../../../drizzle/types';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../../utils/config';
 import { TestWsClient } from '../../../../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../../../../websockets/test/ws-app';
-import { Item } from '../../../../entities/Item';
 import { ItemTestUtils } from '../../../../test/fixtures/items';
 import {
   ItemOpFeedbackErrorEvent,
@@ -17,7 +17,7 @@ import {
   memberItemsTopic,
 } from '../../../../ws/events';
 import { expectValidateFeedbackOp } from '../../../action/test/utils';
-import { ItemValidationGroupRepository } from '../repositories/ItemValidationGroup';
+import { ItemValidationGroupRepository } from '../ItemValidationGroup.repository';
 import { saveItemValidation } from './utils';
 
 const testUtils = new ItemTestUtils();

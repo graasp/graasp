@@ -3,11 +3,11 @@ import { FastifyInstance } from 'fastify';
 import { PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../test/app';
-import { Item } from '../item/entities/Item';
+import { Item, ItemMembershipRaw } from '../../drizzle/types';
+import { MinimalMember } from '../../types';
+import { isMember } from '../authentication';
 import { ItemTestUtils } from '../item/test/fixtures/items';
-import { Member, isMember } from '../member/entities/member';
 import { saveMember } from '../member/test/fixtures/members';
-import { ItemMembership } from './entities/ItemMembership';
 import { ItemMembershipRepository } from './repository';
 
 const testUtils = new ItemTestUtils();
@@ -15,7 +15,7 @@ const itemMembershipRepository = new ItemMembershipRepository();
 
 function crossArrayCheck(
   itemArray: Item[],
-  itemMembershipArray: ItemMembership[],
+  itemMembershipArray: ItemMembershipRaw[],
   crossIdMap: { [key in string]: string[] },
 ): boolean {
   return itemMembershipArray.every((m) => itemArray.some((i) => crossIdMap[i.path].includes(m.id)));
@@ -24,7 +24,7 @@ function crossArrayCheck(
 describe('ItemMembership Repository', () => {
   let app: FastifyInstance;
   let item: Item;
-  let creator: Member;
+  let creator: MinimalMember;
 
   beforeAll(async () => {
     ({ app } = await build({ member: null }));
@@ -47,6 +47,7 @@ describe('ItemMembership Repository', () => {
   describe('getAllWithPermission', () => {
     it('should return empty array when there is no corresponding permission', async () => {
       const result = await itemMembershipRepository.getByItemPathAndPermission(
+        app.db,
         item.path,
         PermissionLevel.Admin,
       );
@@ -67,6 +68,7 @@ describe('ItemMembership Repository', () => {
       }
 
       const result = await itemMembershipRepository.getByItemPathAndPermission(
+        app.db,
         item.path,
         PermissionLevel.Admin,
       );
@@ -119,6 +121,7 @@ describe('ItemMembership Repository', () => {
       }
 
       const result = await itemMembershipRepository.getByItemPathAndPermission(
+        app.db,
         targetItem.path,
         PermissionLevel.Read,
       );

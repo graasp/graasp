@@ -3,13 +3,22 @@ import { singleton } from 'tsyringe';
 
 import { ItemGeolocation, ItemType, PermissionLevel, UUID } from '@graasp/sdk';
 
+import { DBConnection } from '../../../../drizzle/db';
+import { Item } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
-import { Repositories } from '../../../../utils/repositories';
-import { Member } from '../../../member/entities/member';
+import { MaybeUser, MinimalMember } from '../../../../types';
+import { AuthorizationService } from '../../../authorization';
+import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { ThumbnailService } from '../../../thumbnail/service';
-import { FolderItem, Item, isItemType } from '../../entities/Item';
+import { ItemWrapperService } from '../../ItemWrapper';
+import { BasicItemService } from '../../basic.service';
+import { FolderItem, isItemType } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
+import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
+import { ItemGeolocationRepository } from '../geolocation/geolocation.repository';
+import { ItemVisibilityRepository } from '../itemVisibility/repository';
+import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../thumbnail/service';
 
@@ -18,28 +27,49 @@ export class FolderItemService extends ItemService {
   constructor(
     thumbnailService: ThumbnailService,
     itemThumbnailService: ItemThumbnailService,
+    itemMembershipRepository: ItemMembershipRepository,
     meilisearchWrapper: MeiliSearchWrapper,
+    itemRepository: ItemRepository,
+    itemPublishedRepository: ItemPublishedRepository,
+    itemGeolocationRepository: ItemGeolocationRepository,
+    authorizationService: AuthorizationService,
+    itemWrapperService: ItemWrapperService,
+    itemVisibilityRepository: ItemVisibilityRepository,
+    basicItemService: BasicItemService,
     log: BaseLogger,
   ) {
-    super(thumbnailService, itemThumbnailService, meilisearchWrapper, log);
+    super(
+      thumbnailService,
+      itemThumbnailService,
+      itemMembershipRepository,
+      meilisearchWrapper,
+      itemRepository,
+      itemPublishedRepository,
+      itemGeolocationRepository,
+      authorizationService,
+      itemWrapperService,
+      itemVisibilityRepository,
+      basicItemService,
+      log,
+    );
   }
 
-  async get(
-    member: Member,
-    repositories: Repositories,
+  async getFolder(
+    db: DBConnection,
+    member: MaybeUser,
     itemId: Item['id'],
     permission?: PermissionLevel,
   ): Promise<FolderItem> {
-    const item = await super.get(member, repositories, itemId, permission);
+    const item = await this.basicItemService.get(db, member, itemId, permission);
     if (!isItemType(item, ItemType.FOLDER)) {
       throw new WrongItemTypeError(item.type);
     }
-    return item;
+    return item as FolderItem;
   }
 
-  async post(
-    member: Member,
-    repositories: Repositories,
+  async postWithOptions(
+    db: DBConnection,
+    member: MinimalMember,
     args: {
       item: Partial<Pick<Item, 'description' | 'settings' | 'lang'>> & Pick<Item, 'name'>;
       parentId?: string;
@@ -48,27 +78,25 @@ export class FolderItemService extends ItemService {
       previousItemId?: Item['id'];
     },
   ): Promise<FolderItem> {
-    return (await super.post(member, repositories, {
+    return (await super.post(db, member, {
       ...args,
       item: { ...args.item, type: ItemType.FOLDER, extra: { folder: {} } },
     })) as FolderItem;
   }
 
   async patch(
-    member: Member,
-    repositories: Repositories,
+    db: DBConnection,
+    member: MinimalMember,
     itemId: UUID,
     body: Partial<Pick<Item, 'name' | 'description' | 'settings' | 'lang'>>,
   ): Promise<FolderItem> {
-    const { itemRepository } = repositories;
-
-    const item = await itemRepository.getOneOrThrow(itemId);
+    const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
     // check item is folder
     if (item.type !== ItemType.FOLDER) {
       throw new WrongItemTypeError(item.type);
     }
 
-    return (await super.patch(member, repositories, item.id, body)) as FolderItem;
+    return (await super.patch(db, member, item.id, body)) as FolderItem;
   }
 }

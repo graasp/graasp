@@ -65,7 +65,9 @@
         "mhutchie.git-graph",
         "waderyan.gitblame",
         "firsttris.vscode-jest-runner",
-        "Orta.vscode-jest"
+        "Orta.vscode-jest",
+        "Gruntfuggly.todo-tree",
+        "wayou.vscode-todo-highlight"
       ]
     }
   }

@@ -1,12 +1,12 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../../di/utils';
+import { db } from '../../../../../drizzle/db';
 import { asDefined } from '../../../../../utils/assertions';
 import { UnauthorizedMember } from '../../../../../utils/errors';
-import { buildRepositories } from '../../../../../utils/repositories';
 import { isAuthenticated } from '../../../../auth/plugins/passport';
+import { PublicationService } from './publication.service';
 import { getPublicationState } from './schemas';
-import { PublicationService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const publicationService = resolveDependency(PublicationService);
@@ -19,7 +19,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async ({ user, params: { itemId } }) => {
       const account = asDefined(user?.account, UnauthorizedMember);
-      return await publicationService.computeStateForItem(account, buildRepositories(), itemId);
+      return await publicationService.computeStateForItem(db, account, itemId);
     },
   );
 };

@@ -3,9 +3,8 @@ import { v4 } from 'uuid';
 import { FolderItemFactory, ThumbnailSize } from '@graasp/sdk';
 
 import { MOCK_LOGGER } from '../../../../../test/app';
-import { Repositories } from '../../../../utils/repositories';
+import { Item } from '../../../../drizzle/types';
 import { ThumbnailService } from '../../../thumbnail/service';
-import { Item } from '../../entities/Item';
 import { ItemService } from '../../service';
 import { ItemThumbnailService } from './service';
 import {
@@ -33,8 +32,6 @@ export const itemThumbnailService = new ItemThumbnailService(
   MOCK_LOGGER,
 );
 
-const MOCK_REPOSITORIES = {} as Repositories;
-
 describe('ItemThumbnailService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -47,7 +44,7 @@ describe('ItemThumbnailService', () => {
       jest.spyOn(dummyItemService, 'get').mockResolvedValue(MOCK_ITEM);
 
       const size = ThumbnailSize.Large;
-      const result = await itemThumbnailService.getUrl(undefined, MOCK_REPOSITORIES, {
+      const result = await itemThumbnailService.getUrl(app.db, undefined, {
         size,
         itemId: mockedItemsId[0].id,
       });
@@ -57,7 +54,7 @@ describe('ItemThumbnailService', () => {
       const MOCK_ITEM = FolderItemFactory({ settings: { hasThumbnail: false } }) as unknown as Item;
       jest.spyOn(dummyItemService, 'get').mockResolvedValue(MOCK_ITEM);
 
-      const result = await itemThumbnailService.getUrl(undefined, MOCK_REPOSITORIES, {
+      const result = await itemThumbnailService.getUrl(app.db, undefined, {
         size: ThumbnailSize.Large,
         itemId: mockedItemsId[0].id,
       });
@@ -66,7 +63,7 @@ describe('ItemThumbnailService', () => {
     it('throw if cannot get item', async () => {
       jest.spyOn(dummyItemService, 'get').mockRejectedValue(new Error());
       await expect(() =>
-        itemThumbnailService.getUrl(undefined, MOCK_REPOSITORIES, {
+        itemThumbnailService.getUrl(app.db, undefined, {
           size: ThumbnailSize.Large,
           itemId: v4(),
         }),

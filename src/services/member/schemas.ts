@@ -52,6 +52,7 @@ const currentAccountSchema = customType.StrictObject({
   name: customType.Username(),
   createdAt: customType.DateTime(),
   updatedAt: customType.DateTime(),
+  lang: Type.String(),
   // for legacy issue we support null
   // but on login last authenticatedAt should always be updated
   lastAuthenticatedAt: Type.Union([Type.Null(), customType.DateTime()]),
@@ -78,6 +79,8 @@ const compositeCurrentGuestSchema = Type.Composite([
     {
       type: accountTypeGuestRef,
       extra: Type.Object({}, { additionalProperties: true }),
+      // // TODO: following props are added because drizzle returns null?
+      email: Type.Null(),
     },
     { description: 'Current guest information' },
   ),
@@ -156,8 +159,12 @@ export const getStorage = {
   response: {
     [StatusCodes.OK]: customType.StrictObject(
       {
-        current: Type.Integer({ description: 'Current amount of storage used' }),
-        maximum: Type.Integer({ description: 'Maximum amount of storage available' }),
+        current: Type.Integer({
+          description: 'Current amount of storage used',
+        }),
+        maximum: Type.Integer({
+          description: 'Maximum amount of storage available',
+        }),
       },
       { description: 'Successful Response' },
     ),
@@ -172,7 +179,10 @@ export const getStorageFiles = {
   description: 'Get files data counted in storage of current member.',
 
   querystring: customType.Pagination({
-    page: Type.Integer({ minimum: FILE_METADATA_MIN_PAGE, default: FILE_METADATA_MIN_PAGE }),
+    page: Type.Integer({
+      minimum: FILE_METADATA_MIN_PAGE,
+      default: FILE_METADATA_MIN_PAGE,
+    }),
     pageSize: Type.Integer({ default: FILE_METADATA_DEFAULT_PAGE_SIZE }),
   }),
   response: {

@@ -16,10 +16,7 @@ import {
 import { customType } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
 import { accountSchemaRef, nullableAccountSchemaRef } from '../../../account/schemas';
-import {
-  MAX_ACTIONS_SAMPLE_SIZE,
-  MIN_ACTIONS_SAMPLE_SIZE,
-} from '../../../action/constants/constants';
+import { MAX_ACTIONS_SAMPLE_SIZE, MIN_ACTIONS_SAMPLE_SIZE } from '../../../action/constants';
 import { itemSchema, itemSchemaRef } from '../../schemas';
 import { appActionSchemaRef } from '../app/appAction/schemas';
 import { appDataSchemaRef } from '../app/appData/schemas';
@@ -59,24 +56,26 @@ export const getItemActions = {
     endDate: Type.Optional(Type.String({ format: 'date-time' })),
   }),
   response: {
-    [StatusCodes.OK]: customType.StrictObject({
-      actions: Type.Array(actionSchema),
-      members: Type.Array(accountSchemaRef),
-      descendants: Type.Array(itemSchemaRef),
-      item: itemSchemaRef,
-      apps: Type.Record(
-        customType.UUID(),
-        customType.StrictObject({
-          data: Type.Array(appDataSchemaRef),
-          settings: Type.Array(appSettingSchemaRef),
-          actions: Type.Array(appActionSchemaRef),
-        }),
-      ),
-      metadata: customType.StrictObject({
-        numActionsRetrieved: Type.Number(),
-        requestedSampleSize: Type.Number(),
-      }),
-    }),
+    [StatusCodes.OK]: {},
+    // TODO: enable back
+    // [StatusCodes.OK]: customType.StrictObject({
+    //   actions: Type.Array(actionSchema),
+    //   members: Type.Array(accountSchemaRef),
+    //   descendants: Type.Array(itemSchemaRef),
+    //   item: itemSchemaRef,
+    //   apps: Type.Record(
+    //     customType.UUID(),
+    //     customType.StrictObject({
+    //       data: Type.Array(appDataSchemaRef),
+    //       settings: Type.Array(appSettingSchemaRef),
+    //       actions: Type.Array(appActionSchemaRef),
+    //     }),
+    //   ),
+    //   metadata: customType.StrictObject({
+    //     numActionsRetrieved: Type.Number(),
+    //     requestedSampleSize: Type.Number(),
+    //   }),
+    // }),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;

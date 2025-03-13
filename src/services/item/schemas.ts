@@ -11,7 +11,6 @@ import {
   MAX_TARGETS_FOR_MODIFY_REQUEST,
   MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE,
   MaxWidth,
-  PermissionLevel,
 } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
@@ -114,27 +113,6 @@ export const itemUpdateSchema = Type.Partial(
     },
   ),
 );
-
-export const getOwn = {
-  // use GET accessible
-  deprecated: true,
-
-  response: {
-    [StatusCodes.OK]: Type.Array(itemSchemaRef),
-    '4xx': errorSchemaRef,
-  },
-} as const satisfies FastifySchema;
-
-export const getShared = {
-  // use GET accessible
-  deprecated: true,
-
-  querystring: Type.Partial(customType.StrictObject({ permission: Type.Enum(PermissionLevel) })),
-  response: {
-    [StatusCodes.OK]: Type.Array(itemSchemaRef),
-    '4xx': errorSchemaRef,
-  },
-} as const satisfies FastifySchema;
 
 export const updateOne = {
   operationId: 'updateItem',

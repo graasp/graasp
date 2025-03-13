@@ -5,7 +5,8 @@ import { FastifyInstance } from 'fastify';
 import { HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
-import { getDateBeforeOrAfterNow, saveActionsWithItems } from './utils';
+import { saveActions } from '../../../../item/plugins/action/test/fixtures/actions';
+import { generateActionsWithItems, getDateBeforeOrAfterNow } from './utils';
 
 const GET_URL = '/members/actions';
 
@@ -34,7 +35,8 @@ describe('Get member actions', () => {
     it('Get actions when user signed in for last month if no satrt and end date not exist', async () => {
       ({ app, actor } = await build());
 
-      await saveActionsWithItems(actor);
+      const actions = await generateActionsWithItems(actor);
+      await saveActions(rawRepository, actions);
       const response = await app.inject({
         method: HttpMethod.Get,
         url: GET_URL,
@@ -46,7 +48,8 @@ describe('Get member actions', () => {
 
     it('Get actions when user signed in specifing start and end dates that does not have any actions', async () => {
       ({ app, actor } = await build());
-      await saveActionsWithItems(actor);
+      await generateActionsWithItems(actor);
+      await saveActions(rawRepository, actions);
       const response = await app.inject({
         method: HttpMethod.Get,
         url: `${GET_URL}?startDate=${getDateBeforeOrAfterNow(-2)}&endDate=${getDateBeforeOrAfterNow(

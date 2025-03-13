@@ -11,7 +11,7 @@ export type CSVInvite = {
   email: string;
   name?: string;
   group_name?: string;
-  permission?: PermissionLevel;
+  permission?: `${PermissionLevel}`;
 };
 
 export const parseCSV = (stream: Readable): Promise<{ rows: CSVInvite[]; header: string[] }> => {

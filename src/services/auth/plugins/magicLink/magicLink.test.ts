@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker';
+import { eq } from 'drizzle-orm/sql';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import { sign } from 'jsonwebtoken';
 import fetch from 'node-fetch';
@@ -10,24 +11,23 @@ import {
   ClientManager,
   Context,
   HttpMethod,
-  MemberFactory,
   RecaptchaAction,
   RecaptchaActionType,
 } from '@graasp/sdk';
 import { FAILURE_MESSAGES } from '@graasp/translations';
 
 import build, { clearDatabase } from '../../../../../test/app';
+import { MemberFactory } from '../../../../../test/factories/member.factory';
 import { URL_REGEX } from '../../../../../test/utils';
 import { resolveDependency } from '../../../../di/utils';
-import { AppDataSource } from '../../../../plugins/datasource';
-import { MailerService } from '../../../../plugins/mailer/service';
+import { db } from '../../../../drizzle/db';
+import { accountsTable } from '../../../../drizzle/schema';
+import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { JWT_SECRET } from '../../../../utils/config';
-import { Member } from '../../../member/entities/member';
 import { saveMember } from '../../../member/test/fixtures/members';
 import { MOCK_CAPTCHA } from '../captcha/test/utils';
 
 jest.mock('node-fetch');
-const memberRawRepository = AppDataSource.getRepository(Member);
 
 // mock captcha
 // bug: cannot use exported mockCaptchaValidation
@@ -44,15 +44,18 @@ describe('Auth routes tests', () => {
   let app: FastifyInstance;
   let mailerService: MailerService;
 
-  beforeEach(async () => {
-    ({ app } = await build({ member: null }));
+  beforeAll(async () => {
+    ({ app } = await build());
     mailerService = resolveDependency(MailerService);
+  });
+
+  afterAll(async () => {
+    await clearDatabase(db);
+    app.close();
   });
 
   afterEach(async () => {
     jest.clearAllMocks();
-    await clearDatabase(app.db);
-    app.close();
   });
 
   describe('POST /login', () => {
@@ -90,7 +93,7 @@ describe('Auth routes tests', () => {
     });
 
     it('Sign In does send not found on non-existing email', async () => {
-      const email = 'some@email.com';
+      const email = faker.internet.email();
 
       const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
       const response = await app.inject({
@@ -101,7 +104,6 @@ describe('Auth routes tests', () => {
 
       expect(mockSendEmail).not.toHaveBeenCalled();
       expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
-      app.close();
     });
 
     it('Bad request for invalid email', async () => {
@@ -118,7 +120,7 @@ describe('Auth routes tests', () => {
 
     it('Bad request for non registered email', async () => {
       // email is not registered
-      const email = 'tim@graasp.org';
+      const email = faker.internet.email();
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/login',
@@ -142,7 +144,9 @@ describe('Auth routes tests', () => {
       expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
       expect(response.headers.location).not.toContain('error');
 
-      const m = await memberRawRepository.findOneBy({ email: member.email });
+      const m = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.email, member.email),
+      });
       expect(m?.lastAuthenticatedAt).toBeDefined();
       expect(m?.isValidated).toBeFalsy();
     });
@@ -157,7 +161,9 @@ describe('Auth routes tests', () => {
       expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
       expect(response.headers.location).not.toContain('error');
 
-      const m = await memberRawRepository.findOneBy({ email: member.email });
+      const m = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.email, member.email),
+      });
       expect(m?.lastAuthenticatedAt).toBeDefined();
       expect(m?.isValidated).toBeTruthy();
     });
@@ -226,9 +232,11 @@ describe('Auth routes tests', () => {
       });
       expect(responseRegister.statusCode).toBe(StatusCodes.NO_CONTENT);
 
-      let m = await memberRawRepository.findOneBy({ email });
-      expect(m?.lastAuthenticatedAt).toBeNull();
-      expect(m?.isValidated).toBeFalsy();
+      const memberBefore = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.email, email),
+      });
+      expect(memberBefore?.lastAuthenticatedAt).toBeNull();
+      expect(memberBefore?.isValidated).toBeFalsy();
 
       expect(mockSendEmail).toHaveBeenCalledTimes(1);
       const fetchedURL = new URL(mockSendEmail.mock.calls[0][2].match(URL_REGEX)![1]);
@@ -239,9 +247,11 @@ describe('Auth routes tests', () => {
       });
       expect(responseAuth.statusCode).toBe(StatusCodes.SEE_OTHER);
 
-      m = await memberRawRepository.findOneBy({ email });
-      expect(m?.lastAuthenticatedAt).toBeDefined();
-      expect(m?.isValidated).toBeTruthy();
+      const memberAfter = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.email, email),
+      });
+      expect(memberAfter?.lastAuthenticatedAt).toBeDefined();
+      expect(memberAfter?.isValidated).toBeTruthy();
     });
   });
 });

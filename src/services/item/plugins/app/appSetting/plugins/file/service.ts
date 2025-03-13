@@ -6,14 +6,12 @@ import { MultipartFile } from '@fastify/multipart';
 
 import { FileItemProperties, MAX_ITEM_NAME_LENGTH, UUID } from '@graasp/sdk';
 
-import { Repositories } from '../../../../../../../utils/repositories';
-import { Account } from '../../../../../../account/entities/account';
+import { DBConnection } from '../../../../../../../drizzle/db';
+import { AppSettingRaw, AppSettingWithItem, Item } from '../../../../../../../drizzle/types';
+import { AuthenticatedUser, MinimalMember } from '../../../../../../../types';
 import FileService from '../../../../../../file/service';
-import { Actor, Member } from '../../../../../../member/entities/member';
-import { Item } from '../../../../../entities/Item';
-import { ItemService } from '../../../../../service';
-import { AppSetting } from '../../appSettings';
 import { NotAppSettingFile } from '../../errors';
+import { AppSettingRepository } from '../../repository';
 import { AppSettingService } from '../../service';
 
 type AppSettingFileProperties = {
@@ -26,7 +24,7 @@ type AppSettingFileProperties = {
 class AppSettingFileService {
   private readonly appSettingService: AppSettingService;
   private readonly fileService: FileService;
-  private readonly itemService: ItemService;
+  private readonly appSettingRepository: AppSettingRepository;
 
   buildFilePath(itemId: UUID, appSettingId: UUID) {
     return path.join('apps', 'app-setting', itemId, appSettingId);
@@ -35,14 +33,14 @@ class AppSettingFileService {
   constructor(
     appSettingService: AppSettingService,
     fileService: FileService,
-    itemService: ItemService,
+    appSettingRepository: AppSettingRepository,
   ) {
     this.appSettingService = appSettingService;
     this.fileService = fileService;
-    this.itemService = itemService;
+    this.appSettingRepository = appSettingRepository;
   }
 
-  async upload(member: Account, repositories: Repositories, file: MultipartFile, item: Item) {
+  async upload(db: DBConnection, member: AuthenticatedUser, file: MultipartFile, item: Item) {
     const { filename, mimetype, fields, file: stream } = file;
     const appSettingId = v4();
     const filepath = this.buildFilePath(item.id, appSettingId); // parentId, filename
@@ -72,15 +70,13 @@ class AppSettingFileService {
         throw e;
       })) satisfies AppSettingFileProperties;
 
-    const appSetting = await repositories.appSettingRepository.addOne({
+    const appSetting = await this.appSettingRepository.addOne(db, {
       itemId: item.id,
-      memberId: member.id,
-      appSetting: {
-        id: appSettingId,
-        name,
-        data: {
-          [this.fileService.fileType]: fileProperties,
-        },
+      creatorId: member.id,
+      id: appSettingId,
+      name,
+      data: {
+        [this.fileService.fileType]: fileProperties,
       },
     });
 
@@ -88,17 +84,12 @@ class AppSettingFileService {
   }
 
   async download(
-    account: Account,
-    repositories: Repositories,
+    db: DBConnection,
+    account: AuthenticatedUser,
     { item, appSettingId }: { item: Item; appSettingId: UUID },
   ) {
     // get app setting and check it is a file
-    const appSetting = await this.appSettingService.get(
-      account,
-      repositories,
-      item.id,
-      appSettingId,
-    );
+    const appSetting = await this.appSettingService.get(db, account, item.id, appSettingId);
     const fileProp = appSetting.data[this.fileService.fileType] as AppSettingFileProperties;
     if (!fileProp) {
       throw new NotAppSettingFile(appSetting);
@@ -113,7 +104,7 @@ class AppSettingFileService {
     return result;
   }
 
-  async copyMany(actor: Member, repositories: Repositories, toCopy: AppSetting[]) {
+  async copyMany(db: DBConnection, actor: MinimalMember, toCopy: AppSettingWithItem[]) {
     const fileItemType = this.fileService.fileType;
     for (const appSetting of toCopy) {
       if (!appSetting.data) {
@@ -141,11 +132,13 @@ class AppSettingFileService {
       });
 
       // update new setting with file data
-      await repositories.appSettingRepository.updateOne(appSetting.id, { data: newFileData });
+      await this.appSettingRepository.updateOne(db, appSetting.id, {
+        data: newFileData,
+      });
     }
   }
 
-  async deleteOne(actor: Actor, repositories: Repositories, appSetting: AppSetting) {
+  async deleteOne(db: DBConnection, actor: AuthenticatedUser, appSetting: AppSettingRaw) {
     // TODO: check rights? but only use in posthook
     try {
       // delete file only if type is the current file type

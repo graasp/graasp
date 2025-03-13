@@ -2,8 +2,8 @@ import { fastifyCors } from '@fastify/cors';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../di/utils';
+import { db } from '../../drizzle/db';
 import { FastifyInstanceTypebox } from '../../plugins/typebox';
-import { buildRepositories } from '../../utils/repositories';
 import { optionalIsAuthenticated } from '../auth/plugins/passport';
 import { getCountForTags } from './schemas';
 import { TagService } from './service';
@@ -21,9 +21,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         '/',
         { schema: getCountForTags, preHandler: optionalIsAuthenticated },
         async ({ query: { search, category } }) => {
-          const repositories = buildRepositories();
-
-          return await tagService.getCountBy(repositories, search, category);
+          return await tagService.getCountBy(db, search, category);
         },
       );
     },

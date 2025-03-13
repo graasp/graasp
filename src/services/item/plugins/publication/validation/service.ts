@@ -4,13 +4,16 @@ import { singleton } from 'tsyringe';
 
 import { ItemValidationStatus, PermissionLevel, UUID } from '@graasp/sdk';
 
+import { DBConnection } from '../../../../../drizzle/db';
+import { Item } from '../../../../../drizzle/types';
 import { BaseLogger } from '../../../../../logger';
+import { MinimalMember } from '../../../../../types';
 import { TMP_FOLDER } from '../../../../../utils/config';
-import { Repositories } from '../../../../../utils/repositories';
-import { validatePermission } from '../../../../authorization';
-import { Member } from '../../../../member/entities/member';
-import { FolderItem, Item } from '../../../entities/Item';
-import { ItemPublishedService } from '../published/service';
+import { AuthorizationService } from '../../../../authorization';
+import { FolderItem } from '../../../discrimination';
+import { ItemRepository } from '../../../repository';
+import { ItemPublishedService } from '../published/itemPublished.service';
+import { ItemValidationGroupRepository } from './ItemValidationGroup.repository';
 import { ItemValidationModerator } from './moderators/itemValidationModerator';
 import { ValidationQueue } from './validationQueue';
 
@@ -18,18 +21,27 @@ import { ValidationQueue } from './validationQueue';
 export class ItemValidationService {
   private readonly itemPublishedService: ItemPublishedService;
   private readonly contentModerator: ItemValidationModerator;
+  private readonly authorizationService: AuthorizationService;
   private readonly validationQueue: ValidationQueue;
+  private readonly itemValidationGroupRepository: ItemValidationGroupRepository;
+  private readonly itemRepository: ItemRepository;
   private readonly logger: BaseLogger;
 
   constructor(
     itemPublishedService: ItemPublishedService,
     contentModerator: ItemValidationModerator,
+    authorizationService: AuthorizationService,
     validationQueue: ValidationQueue,
+    itemValidationGroupRepository: ItemValidationGroupRepository,
+    itemRepository: ItemRepository,
     logger: BaseLogger,
   ) {
     this.itemPublishedService = itemPublishedService;
     this.contentModerator = contentModerator;
+    this.authorizationService = authorizationService;
+    this.itemValidationGroupRepository = itemValidationGroupRepository;
     this.validationQueue = validationQueue;
+    this.itemRepository = itemRepository;
     this.logger = logger;
   }
 
@@ -39,38 +51,37 @@ export class ItemValidationService {
     return p;
   }
 
-  async getLastItemValidationGroupForItem(member: Member, repositories: Repositories, item: Item) {
-    const { itemValidationGroupRepository } = repositories;
-
-    const group = await itemValidationGroupRepository.getLastForItem(item.id);
+  async getLastItemValidationGroupForItem(db: DBConnection, member: MinimalMember, item: Item) {
+    const group = await this.itemValidationGroupRepository.getLastForItem(db, item.id);
 
     // check permissions
-    await validatePermission(repositories, PermissionLevel.Admin, member, item);
+    await this.authorizationService.validatePermission(db, PermissionLevel.Admin, member, item);
 
     return group;
   }
 
   async getItemValidationGroup(
-    member: Member,
-    repositories: Repositories,
+    db: DBConnection,
+    member: MinimalMember,
     itemValidationGroupId: string,
   ) {
-    const { itemValidationGroupRepository } = repositories;
+    const group = await this.itemValidationGroupRepository.get(db, itemValidationGroupId);
 
-    const group = await itemValidationGroupRepository.get(itemValidationGroupId);
-
-    await validatePermission(repositories, PermissionLevel.Admin, member, group.item);
+    await this.authorizationService.validatePermission(
+      db,
+      PermissionLevel.Admin,
+      member,
+      group.item,
+    );
 
     return group;
   }
 
-  async post(repositories: Repositories, item: FolderItem, onValidationStarted?: () => void) {
-    const { itemValidationGroupRepository, itemRepository } = repositories;
-
-    const descendants = await itemRepository.getDescendants(item);
+  async post(db: DBConnection, item: FolderItem, onValidationStarted?: () => void) {
+    const descendants = await this.itemRepository.getDescendants(db, item);
 
     // create record in item-validation
-    const iVG = await itemValidationGroupRepository.post(item.id);
+    const iVG = await this.itemValidationGroupRepository.post(db, item.id);
 
     // indicates that the item's validation is pending
     await this.validationQueue.addInProgress(item.id);
@@ -83,11 +94,7 @@ export class ItemValidationService {
     const results = await Promise.all(
       items.map(async (currItem) => {
         try {
-          const validationResults = await this.contentModerator.validate(
-            repositories,
-            currItem,
-            iVG,
-          );
+          const validationResults = await this.contentModerator.validate(db, currItem, iVG.id);
           return validationResults.every((v) => v === ItemValidationStatus.Success);
         } catch (e) {
           this.logger.error(e);
@@ -102,7 +109,7 @@ export class ItemValidationService {
 
     // update publication date
     if (operationResult) {
-      await this.itemPublishedService.touchUpdatedAt(repositories, item);
+      await this.itemPublishedService.touchUpdatedAt(db, item);
     }
 
     return operationResult;

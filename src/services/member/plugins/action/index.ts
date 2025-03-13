@@ -3,8 +3,8 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { FileItemType } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
 import { isAuthenticated } from '../../../auth/plugins/passport';
 import {
   LocalFileConfiguration,
@@ -16,12 +16,13 @@ import { ActionMemberService } from './service';
 export interface GraaspActionsOptions {
   shouldSave?: boolean;
   fileItemType: FileItemType;
-  fileConfigurations: { s3: S3FileConfiguration; local: LocalFileConfiguration };
+  fileConfigurations: {
+    s3: S3FileConfiguration;
+    local: LocalFileConfiguration;
+  };
 }
 
 const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) => {
-  const { db } = fastify;
-
   const actionMemberService = resolveDependency(ActionMemberService);
 
   fastify.get(
@@ -29,7 +30,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
     { schema: getMemberFilteredActions, preHandler: isAuthenticated },
     async ({ user, query }) => {
       const account = asDefined(user?.account);
-      return actionMemberService.getFilteredActions(account, buildRepositories(), query);
+      return actionMemberService.getFilteredActions(db, account, query);
     },
   );
 
@@ -40,8 +41,8 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
     { schema: deleteAllById, preHandler: isAuthenticated },
     async ({ user, params: { id } }) => {
       const account = asDefined(user?.account);
-      return db.transaction(async (manager) => {
-        return actionMemberService.deleteAllForMember(account, buildRepositories(manager), id);
+      return db.transaction(async (tx) => {
+        return actionMemberService.deleteAllForMember(tx, account, id);
       });
     },
   );

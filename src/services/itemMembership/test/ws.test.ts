@@ -4,13 +4,13 @@ import waitForExpect from 'wait-for-expect';
 import { HttpMethod, PermissionLevel, Websocket, parseStringToDate } from '@graasp/sdk';
 
 import { clearDatabase, mockAuthenticate } from '../../../../test/app';
+import { ItemMembershipRaw } from '../../../drizzle/types';
 import { MemberCannotAccess } from '../../../utils/errors';
 import { expectDeleteMembershipFeedback } from '../../item/plugins/action/test/utils';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
 import { saveMember } from '../../member/test/fixtures/members';
 import { TestWsClient } from '../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../websockets/test/ws-app';
-import { ItemMembership } from '../entities/ItemMembership';
 import { ItemMembershipEvent, MembershipEvent, itemMembershipsTopic } from '../ws/events';
 
 const testUtils = new ItemTestUtils();
@@ -103,7 +103,7 @@ describe('Item websocket hooks', () => {
       await waitForExpect(() => {
         const [membershipCreate] = membershipUpdates;
         expect(membershipCreate).toMatchObject(
-          ItemMembershipEvent('create', parseStringToDate(membership) as ItemMembership),
+          ItemMembershipEvent('create', parseStringToDate(membership) as ItemMembershipRaw),
         );
       });
     });
@@ -138,7 +138,7 @@ describe('Item websocket hooks', () => {
       await waitForExpect(() => {
         const [membershipUpdate] = membershipUpdates;
         expect(membershipUpdate).toMatchObject(
-          ItemMembershipEvent('update', parseStringToDate(result) as ItemMembership),
+          ItemMembershipEvent('update', parseStringToDate(result) as ItemMembershipRaw),
         );
       });
     });

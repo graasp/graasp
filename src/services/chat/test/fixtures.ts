@@ -1,22 +1,19 @@
-import { AppDataSource } from '../../../plugins/datasource';
-import { Item } from '../../item/entities/Item';
-import { Member } from '../../member/entities/member';
-import { ChatMessage } from '../chatMessage';
-import { ChatMention } from '../plugins/mentions/chatMention';
+import { ChatMentionRaw, ChatMessageRaw, Item } from '../../../drizzle/types';
+import { MinimalMember } from '../../../types';
 
 export const saveChatMessages = async ({
   creator,
   item,
   mentionMember,
 }: {
-  creator: Member;
+  creator: MinimalMember;
   item: Item;
-  mentionMember?: Member;
+  mentionMember?: MinimalMember;
 }) => {
   const chatMentionRepo = AppDataSource.getRepository(ChatMention);
   const rawChatMessageRepository = AppDataSource.getRepository(ChatMessage);
-  const chatMessages: ChatMessage[] = [];
-  const chatMentions: ChatMention[] = [];
+  const chatMessages: ChatMessageRaw[] = [];
+  const chatMentions: ChatMentionRaw[] = [];
   // mock the mention format of react-mention used in the chat-box
   const mentionMessage = mentionMember ? `<!@${mentionMember.id}>[${mentionMember.name}]` : null;
 

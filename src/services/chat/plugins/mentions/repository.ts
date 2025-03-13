@@ -1,72 +1,51 @@
-import { EntityManager, In } from 'typeorm';
+import { eq, inArray } from 'drizzle-orm/sql';
+import { singleton } from 'tsyringe';
 
 import { MentionStatus } from '@graasp/sdk';
 
-import { AbstractRepository } from '../../../../repositories/AbstractRepository';
-import { Account } from '../../../account/entities/account';
-import { messageMentionSchema } from '../../../member/plugins/export-data/schemas/schemas';
-import { schemaToSelectMapper } from '../../../member/plugins/export-data/utils/selection.utils';
-import { ChatMessage } from '../../chatMessage';
+import { DBConnection } from '../../../../drizzle/db';
+import { chatMentionsTable } from '../../../../drizzle/schema';
+import {
+  ChatMentionRaw,
+  ChatMentionWithMessageAndCreator,
+  ChatMessageRaw,
+} from '../../../../drizzle/types';
 import { ChatMentionNotFound, NoChatMentionForMember } from '../../errors';
-import { ChatMention } from './chatMention';
 
-export class ChatMentionRepository extends AbstractRepository<ChatMention> {
-  constructor(manager?: EntityManager) {
-    super(ChatMention, manager);
-  }
-
+@singleton()
+export class ChatMentionRepository {
   /**
    * Retrieves all the mentions for the given accountId
    * @param accountId Id of the account to retrieve
    */
-  async getForAccount(accountId: string): Promise<ChatMention[]> {
+  async getForAccount(
+    db: DBConnection,
+    accountId: string,
+  ): Promise<ChatMentionWithMessageAndCreator[]> {
     if (!accountId) {
       throw new NoChatMentionForMember({ accountId });
     }
 
-    return this.repository.find({
-      where: { account: { id: accountId } },
-      relations: {
-        message: { item: true, creator: true },
+    const res = await db.query.chatMentionsTable.findMany({
+      with: {
+        message: true,
         account: true,
       },
     });
-  }
-
-  /**
-   * Return all the chat mentions for the given account.
-   * @param accountId ID of the account to retrieve the data.
-   * @returns an array of the chat mentions.
-   */
-  async getForMemberExport(accountId: string): Promise<ChatMention[]> {
-    if (!accountId) {
-      throw new NoChatMentionForMember({ accountId });
-    }
-
-    return this.repository.find({
-      select: schemaToSelectMapper(messageMentionSchema),
-      where: { account: { id: accountId } },
-      order: { createdAt: 'DESC' },
-      relations: {
-        message: {
-          creator: true,
-        },
-      },
-    });
+    return res;
   }
 
   /**
    * Retrieves a mention given the mention id
    * @param mentionId Id of the mention to retrieve
    */
-  async get(mentionId: string): Promise<ChatMention> {
+  async get(db: DBConnection, mentionId: string): Promise<ChatMentionRaw> {
     if (!mentionId) {
       throw new ChatMentionNotFound(mentionId);
     }
 
-    const mention = await this.repository.findOne({
-      where: { id: mentionId },
-      relations: { account: true },
+    const mention = await db.query.chatMentionsTable.findFirst({
+      where: eq(chatMentionsTable.id, mentionId),
     });
 
     if (!mention) {
@@ -76,17 +55,15 @@ export class ChatMentionRepository extends AbstractRepository<ChatMention> {
     return mention;
   }
 
+  // FIXME: Not used ??
   /**
    * Return chat mentions by id
    * @param ids ids of the chat mentions
    */
-  async getMany(ids: ChatMessage['id'][]): Promise<ChatMention[]> {
-    const items = await this.repository.find({
-      where: { id: In(ids) },
-      relations: { account: true },
+  async getMany(db: DBConnection, ids: ChatMessageRaw['id'][]): Promise<ChatMentionRaw[]> {
+    return await db.query.chatMentionsTable.findMany({
+      where: inArray(chatMentionsTable.id, ids),
     });
-
-    return items;
   }
 
   /**
@@ -96,16 +73,16 @@ export class ChatMentionRepository extends AbstractRepository<ChatMention> {
    * @param item
    */
   async postMany(
-    mentionedAccountIds: (typeof Account.prototype.id)[],
-    messageId: typeof ChatMessage.prototype.id,
-  ): Promise<ChatMention[]> {
+    db: DBConnection,
+    mentionedAccountIds: string[],
+    messageId: string,
+  ): Promise<ChatMentionRaw[]> {
     const entries = mentionedAccountIds.map((accountId) => ({
-      account: { id: accountId },
-      message: { id: messageId },
+      accountId: accountId,
+      messageId: messageId,
       status: MentionStatus.Unread,
     }));
-    const result = await this.repository.insert(entries);
-    return this.getMany(result.identifiers.map(({ id }) => id));
+    return await db.insert(chatMentionsTable).values(entries).returning();
   }
 
   /**
@@ -113,31 +90,32 @@ export class ChatMentionRepository extends AbstractRepository<ChatMention> {
    * @param mentionId Mention id to be updated
    * @param status new status to be set
    */
-  async patch(mentionId: string, status: MentionStatus): Promise<ChatMention> {
-    await this.repository.update(mentionId, { status });
-    return this.get(mentionId);
+  async patch(db: DBConnection, mentionId: string, status: MentionStatus): Promise<ChatMentionRaw> {
+    const res = await db
+      .update(chatMentionsTable)
+      .set({ status })
+      .where(eq(chatMentionsTable.id, mentionId))
+      .returning();
+    return res[0];
   }
 
   /**
    * Remove a mention
    * @param mentionId Id of chat
    */
-  async deleteOne(mentionId: ChatMention['id']): Promise<ChatMention> {
-    const mention = await this.get(mentionId);
-    await this.repository.delete(mentionId);
-    return mention;
+  async deleteOne(db: DBConnection, mentionId: string): Promise<ChatMentionRaw> {
+    const res = await db
+      .delete(chatMentionsTable)
+      .where(eq(chatMentionsTable.id, mentionId))
+      .returning();
+    return res[0];
   }
 
   /**
    * Remove all mentions for the given accountId
    * @param accountId Id of the account
    */
-  async deleteAll(accountId: string): Promise<void> {
-    await this.repository
-      .createQueryBuilder('mention')
-      .leftJoinAndSelect('mention.account', 'account')
-      .delete()
-      .where('account.id = :accountId', { accountId })
-      .execute();
+  async deleteAll(db: DBConnection, accountId: string): Promise<void> {
+    await db.delete(chatMentionsTable).where(eq(chatMentionsTable.accountId, accountId));
   }
 }

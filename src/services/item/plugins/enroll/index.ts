@@ -2,17 +2,15 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import fp from 'fastify-plugin';
 
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
-import { isAuthenticated } from '../../../auth/plugins/passport';
-import { matchOne } from '../../../authorization';
-import { assertIsMember } from '../../../member/entities/member';
+import { isAuthenticated, matchOne } from '../../../auth/plugins/passport';
+import { assertIsMember } from '../../../authentication';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { enroll } from './schema';
 import { EnrollService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { db } = fastify;
   const enrollService = resolveDependency(EnrollService);
 
   fastify.post(
@@ -26,10 +24,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       assertIsMember(member);
       const { itemId } = params;
 
-      return await db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-
-        return await enrollService.enroll(member, repositories, itemId);
+      await db.transaction(async (tx) => {
+        await enrollService.enroll(tx, member, itemId);
       });
     },
   );

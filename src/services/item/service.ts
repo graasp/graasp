@@ -1,6 +1,5 @@
 import { Readable } from 'stream';
-import { singleton } from 'tsyringe';
-import { DeepPartial } from 'typeorm';
+import { delay, inject, injectable } from 'tsyringe';
 
 import {
   ItemType,
@@ -14,14 +13,24 @@ import {
   Pagination,
   PermissionLevel,
   PermissionLevelCompare,
-  ResultOf,
   UUID,
   buildPathFromIds,
   getIdsFromPath,
   getParentFromPath,
 } from '@graasp/sdk';
 
+import { DBConnection } from '../../drizzle/db';
+import {
+  Item,
+  ItemGeolocationRaw,
+  ItemMembershipRaw,
+  ItemRaw,
+  ItemTypeUnion,
+  ItemWithCreator,
+  MinimalItemForInsert,
+} from '../../drizzle/types';
 import { BaseLogger } from '../../logger';
+import { AuthenticatedUser, MaybeUser, MinimalMember } from '../../types';
 import {
   CannotReorderRootItem,
   InvalidMembership,
@@ -32,41 +41,46 @@ import {
   UnauthorizedMember,
 } from '../../utils/errors';
 import HookManager from '../../utils/hook';
-import { Repositories } from '../../utils/repositories';
-import { Account } from '../account/entities/account';
+import { AuthorizationService } from '../authorization';
 import {
   filterOutItems,
   filterOutPackedDescendants,
   filterOutPackedItems,
-  validatePermission,
-  validatePermissionMany,
-} from '../authorization';
-import { ItemMembership } from '../itemMembership/entities/ItemMembership';
-import { Actor, Member } from '../member/entities/member';
+} from '../authorization.utils';
+import { ItemMembershipRepository } from '../itemMembership/repository';
 import { ThumbnailService } from '../thumbnail/service';
-import { mapById } from '../utils';
-import { ItemWrapper, PackedItem } from './ItemWrapper';
-import { IS_COPY_REGEX, MAX_COPY_SUFFIX_LENGTH } from './constants';
-import { DEFAULT_ORDER, FolderItem, Item, isItemType } from './entities/Item';
-import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
-import { ItemGeolocationRepository } from './plugins/geolocation/repository';
-import { ItemVisibility } from './plugins/itemVisibility/ItemVisibility';
+import { ItemWrapper, ItemWrapperService, PackedItem } from './ItemWrapper';
+import { BasicItemService } from './basic.service';
+import { DEFAULT_ORDER, IS_COPY_REGEX, MAX_COPY_SUFFIX_LENGTH } from './constants';
+import { FolderItem, isItemType } from './discrimination';
+import { ItemGeolocationRepository } from './plugins/geolocation/geolocation.repository';
+import { ItemVisibilityRepository } from './plugins/itemVisibility/repository';
+import { ItemPublishedRepository } from './plugins/publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from './plugins/publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from './plugins/thumbnail/service';
+import { ItemRepository } from './repository';
 import { ItemChildrenParams, ItemSearchParams } from './types';
 
-@singleton()
+@injectable()
 export class ItemService {
   private readonly log: BaseLogger;
   private readonly thumbnailService: ThumbnailService;
   private readonly meilisearchWrapper: MeiliSearchWrapper;
   protected readonly itemThumbnailService: ItemThumbnailService;
+  private readonly itemMembershipRepository: ItemMembershipRepository;
+  private readonly itemGeolocationRepository: ItemGeolocationRepository;
+  private readonly itemPublishedRepository: ItemPublishedRepository;
+  protected readonly itemRepository: ItemRepository;
+  protected readonly authorizationService: AuthorizationService;
+  private readonly itemWrapperService: ItemWrapperService;
+  private readonly itemVisibilityRepository: ItemVisibilityRepository;
+  public readonly basicItemService: BasicItemService;
 
   hooks = new HookManager<{
     create: { pre: { item: Partial<Item> }; post: { item: Item } };
     update: { pre: { item: Item }; post: { item: Item } };
     delete: { pre: { item: Item }; post: { item: Item } };
-    copy: { pre: { original: Item }; post: { original: Item; copy: Item } };
+    copy: { pre: { original: Item }; post: { original: Item; copy: MinimalItemForInsert } };
     move: {
       pre: {
         /** the item to be moved itself */
@@ -87,13 +101,30 @@ export class ItemService {
 
   constructor(
     thumbnailService: ThumbnailService,
+    @inject(delay(() => ItemThumbnailService))
     itemThumbnailService: ItemThumbnailService,
+    itemMembershipRepository: ItemMembershipRepository,
     meilisearchWrapper: MeiliSearchWrapper,
+    itemRepository: ItemRepository,
+    itemPublishedRepository: ItemPublishedRepository,
+    itemGeolocationRepository: ItemGeolocationRepository,
+    authorizationService: AuthorizationService,
+    itemWrapperService: ItemWrapperService,
+    itemVisibilityRepository: ItemVisibilityRepository,
+    basicItemService: BasicItemService,
     log: BaseLogger,
   ) {
     this.thumbnailService = thumbnailService;
     this.itemThumbnailService = itemThumbnailService;
+    this.itemMembershipRepository = itemMembershipRepository;
     this.meilisearchWrapper = meilisearchWrapper;
+    this.itemPublishedRepository = itemPublishedRepository;
+    this.itemGeolocationRepository = itemGeolocationRepository;
+    this.itemRepository = itemRepository;
+    this.authorizationService = authorizationService;
+    this.itemWrapperService = itemWrapperService;
+    this.itemVisibilityRepository = itemVisibilityRepository;
+    this.basicItemService = basicItemService;
     this.log = log;
   }
 
@@ -101,12 +132,12 @@ export class ItemService {
    * Post a single item
    */
   async post(
-    member: Member,
-    repositories: Repositories,
+    db: DBConnection,
+    member: MinimalMember,
     args: {
-      item: Partial<Item> & Pick<Item, 'name' | 'type'>;
+      item: Partial<ItemRaw> & Pick<ItemRaw, 'name' | 'type'>;
       parentId?: string;
-      geolocation?: Pick<ItemGeolocation, 'lat' | 'lng'>;
+      geolocation?: Pick<ItemGeolocationRaw, 'lat' | 'lng'>;
       thumbnail?: Readable;
       previousItemId?: Item['id'];
     },
@@ -115,17 +146,11 @@ export class ItemService {
 
     // item
     // take the first and (must be) the only item
-    const createdItems = await this.createItems(
-      member,
-      repositories,
-      [item],
-      parentId,
-      previousItemId,
-    );
+    const createdItems = await this.createItems(db, member, [item], parentId, previousItemId);
 
     const [updatedItem] = await this.saveGeolocationsAndThumbnails(
+      db,
       member,
-      repositories,
       [{ item, geolocation, thumbnail }],
       createdItems,
     );
@@ -137,12 +162,12 @@ export class ItemService {
    * Post multiple items, with optional geolocations and thumbnails.
    */
   async postMany(
-    member: Member,
-    repositories: Repositories,
+    db: DBConnection,
+    member: MinimalMember,
     args: {
       items: {
         item: Partial<Item> & Pick<Item, 'name' | 'type'>;
-        geolocation?: Pick<ItemGeolocation, 'lat' | 'lng'>;
+        geolocation?: Pick<ItemGeolocationRaw, 'lat' | 'lng'>;
         thumbnail?: Readable;
       }[];
       parentId: string;
@@ -152,32 +177,37 @@ export class ItemService {
 
     // create items
     const itemsToInsert = inputItems.map((i) => i.item);
-    const createdItems = await this.createItems(member, repositories, itemsToInsert, parentId);
+    const createdItems = await this.createItems(db, member, itemsToInsert, parentId);
 
-    return this.saveGeolocationsAndThumbnails(member, repositories, inputItems, createdItems);
+    return this.saveGeolocationsAndThumbnails(db, member, inputItems, createdItems);
   }
 
   private async saveGeolocationsAndThumbnails(
-    member: Member,
-    repositories: Repositories,
+    db: DBConnection,
+    member: MinimalMember,
     inputItems: {
       item: Partial<Item> & Pick<Item, 'name' | 'type'>;
-      geolocation?: Pick<ItemGeolocation, 'lat' | 'lng'>;
       thumbnail?: Readable;
+      geolocation?: Pick<ItemGeolocationRaw, 'lat' | 'lng'>;
     }[],
     createdItems: Item[],
   ) {
-    const { itemGeolocationRepository } = repositories;
-
-    // get the ordered items from the db
-    // to get them in the same order as the input item array
-    const insertedItems = await repositories.itemRepository.getMany(
+    const insertedItems = await this.itemRepository.getMany(
+      db,
       createdItems.map((i) => i.id),
-      { ordered: true },
     );
 
-    // construct geolocation and thumbnail maps
+    // order items from the db
+    // to get them in the same order as the input item array
+    // TODO: CHECK!!
     const orderedItems = Object.values(insertedItems.data);
+    orderedItems.sort((a, b) => {
+      const aIdx = inputItems.findIndex((i) => i.item.id === a.id);
+      const bIdx = inputItems.findIndex((i) => i.item.id === b.id);
+      return aIdx > bIdx ? 1 : -1;
+    });
+
+    // construct geolocation and thumbnail maps
     const geolocations = {};
     const thumbnails = {};
     for (let i = 0; i < inputItems.length; i++) {
@@ -193,10 +223,10 @@ export class ItemService {
     }
 
     // register geolocations
-    await this.saveGeolocations(itemGeolocationRepository, geolocations);
+    await this.saveGeolocations(db, this.itemGeolocationRepository, geolocations);
 
     // upload thumbnails
-    return this.uploadThumbnails(member, repositories, createdItems, thumbnails);
+    return this.uploadThumbnails(db, member, createdItems, thumbnails);
   }
 
   /**
@@ -206,8 +236,8 @@ export class ItemService {
    * @returns An unordered list of inserted items
    */
   private async createItems(
-    member: Member,
-    repositories: Repositories,
+    db: DBConnection,
+    member: MinimalMember,
     items: (Partial<Item> & Pick<Item, 'name' | 'type'>)[],
     parentId?: string,
     previousItemId?: string,
@@ -221,19 +251,13 @@ export class ItemService {
 
     let createdItems: Item[];
     if (parentId) {
-      createdItems = await this.createItemsWithParent(
-        member,
-        repositories,
-        items,
-        parentId,
-        previousItemId,
-      );
+      createdItems = await this.createItemsWithParent(db, member, items, parentId, previousItemId);
     } else {
-      createdItems = await this.createItemsAndMemberships(member, repositories, items, null);
+      createdItems = await this.createItemsAndMemberships(db, member, items, null);
     }
 
     // index the items for search
-    this.indexItemsForSearch(createdItems, repositories);
+    this.indexItemsForSearch(db, createdItems);
 
     return createdItems;
   }
@@ -244,17 +268,16 @@ export class ItemService {
    * @returns An unordered list of inserted items
    */
   private async createItemsWithParent(
-    member: Member,
-    repositories: Repositories,
-    items: (Partial<Item> & Pick<Item, 'name' | 'type'>)[],
+    db: DBConnection,
+    member: MinimalMember,
+    items: (Partial<ItemRaw> & Pick<ItemRaw, 'name' | 'type'>)[],
     parentId: string,
     previousItemId?: string,
   ) {
-    const { itemRepository, itemMembershipRepository } = repositories;
-
     this.log.debug(`verify parent ${parentId} exists and the member has permission over it`);
-    const parentItem = await this.get(member, repositories, parentId, PermissionLevel.Write);
-    const inheritedMembership = await itemMembershipRepository.getInherited(
+    const parentItem = await this.basicItemService.get(db, member, parentId, PermissionLevel.Write);
+    const inheritedMembership = await this.itemMembershipRepository.getInherited(
+      db,
       parentItem.path,
       member.id,
       true,
@@ -265,10 +288,10 @@ export class ItemService {
       throw new ItemNotFolder(parentItem);
     }
 
-    itemRepository.checkHierarchyDepth(parentItem);
+    this.itemRepository.checkHierarchyDepth(parentItem);
 
     // check if there's too many children under the same parent
-    const descendants = await itemRepository.getChildren(member, parentItem);
+    const descendants = await this.itemRepository.getChildren(db, member, parentItem);
     if (descendants.length + items.length > MAX_NUMBER_OF_CHILDREN) {
       throw new TooManyChildren();
     }
@@ -277,9 +300,9 @@ export class ItemService {
     // else define order from given previous item id
     let order;
     if (!previousItemId) {
-      order = await repositories.itemRepository.getFirstOrderValue(parentItem.path);
+      order = await this.itemRepository.getFirstOrderValue(db, parentItem.path);
     } else {
-      order = await repositories.itemRepository.getNextOrderCount(parentItem.path, previousItemId);
+      order = await this.itemRepository.getNextOrderCount(db, parentItem.path, previousItemId);
     }
     for (let i = 0; i < items.length; i++) {
       items[i] = { ...items[i], order };
@@ -287,8 +310,8 @@ export class ItemService {
     }
 
     const createdItems = await this.createItemsAndMemberships(
+      db,
       member,
-      repositories,
       items,
       inheritedMembership,
       parentItem,
@@ -296,7 +319,7 @@ export class ItemService {
 
     // rescale the item ordering, if there's more than one item
     if (items.length > 1) {
-      repositories.itemRepository.rescaleOrder(member, parentItem);
+      this.itemRepository.rescaleOrder(db, member, parentItem);
     }
 
     return createdItems;
@@ -307,16 +330,14 @@ export class ItemService {
    * @returns An unordered list of inserted items
    */
   private async createItemsAndMemberships(
-    member: Member,
-    repositories: Repositories,
-    items: (Partial<Item> & Pick<Item, 'name' | 'type'>)[],
-    inheritedMembership: ItemMembership | null,
+    db: DBConnection,
+    member: MinimalMember,
+    items: (Partial<ItemRaw> & Pick<ItemRaw, 'name' | 'type'>)[],
+    inheritedMembership: ItemMembershipRaw | null,
     parentItem?: Item,
   ) {
-    const { itemRepository, itemMembershipRepository } = repositories;
-
     this.log.debug(`create items ${items.map((item) => item.name)}`);
-    const createdItems = await itemRepository.addMany(items, member, parentItem);
+    const createdItems = await this.itemRepository.addMany(db, items, member, parentItem);
     this.log.debug(`items ${items.map((item) => item.name)} are created: ${createdItems}`);
 
     // create membership if inherited is less than admin
@@ -333,7 +354,7 @@ export class ItemService {
           permission: PermissionLevel.Admin,
         };
       });
-      await itemMembershipRepository.addMany(memberships);
+      await this.itemMembershipRepository.addMany(db, memberships);
     }
 
     return createdItems;
@@ -344,14 +365,15 @@ export class ItemService {
    * @param geolocations Key-value map with the item path ID as key
    */
   private async saveGeolocations(
+    db: DBConnection,
     itemGeolocationRepository: ItemGeolocationRepository,
-    geolocations: { [key: string]: Pick<ItemGeolocation, 'lat' | 'lng'> },
+    geolocations: { [key: string]: Pick<ItemGeolocationRaw, 'lat' | 'lng'> },
   ) {
     return Promise.all(
       Object.keys(geolocations).map(async (itemPath) => {
         const geolocation = geolocations[itemPath];
         if (geolocation) {
-          return itemGeolocationRepository.put(itemPath, geolocations[itemPath]);
+          return itemGeolocationRepository.put(db, itemPath, geolocations[itemPath]);
         }
       }),
     );
@@ -363,8 +385,8 @@ export class ItemService {
    * @returns Items with updated `hasThumbnail` property
    */
   private async uploadThumbnails(
-    member: Member,
-    repositories: Repositories,
+    db: DBConnection,
+    member: MinimalMember,
     createdItems: Item[],
     thumbnails: { [key: string]: Readable },
   ): Promise<Item[]> {
@@ -373,7 +395,7 @@ export class ItemService {
         const thumbnail = thumbnails[item.id];
         if (thumbnail) {
           await this.thumbnailService.upload(member, item.id, thumbnail);
-          return this.patch(member, repositories, item.id, {
+          return this.patch(db, member, item.id, {
             settings: { hasThumbnail: true },
           });
         } else {
@@ -386,83 +408,41 @@ export class ItemService {
   /**
    * Index items for meilisearch.
    */
-  private async indexItemsForSearch(items: Item[], repositories: Repositories) {
+  private async indexItemsForSearch(db: DBConnection, items: Item[]) {
     try {
       // Check if the item is published (or has published parent)
-      const { data: publishedInfo } = await repositories.itemPublishedRepository.getForItems(items);
+      const publishedInfo = await this.itemPublishedRepository.getForItems(
+        db,
+        items.map((i) => i.path),
+      );
 
       if (publishedInfo.length) {
         return;
       }
 
       // update index
-      await this.meilisearchWrapper.index(Object.values(publishedInfo), repositories);
+      await this.meilisearchWrapper.index(db, Object.values(publishedInfo));
     } catch (e) {
       this.log.error('Error during indexation, Meilisearch may be down');
     }
   }
 
   /**
-   * internally get for an item
-   * @param actor
-   * @param repositories
-   * @param id
-   * @param permission
-   * @returns
-   */
-  private async _get(
-    actor: Actor,
-    repositories: Repositories,
-    id: string,
-    permission: PermissionLevel = PermissionLevel.Read,
-  ) {
-    const item = await repositories.itemRepository.getOneOrThrow(id);
-
-    const { itemMembership, visibilities } = await validatePermission(
-      repositories,
-      permission,
-      actor,
-      item,
-    );
-    return { item, itemMembership, visibilities };
-  }
-
-  /**
-   * get for an item
-   * @param actor
-   * @param repositories
-   * @param id
-   * @param permission
-   * @returns
-   */
-  async get(
-    actor: Actor,
-    repositories: Repositories,
-    id: string,
-    permission: PermissionLevel = PermissionLevel.Read,
-  ) {
-    const { item } = await this._get(actor, repositories, id, permission);
-
-    return item;
-  }
-
-  /**
    * get an item packed with complementary info
    * @param actor
-   * @param repositories
    * @param id
    * @param permission
    * @returns
    */
   async getPacked(
-    actor: Actor,
-    repositories: Repositories,
+    db: DBConnection,
+    actor: MaybeUser,
     id: string,
     permission: PermissionLevel = PermissionLevel.Read,
   ) {
-    const { item, itemMembership, visibilities } = await this._get(
+    const { item, itemMembership, visibilities } = await this.basicItemService._get(
+      db,
       actor,
-      repositories,
       id,
       permission,
     );
@@ -472,231 +452,205 @@ export class ItemService {
   }
 
   /**
-   * internally get generic items
-   * @param actor
-   * @param repositories
-   * @param ids
-   * @returns result of items given ids
-   */
-  private async _getMany(
-    actor: Actor,
-    repositories: Repositories,
-    ids: string[],
-  ): Promise<{
-    items: ResultOf<Item>;
-    itemMemberships: ResultOf<ItemMembership | null>;
-    visibilities: ResultOf<ItemVisibility[] | null>;
-  }> {
-    const { itemRepository } = repositories;
-    const result = await itemRepository.getMany(ids);
-    // check memberships
-    // remove items if they do not have permissions
-    const { itemMemberships, visibilities } = await validatePermissionMany(
-      repositories,
-      PermissionLevel.Read,
-      actor,
-      Object.values(result.data),
-    );
-
-    for (const [id, _item] of Object.entries(result.data)) {
-      // Do not delete if value exist but is null, because no memberships but can be public
-      if (itemMemberships?.data[id] === undefined) {
-        delete result.data[id];
-      }
-    }
-
-    return { items: result, itemMemberships, visibilities };
-  }
-
-  /**
-   * get generic items
-   * @param actor
-   * @param repositories
-   * @param ids
-   * @returns
-   */
-  async getMany(actor: Actor, repositories: Repositories, ids: string[]) {
-    const { items, itemMemberships } = await this._getMany(actor, repositories, ids);
-
-    return { data: items.data, errors: items.errors.concat(itemMemberships?.errors ?? []) };
-  }
-
-  /**
    * get item packed with complementary items
    * @param actor
-   * @param repositories
    * @param ids
    * @returns
    */
-  async getManyPacked(actor: Actor, repositories: Repositories, ids: string[]) {
-    const { items, itemMemberships, visibilities } = await this._getMany(actor, repositories, ids);
+  async getManyPacked(db: DBConnection, actor: MaybeUser, ids: string[]) {
+    const { items, itemMemberships, visibilities } = await this.basicItemService._getMany(
+      db,
+      actor,
+      ids,
+    );
 
     const thumbnails = await this.itemThumbnailService.getUrlsByItems(Object.values(items.data));
 
-    return ItemWrapper.mergeResult(items, itemMemberships, visibilities, thumbnails);
+    return this.itemWrapperService.mergeResult(items, itemMemberships, visibilities, thumbnails);
   }
 
   async getAccessible(
-    member: Member,
-    repositories: Repositories,
+    db: DBConnection,
+    member: MinimalMember,
     params: ItemSearchParams,
     pagination: Pagination,
   ): Promise<Paginated<PackedItem>> {
-    const { data: memberships, totalCount } =
-      await repositories.itemMembershipRepository.getAccessibleItems(member, params, pagination);
-
-    const items = memberships.map(({ item }) => item);
-    const resultOfMembership = mapById<ItemMembership[]>({
-      keys: items.map((i) => i.id),
-      findElement: (id) => {
-        const im = memberships.find(({ item: thisItem }) => thisItem.id === id);
-        return im ? [im] : undefined;
-      },
-    });
-
-    const packedItems = await ItemWrapper.createPackedItems(
+    const { data: items, totalCount } = await this.itemRepository.getAccessibleItems(
+      db,
       member,
-      repositories,
-      this.itemThumbnailService,
-      memberships.map(({ item }) => item),
-      resultOfMembership,
+      params,
+      pagination,
     );
+
+    const packedItems = await this.itemWrapperService.createPackedItems(db, items);
+    console.log(packedItems);
     return { data: packedItems, totalCount, pagination };
   }
 
-  async getOwn(member: Member, { itemRepository }: Repositories) {
-    return itemRepository.getOwn(member.id);
-  }
-
-  async getShared(member: Member, repositories: Repositories, permission?: PermissionLevel) {
-    const { itemMembershipRepository } = repositories;
-    const items = await itemMembershipRepository.getSharedItems(member.id, permission);
-    // TODO optimize?
-    return filterOutItems(member, repositories, items);
-  }
-
   private async _getChildren(
-    actor: Actor,
-    repositories: Repositories,
+    db: DBConnection,
+    actor: MaybeUser,
     itemId: string,
     params?: ItemChildrenParams,
   ) {
-    const { itemRepository } = repositories;
-    const item = await this.get(actor, repositories, itemId);
+    const item = await this.basicItemService.get(db, actor, itemId);
 
-    return itemRepository.getChildren(actor, item, params);
+    return this.itemRepository.getChildren(db, actor, item, params);
   }
 
   async getChildren(
-    actor: Actor,
-    repositories: Repositories,
+    db: DBConnection,
+    actor: MaybeUser,
     itemId: string,
     params?: ItemChildrenParams,
   ) {
-    const children = await this._getChildren(actor, repositories, itemId, params);
+    const children = await this._getChildren(db, actor, itemId, params);
     // TODO optimize?
-    return filterOutItems(actor, repositories, children);
+    return filterOutItems(
+      db,
+      actor,
+      {
+        itemMembershipRepository: this.itemMembershipRepository,
+        itemVisibilityRepository: this.itemVisibilityRepository,
+      },
+      children,
+    );
   }
 
   async getPackedChildren(
-    actor: Actor,
-    repositories: Repositories,
+    db: DBConnection,
+    actor: MaybeUser,
     itemId: string,
     params?: ItemChildrenParams,
   ) {
-    const children = await this._getChildren(actor, repositories, itemId, params);
+    const children = await this._getChildren(db, actor, itemId, params);
     const thumbnails = await this.itemThumbnailService.getUrlsByItems(children);
 
     // TODO optimize?
-    return filterOutPackedItems(actor, repositories, children, thumbnails);
+    return filterOutPackedItems(
+      db,
+      actor,
+      {
+        itemMembershipRepository: this.itemMembershipRepository,
+        itemVisibilityRepository: this.itemVisibilityRepository,
+      },
+      children,
+      thumbnails,
+    );
   }
 
   private async getDescendants(
-    actor: Actor,
-    repositories: Repositories,
+    db: DBConnection,
+    actor: MaybeUser,
     itemId: UUID,
-    options?: { types?: string[] },
+    options?: { types?: ItemTypeUnion[] },
   ) {
-    const { itemRepository } = repositories;
-    const item = await this.get(actor, repositories, itemId);
+    const item = await this.basicItemService.get(db, actor, itemId);
 
     if (!isItemType(item, ItemType.FOLDER)) {
-      return { item, descendants: [] };
+      return { item, descendants: <ItemWithCreator[]>[] };
     }
 
-    return { item, descendants: await itemRepository.getDescendants(item, options) };
+    return {
+      item,
+      descendants: await this.itemRepository.getDescendants(db, item, options),
+    };
   }
 
-  async getFilteredDescendants(account: Account, repositories: Repositories, itemId: UUID) {
-    const { descendants } = await this.getDescendants(account, repositories, itemId);
+  async getFilteredDescendants(db: DBConnection, account: MaybeUser, itemId: UUID) {
+    const { descendants } = await this.getDescendants(db, account, itemId);
     if (!descendants.length) {
       return [];
     }
     // TODO optimize?
-    return filterOutItems(account, repositories, descendants);
+    return filterOutItems(
+      db,
+      account,
+      {
+        itemMembershipRepository: this.itemMembershipRepository,
+        itemVisibilityRepository: this.itemVisibilityRepository,
+      },
+      descendants,
+    );
   }
 
   async getPackedDescendants(
-    actor: Actor,
-    repositories: Repositories,
+    db: DBConnection,
+    actor: MaybeUser,
     itemId: UUID,
-    options?: { showHidden?: boolean; types?: string[] },
+    options?: { showHidden?: boolean; types?: ItemTypeUnion[] },
   ) {
-    const { descendants, item } = await this.getDescendants(actor, repositories, itemId, options);
+    const { descendants, item } = await this.getDescendants(db, actor, itemId, options);
     if (!descendants.length) {
       return [];
     }
     const thumbnails = await this.itemThumbnailService.getUrlsByItems(descendants);
-    return filterOutPackedDescendants(actor, repositories, item, descendants, thumbnails, options);
+    return filterOutPackedDescendants(
+      db,
+      actor,
+      {
+        itemMembershipRepository: this.itemMembershipRepository,
+        itemVisibilityRepository: this.itemVisibilityRepository,
+      },
+      item,
+      descendants,
+      thumbnails,
+      options,
+    );
   }
 
-  async getParents(actor: Actor, repositories: Repositories, itemId: UUID) {
-    const { itemRepository } = repositories;
-    const item = await this.get(actor, repositories, itemId);
-    const parents = await itemRepository.getAncestors(item);
+  async getParents(db: DBConnection, actor: MaybeUser, itemId: UUID) {
+    const item = await this.basicItemService.get(db, actor, itemId);
+    const parents = await this.itemRepository.getAncestors(db, item);
 
-    const { itemMemberships, visibilities } = await validatePermissionMany(
-      repositories,
-      PermissionLevel.Read,
-      actor,
-      parents,
-    );
+    const { itemMemberships, visibilities } =
+      await this.authorizationService.validatePermissionMany(
+        db,
+        PermissionLevel.Read,
+        actor,
+        parents,
+      );
     // remove parents actor does not have access
     const parentsIds = Object.keys(itemMemberships.data);
     const items = parents.filter((p) => parentsIds.includes(p.id));
     const thumbnails = await this.itemThumbnailService.getUrlsByItems(items);
-    return ItemWrapper.merge(items, itemMemberships, visibilities, thumbnails);
+    return this.itemWrapperService.merge(items, itemMemberships, visibilities, thumbnails);
   }
 
-  async patch(member: Member, repositories: Repositories, itemId: UUID, body: DeepPartial<Item>) {
-    const { itemRepository } = repositories;
-
+  async patch(db: DBConnection, member: MinimalMember, itemId: UUID, body: Partial<Item>) {
     // check memberships
-    const item = await itemRepository.getOneOrThrow(itemId);
+    const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
-    await validatePermission(repositories, PermissionLevel.Write, member, item);
+    await this.authorizationService.validatePermission(
+      db,
 
-    await this.hooks.runPreHooks('update', member, repositories, { item: item });
+      PermissionLevel.Write,
+      member,
+      item,
+    );
 
-    const updated = await itemRepository.updateOne(item.id, body);
+    await this.hooks.runPreHooks('update', member, db, { item: item });
 
-    await this.hooks.runPostHooks('update', member, repositories, { item: updated });
+    const updated = await this.itemRepository.updateOne(db, item.id, body);
+
+    await this.hooks.runPostHooks('update', member, db, { item: updated });
 
     return updated;
   }
 
   // QUESTION? DELETE BY PATH???
-  async delete(actor: Member, repositories: Repositories, itemId: UUID) {
-    const { itemRepository } = repositories;
+  async delete(db: DBConnection, actor: MinimalMember, itemId: UUID) {
     // check memberships
-    const item = await itemRepository.getOneOrThrow(itemId, { withDeleted: true });
-    await validatePermission(repositories, PermissionLevel.Admin, actor, item);
+    const item = await this.itemRepository.getDeletedById(db, itemId);
+    await this.authorizationService.validatePermission(db, PermissionLevel.Admin, actor, item);
 
     // check how "big the tree is" below the item
     // we do not use checkNumberOfDescendants because we use descendants
     let items = [item];
     if (isItemType(item, ItemType.FOLDER)) {
-      const descendants = await itemRepository.getDescendants(item, { ordered: false });
+      const descendants = await this.itemRepository.getDescendants(db, item, {
+        ordered: false,
+      });
       if (descendants.length > MAX_DESCENDANTS_FOR_DELETE) {
         throw new TooManyDescendants(itemId);
       }
@@ -705,30 +659,32 @@ export class ItemService {
 
     // pre hook
     for (const item of items) {
-      await this.hooks.runPreHooks('delete', actor, repositories, { item });
+      await this.hooks.runPreHooks('delete', actor, db, { item });
     }
 
-    await itemRepository.delete(items.map((i) => i.id));
+    await this.itemRepository.delete(
+      db,
+      items.map((i) => i.id),
+    );
 
     // post hook
     for (const item of items) {
-      await this.hooks.runPostHooks('delete', actor, repositories, { item });
+      await this.hooks.runPostHooks('delete', actor, db, { item });
     }
 
     return item;
   }
 
   // QUESTION? DELETE BY PATH???
-  async deleteMany(actor: Member, repositories: Repositories, itemIds: string[]) {
+  async deleteMany(db: DBConnection, actor: MinimalMember, itemIds: string[]) {
     if (!actor) {
       throw new UnauthorizedMember();
     }
 
-    const { itemRepository } = repositories;
     // check memberships
     // can get soft deleted items
     // QUESTION: move to recycle bin and the endpoint can only delete recycled items
-    const { data: itemsMap } = await itemRepository.getMany(itemIds, {
+    const { data: itemsMap } = await this.itemRepository.getMany(db, itemIds, {
       throwOnError: true,
       withDeleted: true,
     });
@@ -737,13 +693,15 @@ export class ItemService {
     // TODO: optimize
     const allDescendants = await Promise.all(
       allItems.map(async (item) => {
-        await validatePermission(repositories, PermissionLevel.Admin, actor, item);
+        await this.authorizationService.validatePermission(db, PermissionLevel.Admin, actor, item);
         if (!isItemType(item, ItemType.FOLDER)) {
           return [];
         }
         // check how "big the tree is" below the item
         // we do not use checkNumberOfDescendants because we use descendants
-        const descendants = await itemRepository.getDescendants(item, { ordered: false });
+        const descendants = await this.itemRepository.getDescendants(db, item, {
+          ordered: false,
+        });
         if (descendants.length > MAX_DESCENDANTS_FOR_DELETE) {
           throw new TooManyDescendants(item.id);
         }
@@ -755,76 +713,82 @@ export class ItemService {
 
     // pre hook
     for (const item of items) {
-      await this.hooks.runPreHooks('delete', actor, repositories, { item });
+      await this.hooks.runPreHooks('delete', actor, db, { item });
     }
 
-    await itemRepository.delete(items.map((i) => i.id));
+    await this.itemRepository.delete(
+      db,
+      items.map((i) => i.id),
+    );
 
     // post hook
     for (const item of items) {
-      await this.hooks.runPostHooks('delete', actor, repositories, { item });
+      await this.hooks.runPostHooks('delete', actor, db, { item });
     }
 
     return allItems;
   }
 
   /////// -------- MOVE
-  async move(member: Member, repositories: Repositories, itemId: UUID, parentItem?: FolderItem) {
-    const { itemRepository } = repositories;
+  async move(db: DBConnection, member: MinimalMember, itemId: UUID, parentItem?: FolderItem) {
+    const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
-    const item = await itemRepository.getOneOrThrow(itemId);
-
-    await validatePermission(repositories, PermissionLevel.Admin, member, item);
+    await this.authorizationService.validatePermission(db, PermissionLevel.Admin, member, item);
 
     // check how "big the tree is" below the item
-    await itemRepository.checkNumberOfDescendants(item, MAX_DESCENDANTS_FOR_MOVE);
+    await this.itemRepository.checkNumberOfDescendants(db, item, MAX_DESCENDANTS_FOR_MOVE);
 
     if (parentItem) {
       // check how deep (number of levels) the resulting tree will be
-      const levelsToFarthestChild = await itemRepository.getNumberOfLevelsToFarthestChild(item);
-      await itemRepository.checkHierarchyDepth(parentItem, levelsToFarthestChild);
+      const levelsToFarthestChild = await this.itemRepository.getNumberOfLevelsToFarthestChild(
+        db,
+        item,
+      );
+      await this.itemRepository.checkHierarchyDepth(parentItem, levelsToFarthestChild);
     }
 
     // post hook
     // question: invoque on all items?
-    await this.hooks.runPreHooks('move', member, repositories, {
+    await this.hooks.runPreHooks('move', member, db, {
       source: item,
       destinationParent: parentItem,
     });
+    console.log('rhtp9ij34ref');
 
-    const result = await this._move(member, repositories, item, parentItem);
-
-    await this.hooks.runPostHooks('move', member, repositories, {
+    const result = await this._move(db, member, item, parentItem);
+    console.log('eroijenrlg');
+    await this.hooks.runPostHooks('move', member, db, {
       source: item,
       sourceParentId: getParentFromPath(item.path),
-      destination: result,
+      // QUESTION: send notification for root item?
+      destination: result[0],
     });
 
     return { item, moved: result };
   }
 
   // TODO: optimize
-  async moveMany(member: Member, repositories: Repositories, itemIds: string[], toItemId?: string) {
+  async moveMany(db: DBConnection, member: MinimalMember, itemIds: string[], toItemId?: string) {
     let parentItem: FolderItem | undefined = undefined;
     if (toItemId) {
-      parentItem = (await this.get(
+      parentItem = (await this.basicItemService.get(
+        db,
         member,
-        repositories,
         toItemId,
         PermissionLevel.Write,
       )) as FolderItem;
     }
 
-    const results = await Promise.all(
-      itemIds.map((id) => this.move(member, repositories, id, parentItem)),
-    );
-
+    const results = await Promise.all(itemIds.map((id) => this.move(db, member, id, parentItem)));
     // newly moved items needs rescaling since they are added in parallel
     if (parentItem) {
-      await repositories.itemRepository.rescaleOrder(member, parentItem);
+      await this.itemRepository.rescaleOrder(db, member, parentItem);
     }
 
-    return { items: results.map(({ item }) => item), moved: results.map(({ moved }) => moved) };
+    return {
+      items: results.map(({ item }) => item),
+      moved: results.map(({ moved }) => moved),
+    };
   }
 
   /**
@@ -838,53 +802,59 @@ export class ItemService {
    * * `inserts`' `itemPath`s already have the expected paths for the destination;
    * * `deletes`' `itemPath`s have the path changes after `this.itemService.move()`.
    */
-  async _move(actor: Member, repositories: Repositories, item: Item, parentItem?: Item) {
-    const { itemRepository, itemMembershipRepository } = repositories;
+  async _move(db: DBConnection, actor: MinimalMember, item: Item, parentItem?: Item) {
     // identify all the necessary adjustments to memberships
     // TODO: maybe this whole 'magic' should happen in a db procedure?
-    const { inserts, deletes } = await itemMembershipRepository.moveHousekeeping(
+    const { inserts, deletes } = await this.itemMembershipRepository.moveHousekeeping(
+      db,
       item,
       actor,
       parentItem,
     );
+    console.log('w3ioejrnksf');
 
-    const result = await itemRepository.move(item, parentItem);
-
+    const result = await this.itemRepository.move(db, item, parentItem);
+    console.log('foijwnkr');
     // adjust memberships to keep the constraints
     if (inserts.length) {
-      await itemMembershipRepository.addMany(inserts);
+      await this.itemMembershipRepository.addMany(db, inserts);
     }
-    if (deletes.length) {
-      await itemMembershipRepository.deleteManyByItemPathAndAccount(deletes);
-    }
+    console.log('hztrgfdv');
 
+    if (deletes.length) {
+      await this.itemMembershipRepository.deleteManyByItemPathAndAccount(db, deletes);
+    }
+    console.log('293u8weriojk');
     return result;
   }
 
   /////// -------- COPY
-  async copy(member: Member, repositories: Repositories, itemId: UUID, parentItem?: FolderItem) {
-    const { itemRepository, itemMembershipRepository, itemGeolocationRepository } = repositories;
-
-    const item = await this.get(member, repositories, itemId);
+  async copy(db: DBConnection, member: MinimalMember, itemId: UUID, parentItem?: FolderItem) {
+    const item = await this.basicItemService.get(db, member, itemId);
 
     if (parentItem) {
       // check how deep (number of levels) the resulting tree will be
-      const levelsToFarthestChild = await itemRepository.getNumberOfLevelsToFarthestChild(item);
-      await itemRepository.checkHierarchyDepth(parentItem, levelsToFarthestChild);
+      const levelsToFarthestChild = await this.itemRepository.getNumberOfLevelsToFarthestChild(
+        db,
+        item,
+      );
+      await this.itemRepository.checkHierarchyDepth(parentItem, levelsToFarthestChild);
     }
 
     // check how "big the tree is" below the item
-    await itemRepository.checkNumberOfDescendants(item, MAX_DESCENDANTS_FOR_COPY);
+    await this.itemRepository.checkNumberOfDescendants(db, item, MAX_DESCENDANTS_FOR_COPY);
 
     let items = [item];
     if (isItemType(item, ItemType.FOLDER)) {
-      const descendants = await itemRepository.getDescendants(item, { ordered: false });
+      const descendants = await this.itemRepository.getDescendants(db, item, {
+        ordered: false,
+      });
       items = [...descendants, item];
     }
 
     // pre hook
     for (const original of items) {
-      await this.hooks.runPreHooks('copy', member, repositories, { original });
+      await this.hooks.runPreHooks('copy', member, db, { original });
     }
 
     let siblings: string[] = [];
@@ -897,16 +867,26 @@ export class ItemService {
     startWith = startWith.substring(0, MAX_ITEM_NAME_LENGTH - MAX_COPY_SUFFIX_LENGTH);
 
     if (parentItem) {
-      siblings = await itemRepository.getChildrenNames(parentItem, { startWith });
+      siblings = await this.itemRepository.getChildrenNames(db, parentItem, {
+        startWith,
+      });
     } else {
-      siblings = await itemMembershipRepository.getAccessibleItemNames(member, { startWith });
+      siblings = await this.itemMembershipRepository.getAccessibleItemNames(db, member, {
+        startWith,
+      });
     }
 
-    const { copyRoot, treeCopyMap } = await itemRepository.copy(item, member, siblings, parentItem);
+    const { copyRoot, treeCopyMap } = await this.itemRepository.copy(
+      db,
+      item,
+      member,
+      siblings,
+      parentItem,
+    );
 
     // create a membership if needed
-    await itemMembershipRepository
-      .addOne({
+    await this.itemMembershipRepository
+      .addOne(db, {
         itemPath: copyRoot.path,
         accountId: member.id,
         creatorId: member.id,
@@ -922,15 +902,18 @@ export class ItemService {
 
     // post hook
     for (const { original, copy } of treeCopyMap.values()) {
-      await this.hooks.runPostHooks('copy', member, repositories, { original, copy });
+      await this.hooks.runPostHooks('copy', member, db, {
+        original,
+        copy,
+      });
 
       // copy hidden visibility
-      await repositories.itemVisibilityRepository.copyAll(member, original, copy, [
+      await this.itemVisibilityRepository.copyAll(db, member, original, copy.path, [
         ItemVisibilityType.Public,
       ]);
 
       // copy geolocation
-      await itemGeolocationRepository.copy(original, copy);
+      await this.itemGeolocationRepository.copy(db, original, copy);
       // copy thumbnails if original has setting to true
       if (original.settings.hasThumbnail) {
         try {
@@ -947,9 +930,9 @@ export class ItemService {
 
     // index copied root if copied in a published item
     if (parentItem) {
-      const published = await repositories.itemPublishedRepository.getForItem(parentItem);
+      const published = await this.itemPublishedRepository.getForItem(db, parentItem.path);
       if (published) {
-        await this.meilisearchWrapper.indexOne(published, repositories);
+        await this.meilisearchWrapper.indexOne(db, published);
       }
     }
 
@@ -958,42 +941,41 @@ export class ItemService {
 
   // TODO: optimize
   async copyMany(
-    member: Member,
-    repositories: Repositories,
+    db: DBConnection,
+    member: MinimalMember,
     itemIds: string[],
     args: { parentId?: UUID },
   ) {
-    const { itemRepository } = repositories;
-
     let parentItem: FolderItem | undefined;
     if (args.parentId) {
-      parentItem = (await this.get(
+      parentItem = (await this.basicItemService.get(
+        db,
         member,
-        repositories,
         args.parentId,
         PermissionLevel.Write,
       )) as FolderItem;
     }
 
-    const results = await Promise.all(
-      itemIds.map((id) => this.copy(member, repositories, id, parentItem)),
-    );
+    const results = await Promise.all(itemIds.map((id) => this.copy(db, member, id, parentItem)));
 
     // rescale order because copies happen in parallel
     if (parentItem) {
-      await itemRepository.rescaleOrder(member, parentItem);
+      await this.itemRepository.rescaleOrder(db, member, parentItem);
     }
 
-    return { items: results.map(({ item }) => item), copies: results.map(({ copy }) => copy) };
+    return {
+      items: results.map(({ item }) => item),
+      copies: results.map(({ copy }) => copy),
+    };
   }
 
   async reorder(
-    actor: Member,
-    repositories: Repositories,
+    db: DBConnection,
+    actor: MinimalMember,
     itemId: string,
     body: { previousItemId?: string },
   ) {
-    const item = await this.get(actor, repositories, itemId);
+    const item = await this.basicItemService.get(db, actor, itemId);
 
     const ids = getIdsFromPath(item.path);
 
@@ -1004,20 +986,19 @@ export class ItemService {
 
     const parentPath = buildPathFromIds(...ids.slice(0, -1));
 
-    return repositories.itemRepository.reorder(item, parentPath, body.previousItemId);
+    return this.itemRepository.reorder(db, item, parentPath, body.previousItemId);
   }
 
   /**
    * Rescale order of children (of itemId's parent) if necessary
    * @param member
-   * @param repositories
    * @param itemId item whose parent get its children order rescaled if necessary
    */
-  async rescaleOrderForParent(member: Member, repositories: Repositories, item: Item) {
+  async rescaleOrderForParent(db: DBConnection, member: AuthenticatedUser, item: Item) {
     const parentId = getParentFromPath(item.path);
     if (parentId) {
-      const parentItem = await this.get(member, repositories, parentId);
-      await repositories.itemRepository.rescaleOrder(member, parentItem);
+      const parentItem = await this.basicItemService.get(db, member, parentId);
+      await this.itemRepository.rescaleOrder(db, member, parentItem);
     }
   }
 }

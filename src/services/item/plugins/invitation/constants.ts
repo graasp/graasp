@@ -1,6 +1,6 @@
 import { ClientManager, Context } from '@graasp/sdk';
 
-import { Invitation } from './entity';
+import { InvitationWithItem } from '../../../../drizzle/types';
 
 export const PLUGIN_NAME = 'graasp-plugin-invitations';
 
@@ -9,7 +9,7 @@ export const PLUGIN_NAME = 'graasp-plugin-invitations';
  * @param invitation
  * @returns
  */
-export const buildInvitationLink = (invitation: Invitation) => {
+export const buildInvitationLink = (invitation: InvitationWithItem) => {
   const destination = ClientManager.getInstance().getItemLink(Context.Player, invitation.item.id);
   const url = ClientManager.getInstance().getURLByContext(Context.Auth, 'register', {
     invitationId: invitation.id,

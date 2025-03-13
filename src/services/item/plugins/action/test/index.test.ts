@@ -21,14 +21,9 @@ import build, {
 } from '../../../../../../test/app';
 import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { resolveDependency } from '../../../../../di/utils';
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { MailerService } from '../../../../../plugins/mailer/service';
 import { assertIsDefined } from '../../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { Action } from '../../../../action/entities/action';
-import { assertIsMember } from '../../../../member/entities/member';
 import { saveMember, saveMembers } from '../../../../member/test/fixtures/members';
-import { ItemTestUtils } from '../../../test/fixtures/items';
 import { saveAppActions } from '../../app/appAction/test/fixtures';
 import { saveAppData } from '../../app/appData/test/fixtures';
 import { saveAppSettings } from '../../app/appSetting/test/fixtures';

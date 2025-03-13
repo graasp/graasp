@@ -4,7 +4,7 @@ import { fromPath as convertPDFtoImageFromPath } from 'pdf2pic';
 import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
 import { withFile as withTmpFile } from 'tmp-promise';
-import { singleton } from 'tsyringe';
+import { delay, inject, singleton } from 'tsyringe';
 
 import {
   FileItemProperties,
@@ -15,20 +15,27 @@ import {
   getFileExtension,
 } from '@graasp/sdk';
 
+import { DBConnection } from '../../../../drizzle/db';
+import { Item } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
+import { MaybeUser, MinimalMember } from '../../../../types';
 import { asDefined } from '../../../../utils/assertions';
-import { Repositories } from '../../../../utils/repositories';
-import { validatePermission } from '../../../authorization';
+import { AuthorizationService } from '../../../authorization';
 import FileService from '../../../file/service';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
-import { Actor, Member } from '../../../member/entities/member';
+import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { StorageService } from '../../../member/plugins/storage/service';
 import { ThumbnailService } from '../../../thumbnail/service';
 import { randomHexOf4 } from '../../../utils';
-import { Item } from '../../entities/Item';
+import { ItemWrapperService } from '../../ItemWrapper';
+import { BasicItemService } from '../../basic.service';
 import { WrongItemTypeError } from '../../errors';
+import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
 import { readPdfContent } from '../../utils';
+import { ItemGeolocationRepository } from '../geolocation/geolocation.repository';
+import { ItemVisibilityRepository } from '../itemVisibility/repository';
+import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../thumbnail/service';
 
@@ -42,10 +49,32 @@ class FileItemService extends ItemService {
     fileService: FileService,
     storageService: StorageService,
     meilisearchWrapper: MeiliSearchWrapper,
+    @inject(delay(() => ItemThumbnailService))
     itemThumbnailService: ItemThumbnailService,
+    authorizationService: AuthorizationService,
+    itemRepository: ItemRepository,
+    itemMembershipRepository: ItemMembershipRepository,
+    itemPublishedRepository: ItemPublishedRepository,
+    itemGeolocationRepository: ItemGeolocationRepository,
+    itemWrapperService: ItemWrapperService,
+    itemVisibilityRepository: ItemVisibilityRepository,
+    basicItemService: BasicItemService,
     log: BaseLogger,
   ) {
-    super(thumbnailService, itemThumbnailService, meilisearchWrapper, log);
+    super(
+      thumbnailService,
+      itemThumbnailService,
+      itemMembershipRepository,
+      meilisearchWrapper,
+      itemRepository,
+      itemPublishedRepository,
+      itemGeolocationRepository,
+      authorizationService,
+      itemWrapperService,
+      itemVisibilityRepository,
+      basicItemService,
+      log,
+    );
     this.fileService = fileService;
     this.storageService = storageService;
   }
@@ -57,8 +86,8 @@ class FileItemService extends ItemService {
   }
 
   async upload(
-    actor: Member,
-    repositories: Repositories,
+    db: DBConnection,
+    actor: MinimalMember,
     {
       description,
       parentId,
@@ -78,7 +107,7 @@ class FileItemService extends ItemService {
     const filepath = this.buildFilePath(getFileExtension(filename)); // parentId, filename
 
     // check member storage limit
-    await this.storageService.checkRemainingStorage(actor, repositories);
+    await this.storageService.checkRemainingStorage(db, actor);
 
     return await withTmpFile(async ({ path }) => {
       // Write uploaded file to a temporary file
@@ -127,7 +156,7 @@ class FileItemService extends ItemService {
         creator: actor,
       };
 
-      const newItem = await super.post(actor, repositories, {
+      const newItem = await super.post(db, actor, {
         item,
         parentId,
         previousItemId,
@@ -137,35 +166,25 @@ class FileItemService extends ItemService {
       // allow failures
       try {
         if (MimeTypes.isImage(mimetype)) {
-          await this.itemThumbnailService.upload(
-            actor,
-            repositories,
-            newItem.id,
-            fs.createReadStream(path),
-          );
+          await this.itemThumbnailService.upload(db, actor, newItem.id, fs.createReadStream(path));
         } else if (MimeTypes.isPdf(mimetype)) {
           // Convert first page of PDF to image buffer and upload as thumbnail
           const outputImg = await convertPDFtoImageFromPath(path)(1, { responseType: 'buffer' });
           const buffer = asDefined(outputImg.buffer);
-          await this.itemThumbnailService.upload(
-            actor,
-            repositories,
-            newItem.id,
-            Readable.from(buffer),
-          );
+          await this.itemThumbnailService.upload(db, actor, newItem.id, Readable.from(buffer));
         }
       } catch (e) {
         console.error(e);
       }
 
       // retrieve item again since hasThumbnail might have changed
-      return await repositories.itemRepository.getOneOrThrow(newItem.id);
+      return await this.itemRepository.getOneOrThrow(db, newItem.id);
     });
   }
 
   async getFile(
-    actor: Actor,
-    repositories: Repositories,
+    db: DBConnection,
+    actor: MaybeUser,
     {
       itemId,
     }: {
@@ -174,8 +193,8 @@ class FileItemService extends ItemService {
   ) {
     // prehook: get item and input in download call ?
     // check rights
-    const item = await repositories.itemRepository.getOneOrThrow(itemId);
-    await validatePermission(repositories, PermissionLevel.Read, actor, item);
+    const item = await this.itemRepository.getOneOrThrow(db, itemId);
+    await this.authorizationService.validatePermission(db, PermissionLevel.Read, actor, item);
     const extraData = item.extra[this.fileService.fileType] as FileItemProperties;
     const result = await this.fileService.getFile(actor, {
       id: itemId,
@@ -186,8 +205,8 @@ class FileItemService extends ItemService {
   }
 
   async getUrl(
-    actor: Actor,
-    repositories: Repositories,
+    db: DBConnection,
+    actor: MaybeUser,
     {
       itemId,
     }: {
@@ -196,8 +215,8 @@ class FileItemService extends ItemService {
   ) {
     // prehook: get item and input in download call ?
     // check rights
-    const item = await repositories.itemRepository.getOneOrThrow(itemId);
-    await validatePermission(repositories, PermissionLevel.Read, actor, item);
+    const item = await this.itemRepository.getOneOrThrow(db, itemId);
+    await this.authorizationService.validatePermission(db, PermissionLevel.Read, actor, item);
     const extraData = item.extra[this.fileService.fileType] as FileItemProperties | undefined;
 
     const result = await this.fileService.getUrl({
@@ -207,7 +226,7 @@ class FileItemService extends ItemService {
     return result;
   }
 
-  async copyFile(member: Member, repositories: Repositories, { copy }: { original; copy }) {
+  async copyFile(db: DBConnection, member: MinimalMember, { copy }: { original; copy }) {
     const { id, extra } = copy; // full copy with new `id`
     const { path: originalPath, mimetype, name } = extra[this.fileService.fileType];
     const newFilePath = this.buildFilePath(getFileExtension(name));
@@ -228,31 +247,30 @@ class FileItemService extends ItemService {
 
     // update item copy's 'extra'
     if (this.fileService.fileType === ItemType.S3_FILE) {
-      await repositories.itemRepository.updateOne(copy.id, {
+      await this.itemRepository.updateOne(db, copy.id, {
         extra: { s3File: { ...extra.s3File, path: filepath } },
       });
     } else {
-      await repositories.itemRepository.updateOne(copy.id, {
+      await this.itemRepository.updateOne(db, copy.id, {
         extra: { file: { ...extra.s3File, path: filepath } },
       });
     }
   }
 
   async update(
-    member: Member,
-    repositories: Repositories,
+    db: DBConnection,
+    member: MinimalMember,
     itemId: Item['id'],
     body: Partial<Pick<Item, 'name' | 'description' | 'settings' | 'lang'>>,
   ) {
-    const { itemRepository } = repositories;
-    const item = await itemRepository.getOneOrThrow(itemId);
+    const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
     // check item is file
     if (!([ItemType.LOCAL_FILE, ItemType.S3_FILE] as Item['type'][]).includes(item.type)) {
       throw new WrongItemTypeError(item.type);
     }
 
-    await super.patch(member, repositories, item.id, body);
+    await super.patch(db, member, item.id, body);
   }
 }
 

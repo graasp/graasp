@@ -2,124 +2,137 @@ import { singleton } from 'tsyringe';
 
 import { PermissionLevel } from '@graasp/sdk';
 
+import { DBConnection } from '../../drizzle/db';
+import { ChatMessageRaw } from '../../drizzle/types';
+import { AuthenticatedUser, MaybeUser } from '../../types';
 import HookManager from '../../utils/hook';
-import { Repositories } from '../../utils/repositories';
-import { Account } from '../account/entities/account';
+import { BasicItemService } from '../item/basic.service';
 import { ItemService } from '../item/service';
-import { Guest } from '../itemLogin/entities/guest';
-import { Actor, Member } from '../member/entities/member';
-import { ChatMessage } from './chatMessage';
-import { MemberCannotDeleteMessage, MemberCannotEditMessage } from './errors';
+import { ChatMessageNotFound, MemberCannotDeleteMessage, MemberCannotEditMessage } from './errors';
 import { MentionService } from './plugins/mentions/service';
+import { ChatMessageRepository } from './repository';
 
 @singleton()
 export class ChatMessageService {
   hooks = new HookManager();
   private readonly mentionService: MentionService;
-  private readonly itemService: ItemService;
+  private readonly basicItemService: BasicItemService;
+  private readonly chatMessageRepository: ChatMessageRepository;
 
-  constructor(itemService: ItemService, mentionService: MentionService) {
-    this.itemService = itemService;
+  constructor(
+    basicItemService: BasicItemService,
+    mentionService: MentionService,
+    chatMessageRepository: ChatMessageRepository,
+  ) {
+    this.basicItemService = basicItemService;
     this.mentionService = mentionService;
+    this.chatMessageRepository = chatMessageRepository;
   }
 
-  async getForItem(
-    actor: Actor,
-    repositories: Repositories,
-    itemId: string,
-  ): Promise<ChatMessage[]> {
-    const { chatMessageRepository } = repositories;
-
+  async getForItem(db: DBConnection, actor: MaybeUser, itemId: string) {
     // check permission
-    await this.itemService.get(actor, repositories, itemId);
+    await this.basicItemService.get(db, actor, itemId);
 
-    return await chatMessageRepository.getByItem(itemId);
+    return await this.chatMessageRepository.getByItem(db, itemId);
   }
 
   async postOne(
-    actor: Guest | Member,
-    repositories: Repositories,
+    db: DBConnection,
+    actor: AuthenticatedUser,
     itemId: string,
     data: { body: string; mentions?: string[] },
   ) {
-    const { chatMessageRepository } = repositories;
-
     // check permission
-    await this.itemService.get(actor, repositories, itemId);
+    await this.basicItemService.get(db, actor, itemId);
 
-    const message = await chatMessageRepository.addOne({
+    const message = await this.chatMessageRepository.addOne(db, {
       itemId,
-      creator: actor,
+      creatorId: actor.id,
       body: data.body,
     });
 
     // post the mentions that are sent with the message
     if (data.mentions?.length) {
-      await this.mentionService.createManyForItem(actor, repositories, message, data.mentions);
+      await this.mentionService.createManyForItem(db, actor, message, data.mentions);
     }
 
-    await this.hooks.runPostHooks('publish', actor, repositories, { message: message });
+    await this.hooks.runPostHooks('publish', actor, db, {
+      message: message,
+    });
 
     return message;
   }
 
   async patchOne(
-    actor: Account,
-    repositories: Repositories,
+    db: DBConnection,
+    authenticatedUser: AuthenticatedUser,
     itemId: string,
     messageId: string,
     message: { body: string },
   ) {
-    const { chatMessageRepository } = repositories;
-
     // check permission
-    await this.itemService.get(actor, repositories, itemId);
+    await this.basicItemService.get(db, authenticatedUser, itemId);
 
     // check right to make sure that the user is editing his own message
-    const messageContent = await chatMessageRepository.getOneOrThrow(messageId);
+    const messageContent = await this.chatMessageRepository.getOne(db, messageId);
 
-    if (messageContent.creator?.id !== actor.id) {
+    if (!messageContent) {
+      throw new ChatMessageNotFound(messageId);
+    }
+
+    if (messageContent.creator?.id !== authenticatedUser.id) {
       throw new MemberCannotEditMessage(messageId);
     }
 
-    const updatedMessage = await chatMessageRepository.updateOne(messageId, message);
+    const updatedMessage = await this.chatMessageRepository.updateOne(db, messageId, {
+      itemId,
+      ...message,
+    });
 
-    await this.hooks.runPostHooks('update', actor, repositories, { message: updatedMessage });
+    await this.hooks.runPostHooks('update', authenticatedUser, db, {
+      message: updatedMessage,
+    });
 
     return updatedMessage;
   }
 
-  async deleteOne(actor: Account, repositories: Repositories, itemId: string, messageId: string) {
-    const { chatMessageRepository } = repositories;
-
+  async deleteOne(
+    db: DBConnection,
+    authenticatedUser: AuthenticatedUser,
+    itemId: string,
+    messageId: string,
+  ) {
     // check permission
-    await this.itemService.get(actor, repositories, itemId);
+    await this.basicItemService.get(db, authenticatedUser, itemId);
 
-    const messageContent = await chatMessageRepository.getOneOrThrow(messageId);
+    const messageContent = await this.chatMessageRepository.getOne(db, messageId);
+    if (!messageContent) {
+      throw new ChatMessageNotFound(messageId);
+    }
 
-    if (messageContent.creator?.id !== actor.id) {
+    if (messageContent.creator?.id !== authenticatedUser.id) {
       throw new MemberCannotDeleteMessage({ id: messageId });
     }
 
     // TODO: get associated mentions to push the update in the websockets
     // await mentionRepository.getMany()
 
-    await chatMessageRepository.deleteOne(messageId);
+    await this.chatMessageRepository.deleteOne(db, messageId);
 
-    await this.hooks.runPostHooks('delete', actor, repositories, { message: messageContent });
+    await this.hooks.runPostHooks('delete', authenticatedUser, db, {
+      message: messageContent,
+    });
 
     return messageContent;
   }
 
-  async clear(actor: Account, repositories: Repositories, itemId: string) {
-    const { chatMessageRepository } = repositories;
-
+  async clear(db: DBConnection, authenticatedUser: AuthenticatedUser, itemId: string) {
     // check rights for accessing the chat and sufficient right to clear the conversation
     // user should be an admin of the item
-    await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
+    await this.basicItemService.get(db, authenticatedUser, itemId, PermissionLevel.Admin);
 
-    await this.hooks.runPostHooks('clear', actor, repositories, { itemId });
+    await this.hooks.runPostHooks('clear', authenticatedUser, db, { itemId });
 
-    await chatMessageRepository.deleteByItem(itemId);
+    await this.chatMessageRepository.deleteByItem(db, itemId);
   }
 }

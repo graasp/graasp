@@ -12,13 +12,15 @@ import {
 } from '@graasp/sdk';
 
 import { ETHERPAD_NAME_FACTORY_DI_KEY } from '../../../../di/constants';
+import { DBConnection } from '../../../../drizzle/db';
+import { Item, MinimalAccount } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
+import { AuthenticatedUser, MinimalMember } from '../../../../types';
 import { MemberCannotWriteItem } from '../../../../utils/errors';
-import { Repositories, buildRepositories } from '../../../../utils/repositories';
-import { Account } from '../../../account/entities/account';
-import { Member } from '../../../member/entities/member';
-import { EtherpadItem, Item, isItemType } from '../../entities/Item';
+import { ItemMembershipRepository } from '../../../itemMembership/repository';
+import { EtherpadItem, isItemType } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
+import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
 import { MAX_SESSIONS_IN_COOKIE, PLUGIN_NAME } from './constants';
 import { EtherpadServerError, ItemMissingExtraError } from './errors';
@@ -42,6 +44,8 @@ export class EtherpadItemService {
   private readonly publicUrl: string;
   private readonly cookieDomain: string;
   private readonly itemService: ItemService;
+  private readonly itemRepository: ItemRepository;
+  private readonly itemMembershipRepository: ItemMembershipRepository;
   private readonly log: BaseLogger;
 
   constructor(
@@ -49,6 +53,8 @@ export class EtherpadItemService {
     @inject(ETHERPAD_NAME_FACTORY_DI_KEY) padNameFactory: PadNameFactory,
     etherPadConfig: EtherpadServiceConfig,
     itemService: ItemService,
+    itemRepository: ItemRepository,
+    itemMembershipRepository: ItemMembershipRepository,
     log: BaseLogger,
   ) {
     this.api = etherpad;
@@ -56,6 +62,8 @@ export class EtherpadItemService {
     this.publicUrl = etherPadConfig.publicUrl;
     this.cookieDomain = etherPadConfig.cookieDomain;
     this.itemService = itemService;
+    this.itemMembershipRepository = itemMembershipRepository;
+    this.itemRepository = itemRepository;
     this.log = log;
   }
 
@@ -98,16 +106,19 @@ export class EtherpadItemService {
    * Creates a new Etherpad item linked to a pad in the service
    */
   public async createEtherpadItem(
-    member: Member,
-    repositories: Repositories,
+    db: DBConnection,
+    member: MinimalMember,
     args: { readerPermission?: EtherpadPermissionType; name: string },
     parentId?: string,
     initHtml?: string,
   ) {
-    const { groupID, padName } = await this.createPad({ action: 'create', initHtml });
+    const { groupID, padName } = await this.createPad({
+      action: 'create',
+      initHtml,
+    });
 
     try {
-      return this.itemService.post(member, repositories, {
+      return this.itemService.post(db, member, {
         item: {
           name: args.name,
           type: ItemType.ETHERPAD,
@@ -135,16 +146,14 @@ export class EtherpadItemService {
    * Updates Etherpad item
    */
   public async patchWithOptions(
-    member: Member,
-    repositories: Repositories,
+    db: DBConnection,
+    member: MinimalMember,
     itemId: Item['id'],
     body: Partial<Pick<Item, 'settings' | 'name' | 'lang'>> & {
       readerPermission?: EtherpadPermissionType;
     },
   ) {
-    const { itemRepository } = repositories;
-
-    const item = await itemRepository.getOneOrThrow(itemId);
+    const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
     // check item is link
     if (!isItemType(item, ItemType.ETHERPAD)) {
@@ -168,16 +177,16 @@ export class EtherpadItemService {
       };
     }
 
-    return this.itemService.patch(member, repositories, itemId, newProps);
+    return this.itemService.patch(db, member, itemId, newProps);
   }
 
   /**
    * Helper to determine the final viewing mode of an etherpad
    */
   private async checkMode(
-    repositories: Repositories,
+    db: DBConnection,
     requestedMode: 'read' | 'write',
-    account: Account,
+    account: MinimalAccount,
     item: EtherpadItem,
   ): Promise<'read' | 'write'> {
     // no specific check if read mode was requested
@@ -187,7 +196,8 @@ export class EtherpadItemService {
     // if mode was write,
     // check that permission is at least write
 
-    const membership = await repositories.itemMembershipRepository.getInherited(
+    const membership = await this.itemMembershipRepository.getInherited(
+      db,
       item.path,
       account.id,
       true,
@@ -217,15 +227,19 @@ export class EtherpadItemService {
    * Retrieves the Etherpad service URL of the requested pad for a given item and a cookie
    * containing all valid sessions for pads for a given member (including the requested pad)
    */
-  public async getEtherpadFromItem(account: Account, itemId: string, mode: 'read' | 'write') {
-    const repos = buildRepositories();
-    const item = await this.itemService.get(account, repos, itemId);
+  public async getEtherpadFromItem(
+    db: DBConnection,
+    account: AuthenticatedUser,
+    itemId: string,
+    mode: 'read' | 'write',
+  ) {
+    const item = await this.itemService.basicItemService.get(db, account, itemId);
 
     if (!isItemType(item, ItemType.ETHERPAD) || !item.extra?.etherpad) {
       throw new ItemMissingExtraError(item?.id);
     }
 
-    const checkedMode = await this.checkMode(repos, mode, account, item);
+    const checkedMode = await this.checkMode(db, mode, account, item);
 
     const { padID, groupID } = item.extra.etherpad;
 
@@ -356,13 +370,16 @@ export class EtherpadItemService {
    * Retrieves the Etherpad html content for a given item
    * useful for exporting data
    *
-   * @param {Account} account user retrieving the content
+   * @param {AuthenticatedUser} account user retrieving the content
    * @param {string} itemId item to retrieve the content of
    * @returns {string} html content of the etherpad
    */
-  public async getEtherpadContentFromItem(account: Account, itemId: string): Promise<string> {
-    const repos = buildRepositories();
-    const item = await this.itemService.get(account, repos, itemId);
+  public async getEtherpadContentFromItem(
+    db: DBConnection,
+    account: AuthenticatedUser,
+    itemId: string,
+  ): Promise<string> {
+    const item = await this.itemService.basicItemService.get(db, account, itemId);
 
     if (!isItemType(item, ItemType.ETHERPAD) || !item.extra?.etherpad) {
       throw new ItemMissingExtraError(item?.id);
@@ -408,7 +425,10 @@ export class EtherpadItemService {
     }
     const { padID } = extra;
 
-    const { groupID, padName } = await this.createPad({ action: 'copy', sourceID: padID });
+    const { groupID, padName } = await this.createPad({
+      action: 'copy',
+      sourceID: padID,
+    });
     // assign pad copy to new item's extra
     item.extra = this.buildEtherpadExtra({ groupID, padName });
   }

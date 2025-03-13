@@ -1,36 +1,38 @@
 import { faker } from '@faker-js/faker';
 import { beforeAll } from '@jest/globals';
+import { eq } from 'drizzle-orm';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import { sign as jwtSign } from 'jsonwebtoken';
+import waitForExpect from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod } from '@graasp/sdk';
+import { HttpMethod, S3FileItemExtra } from '@graasp/sdk';
 
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../test/app';
 import { buildFile, seedFromJson } from '../../../test/mocks/seed';
 import { resolveDependency } from '../../di/utils';
-import { AppDataSource } from '../../plugins/datasource';
-import { MailerService } from '../../plugins/mailer/service';
+import { db } from '../../drizzle/db';
+import { accountsTable } from '../../drizzle/schema';
+import { ItemRaw } from '../../drizzle/types';
+import { MailerService } from '../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../utils/assertions';
 import { EMAIL_CHANGE_JWT_SECRET } from '../../utils/config';
-import { Item } from '../item/entities/Item';
+import { assertIsMember } from '../authentication';
 import {
   FILE_METADATA_MAX_PAGE_SIZE,
   FILE_METADATA_MIN_PAGE,
   FILE_METADATA_MIN_PAGE_SIZE,
 } from './constants';
-import { Member, assertIsMember } from './entities/member';
 
 jest.mock('node-fetch');
-const memberRawRepository = AppDataSource.getRepository(Member);
 
 describe('Member Controller', () => {
   let app: FastifyInstance;
   let mockSendEmail: jest.SpyInstance;
 
   beforeAll(async () => {
-    ({ app } = await build({ member: null }));
+    ({ app } = await build());
   });
   beforeEach(async () => {
     mockSendEmail = jest.spyOn(resolveDependency(MailerService), 'sendRaw');
@@ -40,7 +42,7 @@ describe('Member Controller', () => {
     jest.clearAllMocks();
   });
   afterAll(async () => {
-    await clearDatabase(app.db);
+    await clearDatabase(db);
     app.close();
   });
 
@@ -57,15 +59,17 @@ describe('Member Controller', () => {
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
       expect(mockSendEmail).not.toHaveBeenCalled();
       // Email didn't changed
-      const rawMember = await memberRawRepository.findOneBy({ id: actor.id });
+      const rawMember = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.id, actor.id),
+      });
       expect(rawMember?.email).toEqual(actor.email);
     });
 
     it('No email provided', async () => {
       const { actor } = await seedFromJson();
-      mockAuthenticate(actor);
       assertIsDefined(actor);
       assertIsMember(actor);
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: 'POST',
@@ -74,14 +78,16 @@ describe('Member Controller', () => {
       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       expect(mockSendEmail).not.toHaveBeenCalled();
       // Email didn't changed
-      const rawMember = await memberRawRepository.findOneBy({ id: actor.id });
+      const rawMember = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.id, actor.id),
+      });
       expect(rawMember?.email).toEqual(actor.email);
     });
     it('Invalid email provided', async () => {
       const { actor } = await seedFromJson();
-      mockAuthenticate(actor);
       assertIsDefined(actor);
       assertIsMember(actor);
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: 'POST',
@@ -91,19 +97,21 @@ describe('Member Controller', () => {
       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       expect(mockSendEmail).not.toHaveBeenCalled();
       // Email didn't changed
-      const rawMember = await memberRawRepository.findOneBy({ id: actor.id });
+      const rawMember = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.id, actor.id),
+      });
       expect(rawMember?.email).toEqual(actor.email);
     });
 
     it('Already taken email', async () => {
-      const email = 'randomemail@email.com';
+      const email = faker.internet.email().toLowerCase();
       const {
         actor,
         members: [member],
       } = await seedFromJson({ members: [{ email }] });
-      mockAuthenticate(actor);
       assertIsDefined(actor);
       assertIsMember(actor);
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: 'POST',
@@ -114,15 +122,17 @@ describe('Member Controller', () => {
       expect(response.statusCode).toBe(StatusCodes.CONFLICT);
       expect(mockSendEmail).not.toHaveBeenCalled();
       // Email didn't change
-      const rawMember = await memberRawRepository.findOneBy({ id: actor.id });
+      const rawMember = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.id, actor.id),
+      });
       expect(rawMember?.email).toEqual(actor.email);
     });
 
     it('Change email', async () => {
       const { actor } = await seedFromJson();
-      mockAuthenticate(actor);
       assertIsDefined(actor);
       assertIsMember(actor);
+      mockAuthenticate(actor);
 
       const email = faker.internet.email();
       const response = await app.inject({
@@ -131,25 +141,31 @@ describe('Member Controller', () => {
         body: { email },
       });
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
-      expect(mockSendEmail).toHaveBeenCalledTimes(1);
-      expect(mockSendEmail.mock.calls[0][1]).toBe(email);
-      expect(mockSendEmail.mock.calls[0][2]).toContain('email/change?t=');
+      waitForExpect(() => {
+        expect(mockSendEmail).toHaveBeenCalledTimes(1);
+        expect(mockSendEmail.mock.calls[0][1]).toBe(email);
+        expect(mockSendEmail.mock.calls[0][2]).toContain('email/change?t=');
+      });
+
       // Email didn't change
-      const rawMember = await memberRawRepository.findOneBy({ id: actor.id });
+      const rawMember = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.id, actor.id),
+      });
       expect(rawMember?.email).toEqual(actor.email);
     });
   });
 
   describe('PATCH /members/current/email/change', () => {
-    let newEmail: string;
+    // let newEmail: string;
+
     beforeEach(async () => {
-      newEmail = faker.internet.email().toLowerCase();
+      // newEmail = faker.internet.email().toLowerCase();
     });
     it('No JWT', async () => {
       const { actor } = await seedFromJson();
-      mockAuthenticate(actor);
       assertIsDefined(actor);
       assertIsMember(actor);
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: HttpMethod.Patch,
@@ -157,16 +173,21 @@ describe('Member Controller', () => {
       });
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
       // Email didn't change
-      const rawMember = await memberRawRepository.findOneBy({ id: actor.id });
+      const rawMember = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.id, actor.id),
+      });
       expect(rawMember?.email).toEqual(actor.email);
       expect(mockSendEmail).not.toHaveBeenCalled();
     });
     it('Invalid JWT', async () => {
       const { actor } = await seedFromJson();
-      mockAuthenticate(actor);
       assertIsDefined(actor);
       assertIsMember(actor);
-      const token = jwtSign({ uuid: actor.id, oldEmail: actor.email, newEmail }, 'invalid');
+      mockAuthenticate(actor);
+      const token = jwtSign(
+        { uuid: actor.id, oldEmail: actor.email, newEmail: faker.internet.email().toLowerCase() },
+        'invalid',
+      );
 
       const response = await app.inject({
         method: HttpMethod.Patch,
@@ -175,7 +196,9 @@ describe('Member Controller', () => {
       });
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
       // Email didn't changed
-      const rawMember = await memberRawRepository.findOneBy({ id: actor.id });
+      const rawMember = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.id, actor.id),
+      });
       expect(rawMember?.email).toEqual(actor.email);
       expect(mockSendEmail).not.toHaveBeenCalled();
     });
@@ -183,10 +206,10 @@ describe('Member Controller', () => {
       const {
         actor,
         members: [anotherMember],
-      } = await seedFromJson({ members: [{ email: 'anotheremail@email.com' }] });
-      mockAuthenticate(actor);
+      } = await seedFromJson({ members: [{}] });
       assertIsDefined(actor);
       assertIsMember(actor);
+      mockAuthenticate(actor);
       const token = jwtSign(
         { uuid: actor.id, oldEmail: actor.email, newEmail: anotherMember.email },
         EMAIL_CHANGE_JWT_SECRET,
@@ -199,16 +222,19 @@ describe('Member Controller', () => {
       });
       expect(response.statusCode).toBe(StatusCodes.CONFLICT);
       // Email didn't changed
-      const rawMember = await memberRawRepository.findOneBy({ id: actor.id });
+      const rawMember = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.id, actor.id),
+      });
       expect(rawMember?.email).toEqual(actor.email);
       expect(mockSendEmail).not.toHaveBeenCalled();
     });
     it('Change email', async () => {
       const { actor } = await seedFromJson();
-      mockAuthenticate(actor);
       assertIsDefined(actor);
       assertIsMember(actor);
+      mockAuthenticate(actor);
 
+      const newEmail = faker.internet.email().toLowerCase();
       const token = jwtSign(
         { uuid: actor.id, oldEmail: actor.email, newEmail },
         EMAIL_CHANGE_JWT_SECRET,
@@ -221,11 +247,16 @@ describe('Member Controller', () => {
       });
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
       // Email changed
-      const rawMember = await memberRawRepository.findOneBy({ id: actor.id });
+      const rawMember = await db.query.accountsTable.findFirst({
+        where: eq(accountsTable.id, actor.id),
+      });
       expect(rawMember?.email).toEqual(newEmail);
-      expect(mockSendEmail).toHaveBeenCalledTimes(1);
-      expect(mockSendEmail.mock.calls[0][1]).toBe(actor.email);
-      mockSendEmail.mockClear();
+
+      waitForExpect(() => {
+        expect(mockSendEmail).toHaveBeenCalledTimes(1);
+        expect(mockSendEmail.mock.calls[0][1]).toBe(actor.email);
+        mockSendEmail.mockClear();
+      });
 
       // JWT is invalidated
       const response2 = await app.inject({
@@ -240,9 +271,9 @@ describe('Member Controller', () => {
   describe('GET /members/current/storage/files', () => {
     it('returns ok', async () => {
       const { actor } = await seedFromJson();
-      mockAuthenticate(actor);
       assertIsDefined(actor);
       assertIsMember(actor);
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -252,9 +283,9 @@ describe('Member Controller', () => {
     });
     it('returns bad request when page is lower than 1', async () => {
       const { actor } = await seedFromJson();
-      mockAuthenticate(actor);
       assertIsDefined(actor);
       assertIsMember(actor);
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -265,9 +296,9 @@ describe('Member Controller', () => {
     });
     it('returns bad request when page size is lower than 1', async () => {
       const { actor } = await seedFromJson();
-      mockAuthenticate(actor);
       assertIsDefined(actor);
       assertIsMember(actor);
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -278,9 +309,9 @@ describe('Member Controller', () => {
     });
     it('returns bad request when page size is greater than the maximum', async () => {
       const { actor } = await seedFromJson();
-      mockAuthenticate(actor);
       assertIsDefined(actor);
       assertIsMember(actor);
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -291,10 +322,15 @@ describe('Member Controller', () => {
     });
 
     it('parent undefined when file is root', async () => {
-      const { actor } = await seedFromJson({ items: [buildFile('actor')] });
-      mockAuthenticate(actor);
+      const {
+        actor,
+        items: [withoutParent, parent, child],
+      } = await seedFromJson({
+        items: [buildFile('actor'), { children: [buildFile('actor')] }],
+      });
       assertIsDefined(actor);
       assertIsMember(actor);
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -302,41 +338,44 @@ describe('Member Controller', () => {
       });
       expect(response.statusCode).toBe(StatusCodes.OK);
       const resultDefault = await response.json();
-      expect(resultDefault.totalCount).toBe(1);
+      expect(resultDefault.totalCount).toBe(2);
       expect(resultDefault.pagination.page).toBe(1);
       expect(resultDefault.pagination.pageSize).toBe(10);
-      expect(resultDefault.data.length).toBe(1);
+      expect(resultDefault.data.length).toBe(2);
 
-      expect(resultDefault.data[0]).toHaveProperty('id');
-      expect(resultDefault.data[0]).toHaveProperty('name');
+      // root item
+      expect(resultDefault.data[0].id).toEqual(withoutParent.id);
+      expect(resultDefault.data[0].name).toEqual(withoutParent.name);
       expect(resultDefault.data[0]).toHaveProperty('size');
-      expect(resultDefault.data[0]).toHaveProperty('updatedAt');
-      expect(resultDefault.data[0]).toHaveProperty('path');
+      expect(resultDefault.data[0].updatedAt).toEqual(withoutParent.updatedAt);
+      expect(resultDefault.data[0].path).toEqual(
+        (withoutParent.extra as S3FileItemExtra).s3File.path,
+      );
       expect(resultDefault.data[0]).not.toHaveProperty('parent');
+
+      // child item
+      expect(resultDefault.data[1].id).toEqual(child.id);
+      expect(resultDefault.data[1].name).toEqual(child.name);
+      expect(resultDefault.data[1]).toHaveProperty('size');
+      expect(resultDefault.data[1]).toHaveProperty('updatedAt');
+      expect(resultDefault.data[1].path).toEqual((child.extra as S3FileItemExtra).s3File.path);
+      expect(resultDefault.data[1].parent.id).toEqual(parent.id);
     });
 
     describe('pagination', () => {
       const totalFiles = 23;
-      let rootFile: Item;
+      let rootFile: ItemRaw;
 
       beforeEach(async () => {
-        // create members
-        const {
-          actor,
-          members: [anotherMember],
-        } = await seedFromJson({ members: [{}] });
-        assertIsDefined(actor);
-        assertIsMember(actor);
-
-        // create items
-        const { items } = await seedFromJson({
-          actor: null,
+        const { items, actor } = await seedFromJson({
           items: [
-            { children: Array.from({ length: totalFiles }, () => buildFile({ id: actor.id })) },
-            ...Array.from({ length: 5 }, () => buildFile({ id: anotherMember.id })),
+            { children: Array.from({ length: totalFiles }, () => buildFile('actor')) },
+            ...Array.from({ length: 5 }, () => buildFile({ name: 'another-member' })),
           ],
         });
         rootFile = items[0];
+        assertIsDefined(actor);
+        assertIsMember(actor);
         mockAuthenticate(actor);
       });
 
@@ -430,7 +469,7 @@ describe('Member Controller', () => {
           ...resultPage3.data,
           ...resultPage4.data,
         ];
-        // Check order Desceding
+        // Check order Descending
         let lastSize = completeData[0].size;
         for (const data of completeData) {
           expect(data.size).toBeLessThanOrEqual(lastSize);
@@ -520,9 +559,9 @@ describe('Member Controller', () => {
   describe('PATCH /members/:id', () => {
     it('username can not contain special characters', async () => {
       const { actor } = await seedFromJson();
-      mockAuthenticate(actor);
       assertIsDefined(actor);
       assertIsMember(actor);
+      mockAuthenticate(actor);
 
       const invalidName = '<divvy>%$^&';
 

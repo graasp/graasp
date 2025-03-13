@@ -13,7 +13,6 @@ import build, {
 } from '../../../../../test/app';
 import { resolveDependency } from '../../../../di/utils';
 import { BaseLogger } from '../../../../logger';
-import { buildRepositories } from '../../../../utils/repositories';
 import { saveMember } from '../../../member/test/fixtures/members';
 import { ItemService } from '../../service';
 import { ItemTestUtils } from '../../test/fixtures/items';
@@ -59,7 +58,7 @@ describe('ZIP routes tests', () => {
         actor,
         parentItem: item,
       });
-      await new ItemVisibilityRepository().post(actor, child1, ItemVisibilityType.Hidden);
+      await new ItemVisibilityRepository().post(app.db, actor, child1, ItemVisibilityType.Hidden);
 
       const importExportService = new ImportExportService(
         app.db,
@@ -69,9 +68,8 @@ describe('ZIP routes tests', () => {
         {} as unknown as EtherpadItemService,
         resolveDependency(BaseLogger),
       );
-      const repositories = buildRepositories();
       const reply = {} as unknown as FastifyReply;
-      await importExportService.export(actor, repositories, { item, reply }, MOCK_LOGGER);
+      await importExportService.export(app.db, actor, { item, reply }, MOCK_LOGGER);
 
       // called for parent and one child
       expect(mock).toHaveBeenCalledTimes(2);
@@ -114,8 +112,7 @@ describe('ZIP routes tests', () => {
         {} as unknown as EtherpadItemService,
         resolveDependency(BaseLogger),
       );
-      const repositories = buildRepositories();
-      const res = await importExportService.fetchItemData(actor, repositories, item);
+      const res = await importExportService.fetchItemData(app.db, actor, item);
 
       expect(res.name).toEqual(item.name + '.png');
       expect(res.stream).toBeDefined();
@@ -138,8 +135,7 @@ describe('ZIP routes tests', () => {
         {} as unknown as EtherpadItemService,
         resolveDependency(BaseLogger),
       );
-      const repositories = buildRepositories();
-      const res = await importExportService.fetchItemData(actor, repositories, item);
+      const res = await importExportService.fetchItemData(app.db, actor, item);
 
       expect(res.name).toEqual(item.name + '.app');
       expect(res.stream).toBeDefined();
@@ -162,8 +158,7 @@ describe('ZIP routes tests', () => {
         {} as unknown as EtherpadItemService,
         resolveDependency(BaseLogger),
       );
-      const repositories = buildRepositories();
-      const res = await importExportService.fetchItemData(actor, repositories, item);
+      const res = await importExportService.fetchItemData(app.db, actor, item);
 
       expect(res.name).toEqual(item.name + '.url');
       expect(res.stream).toBeDefined();
@@ -186,8 +181,7 @@ describe('ZIP routes tests', () => {
         {} as unknown as EtherpadItemService,
         resolveDependency(BaseLogger),
       );
-      const repositories = buildRepositories();
-      const res = await importExportService.fetchItemData(actor, repositories, item);
+      const res = await importExportService.fetchItemData(app.db, actor, item);
 
       expect(res.name).toEqual(item.name + '.graasp');
       expect(res.stream).toBeDefined();
@@ -216,8 +210,7 @@ describe('ZIP routes tests', () => {
         {} as unknown as EtherpadItemService,
         resolveDependency(BaseLogger),
       );
-      const repositories = buildRepositories();
-      const res = await importExportService.fetchItemData(actor, repositories, item);
+      const res = await importExportService.fetchItemData(app.db, actor, item);
 
       expect(res.name).toEqual(item.name + '.html');
       expect(res.stream).toBeDefined();
@@ -249,8 +242,7 @@ describe('ZIP routes tests', () => {
         {} as unknown as EtherpadItemService,
         resolveDependency(BaseLogger),
       );
-      const repositories = buildRepositories();
-      const res = await importExportService.fetchItemData(actor, repositories, item);
+      const res = await importExportService.fetchItemData(app.db, actor, item);
 
       expect(res.name).toEqual(item.name + '.h5p');
       expect(res.stream).toBeDefined();
@@ -284,8 +276,7 @@ describe('ZIP routes tests', () => {
         } as unknown as EtherpadItemService,
         resolveDependency(BaseLogger),
       );
-      const repositories = buildRepositories();
-      const res = await importExportService.fetchItemData(actor, repositories, item);
+      const res = await importExportService.fetchItemData(app.db, actor, item);
 
       expect(res.name).toEqual(item.name + '.html');
       expect(res.stream).toBeDefined();
@@ -307,11 +298,8 @@ describe('ZIP routes tests', () => {
         {} as unknown as EtherpadItemService,
         resolveDependency(BaseLogger),
       );
-      const repositories = buildRepositories();
 
-      await expect(() =>
-        importExportService.fetchItemData(actor, repositories, item),
-      ).rejects.toThrow();
+      await expect(() => importExportService.fetchItemData(app.db, actor, item)).rejects.toThrow();
     });
   });
 });

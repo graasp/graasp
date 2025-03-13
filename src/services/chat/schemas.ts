@@ -13,6 +13,24 @@ import { itemSchemaRef } from '../item/schemas';
  * through Fastify's AJV instance
  */
 
+export const rawChatMessageSchemaRef = registerSchemaAsRef(
+  'rawChatMessage',
+  'Raw Chat Message',
+  customType.StrictObject(
+    {
+      id: customType.UUID(),
+      creatorId: customType.Nullable(customType.UUID()),
+      createdAt: customType.DateTime(),
+      updatedAt: customType.DateTime(),
+      body: Type.String(),
+      itemId: customType.UUID(),
+    },
+    {
+      description: 'Raw data for a message from a member in a chat of an item.',
+    },
+  ),
+);
+
 export const chatMessageSchemaRef = registerSchemaAsRef(
   'chatMessage',
   'Chat Message',
@@ -58,7 +76,9 @@ export const getChat = {
     itemId: customType.UUID(),
   }),
   response: {
-    [StatusCodes.OK]: Type.Array(chatMessageSchemaRef, { description: 'Successful Response' }),
+    [StatusCodes.OK]: Type.Array(chatMessageSchemaRef, {
+      description: 'Successful Response',
+    }),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;

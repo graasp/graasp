@@ -9,8 +9,8 @@ import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
 import { seedFromJson } from '../../../../test/mocks/seed';
 import { resolveDependency } from '../../../di/utils';
-import { AppDataSource } from '../../../plugins/datasource';
-import { MailerService } from '../../../plugins/mailer/service';
+import { MailerService } from '../../../plugins/mailer/mailer.service';
+import { MaybeUser } from '../../../types';
 import { assertIsDefined } from '../../../utils/assertions';
 import {
   CannotDeleteOnlyAdmin,
@@ -22,32 +22,24 @@ import {
   MemberCannotAdminItem,
   ModifyExistingMembership,
 } from '../../../utils/errors';
+import { assertIsMember } from '../../authentication';
 import { setItemPublic } from '../../item/plugins/itemVisibility/test/fixtures';
-import { assertIsMember } from '../../member/entities/member';
-import { ItemMembership } from '../entities/ItemMembership';
-import { MembershipRequestRepository } from '../plugins/MembershipRequest/repository';
-import { ItemMembershipRepository } from '../repository';
 import { expectMembership } from './fixtures/memberships';
-
-const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
-const membershipRequestRepository = new MembershipRequestRepository();
-const itemMembershipRepository = new ItemMembershipRepository();
 
 describe('Membership routes tests', () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
-    ({ app } = await build({ member: null }));
-  });
-
-  afterAll(async () => {
-    await clearDatabase(app.db);
-    app.close();
+    ({ app } = await build());
   });
 
   afterEach(async () => {
     jest.clearAllMocks();
     unmockAuthenticate();
+  });
+  afterAll(async () => {
+    await clearDatabase(db);
+    app.close();
   });
 
   describe('GET /item-memberships?itemId=<itemId>', () => {
@@ -338,8 +330,8 @@ describe('Membership routes tests', () => {
         const m = response.json();
         expect(response.statusCode).toEqual(StatusCodes.OK);
         const correctMembership = { ...payload, item, account: member, creator: actor };
-        expectMembership(m, correctMembership);
-        const savedMembership = await itemMembershipRepository.get(m.id);
+        expectMembership(m, correctMembership, actor);
+        const savedMembership = await itemMembershipRepository.get(app.db, m.id);
         expectMembership(savedMembership, correctMembership, actor);
         expect(response.statusCode).toBe(StatusCodes.OK);
 
@@ -412,9 +404,9 @@ describe('Membership routes tests', () => {
         });
         mockAuthenticate(actor);
 
-        await membershipRequestRepository.post(member.id, parentItem.id);
-        await membershipRequestRepository.post(member.id, targetItem.id);
-        await membershipRequestRepository.post(member.id, childItem.id);
+        await membershipRequestRepository.post(app.db, member.id, parentItem.id);
+        await membershipRequestRepository.post(app.db, member.id, targetItem.id);
+        await membershipRequestRepository.post(app.db, member.id, childItem.id);
 
         const payload = {
           accountId: member.id,
@@ -428,9 +420,13 @@ describe('Membership routes tests', () => {
         });
 
         expect(response.statusCode).toBe(StatusCodes.OK);
-        expect(await membershipRequestRepository.get(member.id, parentItem.id)).toBeDefined();
-        expect(await membershipRequestRepository.get(member.id, targetItem.id)).toBeNull();
-        expect(await membershipRequestRepository.get(member.id, childItem.id)).toBeDefined();
+        expect(
+          await membershipRequestRepository.get(app.db, member.id, parentItem.id),
+        ).toBeDefined();
+        expect(await membershipRequestRepository.get(app.db, member.id, targetItem.id)).toBeNull();
+        expect(
+          await membershipRequestRepository.get(app.db, member.id, childItem.id),
+        ).toBeDefined();
       });
       it('Cannot add new membership at same item for same member', async () => {
         const {
@@ -633,9 +629,10 @@ describe('Membership routes tests', () => {
 
         const newCount = await itemMembershipRawRepository.count();
         expect(newCount).toEqual(initialCount + 2);
-        const { data: savedMembershispForItem } = await itemMembershipRepository.getForManyItems([
-          item,
-        ]);
+        const { data: savedMembershispForItem } = await itemMembershipRepository.getForManyItems(
+          app.db,
+          [item],
+        );
         const savedMemberships = savedMembershispForItem[item.id];
         newMemberships.forEach((m) => {
           const member = members.find(({ id: thisId }) => thisId === m.accountId);
@@ -830,7 +827,7 @@ describe('Membership routes tests', () => {
 
         expectMembership(m, { ...newMembership, account: member, item, creator: actor });
 
-        const savedMembership = await itemMembershipRepository.get(membership.id);
+        const savedMembership = await itemMembershipRepository.get(app.db, membership.id);
         expectMembership(savedMembership, {
           ...newMembership,
           account: member,

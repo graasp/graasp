@@ -2,11 +2,9 @@ import { faker } from '@faker-js/faker';
 
 import { PermissionLevel } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { Member } from '../../../../member/entities/member';
-import { Item } from '../../../entities/Item';
+import { Item } from '../../../../../drizzle/types';
+import { MinimalMember } from '../../../../../types';
 import { ItemTestUtils } from '../../../test/fixtures/items';
-import { Invitation } from '../entity';
 
 const invitationRawRepository = AppDataSource.getRepository(Invitation);
 
@@ -16,7 +14,7 @@ export const createInvitations = async ({
   member,
   parentItem,
 }: {
-  member: Member;
+  member: MinimalMember;
   parentItem?: Item;
 }) => {
   const { item } = await testUtils.saveItemAndMembership({ member, parentItem });
@@ -31,7 +29,7 @@ export const createInvitations = async ({
   return { item, invitations };
 };
 
-export const saveInvitations = async ({ member }: { member: Member }) => {
+export const saveInvitations = async ({ member }: { member: MinimalMember }) => {
   const { item, invitations } = await createInvitations({ member });
   for (const inv of invitations) {
     await invitationRawRepository.save(inv);

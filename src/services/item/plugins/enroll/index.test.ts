@@ -17,7 +17,6 @@ import {
   CannotEnrollItemWithoutItemLoginSchema,
 } from '../../../itemLogin/errors';
 import { expectMembership } from '../../../itemMembership/test/fixtures/memberships';
-import { assertIsMember } from '../../../member/entities/member';
 
 describe('Enroll', () => {
   let app: FastifyInstance;

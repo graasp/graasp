@@ -3,12 +3,11 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifySchema } from 'fastify';
 
-import { PermissionLevel } from '@graasp/sdk';
-
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 import { errorSchemaRef } from '../../schemas/global';
 import { augmentedAccountSchemaRef, nullableAugmentedAccountSchemaRef } from '../account/schemas';
 import { itemSchemaRef } from '../item/schemas';
+import { PermissionLevel } from './types';
 
 export const itemMembershipSchemaRef = registerSchemaAsRef(
   'itemMembership',
@@ -18,8 +17,27 @@ export const itemMembershipSchemaRef = registerSchemaAsRef(
       id: customType.UUID(),
       account: augmentedAccountSchemaRef,
       item: itemSchemaRef,
-      permission: Type.Enum(PermissionLevel),
+      permission: customType.EnumString(Object.values(PermissionLevel)),
       creator: Type.Optional(nullableAugmentedAccountSchemaRef),
+      createdAt: customType.DateTime(),
+      updatedAt: customType.DateTime(),
+    },
+    {
+      description: 'Define the permission access between account and item',
+    },
+  ),
+);
+
+export const itemMembershipWithoutRelationsSchemaRef = registerSchemaAsRef(
+  'rawItemMembership',
+  'Raw Item Membership',
+  customType.StrictObject(
+    {
+      id: customType.UUID(),
+      accountId: customType.UUID(),
+      itemPath: Type.String(),
+      permission: customType.EnumString(Object.values(PermissionLevel)),
+      creator: Type.Optional(customType.UUID()),
       createdAt: customType.DateTime(),
       updatedAt: customType.DateTime(),
     },
@@ -31,7 +49,7 @@ export const itemMembershipSchemaRef = registerSchemaAsRef(
 
 export const createItemMembershipSchema = customType.StrictObject({
   accountId: customType.UUID(),
-  permission: Type.Enum(PermissionLevel),
+  permission: customType.EnumString(Object.values(PermissionLevel)),
 });
 
 // schema for creating an item membership
@@ -61,21 +79,26 @@ export const createMany = {
   params: customType.StrictObject({
     itemId: customType.UUID(),
   }),
-  body: customType.StrictObject({ memberships: Type.Array(createItemMembershipSchema) }),
+  body: customType.StrictObject({
+    memberships: Type.Array(createItemMembershipSchema),
+  }),
   response: {
     [StatusCodes.OK]: Type.Array(itemMembershipSchemaRef),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
 
-// schema for getting many item's memberships
-export const getManyItemMemberships = {
-  querystring: customType.StrictObject({ itemId: Type.Array(customType.UUID()) }),
+export const getItemMembershipsForItem = {
+  operationId: 'getItemMembershipsForItem',
+  tags: ['item-membership'],
+  summary: 'Get memberships for one item',
+  description: 'Get memberships for one item',
+
+  querystring: customType.StrictObject({
+    itemId: customType.UUID(),
+  }),
   response: {
-    [StatusCodes.OK]: customType.StrictObject({
-      data: Type.Record(Type.String({ format: 'uuid' }), Type.Array(itemMembershipSchemaRef)),
-      errors: Type.Array(errorSchemaRef),
-    }),
+    [StatusCodes.OK]: Type.Array(itemMembershipSchemaRef),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
@@ -91,7 +114,7 @@ export const updateOne = {
     id: customType.UUID(),
   }),
   body: customType.StrictObject({
-    permission: Type.Enum(PermissionLevel),
+    permission: customType.EnumString(Object.values(PermissionLevel)),
   }),
   response: {
     [StatusCodes.OK]: itemMembershipSchemaRef,
@@ -109,7 +132,9 @@ export const deleteOne = {
   params: customType.StrictObject({
     id: customType.UUID(),
   }),
-  querystring: customType.StrictObject({ purgeBelow: Type.Optional(Type.Boolean()) }),
+  querystring: customType.StrictObject({
+    purgeBelow: Type.Optional(Type.Boolean()),
+  }),
   response: {
     [StatusCodes.OK]: itemMembershipSchemaRef,
     '4xx': errorSchemaRef,

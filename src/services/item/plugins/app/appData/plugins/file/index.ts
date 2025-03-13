@@ -1,21 +1,18 @@
 import { fastifyMultipart } from '@fastify/multipart';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { HttpMethod } from '@graasp/sdk';
-
 import { resolveDependency } from '../../../../../../../di/utils';
+import { DBConnection, db } from '../../../../../../../drizzle/db';
+import { AppDataRaw } from '../../../../../../../drizzle/types';
+import { AuthenticatedUser } from '../../../../../../../types';
 import { asDefined } from '../../../../../../../utils/assertions';
-import { Repositories, buildRepositories } from '../../../../../../../utils/repositories';
 import { guestAuthenticateAppsJWT } from '../../../../../../auth/plugins/passport';
 import {
   DownloadFileUnexpectedError,
   UploadEmptyFileError,
   UploadFileUnexpectedError,
 } from '../../../../../../file/utils/errors';
-import { Member } from '../../../../../../member/entities/member';
-import { addMemberInAppData } from '../../../legacy';
-import { AppData } from '../../appData';
-import { AppDataService } from '../../service';
+import { AppDataService } from '../../appData.service';
 import { download, upload } from './schema';
 import AppDataFileService from './service';
 
@@ -34,8 +31,6 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
     appDataService,
   } = options;
 
-  const { db } = fastify;
-
   const appDataFileService = resolveDependency(AppDataFileService);
 
   fastify.register(fastifyMultipart, {
@@ -52,28 +47,27 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
 
   // register post delete handler to remove the file object after item delete
   const deleteHook = async (
-    actor: Member,
-    repositories: Repositories,
-    args: { appData: AppData },
+    actor: AuthenticatedUser,
+    db: DBConnection,
+    args: { appData: AppDataRaw },
   ) => {
-    await appDataFileService.deleteOne(args.appData);
+    await appDataFileService.deleteOne(db, args.appData);
   };
   appDataService.hooks.setPostHook('delete', deleteHook);
 
-  fastify.route({
-    method: HttpMethod.Post,
-    url: '/app-data/upload',
-    schema: upload,
-    preHandler: guestAuthenticateAppsJWT,
-    handler: async (request) => {
+  fastify.post(
+    '/app-data/upload',
+    {
+      schema: upload,
+      preHandler: guestAuthenticateAppsJWT,
+    },
+    async (request) => {
       const { user } = request;
       const member = asDefined(user?.account);
       const app = asDefined(user?.app);
 
       return db
-        .transaction(async (manager) => {
-          const repositories = buildRepositories(manager);
-
+        .transaction(async (tx) => {
           // files are saved in temporary folder in disk, they are removed when the response ends
           // necessary to get file size -> can use stream busboy only otherwise
           // only one file is uploaded
@@ -81,9 +75,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
           if (!file) {
             throw new UploadEmptyFileError();
           }
-          return addMemberInAppData(
-            await appDataFileService.upload(member, repositories, file, app.item),
-          );
+          await appDataFileService.upload(tx, member, file, app.item);
         })
         .catch((e) => {
           console.error(e);
@@ -96,7 +88,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
           throw new UploadFileUnexpectedError(e);
         });
     },
-  });
+  );
 
   fastify.get(
     '/app-data/:id/download',
@@ -112,14 +104,12 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
       const member = asDefined(user?.account);
       const app = asDefined(user?.app);
 
-      return appDataFileService
-        .download(member, buildRepositories(), { item: app.item, appDataId })
-        .catch((e) => {
-          if (e.code) {
-            throw e;
-          }
-          throw new DownloadFileUnexpectedError(e);
-        });
+      return appDataFileService.download(db, member, { item: app.item, appDataId }).catch((e) => {
+        if (e.code) {
+          throw e;
+        }
+        throw new DownloadFileUnexpectedError(e);
+      });
     },
   );
 };

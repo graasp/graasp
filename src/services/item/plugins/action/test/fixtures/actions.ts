@@ -2,35 +2,33 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { ActionTriggers, Context } from '@graasp/sdk';
 
-import { Account } from '../../../../../account/entities/account';
-import { Action } from '../../../../../action/entities/action';
-import { ActionRepository } from '../../../../../action/repositories/action';
-import { Member } from '../../../../../member/entities/member';
-import { Item } from '../../../../entities/Item';
+import { db } from '../../../../../../drizzle/db';
+import { AccountRaw, ActionWithItemAndAccount, Item } from '../../../../../../drizzle/types';
+import { ActionRepository } from '../../../../../action/action.repository';
 import { ItemActionType } from '../../utils';
 
 export const getDummyAction = (
   view: Context,
   type: ItemActionType | ActionTriggers,
   createdAt: Date,
-  account: Account,
+  account: AccountRaw,
   item: Item,
-): Action => {
+): ActionWithItemAndAccount => {
   const buildId = uuidv4();
   return {
     id: buildId,
     view: view,
     type: type,
-    geolocation: {},
-    createdAt: createdAt,
+    geolocation: '',
+    createdAt: createdAt.toISOString(),
     account,
     item: item,
-    extra: {},
-  } as unknown as Action;
+    extra: JSON.stringify({}),
+  };
 };
 
-const buildActions = (item: Item, member: Member[]) => {
-  const actions: Action[] = [
+const buildActions = (item: Item, member: AccountRaw[]) => {
+  const actions: ActionWithItemAndAccount[] = [
     getDummyAction(
       Context.Builder,
       ItemActionType.Create,
@@ -84,9 +82,9 @@ const buildActions = (item: Item, member: Member[]) => {
   return actions;
 };
 
-export const saveActions = async (item: Item, member: Member[]) => {
-  const actions: Action[] = buildActions(item, member);
+export const saveActions = async (item: Item, members: AccountRaw[]) => {
+  const actions: ActionWithItemAndAccount[] = buildActions(item, members);
 
-  await new ActionRepository().postMany(actions);
+  await new ActionRepository().postMany(db, actions);
   return actions;
 };

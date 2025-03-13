@@ -1,7 +1,7 @@
 /**
  * Chat websocket events are registered under these topics
  */
-import { ChatMention } from '../chatMention';
+import { ChatMentionRaw } from '../../../../../drizzle/types';
 
 // chat mentions topic
 export const chatMentionTopic = 'mentions';
@@ -11,7 +11,7 @@ export const chatMentionTopic = 'mentions';
  */
 interface ChatMentionEvent {
   op: string;
-  mention?: ChatMention;
+  mention?: ChatMentionRaw;
 }
 
 /**
@@ -19,7 +19,7 @@ interface ChatMentionEvent {
  */
 interface MentionEvent extends ChatMentionEvent {
   op: 'publish' | 'delete' | 'update' | 'clear';
-  mention?: ChatMention;
+  mention?: ChatMentionRaw;
 }
 
 /**
@@ -29,7 +29,7 @@ interface MentionEvent extends ChatMentionEvent {
  * @returns instance of item chat event
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const MentionEvent = (op: MentionEvent['op'], mention?: ChatMention): MentionEvent => ({
+export const MentionEvent = (op: MentionEvent['op'], mention?: ChatMentionRaw): MentionEvent => ({
   op,
   mention,
 });

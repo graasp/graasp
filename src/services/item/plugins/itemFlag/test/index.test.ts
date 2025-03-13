@@ -10,12 +10,10 @@ import build, {
   mockAuthenticate,
   unmockAuthenticate,
 } from '../../../../../../test/app';
-import { AppDataSource } from '../../../../../plugins/datasource';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { ItemNotFound } from '../../../../../utils/errors';
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemTestUtils } from '../../../test/fixtures/items';
-import { ItemFlag } from '../itemFlag';
 
 const testUtils = new ItemTestUtils();
 

@@ -1,6 +1,6 @@
 import { ItemValidationProcess, ItemValidationStatus } from '@graasp/sdk';
 
-import { Item } from '../../../../entities/Item';
+import { Item } from '../../../../../../drizzle/types';
 import { detectFieldNameWithBadWords } from '../processes/badWordsDetection';
 import { stripHtml } from '../utils';
 import { ValidationProcessResult, ValidationStrategy } from './types';

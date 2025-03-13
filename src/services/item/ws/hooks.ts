@@ -12,7 +12,7 @@ function registerMemberItemsTopic(websockets: WebsocketService) {
   websockets.register(memberItemsTopic, async (req) => {
     const { channel: memberId, member } = req;
     // requeted memberId channel must be current member
-    if (memberId !== member.id) {
+    if (memberId !== member?.id) {
       throw new Websocket.AccessDeniedError();
     }
   });

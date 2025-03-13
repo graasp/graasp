@@ -6,7 +6,6 @@ import { ItemVisibilityType } from '@graasp/sdk';
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
 import { nullableMemberSchemaRef } from '../../../member/schemas';
-import { itemSchemaRef } from '../../schemas';
 
 export const itemVisibilitySchemaRef = registerSchemaAsRef(
   'itemVisibility',
@@ -14,8 +13,8 @@ export const itemVisibilitySchemaRef = registerSchemaAsRef(
   customType.StrictObject(
     {
       id: customType.UUID(),
-      type: Type.Enum(ItemVisibilityType),
-      item: itemSchemaRef,
+      type: customType.EnumString(Object.values(ItemVisibilityType)),
+      itemPath: Type.String(),
       creator: Type.Optional(nullableMemberSchemaRef),
       createdAt: customType.DateTime(),
     },
@@ -35,13 +34,13 @@ const create = {
 
   params: customType.StrictObject({
     itemId: customType.UUID(),
-    type: Type.Enum(ItemVisibilityType),
+    type: customType.EnumString(Object.values(ItemVisibilityType)),
   }),
   response: {
     [StatusCodes.CREATED]: customType.StrictObject(
       {
         id: customType.UUID(),
-        type: Type.Enum(ItemVisibilityType),
+        type: customType.EnumString(Object.values(ItemVisibilityType)),
         item: Type.Object({ path: Type.String() }),
         creator: Type.Optional(nullableMemberSchemaRef),
         createdAt: customType.DateTime(),
@@ -63,7 +62,7 @@ const deleteOne = {
 
   params: customType.StrictObject({
     itemId: customType.UUID(),
-    type: Type.Enum(ItemVisibilityType),
+    type: customType.EnumString(Object.values(ItemVisibilityType)),
   }),
   response: {
     [StatusCodes.OK]: Type.Object(

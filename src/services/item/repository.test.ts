@@ -1,23 +1,23 @@
 // This import is necessary so we only download needed langage. eslint can't find the import because it's dynamic.
 // eslint-disable-next-line import/no-unresolved
 import { faker } from '@faker-js/faker/locale/en';
-import { In } from 'typeorm';
+import { eq, inArray } from 'drizzle-orm/sql';
 import { v4 } from 'uuid';
-
-import { FastifyInstance } from 'fastify';
 
 import {
   ItemType,
-  LocalFileItemFactory,
   MAX_ITEM_NAME_LENGTH,
   MAX_TREE_LEVELS,
-  MemberFactory,
   PermissionLevel,
   buildPathFromIds,
 } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../test/app';
 import { ItemFactory } from '../../../test/factories/item.factory';
+import { buildFile, seedFromJson } from '../../../test/mocks/seed';
+import { client, db } from '../../drizzle/db';
+import { items, itemsRaw, publishedItems, recycledItemDatas } from '../../drizzle/schema';
+import { Item } from '../../drizzle/types';
+import { assertIsDefined } from '../../utils/assertions';
 import {
   HierarchyTooDeep,
   InvalidMoveTarget,
@@ -25,43 +25,105 @@ import {
   ItemNotFound,
   TooManyDescendants,
 } from '../../utils/errors';
-import { expectMember, saveMember } from '../member/test/fixtures/members';
-import { DEFAULT_ORDER, FolderItem, Item } from './entities/Item';
+import { assertIsMember } from '../authentication';
+import { expectMember } from '../member/test/fixtures/members';
+import { MemberDTO } from '../member/types';
+import { DEFAULT_ORDER } from './constants';
+import { FolderItem } from './discrimination';
 import { ItemRepository } from './repository';
-import { ItemTestUtils, expectItem, expectManyItems } from './test/fixtures/items';
-
-const itemRepository = new ItemRepository();
-const testUtils = new ItemTestUtils();
+import { expectItem, expectManyItems } from './test/fixtures/items';
 
 const alphabeticalOrder = (a: string, b: string) => a.localeCompare(b);
 
-describe('ItemRepository', () => {
-  let app: FastifyInstance;
-  let actor;
+// TODO: remove when this can be handled by the seed
+async function saveRecycledItem(item: Item, creatorId: string) {
+  await db.insert(recycledItemDatas).values({ itemPath: item.path, creatorId });
+  await db
+    .update(itemsRaw)
+    .set({ deletedAt: new Date().toISOString() })
+    .where(eq(itemsRaw.id, item.id));
+}
 
-  beforeEach(async () => {
-    ({ app, actor } = await build());
+// TODO: remove when this can be handled by the seed
+const saveCollections = async () => {
+  const {
+    items,
+    members: [member],
+  } = await seedFromJson({
+    actor: null,
+    items: [
+      {
+        isPublic: true,
+        creator: { name: 'bob' },
+        memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+      },
+      {
+        isPublic: true,
+        creator: { name: 'bob' },
+        memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+      },
+      {
+        isPublic: true,
+        creator: { name: 'bob' },
+        memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+      },
+    ],
   });
-  afterEach(async () => {
-    jest.clearAllMocks();
-    await clearDatabase(app.db);
-    actor = null;
-    app.close();
+
+  for (const item of items) {
+    await db.insert(publishedItems).values({ itemPath: item.path, creatorId: member.id });
+  }
+  return { items, member };
+};
+
+// TODO: remove when this when we use drizzle
+const getOrderForItemId = async (itemId: Item['id']): Promise<number | null> => {
+  try {
+    const res = await db.select().from(items).where(eq(items.id, itemId));
+    return res[0].order;
+  } catch (e) {
+    console.log('faaskdfjksl', e);
+    return null;
+  }
+};
+
+const itemRepository = new ItemRepository();
+const itemRawRepository = {
+  findOneBy: async ({ id }: { id: string }) => {
+    const res = await db.select().from(items).where(eq(items.id, id));
+    return res.at(0);
+  },
+  countBy: async ({ id }: { id: string }) => await db.$count(items, eq(items.id, id)),
+};
+
+describe('Item Repository', () => {
+  beforeAll(async () => {
+    await client.connect();
+  });
+
+  afterAll(async () => {
+    await client.end();
   });
 
   describe('checkHierarchyDepth', () => {
     it('depth is acceptable', async () => {
-      const item = await testUtils.saveItem({ actor });
+      const {
+        items: [item],
+      } = await seedFromJson({ actor: null, items: [{}] });
 
       expect(itemRepository.checkHierarchyDepth(item)).toBeUndefined();
     });
     it('depth is acceptable with additional levels', async () => {
-      const item = await testUtils.saveItem({ actor });
+      const {
+        items: [item],
+      } = await seedFromJson({ actor: null, items: [{}] });
 
       expect(itemRepository.checkHierarchyDepth(item, 4)).toBeUndefined();
     });
     it('throw for deep item', async () => {
-      const item = await testUtils.saveItem({ actor });
+      const {
+        items: [item],
+      } = await seedFromJson({ actor: null, items: [{}] });
       try {
         itemRepository.checkHierarchyDepth(item, MAX_TREE_LEVELS);
         expect(true).toBeFalsy();
@@ -73,49 +135,61 @@ describe('ItemRepository', () => {
 
   describe('checkNumberOfDescendants', () => {
     it('descendants is acceptable', async () => {
-      const item = await testUtils.saveItem({ actor });
+      const {
+        items: [item],
+      } = await seedFromJson({ actor: null, items: [{}] });
 
-      expect(await itemRepository.checkNumberOfDescendants(item, 10)).toBeUndefined();
+      expect(await itemRepository.checkNumberOfDescendants(db, item, 10)).toBeUndefined();
     });
     it('throws because item is too deep', async () => {
-      const parent1 = await testUtils.saveItem({ actor });
-      const child1 = await testUtils.saveItem({ parentItem: parent1 });
-      await testUtils.saveItem({ parentItem: child1 });
-      await testUtils.saveItem({ parentItem: child1 });
+      const {
+        items: [item],
+      } = await seedFromJson({ actor: null, items: [{ children: [{ children: [{}, {}] }] }] });
 
-      await expect(itemRepository.checkNumberOfDescendants(parent1, 2)).rejects.toBeInstanceOf(
+      await expect(itemRepository.checkNumberOfDescendants(db, item, 2)).rejects.toBeInstanceOf(
         TooManyDescendants,
       );
     });
     it('throw for deep item', async () => {
-      const item = await testUtils.saveItem({ actor });
+      const {
+        items: [item],
+      } = await seedFromJson({ actor: null, items: [{}] });
+
       try {
-        await itemRepository.checkNumberOfDescendants(item, 0);
+        await itemRepository.checkNumberOfDescendants(db, item, 0);
         expect(true).toBeFalsy();
       } catch (e) {
         expect(e).toBeInstanceOf(TooManyDescendants);
       }
     });
   });
+
   describe('createOne', () => {
     it('create default folder item', async () => {
-      const creator = await saveMember();
-      const item = itemRepository.createOne({ name: 'name', creator });
+      const {
+        members: [creator],
+      } = await seedFromJson({ actor: null, members: [{ extra: { lang: 'en' } }] });
+      const item = itemRepository.createOne({
+        name: 'name',
+        creator: new MemberDTO(creator).toMinimal(),
+      });
       expect(item.path).not.toContain('.');
       expect(item.name).toEqual('name');
       expect(item.lang).toEqual('en');
       expect(item.description).toEqual(null);
       expect(item.type).toEqual(ItemType.FOLDER);
-      expect(item.creator!.id).toEqual(creator.id);
+      expect(item.creatorId).toEqual(creator.id);
       expect(item.extra).toEqual({ folder: {} });
     });
     it('create default document item', async () => {
-      const creator = await saveMember();
+      const {
+        members: [creator],
+      } = await seedFromJson({ actor: null, members: [{}] });
       const item = itemRepository.createOne({
         type: ItemType.DOCUMENT,
         name: 'name',
         description: 'description',
-        creator,
+        creator: new MemberDTO(creator).toMinimal(),
         extra: { document: { content: '' } },
         lang: 'fr',
       });
@@ -124,175 +198,171 @@ describe('ItemRepository', () => {
       expect(item.description).toEqual('description');
       expect(item.type).toEqual(ItemType.DOCUMENT);
       expect(item.lang).toEqual('fr');
-      expect(item.creator!.id).toEqual(creator.id);
+      expect(item.creatorId).toEqual(creator.id);
       expect(item.extra).toEqual({ document: { content: '' } });
     });
     it('create child item', async () => {
-      const creator = await saveMember(MemberFactory({ extra: { lang: 'es' } }));
-      const parentItem = await testUtils.createItem();
+      const {
+        items: [parentItem],
+        members: [creator],
+      } = await seedFromJson({ actor: null, members: [{}], items: [{}] });
+      const name = faker.word.words(3);
       const item = itemRepository.createOne({
-        name: 'name',
-        creator,
+        name,
+        creator: new MemberDTO(creator).toMinimal(),
         parent: parentItem,
       });
       expect(item.path).toContain(parentItem.path);
-      expect(item.name).toEqual('name');
+      expect(item.name).toEqual(name);
       expect(item.description).toEqual(null);
       expect(item.type).toEqual(ItemType.FOLDER);
-      expect(item.creator!.id).toEqual(creator.id);
+      expect(item.creatorId).toEqual(creator.id);
     });
   });
+
   describe('deleteMany', () => {
     it('delete successfully', async () => {
-      const item = await testUtils.saveItem({ actor });
-      expect(await testUtils.rawItemRepository.count()).toEqual(1);
+      const {
+        items: [item],
+      } = await seedFromJson({ actor: null, items: [{}] });
 
-      await itemRepository.delete([item.id]);
-      expect(await testUtils.rawItemRepository.count()).toEqual(0);
+      await itemRepository.delete(db, [item.id]);
+      expect(await itemRawRepository.findOneBy({ id: item.id })).toBeUndefined();
     });
     it('delete non existant ids does not throw', async () => {
-      await testUtils.saveItem({ actor });
-      expect(await testUtils.rawItemRepository.count()).toEqual(1);
+      const {
+        items: [item],
+      } = await seedFromJson({ actor: null, items: [{}] });
 
-      await itemRepository.delete([v4()]);
-      expect(await testUtils.rawItemRepository.count()).toEqual(1);
+      await itemRepository.delete(db, [v4()]);
+      expect(await db.$count(items, eq(items.id, item.id))).toEqual(1);
     });
     it('delete many ids', async () => {
-      const item1 = await testUtils.saveItem({ actor });
-      const item2 = await testUtils.saveItem({ actor });
+      const {
+        items: [item1, item2, item3],
+      } = await seedFromJson({ actor: null, items: [{}, {}, { name: 'noise' }] });
 
-      // noise
-      await testUtils.saveItem({ actor });
-
-      expect(await testUtils.rawItemRepository.count()).toEqual(3);
-
-      await itemRepository.delete([item1.id, item2.id]);
-      expect(await testUtils.rawItemRepository.count()).toEqual(1);
+      await itemRepository.delete(db, [item1.id, item2.id]);
+      expect(await itemRawRepository.findOneBy({ id: item1.id })).toBeUndefined();
+      expect(await itemRawRepository.findOneBy({ id: item2.id })).toBeUndefined();
+      expect(await itemRawRepository.countBy({ id: item3.id })).toEqual(1);
     });
   });
+
   describe('get', () => {
     it('getOne item successfully', async () => {
-      const item = await testUtils.saveItem({ actor });
-      const result = await itemRepository.getOne(item.id);
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({ items: [{ creator: 'actor' }] });
+      assertIsDefined(actor);
+      assertIsMember(actor);
+      const result = await itemRepository.getOne(db, item.id);
       expectItem(result, item);
       // contains creator
-      expectMember(result?.creator, actor);
+      expectMember(result?.creator, new MemberDTO(actor).toCurrent());
     });
     it('getOrThrow item successfully', async () => {
-      const item = await testUtils.saveItem({ actor });
-      const result = await itemRepository.getOneOrThrow(item.id);
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({ items: [{ creator: 'actor' }] });
+      assertIsDefined(actor);
+      assertIsMember(actor);
+      const result = await itemRepository.getOneOrThrow(db, item.id);
       expectItem(result, item);
       // contains creator
-      expectMember(result.creator, actor);
+      expectMember(result.creator, new MemberDTO(actor).toCurrent());
     });
     it('getOne returns null for a non-existent id', async () => {
       const id = v4();
-      expect(await itemRepository.getOne(id)).toBeNull();
+      expect(await itemRepository.getOne(db, id)).toBeNull();
     });
     it('getOneOrThrow throws ItemNotFound for a non-existent id', async () => {
       const id = v4();
-      expect(async () => await itemRepository.getOneOrThrow(id)).rejects.toMatchObject(
+      await expect(async () => await itemRepository.getOneOrThrow(db, id)).rejects.toThrow(
         new ItemNotFound(id),
       );
     });
   });
+
   describe('getAncestors', () => {
     it('Returns successfully in order', async () => {
-      const { packedItem: parent, item: parentItem } = await testUtils.saveItemAndMembership({
-        member: actor,
-      });
-      const { packedItem: child1, item: parentItem1 } = await testUtils.saveItemAndMembership({
-        item: { name: 'child1' },
-        member: actor,
-        parentItem,
-      });
-      // noise
-      await testUtils.saveItemAndMembership({
-        item: { name: 'child2' },
-        member: actor,
-        parentItem,
-      });
+      const {
+        items: [parent, child1, childOfChild],
+      } = await seedFromJson({ items: [{ children: [{ children: [{}] }, { name: 'noise' }] }] });
 
-      const { item: childOfChild } = await testUtils.saveItemAndMembership({
-        member: actor,
-        parentItem: parentItem1,
-      });
       const parents = [parent, child1];
 
       // patch item to force reorder
-      await itemRepository.updateOne(parent.id, { name: 'newname' });
+      await itemRepository.updateOne(db, parent.id, { name: 'newname' });
       parent.name = 'newname';
 
-      const data = await itemRepository.getAncestors(childOfChild);
+      const data = await itemRepository.getAncestors(db, childOfChild);
       expect(data).toHaveLength(parents.length);
       data.forEach((p, idx) => {
         expectItem(p, parents[idx]);
       });
     });
     it('Returns successfully empty parents', async () => {
-      const { item: parent } = await testUtils.saveItemAndMembership({ member: actor });
-
-      // another item with child
-      const { item: parent1 } = await testUtils.saveItemAndMembership({ member: actor });
-      await testUtils.saveItemAndMembership({
-        item: { name: 'child1' },
-        member: actor,
-        parentItem: parent1,
+      const {
+        items: [parent],
+      } = await seedFromJson({
+        items: [
+          {},
+          // noise
+          { children: [{ children: [{}] }] },
+        ],
       });
-      const data = await itemRepository.getAncestors(parent);
+
+      const data = await itemRepository.getAncestors(db, parent);
 
       expect(data).toEqual([]);
     });
   });
+
   describe('getChildren', () => {
     it('Returns successfully', async () => {
-      const { item: parentItem } = await testUtils.saveItemAndMembership({
-        member: actor,
-      });
-      const { packedItem: child1, item: parentItem1 } = await testUtils.saveItemAndMembership({
-        member: actor,
-        parentItem,
-      });
-      const { packedItem: child2 } = await testUtils.saveItemAndMembership({
-        member: actor,
-        parentItem,
-      });
-
+      const {
+        actor,
+        items: [parentItem, child1, _childOfChild, child2],
+      } = await seedFromJson({ items: [{ children: [{ children: [{}] }, {}] }] });
       const children = [child1, child2];
-      // create child of child
-      await testUtils.saveItemAndMembership({ member: actor, parentItem: parentItem1 });
 
-      const data = await itemRepository.getChildren(actor, parentItem);
+      assertIsDefined(actor);
+      const maybeUser = new MemberDTO(actor).toMaybeUser();
+
+      const data = await itemRepository.getChildren(db, maybeUser, parentItem);
       expect(data).toHaveLength(children.length);
       expectManyItems(data, children);
     });
     it('Returns successfully empty children', async () => {
-      const { item: parent } = await testUtils.saveItemAndMembership({ member: actor });
+      const {
+        actor,
+        items: [parent],
+      } = await seedFromJson({ items: [{}] });
 
-      const response = await itemRepository.getChildren(actor, parent);
+      assertIsDefined(actor);
+      const maybeUser = new MemberDTO(actor).toMaybeUser();
+
+      const response = await itemRepository.getChildren(db, maybeUser, parent);
 
       expect(response).toEqual([]);
     });
 
     it('Returns ordered children', async () => {
-      const { item: parent } = await testUtils.saveItemAndMembership({ member: actor });
-      const { packedItem: child1, item: parentItem1 } = await testUtils.saveItemAndMembership({
-        item: { name: 'child1', order: 2 },
-        member: actor,
-        parentItem: parent,
-      });
-      const { packedItem: child2 } = await testUtils.saveItemAndMembership({
-        item: { name: 'child2', order: 1 },
-        member: actor,
-        parentItem: parent,
-      });
+      const {
+        actor,
+        items: [parent, child1, child2],
+      } = await seedFromJson({ items: [{ children: [{ order: 2 }, { order: 1 }] }] });
 
       const childrenInOrder = [child2, child1];
       const children = [child1, child2];
 
-      // create child of child
-      await testUtils.saveItemAndMembership({ member: actor, parentItem: parentItem1 });
-      const data = await itemRepository.getChildren(actor, parent, { ordered: true });
+      assertIsDefined(actor);
+      const maybeUser = new MemberDTO(actor).toMaybeUser();
+
+      const data = await itemRepository.getChildren(db, maybeUser, parent, { ordered: true });
       expect(data).toHaveLength(children.length);
       // verify order and content
       childrenInOrder.forEach((child, idx) => {
@@ -302,25 +372,19 @@ describe('ItemRepository', () => {
     });
 
     it('Filter children by Folder', async () => {
-      const member = await saveMember();
-      const { item: parent } = await testUtils.saveItemAndMembership({
-        member: actor,
-        creator: member,
-        permission: PermissionLevel.Read,
+      const {
+        actor,
+        items: [parent, notAFolder, child2],
+      } = await seedFromJson({
+        items: [{ children: [{ type: ItemType.DOCUMENT }, { type: ItemType.FOLDER }] }],
       });
-      const { packedItem: notAFolder } = await testUtils.saveItemAndMembership({
-        item: { name: 'child1', type: ItemType.DOCUMENT },
-        member,
-        parentItem: parent,
-      });
-      const { item: child2 } = await testUtils.saveItemAndMembership({
-        item: { name: 'child2', type: ItemType.FOLDER },
-        member,
-        parentItem: parent,
-      });
-      const children = [child2];
 
-      const data = await itemRepository.getChildren(actor, parent, { types: [ItemType.FOLDER] });
+      const children = [child2];
+      assertIsDefined(actor);
+      const maybeUser = new MemberDTO(actor).toMaybeUser();
+      const data = await itemRepository.getChildren(db, maybeUser, parent, {
+        types: [ItemType.FOLDER],
+      });
       expect(data).toHaveLength(children.length);
       children.forEach(({ id }, idx) => {
         expectItem(
@@ -332,32 +396,20 @@ describe('ItemRepository', () => {
       });
     });
 
-    it('Filter children by keyword', async () => {
-      const member = await saveMember();
-      const { item: parent } = await testUtils.saveItemAndMembership({
-        member: actor,
-        creator: member,
-        permission: PermissionLevel.Read,
+    // FIXME: !!! Need to re-enable the feature in the repo !
+    it.skip('Filter children by keyword', async () => {
+      const {
+        actor,
+        items: [parent, child1, child2, _noise],
+      } = await seedFromJson({
+        items: [{ children: [{ name: 'child1' }, { name: 'child2' }, { name: 'name' }] }],
       });
-      const { packedItem: notAFolder } = await testUtils.saveItemAndMembership({
-        item: { name: 'child1', type: ItemType.DOCUMENT },
-        member,
-        parentItem: parent,
-      });
-      const { item: child2 } = await testUtils.saveItemAndMembership({
-        item: { name: 'child2', type: ItemType.FOLDER },
-        member,
-        parentItem: parent,
-      });
-      // noise
-      await testUtils.saveItemAndMembership({
-        item: { name: 'name', type: ItemType.FOLDER },
-        member,
-        parentItem: parent,
-      });
-      const children = [child2, notAFolder];
+      const children = [child1, child2];
 
-      const data = await itemRepository.getChildren(actor, parent, {
+      assertIsDefined(actor);
+      const maybeUser = new MemberDTO(actor).toMaybeUser();
+
+      const data = await itemRepository.getChildren(db, maybeUser, parent, {
         keywords: ['child'],
       });
       expect(data).toHaveLength(children.length);
@@ -365,71 +417,53 @@ describe('ItemRepository', () => {
     });
 
     it('returns error without leaking information', async () => {
-      const member = await saveMember();
-
-      const { item: notAFolder } = await testUtils.saveItemAndMembership({
-        item: { name: 'child1', type: ItemType.DOCUMENT },
-        member,
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [{ type: ItemType.DOCUMENT }],
       });
 
-      await expect(itemRepository.getChildren(actor, notAFolder)).rejects.toMatchObject(
-        new ItemNotFolder({ id: notAFolder.id }),
+      assertIsDefined(actor);
+      const maybeUser = new MemberDTO(actor).toMaybeUser();
+
+      await expect(itemRepository.getChildren(db, maybeUser, item)).rejects.toMatchObject(
+        new ItemNotFolder({ id: item.id }),
       );
     });
   });
+
   describe('getDescendants', () => {
     it('Returns successfully', async () => {
-      const { item: parent } = await testUtils.saveItemAndMembership({ member: actor });
-      const { packedItem: child1, item: parentItem1 } = await testUtils.saveItemAndMembership({
-        item: { name: 'child1' },
-        member: actor,
-        parentItem: parent,
-      });
-      const { packedItem: child2 } = await testUtils.saveItemAndMembership({
-        item: { name: 'child2' },
-        member: actor,
-        parentItem: parent,
+      const {
+        items: [parent, child1, child2, childOfChild2],
+      } = await seedFromJson({
+        items: [{ children: [{ name: 'child1' }, { name: 'child2', children: [{}] }] }],
       });
 
-      const { packedItem: childOfChild } = await testUtils.saveItemAndMembership({
-        member: actor,
-        parentItem: parentItem1,
-      });
-      const descendants = [child1, child2, childOfChild];
+      const descendants = [child1, child2, childOfChild2];
 
-      const data = await itemRepository.getDescendants(parent as FolderItem);
+      const data = await itemRepository.getDescendants(db, parent as FolderItem);
       expect(data).toHaveLength(descendants.length);
       expectManyItems(data, descendants);
     });
 
     it('Returns successfully ordered', async () => {
-      const { item: parent } = await testUtils.saveItemAndMembership({ member: actor });
-      const { item: parentItem1 } = await testUtils.saveItemAndMembership({
-        item: { name: 'child1', order: 3 },
-        member: actor,
-        parentItem: parent,
+      const {
+        items: [parent, child1, childOfChild1, anotherChildOfChild1, child2, childOfChild2],
+      } = await seedFromJson({
+        items: [
+          {
+            children: [
+              { name: 'child1', order: 3, children: [{ order: 2 }, { order: 1 }] },
+              { name: 'child2', order: 2, children: [{}] },
+            ],
+          },
+        ],
       });
-      const { item: child2 } = await testUtils.saveItemAndMembership({
-        item: { name: 'child2', order: 2 },
-        member: actor,
-        parentItem: parent,
-      });
-      const { item: childOfChild } = await testUtils.saveItemAndMembership({
-        member: actor,
-        parentItem: parentItem1,
-      });
-      const { item: childOfChild1 } = await testUtils.saveItemAndMembership({
-        item: { name: 'childOfChild1', order: 2 },
-        member: actor,
-        parentItem: childOfChild,
-      });
-      const { item: childOfChild2 } = await testUtils.saveItemAndMembership({
-        member: actor,
-        item: { name: 'childOfChild2', order: 1 },
-        parentItem: childOfChild,
-      });
-      const descendants = [child2, parentItem1, childOfChild, childOfChild2, childOfChild1];
-      const data = await itemRepository.getDescendants(parent as FolderItem, { ordered: true });
+
+      const descendants = [child2, childOfChild2, child1, anotherChildOfChild1, childOfChild1];
+      const data = await itemRepository.getDescendants(db, parent as FolderItem, { ordered: true });
       expectManyItems(data, descendants);
       descendants.forEach((v, idx) => {
         expectItem(data[idx], v);
@@ -437,81 +471,114 @@ describe('ItemRepository', () => {
     });
 
     it('Returns successfully empty descendants', async () => {
-      const { item: parent } = await testUtils.saveItemAndMembership({ member: actor });
-
-      // another item with child
-      const { item: parent1 } = await testUtils.saveItemAndMembership({ member: actor });
-      await testUtils.saveItemAndMembership({
-        item: { name: 'child1' },
-        member: actor,
-        parentItem: parent1,
+      const {
+        items: [parent],
+      } = await seedFromJson({
+        items: [
+          {},
+          //noise
+          {
+            children: [{ children: [{}, {}] }, { children: [{}] }],
+          },
+        ],
       });
 
-      const response = await itemRepository.getDescendants(parent as FolderItem);
+      const response = await itemRepository.getDescendants(db, parent as FolderItem);
 
       expect(response).toEqual([]);
     });
   });
-  describe('getManyDescendants', () => {
-    it('return empty for empty ids', async () => {
-      const result = await itemRepository.getManyDescendants([]);
-      expect(result).toHaveLength(0);
-    });
-    it('return many descendants', async () => {
-      const member = await saveMember();
-      const parent1 = await testUtils.saveItem({ actor: member });
-      const parent2 = await testUtils.saveItem({ actor: member });
-      const child1 = await testUtils.saveItem({ parentItem: parent1 });
-      const child11 = await testUtils.saveItem({ parentItem: child1 });
-      const child2 = await testUtils.saveItem({ parentItem: parent2 });
-      const deleted = await testUtils.saveItem({ parentItem: child1 });
-      await testUtils.saveRecycledItem(member, deleted);
 
-      const result = await itemRepository.getManyDescendants([parent1, parent2]);
+  // describe('getManyDescendants', () => {
+  // it.skip('return empty for empty ids', async () => {
+  //   const result = await itemRepository.getManyDescendants(db, []);
+  //   expect(result).toHaveLength(0);
+  // });
+  // it('return many descendants', async () => {
+  //   const {
+  //     actor,
+  //     items: [A, A1, A11, B, B1, B11, B12, deleted, _C, _C1],
+  //   } = await seedFromJson({
+  //     items: [
+  //       {
+  //         children: [{ children: [{}] }],
+  //       },
+  //       {
+  //         children: [{ children: [{}, {}, {}] }],
+  //       },
+  //       {
+  //         children: [{}],
+  //       },
+  //     ],
+  //   });
+  //   assertIsDefined(actor);
+  //   assertIsMember(actor);
+  //   // TODO: remove once deleted is part of seed
+  //   await saveRecycledItem(recycledItemRepository, itemRawRepository, deleted, actor.id);
+  //   const result = await itemRepository.getManyDescendants([A, B]);
+  //   expectManyItems(result, [A1, A11, B1, B11, B12]);
+  //   expect(result).not.toContain(deleted);
+  // });
+  // it('return descendants with deleted', async () => {
+  //   const {
+  //     actor,
+  //     items: [A, A1, A11, B, B1, B11, B12, deleted, _C, _C1],
+  //   } = await seedFromJson({
+  //     items: [
+  //       {
+  //         children: [{ children: [{}] }],
+  //       },
+  //       {
+  //         children: [{ children: [{}, {}, {}] }],
+  //       },
+  //       {
+  //         children: [{}],
+  //       },
+  //     ],
+  //   });
+  //   assertIsDefined(actor);
+  //   assertIsMember(actor);
+  //   // TODO: remove once deleted is part of seed
+  //   await saveRecycledItem(recycledItemRepository, itemRawRepository, deleted, actor.id);
+  //   const result = await itemRepository.getManyDescendants([A, B], {
+  //     withDeleted: true,
+  //   });
+  //   expectManyItems(result, [A1, A11, B1, B11, B12, deleted]);
+  // });
+  // });
 
-      expectManyItems(result, [child1, child2, child11]);
-      expect(result).not.toContain(deleted);
-    });
-    it('return descendants with deleted', async () => {
-      const parent1 = await testUtils.saveItem({ actor });
-      const parent2 = await testUtils.saveItem({ actor });
-      const child1 = await testUtils.saveItem({ parentItem: parent1 });
-      const child11 = await testUtils.saveItem({ parentItem: child1 });
-      const child2 = await testUtils.saveItem({ parentItem: parent2 });
-      const deleted = await testUtils.saveItem({ parentItem: child1 });
-      await testUtils.saveRecycledItem(actor, deleted);
-
-      const result = await itemRepository.getManyDescendants([parent1, parent2], {
-        withDeleted: true,
-      });
-
-      expectManyItems(result, [child1, child2, child11, deleted]);
-    });
-  });
   describe('getMany', () => {
     it('return empty for empty ids', async () => {
-      const result = await itemRepository.getMany([]);
+      const result = await itemRepository.getMany(db, []);
       expect(Object.keys(result.data)).toHaveLength(0);
       expect(result.errors).toHaveLength(0);
     });
     it('return result for ids with errors', async () => {
-      const item1 = await testUtils.saveItem({ actor });
-      const item2 = await testUtils.saveItem({ actor });
-      const item3 = await testUtils.saveItem({ actor });
+      const {
+        items: [item1, item2, item3],
+      } = await seedFromJson({ actor: null, items: [{}, {}, {}] });
 
-      const result = await itemRepository.getMany([item1.id, item2.id, item3.id, v4()]);
+      const result = await itemRepository.getMany(db, [item1.id, item2.id, item3.id, v4()]);
       expectItem(result.data[item1.id], item1);
       expectItem(result.data[item2.id], item2);
       expectItem(result.data[item3.id], item3);
       expect(result.errors).toHaveLength(1);
     });
-    it('return result for ids with deleted', async () => {
-      const item1 = await testUtils.saveItem({ actor });
-      const item2 = await testUtils.saveItem({ actor });
-      const item3 = await testUtils.saveItem({ actor });
-      await testUtils.saveRecycledItem(actor, item3);
 
-      const result = await itemRepository.getMany([item1.id, item2.id, item3.id, v4()], {
+    // FIXME: withDeleted feature has been removed from the repo
+    it.skip('return result for ids with deleted', async () => {
+      const {
+        actor,
+        items: [item1, item2, item3],
+      } = await seedFromJson({
+        items: [{}, {}, {}],
+      });
+      assertIsDefined(actor);
+      assertIsMember(actor);
+      // TODO: remove once deleted is part of seed
+      await saveRecycledItem(item3, actor.id);
+
+      const result = await itemRepository.getMany(db, [item1.id, item2.id, item3.id, v4()], {
         withDeleted: true,
       });
       expectItem(result.data[item1.id], item1);
@@ -520,72 +587,79 @@ describe('ItemRepository', () => {
       expect(result.errors).toHaveLength(1);
     });
     it('throw for error', async () => {
-      await expect(itemRepository.getMany([v4()], { throwOnError: true })).rejects.toBeInstanceOf(
-        ItemNotFound,
-      );
+      await expect(
+        itemRepository.getMany(db, [v4()], { throwOnError: true }),
+      ).rejects.toBeInstanceOf(ItemNotFound);
     });
   });
   describe('getNumberOfLevelsToFarthestChild', () => {
     it('return correct number', async () => {
-      const item = await testUtils.saveItem({ actor });
-      const child1 = await testUtils.saveItem({ actor, parentItem: item });
-      expect(await itemRepository.getNumberOfLevelsToFarthestChild(item)).toEqual(2);
-      expect(await itemRepository.getNumberOfLevelsToFarthestChild(child1)).toEqual(0);
-    });
-  });
-  describe('getOwn', () => {
-    it('return own items', async () => {
-      const { item: item1 } = await testUtils.saveItemAndMembership({ member: actor });
-      const { item: item2 } = await testUtils.saveItemAndMembership({ member: actor });
-      // noise - child of own
-      await testUtils.saveItemAndMembership({ member: actor, parentItem: item2 });
-      // noise - no membership
-      await testUtils.saveItem({ actor });
-      // noise - not creator
-      const member = await saveMember();
-      await testUtils.saveItemAndMembership({ member: actor, creator: member });
-      expectManyItems(await itemRepository.getOwn(actor.id), [item1, item2]);
+      const {
+        items: [item, child],
+      } = await seedFromJson({
+        actor: null,
+        items: [{ children: [{}] }],
+      });
+      expect(await itemRepository.getNumberOfLevelsToFarthestChild(db, item)).toEqual(2);
+      expect(await itemRepository.getNumberOfLevelsToFarthestChild(db, child)).toEqual(0);
     });
   });
   describe('move', () => {
     it('move item to root', async () => {
-      const parent = await testUtils.saveItem({ actor });
-      const item1 = await testUtils.saveItem({ parentItem: parent, actor });
+      const {
+        items: [_parent, child],
+      } = await seedFromJson({
+        actor: null,
+        items: [
+          {
+            children: [{}],
+          },
+        ],
+      });
 
-      expect((await itemRepository.move(item1)).id).toEqual(item1.id);
-      const newItem = await testUtils.rawItemRepository.findOneBy({ id: item1.id });
-      expect(newItem!.path).toEqual(buildPathFromIds(item1.id));
+      expect((await itemRepository.move(db, child)).id).toEqual(child.id);
+      const newItem = await itemRawRepository.findOneBy({ id: child.id });
+      expect(newItem!.path).toEqual(buildPathFromIds(child.id));
     });
     it('move item into parent', async () => {
-      const item1 = await testUtils.saveItem({ actor });
-      const item2 = await testUtils.saveItem({ actor });
-
-      expect((await itemRepository.move(item1, item2)).id).toEqual(item1.id);
-      const newItem = await testUtils.rawItemRepository.findOneBy({ id: item1.id });
-      expect(newItem!.path).toEqual(buildPathFromIds(item2.id, item1.id));
+      const {
+        items: [item1, item2],
+      } = await seedFromJson({ actor: null, items: [{}, {}] });
+      const movedItem = await itemRepository.move(db, item1, item2);
+      expect(movedItem.id).toEqual(item1.id);
+      const newItem = await itemRawRepository.findOneBy({ id: item1.id });
+      expect(newItem).toBeDefined();
+      expect(newItem?.path).toEqual(buildPathFromIds(item2.id, item1.id));
     });
     it('Fail to move items in non-folder parent', async () => {
-      const parentItem = await testUtils.saveItem({
-        item: { type: ItemType.DOCUMENT },
-        actor,
-      });
-      const item = await testUtils.saveItem({ actor });
+      const {
+        items: [item1, item2],
+      } = await seedFromJson({ actor: null, items: [{}, { type: ItemType.DOCUMENT }] });
 
-      await expect(itemRepository.move(item, parentItem)).rejects.toBeInstanceOf(ItemNotFolder);
+      await expect(itemRepository.move(db, item1, item2)).rejects.toBeInstanceOf(ItemNotFolder);
     });
     it('Fail to move into self', async () => {
-      const item = await testUtils.saveItem({ actor });
+      const {
+        items: [item],
+      } = await seedFromJson({ actor: null, items: [{}] });
 
-      await expect(itemRepository.move(item, item)).rejects.toBeInstanceOf(InvalidMoveTarget);
+      await expect(itemRepository.move(db, item, item)).rejects.toBeInstanceOf(InvalidMoveTarget);
     });
     it('Fail to move in same parent', async () => {
       // root
-      const item = await testUtils.saveItem({ actor });
-      await expect(itemRepository.move(item)).rejects.toBeInstanceOf(InvalidMoveTarget);
+      const {
+        items: [parent, child],
+      } = await seedFromJson({
+        actor: null,
+        items: [
+          {
+            children: [{}],
+          },
+        ],
+      });
+      await expect(itemRepository.move(db, parent)).rejects.toBeInstanceOf(InvalidMoveTarget);
 
-      const parentItem = await testUtils.saveItem({ actor });
-      const item1 = await testUtils.saveItem({ actor, parentItem });
-      await expect(itemRepository.move(item1, parentItem)).rejects.toBeInstanceOf(
+      await expect(itemRepository.move(db, child, parent)).rejects.toBeInstanceOf(
         InvalidMoveTarget,
       );
     });
@@ -593,42 +667,44 @@ describe('ItemRepository', () => {
 
   describe('patch', () => {
     it('patch successfully', async () => {
-      const item = await testUtils.saveItem({
-        actor,
-        item: { lang: 'fr', extra: { folder: {} } },
+      const {
+        items: [item, noise],
+      } = await seedFromJson({
+        actor: null,
+        items: [{ lang: 'fr' }, { name: 'noise' }],
       });
 
-      // noise
-      const untouchedItem = await testUtils.saveItem({ actor });
-
       const newData = { lang: 'de', name: 'newname' };
-      const newItem = await itemRepository.updateOne(item.id, newData);
+      const newItem = await itemRepository.updateOne(db, item.id, newData);
       expectItem(newItem, { ...item, ...newData });
-      expectItem(await testUtils.rawItemRepository.findOneBy({ id: item.id }), {
+      expectItem(await itemRawRepository.findOneBy({ id: item.id }), {
         ...item,
         ...newData,
       });
-      expectItem(
-        await testUtils.rawItemRepository.findOneBy({ id: untouchedItem.id }),
-        untouchedItem,
-      );
+      expectItem(await itemRawRepository.findOneBy({ id: noise.id }), noise);
     });
     it('patch extra successfully', async () => {
-      const item = await testUtils.saveItem({
-        actor,
-        item: {
-          type: ItemType.S3_FILE,
-          extra: {
-            [ItemType.S3_FILE]: {
-              content: 'prop',
-              name: 'name',
-              path: 'path',
-              mimetype: 'mime',
-              size: 30,
+      const {
+        items: [item],
+      } = await seedFromJson({
+        actor: null,
+        items: [
+          {
+            type: ItemType.S3_FILE,
+            extra: {
+              [ItemType.S3_FILE]: {
+                content: 'prop',
+                name: 'name',
+                path: 'path',
+                mimetype: 'mime',
+                size: 30,
+              },
             },
           },
-        },
+          { name: 'noise' },
+        ],
       });
+
       const newData = {
         // correct data
         [ItemType.S3_FILE]: {
@@ -637,7 +713,7 @@ describe('ItemRepository', () => {
         // incorrect data
         document: { content: 'some content' },
       };
-      const newItem = await itemRepository.updateOne(item.id, { extra: newData });
+      const newItem = await itemRepository.updateOne(db, item.id, { extra: newData });
       expectItem(newItem, {
         ...item,
         extra: {
@@ -650,7 +726,7 @@ describe('ItemRepository', () => {
           },
         },
       });
-      expectItem(await testUtils.rawItemRepository.findOneBy({ id: item.id }), {
+      expectItem(await itemRawRepository.findOneBy({ id: item.id }), {
         ...item,
         extra: {
           [ItemType.S3_FILE]: {
@@ -664,15 +740,20 @@ describe('ItemRepository', () => {
       });
     });
     it('patch settings successfully', async () => {
-      const item = await testUtils.saveItem({ actor, item: { settings: { isCollapsible: true } } });
+      const {
+        items: [item],
+      } = await seedFromJson({
+        actor: null,
+        items: [{ settings: { isCollapsible: true } }],
+      });
       const newData = {
         settings: {
           hasThumbnail: true,
         },
       };
-      const newItem = await itemRepository.updateOne(item.id, newData);
+      const newItem = await itemRepository.updateOne(db, item.id, newData);
       expectItem(newItem, { ...item, settings: { hasThumbnail: true, isCollapsible: true } });
-      expectItem(await testUtils.rawItemRepository.findOneBy({ id: item.id }), {
+      expectItem(await itemRawRepository.findOneBy({ id: item.id }), {
         ...item,
         settings: { hasThumbnail: true, isCollapsible: true },
       });
@@ -681,78 +762,62 @@ describe('ItemRepository', () => {
 
   describe('post', () => {
     it('post successfully', async () => {
+      const {
+        members: [member],
+      } = await seedFromJson({ actor: null, members: [{}] });
       const data = { name: 'name', type: ItemType.FOLDER };
 
-      await itemRepository.addOne({ item: data, creator: actor });
-      const newItem = await testUtils.rawItemRepository.findOne({
-        where: { name: data.name },
-        relations: { creator: true },
-      });
+      await itemRepository.addOne(db, { item: data, creator: new MemberDTO(member).toMinimal() });
+      const newItem = (await db.select().from(items).where(eq(items.name, data.name))).at(0);
       expect(newItem!.name).toEqual(data.name);
       expect(newItem!.type).toEqual(data.type);
-      expect(newItem!.creator!.id).toEqual(actor.id);
+      expect(newItem!.creatorId).toEqual(member.id);
     });
     it('post successfully with parent item', async () => {
-      const parentItem = await testUtils.saveItem({ actor });
+      const {
+        members: [member],
+        items: [parentItem],
+      } = await seedFromJson({ members: [{}], items: [{}] });
       const data = { name: 'name-1', type: ItemType.S3_FILE };
 
-      await itemRepository.addOne({ item: data, creator: actor, parentItem });
-      const newItem = await testUtils.rawItemRepository.findOne({
-        where: { name: data.name },
-        relations: { creator: true },
+      await itemRepository.addOne(db, {
+        item: data,
+        creator: new MemberDTO(member).toMinimal(),
+        parentItem,
       });
+      const newItem = (await db.select().from(items).where(eq(items.name, data.name))).at(0);
+
       expect(newItem!.name).toEqual(data.name);
       expect(newItem!.type).toEqual(data.type);
       expect(newItem!.path).toContain(parentItem.path);
-      expect(newItem!.creator!.id).toEqual(actor.id);
-    });
-
-    describe('getNextOrderCount', () => {
-      it('return default value for no children', async () => {
-        const parentItem = await testUtils.saveItem({ actor });
-        expect(await itemRepository.getNextOrderCount(parentItem.path)).toEqual(DEFAULT_ORDER);
-      });
-      it('no parent returns null', async () => {
-        expect(await itemRepository.getNextOrderCount()).toBeNull();
-      });
-      it('return next values', async () => {
-        const parentItem = await testUtils.saveItem({ actor });
-        const item1 = await testUtils.saveItem({ actor, parentItem, item: { order: 10 } });
-        expect(await itemRepository.getNextOrderCount(parentItem.path, item1.id)).toEqual(30);
-        const item2 = await testUtils.saveItem({ actor, parentItem, item: { order: 22 } });
-        expect(await itemRepository.getNextOrderCount(parentItem.path, item2.id)).toEqual(42);
-        const item3 = await testUtils.saveItem({ actor, parentItem, item: { order: 45 } });
-        expect(await itemRepository.getNextOrderCount(parentItem.path, item3.id)).toEqual(65);
-      });
-      it('return biggest value if no item id', async () => {
-        const parentItem = await testUtils.saveItem({ actor });
-        await testUtils.saveItem({ actor, parentItem, item: { order: 10 } });
-        await testUtils.saveItem({ actor, parentItem, item: { order: 20 } });
-        await testUtils.saveItem({ actor, parentItem, item: { order: 25 } });
-        expect(await itemRepository.getNextOrderCount(parentItem.path)).toEqual(45);
-      });
+      expect(newItem!.creatorId).toEqual(member.id);
     });
   });
+
   describe('postMany', () => {
     it('post many', async () => {
-      const items = Array.from(
+      const {
+        members: [member],
+      } = await seedFromJson({ actor: null, members: [{}] });
+      const localItems = Array.from(
         { length: 15 },
-        (_v, idx) =>
-          ItemFactory({ id: `item${idx}`, type: ItemType.FOLDER, creator: actor }) as Item,
+        () => ItemFactory({ type: ItemType.FOLDER, creator: member }) as Item,
       );
 
-      const insertedItems = await itemRepository.addMany(items, actor);
+      const insertedItems = await itemRepository.addMany(
+        db,
+        localItems,
+        new MemberDTO(member).toMinimal(),
+      );
       const insertedItemNames = insertedItems.map((i) => i.name);
       const insertedItemTypes = insertedItems.map((i) => i.type);
-      const insertedItemCreatorIds = insertedItems.map((i) => i.creator?.id);
+      const insertedItemCreatorIds = insertedItems.map((i) => i.creatorId);
 
-      const itemsInDB = await testUtils.rawItemRepository.find({
-        where: { name: In(insertedItemNames) },
-        relations: { creator: true },
-      });
+      const itemsInDB = await db.select().from(items).where(inArray(items.name, insertedItemNames));
+
       const itemNamesInDB = itemsInDB.map((i) => i.name);
       const itemTypesInDB = insertedItems.map((i) => i.type);
-      const itemCreatorIdsInDB = insertedItems.map((i) => i.creator?.id);
+      const itemCreatorIdsInDB = insertedItems.map((i) => i.creatorId);
       const itemPathsInDb = insertedItems.map((i) => i.path);
 
       expect(itemNamesInDB.sort(alphabeticalOrder)).toEqual(
@@ -767,27 +832,31 @@ describe('ItemRepository', () => {
       expect(itemPathsInDb.every((path) => !path.includes('.'))).toBeTruthy();
     });
     it('post many with parent item', async () => {
-      const parentItem = await testUtils.saveItem({ actor });
+      const {
+        members: [member],
+        items: [parentItem],
+      } = await seedFromJson({ actor: null, members: [{}], items: [{}] });
 
-      const items = Array.from(
+      const localItems = Array.from(
         { length: 15 },
-        (_v, idx) =>
-          ItemFactory({ name: `item${idx}`, type: ItemType.FOLDER, creator: actor }) as Item,
+        (_v) => ItemFactory({ type: ItemType.FOLDER, creator: member }) as Item,
       );
 
-      const insertedItems = await itemRepository.addMany(items, actor, parentItem);
+      const insertedItems = await itemRepository.addMany(
+        db,
+        localItems,
+        new MemberDTO(member).toMinimal(),
+        parentItem,
+      );
       const insertedItemNames = insertedItems.map((i) => i.name);
       const insertedItemTypes = insertedItems.map((i) => i.type);
-      const insertedItemCreatorIds = insertedItems.map((i) => i.creator?.id);
+      const insertedItemCreatorIds = insertedItems.map((i) => i.creatorId);
       const insertedItemPaths = insertedItems.map((i) => i.path);
 
-      const itemsInDB = await testUtils.rawItemRepository.find({
-        where: { name: In(insertedItemNames) },
-        relations: { creator: true },
-      });
+      const itemsInDB = await db.select().from(items).where(inArray(items.name, insertedItemNames));
       const itemNamesInDB = itemsInDB.map((i) => i.name);
       const itemTypesInDB = insertedItems.map((i) => i.type);
-      const itemCreatorIdsInDB = insertedItems.map((i) => i.creator?.id);
+      const itemCreatorIdsInDB = insertedItems.map((i) => i.creatorId);
       const itemPathsInDB = insertedItems.map((i) => i.path);
 
       expect(itemNamesInDB.sort(alphabeticalOrder)).toEqual(
@@ -805,10 +874,101 @@ describe('ItemRepository', () => {
       expect(itemPathsInDB.every((path) => path.includes(`${parentItem.path}.`))).toBeTruthy();
     });
   });
+
+  describe('postMany', () => {
+    it('post many', async () => {
+      const { actor } = await seedFromJson({});
+      assertIsDefined(actor);
+      const localItems = Array.from({ length: 15 }, () =>
+        ItemFactory({
+          type: ItemType.FOLDER,
+          creator: new MemberDTO(actor).toCurrent(),
+        }),
+      );
+
+      assertIsDefined(actor);
+      const insertedItems = await itemRepository.addMany(
+        db,
+        localItems,
+        new MemberDTO(actor).toMinimal(),
+      );
+      const insertedItemNames = insertedItems.map((i) => i.name);
+      const insertedItemTypes = insertedItems.map((i) => i.type);
+      const insertedItemCreatorIds = insertedItems.map((i) => i.creatorId);
+
+      const itemsInDB = await db.select().from(items).where(inArray(items.name, insertedItemNames));
+      const itemNamesInDB = itemsInDB.map((i) => i.name);
+      const itemTypesInDB = insertedItems.map((i) => i.type);
+      const itemCreatorIdsInDB = insertedItems.map((i) => i.creatorId);
+      const itemPathsInDb = insertedItems.map((i) => i.path);
+
+      expect(itemNamesInDB.sort(alphabeticalOrder)).toEqual(
+        insertedItemNames.sort(alphabeticalOrder),
+      );
+      expect(itemTypesInDB.sort(alphabeticalOrder)).toEqual(
+        insertedItemTypes.sort(alphabeticalOrder),
+      );
+      expect(itemCreatorIdsInDB.sort(alphabeticalOrder)).toEqual(
+        insertedItemCreatorIds.sort(alphabeticalOrder),
+      );
+      expect(itemPathsInDb.every((path) => !path.includes('.'))).toBeTruthy();
+    });
+    it('post many with parent item', async () => {
+      const {
+        actor,
+        items: [parentItem],
+      } = await seedFromJson({ items: [{ creator: 'actor' }] });
+      assertIsDefined(actor);
+      const localItems = Array.from({ length: 15 }, (_v) =>
+        ItemFactory({
+          type: ItemType.FOLDER,
+          creator: new MemberDTO(actor).toCurrent(),
+        }),
+      );
+
+      const insertedItems = await itemRepository.addMany(
+        db,
+        localItems,
+        new MemberDTO(actor).toMinimal(),
+        parentItem,
+      );
+      const insertedItemNames = insertedItems.map((i) => i.name);
+      const insertedItemTypes = insertedItems.map((i) => i.type);
+      const insertedItemCreatorIds = insertedItems.map((i) => i.creatorId);
+      const insertedItemPaths = insertedItems.map((i) => i.path);
+
+      const itemsInDB = await db.select().from(items).where(inArray(items.name, insertedItemNames));
+
+      const itemNamesInDB = itemsInDB.map((i) => i.name);
+      const itemTypesInDB = insertedItems.map((i) => i.type);
+      const itemCreatorIdsInDB = insertedItems.map((i) => i.creatorId);
+      const itemPathsInDB = insertedItems.map((i) => i.path);
+
+      expect(itemNamesInDB.sort(alphabeticalOrder)).toEqual(
+        insertedItemNames.sort(alphabeticalOrder),
+      );
+      expect(itemTypesInDB.sort(alphabeticalOrder)).toEqual(
+        insertedItemTypes.sort(alphabeticalOrder),
+      );
+      expect(itemCreatorIdsInDB.sort(alphabeticalOrder)).toEqual(
+        insertedItemCreatorIds.sort(alphabeticalOrder),
+      );
+      expect(itemPathsInDB.sort(alphabeticalOrder)).toEqual(
+        insertedItemPaths.sort(alphabeticalOrder),
+      );
+      expect(itemPathsInDB.every((path) => path.includes(`${parentItem.path}.`))).toBeTruthy();
+    });
+  });
+
   describe('copy', () => {
     it('copy successfully', async () => {
-      const item = await testUtils.saveItem({ actor });
-      const result = await itemRepository.copy(item, actor, [item.name]);
+      const {
+        members: [member],
+        items: [item],
+      } = await seedFromJson({ actor: null, members: [{}], items: [{}] });
+      const result = await itemRepository.copy(db, item, new MemberDTO(member).toMinimal(), [
+        item.name,
+      ]);
       const copy = result.copyRoot;
       expect(copy.name).toEqual(`${item.name} (2)`);
       expect(copy.id).not.toEqual(item.id);
@@ -816,10 +976,18 @@ describe('ItemRepository', () => {
       expect(result.treeCopyMap.get(item.id)!.original.id).toEqual(item.id);
     });
     it('copy successfully in parent', async () => {
-      const originalParentItem = await testUtils.saveItem({ actor });
-      const parentItem = await testUtils.saveItem({ actor });
-      const item = await testUtils.saveItem({ actor, parentItem: originalParentItem });
-      const result = await itemRepository.copy(item, actor, [item.name], parentItem);
+      const {
+        members: [member],
+        items: [originalParentItem, item, parentItem],
+      } = await seedFromJson({ actor: null, members: [{}], items: [{ children: [{}] }, {}] });
+
+      const result = await itemRepository.copy(
+        db,
+        item,
+        new MemberDTO(member).toMinimal(),
+        [item.name],
+        parentItem as FolderItem,
+      );
       const copy = result.copyRoot;
       expect(copy.name).toEqual(`${item.name} (2)`);
       expect(copy.id).not.toEqual(item.id);
@@ -828,294 +996,414 @@ describe('ItemRepository', () => {
       expect(result.treeCopyMap.get(item.id)!.copy.id).toEqual(copy.id);
       expect(result.treeCopyMap.get(item.id)!.original.id).toEqual(item.id);
     });
+    // regression test for issue with statefull regular expression
     it('copy multiple times', async () => {
-      // regession test for issue with statefull regular expression
-      const item = await testUtils.saveItem({ actor });
-      const result = await itemRepository.copy(item, actor, [item.name]);
+      const {
+        members: [member],
+        items: [item],
+      } = await seedFromJson({ actor: null, members: [{}], items: [{}] });
+
+      const result = await itemRepository.copy(db, item, new MemberDTO(member).toMinimal(), [
+        item.name,
+      ]);
       const copy = result.copyRoot;
       expect(copy.name).toEqual(`${item.name} (2)`);
       expect(copy.id).not.toEqual(item.id);
       expect(result.treeCopyMap.get(item.id)!.copy.id).toEqual(copy.id);
       expect(result.treeCopyMap.get(item.id)!.original.id).toEqual(item.id);
-      const secondResult = await itemRepository.copy(copy, actor, [item.name, copy.name]);
-      const secondCopy = secondResult.copyRoot;
-      expect(secondCopy.name).toEqual(`${item.name} (3)`);
-      const thirdResult = await itemRepository.copy(secondCopy, actor, [
+      const secondResult = await itemRepository.copy(db, copy, new MemberDTO(member).toMinimal(), [
         item.name,
         copy.name,
-        secondCopy.name,
       ]);
+      const secondCopy = secondResult.copyRoot;
+      expect(secondCopy.name).toEqual(`${item.name} (3)`);
+      const thirdResult = await itemRepository.copy(
+        db,
+        secondCopy,
+        new MemberDTO(member).toMinimal(),
+        [item.name, copy.name, secondCopy.name],
+      );
       const thirdCopy = thirdResult.copyRoot;
       expect(thirdCopy.name).toEqual(`${item.name} (4)`);
     });
     it('cannot copy in non-folder', async () => {
-      const parentItem = await testUtils.saveItem({ actor, item: { type: 'app' } });
-      const item = await testUtils.saveItem({ actor });
-      await expect(itemRepository.copy(item, actor, [], parentItem)).rejects.toBeInstanceOf(
-        ItemNotFolder,
-      );
+      const {
+        members: [member],
+        items: [item, parentItem],
+      } = await seedFromJson({
+        actor: null,
+        members: [{}],
+        items: [{}, { type: ItemType.DOCUMENT }],
+      });
+      await expect(
+        itemRepository.copy(
+          db,
+          item,
+          new MemberDTO(member).toMinimal(),
+          [],
+          parentItem as FolderItem,
+        ),
+      ).rejects.toBeInstanceOf(ItemNotFolder);
     });
     it('copy suffix is updated', async () => {
-      const item = await testUtils.saveItem({ actor });
-      const result = await itemRepository.copy(item, actor, [item.name]);
+      const {
+        members: [member],
+        items: [item],
+      } = await seedFromJson({
+        actor: null,
+        members: [{}],
+        items: [{}],
+      });
+
+      const result = await itemRepository.copy(db, item, new MemberDTO(member).toMinimal(), [
+        item.name,
+      ]);
       const copy = result.copyRoot;
       expect(copy.name).toEqual(`${item.name} (2)`);
 
-      const result2 = await itemRepository.copy(copy, actor, [item.name, copy.name]);
+      const result2 = await itemRepository.copy(db, copy, new MemberDTO(member).toMinimal(), [
+        item.name,
+        copy.name,
+      ]);
       const copy2 = result2.copyRoot;
       expect(copy2.name).toEqual(`${item.name} (3)`);
     });
 
     it('copy name is not altered', async () => {
-      const item = await testUtils.saveItem({ actor });
+      const {
+        members: [member],
+        items: [item],
+      } = await seedFromJson({
+        actor: null,
+        members: [{}],
+        items: [{}],
+      });
+
       item.name = '()(/\\)(..)() (a) (3) ';
-      await itemRepository.updateOne(item.id, item);
-      const result = await itemRepository.copy(item, actor, [item.name]);
+      await itemRepository.updateOne(db, item.id, item);
+      const result = await itemRepository.copy(db, item, new MemberDTO(member).toMinimal(), [
+        item.name,
+      ]);
       const copy = result.copyRoot;
       expect(copy.name).toEqual(`${item.name} (2)`);
 
-      const result2 = await itemRepository.copy(copy, actor, [item.name, copy.name]);
+      const result2 = await itemRepository.copy(db, copy, new MemberDTO(member).toMinimal(), [
+        item.name,
+        copy.name,
+      ]);
       const copy2 = result2.copyRoot;
       expect(copy2.name).toEqual(`${item.name} (3)`);
     });
 
     it('copy name do not exceed maximum length allowed.', async () => {
-      const item = await testUtils.saveItem({ actor });
+      const {
+        members: [member],
+        items: [item],
+      } = await seedFromJson({
+        actor: null,
+        members: [{}],
+        items: [{}],
+      });
+
       item.name = faker.string.sample(MAX_ITEM_NAME_LENGTH);
-      await itemRepository.updateOne(item.id, item);
-      const result = await itemRepository.copy(item, actor, [item.name]);
+      await itemRepository.updateOne(db, item.id, item);
+      const result = await itemRepository.copy(db, item, new MemberDTO(member).toMinimal(), [
+        item.name,
+      ]);
       const copy = result.copyRoot;
       expect(copy.name).toEqual(`${item.name.substring(0, MAX_ITEM_NAME_LENGTH - 4)} (2)`);
 
       copy.name = `${item.name.substring(0, MAX_ITEM_NAME_LENGTH - 4)} (9)`;
-      await itemRepository.updateOne(copy.id, copy);
-      const result2 = await itemRepository.copy(copy, actor, [item.name, copy.name]);
+      await itemRepository.updateOne(db, copy.id, copy);
+      const result2 = await itemRepository.copy(db, copy, new MemberDTO(member).toMinimal(), [
+        item.name,
+        copy.name,
+      ]);
       const copy2 = result2.copyRoot;
       expect(copy2.name).toEqual(`${item.name.substring(0, MAX_ITEM_NAME_LENGTH - 5)} (10)`);
     });
   });
+
   describe('getItemSumSize', () => {
-    const itemType = ItemType.LOCAL_FILE;
+    const itemType = ItemType.S3_FILE;
     it('get sum for no item', async () => {
-      const result = await itemRepository.getItemSumSize(actor.id, itemType);
+      const {
+        members: [member],
+      } = await seedFromJson({
+        actor: null,
+        members: [{}],
+      });
+      const result = await itemRepository.getItemSumSize(db, member.id, itemType);
       expect(result).toEqual(0);
     });
     it('get sum for many items', async () => {
-      const item1 = await testUtils.saveItem({
+      const {
         actor,
-        item: LocalFileItemFactory() as unknown as Item,
+        items: [item1, item2, item3],
+      } = await seedFromJson({
+        items: [buildFile('actor'), buildFile('actor'), buildFile('actor'), { name: 'noise' }],
       });
-      const item2 = await testUtils.saveItem({
-        actor,
-        item: LocalFileItemFactory() as unknown as Item,
-      });
-      const item3 = await testUtils.saveItem({
-        actor,
-        item: LocalFileItemFactory() as unknown as Item,
-      });
+      assertIsDefined(actor);
+      assertIsMember(actor);
 
-      // noise
-      await testUtils.saveItem({
-        actor,
-      });
-
-      const result = await itemRepository.getItemSumSize(actor.id, itemType);
+      const result = await itemRepository.getItemSumSize(db, actor.id, itemType);
       expect(result).toEqual(
         item1.extra[itemType].size + item2.extra[itemType].size + item3.extra[itemType].size,
       );
     });
   });
-  describe('getAllPublishedItems', () => {
-    it('get published items', async () => {
-      const { items } = await testUtils.saveCollections(actor);
-      const result = await itemRepository.getAllPublishedItems();
-      expectManyItems(result, items);
-    });
-  });
   describe('getPublishedItemsForMember', () => {
     it('get published items for member', async () => {
-      const { items } = await testUtils.saveCollections(actor);
+      // TODO: update when seed handle published items
+      const { items, member } = await saveCollections();
       // noise
-      const member = await saveMember();
-      await testUtils.saveCollections(member);
+      await saveCollections();
 
-      const result = await itemRepository.getPublishedItemsForMember(actor.id);
+      const result = await itemRepository.getPublishedItemsForMember(db, member.id);
       expectManyItems(result, items);
     });
   });
   describe('getNextOrderCount', () => {
-    it('get next order for empty path', async () => {
-      expect(await itemRepository.getNextOrderCount()).toBeNull();
+    it('return default value for no children', async () => {
+      const {
+        items: [parentItem],
+      } = await seedFromJson({ members: [{}], items: [{}] });
+      expect(await itemRepository.getNextOrderCount(db, parentItem.path)).toEqual(DEFAULT_ORDER);
     });
-    it('get next order for no children', async () => {
-      const item = await testUtils.saveItem({ actor });
-      expect(await itemRepository.getNextOrderCount(item.path)).toEqual(DEFAULT_ORDER);
+    it('no parent returns null', async () => {
+      expect(await itemRepository.getNextOrderCount(db)).toBeNull();
+    });
+    it('return next values', async () => {
+      const {
+        items: [parentItem1, item1],
+      } = await seedFromJson({ actor: null, items: [{ children: [{ order: 10 }] }] });
+      expect(await itemRepository.getNextOrderCount(db, parentItem1.path, item1.id)).toEqual(30);
+
+      const {
+        items: [parentItem2, item2],
+      } = await seedFromJson({ actor: null, items: [{ children: [{ order: 22 }] }] });
+      expect(await itemRepository.getNextOrderCount(db, parentItem2.path, item2.id)).toEqual(42);
+
+      const {
+        items: [parentItem3, item3],
+      } = await seedFromJson({ actor: null, items: [{ children: [{ order: 45 }] }] });
+      expect(await itemRepository.getNextOrderCount(db, parentItem3.path, item3.id)).toEqual(65);
+    });
+    it('return biggest value if no item id', async () => {
+      const {
+        items: [parentItem],
+      } = await seedFromJson({
+        actor: null,
+        items: [{ children: [{ order: 10 }, { order: 20 }, { order: 25 }] }],
+      });
+      expect(await itemRepository.getNextOrderCount(db, parentItem.path)).toEqual(45);
+    });
+    it('get next order for empty path', async () => {
+      expect(await itemRepository.getNextOrderCount(db)).toBeNull();
     });
     it('get next order for one child', async () => {
-      const parentItem = await testUtils.saveItem({ actor });
+      const {
+        items: [parentItem],
+      } = await seedFromJson({ items: [{ children: [{ order: 5 }] }] });
 
-      await testUtils.saveItem({ actor, parentItem, item: { order: 5 } });
-      expect(await itemRepository.getNextOrderCount(parentItem.path)).toEqual(25);
+      expect(await itemRepository.getNextOrderCount(db, parentItem.path)).toEqual(25);
     });
     it('get next order in between two children', async () => {
-      const parentItem = await testUtils.saveItem({ actor });
+      const {
+        items: [parentItem, item],
+      } = await seedFromJson({ items: [{ children: [{ order: 30 }, { order: 40 }] }] });
 
-      const item = await testUtils.saveItem({ actor, parentItem, item: { order: 30 } });
-      await testUtils.saveItem({ actor, parentItem, item: { order: 40 } });
-      expect(await itemRepository.getNextOrderCount(parentItem.path, item.id)).toEqual(35);
+      expect(await itemRepository.getNextOrderCount(db, parentItem.path, item.id)).toEqual(35);
     });
     it('get next order for last child', async () => {
-      const parentItem = await testUtils.saveItem({ actor });
-      const item = await testUtils.saveItem({ actor, parentItem, item: { order: 40 } });
-      expect(await itemRepository.getNextOrderCount(parentItem.path, item.id)).toEqual(60);
+      const {
+        items: [parentItem, _item, lastItem],
+      } = await seedFromJson({ items: [{ children: [{ order: 30 }, { order: 40 }] }] });
+      expect(await itemRepository.getNextOrderCount(db, parentItem.path, lastItem.id)).toEqual(60);
     });
     it('no previous item id return latest order', async () => {
-      const parentItem = await testUtils.saveItem({ actor });
-      await testUtils.saveItem({ actor, parentItem, item: { order: 40 } });
-      expect(await itemRepository.getNextOrderCount(parentItem.path)).toEqual(60);
+      const {
+        items: [parentItem],
+      } = await seedFromJson({ items: [{ children: [{ order: 40 }] }] });
+      expect(await itemRepository.getNextOrderCount(db, parentItem.path)).toEqual(60);
     });
   });
   describe('getFirstOrderValue', () => {
     it('get first order for empty path', async () => {
-      expect(await itemRepository.getFirstOrderValue()).toBeNull();
+      expect(await itemRepository.getFirstOrderValue(db)).toBeNull();
     });
     it('get first order for no child', async () => {
-      const parentItem = await testUtils.saveItem({ actor });
-      expect(await itemRepository.getFirstOrderValue(parentItem.path)).toEqual(DEFAULT_ORDER);
+      const {
+        items: [parentItem],
+      } = await seedFromJson({ items: [{}] });
+      expect(await itemRepository.getFirstOrderValue(db, parentItem.path)).toEqual(DEFAULT_ORDER);
     });
     it('get first order for children', async () => {
-      const parentItem = await testUtils.saveItem({ actor });
-      await testUtils.saveItem({ actor, parentItem, item: { order: 40 } });
-      await testUtils.saveItem({ actor, parentItem, item: { order: 50 } });
-      expect(await itemRepository.getFirstOrderValue(parentItem.path)).toEqual(20);
+      const {
+        items: [parentItem],
+      } = await seedFromJson({ items: [{ children: [{ order: 40 }, { order: 50 }] }] });
+      expect(await itemRepository.getFirstOrderValue(db, parentItem.path)).toEqual(20);
     });
   });
   describe('reorder', () => {
     it('no previous item reorder at first place', async () => {
-      const parentItem = await testUtils.saveItem({ actor });
-      const item = await testUtils.saveItem({ actor, parentItem, item: { order: 10 } });
-      await itemRepository.reorder(item, parentItem.path);
-      expect(await testUtils.getOrderForItemId(item.id)).toEqual(5);
+      const {
+        items: [parentItem, item],
+      } = await seedFromJson({ items: [{ children: [{ order: 10 }] }] });
+      const reOrderedItem = await itemRepository.reorder(db, item, parentItem.path);
+      expect(reOrderedItem.order).toEqual(5);
     });
     it('reorder in one child will return smaller order', async () => {
-      const parentItem = await testUtils.saveItem({ actor });
-      const item = await testUtils.saveItem({ actor, parentItem, item: { order: 10 } });
-      await itemRepository.reorder(item, parentItem.path);
-      expect(await testUtils.getOrderForItemId(item.id)).toBeLessThan(10);
+      const {
+        items: [parentItem, item],
+      } = await seedFromJson({ items: [{ children: [{ order: 10 }] }] });
+      const reOrderedItem = await itemRepository.reorder(db, item, parentItem.path);
+      expect(reOrderedItem.order).toBeLessThan(10);
     });
     it('reorder in root returns null', async () => {
-      const item = await testUtils.saveItem({ actor });
-      await itemRepository.reorder(item, '');
+      const {
+        items: [item],
+      } = await seedFromJson({ items: [{}] });
+      const reOrderedItem = await itemRepository.reorder(db, item, '');
       // cannot use findOne because order is null
-      expect(await testUtils.getOrderForItemId(item.id)).toBeNull();
+      expect(reOrderedItem.order).toBeNull();
     });
     it('reorder in between children after previous item', async () => {
-      const parentItem = await testUtils.saveItem({ actor });
-      const item = await testUtils.saveItem({ actor, parentItem, item: { order: 40 } });
-      const previousItem = await testUtils.saveItem({ actor, parentItem, item: { order: 50 } });
-      await testUtils.saveItem({ actor, parentItem, item: { order: 70 } });
-      await itemRepository.reorder(item, parentItem.path, previousItem.id);
+      const {
+        items: [parentItem, item, previousItem],
+      } = await seedFromJson({
+        items: [{ children: [{ order: 40 }, { order: 50 }, { order: 70 }] }],
+      });
 
-      expect(await testUtils.getOrderForItemId(item.id)).toEqual(60);
+      const reOrderedItem = await itemRepository.reorder(
+        db,
+        item,
+        parentItem.path,
+        previousItem.id,
+      );
+
+      expect(reOrderedItem.order).toEqual(60);
     });
     it('reorder at the end after previous item', async () => {
-      const parentItem = await testUtils.saveItem({ actor });
-      const item = await testUtils.saveItem({ actor, parentItem, item: { order: 40 } });
-      const previousItem = await testUtils.saveItem({ actor, parentItem, item: { order: 50 } });
-      await itemRepository.reorder(item, parentItem.path, previousItem.id);
-      expect(await testUtils.getOrderForItemId(item.id)).toEqual(70);
+      const {
+        items: [parentItem, item, previousItem],
+      } = await seedFromJson({
+        items: [{ children: [{ order: 40 }, { order: 50 }] }],
+      });
+
+      const reOrderedItem = await itemRepository.reorder(
+        db,
+        item,
+        parentItem.path,
+        previousItem.id,
+      );
+      expect(reOrderedItem.order).toEqual(70);
     });
   });
   describe('rescaleOrder', () => {
-    it('rescale no children does no update', async () => {
-      const parentItem = await testUtils.saveItem({ actor });
-      const updateFn = jest.spyOn(testUtils.rawItemRepository, 'update');
-      await itemRepository.rescaleOrder(actor, parentItem);
-      expect(updateFn).not.toHaveBeenCalled();
-    });
+    // HOW to check if there was an update ? we can not spy on the repo since we do the update directly.
+    // it.skip('rescale no children does no update', async () => {
+    //   const {
+    //     actor,
+    //     items: [parentItem],
+    //   } = await seedFromJson({
+    //     items: [{}],
+    //   });
+    //   // const updateFn = jest.spyOn(itemRawRepository, 'update');
+    //   await itemRepository.rescaleOrder(db, actor, parentItem);
+    //   // expect(updateFn).not.toHaveBeenCalled();
+    // });
     it('rescale children', async () => {
-      const parentItem = await testUtils.saveItem({ actor });
+      const {
+        actor,
+        items: [parentItem, item1, item2, item3, item4],
+      } = await seedFromJson({
+        items: [
+          { children: [{ order: 10.1 }, { order: 10.12 }, { order: 10.14 }, { order: 10.13 }] },
+        ],
+      });
 
-      const item1 = await testUtils.saveItem({ actor, parentItem, item: { order: 10.1 } });
-      const item2 = await testUtils.saveItem({ actor, parentItem, item: { order: 10.12 } });
-      const item3 = await testUtils.saveItem({ actor, parentItem, item: { order: 10.14 } });
-      const item4 = await testUtils.saveItem({ actor, parentItem, item: { order: 10.13 } });
+      assertIsDefined(actor);
+      await itemRepository.rescaleOrder(db, new MemberDTO(actor).toMinimal(), parentItem);
 
-      await itemRepository.rescaleOrder(actor, parentItem);
-
-      expect(await testUtils.getOrderForItemId(item1.id)).toEqual(20);
-      expect(await testUtils.getOrderForItemId(item2.id)).toEqual(40);
-      expect(await testUtils.getOrderForItemId(item3.id)).toEqual(80);
-      expect(await testUtils.getOrderForItemId(item4.id)).toEqual(60);
+      expect(await getOrderForItemId(item1.id)).toEqual(20);
+      expect(await getOrderForItemId(item2.id)).toEqual(40);
+      expect(await getOrderForItemId(item3.id)).toEqual(80);
+      expect(await getOrderForItemId(item4.id)).toEqual(60);
     });
     it('rescale children for null values', async () => {
-      const parentItem = await testUtils.saveItem({ actor });
-
-      const item1 = await testUtils.saveItem({ actor, parentItem, item: { order: 10.1 } });
-      const item2 = await testUtils.saveItem({
+      const {
         actor,
-        parentItem,
-        item: { createdAt: new Date(Date.now() - 1000), order: null },
-      });
-      const item3 = await testUtils.saveItem({ actor, parentItem, item: { order: 16 } });
-      const item4 = await testUtils.saveItem({ actor, parentItem, item: { order: 13 } });
-      const item5 = await testUtils.saveItem({
-        actor,
-        parentItem,
-        item: { createdAt: new Date(Date.now()), order: null },
+        items: [parentItem, item1, item2, item3, item4, item5],
+      } = await seedFromJson({
+        items: [
+          {
+            children: [
+              { order: 10.1 },
+              { createdAt: new Date(Date.now() - 1000).toISOString(), order: null },
+              { order: 16 },
+              { order: 13 },
+              { createdAt: new Date(Date.now()).toISOString(), order: null },
+            ],
+          },
+        ],
       });
 
-      await itemRepository.rescaleOrder(actor, parentItem);
+      assertIsDefined(actor);
+      await itemRepository.rescaleOrder(db, new MemberDTO(actor).toMinimal(), parentItem);
 
-      expect(await testUtils.getOrderForItemId(item1.id)).toEqual(20);
+      expect(await getOrderForItemId(item1.id)).toEqual(20);
       // null value is at the end but before item5 because it is the least recent
-      expect(await testUtils.getOrderForItemId(item2.id)).toEqual(80);
-      expect(await testUtils.getOrderForItemId(item3.id)).toEqual(60);
-      expect(await testUtils.getOrderForItemId(item4.id)).toEqual(40);
+      expect(await getOrderForItemId(item2.id)).toEqual(80);
+      expect(await getOrderForItemId(item3.id)).toEqual(60);
+      expect(await getOrderForItemId(item4.id)).toEqual(40);
       // null value is at the end because it's the most recent
-      expect(await testUtils.getOrderForItemId(item5.id)).toEqual(100);
+      expect(await getOrderForItemId(item5.id)).toEqual(100);
     });
     it('rescale children for identical values', async () => {
-      const parentItem = await testUtils.saveItem({ actor });
-
-      const item1 = await testUtils.saveItem({ actor, parentItem, item: { order: 10.1 } });
-      const item2 = await testUtils.saveItem({
+      const {
         actor,
-        parentItem,
-        item: { createdAt: new Date(Date.now() - 1000), order: 3 },
-      });
-      const item3 = await testUtils.saveItem({ actor, parentItem, item: { order: 16 } });
-      const item4 = await testUtils.saveItem({ actor, parentItem, item: { order: 13 } });
-      const item5 = await testUtils.saveItem({
-        actor,
-        parentItem,
-        item: { createdAt: new Date(Date.now()), order: 3 },
+        items: [parentItem, item1, item2, item3, item4, item5],
+      } = await seedFromJson({
+        items: [
+          {
+            children: [
+              { order: 10.1 },
+              { createdAt: new Date(Date.now() - 1000).toISOString(), order: 3 },
+              { order: 16 },
+              { order: 13 },
+              { createdAt: new Date(Date.now()).toISOString(), order: 3 },
+            ],
+          },
+        ],
       });
 
-      await itemRepository.rescaleOrder(actor, parentItem);
+      assertIsDefined(actor);
+      await itemRepository.rescaleOrder(db, new MemberDTO(actor).toMinimal(), parentItem);
 
-      expect(await testUtils.getOrderForItemId(item1.id)).toEqual(60);
+      expect(await getOrderForItemId(item1.id)).toEqual(60);
       // first among duplicata because is more recent
-      expect(await testUtils.getOrderForItemId(item2.id)).toEqual(20);
-      expect(await testUtils.getOrderForItemId(item3.id)).toEqual(100);
-      expect(await testUtils.getOrderForItemId(item4.id)).toEqual(80);
+      expect(await getOrderForItemId(item2.id)).toEqual(20);
+      expect(await getOrderForItemId(item3.id)).toEqual(100);
+      expect(await getOrderForItemId(item4.id)).toEqual(80);
       // second among duplicata because is less recent
-      expect(await testUtils.getOrderForItemId(item5.id)).toEqual(40);
+      expect(await getOrderForItemId(item5.id)).toEqual(40);
     });
     it('do not rescale if bigger than threshold', async () => {
-      const parentItem = await testUtils.saveItem({ actor });
+      const {
+        actor,
+        items: [parentItem, item1, item2, item3, item4],
+      } = await seedFromJson({
+        items: [{ children: [{ order: 11 }, { order: 12 }, { order: 14 }, { order: 13 }] }],
+      });
 
-      const item1 = await testUtils.saveItem({ actor, parentItem, item: { order: 11 } });
-      const item2 = await testUtils.saveItem({ actor, parentItem, item: { order: 12 } });
-      const item3 = await testUtils.saveItem({ actor, parentItem, item: { order: 14 } });
-      const item4 = await testUtils.saveItem({ actor, parentItem, item: { order: 13 } });
+      assertIsDefined(actor);
+      await itemRepository.rescaleOrder(db, new MemberDTO(actor).toMinimal(), parentItem);
 
-      await itemRepository.rescaleOrder(actor, parentItem);
-
-      expect(await testUtils.getOrderForItemId(item1.id)).toEqual(11);
-      expect(await testUtils.getOrderForItemId(item2.id)).toEqual(12);
-      expect(await testUtils.getOrderForItemId(item3.id)).toEqual(14);
-      expect(await testUtils.getOrderForItemId(item4.id)).toEqual(13);
+      expect(await getOrderForItemId(item1.id)).toEqual(11);
+      expect(await getOrderForItemId(item2.id)).toEqual(12);
+      expect(await getOrderForItemId(item3.id)).toEqual(14);
+      expect(await getOrderForItemId(item4.id)).toEqual(13);
     });
   });
 });

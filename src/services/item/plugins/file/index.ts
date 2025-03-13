@@ -6,15 +6,16 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { FileItemProperties, PermissionLevel, getFileExtension } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../di/utils';
-import { asDefined } from '../../../../utils/assertions';
-import { buildRepositories } from '../../../../utils/repositories';
-import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
-import { matchOne, validatePermission } from '../../../authorization';
+import { db } from '../../../../drizzle/db';
+import { Item } from '../../../../drizzle/types';
+import { asDefined, assertIsDefined } from '../../../../utils/assertions';
+import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
+import { assertIsMember, isMember } from '../../../authentication';
+import { AuthorizationService } from '../../../authorization';
 import FileService from '../../../file/service';
-import { assertIsMember, isMember } from '../../../member/entities/member';
 import { StorageService } from '../../../member/plugins/storage/service';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { Item } from '../../entities/Item';
+import { ItemRepository } from '../../repository';
 import { ItemService } from '../../service';
 import { H5PService } from '../html/h5p/service';
 import { H5P_FILE_EXTENSION } from '../importExport/constants';
@@ -32,13 +33,13 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
   const { uploadMaxFileNb = MAX_NUMBER_OF_FILES_UPLOAD, maxFileSize = DEFAULT_MAX_FILE_SIZE } =
     options;
 
-  const { db } = fastify;
-
   const fileService = resolveDependency(FileService);
   const itemService = resolveDependency(ItemService);
   const storageService = resolveDependency(StorageService);
   const fileItemService = resolveDependency(FileItemService);
   const h5pService = resolveDependency(H5PService);
+  const itemRepository = resolveDependency(ItemRepository);
+  const authorizationService = resolveDependency(AuthorizationService);
 
   fastify.register(fastifyMultipart, {
     limits: {
@@ -53,29 +54,26 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
   });
 
   // register post delete handler to remove the file object after item delete
-  itemService.hooks.setPostHook(
-    'delete',
-    async (actor, repositories, { item: { id, type, extra } }) => {
-      if (!actor) {
+  itemService.hooks.setPostHook('delete', async (actor, db, { item: { id, type, extra } }) => {
+    if (!actor) {
+      return;
+    }
+    try {
+      // delete file only if type is the current file type
+      if (!id || type !== fileService.fileType) {
         return;
       }
-      try {
-        // delete file only if type is the current file type
-        if (!id || type !== fileService.fileType) {
-          return;
-        }
-        const filepath = (extra[fileService.fileType] as FileItemProperties).path;
-        await fileService.delete(filepath);
-      } catch (err) {
-        // we catch the error, it ensures the item is deleted even if the file is not
-        // this is especially useful for the files uploaded before the migration to the new plugin
-        console.error(err);
-      }
-    },
-  );
+      const filepath = (extra[fileService.fileType] as FileItemProperties).path;
+      await fileService.delete(filepath);
+    } catch (err) {
+      // we catch the error, it ensures the item is deleted even if the file is not
+      // this is especially useful for the files uploaded before the migration to the new plugin
+      console.error(err);
+    }
+  });
 
   // register post copy handler to copy the file object after item copy
-  itemService.hooks.setPreHook('copy', async (actor, repositories, { original: item }) => {
+  itemService.hooks.setPreHook('copy', async (actor, thisDb, { original: item }) => {
     if (!actor) {
       return;
     }
@@ -87,11 +85,11 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
     if (!id || type !== fileService.fileType) return;
     const size = (item.extra[fileService.fileType] as FileItemProperties & { size?: number })?.size;
 
-    await storageService.checkRemainingStorage(actor, repositories, size);
+    await storageService.checkRemainingStorage(thisDb, actor, size);
   });
 
   // register post copy handler to copy the file object after item copy
-  itemService.hooks.setPostHook('copy', async (actor, repositories, { original, copy }) => {
+  itemService.hooks.setPostHook('copy', async (actor, thisDb, { original, copy }) => {
     if (!actor || !isMember(actor)) {
       return;
     }
@@ -102,7 +100,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
     if (!id || type !== fileService.fileType) {
       return;
     }
-    await fileItemService.copyFile(actor, repositories, { original, copy });
+    await fileItemService.copyFile(thisDb, actor, { original, copy });
   });
 
   fastify.post('/upload', {
@@ -119,9 +117,8 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
 
       // check rights
       if (parentId) {
-        const repositories = buildRepositories();
-        const item = await repositories.itemRepository.getOneOrThrow(parentId);
-        await validatePermission(repositories, PermissionLevel.Write, member, item);
+        const item = await itemRepository.getOneOrThrow(db, parentId);
+        await authorizationService.validatePermission(db, PermissionLevel.Write, member, item);
       }
 
       // upload file one by one
@@ -135,17 +132,15 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
 
         // if one file fails, keep other files
         // transaction to ensure item is saved with memberships
-        await db.transaction(async (manager) => {
-          const repositories = buildRepositories(manager);
-
+        await db.transaction(async (tx) => {
           try {
             // if the file is an H5P file, we treat it appropriately
             // othwerwise, we save it as a generic file
             let item: Item;
             if (getFileExtension(filename) === H5P_FILE_EXTENSION) {
               item = await h5pService.createH5PItem(
+                tx,
                 member,
-                repositories,
                 filename,
                 stream,
                 parentId,
@@ -153,7 +148,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
                 log,
               );
             } else {
-              item = await fileItemService.upload(member, repositories, {
+              item = await fileItemService.upload(tx, member, {
                 parentId,
                 filename,
                 mimetype,
@@ -177,7 +172,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
 
       // rescale is necessary when uploading multiple files: they have the same order number
       if (items.length) {
-        await itemService.rescaleOrderForParent(member, buildRepositories(), items[0]);
+        await itemService.rescaleOrderForParent(db, member, items[0]);
       }
 
       return {
@@ -199,7 +194,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
         params: { id: itemId },
       } = request;
 
-      const url = await fileItemService.getUrl(user?.account, buildRepositories(), {
+      const url = await fileItemService.getUrl(db, user?.account, {
         itemId,
       });
 
@@ -213,14 +208,14 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
       schema: updateFile,
       preHandler: isAuthenticated,
     },
-    async (request, reply) => {
-      const {
-        user,
-        params: { id: itemId },
-        body,
-      } = request;
+    async ({ user, params: { id: itemId }, body }, reply) => {
+      const member = user?.account;
+      assertIsDefined(member);
+      assertIsMember(member);
 
-      await fileItemService.update(user?.account, buildRepositories(), itemId, body);
+      await db.transaction(async (tx) => {
+        await fileItemService.update(tx, member, itemId, body);
+      });
 
       reply.status(StatusCodes.NO_CONTENT);
     },
