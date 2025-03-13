@@ -351,11 +351,16 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       } = request;
       const member = asDefined(user?.account);
       assertIsMember(member);
-      db.transaction(async (tsx) => {
-        return await itemService.copyMany(tsx, member, ids, {
-          parentId,
-        });
-      })
+
+      reply.status(StatusCodes.ACCEPTED);
+      reply.send(ids);
+
+      await db
+        .transaction(async (tsx) => {
+          return await itemService.copyMany(tsx, member, ids, {
+            parentId,
+          });
+        })
         .then(({ items, copies }) => {
           websockets.publish(
             memberItemsTopic,
@@ -367,8 +372,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           log.error(e);
           websockets.publish(memberItemsTopic, member.id, ItemOpFeedbackErrorEvent('copy', ids, e));
         });
-      reply.status(StatusCodes.ACCEPTED);
-      return ids;
     },
   );
 };

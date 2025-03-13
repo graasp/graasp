@@ -105,7 +105,7 @@ export const itemRelations = relations(itemsRaw, ({ one, many }) => ({
   actions: many(actionsTable),
   itemGeolocations: many(itemGeolocationsTable),
   actionRequestExports: many(actionRequestExports),
-  account: one(accountsTable, {
+  creator: one(accountsTable, {
     fields: [itemsRaw.creatorId],
     references: [accountsTable.id],
   }),

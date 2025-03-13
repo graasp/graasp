@@ -884,6 +884,7 @@ export class ItemService {
     );
 
     // create a membership if needed
+    console.log('wrgoijw');
     await this.itemMembershipRepository
       .addOne(db, {
         itemPath: copyRoot.path,
@@ -892,12 +893,14 @@ export class ItemService {
         permission: PermissionLevel.Admin,
       })
       .catch((e) => {
+        console.log(e);
         // admin permission already exists and does not need to be added
         if (e instanceof InvalidMembership) {
           return;
         }
         throw e;
       });
+    console.log('zhrtgdrfsd');
 
     // post hook
     for (const { original, copy } of treeCopyMap.values()) {

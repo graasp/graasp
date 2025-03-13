@@ -608,7 +608,13 @@ export class ItemMembershipRepository {
       .select()
       .from(itemMembershipTable)
       .innerJoin(accountsTable, eq(itemMembershipTable.accountId, accountsTable.id))
-      .innerJoin(itemsRaw, isAncestorOrSelf(itemMembershipTable.itemPath, itemsRaw.path))
+      .innerJoin(
+        itemsRaw,
+        and(
+          eq(itemsRaw.path, itemPath),
+          isAncestorOrSelf(itemMembershipTable.itemPath, itemsRaw.path),
+        ),
+      )
       .where(and(...andConditions))
       .orderBy(desc(sql`nlevel(${itemMembershipTable.itemPath})`));
 
@@ -757,7 +763,7 @@ export class ItemMembershipRepository {
       if (itemFromPermission.id === itemId) {
         throw new ModifyExistingMembership({ id });
       }
-
+      console.log(itemId, itemPath, permission, inheritedMembership);
       if (PermissionLevelCompare.lte(permission, inheritedPermission)) {
         // trying to add a membership with the same or "worse" permission level than
         // the one inherited from the membership "above"

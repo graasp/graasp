@@ -295,14 +295,12 @@ export class ItemVisibilityRepository {
     excludeTypes?: ItemVisibilityOptionsType[],
   ): Promise<void> {
     const originalVisibilities = await this.getByItemPath(db, original.path);
-    if (originalVisibilities) {
-      await db
-        .insert(itemVisibilities)
-        .values(
-          originalVisibilities
-            .filter((visibility) => !excludeTypes?.includes(visibility.type))
-            .map(({ type }) => ({ itemPath: copyPath, type, creator })),
-        );
+    const visibilitiesToInsert = originalVisibilities
+      .filter((visibility) => !excludeTypes?.includes(visibility.type))
+      .map(({ type }) => ({ itemPath: copyPath, type, creator }));
+
+    if (visibilitiesToInsert.length) {
+      await db.insert(itemVisibilities).values(visibilitiesToInsert);
       // await this.repository.insert(
       //   itemVisibilities
       //     .filter((visibility) => !excludeTypes?.includes(visibility.type))
