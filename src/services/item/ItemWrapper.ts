@@ -188,10 +188,8 @@ export class ItemWrapperService {
       (await this.itemMembershipRepository.getForManyItems(db, items, {
         withDeleted,
       }));
-    console.log('rtjzg');
 
     const itemsThumbnails = await this.itemThumbnailService.getUrlsByItems(items);
-    console.log('kujhzfgb');
 
     return items.map((item) => {
       const permission = m.data[item.id][0]?.permission;
@@ -202,7 +200,6 @@ export class ItemWrapperService {
       if (itemVisibilities) {
         itemVisibilities.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
       }
-      console.log('weroiherg');
 
       return {
         ...item,

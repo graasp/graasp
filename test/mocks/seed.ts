@@ -43,7 +43,10 @@ import { ItemFactory } from '../factories/item.factory';
 import { GuestFactory, MemberFactory } from '../factories/member.factory';
 
 const ACTOR_STRING = 'actor';
-type SeedActor = Partial<AccountRaw> & { profile?: Partial<MemberProfileRaw>; password?: string };
+export type SeedActor = Partial<AccountRaw> & {
+  profile?: Partial<MemberProfileRaw>;
+  password?: string;
+};
 type ReferencedSeedActor = 'actor' | SeedActor;
 type SeedMember = Partial<MemberRaw> & { profile?: Partial<MemberProfileRaw> };
 type SeedMembership<M = SeedMember> = Partial<Omit<ItemMembershipRaw, 'creator' | 'account'>> & {

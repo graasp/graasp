@@ -82,7 +82,6 @@ const getOrderForItemId = async (itemId: Item['id']): Promise<number | null> => 
     const res = await db.select().from(items).where(eq(items.id, itemId));
     return res[0].order;
   } catch (e) {
-    console.log('faaskdfjksl', e);
     return null;
   }
 };

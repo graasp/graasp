@@ -483,7 +483,6 @@ export class ItemService {
     );
 
     const packedItems = await this.itemWrapperService.createPackedItems(db, items);
-    console.log(packedItems);
     return { data: packedItems, totalCount, pagination };
   }
 
@@ -731,7 +730,12 @@ export class ItemService {
 
   /////// -------- MOVE
   async move(db: DBConnection, member: MinimalMember, itemId: UUID, parentItem?: FolderItem) {
-    const item = await this.itemRepository.getOneOrThrow(db, itemId);
+    let item;
+    try {
+      item = await this.itemRepository.getOneOrThrow(db, itemId);
+    } catch (e) {
+      throw e;
+    }
 
     await this.authorizationService.validatePermission(db, PermissionLevel.Admin, member, item);
 
@@ -753,10 +757,8 @@ export class ItemService {
       source: item,
       destinationParent: parentItem,
     });
-    console.log('rhtp9ij34ref');
 
     const result = await this._move(db, member, item, parentItem);
-    console.log('eroijenrlg');
     await this.hooks.runPostHooks('move', member, db, {
       source: item,
       sourceParentId: getParentFromPath(item.path),
@@ -780,6 +782,7 @@ export class ItemService {
     }
 
     const results = await Promise.all(itemIds.map((id) => this.move(db, member, id, parentItem)));
+
     // newly moved items needs rescaling since they are added in parallel
     if (parentItem) {
       await this.itemRepository.rescaleOrder(db, member, parentItem);
@@ -811,20 +814,16 @@ export class ItemService {
       actor,
       parentItem,
     );
-    console.log('w3ioejrnksf');
 
     const result = await this.itemRepository.move(db, item, parentItem);
-    console.log('foijwnkr');
     // adjust memberships to keep the constraints
     if (inserts.length) {
       await this.itemMembershipRepository.addMany(db, inserts);
     }
-    console.log('hztrgfdv');
 
     if (deletes.length) {
       await this.itemMembershipRepository.deleteManyByItemPathAndAccount(db, deletes);
     }
-    console.log('293u8weriojk');
     return result;
   }
 
