@@ -175,7 +175,7 @@
     "wait-for-expect": "3.0.2"
   },
   "resolutions": {
-    "sodium-native": "4.2.0"
+    "sodium-native": "4.3.3"
   },
   "packageManager": "yarn@4.5.3"
 }
