@@ -1,8 +1,6 @@
 import { count, desc, eq, inArray, sql } from 'drizzle-orm';
 import { singleton } from 'tsyringe';
 
-import { isDescendantOf } from '@graasp/sdk';
-
 import { DBConnection } from '../../../../../drizzle/db';
 import { isAncestorOrSelf } from '../../../../../drizzle/operations';
 import { items, membersView, publishedItems } from '../../../../../drizzle/schema';
@@ -13,7 +11,6 @@ import {
   MemberRaw,
 } from '../../../../../drizzle/types';
 import { MinimalMember } from '../../../../../types';
-import { assertIsDefined } from '../../../../../utils/assertions';
 import { ItemPublishedNotFound } from './errors';
 
 @singleton()
@@ -35,14 +32,16 @@ export class ItemPublishedRepository {
       .innerJoin(membersView, eq(items.creatorId, membersView.id))
       .orderBy(desc(sql`nlevel(${publishedItems.itemPath})`))
       .limit(1);
-    const entry = res[0];
-    assertIsDefined(entry);
-    const mappedEntry = {
-      ...entry.item_published,
-      item: { ...entry.item_view, creator: entry.members_view as MemberRaw },
-      // creator: entry.members_view,
-    };
-    return mappedEntry;
+    if (res.length) {
+      const entry = res[0];
+      const mappedEntry = {
+        ...entry.item_published,
+        item: { ...entry.item_view, creator: entry.members_view as MemberRaw },
+        // creator: entry.members_view,
+      };
+      return mappedEntry;
+    }
+    return null;
   }
 
   async getForItems(

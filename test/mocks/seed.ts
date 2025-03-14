@@ -16,6 +16,7 @@ import { db } from '../../src/drizzle/db';
 import {
   accountsTable,
   guestPasswords,
+  itemGeolocationsTable,
   itemLoginSchemas,
   itemMemberships,
   itemTags as itemTagsTable,
@@ -29,6 +30,8 @@ import {
   AccountRaw,
   GuestRaw,
   Item,
+  ItemGeolocationInsertDTO,
+  ItemGeolocationRaw,
   ItemLoginSchemaRaw,
   ItemMembershipRaw,
   ItemRaw,
@@ -59,6 +62,7 @@ type SeedItem<M = SeedMember> = (Partial<Omit<Item, 'creator'>> & { creator?: M 
   memberships?: SeedMembership<M>[];
   isPublic?: boolean;
   isHidden?: boolean;
+  geolocation?: Omit<ItemGeolocationInsertDTO, 'itemPath'>;
   tags?: Pick<TagRaw, 'name' | 'category'>[];
   itemLoginSchema?: Partial<ItemLoginSchemaRaw> & {
     guests?: (Partial<GuestRaw> & { password?: string })[];
@@ -441,6 +445,7 @@ export async function seedFromJson(data: DataType = {}) {
     guests: GuestRaw[];
     tags: TagRaw[];
     itemTags: ItemTagRaw[];
+    geolocations: ItemGeolocationRaw[];
   } = {
     items: [],
     actor: undefined,
@@ -452,6 +457,7 @@ export async function seedFromJson(data: DataType = {}) {
     guests: [],
     tags: [],
     itemTags: [],
+    geolocations: [],
   };
 
   const { items: itemsWithActor, actor, members, actorProfile } = await processActor(data);
@@ -517,6 +523,17 @@ export async function seedFromJson(data: DataType = {}) {
       )[0];
       result.itemTags.push(itemTag);
     }
+  }
+
+  // save item geolocation
+  const geolocations = processedItems.reduce((acc, i) => {
+    if (i.geolocation) {
+      acc.push({ itemPath: i.path, ...i.geolocation });
+    }
+    return acc;
+  }, []);
+  if (geolocations.length) {
+    result.geolocations = await db.insert(itemGeolocationsTable).values(geolocations).returning();
   }
 
   return result;

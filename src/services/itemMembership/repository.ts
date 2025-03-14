@@ -607,14 +607,14 @@ export class ItemMembershipRepository {
     const memberships = await db
       .select()
       .from(itemMembershipTable)
-      .innerJoin(accountsTable, eq(itemMembershipTable.accountId, accountsTable.id))
       .innerJoin(
         itemsRaw,
         and(
-          eq(itemsRaw.path, itemPath),
-          isAncestorOrSelf(itemMembershipTable.itemPath, itemsRaw.path),
+          eq(itemMembershipTable.itemPath, itemsRaw.path),
+          isAncestorOrSelf(itemMembershipTable.itemPath, itemPath),
         ),
       )
+      .innerJoin(accountsTable, eq(itemMembershipTable.accountId, accountsTable.id))
       .where(and(...andConditions))
       .orderBy(desc(sql`nlevel(${itemMembershipTable.itemPath})`));
 
@@ -757,6 +757,7 @@ export class ItemMembershipRepository {
     const itemId = getChildFromPath(itemPath);
 
     const inheritedMembership = await this.getInherited(db, itemPath, accountId, true);
+    console.log(inheritedMembership, itemId, itemPath, accountId);
     if (inheritedMembership) {
       const { item: itemFromPermission, permission: inheritedPermission, id } = inheritedMembership;
       // fail if trying to add a new membership for the same member and item

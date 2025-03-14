@@ -271,11 +271,16 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       } = request;
       const member = asDefined(user?.account);
       assertIsMember(member);
-      db.transaction(async (tsx) => {
-        const items = await itemService.deleteMany(tsx, member, ids);
-        await actionItemService.postManyDeleteAction(tsx, request, items);
-        return items;
-      })
+
+      reply.status(StatusCodes.ACCEPTED);
+      reply.send(ids);
+
+      await db
+        .transaction(async (tsx) => {
+          const items = await itemService.deleteMany(tsx, member, ids);
+          await actionItemService.postManyDeleteAction(tsx, request, items);
+          return items;
+        })
         .then((items) => {
           websockets.publish(
             memberItemsTopic,
@@ -291,8 +296,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
             ItemOpFeedbackErrorEvent('delete', ids, e),
           );
         });
-      reply.status(StatusCodes.ACCEPTED);
-      return ids;
     },
   );
 
