@@ -1,23 +1,22 @@
 import { sign as jwtSign } from 'jsonwebtoken';
 import { singleton } from 'tsyringe';
 
-import { ClientManager, Context, UUID } from '@graasp/sdk';
+import { ClientManager, Context, type UUID } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import { type DBConnection } from '../../drizzle/db';
-import { MemberCreationDTO, MemberRaw } from '../../drizzle/types';
-import { TRANSLATIONS } from '../../langs/constants';
-import { BaseLogger } from '../../logger';
-import { MailBuilder } from '../../plugins/mailer/builder';
-import { type MailerService } from '../../plugins/mailer/mailer.service';
-import { type MemberInfo } from '../../types';
+import { type DBConnection } from '../../drizzle/db.js';
+import type { MemberCreationDTO, MemberRaw } from '../../drizzle/types.js';
+import { TRANSLATIONS } from '../../langs/constants.js';
+import { BaseLogger } from '../../logger.js';
+import { MailBuilder } from '../../plugins/mailer/builder.js';
+import { type MemberInfo } from '../../types.js';
 import {
   EMAIL_CHANGE_JWT_EXPIRATION_IN_MINUTES,
   EMAIL_CHANGE_JWT_SECRET,
-} from '../../utils/config';
-import { MemberAlreadySignedUp } from '../../utils/errors';
-import { NEW_EMAIL_PARAM, SHORT_TOKEN_PARAM } from '../auth/plugins/passport';
-import { MemberRepository } from './member.repository';
+} from '../../utils/config.js';
+import { MemberAlreadySignedUp } from '../../utils/errors.js';
+import { NEW_EMAIL_PARAM, SHORT_TOKEN_PARAM } from '../auth/plugins/passport/index.js';
+import { MemberRepository } from './member.repository.js';
 
 @singleton()
 export class MemberService {

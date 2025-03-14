@@ -13,9 +13,9 @@ import {
   MaxWidth,
 } from '@graasp/sdk';
 
-import { customType, registerSchemaAsRef } from '../../plugins/typebox';
-import { errorSchemaRef } from '../../schemas/global';
-import { nullableAccountSchemaRef } from '../account/schemas';
+import { customType, registerSchemaAsRef } from '../../plugins/typebox.js';
+import { errorSchemaRef } from '../../schemas/global.js';
+import { nullableAccountSchemaRef } from '../account/schemas.js';
 
 export const settingsSchema = Type.Partial(
   customType.StrictObject(

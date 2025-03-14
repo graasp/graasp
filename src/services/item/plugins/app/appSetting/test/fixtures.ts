@@ -1,5 +1,7 @@
-import { Item } from '../../../../../../drizzle/types';
-import { MinimalMember } from '../../../../../../types';
+import { db } from '../../../../../../drizzle/db.js';
+import { appSettings } from '../../../../../../drizzle/schema.js';
+import { Item } from '../../../../../../drizzle/types.js';
+import { MinimalMember } from '../../../../../../types.js';
 
 export const saveAppSettings = async ({
   item,
@@ -9,15 +11,13 @@ export const saveAppSettings = async ({
   creator: MinimalMember;
 }) => {
   const defaultData = { name: 'setting-name', data: { setting: 'value' } };
-  const rawAppSettingRepository = AppDataSource.getRepository(AppSetting);
-  const s1 = await rawAppSettingRepository.save({ item, creator, ...defaultData });
-  const s2 = await rawAppSettingRepository.save({ item, creator, ...defaultData });
-  const s3 = await rawAppSettingRepository.save({ item, creator, ...defaultData });
-  const s4 = await rawAppSettingRepository.save({
-    item,
-    creator,
-    ...defaultData,
-    name: 'new-setting',
-  });
-  return [s1, s2, s3, s4];
+  return await db
+    .insert(appSettings)
+    .values([
+      { itemId: item.id, creatorId: creator.id, ...defaultData },
+      { itemId: item.id, creatorId: creator.id, ...defaultData },
+      { itemId: item.id, creatorId: creator.id, ...defaultData },
+      { itemId: item.id, creatorId: creator.id, ...defaultData, name: 'new-setting' },
+    ])
+    .returning();
 };

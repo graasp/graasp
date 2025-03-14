@@ -1,12 +1,12 @@
-import build, { MOCK_LOGGER, clearDatabase } from '../../../../../../test/app';
-import { resolveDependency } from '../../../../../di/utils';
-import { asDefined } from '../../../../../utils/assertions';
-import { getMemberActions } from '../../../../action/test/fixtures/actions';
-import { saveActions } from '../../../../item/plugins/action/test/fixtures/actions';
-import { ItemService } from '../../../../item/service';
-import { MemberService } from '../../../member.service';
-import { ActionMemberService } from '../service';
-import { generateActionsWithItems } from './utils';
+import build, { MOCK_LOGGER, clearDatabase } from '../../../../../../test/app.js';
+import { resolveDependency } from '../../../../../di/utils.js';
+import { asDefined } from '../../../../../utils/assertions.js';
+import { getMemberActions } from '../../../../action/test/fixtures/actions.js';
+import { saveActions } from '../../../../item/plugins/action/test/fixtures/actions.js';
+import { ItemService } from '../../../../item/service.js';
+import { MemberService } from '../../../member.service.js';
+import { ActionMemberService } from '../service.js';
+import { generateActionsWithItems } from './utils.js';
 
 const rawRepository = AppDataSource.getRepository(Action);
 

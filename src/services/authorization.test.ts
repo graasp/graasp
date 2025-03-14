@@ -1,12 +1,16 @@
 import { ItemVisibilityType, PermissionLevel } from '@graasp/sdk';
 
-import { ItemVisibilityFactory } from '../../test/factories/itemVisibility.factory';
-import { DBConnection } from '../drizzle/db';
-import { Item, ItemMembershipWithItemAndAccount } from '../drizzle/types';
-import { ItemMembershipRepository } from '../services/itemMembership/repository';
-import { MemberCannotAccess, MemberCannotAdminItem, MemberCannotWriteItem } from '../utils/errors';
-import { AuthorizationService } from './authorization';
-import { ItemVisibilityRepository } from './item/plugins/itemVisibility/repository';
+import { ItemVisibilityFactory } from '../../test/factories/itemVisibility.factory.js';
+import { DBConnection } from '../drizzle/db.js';
+import { Item, ItemMembershipWithItemAndAccount } from '../drizzle/types.js';
+import { ItemMembershipRepository } from '../services/itemMembership/repository.js';
+import {
+  MemberCannotAccess,
+  MemberCannotAdminItem,
+  MemberCannotWriteItem,
+} from '../utils/errors.js';
+import { AuthorizationService } from './authorization.js';
+import { ItemVisibilityRepository } from './item/plugins/itemVisibility/repository.js';
 
 const MOCK_DB = {} as unknown as DBConnection;
 
@@ -22,7 +26,11 @@ const ownerMembership = {
 } as unknown as ItemMembershipWithItemAndAccount;
 
 const buildSharedMembership = (permission: PermissionLevel, item: Item = ITEM) =>
-  ({ account: SHARED_MEMBER, permission, item }) as ItemMembershipWithItemAndAccount;
+  ({
+    account: SHARED_MEMBER,
+    permission,
+    item,
+  }) as ItemMembershipWithItemAndAccount;
 
 const itemMembershipRepository = new ItemMembershipRepository();
 const itemVisibilityRepository = new ItemVisibilityRepository();

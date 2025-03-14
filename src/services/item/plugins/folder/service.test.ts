@@ -2,16 +2,16 @@ import { v4 } from 'uuid';
 
 import { AppItemFactory, FolderItemFactory, ItemType, PermissionLevel } from '@graasp/sdk';
 
-import { MOCK_LOGGER } from '../../../../../test/app';
-import { Item } from '../../../../drizzle/types';
-import { MinimalMember } from '../../../../types';
-import { ThumbnailService } from '../../../thumbnail/service';
-import { WrongItemTypeError } from '../../errors';
-import { ItemRepository } from '../../repository';
-import { ItemService } from '../../service';
-import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
-import { ItemThumbnailService } from '../thumbnail/service';
-import { FolderItemService } from './service';
+import { MOCK_LOGGER } from '../../../../../test/app.js';
+import { Item } from '../../../../drizzle/types.js';
+import { MinimalMember } from '../../../../types.js';
+import { ThumbnailService } from '../../../thumbnail/service.js';
+import { WrongItemTypeError } from '../../errors.js';
+import { ItemRepository } from '../../repository.js';
+import { ItemService } from '../../service.js';
+import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch.js';
+import { ItemThumbnailService } from '../thumbnail/service.js';
+import { FolderItemService } from './service.js';
 
 const folderService = new FolderItemService(
   {} as unknown as ThumbnailService,

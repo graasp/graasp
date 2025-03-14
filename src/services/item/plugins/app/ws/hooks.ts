@@ -2,22 +2,22 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { AppDataVisibility, PermissionLevel } from '@graasp/sdk';
 
-import { resolveDependency } from '../../../../../di/utils';
-import { db } from '../../../../../drizzle/db';
-import { AuthorizationService } from '../../../../authorization';
-import { WebsocketService } from '../../../../websockets/ws-service';
-import { BasicItemService } from '../../../basic.service';
-import { AppActionService } from '../appAction/appAction.service';
-import { AppDataService } from '../appData/appData.service';
-import { AppSettingService } from '../appSetting/service';
+import { resolveDependency } from '../../../../../di/utils.js';
+import { db } from '../../../../../drizzle/db.js';
+import { AuthorizationService } from '../../../../authorization.js';
+import { WebsocketService } from '../../../../websockets/ws-service.js';
+import { BasicItemService } from '../../../basic.service.js';
+import { AppActionService } from '../appAction/appAction.service.js';
+import { AppDataService } from '../appData/appData.service.js';
+import { AppSettingService } from '../appSetting/service.js';
 import {
   AppDataEvent,
   AppSettingEvent,
   appActionsTopic,
   appDataTopic,
   appSettingsTopic,
-} from './events';
-import { checkItemIsApp } from './utils';
+} from './events.js';
+import { checkItemIsApp } from './utils.js';
 
 /**
  * helper to register app action topic

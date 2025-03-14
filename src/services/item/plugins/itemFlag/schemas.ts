@@ -1,11 +1,11 @@
 import { Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
-import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
-import { errorSchemaRef } from '../../../../schemas/global';
-import { nullableAccountSchemaRef } from '../../../account/schemas';
-import { itemSchemaRef } from '../../schemas';
-import { FlagType } from './itemFlag.types';
+import { customType, registerSchemaAsRef } from '../../../../plugins/typebox.js';
+import { errorSchemaRef } from '../../../../schemas/global.js';
+import { nullableAccountSchemaRef } from '../../../account/schemas.js';
+import { itemSchemaRef } from '../../schemas.js';
+import { FlagType } from './itemFlag.types.js';
 
 export const itemFlagSchemaRef = registerSchemaAsRef(
   'itemFlag',

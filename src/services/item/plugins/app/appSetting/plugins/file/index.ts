@@ -1,26 +1,26 @@
 import { fastifyMultipart } from '@fastify/multipart';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { resolveDependency } from '../../../../../../../di/utils';
-import { DBConnection, db } from '../../../../../../../drizzle/db';
-import { AppSettingRaw, AppSettingWithItem } from '../../../../../../../drizzle/types';
-import { AuthenticatedUser, MinimalMember } from '../../../../../../../types';
-import { asDefined } from '../../../../../../../utils/assertions';
+import { resolveDependency } from '../../../../../../../di/utils.js';
+import { DBConnection, db } from '../../../../../../../drizzle/db.js';
+import { AppSettingRaw, AppSettingWithItem } from '../../../../../../../drizzle/types.js';
+import { AuthenticatedUser, MinimalMember } from '../../../../../../../types.js';
+import { asDefined } from '../../../../../../../utils/assertions.js';
 import {
   authenticateAppsJWT,
   guestAuthenticateAppsJWT,
-} from '../../../../../../auth/plugins/passport';
-import FileService from '../../../../../../file/service';
+} from '../../../../../../auth/plugins/passport/index.js';
+import FileService from '../../../../../../file/service.js';
 import {
   DownloadFileUnexpectedError,
   UploadEmptyFileError,
   UploadFileUnexpectedError,
-} from '../../../../../../file/utils/errors';
-import { DEFAULT_MAX_FILE_SIZE } from '../../../../file/utils/constants';
-import { PreventUpdateAppSettingFile } from '../../errors';
-import type { AppSettingService } from '../../service';
-import { download, upload } from './schema';
-import AppSettingFileService from './service';
+} from '../../../../../../file/utils/errors.js';
+import { DEFAULT_MAX_FILE_SIZE } from '../../../../file/utils/constants.js';
+import { PreventUpdateAppSettingFile } from '../../errors.js';
+import type { AppSettingService } from '../../service.js';
+import { download, upload } from './schema.js';
+import AppSettingFileService from './service.js';
 
 export interface GraaspPluginFileOptions {
   maxFileSize?: number; // max size for an uploaded file in bytes

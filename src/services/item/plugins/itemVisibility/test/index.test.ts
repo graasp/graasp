@@ -9,15 +9,15 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../../test/app';
-import { seedFromJson } from '../../../../../../test/mocks/seed';
-import { ItemVisibilityRaw } from '../../../../../drizzle/types';
-import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
+} from '../../../../../../test/app.js';
+import { seedFromJson } from '../../../../../../test/mocks/seed.js';
+import { ItemVisibilityRaw } from '../../../../../drizzle/types.js';
+import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config.js';
 import {
   CannotModifyParentVisibility,
   ConflictingVisibilitiesInTheHierarchy,
   ItemVisibilityNotFound,
-} from '../errors';
+} from '../errors.js';
 
 export const saveTagsForItem = async ({ item, creator }) => {
   const itemVisibilities: ItemVisibilityRaw[] = [];

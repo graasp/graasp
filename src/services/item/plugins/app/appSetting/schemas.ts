@@ -3,9 +3,9 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifySchema } from 'fastify';
 
-import { customType, registerSchemaAsRef } from '../../../../../plugins/typebox';
-import { errorSchemaRef } from '../../../../../schemas/global';
-import { nullableMemberSchemaRef } from '../../../../member/schemas';
+import { customType, registerSchemaAsRef } from '../../../../../plugins/typebox.js';
+import { errorSchemaRef } from '../../../../../schemas/global.js';
+import { nullableMemberSchemaRef } from '../../../../member/schemas.js';
 
 export const appSettingSchemaRef = registerSchemaAsRef(
   'appSetting',

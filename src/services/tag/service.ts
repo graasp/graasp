@@ -1,8 +1,8 @@
 import { singleton } from 'tsyringe';
 
-import { DBConnection } from '../../drizzle/db';
-import { ItemTagRepository } from '../item/plugins/tag/ItemTag.repository';
-import { TagCategoryOptions } from './schemas';
+import type { DBConnection } from '../../drizzle/db.js';
+import { ItemTagRepository } from '../item/plugins/tag/ItemTag.repository.js';
+import type { TagCategoryOptions } from './schemas.js';
 
 @singleton()
 export class TagService {

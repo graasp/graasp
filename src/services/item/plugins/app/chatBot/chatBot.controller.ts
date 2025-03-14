@@ -1,14 +1,14 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { resolveDependency } from '../../../../../di/utils';
-import { db } from '../../../../../drizzle/db';
-import { asDefined } from '../../../../../utils/assertions';
-import { OPENAI_DEFAULT_TEMPERATURE, OPENAI_GPT_VERSION } from '../../../../../utils/config';
-import { InvalidJWTItem } from '../../../../../utils/errors';
-import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
-import { ItemService } from '../../../service';
-import { ChatBotService } from './chatBot.service';
-import { create } from './schemas';
+import { resolveDependency } from '../../../../../di/utils.js';
+import { db } from '../../../../../drizzle/db.js';
+import { asDefined } from '../../../../../utils/assertions.js';
+import { OPENAI_DEFAULT_TEMPERATURE, OPENAI_GPT_VERSION } from '../../../../../utils/config.js';
+import { InvalidJWTItem } from '../../../../../utils/errors.js';
+import { authenticateAppsJWT } from '../../../../auth/plugins/passport/index.js';
+import { ItemService } from '../../../service.js';
+import { ChatBotService } from './chatBot.service.js';
+import { create } from './schemas.js';
 
 const chatBotPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const itemService = resolveDependency(ItemService);

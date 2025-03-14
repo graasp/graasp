@@ -1,6 +1,6 @@
-import { RessourceAuthorizationStrategy } from '../../auth/plugins/passport';
-import { isMember } from '../../authentication';
-import { NotValidatedMember } from '../error';
+import type { RessourceAuthorizationStrategy } from '../../auth/plugins/passport/index.js';
+import { isMember } from '../../authentication.js';
+import { NotValidatedMember } from '../error.js';
 
 /**
  * Strategy to check if user is validated.

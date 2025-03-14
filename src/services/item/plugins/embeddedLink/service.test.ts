@@ -3,18 +3,18 @@ import { v4 } from 'uuid';
 
 import { FolderItemFactory, ItemType, LinkItemFactory } from '@graasp/sdk';
 
-import { MOCK_LOGGER } from '../../../../../test/app';
-import { Item } from '../../../../drizzle/types';
-import { MinimalMember } from '../../../../types';
-import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN } from '../../../../utils/config';
-import { ThumbnailService } from '../../../thumbnail/service';
-import { EmbeddedLinkItem } from '../../discrimination';
-import { WrongItemTypeError } from '../../errors';
-import { ItemRepository } from '../../repository';
-import { ItemService } from '../../service';
-import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
-import { ItemThumbnailService } from '../thumbnail/service';
-import { EmbeddedLinkItemService } from './service';
+import { MOCK_LOGGER } from '../../../../../test/app.js';
+import { Item } from '../../../../drizzle/types.js';
+import { MinimalMember } from '../../../../types.js';
+import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN } from '../../../../utils/config.js';
+import { ThumbnailService } from '../../../thumbnail/service.js';
+import { EmbeddedLinkItem } from '../../discrimination.js';
+import { WrongItemTypeError } from '../../errors.js';
+import { ItemRepository } from '../../repository.js';
+import { ItemService } from '../../service.js';
+import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch.js';
+import { ItemThumbnailService } from '../thumbnail/service.js';
+import { EmbeddedLinkItemService } from './service.js';
 
 jest.mock('node-fetch');
 

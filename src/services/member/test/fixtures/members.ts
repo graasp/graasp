@@ -1,12 +1,12 @@
 import { AccountType } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import { MemberFactory } from '../../../../../test/factories/member.factory';
-import { db } from '../../../../drizzle/db';
-import { accountsTable } from '../../../../drizzle/schema';
-import { Account, MemberRaw } from '../../../../drizzle/types';
-import { assertIsDefined } from '../../../../utils/assertions';
-import { assertIsMember } from '../../../authentication';
+import { MemberFactory } from '../../../../../test/factories/member.factory.js';
+import { db } from '../../../../drizzle/db.js';
+import { accountsTable } from '../../../../drizzle/schema.js';
+import { Account, MemberRaw } from '../../../../drizzle/types.js';
+import { assertIsDefined } from '../../../../utils/assertions.js';
+import { assertIsMember } from '../../../authentication.js';
 
 export const saveMember = async (m = MemberFactory()) => {
   // using accounts table since member is just a view and we can not insert on views

@@ -1,4 +1,4 @@
-import { ItemGeolocationRaw } from '../../../../../drizzle/types';
+import { ItemGeolocationRaw } from '../../../../../drizzle/types.js';
 
 export const expectItemGeolocations = (
   results: ItemGeolocationRaw[] | null,

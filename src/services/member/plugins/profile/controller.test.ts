@@ -8,17 +8,17 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../test/app';
-import { seedFromJson } from '../../../../../test/mocks/seed';
-import { MEMBER_PROFILE_ROUTE_PREFIX } from '../../../../utils/config';
-import { saveMember } from '../../test/fixtures/members';
+} from '../../../../../test/app.js';
+import { seedFromJson } from '../../../../../test/mocks/seed.js';
+import { MEMBER_PROFILE_ROUTE_PREFIX } from '../../../../utils/config.js';
+import { saveMember } from '../../test/fixtures/members.js';
 import {
   ANNA_PROFILE,
   BOB_PROFILE,
   getDummyProfile,
   getMemberProfile,
   saveMemberProfile,
-} from './test/fixtures/profile';
+} from './test/fixtures/profile.js';
 
 describe('Profile Member routes tests', () => {
   let app: FastifyInstance;

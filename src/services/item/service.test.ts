@@ -6,19 +6,19 @@ import { FastifyInstance } from 'fastify';
 
 import { FolderItemFactory, ItemGeolocation, ItemType, ItemVisibilityType } from '@graasp/sdk';
 
-import build, { MOCK_LOGGER, clearDatabase, mockAuthenticate } from '../../../test/app';
-import { seedFromJson } from '../../../test/mocks/seed';
-import { MinimalMember } from '../../types';
-import { assertIsDefined } from '../../utils/assertions';
-import { assertIsMember } from '../authentication';
-import * as authorization from '../authorization';
-import { saveMember } from '../member/test/fixtures/members';
-import { ThumbnailService } from '../thumbnail/service';
-import { FolderItem } from './discrimination';
-import { ItemVisibilityRepository } from './plugins/itemVisibility/repository';
-import { MeiliSearchWrapper } from './plugins/publication/published/plugins/search/meilisearch';
-import { ItemThumbnailService } from './plugins/thumbnail/service';
-import { ItemService } from './service';
+import build, { MOCK_LOGGER, clearDatabase, mockAuthenticate } from '../../../test/app.js';
+import { seedFromJson } from '../../../test/mocks/seed.js';
+import { MinimalMember } from '../../types.js';
+import { assertIsDefined } from '../../utils/assertions.js';
+import { assertIsMember } from '../authentication.js';
+import * as authorization from '../authorization.js';
+import { saveMember } from '../member/test/fixtures/members.js';
+import { ThumbnailService } from '../thumbnail/service.js';
+import { FolderItem } from './discrimination.js';
+import { ItemVisibilityRepository } from './plugins/itemVisibility/repository.js';
+import { MeiliSearchWrapper } from './plugins/publication/published/plugins/search/meilisearch.js';
+import { ItemThumbnailService } from './plugins/thumbnail/service.js';
+import { ItemService } from './service.js';
 
 const testUtils = new ItemTestUtils();
 const mockedThumbnailService = {

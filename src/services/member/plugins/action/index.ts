@@ -2,16 +2,16 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { FileItemType } from '@graasp/sdk';
 
-import { resolveDependency } from '../../../../di/utils';
-import { db } from '../../../../drizzle/db';
-import { asDefined } from '../../../../utils/assertions';
-import { isAuthenticated } from '../../../auth/plugins/passport';
+import { resolveDependency } from '../../../../di/utils.js';
+import { db } from '../../../../drizzle/db.js';
+import { asDefined } from '../../../../utils/assertions.js';
+import { isAuthenticated } from '../../../auth/plugins/passport/index.js';
 import {
   LocalFileConfiguration,
   S3FileConfiguration,
-} from '../../../file/interfaces/configuration';
-import { deleteAllById, getMemberFilteredActions } from './schemas';
-import { ActionMemberService } from './service';
+} from '../../../file/interfaces/configuration.js';
+import { deleteAllById, getMemberFilteredActions } from './schemas.js';
+import { ActionMemberService } from './service.js';
 
 export interface GraaspActionsOptions {
   shouldSave?: boolean;

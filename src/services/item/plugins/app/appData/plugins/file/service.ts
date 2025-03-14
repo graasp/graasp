@@ -6,14 +6,14 @@ import { MultipartFile } from '@fastify/multipart';
 
 import { AppDataVisibility, FileItemProperties, UUID } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../../../../drizzle/db';
-import { AppDataRaw, Item } from '../../../../../../../drizzle/types';
-import { AuthenticatedUser } from '../../../../../../../types';
-import FileService from '../../../../../../file/service';
-import { APP_DATA_TYPE_FILE } from '../../../constants';
-import { AppDataService } from '../../appData.service';
-import { NotAppDataFile } from '../../errors';
-import { AppDataRepository } from '../../repository';
+import { DBConnection } from '../../../../../../../drizzle/db.js';
+import { AppDataRaw, Item } from '../../../../../../../drizzle/types.js';
+import { AuthenticatedUser } from '../../../../../../../types.js';
+import FileService from '../../../../../../file/service.js';
+import { APP_DATA_TYPE_FILE } from '../../../constants.js';
+import { AppDataService } from '../../appData.service.js';
+import { NotAppDataFile } from '../../errors.js';
+import { AppDataRepository } from '../../repository.js';
 
 @singleton()
 class AppDataFileService {

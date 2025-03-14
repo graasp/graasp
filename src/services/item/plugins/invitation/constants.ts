@@ -1,6 +1,6 @@
 import { ClientManager, Context } from '@graasp/sdk';
 
-import { InvitationWithItem } from '../../../../drizzle/types';
+import { InvitationWithItem } from '../../../../drizzle/types.js';
 
 export const PLUGIN_NAME = 'graasp-plugin-invitations';
 

@@ -2,18 +2,18 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { ItemType } from '@graasp/sdk';
 
-import { resolveDependency } from '../../../../../di/utils';
-import { DBConnection, db } from '../../../../../drizzle/db';
-import { AuthenticatedUser } from '../../../../../types';
-import { asDefined } from '../../../../../utils/assertions';
-import { authenticateAppsJWT, matchOne } from '../../../../auth/plugins/passport';
-import { assertIsMember } from '../../../../authentication';
-import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
-import { ItemService } from '../../../service';
-import { appSettingsWsHooks } from '../ws/hooks';
-import appSettingFilePlugin from './plugins/file';
-import { create, deleteOne, getForOne, updateOne } from './schemas';
-import { AppSettingService } from './service';
+import { resolveDependency } from '../../../../../di/utils.js';
+import { DBConnection, db } from '../../../../../drizzle/db.js';
+import { AuthenticatedUser } from '../../../../../types.js';
+import { asDefined } from '../../../../../utils/assertions.js';
+import { authenticateAppsJWT, matchOne } from '../../../../auth/plugins/passport/index.js';
+import { assertIsMember } from '../../../../authentication.js';
+import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole.js';
+import { ItemService } from '../../../service.js';
+import { appSettingsWsHooks } from '../ws/hooks.js';
+import appSettingFilePlugin from './plugins/file/index.js';
+import { create, deleteOne, getForOne, updateOne } from './schemas.js';
+import { AppSettingService } from './service.js';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const itemService = resolveDependency(ItemService);

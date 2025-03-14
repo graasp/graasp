@@ -1,4 +1,4 @@
-import { getGeolocationIp } from './actions';
+import { getGeolocationIp } from './actions.js';
 
 describe('Action Utils', () => {
   it('check geolocation and view properties', async () => {

@@ -9,39 +9,39 @@ import {
   FILE_ITEM_PLUGIN_OPTIONS,
   ITEMS_ROUTE_PREFIX,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
-} from '../../utils/config';
-import graaspChatbox from '../chat';
-import graaspItemLogin from '../itemLogin';
-import itemController from './item.controller';
-import actionItemPlugin from './plugins/action';
-import graaspApps from './plugins/app';
-import { plugin as graaspAppItem } from './plugins/app/controller';
-import graaspDocumentItem from './plugins/document/controller';
-import { PREFIX_DOCUMENT } from './plugins/document/service';
-import graaspEmbeddedLinkItem from './plugins/embeddedLink/controller';
-import { PREFIX_EMBEDDED_LINK } from './plugins/embeddedLink/service';
-import graaspEnrollPlugin from './plugins/enroll';
-import graaspEtherpadPlugin from './plugins/etherpad/controller';
-import graaspFileItem from './plugins/file';
-import graaspFolderItem from './plugins/folder/controller';
-import itemGeolocationPlugin from './plugins/geolocation/index';
-import graaspH5PPlugin from './plugins/html/h5p';
-import graaspZipPlugin from './plugins/importExport';
-import graaspInvitationsPlugin from './plugins/invitation';
-import graaspFavoritePlugin from './plugins/itemBookmark';
-import graaspItemFlags from './plugins/itemFlag';
-import graaspItemLikes from './plugins/itemLike';
-import graaspItemVisibility from './plugins/itemVisibility';
-import graaspItemPublicationState from './plugins/publication/publicationState';
-import graaspItemPublish from './plugins/publication/published';
-import graaspValidationPlugin from './plugins/publication/validation';
-import graaspRecycledItemData from './plugins/recycled';
-import ShortLinkService from './plugins/shortLink';
-import { SHORT_LINKS_ROUTE_PREFIX } from './plugins/shortLink/service';
-import { plugin as graaspShortcutPlugin } from './plugins/shortcut/controller';
-import graaspItemTagPlugin from './plugins/tag/controller';
-import thumbnailsPlugin from './plugins/thumbnail';
-import { itemWsHooks } from './ws/hooks';
+} from '../../utils/config.js';
+import graaspChatbox from '../chat/index.js';
+import graaspItemLogin from '../itemLogin/index.js';
+import itemController from './item.controller.js';
+import actionItemPlugin from './plugins/action/index.js';
+import { plugin as graaspAppItem } from './plugins/app/controller.js';
+import graaspApps from './plugins/app/index.js';
+import graaspDocumentItem from './plugins/document/controller.js';
+import { PREFIX_DOCUMENT } from './plugins/document/service.js';
+import graaspEmbeddedLinkItem from './plugins/embeddedLink/controller.js';
+import { PREFIX_EMBEDDED_LINK } from './plugins/embeddedLink/service.js';
+import graaspEnrollPlugin from './plugins/enroll/index.js';
+import graaspEtherpadPlugin from './plugins/etherpad/controller.js';
+import graaspFileItem from './plugins/file/index.js';
+import graaspFolderItem from './plugins/folder/controller.js';
+import itemGeolocationPlugin from './plugins/geolocation/index.js';
+import graaspH5PPlugin from './plugins/html/h5p/index.js';
+import graaspZipPlugin from './plugins/importExport/index.js';
+import graaspInvitationsPlugin from './plugins/invitation/index.js';
+import graaspFavoritePlugin from './plugins/itemBookmark/index.js';
+import graaspItemFlags from './plugins/itemFlag/index.js';
+import graaspItemLikes from './plugins/itemLike/index.js';
+import graaspItemVisibility from './plugins/itemVisibility/index.js';
+import graaspItemPublicationState from './plugins/publication/publicationState/index.js';
+import graaspItemPublish from './plugins/publication/published/index.js';
+import graaspValidationPlugin from './plugins/publication/validation/index.js';
+import graaspRecycledItemData from './plugins/recycled/index.js';
+import ShortLinkService from './plugins/shortLink/index.js';
+import { SHORT_LINKS_ROUTE_PREFIX } from './plugins/shortLink/service.js';
+import { plugin as graaspShortcutPlugin } from './plugins/shortcut/controller.js';
+import graaspItemTagPlugin from './plugins/tag/controller.js';
+import thumbnailsPlugin from './plugins/thumbnail/index.js';
+import { itemWsHooks } from './ws/hooks.js';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.decorate('file', {

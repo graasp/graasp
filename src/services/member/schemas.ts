@@ -3,10 +3,10 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifySchema } from 'fastify';
 
-import { customType, registerSchemaAsRef } from '../../plugins/typebox';
-import { errorSchemaRef } from '../../schemas/global';
-import { accountTypeGuestRef, accountTypeIndividualRef } from '../account/schemas';
-import { FILE_METADATA_DEFAULT_PAGE_SIZE, FILE_METADATA_MIN_PAGE } from './constants';
+import { customType, registerSchemaAsRef } from '../../plugins/typebox.js';
+import { errorSchemaRef } from '../../schemas/global.js';
+import { accountTypeGuestRef, accountTypeIndividualRef } from '../account/schemas.js';
+import { FILE_METADATA_DEFAULT_PAGE_SIZE, FILE_METADATA_MIN_PAGE } from './constants.js';
 
 /**
  * This allows email adresses that are structured as follows:

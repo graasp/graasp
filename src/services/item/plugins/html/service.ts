@@ -12,17 +12,17 @@ import { FastifyBaseLogger } from 'fastify';
 
 import { FileItemType } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
-import { Item } from '../../../../drizzle/types';
-import { BaseLogger } from '../../../../logger';
-import { MinimalMember } from '../../../../types';
-import { TMP_FOLDER } from '../../../../utils/config';
-import FileService, { FileServiceConfig } from '../../../file/service';
-import { fileRepositoryFactory } from '../../../file/utils/factory';
-import { StorageService } from '../../../member/plugins/storage/service';
-import { GraaspHtmlError, HtmlImportError } from './errors';
-import { DEFAULT_MIME_TYPE } from './h5p/constants';
-import { HtmlValidator } from './validator';
+import { DBConnection } from '../../../../drizzle/db.js';
+import { Item } from '../../../../drizzle/types.js';
+import { BaseLogger } from '../../../../logger.js';
+import { MinimalMember } from '../../../../types.js';
+import { TMP_FOLDER } from '../../../../utils/config.js';
+import FileService, { FileServiceConfig } from '../../../file/service.js';
+import { fileRepositoryFactory } from '../../../file/utils/factory.js';
+import { StorageService } from '../../../member/plugins/storage/service.js';
+import { GraaspHtmlError, HtmlImportError } from './errors.js';
+import { DEFAULT_MIME_TYPE } from './h5p/constants.js';
+import { HtmlValidator } from './validator.js';
 
 /**
  * Implementation for the Html service

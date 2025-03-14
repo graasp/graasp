@@ -1,31 +1,31 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
+import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { RecaptchaAction } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import { resolveDependency } from '../../../../di/utils';
-import { db } from '../../../../drizzle/db';
-import { asDefined } from '../../../../utils/assertions';
+import { resolveDependency } from '../../../../di/utils.js';
+import { db } from '../../../../drizzle/db.js';
+import { asDefined } from '../../../../utils/assertions.js';
 import {
   LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
   MOBILE_DEEP_LINK_PROTOCOL,
-} from '../../../../utils/config';
-import { isMember } from '../../../authentication';
-import { MemberService } from '../../../member/member.service';
-import { generateAuthTokensPair, getRedirectionLink } from '../../utils';
-import captchaPreHandler from '../captcha';
+} from '../../../../utils/config.js';
+import { isMember } from '../../../authentication.js';
+import { MemberService } from '../../../member/member.service.js';
+import { generateAuthTokensPair, getRedirectionLink } from '../../utils.js';
+import captchaPreHandler from '../captcha/index.js';
 import {
   SHORT_TOKEN_PARAM,
   authenticateJWTChallengeVerifier,
   authenticateMobileMagicLink,
   authenticatePassword,
   authenticateRefreshToken,
-} from '../passport';
-import { MemberPasswordService } from '../password/service';
-import { authWeb, mPasswordLogin, mauth, mlogin, mregister } from './schemas';
-import { MobileService } from './service';
+} from '../passport/index.js';
+import { MemberPasswordService } from '../password/service.js';
+import { authWeb, mPasswordLogin, mauth, mlogin, mregister } from './schemas.js';
+import { MobileService } from './service.js';
 
 // token based auth and endpoints for mobile
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {

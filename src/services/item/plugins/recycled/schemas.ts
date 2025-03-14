@@ -5,10 +5,10 @@ import { FastifySchema } from 'fastify';
 
 import { MAX_TARGETS_FOR_MODIFY_REQUEST } from '@graasp/sdk';
 
-import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
-import { errorSchemaRef } from '../../../../schemas/global';
-import { ITEMS_PAGE_SIZE } from '../../constants';
-import { itemSchemaRef } from '../../schemas';
+import { customType, registerSchemaAsRef } from '../../../../plugins/typebox.js';
+import { errorSchemaRef } from '../../../../schemas/global.js';
+import { ITEMS_PAGE_SIZE } from '../../constants.js';
+import { itemSchemaRef } from '../../schemas.js';
 
 export const recycledItemSchemaRef = registerSchemaAsRef(
   'recycledItemData',

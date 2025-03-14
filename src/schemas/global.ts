@@ -2,7 +2,7 @@
 import { Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
-import { customType, registerSchemaAsRef } from '../plugins/typebox';
+import { customType, registerSchemaAsRef } from '../plugins/typebox.js';
 
 export const errorSchemaRef = registerSchemaAsRef(
   'error',

@@ -3,9 +3,9 @@ import striptags from 'striptags';
 
 import { ItemType, MimeTypes, getMimetype } from '@graasp/sdk';
 
-import { Item } from '../../../../../drizzle/types';
-import { TMP_FOLDER } from '../../../../../utils/config';
-import { LocalFileItem, S3FileItem, isItemType } from '../../../discrimination';
+import { Item } from '../../../../../drizzle/types.js';
+import { TMP_FOLDER } from '../../../../../utils/config.js';
+import { LocalFileItem, S3FileItem, isItemType } from '../../../discrimination.js';
 
 export const stripHtml = (str?: string | null): string => (str ? striptags(str) : '');
 

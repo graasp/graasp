@@ -3,9 +3,9 @@ import sharp from 'sharp';
 import { Readable } from 'stream';
 import { injectable } from 'tsyringe';
 
-import { AuthenticatedUser, MaybeUser } from '../../types';
-import FileService from '../file/service';
-import { THUMBNAIL_FORMAT, THUMBNAIL_MIMETYPE, ThumbnailSizeFormat } from './constants';
+import type { AuthenticatedUser, MaybeUser } from '../../types.js';
+import FileService from '../file/service.js';
+import { THUMBNAIL_FORMAT, THUMBNAIL_MIMETYPE, ThumbnailSizeFormat } from './constants.js';
 
 export const AVATAR_THUMBNAIL_PREFIX = 'avatars';
 export const ITEM_THUMBNAIL_PREFIX = 'thumbnails';

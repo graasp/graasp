@@ -1,3 +1,3 @@
-import websockets from './service-api';
+import websockets from './service-api.js';
 
 export default websockets;

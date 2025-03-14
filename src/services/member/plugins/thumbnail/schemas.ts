@@ -5,8 +5,8 @@ import { FastifySchema } from 'fastify';
 
 import { ThumbnailSize } from '@graasp/sdk';
 
-import { customType } from '../../../../plugins/typebox';
-import { errorSchemaRef } from '../../../../schemas/global';
+import { customType } from '../../../../plugins/typebox.js';
+import { errorSchemaRef } from '../../../../schemas/global.js';
 
 export const upload = {
   response: { [StatusCodes.NO_CONTENT]: Type.Null() },

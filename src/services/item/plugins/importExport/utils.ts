@@ -12,9 +12,9 @@ import { FastifyBaseLogger } from 'fastify';
 
 import { ItemType, UnionOfConst, getMimetype } from '@graasp/sdk';
 
-import { Item } from '../../../../drizzle/types';
-import { isItemType } from '../../discrimination';
-import { APP_URL_PREFIX, TMP_IMPORT_ZIP_FOLDER_PATH, URL_PREFIX } from './constants';
+import { Item } from '../../../../drizzle/types.js';
+import { isItemType } from '../../discrimination.js';
+import { APP_URL_PREFIX, TMP_IMPORT_ZIP_FOLDER_PATH, URL_PREFIX } from './constants.js';
 
 export const prepareZip = async (file: BusboyFileStream, log?: FastifyBaseLogger) => {
   // read and prepare folder for zip and content

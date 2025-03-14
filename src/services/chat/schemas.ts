@@ -3,10 +3,10 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifySchema } from 'fastify';
 
-import { customType, registerSchemaAsRef } from '../../plugins/typebox';
-import { errorSchemaRef } from '../../schemas/global';
-import { nullableAccountSchemaRef } from '../account/schemas';
-import { itemSchemaRef } from '../item/schemas';
+import { customType, registerSchemaAsRef } from '../../plugins/typebox.js';
+import { errorSchemaRef } from '../../schemas/global.js';
+import { nullableAccountSchemaRef } from '../account/schemas.js';
+import { itemSchemaRef } from '../item/schemas.js';
 
 /**
  * JSON schema definitions to validate requests and responses

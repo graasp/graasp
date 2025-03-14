@@ -3,15 +3,15 @@ import { and, between, count, desc, eq, inArray } from 'drizzle-orm/sql';
 
 import { AggregateBy, AggregateFunction, AggregateMetric, UUID } from '@graasp/sdk';
 
-import { DBConnection } from '../../drizzle/db';
-import { isDescendantOrSelf } from '../../drizzle/operations';
-import { actionsTable, items } from '../../drizzle/schema';
-import { ActionInsertDTO, ActionWithItem } from '../../drizzle/types';
-import { MemberIdentifierNotFound } from '../itemLogin/errors';
-import { DEFAULT_ACTIONS_SAMPLE_SIZE } from './constants';
-import { CountGroupByOptions } from './types';
-import { aggregateExpressionNames, buildAggregateExpression } from './utils/actions';
-import { validateAggregationParameters } from './utils/utils';
+import { DBConnection } from '../../drizzle/db.js';
+import { isDescendantOrSelf } from '../../drizzle/operations.js';
+import { actionsTable, items } from '../../drizzle/schema.js';
+import { ActionInsertDTO, ActionWithItem } from '../../drizzle/types.js';
+import { MemberIdentifierNotFound } from '../itemLogin/errors.js';
+import { DEFAULT_ACTIONS_SAMPLE_SIZE } from './constants.js';
+import { CountGroupByOptions } from './types.js';
+import { aggregateExpressionNames, buildAggregateExpression } from './utils/actions.js';
+import { validateAggregationParameters } from './utils/utils.js';
 
 export class ActionRepository {
   /**

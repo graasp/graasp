@@ -9,14 +9,14 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../test/app';
-import { resolveDependency } from '../../../../di/utils';
-import { Item } from '../../../../drizzle/types';
-import { MailerService } from '../../../../plugins/mailer/mailer.service';
-import { MinimalMember } from '../../../../types';
-import { ItemTestUtils } from '../../../item/test/fixtures/items';
-import { saveMember } from '../../../member/test/fixtures/members';
-import { MembershipRequestRepository } from './repository';
+} from '../../../../../test/app.js';
+import { resolveDependency } from '../../../../di/utils.js';
+import { Item } from '../../../../drizzle/types.js';
+import { MailerService } from '../../../../plugins/mailer/mailer.service.js';
+import { MinimalMember } from '../../../../types.js';
+import { ItemTestUtils } from '../../../item/test/fixtures/items.js';
+import { saveMember } from '../../../member/test/fixtures/members.js';
+import { MembershipRequestRepository } from './repository.js';
 
 const testUtils = new ItemTestUtils();
 const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);

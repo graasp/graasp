@@ -1,11 +1,11 @@
 import { fastifyCors } from '@fastify/cors';
 import { FastifyPluginAsync } from 'fastify';
 
-import memberController from './controller';
-import actionMemberPlugin from './plugins/action';
-import memberExportDataPlugin from './plugins/export-data';
-import memberProfilePlugin from './plugins/profile';
-import memberThumbnailPlugin from './plugins/thumbnail';
+import memberController from './controller.js';
+import actionMemberPlugin from './plugins/action/index.js';
+import memberExportDataPlugin from './plugins/export-data/index.js';
+import memberProfilePlugin from './plugins/profile/index.js';
+import memberThumbnailPlugin from './plugins/thumbnail/index.js';
 
 const ROUTES_PREFIX = '/members';
 

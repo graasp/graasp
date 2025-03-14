@@ -5,10 +5,10 @@ import { FastifySchema } from 'fastify';
 
 import { PermissionLevel } from '@graasp/sdk';
 
-import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
-import { errorSchemaRef } from '../../../../schemas/global';
-import { itemMembershipSchemaRef } from '../../../itemMembership/schemas';
-import { itemSchemaRef } from '../../schemas';
+import { customType, registerSchemaAsRef } from '../../../../plugins/typebox.js';
+import { errorSchemaRef } from '../../../../schemas/global.js';
+import { itemMembershipSchemaRef } from '../../../itemMembership/schemas.js';
+import { itemSchemaRef } from '../../schemas.js';
 
 export const invitationSchemaRef = registerSchemaAsRef(
   'invitation',

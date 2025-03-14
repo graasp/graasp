@@ -2,21 +2,21 @@ import { FastifyInstance } from 'fastify';
 
 import { PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
-import { ItemMembershipRaw } from '../../../../../drizzle/types';
-import { MinimalMember } from '../../../../../types';
-import { saveActions } from '../../../../action/test/fixtures/actions';
-import { saveChatMessages } from '../../../../chat/test/fixtures';
-import { saveAppActions } from '../../../../item/plugins/app/appAction/test/fixtures';
-import { saveAppData } from '../../../../item/plugins/app/appData/test/fixtures';
-import { saveAppSettings } from '../../../../item/plugins/app/appSetting/test/fixtures';
-import { saveItemFavorites } from '../../../../item/plugins/itemBookmark/test/fixtures';
-import { saveItemLikes } from '../../../../item/plugins/itemLike/test/utils';
-import { ItemTestUtils } from '../../../../item/test/fixtures/items';
-import { saveMember } from '../../../test/fixtures/members';
-import { ExportMemberDataService } from '../service';
-import { RequestDataExportService } from '../utils/export.utils';
-import { expectNoLeakMemberId } from './fixtures';
+import build, { clearDatabase } from '../../../../../../test/app.js';
+import { ItemMembershipRaw } from '../../../../../drizzle/types.js';
+import { MinimalMember } from '../../../../../types.js';
+import { saveActions } from '../../../../action/test/fixtures/actions.js';
+import { saveChatMessages } from '../../../../chat/test/fixtures.js';
+import { saveAppActions } from '../../../../item/plugins/app/appAction/test/fixtures.js';
+import { saveAppData } from '../../../../item/plugins/app/appData/test/fixtures.js';
+import { saveAppSettings } from '../../../../item/plugins/app/appSetting/test/fixtures.js';
+import { saveItemFavorites } from '../../../../item/plugins/itemBookmark/test/fixtures.js';
+import { saveItemLikes } from '../../../../item/plugins/itemLike/test/utils.js';
+import { ItemTestUtils } from '../../../../item/test/fixtures/items.js';
+import { saveMember } from '../../../test/fixtures/members.js';
+import { ExportMemberDataService } from '../service.js';
+import { RequestDataExportService } from '../utils/export.utils.js';
+import { expectNoLeakMemberId } from './fixtures.js';
 
 /**
  * The service tests ensure that no member id of other members are leaked during the export.

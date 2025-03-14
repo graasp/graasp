@@ -1,12 +1,12 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { resolveDependency } from '../../../../../di/utils';
-import { db } from '../../../../../drizzle/db';
-import { asDefined } from '../../../../../utils/assertions';
-import { UnauthorizedMember } from '../../../../../utils/errors';
-import { isAuthenticated } from '../../../../auth/plugins/passport';
-import { PublicationService } from './publication.service';
-import { getPublicationState } from './schemas';
+import { resolveDependency } from '../../../../../di/utils.js';
+import { db } from '../../../../../drizzle/db.js';
+import { asDefined } from '../../../../../utils/assertions.js';
+import { UnauthorizedMember } from '../../../../../utils/errors.js';
+import { isAuthenticated } from '../../../../auth/plugins/passport/index.js';
+import { PublicationService } from './publication.service.js';
+import { getPublicationState } from './schemas.js';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const publicationService = resolveDependency(PublicationService);

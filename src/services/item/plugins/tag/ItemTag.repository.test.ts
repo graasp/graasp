@@ -3,14 +3,14 @@ import { v4 } from 'uuid';
 
 import { FolderItemFactory, TagCategory } from '@graasp/sdk';
 
-import { client, db } from '../../../../drizzle/db';
-import { ItemInsertDTO, itemTags, itemsRaw } from '../../../../drizzle/schema';
-import { IllegalArgumentException } from '../../../../repositories/errors';
-import { assertIsDefined } from '../../../../utils/assertions';
-import { saveTag } from '../../../tag/fixtures/utils';
-import { ItemTagRepository } from './ItemTag.repository';
-import { TAG_COUNT_MAX_RESULTS } from './constants';
-import { ItemTagAlreadyExists } from './errors';
+import { client, db } from '../../../../drizzle/db.js';
+import { ItemInsertDTO, itemTags, itemsRaw } from '../../../../drizzle/schema.js';
+import { IllegalArgumentException } from '../../../../repositories/errors.js';
+import { assertIsDefined } from '../../../../utils/assertions.js';
+import { saveTag } from '../../../tag/fixtures/utils.js';
+import { ItemTagRepository } from './ItemTag.repository.js';
+import { TAG_COUNT_MAX_RESULTS } from './constants.js';
+import { ItemTagAlreadyExists } from './errors.js';
 
 const repository = new ItemTagRepository();
 

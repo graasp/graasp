@@ -2,9 +2,9 @@ import { eq } from 'drizzle-orm/sql';
 
 import { UUID } from '@graasp/sdk';
 
-import { DBConnection } from '../../drizzle/db';
-import { guestPasswords } from '../../drizzle/schema';
-import { encryptPassword } from '../auth/plugins/password/utils';
+import { DBConnection } from '../../drizzle/db.js';
+import { guestPasswords } from '../../drizzle/schema.js';
+import { encryptPassword } from '../auth/plugins/password/utils.js';
 
 export class GuestPasswordRepository {
   async getForGuestId(db: DBConnection, guestId: string) {

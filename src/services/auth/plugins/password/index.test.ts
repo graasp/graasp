@@ -16,24 +16,24 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../test/app';
-import { seedFromJson } from '../../../../../test/mocks/seed';
-import { TOKEN_REGEX, mockCaptchaValidationOnce } from '../../../../../test/utils';
-import { resolveDependency } from '../../../../di/utils';
-import { db } from '../../../../drizzle/db';
-import { memberPasswords } from '../../../../drizzle/schema';
-import { MemberRaw } from '../../../../drizzle/types';
-import { MailerService } from '../../../../plugins/mailer/mailer.service';
-import { assertIsDefined } from '../../../../utils/assertions';
+} from '../../../../../test/app.js';
+import { seedFromJson } from '../../../../../test/mocks/seed.js';
+import { TOKEN_REGEX, mockCaptchaValidationOnce } from '../../../../../test/utils.js';
+import { resolveDependency } from '../../../../di/utils.js';
+import { db } from '../../../../drizzle/db.js';
+import { memberPasswords } from '../../../../drizzle/schema.js';
+import { MemberRaw } from '../../../../drizzle/types.js';
+import { MailerService } from '../../../../plugins/mailer/mailer.service.js';
+import { assertIsDefined } from '../../../../utils/assertions.js';
 import {
   PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES,
   REDIS_HOST,
   REDIS_PASSWORD,
   REDIS_PORT,
   REDIS_USERNAME,
-} from '../../../../utils/config';
-import { assertIsMember, assertIsMemberForTest } from '../../../authentication';
-import { MOCK_CAPTCHA } from '../captcha/test/utils';
+} from '../../../../utils/config.js';
+import { assertIsMember, assertIsMemberForTest } from '../../../authentication.js';
+import { MOCK_CAPTCHA } from '../captcha/test/utils.js';
 
 async function login(
   app: FastifyInstance,

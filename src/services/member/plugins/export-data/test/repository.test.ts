@@ -2,26 +2,25 @@ import { FastifyInstance } from 'fastify';
 
 import { PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
-import { ChatMentionRaw, ChatMessageRaw } from '../../../../../drizzle/types';
-import { ActionRepository } from '../../../../action/action.repository';
-import { saveActions } from '../../../../action/test/fixtures/actions';
-import { ChatMentionRepository } from '../../../../chat/plugins/mentions/repository';
-import { ChatMessageRepository } from '../../../../chat/repository';
-import { saveChatMessages } from '../../../../chat/test/fixtures';
-import { saveAppActions } from '../../../../item/plugins/app/appAction/test/fixtures';
-import { AppDataRepository } from '../../../../item/plugins/app/appData/repository';
-import { saveAppData } from '../../../../item/plugins/app/appData/test/fixtures';
-import { AppSettingRepository } from '../../../../item/plugins/app/appSetting/repository';
-import { saveAppSettings } from '../../../../item/plugins/app/appSetting/test/fixtures';
-import { ItemBookmarkRepository } from '../../../../item/plugins/itemBookmark/itemBookmark.repository';
-import { saveItemFavorites } from '../../../../item/plugins/itemBookmark/test/fixtures';
-import { ItemLikeRepository } from '../../../../item/plugins/itemLike/repository';
-import { saveItemLikes } from '../../../../item/plugins/itemLike/test/utils';
-import { ItemRepository } from '../../../../item/repository';
-import { ItemTestUtils } from '../../../../item/test/fixtures/items';
-import { ItemMembershipRepository } from '../../../../itemMembership/repository';
-import { saveMember } from '../../../test/fixtures/members';
+import build, { clearDatabase } from '../../../../../../test/app.js';
+import { ChatMentionRaw, ChatMessageRaw } from '../../../../../drizzle/types.js';
+import { ActionRepository } from '../../../../action/action.repository.js';
+import { saveActions } from '../../../../action/test/fixtures/actions.js';
+import { ChatMentionRepository } from '../../../../chat/plugins/mentions/repository.js';
+import { ChatMessageRepository } from '../../../../chat/repository.js';
+import { saveChatMessages } from '../../../../chat/test/fixtures.js';
+import { saveAppActions } from '../../../../item/plugins/app/appAction/test/fixtures.js';
+import { AppDataRepository } from '../../../../item/plugins/app/appData/repository.js';
+import { saveAppData } from '../../../../item/plugins/app/appData/test/fixtures.js';
+import { AppSettingRepository } from '../../../../item/plugins/app/appSetting/repository.js';
+import { saveAppSettings } from '../../../../item/plugins/app/appSetting/test/fixtures.js';
+import { ItemBookmarkRepository } from '../../../../item/plugins/itemBookmark/itemBookmark.repository.js';
+import { saveItemFavorites } from '../../../../item/plugins/itemBookmark/test/fixtures.js';
+import { saveItemLikes } from '../../../../item/plugins/itemLike/test/utils.js';
+import { ItemRepository } from '../../../../item/repository.js';
+import { ItemTestUtils } from '../../../../item/test/fixtures/items.js';
+import { ItemMembershipRepository } from '../../../../itemMembership/repository.js';
+import { saveMember } from '../../../test/fixtures/members.js';
 import {
   actionSchema,
   appActionSchema,
@@ -33,8 +32,8 @@ import {
   itemSchema,
   messageMentionSchema,
   messageSchema,
-} from '../schemas/schemas';
-import { expectNoLeaksAndEquality } from './fixtures';
+} from '../schemas/schemas.js';
+import { expectNoLeaksAndEquality } from './fixtures.js';
 
 /**
  * The repository tests ensure that no unwanted columns are leaked during the export.

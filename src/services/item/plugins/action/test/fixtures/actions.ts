@@ -2,10 +2,10 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { ActionTriggers, Context } from '@graasp/sdk';
 
-import { db } from '../../../../../../drizzle/db';
-import { AccountRaw, ActionWithItemAndAccount, Item } from '../../../../../../drizzle/types';
-import { ActionRepository } from '../../../../../action/action.repository';
-import { ItemActionType } from '../../utils';
+import { db } from '../../../../../../drizzle/db.js';
+import { AccountRaw, ActionWithItemAndAccount, Item } from '../../../../../../drizzle/types.js';
+import { ActionRepository } from '../../../../../action/action.repository.js';
+import { ItemActionType } from '../../utils.js';
 
 export const getDummyAction = (
   view: Context,

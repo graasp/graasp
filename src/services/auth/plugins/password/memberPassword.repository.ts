@@ -1,16 +1,18 @@
 import { eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
-import { UUID, isPasswordStrong } from '@graasp/sdk';
+import { type UUID, isPasswordStrong } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
-import { MemberPasswordRaw, memberPasswords } from '../../../../drizzle/schema';
-import { MemberNotFound } from '../../../../utils/errors';
-import { PasswordNotStrong } from './errors';
-import { encryptPassword } from './utils';
+import type { DBConnection } from '../../../../drizzle/db.js';
+import { type MemberPasswordRaw, memberPasswords } from '../../../../drizzle/schema.js';
+import { MemberNotFound } from '../../../../utils/errors.js';
+import { PasswordNotStrong } from './errors.js';
+import { encryptPassword } from './utils.js';
 
 @singleton()
 export class MemberPasswordRepository {
+  constructor() {}
+
   async getForMemberId(db: DBConnection, memberId: string): Promise<MemberPasswordRaw | undefined> {
     // additional check that id is not null
     // o/w empty parameter to findOneBy return the first entry

@@ -3,10 +3,10 @@ import { singleton } from 'tsyringe';
 
 import { TagCategory } from '@graasp/sdk';
 
-import { DBConnection } from '../../drizzle/db';
-import { tags } from '../../drizzle/schema';
-import { TagRaw } from '../../drizzle/types';
-import { IllegalArgumentException } from '../../repositories/errors';
+import type { DBConnection } from '../../drizzle/db.js';
+import { tags } from '../../drizzle/schema.js';
+import type { TagRaw } from '../../drizzle/types.js';
+import { IllegalArgumentException } from '../../repositories/errors.js';
 
 @singleton()
 export class TagRepository {

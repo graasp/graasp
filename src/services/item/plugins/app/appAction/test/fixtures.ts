@@ -1,7 +1,7 @@
 import { v4 } from 'uuid';
 
-import { Item } from '../../../../../../drizzle/types';
-import { MinimalMember } from '../../../../../../types';
+import { Item } from '../../../../../../drizzle/types.js';
+import { MinimalMember } from '../../../../../../types.js';
 
 export const MOCK_APP_ORIGIN = 'https://app.localhost:3000';
 export const MOCK_CONTEXT = {

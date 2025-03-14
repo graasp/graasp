@@ -2,9 +2,9 @@ import { faker } from '@faker-js/faker';
 
 import { PermissionLevel } from '@graasp/sdk';
 
-import { Item } from '../../../../../drizzle/types';
-import { MinimalMember } from '../../../../../types';
-import { ItemTestUtils } from '../../../test/fixtures/items';
+import { Item } from '../../../../../drizzle/types.js';
+import { MinimalMember } from '../../../../../types.js';
+import { ItemTestUtils } from '../../../test/fixtures/items.js';
 
 const invitationRawRepository = AppDataSource.getRepository(Invitation);
 

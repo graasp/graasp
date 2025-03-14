@@ -1,20 +1,20 @@
 import { sign } from 'jsonwebtoken';
 import { singleton } from 'tsyringe';
 
-import { TRANSLATIONS } from '../../langs/constants';
-import { BaseLogger } from '../../logger';
-import { MailBuilder } from '../../plugins/mailer/builder';
-import { MailerService } from '../../plugins/mailer/mailer.service';
-import { MemberInfo } from '../../types';
+import { TRANSLATIONS } from '../../langs/constants.js';
+import { BaseLogger } from '../../logger.js';
+import { MailBuilder } from '../../plugins/mailer/builder.js';
+import { MailerService } from '../../plugins/mailer/mailer.service.js';
+import type { MemberInfo } from '../../types.js';
 import {
   JWT_SECRET,
   LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
   MOBILE_AUTH_URL,
   PUBLIC_URL,
   REGISTER_TOKEN_EXPIRATION_IN_MINUTES,
-} from '../../utils/config';
-import { SHORT_TOKEN_PARAM } from './plugins/passport';
-import { getRedirectionLink } from './utils';
+} from '../../utils/config.js';
+import { SHORT_TOKEN_PARAM } from './plugins/passport/index.js';
+import { getRedirectionLink } from './utils.js';
 
 @singleton()
 export class AuthService {

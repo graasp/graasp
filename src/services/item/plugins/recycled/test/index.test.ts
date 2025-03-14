@@ -15,14 +15,14 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../../test/app';
-import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants';
-import { Item } from '../../../../../drizzle/types';
-import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { saveMember } from '../../../../member/test/fixtures/members';
-import { ITEMS_PAGE_SIZE } from '../../../constants';
-import { ItemTestUtils, expectItem, expectManyItems } from '../../../test/fixtures/items';
-import { expectManyRecycledItems } from './fixtures';
+} from '../../../../../../test/app.js';
+import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants.js';
+import { Item } from '../../../../../drizzle/types.js';
+import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config.js';
+import { saveMember } from '../../../../member/test/fixtures/members.js';
+import { ITEMS_PAGE_SIZE } from '../../../constants.js';
+import { ItemTestUtils, expectItem, expectManyItems } from '../../../test/fixtures/items.js';
+import { expectManyRecycledItems } from './fixtures.js';
 
 const recycledItemDataRawRepository = AppDataSource.getRepository(RecycledItemData);
 const testUtils = new ItemTestUtils();

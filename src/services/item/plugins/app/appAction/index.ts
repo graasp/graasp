@@ -1,14 +1,14 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { resolveDependency } from '../../../../../di/utils';
-import { db } from '../../../../../drizzle/db';
-import { FastifyInstanceTypebox } from '../../../../../plugins/typebox';
-import { asDefined } from '../../../../../utils/assertions';
-import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
-import { addMemberInAppAction } from '../legacy';
-import { appActionsWsHooks } from '../ws/hooks';
-import { AppActionService } from './appAction.service';
-import { create, getForOne } from './schemas';
+import { resolveDependency } from '../../../../../di/utils.js';
+import { db } from '../../../../../drizzle/db.js';
+import { FastifyInstanceTypebox } from '../../../../../plugins/typebox.js';
+import { asDefined } from '../../../../../utils/assertions.js';
+import { authenticateAppsJWT } from '../../../../auth/plugins/passport/index.js';
+import { addMemberInAppAction } from '../legacy.js';
+import { appActionsWsHooks } from '../ws/hooks.js';
+import { AppActionService } from './appAction.service.js';
+import { create, getForOne } from './schemas.js';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const appActionService = resolveDependency(AppActionService);

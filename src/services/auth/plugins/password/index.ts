@@ -4,22 +4,22 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { ActionTriggers, Context, RecaptchaAction } from '@graasp/sdk';
 
-import { resolveDependency } from '../../../../di/utils';
-import { db } from '../../../../drizzle/db';
-import { ActionInsertDTO } from '../../../../drizzle/types';
-import { asDefined } from '../../../../utils/assertions';
-import { LOGIN_TOKEN_EXPIRATION_IN_MINUTES, PUBLIC_URL } from '../../../../utils/config';
-import { ActionService } from '../../../action/action.service';
-import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { getRedirectionLink } from '../../utils';
-import captchaPreHandler from '../captcha';
+import { resolveDependency } from '../../../../di/utils.js';
+import { db } from '../../../../drizzle/db.js';
+import { ActionInsertDTO } from '../../../../drizzle/types.js';
+import { asDefined } from '../../../../utils/assertions.js';
+import { LOGIN_TOKEN_EXPIRATION_IN_MINUTES, PUBLIC_URL } from '../../../../utils/config.js';
+import { ActionService } from '../../../action/action.service.js';
+import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole.js';
+import { getRedirectionLink } from '../../utils.js';
+import captchaPreHandler from '../captcha/index.js';
 import {
   SHORT_TOKEN_PARAM,
   authenticatePassword,
   authenticatePasswordReset,
   isAuthenticated,
   matchOne,
-} from '../passport';
+} from '../passport/index.js';
 import {
   getMembersCurrentPasswordStatus,
   passwordLogin,
@@ -27,8 +27,8 @@ import {
   postResetPasswordRequest,
   setPassword,
   updatePassword,
-} from './schemas';
-import { MemberPasswordService } from './service';
+} from './schemas.js';
+import { MemberPasswordService } from './service.js';
 
 const REDIRECTION_URL_PARAM = 'url';
 const AUTHENTICATION_FALLBACK_ROUTE = '/auth';

@@ -5,10 +5,10 @@ import { FastifySchema } from 'fastify';
 
 import { DocumentItemExtraFlavor, ItemType } from '@graasp/sdk';
 
-import { customType } from '../../plugins/typebox';
-import { errorSchemaRef } from '../../schemas/global';
-import { geoCoordinateSchemaRef } from './plugins/geolocation/schemas';
-import { itemSchema, itemSchemaRef, settingsSchema } from './schemas';
+import { customType } from '../../plugins/typebox.js';
+import { errorSchemaRef } from '../../schemas/global.js';
+import { geoCoordinateSchemaRef } from './plugins/geolocation/schemas.js';
+import { itemSchema, itemSchemaRef, settingsSchema } from './schemas.js';
 
 const baseItemCreateSchema = Type.Composite(
   [

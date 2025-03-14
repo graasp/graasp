@@ -10,18 +10,17 @@ import {
   PermissionLevel,
 } from '@graasp/sdk';
 
-import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
-import { seedFromJson } from '../../../../test/mocks/seed';
-import { AppDataSource } from '../../../plugins/datasource';
-import { assertIsDefined } from '../../../utils/assertions';
-import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
-import { MemberCannotAdminItem } from '../../../utils/errors';
-import { Account } from '../../account/entities/account';
-import { ItemMembership } from '../../itemMembership/entities/ItemMembership';
-import { expectAccount } from '../../member/test/fixtures/members';
-import { Guest } from '../entities/guest';
-import { ItemLoginSchema as ItemLoginSchemaEntity } from '../entities/itemLoginSchema';
-import { CannotNestItemLoginSchema, ValidMemberSession } from '../errors';
+import build, {
+  clearDatabase,
+  mockAuthenticate,
+  unmockAuthenticate,
+} from '../../../../test/app.js';
+import { seedFromJson } from '../../../../test/mocks/seed.js';
+import { assertIsDefined } from '../../../utils/assertions.js';
+import { ITEMS_ROUTE_PREFIX } from '../../../utils/config.js';
+import { MemberCannotAdminItem } from '../../../utils/errors.js';
+import { expectAccount } from '../../member/test/fixtures/members.js';
+import { CannotNestItemLoginSchema, ValidMemberSession } from '../errors.js';
 
 const rawGuestRepository = AppDataSource.getRepository(Guest);
 const rawItemMembershipRepository = AppDataSource.getRepository(ItemMembership);

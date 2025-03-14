@@ -3,22 +3,22 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { AuthTokenSubject } from '@graasp/sdk';
 
-import { resolveDependency } from '../../../../di/utils';
-import { db } from '../../../../drizzle/db';
-import { FastifyInstanceTypebox } from '../../../../plugins/typebox';
-import { asDefined } from '../../../../utils/assertions';
+import { resolveDependency } from '../../../../di/utils.js';
+import { db } from '../../../../drizzle/db.js';
+import { FastifyInstanceTypebox } from '../../../../plugins/typebox.js';
+import { asDefined } from '../../../../utils/assertions.js';
 import {
   guestAuthenticateAppsJWT,
   isAuthenticated,
   optionalIsAuthenticated,
-} from '../../../auth/plugins/passport';
-import { AppService } from './app.service';
-import appActionPlugin from './appAction';
-import appDataPlugin from './appData';
-import appSettingPlugin from './appSetting';
-import chatBotPlugin from './chatBot/chatBot.controller';
-import { generateToken, getContext, getList, getOwnMostUsedApps } from './schemas';
-import { AppsPluginOptions } from './types';
+} from '../../../auth/plugins/passport/index.js';
+import { AppService } from './app.service.js';
+import appActionPlugin from './appAction/index.js';
+import appDataPlugin from './appData/index.js';
+import appSettingPlugin from './appSetting/index.js';
+import chatBotPlugin from './chatBot/chatBot.controller.js';
+import { generateToken, getContext, getList, getOwnMostUsedApps } from './schemas.js';
+import { AppsPluginOptions } from './types.js';
 
 const plugin: FastifyPluginAsyncTypebox<AppsPluginOptions> = async (fastify, options) => {
   const { jwtSecret, publisherId } = options;

@@ -1,12 +1,12 @@
 import fetch, { Response } from 'node-fetch';
 
-import { BaseLogger } from '../../../../../logger';
-import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN } from '../../../../../utils/config';
-import { ThumbnailService } from '../../../../thumbnail/service';
-import { MeiliSearchWrapper } from '../../publication/published/plugins/search/meilisearch';
-import { ItemThumbnailService } from '../../thumbnail/service';
-import { EmbeddedLinkItemService } from '../service';
-import { FAKE_URL, FETCH_RESULT, expectedResult } from './fixtures';
+import { BaseLogger } from '../../../../../logger.js';
+import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN } from '../../../../../utils/config.js';
+import { ThumbnailService } from '../../../../thumbnail/service.js';
+import { MeiliSearchWrapper } from '../../publication/published/plugins/search/meilisearch.js';
+import { ItemThumbnailService } from '../../thumbnail/service.js';
+import { EmbeddedLinkItemService } from '../service.js';
+import { FAKE_URL, FETCH_RESULT, expectedResult } from './fixtures.js';
 
 jest.mock('node-fetch');
 
@@ -18,7 +18,10 @@ export const mockResponse = (response: Response) => {
 
 export const mockHeaderResponse = (headers: { [key: string]: string }) => {
   (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(
-    async () => ({ headers: new Headers(headers) }) as Response,
+    async () =>
+      ({
+        headers: new Headers(headers),
+      }) as Response,
   );
 };
 

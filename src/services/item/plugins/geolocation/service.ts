@@ -2,16 +2,16 @@ import { inject, singleton } from 'tsyringe';
 
 import { PermissionLevel } from '@graasp/sdk';
 
-import { GEOLOCATION_API_KEY_DI_KEY } from '../../../../di/constants';
-import { DBConnection } from '../../../../drizzle/db';
-import { Item, ItemGeolocationRaw } from '../../../../drizzle/types';
-import { MaybeUser, MinimalMember } from '../../../../types';
-import { AuthorizationService } from '../../../authorization';
-import { ItemWrapper, type PackedItem } from '../../ItemWrapper';
-import { BasicItemService } from '../../basic.service';
-import { ItemThumbnailService } from '../thumbnail/service';
-import { MissingGeolocationApiKey } from './errors';
-import { ItemGeolocationRepository } from './repository';
+import { GEOLOCATION_API_KEY_DI_KEY } from '../../../../di/constants.js';
+import { DBConnection } from '../../../../drizzle/db.js';
+import { Item, ItemGeolocationRaw } from '../../../../drizzle/types.js';
+import { MaybeUser, MinimalMember } from '../../../../types.js';
+import { AuthorizationService } from '../../../authorization.js';
+import { ItemWrapper, type PackedItem } from '../../ItemWrapper.js';
+import { BasicItemService } from '../../basic.service.js';
+import { ItemThumbnailService } from '../thumbnail/service.js';
+import { MissingGeolocationApiKey } from './errors.js';
+import { ItemGeolocationRepository } from './geolocation.repository.js';
 
 type PackedItemGeolocation = ItemGeolocationRaw & {
   item: PackedItem;

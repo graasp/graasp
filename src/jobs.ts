@@ -1,13 +1,13 @@
-import { ConnectionOptions, Queue, Worker } from 'bullmq';
+import { type ConnectionOptions, Queue, Worker } from 'bullmq';
 
-import { BaseLogger } from './logger';
+import { BaseLogger } from './logger.js';
 import {
   JOB_SCHEDULING,
   REDIS_HOST,
   REDIS_PASSWORD,
   REDIS_PORT,
   REDIS_USERNAME,
-} from './utils/config';
+} from './utils/config.js';
 
 const connection: ConnectionOptions = {
   host: REDIS_HOST,

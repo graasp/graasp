@@ -1,17 +1,17 @@
-import { Data, WebSocket } from 'ws';
+import { type Data, WebSocket } from 'ws';
 
-import { FastifyBaseLogger } from 'fastify';
+import type { FastifyBaseLogger } from 'fastify';
 
 import { Websocket as GraaspWS } from '@graasp/sdk';
 
-import { MaybeUser } from '../../types';
+import type { MaybeUser } from '../../types.js';
 import {
   createServerErrorResponse,
   createServerSuccessResponse,
   createServerUpdate,
-} from './message';
-import { MultiInstanceChannelsBroker } from './multi-instance';
-import { WebSocketChannels } from './ws-channels';
+} from './message.js';
+import { MultiInstanceChannelsBroker } from './multi-instance.js';
+import { WebSocketChannels } from './ws-channels.js';
 
 export interface SubscriptionRequest {
   /**

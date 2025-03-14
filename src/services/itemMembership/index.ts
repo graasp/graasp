@@ -1,16 +1,20 @@
 import { fastifyCors } from '@fastify/cors';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { resolveDependency } from '../../di/utils';
-import { db } from '../../drizzle/db';
-import { FastifyInstanceTypebox } from '../../plugins/typebox';
-import { asDefined } from '../../utils/assertions';
-import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../auth/plugins/passport';
-import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
-import MembershipRequestAPI from './plugins/MembershipRequest';
-import { create, deleteOne, getItemMembershipsForItem, updateOne } from './schemas';
-import { ItemMembershipService } from './service';
-import { membershipWsHooks } from './ws/hooks';
+import { resolveDependency } from '../../di/utils.js';
+import { db } from '../../drizzle/db.js';
+import { FastifyInstanceTypebox } from '../../plugins/typebox.js';
+import { asDefined } from '../../utils/assertions.js';
+import {
+  isAuthenticated,
+  matchOne,
+  optionalIsAuthenticated,
+} from '../auth/plugins/passport/index.js';
+import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole.js';
+import MembershipRequestAPI from './plugins/MembershipRequest/index.js';
+import { create, deleteOne, getItemMembershipsForItem, updateOne } from './schemas.js';
+import { ItemMembershipService } from './service.js';
+import { membershipWsHooks } from './ws/hooks.js';
 
 const ROUTES_PREFIX = '/item-memberships';
 

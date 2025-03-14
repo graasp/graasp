@@ -1,8 +1,8 @@
 import { v4 as uuidV4 } from 'uuid';
 
-import { client, db } from '../../drizzle/db';
-import { saveMember } from '../member/test/fixtures/members';
-import { AccountRepository } from './account.repository';
+import { client, db } from '../../drizzle/db.js';
+import { saveMember } from '../member/test/fixtures/members.js';
+import { AccountRepository } from './account.repository.js';
 
 const accountRepository = new AccountRepository();
 

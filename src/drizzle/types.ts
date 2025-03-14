@@ -1,4 +1,4 @@
-import {
+import type {
   AppItemExtra,
   DocumentItemExtra,
   EtherpadItemExtra,
@@ -13,7 +13,7 @@ import {
   UnionOfConst,
 } from '@graasp/sdk';
 
-import { MinimalGuest, MinimalMember } from '../types';
+import type { MinimalGuest, MinimalMember } from '../types.js';
 import {
   accountsTable,
   actionRequestExports,
@@ -27,7 +27,7 @@ import {
   guestsView,
   invitationsTable,
   itemBookmarks,
-  itemGeolocations,
+  itemGeolocationsTable,
   itemLikes,
   itemLoginSchemas,
   itemMemberships,
@@ -43,7 +43,7 @@ import {
   publishedItems,
   shortLinks,
   tags,
-} from './schema';
+} from './schema.js';
 
 export type AccountInsertDTO = typeof accountsTable.$inferInsert;
 export type AccountRaw = typeof accountsTable.$inferSelect;
@@ -62,8 +62,10 @@ export type Account = MinimalAccount;
 export type NullableAccount = Account | null;
 
 // HACK: Using inferSelect since this is a PGView and it does not allow to insert on the view
-export type MemberCreationDTO = typeof membersView.$inferSelect & {
+// HACK: Remove the too wide "type" from the select which allows a union and add over it the more specific single value type of individual
+export type MemberCreationDTO = Omit<typeof membersView.$inferSelect, 'type'> & {
   email: string;
+  type: 'individual';
 };
 export type MemberRaw = Omit<typeof membersView.$inferSelect, 'type'> & {
   type: 'individual';
@@ -214,7 +216,7 @@ export type InvitationRaw = typeof invitationsTable.$inferSelect;
 export type InvitationWithItem = InvitationRaw & {
   item: Item;
 };
-export type InvitationWIthItemAndCreator = Omit<InvitationWithItem, 'creatorId'> & {
+export type InvitationWithItemAndCreator = Omit<InvitationWithItem, 'creatorId'> & {
   creator: NullableAccount;
 };
 
@@ -228,6 +230,7 @@ export type ItemTagRaw = typeof itemTags.$inferSelect;
 
 // --- ItemMembership
 export type ItemMembershipRaw = typeof itemMemberships.$inferSelect;
+export type ItemMembershipInsertDTO = typeof itemMemberships.$inferInsert;
 export type ItemMembershipWithItem = ItemMembershipRaw & {
   item: ItemRaw;
 };
@@ -285,10 +288,13 @@ export type ShortLinkWithItem = ShortLinkRaw & { item: Item };
 // --- ItemLike
 export type ItemLikeRaw = typeof itemLikes.$inferSelect;
 export type ItemLikeWithItem = ItemLikeRaw & { item: Item };
-export type ItemLikeWithItemAndAccount = ItemLikeWithItem & { creator: Account };
+export type ItemLikeWithItemAndAccount = ItemLikeWithItem & {
+  creator: Account;
+};
 
 // --- ItemGeolocation
-export type ItemGeolocationRaw = typeof itemGeolocations.$inferSelect;
+export type ItemGeolocationRaw = typeof itemGeolocationsTable.$inferSelect;
+export type ItemGeolocationInsertDTO = typeof itemGeolocationsTable.$inferInsert;
 export type ItemGeolocationWithItem = ItemGeolocationRaw & { item: Item };
 export type ItemGeolocationWithItemWithCreator = ItemGeolocationRaw & {
   item: ItemWithCreator;
@@ -329,5 +335,6 @@ export type ItemBookmarkRawWithItemAndAccount = ItemBookmarkRaw & {
 
 // --- MemberProfile
 export type MemberProfileRaw = typeof memberProfiles.$inferSelect;
+export type MemberProfileInsertDTO = typeof memberProfiles.$inferInsert;
 
 export type ActionRequestExportRaw = typeof actionRequestExports.$inferSelect;

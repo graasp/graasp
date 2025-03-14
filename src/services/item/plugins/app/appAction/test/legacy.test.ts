@@ -8,11 +8,11 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../../test/app';
-import { MinimalMember } from '../../../../../../types';
-import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
-import { AppTestUtils } from '../../test/fixtures';
-import { saveAppActions } from './fixtures';
+import build, { clearDatabase } from '../../../../../../../test/app.js';
+import { MinimalMember } from '../../../../../../types.js';
+import { APP_ITEMS_PREFIX } from '../../../../../../utils/config.js';
+import { AppTestUtils } from '../../test/fixtures.js';
+import { saveAppActions } from './fixtures.js';
 
 const testUtils = new AppTestUtils();
 

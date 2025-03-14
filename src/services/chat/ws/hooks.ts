@@ -1,10 +1,10 @@
 import { PermissionLevel } from '@graasp/sdk';
 
-import { type DBConnection } from '../../../drizzle/db';
-import { ItemService } from '../../item/service';
-import { WebsocketService } from '../../websockets/ws-service';
-import { ChatMessageService } from '../service';
-import { ItemChatEvent, itemChatTopic } from './events';
+import { type DBConnection } from '../../../drizzle/db.js';
+import { ItemService } from '../../item/service.js';
+import { WebsocketService } from '../../websockets/ws-service.js';
+import { ChatMessageService } from '../service.js';
+import { ItemChatEvent, itemChatTopic } from './events.js';
 
 export function registerChatWsHooks(
   db: DBConnection,

@@ -6,10 +6,10 @@ import { MultipartFields, MultipartFile } from '@fastify/multipart';
 
 import { ItemGeolocation, ItemType, ItemTypeUnion, isChildOf } from '@graasp/sdk';
 
-import { Item, ItemRaw } from '../../drizzle/types';
-import { NoFileProvided } from '../../utils/errors';
-import { FolderItem, isItemType } from './discrimination';
-import { validateGeolocation, validateSettings } from './validation';
+import { Item, ItemRaw } from '../../drizzle/types.js';
+import { NoFileProvided } from '../../utils/errors.js';
+import { FolderItem, isItemType } from './discrimination.js';
+import { validateGeolocation, validateSettings } from './validation.js';
 
 const itemOrderFn = (a: ItemRaw, b: ItemRaw) => {
   return (a.order ?? 0) - (b.order ?? 0);

@@ -1,6 +1,6 @@
-import { InvalidUrlError, RegexValidatorError, UrlMissingProtocolError } from './errors';
-import { Validator, Variable } from './types';
-import { urlContainsProtocol, valueShouldBeDefined } from './utils';
+import { InvalidUrlError, RegexValidatorError, UrlMissingProtocolError } from './errors.js';
+import type { Validator, Variable } from './types.js';
+import { urlContainsProtocol, valueShouldBeDefined } from './utils.js';
 
 export class UrlValidator implements Validator {
   public validate({ name, value }: Variable) {

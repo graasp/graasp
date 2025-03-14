@@ -3,9 +3,9 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifySchema } from 'fastify';
 
-import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
-import { errorSchemaRef } from '../../../../schemas/global';
-import { SHORT_TOKEN_PARAM, TOKEN_PARAM } from '../passport';
+import { customType, registerSchemaAsRef } from '../../../../plugins/typebox.js';
+import { errorSchemaRef } from '../../../../schemas/global.js';
+import { SHORT_TOKEN_PARAM, TOKEN_PARAM } from '../passport/index.js';
 
 const authTokensPairSchemaRef = registerSchemaAsRef(
   'tokensPair',

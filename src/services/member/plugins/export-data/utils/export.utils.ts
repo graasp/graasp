@@ -5,14 +5,14 @@ import { singleton } from 'tsyringe';
 
 import { DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS } from '@graasp/sdk';
 
-import { TRANSLATIONS } from '../../../../../langs/constants';
-import { MailBuilder } from '../../../../../plugins/mailer/builder';
-import { MailerService } from '../../../../../plugins/mailer/mailer.service';
-import { MemberInfo, MinimalMember } from '../../../../../types';
-import { TMP_FOLDER } from '../../../../../utils/config';
-import { EXPORT_FILE_EXPIRATION, ZIP_MIMETYPE } from '../../../../action/constants';
-import { CannotWriteFileError } from '../../../../action/utils/errors';
-import FileService from '../../../../file/service';
+import { TRANSLATIONS } from '../../../../../langs/constants.js';
+import { MailBuilder } from '../../../../../plugins/mailer/builder.js';
+import { MailerService } from '../../../../../plugins/mailer/mailer.service.js';
+import type { MemberInfo, MinimalMember } from '../../../../../types.js';
+import { TMP_FOLDER } from '../../../../../utils/config.js';
+import { EXPORT_FILE_EXPIRATION, ZIP_MIMETYPE } from '../../../../action/constants.js';
+import { CannotWriteFileError } from '../../../../action/utils/errors.js';
+import FileService from '../../../../file/service.js';
 
 /**
  * DataToExport will be used to store each values in its own file with the name of the key.

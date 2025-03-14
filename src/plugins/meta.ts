@@ -6,11 +6,11 @@ import { FastifySchema } from 'fastify';
 
 import { UnionOfConst } from '@graasp/sdk';
 
-import { resolveDependency } from '../di/utils';
-import { DBConnection, db } from '../drizzle/db';
-import { SearchService } from '../services/item/plugins/publication/published/plugins/search/service';
-import { assertIsError } from '../utils/assertions';
-import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN, ETHERPAD_URL } from '../utils/config';
+import { resolveDependency } from '../di/utils.js';
+import { DBConnection, db } from '../drizzle/db.js';
+import { SearchService } from '../services/item/plugins/publication/published/plugins/search/service.js';
+import { assertIsError } from '../utils/assertions.js';
+import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN, ETHERPAD_URL } from '../utils/config.js';
 
 const Status = {
   Healthy: 'healthy',

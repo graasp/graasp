@@ -6,15 +6,15 @@ import { FastifyInstance } from 'fastify';
 
 import { Context, ExportActionsFormatting } from '@graasp/sdk';
 
-import build from '../../../../test/app';
-import { db } from '../../../drizzle/db';
-import { actionsTable, chatMessagesTable } from '../../../drizzle/schema';
-import { MemberRaw } from '../../../drizzle/types';
-import { TMP_FOLDER } from '../../../utils/config';
-import { BaseAnalytics } from '../../item/plugins/action/base-analytics';
-import { ItemTestUtils } from '../../item/test/fixtures/items';
-import { saveMember } from '../../member/test/fixtures/members';
-import { exportActionsInArchive } from './export';
+import build from '../../../../test/app.js';
+import { db } from '../../../drizzle/db.js';
+import { actionsTable, chatMessagesTable } from '../../../drizzle/schema.js';
+import { MemberRaw } from '../../../drizzle/types.js';
+import { TMP_FOLDER } from '../../../utils/config.js';
+import { BaseAnalytics } from '../../item/plugins/action/base-analytics.js';
+import { ItemTestUtils } from '../../item/test/fixtures/items.js';
+import { saveMember } from '../../member/test/fixtures/members.js';
+import { exportActionsInArchive } from './export.js';
 
 const testUtils = new ItemTestUtils();
 

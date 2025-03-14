@@ -7,28 +7,28 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { ItemType, PermissionLevel } from '@graasp/sdk';
 
-import { resolveDependency } from '../../../../../di/utils';
-import { db } from '../../../../../drizzle/db';
-import { asDefined } from '../../../../../utils/assertions';
-import { isAuthenticated, matchOne } from '../../../../auth/plugins/passport';
-import { assertIsMember, isMember } from '../../../../authentication';
-import { AuthorizationService } from '../../../../authorization';
-import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
-import { isItemType } from '../../../discrimination';
-import { ItemService } from '../../../service';
-import { FastifyStaticReply } from '../types';
+import { resolveDependency } from '../../../../../di/utils.js';
+import { db } from '../../../../../drizzle/db.js';
+import { asDefined } from '../../../../../utils/assertions.js';
+import { isAuthenticated, matchOne } from '../../../../auth/plugins/passport/index.js';
+import { assertIsMember, isMember } from '../../../../authentication.js';
+import { AuthorizationService } from '../../../../authorization.js';
+import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole.js';
+import { isItemType } from '../../../discrimination.js';
+import { ItemService } from '../../../service.js';
+import { FastifyStaticReply } from '../types.js';
 import {
   DEFAULT_H5P_ASSETS_ROUTE,
   DEFAULT_H5P_CONTENT_ROUTE,
   MAX_FILES,
   MAX_FILE_SIZE,
   MAX_NON_FILE_FIELDS,
-} from './constants';
-import { H5PInvalidFileError } from './errors';
-import { renderHtml } from './integration';
-import { h5pImport } from './schemas';
-import { H5PService } from './service';
-import { H5PPluginOptions } from './types';
+} from './constants.js';
+import { H5PInvalidFileError } from './errors.js';
+import { renderHtml } from './integration.js';
+import { h5pImport } from './schemas.js';
+import { H5PService } from './service.js';
+import { H5PPluginOptions } from './types.js';
 
 const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
   const itemService = resolveDependency(ItemService);

@@ -2,19 +2,19 @@ import { v4 } from 'uuid';
 
 import { buildPathFromIds } from '@graasp/sdk';
 
-import { MOCK_LOGGER } from '../../../../../../test/app';
-import { db } from '../../../../../drizzle/db';
-import { MailerService } from '../../../../../plugins/mailer/mailer.service';
-import { ActionRepository } from '../../../../action/action.repository';
-import { ItemMembershipRepository } from '../../../../itemMembership/repository';
-import { ItemWrapperService } from '../../../ItemWrapper';
-import { BasicItemService } from '../../../basic.service';
-import { ItemRepository } from '../../../repository';
-import { ItemVisibilityRepository } from '../../itemVisibility/repository';
-import { ItemThumbnailService } from '../../thumbnail/service';
-import { ItemPublishedRepository } from './itemPublished.repository';
-import { ItemPublishedService } from './itemPublished.service';
-import { MeiliSearchWrapper } from './plugins/search/meilisearch';
+import { MOCK_LOGGER } from '../../../../../../test/app.js';
+import { db } from '../../../../../drizzle/db.js';
+import { MailerService } from '../../../../../plugins/mailer/mailer.service.js';
+import { ActionRepository } from '../../../../action/action.repository.js';
+import { ItemMembershipRepository } from '../../../../itemMembership/repository.js';
+import { ItemWrapperService } from '../../../ItemWrapper.js';
+import { BasicItemService } from '../../../basic.service.js';
+import { ItemRepository } from '../../../repository.js';
+import { ItemVisibilityRepository } from '../../itemVisibility/repository.js';
+import { ItemThumbnailService } from '../../thumbnail/service.js';
+import { ItemPublishedRepository } from './itemPublished.repository.js';
+import { ItemPublishedService } from './itemPublished.service.js';
+import { MeiliSearchWrapper } from './plugins/search/meilisearch.js';
 
 const meiliSearchWrapper = {
   updateItem: jest.fn(),

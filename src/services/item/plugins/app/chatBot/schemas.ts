@@ -3,13 +3,13 @@ import { StatusCodes } from 'http-status-codes';
 
 import { ChatbotRole, GPTVersion } from '@graasp/sdk';
 
-import { customType } from '../../../../../plugins/typebox';
-import { errorSchemaRef } from '../../../../../schemas/global';
+import { customType } from '../../../../../plugins/typebox.js';
+import { errorSchemaRef } from '../../../../../schemas/global.js';
 import {
   OPENAI_GPT_VERSION,
   OPENAI_MAX_TEMPERATURE,
   OPENAI_MIN_TEMPERATURE,
-} from '../../../../../utils/config';
+} from '../../../../../utils/config.js';
 
 export const create = {
   operationId: 'createChatbotCompletionPrompt',

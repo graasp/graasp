@@ -5,8 +5,8 @@ import { FastifyReply, FastifyRequest, RouteHandlerMethod } from 'fastify';
 
 import { RecaptchaActionType } from '@graasp/sdk';
 
-import { DEV, RECAPTCHA_SECRET_ACCESS_KEY } from '../../../../utils/config';
-import { AuthenticationError } from './errors';
+import { DEV, RECAPTCHA_SECRET_ACCESS_KEY } from '../../../../utils/config.js';
+import { AuthenticationError } from './errors.js';
 
 export const RECAPTCHA_VERIFY_LINK = 'https://www.google.com/recaptcha/api/siteverify';
 export const RECAPTCHA_SCORE_THRESHOLD = 0.5;

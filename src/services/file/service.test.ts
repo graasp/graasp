@@ -6,12 +6,12 @@ import { Readable } from 'stream';
 
 import { ItemType, MimeTypes } from '@graasp/sdk';
 
-import { BaseLogger } from '../../logger';
-import { MinimalMember } from '../../types';
-import { CachingService } from '../caching/service';
-import { LocalFileRepository } from './repositories/local';
-import { S3FileRepository } from './repositories/s3';
-import FileService from './service';
+import { BaseLogger } from '../../logger.js';
+import { MinimalMember } from '../../types.js';
+import { CachingService } from '../caching/service.js';
+import { LocalFileRepository } from './repositories/local.js';
+import { S3FileRepository } from './repositories/s3.js';
+import FileService from './service.js';
 import {
   CopyFileInvalidPathError,
   CopyFolderInvalidPathError,
@@ -19,8 +19,8 @@ import {
   DeleteFolderInvalidPathError,
   MalformedFileConfigError,
   UploadFileUnexpectedError,
-} from './utils/errors';
-import { fileRepositoryFactory } from './utils/factory';
+} from './utils/errors.js';
+import { fileRepositoryFactory } from './utils/factory.js';
 
 // We are mocking the cache service to avoid using Redis.
 jest.mock('../caching/service');

@@ -3,13 +3,17 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 
 import { Authenticator } from '@fastify/passport';
 
-import { db } from '../../../../../drizzle/db';
-import { JWT_SECRET } from '../../../../../utils/config';
-import { ChallengeFailed, MemberNotFound, UnauthorizedMember } from '../../../../../utils/errors';
-import { AccountRepository } from '../../../../account/account.repository';
-import { SHORT_TOKEN_PARAM } from '../constants';
-import { PassportStrategy } from '../strategies';
-import { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
+import { db } from '../../../../../drizzle/db.js';
+import { JWT_SECRET } from '../../../../../utils/config.js';
+import {
+  ChallengeFailed,
+  MemberNotFound,
+  UnauthorizedMember,
+} from '../../../../../utils/errors.js';
+import { AccountRepository } from '../../../../account/account.repository.js';
+import { SHORT_TOKEN_PARAM } from '../constants.js';
+import { PassportStrategy } from '../strategies.js';
+import { CustomStrategyOptions, StrictVerifiedCallback } from '../types.js';
 
 export default (
   passport: Authenticator,

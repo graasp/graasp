@@ -1,4 +1,4 @@
-import { TokenItemIdMismatch } from './errors';
+import { TokenItemIdMismatch } from './errors.js';
 
 export const checkTargetItemAndTokenItemMatch = (itemId1: string, itemId2: string): void => {
   if (itemId1 !== itemId2) {

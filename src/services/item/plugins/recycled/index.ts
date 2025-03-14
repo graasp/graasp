@@ -2,17 +2,21 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { resolveDependency } from '../../../../di/utils';
-import { db } from '../../../../drizzle/db';
-import { asDefined } from '../../../../utils/assertions';
-import { isAuthenticated, matchOne } from '../../../auth/plugins/passport';
-import { assertIsMember } from '../../../authentication';
-import { memberAccountRole } from '../../../member/strategies/memberAccountRole';
-import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { ITEMS_PAGE_SIZE } from '../../constants';
-import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
-import { getOwnRecycledItems, recycleMany, restoreMany } from './schemas';
-import { RecycledBinService } from './service';
+import { resolveDependency } from '../../../../di/utils.js';
+import { db } from '../../../../drizzle/db.js';
+import { asDefined } from '../../../../utils/assertions.js';
+import { isAuthenticated, matchOne } from '../../../auth/plugins/passport/index.js';
+import { assertIsMember } from '../../../authentication.js';
+import { memberAccountRole } from '../../../member/strategies/memberAccountRole.js';
+import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole.js';
+import { ITEMS_PAGE_SIZE } from '../../constants.js';
+import {
+  ItemOpFeedbackErrorEvent,
+  ItemOpFeedbackEvent,
+  memberItemsTopic,
+} from '../../ws/events.js';
+import { getOwnRecycledItems, recycleMany, restoreMany } from './schemas.js';
+import { RecycledBinService } from './service.js';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { websockets } = fastify;

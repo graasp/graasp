@@ -3,18 +3,22 @@ import { StatusCodes } from 'http-status-codes';
 import { fastifyMultipart } from '@fastify/multipart';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { resolveDependency } from '../../../../di/utils';
-import { db } from '../../../../drizzle/db';
-import { asDefined } from '../../../../utils/assertions';
-import { THUMBNAILS_ROUTE_PREFIX } from '../../../../utils/config';
-import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
-import { assertIsMember } from '../../../authentication';
-import { UploadFileUnexpectedError } from '../../../file/utils/errors';
-import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
-import { deleteSchema, download, upload } from './schemas';
-import { ItemThumbnailService } from './service';
-import { UploadFileNotImageError } from './utils/errors';
+import { resolveDependency } from '../../../../di/utils.js';
+import { db } from '../../../../drizzle/db.js';
+import { asDefined } from '../../../../utils/assertions.js';
+import { THUMBNAILS_ROUTE_PREFIX } from '../../../../utils/config.js';
+import {
+  isAuthenticated,
+  matchOne,
+  optionalIsAuthenticated,
+} from '../../../auth/plugins/passport/index.js';
+import { assertIsMember } from '../../../authentication.js';
+import { UploadFileUnexpectedError } from '../../../file/utils/errors.js';
+import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole.js';
+import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants.js';
+import { deleteSchema, download, upload } from './schemas.js';
+import { ItemThumbnailService } from './service.js';
+import { UploadFileNotImageError } from './utils/errors.js';
 
 type GraaspThumbnailsOptions = {
   shouldRedirectOnDownload?: boolean;

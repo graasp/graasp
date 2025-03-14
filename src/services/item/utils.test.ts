@@ -1,7 +1,7 @@
 import { FolderItemFactory } from '@graasp/sdk';
 
-import { FolderItem } from './discrimination';
-import { sortChildrenForTreeWith } from './utils';
+import { FolderItem } from './discrimination.js';
+import { sortChildrenForTreeWith } from './utils.js';
 
 const buildFolderItem = (args: { parentItem?: FolderItem; order: number }) => {
   const item = FolderItemFactory(args) as unknown as FolderItem;

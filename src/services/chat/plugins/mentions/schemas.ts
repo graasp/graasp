@@ -9,10 +9,10 @@ import { FastifySchema } from 'fastify';
 
 import { MentionStatus } from '@graasp/sdk';
 
-import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
-import { errorSchemaRef } from '../../../../schemas/global';
-import { accountSchemaRef } from '../../../account/schemas';
-import { rawChatMessageSchemaRef } from '../../schemas';
+import { customType, registerSchemaAsRef } from '../../../../plugins/typebox.js';
+import { errorSchemaRef } from '../../../../schemas/global.js';
+import { accountSchemaRef } from '../../../account/schemas.js';
+import { rawChatMessageSchemaRef } from '../../schemas.js';
 
 export const minimalChatMentionSchemaRef = registerSchemaAsRef(
   'minimalChatMention',

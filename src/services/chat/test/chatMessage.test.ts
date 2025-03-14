@@ -5,18 +5,26 @@ import { FastifyInstance } from 'fastify';
 
 import { FolderItemFactory, HttpMethod } from '@graasp/sdk';
 
-import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
-import { resolveDependency } from '../../../di/utils';
-import { ChatMessageRaw } from '../../../drizzle/types';
-import { MailerService } from '../../../plugins/mailer/mailer.service';
-import { MinimalMember } from '../../../types';
-import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
-import { ItemNotFound, MemberCannotAccess } from '../../../utils/errors';
-import { setItemPublic } from '../../item/plugins/itemVisibility/test/fixtures';
-import { ItemTestUtils } from '../../item/test/fixtures/items';
-import { saveMember } from '../../member/test/fixtures/members';
-import { ChatMessageNotFound, MemberCannotDeleteMessage, MemberCannotEditMessage } from '../errors';
-import { ChatMessageRepository } from '../repository';
+import build, {
+  clearDatabase,
+  mockAuthenticate,
+  unmockAuthenticate,
+} from '../../../../test/app.js';
+import { resolveDependency } from '../../../di/utils.js';
+import { ChatMessageRaw } from '../../../drizzle/types.js';
+import { MailerService } from '../../../plugins/mailer/mailer.service.js';
+import { MinimalMember } from '../../../types.js';
+import { ITEMS_ROUTE_PREFIX } from '../../../utils/config.js';
+import { ItemNotFound, MemberCannotAccess } from '../../../utils/errors.js';
+import { setItemPublic } from '../../item/plugins/itemVisibility/test/fixtures.js';
+import { ItemTestUtils } from '../../item/test/fixtures/items.js';
+import { saveMember } from '../../member/test/fixtures/members.js';
+import {
+  ChatMessageNotFound,
+  MemberCannotDeleteMessage,
+  MemberCannotEditMessage,
+} from '../errors.js';
+import { ChatMessageRepository } from '../repository.js';
 
 const testUtils = new ItemTestUtils();
 const memberRawRepository = AppDataSource.getRepository(Member);

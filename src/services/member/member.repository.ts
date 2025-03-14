@@ -12,6 +12,8 @@ import { MemberDTO } from './types';
 
 @singleton()
 export class MemberRepository {
+  constructor() {}
+
   async deleteOne(db: DBConnection, id: string) {
     // need to use the accounts table as we can not delete from a view (membersView)
     await db

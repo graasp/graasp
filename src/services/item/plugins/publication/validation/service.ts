@@ -2,20 +2,20 @@ import { mkdirSync } from 'fs';
 import path from 'path';
 import { singleton } from 'tsyringe';
 
-import { ItemValidationStatus, PermissionLevel, UUID } from '@graasp/sdk';
+import { ItemValidationStatus, PermissionLevel, type UUID } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../../drizzle/db';
-import { Item } from '../../../../../drizzle/types';
-import { BaseLogger } from '../../../../../logger';
-import { MinimalMember } from '../../../../../types';
-import { TMP_FOLDER } from '../../../../../utils/config';
-import { AuthorizationService } from '../../../../authorization';
-import { FolderItem } from '../../../discrimination';
-import { ItemRepository } from '../../../repository';
-import { ItemPublishedService } from '../published/itemPublished.service';
-import { ItemValidationGroupRepository } from './ItemValidationGroup.repository';
-import { ItemValidationModerator } from './moderators/itemValidationModerator';
-import { ValidationQueue } from './validationQueue';
+import type { DBConnection } from '../../../../../drizzle/db.js';
+import type { Item } from '../../../../../drizzle/types.js';
+import { BaseLogger } from '../../../../../logger.js';
+import type { MinimalMember } from '../../../../../types.js';
+import { TMP_FOLDER } from '../../../../../utils/config.js';
+import { AuthorizationService } from '../../../../authorization.js';
+import type { FolderItem } from '../../../discrimination.js';
+import { ItemRepository } from '../../../repository.js';
+import { ItemPublishedService } from '../published/itemPublished.service.js';
+import { ItemValidationGroupRepository } from './ItemValidationGroup.repository.js';
+import { ItemValidationModerator } from './moderators/itemValidationModerator.js';
+import { ValidationQueue } from './validationQueue.js';
 
 @singleton()
 export class ItemValidationService {

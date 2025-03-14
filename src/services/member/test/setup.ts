@@ -5,8 +5,8 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, ItemLoginSchemaType } from '@graasp/sdk';
 
-import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
-import { ItemTestUtils } from '../../item/test/fixtures/items';
+import { ITEMS_ROUTE_PREFIX } from '../../../utils/config.js';
+import { ItemTestUtils } from '../../item/test/fixtures/items.js';
 
 const testUtils = new ItemTestUtils();
 

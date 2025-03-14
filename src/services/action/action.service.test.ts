@@ -2,22 +2,22 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 
 import { ActionFactory, MemberFactory } from '@graasp/sdk';
 
-import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../test/app';
-import { db } from '../../drizzle/db';
-import { BaseLogger } from '../../logger';
-import { MailerService } from '../../plugins/mailer/mailer.service';
-import { ItemGeolocationRepository } from '../item/plugins/geolocation/repository';
-import { MeiliSearchWrapper } from '../item/plugins/publication/published/plugins/search/meilisearch';
-import { ItemThumbnailService } from '../item/plugins/thumbnail/service';
-import { ItemRepository } from '../item/repository';
-import { ItemService } from '../item/service';
-import { ItemMembershipRepository } from '../itemMembership/repository';
-import { MemberRepository } from '../member/member.repository';
-import { MemberService } from '../member/member.service';
-import { saveMember } from '../member/test/fixtures/members';
-import { ThumbnailService } from '../thumbnail/service';
-import { ActionRepository } from './action.repository';
-import { ActionService } from './action.service';
+import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../test/app.js';
+import { db } from '../../drizzle/db.js';
+import { BaseLogger } from '../../logger.js';
+import { MailerService } from '../../plugins/mailer/mailer.service.js';
+import { ItemGeolocationRepository } from '../item/plugins/geolocation/geolocation.repository.js';
+import { MeiliSearchWrapper } from '../item/plugins/publication/published/plugins/search/meilisearch.js';
+import { ItemThumbnailService } from '../item/plugins/thumbnail/service.js';
+import { ItemRepository } from '../item/repository.js';
+import { ItemService } from '../item/service.js';
+import { ItemMembershipRepository } from '../itemMembership/repository.js';
+import { MemberRepository } from '../member/member.repository.js';
+import { MemberService } from '../member/member.service.js';
+import { saveMember } from '../member/test/fixtures/members.js';
+import { ThumbnailService } from '../thumbnail/service.js';
+import { ActionRepository } from './action.repository.js';
+import { ActionService } from './action.service.js';
 
 const service = new ActionService(
   new ActionRepository(),

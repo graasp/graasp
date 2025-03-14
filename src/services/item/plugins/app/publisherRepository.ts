@@ -1,4 +1,4 @@
-import { DBConnection } from '../../../../drizzle/db';
+import { DBConnection } from '../../../../drizzle/db.js';
 
 export class PublisherRepository {
   async getAllValidAppOrigins(db: DBConnection) {

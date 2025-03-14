@@ -1,6 +1,6 @@
 import { ItemType } from '@graasp/sdk';
 
-import { Item, ItemTypeEnumKeys, ItemWithType } from '../../drizzle/types';
+import { Item, ItemTypeEnumKeys, ItemWithType } from '../../drizzle/types.js';
 
 export type AppItem = ItemWithType<typeof ItemType.APP>;
 export type DocumentItem = ItemWithType<typeof ItemType.DOCUMENT>;

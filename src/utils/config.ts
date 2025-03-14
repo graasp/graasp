@@ -1,17 +1,17 @@
 import { config } from 'dotenv';
 import os from 'os';
 
-import { ClientManager, Context, FileItemType, GPTVersion, ItemType } from '@graasp/sdk';
+import { ClientManager, Context, type FileItemType, GPTVersion, ItemType } from '@graasp/sdk';
 
-import {
+import type {
   LocalFileConfiguration,
   S3FileConfiguration,
-} from '../services/file/interfaces/configuration';
-import { API_KEY_FORMAT } from '../services/item/plugins/etherpad/serviceConfig';
-import { asDefined } from './assertions';
-import { ExpectedEnvVariable } from './errors';
-import { validateEnv } from './validators/utils';
-import { RegexValidator, UrlValidator } from './validators/validators';
+} from '../services/file/interfaces/configuration.js';
+import { API_KEY_FORMAT } from '../services/item/plugins/etherpad/serviceConfig.js';
+import { asDefined } from './assertions.js';
+import { ExpectedEnvVariable } from './errors.js';
+import { validateEnv } from './validators/utils.js';
+import { RegexValidator, UrlValidator } from './validators/validators.js';
 
 enum Environment {
   production = 'production',

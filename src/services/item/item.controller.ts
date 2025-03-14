@@ -3,19 +3,23 @@ import { StatusCodes } from 'http-status-codes';
 import { fastifyMultipart } from '@fastify/multipart';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { resolveDependency } from '../../di/utils';
-import { db } from '../../drizzle/db';
-import { Item } from '../../drizzle/types';
-import { FastifyInstanceTypebox } from '../../plugins/typebox';
-import { asDefined } from '../../utils/assertions';
-import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../auth/plugins/passport';
-import { assertIsMember } from '../authentication';
-import { memberAccountRole } from '../member/strategies/memberAccountRole';
-import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
-import { ITEMS_PAGE_SIZE } from './constants';
-import { ActionItemService } from './plugins/action/action.service';
-import { copyMany, deleteMany, moveMany, reorder, updateOne } from './schemas';
-import { create, createWithThumbnail } from './schemas.create';
+import { resolveDependency } from '../../di/utils.js';
+import { db } from '../../drizzle/db.js';
+import { Item } from '../../drizzle/types.js';
+import { FastifyInstanceTypebox } from '../../plugins/typebox.js';
+import { asDefined } from '../../utils/assertions.js';
+import {
+  isAuthenticated,
+  matchOne,
+  optionalIsAuthenticated,
+} from '../auth/plugins/passport/index.js';
+import { assertIsMember } from '../authentication.js';
+import { memberAccountRole } from '../member/strategies/memberAccountRole.js';
+import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole.js';
+import { ITEMS_PAGE_SIZE } from './constants.js';
+import { ActionItemService } from './plugins/action/action.service.js';
+import { create, createWithThumbnail } from './schemas.create.js';
+import { copyMany, deleteMany, moveMany, reorder, updateOne } from './schemas.js';
 import {
   getAccessible,
   getChildren,
@@ -23,10 +27,10 @@ import {
   getMany,
   getOne,
   getParentItems,
-} from './schemas.packed';
-import { ItemService } from './service';
-import { getPostItemPayloadFromFormData } from './utils';
-import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from './ws/events';
+} from './schemas.packed.js';
+import { ItemService } from './service.js';
+import { getPostItemPayloadFromFormData } from './utils.js';
+import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from './ws/events.js';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { websockets } = fastify;

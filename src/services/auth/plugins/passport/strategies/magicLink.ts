@@ -2,11 +2,11 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 
 import { Authenticator } from '@fastify/passport';
 
-import { db } from '../../../../../drizzle/db';
-import { MemberNotFound, UnauthorizedMember } from '../../../../../utils/errors';
-import { MemberRepository } from '../../../../member/member.repository';
-import { PassportStrategy } from '../strategies';
-import { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
+import { db } from '../../../../../drizzle/db.js';
+import { MemberNotFound, UnauthorizedMember } from '../../../../../utils/errors.js';
+import { MemberRepository } from '../../../../member/member.repository.js';
+import { PassportStrategy } from '../strategies.js';
+import { CustomStrategyOptions, StrictVerifiedCallback } from '../types.js';
 
 export default (
   passport: Authenticator,

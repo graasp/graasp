@@ -1,27 +1,31 @@
 import { singleton } from 'tsyringe';
 
-import { ClientManager, Context, PermissionLevel, UUID } from '@graasp/sdk';
+import { ClientManager, Context, PermissionLevel, type UUID } from '@graasp/sdk';
 
-import { DBConnection } from '../../drizzle/db';
-import {
+import type { DBConnection } from '../../drizzle/db.js';
+import type {
   Item,
   ItemMembershipRaw,
   ItemMembershipWithItem,
   ItemMembershipWithItemAndAccount,
   ItemRaw,
-} from '../../drizzle/types';
-import { TRANSLATIONS } from '../../langs/constants';
-import { MailBuilder } from '../../plugins/mailer/builder';
-import { MailerService } from '../../plugins/mailer/mailer.service';
-import { AccountType, AuthenticatedUser, MaybeUser, MemberInfo } from '../../types';
-import { CannotDeleteOnlyAdmin, CannotModifyGuestItemMembership } from '../../utils/errors';
-import HookManager from '../../utils/hook';
-import { AuthorizationService } from '../authorization';
-import { BasicItemService } from '../item/basic.service';
-import { ItemService } from '../item/service';
-import { MemberRepository } from '../member/member.repository';
-import { MembershipRequestRepository } from './plugins/MembershipRequest/repository';
-import { ItemMembershipRepository } from './repository';
+} from '../../drizzle/types.js';
+import { TRANSLATIONS } from '../../langs/constants.js';
+import { MailBuilder } from '../../plugins/mailer/builder.js';
+import { MailerService } from '../../plugins/mailer/mailer.service.js';
+import {
+  AccountType,
+  type AuthenticatedUser,
+  type MaybeUser,
+  type MemberInfo,
+} from '../../types.js';
+import { CannotDeleteOnlyAdmin, CannotModifyGuestItemMembership } from '../../utils/errors.js';
+import HookManager from '../../utils/hook.js';
+import { AuthorizationService } from '../authorization.js';
+import { BasicItemService } from '../item/basic.service.js';
+import { MemberRepository } from '../member/member.repository.js';
+import { MembershipRequestRepository } from './plugins/MembershipRequest/repository.js';
+import { ItemMembershipRepository } from './repository.js';
 
 @singleton()
 export class ItemMembershipService {

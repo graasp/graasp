@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { customType } from '../../../../plugins/typebox';
-import { itemMembershipWithoutRelationsSchemaRef } from '../../../itemMembership/schemas';
+import { customType } from '../../../../plugins/typebox.js';
+import { itemMembershipWithoutRelationsSchemaRef } from '../../../itemMembership/schemas.js';
 
 export const enroll = {
   operationId: 'enroll',

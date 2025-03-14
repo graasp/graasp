@@ -15,19 +15,19 @@ import {
   PermissionLevel,
 } from '@graasp/sdk';
 
-import build, { clearDatabase, mockAuthenticate } from '../../../../../../test/app';
-import { seedFromJson } from '../../../../../../test/mocks/seed';
-import { resolveDependency } from '../../../../../di/utils';
-import { AuthenticatedUser, MinimalMember } from '../../../../../types';
-import { ETHERPAD_PUBLIC_URL } from '../../../../../utils/config';
-import { ItemNotFound, MemberCannotAccess } from '../../../../../utils/errors';
-import { saveMember } from '../../../../member/test/fixtures/members';
-import { ItemService } from '../../../service';
-import { ItemTestUtils } from '../../../test/fixtures/items';
-import { MAX_SESSIONS_IN_COOKIE } from '../constants';
-import { ItemMissingExtraError } from '../errors';
-import { EtherpadItemService } from '../service';
-import { setUpApi } from './api';
+import build, { clearDatabase, mockAuthenticate } from '../../../../../../test/app.js';
+import { seedFromJson } from '../../../../../../test/mocks/seed.js';
+import { resolveDependency } from '../../../../../di/utils.js';
+import { AuthenticatedUser, MinimalMember } from '../../../../../types.js';
+import { ETHERPAD_PUBLIC_URL } from '../../../../../utils/config.js';
+import { ItemNotFound, MemberCannotAccess } from '../../../../../utils/errors.js';
+import { saveMember } from '../../../../member/test/fixtures/members.js';
+import { ItemService } from '../../../service.js';
+import { ItemTestUtils } from '../../../test/fixtures/items.js';
+import { MAX_SESSIONS_IN_COOKIE } from '../constants.js';
+import { ItemMissingExtraError } from '../errors.js';
+import { EtherpadItemService } from '../service.js';
+import { setUpApi } from './api.js';
 
 const testUtils = new ItemTestUtils();
 

@@ -2,26 +2,26 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { resolveDependency } from '../../di/utils';
-import { db } from '../../drizzle/db';
-import { asDefined, assertIsDefined } from '../../utils/assertions';
-import { CannotModifyOtherMembers } from '../../utils/errors';
+import { resolveDependency } from '../../di/utils.js';
+import { db } from '../../drizzle/db.js';
+import { asDefined, assertIsDefined } from '../../utils/assertions.js';
+import { CannotModifyOtherMembers } from '../../utils/errors.js';
 import {
   authenticateEmailChange,
   isAuthenticated,
   matchOne,
   optionalIsAuthenticated,
-} from '../auth/plugins/passport';
-import { assertIsMember } from '../authentication';
-import FileService from '../file/service';
+} from '../auth/plugins/passport/index.js';
+import { assertIsMember } from '../authentication.js';
+import FileService from '../file/service.js';
 import {
   FILE_METADATA_MAX_PAGE_SIZE,
   FILE_METADATA_MIN_PAGE,
   FILE_METADATA_MIN_PAGE_SIZE,
-} from './constants';
-import { EmailAlreadyTaken } from './error';
-import { MemberService } from './member.service';
-import { StorageService } from './plugins/storage/service';
+} from './constants.js';
+import { EmailAlreadyTaken } from './error.js';
+import { MemberService } from './member.service.js';
+import { StorageService } from './plugins/storage/service.js';
 import {
   deleteCurrent,
   getCurrent,
@@ -32,8 +32,8 @@ import {
   postChangeEmail,
   updateCurrent,
   updateOne,
-} from './schemas';
-import { memberAccountRole } from './strategies/memberAccountRole';
+} from './schemas.js';
+import { memberAccountRole } from './strategies/memberAccountRole.js';
 
 const controller: FastifyPluginAsyncTypebox = async (fastify) => {
   const fileService = resolveDependency(FileService);

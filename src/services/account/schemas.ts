@@ -1,7 +1,7 @@
 import { Type } from '@fastify/type-provider-typebox';
 
-import { customType, registerSchemaAsRef } from '../../plugins/typebox';
-import { AccountType } from '../../types';
+import { customType, registerSchemaAsRef } from '../../plugins/typebox.js';
+import { AccountType } from '../../types.js';
 
 const accountSchema = customType.StrictObject(
   {

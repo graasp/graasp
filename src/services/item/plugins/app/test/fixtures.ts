@@ -2,12 +2,12 @@ import { v4 } from 'uuid';
 
 import { HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
-import { mockAuthenticate } from '../../../../../../test/app';
-import { AuthenticatedUser, MinimalMember } from '../../../../../types';
-import { APPS_PUBLISHER_ID, APP_ITEMS_PREFIX } from '../../../../../utils/config';
-import { FolderItem } from '../../../discrimination';
-import { ItemTestUtils } from '../../../test/fixtures/items';
-import { setItemPublic } from '../../itemVisibility/test/fixtures';
+import { mockAuthenticate } from '../../../../../../test/app.js';
+import { AuthenticatedUser, MinimalMember } from '../../../../../types.js';
+import { APPS_PUBLISHER_ID, APP_ITEMS_PREFIX } from '../../../../../utils/config.js';
+import { FolderItem } from '../../../discrimination.js';
+import { ItemTestUtils } from '../../../test/fixtures/items.js';
+import { setItemPublic } from '../../itemVisibility/test/fixtures.js';
 
 export const GRAASP_PUBLISHER = {
   id: APPS_PUBLISHER_ID,

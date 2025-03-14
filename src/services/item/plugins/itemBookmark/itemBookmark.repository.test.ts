@@ -1,11 +1,11 @@
 import { v4 } from 'uuid';
 
-import { clearDatabase } from '../../../../../test/app';
-import { ItemBookmarkRaw } from '../../../../drizzle/types';
-import { saveMember } from '../../../member/test/fixtures/members';
-import { ItemTestUtils } from '../../test/fixtures/items';
-import { DuplicateBookmarkError, ItemBookmarkNotFound } from './errors';
-import { ItemBookmarkRepository } from './itemBookmark.repository';
+import { clearDatabase } from '../../../../../test/app.js';
+import { ItemBookmarkRaw } from '../../../../drizzle/types.js';
+import { saveMember } from '../../../member/test/fixtures/members.js';
+import { ItemTestUtils } from '../../test/fixtures/items.js';
+import { DuplicateBookmarkError, ItemBookmarkNotFound } from './errors.js';
+import { ItemBookmarkRepository } from './itemBookmark.repository.js';
 
 const testUtils = new ItemTestUtils();
 

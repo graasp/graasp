@@ -19,23 +19,23 @@ import { singleton } from 'tsyringe';
 import { v4 } from 'uuid';
 
 import {
-  FileItemType,
-  ItemSettings,
+  type FileItemType,
+  type ItemSettings,
   ItemType,
   MAX_ITEM_NAME_LENGTH,
   MAX_TREE_LEVELS,
-  Paginated,
-  Pagination,
+  type Paginated,
+  type Pagination,
   PermissionLevel,
-  ResultOf,
+  type ResultOf,
   buildPathFromIds,
   getChildFromPath,
   getParentFromPath,
 } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import { DBConnection } from '../../drizzle/db';
-import { isAncestorOrSelf, isDescendantOrSelf, isDirectChild } from '../../drizzle/operations';
+import type { DBConnection } from '../../drizzle/db.js';
+import { isAncestorOrSelf, isDescendantOrSelf, isDirectChild } from '../../drizzle/operations.js';
 import {
   accountsTable,
   itemMemberships,
@@ -43,8 +43,8 @@ import {
   itemsRaw,
   membersView,
   publishedItems,
-} from '../../drizzle/schema';
-import {
+} from '../../drizzle/schema.js';
+import type {
   Item,
   ItemRaw,
   ItemTypeEnumKeys,
@@ -52,11 +52,10 @@ import {
   ItemWithCreator,
   MemberRaw,
   MinimalItemForInsert,
-} from '../../drizzle/types';
-import { IllegalArgumentException } from '../../repositories/errors';
-import { AuthenticatedUser, MaybeUser, MinimalMember } from '../../types';
-import { assertIsDefined } from '../../utils/assertions';
-import { ALLOWED_SEARCH_LANGS } from '../../utils/config';
+} from '../../drizzle/types.js';
+import { IllegalArgumentException } from '../../repositories/errors.js';
+import type { AuthenticatedUser, MaybeUser, MinimalMember } from '../../types.js';
+import { assertIsDefined } from '../../utils/assertions.js';
 import {
   HierarchyTooDeep,
   InvalidMoveTarget,
@@ -64,18 +63,17 @@ import {
   ItemNotFound,
   TooManyDescendants,
   UnexpectedError,
-} from '../../utils/errors';
-import { isMember } from '../authentication';
+} from '../../utils/errors.js';
 import {
   FILE_METADATA_DEFAULT_PAGE_SIZE,
   FILE_METADATA_MAX_PAGE_SIZE,
   FILE_METADATA_MIN_PAGE,
-} from '../member/constants';
-import { mapById } from '../utils';
-import { DEFAULT_ORDER, IS_COPY_REGEX, ITEMS_PAGE_SIZE_MAX } from './constants';
-import { FolderItem, isItemType } from './discrimination';
-import { ItemChildrenParams, ItemSearchParams, Ordering, SortBy } from './types';
-import { sortChildrenForTreeWith } from './utils';
+} from '../member/constants.js';
+import { mapById } from '../utils.js';
+import { DEFAULT_ORDER, IS_COPY_REGEX, ITEMS_PAGE_SIZE_MAX } from './constants.js';
+import { type FolderItem, isItemType } from './discrimination.js';
+import { type ItemChildrenParams, type ItemSearchParams, Ordering, SortBy } from './types.js';
+import { sortChildrenForTreeWith } from './utils.js';
 
 const DEFAULT_COPY_SUFFIX = ' (2)';
 const RESCALE_ORDER_THRESHOLD = 0.1;

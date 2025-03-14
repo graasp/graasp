@@ -3,16 +3,16 @@ import { and, eq, or } from 'drizzle-orm/sql';
 
 import { AppDataVisibility, FileItemType, ItemType, PermissionLevel } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../../drizzle/db';
-import { appDatas } from '../../../../../drizzle/schema';
+import { DBConnection } from '../../../../../drizzle/db.js';
+import { appDatas } from '../../../../../drizzle/schema.js';
 import {
   Account,
   AppDataInsertDTO,
   AppDataRaw,
   AppDataWithItemAndAccountAndCreator,
-} from '../../../../../drizzle/types';
-import { AppDataNotFound, PreventUpdateAppDataFile } from './errors';
-import { InputAppData } from './interfaces/app-data';
+} from '../../../../../drizzle/types.js';
+import { AppDataNotFound, PreventUpdateAppDataFile } from './errors.js';
+import { InputAppData } from './interfaces/app-data.js';
 
 // TODO: appData was previously Partial, define what is needed all the time:
 // -- type

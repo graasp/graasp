@@ -3,19 +3,19 @@ import waitForExpect from 'wait-for-expect';
 
 import { HttpMethod, ItemOpFeedbackEvent as ItemOpFeedbackEventType } from '@graasp/sdk';
 
-import { clearDatabase } from '../../../../test/app';
-import { Item } from '../../../drizzle/types';
-import { TestWsClient } from '../../websockets/test/test-websocket-client';
-import { setupWsApp } from '../../websockets/test/ws-app';
-import { FolderItem } from '../discrimination';
+import { clearDatabase } from '../../../../test/app.js';
+import { Item } from '../../../drizzle/types.js';
+import { TestWsClient } from '../../websockets/test/test-websocket-client.js';
+import { setupWsApp } from '../../websockets/test/ws-app.js';
+import { FolderItem } from '../discrimination.js';
 import {
   expectCopyFeedbackOp,
   expectDeleteFeedbackOp,
   expectMoveFeedbackOp,
-} from '../plugins/action/test/utils';
-import { ItemRepository } from '../repository';
-import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../ws/events';
-import { ItemTestUtils } from './fixtures/items';
+} from '../plugins/action/test/utils.js';
+import { ItemRepository } from '../repository.js';
+import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../ws/events.js';
+import { ItemTestUtils } from './fixtures/items.js';
 
 const testUtils = new ItemTestUtils();
 

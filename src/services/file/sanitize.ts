@@ -4,8 +4,8 @@ import path from 'path';
 import sanitize from 'sanitize-html';
 import { Readable } from 'stream';
 
-import { TMP_FOLDER } from '../../utils/config';
-import { randomHexOf4 } from '../utils';
+import { TMP_FOLDER } from '../../utils/config.js';
+import { randomHexOf4 } from '../utils.js';
 
 export function sanitizeHtml(content: string): string {
   return sanitize(content);

@@ -2,16 +2,16 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { resolveDependency } from '../../../../../di/utils';
-import { db } from '../../../../../drizzle/db';
-import { FastifyInstanceTypebox } from '../../../../../plugins/typebox';
-import { asDefined } from '../../../../../utils/assertions';
-import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
-import { addMemberInAppData } from '../legacy';
-import { appDataWsHooks } from '../ws/hooks';
-import { AppDataService } from './appData.service';
-import appDataFilePlugin from './plugins/file';
-import { create, deleteOne, getForOne, updateOne } from './schemas';
+import { resolveDependency } from '../../../../../di/utils.js';
+import { db } from '../../../../../drizzle/db.js';
+import { FastifyInstanceTypebox } from '../../../../../plugins/typebox.js';
+import { asDefined } from '../../../../../utils/assertions.js';
+import { authenticateAppsJWT } from '../../../../auth/plugins/passport/index.js';
+import { addMemberInAppData } from '../legacy.js';
+import { appDataWsHooks } from '../ws/hooks.js';
+import { AppDataService } from './appData.service.js';
+import appDataFilePlugin from './plugins/file/index.js';
+import { create, deleteOne, getForOne, updateOne } from './schemas.js';
 
 const appDataPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const appDataService = resolveDependency(AppDataService);

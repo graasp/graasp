@@ -19,12 +19,16 @@ import {
   buildPathFromIds,
 } from '@graasp/sdk';
 
-import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
-import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../test/constants';
-import { resolveDependency } from '../../../di/utils';
-import { Item } from '../../../drizzle/types';
-import { MinimalMember } from '../../../types';
-import { assertIsDefined } from '../../../utils/assertions';
+import build, {
+  clearDatabase,
+  mockAuthenticate,
+  unmockAuthenticate,
+} from '../../../../test/app.js';
+import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../test/constants.js';
+import { resolveDependency } from '../../../di/utils.js';
+import { Item } from '../../../drizzle/types.js';
+import { MinimalMember } from '../../../types.js';
+import { assertIsDefined } from '../../../utils/assertions.js';
 import {
   HierarchyTooDeep,
   ItemNotFolder,
@@ -32,12 +36,12 @@ import {
   MemberCannotAccess,
   MemberCannotWriteItem,
   TooManyChildren,
-} from '../../../utils/errors';
-import { saveMember } from '../../member/test/fixtures/members';
-import { ActionItemService } from '../plugins/action/action.service';
-import { ItemService } from '../service';
-import { ItemTestUtils, expectItem } from './fixtures/items';
-import { saveUntilMaxDescendants } from './utils';
+} from '../../../utils/errors.js';
+import { saveMember } from '../../member/test/fixtures/members.js';
+import { ActionItemService } from '../plugins/action/action.service.js';
+import { ItemService } from '../service.js';
+import { ItemTestUtils, expectItem } from './fixtures/items.js';
+import { saveUntilMaxDescendants } from './utils.js';
 
 const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
 const testUtils = new ItemTestUtils();

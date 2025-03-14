@@ -4,15 +4,15 @@ import { FastifyInstance } from 'fastify';
 
 import { ItemVisibilityType } from '@graasp/sdk';
 
-import build, { MOCK_LOGGER, clearDatabase } from '../../../test/app';
-import { ItemFactory } from '../../../test/factories/item.factory';
-import { ItemVisibilityFactory } from '../../../test/factories/itemVisibility.factory';
-import { saveMember } from '../member/test/fixtures/members';
-import { ThumbnailService } from '../thumbnail/service';
-import { ItemWrapper, ItemWrapperService } from './ItemWrapper';
-import { createTag, setItemPublic } from './plugins/itemVisibility/test/fixtures';
-import { ItemThumbnailService } from './plugins/thumbnail/service';
-import { ItemService } from './service';
+import build, { MOCK_LOGGER, clearDatabase } from '../../../test/app.js';
+import { ItemFactory } from '../../../test/factories/item.factory.js';
+import { ItemVisibilityFactory } from '../../../test/factories/itemVisibility.factory.js';
+import { saveMember } from '../member/test/fixtures/members.js';
+import { ThumbnailService } from '../thumbnail/service.js';
+import { ItemWrapper, ItemWrapperService } from './ItemWrapper.js';
+import { createTag, setItemPublic } from './plugins/itemVisibility/test/fixtures.js';
+import { ItemThumbnailService } from './plugins/thumbnail/service.js';
+import { ItemService } from './service.js';
 
 // const itemThumbnailService = new ItemThumbnailService(
 //   {} as unknown as ItemService,

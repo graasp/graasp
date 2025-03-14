@@ -6,13 +6,17 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, MAX_USERNAME_LENGTH, MemberFactory, RecaptchaAction } from '@graasp/sdk';
 
-import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
-import { mockCaptchaValidation } from '../../../../test/utils';
-import { resolveDependency } from '../../../di/utils';
-import { MailerService } from '../../../plugins/mailer/mailer.service';
-import { MOCK_CAPTCHA } from '../../auth/plugins/captcha/test/utils';
-import { saveInvitations } from '../../item/plugins/invitation/test/utils';
-import { expectMember, saveMember } from './fixtures/members';
+import build, {
+  clearDatabase,
+  mockAuthenticate,
+  unmockAuthenticate,
+} from '../../../../test/app.js';
+import { mockCaptchaValidation } from '../../../../test/utils.js';
+import { resolveDependency } from '../../../di/utils.js';
+import { MailerService } from '../../../plugins/mailer/mailer.service.js';
+import { MOCK_CAPTCHA } from '../../auth/plugins/captcha/test/utils.js';
+import { saveInvitations } from '../../item/plugins/invitation/test/utils.js';
+import { expectMember, saveMember } from './fixtures/members.js';
 
 const invitationRawRepository = AppDataSource.getRepository(Invitation);
 const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);

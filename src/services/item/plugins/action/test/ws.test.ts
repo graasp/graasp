@@ -5,18 +5,18 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, ItemOpFeedbackEvent as ItemOpFeedbackEventType } from '@graasp/sdk';
 
-import { clearDatabase } from '../../../../../../test/app';
-import { Item } from '../../../../../drizzle/types';
-import { TestWsClient } from '../../../../websockets/test/test-websocket-client';
-import { setupWsApp } from '../../../../websockets/test/ws-app';
-import { ItemTestUtils } from '../../../test/fixtures/items';
+import { clearDatabase } from '../../../../../../test/app.js';
+import { Item } from '../../../../../drizzle/types.js';
+import { TestWsClient } from '../../../../websockets/test/test-websocket-client.js';
+import { setupWsApp } from '../../../../websockets/test/ws-app.js';
+import { ItemTestUtils } from '../../../test/fixtures/items.js';
 import {
   ItemOpFeedbackErrorEvent,
   ItemOpFeedbackEvent,
   memberItemsTopic,
-} from '../../../ws/events';
-import { ActionRequestExportRepository } from '../requestExport/repository';
-import { expectExportFeedbackOp } from './utils';
+} from '../../../ws/events.js';
+import { ActionRequestExportRepository } from '../requestExport/repository.js';
+import { expectExportFeedbackOp } from './utils.js';
 
 const testUtils = new ItemTestUtils();
 

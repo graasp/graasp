@@ -1,6 +1,6 @@
 import { ThumbnailSizeType } from '@graasp/sdk';
 
-import { ItemsThumbnails } from '../../types';
+import { ItemsThumbnails } from '../../types.js';
 
 export const constructMockedItem = (id: string) => ({ id, settings: { hasThumbnail: true } });
 export const constructMockedUrl = ({ size, id }: { size: string; id: string }) =>

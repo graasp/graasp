@@ -1,8 +1,8 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { ItemFactory } from '../../../../../../../test/factories/item.factory';
-import { HtmlImportError, HtmlItemNotFoundError } from '../../errors';
-import { H5PInvalidFileError } from '../errors';
+import { ItemFactory } from '../../../../../../../test/factories/item.factory.js';
+import { HtmlImportError, HtmlItemNotFoundError } from '../../errors.js';
+import { H5PInvalidFileError } from '../errors.js';
 
 const MOCK_ITEM = ItemFactory({});
 

@@ -1,26 +1,31 @@
 import sanitize from 'sanitize-html';
 import { singleton } from 'tsyringe';
 
-import { DocumentItemExtraProperties, ItemGeolocation, ItemType, UUID } from '@graasp/sdk';
+import {
+  type DocumentItemExtraProperties,
+  type ItemGeolocation,
+  ItemType,
+  type UUID,
+} from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
-import { Item } from '../../../../drizzle/types';
-import { BaseLogger } from '../../../../logger';
-import { MinimalMember } from '../../../../types';
-import { AuthorizationService } from '../../../authorization';
-import { ItemMembershipRepository } from '../../../itemMembership/repository';
-import { ThumbnailService } from '../../../thumbnail/service';
-import { ItemWrapperService } from '../../ItemWrapper';
-import { BasicItemService } from '../../basic.service';
-import { DocumentItem, isItemType } from '../../discrimination';
-import { WrongItemTypeError } from '../../errors';
-import { ItemRepository } from '../../repository';
-import { ItemService } from '../../service';
-import { ItemGeolocationRepository } from '../geolocation/repository';
-import { ItemVisibilityRepository } from '../itemVisibility/repository';
-import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
-import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
-import { ItemThumbnailService } from '../thumbnail/service';
+import type { DBConnection } from '../../../../drizzle/db.js';
+import type { Item } from '../../../../drizzle/types.js';
+import { BaseLogger } from '../../../../logger.js';
+import type { MinimalMember } from '../../../../types.js';
+import { AuthorizationService } from '../../../authorization.js';
+import { ItemMembershipRepository } from '../../../itemMembership/repository.js';
+import { ThumbnailService } from '../../../thumbnail/service.js';
+import { ItemWrapperService } from '../../ItemWrapper.js';
+import { BasicItemService } from '../../basic.service.js';
+import { type DocumentItem, isItemType } from '../../discrimination.js';
+import { WrongItemTypeError } from '../../errors.js';
+import { ItemRepository } from '../../repository.js';
+import { ItemService } from '../../service.js';
+import { ItemGeolocationRepository } from '../geolocation/geolocation.repository.js';
+import { ItemVisibilityRepository } from '../itemVisibility/repository.js';
+import { ItemPublishedRepository } from '../publication/published/itemPublished.repository.js';
+import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch.js';
+import { ItemThumbnailService } from '../thumbnail/service.js';
 
 export const PREFIX_DOCUMENT = 'documents';
 

@@ -2,7 +2,7 @@ import { hoursToSeconds } from 'date-fns';
 import { Redis } from 'ioredis';
 import { singleton } from 'tsyringe';
 
-import { ICachingService } from './interfaces';
+import type { ICachingService } from './interfaces.js';
 
 const EXPIRES_IN_SECONDS = hoursToSeconds(1);
 

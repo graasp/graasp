@@ -1,9 +1,9 @@
 import { FastifyInstance } from 'fastify';
 
-import build from '../../../../../../../test/app';
-import { resolveDependency } from '../../../../../../di/utils';
-import { ItemValidationAlreadyExist } from '../errors';
-import { ValidationQueue } from '../validationQueue';
+import build from '../../../../../../../test/app.js';
+import { resolveDependency } from '../../../../../../di/utils.js';
+import { ItemValidationAlreadyExist } from '../errors.js';
+import { ValidationQueue } from '../validationQueue.js';
 
 describe('Validation Queue Tests', () => {
   let app: FastifyInstance;

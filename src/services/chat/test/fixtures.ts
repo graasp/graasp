@@ -1,5 +1,5 @@
-import { ChatMentionRaw, ChatMessageRaw, Item } from '../../../drizzle/types';
-import { MinimalMember } from '../../../types';
+import { ChatMentionRaw, ChatMessageRaw, Item } from '../../../drizzle/types.js';
+import { MinimalMember } from '../../../types.js';
 
 export const saveChatMessages = async ({
   creator,

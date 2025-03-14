@@ -1,10 +1,10 @@
-import { FileItemType, ItemType } from '@graasp/sdk';
+import { type FileItemType, ItemType } from '@graasp/sdk';
 
-import { LocalFileConfiguration, S3FileConfiguration } from '../interfaces/configuration';
-import { LocalFileRepository } from '../repositories/local';
-import { S3FileRepository } from '../repositories/s3';
-import { FileServiceConfig } from '../service';
-import { MalformedFileConfigError } from './errors';
+import type { LocalFileConfiguration, S3FileConfiguration } from '../interfaces/configuration.js';
+import { LocalFileRepository } from '../repositories/local.js';
+import { S3FileRepository } from '../repositories/s3.js';
+import type { FileServiceConfig } from '../service.js';
+import { MalformedFileConfigError } from './errors.js';
 
 const verifyLocalConfig = (config?: LocalFileConfiguration) => {
   if (!config?.storageRootPath.startsWith('/')) {

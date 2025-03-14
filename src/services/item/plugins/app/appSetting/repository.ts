@@ -2,11 +2,11 @@ import { and, eq } from 'drizzle-orm';
 
 import { FileItemType, ItemType } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../../drizzle/db';
-import { appSettings } from '../../../../../drizzle/schema';
-import { AppSettingInsertDTO, AppSettingRaw } from '../../../../../drizzle/types';
-import { ItemNotFound } from '../../../../../utils/errors';
-import { AppSettingNotFound, PreventUpdateAppSettingFile } from './errors';
+import { DBConnection } from '../../../../../drizzle/db.js';
+import { appSettings } from '../../../../../drizzle/schema.js';
+import { AppSettingInsertDTO, AppSettingRaw } from '../../../../../drizzle/types.js';
+import { ItemNotFound } from '../../../../../utils/errors.js';
+import { AppSettingNotFound, PreventUpdateAppSettingFile } from './errors.js';
 
 type UpdateAppSettingBody = Partial<AppSettingRaw>;
 

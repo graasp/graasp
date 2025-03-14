@@ -1,9 +1,9 @@
 import { Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
-import { customType } from '../../../../plugins/typebox';
-import { errorSchemaRef } from '../../../../schemas/global';
-import { itemSchema, itemSchemaRef } from '../../schemas';
+import { customType } from '../../../../plugins/typebox.js';
+import { errorSchemaRef } from '../../../../schemas/global.js';
+import { itemSchema, itemSchemaRef } from '../../schemas.js';
 
 export const upload = {
   operationId: 'uploadFile',

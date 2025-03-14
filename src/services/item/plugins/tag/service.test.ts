@@ -3,14 +3,14 @@ import { v4 } from 'uuid';
 
 import { TagFactory } from '@graasp/sdk';
 
-import { Item, ItemPublishedRaw, TagRaw } from '../../../../drizzle/types';
-import { MinimalMember } from '../../../../types';
-import { TagRepository } from '../../../tag/Tag.repository';
-import { ItemService } from '../../service';
-import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
-import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
-import { ItemTagRepository } from './ItemTag.repository';
-import { ItemTagService } from './service';
+import { Item, ItemPublishedRaw, TagRaw } from '../../../../drizzle/types.js';
+import { MinimalMember } from '../../../../types.js';
+import { TagRepository } from '../../../tag/Tag.repository.js';
+import { ItemService } from '../../service.js';
+import { ItemPublishedRepository } from '../publication/published/itemPublished.repository.js';
+import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch.js';
+import { ItemTagRepository } from './ItemTag.repository.js';
+import { ItemTagService } from './service.js';
 
 const itemService = { get: jest.fn() as ItemService['get'] } as ItemService;
 const meilisearchWrapper = {

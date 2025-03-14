@@ -9,17 +9,17 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../../test/app';
-import { Item } from '../../../../../drizzle/types';
-import { AuthenticatedUser, MaybeUser, MinimalMember } from '../../../../../types';
-import { assertIsDefined } from '../../../../../utils/assertions';
-import { APP_ITEMS_PREFIX } from '../../../../../utils/config';
-import { expectAccount, saveMember } from '../../../../member/test/fixtures/members';
-import { setupGuest } from '../../../../member/test/setup';
-import { FolderItem } from '../../../discrimination';
-import { expectItem } from '../../../test/fixtures/items';
-import { setItemPublic } from '../../itemVisibility/test/fixtures';
-import { AppTestUtils, MOCK_APP_ORIGIN } from './fixtures';
+} from '../../../../../../test/app.js';
+import { Item } from '../../../../../drizzle/types.js';
+import { AuthenticatedUser, MaybeUser, MinimalMember } from '../../../../../types.js';
+import { assertIsDefined } from '../../../../../utils/assertions.js';
+import { APP_ITEMS_PREFIX } from '../../../../../utils/config.js';
+import { expectAccount, saveMember } from '../../../../member/test/fixtures/members.js';
+import { setupGuest } from '../../../../member/test/setup.js';
+import { FolderItem } from '../../../discrimination.js';
+import { expectItem } from '../../../test/fixtures/items.js';
+import { setItemPublic } from '../../itemVisibility/test/fixtures.js';
+import { AppTestUtils, MOCK_APP_ORIGIN } from './fixtures.js';
 
 const testUtils = new AppTestUtils();
 

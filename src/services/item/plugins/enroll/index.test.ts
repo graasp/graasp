@@ -9,14 +9,14 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../test/app';
-import { seedFromJson } from '../../../../../test/mocks/seed';
-import { assertIsDefined } from '../../../../utils/assertions';
+} from '../../../../../test/app.js';
+import { seedFromJson } from '../../../../../test/mocks/seed.js';
+import { assertIsDefined } from '../../../../utils/assertions.js';
 import {
   CannotEnrollFrozenItemLoginSchema,
   CannotEnrollItemWithoutItemLoginSchema,
-} from '../../../itemLogin/errors';
-import { expectMembership } from '../../../itemMembership/test/fixtures/memberships';
+} from '../../../itemLogin/errors.js';
+import { expectMembership } from '../../../itemMembership/test/fixtures/memberships.js';
 
 describe('Enroll', () => {
   let app: FastifyInstance;

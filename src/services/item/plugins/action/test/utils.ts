@@ -1,9 +1,9 @@
 import { ItemOpFeedbackEvent } from '@graasp/sdk';
 
-import { Item } from '../../../../../drizzle/types';
-import { expectMembership } from '../../../../itemMembership/test/fixtures/memberships';
-import { MembershipEvent } from '../../../../itemMembership/ws/events';
-import { expectItem, expectManyItems } from '../../../test/fixtures/items';
+import { Item } from '../../../../../drizzle/types.js';
+import { expectMembership } from '../../../../itemMembership/test/fixtures/memberships.js';
+import { MembershipEvent } from '../../../../itemMembership/ws/events.js';
+import { expectItem, expectManyItems } from '../../../test/fixtures/items.js';
 
 export const expectExportFeedbackOp = <
   S extends {

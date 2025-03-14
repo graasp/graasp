@@ -2,9 +2,9 @@ import { eq } from 'drizzle-orm';
 
 import { ItemValidationReviewStatus } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../../drizzle/db';
-import { itemValidationReviews } from '../../../../../drizzle/schema';
-import { ItemValidationReviewInsertDTO } from '../../../../../drizzle/types';
+import { DBConnection } from '../../../../../drizzle/db.js';
+import { itemValidationReviews } from '../../../../../drizzle/schema.js';
+import { ItemValidationReviewInsertDTO } from '../../../../../drizzle/types.js';
 
 export class ItemValidationReviewRepository {
   // private async get(db: DBConnection, id: string): Promise<ItemValidationReview> {

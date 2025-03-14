@@ -11,12 +11,12 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../test/app';
-import { assertIsDefined } from '../../../../utils/assertions';
-import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN } from '../../../../utils/config';
-import { saveMember } from '../../../member/test/fixtures/members';
-import { ItemTestUtils } from '../../test/fixtures/items';
-import { FETCH_RESULT, METADATA } from './test/fixtures';
+} from '../../../../../test/app.js';
+import { assertIsDefined } from '../../../../utils/assertions.js';
+import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN } from '../../../../utils/config.js';
+import { saveMember } from '../../../member/test/fixtures/members.js';
+import { ItemTestUtils } from '../../test/fixtures/items.js';
+import { FETCH_RESULT, METADATA } from './test/fixtures.js';
 
 const rawGuestRepository = AppDataSource.getRepository(Guest);
 const rawItemRepository = AppDataSource.getRepository(Item);

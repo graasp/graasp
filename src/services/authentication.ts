@@ -1,8 +1,13 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { AccountRaw, MemberRaw } from '../drizzle/types';
-import { AccountType, AuthenticatedUser, MinimalGuest, MinimalMember } from '../types';
-import { NotMember } from './member/error';
+import type { AccountRaw, MemberRaw } from '../drizzle/types.js';
+import {
+  AccountType,
+  type AuthenticatedUser,
+  type MinimalGuest,
+  type MinimalMember,
+} from '../types.js';
+import { NotMember } from './member/error.js';
 
 // TODO: allow AccountRow or apply DTO on all relations?
 export function isMember(account: AuthenticatedUser | AccountRaw): account is MinimalMember {

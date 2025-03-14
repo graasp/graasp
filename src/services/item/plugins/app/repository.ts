@@ -2,10 +2,10 @@ import { and, arrayContains, count, desc, eq, sql } from 'drizzle-orm/sql';
 
 import { AuthTokenSubject } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
-import { apps, items, publishers } from '../../../../drizzle/schema';
-import { AppRaw } from '../../../../drizzle/types';
-import { InvalidApplicationOrigin } from './errors';
+import { DBConnection } from '../../../../drizzle/db.js';
+import { apps, items, publishers } from '../../../../drizzle/schema.js';
+import { AppRaw } from '../../../../drizzle/types.js';
+import { InvalidApplicationOrigin } from './errors.js';
 
 export class AppRepository {
   async getAll(db: DBConnection, publisherId: string): Promise<AppRaw[]> {

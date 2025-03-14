@@ -5,23 +5,27 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { FileItemProperties, PermissionLevel, getFileExtension } from '@graasp/sdk';
 
-import { resolveDependency } from '../../../../di/utils';
-import { db } from '../../../../drizzle/db';
-import { Item } from '../../../../drizzle/types';
-import { asDefined, assertIsDefined } from '../../../../utils/assertions';
-import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
-import { assertIsMember, isMember } from '../../../authentication';
-import { AuthorizationService } from '../../../authorization';
-import FileService from '../../../file/service';
-import { StorageService } from '../../../member/plugins/storage/service';
-import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { ItemRepository } from '../../repository';
-import { ItemService } from '../../service';
-import { H5PService } from '../html/h5p/service';
-import { H5P_FILE_EXTENSION } from '../importExport/constants';
-import { download, updateFile, upload } from './schema';
-import FileItemService from './service';
-import { DEFAULT_MAX_FILE_SIZE, MAX_NUMBER_OF_FILES_UPLOAD } from './utils/constants';
+import { resolveDependency } from '../../../../di/utils.js';
+import { db } from '../../../../drizzle/db.js';
+import { Item } from '../../../../drizzle/types.js';
+import { asDefined, assertIsDefined } from '../../../../utils/assertions.js';
+import {
+  isAuthenticated,
+  matchOne,
+  optionalIsAuthenticated,
+} from '../../../auth/plugins/passport/index.js';
+import { assertIsMember, isMember } from '../../../authentication.js';
+import { AuthorizationService } from '../../../authorization.js';
+import FileService from '../../../file/service.js';
+import { StorageService } from '../../../member/plugins/storage/service.js';
+import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole.js';
+import { ItemRepository } from '../../repository.js';
+import { ItemService } from '../../service.js';
+import { H5PService } from '../html/h5p/service.js';
+import { H5P_FILE_EXTENSION } from '../importExport/constants.js';
+import { download, updateFile, upload } from './schema.js';
+import FileItemService from './service.js';
+import { DEFAULT_MAX_FILE_SIZE, MAX_NUMBER_OF_FILES_UPLOAD } from './utils/constants.js';
 
 export interface GraaspPluginFileOptions {
   uploadMaxFileNb?: number; // max number of files to upload at a time

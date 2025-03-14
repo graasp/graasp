@@ -9,10 +9,10 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../test/app';
-import { Item, ItemTagRaw, TagRaw } from '../../../../drizzle/types';
-import { saveMember } from '../../../member/test/fixtures/members';
-import { ItemTestUtils } from '../../test/fixtures/items';
+} from '../../../../../test/app.js';
+import { Item, ItemTagRaw, TagRaw } from '../../../../drizzle/types.js';
+import { saveMember } from '../../../member/test/fixtures/members.js';
+import { ItemTestUtils } from '../../test/fixtures/items.js';
 
 const testUtils = new ItemTestUtils();
 const tagRawRepository = AppDataSource.getRepository(Tag);

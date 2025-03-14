@@ -2,16 +2,16 @@ import { v4 } from 'uuid';
 
 import { FolderItemFactory, ThumbnailSize } from '@graasp/sdk';
 
-import { MOCK_LOGGER } from '../../../../../test/app';
-import { Item } from '../../../../drizzle/types';
-import { ThumbnailService } from '../../../thumbnail/service';
-import { ItemService } from '../../service';
-import { ItemThumbnailService } from './service';
+import { MOCK_LOGGER } from '../../../../../test/app.js';
+import { Item } from '../../../../drizzle/types.js';
+import { ThumbnailService } from '../../../thumbnail/service.js';
+import { ItemService } from '../../service.js';
+import { ItemThumbnailService } from './service.js';
 import {
   constructMockedItem,
   constructMockedUrl,
   expectValidUrls,
-} from './test/fixtures/itemThumbnailService';
+} from './test/fixtures/itemThumbnailService.js';
 
 const mockedItemsId = [
   constructMockedItem('item1'),

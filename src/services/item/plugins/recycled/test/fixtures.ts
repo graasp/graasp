@@ -1,8 +1,8 @@
 import { PackedItem } from '@graasp/sdk';
 
-import { Item } from '../../../../../drizzle/types';
-import { MinimalMember } from '../../../../../types';
-import { PackedRecycledItemData, RecycledItemData } from '../RecycledItemData';
+import { Item } from '../../../../../drizzle/types.js';
+import { MinimalMember } from '../../../../../types.js';
+import { PackedRecycledItemData, RecycledItemData } from '../RecycledItemData.js';
 
 export const expectRecycledItem = (
   newRecycledItem: RecycledItemData,

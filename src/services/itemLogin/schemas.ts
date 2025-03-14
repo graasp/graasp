@@ -5,10 +5,10 @@ import { FastifySchema } from 'fastify';
 
 import { ItemLoginSchemaStatus, ItemLoginSchemaType } from '@graasp/sdk';
 
-import { customType, registerSchemaAsRef } from '../../plugins/typebox';
-import { errorSchemaRef } from '../../schemas/global';
-import { accountSchemaRef } from '../account/schemas';
-import { itemSchemaRef } from '../item/schemas';
+import { customType, registerSchemaAsRef } from '../../plugins/typebox.js';
+import { errorSchemaRef } from '../../schemas/global.js';
+import { accountSchemaRef } from '../account/schemas.js';
+import { itemSchemaRef } from '../item/schemas.js';
 
 const itemLoginSchemaSchema = customType.StrictObject(
   {

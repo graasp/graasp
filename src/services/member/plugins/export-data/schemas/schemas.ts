@@ -1,7 +1,7 @@
 import { Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
-import { errorSchemaRef } from '../../../../../schemas/global';
+import { errorSchemaRef } from '../../../../../schemas/global.js';
 import {
   DATE_TYPE,
   NULLABLE_TYPE,
@@ -11,7 +11,7 @@ import {
   STRING_TYPE,
   buildArraySchema,
   buildObjectSchema,
-} from '../utils/schema.utils';
+} from '../utils/schema.utils.js';
 
 export const exportMemberData = {
   operationId: 'exportMemberData',

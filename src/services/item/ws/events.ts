@@ -3,7 +3,7 @@
  */
 import { FeedBackOperationType, ItemOpFeedbackEvent as ItemOpFeedbackEventType } from '@graasp/sdk';
 
-import { Item } from '../../../drizzle/types';
+import { Item } from '../../../drizzle/types.js';
 
 // changes on items of given user
 export const memberItemsTopic = 'item/member';

@@ -4,9 +4,9 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
-import { saveActions } from '../../../../item/plugins/action/test/fixtures/actions';
-import { generateActionsWithItems, getDateBeforeOrAfterNow } from './utils';
+import build, { clearDatabase } from '../../../../../../test/app.js';
+import { saveActions } from '../../../../item/plugins/action/test/fixtures/actions.js';
+import { generateActionsWithItems, getDateBeforeOrAfterNow } from './utils.js';
 
 const GET_URL = '/members/actions';
 

@@ -10,17 +10,17 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../test/app';
-import { resolveDependency } from '../../../../di/utils';
-import { BaseLogger } from '../../../../logger';
-import { saveMember } from '../../../member/test/fixtures/members';
-import { ItemService } from '../../service';
-import { ItemTestUtils } from '../../test/fixtures/items';
-import { EtherpadItemService } from '../etherpad/service';
-import FileItemService from '../file/service';
-import type { H5PService } from '../html/h5p/service';
-import { ItemVisibilityRepository } from '../itemVisibility/repository';
-import { ImportExportService } from './service';
+} from '../../../../../test/app.js';
+import { resolveDependency } from '../../../../di/utils.js';
+import { BaseLogger } from '../../../../logger.js';
+import { saveMember } from '../../../member/test/fixtures/members.js';
+import { ItemService } from '../../service.js';
+import { ItemTestUtils } from '../../test/fixtures/items.js';
+import { EtherpadItemService } from '../etherpad/service.js';
+import FileItemService from '../file/service.js';
+import type { H5PService } from '../html/h5p/service.js';
+import { ItemVisibilityRepository } from '../itemVisibility/repository.js';
+import { ImportExportService } from './service.js';
 
 const testUtils = new ItemTestUtils();
 

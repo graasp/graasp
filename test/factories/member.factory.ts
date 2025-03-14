@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker';
 
-import { AccountRaw, GuestRaw, MemberRaw } from '../../src/drizzle/types';
-import { AccountType, AccountTypeOptions } from '../../src/types';
+import { AccountRaw, GuestRaw, MemberRaw } from '../../src/drizzle/types.js';
+import { AccountType, AccountTypeOptions } from '../../src/types.js';
 
 export function AccountFactory(account: Partial<AccountRaw> = {}) {
   return { id: faker.string.uuid(), name: faker.person.fullName(), ...account };

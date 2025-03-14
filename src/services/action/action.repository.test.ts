@@ -12,14 +12,14 @@ import {
   Action as GraaspAction,
 } from '@graasp/sdk';
 
-import { client, db } from '../../drizzle/db';
-import { Account, Item } from '../../drizzle/types';
-import { ItemTestUtils } from '../item/test/fixtures/items';
-import { getPreviousMonthFromNow } from '../member/plugins/action/service';
-import { saveMember } from '../member/test/fixtures/members';
-import { ActionRepository } from './action.repository';
-import { DEFAULT_ACTIONS_SAMPLE_SIZE } from './constants';
-import { expectActions, getMemberActions, saveActions } from './test/fixtures/actions';
+import { client, db } from '../../drizzle/db.js';
+import { Account, Item } from '../../drizzle/types.js';
+import { ItemTestUtils } from '../item/test/fixtures/items.js';
+import { getPreviousMonthFromNow } from '../member/plugins/action/service.js';
+import { saveMember } from '../member/test/fixtures/members.js';
+import { ActionRepository } from './action.repository.js';
+import { DEFAULT_ACTIONS_SAMPLE_SIZE } from './constants.js';
+import { expectActions, getMemberActions, saveActions } from './test/fixtures/actions.js';
 
 const actionRepository = new ActionRepository();
 

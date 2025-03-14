@@ -8,12 +8,12 @@ import { FastifyInstance, PassportUser } from 'fastify';
 
 import { HttpMethod } from '@graasp/sdk';
 
-import build from '../../../../../test/app';
-import { seedFromJson } from '../../../../../test/mocks/seed';
-import { resolveDependency } from '../../../../di/utils';
-import { db } from '../../../../drizzle/db';
-import { ItemRaw, MemberRaw } from '../../../../drizzle/types';
-import { assertIsDefined } from '../../../../utils/assertions';
+import build from '../../../../../test/app.js';
+import { seedFromJson } from '../../../../../test/mocks/seed.js';
+import { resolveDependency } from '../../../../di/utils.js';
+import { db } from '../../../../drizzle/db.js';
+import { ItemRaw, MemberRaw } from '../../../../drizzle/types.js';
+import { assertIsDefined } from '../../../../utils/assertions.js';
 import {
   APPS_JWT_SECRET,
   AUTH_TOKEN_JWT_SECRET,
@@ -21,10 +21,10 @@ import {
   JWT_SECRET,
   PASSWORD_RESET_JWT_SECRET,
   REFRESH_TOKEN_JWT_SECRET,
-} from '../../../../utils/config';
-import { assertIsMember, assertIsMemberForTest } from '../../../authentication';
-import { expectItem } from '../../../item/test/fixtures/items';
-import { MemberPasswordService } from '../password/service';
+} from '../../../../utils/config.js';
+import { assertIsMember, assertIsMemberForTest } from '../../../authentication.js';
+import { expectItem } from '../../../item/test/fixtures/items.js';
+import { MemberPasswordService } from '../password/service.js';
 import {
   authenticateAppsJWT,
   authenticateEmailChange,
@@ -36,7 +36,7 @@ import {
   guestAuthenticateAppsJWT,
   isAuthenticated,
   optionalIsAuthenticated,
-} from './preHandlers';
+} from './preHandlers.js';
 
 const MOCKED_ROUTE = '/mock-route';
 

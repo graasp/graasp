@@ -6,21 +6,25 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { ActionTriggers, Context, ItemType, MAX_ZIP_FILE_SIZE } from '@graasp/sdk';
 
-import { resolveDependency } from '../../../../di/utils';
-import { db } from '../../../../drizzle/db';
-import { BaseLogger } from '../../../../logger';
-import { asDefined } from '../../../../utils/assertions';
-import { ActionService } from '../../../action/action.service';
-import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
-import { assertIsMember } from '../../../authentication';
-import '../../../authorization';
-import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { ItemService } from '../../service';
-import { ZIP_FILE_MIME_TYPES } from './constants';
-import { FileIsInvalidArchiveError } from './errors';
-import { zipExport, zipImport } from './schema';
-import { ImportExportService } from './service';
-import { prepareZip } from './utils';
+import { resolveDependency } from '../../../../di/utils.js';
+import { db } from '../../../../drizzle/db.js';
+import { BaseLogger } from '../../../../logger.js';
+import { asDefined } from '../../../../utils/assertions.js';
+import { ActionService } from '../../../action/action.service.js';
+import {
+  isAuthenticated,
+  matchOne,
+  optionalIsAuthenticated,
+} from '../../../auth/plugins/passport/index.js';
+import { assertIsMember } from '../../../authentication.js';
+import '../../../authorization.js';
+import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole.js';
+import { ItemService } from '../../service.js';
+import { ZIP_FILE_MIME_TYPES } from './constants.js';
+import { FileIsInvalidArchiveError } from './errors.js';
+import { zipExport, zipImport } from './schema.js';
+import { ImportExportService } from './service.js';
+import { prepareZip } from './utils.js';
 
 function encodeFilename(name: string) {
   return encodeURI(sanitize(name, { replacement: '_' }));

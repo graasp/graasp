@@ -1,7 +1,7 @@
 import { or } from 'drizzle-orm';
 import { desc, eq } from 'drizzle-orm/sql';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { DBConnection } from '../../../../drizzle/db.js';
 import {
   actionsTable,
   appActions,
@@ -13,7 +13,7 @@ import {
   itemLikes,
   itemMemberships,
   itemsRaw,
-} from '../../../../drizzle/schema';
+} from '../../../../drizzle/schema.js';
 import {
   ActionWithItem,
   AppActionWithItem,
@@ -24,11 +24,11 @@ import {
   Item,
   ItemLikeWithItem,
   ItemMembershipWithItem,
-} from '../../../../drizzle/types';
-import { IllegalArgumentException } from '../../../../repositories/errors';
-import { throwsIfParamIsInvalid } from '../../../../repositories/utils';
-import { NoChatMentionForMember } from '../../../chat/errors';
-import { MemberIdentifierNotFound } from '../../../itemLogin/errors';
+} from '../../../../drizzle/types.js';
+import { IllegalArgumentException } from '../../../../repositories/errors.js';
+import { throwsIfParamIsInvalid } from '../../../../repositories/utils.js';
+import { NoChatMentionForMember } from '../../../chat/errors.js';
+import { MemberIdentifierNotFound } from '../../../itemLogin/errors.js';
 
 export class ExportDataRepository {
   /**

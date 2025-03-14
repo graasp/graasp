@@ -5,16 +5,16 @@ import { FastifyInstance } from 'fastify';
 
 import Etherpad from '@graasp/etherpad-api';
 
-import { CRON_3AM_MONDAY, JobServiceBuilder } from '../jobs';
-import { BaseLogger } from '../logger';
-import { MailerService } from '../plugins/mailer/mailer.service';
-import { CachingService } from '../services/caching/service';
-import FileService from '../services/file/service';
-import { fileRepositoryFactory } from '../services/file/utils/factory';
-import { wrapEtherpadErrors } from '../services/item/plugins/etherpad/etherpad';
-import { RandomPadNameFactory } from '../services/item/plugins/etherpad/service';
-import { EtherpadServiceConfig } from '../services/item/plugins/etherpad/serviceConfig';
-import { SearchService } from '../services/item/plugins/publication/published/plugins/search/service';
+import { CRON_3AM_MONDAY, JobServiceBuilder } from '../jobs.js';
+import { BaseLogger } from '../logger.js';
+import { MailerService } from '../plugins/mailer/mailer.service.js';
+import { CachingService } from '../services/caching/service.js';
+import FileService from '../services/file/service.js';
+import { fileRepositoryFactory } from '../services/file/utils/factory.js';
+import { wrapEtherpadErrors } from '../services/item/plugins/etherpad/etherpad.js';
+import { RandomPadNameFactory } from '../services/item/plugins/etherpad/service.js';
+import { EtherpadServiceConfig } from '../services/item/plugins/etherpad/serviceConfig.js';
+import { SearchService } from '../services/item/plugins/publication/published/plugins/search/service.js';
 import {
   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
   FILE_ITEM_PLUGIN_OPTIONS,
@@ -34,7 +34,7 @@ import {
   REDIS_PORT,
   REDIS_USERNAME,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
-} from '../utils/config';
+} from '../utils/config.js';
 import {
   ETHERPAD_NAME_FACTORY_DI_KEY,
   FASTIFY_LOGGER_DI_KEY,
@@ -43,8 +43,8 @@ import {
   GEOLOCATION_API_KEY_DI_KEY,
   IFRAMELY_API_DI_KEY,
   IMAGE_CLASSIFIER_API_DI_KEY,
-} from './constants';
-import { registerValue, resolveDependency } from './utils';
+} from './constants.js';
+import { registerValue, resolveDependency } from './utils.js';
 
 export const registerDependencies = (instance: FastifyInstance) => {
   const { log } = instance;

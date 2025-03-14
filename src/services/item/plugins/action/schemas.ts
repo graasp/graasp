@@ -13,15 +13,15 @@ import {
   ExportActionsFormatting,
 } from '@graasp/sdk';
 
-import { customType } from '../../../../plugins/typebox';
-import { errorSchemaRef } from '../../../../schemas/global';
-import { accountSchemaRef, nullableAccountSchemaRef } from '../../../account/schemas';
-import { MAX_ACTIONS_SAMPLE_SIZE, MIN_ACTIONS_SAMPLE_SIZE } from '../../../action/constants';
-import { itemSchema, itemSchemaRef } from '../../schemas';
-import { appActionSchemaRef } from '../app/appAction/schemas';
-import { appDataSchemaRef } from '../app/appData/schemas';
-import { appSettingSchemaRef } from '../app/appSetting/schemas';
-import { ItemActionType } from './utils';
+import { customType } from '../../../../plugins/typebox.js';
+import { errorSchemaRef } from '../../../../schemas/global.js';
+import { accountSchemaRef, nullableAccountSchemaRef } from '../../../account/schemas.js';
+import { MAX_ACTIONS_SAMPLE_SIZE, MIN_ACTIONS_SAMPLE_SIZE } from '../../../action/constants.js';
+import { itemSchema, itemSchemaRef } from '../../schemas.js';
+import { appActionSchemaRef } from '../app/appAction/schemas.js';
+import { appDataSchemaRef } from '../app/appData/schemas.js';
+import { appSettingSchemaRef } from '../app/appSetting/schemas.js';
+import { ItemActionType } from './utils.js';
 
 const actionSchema = customType.StrictObject({
   id: customType.UUID(),

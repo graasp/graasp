@@ -8,7 +8,7 @@ import waitForExpect from 'wait-for-expect';
 
 import { Websocket } from '@graasp/sdk';
 
-import '../../auth/plugins/passport/preHandlers';
+import '../../auth/plugins/passport/preHandlers.js';
 import {
   PortGenerator,
   clientSend,
@@ -16,7 +16,7 @@ import {
   createDefaultLocalConfig,
   createWsClient,
   createWsFastifyInstance,
-} from './test-utils';
+} from './test-utils.js';
 
 const portGen = new PortGenerator(5000);
 jest.mock('../../auth/plugins/passport/preHandlers', () => ({

@@ -21,30 +21,30 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../../test/app';
-import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants';
-import { buildFile, seedFromJson } from '../../../../../../test/mocks/seed';
-import { db } from '../../../../../drizzle/db';
-import { Item } from '../../../../../drizzle/types';
+} from '../../../../../../test/app.js';
+import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants.js';
+import { buildFile, seedFromJson } from '../../../../../../test/mocks/seed.js';
+import { db } from '../../../../../drizzle/db.js';
+import { Item } from '../../../../../drizzle/types.js';
 import {
   FILE_ITEM_TYPE,
   ITEMS_ROUTE_PREFIX,
   S3_FILE_ITEM_PLUGIN,
-} from '../../../../../utils/config';
-import { MemberCannotAccess, MemberCannotWriteItem } from '../../../../../utils/errors';
+} from '../../../../../utils/config.js';
+import { MemberCannotAccess, MemberCannotWriteItem } from '../../../../../utils/errors.js';
 import {
   DownloadFileInvalidParameterError,
   DownloadFileUnexpectedError,
   S3FileNotFound,
   UploadEmptyFileError,
   UploadFileUnexpectedError,
-} from '../../../../file/utils/errors';
-import { expectItem, expectManyItems } from '../../../../item/test/fixtures/items';
-import { saveMember } from '../../../../member/test/fixtures/members';
-import { ThumbnailSizeFormat } from '../../../../thumbnail/constants';
-import { setItemPublic } from '../../itemVisibility/test/fixtures';
-import { DEFAULT_MAX_STORAGE } from '../utils/constants';
-import { StorageExceeded } from '../utils/errors';
+} from '../../../../file/utils/errors.js';
+import { expectItem, expectManyItems } from '../../../../item/test/fixtures/items.js';
+import { saveMember } from '../../../../member/test/fixtures/members.js';
+import { ThumbnailSizeFormat } from '../../../../thumbnail/constants.js';
+import { setItemPublic } from '../../itemVisibility/test/fixtures.js';
+import { DEFAULT_MAX_STORAGE } from '../utils/constants.js';
+import { StorageExceeded } from '../utils/errors.js';
 
 // TODO: LOCAL FILE TESTS
 

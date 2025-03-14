@@ -21,8 +21,8 @@ import {
 
 import { MAX_ITEM_NAME_LENGTH, MAX_USERNAME_LENGTH, MIN_USERNAME_LENGTH } from '@graasp/sdk';
 
-import { ITEM_NAME_REGEX } from '../schemas/regex';
-import { discriminable } from './typebox/discriminable';
+import { ITEM_NAME_REGEX } from '../schemas/regex.js';
+import { discriminable } from './typebox/discriminable.js';
 
 /**
  * List of schemas to be registered in the Fastify instance.

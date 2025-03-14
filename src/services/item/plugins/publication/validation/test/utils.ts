@@ -1,9 +1,9 @@
 import { ItemValidationProcess, ItemValidationStatus } from '@graasp/sdk';
 
-import { registerValue } from '../../../../../../di/utils';
-import { Item } from '../../../../../../drizzle/types';
-import { ItemValidationModerator } from '../moderators/itemValidationModerator';
-import { StrategyExecutorFactory } from '../moderators/strategyExecutorFactory';
+import { registerValue } from '../../../../../../di/utils.js';
+import { Item } from '../../../../../../drizzle/types.js';
+import { ItemValidationModerator } from '../moderators/itemValidationModerator.js';
+import { StrategyExecutorFactory } from '../moderators/strategyExecutorFactory.js';
 
 export const saveItemValidation = async ({ item }: { item: Item }) => {
   const itemValidationGroupRawRepository = AppDataSource.getRepository(ItemValidationGroup);

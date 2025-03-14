@@ -10,14 +10,13 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../test/app';
-import { GEOLOCATION_API_HOST, ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
-import { MemberCannotAccess } from '../../../../utils/errors';
-import { saveMember } from '../../../member/test/fixtures/members';
-import { ItemWrapper, PackedItem } from '../../ItemWrapper';
-import { ItemTestUtils, expectPackedItem, expectThumbnails } from '../../test/fixtures/items';
-import { ItemGeolocation } from './ItemGeolocation';
-import { expectPackedItemGeolocations, saveGeolocation } from './test/utils';
+} from '../../../../../test/app.js';
+import { GEOLOCATION_API_HOST, ITEMS_ROUTE_PREFIX } from '../../../../utils/config.js';
+import { MemberCannotAccess } from '../../../../utils/errors.js';
+import { saveMember } from '../../../member/test/fixtures/members.js';
+import { ItemWrapper, PackedItem } from '../../ItemWrapper.js';
+import { ItemTestUtils, expectPackedItem, expectThumbnails } from '../../test/fixtures/items.js';
+import { expectPackedItemGeolocations, saveGeolocation } from './test/utils.js';
 
 const testUtils = new ItemTestUtils();
 

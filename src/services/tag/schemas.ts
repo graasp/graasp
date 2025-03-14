@@ -1,13 +1,13 @@
-import { Static, Type } from '@sinclair/typebox';
+import { type Static, Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifySchema } from 'fastify';
+import type { FastifySchema } from 'fastify';
 
-import { UnionOfConst } from '@graasp/sdk';
+import type { UnionOfConst } from '@graasp/sdk';
 
-import { customType, registerSchemaAsRef } from '../../plugins/typebox';
-import { errorSchemaRef } from '../../schemas/global';
-import { TAG_COUNT_MAX_RESULTS } from '../item/plugins/tag/constants';
+import { customType, registerSchemaAsRef } from '../../plugins/typebox.js';
+import { errorSchemaRef } from '../../schemas/global.js';
+import { TAG_COUNT_MAX_RESULTS } from '../item/plugins/tag/constants.js';
 
 export const TagCategory = {
   Level: 'level',

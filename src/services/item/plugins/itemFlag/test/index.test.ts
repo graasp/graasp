@@ -9,11 +9,11 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../../test/app';
-import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { ItemNotFound } from '../../../../../utils/errors';
-import { saveMember } from '../../../../member/test/fixtures/members';
-import { ItemTestUtils } from '../../../test/fixtures/items';
+} from '../../../../../../test/app.js';
+import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config.js';
+import { ItemNotFound } from '../../../../../utils/errors.js';
+import { saveMember } from '../../../../member/test/fixtures/members.js';
+import { ItemTestUtils } from '../../../test/fixtures/items.js';
 
 const testUtils = new ItemTestUtils();
 

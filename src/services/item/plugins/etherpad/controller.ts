@@ -4,15 +4,15 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
-import { resolveDependency } from '../../../../di/utils';
-import { db } from '../../../../drizzle/db';
-import { asDefined } from '../../../../utils/assertions';
-import { isAuthenticated, matchOne } from '../../../auth/plugins/passport';
-import { assertIsMember } from '../../../authentication';
-import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { ItemService } from '../../service';
-import { createEtherpad, getEtherpadFromItem, updateEtherpad } from './schemas';
-import { EtherpadItemService } from './service';
+import { resolveDependency } from '../../../../di/utils.js';
+import { db } from '../../../../drizzle/db.js';
+import { asDefined } from '../../../../utils/assertions.js';
+import { isAuthenticated, matchOne } from '../../../auth/plugins/passport/index.js';
+import { assertIsMember } from '../../../authentication.js';
+import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole.js';
+import { ItemService } from '../../service.js';
+import { createEtherpad, getEtherpadFromItem, updateEtherpad } from './schemas.js';
+import { EtherpadItemService } from './service.js';
 
 const endpoints: FastifyPluginAsyncTypebox = async (fastify) => {
   const itemService = resolveDependency(ItemService);

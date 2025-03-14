@@ -1,8 +1,8 @@
 import { MAX_TREE_LEVELS } from '@graasp/sdk';
 
-import { Item } from '../../../drizzle/types';
-import { MaybeUser } from '../../../types';
-import { ItemTestUtils } from './fixtures/items';
+import { Item } from '../../../drizzle/types.js';
+import { MaybeUser } from '../../../types.js';
+import { ItemTestUtils } from './fixtures/items.js';
 
 const testUtils = new ItemTestUtils();
 

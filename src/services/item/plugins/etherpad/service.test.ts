@@ -9,21 +9,21 @@ import {
   PermissionLevel,
 } from '@graasp/sdk';
 
-import { MOCK_LOGGER } from '../../../../../test/app';
-import { resolveDependency } from '../../../../di/utils';
-import { ItemMembershipRaw } from '../../../../drizzle/types';
-import { MinimalMember } from '../../../../types';
-import { ItemMembershipRepository } from '../../../itemMembership/repository';
-import { ThumbnailService } from '../../../thumbnail/service';
-import { EtherpadItem } from '../../discrimination';
-import { WrongItemTypeError } from '../../errors';
-import { ItemRepository } from '../../repository';
-import { ItemService } from '../../service';
-import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
-import { ItemThumbnailService } from '../thumbnail/service';
-import { EtherpadItemService } from './service';
-import { EtherpadServiceConfig } from './serviceConfig';
-import { PadNameFactory } from './types';
+import { MOCK_LOGGER } from '../../../../../test/app.js';
+import { resolveDependency } from '../../../../di/utils.js';
+import { ItemMembershipRaw } from '../../../../drizzle/types.js';
+import { MinimalMember } from '../../../../types.js';
+import { ItemMembershipRepository } from '../../../itemMembership/repository.js';
+import { ThumbnailService } from '../../../thumbnail/service.js';
+import { EtherpadItem } from '../../discrimination.js';
+import { WrongItemTypeError } from '../../errors.js';
+import { ItemRepository } from '../../repository.js';
+import { ItemService } from '../../service.js';
+import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch.js';
+import { ItemThumbnailService } from '../thumbnail/service.js';
+import { EtherpadItemService } from './service.js';
+import { EtherpadServiceConfig } from './serviceConfig.js';
+import { PadNameFactory } from './types.js';
 
 jest.mock('node-fetch');
 

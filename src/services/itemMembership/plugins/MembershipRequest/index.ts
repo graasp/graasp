@@ -3,26 +3,26 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { MembershipRequestStatus, PermissionLevel } from '@graasp/sdk';
 
-import { resolveDependency } from '../../../../di/utils';
-import { db } from '../../../../drizzle/db';
-import { asDefined } from '../../../../utils/assertions';
-import { ItemNotFound } from '../../../../utils/errors';
-import { isAuthenticated, matchOne } from '../../../auth/plugins/passport';
-import { assertIsMember } from '../../../authentication';
-import { AuthorizationService } from '../../../authorization';
-import { BasicItemService } from '../../../item/basic.service';
-import { ItemRepository } from '../../../item/repository';
-import { ItemLoginSchemaExists } from '../../../itemLogin/errors';
-import { ItemLoginService } from '../../../itemLogin/service';
-import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { ItemMembershipService } from '../../service';
+import { resolveDependency } from '../../../../di/utils.js';
+import { db } from '../../../../drizzle/db.js';
+import { asDefined } from '../../../../utils/assertions.js';
+import { ItemNotFound } from '../../../../utils/errors.js';
+import { isAuthenticated, matchOne } from '../../../auth/plugins/passport/index.js';
+import { assertIsMember } from '../../../authentication.js';
+import { AuthorizationService } from '../../../authorization.js';
+import { BasicItemService } from '../../../item/basic.service.js';
+import { ItemRepository } from '../../../item/repository.js';
+import { ItemLoginSchemaExists } from '../../../itemLogin/errors.js';
+import { ItemLoginService } from '../../../itemLogin/service.js';
+import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole.js';
+import { ItemMembershipService } from '../../service.js';
 import {
   ItemMembershipAlreadyExists,
   MembershipRequestAlreadyExists,
   MembershipRequestNotFound,
-} from './error';
-import { createOne, deleteOne, getAllByItem, getOwn } from './schemas';
-import { MembershipRequestService } from './service';
+} from './error.js';
+import { createOne, deleteOne, getAllByItem, getOwn } from './schemas.js';
+import { MembershipRequestService } from './service.js';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const membershipRequestService = resolveDependency(MembershipRequestService);

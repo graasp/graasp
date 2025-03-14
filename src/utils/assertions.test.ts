@@ -1,4 +1,4 @@
-import { asDefined, assertIsDefined, isDefined } from './assertions';
+import { asDefined, assertIsDefined, isDefined } from './assertions.js';
 
 describe('isDefined', () => {
   it('should return false if the object is undefined', () => {

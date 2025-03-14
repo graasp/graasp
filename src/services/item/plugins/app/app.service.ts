@@ -2,19 +2,19 @@ import { sign } from 'jsonwebtoken';
 import uniqBy from 'lodash.uniqby';
 import { singleton } from 'tsyringe';
 
-import { AuthTokenSubject, ItemType, PermissionLevel } from '@graasp/sdk';
+import { type AuthTokenSubject, ItemType, PermissionLevel } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
-import { Item, MinimalAccount } from '../../../../drizzle/types';
-import { AuthenticatedUser, MaybeUser } from '../../../../types';
-import { APPS_JWT_SECRET } from '../../../../utils/config';
-import { AuthorizationService } from '../../../authorization';
-import { ItemMembershipRepository } from '../../../itemMembership/repository';
-import { ItemRepository } from '../../repository';
-import { DEFAULT_JWT_EXPIRATION } from './constants';
-import { PublisherRepository } from './publisherRepository';
-import { AppRepository } from './repository';
-import { checkTargetItemAndTokenItemMatch } from './utils';
+import type { DBConnection } from '../../../../drizzle/db.js';
+import type { Item, MinimalAccount } from '../../../../drizzle/types.js';
+import type { AuthenticatedUser, MaybeUser } from '../../../../types.js';
+import { APPS_JWT_SECRET } from '../../../../utils/config.js';
+import { AuthorizationService } from '../../../authorization.js';
+import { ItemMembershipRepository } from '../../../itemMembership/repository.js';
+import { ItemRepository } from '../../repository.js';
+import { DEFAULT_JWT_EXPIRATION } from './constants.js';
+import { PublisherRepository } from './publisherRepository.js';
+import { AppRepository } from './repository.js';
+import { checkTargetItemAndTokenItemMatch } from './utils.js';
 
 @singleton()
 export class AppService {

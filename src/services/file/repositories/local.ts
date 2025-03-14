@@ -6,9 +6,9 @@ import { pipeline } from 'stream/promises';
 
 import { ItemType } from '@graasp/sdk';
 
-import { LocalFileConfiguration } from '../interfaces/configuration';
-import { FileRepository, FileUpload } from '../interfaces/fileRepository';
-import { LocalFileNotFound } from '../utils/errors';
+import type { LocalFileConfiguration } from '../interfaces/configuration.js';
+import type { FileRepository, FileUpload } from '../interfaces/fileRepository.js';
+import { LocalFileNotFound } from '../utils/errors.js';
 
 export class LocalFileRepository implements FileRepository {
   private readonly options: LocalFileConfiguration;

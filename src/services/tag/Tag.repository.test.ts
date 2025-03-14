@@ -3,11 +3,11 @@ import { v4 } from 'uuid';
 
 import { TagCategory, TagFactory } from '@graasp/sdk';
 
-import { client, db } from '../../drizzle/db';
-import { tags } from '../../drizzle/schema';
-import { IllegalArgumentException } from '../../repositories/errors';
-import { TagRepository } from './Tag.repository';
-import { saveTag } from './fixtures/utils';
+import { client, db } from '../../drizzle/db.js';
+import { tags } from '../../drizzle/schema.js';
+import { IllegalArgumentException } from '../../repositories/errors.js';
+import { TagRepository } from './Tag.repository.js';
+import { saveTag } from './fixtures/utils.js';
 
 const repository = new TagRepository();
 

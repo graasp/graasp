@@ -9,16 +9,16 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../../test/app';
-import { ItemLikeRaw, ItemLikeWithItemAndAccount } from '../../../../../drizzle/types';
-import { MinimalMember } from '../../../../../types';
-import { MemberCannotAccess } from '../../../../../utils/errors';
-import { saveMember } from '../../../../member/test/fixtures/members';
-import { ItemTestUtils, expectManyPackedItems } from '../../../test/fixtures/items';
-import { setItemPublic } from '../../itemVisibility/test/fixtures';
-import { ItemLikeNotFound } from '../errors';
-import { ItemLikeRepository } from '../repository';
-import { saveItemLikes } from './utils';
+} from '../../../../../../test/app.js';
+import { ItemLikeRaw, ItemLikeWithItemAndAccount } from '../../../../../drizzle/types.js';
+import { MinimalMember } from '../../../../../types.js';
+import { MemberCannotAccess } from '../../../../../utils/errors.js';
+import { saveMember } from '../../../../member/test/fixtures/members.js';
+import { ItemTestUtils, expectManyPackedItems } from '../../../test/fixtures/items.js';
+import { setItemPublic } from '../../itemVisibility/test/fixtures.js';
+import { ItemLikeNotFound } from '../errors.js';
+import { ItemLikeRepository } from '../itemLike.repository.js';
+import { saveItemLikes } from './utils.js';
 
 const testUtils = new ItemTestUtils();
 

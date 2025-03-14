@@ -9,9 +9,9 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../../test/app';
-import { ItemFactory } from '../../../../../../test/factories/item.factory';
-import { seedFromJson } from '../../../../../../test/mocks/seed';
+} from '../../../../../../test/app.js';
+import { ItemFactory } from '../../../../../../test/factories/item.factory.js';
+import { seedFromJson } from '../../../../../../test/mocks/seed.js';
 
 jest.mock('node-fetch');
 

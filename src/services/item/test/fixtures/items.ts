@@ -1,8 +1,8 @@
 import { ItemVisibilityType, ThumbnailSize, buildPathFromIds } from '@graasp/sdk';
 
-import { Item, ItemVisibilityWithItem } from '../../../../drizzle/types';
-import { MinimalMember } from '../../../../types';
-import { PackedItem } from '../../ItemWrapper';
+import { Item, ItemVisibilityWithItem } from '../../../../drizzle/types.js';
+import { MinimalMember } from '../../../../types.js';
+import { PackedItem } from '../../ItemWrapper.js';
 
 // export class ItemTestUtils {
 //   public itemRepository: ItemRepository;

@@ -3,11 +3,14 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifySchema } from 'fastify';
 
-import { customType, registerSchemaAsRef } from '../../plugins/typebox';
-import { errorSchemaRef } from '../../schemas/global';
-import { augmentedAccountSchemaRef, nullableAugmentedAccountSchemaRef } from '../account/schemas';
-import { itemSchemaRef } from '../item/schemas';
-import { PermissionLevel } from './types';
+import { customType, registerSchemaAsRef } from '../../plugins/typebox.js';
+import { errorSchemaRef } from '../../schemas/global.js';
+import {
+  augmentedAccountSchemaRef,
+  nullableAugmentedAccountSchemaRef,
+} from '../account/schemas.js';
+import { itemSchemaRef } from '../item/schemas.js';
+import { PermissionLevel } from './types.js';
 
 export const itemMembershipSchemaRef = registerSchemaAsRef(
   'itemMembership',

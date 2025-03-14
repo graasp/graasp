@@ -5,15 +5,19 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, ItemType, MAX_USERNAME_LENGTH } from '@graasp/sdk';
 
-import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
-import { MemberFactory } from '../../../../test/factories/member.factory';
-import { seedFromJson } from '../../../../test/mocks/seed';
-import { DEFAULT_MAX_STORAGE } from '../../../services/item/plugins/file/utils/constants';
-import { assertIsDefined } from '../../../utils/assertions';
-import { FILE_ITEM_TYPE } from '../../../utils/config';
-import { MemberNotFound } from '../../../utils/errors';
-import { assertIsMember } from '../../authentication';
-import { setupGuest } from './setup';
+import build, {
+  clearDatabase,
+  mockAuthenticate,
+  unmockAuthenticate,
+} from '../../../../test/app.js';
+import { MemberFactory } from '../../../../test/factories/member.factory.js';
+import { seedFromJson } from '../../../../test/mocks/seed.js';
+import { DEFAULT_MAX_STORAGE } from '../../../services/item/plugins/file/utils/constants.js';
+import { assertIsDefined } from '../../../utils/assertions.js';
+import { FILE_ITEM_TYPE } from '../../../utils/config.js';
+import { MemberNotFound } from '../../../utils/errors.js';
+import { assertIsMember } from '../../authentication.js';
+import { setupGuest } from './setup.js';
 
 describe('Member routes tests', () => {
   let app: FastifyInstance;

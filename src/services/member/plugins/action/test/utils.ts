@@ -1,8 +1,8 @@
 import { ActionFactory, ActionTriggers, DiscriminatedItem } from '@graasp/sdk';
 
-import { MinimalMember } from '../../../../../types';
-import { ItemTestUtils } from '../../../../item/test/fixtures/items';
-import { saveMember } from '../../../test/fixtures/members';
+import { MinimalMember } from '../../../../../types.js';
+import { ItemTestUtils } from '../../../../item/test/fixtures/items.js';
+import { saveMember } from '../../../test/fixtures/members.js';
 
 const testUtils = new ItemTestUtils();
 

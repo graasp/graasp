@@ -13,16 +13,16 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../../test/app';
-import { resolveDependency } from '../../../../../di/utils';
-import { InvitationRaw } from '../../../../../drizzle/types';
-import { MailerService } from '../../../../../plugins/mailer/mailer.service';
-import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { MOCK_CAPTCHA } from '../../../../auth/plugins/captcha/test/utils';
-import { saveMember } from '../../../../member/test/fixtures/members';
-import { ItemTestUtils } from '../../../test/fixtures/items';
-import { MissingGroupColumnInCSVError } from '../errors';
-import { createInvitations, saveInvitations } from './utils';
+} from '../../../../../../test/app.js';
+import { resolveDependency } from '../../../../../di/utils.js';
+import { InvitationRaw } from '../../../../../drizzle/types.js';
+import { MailerService } from '../../../../../plugins/mailer/mailer.service.js';
+import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config.js';
+import { MOCK_CAPTCHA } from '../../../../auth/plugins/captcha/test/utils.js';
+import { saveMember } from '../../../../member/test/fixtures/members.js';
+import { ItemTestUtils } from '../../../test/fixtures/items.js';
+import { MissingGroupColumnInCSVError } from '../errors.js';
+import { createInvitations, saveInvitations } from './utils.js';
 
 const testUtils = new ItemTestUtils();
 const invitationRawRepository = AppDataSource.getRepository(Invitation);

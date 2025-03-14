@@ -1,3 +1,3 @@
-import start from './fastify';
+import start from './fastify.js';
 
 start();

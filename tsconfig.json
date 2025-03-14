@@ -1,25 +1,36 @@
 {
   "compilerOptions": {
-    "lib": ["es2021", "es6", "esnext.asynciterable"],
+    "lib": [
+      "es2021",
+      "es6",
+      "esnext.asynciterable"
+    ],
     "target": "es6",
-    "module": "Node16",
+    "module": "NodeNext",
     // "strict": true, // TODO: enable
     "esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables `allowSyntheticDefaultImports` for type compatibility. */,
     "checkJs": false,
     "allowJs": false,
-    "moduleResolution": "node16",
+    "moduleResolution": "nodenext",
     "resolveJsonModule": true,
     "skipLibCheck": true,
-
+    "noImplicitAny": true,
     // required for typeorm
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-
     "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
     "strictNullChecks": true,
-    "strictPropertyInitialization": false, // disable because of entities,
-    "typeRoots": ["./node_modules/@types", "./src/@types/*"],
+    "strictPropertyInitialization": true, // disable because of entities,
+    "verbatimModuleSyntax": true, // force usage of "type" specifiers to catch imports that use a type as a value
+    // "allowImportingTsExtensions": true,
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/@types/*"
+    ],
     "sourceMap": true
   },
-  "include": ["src/**/*", "test"]
+  "include": [
+    "src/**/*",
+    "test"
+  ]
 }

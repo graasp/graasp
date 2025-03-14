@@ -1,6 +1,6 @@
-import { Transporter, createTransport } from 'nodemailer';
+import { type Transporter, createTransport } from 'nodemailer';
 
-import { applyLayout } from './layout';
+import { applyLayout } from './layout.js';
 
 export interface Mail {
   subject: string;

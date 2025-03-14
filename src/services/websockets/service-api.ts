@@ -6,17 +6,17 @@
  * Integrates the {@link WebSocketChannels} abstraction
  * in a fastify server plugin with @fastify/websocket
  */
-import { RedisOptions } from 'ioredis';
+import type { RedisOptions } from 'ioredis';
 
 import fws from '@fastify/websocket';
-import { FastifyBaseLogger, FastifyPluginAsync } from 'fastify';
+import type { FastifyBaseLogger, FastifyPluginAsync } from 'fastify';
 
-import { NODE_ENV } from '../../utils/config';
-import { optionalIsAuthenticated } from '../auth/plugins/passport';
-import { AjvMessageSerializer } from './message-serializer';
-import { MultiInstanceChannelsBroker } from './multi-instance';
-import { WebSocketChannels } from './ws-channels';
-import { WebsocketService } from './ws-service';
+import { NODE_ENV } from '../../utils/config.js';
+import { optionalIsAuthenticated } from '../auth/plugins/passport/index.js';
+import { AjvMessageSerializer } from './message-serializer.js';
+import { MultiInstanceChannelsBroker } from './multi-instance.js';
+import { WebSocketChannels } from './ws-channels.js';
+import { WebsocketService } from './ws-service.js';
 
 /**
  * Type definition for plugin options

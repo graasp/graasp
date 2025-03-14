@@ -2,8 +2,8 @@ import nock from 'nock';
 
 import Etherpad from '@graasp/etherpad-api';
 
-import { ETHERPAD_API_KEY, ETHERPAD_URL } from '../../../../../utils/config';
-import { ETHERPAD_API_VERSION } from '../constants';
+import { ETHERPAD_API_KEY, ETHERPAD_URL } from '../../../../../utils/config.js';
+import { ETHERPAD_API_VERSION } from '../constants.js';
 
 type PickMatching<T, V> = { [K in keyof T as T[K] extends V ? K : never]: T[K] };
 // eslint-disable-next-line @typescript-eslint/ban-types

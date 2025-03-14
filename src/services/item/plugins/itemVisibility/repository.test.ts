@@ -2,9 +2,9 @@ import { FastifyInstance } from 'fastify';
 
 import { ItemVisibilityType } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../test/app';
-import { ItemTestUtils, expectItem } from '../../test/fixtures/items';
-import { ItemVisibilityRepository } from './repository';
+import build, { clearDatabase } from '../../../../../test/app.js';
+import { ItemTestUtils, expectItem } from '../../test/fixtures/items.js';
+import { ItemVisibilityRepository } from './repository.js';
 
 const rawRepository = AppDataSource.getRepository(ItemVisibility);
 const repository = new ItemVisibilityRepository();

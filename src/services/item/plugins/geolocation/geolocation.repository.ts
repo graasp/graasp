@@ -7,19 +7,19 @@ import fetch from 'node-fetch';
 
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import { DBConnection } from '../../../../drizzle/db';
-import { isAncestorOrSelf, isDescendantOrSelf } from '../../../../drizzle/operations';
-import { accountsTable, itemGeolocations, items } from '../../../../drizzle/schema';
+import { DBConnection } from '../../../../drizzle/db.js';
+import { isAncestorOrSelf, isDescendantOrSelf } from '../../../../drizzle/operations.js';
+import { accountsTable, itemGeolocationsTable, items } from '../../../../drizzle/schema.js';
 import {
   Item,
   ItemGeolocationRaw,
   ItemGeolocationWithItem,
   ItemGeolocationWithItemWithCreator,
   MemberRaw,
-} from '../../../../drizzle/types';
-import { MaybeUser } from '../../../../types';
-import { ALLOWED_SEARCH_LANGS, GEOLOCATION_API_HOST } from '../../../../utils/config';
-import { MissingGeolocationSearchParams, PartialItemGeolocation } from './errors';
+} from '../../../../drizzle/types.js';
+import { MaybeUser } from '../../../../types.js';
+import { ALLOWED_SEARCH_LANGS, GEOLOCATION_API_HOST } from '../../../../utils/config.js';
+import { MissingGeolocationSearchParams, PartialItemGeolocation } from './errors.js';
 
 export class ItemGeolocationRepository {
   /**
@@ -34,7 +34,7 @@ export class ItemGeolocationRepository {
   ): Promise<void> {
     const geoloc = await this.getByItem(db, original.path);
     if (geoloc) {
-      await db.insert(itemGeolocations).values({
+      await db.insert(itemGeolocationsTable).values({
         itemPath: copy.path,
         lat: geoloc.lat,
         lng: geoloc.lng,
@@ -50,7 +50,7 @@ export class ItemGeolocationRepository {
    * @param item item to delete
    */
   async delete(db: DBConnection, item: Item): Promise<void> {
-    await db.delete(itemGeolocations).where(eq(itemGeolocations.itemPath, item.path));
+    await db.delete(itemGeolocationsTable).where(eq(itemGeolocationsTable.itemPath, item.path));
   }
 
   /**
@@ -111,8 +111,8 @@ export class ItemGeolocationRepository {
       const [minLat, maxLat] = [lat1, lat2].sort((a, b) => a - b);
       const [minLng, maxLng] = [lng1, lng2].sort((a, b) => a - b);
       andConditions.push(
-        between(itemGeolocations.lat, minLat, maxLat),
-        between(itemGeolocations.lng, minLng, maxLng),
+        between(itemGeolocationsTable.lat, minLat, maxLat),
+        between(itemGeolocationsTable.lng, minLng, maxLng),
       );
     }
 
@@ -154,9 +154,9 @@ export class ItemGeolocationRepository {
 
     const result = await db
       .select()
-      .from(itemGeolocations)
+      .from(itemGeolocationsTable)
       // use view to filter out recycled items
-      .innerJoin(items, eq(items.path, itemGeolocations.itemPath))
+      .innerJoin(items, eq(items.path, itemGeolocationsTable.itemPath))
       .leftJoin(accountsTable, eq(items.creatorId, accountsTable.id))
       .where(and(...andConditions));
 
@@ -174,10 +174,10 @@ export class ItemGeolocationRepository {
     db: DBConnection,
     itemPath: Item['path'],
   ): Promise<ItemGeolocationWithItem | undefined> {
-    const geoloc = await db.query.itemGeolocations.findFirst({
-      where: isAncestorOrSelf(itemGeolocations.itemPath, itemPath),
+    const geoloc = await db.query.itemGeolocationsTable.findFirst({
+      where: isAncestorOrSelf(itemGeolocationsTable.itemPath, itemPath),
       with: { item: true },
-      orderBy: desc(itemGeolocations.itemPath),
+      orderBy: desc(itemGeolocationsTable.itemPath),
     });
 
     return geoloc;
@@ -205,7 +205,7 @@ export class ItemGeolocationRepository {
     const country = iso1A2Code([geolocation.lng, geolocation.lat]);
 
     await db
-      .insert(itemGeolocations)
+      .insert(itemGeolocationsTable)
       .values({
         itemPath,
         lat: geolocation.lat,
@@ -215,8 +215,8 @@ export class ItemGeolocationRepository {
         country,
       })
       .onConflictDoUpdate({
-        target: itemGeolocations.itemPath,
-        targetWhere: eq(itemGeolocations.itemPath, itemPath),
+        target: itemGeolocationsTable.itemPath,
+        targetWhere: eq(itemGeolocationsTable.itemPath, itemPath),
         set: {
           lat: geolocation.lat,
           lng: geolocation.lng,

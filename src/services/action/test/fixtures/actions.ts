@@ -2,15 +2,15 @@ import { eq } from 'drizzle-orm';
 
 import { ActionFactory, Action as GraaspAction } from '@graasp/sdk';
 
-import { DBConnection, db } from '../../../../drizzle/db';
-import { actionsTable } from '../../../../drizzle/schema';
+import { DBConnection, db } from '../../../../drizzle/db.js';
+import { actionsTable } from '../../../../drizzle/schema.js';
 import {
   Account,
   ActionInsertDTO,
   ActionRaw,
   ActionWithItem,
   ActionWithItemAndAccount,
-} from '../../../../drizzle/types';
+} from '../../../../drizzle/types.js';
 
 type ActionToTest = ActionRaw | ActionWithItem | ActionWithItemAndAccount;
 export const saveActions = async (actions: Partial<GraaspAction>[]): Promise<ActionInsertDTO[]> => {

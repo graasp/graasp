@@ -2,13 +2,13 @@ import { FastifyInstance } from 'fastify';
 
 import { PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../test/app';
-import { Item, ItemMembershipRaw } from '../../drizzle/types';
-import { MinimalMember } from '../../types';
-import { isMember } from '../authentication';
-import { ItemTestUtils } from '../item/test/fixtures/items';
-import { saveMember } from '../member/test/fixtures/members';
-import { ItemMembershipRepository } from './repository';
+import build, { clearDatabase } from '../../../test/app.js';
+import { Item, ItemMembershipRaw } from '../../drizzle/types.js';
+import { MinimalMember } from '../../types.js';
+import { isMember } from '../authentication.js';
+import { ItemTestUtils } from '../item/test/fixtures/items.js';
+import { saveMember } from '../member/test/fixtures/members.js';
+import { ItemMembershipRepository } from './repository.js';
 
 const testUtils = new ItemTestUtils();
 const itemMembershipRepository = new ItemMembershipRepository();

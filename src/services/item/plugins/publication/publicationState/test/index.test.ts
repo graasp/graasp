@@ -5,12 +5,12 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../../test/app';
-import { MinimalMember } from '../../../../../../types';
-import { asDefined } from '../../../../../../utils/assertions';
-import { ITEMS_ROUTE_PREFIX } from '../../../../../../utils/config';
-import { saveMember } from '../../../../../member/test/fixtures/members';
-import { ItemTestUtils } from '../../../../test/fixtures/items';
+import build, { clearDatabase } from '../../../../../../../test/app.js';
+import { MinimalMember } from '../../../../../../types.js';
+import { asDefined } from '../../../../../../utils/assertions.js';
+import { ITEMS_ROUTE_PREFIX } from '../../../../../../utils/config.js';
+import { saveMember } from '../../../../../member/test/fixtures/members.js';
+import { ItemTestUtils } from '../../../../test/fixtures/items.js';
 
 const testUtils = new ItemTestUtils();
 

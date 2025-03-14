@@ -2,7 +2,7 @@ import fs from 'fs';
 
 import { ExportActionsFormatting } from '@graasp/sdk';
 
-import { writeFileForFormat } from './export';
+import { writeFileForFormat } from './export.js';
 
 const writeFileSyncMock = jest.spyOn(fs, 'writeFileSync').mockImplementation(() => {});
 describe('writeFileForFormat', () => {

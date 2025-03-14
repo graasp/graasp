@@ -1,37 +1,37 @@
 import { Redis } from 'ioredis';
 import { sign } from 'jsonwebtoken';
-import { singleton } from 'tsyringe';
+import { injectable } from 'tsyringe';
 import { v4 as uuid } from 'uuid';
 
 import { ClientManager, Context } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
-import { TRANSLATIONS } from '../../../../langs/constants';
-import { BaseLogger } from '../../../../logger';
-import { MailBuilder } from '../../../../plugins/mailer/builder';
-import { MailerService } from '../../../../plugins/mailer/mailer.service';
-import { AuthenticatedUser, MemberInfo } from '../../../../types';
+import type { DBConnection } from '../../../../drizzle/db.js';
+import { TRANSLATIONS } from '../../../../langs/constants.js';
+import { BaseLogger } from '../../../../logger.js';
+import { MailBuilder } from '../../../../plugins/mailer/builder.js';
+import { MailerService } from '../../../../plugins/mailer/mailer.service.js';
+import type { AuthenticatedUser, MemberInfo } from '../../../../types.js';
 import {
   JWT_SECRET,
   PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES,
   PASSWORD_RESET_JWT_SECRET,
-} from '../../../../utils/config';
+} from '../../../../utils/config.js';
 import {
   EmptyCurrentPassword,
   InvalidPassword,
   MemberNotSignedUp,
   MemberWithoutPassword,
-} from '../../../../utils/errors';
-import { MemberRepository } from '../../../member/member.repository';
-import { MemberDTO } from '../../../member/types';
-import { SHORT_TOKEN_PARAM } from '../passport';
-import { PasswordConflict } from './errors';
-import { MemberPasswordRepository } from './memberPassword.repository';
-import { comparePasswords, encryptPassword, verifyCurrentPassword } from './utils';
+} from '../../../../utils/errors.js';
+import { MemberRepository } from '../../../member/member.repository.js';
+import { MemberDTO } from '../../../member/types.js';
+import { SHORT_TOKEN_PARAM } from '../passport/index.js';
+import { PasswordConflict } from './errors.js';
+import { MemberPasswordRepository } from './memberPassword.repository.js';
+import { comparePasswords, encryptPassword, verifyCurrentPassword } from './utils.js';
 
 const REDIS_PREFIX = 'reset-password:';
 
-@singleton()
+@injectable()
 export class MemberPasswordService {
   private readonly log: BaseLogger;
   private readonly mailerService: MailerService;

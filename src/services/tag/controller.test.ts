@@ -5,9 +5,9 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, TagCategory } from '@graasp/sdk';
 
-import build, { clearDatabase, unmockAuthenticate } from '../../../test/app';
-import { seedFromJson } from '../../../test/mocks/seed';
-import { db } from '../../drizzle/db';
+import build, { clearDatabase, unmockAuthenticate } from '../../../test/app.js';
+import { seedFromJson } from '../../../test/mocks/seed.js';
+import { db } from '../../drizzle/db.js';
 
 describe('Tag Endpoints', () => {
   let app: FastifyInstance;

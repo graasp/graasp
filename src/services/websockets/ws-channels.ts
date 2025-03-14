@@ -6,9 +6,9 @@
  * @author Alexandre CHAU
  */
 import util from 'util';
-import { Data, Server, WebSocket } from 'ws';
+import { type Data, WebSocket, WebSocketServer } from 'ws';
 
-import { FastifyBaseLogger } from 'fastify';
+import type { FastifyBaseLogger } from 'fastify';
 
 import { Websocket } from '@graasp/sdk';
 
@@ -96,7 +96,7 @@ class Client {
  */
 class WebSocketChannels {
   // Underlying WebSocket server
-  wsServer: Server;
+  wsServer: WebSocketServer;
   // Collection of existing channels, identified by name for lookup
   channels: Map<string, Channel>;
   // Collection of all client subscriptions, identified by socket for lookup
@@ -117,7 +117,7 @@ class WebSocketChannels {
    *                          MUST be at least an order of magnitude higher than network RTT
    */
   constructor(
-    wsServer: Server,
+    wsServer: WebSocketServer,
     serialize: (data: Websocket.ServerMessage) => Data,
     log?: FastifyBaseLogger | Console,
     heartbeatInterval: number = 30000,

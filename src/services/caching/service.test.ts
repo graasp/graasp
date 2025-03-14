@@ -2,10 +2,10 @@ import { faker } from '@faker-js/faker';
 
 import { FastifyInstance } from 'fastify';
 
-import build from '../../../test/app';
-import { FILE_SERVICE_URLS_CACHING_DI_KEY } from '../../di/constants';
-import { resolveDependency } from '../../di/utils';
-import { CachingService } from './service';
+import build from '../../../test/app.js';
+import { FILE_SERVICE_URLS_CACHING_DI_KEY } from '../../di/constants.js';
+import { resolveDependency } from '../../di/utils.js';
+import { CachingService } from './service.js';
 
 describe('CachingService Tests', () => {
   let app: FastifyInstance;

@@ -2,12 +2,12 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { getIdsFromPath } from '@graasp/sdk';
 
-import { resolveDependency } from '../../../di/utils';
-import { DBConnection, db } from '../../../drizzle/db';
-import { BasicItemService } from '../../item/basic.service';
-import { WebsocketService } from '../../websockets/ws-service';
-import { ItemMembershipService } from '../service';
-import { ItemMembershipEvent, itemMembershipsTopic } from './events';
+import { resolveDependency } from '../../../di/utils.js';
+import { DBConnection, db } from '../../../drizzle/db.js';
+import { BasicItemService } from '../../item/basic.service.js';
+import { WebsocketService } from '../../websockets/ws-service.js';
+import { ItemMembershipService } from '../service.js';
+import { ItemMembershipEvent, itemMembershipsTopic } from './events.js';
 
 export function registerItemMembershipWsHooks(
   db: DBConnection,

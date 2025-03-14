@@ -1,13 +1,13 @@
 import { inject, singleton } from 'tsyringe';
 
-import { FileItemType, MemberStorage, Pagination } from '@graasp/sdk';
+import type { FileItemType, MemberStorage, Pagination } from '@graasp/sdk';
 
-import { FILE_ITEM_TYPE_DI_KEY } from '../../../../di/constants';
-import { DBConnection } from '../../../../drizzle/db';
-import { MinimalMember } from '../../../../types';
-import { DEFAULT_MAX_STORAGE } from '../../../item/plugins/file/utils/constants';
-import { StorageExceeded } from '../../../item/plugins/file/utils/errors';
-import { ItemRepository } from '../../../item/repository';
+import { FILE_ITEM_TYPE_DI_KEY } from '../../../../di/constants.js';
+import type { DBConnection } from '../../../../drizzle/db.js';
+import type { MinimalMember } from '../../../../types.js';
+import { DEFAULT_MAX_STORAGE } from '../../../item/plugins/file/utils/constants.js';
+import { StorageExceeded } from '../../../item/plugins/file/utils/errors.js';
+import { ItemRepository } from '../../../item/repository.js';
 
 @singleton()
 export class StorageService {

@@ -4,21 +4,21 @@ import {
   ClientManager,
   Context,
   PermissionLevel,
-  ShortLink,
+  type ShortLink,
   ShortLinkPlatform,
-  ShortLinksOfItem,
-  UpdateShortLink,
+  type ShortLinksOfItem,
+  type UpdateShortLink,
 } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
-import { AuthenticatedUser, MinimalMember } from '../../../../types';
-import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
-import { UnauthorizedMember } from '../../../../utils/errors';
-import { BasicItemService } from '../../basic.service';
-import { ItemPublishedNotFound } from '../publication/published/errors';
-import { ItemPublishedService } from '../publication/published/itemPublished.service';
-import { ShortLinkDTO } from './dto/ShortLinkDTO';
-import { ShortLinkRepository } from './repository';
+import type { DBConnection } from '../../../../drizzle/db.js';
+import type { AuthenticatedUser, MinimalMember } from '../../../../types.js';
+import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config.js';
+import { UnauthorizedMember } from '../../../../utils/errors.js';
+import { BasicItemService } from '../../basic.service.js';
+import { ItemPublishedNotFound } from '../publication/published/errors.js';
+import { ItemPublishedService } from '../publication/published/itemPublished.service.js';
+import { ShortLinkDTO } from './dto/ShortLinkDTO.js';
+import { ShortLinkRepository } from './repository.js';
 
 export const SHORT_LINKS_ROUTE_PREFIX = '/short-links';
 export const SHORT_LINKS_LIST_ROUTE = '/list';

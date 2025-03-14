@@ -17,13 +17,13 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../../../../test/app';
-import { Item } from '../../../../../../../drizzle/types';
-import { ITEMS_ROUTE_PREFIX } from '../../../../../../../utils/config';
-import { saveMember } from '../../../../../../member/test/fixtures/members';
-import { ItemTestUtils } from '../../../../../test/fixtures/items';
-import { ItemPublishedRepository } from '../../itemPublished.repository';
-import { MeiliSearchWrapper } from './meilisearch';
+} from '../../../../../../../../test/app.js';
+import { Item } from '../../../../../../../drizzle/types.js';
+import { ITEMS_ROUTE_PREFIX } from '../../../../../../../utils/config.js';
+import { saveMember } from '../../../../../../member/test/fixtures/members.js';
+import { ItemTestUtils } from '../../../../../test/fixtures/items.js';
+import { ItemPublishedRepository } from '../../itemPublished.repository.js';
+import { MeiliSearchWrapper } from './meilisearch.js';
 
 const testUtils = new ItemTestUtils();
 

@@ -8,10 +8,10 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../test/app';
-import { MaybeUser } from '../../../../types';
-import { saveMember } from '../../../member/test/fixtures/members';
-import { ItemTestUtils } from '../../test/fixtures/items';
+} from '../../../../../test/app.js';
+import { MaybeUser } from '../../../../types.js';
+import { saveMember } from '../../../member/test/fixtures/members.js';
+import { ItemTestUtils } from '../../test/fixtures/items.js';
 
 const testUtils = new ItemTestUtils();
 const rawGuestRepository = AppDataSource.getRepository(Guest);

@@ -1,7 +1,7 @@
 import { writeFile } from 'node:fs/promises';
 
-import registerAppPlugins from '../app';
-import { instance } from '../fastify';
+import registerAppPlugins from '../app.js';
+import { instance } from '../fastify.js';
 
 const output = 'openapi.json';
 

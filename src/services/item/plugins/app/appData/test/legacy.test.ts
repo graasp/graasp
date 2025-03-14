@@ -8,12 +8,12 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../../test/app';
-import { AuthenticatedUser, MinimalMember } from '../../../../../../types';
-import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
-import { saveMember } from '../../../../../member/test/fixtures/members';
-import { AppTestUtils } from '../../test/fixtures';
-import { saveAppData } from './fixtures';
+import build, { clearDatabase } from '../../../../../../../test/app.js';
+import { AuthenticatedUser, MinimalMember } from '../../../../../../types.js';
+import { APP_ITEMS_PREFIX } from '../../../../../../utils/config.js';
+import { saveMember } from '../../../../../member/test/fixtures/members.js';
+import { AppTestUtils } from '../../test/fixtures.js';
+import { saveAppData } from './fixtures.js';
 
 const testUtils = new AppTestUtils();
 

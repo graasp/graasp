@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { GraaspHtmlError } from '../errors';
+import { GraaspHtmlError } from '../errors.js';
 
 export class H5PInvalidFileError extends GraaspHtmlError {
   constructor(data?: unknown) {

@@ -2,17 +2,21 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { ActionTriggers } from '@graasp/sdk';
 
-import { resolveDependency } from '../../../../di/utils';
-import { db } from '../../../../drizzle/db';
-import { asDefined } from '../../../../utils/assertions';
-import { ActionService } from '../../../action/action.service';
-import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
-import { assertIsMember } from '../../../authentication';
-import { memberAccountRole } from '../../../member/strategies/memberAccountRole';
-import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { BasicItemService } from '../../basic.service';
-import { create, deleteOne, getLikesForCurrentMember, getLikesForItem } from './schemas';
-import { ItemLikeService } from './service';
+import { resolveDependency } from '../../../../di/utils.js';
+import { db } from '../../../../drizzle/db.js';
+import { asDefined } from '../../../../utils/assertions.js';
+import { ActionService } from '../../../action/action.service.js';
+import {
+  isAuthenticated,
+  matchOne,
+  optionalIsAuthenticated,
+} from '../../../auth/plugins/passport/index.js';
+import { assertIsMember } from '../../../authentication.js';
+import { memberAccountRole } from '../../../member/strategies/memberAccountRole.js';
+import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole.js';
+import { BasicItemService } from '../../basic.service.js';
+import { create, deleteOne, getLikesForCurrentMember, getLikesForItem } from './schemas.js';
+import { ItemLikeService } from './service.js';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const basicItemService = resolveDependency(BasicItemService);

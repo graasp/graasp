@@ -3,8 +3,8 @@ import sharp from 'sharp';
 
 import { HttpMethod, MimeTypes } from '@graasp/sdk';
 
-import { IMAGE_CLASSIFIER_PREDICTION_THRESHOLD } from '../constants';
-import { FailedImageClassificationRequestError } from '../errors';
+import { IMAGE_CLASSIFIER_PREDICTION_THRESHOLD } from '../constants.js';
+import { FailedImageClassificationRequestError } from '../errors.js';
 
 const imageToBase64 = async (buffer: ArrayBuffer, mimetype?: string) => {
   let imageBuffer = buffer;

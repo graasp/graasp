@@ -6,11 +6,11 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
-import { resolveDependency } from '../../../../../di/utils';
-import { MailerService } from '../../../../../plugins/mailer/mailer.service';
-import { MEMBER_EXPORT_DATA_ROUTE_PREFIX } from '../../../../../utils/config';
-import { ItemTestUtils } from '../../../../item/test/fixtures/items';
+import build, { clearDatabase } from '../../../../../../test/app.js';
+import { resolveDependency } from '../../../../../di/utils.js';
+import { MailerService } from '../../../../../plugins/mailer/mailer.service.js';
+import { MEMBER_EXPORT_DATA_ROUTE_PREFIX } from '../../../../../utils/config.js';
+import { ItemTestUtils } from '../../../../item/test/fixtures/items.js';
 
 const testUtils = new ItemTestUtils();
 

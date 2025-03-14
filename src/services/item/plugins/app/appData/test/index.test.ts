@@ -5,15 +5,15 @@ import { FastifyInstance } from 'fastify';
 
 import { AppDataVisibility, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../../test/app';
-import { AuthenticatedUser, MinimalMember } from '../../../../../../types';
-import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
-import { expectAccount, saveMember } from '../../../../../member/test/fixtures/members';
-import { AppTestUtils } from '../../test/fixtures';
-import { AppData } from '../appData';
-import { PreventUpdateAppDataFile } from '../errors';
-import { AppDataRepository } from '../repository';
-import { saveAppData } from './fixtures';
+import build, { clearDatabase } from '../../../../../../../test/app.js';
+import { AuthenticatedUser, MinimalMember } from '../../../../../../types.js';
+import { APP_ITEMS_PREFIX } from '../../../../../../utils/config.js';
+import { expectAccount, saveMember } from '../../../../../member/test/fixtures/members.js';
+import { AppTestUtils } from '../../test/fixtures.js';
+import { AppData } from '../appData.js';
+import { PreventUpdateAppDataFile } from '../errors.js';
+import { AppDataRepository } from '../repository.js';
+import { saveAppData } from './fixtures.js';
 
 const testUtils = new AppTestUtils();
 

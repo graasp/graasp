@@ -1,9 +1,9 @@
 import { ItemType } from '@graasp/sdk';
 
-import { BaseLogger } from '../../../../logger';
-import { StorageService } from '../../../member/plugins/storage/service';
-import { HtmlService } from './service';
-import { HtmlValidator } from './validator';
+import { BaseLogger } from '../../../../logger.js';
+import { StorageService } from '../../../member/plugins/storage/service.js';
+import { HtmlService } from './service.js';
+import { HtmlValidator } from './validator.js';
 
 class MockValidator implements HtmlValidator {
   isExtensionAllowed() {

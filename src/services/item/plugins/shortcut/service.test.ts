@@ -3,15 +3,15 @@ import { v4 } from 'uuid';
 
 import { FolderItemFactory, ItemType } from '@graasp/sdk';
 
-import { MOCK_LOGGER } from '../../../../../test/app';
-import { Item } from '../../../../drizzle/types';
-import { MinimalMember } from '../../../../types';
-import { ThumbnailService } from '../../../thumbnail/service';
-import { ItemRepository } from '../../repository';
-import { ItemService } from '../../service';
-import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
-import { ItemThumbnailService } from '../thumbnail/service';
-import { ShortcutItemService } from './service';
+import { MOCK_LOGGER } from '../../../../../test/app.js';
+import { Item } from '../../../../drizzle/types.js';
+import { MinimalMember } from '../../../../types.js';
+import { ThumbnailService } from '../../../thumbnail/service.js';
+import { ItemRepository } from '../../repository.js';
+import { ItemService } from '../../service.js';
+import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch.js';
+import { ItemThumbnailService } from '../thumbnail/service.js';
+import { ShortcutItemService } from './service.js';
 
 const shortcutService = new ShortcutItemService(
   {} as unknown as ThumbnailService,

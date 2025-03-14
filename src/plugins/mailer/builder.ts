@@ -2,10 +2,10 @@ import { TFunction } from 'i18next';
 
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import i18next from '../../i18n';
-import { TRANSLATIONS } from '../../langs/constants';
-import { GRAASP_LANDING_PAGE_ORIGIN } from '../../utils/constants';
-import { type Mail } from './mailer.service';
+import i18next from '../../i18n.js';
+import { TRANSLATIONS } from '../../langs/constants.js';
+import { GRAASP_LANDING_PAGE_ORIGIN } from '../../utils/constants.js';
+import { type Mail } from './mailer.service.js';
 
 type CssStyles = { [key: string]: string };
 

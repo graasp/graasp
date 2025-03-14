@@ -2,11 +2,11 @@ import { v4 } from 'uuid';
 
 import { EmailFrequency, MemberFactory } from '@graasp/sdk';
 
-import { client, db } from '../../drizzle/db';
-import { MemberRaw } from '../../drizzle/types';
-import { MemberNotFound } from '../../utils/errors';
-import { MemberRepository } from './member.repository';
-import { expectMember, saveMember, saveMembers } from './test/fixtures/members';
+import { client, db } from '../../drizzle/db.js';
+import { MemberRaw } from '../../drizzle/types.js';
+import { MemberNotFound } from '../../utils/errors.js';
+import { MemberRepository } from './member.repository.js';
+import { expectMember, saveMember, saveMembers } from './test/fixtures/members.js';
 
 const memberRepository = new MemberRepository();
 

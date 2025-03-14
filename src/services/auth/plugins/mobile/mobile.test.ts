@@ -10,25 +10,25 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, RecaptchaAction } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../test/app';
-import { seedFromJson } from '../../../../../test/mocks/seed';
-import { TOKEN_REGEX, mockCaptchaValidationOnce } from '../../../../../test/utils';
-import { resolveDependency } from '../../../../di/utils';
-import { db } from '../../../../drizzle/db';
-import { accountsTable } from '../../../../drizzle/schema';
-import { MailerService } from '../../../../plugins/mailer/mailer.service';
-import { assertIsDefined } from '../../../../utils/assertions';
+import build, { clearDatabase } from '../../../../../test/app.js';
+import { seedFromJson } from '../../../../../test/mocks/seed.js';
+import { TOKEN_REGEX, mockCaptchaValidationOnce } from '../../../../../test/utils.js';
+import { resolveDependency } from '../../../../di/utils.js';
+import { db } from '../../../../drizzle/db.js';
+import { accountsTable } from '../../../../drizzle/schema.js';
+import { MailerService } from '../../../../plugins/mailer/mailer.service.js';
+import { assertIsDefined } from '../../../../utils/assertions.js';
 import {
   AUTH_TOKEN_JWT_SECRET,
   JWT_SECRET,
   MOBILE_DEEP_LINK_PROTOCOL,
   REFRESH_TOKEN_JWT_SECRET,
-} from '../../../../utils/config';
-import { MemberNotFound } from '../../../../utils/errors';
-import { assertIsMember } from '../../../authentication';
-import { expectMember, saveMember } from '../../../member/test/fixtures/members';
-import { MOCK_CAPTCHA } from '../captcha/test/utils';
-import { SHORT_TOKEN_PARAM } from '../passport';
+} from '../../../../utils/config.js';
+import { MemberNotFound } from '../../../../utils/errors.js';
+import { assertIsMember } from '../../../authentication.js';
+import { expectMember, saveMember } from '../../../member/test/fixtures/members.js';
+import { MOCK_CAPTCHA } from '../captcha/test/utils.js';
+import { SHORT_TOKEN_PARAM } from '../passport/index.js';
 
 // jest.mock('node-fetch');
 const memberRawRepository = {

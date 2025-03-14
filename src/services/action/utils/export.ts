@@ -5,8 +5,8 @@ import path from 'path';
 
 import { ExportActionsFormatting } from '@graasp/sdk';
 
-import { TMP_FOLDER } from '../../../utils/config';
-import { CannotWriteFileError } from './errors';
+import { TMP_FOLDER } from '../../../utils/config.js';
+import { CannotWriteFileError } from './errors.js';
 
 export const buildItemTmpFolder = (itemId: string): string =>
   path.join(TMP_FOLDER, 'export', itemId);

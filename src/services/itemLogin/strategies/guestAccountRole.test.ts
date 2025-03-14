@@ -2,8 +2,8 @@ import { FastifyRequest } from 'fastify';
 
 import { AccountType } from '@graasp/sdk';
 
-import { GuestFactory, MemberFactory } from '../../../../test/factories/member.factory';
-import { guestAccountRole } from './guestAccountRole';
+import { GuestFactory, MemberFactory } from '../../../../test/factories/member.factory.js';
+import { guestAccountRole } from './guestAccountRole.js';
 
 describe('Member Account Role', () => {
   it('Test inputs', async () => {

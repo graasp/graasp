@@ -1,7 +1,7 @@
-import { NotMemberOrGuest } from '../services/account/errors';
-import { isGuest, isMember } from '../services/authentication';
-import { AuthenticatedUser, MinimalGuest, MinimalMember } from '../types';
-import { UnexpectedError } from './errors';
+import { NotMemberOrGuest } from '../services/account/errors.js';
+import { isGuest, isMember } from '../services/authentication.js';
+import type { AuthenticatedUser, MinimalGuest, MinimalMember } from '../types.js';
+import { UnexpectedError } from './errors.js';
 
 export type Nullable<T> = T | null | undefined;
 

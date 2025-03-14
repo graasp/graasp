@@ -5,13 +5,13 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../../test/app';
-import { MinimalMember } from '../../../../../../types';
-import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
-import { saveMember } from '../../../../../member/test/fixtures/members';
-import { AppTestUtils } from '../../test/fixtures';
-import { AppActionRepository } from '../appAction.repository';
-import { saveAppActions } from './fixtures';
+import build, { clearDatabase } from '../../../../../../../test/app.js';
+import { MinimalMember } from '../../../../../../types.js';
+import { APP_ITEMS_PREFIX } from '../../../../../../utils/config.js';
+import { saveMember } from '../../../../../member/test/fixtures/members.js';
+import { AppTestUtils } from '../../test/fixtures.js';
+import { AppActionRepository } from '../appAction.repository.js';
+import { saveAppActions } from './fixtures.js';
 
 const testUtils = new AppTestUtils();
 

@@ -10,7 +10,7 @@
 import waitForExpect from 'wait-for-expect';
 import { CLOSED, OPEN, WebSocket } from 'ws';
 
-import { createServerInfo } from '../message';
+import { createServerInfo } from '../message.js';
 import {
   PortGenerator,
   createConnUrl,
@@ -18,7 +18,7 @@ import {
   createWsChannels,
   createWsClient,
   createWsClients,
-} from './test-utils';
+} from './test-utils.js';
 
 const portGen = new PortGenerator(4000);
 

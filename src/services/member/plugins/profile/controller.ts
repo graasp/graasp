@@ -2,14 +2,23 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { resolveDependency } from '../../../../di/utils';
-import { asDefined } from '../../../../utils/assertions';
-import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
-import { assertIsMember } from '../../../authentication';
-import { validatedMemberAccountRole } from '../../strategies/validatedMemberAccountRole';
-import { MemberProfileNotFound } from './errors';
-import { createOwnProfile, getOwnProfile, getProfileForMember, updateOwnProfile } from './schemas';
-import { MemberProfileService } from './service';
+import { resolveDependency } from '../../../../di/utils.js';
+import { asDefined } from '../../../../utils/assertions.js';
+import {
+  isAuthenticated,
+  matchOne,
+  optionalIsAuthenticated,
+} from '../../../auth/plugins/passport/index.js';
+import { assertIsMember } from '../../../authentication.js';
+import { validatedMemberAccountRole } from '../../strategies/validatedMemberAccountRole.js';
+import { MemberProfileNotFound } from './errors.js';
+import {
+  createOwnProfile,
+  getOwnProfile,
+  getProfileForMember,
+  updateOwnProfile,
+} from './schemas.js';
+import { MemberProfileService } from './service.js';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const memberProfileService = resolveDependency(MemberProfileService);

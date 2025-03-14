@@ -1,16 +1,16 @@
 import { singleton } from 'tsyringe';
 
-import { ClientManager, Context, PermissionLevel } from '@graasp/sdk';
+import { ClientManager, Context } from '@graasp/sdk';
 
-import { type DBConnection } from '../../../../drizzle/db';
-import { Item } from '../../../../drizzle/types';
-import { TRANSLATIONS } from '../../../../langs/constants';
-import { BaseLogger } from '../../../../logger';
-import { MailBuilder } from '../../../../plugins/mailer/builder';
-import { MailerService } from '../../../../plugins/mailer/mailer.service';
-import { AccountType, MinimalMember } from '../../../../types';
-import { ItemMembershipRepository } from '../../repository';
-import { MembershipRequestRepository } from './repository';
+import { type DBConnection } from '../../../../drizzle/db.js';
+import type { Item } from '../../../../drizzle/types.js';
+import { TRANSLATIONS } from '../../../../langs/constants.js';
+import { BaseLogger } from '../../../../logger.js';
+import { MailBuilder } from '../../../../plugins/mailer/builder.js';
+import { MailerService } from '../../../../plugins/mailer/mailer.service.js';
+import { AccountType, type MinimalMember } from '../../../../types.js';
+import { ItemMembershipRepository } from '../../repository.js';
+import { MembershipRequestRepository } from './repository.js';
 
 @singleton()
 export class MembershipRequestService {

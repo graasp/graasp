@@ -3,11 +3,11 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifySchema } from 'fastify';
 
-import { customType } from '../../../../plugins/typebox';
-import { errorSchemaRef } from '../../../../schemas/global';
-import { accountSchemaRef } from '../../../account/schemas';
-import { itemSchema, itemSchemaRef } from '../../schemas';
-import { geoCoordinateSchemaRef } from '../geolocation/schemas';
+import { customType } from '../../../../plugins/typebox.js';
+import { errorSchemaRef } from '../../../../schemas/global.js';
+import { accountSchemaRef } from '../../../account/schemas.js';
+import { itemSchema, itemSchemaRef } from '../../schemas.js';
+import { geoCoordinateSchemaRef } from '../geolocation/schemas.js';
 
 export const generateToken = {
   operationId: 'generateAppToken',

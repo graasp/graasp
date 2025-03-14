@@ -1,8 +1,8 @@
 import 'fastify';
 
-import { Item } from '../drizzle/types';
-import { WebsocketService } from '../services/websockets/ws-service';
-import { MaybeUser } from '../types';
+import type { Item } from '../drizzle/types.js';
+import { WebsocketService } from '../services/websockets/ws-service.js';
+import type { MaybeUser } from '../types.js';
 
 declare module 'fastify' {
   interface FastifyInstance {

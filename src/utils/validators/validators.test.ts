@@ -1,12 +1,12 @@
-import { RegexValidatorError, UndefinedVariableError, UrlMissingProtocolError } from './errors';
+import { RegexValidatorError, UndefinedVariableError, UrlMissingProtocolError } from './errors.js';
 import {
   ERROR_CONTAIN_NUMBER,
   ERROR_NUMBER,
   containsNumberFiveValidator,
   numberValidator,
-} from './fixtures';
-import { validateVar } from './utils';
-import { RegexValidator, UrlValidator } from './validators';
+} from './fixtures.js';
+import { validateVar } from './utils.js';
+import { RegexValidator, UrlValidator } from './validators.js';
 
 describe('Test Validators', () => {
   describe('UrlValidator', () => {

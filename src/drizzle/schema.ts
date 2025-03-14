@@ -1,6 +1,6 @@
 import { and, getTableColumns, isNotNull, sql } from 'drizzle-orm';
 import {
-  AnyPgColumn,
+  type AnyPgColumn,
   boolean,
   check,
   doublePrecision,
@@ -19,9 +19,14 @@ import {
 import { eq, isNull } from 'drizzle-orm/sql';
 import geoip from 'geoip-lite';
 
-import { AccountType, CompleteMember, ItemSettings, ItemTypeUnion } from '@graasp/sdk';
+import {
+  AccountType,
+  type CompleteMember,
+  type ItemSettings,
+  type ItemTypeUnion,
+} from '@graasp/sdk';
 
-import { customNumeric, ltree } from './customTypes';
+import { customNumeric, ltree } from './customTypes.js';
 import {
   accountTypeEnum,
   actionRequestExportFormatEnum,
@@ -34,7 +39,7 @@ import {
   permissionEnum,
   shortLinkPlatformEnum,
   tagCategoryEnum,
-} from './enums';
+} from './enums.js';
 
 export const categoriesTable = pgTable(
   'category',
@@ -634,7 +639,7 @@ export const actionsTable = pgTable(
   ],
 );
 
-export const itemGeolocations = pgTable(
+export const itemGeolocationsTable = pgTable(
   'item_geolocation',
   {
     id: uuid().primaryKey().defaultRandom().notNull(),

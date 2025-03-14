@@ -2,15 +2,15 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { resolveDependency } from '../../../../di/utils';
-import { db } from '../../../../drizzle/db';
-import { asDefined } from '../../../../utils/assertions';
-import { isAuthenticated, matchOne } from '../../../auth/plugins/passport';
-import { assertIsMember } from '../../../authentication';
-import { MemberRepository } from '../../member.repository';
-import { memberAccountRole } from '../../strategies/memberAccountRole';
-import { exportMemberData } from './schemas/schemas';
-import { ExportMemberDataService } from './service';
+import { resolveDependency } from '../../../../di/utils.js';
+import { db } from '../../../../drizzle/db.js';
+import { asDefined } from '../../../../utils/assertions.js';
+import { isAuthenticated, matchOne } from '../../../auth/plugins/passport/index.js';
+import { assertIsMember } from '../../../authentication.js';
+import { MemberRepository } from '../../member.repository.js';
+import { memberAccountRole } from '../../strategies/memberAccountRole.js';
+import { exportMemberData } from './schemas/schemas.js';
+import { ExportMemberDataService } from './service.js';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const exportMemberDataService = resolveDependency(ExportMemberDataService);

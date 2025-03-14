@@ -1,8 +1,8 @@
 import fastifyPassport from '@fastify/passport';
 import { FastifyRequest, RouteGenericInterface, RouteHandlerMethod } from 'fastify';
 
-import { InsufficientPermission } from '../../../../utils/errors';
-import { PassportStrategy } from './strategies';
+import { InsufficientPermission } from '../../../../utils/errors.js';
+import { PassportStrategy } from './strategies.js';
 
 /**
  * Passport Authenticate function will accept the authenticaction if at least one of the strategies is successful.

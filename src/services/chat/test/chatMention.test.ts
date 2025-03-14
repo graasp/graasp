@@ -5,13 +5,17 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, MentionStatus } from '@graasp/sdk';
 
-import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
-import { ChatMentionRaw } from '../../../drizzle/types';
-import { MaybeUser, MinimalMember } from '../../../types';
-import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
-import { saveMember } from '../../member/test/fixtures/members';
-import { ChatMentionNotFound, MemberCannotAccessMention } from '../errors';
-import { saveItemWithChatMessages } from './chatMessage.test';
+import build, {
+  clearDatabase,
+  mockAuthenticate,
+  unmockAuthenticate,
+} from '../../../../test/app.js';
+import { ChatMentionRaw } from '../../../drizzle/types.js';
+import { MaybeUser, MinimalMember } from '../../../types.js';
+import { ITEMS_ROUTE_PREFIX } from '../../../utils/config.js';
+import { saveMember } from '../../member/test/fixtures/members.js';
+import { ChatMentionNotFound, MemberCannotAccessMention } from '../errors.js';
+import { saveItemWithChatMessages } from './chatMessage.test.js';
 
 const adminRepository = AppDataSource.getRepository(ChatMention);
 

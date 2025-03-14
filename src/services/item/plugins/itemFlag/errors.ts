@@ -1,6 +1,6 @@
 import { ErrorFactory } from '@graasp/sdk';
 
-import { PLUGIN_NAME } from './constants';
+import { PLUGIN_NAME } from './constants.js';
 
 export const GraaspItemFlagsError = ErrorFactory(PLUGIN_NAME);
 export class FlagNotFound extends GraaspItemFlagsError {

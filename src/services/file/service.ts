@@ -1,14 +1,13 @@
 import { Readable } from 'stream';
-import { singleton } from 'tsyringe';
 
-import { Account } from '@graasp/sdk';
+import type { Account } from '@graasp/sdk';
 
-import { BaseLogger } from '../../logger';
-import { MaybeUser, MinimalMember } from '../../types';
-import { CachingService } from '../caching/service';
-import { LocalFileConfiguration, S3FileConfiguration } from './interfaces/configuration';
-import { FileRepository } from './interfaces/fileRepository';
-import { createSanitizedFile, sanitizeHtml } from './sanitize';
+import { BaseLogger } from '../../logger.js';
+import type { MaybeUser, MinimalMember } from '../../types.js';
+import { CachingService } from '../caching/service.js';
+import type { LocalFileConfiguration, S3FileConfiguration } from './interfaces/configuration.js';
+import type { FileRepository } from './interfaces/fileRepository.js';
+import { createSanitizedFile, sanitizeHtml } from './sanitize.js';
 import {
   CopyFileInvalidPathError,
   CopyFolderInvalidPathError,
@@ -17,7 +16,7 @@ import {
   DownloadFileInvalidParameterError,
   UploadFileInvalidParameterError,
   UploadFileUnexpectedError,
-} from './utils/errors';
+} from './utils/errors.js';
 
 export type FileServiceConfig = {
   s3?: S3FileConfiguration;

@@ -9,8 +9,8 @@ import {
   S3FileItemFactory,
 } from '@graasp/sdk';
 
-import { Item } from '../../../../drizzle/types';
-import { getFilenameFromItem } from './utils';
+import { Item } from '../../../../drizzle/types.js';
+import { getFilenameFromItem } from './utils.js';
 
 describe('File name', () => {
   it('get file name from local file item', () => {

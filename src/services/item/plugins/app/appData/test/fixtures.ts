@@ -2,8 +2,8 @@ import { v4 } from 'uuid';
 
 import { AppDataVisibility } from '@graasp/sdk';
 
-import { AccountRaw, Item } from '../../../../../../drizzle/types';
-import { MinimalMember } from '../../../../../../types';
+import { AccountRaw, Item } from '../../../../../../drizzle/types.js';
+import { MinimalMember } from '../../../../../../types.js';
 
 export const GRAASP_PUBLISHER_ID = 'publisher-id';
 

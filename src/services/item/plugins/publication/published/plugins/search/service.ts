@@ -1,18 +1,18 @@
-import { MultiSearchQuery } from 'meilisearch';
+import type { MultiSearchQuery } from 'meilisearch';
 import { singleton } from 'tsyringe';
 
-import { TagCategory, UUID } from '@graasp/sdk';
+import { TagCategory, type UUID } from '@graasp/sdk';
 
-import { TagRaw } from '../../../../../../../drizzle/types';
-import { BaseLogger } from '../../../../../../../logger';
+import type { TagRaw } from '../../../../../../../drizzle/types.js';
+import { BaseLogger } from '../../../../../../../logger.js';
 import {
   GET_MOST_LIKED_ITEMS_MAXIMUM,
   GET_MOST_RECENT_ITEMS_MAXIMUM,
-} from '../../../../../../../utils/config';
-import { ItemService } from '../../../../../service';
-import { ItemPublishedRepository } from '../../itemPublished.repository';
-import { ItemPublishedService } from '../../itemPublished.service';
-import { MeiliSearchWrapper } from './meilisearch';
+} from '../../../../../../../utils/config.js';
+import { ItemService } from '../../../../../service.js';
+import { ItemPublishedRepository } from '../../itemPublished.repository.js';
+import { ItemPublishedService } from '../../itemPublished.service.js';
+import { MeiliSearchWrapper } from './meilisearch.js';
 
 type SearchFilters = Partial<{
   query?: string;

@@ -2,21 +2,21 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { PermissionLevel } from '@graasp/sdk';
 
-import { resolveDependency } from '../../../../../di/utils';
-import { db } from '../../../../../drizzle/db';
-import { asDefined } from '../../../../../utils/assertions';
+import { resolveDependency } from '../../../../../di/utils.js';
+import { db } from '../../../../../drizzle/db.js';
+import { asDefined } from '../../../../../utils/assertions.js';
 import {
   isAuthenticated,
   matchOne,
   optionalIsAuthenticated,
-} from '../../../../auth/plugins/passport';
-import { assertIsMember } from '../../../../authentication';
-import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
-import { ItemService } from '../../../service';
-import { PublicationService } from '../publicationState/publication.service';
-import { ItemPublishedService } from './itemPublished.service';
-import graaspSearchPlugin from './plugins/search';
-import { getCollectionsForMember, getInformations, publishItem, unpublishItem } from './schemas';
+} from '../../../../auth/plugins/passport/index.js';
+import { assertIsMember } from '../../../../authentication.js';
+import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole.js';
+import { ItemService } from '../../../service.js';
+import { PublicationService } from '../publicationState/publication.service.js';
+import { ItemPublishedService } from './itemPublished.service.js';
+import graaspSearchPlugin from './plugins/search/index.js';
+import { getCollectionsForMember, getInformations, publishItem, unpublishItem } from './schemas.js';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const itemPublishedService = resolveDependency(ItemPublishedService);

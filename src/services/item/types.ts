@@ -1,6 +1,6 @@
 import { ItemType, PermissionLevel, UnionOfConst } from '@graasp/sdk';
 
-import { Account } from '../../drizzle/types';
+import { Account } from '../../drizzle/types.js';
 
 export enum SortBy {
   ItemType = 'item.type',

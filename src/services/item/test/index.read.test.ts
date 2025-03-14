@@ -11,12 +11,16 @@ import {
   PermissionLevel,
 } from '@graasp/sdk';
 
-import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
-import { Item } from '../../../drizzle/types';
-import { ItemNotFound, MemberCannotAccess } from '../../../utils/errors';
-import { saveMember } from '../../member/test/fixtures/members';
-import { PackedItem } from '../ItemWrapper';
-import { Ordering, SortBy } from '../types';
+import build, {
+  clearDatabase,
+  mockAuthenticate,
+  unmockAuthenticate,
+} from '../../../../test/app.js';
+import { Item } from '../../../drizzle/types.js';
+import { ItemNotFound, MemberCannotAccess } from '../../../utils/errors.js';
+import { saveMember } from '../../member/test/fixtures/members.js';
+import { PackedItem } from '../ItemWrapper.js';
+import { Ordering, SortBy } from '../types.js';
 
 const rawRepository = AppDataSource.getRepository(ItemVisibility);
 const testUtils = new ItemTestUtils();

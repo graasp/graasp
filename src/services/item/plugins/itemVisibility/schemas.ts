@@ -3,10 +3,10 @@ import { StatusCodes } from 'http-status-codes';
 
 import { ItemVisibilityType } from '@graasp/sdk';
 
-import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
-import { errorSchemaRef } from '../../../../schemas/global';
-import { nullableMemberSchemaRef } from '../../../member/schemas';
-import { itemSchemaRef } from '../../schemas';
+import { customType, registerSchemaAsRef } from '../../../../plugins/typebox.js';
+import { errorSchemaRef } from '../../../../schemas/global.js';
+import { nullableMemberSchemaRef } from '../../../member/schemas.js';
+import { itemSchemaRef } from '../../schemas.js';
 
 export const itemVisibilitySchemaRef = registerSchemaAsRef(
   'itemVisibility',

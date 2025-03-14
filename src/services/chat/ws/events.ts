@@ -1,7 +1,7 @@
 /**
  * Chat websocket events are registered under these topics
  */
-import { ChatMessageRaw } from '../../../drizzle/types';
+import { ChatMessageRaw } from '../../../drizzle/types.js';
 
 // item chat messages
 export const itemChatTopic = 'chat/item';

@@ -7,16 +7,16 @@
  * ! In this file, we distinguish WS channels (part of the {@link WebSocketChannels} abstraction)
  * and Redis channels (from the Redis Pub/Sub mechanism which handles inter-instance communication) !
  */
-import { JTDSchemaType } from 'ajv/dist/core';
-import { Ajv } from 'ajv/dist/jtd';
-import { Redis, RedisOptions } from 'ioredis';
+import type { JTDSchemaType } from 'ajv/dist/core.js';
+import { Ajv } from 'ajv/dist/jtd.js';
+import { Redis, type RedisOptions } from 'ioredis';
 
-import { FastifyBaseLogger } from 'fastify';
+import type { FastifyBaseLogger } from 'fastify';
 
 import { Websocket } from '@graasp/sdk';
 
-import { serverMessageSchema } from './schemas';
-import { WebSocketChannels } from './ws-channels';
+import { serverMessageSchema } from './schemas/index.js';
+import { WebSocketChannels } from './ws-channels.js';
 
 /**
  * Represents deserialized messages sent over Redis

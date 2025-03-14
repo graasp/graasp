@@ -1,4 +1,4 @@
-export { default as plugin } from './plugin';
-export { PassportStrategy } from './strategies';
-export * from './preHandlers';
-export * from './constants';
+export { default as plugin } from './plugin.js';
+export { PassportStrategy } from './strategies.js';
+export * from './preHandlers.js';
+export * from './constants.js';

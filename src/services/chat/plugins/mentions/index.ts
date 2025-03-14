@@ -2,12 +2,12 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { resolveDependency } from '../../../../di/utils';
-import { db } from '../../../../drizzle/db';
-import { asDefined } from '../../../../utils/assertions';
-import { isAuthenticated } from '../../../auth/plugins/passport';
-import { clearAllMentions, deleteMention, getOwnMentions, patchMention } from './schemas';
-import { MentionService } from './service';
+import { resolveDependency } from '../../../../di/utils.js';
+import { db } from '../../../../drizzle/db.js';
+import { asDefined } from '../../../../utils/assertions.js';
+import { isAuthenticated } from '../../../auth/plugins/passport/index.js';
+import { clearAllMentions, deleteMention, getOwnMentions, patchMention } from './schemas.js';
+import { MentionService } from './service.js';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   // isolate plugin content using fastify.register to ensure that the action hook from chat_message will not be called when using mention routes

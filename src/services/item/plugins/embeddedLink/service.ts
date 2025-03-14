@@ -2,37 +2,37 @@ import { captureException } from '@sentry/node';
 import fetch from 'node-fetch';
 import { inject, singleton } from 'tsyringe';
 
-import { FastifyBaseLogger } from 'fastify';
+import type { FastifyBaseLogger } from 'fastify';
 
 import {
-  ItemGeolocation,
+  type ItemGeolocation,
   ItemType,
-  LinkItemExtra,
-  LinkItemExtraProperties,
-  UUID,
+  type LinkItemExtra,
+  type LinkItemExtraProperties,
+  type UUID,
 } from '@graasp/sdk';
 
-import { IFRAMELY_API_DI_KEY } from '../../../../di/constants';
-import { DBConnection } from '../../../../drizzle/db';
-import { Item } from '../../../../drizzle/types';
-import { BaseLogger } from '../../../../logger';
-import { MinimalMember } from '../../../../types';
-import { AuthorizationService } from '../../../authorization';
-import { ItemMembershipRepository } from '../../../itemMembership/repository';
-import { ThumbnailService } from '../../../thumbnail/service';
-import { ItemWrapperService } from '../../ItemWrapper';
-import { BasicItemService } from '../../basic.service';
-import { EmbeddedLinkItem, isItemType } from '../../discrimination';
-import { WrongItemTypeError } from '../../errors';
-import { ItemRepository } from '../../repository';
-import { ItemService } from '../../service';
-import { ItemGeolocationRepository } from '../geolocation/repository';
-import { ItemVisibilityRepository } from '../itemVisibility/repository';
-import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
-import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
-import { ItemThumbnailService } from '../thumbnail/service';
-import { InvalidUrl } from './errors';
-import { isValidUrl } from './utils';
+import { IFRAMELY_API_DI_KEY } from '../../../../di/constants.js';
+import type { DBConnection } from '../../../../drizzle/db.js';
+import type { Item } from '../../../../drizzle/types.js';
+import { BaseLogger } from '../../../../logger.js';
+import type { MinimalMember } from '../../../../types.js';
+import { AuthorizationService } from '../../../authorization.js';
+import { ItemMembershipRepository } from '../../../itemMembership/repository.js';
+import { ThumbnailService } from '../../../thumbnail/service.js';
+import { ItemWrapperService } from '../../ItemWrapper.js';
+import { BasicItemService } from '../../basic.service.js';
+import { type EmbeddedLinkItem, isItemType } from '../../discrimination.js';
+import { WrongItemTypeError } from '../../errors.js';
+import { ItemRepository } from '../../repository.js';
+import { ItemService } from '../../service.js';
+import { ItemGeolocationRepository } from '../geolocation/geolocation.repository.js';
+import { ItemVisibilityRepository } from '../itemVisibility/repository.js';
+import { ItemPublishedRepository } from '../publication/published/itemPublished.repository.js';
+import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch.js';
+import { ItemThumbnailService } from '../thumbnail/service.js';
+import { InvalidUrl } from './errors.js';
+import { isValidUrl } from './utils.js';
 
 type IframelyLink = {
   rel: string[];

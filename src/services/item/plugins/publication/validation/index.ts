@@ -4,23 +4,23 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { PermissionLevel, PublicationStatus } from '@graasp/sdk';
 
-import { resolveDependency } from '../../../../../di/utils';
-import { db } from '../../../../../drizzle/db';
-import { asDefined } from '../../../../../utils/assertions';
-import { isAuthenticated, matchOne } from '../../../../auth/plugins/passport';
-import { assertIsMember } from '../../../../authentication';
-import { memberAccountRole } from '../../../../member/strategies/memberAccountRole';
-import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
-import { BasicItemService } from '../../../basic.service';
+import { resolveDependency } from '../../../../../di/utils.js';
+import { db } from '../../../../../drizzle/db.js';
+import { asDefined } from '../../../../../utils/assertions.js';
+import { isAuthenticated, matchOne } from '../../../../auth/plugins/passport/index.js';
+import { assertIsMember } from '../../../../authentication.js';
+import { memberAccountRole } from '../../../../member/strategies/memberAccountRole.js';
+import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole.js';
+import { BasicItemService } from '../../../basic.service.js';
 import {
   ItemOpFeedbackErrorEvent,
   ItemOpFeedbackEvent,
   memberItemsTopic,
-} from '../../../ws/events';
-import { FolderItemService } from '../../folder/service';
-import { ItemPublishedService } from '../published/itemPublished.service';
-import { getLatestItemValidationGroup, validateItem } from './schemas';
-import { ItemValidationService } from './service';
+} from '../../../ws/events.js';
+import { FolderItemService } from '../../folder/service.js';
+import { ItemPublishedService } from '../published/itemPublished.service.js';
+import { getLatestItemValidationGroup, validateItem } from './schemas.js';
+import { ItemValidationService } from './service.js';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { websockets } = fastify;

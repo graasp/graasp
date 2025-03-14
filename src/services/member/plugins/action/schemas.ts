@@ -2,7 +2,7 @@ import { Type } from '@sinclair/typebox';
 
 import { FastifySchema } from 'fastify';
 
-import { customType } from '../../../../plugins/typebox';
+import { customType } from '../../../../plugins/typebox.js';
 
 // schema for removing all actions of a member
 export const deleteAllById = {

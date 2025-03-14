@@ -2,9 +2,9 @@ import { eq } from 'drizzle-orm';
 
 import { ItemValidationProcess, ItemValidationStatus } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../../drizzle/db';
-import { type ItemValidation, itemValidations } from '../../../../../drizzle/schema';
-import { ItemValidationGroupNotFound, ItemValidationNotFound } from './errors';
+import { DBConnection } from '../../../../../drizzle/db.js';
+import { type ItemValidation, itemValidations } from '../../../../../drizzle/schema.js';
+import { ItemValidationGroupNotFound, ItemValidationNotFound } from './errors.js';
 
 export class ItemValidationRepository {
   async get(db: DBConnection, id: string): Promise<ItemValidation> {

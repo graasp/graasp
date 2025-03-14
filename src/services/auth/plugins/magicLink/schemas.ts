@@ -3,9 +3,9 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifySchema } from 'fastify';
 
-import { customType } from '../../../../plugins/typebox';
-import { errorSchemaRef } from '../../../../schemas/global';
-import { SHORT_TOKEN_PARAM } from '../passport';
+import { customType } from '../../../../plugins/typebox.js';
+import { errorSchemaRef } from '../../../../schemas/global.js';
+import { SHORT_TOKEN_PARAM } from '../passport/index.js';
 
 export const register = {
   operationId: 'register',

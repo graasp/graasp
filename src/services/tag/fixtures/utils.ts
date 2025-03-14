@@ -2,9 +2,9 @@ import { and, eq } from 'drizzle-orm/sql';
 
 import { TagCategory, TagFactory } from '@graasp/sdk';
 
-import { db } from '../../../drizzle/db';
-import { tags } from '../../../drizzle/schema';
-import { assertIsDefined } from '../../../utils/assertions';
+import { db } from '../../../drizzle/db.js';
+import { tags } from '../../../drizzle/schema.js';
+import { assertIsDefined } from '../../../utils/assertions.js';
 
 /**
  * Add and return a tag, does not throw in case of duplicata

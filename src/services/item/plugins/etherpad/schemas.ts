@@ -5,9 +5,9 @@ import { FastifySchema } from 'fastify';
 
 import { EtherpadPermission } from '@graasp/sdk';
 
-import { customType } from '../../../../plugins/typebox';
-import { errorSchemaRef } from '../../../../schemas/global';
-import { itemSchema, itemSchemaRef } from '../../schemas';
+import { customType } from '../../../../plugins/typebox.js';
+import { errorSchemaRef } from '../../../../schemas/global.js';
+import { itemSchema, itemSchemaRef } from '../../schemas.js';
 
 const readerPermissionType = Type.Union([
   Type.Literal(EtherpadPermission.Read),

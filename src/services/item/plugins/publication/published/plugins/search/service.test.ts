@@ -1,10 +1,10 @@
 import { v4 } from 'uuid';
 
-import { MOCK_LOGGER } from '../../../../../../../../test/app';
-import HookManager from '../../../../../../../utils/hook';
-import { ItemService } from '../../../../../service';
-import { MeiliSearchWrapper } from './meilisearch';
-import { SearchService } from './service';
+import { MOCK_LOGGER } from '../../../../../../../../test/app.js';
+import HookManager from '../../../../../../../utils/hook.js';
+import { ItemService } from '../../../../../service.js';
+import { MeiliSearchWrapper } from './meilisearch.js';
+import { SearchService } from './service.js';
 
 const meilisearchClient = {
   search: jest.fn(async () => {

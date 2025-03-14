@@ -1,8 +1,8 @@
 import { Readable } from 'stream';
 
-import { FastifyBaseLogger } from 'fastify';
+import type { FastifyBaseLogger } from 'fastify';
 
-import { FileItemType } from '@graasp/sdk';
+import type { FileItemType } from '@graasp/sdk';
 
 export type FileUpload = {
   fileStream: Readable;

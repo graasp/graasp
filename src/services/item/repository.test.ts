@@ -13,24 +13,24 @@ import {
   buildPathFromIds,
 } from '@graasp/sdk';
 
-import { ItemFactory } from '../../../test/factories/item.factory';
-import { buildFile, seedFromJson } from '../../../test/mocks/seed';
-import { db } from '../../drizzle/db';
-import { itemsRaw, publishedItems, recycledItemDatas } from '../../drizzle/schema';
-import { Item } from '../../drizzle/types';
-import { assertIsDefined } from '../../utils/assertions';
+import { ItemFactory } from '../../../test/factories/item.factory.js';
+import { buildFile, seedFromJson } from '../../../test/mocks/seed.js';
+import { db } from '../../drizzle/db.js';
+import { itemsRaw, publishedItems, recycledItemDatas } from '../../drizzle/schema.js';
+import { Item } from '../../drizzle/types.js';
+import { assertIsDefined } from '../../utils/assertions.js';
 import {
   HierarchyTooDeep,
   InvalidMoveTarget,
   ItemNotFolder,
   ItemNotFound,
   TooManyDescendants,
-} from '../../utils/errors';
-import { expectMember } from '../member/test/fixtures/members';
-import { ItemPublishedRepository } from './plugins/publication/published/itemPublished.repository';
-import { RecycledItemDataRepository } from './plugins/recycled/repository';
-import { ItemRepository } from './repository';
-import { expectItem, expectManyItems } from './test/fixtures/items';
+} from '../../utils/errors.js';
+import { expectMember } from '../member/test/fixtures/members.js';
+import { ItemPublishedRepository } from './plugins/publication/published/itemPublished.repository.js';
+import { RecycledItemDataRepository } from './plugins/recycled/repository.js';
+import { ItemRepository } from './repository.js';
+import { expectItem, expectManyItems } from './test/fixtures/items.js';
 
 const alphabeticalOrder = (a: string, b: string) => a.localeCompare(b);
 

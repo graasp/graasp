@@ -1,4 +1,4 @@
-import { IllegalArgumentException } from './errors';
+import { IllegalArgumentException } from './errors.js';
 
 export enum OpEntryNotFound {
   CREATE = 'insertion',

@@ -3,13 +3,13 @@ import { Strategy as CustomStrategy } from 'passport-custom';
 import fastifyPassport from '@fastify/passport';
 import { fastify } from 'fastify';
 
-import registerAppPlugins from '../src/app';
-import { resetDependencies } from '../src/di/utils';
-import { DBConnection } from '../src/drizzle/db';
-import { BaseLogger } from '../src/logger';
-import ajvFormats from '../src/schemas/ajvFormats';
-import { PassportStrategy } from '../src/services/auth/plugins/passport';
-import { DB_TEST_SCHEMA } from './constants';
+import registerAppPlugins from '../src/app.js';
+import { resetDependencies } from '../src/di/utils.js';
+import { DBConnection } from '../src/drizzle/db.js';
+import { BaseLogger } from '../src/logger.js';
+import ajvFormats from '../src/schemas/ajvFormats.js';
+import { PassportStrategy } from '../src/services/auth/plugins/passport/index.js';
+import { DB_TEST_SCHEMA } from './constants.js';
 
 const originalSessionStrategy = fastifyPassport.strategy(PassportStrategy.Session)!;
 let originalStrictSessionStrategy;

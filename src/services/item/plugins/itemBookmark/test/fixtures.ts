@@ -1,5 +1,5 @@
-import { Item, ItemBookmarkRaw } from '../../../../../drizzle/types';
-import { MinimalMember } from '../../../../../types';
+import { Item, ItemBookmarkRaw } from '../../../../../drizzle/types.js';
+import { MinimalMember } from '../../../../../types.js';
 
 export const saveItemFavorites = async ({
   items,

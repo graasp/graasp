@@ -5,12 +5,12 @@ import { FastifySchema } from 'fastify';
 
 import { ItemType, MAX_TARGETS_FOR_READ_REQUEST, PermissionLevel } from '@graasp/sdk';
 
-import { customType, registerSchemaAsRef } from '../../plugins/typebox';
-import { errorSchemaRef } from '../../schemas/global';
-import { nullableMemberSchemaRef } from '../member/schemas';
-import { ITEMS_PAGE_SIZE } from './constants';
-import { itemVisibilitySchemaRef } from './plugins/itemVisibility/schemas';
-import { Ordering, SortBy } from './types';
+import { customType, registerSchemaAsRef } from '../../plugins/typebox.js';
+import { errorSchemaRef } from '../../schemas/global.js';
+import { nullableMemberSchemaRef } from '../member/schemas.js';
+import { ITEMS_PAGE_SIZE } from './constants.js';
+import { itemVisibilitySchemaRef } from './plugins/itemVisibility/schemas.js';
+import { Ordering, SortBy } from './types.js';
 
 export const packedItemSchemaRef = registerSchemaAsRef(
   'packedItem',

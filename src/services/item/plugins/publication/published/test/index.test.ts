@@ -10,24 +10,24 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../../../test/app';
-import { resolveDependency } from '../../../../../../di/utils';
-import { Item, ItemPublishedRaw } from '../../../../../../drizzle/types';
-import { MailerService } from '../../../../../../plugins/mailer/mailer.service';
-import { ITEMS_ROUTE_PREFIX } from '../../../../../../utils/config';
-import { ItemNotFound, MemberCannotAdminItem } from '../../../../../../utils/errors';
-import { saveMember } from '../../../../../member/test/fixtures/members';
+} from '../../../../../../../test/app.js';
+import { resolveDependency } from '../../../../../../di/utils.js';
+import { Item, ItemPublishedRaw } from '../../../../../../drizzle/types.js';
+import { MailerService } from '../../../../../../plugins/mailer/mailer.service.js';
+import { ITEMS_ROUTE_PREFIX } from '../../../../../../utils/config.js';
+import { ItemNotFound, MemberCannotAdminItem } from '../../../../../../utils/errors.js';
+import { saveMember } from '../../../../../member/test/fixtures/members.js';
 import {
   ItemTestUtils,
   expectItem,
   expectManyItems,
   expectManyPackedItems,
-} from '../../../../test/fixtures/items';
-import { ItemVisibilityNotFound } from '../../../itemVisibility/errors';
-import { saveItemValidation } from '../../validation/test/utils';
-import { ItemPublishedNotFound } from '../errors';
-import { ItemPublishedRepository } from '../itemPublished.repository';
-import { MeiliSearchWrapper } from '../plugins/search/meilisearch';
+} from '../../../../test/fixtures/items.js';
+import { ItemVisibilityNotFound } from '../../../itemVisibility/errors.js';
+import { saveItemValidation } from '../../validation/test/utils.js';
+import { ItemPublishedNotFound } from '../errors.js';
+import { ItemPublishedRepository } from '../itemPublished.repository.js';
+import { MeiliSearchWrapper } from '../plugins/search/meilisearch.js';
 
 const testUtils = new ItemTestUtils();
 

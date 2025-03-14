@@ -9,20 +9,20 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod } from '@graasp/sdk';
 
-import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../test/app';
-import { buildFile, seedFromJson } from '../../../test/mocks/seed';
-import { resolveDependency } from '../../di/utils';
-import { db } from '../../drizzle/db';
-import { accountsTable } from '../../drizzle/schema';
-import { MailerService } from '../../plugins/mailer/mailer.service';
-import { assertIsDefined } from '../../utils/assertions';
-import { EMAIL_CHANGE_JWT_SECRET } from '../../utils/config';
-import { assertIsMember } from '../authentication';
+import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../test/app.js';
+import { buildFile, seedFromJson } from '../../../test/mocks/seed.js';
+import { resolveDependency } from '../../di/utils.js';
+import { db } from '../../drizzle/db.js';
+import { accountsTable } from '../../drizzle/schema.js';
+import { MailerService } from '../../plugins/mailer/mailer.service.js';
+import { assertIsDefined } from '../../utils/assertions.js';
+import { EMAIL_CHANGE_JWT_SECRET } from '../../utils/config.js';
+import { assertIsMember } from '../authentication.js';
 import {
   FILE_METADATA_MAX_PAGE_SIZE,
   FILE_METADATA_MIN_PAGE,
   FILE_METADATA_MIN_PAGE_SIZE,
-} from './constants';
+} from './constants.js';
 
 jest.mock('node-fetch');
 

@@ -18,21 +18,21 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../test/app';
-import { BaseLogger } from '../../../../logger';
-import { MailerService } from '../../../../plugins/mailer/mailer.service';
-import { MemberCannotAccess, UnauthorizedMember } from '../../../../utils/errors';
-import { saveActions } from '../../../action/test/fixtures/actions';
-import { MemberService } from '../../../member/member.service';
-import { saveMember } from '../../../member/test/fixtures/members';
-import { ThumbnailService } from '../../../thumbnail/service';
-import { ItemService } from '../../service';
-import { ItemTestUtils, expectItem } from '../../test/fixtures/items';
-import { saveAppActions } from '../app/appAction/test/fixtures';
-import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
-import { ItemThumbnailService } from '../thumbnail/service';
-import { ActionItemService } from './action.service';
-import { ItemActionType } from './utils';
+} from '../../../../../test/app.js';
+import { BaseLogger } from '../../../../logger.js';
+import { MailerService } from '../../../../plugins/mailer/mailer.service.js';
+import { MemberCannotAccess, UnauthorizedMember } from '../../../../utils/errors.js';
+import { saveActions } from '../../../action/test/fixtures/actions.js';
+import { MemberService } from '../../../member/member.service.js';
+import { saveMember } from '../../../member/test/fixtures/members.js';
+import { ThumbnailService } from '../../../thumbnail/service.js';
+import { ItemService } from '../../service.js';
+import { ItemTestUtils, expectItem } from '../../test/fixtures/items.js';
+import { saveAppActions } from '../app/appAction/test/fixtures.js';
+import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch.js';
+import { ItemThumbnailService } from '../thumbnail/service.js';
+import { ActionItemService } from './action.service.js';
+import { ItemActionType } from './utils.js';
 
 const itemService = new ItemService(
   {} as ThumbnailService,

@@ -2,11 +2,11 @@ import { Strategy } from 'passport-local';
 
 import { Authenticator } from '@fastify/passport';
 
-import { db } from '../../../../../drizzle/db';
-import { UnauthorizedMember } from '../../../../../utils/errors';
-import { MemberPasswordService } from '../../password/service';
-import { PassportStrategy } from '../strategies';
-import { CustomStrategyOptions } from '../types';
+import { db } from '../../../../../drizzle/db.js';
+import { UnauthorizedMember } from '../../../../../utils/errors.js';
+import { MemberPasswordService } from '../../password/service.js';
+import { PassportStrategy } from '../strategies.js';
+import { CustomStrategyOptions } from '../types.js';
 
 export default (
   passport: Authenticator,

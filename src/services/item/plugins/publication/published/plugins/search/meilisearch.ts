@@ -5,43 +5,43 @@ import {
   MeiliSearch,
   MeiliSearchApiError,
   MeiliSearchTimeOutError,
-  MultiSearchParams,
-  TypoTolerance,
+  type MultiSearchParams,
+  type TypoTolerance,
 } from 'meilisearch';
 import { singleton } from 'tsyringe';
 
 import {
-  DocumentItemExtra,
-  IndexItem,
+  type DocumentItemExtra,
+  type IndexItem,
   ItemType,
   ItemVisibilityType,
-  LocalFileItemExtra,
+  type LocalFileItemExtra,
   MimeTypes,
-  S3FileItemExtra,
+  type S3FileItemExtra,
   TagCategory,
 } from '@graasp/sdk';
 
-import { DBConnection, db } from '../../../../../../../drizzle/db';
-import { items } from '../../../../../../../drizzle/schema';
-import {
+import { type DBConnection, db } from '../../../../../../../drizzle/db.js';
+import { items } from '../../../../../../../drizzle/schema.js';
+import type {
   Item,
   ItemPublishedWithItemWithCreator,
   ItemWithCreator,
   TagRaw,
-} from '../../../../../../../drizzle/types';
-import { BaseLogger } from '../../../../../../../logger';
-import { MEILISEARCH_STORE_LEGACY_PDF_CONTENT } from '../../../../../../../utils/config';
-import FileService from '../../../../../../file/service';
-import { isItemType } from '../../../../../discrimination';
-import { ItemRepository } from '../../../../../repository';
-import { readPdfContent } from '../../../../../utils';
-import { ItemLikeRepository } from '../../../../itemLike/repository';
-import { ItemVisibilityRepository } from '../../../../itemVisibility/repository';
-import { ItemTagRepository } from '../../../../tag/ItemTag.repository';
-import { stripHtml } from '../../../validation/utils';
-import { ItemPublishedNotFound } from '../../errors';
-import { ItemPublishedRepository } from '../../itemPublished.repository';
-import { Hit } from './schemas';
+} from '../../../../../../../drizzle/types.js';
+import { BaseLogger } from '../../../../../../../logger.js';
+import { MEILISEARCH_STORE_LEGACY_PDF_CONTENT } from '../../../../../../../utils/config.js';
+import FileService from '../../../../../../file/service.js';
+import { isItemType } from '../../../../../discrimination.js';
+import { ItemRepository } from '../../../../../repository.js';
+import { readPdfContent } from '../../../../../utils.js';
+import { ItemLikeRepository } from '../../../../itemLike/itemLike.repository.js';
+import { ItemVisibilityRepository } from '../../../../itemVisibility/repository.js';
+import { ItemTagRepository } from '../../../../tag/ItemTag.repository.js';
+import { stripHtml } from '../../../validation/utils.js';
+import { ItemPublishedNotFound } from '../../errors.js';
+import { ItemPublishedRepository } from '../../itemPublished.repository.js';
+import type { Hit } from './schemas.js';
 
 const ACTIVE_INDEX = 'itemIndex';
 const ROTATING_INDEX = 'itemIndex_tmp'; // Used when reindexing

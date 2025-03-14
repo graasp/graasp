@@ -1,20 +1,24 @@
 import { StatusCodes } from 'http-status-codes';
 
 import { fastifyMultipart } from '@fastify/multipart';
-import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
+import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { MAX_THUMBNAIL_SIZE } from '@graasp/sdk';
 
-import { resolveDependency } from '../../../../di/utils';
-import { db } from '../../../../drizzle/db';
-import { asDefined } from '../../../../utils/assertions';
-import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
-import { assertIsMember } from '../../../authentication';
-import { UploadEmptyFileError, UploadFileUnexpectedError } from '../../../file/utils/errors';
-import { validatedMemberAccountRole } from '../../strategies/validatedMemberAccountRole';
-import { download, upload } from './schemas';
-import { MemberThumbnailService } from './service';
-import { UploadFileNotImageError } from './utils/errors';
+import { resolveDependency } from '../../../../di/utils.js';
+import { db } from '../../../../drizzle/db.js';
+import { asDefined } from '../../../../utils/assertions.js';
+import {
+  isAuthenticated,
+  matchOne,
+  optionalIsAuthenticated,
+} from '../../../auth/plugins/passport/index.js';
+import { assertIsMember } from '../../../authentication.js';
+import { UploadEmptyFileError, UploadFileUnexpectedError } from '../../../file/utils/errors.js';
+import { validatedMemberAccountRole } from '../../strategies/validatedMemberAccountRole.js';
+import { download, upload } from './schemas.js';
+import { MemberThumbnailService } from './service.js';
+import { UploadFileNotImageError } from './utils/errors.js';
 
 type GraaspThumbnailsOptions = {
   shouldRedirectOnDownload?: boolean;

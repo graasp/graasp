@@ -1,10 +1,10 @@
 import { fastifyHelmet } from '@fastify/helmet';
-import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
+import { type TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import { fastify } from 'fastify';
 
-import registerAppPlugins from './app';
-import ajvFormats from './schemas/ajvFormats';
-import { initSentry } from './sentry';
+import registerAppPlugins from './app.js';
+import ajvFormats from './schemas/ajvFormats.js';
+import { initSentry } from './sentry.js';
 import {
   APP_VERSION,
   CORS_ORIGIN_REGEX,
@@ -13,8 +13,8 @@ import {
   HOSTNAME,
   PORT,
   PROD,
-} from './utils/config';
-import { GREETING } from './utils/constants';
+} from './utils/config.js';
+import { GREETING } from './utils/constants.js';
 
 export const instance = fastify({
   // allows to remove logging of incomming requests

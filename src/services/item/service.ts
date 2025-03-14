@@ -9,18 +9,18 @@ import {
   MAX_DESCENDANTS_FOR_MOVE,
   MAX_ITEM_NAME_LENGTH,
   MAX_NUMBER_OF_CHILDREN,
-  Paginated,
-  Pagination,
+  type Paginated,
+  type Pagination,
   PermissionLevel,
   PermissionLevelCompare,
-  UUID,
+  type UUID,
   buildPathFromIds,
   getIdsFromPath,
   getParentFromPath,
 } from '@graasp/sdk';
 
-import { DBConnection } from '../../drizzle/db';
-import {
+import type { DBConnection } from '../../drizzle/db.js';
+import type {
   Item,
   ItemGeolocationRaw,
   ItemMembershipRaw,
@@ -28,9 +28,9 @@ import {
   ItemTypeUnion,
   ItemWithCreator,
   MinimalItemForInsert,
-} from '../../drizzle/types';
-import { BaseLogger } from '../../logger';
-import { AuthenticatedUser, MaybeUser, MinimalMember } from '../../types';
+} from '../../drizzle/types.js';
+import { BaseLogger } from '../../logger.js';
+import type { AuthenticatedUser, MaybeUser, MinimalMember } from '../../types.js';
 import {
   CannotReorderRootItem,
   InvalidMembership,
@@ -39,27 +39,27 @@ import {
   TooManyChildren,
   TooManyDescendants,
   UnauthorizedMember,
-} from '../../utils/errors';
-import HookManager from '../../utils/hook';
-import { AuthorizationService } from '../authorization';
+} from '../../utils/errors.js';
+import HookManager from '../../utils/hook.js';
+import { AuthorizationService } from '../authorization.js';
 import {
   filterOutItems,
   filterOutPackedDescendants,
   filterOutPackedItems,
-} from '../authorization.utils';
-import { ItemMembershipRepository } from '../itemMembership/repository';
-import { ThumbnailService } from '../thumbnail/service';
-import { ItemWrapper, ItemWrapperService, PackedItem } from './ItemWrapper';
-import { BasicItemService } from './basic.service';
-import { DEFAULT_ORDER, IS_COPY_REGEX, MAX_COPY_SUFFIX_LENGTH } from './constants';
-import { FolderItem, isItemType } from './discrimination';
-import { ItemGeolocationRepository } from './plugins/geolocation/repository';
-import { ItemVisibilityRepository } from './plugins/itemVisibility/repository';
-import { ItemPublishedRepository } from './plugins/publication/published/itemPublished.repository';
-import { MeiliSearchWrapper } from './plugins/publication/published/plugins/search/meilisearch';
-import { ItemThumbnailService } from './plugins/thumbnail/service';
-import { ItemRepository } from './repository';
-import { ItemChildrenParams, ItemSearchParams } from './types';
+} from '../authorization.utils.js';
+import { ItemMembershipRepository } from '../itemMembership/repository.js';
+import { ThumbnailService } from '../thumbnail/service.js';
+import { ItemWrapper, ItemWrapperService, type PackedItem } from './ItemWrapper.js';
+import { BasicItemService } from './basic.service.js';
+import { DEFAULT_ORDER, IS_COPY_REGEX, MAX_COPY_SUFFIX_LENGTH } from './constants.js';
+import { type FolderItem, isItemType } from './discrimination.js';
+import { ItemGeolocationRepository } from './plugins/geolocation/geolocation.repository.js';
+import { ItemVisibilityRepository } from './plugins/itemVisibility/repository.js';
+import { ItemPublishedRepository } from './plugins/publication/published/itemPublished.repository.js';
+import { MeiliSearchWrapper } from './plugins/publication/published/plugins/search/meilisearch.js';
+import { ItemThumbnailService } from './plugins/thumbnail/service.js';
+import { ItemRepository } from './repository.js';
+import type { ItemChildrenParams, ItemSearchParams } from './types.js';
 
 @injectable()
 export class ItemService {

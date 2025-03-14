@@ -2,11 +2,11 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 
 import { Authenticator } from '@fastify/passport';
 
-import { PASSWORD_RESET_JWT_SECRET } from '../../../../../utils/config';
-import { MemberNotFound, UnauthorizedMember } from '../../../../../utils/errors';
-import { MemberPasswordService } from '../../password/service';
-import { PassportStrategy } from '../strategies';
-import { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
+import { PASSWORD_RESET_JWT_SECRET } from '../../../../../utils/config.js';
+import { MemberNotFound, UnauthorizedMember } from '../../../../../utils/errors.js';
+import { MemberPasswordService } from '../../password/service.js';
+import { PassportStrategy } from '../strategies.js';
+import { CustomStrategyOptions, StrictVerifiedCallback } from '../types.js';
 
 export default (
   passport: Authenticator,

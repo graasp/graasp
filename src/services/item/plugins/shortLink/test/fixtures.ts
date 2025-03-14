@@ -11,12 +11,12 @@ import {
   UUID,
 } from '@graasp/sdk';
 
-import { Item } from '../../../../../drizzle/types';
-import { MinimalMember } from '../../../../../types';
-import { ItemTestUtils } from '../../../test/fixtures/items';
-import { setItemPublic } from '../../itemVisibility/test/fixtures';
-import { createShortLink, updateShortLink } from '../schemas';
-import { SHORT_LINKS_FULL_PREFIX, SHORT_LINKS_LIST_ROUTE } from '../service';
+import { Item } from '../../../../../drizzle/types.js';
+import { MinimalMember } from '../../../../../types.js';
+import { ItemTestUtils } from '../../../test/fixtures/items.js';
+import { setItemPublic } from '../../itemVisibility/test/fixtures.js';
+import { createShortLink, updateShortLink } from '../schemas.js';
+import { SHORT_LINKS_FULL_PREFIX, SHORT_LINKS_LIST_ROUTE } from '../service.js';
 
 export const MOCK_ALIAS = 'mocked-alias';
 export const MOCK_PLATFORM = ShortLinkPlatform.Player;

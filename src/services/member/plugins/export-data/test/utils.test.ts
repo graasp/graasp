@@ -5,7 +5,7 @@ import {
   OBJECT_TYPE,
   STRING_TYPE,
   buildObjectSchema,
-} from '../utils/schema.utils';
+} from '../utils/schema.utils.js';
 
 const simpleSchema = (options?: BuildSchemaOptions) =>
   buildObjectSchema(

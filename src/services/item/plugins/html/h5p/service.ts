@@ -3,27 +3,27 @@ import { Readable } from 'stream';
 import { singleton } from 'tsyringe';
 import { v4 } from 'uuid';
 
-import { FastifyBaseLogger } from 'fastify';
+import type { FastifyBaseLogger } from 'fastify';
 
-import { H5PItemExtra, ItemType } from '@graasp/sdk';
+import { type H5PItemExtra, ItemType } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../../drizzle/db';
-import { Item, ItemWithType } from '../../../../../drizzle/types';
-import { BaseLogger } from '../../../../../logger';
-import { MinimalMember } from '../../../../../types';
+import type { DBConnection } from '../../../../../drizzle/db.js';
+import type { Item, ItemWithType } from '../../../../../drizzle/types.js';
+import { BaseLogger } from '../../../../../logger.js';
+import type { MinimalMember } from '../../../../../types.js';
 import {
   H5P_FILE_STORAGE_CONFIG,
   H5P_FILE_STORAGE_TYPE,
   H5P_PATH_PREFIX,
-} from '../../../../../utils/config';
-import { StorageService } from '../../../../member/plugins/storage/service';
-import { H5PItem, isItemType } from '../../../discrimination';
-import { ItemRepository } from '../../../repository';
-import { ItemService } from '../../../service';
-import { HtmlService } from '../service';
-import { H5P_FILE_DOT_EXTENSION, H5P_FILE_MIME_TYPE } from './constants';
-import { H5P } from './validation/h5p';
-import { H5PValidator } from './validation/h5p-validator';
+} from '../../../../../utils/config.js';
+import { StorageService } from '../../../../member/plugins/storage/service.js';
+import { type H5PItem, isItemType } from '../../../discrimination.js';
+import { ItemRepository } from '../../../repository.js';
+import { ItemService } from '../../../service.js';
+import { HtmlService } from '../service.js';
+import { H5P_FILE_DOT_EXTENSION, H5P_FILE_MIME_TYPE } from './constants.js';
+import { H5PValidator } from './validation/h5p-validator.js';
+import { H5P } from './validation/h5p.js';
 
 /**
  * Implementation for the H5P service

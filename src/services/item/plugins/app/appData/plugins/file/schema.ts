@@ -3,9 +3,9 @@ import { StatusCodes } from 'http-status-codes';
 
 import { AppDataVisibility } from '@graasp/sdk';
 
-import { customType } from '../../../../../../../plugins/typebox';
-import { errorSchemaRef } from '../../../../../../../schemas/global';
-import { APP_DATA_TYPE_FILE } from '../../../constants';
+import { customType } from '../../../../../../../plugins/typebox.js';
+import { errorSchemaRef } from '../../../../../../../schemas/global.js';
+import { APP_DATA_TYPE_FILE } from '../../../constants.js';
 
 export const upload = {
   operationId: 'createAppDataFile',

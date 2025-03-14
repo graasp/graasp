@@ -10,14 +10,14 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../test/app';
-import { resolveDependency } from '../../../../di/utils';
-import { Item } from '../../../../drizzle/types';
-import { MemberCannotAccess, MemberCannotWriteItem } from '../../../../utils/errors';
-import { saveMember } from '../../../member/test/fixtures/members';
-import { ItemService } from '../../service';
-import { ItemTestUtils, expectItem } from '../../test/fixtures/items';
-import { ActionItemService } from '../action/action.service';
+} from '../../../../../test/app.js';
+import { resolveDependency } from '../../../../di/utils.js';
+import { Item } from '../../../../drizzle/types.js';
+import { MemberCannotAccess, MemberCannotWriteItem } from '../../../../utils/errors.js';
+import { saveMember } from '../../../member/test/fixtures/members.js';
+import { ItemService } from '../../service.js';
+import { ItemTestUtils, expectItem } from '../../test/fixtures/items.js';
+import { ActionItemService } from '../action/action.service.js';
 
 const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
 const testUtils = new ItemTestUtils();

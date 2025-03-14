@@ -1,20 +1,20 @@
 import { fastifyMultipart } from '@fastify/multipart';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { resolveDependency } from '../../../../../../../di/utils';
-import { DBConnection, db } from '../../../../../../../drizzle/db';
-import { AppDataRaw } from '../../../../../../../drizzle/types';
-import { AuthenticatedUser } from '../../../../../../../types';
-import { asDefined } from '../../../../../../../utils/assertions';
-import { guestAuthenticateAppsJWT } from '../../../../../../auth/plugins/passport';
+import { resolveDependency } from '../../../../../../../di/utils.js';
+import { DBConnection, db } from '../../../../../../../drizzle/db.js';
+import { AppDataRaw } from '../../../../../../../drizzle/types.js';
+import { AuthenticatedUser } from '../../../../../../../types.js';
+import { asDefined } from '../../../../../../../utils/assertions.js';
+import { guestAuthenticateAppsJWT } from '../../../../../../auth/plugins/passport/index.js';
 import {
   DownloadFileUnexpectedError,
   UploadEmptyFileError,
   UploadFileUnexpectedError,
-} from '../../../../../../file/utils/errors';
-import { AppDataService } from '../../appData.service';
-import { download, upload } from './schema';
-import AppDataFileService from './service';
+} from '../../../../../../file/utils/errors.js';
+import { AppDataService } from '../../appData.service.js';
+import { download, upload } from './schema.js';
+import AppDataFileService from './service.js';
 
 export interface GraaspPluginFileOptions {
   maxFileSize?: number; // max size for an uploaded file in bytes

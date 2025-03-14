@@ -1,6 +1,6 @@
 import { EtherpadPermission } from '@graasp/sdk';
 
-import { EtherpadItemService } from '../service';
+import { EtherpadItemService } from '../service.js';
 
 describe('Service helper methods', () => {
   it('builds correct pad ID', () => {

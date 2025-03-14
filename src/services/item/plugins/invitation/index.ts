@@ -4,17 +4,21 @@ import { fastifyMultipart } from '@fastify/multipart';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import fp from 'fastify-plugin';
 
-import { resolveDependency } from '../../../../di/utils';
-import { db } from '../../../../drizzle/db';
-import { FastifyInstanceTypebox } from '../../../../plugins/typebox';
-import { isNonEmptyArray } from '../../../../types';
-import { asDefined } from '../../../../utils/assertions';
-import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
-import { assertIsMember } from '../../../authentication';
-import { memberAccountRole } from '../../../member/strategies/memberAccountRole';
-import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { MAX_FILE_SIZE } from './constants';
-import { NoFileProvidedForInvitations, NoInvitationReceivedFound } from './errors';
+import { resolveDependency } from '../../../../di/utils.js';
+import { db } from '../../../../drizzle/db.js';
+import { FastifyInstanceTypebox } from '../../../../plugins/typebox.js';
+import { isNonEmptyArray } from '../../../../types.js';
+import { asDefined } from '../../../../utils/assertions.js';
+import {
+  isAuthenticated,
+  matchOne,
+  optionalIsAuthenticated,
+} from '../../../auth/plugins/passport/index.js';
+import { assertIsMember } from '../../../authentication.js';
+import { memberAccountRole } from '../../../member/strategies/memberAccountRole.js';
+import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole.js';
+import { MAX_FILE_SIZE } from './constants.js';
+import { NoFileProvidedForInvitations, NoInvitationReceivedFound } from './errors.js';
 import {
   deleteOne,
   getById,
@@ -24,8 +28,8 @@ import {
   inviteFromCSVWithTemplate,
   sendOne,
   updateOne,
-} from './schema';
-import { InvitationService } from './service';
+} from './schema.js';
+import { InvitationService } from './service.js';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const invitationService = resolveDependency(InvitationService);

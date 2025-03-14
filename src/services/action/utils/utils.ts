@@ -1,13 +1,13 @@
 import { AggregateBy, AggregateFunction, AggregateMetric } from '@graasp/sdk';
 
-import { CountGroupByOptions } from '../types';
+import { CountGroupByOptions } from '../types.js';
 import {
   AggregateByCannotIncludeAggregateMetricError,
   AggregateByCannotUserError,
   CountGroupByShouldIncludeAggregateByError,
   CountGroupByShouldIncludeAggregateMetricError,
   InvalidAggregateFunctionError,
-} from './errors';
+} from './errors.js';
 
 export const validateAggregationParameters = ({
   countGroupBy,

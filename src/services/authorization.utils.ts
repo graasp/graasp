@@ -1,10 +1,10 @@
 import { ItemVisibilityType, PermissionLevel, PermissionLevelCompare } from '@graasp/sdk';
 
-import { DBConnection } from '../drizzle/db';
-import { Item, ItemWithCreator } from '../drizzle/types';
-import { MaybeUser } from '../types';
-import { ItemWrapper, type PackedItem } from './item/ItemWrapper';
-import { ItemsThumbnails } from './item/plugins/thumbnail/types';
+import { DBConnection } from '../drizzle/db.js';
+import { Item, ItemWithCreator } from '../drizzle/types.js';
+import { MaybeUser } from '../types.js';
+import { ItemWrapper, type PackedItem } from './item/ItemWrapper.js';
+import { ItemsThumbnails } from './item/plugins/thumbnail/types.js';
 
 /**
  * Internal filtering function that takes out limited items (eg. hidden children)

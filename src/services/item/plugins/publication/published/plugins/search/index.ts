@@ -4,13 +4,13 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { ActionTriggers } from '@graasp/sdk';
 
-import { resolveDependency } from '../../../../../../../di/utils';
-import { db } from '../../../../../../../drizzle/db';
-import { MEILISEARCH_REBUILD_SECRET } from '../../../../../../../utils/config';
-import { ActionService } from '../../../../../../action/action.service';
-import { optionalIsAuthenticated } from '../../../../../../auth/plugins/passport';
-import { getFacets, getMostLiked, getMostRecent, search } from './schemas';
-import { SearchService } from './service';
+import { resolveDependency } from '../../../../../../../di/utils.js';
+import { db } from '../../../../../../../drizzle/db.js';
+import { MEILISEARCH_REBUILD_SECRET } from '../../../../../../../utils/config.js';
+import { ActionService } from '../../../../../../action/action.service.js';
+import { optionalIsAuthenticated } from '../../../../../../auth/plugins/passport/index.js';
+import { getFacets, getMostLiked, getMostRecent, search } from './schemas.js';
+import { SearchService } from './service.js';
 
 export type SearchFields = {
   keywords?: string;

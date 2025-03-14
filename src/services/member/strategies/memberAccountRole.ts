@@ -1,6 +1,6 @@
-import { RessourceAuthorizationStrategy } from '../../auth/plugins/passport';
-import { isMember } from '../../authentication';
-import { NotMember } from '../error';
+import { RessourceAuthorizationStrategy } from '../../auth/plugins/passport/index.js';
+import { isMember } from '../../authentication.js';
+import { NotMember } from '../error.js';
 
 /**
  * Strategy to check if user is a member account.

@@ -16,16 +16,16 @@ import {
 } from '@graasp/sdk';
 import { FAILURE_MESSAGES } from '@graasp/translations';
 
-import build, { clearDatabase } from '../../../../../test/app';
-import { MemberFactory } from '../../../../../test/factories/member.factory';
-import { URL_REGEX } from '../../../../../test/utils';
-import { resolveDependency } from '../../../../di/utils';
-import { db } from '../../../../drizzle/db';
-import { accountsTable } from '../../../../drizzle/schema';
-import { MailerService } from '../../../../plugins/mailer/mailer.service';
-import { JWT_SECRET } from '../../../../utils/config';
-import { saveMember } from '../../../member/test/fixtures/members';
-import { MOCK_CAPTCHA } from '../captcha/test/utils';
+import build, { clearDatabase } from '../../../../../test/app.js';
+import { MemberFactory } from '../../../../../test/factories/member.factory.js';
+import { URL_REGEX } from '../../../../../test/utils.js';
+import { resolveDependency } from '../../../../di/utils.js';
+import { db } from '../../../../drizzle/db.js';
+import { accountsTable } from '../../../../drizzle/schema.js';
+import { MailerService } from '../../../../plugins/mailer/mailer.service.js';
+import { JWT_SECRET } from '../../../../utils/config.js';
+import { saveMember } from '../../../member/test/fixtures/members.js';
+import { MOCK_CAPTCHA } from '../captcha/test/utils.js';
 
 jest.mock('node-fetch');
 

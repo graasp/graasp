@@ -3,15 +3,15 @@ import waitForExpect from 'wait-for-expect';
 
 import { HttpMethod, PermissionLevel, Websocket, parseStringToDate } from '@graasp/sdk';
 
-import { clearDatabase, mockAuthenticate } from '../../../../test/app';
-import { ItemMembershipRaw } from '../../../drizzle/types';
-import { MemberCannotAccess } from '../../../utils/errors';
-import { expectDeleteMembershipFeedback } from '../../item/plugins/action/test/utils';
-import { ItemTestUtils } from '../../item/test/fixtures/items';
-import { saveMember } from '../../member/test/fixtures/members';
-import { TestWsClient } from '../../websockets/test/test-websocket-client';
-import { setupWsApp } from '../../websockets/test/ws-app';
-import { ItemMembershipEvent, MembershipEvent, itemMembershipsTopic } from '../ws/events';
+import { clearDatabase, mockAuthenticate } from '../../../../test/app.js';
+import { ItemMembershipRaw } from '../../../drizzle/types.js';
+import { MemberCannotAccess } from '../../../utils/errors.js';
+import { expectDeleteMembershipFeedback } from '../../item/plugins/action/test/utils.js';
+import { ItemTestUtils } from '../../item/test/fixtures/items.js';
+import { saveMember } from '../../member/test/fixtures/members.js';
+import { TestWsClient } from '../../websockets/test/test-websocket-client.js';
+import { setupWsApp } from '../../websockets/test/ws-app.js';
+import { ItemMembershipEvent, MembershipEvent, itemMembershipsTopic } from '../ws/events.js';
 
 const testUtils = new ItemTestUtils();
 

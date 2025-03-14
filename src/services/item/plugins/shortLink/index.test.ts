@@ -8,12 +8,12 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../test/app';
-import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
-import { ShortLinkDuplication, ShortLinkLimitExceed } from '../../../../utils/errors';
-import { saveMember } from '../../../member/test/fixtures/members';
-import { ItemPublishedNotFound } from '../publication/published/errors';
-import { saveItemValidation } from '../publication/validation/test/utils';
+} from '../../../../../test/app.js';
+import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config.js';
+import { ShortLinkDuplication, ShortLinkLimitExceed } from '../../../../utils/errors.js';
+import { saveMember } from '../../../member/test/fixtures/members.js';
+import { ItemPublishedNotFound } from '../publication/published/errors.js';
+import { saveItemValidation } from '../publication/validation/test/utils.js';
 import {
   MOCK_ALIAS,
   MOCK_ITEM_ID,
@@ -26,7 +26,7 @@ import {
   injectGetAvailable,
   injectPatch,
   injectPost,
-} from './test/fixtures';
+} from './test/fixtures.js';
 
 const MOCK_FAKE_ALIAS = 'fake-alias';
 const testUtils = new ShortLinkTestUtils();

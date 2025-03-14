@@ -12,9 +12,9 @@ import {
   buildPathFromIds,
 } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../test/app';
-import seed from '../../../test/mocks/seed';
-import { MaybeUser } from '../../types';
+import build, { clearDatabase } from '../../../test/app.js';
+import seed from '../../../test/mocks/seed.js';
+import { MaybeUser } from '../../types.js';
 
 describe('Item controller', () => {
   let app: FastifyInstance;

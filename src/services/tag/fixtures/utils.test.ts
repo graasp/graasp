@@ -1,7 +1,7 @@
 import { TagCategory } from '@graasp/sdk';
 
-import { client } from '../../../drizzle/db';
-import { saveTag } from './utils';
+import { client } from '../../../drizzle/db.js';
+import { saveTag } from './utils.js';
 
 describe('saveTag util', () => {
   beforeAll(async () => {

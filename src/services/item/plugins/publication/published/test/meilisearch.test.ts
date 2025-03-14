@@ -25,15 +25,15 @@ import {
   ItemPublishedWithItem,
   ItemVisibilityRaw,
   ItemVisibilityWithItem,
-} from '../../../../../../drizzle/types';
-import { BaseLogger } from '../../../../../../logger';
-import FileService from '../../../../../file/service';
-import { ItemMembershipRepository } from '../../../../../itemMembership/repository';
-import { ItemTestUtils } from '../../../../test/fixtures/items';
-import { ItemLikeRepository } from '../../../itemLike/repository';
-import { ItemTagRepository } from '../../../tag/ItemTag.repository';
-import { ItemPublishedRepository } from '../itemPublished.repository';
-import { MeiliSearchWrapper } from '../plugins/search/meilisearch';
+} from '../../../../../../drizzle/types.js';
+import { BaseLogger } from '../../../../../../logger.js';
+import FileService from '../../../../../file/service.js';
+import { ItemMembershipRepository } from '../../../../../itemMembership/repository.js';
+import { ItemTestUtils } from '../../../../test/fixtures/items.js';
+import { ItemLikeRepository } from '../../../itemLike/itemLike.repository.js';
+import { ItemTagRepository } from '../../../tag/ItemTag.repository.js';
+import { ItemPublishedRepository } from '../itemPublished.repository.js';
+import { MeiliSearchWrapper } from '../plugins/search/meilisearch.js';
 
 jest.unmock('../plugins/search/meilisearch');
 

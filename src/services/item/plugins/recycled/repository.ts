@@ -3,20 +3,20 @@ import { and, asc, desc, isNotNull, ne } from 'drizzle-orm/sql';
 
 import { Paginated, Pagination, PermissionLevel } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
-import { isDescendantOrSelf } from '../../../../drizzle/operations';
+import { DBConnection } from '../../../../drizzle/db.js';
+import { isDescendantOrSelf } from '../../../../drizzle/operations.js';
 import {
   itemMemberships,
   items,
   itemsRaw,
   membersView,
   recycledItemDatas,
-} from '../../../../drizzle/schema';
-import { Item } from '../../../../drizzle/types';
-import { throwsIfParamIsInvalid } from '../../../../repositories/utils';
-import { MinimalMember } from '../../../../types';
-import { ITEMS_PAGE_SIZE_MAX } from '../../constants';
-import { FolderItem } from '../../discrimination';
+} from '../../../../drizzle/schema.js';
+import { Item } from '../../../../drizzle/types.js';
+import { throwsIfParamIsInvalid } from '../../../../repositories/utils.js';
+import { MinimalMember } from '../../../../types.js';
+import { ITEMS_PAGE_SIZE_MAX } from '../../constants.js';
+import { FolderItem } from '../../discrimination.js';
 
 type CreateRecycledItemDataBody = { itemPath: string; creatorId: string };
 

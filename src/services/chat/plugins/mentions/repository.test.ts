@@ -4,12 +4,12 @@ import { FastifyInstance } from 'fastify';
 
 import { MentionStatus } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../test/app';
-import { db } from '../../../../drizzle/db';
-import { ChatMentionNotFound, NoChatMentionForMember } from '../../errors';
-import { expectChatMentions } from '../../test/chatMention.test';
-import { saveItemWithChatMessages } from '../../test/chatMessage.test';
-import { ChatMentionRepository } from './repository';
+import build, { clearDatabase } from '../../../../../test/app.js';
+import { db } from '../../../../drizzle/db.js';
+import { ChatMentionNotFound, NoChatMentionForMember } from '../../errors.js';
+import { expectChatMentions } from '../../test/chatMention.test.js';
+import { saveItemWithChatMessages } from '../../test/chatMessage.test.js';
+import { ChatMentionRepository } from './repository.js';
 
 const rawRepository = AppDataSource.getRepository(ChatMention);
 const repository = new ChatMentionRepository();

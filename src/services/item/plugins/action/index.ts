@@ -5,24 +5,32 @@ import fp from 'fastify-plugin';
 
 import { ExportActionsFormatting, FileItemType } from '@graasp/sdk';
 
-import { resolveDependency } from '../../../../di/utils';
-import { db } from '../../../../drizzle/db';
-import { asDefined } from '../../../../utils/assertions';
-import { ALLOWED_ORIGINS } from '../../../../utils/config';
-import { ActionService } from '../../../action/action.service';
-import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
-import { assertIsMember } from '../../../authentication';
+import { resolveDependency } from '../../../../di/utils.js';
+import { db } from '../../../../drizzle/db.js';
+import { asDefined } from '../../../../utils/assertions.js';
+import { ALLOWED_ORIGINS } from '../../../../utils/config.js';
+import { ActionService } from '../../../action/action.service.js';
+import {
+  isAuthenticated,
+  matchOne,
+  optionalIsAuthenticated,
+} from '../../../auth/plugins/passport/index.js';
+import { assertIsMember } from '../../../authentication.js';
 import {
   LocalFileConfiguration,
   S3FileConfiguration,
-} from '../../../file/interfaces/configuration';
-import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { ItemService } from '../../service';
-import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
-import { ActionItemService } from './action.service';
-import { CannotPostAction } from './errors';
-import { ActionRequestExportService } from './requestExport/service';
-import { exportActions, getItemActions, postAction } from './schemas';
+} from '../../../file/interfaces/configuration.js';
+import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole.js';
+import { ItemService } from '../../service.js';
+import {
+  ItemOpFeedbackErrorEvent,
+  ItemOpFeedbackEvent,
+  memberItemsTopic,
+} from '../../ws/events.js';
+import { ActionItemService } from './action.service.js';
+import { CannotPostAction } from './errors.js';
+import { ActionRequestExportService } from './requestExport/service.js';
+import { exportActions, getItemActions, postAction } from './schemas.js';
 
 export interface GraaspActionsOptions {
   shouldSave?: boolean;

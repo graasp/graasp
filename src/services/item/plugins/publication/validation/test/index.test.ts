@@ -10,14 +10,14 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../../../test/app';
-import { Item } from '../../../../../../drizzle/types';
-import { ITEMS_ROUTE_PREFIX } from '../../../../../../utils/config';
-import { ItemNotFound, MemberCannotAdminItem } from '../../../../../../utils/errors';
-import { saveMember } from '../../../../../member/test/fixtures/members';
-import { ItemTestUtils } from '../../../../test/fixtures/items';
-import { ItemValidationGroupNotFound } from '../errors';
-import { ItemModeratorValidate, saveItemValidation, stubItemModerator } from './utils';
+} from '../../../../../../../test/app.js';
+import { Item } from '../../../../../../drizzle/types.js';
+import { ITEMS_ROUTE_PREFIX } from '../../../../../../utils/config.js';
+import { ItemNotFound, MemberCannotAdminItem } from '../../../../../../utils/errors.js';
+import { saveMember } from '../../../../../member/test/fixtures/members.js';
+import { ItemTestUtils } from '../../../../test/fixtures/items.js';
+import { ItemValidationGroupNotFound } from '../errors.js';
+import { ItemModeratorValidate, saveItemValidation, stubItemModerator } from './utils.js';
 
 const VALIDATION_LOADING_TIME = 2000;
 

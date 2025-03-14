@@ -2,16 +2,16 @@ import { v4 } from 'uuid';
 
 import { ItemVisibilityType, PackedFolderItemFactory, PermissionLevel } from '@graasp/sdk';
 
-import { ItemFactory } from '../../test/factories/item.factory';
-import { MemberFactory } from '../../test/factories/member.factory';
-import { DBConnection } from '../drizzle/db';
-import { ItemVisibilityWithItem } from '../drizzle/types';
-import { ItemMembershipRepository } from '../services/itemMembership/repository';
-import { AccountType } from '../types';
-import { filterOutPackedDescendants } from './authorization.utils';
-import { PackedItem } from './item/ItemWrapper';
-import { ItemVisibilityRepository } from './item/plugins/itemVisibility/repository';
-import { expectPackedItem } from './item/test/fixtures/items';
+import { ItemFactory } from '../../test/factories/item.factory.js';
+import { MemberFactory } from '../../test/factories/member.factory.js';
+import { DBConnection } from '../drizzle/db.js';
+import { ItemVisibilityWithItem } from '../drizzle/types.js';
+import { ItemMembershipRepository } from '../services/itemMembership/repository.js';
+import { AccountType } from '../types.js';
+import { filterOutPackedDescendants } from './authorization.utils.js';
+import { PackedItem } from './item/ItemWrapper.js';
+import { ItemVisibilityRepository } from './item/plugins/itemVisibility/repository.js';
+import { expectPackedItem } from './item/test/fixtures/items.js';
 
 const OWNER = { id: 'owner', name: 'owner', type: AccountType.Individual, isValidated: true };
 

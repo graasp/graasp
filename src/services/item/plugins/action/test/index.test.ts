@@ -18,24 +18,20 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../../test/app';
-import { seedFromJson } from '../../../../../../test/mocks/seed';
-import { resolveDependency } from '../../../../../di/utils';
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { MailerService } from '../../../../../plugins/mailer/service';
-import { assertIsDefined } from '../../../../../utils/assertions';
-import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { Action } from '../../../../action/entities/action';
-import { assertIsMember } from '../../../../member/entities/member';
-import { saveMember, saveMembers } from '../../../../member/test/fixtures/members';
-import { ItemTestUtils } from '../../../test/fixtures/items';
-import { saveAppActions } from '../../app/appAction/test/fixtures';
-import { saveAppData } from '../../app/appData/test/fixtures';
-import { saveAppSettings } from '../../app/appSetting/test/fixtures';
-import { CannotPostAction } from '../errors';
-import { ActionRequestExportRepository } from '../requestExport/repository';
-import { ItemActionType } from '../utils';
-import { getDummyAction, saveActions } from './fixtures/actions';
+} from '../../../../../../test/app.js';
+import { seedFromJson } from '../../../../../../test/mocks/seed.js';
+import { resolveDependency } from '../../../../../di/utils.js';
+import { assertIsDefined } from '../../../../../utils/assertions.js';
+import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config.js';
+import { saveMember, saveMembers } from '../../../../member/test/fixtures/members.js';
+import { ItemTestUtils } from '../../../test/fixtures/items.js';
+import { saveAppActions } from '../../app/appAction/test/fixtures.js';
+import { saveAppData } from '../../app/appData/test/fixtures.js';
+import { saveAppSettings } from '../../app/appSetting/test/fixtures.js';
+import { CannotPostAction } from '../errors.js';
+import { ActionRequestExportRepository } from '../requestExport/repository.js';
+import { ItemActionType } from '../utils.js';
+import { getDummyAction, saveActions } from './fixtures/actions.js';
 
 const BUILDER_HOST = ClientManager.getInstance().getURLByContext(Context.Builder);
 

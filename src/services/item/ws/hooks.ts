@@ -2,8 +2,8 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { Websocket } from '@graasp/sdk';
 
-import { WebsocketService } from '../../websockets/ws-service';
-import { memberItemsTopic } from './events';
+import { WebsocketService } from '../../websockets/ws-service.js';
+import { memberItemsTopic } from './events.js';
 
 /**
  * helper to register items of member topic

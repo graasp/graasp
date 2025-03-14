@@ -7,7 +7,7 @@ import { withFile as withTmpFile } from 'tmp-promise';
 import { delay, inject, singleton } from 'tsyringe';
 
 import {
-  FileItemProperties,
+  type FileItemProperties,
   ItemType,
   MAX_ITEM_NAME_LENGTH,
   MimeTypes,
@@ -15,29 +15,29 @@ import {
   getFileExtension,
 } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
-import { Item } from '../../../../drizzle/types';
-import { BaseLogger } from '../../../../logger';
-import { MaybeUser, MinimalMember } from '../../../../types';
-import { asDefined } from '../../../../utils/assertions';
-import { AuthorizationService } from '../../../authorization';
-import FileService from '../../../file/service';
-import { UploadEmptyFileError } from '../../../file/utils/errors';
-import { ItemMembershipRepository } from '../../../itemMembership/repository';
-import { StorageService } from '../../../member/plugins/storage/service';
-import { ThumbnailService } from '../../../thumbnail/service';
-import { randomHexOf4 } from '../../../utils';
-import { ItemWrapperService } from '../../ItemWrapper';
-import { BasicItemService } from '../../basic.service';
-import { WrongItemTypeError } from '../../errors';
-import { ItemRepository } from '../../repository';
-import { ItemService } from '../../service';
-import { readPdfContent } from '../../utils';
-import { ItemGeolocationRepository } from '../geolocation/repository';
-import { ItemVisibilityRepository } from '../itemVisibility/repository';
-import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
-import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
-import { ItemThumbnailService } from '../thumbnail/service';
+import type { DBConnection } from '../../../../drizzle/db.js';
+import type { Item } from '../../../../drizzle/types.js';
+import { BaseLogger } from '../../../../logger.js';
+import type { MaybeUser, MinimalMember } from '../../../../types.js';
+import { asDefined } from '../../../../utils/assertions.js';
+import { AuthorizationService } from '../../../authorization.js';
+import FileService from '../../../file/service.js';
+import { UploadEmptyFileError } from '../../../file/utils/errors.js';
+import { ItemMembershipRepository } from '../../../itemMembership/repository.js';
+import { StorageService } from '../../../member/plugins/storage/service.js';
+import { ThumbnailService } from '../../../thumbnail/service.js';
+import { randomHexOf4 } from '../../../utils.js';
+import { ItemWrapperService } from '../../ItemWrapper.js';
+import { BasicItemService } from '../../basic.service.js';
+import { WrongItemTypeError } from '../../errors.js';
+import { ItemRepository } from '../../repository.js';
+import { ItemService } from '../../service.js';
+import { readPdfContent } from '../../utils.js';
+import { ItemGeolocationRepository } from '../geolocation/geolocation.repository.js';
+import { ItemVisibilityRepository } from '../itemVisibility/repository.js';
+import { ItemPublishedRepository } from '../publication/published/itemPublished.repository.js';
+import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch.js';
+import { ItemThumbnailService } from '../thumbnail/service.js';
 
 @singleton()
 class FileItemService extends ItemService {

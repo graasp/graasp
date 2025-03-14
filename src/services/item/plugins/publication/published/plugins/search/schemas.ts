@@ -5,12 +5,12 @@ import { FastifySchema } from 'fastify';
 
 import { ItemType, TagCategory } from '@graasp/sdk';
 
-import { customType } from '../../../../../../../plugins/typebox';
-import { errorSchemaRef } from '../../../../../../../schemas/global';
+import { customType } from '../../../../../../../plugins/typebox.js';
+import { errorSchemaRef } from '../../../../../../../schemas/global.js';
 import {
   GET_MOST_LIKED_ITEMS_MAXIMUM,
   GET_MOST_RECENT_ITEMS_MAXIMUM,
-} from '../../../../../../../utils/config';
+} from '../../../../../../../utils/config.js';
 
 const meilisearchSearchResponseSchema = customType.StrictObject({
   totalHits: Type.Optional(Type.Number()),

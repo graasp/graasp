@@ -4,19 +4,23 @@ import { FastifyInstance } from 'fastify';
 
 import { PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../test/app';
-import { BaseLogger } from '../../../../logger';
-import { assertIsDefined } from '../../../../utils/assertions';
-import { ItemNotFound, MemberCannotAccess, MemberCannotWriteItem } from '../../../../utils/errors';
-import { saveMember } from '../../../member/test/fixtures/members';
-import { ThumbnailService } from '../../../thumbnail/service';
-import { ItemWrapper } from '../../ItemWrapper';
-import { ItemService } from '../../service';
-import { ItemTestUtils } from '../../test/fixtures/items';
-import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
-import { ItemThumbnailService } from '../thumbnail/service';
-import { ItemGeolocationService } from './service';
-import { expectPackedItemGeolocations, saveGeolocation } from './test/utils';
+import build, { clearDatabase } from '../../../../../test/app.js';
+import { BaseLogger } from '../../../../logger.js';
+import { assertIsDefined } from '../../../../utils/assertions.js';
+import {
+  ItemNotFound,
+  MemberCannotAccess,
+  MemberCannotWriteItem,
+} from '../../../../utils/errors.js';
+import { saveMember } from '../../../member/test/fixtures/members.js';
+import { ThumbnailService } from '../../../thumbnail/service.js';
+import { ItemWrapper } from '../../ItemWrapper.js';
+import { ItemService } from '../../service.js';
+import { ItemTestUtils } from '../../test/fixtures/items.js';
+import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch.js';
+import { ItemThumbnailService } from '../thumbnail/service.js';
+import { ItemGeolocationService } from './service.js';
+import { expectPackedItemGeolocations, saveGeolocation } from './test/utils.js';
 
 const testUtils = new ItemTestUtils();
 

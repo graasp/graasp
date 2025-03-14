@@ -6,12 +6,16 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
-import { seedFromJson } from '../../../../test/mocks/seed';
-import { resolveDependency } from '../../../di/utils';
-import { MailerService } from '../../../plugins/mailer/mailer.service';
-import { MaybeUser } from '../../../types';
-import { assertIsDefined } from '../../../utils/assertions';
+import build, {
+  clearDatabase,
+  mockAuthenticate,
+  unmockAuthenticate,
+} from '../../../../test/app.js';
+import { seedFromJson } from '../../../../test/mocks/seed.js';
+import { resolveDependency } from '../../../di/utils.js';
+import { MailerService } from '../../../plugins/mailer/mailer.service.js';
+import { MaybeUser } from '../../../types.js';
+import { assertIsDefined } from '../../../utils/assertions.js';
 import {
   CannotDeleteOnlyAdmin,
   InvalidMembership,
@@ -21,12 +25,12 @@ import {
   MemberCannotAccess,
   MemberCannotAdminItem,
   ModifyExistingMembership,
-} from '../../../utils/errors';
-import { assertIsMember } from '../../authentication';
-import { setItemPublic } from '../../item/plugins/itemVisibility/test/fixtures';
-import { MembershipRequestRepository } from '../plugins/MembershipRequest/repository';
-import { ItemMembershipRepository } from '../repository';
-import { expectMembership } from './fixtures/memberships';
+} from '../../../utils/errors.js';
+import { assertIsMember } from '../../authentication.js';
+import { setItemPublic } from '../../item/plugins/itemVisibility/test/fixtures.js';
+import { MembershipRequestRepository } from '../plugins/MembershipRequest/repository.js';
+import { ItemMembershipRepository } from '../repository.js';
+import { expectMembership } from './fixtures/memberships.js';
 
 const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
 const membershipRequestRepository = new MembershipRequestRepository();

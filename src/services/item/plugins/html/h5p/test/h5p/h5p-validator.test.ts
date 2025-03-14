@@ -3,10 +3,10 @@ import fs from 'fs/promises';
 import path from 'path';
 import { type DirectoryResult, dir } from 'tmp-promise';
 
-import { H5PInvalidManifestError } from '../../errors';
-import { H5P } from '../../validation/h5p';
-import { H5PValidator } from '../../validation/h5p-validator';
-import { H5P_PACKAGES } from '../fixtures';
+import { H5PInvalidManifestError } from '../../errors.js';
+import { H5PValidator } from '../../validation/h5p-validator.js';
+import { H5P } from '../../validation/h5p.js';
+import { H5P_PACKAGES } from '../fixtures.js';
 
 describe('H5PValidator', () => {
   const h5pValidator = new H5PValidator();

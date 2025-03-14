@@ -14,10 +14,10 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../../test/app';
-import { seedFromJson } from '../../../../../../test/mocks/seed';
-import { saveMember } from '../../../test/fixtures/members';
-import { UploadFileNotImageError } from '../utils/errors';
+} from '../../../../../../test/app.js';
+import { seedFromJson } from '../../../../../../test/mocks/seed.js';
+import { saveMember } from '../../../test/fixtures/members.js';
+import { UploadFileNotImageError } from '../utils/errors.js';
 
 const filepath = path.resolve(__dirname, './fixtures/image.png');
 const textPath = path.resolve(__dirname, './fixtures/emptyFile');

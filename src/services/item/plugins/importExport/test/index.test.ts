@@ -13,11 +13,11 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../../test/app';
-import { LocalFileRepository } from '../../../../file/repositories/local';
-import { saveMember } from '../../../../member/test/fixtures/members';
-import { ItemTestUtils } from '../../../test/fixtures/items';
-import * as ARCHIVE_CONTENT from './fixtures/archive';
+} from '../../../../../../test/app.js';
+import { LocalFileRepository } from '../../../../file/repositories/local.js';
+import { saveMember } from '../../../../member/test/fixtures/members.js';
+import { ItemTestUtils } from '../../../test/fixtures/items.js';
+import * as ARCHIVE_CONTENT from './fixtures/archive.js';
 
 // we need a different form data for each test
 const createFormData = (filename: string) => {

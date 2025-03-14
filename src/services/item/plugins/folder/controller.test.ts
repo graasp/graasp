@@ -21,20 +21,20 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../test/app';
-import { seedFromJson } from '../../../../../test/mocks/seed';
-import { resolveDependency } from '../../../../di/utils';
-import { assertIsDefined } from '../../../../utils/assertions';
+} from '../../../../../test/app.js';
+import { seedFromJson } from '../../../../../test/mocks/seed.js';
+import { resolveDependency } from '../../../../di/utils.js';
+import { assertIsDefined } from '../../../../utils/assertions.js';
 import {
   MemberCannotAccess,
   MemberCannotWriteItem,
   TooManyChildren,
-} from '../../../../utils/errors';
-import { assertIsMember } from '../../../authentication';
-import { WrongItemTypeError } from '../../errors';
-import { ItemTestUtils, expectItem } from '../../test/fixtures/items';
-import { ActionItemService } from '../action/action.service';
-import { FolderItemService } from './service';
+} from '../../../../utils/errors.js';
+import { assertIsMember } from '../../../authentication.js';
+import { WrongItemTypeError } from '../../errors.js';
+import { ItemTestUtils, expectItem } from '../../test/fixtures/items.js';
+import { ActionItemService } from '../action/action.service.js';
+import { FolderItemService } from './service.js';
 
 const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
 const testUtils = new ItemTestUtils();

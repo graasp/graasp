@@ -1,4 +1,4 @@
-import { MinimalAccount } from '../../../../drizzle/types';
+import { MinimalAccount } from '../../../../drizzle/types.js';
 
 /**
  * Add legacy property `member` to an app data
