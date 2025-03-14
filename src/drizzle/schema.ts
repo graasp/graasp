@@ -421,7 +421,7 @@ export const invitationsTable = pgTable(
       .references(() => itemsRaw.path),
     name: varchar({ length: 100 }),
     email: varchar({ length: 100 }).notNull(),
-    permission: permissionEnum().notNull(),
+    permission: permissionEnum().default('read').notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
   },
@@ -583,7 +583,6 @@ export const memberProfiles = pgTable(
     twitterId: varchar({ length: 100 }),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
-    deletedAt: timestamp('deleted_at', { mode: 'string' }),
     memberId: uuid('member_id')
       .notNull()
       .references(() => accountsTable.id),
@@ -636,7 +635,7 @@ export const actionsTable = pgTable(
     id: uuid().primaryKey().defaultRandom().notNull(),
     view: varchar().notNull(),
     type: varchar().notNull(),
-    extra: jsonb().$type<object>().notNull(),
+    extra: jsonb().$type<object>().default({}).notNull(),
     geolocation: jsonb().$type<geoip.Lookup>(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     accountId: uuid('account_id'),
@@ -724,8 +723,8 @@ export const itemsRaw = pgTable(
     path: ltree('path').notNull(),
     creatorId: uuid('creator_id'),
     // TODO: fix type
-    extra: jsonb().$type<object>().notNull(),
-    settings: jsonb().$type<ItemSettings>().notNull(),
+    extra: jsonb().$type<object>().default({}).notNull(),
+    settings: jsonb().$type<ItemSettings>().default({}).notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
     deletedAt: timestamp('deleted_at', { mode: 'string' }), // HACK: the softdeletion mechanism relies on the deletedAt being null or having a date
@@ -843,7 +842,7 @@ export const accountsTable = pgTable(
     ),
   },
   (table) => [
-    index('IDX_account_type').using('btree', table.type.asc().nullsLast().op('text_ops')),
+    index('IDX_account_type').using('btree', table.type.asc().nullsLast().op('enum_ops')),
     unique('UQ_account_name_item_login_schema_id').on(table.name, table.itemLoginSchemaId),
     unique('member_email_key1').on(table.email),
     check(
