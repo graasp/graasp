@@ -2,6 +2,7 @@ import { faker } from '@faker-js/faker';
 import { v4 } from 'uuid';
 
 import {
+  AppDataVisibility,
   ItemLoginSchemaStatus,
   ItemLoginSchemaType,
   ItemType,
@@ -16,6 +17,7 @@ import { db } from '../../src/drizzle/db';
 import {
   accountsTable,
   appActions,
+  appDatas,
   apps,
   guestPasswords,
   itemGeolocationsTable,
@@ -32,6 +34,7 @@ import {
 import {
   AccountRaw,
   AppActionRaw,
+  AppDataRaw,
   AppRaw,
   GuestRaw,
   Item,
@@ -76,6 +79,9 @@ type SeedItem<M = SeedMember> = (Partial<Omit<Item, 'creator'>> & { creator?: M 
   appActions?: (Omit<Partial<AppActionRaw>, 'accountId'> & {
     account: M;
   })[];
+  appData?: (Omit<Partial<AppDataRaw>, 'accountId'> & {
+    account: M;
+  })[];
 };
 type DataType = {
   actor?: SeedActor | null;
@@ -101,6 +107,10 @@ const replaceActorInItems = (createdActor?: AccountRaw, items?: DataType['items'
     appActions: i.appActions?.map((aa) => ({
       ...aa,
       account: aa.account === ACTOR_STRING ? (createdActor as any) : aa.account,
+    })),
+    appData: i.appData?.map((ad) => ({
+      ...ad,
+      account: ad.account === ACTOR_STRING ? (createdActor as any) : ad.account,
     })),
     children: replaceActorInItems(createdActor, i.children),
   }));
@@ -132,6 +142,12 @@ function replaceAccountInItems(createdAccount: AccountRaw, items?: DataType['ite
         account: getNameIfExists(a.account) === createdAccount.name ? createdAccount : a.account,
       };
     });
+    const appData = i.appData?.map((a) => {
+      return {
+        ...a,
+        account: getNameIfExists(a.account) === createdAccount.name ? createdAccount : a.account,
+      };
+    });
 
     return {
       ...i,
@@ -140,6 +156,7 @@ function replaceAccountInItems(createdAccount: AccountRaw, items?: DataType['ite
       memberships,
       children: replaceAccountInItems(createdAccount, i.children),
       appActions,
+      appData,
     };
   });
 }
@@ -277,7 +294,19 @@ function generateIdForMembers({
         return [...acc, m.account];
       }, []);
 
-      const allAccounts = [...accountsFromMemberships, ...accountsFromAppActions];
+      // get all accounts from all app data
+      const accountsFromAppData = (i.appData ?? [])?.reduce<SeedMember[]>((acc, m) => {
+        if (!m.account) {
+          return acc;
+        }
+        return [...acc, m.account];
+      }, []);
+
+      const allAccounts = [
+        ...accountsFromMemberships,
+        ...accountsFromAppActions,
+        ...accountsFromAppData,
+      ];
 
       // get creator of item
       if (i.creator) {
@@ -484,6 +513,7 @@ export async function seedFromJson(data: DataType = {}) {
     geolocations: ItemGeolocationRaw[];
     apps: AppRaw[];
     appActions: AppActionRaw[];
+    appData: AppDataRaw[];
   } = {
     items: [],
     actor: undefined,
@@ -498,6 +528,7 @@ export async function seedFromJson(data: DataType = {}) {
     geolocations: [],
     apps: [],
     appActions: [],
+    appData: [],
   };
 
   const { items: itemsWithActor, actor, members, actorProfile } = await processActor(data);
@@ -619,7 +650,6 @@ export async function seedFromJson(data: DataType = {}) {
   // save app actions
   const appActionValues = processedItems.reduce((acc, i) => {
     if (i.appActions) {
-      console.log(i);
       return acc.concat(
         i.appActions.map((aa) => ({
           itemId: i.id,
@@ -634,6 +664,26 @@ export async function seedFromJson(data: DataType = {}) {
   }, []);
   if (appActionValues.length) {
     result.appActions = await db.insert(appActions).values(appActionValues).returning();
+  }
+
+  // save app data
+  const appDataValues = processedItems.reduce((acc, i) => {
+    if (i.appData) {
+      return acc.concat(
+        i.appData.map((aa) => ({
+          itemId: i.id,
+          visibility: AppDataVisibility.Member,
+          data: {},
+          type: faker.word.sample(),
+          accountId: aa.account.id,
+          ...aa,
+        })),
+      );
+    }
+    return acc;
+  }, []);
+  if (appDataValues.length) {
+    result.appData = await db.insert(appDatas).values(appDataValues).returning();
   }
 
   return result;

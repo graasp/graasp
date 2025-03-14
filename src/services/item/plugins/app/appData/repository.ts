@@ -23,7 +23,7 @@ export class AppDataRepository {
     db: DBConnection,
     { itemId, actorId, appData }: CreateAppDataBody,
   ): Promise<AppDataInsertDTO> {
-    return await db
+    const savedValue = await db
       .insert(appDatas)
       .values({
         visibility: AppDataVisibility.Member,
@@ -32,7 +32,9 @@ export class AppDataRepository {
         creatorId: actorId,
         accountId: appData.accountId ?? actorId,
       })
-      .returning()[0];
+      .returning();
+
+    return savedValue[0];
   }
 
   async updateOne(db: DBConnection, appDataId: string, body: Partial<AppDataRaw>): Promise<void> {

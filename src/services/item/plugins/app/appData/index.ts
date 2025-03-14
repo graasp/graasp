@@ -31,11 +31,12 @@ const appDataPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
         schema: create,
         preHandler: authenticateAppsJWT,
       },
-      async ({ user, params: { itemId }, body }) => {
+      async ({ user, params: { itemId }, body }, reply) => {
         const member = asDefined(user?.account);
         await db.transaction(async (tx) => {
           await appDataService.post(tx, member, itemId, body);
         });
+        reply.status(StatusCodes.NO_CONTENT);
       },
     );
 
