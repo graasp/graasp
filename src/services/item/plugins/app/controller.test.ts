@@ -1,40 +1,45 @@
+import { eq } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 
 import { FastifyInstance } from 'fastify';
 
 import { AppItemFactory, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../test/app';
-import { Item } from '../../../../drizzle/types';
-import { MaybeUser } from '../../../../types';
-import { saveMember } from '../../../member/test/fixtures/members';
-import { ItemRepository } from '../../repository';
-import { ItemTestUtils, expectItem } from '../../test/fixtures/items';
+import build, {
+  clearDatabase,
+  mockAuthenticate,
+  unmockAuthenticate,
+} from '../../../../../test/app';
+import { seedFromJson } from '../../../../../test/mocks/seed';
+import { db } from '../../../../drizzle/db';
+import { itemMemberships, itemsRaw } from '../../../../drizzle/schema';
+import { assertIsDefined } from '../../../../utils/assertions';
+import { assertIsMemberForTest } from '../../../authentication';
+import { expectItem } from '../../test/fixtures/items';
 
 jest.mock('node-fetch');
-
-const testUtils = new ItemTestUtils();
-
-const itemRepository = new ItemRepository();
-const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
 
 const MOCK_URL = 'https://example.com';
 
 describe('App Item tests', () => {
   let app: FastifyInstance;
-  let actor: MaybeUser;
 
-  afterEach(async () => {
-    jest.clearAllMocks();
-    await clearDatabase(app.db);
-    actor = undefined;
+  beforeAll(async () => {
+    ({ app } = await build());
+  });
+
+  afterAll(async () => {
+    await clearDatabase(db);
     app.close();
+  });
+
+  afterEach(() => {
+    unmockAuthenticate();
+    jest.clearAllMocks();
   });
 
   describe('POST /items', () => {
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
-
       const payload = { name: 'name', url: MOCK_URL };
       const response = await app.inject({
         method: HttpMethod.Post,
@@ -45,11 +50,12 @@ describe('App Item tests', () => {
     });
 
     describe('Signed In', () => {
-      beforeEach(async () => {
-        ({ app, actor } = await build());
-      });
-
       it('Create successfully', async () => {
+        const { actor } = await seedFromJson();
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+
         const payload = { name: 'name', url: MOCK_URL, description: 'description' };
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -74,17 +80,22 @@ describe('App Item tests', () => {
         expectItem(newItem, expectedItem);
 
         // check item exists in db
-        const item = await itemRepository.getOne(app.db, newItem.id);
+        const item = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, newItem.id) });
         expectItem(item, expectedItem);
 
         // a membership is created for this item
-        const membership = await itemMembershipRawRepository.findOneBy({
-          item: { id: newItem.id },
+        const membership = await db.query.itemMemberships.findFirst({
+          where: eq(itemMemberships.itemPath, newItem.path),
         });
         expect(membership?.permission).toEqual(PermissionLevel.Admin);
       });
 
       it('Fail to create if payload is invalid', async () => {
+        const { actor } = await seedFromJson();
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+
         const payload = {
           name: 'm',
         };
@@ -99,6 +110,11 @@ describe('App Item tests', () => {
       });
 
       it('Fail to create if url of app is not an url', async () => {
+        const { actor } = await seedFromJson();
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+
         const payload1 = {
           url: 'someurl',
           name: 'myapp',
@@ -117,9 +133,9 @@ describe('App Item tests', () => {
 
   describe('PATCH /items/:id', () => {
     it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
-      const member = await saveMember();
-      const { item } = await testUtils.saveItemAndMembership({ member });
+      const {
+        items: [item],
+      } = await seedFromJson({ items: [{}] });
 
       const response = await app.inject({
         method: HttpMethod.Patch,
@@ -131,15 +147,22 @@ describe('App Item tests', () => {
     });
 
     describe('Signed In', () => {
-      beforeEach(async () => {
-        ({ app, actor } = await build());
-      });
-
       it('Update successfully', async () => {
-        const { item } = await testUtils.saveItemAndMembership({
-          item: AppItemFactory() as unknown as Item,
-          member: actor,
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            {
+              ...AppItemFactory(),
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+          ],
         });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+
         const payload = {
           name: 'new name',
           settings: {
