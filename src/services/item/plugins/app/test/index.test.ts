@@ -17,20 +17,7 @@ import { assertIsDefined } from '../../../../../utils/assertions';
 import { APP_ITEMS_PREFIX } from '../../../../../utils/config';
 import { assertIsMemberForTest } from '../../../../authentication';
 import { expectItem } from '../../../test/fixtures/items';
-
-const getAccessToken = async (
-  app: FastifyInstance,
-  item: { id: string },
-  chosenApp: { key: string; url: string },
-) => {
-  const response = await app.inject({
-    method: HttpMethod.Post,
-    url: `${APP_ITEMS_PREFIX}/${item.id}/api-access-token`,
-    payload: { key: chosenApp.key, origin: chosenApp.url },
-  });
-  const { token } = response.json();
-  return token;
-};
+import { getAccessToken } from './fixtures';
 
 describe('Apps Plugin Tests', () => {
   let app: FastifyInstance;
@@ -239,10 +226,6 @@ describe('Apps Plugin Tests', () => {
             },
           ],
         });
-        // assertIsDefined(actor);
-        // assertIsMemberForTest(actor);
-        // mockAuthenticate(actor);
-
         const token = await getAccessToken(app, item, chosenApp);
         const response = await app.inject({
           method: HttpMethod.Get,

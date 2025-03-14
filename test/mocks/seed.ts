@@ -15,6 +15,7 @@ import {
 import { db } from '../../src/drizzle/db';
 import {
   accountsTable,
+  appActions,
   apps,
   guestPasswords,
   itemGeolocationsTable,
@@ -30,6 +31,7 @@ import {
 } from '../../src/drizzle/schema';
 import {
   AccountRaw,
+  AppActionRaw,
   AppRaw,
   GuestRaw,
   Item,
@@ -71,6 +73,9 @@ type SeedItem<M = SeedMember> = (Partial<Omit<Item, 'creator'>> & { creator?: M 
   itemLoginSchema?: Partial<ItemLoginSchemaRaw> & {
     guests?: (Partial<GuestRaw> & { password?: string })[];
   };
+  appActions?: (Omit<Partial<AppActionRaw>, 'accountId'> & {
+    account: M;
+  })[];
 };
 type DataType = {
   actor?: SeedActor | null;
@@ -92,6 +97,10 @@ const replaceActorInItems = (createdActor?: AccountRaw, items?: DataType['items'
       ...m,
       account: m.account === ACTOR_STRING ? (createdActor as any) : m.account,
       creator: m.creator === ACTOR_STRING ? (createdActor as any) : (m.creator ?? null),
+    })),
+    appActions: i.appActions?.map((aa) => ({
+      ...aa,
+      account: aa.account === ACTOR_STRING ? (createdActor as any) : aa.account,
     })),
     children: replaceActorInItems(createdActor, i.children),
   }));
@@ -117,6 +126,12 @@ function replaceAccountInItems(createdAccount: AccountRaw, items?: DataType['ite
         creator: getNameIfExists(m.creator) === createdAccount.name ? createdAccount : m.creator,
       };
     });
+    const appActions = i.appActions?.map((a) => {
+      return {
+        ...a,
+        account: getNameIfExists(a.account) === createdAccount.name ? createdAccount : a.account,
+      };
+    });
 
     return {
       ...i,
@@ -124,6 +139,7 @@ function replaceAccountInItems(createdAccount: AccountRaw, items?: DataType['ite
         getNameIfExists(i.creator) === createdAccount.name ? createdAccount : (i.creator ?? null),
       memberships,
       children: replaceAccountInItems(createdAccount, i.children),
+      appActions,
     };
   });
 }
@@ -245,15 +261,30 @@ function generateIdForMembers({
   const allMembers = [
     ...members,
     ...items.flatMap((i) => {
-      // get all account from all memberships
+      // get all accounts from all memberships
       const accountsFromMemberships = (i.memberships ?? [])?.reduce<SeedMember[]>((acc, m) => {
         if (!m.account) {
           return acc;
         }
         return [...acc, m.account];
       }, []);
-      // get creator of membership
-      return i.creator ? accountsFromMemberships.concat([i.creator]) : accountsFromMemberships;
+
+      // get all accounts from all app actions
+      const accountsFromAppActions = (i.appActions ?? [])?.reduce<SeedMember[]>((acc, m) => {
+        if (!m.account) {
+          return acc;
+        }
+        return [...acc, m.account];
+      }, []);
+
+      const allAccounts = [...accountsFromMemberships, ...accountsFromAppActions];
+
+      // get creator of item
+      if (i.creator) {
+        allAccounts.push(i.creator);
+      }
+
+      return allAccounts;
     }),
   ].filter((m, index, array) => {
     // return unique member by name
@@ -452,6 +483,7 @@ export async function seedFromJson(data: DataType = {}) {
     itemTags: ItemTagRaw[];
     geolocations: ItemGeolocationRaw[];
     apps: AppRaw[];
+    appActions: AppActionRaw[];
   } = {
     items: [],
     actor: undefined,
@@ -465,6 +497,7 @@ export async function seedFromJson(data: DataType = {}) {
     itemTags: [],
     geolocations: [],
     apps: [],
+    appActions: [],
   };
 
   const { items: itemsWithActor, actor, members, actorProfile } = await processActor(data);
@@ -581,6 +614,26 @@ export async function seedFromJson(data: DataType = {}) {
         },
       })
       .returning();
+  }
+
+  // save app actions
+  const appActionValues = processedItems.reduce((acc, i) => {
+    if (i.appActions) {
+      console.log(i);
+      return acc.concat(
+        i.appActions.map((aa) => ({
+          itemId: i.id,
+          data: {},
+          type: faker.word.sample(),
+          accountId: aa.account.id,
+          ...aa,
+        })),
+      );
+    }
+    return acc;
+  }, []);
+  if (appActionValues.length) {
+    result.appActions = await db.insert(appActions).values(appActionValues).returning();
   }
 
   return result;
