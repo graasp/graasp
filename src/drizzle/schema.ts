@@ -421,7 +421,7 @@ export const invitationsTable = pgTable(
       .references(() => itemsRaw.path),
     name: varchar({ length: 100 }),
     email: varchar({ length: 100 }).notNull(),
-    permission: permissionEnum().notNull(),
+    permission: permissionEnum().default('read').notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
   },

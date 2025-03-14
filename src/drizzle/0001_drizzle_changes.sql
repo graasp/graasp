@@ -33,6 +33,7 @@ ALTER TABLE "account" RENAME COLUMN "extra_new" TO "extra";--> statement-breakpo
 
 CREATE TYPE "public"."account_type_enum" AS ENUM('individual', 'guest');--> statement-breakpoint
 
+CREATE INDEX "IDX_account_type" ON "account" USING btree ("type" text_ops);--> statement-breakpoint
 ALTER TABLE "account" ADD COLUMN "type_new" account_type_enum NOT NULL DEFAULT 'individual'::account_type_enum;--> statement-breakpoint
 UPDATE "account" SET "type_new" = "type"::account_type_enum; --> statement-breakpoint
 ALTER TABLE "account" DROP COLUMN "type"--> statement-breakpoint
@@ -185,7 +186,10 @@ ALTER TABLE "item_membership" ADD CONSTRAINT "item_membership_creator_id_account
 ALTER TABLE "item_membership" ADD CONSTRAINT "item_membership_account_id_account_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."account"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "member_profile" ADD CONSTRAINT "member_profile_member_id_account_id_fk" FOREIGN KEY ("member_id") REFERENCES "public"."account"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "member_password" ADD CONSTRAINT "member_password_member_id_account_id_fk" FOREIGN KEY ("member_id") REFERENCES "public"."account"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-
+ALTER TABLE "account" ADD CONSTRAINT "CHK_account_is_validated" CHECK ((is_validated IS NOT NULL) OR ((type)::text <> 'individual'::text));--> statement-breakpoint
+ALTER TABLE "account" ADD CONSTRAINT "CHK_account_email" CHECK ((email IS NOT NULL) OR ((type)::text <> 'individual'::text));--> statement-breakpoint
+ALTER TABLE "account" ADD CONSTRAINT "CHK_account_extra" CHECK ((extra IS NOT NULL) OR ((type)::text <> 'individual'::text));--> statement-breakpoint
+ALTER TABLE "account" ADD CONSTRAINT "CHK_account_enable_save_actions" CHECK ((enable_save_actions IS NOT NULL) OR ((type)::text <> 'individual'::text));--> statement-breakpoint
 
 CREATE VIEW "public"."guests_view" AS (select "id", "name", "email", "extra", "type", "created_at", "updated_at", "user_agreements_date", "enable_save_actions", "last_authenticated_at", "is_validated", "item_login_schema_id" from "account" where ("account"."type" = 'guest' and "account"."item_login_schema_id" is not null));--> statement-breakpoint
 CREATE VIEW "public"."item_view" AS (select "id", "name", "type", "description", "path", "creator_id", "extra", "settings", "created_at", "updated_at", "lang", "order" from "item" where "item"."deleted_at" is null);--> statement-breakpoint
