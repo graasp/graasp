@@ -1,9 +1,13 @@
+-- Enable these if you are running on a db that has the role table
+-- ALTER TABLE "role" DISABLE ROW LEVEL SECURITY;--> statement-breakpoint
+-- DROP TABLE "role" CASCADE;--> statement-breakpoint
+
 ALTER TABLE "migrations" DISABLE ROW LEVEL SECURITY;--> statement-breakpoint
-ALTER TABLE "role" DISABLE ROW LEVEL SECURITY;--> statement-breakpoint
-ALTER TABLE "typeorm_metadata" DISABLE ROW LEVEL SECURITY;--> statement-breakpoint
 DROP TABLE "migrations" CASCADE;--> statement-breakpoint
-DROP TABLE "role" CASCADE;--> statement-breakpoint
+
+ALTER TABLE "typeorm_metadata" DISABLE ROW LEVEL SECURITY;--> statement-breakpoint
 DROP TABLE "typeorm_metadata" CASCADE;--> statement-breakpoint
+
 ALTER TABLE "member_profile" RENAME COLUMN "facebookID" TO "facebookId";--> statement-breakpoint
 ALTER TABLE "member_profile" RENAME COLUMN "linkedinID" TO "linkedinId";--> statement-breakpoint
 ALTER TABLE "member_profile" RENAME COLUMN "twitterID" TO "twitterId";--> statement-breakpoint
