@@ -273,7 +273,7 @@ CREATE TABLE "item_visibility" (
 CREATE TABLE "migrations" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"timestamp" bigint NOT NULL,
-	"name" varchar NOT NULL
+	"name" text NOT NULL
 );--> statement-breakpoint
 CREATE TABLE "recycled_item_data" (
 	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
@@ -309,11 +309,11 @@ CREATE TABLE "member_profile" (
 	CONSTRAINT "member-profile" UNIQUE("member_id")
 );--> statement-breakpoint
 CREATE TABLE "typeorm_metadata" (
-	"type" varchar NOT NULL,
-	"database" varchar,
-	"schema" varchar,
-	"table" varchar,
-	"name" varchar,
+	"type" text NOT NULL,
+	"database" text,
+	"schema" text,
+	"table" text,
+	"name" text,
 	"value" text
 );--> statement-breakpoint
 CREATE TABLE "publisher" (
