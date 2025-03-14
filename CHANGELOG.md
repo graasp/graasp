@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.65.1](https://github.com/graasp/graasp/compare/v1.65.0...v1.65.1) (2025-03-14)
+
+
+### Bug Fixes
+
+* return deleted child items in own recycled ([#1790](https://github.com/graasp/graasp/issues/1790)) ([477d6b6](https://github.com/graasp/graasp/commit/477d6b6fcdf164c45c0873878812110bdd6a0d35))
+
 ## [1.65.0](https://github.com/graasp/graasp/compare/v1.64.0...v1.65.0) (2025-03-10)
 
 
