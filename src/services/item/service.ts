@@ -884,7 +884,6 @@ export class ItemService {
     );
 
     // create a membership if needed
-    console.log('wrgoijw');
     await this.itemMembershipRepository
       .addOne(db, {
         itemPath: copyRoot.path,
@@ -893,14 +892,12 @@ export class ItemService {
         permission: PermissionLevel.Admin,
       })
       .catch((e) => {
-        console.log(e);
         // admin permission already exists and does not need to be added
         if (e instanceof InvalidMembership) {
           return;
         }
         throw e;
       });
-    console.log('zhrtgdrfsd');
 
     // post hook
     for (const { original, copy } of treeCopyMap.values()) {
@@ -913,7 +910,6 @@ export class ItemService {
       await this.itemVisibilityRepository.copyAll(db, member, original, copy.path, [
         ItemVisibilityType.Public,
       ]);
-      console.log('jutzhfgb');
 
       // copy geolocation
       await this.itemGeolocationRepository.copy(db, original, copy);
@@ -925,26 +921,19 @@ export class ItemService {
             originalId: original.id,
             newId: copy.id,
           });
-          console.log('5tergdf');
         } catch {
           this.log.error(`On item copy, thumbnail for ${original.id} could not be found.`);
         }
       }
     }
 
-    console.log('woiwrf');
-
     // index copied root if copied in a published item
     if (parentItem) {
-      console.log('uzjhnfgb');
       const published = await this.itemPublishedRepository.getForItem(db, parentItem.path);
-      console.log('ujzrzth');
       if (published) {
         await this.meilisearchWrapper.indexOne(db, published);
-        console.log('rgerger');
       }
     }
-    console.log('ujzzghg');
 
     return { item, copy: copyRoot };
   }

@@ -1619,8 +1619,6 @@ describe('Item routes tests', () => {
         assertIsMemberForTest(actor);
         mockAuthenticate(actor);
 
-        console.log('weiojwrfnkj');
-
         const response = await app.inject({
           method: HttpMethod.Post,
           url: '/items/move',

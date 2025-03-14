@@ -36,6 +36,7 @@ export default (
 
         // Fetch Member datas
         const account = await accountRepository.get(db, accountId);
+
         // Member can be undefined if authorized.
         if (strict && !account.exists()) {
           return done(new UnauthorizedMember(), false);

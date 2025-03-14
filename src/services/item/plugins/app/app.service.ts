@@ -91,7 +91,6 @@ export class AppService {
     if (item.type !== ItemType.APP) {
       throw new Error('Item is not an app');
     }
-
     if (requestDetails) {
       const { itemId: tokenItemId } = requestDetails;
       checkTargetItemAndTokenItemMatch(itemId, tokenItemId);

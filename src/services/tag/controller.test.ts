@@ -47,7 +47,7 @@ describe('Tag Endpoints', () => {
     });
 
     it('Return count', async () => {
-      const commonString = faker.word.sample(1);
+      const commonString = faker.word.sample();
       const { tags } = await seedFromJson({
         items: [
           {

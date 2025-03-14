@@ -15,6 +15,7 @@ import {
 import { db } from '../../src/drizzle/db';
 import {
   accountsTable,
+  apps,
   guestPasswords,
   itemGeolocationsTable,
   itemLoginSchemas,
@@ -24,10 +25,12 @@ import {
   itemsRaw,
   memberPasswords,
   memberProfiles,
+  publishers,
   tags as tagsTable,
 } from '../../src/drizzle/schema';
 import {
   AccountRaw,
+  AppRaw,
   GuestRaw,
   Item,
   ItemGeolocationInsertDTO,
@@ -42,6 +45,7 @@ import {
   TagRaw,
 } from '../../src/drizzle/types';
 import { encryptPassword } from '../../src/services/auth/plugins/password/utils';
+import { APPS_PUBLISHER_ID } from '../../src/utils/config';
 import { ItemFactory } from '../factories/item.factory';
 import { GuestFactory, MemberFactory } from '../factories/member.factory';
 
@@ -73,6 +77,7 @@ type DataType = {
   members?: SeedMember[];
   items?: SeedItem<ReferencedSeedActor | SeedMember>[];
   tags?: Pick<TagRaw, 'name' | 'category'>[];
+  apps?: Partial<AppRaw>[];
 };
 
 const replaceActorInItems = (createdActor?: AccountRaw, items?: DataType['items']): SeedItem[] => {
@@ -446,6 +451,7 @@ export async function seedFromJson(data: DataType = {}) {
     tags: TagRaw[];
     itemTags: ItemTagRaw[];
     geolocations: ItemGeolocationRaw[];
+    apps: AppRaw[];
   } = {
     items: [],
     actor: undefined,
@@ -458,6 +464,7 @@ export async function seedFromJson(data: DataType = {}) {
     tags: [],
     itemTags: [],
     geolocations: [],
+    apps: [],
   };
 
   const { items: itemsWithActor, actor, members, actorProfile } = await processActor(data);
@@ -534,6 +541,46 @@ export async function seedFromJson(data: DataType = {}) {
   }, []);
   if (geolocations.length) {
     result.geolocations = await db.insert(itemGeolocationsTable).values(geolocations).returning();
+  }
+
+  // save apps
+  // const publisherValues = data.apps.map(({publisher}))
+  const appValues = data.apps;
+  if (appValues?.length) {
+    const publishersEntities = await db
+      .insert(publishers)
+      .values({
+        id: APPS_PUBLISHER_ID,
+        name: faker.word.sample(),
+        origins: [faker.internet.url()],
+      })
+      .onConflictDoUpdate({
+        target: publishers.id,
+        set: {
+          origins: [faker.internet.url()],
+        },
+      })
+      .returning();
+    result.apps = await db
+      .insert(apps)
+      .values(
+        appValues.map((app) => ({
+          name: faker.word.words(5),
+          description: faker.word.sample(),
+          url: `${publishersEntities[0].origins[0]}/${faker.word.sample()}`,
+          ...app,
+          publisherId: publishersEntities[0].id,
+        })),
+      )
+      .onConflictDoUpdate({
+        target: publishers.id,
+        set: {
+          description: faker.word.sample(),
+          url: `${publishersEntities[0].origins[0]}/${faker.word.sample()}`,
+          publisherId: publishersEntities[0].id,
+        },
+      })
+      .returning();
   }
 
   return result;

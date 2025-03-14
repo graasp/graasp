@@ -757,14 +757,12 @@ export class ItemMembershipRepository {
     const itemId = getChildFromPath(itemPath);
 
     const inheritedMembership = await this.getInherited(db, itemPath, accountId, true);
-    console.log(inheritedMembership, itemId, itemPath, accountId);
     if (inheritedMembership) {
       const { item: itemFromPermission, permission: inheritedPermission, id } = inheritedMembership;
       // fail if trying to add a new membership for the same member and item
       if (itemFromPermission.id === itemId) {
         throw new ModifyExistingMembership({ id });
       }
-      console.log(itemId, itemPath, permission, inheritedMembership);
       if (PermissionLevelCompare.lte(permission, inheritedPermission)) {
         // trying to add a membership with the same or "worse" permission level than
         // the one inherited from the membership "above"
