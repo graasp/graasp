@@ -45,14 +45,15 @@ export class RecycledItemDataRepository extends MutableRepository<RecycledItemDa
       .createQueryBuilder('im')
       // we want to join on recycled item
       .withDeleted()
+      // get top most recycled item
+      .innerJoin(RecycledItemData, 'rid', 'im.item_path  @>  rid.item_path')
       .innerJoinAndSelect(
-        'im.item',
+        'rid.item',
         'item',
         // reduce size by getting only recycled items
-        `item.path <@ im.item_path and item.deleted_at is not null`,
+        // `item.path <@ im.item_path and item.deleted_at is not null`,
       )
-      // get top most recycled item
-      .innerJoin(RecycledItemData, 'rid', 'item.path = rid.item_path')
+
       // return item's creator
       .leftJoinAndSelect('item.creator', 'member')
       // item membership constraints
@@ -66,9 +67,55 @@ export class RecycledItemDataRepository extends MutableRepository<RecycledItemDa
       .orderBy('item.deleted_at', 'DESC')
       .offset(skip)
       .limit(limit);
+    const countQuery = this.manager
+      // start with smaller table that can have the most contraints: membership with admin and accountId
+      .getRepository(ItemMembership)
+      .createQueryBuilder('im')
+      // we want to join on recycled item
+      .withDeleted()
+      // get top most recycled item
+      .innerJoin(RecycledItemData, 'rid', 'im.item_path  @>  rid.item_path')
+      .where(`im.account_id = :accountId`, {
+        accountId: account.id,
+      })
+      .andWhere(` im.permission = :permission`, {
+        permission: PermissionLevel.Admin,
+      });
 
-    const [data, totalCount] = await query.getManyAndCount();
-    return { data: data.map(({ item }) => item), totalCount, pagination };
+    const data = await query.getRawMany();
+
+    const totalCount = await countQuery.getCount();
+
+    // remap raw values
+    const allResults = data.map(
+      (i) =>
+        ({
+          id: i.item_id,
+          name: i.item_name,
+          description: i.item_description,
+          type: i.item_type,
+          createdAt: new Date(i.item_created_at),
+          updatedAt: new Date(i.item_updated_at),
+          extra: JSON.parse(i.item_extra ?? {}),
+          settings: JSON.parse(i.item_settings ?? {}),
+          path: i.item_path,
+          lang: i.item_lang,
+          creator: i.item_creator_id
+            ? {
+                id: i.item_creator_id,
+                name: i.member_name,
+                type: i.member_type,
+              }
+            : null,
+        }) as Item,
+    );
+
+    return {
+      // remove duplicate
+      data: [...new Map(allResults.map((item) => [item.id, item])).values()],
+      totalCount,
+      pagination,
+    };
   }
 
   // warning: this call removes from the table
