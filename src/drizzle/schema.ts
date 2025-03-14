@@ -842,7 +842,7 @@ export const accountsTable = pgTable(
     ),
   },
   (table) => [
-    index('IDX_account_type').using('btree', table.type.asc().nullsLast().op('text_ops')),
+    index('IDX_account_type').using('btree', table.type.asc().nullsLast().op('enum_ops')),
     unique('UQ_account_name_item_login_schema_id').on(table.name, table.itemLoginSchemaId),
     unique('member_email_key1').on(table.email),
     check(
