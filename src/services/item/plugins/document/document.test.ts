@@ -1,3 +1,4 @@
+import { eq } from 'drizzle-orm';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 
 import { FastifyInstance } from 'fastify';
@@ -15,12 +16,11 @@ import build, {
   mockAuthenticate,
   unmockAuthenticate,
 } from '../../../../../test/app';
-import { MaybeUser } from '../../../../types';
-import { saveMember } from '../../../member/test/fixtures/members';
-import { ItemTestUtils, expectItem } from '../../test/fixtures/items';
-
-const testUtils = new ItemTestUtils();
-const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
+import { seedFromJson } from '../../../../../test/mocks/seed';
+import { db } from '../../../../drizzle/db';
+import { itemMemberships, itemsRaw } from '../../../../drizzle/schema';
+import { assertIsDefined } from '../../../../utils/assertions';
+import { expectItem } from '../../test/fixtures/items';
 
 const extra = {
   [ItemType.DOCUMENT]: {
@@ -29,20 +29,18 @@ const extra = {
 };
 describe('Document Item tests', () => {
   let app: FastifyInstance;
-  let actor: MaybeUser;
 
   beforeAll(async () => {
-    ({ app } = await build({ member: null }));
+    ({ app } = await build());
   });
 
   afterAll(async () => {
-    await clearDatabase(app.db);
+    await clearDatabase(db);
     app.close();
   });
 
   afterEach(async () => {
     jest.clearAllMocks();
-    actor = undefined;
     unmockAuthenticate();
   });
 
@@ -60,14 +58,12 @@ describe('Document Item tests', () => {
     });
 
     describe('Signed In', () => {
-      beforeEach(async () => {
-        actor = await saveMember();
-        mockAuthenticate(actor);
-      });
-
       it('Create successfully', async () => {
-        const payload = DocumentItemFactory({ extra });
+        const { actor } = await seedFromJson();
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
+        const payload = DocumentItemFactory({ extra });
         const response = await app.inject({
           method: HttpMethod.Post,
           url: '/items',
@@ -80,12 +76,12 @@ describe('Document Item tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
 
         // check item exists in db
-        const item = await testUtils.itemRepository.getOne(newItem.id);
+        const item = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, newItem.id) });
         expectItem(item, payload);
 
         // a membership is created for this item
-        const membership = await itemMembershipRawRepository.findOneBy({
-          item: { id: newItem.id },
+        const membership = await db.query.itemMemberships.findFirst({
+          where: eq(itemMemberships.itemPath, newItem.path),
         });
         expect(membership?.permission).toEqual(PermissionLevel.Admin);
       });
@@ -144,8 +140,9 @@ describe('Document Item tests', () => {
 
   describe('PATCH /items/:id', () => {
     it('Throws if signed out', async () => {
-      const member = await saveMember();
-      const { item } = await testUtils.saveItemAndMembership({ member });
+      const {
+        items: [item],
+      } = await seedFromJson({ actor: null, items: [{}] });
 
       const response = await app.inject({
         method: HttpMethod.Patch,
@@ -157,23 +154,26 @@ describe('Document Item tests', () => {
     });
 
     describe('Signed In', () => {
-      beforeEach(async () => {
-        actor = await saveMember();
-        mockAuthenticate(actor);
-      });
-
       it('Update successfully', async () => {
-        const { item } = await testUtils.saveItemAndMembership({
-          item: {
-            type: ItemType.DOCUMENT,
-            extra: {
-              [ItemType.DOCUMENT]: {
-                content: 'value',
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              type: ItemType.DOCUMENT,
+              extra: {
+                [ItemType.DOCUMENT]: {
+                  content: 'value',
+                },
               },
             },
-          },
-          member: actor,
+          ],
         });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         const payload = {
           name: 'new name',
           extra: {
@@ -208,17 +208,24 @@ describe('Document Item tests', () => {
       });
 
       it('Bad Request if extra is invalid', async () => {
-        const { item } = await testUtils.saveItemAndMembership({
-          item: {
-            type: ItemType.DOCUMENT,
-            extra: {
-              [ItemType.DOCUMENT]: {
-                content: 'value',
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            {
+              type: ItemType.DOCUMENT,
+              extra: {
+                [ItemType.DOCUMENT]: {
+                  content: 'value',
+                },
               },
             },
-          },
-          member: actor,
+          ],
         });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         const payload = {
           name: 'new name',
           extra: {
