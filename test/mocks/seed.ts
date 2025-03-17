@@ -21,6 +21,7 @@ import {
   appSettings,
   apps,
   guestPasswords,
+  invitationsTable,
   itemGeolocationsTable,
   itemLoginSchemas,
   itemMemberships,
@@ -30,6 +31,7 @@ import {
   memberPasswords,
   memberProfiles,
   publishers,
+  recycledItemDatas,
   tags as tagsTable,
 } from '../../src/drizzle/schema';
 import {
@@ -39,7 +41,7 @@ import {
   AppRaw,
   AppSettingRaw,
   GuestRaw,
-  Item,
+  InvitationRaw,
   ItemGeolocationInsertDTO,
   ItemGeolocationRaw,
   ItemLoginSchemaRaw,
@@ -68,11 +70,12 @@ type SeedMembership<M = SeedMember> = Partial<Omit<ItemMembershipRaw, 'creator' 
   creator?: M | null;
   permission?: `${PermissionLevel}`;
 };
-type SeedItem<M = SeedMember> = (Partial<Omit<Item, 'creator'>> & { creator?: M | null }) & {
+type SeedItem<M = SeedMember> = (Partial<Omit<ItemRaw, 'creator'>> & { creator?: M | null }) & {
   children?: SeedItem<M>[];
   memberships?: SeedMembership<M>[];
   isPublic?: boolean;
   isHidden?: boolean;
+  isDeleted?: boolean;
   geolocation?: Omit<ItemGeolocationInsertDTO, 'itemPath'>;
   tags?: Pick<TagRaw, 'name' | 'category'>[];
   itemLoginSchema?: Partial<ItemLoginSchemaRaw> & {
@@ -88,6 +91,7 @@ type SeedItem<M = SeedMember> = (Partial<Omit<Item, 'creator'>> & { creator?: M 
     account: M;
     creator: M;
   })[];
+  invitations?: Partial<InvitationRaw>[];
 };
 type DataType = {
   actor?: SeedActor | null;
@@ -540,6 +544,7 @@ export async function seedFromJson(data: DataType = {}) {
     appActions: AppActionRaw[];
     appSettings: AppSettingRaw[];
     appData: AppDataRaw[];
+    invitations: InvitationRaw[];
   } = {
     items: [],
     actor: undefined,
@@ -556,6 +561,7 @@ export async function seedFromJson(data: DataType = {}) {
     appActions: [],
     appData: [],
     appSettings: [],
+    invitations: [],
   };
 
   const { items: itemsWithActor, actor, members, actorProfile } = await processActor(data);
@@ -579,7 +585,12 @@ export async function seedFromJson(data: DataType = {}) {
   if (processedItems.length) {
     result.items = await db
       .insert(itemsRaw)
-      .values(processedItems.map((i) => ItemFactory({ ...i, creatorId: i.creator?.id })))
+      .values(
+        processedItems.map((i) => ({
+          ...ItemFactory({ ...i, creatorId: i.creator?.id }),
+          deletedAt: i.isDeleted ? new Date().toISOString() : null,
+        })),
+      )
       .returning();
   }
 
@@ -731,6 +742,34 @@ export async function seedFromJson(data: DataType = {}) {
   }, []);
   if (appSettingValues.length) {
     result.appSettings = await db.insert(appSettings).values(appSettingValues).returning();
+  }
+
+  // save invitations
+  const invitationValues = processedItems.reduce((acc, i) => {
+    if (i.invitations) {
+      return acc.concat(
+        i.invitations.map(() => ({
+          itemPath: i.path,
+          permission: PermissionLevel.Read,
+          email: faker.internet.email().toLowerCase(),
+        })),
+      );
+    }
+    return acc;
+  }, []);
+  if (invitationValues.length) {
+    result.invitations = await db.insert(invitationsTable).values(invitationValues).returning();
+  }
+
+  // save recycled data
+  const recycledDataValues = processedItems.reduce((acc, i) => {
+    if (i.isDeleted) {
+      return acc.concat([{ itemPath: i.path }]);
+    }
+    return acc;
+  }, []);
+  if (recycledDataValues.length) {
+    await db.insert(recycledItemDatas).values(recycledDataValues);
   }
 
   return result;

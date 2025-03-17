@@ -106,10 +106,11 @@ export class InvitationService {
     if (actor) {
       return this.invitationRepository.getOneByIdAndByCreatorOrThrow(db, invitationId, actor.id);
     } else {
-      const invitation = this.invitationRepository.getOne(db, invitationId);
+      const invitation = await this.invitationRepository.getOne(db, invitationId);
       if (!invitation) {
         throw new InvitationNotFound({ invitationId });
       }
+      return invitation;
     }
   }
 
@@ -248,12 +249,15 @@ export class InvitationService {
     this.log.debug(`${JSON.stringify(membershipsToCreate)} memberships to create`);
 
     // create memberships for accounts that already exist
-    const memberships = await this.itemMembershipService.createMany(
-      db,
-      actor,
-      membershipsToCreate,
-      itemId,
-    );
+    let memberships: ItemMembershipRaw[] = [];
+    if (membershipsToCreate.length) {
+      memberships = await this.itemMembershipService.createMany(
+        db,
+        actor,
+        membershipsToCreate,
+        itemId,
+      );
+    }
 
     // generate invitations to create
     const invitationsToCreate = newAccounts.map((email) => {
@@ -264,8 +268,10 @@ export class InvitationService {
     this.log.debug(`${JSON.stringify(invitationsToCreate)} invitations to create`);
 
     // create invitations for accounts that do not exist yet
-    const invitations = await this.postManyForItem(db, actor, itemId, invitationsToCreate);
-
+    let invitations: InvitationWithItem[] = [];
+    if (invitationsToCreate.length) {
+      invitations = await this.postManyForItem(db, actor, itemId, invitationsToCreate);
+    }
     return { memberships, invitations };
   }
 

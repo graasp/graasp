@@ -1,10 +1,11 @@
 import { faker } from '@faker-js/faker';
-import { inArray } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import FormData from 'form-data';
 import fs from 'fs';
 import { StatusCodes } from 'http-status-codes';
 import fetch from 'node-fetch';
 import path from 'path';
+import { permission } from 'process';
 import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
@@ -19,7 +20,7 @@ import build, {
 import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { resolveDependency } from '../../../../../di/utils';
 import { db } from '../../../../../drizzle/db';
-import { invitationsTable } from '../../../../../drizzle/schema';
+import { invitationsTable, itemMemberships } from '../../../../../drizzle/schema';
 import { InvitationRaw } from '../../../../../drizzle/types';
 import { MailerService } from '../../../../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../../../../utils/assertions';
@@ -27,7 +28,6 @@ import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { MOCK_CAPTCHA } from '../../../../auth/plugins/captcha/test/utils';
 import { assertIsMemberForTest } from '../../../../authentication';
 import { MissingGroupColumnInCSVError } from '../errors';
-import { createInvitations, saveInvitations } from './utils';
 
 // we need a different form data for each test
 const createFormData = (filename) => {
@@ -55,7 +55,7 @@ const mockEmail = () => {
 
 const expectInvitations = (
   invitations: Pick<InvitationRaw, 'name' | 'permission' | 'email'>[],
-  correctInvitations: (Pick<InvitationRaw, 'permission' | 'email'> & { name?: string })[],
+  correctInvitations: (Pick<InvitationRaw, 'permission' | 'email'> & { name?: string | null })[],
 ) => {
   expect(invitations).toHaveLength(correctInvitations.length);
   for (const inv of invitations) {
@@ -151,226 +151,318 @@ describe('Invitation Plugin', () => {
         expect(new Set(invitationEmails)).toEqual(new Set(sentEmails));
       });
 
-      //     it('create memberships if member already exists', async () => {
-      //       const { item } = await testUtils.saveItemAndMembership({ member: actor });
-      //       const toMember = await saveMember();
-      //       const invitations = [
-      //         invitationRawRepository.create({
-      //           item,
-      //           creator: actor,
-      //           permission: PermissionLevel.Read,
-      //           email: toMember.email,
-      //         }),
-      //       ];
+      it('create memberships if member already exists', async () => {
+        const {
+          items: [item],
+          actor,
+          members: [toMember],
+        } = await seedFromJson({
+          members: [{ name: 'bob' }],
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
 
+        const invitationsForPayload = [{ email: toMember.email, permission: PermissionLevel.Read }];
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invite`,
+          payload: { invitations: invitationsForPayload },
+        });
+        expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
+
+        // a membership is created
+        const memberships = await db.query.itemMemberships.findMany({
+          where: eq(itemMemberships.accountId, toMember.id),
+        });
+        expect(memberships).toHaveLength(1);
+        expect(memberships[0].permission).toEqual(PermissionLevel.Read);
+        expect(memberships[0].itemPath).toEqual(item.path);
+
+        // no invitation created
+        const completeInvitation = await db.query.invitationsTable.findFirst({
+          where: eq(invitationsTable.email, toMember.email),
+        });
+        expect(completeInvitation).toBeUndefined();
+      });
+
+      it('Throw for no invitation', async () => {
+        const {
+          items: [item],
+          actor,
+        } = await seedFromJson({
+          members: [{ name: 'bob' }],
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invite`,
+          payload: { invitations: [] },
+        });
+        expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
+      });
+
+      it('normalise emails before saving', async () => {
+        const {
+          items: [item],
+          actor,
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+
+        const invitation = {
+          email: 'TestCase@graap.org',
+          permission: PermissionLevel.Read,
+        };
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invite`,
+          payload: { invitations: [invitation] },
+        });
+        expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
+
+        const completeInvitations = await db.query.invitationsTable.findMany({
+          where: eq(invitationsTable.email, invitation.email.toLowerCase()),
+        });
+        expectInvitations(completeInvitations, [
+          { ...invitation, email: invitation.email.toLowerCase() },
+        ]);
+      });
+
+      it('throws if one invitation is malformed', async () => {
+        const {
+          items: [item],
+          actor,
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+
+        const faultyInvitation = { email: 'not-correct-email', permission: PermissionLevel.Read };
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invite`,
+          payload: { invitations: [...buildInvitations(3), faultyInvitation] },
+        });
+
+        expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
+      });
+
+      it('throw if id is invalid', async () => {
+        const { actor } = await seedFromJson();
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `${ITEMS_ROUTE_PREFIX}/invalid-id/invite`,
+          payload: { invitations: buildInvitations() },
+        });
+
+        expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
+      });
+    });
+  });
+
+  describe('GET /:itemId/invitations', () => {
+    it('throws if signed out', async () => {
+      const {
+        items: [item],
+      } = await seedFromJson({ actor: null, items: [{}] });
+
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    });
+
+    describe('Signed In', () => {
+      it('get invitations for item successfully', async () => {
+        const {
+          items: [item],
+          actor,
+          invitations,
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              invitations: [{}, {}, {}],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations`,
+        });
+
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        expectInvitations(response.json(), invitations);
+      });
+
+      it('get invitations for parent item from child successfully', async () => {
+        const {
+          items: [_parent, child],
+          actor,
+          invitations: [parentInvitation, ...childInvitations],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              invitations: [{}],
+              children: [
+                {
+                  invitations: [{}, {}, {}],
+                },
+              ],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: `${ITEMS_ROUTE_PREFIX}/${child.id}/invitations`,
+        });
+
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        expectInvitations(await response.json(), [parentInvitation, ...childInvitations]);
+      });
+
+      it('throw if item with invitations has been trashed', async () => {
+        const {
+          items: [item],
+          actor,
+        } = await seedFromJson({
+          items: [
+            {
+              isDeleted: true,
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              invitations: [{}],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations`,
+        });
+
+        expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
+      });
+
+      it('throw if id is invalid', async () => {
+        const { actor } = await seedFromJson();
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: `${ITEMS_ROUTE_PREFIX}/invalid-id/invitations`,
+        });
+
+        expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
+      });
+    });
+  });
+
+  describe('GET /invitations/:id', () => {
+    it('get invitation by id successfully if signed out', async () => {
+      const { invitations } = await seedFromJson({
+        actor: null,
+        items: [
+          {
+            invitations: [{}],
+          },
+        ],
+      });
+
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: `${ITEMS_ROUTE_PREFIX}/invitations/${invitations[0].id}`,
+      });
+      expect(response.statusCode).toEqual(StatusCodes.OK);
+      expectInvitations([response.json()], [invitations[0]]);
+    });
+    describe('Signed In', () => {
+      it('get invitation by id successfully', async () => {
+        const { invitations, actor } = await seedFromJson({
+          items: [
+            {
+              invitations: [{}],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: `${ITEMS_ROUTE_PREFIX}/invitations/${invitations[0].id}`,
+        });
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        expectInvitations([await response.json()], [invitations[0]]);
+      });
+      //     it("don't return an invitation for a trashed item", async () => {
+      //       await testUtils.rawItemRepository.softDelete(invitations[0].item.id);
       //       const response = await app.inject({
-      //         method: HttpMethod.Post,
-      //         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invite`,
-      //         payload: { invitations },
+      //         method: HttpMethod.Get,
+      //         url: `${ITEMS_ROUTE_PREFIX}/invitations/${invitations[0].id}`,
       //       });
-
-      //       expect(response.statusCode).toEqual(StatusCodes.OK);
-
-      //       const result = await response.json();
-      //       expect(result.memberships).toHaveLength(1);
-      //       expect(result.memberships[0].account.id).toEqual(toMember.id);
-      //       expect(result.memberships[0].item.id).toEqual(item.id);
-      //       expect(result.memberships[0].permission).toEqual(PermissionLevel.Read);
-      //       expect(result.invitations).toHaveLength(0);
+      //       expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
       //     });
-
-      //     it('Throw for no invitation', async () => {
-      //       const { item } = await testUtils.saveItemAndMembership({ member: actor });
-
-      //       const response = await app.inject({
-      //         method: HttpMethod.Post,
-      //         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invite`,
-      //         payload: { invitations: [] },
-      //       });
-      //       expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
-      //     });
-
-      //     it('normalise emails before saving', async () => {
-      //       const { item } = await testUtils.saveItemAndMembership({ member: actor });
-      //       const invitation = {
-      //         email: 'TestCase@graap.org',
-      //         permission: PermissionLevel.Read,
-      //       };
-
-      //       const response = await app.inject({
-      //         method: HttpMethod.Post,
-      //         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invite`,
-      //         payload: { invitations: [invitation] },
-      //       });
-
-      //       expect(response.statusCode).toEqual(StatusCodes.OK);
-      //       const completeInvitations = await invitationRawRepository.find({
-      //         where: { email: invitation.email.toLowerCase() },
-      //       });
-      //       const result = await response.json();
-      //       expectInvitations(result.invitations, completeInvitations);
-      //     });
-
-      //     it('throws if one invitation is malformed', async () => {
-      //       const { item, invitations } = await createInvitations({ member: actor });
-      //       const faultyInvitation = { email: 'not-correct-email', permission: PermissionLevel.Read };
-
-      //       const response = await app.inject({
-      //         method: HttpMethod.Post,
-      //         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invite`,
-      //         payload: { invitations: [...invitations, faultyInvitation] },
-      //       });
-
-      //       expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
-      //     });
-
       //     it('throw if id is invalid', async () => {
-      //       const { invitations } = await createInvitations({ member: actor });
       //       const response = await app.inject({
-      //         method: HttpMethod.Post,
-      //         url: `${ITEMS_ROUTE_PREFIX}/invalid-id/invite`,
-      //         payload: { invitations },
+      //         method: HttpMethod.Get,
+      //         url: `${ITEMS_ROUTE_PREFIX}/invitations/invalid-id`,
       //       });
-
       //       expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
       //     });
       //   });
     });
-
-    // describe('GET /:itemId/invitations', () => {
-    //   it('throws if signed out', async () => {
-    //     const member = await saveMember();
-    //     const { item } = await saveInvitations({ member });
-
-    //     const response = await app.inject({
-    //       method: HttpMethod.Get,
-    //       url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations`,
-    //     });
-
-    //     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-    //   });
-
-    //   describe('Signed In', () => {
-    //     let item, invitations;
-
-    //     beforeEach(async () => {
-    //       actor = await saveMember();
-    //       mockAuthenticate(actor);
-    //       ({ item, invitations } = await saveInvitations({ member: actor }));
-    //     });
-    //     it('get invitations for item successfully', async () => {
-    //       const response = await app.inject({
-    //         method: HttpMethod.Get,
-    //         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations`,
-    //         payload: { invitations },
-    //       });
-
-    //       expect(response.statusCode).toEqual(StatusCodes.OK);
-    //       expectInvitations(await response.json(), invitations);
-    //     });
-
-    //     it('get invitations for parent item from child successfully', async () => {
-    //       // child invitations
-    //       const { item: child, invitations: childInvitations } = await createInvitations({
-    //         member: actor,
-    //         parentItem: item,
-    //       });
-    //       for (const inv of childInvitations) {
-    //         await invitationRawRepository.save(inv);
-    //       }
-
-    //       const response = await app.inject({
-    //         method: HttpMethod.Get,
-    //         url: `${ITEMS_ROUTE_PREFIX}/${child.id}/invitations`,
-    //         payload: { invitations },
-    //       });
-
-    //       expect(response.statusCode).toEqual(StatusCodes.OK);
-    //       expectInvitations(await response.json(), [...invitations, ...childInvitations]);
-    //     });
-
-    //     it('throw if item with invitations has been trashed', async () => {
-    //       await testUtils.rawItemRepository.softDelete(item.id);
-    //       const response = await app.inject({
-    //         method: HttpMethod.Get,
-    //         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations`,
-    //         payload: { invitations },
-    //       });
-
-    //       expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
-    //     });
-
-    //     it('throw if id is invalid', async () => {
-    //       const response = await app.inject({
-    //         method: HttpMethod.Get,
-    //         url: `${ITEMS_ROUTE_PREFIX}/invalid-id/invitations`,
-    //         payload: { invitations },
-    //       });
-
-    //       expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
-    //     });
-    //   });
-    // });
-
-    // describe('GET /invitations/:id', () => {
-    //   it('get invitation by id successfully if signed out', async () => {
-    //     const member = await saveMember();
-
-    //     const { invitations } = await saveInvitations({ member });
-    //     const response = await app.inject({
-    //       method: HttpMethod.Get,
-    //       url: `${ITEMS_ROUTE_PREFIX}/invitations/${invitations[0].id}`,
-    //     });
-
-    //     expect(response.statusCode).toEqual(StatusCodes.OK);
-    //     expectInvitations([await response.json()], [invitations[0]]);
-    //   });
-
-    //   describe('Signed In', () => {
-    //     let invitations;
-
-    //     beforeEach(async () => {
-    //       const actor = await saveMember();
-    //       mockAuthenticate(actor);
-    //       ({ invitations } = await saveInvitations({ member: actor }));
-    //     });
-
-    //     it('get invitation by id successfully', async () => {
-    //       const response = await app.inject({
-    //         method: HttpMethod.Get,
-    //         url: `${ITEMS_ROUTE_PREFIX}/invitations/${invitations[0].id}`,
-    //       });
-
-    //       expect(response.statusCode).toEqual(StatusCodes.OK);
-    //       expectInvitations([await response.json()], [invitations[0]]);
-    //     });
-
-    //     it("don't return an invitation for a trashed item", async () => {
-    //       await testUtils.rawItemRepository.softDelete(invitations[0].item.id);
-    //       const response = await app.inject({
-    //         method: HttpMethod.Get,
-    //         url: `${ITEMS_ROUTE_PREFIX}/invitations/${invitations[0].id}`,
-    //       });
-
-    //       expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
-    //     });
-
-    //     it('throw if id is invalid', async () => {
-    //       const response = await app.inject({
-    //         method: HttpMethod.Get,
-    //         url: `${ITEMS_ROUTE_PREFIX}/invitations/invalid-id`,
-    //       });
-
-    //       expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
-    //     });
-    //   });
-    // });
-
     // describe('PATCH /:itemId/invitations/:id', () => {
     //   it('throws if signed out', async () => {
     //     const member = await saveMember();
     //     const { item, invitations } = await saveInvitations({ member });
-
     //     const response = await app.inject({
     //       method: HttpMethod.Patch,
     //       url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations/${invitations[0].id}`,
@@ -379,13 +471,10 @@ describe('Invitation Plugin', () => {
     //         name: 'myname',
     //       },
     //     });
-
     //     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
     //   });
-
     //   describe('Signed In', () => {
     //     let item, invitations;
-
     //     beforeEach(async () => {
     //       const actor = await saveMember();
     //       mockAuthenticate(actor);
@@ -404,7 +493,6 @@ describe('Invitation Plugin', () => {
     //       expect(response.statusCode).toEqual(StatusCodes.OK);
     //       expectInvitations([await response.json()], [{ ...invitations[0], ...payload }]);
     //     });
-
     //     it('throw if item id is invalid', async () => {
     //       const response = await app.inject({
     //         method: HttpMethod.Patch,
@@ -414,10 +502,8 @@ describe('Invitation Plugin', () => {
     //           name: 'myname',
     //         },
     //       });
-
     //       expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
     //     });
-
     //     it('throw if invitation id is invalid', async () => {
     //       const response = await app.inject({
     //         method: HttpMethod.Patch,
@@ -427,38 +513,30 @@ describe('Invitation Plugin', () => {
     //           name: 'myname',
     //         },
     //       });
-
     //       expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
     //     });
-
     //     it('throw if payload is empty', async () => {
     //       const response = await app.inject({
     //         method: HttpMethod.Patch,
     //         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations/${invitations[0].id}`,
     //         payload: {},
     //       });
-
     //       expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
     //     });
     //   });
     // });
-
     // describe('DELETE /:itemId/invitations/:id', () => {
     //   it('throws if signed out', async () => {
     //     const member = await saveMember();
     //     const { item, invitations } = await saveInvitations({ member });
-
     //     const response = await app.inject({
     //       method: HttpMethod.Delete,
     //       url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations/${invitations[0].id}`,
     //     });
-
     //     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
     //   });
-
     //   describe('Signed In', () => {
     //     let item, invitations;
-
     //     beforeEach(async () => {
     //       const actor = await saveMember();
     //       mockAuthenticate(actor);
@@ -469,47 +547,37 @@ describe('Invitation Plugin', () => {
     //         method: HttpMethod.Delete,
     //         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations/${invitations[0].id}`,
     //       });
-
     //       expect(response.statusCode).toEqual(StatusCodes.OK);
     //       expect(response.body).toEqual(invitations[0].id);
     //     });
-
     //     it('throw if item id is invalid', async () => {
     //       const response = await app.inject({
     //         method: HttpMethod.Delete,
     //         url: `${ITEMS_ROUTE_PREFIX}/invalid/invitations/${invitations[0].id}`,
     //       });
-
     //       expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
     //     });
-
     //     it('throw if invitation id is invalid', async () => {
     //       const response = await app.inject({
     //         method: HttpMethod.Delete,
     //         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations/invalid-id`,
     //       });
-
     //       expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
     //     });
     //   });
     // });
-
     // describe('POST /:itemId/invitations/:id/send', () => {
     //   it('throws if signed out', async () => {
     //     const member = await saveMember();
     //     const { item, invitations } = await saveInvitations({ member });
-
     //     const response = await app.inject({
     //       method: HttpMethod.Post,
     //       url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations/${invitations[0].id}/send`,
     //     });
-
     //     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
     //   });
-
     //   describe('Signed In', () => {
     //     let item, invitations;
-
     //     beforeEach(async () => {
     //       const actor = await saveMember();
     //       mockAuthenticate(actor);
@@ -517,37 +585,30 @@ describe('Invitation Plugin', () => {
     //     });
     //     it('resend invitation successfully', async () => {
     //       const mockSendMail = mockEmail();
-
     //       const response = await app.inject({
     //         method: HttpMethod.Post,
     //         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations/${invitations[0].id}/send`,
     //       });
-
     //       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
     //       // check email got sent
     //       expect(mockSendMail).toHaveBeenCalled();
     //     });
-
     //     it('throw if item id is invalid', async () => {
     //       const response = await app.inject({
     //         method: HttpMethod.Post,
     //         url: `${ITEMS_ROUTE_PREFIX}/invalid/invitations/${invitations[0].id}/send`,
     //       });
-
     //       expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
     //     });
-
     //     it('throw if invitation id is invalid', async () => {
     //       const response = await app.inject({
     //         method: HttpMethod.Post,
     //         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations/invalid-id/send`,
     //       });
-
     //       expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
     //     });
     //   });
     // });
-
     // describe('POST /:itemId/invitations/upload-csv', () => {
     //   it('throws if signed out', async () => {
     //     const form = createFormData('users.csv');
@@ -557,20 +618,16 @@ describe('Invitation Plugin', () => {
     //       payload: form,
     //       headers: form.getHeaders(),
     //     });
-
     //     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
     //   });
-
     //   describe('Signed In', () => {
     //     let item, mailerService;
-
     //     beforeEach(async () => {
     //       actor = await saveMember();
     //       mockAuthenticate(actor);
     //       ({ item } = await testUtils.saveItemAndMembership({ member: actor }));
     //       mailerService = resolveDependency(MailerService);
     //     });
-
     //     it('upload csv successfully', async () => {
     //       const mockSendEmail = jest.spyOn(mailerService, 'send');
     //       const form = createFormData('users.csv');
@@ -581,11 +638,9 @@ describe('Invitation Plugin', () => {
     //         headers: form.getHeaders(),
     //       });
     //       expect(response.statusCode).toEqual(StatusCodes.OK);
-
     //       const { invitations, memberships } = response.json();
     //       // no membership created
     //       expect(memberships).toHaveLength(0);
-
     //       // send invitations
     //       for (const inv of invitations) {
     //         expect(mockSendEmail).toHaveBeenCalledWith(expect.anything(), inv.email);
@@ -593,7 +648,6 @@ describe('Invitation Plugin', () => {
     //     });
     //   });
     // });
-
     // describe('POST /:itemId/invitations/upload-csv-template', () => {
     //   it('throws if signed out', async () => {
     //     const form = createFormData('users-groups.csv');
@@ -604,20 +658,16 @@ describe('Invitation Plugin', () => {
     //       payload: form,
     //       headers: form.getHeaders(),
     //     });
-
     //     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
     //   });
-
     //   describe('Signed In', () => {
     //     let item, mailerService;
-
     //     beforeEach(async () => {
     //       actor = await saveMember();
     //       mockAuthenticate(actor);
     //       ({ item } = await testUtils.saveItemAndMembership({ member: actor }));
     //       mailerService = resolveDependency(MailerService);
     //     });
-
     //     it('upload csv successfully', async () => {
     //       const { item: templateItem } = await testUtils.saveItemAndMembership({ member: actor });
     //       const mockSendEmail = jest.spyOn(mailerService, 'send');
@@ -634,14 +684,12 @@ describe('Invitation Plugin', () => {
     //         const { invitations, memberships } = group;
     //         // no membership created
     //         expect(memberships).toHaveLength(0);
-
     //         // send invitations
     //         for (const inv of invitations) {
     //           expect(mockSendEmail).toHaveBeenCalledWith(expect.anything(), inv.email);
     //         }
     //       }
     //     });
-
     //     it('throw if csv does not have group name column', async () => {
     //       const { item: templateItem } = await testUtils.saveItemAndMembership({ member: actor });
     //       const form = createFormData('users.csv');
@@ -657,19 +705,15 @@ describe('Invitation Plugin', () => {
     //     });
     //   });
     // });
-
     // describe('Hook', () => {
     //   let invitations;
-
     //   beforeEach(async () => {
     //     const actor = await saveMember();
     //     mockAuthenticate(actor);
     //     ({ invitations } = await saveInvitations({ member: actor }));
     //   });
-
     //   it('remove invitation on member registration and create memberships successfully', async () => {
     //     const { id, email, item, permission } = invitations[0];
-
     //     // register
     //     await app.inject({
     //       method: HttpMethod.Post,
@@ -692,25 +736,21 @@ describe('Invitation Plugin', () => {
     //       }, 1000);
     //     });
     //   });
-
     //   it('does not throw if no invitation found', async () => {
     //     const email = 'random@email.org';
     //     const allInvitationsCount = await invitationRawRepository.count();
     //     const allMembershipsCount = await itemMembershipRawRepository.count();
-
     //     // register
     //     await app.inject({
     //       method: HttpMethod.Post,
     //       url: '/register',
     //       payload: { email, name: 'some-name', captcha: MOCK_CAPTCHA },
     //     });
-
     //     await new Promise((done) => {
     //       setTimeout(async () => {
     //         // all invitations and memberships should exist
     //         expect(await invitationRawRepository.count()).toEqual(allInvitationsCount);
     //         expect(await itemMembershipRawRepository.count()).toEqual(allMembershipsCount);
-
     //         done(true);
     //       }, 1000);
     //     });
