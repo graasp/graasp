@@ -18,6 +18,7 @@ import {
   accountsTable,
   appActions,
   appDatas,
+  appSettings,
   apps,
   guestPasswords,
   itemGeolocationsTable,
@@ -36,6 +37,7 @@ import {
   AppActionRaw,
   AppDataRaw,
   AppRaw,
+  AppSettingRaw,
   GuestRaw,
   Item,
   ItemGeolocationInsertDTO,
@@ -79,6 +81,9 @@ type SeedItem<M = SeedMember> = (Partial<Omit<Item, 'creator'>> & { creator?: M 
   appActions?: (Omit<Partial<AppActionRaw>, 'accountId'> & {
     account: M;
   })[];
+  appSettings?: (Omit<Partial<AppSettingRaw>, 'creatorId'> & {
+    creator: M;
+  })[];
   appData?: (Omit<Partial<AppDataRaw>, 'accountId'> & {
     account: M;
     creator: M;
@@ -108,6 +113,10 @@ const replaceActorInItems = (createdActor?: AccountRaw, items?: DataType['items'
     appActions: i.appActions?.map((aa) => ({
       ...aa,
       account: aa.account === ACTOR_STRING ? (createdActor as any) : aa.account,
+    })),
+    appSettings: i.appSettings?.map((as) => ({
+      ...as,
+      creator: as.creator === ACTOR_STRING ? (createdActor as any) : as.creator,
     })),
     appData: i.appData?.map((ad) => ({
       ...ad,
@@ -151,6 +160,12 @@ function replaceAccountInItems(createdAccount: AccountRaw, items?: DataType['ite
         creator: getNameIfExists(a.creator) === createdAccount.name ? createdAccount : a.creator,
       };
     });
+    const appSettings = i.appSettings?.map((as) => {
+      return {
+        ...as,
+        creator: getNameIfExists(as.creator) === createdAccount.name ? createdAccount : as.creator,
+      };
+    });
 
     return {
       ...i,
@@ -160,6 +175,7 @@ function replaceAccountInItems(createdAccount: AccountRaw, items?: DataType['ite
       children: replaceAccountInItems(createdAccount, i.children),
       appActions,
       appData,
+      appSettings,
     };
   });
 }
@@ -297,6 +313,14 @@ function generateIdForMembers({
         return [...acc, m.account];
       }, []);
 
+      // get all accounts from all app settings
+      const creatorsFromAppSettings = (i.appSettings ?? [])?.reduce<SeedMember[]>((acc, m) => {
+        if (!m.creator) {
+          return acc;
+        }
+        return [...acc, m.creator];
+      }, []);
+
       // get all accounts and creators from all app data
       const accountsFromAppData = (i.appData ?? [])?.reduce<SeedMember[]>((acc, m) => {
         return [...acc, m.account, m.creator].filter(Boolean);
@@ -306,6 +330,7 @@ function generateIdForMembers({
         ...accountsFromMemberships,
         ...accountsFromAppActions,
         ...accountsFromAppData,
+        ...creatorsFromAppSettings,
       ];
 
       // get creator of item
@@ -513,6 +538,7 @@ export async function seedFromJson(data: DataType = {}) {
     geolocations: ItemGeolocationRaw[];
     apps: AppRaw[];
     appActions: AppActionRaw[];
+    appSettings: AppSettingRaw[];
     appData: AppDataRaw[];
   } = {
     items: [],
@@ -529,6 +555,7 @@ export async function seedFromJson(data: DataType = {}) {
     apps: [],
     appActions: [],
     appData: [],
+    appSettings: [],
   };
 
   const { items: itemsWithActor, actor, members, actorProfile } = await processActor(data);
@@ -685,6 +712,25 @@ export async function seedFromJson(data: DataType = {}) {
   }, []);
   if (appDataValues.length) {
     result.appData = await db.insert(appDatas).values(appDataValues).returning();
+  }
+
+  // save app settings
+  const appSettingValues = processedItems.reduce((acc, i) => {
+    if (i.appSettings) {
+      return acc.concat(
+        i.appSettings.map((as) => ({
+          itemId: i.id,
+          data: {},
+          name: faker.word.sample(),
+          creatorId: as.creator.id,
+          ...as,
+        })),
+      );
+    }
+    return acc;
+  }, []);
+  if (appSettingValues.length) {
+    result.appSettings = await db.insert(appSettings).values(appSettingValues).returning();
   }
 
   return result;

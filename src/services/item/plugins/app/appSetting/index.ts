@@ -1,3 +1,5 @@
+import { StatusCodes } from 'http-status-codes';
+
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { ItemType } from '@graasp/sdk';
@@ -6,7 +8,11 @@ import { resolveDependency } from '../../../../../di/utils';
 import { DBConnection, db } from '../../../../../drizzle/db';
 import { AuthenticatedUser } from '../../../../../types';
 import { asDefined } from '../../../../../utils/assertions';
-import { authenticateAppsJWT, matchOne } from '../../../../auth/plugins/passport';
+import {
+  authenticateAppsJWT,
+  guestAuthenticateAppsJWT,
+  matchOne,
+} from '../../../../auth/plugins/passport';
 import { assertIsMember } from '../../../../authentication';
 import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
 import { ItemService } from '../../../service';
@@ -70,19 +76,20 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       schema: deleteOne,
       preHandler: [authenticateAppsJWT, matchOne(validatedMemberAccountRole)],
     },
-    async ({ user, params: { itemId, id: appSettingId } }) => {
+    async ({ user, params: { itemId, id: appSettingId } }, reply) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
       await db.transaction(async (tx) => {
         await appSettingService.deleteOne(tx, member, itemId, appSettingId);
       });
+      reply.status(StatusCodes.NO_CONTENT);
     },
   );
 
   // get app settings
   fastify.get<{ Params: { itemId: string }; Querystring: { name?: string } }>(
     '/:itemId/app-settings',
-    { schema: getForOne, preHandler: authenticateAppsJWT },
+    { schema: getForOne, preHandler: guestAuthenticateAppsJWT },
     async ({ user, params: { itemId }, query: { name } }) => {
       return appSettingService.getForItem(db, user?.account, itemId, name);
     },
