@@ -20,6 +20,7 @@ import {
   appDatas,
   appSettings,
   apps,
+  chatMessagesTable,
   guestPasswords,
   invitationsTable,
   itemGeolocationsTable,
@@ -40,6 +41,7 @@ import {
   AppDataRaw,
   AppRaw,
   AppSettingRaw,
+  ChatMessageRaw,
   GuestRaw,
   InvitationRaw,
   ItemGeolocationInsertDTO,
@@ -92,6 +94,9 @@ type SeedItem<M = SeedMember> = (Partial<Omit<ItemRaw, 'creator'>> & { creator?:
     creator: M;
   })[];
   invitations?: Partial<InvitationRaw>[];
+  chatMessages?: (Omit<Partial<ChatMessageRaw>, 'creatorId'> & {
+    creator: M | null;
+  })[];
 };
 type DataType = {
   actor?: SeedActor | null;
@@ -125,6 +130,10 @@ const replaceActorInItems = (createdActor?: AccountRaw, items?: DataType['items'
     appData: i.appData?.map((ad) => ({
       ...ad,
       account: ad.account === ACTOR_STRING ? (createdActor as any) : ad.account,
+      creator: ad.creator === ACTOR_STRING ? (createdActor as any) : ad.creator,
+    })),
+    chatMessages: i.chatMessages?.map((ad) => ({
+      ...ad,
       creator: ad.creator === ACTOR_STRING ? (createdActor as any) : ad.creator,
     })),
     children: replaceActorInItems(createdActor, i.children),
@@ -545,6 +554,7 @@ export async function seedFromJson(data: DataType = {}) {
     appSettings: AppSettingRaw[];
     appData: AppDataRaw[];
     invitations: InvitationRaw[];
+    chatMessages: ChatMessageRaw[];
   } = {
     items: [],
     actor: undefined,
@@ -562,6 +572,7 @@ export async function seedFromJson(data: DataType = {}) {
     appData: [],
     appSettings: [],
     invitations: [],
+    chatMessages: [],
   };
 
   const { items: itemsWithActor, actor, members, actorProfile } = await processActor(data);
@@ -757,6 +768,21 @@ export async function seedFromJson(data: DataType = {}) {
     }
     return acc;
   }, []);
+
+  // save chat messages
+  const chatMessageValues = processedItems.reduce((acc, i) => {
+    if (i.chatMessages) {
+      return acc.concat(
+        i.chatMessages.map((aa) => ({
+          creatoId: aa.creatorId,
+          itemId: i.id,
+          body: aa.body,
+          ...aa,
+        })),
+      );
+    }
+    return acc;
+  }, []);
   if (invitationValues.length) {
     result.invitations = await db.insert(invitationsTable).values(invitationValues).returning();
   }
@@ -770,6 +796,10 @@ export async function seedFromJson(data: DataType = {}) {
   }, []);
   if (recycledDataValues.length) {
     await db.insert(recycledItemDatas).values(recycledDataValues);
+  }
+
+  if (chatMessageValues.length) {
+    result.chatMessages = await db.insert(chatMessagesTable).values(chatMessageValues).returning();
   }
 
   return result;

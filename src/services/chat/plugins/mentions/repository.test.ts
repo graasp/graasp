@@ -7,7 +7,7 @@ import { seedFromJson } from '../../../../../test/mocks/seed';
 import { client, db } from '../../../../drizzle/db';
 import { chatMentionsTable } from '../../../../drizzle/schema';
 import { ChatMentionNotFound, NoChatMentionForMember } from '../../errors';
-import { expectChatMentions } from '../../test/chatMention.test';
+import { expectChatMentions } from '../../test/chatMentions.expectations';
 import { saveItemWithChatMessages } from '../../test/chatMessage.test';
 import { ChatMentionRepository } from './repository';
 
