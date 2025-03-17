@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.65.2](https://github.com/graasp/graasp/compare/v1.65.1...v1.65.2) (2025-03-17)
+
+
+### Bug Fixes
+
+* fix request membership link in email ([#1789](https://github.com/graasp/graasp/issues/1789)) ([d388623](https://github.com/graasp/graasp/commit/d388623cd8ccbec07b19e5c00e9bd6897026880a))
+
 ## [1.65.1](https://github.com/graasp/graasp/compare/v1.65.0...v1.65.1) (2025-03-14)
 
 
