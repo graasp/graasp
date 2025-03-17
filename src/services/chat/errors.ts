@@ -70,15 +70,8 @@ export const ChatMentionNotFound = createError(
   StatusCodes.NOT_FOUND,
 );
 
-export class NoChatMentionForMember extends GraaspChatboxError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GICERR007',
-        statusCode: StatusCodes.BAD_REQUEST,
-        message: 'This member cannot have chat mention',
-      },
-      data,
-    );
-  }
-}
+export const NoChatMentionForMember = createError(
+  'GICERR007',
+  'This member cannot have chat mention',
+  StatusCodes.BAD_REQUEST,
+);

@@ -334,6 +334,14 @@ function generateIdForMembers({
         return [...acc, m.creator];
       }, []);
 
+      // get all accounts from all app settings
+      const creatorsFromChatMessages = (i.chatMessages ?? [])?.reduce<SeedMember[]>((acc, m) => {
+        if (!m.creator) {
+          return acc;
+        }
+        return [...acc, m.creator];
+      }, []);
+
       // get all accounts and creators from all app data
       const accountsFromAppData = (i.appData ?? [])?.reduce<SeedMember[]>((acc, m) => {
         return [...acc, m.account, m.creator].filter(Boolean);
@@ -344,6 +352,7 @@ function generateIdForMembers({
         ...accountsFromAppActions,
         ...accountsFromAppData,
         ...creatorsFromAppSettings,
+        ...creatorsFromChatMessages,
       ];
 
       // get creator of item
@@ -774,15 +783,15 @@ export async function seedFromJson(data: DataType = {}) {
     if (i.chatMessages) {
       return acc.concat(
         i.chatMessages.map((aa) => ({
-          creatoId: aa.creatorId,
+          creatorId: aa.creator.id,
           itemId: i.id,
-          body: aa.body,
-          ...aa,
+          body: aa.body ?? faker.word.sample(),
         })),
       );
     }
     return acc;
   }, []);
+
   if (invitationValues.length) {
     result.invitations = await db.insert(invitationsTable).values(invitationValues).returning();
   }

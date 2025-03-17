@@ -15,7 +15,7 @@ export const expectChatMentions = (
     // foreign keys
     if (relationsMessage) {
       expect(m.message.id).toEqual(correctMention.messageId);
-      expect(m.message.creatorId).toBeUndefined();
+      expect(m.message.creatorId).toBeDefined();
     } else {
       expect(m.message).toBeUndefined();
     }
@@ -25,5 +25,17 @@ export const expectChatMentions = (
     } else {
       expect(m.account).toBeUndefined();
     }
+  }
+};
+
+export const expectRawChatMentions = (
+  mentions: ChatMentionRaw[],
+  correctMentions: ChatMentionRaw[],
+) => {
+  expect(mentions).toHaveLength(correctMentions.length);
+  for (const m of mentions) {
+    const correctMention = correctMentions.find(({ id }) => id === m.id)!;
+
+    expect(m).toEqual(correctMention);
   }
 };
