@@ -4841,10 +4841,71 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bare-addon-resolve@npm:^1.3.0":
+  version: 1.9.3
+  resolution: "bare-addon-resolve@npm:1.9.3"
+  dependencies:
+    bare-module-resolve: "npm:^1.10.0"
+    bare-semver: "npm:^1.0.0"
+  peerDependencies:
+    bare-url: "*"
+  peerDependenciesMeta:
+    bare-url:
+      optional: true
+  checksum: 10/405c284d6a9d27d48c6a9685849fa77df1c4b8979989f75cea933fbcf8f4a06481cdd4ed948658dafd78ded8d15195d7976d35352a32e36bf7d87dd3efa3167e
+  languageName: node
+  linkType: hard
+
 "bare-events@npm:^2.2.0":
   version: 2.4.2
   resolution: "bare-events@npm:2.4.2"
   checksum: 10/c1006ad13b7e62a412466d4eac8466b4ceb46ce84a5e2fc164cd4b10edaaa5016adc684147134b67a6a3865aaf5aa007191647bdb5dbf859b1d5735d2a9ddf3b
+  languageName: node
+  linkType: hard
+
+"bare-module-resolve@npm:^1.10.0":
+  version: 1.10.2
+  resolution: "bare-module-resolve@npm:1.10.2"
+  dependencies:
+    bare-semver: "npm:^1.0.0"
+  peerDependencies:
+    bare-url: "*"
+  peerDependenciesMeta:
+    bare-url:
+      optional: true
+  checksum: 10/8862bac92bcfbd08f6f583ff431876ee13ab822904d1e014a07d38ce9b87677f5ef13c04f4e4827811617b580b451017123b00f4a045b0b4fa661e8c98dd2c82
+  languageName: node
+  linkType: hard
+
+"bare-os@npm:^3.0.1":
+  version: 3.6.0
+  resolution: "bare-os@npm:3.6.0"
+  checksum: 10/2d8366d74d0c9a780a83f9a3f3da9261ca68b6066eede5fbf94b13eba0dca105a78879529967c374858fffe23c53042eef292c9b8a866e6f9c6cec18b13c0ce2
+  languageName: node
+  linkType: hard
+
+"bare-path@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "bare-path@npm:3.0.0"
+  dependencies:
+    bare-os: "npm:^3.0.1"
+  checksum: 10/712d90e9cd8c3263cc11b0e0d386d1531a452706d7840c081ee586b34b00d72544e65df7a40013d47c1b177277495225deeede65cb2984db88a979cb65aaa2ff
+  languageName: node
+  linkType: hard
+
+"bare-semver@npm:^1.0.0":
+  version: 1.0.1
+  resolution: "bare-semver@npm:1.0.1"
+  checksum: 10/b601629841a767b1b8ed3b475ce9208ae2fc6508672fd326b1c9667fe50437bc96905e1c4639ead8389b5b971731eb508e34b64d42db0dcca44ab25bff69a990
+  languageName: node
+  linkType: hard
+
+"bare-url@npm:^2.1.0":
+  version: 2.1.3
+  resolution: "bare-url@npm:2.1.3"
+  dependencies:
+    bare-path: "npm:^3.0.0"
+  checksum: 10/384caf0cae420ec1c54cd88b06524b4ec5366f1051ce50d7201671d1c8ba1e905e1b2fcd56e58e4fe0d8183e54a806ed8f94ee10a784dc24ec5cb12cf612e221
   languageName: node
   linkType: hard
 
@@ -9984,17 +10045,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-gyp-build@npm:^4.8.0":
-  version: 4.8.1
-  resolution: "node-gyp-build@npm:4.8.1"
-  bin:
-    node-gyp-build: bin.js
-    node-gyp-build-optional: optional.js
-    node-gyp-build-test: build-test.js
-  checksum: 10/b9297770f96a92e5f2b854f3fd5e4bd418df81d7785a81ab60cec5cf2e5e72dc2c3319808978adc572cfa3885e6b12338cb5f4034bed2cab35f0d76a4b75ccdf
-  languageName: node
-  linkType: hard
-
 "node-gyp@npm:^10.2.0":
   version: 10.2.0
   resolution: "node-gyp@npm:10.2.0"
@@ -11247,6 +11297,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"require-addon@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "require-addon@npm:1.1.0"
+  dependencies:
+    bare-addon-resolve: "npm:^1.3.0"
+    bare-url: "npm:^2.1.0"
+  checksum: 10/c43fc8a8a92235d3f7daca68ec24f52cd1ab673a05516d94b2f1954c0a02b5a508f3bb2d2ee26d7e97e9575a05a6c1bac03095f2d34cf3cf6c71d759e2b51310
+  languageName: node
+  linkType: hard
+
 "require-directory@npm:^2.1.1":
   version: 2.1.1
   resolution: "require-directory@npm:2.1.1"
@@ -11819,13 +11879,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sodium-native@npm:4.2.0":
-  version: 4.2.0
-  resolution: "sodium-native@npm:4.2.0"
+"sodium-native@npm:4.3.3":
+  version: 4.3.3
+  resolution: "sodium-native@npm:4.3.3"
   dependencies:
-    node-gyp: "npm:latest"
-    node-gyp-build: "npm:^4.8.0"
-  checksum: 10/fa08f69a009f09657a0d9177b3febaea5f28947996bff3dd6489a4341d9eeee74b7399130af089cc261ab9995669ade85a83c38e2c7702987b920ddc0f4fb307
+    require-addon: "npm:^1.1.0"
+  checksum: 10/e1b9758489545a19e8b5547281edd0325fbd77447b5bdf53a398ad212b1c30e0889a1d7f0f45ec2cf3e2ce36c9f725e20ac9dd95842086baee90594b65200069
   languageName: node
   linkType: hard
 
