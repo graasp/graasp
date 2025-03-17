@@ -3,20 +3,16 @@ import { singleton } from 'tsyringe';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { isAncestorOrSelf } from '../../../../drizzle/operations';
-import { invitationsTable } from '../../../../drizzle/schema';
+import { invitationsTable, items } from '../../../../drizzle/schema';
 import {
   InvitationInsertDTO,
   InvitationRaw,
   InvitationWithItem,
-  InvitationWithItemAndCreator,
   Item,
-  MemberRaw,
 } from '../../../../drizzle/types';
 import { throwsIfParamIsInvalid } from '../../../../repositories/utils';
 import { AuthenticatedUser } from '../../../../types';
-import { InvitationNotFound } from './errors';
 
-type CreatorId = MemberRaw['id'];
 type ItemPath = Item['path'];
 type Email = InvitationRaw['email'];
 
@@ -50,40 +46,47 @@ export class InvitationRepository {
   //     .returning();
   // }
 
-  async getOne(db: DBConnection, id: string): Promise<InvitationWithItem | undefined> {
+  async getOne(db: DBConnection, id: string): Promise<InvitationWithItem | null> {
     throwsIfParamIsInvalid('id', id);
-    return await db.query.invitationsTable.findFirst({
-      with: { item: true },
-      where: eq(invitationsTable.id, id),
-    });
-  }
+    const entity = await db
+      .select()
+      .from(invitationsTable)
+      .where(and(eq(invitationsTable.id, id)))
+      // item should not be deleted
+      .innerJoin(items, eq(items.path, invitationsTable.itemPath))
+      .limit(1);
 
-  /**
-   * Get invitation by id or null if it is not found
-   * @param id Invitation id
-   */
-  async getOneByIdAndByCreatorOrThrow(
-    db: DBConnection,
-    id: string,
-    creatorId: CreatorId,
-  ): Promise<InvitationWithItemAndCreator> {
-    throwsIfParamIsInvalid('id', id);
-    throwsIfParamIsInvalid('creatorId', creatorId);
-
-    const entity = await db.query.invitationsTable.findFirst({
-      where: and(eq(invitationsTable.id, id), eq(invitationsTable.creatorId, creatorId)),
-      with: {
-        item: true,
-        creator: true,
-      },
-    });
-
-    if (!entity) {
-      throw new InvitationNotFound(id);
+    if (!entity.length) {
+      return null;
     }
 
-    return entity;
+    return { ...entity[0].invitation, item: entity[0].item_view };
   }
+
+  // /**
+  //  * Get invitation by id or null if it is not found
+  //  * @param id Invitation id
+  //  */
+  // async getOneByIdAndByCreatorOrThrow(
+  //   db: DBConnection,
+  //   id: string,
+  // ): Promise<InvitationWithItem | null> {
+  //   throwsIfParamIsInvalid('id', id);
+
+  //   const entity = await db
+  //     .select()
+  //     .from(invitationsTable)
+  //     .where(and(eq(invitationsTable.id, id)))
+  //     // item should not be deleted
+  //     .innerJoin(items, eq(items.path, invitationsTable.itemPath))
+  //     .limit(1);
+
+  //   if (!entity.length) {
+  //     return null;
+  //   }
+
+  //   return { ...entity[0].invitation, item: entity[0].item_view };
+  // }
 
   /**
    * Get invitations for item path and below

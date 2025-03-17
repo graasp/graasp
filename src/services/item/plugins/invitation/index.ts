@@ -81,7 +81,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         schema: inviteFromCSVWithTemplate,
         preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
       },
-      async (request) => {
+      async (request, reply) => {
         const { query, params, user } = request;
         const member = asDefined(user?.account);
         assertIsMember(member);
@@ -113,6 +113,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
               uploadedFile,
             ),
         );
+        reply.status(StatusCodes.NO_CONTENT);
       },
     );
     // post invitations from a csv file
@@ -122,7 +123,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         schema: inviteFromCSV,
         preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
       },
-      async (request) => {
+      async (request, reply) => {
         const { params, user } = request;
         const member = asDefined(user?.account);
         assertIsMember(member);
@@ -146,6 +147,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           async (tx) =>
             await invitationService.importUsersWithCSV(tx, member, itemId, uploadedFile),
         );
+        reply.status(StatusCodes.NO_CONTENT);
       },
     );
   });
@@ -171,12 +173,13 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       schema: updateOne,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
-    async ({ user, params: { invitationId }, body }) => {
+    async ({ user, params: { invitationId }, body }, reply) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return db.transaction(async (tx) => {
-        return invitationService.patch(tx, member, invitationId, body);
+      await db.transaction(async (tx) => {
+        await invitationService.patch(tx, member, invitationId, body);
       });
+      reply.status(StatusCodes.NO_CONTENT);
     },
   );
 

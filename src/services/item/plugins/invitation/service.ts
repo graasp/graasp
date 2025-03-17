@@ -103,15 +103,12 @@ export class InvitationService {
   }
 
   async get(db: DBConnection, actor: MaybeUser, invitationId: string) {
-    if (actor) {
-      return this.invitationRepository.getOneByIdAndByCreatorOrThrow(db, invitationId, actor.id);
-    } else {
-      const invitation = await this.invitationRepository.getOne(db, invitationId);
-      if (!invitation) {
-        throw new InvitationNotFound({ invitationId });
-      }
-      return invitation;
+    const invitation = await this.invitationRepository.getOne(db, invitationId);
+
+    if (!invitation) {
+      throw new InvitationNotFound({ invitationId });
     }
+    return invitation;
   }
 
   async getForItem(db: DBConnection, authenticatedUser: AuthenticatedUser, itemId: string) {
@@ -167,7 +164,7 @@ export class InvitationService {
       invitation.item,
     );
 
-    return this.invitationRepository.updateOne(db, invitationId, body);
+    await this.invitationRepository.updateOne(db, invitationId, body);
   }
 
   async delete(db: DBConnection, authenticatedUser: AuthenticatedUser, invitationId: string) {

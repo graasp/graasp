@@ -146,7 +146,7 @@ export const updateOne = {
     { minProperties: 1 },
   ),
   response: {
-    [StatusCodes.OK]: invitationSchemaRef,
+    [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
