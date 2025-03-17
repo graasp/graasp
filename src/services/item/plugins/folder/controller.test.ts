@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker';
+import { and, eq } from 'drizzle-orm';
 import FormData from 'form-data';
 import fs from 'fs';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
@@ -24,20 +25,19 @@ import build, {
 } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
+import { itemGeolocationsTable, itemMemberships, itemsRaw } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import {
+  ItemNotFolder,
   MemberCannotAccess,
   MemberCannotWriteItem,
   TooManyChildren,
 } from '../../../../utils/errors';
-import { assertIsMember } from '../../../authentication';
-import { WrongItemTypeError } from '../../errors';
-import { ItemTestUtils, expectItem } from '../../test/fixtures/items';
+import { assertIsMember, assertIsMemberForTest } from '../../../authentication';
+import { expectItem } from '../../test/fixtures/items';
 import { ActionItemService } from '../action/action.service';
 import { FolderItemService } from './service';
-
-const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
-const testUtils = new ItemTestUtils();
 
 // Mock S3 libraries
 const deleteObjectMock = jest.fn(async () => console.debug('deleteObjectMock'));
@@ -75,22 +75,21 @@ jest.mock('@aws-sdk/lib-storage', () => {
 
 describe('Folder routes tests', () => {
   let app: FastifyInstance;
-  let actor;
 
   beforeAll(async () => {
-    ({ app } = await build({ member: null }));
+    ({ app } = await build());
   });
 
   afterAll(async () => {
-    await clearDatabase(app.db);
+    await clearDatabase(db);
     app.close();
   });
 
   afterEach(async () => {
     jest.clearAllMocks();
     unmockAuthenticate();
-    actor = null;
   });
+
   describe('POST /items/folders', () => {
     it('Throws if signed out', async () => {
       const payload = FolderItemFactory();
@@ -123,7 +122,9 @@ describe('Folder routes tests', () => {
       });
 
       it('Create successfully', async () => {
-        ({ actor } = await seedFromJson());
+        const { actor } = await seedFromJson();
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
         mockAuthenticate(actor);
 
         const payload = FolderItemFactory();
@@ -141,27 +142,29 @@ describe('Folder routes tests', () => {
         await waitForPostCreation();
 
         // check item exists in db
-        const item = await testUtils.itemRepository.getOne(app.db, newItem.id);
+        const item = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, newItem.id) });
         expect(item?.id).toEqual(newItem.id);
 
         // a membership is created for this item
-        const membership = await itemMembershipRawRepository.findOneBy({
-          item: { id: newItem.id },
+        const membership = await db.query.itemMemberships.findFirst({
+          where: eq(itemMemberships.itemPath, newItem.path),
         });
         expect(membership?.permission).toEqual(PermissionLevel.Admin);
 
         // order is null for root
-        expect(await testUtils.getOrderForItemId(newItem.id)).toBeNull();
+        const savedItem = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, newItem.id) });
+        assertIsDefined(savedItem);
+        expect(savedItem.order).toBeNull();
       });
 
       it('Create successfully in parent item', async () => {
         const { items, actor } = await seedFromJson({
-          items: [{ children: [{}], memberships: [{ account: 'actor' }] }],
+          items: [{ children: [{ order: 20 }], memberships: [{ account: 'actor' }] }],
         });
         const [parent, child] = items;
-        mockAuthenticate(actor);
         assertIsDefined(actor);
         assertIsMember(actor);
+        mockAuthenticate(actor);
 
         const payload = FolderItemFactory();
         const response = await app.inject({
@@ -175,13 +178,15 @@ describe('Folder routes tests', () => {
         await waitForPostCreation();
 
         // a membership does not need to be created for item with admin rights
-        const nbItemMemberships = await itemMembershipRawRepository.countBy({
-          item: { id: newItem.id },
+        const nbItemMemberships = await db.query.itemMemberships.findMany({
+          where: eq(itemMemberships.itemPath, newItem.path),
         });
-        expect(nbItemMemberships).toEqual(0);
+        expect(nbItemMemberships).toHaveLength(0);
 
-        // add at beginning
-        await testUtils.expectOrder(newItem.id, undefined, child.id);
+        // add at beginning, before current child
+        const savedItem = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, newItem.id) });
+        assertIsDefined(savedItem);
+        expect(savedItem.order).toBeLessThan(child.order!);
       });
 
       it('Create successfully in shared parent item', async () => {
@@ -191,9 +196,9 @@ describe('Folder routes tests', () => {
         } = await seedFromJson({
           items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Write }] }],
         });
-        mockAuthenticate(actor);
         assertIsDefined(actor);
         assertIsMember(actor);
+        mockAuthenticate(actor);
 
         const payload = FolderItemFactory();
         const response = await app.inject({
@@ -212,20 +217,21 @@ describe('Folder routes tests', () => {
         // one membership for sharing
         // admin for the new item
         expect(
-          await itemMembershipRawRepository.countBy({
-            permission: PermissionLevel.Admin,
-            item: { id: newItem.id },
-            account: { id: actor.id },
+          await db.query.itemMemberships.findMany({
+            where: and(
+              eq(itemMemberships.itemPath, newItem.path),
+              eq(itemMemberships.permission, PermissionLevel.Admin),
+              eq(itemMemberships.accountId, actor.id),
+            ),
           }),
-        ).toEqual(1);
+        ).toHaveLength(1);
       });
 
       it('Create successfully with geolocation', async () => {
         const { actor } = await seedFromJson();
-        mockAuthenticate(actor);
-
         assertIsDefined(actor);
         assertIsMember(actor);
+        mockAuthenticate(actor);
 
         const payload = FolderItemFactory();
         const response = await app.inject({
@@ -240,15 +246,17 @@ describe('Folder routes tests', () => {
         await waitForPostCreation();
 
         expect(
-          await AppDataSource.getRepository(ItemGeolocation).countBy({ item: { id: newItem.id } }),
-        ).toEqual(1);
+          await db.query.itemGeolocationsTable.findMany({
+            where: eq(itemGeolocationsTable.itemPath, newItem.path),
+          }),
+        ).toHaveLength(1);
       });
 
       it('Create successfully with language', async () => {
         const { actor } = await seedFromJson();
-        mockAuthenticate(actor);
         assertIsDefined(actor);
         assertIsMember(actor);
+        mockAuthenticate(actor);
 
         const payload = FolderItemFactory({ lang: 'fr' });
         const response = await app.inject({
@@ -271,9 +279,9 @@ describe('Folder routes tests', () => {
         } = await seedFromJson({
           items: [{ lang, memberships: [{ account: 'actor' }] }],
         });
-        mockAuthenticate(actor);
         assertIsDefined(actor);
         assertIsMember(actor);
+        mockAuthenticate(actor);
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -290,9 +298,9 @@ describe('Folder routes tests', () => {
 
       it('Create successfully with description placement above and should not erase default thumbnail', async () => {
         const { actor } = await seedFromJson();
-        mockAuthenticate(actor);
         assertIsDefined(actor);
         assertIsMember(actor);
+        mockAuthenticate(actor);
 
         const payload = FolderItemFactory({
           settings: { descriptionPlacement: DescriptionPlacement.ABOVE },
@@ -313,9 +321,9 @@ describe('Folder routes tests', () => {
 
       it('Filter out bad setting when creating', async () => {
         const { actor } = await seedFromJson();
-        mockAuthenticate(actor);
         assertIsDefined(actor);
         assertIsMember(actor);
+        mockAuthenticate(actor);
 
         const BAD_SETTING = { INVALID: 'Not a valid setting' };
         const VALID_SETTING = { descriptionPlacement: DescriptionPlacement.ABOVE };
@@ -347,9 +355,9 @@ describe('Folder routes tests', () => {
         } = await seedFromJson({
           items: [{ memberships: [{ account: 'actor' }], children: [{ order: 1 }, { order: 2 }] }],
         });
-        mockAuthenticate(actor);
         assertIsDefined(actor);
         assertIsMember(actor);
+        mockAuthenticate(actor);
 
         const payload = FolderItemFactory();
         const response = await app.inject({
@@ -364,7 +372,10 @@ describe('Folder routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
         await waitForPostCreation();
 
-        await testUtils.expectOrder(newItem.id, previousItem.id, afterItem.id);
+        const savedItem = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, newItem.id) });
+        assertIsDefined(savedItem);
+        expect(savedItem.order).toBeGreaterThan(previousItem.order!);
+        expect(savedItem.order).toBeLessThan(afterItem.order!);
       });
 
       it('Create successfully at end', async () => {
@@ -374,9 +385,9 @@ describe('Folder routes tests', () => {
         } = await seedFromJson({
           items: [{ memberships: [{ account: 'actor' }], children: [{ order: 1 }, { order: 40 }] }],
         });
-        mockAuthenticate(actor);
         assertIsDefined(actor);
         assertIsMember(actor);
+        mockAuthenticate(actor);
 
         const payload = FolderItemFactory();
         const response = await app.inject({
@@ -391,7 +402,9 @@ describe('Folder routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
         await waitForPostCreation();
 
-        await testUtils.expectOrder(newItem.id, previousItem.id);
+        const savedItem = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, newItem.id) });
+        assertIsDefined(savedItem);
+        expect(savedItem.order).toBeGreaterThan(previousItem.order!);
       });
 
       it('Create successfully after invalid child adds at end', async () => {
@@ -405,9 +418,9 @@ describe('Folder routes tests', () => {
             { memberships: [{ account: 'actor' }], children: [{ order: 100 }] },
           ],
         });
-        mockAuthenticate(actor);
         assertIsDefined(actor);
         assertIsMember(actor);
+        mockAuthenticate(actor);
 
         const payload = FolderItemFactory();
         const response = await app.inject({
@@ -416,14 +429,19 @@ describe('Folder routes tests', () => {
           query: { parentId: parentItem.id, previousItemId: anotherChild.id },
           payload,
         });
-
+        expect(response.statusCode).toBe(StatusCodes.OK);
         const newItem = response.json();
         expectItem(newItem, payload, actor);
-        expect(response.statusCode).toBe(StatusCodes.OK);
         await waitForPostCreation();
 
         // should be after child, since another child is not valid
-        await testUtils.expectOrder(newItem.id, child.id, anotherChild.id);
+        const savedItem = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, newItem.id) });
+        assertIsDefined(savedItem);
+        assertIsDefined(child.order);
+        assertIsDefined(anotherChild.order);
+        expect(savedItem.order).toBeGreaterThan(child.order);
+        // is smaller than another child because it is not in the same parent
+        expect(savedItem.order).toBeLessThan(anotherChild.order);
       });
 
       it('Throw if geolocation is partial', async () => {
@@ -436,7 +454,11 @@ describe('Folder routes tests', () => {
 
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
         // no item nor geolocation is created
-        expect(await testUtils.rawItemRepository.countBy({ name: payload.name })).toEqual(0);
+        expect(
+          await db.query.itemsRaw.findMany({
+            where: eq(itemsRaw.name, payload.name),
+          }),
+        ).toHaveLength(0);
 
         const response1 = await app.inject({
           method: HttpMethod.Post,
@@ -446,7 +468,11 @@ describe('Folder routes tests', () => {
 
         expect(response1.statusCode).toBe(StatusCodes.BAD_REQUEST);
         // no item nor geolocation is created
-        expect(await testUtils.rawItemRepository.countBy({ name: payload.name })).toEqual(0);
+        expect(
+          await db.query.itemsRaw.findMany({
+            where: eq(itemsRaw.name, payload.name),
+          }),
+        ).toHaveLength(0);
       });
 
       it('Bad request if name is invalid', async () => {
@@ -485,6 +511,7 @@ describe('Folder routes tests', () => {
       });
       it('Cannot create item in non-existing parent', async () => {
         const { actor } = await seedFromJson();
+        assertIsDefined(actor);
         mockAuthenticate(actor);
 
         const payload = FolderItemFactory();
@@ -506,6 +533,7 @@ describe('Folder routes tests', () => {
         } = await seedFromJson({
           items: [{}],
         });
+        assertIsDefined(actor);
         mockAuthenticate(actor);
 
         const payload = FolderItemFactory();
@@ -526,6 +554,7 @@ describe('Folder routes tests', () => {
         } = await seedFromJson({
           items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Read }] }],
         });
+        assertIsDefined(actor);
         mockAuthenticate(actor);
 
         const payload = FolderItemFactory();
@@ -552,6 +581,7 @@ describe('Folder routes tests', () => {
             },
           ],
         });
+        assertIsDefined(actor);
         mockAuthenticate(actor);
 
         const payload = FolderItemFactory();
@@ -577,6 +607,7 @@ describe('Folder routes tests', () => {
             },
           ],
         });
+        assertIsDefined(actor);
         mockAuthenticate(actor);
 
         const payload = FolderItemFactory();
@@ -587,17 +618,17 @@ describe('Folder routes tests', () => {
         });
 
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-        expect(response.json()).toMatchObject(new WrongItemTypeError(ItemType.DOCUMENT));
+        expect(response.json()).toMatchObject(new ItemNotFolder(parent));
       });
     });
   });
 
   describe('POST /items/folders-with-thumbnail', () => {
-    beforeEach(async () => {
-      const { actor } = await seedFromJson({ actor: { extra: { lang: 'en' } } });
-      mockAuthenticate(actor);
-    });
     it('Post item with thumbnail', async () => {
+      const { actor } = await seedFromJson({ actor: { extra: { lang: 'en' } } });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
+      mockAuthenticate(actor);
       const imageStream = fs.createReadStream(
         path.resolve(__dirname, '../../test/fixtures/image.png'),
       );
@@ -664,6 +695,7 @@ describe('Folder routes tests', () => {
             },
           ],
         });
+        assertIsDefined(actor);
         mockAuthenticate(actor);
 
         const payload = {
@@ -705,6 +737,7 @@ describe('Folder routes tests', () => {
             },
           ],
         });
+        assertIsDefined(actor);
         mockAuthenticate(actor);
 
         const payload = {
@@ -737,6 +770,7 @@ describe('Folder routes tests', () => {
             },
           ],
         });
+        assertIsDefined(actor);
         mockAuthenticate(actor);
 
         const payload = {
@@ -776,6 +810,7 @@ describe('Folder routes tests', () => {
             },
           ],
         });
+        assertIsDefined(actor);
         mockAuthenticate(actor);
 
         const BAD_SETTING = { INVALID: 'Not a valid setting' };
@@ -829,6 +864,7 @@ describe('Folder routes tests', () => {
         } = await seedFromJson({
           items: [{}],
         });
+        assertIsDefined(actor);
         mockAuthenticate(actor);
 
         const payload = {
@@ -850,6 +886,7 @@ describe('Folder routes tests', () => {
         } = await seedFromJson({
           items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Read }] }],
         });
+        assertIsDefined(actor);
         mockAuthenticate(actor);
 
         const payload = {
