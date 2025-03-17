@@ -48,13 +48,7 @@ export const invite = {
     ),
   }),
   response: {
-    [StatusCodes.OK]: customType.StrictObject(
-      {
-        memberships: Type.Array(itemMembershipSchemaRef),
-        invitations: Type.Array(invitationSchemaRef),
-      },
-      { description: 'Successful Response' },
-    ),
+    [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
     '4xx': errorSchemaRef,
     [StatusCodes.INTERNAL_SERVER_ERROR]: errorSchemaRef,
   },

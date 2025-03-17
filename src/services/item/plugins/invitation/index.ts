@@ -54,7 +54,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       schema: invite,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
-    async ({ user, body, params }) => {
+    async ({ user, body, params }, reply) => {
       const { invitations } = body;
       const member = asDefined(user?.account);
       assertIsMember(member);
@@ -66,6 +66,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       await db.transaction(async (tx) => {
         await invitationService.shareItem(tx, member, params.id, invitations);
       });
+
+      reply.status(StatusCodes.NO_CONTENT);
     },
   );
 
