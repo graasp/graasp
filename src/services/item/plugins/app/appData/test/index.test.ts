@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
@@ -18,10 +18,8 @@ import { appDatas } from '../../../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../../../utils/assertions';
 import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
 import { assertIsMemberForTest } from '../../../../../authentication';
-import { expectAccount } from '../../../../../member/test/fixtures/members';
 import { getAccessToken } from '../../test/fixtures';
 import { PreventUpdateAppDataFile } from '../errors';
-import { saveAppData } from './fixtures';
 
 const expectAppDatas = (values, expected) => {
   for (const expectValue of expected) {
@@ -30,6 +28,21 @@ const expectAppDatas = (values, expected) => {
     expect(value.data).toEqual(expectValue.data);
   }
 };
+
+function buildAppDataFile() {
+  return {
+    type: ItemType.S3_FILE,
+    data: {
+      [ItemType.S3_FILE]: {
+        size: faker.number.int({ min: 1, max: 1000 }),
+        content: 'content',
+        mimetype: 'image/png',
+        name: faker.system.fileName(),
+        path: faker.system.filePath(),
+      },
+    },
+  };
+}
 
 describe('App Data Tests', () => {
   let app: FastifyInstance;
@@ -104,8 +117,8 @@ describe('App Data Tests', () => {
               isPublic: true,
               type: ItemType.APP,
               appData: [
-                { account: { name: 'bob' }, visibility: AppDataVisibility.Item },
-                { account: { name: 'bob' }, visibility: AppDataVisibility.Item },
+                { account: 'actor', visibility: AppDataVisibility.Item, creator: 'actor' },
+                { account: { name: 'bob' }, visibility: AppDataVisibility.Item, creator: 'actor' },
               ],
             },
           ],
@@ -140,7 +153,10 @@ describe('App Data Tests', () => {
             {
               memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
               type: ItemType.APP,
-              appData: [{ account: 'actor' }, { account: 'actor' }],
+              appData: [
+                { account: 'actor', creator: 'actor' },
+                { account: 'actor', creator: 'actor' },
+              ],
             },
           ],
         });
@@ -174,9 +190,9 @@ describe('App Data Tests', () => {
               memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
               type: ItemType.APP,
               appData: [
-                { account: 'actor', type },
-                { account: 'actor', type },
-                { account: 'actor' },
+                { account: 'actor', type, creator: 'actor' },
+                { account: 'actor', type, creator: 'actor' },
+                { account: 'actor', creator: 'actor' },
               ],
             },
           ],
@@ -212,7 +228,7 @@ describe('App Data Tests', () => {
             {
               memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
               type: ItemType.APP,
-              appData: [{ account: 'actor' }],
+              appData: [{ account: 'actor', creator: 'actor' }],
             },
           ],
         });
@@ -272,7 +288,11 @@ describe('App Data Tests', () => {
             {
               memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
               type: ItemType.APP,
-              appData: [{ account: 'actor' }, { account: 'actor' }, { account: 'actor' }],
+              appData: [
+                { account: 'actor', creator: 'actor' },
+                { account: 'actor', creator: 'actor' },
+                { account: 'actor', creator: 'actor' },
+              ],
             },
           ],
         });
@@ -304,9 +324,9 @@ describe('App Data Tests', () => {
               memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
               type: ItemType.APP,
               appData: [
-                { account: 'actor' },
-                { account: 'actor' },
-                { account: 'actor', visibility: AppDataVisibility.Item },
+                { account: 'actor', creator: 'actor' },
+                { account: 'actor', creator: 'actor' },
+                { account: 'actor', creator: 'actor', visibility: AppDataVisibility.Item },
               ],
             },
           ],
@@ -418,7 +438,7 @@ describe('App Data Tests', () => {
               {
                 memberships: [
                   { account: 'actor', permission: PermissionLevel.Admin },
-                  { account: { name: 'bob' }, permission: PermissionLevel.Admin },
+                  { account: { name: 'bob' }, permission: PermissionLevel.Read },
                 ],
                 type: ItemType.APP,
               },
@@ -441,7 +461,7 @@ describe('App Data Tests', () => {
           });
           expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
           const newAppData = await db.query.appDatas.findFirst({
-            where: eq(appDatas.type, payload.type),
+            where: and(eq(appDatas.type, payload.type), eq(appDatas.accountId, bob.id)),
           });
           assertIsDefined(newAppData);
           expect(newAppData.data).toEqual(payload.data);
@@ -456,10 +476,7 @@ describe('App Data Tests', () => {
           } = await seedFromJson({
             items: [
               {
-                memberships: [
-                  { account: 'actor', permission: PermissionLevel.Admin },
-                  { account: { name: 'bob' }, permission: PermissionLevel.Admin },
-                ],
+                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
                 type: ItemType.APP,
               },
             ],
@@ -525,199 +542,364 @@ describe('App Data Tests', () => {
         });
       });
     });
-    describe('PATCH /:itemId/app-data/:appDataId', () => {
-      //   const updatedData = { data: { myData: 'value' } };
-      //   let chosenAppData;
-      describe('Sign Out', () => {
-        //     beforeEach(async () => {
-        //       ({ app, actor } = await build());
-        //       ({ item, token, appData } = await setUpForAppData(app, actor, actor));
-        //       // logout after getting token and setting up
-        //       await app.inject({
-        //         method: HttpMethod.Get,
-        //         url: '/logout',
-        //       });
-        //       member = null;
-        //     });
-        //     it('Request without member and token throws', async () => {
-        //       const response = await app.inject({
-        //         method: HttpMethod.Patch,
-        //         url: `${APP_ITEMS_PREFIX}/${v4()}/app-data/${v4()}`,
-        //         payload: { data: updatedData.data },
-        //       });
-        //       expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
-        //     });
-        //   });
-        //   describe('Sign In', () => {
-        //     beforeEach(async () => {
-        //       ({ app, actor } = await build());
-        //       let appData;
-        //       ({ item, token, appData } = await setUpForAppData(app, actor, actor));
-        //       chosenAppData = appData[0];
-        //     });
-        //     it('Patch app data successfully', async () => {
-        //       const response = await app.inject({
-        //         method: HttpMethod.Patch,
-        //         url: `${APP_ITEMS_PREFIX}/${item.id}/app-data/${chosenAppData.id}`,
-        //         headers: {
-        //           Authorization: `Bearer ${token}`,
-        //         },
-        //         payload: { data: updatedData.data },
-        //       });
-        //       expect(response.statusCode).toEqual(StatusCodes.OK);
-        //       expect(response.json()).toMatchObject(updatedData);
-        //     });
-        //     it('Invalid item id throws bad request', async () => {
-        //       const response = await app.inject({
-        //         method: HttpMethod.Patch,
-        //         url: `${APP_ITEMS_PREFIX}/invalid-id/app-data/${chosenAppData.id}`,
-        //         headers: {
-        //           Authorization: `Bearer ${token}`,
-        //         },
-        //         payload: { data: updatedData.data },
-        //       });
-        //       expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
-        //     });
-        //     it('Invalid app data id throws bad request', async () => {
-        //       const response = await app.inject({
-        //         method: HttpMethod.Patch,
-        //         url: `${APP_ITEMS_PREFIX}/${item.id}/app-data/invalid-id`,
-        //         headers: {
-        //           Authorization: `Bearer ${token}`,
-        //         },
-        //         payload: { data: updatedData.data },
-        //       });
-        //       expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
-        //     });
-        //     it('Throw if app data is a file', async () => {
-        //       const fileAppData = await AppDataSource.getRepository(AppData).save({
-        //         type: 'type',
-        //         account: actor,
-        //         data: {
-        //           name: 'name',
-        //           type: ItemType.S3_FILE,
-        //           filename: 'filename',
-        //           filepath: 'filepath',
-        //           size: 120,
-        //           mimetype: 'mimetype',
-        //         },
-        //         visibility: AppDataVisibility.Item,
-        //         item: chosenAppData.item,
-        //       });
-        //       const response = await app.inject({
-        //         method: HttpMethod.Patch,
-        //         url: `${APP_ITEMS_PREFIX}/${item.id}/app-data/${fileAppData.id}`,
-        //         headers: {
-        //           Authorization: `Bearer ${token}`,
-        //         },
-        //         payload: { data: updatedData.data },
-        //       });
-        //       expect(response.json()).toMatchObject(new PreventUpdateAppDataFile(fileAppData.id));
-        //     });
-        //   });
-        //   describe('Sign In as reader', () => {
-        //     beforeEach(async () => {
-        //       ({ app, actor } = await build());
-        //       member = await saveMember();
-        //       let appData;
-        //       ({ item, token, appData } = await setUpForAppData(
-        //         app,
-        //         actor,
-        //         member,
-        //         PermissionLevel.Read,
-        //       ));
-        //       chosenAppData = appData[0];
-        //     });
-        //     it('Can patch own app data', async () => {
-        //       const [a] = await saveAppData({
-        //         item,
-        //         creator: actor,
-        //       });
-        //       const response = await app.inject({
-        //         method: HttpMethod.Patch,
-        //         url: `${APP_ITEMS_PREFIX}/${item.id}/app-data/${a.id}`,
-        //         headers: {
-        //           Authorization: `Bearer ${token}`,
-        //         },
-        //         payload: { data: updatedData.data },
-        //       });
-        //       expect(response.statusCode).toEqual(StatusCodes.OK);
-        //       expect(response.json()).toMatchObject(updatedData);
-        //     });
-        //     it("Cannot patch someone else's app data", async () => {
-        //       const response = await app.inject({
-        //         method: HttpMethod.Patch,
-        //         url: `${APP_ITEMS_PREFIX}/${item.id}/app-data/${chosenAppData.id}`,
-        //         headers: {
-        //           Authorization: `Bearer ${token}`,
-        //         },
-        //         payload: { data: updatedData.data },
-        //       });
-        //       expect(response.statusCode).toEqual(StatusCodes.FORBIDDEN);
-        //     });
-        //   });
-        // });
-        // describe('DELETE /:itemId/app-data/:appDataId', () => {
-        //   describe('Sign Out', () => {
-        //     beforeEach(async () => {
-        //       ({ app, actor } = await build());
-        //       ({ item, token, appData } = await setUpForAppData(app, actor, actor));
-        //       // logout after getting token and setting up
-        //       await app.inject({
-        //         method: HttpMethod.Get,
-        //         url: '/logout',
-        //       });
-        //       member = null;
-        //     });
-        //     it('Delete app data without member and token throws', async () => {
-        //       const response = await app.inject({
-        //         method: HttpMethod.Delete,
-        //         url: `${APP_ITEMS_PREFIX}/${item.id}/app-data/${v4()}`,
-        //       });
-        //       expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
-        //     });
-        //   });
-        //   describe('Sign In', () => {
-        //     let chosenAppData;
-        //     beforeEach(async () => {
-        //       ({ app, actor } = await build());
-        //       ({ item, token, appData } = await setUpForAppData(app, actor, actor));
-        //       chosenAppData = appData[0];
-        //     });
-        //     it('Delete app data successfully', async () => {
-        //       const response = await app.inject({
-        //         method: HttpMethod.Delete,
-        //         url: `${APP_ITEMS_PREFIX}/${item.id}/app-data/${chosenAppData.id}`,
-        //         headers: {
-        //           Authorization: `Bearer ${token}`,
-        //         },
-        //       });
-        //       expect(response.statusCode).toEqual(StatusCodes.OK);
-        //       expect(response.body).toEqual(chosenAppData.id);
-        //       const appSetting = await AppDataSource.getRepository(AppData).findOneBy({
-        //         id: chosenAppData.id,
-        //       });
-        //       expect(appSetting).toBeFalsy();
-        //     });
-        //     it('Delete app data with invalid id throws', async () => {
-        //       const response = await app.inject({
-        //         method: HttpMethod.Delete,
-        //         url: `${APP_ITEMS_PREFIX}/invalid-id/app-data/${chosenAppData.id}`,
-        //         headers: {
-        //           Authorization: `Bearer ${token}`,
-        //         },
-        //       });
-        //       expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
-        //     });
-        //     it('Delete app data with invalid app data id throws', async () => {
-        //       const response = await app.inject({
-        //         method: HttpMethod.Delete,
-        //         url: `${APP_ITEMS_PREFIX}/${item.id}/app-data/invalid-id`,
-        //         headers: {
-        //           Authorization: `Bearer ${token}`,
-        //         },
-        //       });
-        //       expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
+  });
+  describe('PATCH /:itemId/app-data/:appDataId', () => {
+    //   const updatedData = { data: { myData: 'value' } };
+    it('Request without member and token throws', async () => {
+      const response = await app.inject({
+        method: HttpMethod.Patch,
+        url: `${APP_ITEMS_PREFIX}/${v4()}/app-data/${v4()}`,
+        payload: { data: { myData: 'value' } },
+      });
+      expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
+    });
+    describe('Sign In', () => {
+      it('Patch app data successfully', async () => {
+        const { apps } = await seedFromJson({ apps: [{}] });
+        const {
+          actor,
+          items: [item],
+          appData,
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              type: ItemType.APP,
+              appData: [
+                { account: 'actor', creator: 'actor', type: 'type', data: { foo: 'value' } },
+              ],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+        const chosenApp = apps[0];
+        const chosenAppData = appData[0];
+        const updatedData = { data: { foo: 'bar' } };
+
+        const token = await getAccessToken(app, item, chosenApp);
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/app-data/${chosenAppData.id}`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          payload: updatedData,
+        });
+        expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
+        const savedAppData = await db.query.appDatas.findFirst({
+          where: eq(appDatas.id, chosenAppData.id),
+        });
+        expect(savedAppData).toMatchObject(updatedData);
+      });
+      it('Invalid item id throws bad request', async () => {
+        const { apps } = await seedFromJson({ apps: [{}] });
+        const {
+          actor,
+          items: [item],
+          appData,
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              type: ItemType.APP,
+              appData: [
+                { account: 'actor', creator: 'actor', type: 'type', data: { foo: 'value' } },
+              ],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+        const chosenApp = apps[0];
+        const chosenAppData = appData[0];
+        const updatedData = { data: { foo: 'bar' } };
+
+        const token = await getAccessToken(app, item, chosenApp);
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `${APP_ITEMS_PREFIX}/invalid-id/app-data/${chosenAppData.id}`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          payload: { data: updatedData.data },
+        });
+        expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
+      });
+      it('Invalid app data id throws bad request', async () => {
+        const { apps } = await seedFromJson({ apps: [{}] });
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              type: ItemType.APP,
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+        const chosenApp = apps[0];
+        const updatedData = { data: { foo: 'bar' } };
+
+        const token = await getAccessToken(app, item, chosenApp);
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/app-data/invalid-id`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          payload: { data: updatedData.data },
+        });
+        expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
+      });
+      it('Throw if app data is a file', async () => {
+        const { apps } = await seedFromJson({ apps: [{}] });
+        const {
+          actor,
+          items: [item],
+          appData: [fileAppData],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              type: ItemType.APP,
+              appData: [{ account: 'actor', creator: 'actor', ...buildAppDataFile() }],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+        const chosenApp = apps[0];
+
+        const token = await getAccessToken(app, item, chosenApp);
+        const updatedData = { data: { foo: 'bar' } };
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/app-data/${fileAppData.id}`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          payload: { data: updatedData.data },
+        });
+        expect(response.json()).toMatchObject(new PreventUpdateAppDataFile(fileAppData.id));
+        const savedAppData = await db.query.appDatas.findFirst({
+          where: eq(appDatas.id, fileAppData.id),
+        });
+        expect(savedAppData).toMatchObject(fileAppData);
+      });
+    });
+    describe('Sign In as reader', () => {
+      it('Can patch own app data', async () => {
+        const { apps } = await seedFromJson({ apps: [{}] });
+        const {
+          actor,
+          items: [item],
+          appData: [a],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              type: ItemType.APP,
+              appData: [{ account: 'actor', creator: 'actor', type: 'type', data: { foo: 'bar' } }],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+        const chosenApp = apps[0];
+
+        const token = await getAccessToken(app, item, chosenApp);
+        const updatedData = { data: { foo: 'bar' } };
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/app-data/${a.id}`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          payload: { data: updatedData.data },
+        });
+        expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
+        const savedAppData = await db.query.appDatas.findFirst({
+          where: eq(appDatas.id, a.id),
+        });
+        expect(savedAppData).toMatchObject(updatedData);
+      });
+      it("Cannot patch someone else's app data", async () => {
+        const { apps } = await seedFromJson({ apps: [{}] });
+        const {
+          actor,
+          items: [item],
+          appData: [chosenAppData],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              type: ItemType.APP,
+              appData: [
+                {
+                  account: { name: 'bob' },
+                  creator: { name: 'bob' },
+                  type: 'type',
+                  data: { foo: 'bar' },
+                },
+              ],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+        const chosenApp = apps[0];
+
+        const token = await getAccessToken(app, item, chosenApp);
+        const updatedData = { data: { newFoo: 'barbar' } };
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/app-data/${chosenAppData.id}`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          payload: { data: updatedData.data },
+        });
+        expect(response.statusCode).toEqual(StatusCodes.FORBIDDEN);
+      });
+    });
+  });
+  describe('DELETE /:itemId/app-data/:appDataId', () => {
+    describe('Sign Out', () => {
+      it('Delete app data without member and token throws', async () => {
+        const {
+          items: [item],
+        } = await seedFromJson({
+          actor: null,
+          items: [
+            {
+              type: ItemType.APP,
+            },
+          ],
+        });
+        const response = await app.inject({
+          method: HttpMethod.Delete,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/app-data/${v4()}`,
+        });
+        expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
+      });
+    });
+    describe('Sign In', () => {
+      it('Delete app data successfully', async () => {
+        const { apps } = await seedFromJson({ apps: [{}] });
+        const {
+          actor,
+          items: [item],
+          appData: [chosenAppData],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              type: ItemType.APP,
+              appData: [
+                {
+                  account: { name: 'bob' },
+                  creator: { name: 'bob' },
+                  type: 'type',
+                  data: { foo: 'bar' },
+                },
+              ],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+        const chosenApp = apps[0];
+
+        const token = await getAccessToken(app, item, chosenApp);
+        const response = await app.inject({
+          method: HttpMethod.Delete,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/app-data/${chosenAppData.id}`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        expect(response.body).toEqual(chosenAppData.id);
+        const appSetting = await db.query.appDatas.findFirst({
+          where: eq(appDatas.id, chosenAppData.id),
+        });
+        expect(appSetting).toBeFalsy();
+      });
+      it('Delete app data with invalid id throws', async () => {
+        const { apps } = await seedFromJson({ apps: [{}] });
+        const {
+          actor,
+          items: [item],
+          appData: [chosenAppData],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              type: ItemType.APP,
+              appData: [
+                {
+                  account: { name: 'bob' },
+                  creator: { name: 'bob' },
+                  type: 'type',
+                  data: { foo: 'bar' },
+                },
+              ],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+        const chosenApp = apps[0];
+
+        const token = await getAccessToken(app, item, chosenApp);
+        const response = await app.inject({
+          method: HttpMethod.Delete,
+          url: `${APP_ITEMS_PREFIX}/invalid-id/app-data/${chosenAppData.id}`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
+      });
+      it('Delete app data with invalid app data id throws', async () => {
+        const { apps } = await seedFromJson({ apps: [{}] });
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              type: ItemType.APP,
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMemberForTest(actor);
+        mockAuthenticate(actor);
+        const chosenApp = apps[0];
+
+        const token = await getAccessToken(app, item, chosenApp);
+        const response = await app.inject({
+          method: HttpMethod.Delete,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/app-data/invalid-id`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
       });
     });
   });

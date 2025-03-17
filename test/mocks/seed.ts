@@ -81,6 +81,7 @@ type SeedItem<M = SeedMember> = (Partial<Omit<Item, 'creator'>> & { creator?: M 
   })[];
   appData?: (Omit<Partial<AppDataRaw>, 'accountId'> & {
     account: M;
+    creator: M;
   })[];
 };
 type DataType = {
@@ -111,6 +112,7 @@ const replaceActorInItems = (createdActor?: AccountRaw, items?: DataType['items'
     appData: i.appData?.map((ad) => ({
       ...ad,
       account: ad.account === ACTOR_STRING ? (createdActor as any) : ad.account,
+      creator: ad.creator === ACTOR_STRING ? (createdActor as any) : ad.creator,
     })),
     children: replaceActorInItems(createdActor, i.children),
   }));
@@ -146,6 +148,7 @@ function replaceAccountInItems(createdAccount: AccountRaw, items?: DataType['ite
       return {
         ...a,
         account: getNameIfExists(a.account) === createdAccount.name ? createdAccount : a.account,
+        creator: getNameIfExists(a.creator) === createdAccount.name ? createdAccount : a.creator,
       };
     });
 
@@ -294,12 +297,9 @@ function generateIdForMembers({
         return [...acc, m.account];
       }, []);
 
-      // get all accounts from all app data
+      // get all accounts and creators from all app data
       const accountsFromAppData = (i.appData ?? [])?.reduce<SeedMember[]>((acc, m) => {
-        if (!m.account) {
-          return acc;
-        }
-        return [...acc, m.account];
+        return [...acc, m.account, m.creator].filter(Boolean);
       }, []);
 
       const allAccounts = [
@@ -676,6 +676,7 @@ export async function seedFromJson(data: DataType = {}) {
           data: {},
           type: faker.word.sample(),
           accountId: aa.account.id,
+          creatorId: aa.creator.id,
           ...aa,
         })),
       );
