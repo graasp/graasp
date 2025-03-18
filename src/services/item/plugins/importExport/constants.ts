@@ -8,6 +8,8 @@ export const TMP_IMPORT_ZIP_FOLDER_PATH = path.join(TMP_FOLDER, 'zip-import');
 
 export const ROOT_PATH = './';
 
+export const GRAASP_MANIFEST_FILENAME = 'graasp-manifest.json';
+
 export const DESCRIPTION_EXTENSION = '.description.html';
 
 export const GRAASP_DOCUMENT_EXTENSION = '.graasp';

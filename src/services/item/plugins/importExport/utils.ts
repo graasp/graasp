@@ -3,11 +3,10 @@ import { createWriteStream } from 'fs';
 import { mkdir } from 'fs/promises';
 import mime from 'mime';
 import path from 'path';
-import { Transform } from 'stream';
+import { Readable, Transform } from 'stream';
 import { pipeline } from 'stream/promises';
 import { v4 } from 'uuid';
 
-import { BusboyFileStream } from '@fastify/busboy';
 import { FastifyBaseLogger } from 'fastify';
 
 import { ItemType, UnionOfConst, getMimetype } from '@graasp/sdk';
@@ -15,7 +14,7 @@ import { ItemType, UnionOfConst, getMimetype } from '@graasp/sdk';
 import { Item, isItemType } from '../../entities/Item';
 import { APP_URL_PREFIX, TMP_IMPORT_ZIP_FOLDER_PATH, URL_PREFIX } from './constants';
 
-export const prepareZip = async (file: BusboyFileStream, log?: FastifyBaseLogger) => {
+export const prepareZip = async (file: Readable, log?: FastifyBaseLogger) => {
   // read and prepare folder for zip and content
   const tmpId = v4();
   const targetFolder = path.join(TMP_IMPORT_ZIP_FOLDER_PATH, tmpId);
