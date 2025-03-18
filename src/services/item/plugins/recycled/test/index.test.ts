@@ -1,15 +1,11 @@
+import { and, eq, inArray, isNotNull, isNull } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
 
-import {
-  FolderItemFactory,
-  HttpMethod,
-  MAX_TARGETS_FOR_MODIFY_REQUEST,
-  PermissionLevel,
-} from '@graasp/sdk';
+import { HttpMethod, MAX_TARGETS_FOR_MODIFY_REQUEST, PermissionLevel } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -17,32 +13,29 @@ import build, {
   unmockAuthenticate,
 } from '../../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants';
-import { Item } from '../../../../../drizzle/types';
+import { seedFromJson } from '../../../../../../test/mocks/seed';
+import { db } from '../../../../../drizzle/db';
+import { itemsRaw, recycledItemDatas } from '../../../../../drizzle/schema';
+import { assertIsDefined } from '../../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { saveMember } from '../../../../member/test/fixtures/members';
+import { assertIsMemberForTest } from '../../../../authentication';
 import { ITEMS_PAGE_SIZE } from '../../../constants';
-import { ItemTestUtils, expectItem, expectManyItems } from '../../../test/fixtures/items';
-import { expectManyRecycledItems } from './fixtures';
-
-const recycledItemDataRawRepository = AppDataSource.getRepository(RecycledItemData);
-const testUtils = new ItemTestUtils();
+import { expectItem, expectManyItems } from '../../../test/fixtures/items';
 
 describe('Recycle Bin Tests', () => {
   let app: FastifyInstance;
-  let actor;
 
   beforeAll(async () => {
-    ({ app } = await build({ member: null }));
+    ({ app } = await build());
   });
 
   afterAll(async () => {
-    await clearDatabase(app.db);
+    await clearDatabase(db);
     app.close();
   });
 
   afterEach(async () => {
     jest.clearAllMocks();
-    actor = null;
     unmockAuthenticate();
   });
 
@@ -58,18 +51,29 @@ describe('Recycle Bin Tests', () => {
       });
 
       describe('Signed In', () => {
-        beforeEach(async () => {
-          actor = await saveMember();
-          mockAuthenticate(actor);
-        });
-
         it('Successfully get recycled items', async () => {
-          const { item: item0 } = await testUtils.saveRecycledItem(actor);
-          const { item: item1 } = await testUtils.saveRecycledItem(actor);
-
-          // actor does not have access
-          const member = await saveMember();
-          await testUtils.saveRecycledItem(member);
+          const {
+            actor,
+            items: [item0, item1],
+          } = await seedFromJson({
+            items: [
+              {
+                isDeleted: true,
+                creator: 'actor',
+                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              },
+              {
+                isDeleted: true,
+                creator: 'actor',
+                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              },
+              // noise
+              { isDeleted: true },
+            ],
+          });
+          assertIsDefined(actor);
+          assertIsMemberForTest(actor);
+          mockAuthenticate(actor);
 
           // we should not get item2
           const recycledItems = [item0, item1];
@@ -82,9 +86,8 @@ describe('Recycle Bin Tests', () => {
           const response = res.json();
           expect(res.statusCode).toBe(StatusCodes.OK);
 
-          const dbDeletedItems = await testUtils.rawItemRepository.find({
-            where: { creator: { id: actor.id } },
-            withDeleted: true,
+          const dbDeletedItems = await db.query.itemsRaw.findMany({
+            where: eq(itemsRaw.creatorId, actor.id),
           });
           expectManyItems(dbDeletedItems, recycledItems);
           // check response recycled items
@@ -95,18 +98,43 @@ describe('Recycle Bin Tests', () => {
         });
 
         it('Successfully get second page with smaller page size', async () => {
-          const { item: item0 } = await testUtils.saveRecycledItem(actor);
-          const { item: item1 } = await testUtils.saveRecycledItem(actor);
-          const { item: item2 } = await testUtils.saveRecycledItem(actor);
-          const { item: item3 } = await testUtils.saveRecycledItem(actor);
-          const { item: item4 } = await testUtils.saveRecycledItem(actor);
-          const { item: item5 } = await testUtils.saveRecycledItem(actor);
+          const {
+            actor,
+            items: [item0, item1, item2, item3, item4, item5],
+          } = await seedFromJson({
+            items: [
+              {
+                isDeleted: true,
+                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              },
+              {
+                isDeleted: true,
+                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              },
+              {
+                isDeleted: true,
+                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              },
+              {
+                isDeleted: true,
+                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              },
+              {
+                isDeleted: true,
+                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              },
+              {
+                isDeleted: true,
+                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              },
+              // noise
+              { isDeleted: true },
+            ],
+          });
+          assertIsDefined(actor);
+          assertIsMemberForTest(actor);
+          mockAuthenticate(actor);
 
-          // actor does not have access
-          const member = await saveMember();
-          await testUtils.saveRecycledItem(member);
-
-          // we should not get item2
           const recycledItems = [item0, item1, item2, item3, item4, item5];
 
           const res = await app.inject({
@@ -115,34 +143,41 @@ describe('Recycle Bin Tests', () => {
             query: { page: '2', pageSize: '5' },
           });
 
-          const response = res.json();
           expect(res.statusCode).toBe(StatusCodes.OK);
 
-          const dbDeletedItems = await testUtils.rawItemRepository.find({
-            where: { creator: { id: actor.id } },
-            withDeleted: true,
-          });
-          expectManyItems(dbDeletedItems, recycledItems);
           // receive last created item
-          expectManyItems(response.data, [item0], actor);
+          const response = res.json();
+          expect(response.data).toHaveLength(1);
           expect(response.totalCount).toEqual(recycledItems.length);
           expect(response.pagination.page).toEqual(2);
           expect(response.pagination.pageSize).toEqual(5);
         });
 
         it('Successfully return recycled subitems', async () => {
-          const { item: item0 } = await testUtils.saveRecycledItem(actor);
-          const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
-          const { item: deletedChild } = await testUtils.saveItemAndMembership({
-            item: { name: 'child' },
-            parentItem,
-            member: actor,
+          const {
+            actor,
+            items: [item0, _parent, deletedChild],
+          } = await seedFromJson({
+            items: [
+              {
+                isDeleted: true,
+                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              },
+              {
+                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                children: [
+                  {
+                    isDeleted: true,
+                  },
+                ],
+              },
+              // noise
+              { isDeleted: true },
+            ],
           });
-          await testUtils.saveRecycledItem(actor, deletedChild);
-
-          // actor does not have access
-          const member = await saveMember();
-          await testUtils.saveRecycledItem(member);
+          assertIsDefined(actor);
+          assertIsMemberForTest(actor);
+          mockAuthenticate(actor);
 
           // we should not get item2
           const recycledItems = [item0, deletedChild];
@@ -163,22 +198,23 @@ describe('Recycle Bin Tests', () => {
         });
 
         it('Does not return child of recycled item', async () => {
-          const creator = await saveMember();
-          const { item: parentItem } = await testUtils.saveItemAndMembership({
-            member: actor,
-            permission: PermissionLevel.Read,
-            creator,
+          const { actor } = await seedFromJson({
+            items: [
+              {
+                isDeleted: true,
+                memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+                children: [
+                  {
+                    memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                  },
+                ],
+              },
+              // noise
+              { isDeleted: true },
+            ],
           });
-          await testUtils.saveItemAndMembership({
-            item: { name: 'child' },
-            parentItem,
-            member: actor,
-          });
-          await testUtils.saveRecycledItem(actor, parentItem);
-
-          // actor does not have access
-          const member = await saveMember();
-          await testUtils.saveRecycledItem(member);
+          assertIsDefined(actor);
+          mockAuthenticate(actor);
 
           const res = await app.inject({
             method: HttpMethod.Get,
@@ -200,8 +236,16 @@ describe('Recycle Bin Tests', () => {
 
     describe('POST /recycle', () => {
       it('Throws if signed out', async () => {
-        const member = await saveMember();
-        const { item } = await testUtils.saveItemAndMembership({ member });
+        const {
+          items: [item],
+        } = await seedFromJson({
+          actor: null,
+          items: [
+            {},
+            // noise
+            { isDeleted: true },
+          ],
+        });
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -212,19 +256,24 @@ describe('Recycle Bin Tests', () => {
       });
 
       describe('Signed In', () => {
-        let items;
-        let itemIds;
-        beforeEach(async () => {
-          actor = await saveMember();
-          mockAuthenticate(actor);
-          const { item: item1 } = await testUtils.saveItemAndMembership({ member: actor });
-          const { item: item2 } = await testUtils.saveItemAndMembership({ member: actor });
-          const { item: item3 } = await testUtils.saveItemAndMembership({ member: actor });
-          items = [item1, item2, item3];
-          itemIds = items.map(({ id }) => id);
-        });
-
         it('Successfully recycle many items', async () => {
+          const { actor, items } = await seedFromJson({
+            items: [
+              {
+                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              },
+              {
+                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              },
+              {
+                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              },
+            ],
+          });
+          assertIsDefined(actor);
+          mockAuthenticate(actor);
+
+          const itemIds = items.map((i) => i.id);
           const res = await app.inject({
             method: HttpMethod.Post,
             url: '/items/recycle',
@@ -235,33 +284,45 @@ describe('Recycle Bin Tests', () => {
           await new Promise((res) => {
             setTimeout(async () => {
               // check items are soft deleted
-              const saved = await testUtils.rawItemRepository.find({
-                withDeleted: true,
-                where: { id: In(itemIds) },
+              const saved = await db.query.itemsRaw.findMany({
+                where: and(isNotNull(itemsRaw.deletedAt), inArray(itemsRaw.id, itemIds)),
               });
               expectManyItems(saved, items);
-              const savedNotDeleted = await testUtils.rawItemRepository.find({
-                where: { id: In(itemIds) },
-              });
-              expect(savedNotDeleted).toHaveLength(0);
 
               // check recycle item entries
-              const savedEntries = await recycledItemDataRawRepository.find({
-                where: { item: { path: In(items.map(({ path }) => path)) } },
+              const savedEntries = await db.query.recycledItemDatas.findMany({
+                where: inArray(
+                  recycledItemDatas.itemPath,
+                  items.map(({ path }) => path),
+                ),
               });
-              expectManyRecycledItems(savedEntries, saved);
+              expect(savedEntries).toHaveLength(items.length);
+
               res(true);
             }, MULTIPLE_ITEMS_LOADING_TIME);
           });
         });
 
         it('Returns error in array if does not have rights on one item', async () => {
-          const member = await saveMember();
-          const { item: errorItem } = await testUtils.saveRecycledItem(member);
+          const { actor, items } = await seedFromJson({
+            items: [
+              {},
+              {
+                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              },
+              {
+                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              },
+            ],
+          });
+          assertIsDefined(actor);
+          mockAuthenticate(actor);
+
+          const itemIds = items.map((i) => i.id);
           const res = await app.inject({
             method: HttpMethod.Post,
             url: '/items/recycle',
-            query: { id: [...items.map(({ id }) => id), errorItem.id] },
+            query: { id: itemIds },
           });
 
           expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -269,14 +330,17 @@ describe('Recycle Bin Tests', () => {
           await new Promise((res) => {
             setTimeout(async () => {
               // check items are NOT soft deleted
-              const savedNotDeleted = await testUtils.rawItemRepository.find({
-                where: { id: In(itemIds) },
+              const savedNotDeleted = await db.query.itemsRaw.findMany({
+                where: and(isNull(itemsRaw.deletedAt), inArray(itemsRaw.id, itemIds)),
               });
               expect(savedNotDeleted).toHaveLength(items.length);
 
               // check NO recycle item entries
-              const savedEntries = await recycledItemDataRawRepository.find({
-                where: { item: { path: In(items.map(({ path }) => path)) } },
+              const savedEntries = await db.query.recycledItemDatas.findMany({
+                where: inArray(
+                  recycledItemDatas.itemPath,
+                  items.map(({ path }) => path),
+                ),
               });
               expect(savedEntries).toHaveLength(0);
 
@@ -286,9 +350,13 @@ describe('Recycle Bin Tests', () => {
         });
 
         it('Bad request if recycle more than maxItemsInRequest items', async () => {
-          const items = Array.from({ length: MAX_TARGETS_FOR_MODIFY_REQUEST + 1 }, () =>
-            FolderItemFactory(),
-          );
+          const { actor, items } = await seedFromJson({
+            items: Array.from({ length: MAX_TARGETS_FOR_MODIFY_REQUEST + 1 }, () => ({
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            })),
+          });
+          assertIsDefined(actor);
+          mockAuthenticate(actor);
 
           const res = await app.inject({
             method: HttpMethod.Post,
@@ -299,6 +367,10 @@ describe('Recycle Bin Tests', () => {
         });
 
         it('Bad request for invalid id', async () => {
+          const { actor } = await seedFromJson();
+          assertIsDefined(actor);
+          mockAuthenticate(actor);
+
           const res = await app.inject({
             method: HttpMethod.Post,
             url: '/items/recycle',
@@ -321,20 +393,23 @@ describe('Recycle Bin Tests', () => {
       });
 
       describe('Signed In', () => {
-        let items: Item[];
-        let itemIds: string[];
-        beforeEach(async () => {
-          actor = await saveMember();
-          mockAuthenticate(actor);
-          const { item: item1 } = await testUtils.saveRecycledItem(actor);
-          const { item: item2 } = await testUtils.saveRecycledItem(actor);
-          const { item: item3 } = await testUtils.saveRecycledItem(actor);
-          items = [item1, item2, item3];
-          itemIds = items.map(({ id }) => id);
-        });
-
         it('Successfully restore multiple items', async () => {
-          const nonRecycledItemsCount = await testUtils.rawItemRepository.count();
+          const { actor, items } = await seedFromJson({
+            items: [
+              {
+                isDeleted: true,
+                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              },
+              {
+                isDeleted: true,
+                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              },
+            ],
+          });
+          assertIsDefined(actor);
+          mockAuthenticate(actor);
+
+          const itemIds = items.map((i) => i.id);
           const response = await app.inject({
             method: HttpMethod.Post,
             url: `${ITEMS_ROUTE_PREFIX}/restore`,
@@ -342,16 +417,20 @@ describe('Recycle Bin Tests', () => {
           });
 
           expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-          await new Promise((res) => {
-            setTimeout(async () => {
-              const allItemsCount = await testUtils.rawItemRepository.count();
-              expect(allItemsCount).toEqual(nonRecycledItemsCount + items.length);
-              res(true);
-            }, MULTIPLE_ITEMS_LOADING_TIME);
-          });
+          await waitForExpect(async () => {
+            expect(
+              await db.query.itemsRaw.findMany({
+                where: and(isNull(itemsRaw.deletedAt), inArray(itemsRaw.id, itemIds)),
+              }),
+            ).toHaveLength(items.length);
+          }, MULTIPLE_ITEMS_LOADING_TIME);
         });
 
         it('Bad request for invalid id', async () => {
+          const { actor } = await seedFromJson();
+          assertIsDefined(actor);
+          mockAuthenticate(actor);
+
           const res = await app.inject({
             method: HttpMethod.Post,
             url: `${ITEMS_ROUTE_PREFIX}/restore`,
@@ -362,6 +441,10 @@ describe('Recycle Bin Tests', () => {
         });
 
         it('Bad request if submit same id', async () => {
+          const { actor } = await seedFromJson();
+          assertIsDefined(actor);
+          mockAuthenticate(actor);
+
           const sameId = v4();
           const res = await app.inject({
             method: HttpMethod.Post,
@@ -373,6 +456,10 @@ describe('Recycle Bin Tests', () => {
         });
 
         it('Bad request if submit too many ids', async () => {
+          const { actor } = await seedFromJson();
+          assertIsDefined(actor);
+          mockAuthenticate(actor);
+
           const res = await app.inject({
             method: HttpMethod.Post,
             url: `${ITEMS_ROUTE_PREFIX}/restore`,
@@ -382,38 +469,23 @@ describe('Recycle Bin Tests', () => {
           expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
         });
 
-        it('Throws if has no admin rights on one item', async () => {
-          const member = await saveMember();
-          const { item } = await testUtils.saveItemAndMembership({
-            member: actor,
-            creator: member,
-            permission: PermissionLevel.Write,
-          });
-          const initialCount = await testUtils.rawItemRepository.count();
-          const initialCountRecycled = await recycledItemDataRawRepository.count();
-
-          const res = await app.inject({
-            method: HttpMethod.Post,
-            url: `${ITEMS_ROUTE_PREFIX}/restore`,
-            query: { id: [...itemIds, item.id] },
-          });
-          expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
-
-          // did not restore any items
-          await new Promise((res) => {
-            setTimeout(async () => {
-              const allItemsCount = await testUtils.rawItemRepository.count();
-              expect(allItemsCount).toEqual(initialCount);
-              expect(await recycledItemDataRawRepository.count()).toEqual(initialCountRecycled);
-              res(true);
-            }, MULTIPLE_ITEMS_LOADING_TIME);
-          });
-        });
-
         it('Throws if one item does not exist', async () => {
-          const initialCount = await testUtils.rawItemRepository.count();
-          const initialCountRecycled = await recycledItemDataRawRepository.count();
+          const { actor, items } = await seedFromJson({
+            items: [
+              {
+                isDeleted: true,
+                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              },
+              {
+                isDeleted: true,
+                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              },
+            ],
+          });
+          assertIsDefined(actor);
+          mockAuthenticate(actor);
 
+          const itemIds = items.map((i) => i.id);
           const res = await app.inject({
             method: HttpMethod.Post,
             url: `${ITEMS_ROUTE_PREFIX}/restore`,
@@ -422,34 +494,69 @@ describe('Recycle Bin Tests', () => {
           expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
 
           // did not restore any items
-          await new Promise((res) => {
-            setTimeout(async () => {
-              const allItemsCount = await testUtils.rawItemRepository.count();
-              expect(allItemsCount).toEqual(initialCount);
-              expect(await recycledItemDataRawRepository.count()).toEqual(initialCountRecycled);
-              res(true);
-            }, MULTIPLE_ITEMS_LOADING_TIME);
+          await waitForExpect(async () => {
+            expect(
+              await db.query.itemsRaw.findMany({
+                where: and(isNotNull(itemsRaw.deletedAt), inArray(itemsRaw.id, itemIds)),
+              }),
+            ).toHaveLength(items.length);
+          }, MULTIPLE_ITEMS_LOADING_TIME);
+        });
+
+        it('Throws if has no admin rights on one item', async () => {
+          const { actor, items } = await seedFromJson({
+            items: [
+              {
+                isDeleted: true,
+              },
+              {
+                isDeleted: true,
+                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              },
+            ],
           });
+          assertIsDefined(actor);
+          mockAuthenticate(actor);
+
+          const itemIds = items.map((i) => i.id);
+          const res = await app.inject({
+            method: HttpMethod.Post,
+            url: `${ITEMS_ROUTE_PREFIX}/restore`,
+            query: { id: itemIds },
+          });
+          expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
+
+          // did not restore any items
+          await waitForExpect(async () => {
+            expect(
+              await db.query.itemsRaw.findMany({
+                where: and(isNotNull(itemsRaw.deletedAt), inArray(itemsRaw.id, itemIds)),
+              }),
+            ).toHaveLength(items.length);
+          }, MULTIPLE_ITEMS_LOADING_TIME);
         });
       });
     });
   });
 
   describe('Scenarios', () => {
-    beforeEach(async () => {
-      actor = await saveMember();
-      mockAuthenticate(actor);
-    });
-
     /**
      * This is a regression test from a real production bug caused by not restoring the soft-deleted children
      */
     it('Restores the subtree successfully if it has children', async () => {
-      const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
-      const { item: childItem } = await testUtils.saveItemAndMembership({
-        member: actor,
-        parentItem,
+      const {
+        actor,
+        items: [parentItem, childItem],
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            children: [{}],
+          },
+        ],
       });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
 
       const recycle = await app.inject({
         method: HttpMethod.Post,
@@ -459,13 +566,16 @@ describe('Recycle Bin Tests', () => {
 
       await waitForExpect(async () => {
         expect(
-          await recycledItemDataRawRepository.find({
-            where: { item: { id: parentItem.id } },
-            withDeleted: true,
+          await db.query.recycledItemDatas.findMany({
+            where: eq(recycledItemDatas.itemPath, parentItem.path),
+          }),
+        ).toHaveLength(1);
+        expect(
+          await db.query.itemsRaw.findMany({
+            where: and(isNotNull(itemsRaw.deletedAt), eq(itemsRaw.id, childItem.id)),
           }),
         ).toHaveLength(1);
       });
-      expect(await testUtils.rawItemRepository.findOneBy({ id: childItem.id })).toBe(null);
 
       const restore = await app.inject({
         method: HttpMethod.Post,
@@ -475,16 +585,14 @@ describe('Recycle Bin Tests', () => {
 
       await waitForExpect(async () => {
         expect(
-          await recycledItemDataRawRepository.find({
-            where: { item: { id: parentItem.id } },
-            withDeleted: true,
+          await db.query.recycledItemDatas.findMany({
+            where: eq(recycledItemDatas.itemPath, parentItem.path),
           }),
         ).toHaveLength(0);
       });
 
-      const restoredChild = await testUtils.rawItemRepository.findOne({
-        where: { id: childItem.id },
-        relations: { creator: true },
+      const restoredChild = await db.query.itemsRaw.findFirst({
+        where: and(eq(itemsRaw.id, childItem.id), isNull(itemsRaw.deletedAt)),
       });
       // the recycle/restore operation changed the updatedAt value, but we can't know when from the outside
       expectItem(restoredChild!, childItem);

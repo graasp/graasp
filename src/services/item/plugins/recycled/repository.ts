@@ -1,4 +1,4 @@
-import { count, eq, inArray } from 'drizzle-orm';
+import { count, eq, getTableColumns, inArray } from 'drizzle-orm';
 import { and, asc, desc, isNotNull, ne } from 'drizzle-orm/sql';
 
 import { Paginated, Pagination, PermissionLevel } from '@graasp/sdk';
@@ -7,12 +7,11 @@ import { DBConnection } from '../../../../drizzle/db';
 import { isDescendantOrSelf } from '../../../../drizzle/operations';
 import {
   itemMemberships,
-  items,
   itemsRaw,
   membersView,
   recycledItemDatas,
 } from '../../../../drizzle/schema';
-import { Item } from '../../../../drizzle/types';
+import { Item, ItemRaw } from '../../../../drizzle/types';
 import { throwsIfParamIsInvalid } from '../../../../repositories/utils';
 import { MinimalMember } from '../../../../types';
 import { ITEMS_PAGE_SIZE_MAX } from '../../constants';
@@ -49,7 +48,7 @@ export class RecycledItemDataRepository {
     const skip = (page - 1) * limit;
 
     const query = db
-      .select()
+      .select(getTableColumns(itemsRaw))
       // start with smaller table that can have the most contraints: membership with admin and accountId
       .from(itemMemberships)
       // we want to join on recycled item
@@ -78,14 +77,14 @@ export class RecycledItemDataRepository {
       .select()
       .from(query)
       // show most recently deleted items first
-      .orderBy(desc(itemsRaw.deletedAt))
+      .orderBy(desc(query.deletedAt))
       // pagination
       .offset(skip)
       .limit(limit);
 
     const totalCount = (await db.select({ count: count() }).from(query))[0].count;
 
-    return { data: data.map(({ item }) => item), totalCount, pagination };
+    return { data, totalCount, pagination };
   }
 
   // warning: this call removes from the table
@@ -119,12 +118,18 @@ export class RecycledItemDataRepository {
       .where(
         and(
           and(
-            isDescendantOrSelf(items.path, itemsRaw.path),
+            isDescendantOrSelf(itemsRaw.path, item.path),
             ne(itemsRaw.id, item.id),
             isNotNull(itemsRaw.deletedAt),
           ),
         ),
       )
       .orderBy(asc(itemsRaw.path));
+  }
+
+  async getManyDeletedItemsById(db: DBConnection, itemIds: string[]): Promise<ItemRaw[]> {
+    return await db.query.itemsRaw.findMany({
+      where: and(isNotNull(itemsRaw.deletedAt), inArray(itemsRaw.id, itemIds)),
+    });
   }
 }

@@ -5,6 +5,7 @@ import { ItemType, Paginated, Pagination, PermissionLevel } from '@graasp/sdk';
 import { DBConnection } from '../../../../drizzle/db';
 import { Item } from '../../../../drizzle/types';
 import { MinimalMember } from '../../../../types';
+import { ItemNotFound } from '../../../../utils/errors';
 import HookManager from '../../../../utils/hook';
 import { AuthorizationService } from '../../../authorization';
 import { isItemType } from '../../discrimination';
@@ -84,13 +85,12 @@ export class RecycledBinService {
   }
 
   async restoreMany(db: DBConnection, member: MinimalMember, itemIds: string[]) {
-    const result = await this.itemRepository.getMany(db, itemIds, {
-      throwOnError: true,
-      withDeleted: true,
-    });
-    const { data: idsToItems } = result;
+    const items = await this.recycledItemRepository.getManyDeletedItemsById(db, itemIds);
 
-    const items = Object.values(idsToItems);
+    // throw if one provided id does not have a corresponding item
+    if (items.length !== itemIds.length) {
+      throw new ItemNotFound();
+    }
 
     for (const item of items) {
       await this.authorizationService.validatePermission(db, PermissionLevel.Admin, member, item);
@@ -132,6 +132,6 @@ export class RecycledBinService {
       });
     }
 
-    return result;
+    return items;
   }
 }

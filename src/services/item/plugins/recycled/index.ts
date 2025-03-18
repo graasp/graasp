@@ -59,25 +59,28 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       } = request;
       const member = asDefined(user?.account);
       assertIsMember(member);
-      db.transaction(async (tx) => {
-        const items = await recycleBinService.recycleMany(tx, member, ids);
-        websockets.publish(
-          memberItemsTopic,
-          member.id,
-          ItemOpFeedbackEvent('recycle', ids, items.data, items.errors),
-        );
-        return items;
-      }).catch((e: Error) => {
-        log.error(e);
-        websockets.publish(
-          memberItemsTopic,
-          member.id,
-          ItemOpFeedbackErrorEvent('recycle', ids, e),
-        );
-      });
 
       reply.status(StatusCodes.ACCEPTED);
-      return ids;
+      reply.send(ids);
+
+      await db
+        .transaction(async (tx) => {
+          const items = await recycleBinService.recycleMany(tx, member, ids);
+          websockets.publish(
+            memberItemsTopic,
+            member.id,
+            ItemOpFeedbackEvent('recycle', ids, items.data, items.errors),
+          );
+          return items;
+        })
+        .catch((e: Error) => {
+          log.error(e);
+          websockets.publish(
+            memberItemsTopic,
+            member.id,
+            ItemOpFeedbackErrorEvent('recycle', ids, e),
+          );
+        });
     },
   );
 
@@ -98,23 +101,29 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       assertIsMember(member);
       log.info(`Restoring items ${ids}`);
 
-      db.transaction(async (tx) => {
-        const items = await recycleBinService.restoreMany(tx, member, ids);
-        websockets.publish(
-          memberItemsTopic,
-          member.id,
-          ItemOpFeedbackEvent('restore', ids, items.data, items.errors),
-        );
-      }).catch((e: Error) => {
-        log.error(e);
-        websockets.publish(
-          memberItemsTopic,
-          member.id,
-          ItemOpFeedbackErrorEvent('restore', ids, e),
-        );
-      });
       reply.status(StatusCodes.ACCEPTED);
-      return ids;
+      reply.send(ids);
+
+      await db
+        .transaction(async (tx) => {
+          return await recycleBinService.restoreMany(tx, member, ids);
+        })
+        .then(() => {
+          // TODO
+          // websockets.publish(
+          //   memberItemsTopic,
+          //   member.id,
+          //   ItemOpFeedbackEvent('restore', ids, items, items.errors),
+          // );
+        })
+        .catch((e: Error) => {
+          log.error(e);
+          websockets.publish(
+            memberItemsTopic,
+            member.id,
+            ItemOpFeedbackErrorEvent('restore', ids, e),
+          );
+        });
     },
   );
 };
