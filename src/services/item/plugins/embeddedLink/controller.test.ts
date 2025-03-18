@@ -1,26 +1,27 @@
 import { faker } from '@faker-js/faker';
+import { eq } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 import nock from 'nock';
 import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType, MemberFactory } from '@graasp/sdk';
+import { HttpMethod, ItemType } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
 } from '../../../../../test/app';
+import { seedFromJson } from '../../../../../test/mocks/seed';
+import { db } from '../../../../drizzle/db';
+import { itemsRaw } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN } from '../../../../utils/config';
-import { saveMember } from '../../../member/test/fixtures/members';
-import { ItemTestUtils } from '../../test/fixtures/items';
+import { PermissionLevel } from '../../../itemMembership/types';
+import { EmbeddedLinkItem } from '../../discrimination';
 import { FETCH_RESULT, METADATA } from './test/fixtures';
 
-const rawGuestRepository = AppDataSource.getRepository(Guest);
-const rawItemRepository = AppDataSource.getRepository(Item);
-const itemTestUtils = new ItemTestUtils();
 const MOCK_URL = 'https://url.com';
 
 const iframelyResult = {
@@ -42,14 +43,14 @@ describe('Tests Embedded Link Controller', () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
-    ({ app } = await build({ member: null }));
+    ({ app } = await build());
   });
   afterEach(async () => {
     jest.clearAllMocks();
     unmockAuthenticate();
   });
   afterAll(async () => {
-    await clearDatabase(app.db);
+    await clearDatabase(db);
     app.close();
   });
 
@@ -67,7 +68,8 @@ describe('Tests Embedded Link Controller', () => {
     });
 
     it('Throws if link parameter is not set', async () => {
-      const actor = await saveMember(MemberFactory({ isValidated: false }));
+      const { actor } = await seedFromJson({ actor: { isValidated: false } });
+      assertIsDefined(actor);
       mockAuthenticate(actor);
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -77,7 +79,8 @@ describe('Tests Embedded Link Controller', () => {
     });
 
     it('Throws if URL is not valid', async () => {
-      const actor = await saveMember(MemberFactory({ isValidated: false }));
+      const { actor } = await seedFromJson({ actor: { isValidated: false } });
+      assertIsDefined(actor);
       mockAuthenticate(actor);
 
       const response = await app.inject({
@@ -97,7 +100,8 @@ describe('Tests Embedded Link Controller', () => {
         .query({ uri: validUrl })
         .reply(200, FETCH_RESULT);
 
-      const actor = await saveMember(MemberFactory({ isValidated: false }));
+      const { actor } = await seedFromJson({ actor: { isValidated: false } });
+      assertIsDefined(actor);
       mockAuthenticate(actor);
 
       const response = await app.inject({
@@ -129,7 +133,8 @@ describe('Tests Embedded Link Controller', () => {
           ],
         });
 
-      const actor = await saveMember();
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
       mockAuthenticate(actor);
 
       const response = await app.inject({
@@ -182,8 +187,20 @@ describe('Tests Embedded Link Controller', () => {
       });
     });
     it('Throws if actor is guest', async () => {
-      const actor = await rawGuestRepository.save({ name: 'guest' });
-      mockAuthenticate(actor);
+      const {
+        guests: [guest],
+      } = await seedFromJson({
+        actor: null,
+        items: [
+          {
+            itemLoginSchema: { guests: [{}] },
+          },
+        ],
+      });
+      assertIsDefined(guest);
+      mockAuthenticate(guest);
+      mockAuthenticate(guest);
+
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/items/embedded-links`,
@@ -193,8 +210,10 @@ describe('Tests Embedded Link Controller', () => {
       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
     });
     it('Throws if actor is not validated', async () => {
-      const actor = await saveMember(MemberFactory({ isValidated: false }));
+      const { actor } = await seedFromJson({ actor: { isValidated: false } });
+      assertIsDefined(actor);
       mockAuthenticate(actor);
+
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/items/embedded-links`,
@@ -213,7 +232,8 @@ describe('Tests Embedded Link Controller', () => {
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
     });
     it('Do not fail if iframely is unresponsive', async () => {
-      const actor = await saveMember();
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
       mockAuthenticate(actor);
 
       const response = await app.inject({
@@ -228,7 +248,8 @@ describe('Tests Embedded Link Controller', () => {
         nock(EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN).get(`/iframely`).reply(200, iframelyResult);
       });
       it('Create link', async () => {
-        const actor = await saveMember();
+        const { actor } = await seedFromJson();
+        assertIsDefined(actor);
         mockAuthenticate(actor);
 
         const response = await app.inject({
@@ -240,14 +261,19 @@ describe('Tests Embedded Link Controller', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
       it('Create link with parameters', async () => {
-        const actor = await saveMember();
-        mockAuthenticate(actor);
-
-        const { item: parentItem } = await itemTestUtils.saveItemAndMembership({ member: actor });
-        const { item: previousItem } = await itemTestUtils.saveItemAndMembership({
-          member: actor,
-          parentItem,
+        const {
+          actor,
+          items: [parentItem, previousItem],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              children: [{}],
+            },
+          ],
         });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -310,8 +336,20 @@ describe('Tests Embedded Link Controller', () => {
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
     });
     it('Throws if actor is guest', async () => {
-      const actor = await rawGuestRepository.save({ name: 'guest' });
-      mockAuthenticate(actor);
+      const {
+        guests: [guest],
+      } = await seedFromJson({
+        actor: null,
+        items: [
+          {
+            itemLoginSchema: { guests: [{}] },
+          },
+        ],
+      });
+      assertIsDefined(guest);
+      mockAuthenticate(guest);
+      mockAuthenticate(guest);
+
       const response = await app.inject({
         method: HttpMethod.Patch,
         url: `/items/embedded-links/${v4()}`,
@@ -321,8 +359,10 @@ describe('Tests Embedded Link Controller', () => {
       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
     });
     it('Throws if actor is not validated', async () => {
-      const actor = await saveMember(MemberFactory({ isValidated: false }));
+      const { actor } = await seedFromJson({ actor: { isValidated: false } });
+      assertIsDefined(actor);
       mockAuthenticate(actor);
+
       const response = await app.inject({
         method: HttpMethod.Patch,
         url: `/items/embedded-links/${v4()}`,
@@ -332,13 +372,20 @@ describe('Tests Embedded Link Controller', () => {
       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
     });
     it('Do not fail if iframely is unresponsive', async () => {
-      const actor = await saveMember();
-      mockAuthenticate(actor);
-
-      const { item } = await itemTestUtils.saveItemAndMembership({
-        item: { type: ItemType.LINK },
-        member: actor,
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [
+          {
+            extra: { [ItemType.LINK]: { url: faker.internet.url() } },
+            type: ItemType.LINK,
+            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+          },
+        ],
       });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: HttpMethod.Patch,
@@ -352,12 +399,20 @@ describe('Tests Embedded Link Controller', () => {
         nock(EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN).get(`/iframely`).reply(200, iframelyResult);
       });
       it('Update link', async () => {
-        const actor = await saveMember();
-        mockAuthenticate(actor);
-        const { item } = await itemTestUtils.saveItemAndMembership({
-          item: { type: ItemType.LINK },
-          member: actor,
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            {
+              type: ItemType.LINK,
+              extra: { [ItemType.LINK]: { url: faker.internet.url() } },
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+          ],
         });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
         const response = await app.inject({
           method: HttpMethod.Patch,
@@ -368,20 +423,28 @@ describe('Tests Embedded Link Controller', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
       it('Update link with other parameters', async () => {
-        const actor = await saveMember();
-        mockAuthenticate(actor);
-        const { item } = await itemTestUtils.saveItemAndMembership({
-          item: { type: ItemType.LINK, settings: { isCollapsible: false } },
-          member: actor,
+        const {
+          actor,
+          items: [initialItem],
+        } = await seedFromJson({
+          items: [
+            {
+              settings: { isCollapsible: false },
+              type: ItemType.LINK,
+              extra: { [ItemType.LINK]: { url: faker.internet.url() } },
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+          ],
         });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
-        const initialItem = await rawItemRepository.findOneBy({ id: item.id });
         assertIsDefined(initialItem);
         expect(initialItem.settings.isCollapsible).toEqual(false);
 
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `/items/embedded-links/${item.id}`,
+          url: `/items/embedded-links/${initialItem.id}`,
           payload: {
             name: 'name',
             showLinkIframe: true,
@@ -394,7 +457,9 @@ describe('Tests Embedded Link Controller', () => {
 
         expect(response.statusCode).toBe(StatusCodes.OK);
 
-        const savedItem = (await rawItemRepository.findOneBy({ id: item.id })) as EmbeddedLinkItem;
+        const savedItem = (await db.query.itemsRaw.findFirst({
+          where: eq(itemsRaw.id, initialItem.id),
+        })) as EmbeddedLinkItem;
         assertIsDefined(savedItem);
         expect(savedItem.settings.isCollapsible).toEqual(true);
         expect(savedItem.settings.showLinkIframe).toEqual(true);

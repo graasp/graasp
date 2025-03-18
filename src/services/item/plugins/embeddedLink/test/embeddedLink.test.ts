@@ -12,6 +12,8 @@ import build, {
 } from '../../../../../../test/app';
 import { ItemFactory } from '../../../../../../test/factories/item.factory';
 import { seedFromJson } from '../../../../../../test/mocks/seed';
+import { db } from '../../../../../drizzle/db';
+import { assertIsDefined } from '../../../../../utils/assertions';
 
 jest.mock('node-fetch');
 
@@ -33,11 +35,11 @@ describe('Link Item tests', () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
-    ({ app } = await build({ member: null }));
+    ({ app } = await build());
   });
 
   afterAll(async () => {
-    await clearDatabase(app.db);
+    await clearDatabase(db);
     app.close();
   });
 
@@ -82,6 +84,7 @@ describe('Link Item tests', () => {
             },
           ],
         });
+        assertIsDefined(actor);
         mockAuthenticate(actor);
 
         const payload = {
@@ -114,6 +117,7 @@ describe('Link Item tests', () => {
         } = await seedFromJson({
           items: [ItemFactory({ name: 'link item', type: ItemType.LINK })],
         });
+        assertIsDefined(actor);
         mockAuthenticate(actor);
 
         const payload = {
