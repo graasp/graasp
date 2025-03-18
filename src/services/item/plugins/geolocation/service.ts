@@ -13,7 +13,7 @@ import { ItemThumbnailService } from '../thumbnail/service';
 import { MissingGeolocationApiKey } from './errors';
 import { ItemGeolocationRepository } from './geolocation.repository';
 
-type PackedItemGeolocation = ItemGeolocationRaw & {
+export type PackedItemGeolocation = ItemGeolocationRaw & {
   item: PackedItem;
 };
 
