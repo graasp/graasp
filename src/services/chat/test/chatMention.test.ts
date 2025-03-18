@@ -11,9 +11,8 @@ import { MaybeUser, MinimalMember } from '../../../types';
 import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
 import { saveMember } from '../../member/test/fixtures/members';
 import { ChatMentionNotFound, MemberCannotAccessMention } from '../errors';
+import { expectChatMentions } from './chatMentions.expectations';
 import { saveItemWithChatMessages } from './chatMessage.test';
-
-const adminRepository = AppDataSource.getRepository(ChatMention);
 
 // create item, chat messages from another member and members
 // as well as mentions of actor
@@ -25,46 +24,6 @@ const saveItemWithChatMessagesAndMentions = async (actor: MaybeUser) => {
     chatMentions.push(await adminRepository.save({ account: actor, message: c }));
   }
   return { item, chatMessages, members, chatMentions };
-};
-
-export const expectChatMentions = (
-  mentions: ChatMentionRaw[],
-  correctMentions: ChatMentionRaw[],
-  relations: { account?: boolean; message?: { item?: boolean; creator?: boolean } } = {},
-) => {
-  const relationsMessageCreator = relations?.message?.creator ?? true;
-  const relationsMessageItem = relations?.message?.item ?? true;
-  const relationsMessage = (relationsMessageCreator || relationsMessageItem) ?? true;
-  const relationsMember = relations?.account ?? true;
-
-  expect(mentions).toHaveLength(correctMentions.length);
-  for (const m of mentions) {
-    const correctMention = correctMentions.find(({ id }) => id === m.id)!;
-
-    // foreign keys
-    if (relationsMessage) {
-      expect(m.message.id).toEqual(correctMention.message.id);
-
-      if (relationsMessageCreator) {
-        expect(m.message.creator!.id).toEqual(correctMention.message.creator!.id);
-      } else {
-        expect(m.message.creator).toBeUndefined();
-      }
-      if (relationsMessageItem) {
-        expect(m.message.item.id).toEqual(correctMention.message.item.id);
-      } else {
-        expect(m.message.item).toBeUndefined();
-      }
-    } else {
-      expect(m.message).toBeUndefined();
-    }
-
-    if (relationsMember) {
-      expect(m.account.id).toEqual(correctMention.account.id);
-    } else {
-      expect(m.account).toBeUndefined();
-    }
-  }
 };
 
 describe('Chat Mention tests', () => {

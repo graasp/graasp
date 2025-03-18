@@ -2,6 +2,8 @@ import 'dotenv/config';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { defineConfig } from 'drizzle-kit';
 
+console.log(process.env.DB_HOST, process.env.DB_USERNAME);
+
 export default defineConfig({
   dialect: 'postgresql',
   out: './src/drizzle',

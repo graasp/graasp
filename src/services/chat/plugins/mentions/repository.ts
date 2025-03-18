@@ -1,15 +1,11 @@
-import { eq, inArray } from 'drizzle-orm/sql';
+import { eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
 import { MentionStatus } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
 import { chatMentionsTable } from '../../../../drizzle/schema';
-import {
-  ChatMentionRaw,
-  ChatMentionWithMessageAndCreator,
-  ChatMessageRaw,
-} from '../../../../drizzle/types';
+import { ChatMentionRaw, ChatMentionWithMessageAndCreator } from '../../../../drizzle/types';
 import { ChatMentionNotFound, NoChatMentionForMember } from '../../errors';
 
 @singleton()
@@ -27,6 +23,7 @@ export class ChatMentionRepository {
     }
 
     const res = await db.query.chatMentionsTable.findMany({
+      where: eq(chatMentionsTable.accountId, accountId),
       with: {
         message: true,
         account: true,
@@ -53,17 +50,6 @@ export class ChatMentionRepository {
     }
 
     return mention;
-  }
-
-  // FIXME: Not used ??
-  /**
-   * Return chat mentions by id
-   * @param ids ids of the chat mentions
-   */
-  async getMany(db: DBConnection, ids: ChatMessageRaw['id'][]): Promise<ChatMentionRaw[]> {
-    return await db.query.chatMentionsTable.findMany({
-      where: inArray(chatMentionsTable.id, ids),
-    });
   }
 
   /**
@@ -96,6 +82,10 @@ export class ChatMentionRepository {
       .set({ status })
       .where(eq(chatMentionsTable.id, mentionId))
       .returning();
+
+    if (res.length !== 1) {
+      throw new ChatMentionNotFound(mentionId);
+    }
     return res[0];
   }
 
@@ -108,6 +98,9 @@ export class ChatMentionRepository {
       .delete(chatMentionsTable)
       .where(eq(chatMentionsTable.id, mentionId))
       .returning();
+    if (res.length !== 1) {
+      throw new ChatMentionNotFound(mentionId);
+    }
     return res[0];
   }
 
