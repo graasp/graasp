@@ -1,5 +1,5 @@
 import { Readable } from 'stream';
-import { delay, inject, injectable, singleton } from 'tsyringe';
+import { delay, inject, injectable } from 'tsyringe';
 
 import { PermissionLevel, ThumbnailSize } from '@graasp/sdk';
 
@@ -36,6 +36,7 @@ export class ItemThumbnailService {
     logger: BaseLogger,
   ) {
     this.thumbnailService = thumbnailService;
+    this.basicItemService = basicItemService;
     this.itemService = itemService;
     this.itemRepository = itemRepository;
     this.authorizationService = authorizationService;
