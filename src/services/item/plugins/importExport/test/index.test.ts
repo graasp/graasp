@@ -1,5 +1,6 @@
-import FormData from 'form-data';
+import FormData, { Readable } from 'form-data';
 import fs from 'fs';
+import { readFile } from 'fs/promises';
 import { StatusCodes } from 'http-status-codes';
 import fetch from 'node-fetch';
 import path from 'path';
@@ -14,9 +15,13 @@ import build, {
   mockAuthenticate,
   unmockAuthenticate,
 } from '../../../../../../test/app';
+import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { LocalFileRepository } from '../../../../file/repositories/local';
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemTestUtils } from '../../../test/fixtures/items';
+import { GRAASP_MANIFEST_FILENAME } from '../constants';
+import { GraaspExportItem } from '../service';
+import { prepareZip } from '../utils';
 import * as ARCHIVE_CONTENT from './fixtures/archive';
 
 // we need a different form data for each test
@@ -25,6 +30,72 @@ const createFormData = (filename: string) => {
   form.append('myfile', fs.createReadStream(path.resolve(__dirname, `./fixtures/${filename}`)));
 
   return form;
+};
+
+const readResponseStream = async (stream: Readable) => {
+  const { folderPath, targetFolder } = await prepareZip(stream);
+
+  const manifestString = await readFile(path.join(folderPath, GRAASP_MANIFEST_FILENAME), {
+    encoding: 'utf8',
+    flag: 'r',
+  });
+
+  const manifestItems: GraaspExportItem[] = JSON.parse(manifestString);
+
+  return {
+    targetFolder,
+    manifestItems,
+  };
+};
+
+const setupActorAndItems = async () => {
+  const secondLevelChildren = Array.from({ length: 5 }).map((_val, i) => {
+    return {
+      name: `secondLevelItem${i}`,
+      order: i,
+    };
+  });
+  const firstLevelChildren = Array.from({ length: 15 }).map((_val, i) => {
+    if (i === 0) {
+      return {
+        name: `folderItem1`,
+        type: ItemType.FOLDER,
+        order: i,
+        children: secondLevelChildren,
+      };
+    }
+    return {
+      name: `firstLevelItem${i}`,
+      order: i,
+    };
+  });
+
+  const { actor, items } = await seedFromJson({
+    actor: {},
+    items: [
+      {
+        name: 'folderItem',
+        type: ItemType.FOLDER,
+        memberships: [{ account: `actor` }],
+        children: firstLevelChildren,
+      },
+    ],
+  });
+
+  const folderItem = items.find((i) => i.name === 'folderItem')!;
+  const firstLevelFolderItem = items.find((i) => i.name === 'folderItem1')!;
+  const firstLevelItems = items.filter((i) => i.name.startsWith('firstLevelItem'))!;
+  firstLevelItems.unshift(firstLevelFolderItem);
+  const secondLevelItems = items.filter((i) => i.name.startsWith('secondLevelItem'))!;
+
+  return {
+    actor,
+    items,
+    folderItem,
+    firstLevelFolderItem,
+    firstLevelItems,
+    secondLevelItems,
+  };
 };
 
 jest.mock('node-fetch');
@@ -380,6 +451,60 @@ describe('ZIP routes tests', () => {
       expect(response.headers['content-disposition']).toContain(h5pName);
       expect(response.headers['content-disposition']).toContain('.h5p');
       expect(response.headers['content-disposition']).not.toContain('.zip');
+    });
+  });
+
+  describe('POST /graasp-export', () => {
+    it('Exports successfully if signed in', async () => {
+      const { actor, items } = await seedFromJson({
+        actor: {},
+        items: [
+          {
+            name: 'itemname',
+            memberships: [{ account: `actor` }],
+          },
+        ],
+      });
+      mockAuthenticate(actor);
+
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: `/items/${items[0].id}/graasp-export`,
+      });
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      expect(response.headers['content-disposition']).toContain(items[0].name);
+    });
+
+    it('Graasp export recreates the file structure', async () => {
+      const { actor, folderItem, firstLevelItems, secondLevelItems } = await setupActorAndItems();
+      mockAuthenticate(actor);
+
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: `/items/${folderItem!.id}/graasp-export`,
+      });
+
+      const { targetFolder, manifestItems } = await readResponseStream(response.stream());
+
+      // check that the item quantities and order is correct for all the hierarchy levels
+
+      expect(manifestItems.length).toBe(1);
+      expect(manifestItems[0].name === folderItem!.name).toBeTruthy();
+
+      const foundFirstLevelChildren = manifestItems[0].children;
+      expect(foundFirstLevelChildren?.length === firstLevelItems.length).toBeTruthy();
+      expect(foundFirstLevelChildren?.map((x) => x.name)).toEqual(
+        firstLevelItems.map((x) => x.name),
+      );
+
+      const foundSecondLevelChildren = foundFirstLevelChildren![0].children;
+      expect(foundSecondLevelChildren?.length === secondLevelItems.length).toBeTruthy();
+      expect(foundSecondLevelChildren?.map((x) => x.name)).toEqual(
+        secondLevelItems.map((x) => x.name),
+      );
+
+      // delete the folder in which the files were unzipped
+      fs.rmSync(targetFolder, { recursive: true });
     });
   });
 });
