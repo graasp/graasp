@@ -31,6 +31,7 @@ import {
   itemsRaw,
   memberPasswords,
   memberProfiles,
+  membershipRequests,
   publishers,
   recycledItemDatas,
   tags as tagsTable,
@@ -53,6 +54,7 @@ import {
   ItemVisibilityRaw,
   MemberProfileRaw,
   MemberRaw,
+  MembershipRequestRaw,
   TagRaw,
 } from '../../src/drizzle/types';
 import { encryptPassword } from '../../src/services/auth/plugins/password/utils';
@@ -97,6 +99,9 @@ type SeedItem<M = SeedMember> = (Partial<Omit<ItemRaw, 'creator'>> & { creator?:
   chatMessages?: (Omit<Partial<ChatMessageRaw>, 'creatorId'> & {
     creator: M | null;
   })[];
+  membershipRequests?: (Omit<Partial<MembershipRequestRaw>, 'memberId'> & {
+    member: M;
+  })[];
 };
 type DataType = {
   actor?: SeedActor | null;
@@ -135,6 +140,10 @@ const replaceActorInItems = (createdActor?: AccountRaw, items?: DataType['items'
     chatMessages: i.chatMessages?.map((ad) => ({
       ...ad,
       creator: ad.creator === ACTOR_STRING ? (createdActor as any) : ad.creator,
+    })),
+    membershipRequests: i.membershipRequests?.map((mr) => ({
+      ...mr,
+      member: mr.member === ACTOR_STRING ? (createdActor as any) : mr.member,
     })),
     children: replaceActorInItems(createdActor, i.children),
   }));
@@ -179,6 +188,10 @@ function replaceAccountInItems(createdAccount: AccountRaw, items?: DataType['ite
         creator: getNameIfExists(as.creator) === createdAccount.name ? createdAccount : as.creator,
       };
     });
+    const membershipRequests = i.membershipRequests?.map((mr) => ({
+      ...mr,
+      member: getNameIfExists(mr.member) === createdAccount.name ? createdAccount : mr.member,
+    }));
 
     return {
       ...i,
@@ -189,6 +202,7 @@ function replaceAccountInItems(createdAccount: AccountRaw, items?: DataType['ite
       appActions,
       appData,
       appSettings,
+      membershipRequests,
     };
   });
 }
@@ -292,6 +306,75 @@ const processItemMemberships = (items: DataType['items'] = []) => {
   );
 };
 
+const getAllAccountsFromItems = (items: SeedItem[] = []) => {
+  if (items.length === 0) {
+    return [];
+  }
+
+  return items.flatMap((i) => {
+    // get all accounts from all memberships
+    const accountsFromMemberships = (i.memberships ?? [])?.reduce<SeedMember[]>((acc, m) => {
+      if (!m.account) {
+        return acc;
+      }
+      return [...acc, m.account];
+    }, []);
+
+    // get all accounts from all app actions
+    const accountsFromAppActions = (i.appActions ?? [])?.reduce<SeedMember[]>((acc, m) => {
+      if (!m.account) {
+        return acc;
+      }
+      return [...acc, m.account];
+    }, []);
+
+    // get all accounts from all app settings
+    const creatorsFromAppSettings = (i.appSettings ?? [])?.reduce<SeedMember[]>((acc, m) => {
+      if (!m.creator) {
+        return acc;
+      }
+      return [...acc, m.creator];
+    }, []);
+
+    // get all accounts from all app settings
+    const creatorsFromChatMessages = (i.chatMessages ?? [])?.reduce<SeedMember[]>((acc, m) => {
+      if (!m.creator) {
+        return acc;
+      }
+      return [...acc, m.creator];
+    }, []);
+
+    // get all accounts and creators from all app data
+    const accountsFromAppData = (i.appData ?? [])?.reduce<SeedMember[]>((acc, m) => {
+      return [...acc, m.account, m.creator].filter(Boolean);
+    }, []);
+
+    const membersForMembershipRequests = (i.membershipRequests ?? [])?.reduce<SeedMember[]>(
+      (acc, m) => {
+        return [...acc, m.member].filter(Boolean);
+      },
+      [],
+    );
+
+    const allAccounts = [
+      ...accountsFromMemberships,
+      ...accountsFromAppActions,
+      ...accountsFromAppData,
+      ...creatorsFromAppSettings,
+      ...creatorsFromChatMessages,
+      ...membersForMembershipRequests,
+      ...getAllAccountsFromItems(i.children),
+    ];
+
+    // get creator of item
+    if (i.creator) {
+      allAccounts.push(i.creator);
+    }
+
+    return allAccounts;
+  });
+};
+
 /**
  * Generate ids for members, necessary to further references (for example when creating profiles)
  * Only unique accounts will be created based on their name
@@ -307,62 +390,7 @@ function generateIdForMembers({
   members?: SeedMember[];
 }) {
   // get all unique members
-  const allMembers = [
-    ...members,
-    ...items.flatMap((i) => {
-      // get all accounts from all memberships
-      const accountsFromMemberships = (i.memberships ?? [])?.reduce<SeedMember[]>((acc, m) => {
-        if (!m.account) {
-          return acc;
-        }
-        return [...acc, m.account];
-      }, []);
-
-      // get all accounts from all app actions
-      const accountsFromAppActions = (i.appActions ?? [])?.reduce<SeedMember[]>((acc, m) => {
-        if (!m.account) {
-          return acc;
-        }
-        return [...acc, m.account];
-      }, []);
-
-      // get all accounts from all app settings
-      const creatorsFromAppSettings = (i.appSettings ?? [])?.reduce<SeedMember[]>((acc, m) => {
-        if (!m.creator) {
-          return acc;
-        }
-        return [...acc, m.creator];
-      }, []);
-
-      // get all accounts from all app settings
-      const creatorsFromChatMessages = (i.chatMessages ?? [])?.reduce<SeedMember[]>((acc, m) => {
-        if (!m.creator) {
-          return acc;
-        }
-        return [...acc, m.creator];
-      }, []);
-
-      // get all accounts and creators from all app data
-      const accountsFromAppData = (i.appData ?? [])?.reduce<SeedMember[]>((acc, m) => {
-        return [...acc, m.account, m.creator].filter(Boolean);
-      }, []);
-
-      const allAccounts = [
-        ...accountsFromMemberships,
-        ...accountsFromAppActions,
-        ...accountsFromAppData,
-        ...creatorsFromAppSettings,
-        ...creatorsFromChatMessages,
-      ];
-
-      // get creator of item
-      if (i.creator) {
-        allAccounts.push(i.creator);
-      }
-
-      return allAccounts;
-    }),
-  ].filter((m, index, array) => {
+  const allMembers = [...members, ...getAllAccountsFromItems(items)].filter((m, index, array) => {
     // return unique member by name
     if (m && 'name' in m) {
       return array.findIndex((a) => a && 'name' in a && a?.name === m.name) === index;
@@ -564,6 +592,7 @@ export async function seedFromJson(data: DataType = {}) {
     appData: AppDataRaw[];
     invitations: InvitationRaw[];
     chatMessages: ChatMessageRaw[];
+    membershipRequests: MembershipRequestRaw[];
   } = {
     items: [],
     actor: undefined,
@@ -582,6 +611,7 @@ export async function seedFromJson(data: DataType = {}) {
     appSettings: [],
     invitations: [],
     chatMessages: [],
+    membershipRequests: [],
   };
 
   const { items: itemsWithActor, actor, members, actorProfile } = await processActor(data);
@@ -619,7 +649,6 @@ export async function seedFromJson(data: DataType = {}) {
   if (itemMembershipsEntities.length) {
     result.itemMemberships = await db
       .insert(itemMemberships)
-      // TODO
       .values(itemMembershipsEntities)
       .returning();
   }
@@ -777,6 +806,9 @@ export async function seedFromJson(data: DataType = {}) {
     }
     return acc;
   }, []);
+  if (invitationValues.length) {
+    result.invitations = await db.insert(invitationsTable).values(invitationValues).returning();
+  }
 
   // save chat messages
   const chatMessageValues = processedItems.reduce((acc, i) => {
@@ -791,9 +823,8 @@ export async function seedFromJson(data: DataType = {}) {
     }
     return acc;
   }, []);
-
-  if (invitationValues.length) {
-    result.invitations = await db.insert(invitationsTable).values(invitationValues).returning();
+  if (chatMessageValues.length) {
+    result.chatMessages = await db.insert(chatMessagesTable).values(chatMessageValues).returning();
   }
 
   // save recycled data
@@ -807,8 +838,17 @@ export async function seedFromJson(data: DataType = {}) {
     await db.insert(recycledItemDatas).values(recycledDataValues);
   }
 
-  if (chatMessageValues.length) {
-    result.chatMessages = await db.insert(chatMessagesTable).values(chatMessageValues).returning();
+  // save membership requests
+  const membershipRequestValues = processedItems.reduce((acc, i) => {
+    if (i.membershipRequests) {
+      return acc.concat(
+        i.membershipRequests.map((mr) => ({ itemId: i.id, memberId: mr.member.id })),
+      );
+    }
+    return acc;
+  }, []);
+  if (membershipRequestValues.length) {
+    await db.insert(membershipRequests).values(membershipRequestValues);
   }
 
   return result;

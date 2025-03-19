@@ -40,6 +40,7 @@ import {
   itemsRaw,
   memberProfiles,
   membersView,
+  membershipRequests,
   publishedItems,
   shortLinks,
   tags,
@@ -337,3 +338,5 @@ export type MemberProfileRaw = typeof memberProfiles.$inferSelect;
 export type MemberProfileInsertDTO = typeof memberProfiles.$inferInsert;
 
 export type ActionRequestExportRaw = typeof actionRequestExports.$inferSelect;
+
+export type MembershipRequestRaw = typeof membershipRequests.$inferSelect;

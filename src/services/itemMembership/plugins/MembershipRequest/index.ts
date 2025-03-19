@@ -1,3 +1,5 @@
+import { StatusCodes } from 'http-status-codes';
+
 import { fastifyCors } from '@fastify/cors';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
@@ -109,8 +111,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         if (membershipRequest) {
           throw new MembershipRequestAlreadyExists();
         }
-        //TODO: replace by transaction tx
-        const item = await itemRepository.getOneOrThrow(db, itemId);
+        const item = await itemRepository.getOneOrThrow(tx, itemId);
 
         const itemLoginSchema = await itemLoginService.getByItemPath(tx, item.path);
         if (itemLoginSchema) {
@@ -122,10 +123,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           throw new ItemMembershipAlreadyExists();
         }
 
-        const result = await membershipRequestService.post(tx, member.id, itemId);
+        await membershipRequestService.post(tx, member.id, itemId);
         await membershipRequestService.notifyAdmins(tx, member, item);
-        reply.send(result);
       });
+      reply.status(StatusCodes.NO_CONTENT);
     },
   );
 
@@ -140,15 +141,17 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const { itemId, memberId } = params;
 
       await db.transaction(async (tx) => {
-        // Check if the Item exists and the member has the required permission
+        // Check if the item exists and the member has the required permission
         await basicItemService.get(tx, member, itemId, PermissionLevel.Admin);
 
-        const requests = await membershipRequestService.deleteOne(tx, memberId, itemId);
-        if (!requests) {
-          throw new MembershipRequestNotFound();
+        const result = await membershipRequestService.deleteOne(tx, memberId, itemId);
+
+        // throw if the operation didn't delete anything
+        if (!result) {
+          throw new MembershipRequestNotFound(result);
         }
-        reply.send(requests);
       });
+      reply.status(StatusCodes.NO_CONTENT);
     },
   );
 };

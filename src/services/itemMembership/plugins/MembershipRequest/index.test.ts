@@ -1,3 +1,4 @@
+import { and, eq } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 import { v4 as uuid } from 'uuid';
 
@@ -10,19 +11,20 @@ import build, {
   mockAuthenticate,
   unmockAuthenticate,
 } from '../../../../../test/app';
+import { seedFromJson } from '../../../../../test/mocks/seed';
 import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
+import { membershipRequests } from '../../../../drizzle/schema';
 import { Item } from '../../../../drizzle/types';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
-import { MinimalMember } from '../../../../types';
-import { ItemTestUtils } from '../../../item/test/fixtures/items';
-import { saveMember } from '../../../member/test/fixtures/members';
-import { MembershipRequestRepository } from './repository';
+import { assertIsDefined } from '../../../../utils/assertions';
+import { assertIsMemberForTest } from '../../../authentication';
 
-const testUtils = new ItemTestUtils();
-const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
-const membershipRequestRepository = new MembershipRequestRepository();
-
-function expectMemberRequestToBe(membershipRequest, member?: MinimalMember, item?: Item) {
+function expectMemberRequestToBe(
+  membershipRequest,
+  member?: { id: string; email: string },
+  item?: Item,
+) {
   // There is no use to this Id since we should use the Item Id and the Member Id. This assertion check that AJV is doing his job by removing it.
   expect(membershipRequest.id).toBeUndefined();
   expect(membershipRequest.createdAt).toBeDefined();
@@ -42,34 +44,32 @@ function expectMemberRequestToBe(membershipRequest, member?: MinimalMember, item
 
 describe('MembershipRequest', () => {
   let app: FastifyInstance;
-  let member: MinimalMember;
-  let creator: MinimalMember;
-  let item: Item;
 
   beforeAll(async () => {
-    ({ app } = await build({ member: null }));
-  });
-
-  beforeEach(async () => {
-    member = await saveMember();
-    creator = await saveMember();
-    ({ item } = await testUtils.saveItemAndMembership({ member: creator }));
+    ({ app } = await build());
   });
 
   afterEach(async () => {
     jest.clearAllMocks();
+    unmockAuthenticate();
   });
 
   afterAll(async () => {
-    await clearDatabase(app.db);
+    await clearDatabase(db);
     app.close();
   });
 
   describe('Get All', () => {
-    beforeEach(() => {
-      mockAuthenticate(creator);
-    });
     it('returns empty array if no requests', async () => {
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] }],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
       const response = await app.inject({
         method: HttpMethod.Get,
         url: `/items/${item.id}/memberships/requests`,
@@ -80,8 +80,21 @@ describe('MembershipRequest', () => {
       expect(membershipRequests).toEqual([]);
     });
     it('returns array with one request', async () => {
-      const member = await saveMember();
-      membershipRequestRepository.post(app.db, member.id, item.id);
+      const {
+        actor,
+        items: [item],
+        members: [member],
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            membershipRequests: [{ member: { name: 'bob' } }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -94,10 +107,29 @@ describe('MembershipRequest', () => {
       expectMemberRequestToBe(membershipRequests[0], member);
     });
     it('returns array with all requests', async () => {
-      const numberOfRequests = 3;
-      for (let i = 0; i < numberOfRequests; i++) {
-        membershipRequestRepository.post(app.db, (await saveMember()).id, item.id);
-      }
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            membershipRequests: [
+              { member: { name: 'bob' } },
+              { member: { name: 'alice' } },
+              { member: { name: 'cedric' } },
+            ],
+          },
+          // noise
+          {
+            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            membershipRequests: [{ member: { name: 'bob' } }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -105,27 +137,17 @@ describe('MembershipRequest', () => {
       });
 
       expect(response.statusCode).toBe(StatusCodes.OK);
-      const membershipRequests = await response.json();
-      expect(membershipRequests.length).toBe(numberOfRequests);
+      const returnedValues = await response.json();
+      // shoul not return other items' requests
+      expect(returnedValues).toHaveLength(3);
     });
 
-    it('does not returns requests of other items', async () => {
-      const numberOfRequests = 3;
-      for (let i = 0; i < numberOfRequests; i++) {
-        membershipRequestRepository.post(app.db, (await saveMember()).id, item.id);
-      }
-      const { item: anotherItem } = await testUtils.saveItemAndMembership({ member: creator });
-
-      const response = await app.inject({
-        method: HttpMethod.Get,
-        url: `/items/${anotherItem.id}/memberships/requests`,
-      });
-
-      expect(response.statusCode).toBe(StatusCodes.OK);
-      const membershipRequests = await response.json();
-      expect(membershipRequests).toEqual([]);
-    });
     it('rejects not found if item id does not exist', async () => {
+      const { actor } = await seedFromJson({});
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
+      mockAuthenticate(actor);
+
       const response = await app.inject({
         method: HttpMethod.Get,
         url: `/items/${uuid()}/memberships/requests`,
@@ -135,7 +157,13 @@ describe('MembershipRequest', () => {
     });
 
     it('rejects forbidden if authenticated member has no permissions on the item', async () => {
-      mockAuthenticate(await saveMember());
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({ items: [{}] });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
       const response = await app.inject({
         method: HttpMethod.Get,
         url: `/items/${item.id}/memberships/requests`,
@@ -144,20 +172,27 @@ describe('MembershipRequest', () => {
       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
     });
     it('rejects forbidden if authenticated member is a writer of the item', async () => {
-      const { item: anotherItem } = await testUtils.saveItemAndMembership({
-        member: creator,
-        permission: PermissionLevel.Write,
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Write }] }],
       });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: HttpMethod.Get,
-        url: `/items/${anotherItem.id}/memberships/requests`,
+        url: `/items/${item.id}/memberships/requests`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
     });
     it('rejects unauthorized if unauthenticated', async () => {
-      unmockAuthenticate();
+      const {
+        items: [item],
+      } = await seedFromJson({ actor: null, items: [{}] });
+
       const response = await app.inject({
         method: HttpMethod.Get,
         url: `/items/${item.id}/memberships/requests`,
@@ -168,22 +203,39 @@ describe('MembershipRequest', () => {
   });
 
   describe('Get Own', () => {
-    beforeEach(() => {
-      mockAuthenticate(member);
-    });
     it('returns notSubmittedOrDeleted if there is no request and no item membership', async () => {
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [{}],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
       const response = await app.inject({
         method: HttpMethod.Get,
         url: `/items/${item.id}/memberships/requests/own`,
       });
-
       expect(response.statusCode).toBe(StatusCodes.OK);
       const data = await response.json();
       expect(data.status).toEqual(MembershipRequestStatus.NotSubmittedOrDeleted);
     });
     it('returns notSubmittedOrDeleted if there is no request and an item membership in parent item', async () => {
-      const childItem = await testUtils.saveItem({ actor: creator, parentItem: item });
-      await testUtils.saveMembership({ item, account: member });
+      const {
+        actor,
+        items: [_parent, childItem],
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            children: [{}],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
       const response = await app.inject({
         method: HttpMethod.Get,
         url: `/items/${childItem.id}/memberships/requests/own`,
@@ -194,7 +246,19 @@ describe('MembershipRequest', () => {
       expect(data.status).toEqual(MembershipRequestStatus.NotSubmittedOrDeleted);
     });
     it('returns pending if there is a request', async () => {
-      await membershipRequestRepository.post(app.db, member.id, item.id);
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [
+          {
+            membershipRequests: [{ member: 'actor' }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
       const response = await app.inject({
         method: HttpMethod.Get,
         url: `/items/${item.id}/memberships/requests/own`,
@@ -205,7 +269,19 @@ describe('MembershipRequest', () => {
       expect(data.status).toEqual(MembershipRequestStatus.Pending);
     });
     it('returns approved if there is an item membership', async () => {
-      await testUtils.saveMembership({ item, account: member });
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
       const response = await app.inject({
         method: HttpMethod.Get,
         url: `/items/${item.id}/memberships/requests/own`,
@@ -218,236 +294,320 @@ describe('MembershipRequest', () => {
     it('returns pending if there is a request and an item membership', async () => {
       // This case should not happen because no request should be made if the member already has a membership, and
       // the request should be deleted if the member gets a membership.
-      await membershipRequestRepository.post(member.id, item.id);
-      await testUtils.saveMembership({ item, account: member });
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            membershipRequests: [{ member: 'actor' }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
       const response = await app.inject({
         method: HttpMethod.Get,
         url: `/items/${item.id}/memberships/requests/own`,
       });
-
       expect(response.statusCode).toBe(StatusCodes.OK);
       const data = await response.json();
       expect(data.status).toEqual(MembershipRequestStatus.Pending);
     });
     it('rejects if item id does not exist', async () => {
+      const { actor } = await seedFromJson({});
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
       const response = await app.inject({
         method: HttpMethod.Get,
         url: `/items/${uuid()}/memberships/requests/own`,
       });
-
       expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
     });
     it('rejects unauthorized if unauthenticated', async () => {
-      unmockAuthenticate();
+      const {
+        items: [item],
+      } = await seedFromJson({ actor: null, items: [{}] });
+
       const response = await app.inject({
         method: HttpMethod.Get,
         url: `/items/${item.id}/memberships/requests/own`,
       });
-
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
     });
   });
-
   describe('Create', () => {
     let mailerService: MailerService;
     let mockSendEmail: jest.SpyInstance;
-
     beforeEach(async () => {
       mailerService = resolveDependency(MailerService);
       mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
     });
-
-    it('returns valid object when successful', async () => {
-      mockAuthenticate(member);
+    it('returns valid object when successful and send notification to admin', async () => {
+      const {
+        actor,
+        items: [item],
+        members: [admin],
+      } = await seedFromJson({
+        items: [{ memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }] }],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/items/${item.id}/memberships/requests`,
       });
 
-      expect(response.statusCode).toBe(StatusCodes.OK);
-      const membershipRequest = await response.json();
-      expect(membershipRequest.member.id).toBe(member.id);
-      expect(membershipRequest.member.email).toBe(member.email);
-      expect(membershipRequest.item.id).toBe(item.id);
-      expect(membershipRequest.item.path).toBe(item.path);
+      expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
+      const membershipRequest = await db.query.membershipRequests.findFirst({
+        where: and(
+          eq(membershipRequests.itemId, item.id),
+          eq(membershipRequests.memberId, actor.id),
+        ),
+      });
+      assertIsDefined(membershipRequest);
+      expect(membershipRequest.memberId).toBe(actor.id);
+      expect(membershipRequest.itemId).toBe(item.id);
+
+      // send notification to admin
       expect(mockSendEmail).toHaveBeenCalledTimes(1);
-      expect(mockSendEmail.mock.calls[0][1]).toBe(creator.email);
+      expect(mockSendEmail.mock.calls[0][1]).toBe(admin.email);
     });
-
     it('sends email to every admins of the item and its ancestors when successful', async () => {
-      const parentItem = await testUtils.saveItem({ actor: creator, parentItem: item });
-      const targetItem = await testUtils.saveItem({ actor: creator, parentItem });
-      const siblingItem = await testUtils.saveItem({ actor: creator, parentItem });
-      const childItem = await testUtils.saveItem({ actor: creator, parentItem: targetItem });
-      const uncleItem = await testUtils.saveItem({ actor: creator, parentItem: item });
-
-      const items = [item, parentItem, targetItem, siblingItem, childItem, uncleItem];
-
-      const preset = {
-        [PermissionLevel.Admin]: 3,
-        [PermissionLevel.Read]: 6,
-        [PermissionLevel.Write]: 4,
-      };
-
-      for (const entry in preset) {
-        const permission = entry as PermissionLevel;
-        for (let i = 0; i < preset[permission]; i++) {
-          for (const item of items) {
-            const temporaryMember = await saveMember();
-            await testUtils.saveMembership({ item, permission, account: temporaryMember });
-          }
-        }
-      }
-
-      mockAuthenticate(member);
+      const {
+        actor,
+        items: [_root, _parent, targetItem],
+        members,
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+            children: [
+              {
+                memberships: [{ account: { name: 'alice' }, permission: PermissionLevel.Admin }],
+                children: [
+                  {
+                    memberships: [
+                      { account: { name: 'cedric' }, permission: PermissionLevel.Admin },
+                      // noise
+                      { account: { name: 'noise' }, permission: PermissionLevel.Read },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+      const admins = members.slice(0, 3);
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/items/${targetItem.id}/memberships/requests`,
       });
 
-      const expectedItems = [targetItem, parentItem, item];
-
-      expect(response.statusCode).toBe(StatusCodes.OK);
-      const membershipRequest = await response.json();
-      expectMemberRequestToBe(membershipRequest, member, targetItem);
-      expect(mockSendEmail).toHaveBeenCalledTimes(
-        preset[PermissionLevel.Admin] * expectedItems.length + 1, // +1 for the creator
-      );
-    });
-
-    it('reject when request already exist', async () => {
-      mockAuthenticate(member);
-
-      const responseFirstPost = await app.inject({
-        method: HttpMethod.Post,
-        url: `/items/${item.id}/memberships/requests`,
+      expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
+      const membershipRequest = await db.query.membershipRequests.findFirst({
+        where: and(
+          eq(membershipRequests.itemId, targetItem.id),
+          eq(membershipRequests.memberId, actor.id),
+        ),
       });
-
-      expect(responseFirstPost.statusCode).toBe(StatusCodes.OK);
-      const membershipRequest = await responseFirstPost.json();
-      expectMemberRequestToBe(membershipRequest, member, item);
-      expect(mockSendEmail).toHaveBeenCalledTimes(1);
-      expect(mockSendEmail.mock.calls[0][1]).toBe(creator.email);
+      expect(membershipRequest).toBeDefined();
+      expect(mockSendEmail).toHaveBeenCalledTimes(admins.length);
+    });
+    it('reject when request already exist', async () => {
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [
+          {
+            membershipRequests: [{ member: 'actor' }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
+      mockAuthenticate(actor);
 
       const responseSecondPost = await app.inject({
         method: HttpMethod.Post,
         url: `/items/${item.id}/memberships/requests`,
       });
-
       expect(responseSecondPost.statusCode).toBe(StatusCodes.BAD_REQUEST);
-      expect(mockSendEmail).toHaveBeenCalledTimes(1);
+      // do not send email
+      expect(mockSendEmail).toHaveBeenCalledTimes(0);
     });
     it('rejects when unauthenticated', async () => {
-      unmockAuthenticate();
+      const {
+        items: [item],
+      } = await seedFromJson({ actor: null, items: [{}] });
+
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/items/${item.id}/memberships/requests`,
       });
-
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
       expect(mockSendEmail).toHaveBeenCalledTimes(0);
     });
     it('rejects when unauthenticated with non-existing item id', async () => {
-      unmockAuthenticate();
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/items/${uuid()}/memberships/requests`,
       });
-
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
       expect(mockSendEmail).toHaveBeenCalledTimes(0);
     });
     it('rejects when item does not exist', async () => {
-      mockAuthenticate(member);
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/items/${uuid()}/memberships/requests`,
       });
-
       expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
       expect(mockSendEmail).toHaveBeenCalledTimes(0);
     });
-
-    it('accepts when authenticated as the creator when there is no membership', async () => {
-      await itemMembershipRawRepository.delete({ item, account: creator });
-      mockAuthenticate(creator);
+    it('creator without membership can request membership', async () => {
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [
+          {
+            creator: 'actor',
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/items/${item.id}/memberships/requests`,
       });
-
-      expect(response.statusCode).toBe(StatusCodes.OK);
-      const membershipRequest = await response.json();
-      expectMemberRequestToBe(membershipRequest, creator, item);
+      expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
+      const membershipRequest = await db.query.membershipRequests.findFirst({
+        where: and(
+          eq(membershipRequests.itemId, item.id),
+          eq(membershipRequests.memberId, actor.id),
+        ),
+      });
+      expect(membershipRequest).toBeDefined();
       expect(mockSendEmail).toHaveBeenCalledTimes(0); // Because there is no admin to notify
     });
-    it('rejects when authenticated as the creator with membership', async () => {
-      mockAuthenticate(creator);
-
-      const response = await app.inject({
-        method: HttpMethod.Post,
-        url: `/items/${item.id}/memberships/requests`,
-      });
-
-      expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-      expect(mockSendEmail).toHaveBeenCalledTimes(0);
-    });
-
     it('rejects when already have a membership', async () => {
-      await testUtils.saveMembership({
-        item,
-        account: member,
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [{ memberships: [{ account: 'actor' }] }],
       });
-      mockAuthenticate(member);
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/items/${item.id}/memberships/requests`,
       });
-
       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       expect(mockSendEmail).toHaveBeenCalledTimes(0);
     });
   });
-
   describe('Delete One', () => {
-    beforeEach(async () => {
-      mockAuthenticate(creator);
-      await membershipRequestRepository.post(member.id, item.id);
-    });
-
     it('returns ok with the concerned membership request', async () => {
+      const {
+        actor,
+        items: [item],
+        members: [member],
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [{ account: 'actor' }],
+            membershipRequests: [{ member: { name: 'bob' } }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
+      mockAuthenticate(actor);
+
       const response = await app.inject({
         method: HttpMethod.Delete,
         url: `/items/${item.id}/memberships/requests/${member.id}`,
       });
-
-      expect(response.statusCode).toBe(StatusCodes.OK);
-      const membershipRequest = await response.json();
-      expectMemberRequestToBe(membershipRequest, member, item);
+      expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
+      const membershipRequest = await db.query.membershipRequests.findFirst({
+        where: and(
+          eq(membershipRequests.itemId, item.id),
+          eq(membershipRequests.memberId, member.id),
+        ),
+      });
+      expect(membershipRequest).toBeUndefined();
     });
-
     it('rejects not found if item id does not exist', async () => {
+      const {
+        actor,
+        members: [member],
+      } = await seedFromJson({ members: [{}] });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
       const response = await app.inject({
         method: HttpMethod.Delete,
         url: `/items/${uuid()}/memberships/requests/${member.id}`,
       });
       expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
     });
-
     it('rejects not found if item id is not associated with member id', async () => {
-      const anotherMember = await saveMember();
+      const {
+        actor,
+        items: [item],
+        members: [member],
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [{ account: 'actor' }],
+          },
+        ],
+        members: [{}],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
       const response = await app.inject({
         method: HttpMethod.Delete,
-        url: `/items/${item.id}/memberships/requests/${anotherMember.id}`,
+        url: `/items/${item.id}/memberships/requests/${member.id}`,
       });
       expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
     });
     it('rejects not found if member id does not exists', async () => {
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [{ account: 'actor' }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
       const response = await app.inject({
         method: HttpMethod.Delete,
         url: `/items/${item.id}/memberships/requests/${uuid()}`,
@@ -455,7 +615,17 @@ describe('MembershipRequest', () => {
       expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
     });
     it('rejects forbidden if authenticated member has no permissions on the item', async () => {
-      mockAuthenticate(await saveMember());
+      const {
+        actor,
+        items: [item],
+        members: [member],
+      } = await seedFromJson({
+        items: [{}],
+        members: [{}],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
       const response = await app.inject({
         method: HttpMethod.Delete,
         url: `/items/${item.id}/memberships/requests/${member.id}`,
@@ -463,9 +633,21 @@ describe('MembershipRequest', () => {
       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
     });
     it('rejects forbidden if authenticated member is a writer of the item', async () => {
-      const writer = await saveMember();
-      await testUtils.saveMembership({ item, account: writer, permission: PermissionLevel.Write });
-      mockAuthenticate(writer);
+      const {
+        actor,
+        items: [item],
+        members: [member],
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+          },
+        ],
+        members: [{}],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
       const response = await app.inject({
         method: HttpMethod.Delete,
         url: `/items/${item.id}/memberships/requests/${member.id}`,
@@ -473,7 +655,11 @@ describe('MembershipRequest', () => {
       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
     });
     it('rejects unauthorized if unauthenticated', async () => {
-      unmockAuthenticate();
+      const {
+        items: [item],
+        members: [member],
+      } = await seedFromJson({ actor: null, items: [{}], members: [{}] });
+
       const response = await app.inject({
         method: HttpMethod.Delete,
         url: `/items/${item.id}/memberships/requests/${member.id}`,
@@ -481,7 +667,6 @@ describe('MembershipRequest', () => {
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
     });
     it('rejects unauthorized if unauthenticated with non-existing ids', async () => {
-      unmockAuthenticate();
       const response = await app.inject({
         method: HttpMethod.Delete,
         url: `/items/${uuid()}/memberships/requests/${uuid()}`,

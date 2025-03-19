@@ -1,4 +1,13 @@
-import { SQL, asc, getTableColumns, inArray, isNull, ne, notInArray } from 'drizzle-orm';
+import {
+  SQL,
+  asc,
+  getTableColumns,
+  getViewSelectedFields,
+  inArray,
+  isNull,
+  ne,
+  notInArray,
+} from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { and, desc, eq, ilike, sql } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
@@ -680,8 +689,8 @@ export class ItemMembershipRepository {
   // }
 
   async getAdminsForItem(db: DBConnection, itemPath: string): Promise<MemberRaw[]> {
-    return await db
-      .select(getTableColumns(accountsTable))
+    return (await db
+      .select(getViewSelectedFields(membersView))
       .from(itemMembershipTable)
       .innerJoin(membersView, eq(membersView.id, itemMembershipTable.accountId))
       .where(
@@ -689,7 +698,7 @@ export class ItemMembershipRepository {
           isAncestorOrSelf(itemMembershipTable.itemPath, itemPath),
           eq(itemMembershipTable.permission, PermissionLevel.Admin),
         ),
-      );
+      )) as MemberRaw[]; // TODO: fix type
   }
 
   async updateOne(

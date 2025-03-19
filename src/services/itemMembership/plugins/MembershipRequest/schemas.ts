@@ -58,7 +58,7 @@ export const createOne = {
     itemId: customType.UUID(),
   }),
   response: {
-    [StatusCodes.OK]: Type.Array(createdMembershipRequestSchema),
+    [StatusCodes.NO_CONTENT]: Type.Null(),
   },
 } as const satisfies FastifySchema;
 
@@ -86,6 +86,6 @@ export const deleteOne = {
     memberId: customType.UUID(),
   }),
   response: {
-    [StatusCodes.OK]: createdMembershipRequestSchema,
+    [StatusCodes.NO_CONTENT]: Type.Null(),
   },
 } as const satisfies FastifySchema;
