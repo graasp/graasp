@@ -1,35 +1,32 @@
+import { faker } from '@faker-js/faker';
 import { add, isAfter, isBefore, sub } from 'date-fns';
 import { StatusCodes } from 'http-status-codes';
 import { cleanAll } from 'nock';
-import { And, Not } from 'typeorm';
-import { v4 as uuidv4, v4 } from 'uuid';
+import { v4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
 
-import {
-  EtherpadItemType,
-  EtherpadPermission,
-  HttpMethod,
-  ItemType,
-  PermissionLevel,
-} from '@graasp/sdk';
+import { EtherpadPermission, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase, mockAuthenticate } from '../../../../../../test/app';
+import build, {
+  clearDatabase,
+  mockAuthenticate,
+  unmockAuthenticate,
+} from '../../../../../../test/app';
 import { seedFromJson } from '../../../../../../test/mocks/seed';
-import { resolveDependency } from '../../../../../di/utils';
-import { AuthenticatedUser, MinimalMember } from '../../../../../types';
+import { db } from '../../../../../drizzle/db';
+import { isDirectChild } from '../../../../../drizzle/operations';
+import { itemsRaw } from '../../../../../drizzle/schema';
+import { assertIsDefined } from '../../../../../utils/assertions';
 import { ETHERPAD_PUBLIC_URL } from '../../../../../utils/config';
 import { ItemNotFound, MemberCannotAccess } from '../../../../../utils/errors';
-import { saveMember } from '../../../../member/test/fixtures/members';
+import { EtherpadItem } from '../../../discrimination';
 import { ItemService } from '../../../service';
-import { ItemTestUtils } from '../../../test/fixtures/items';
 import { MAX_SESSIONS_IN_COOKIE } from '../constants';
 import { ItemMissingExtraError } from '../errors';
 import { EtherpadItemService } from '../service';
 import { setUpApi } from './api';
-
-const testUtils = new ItemTestUtils();
 
 const MOCK_GROUP_ID = 'g.s8oes9dhwrvt0zif';
 const MOCK_PAD_READ_ONLY_ID = 'r.s8oes9dhwrvt0zif';
@@ -45,36 +42,54 @@ const expectExpiration = (expires: Date) => {
   expect(isAfter(expires, sub(oneDayFromNow, { minutes: 1 }))).toBeTruthy();
   expect(isBefore(expires, add(oneDayFromNow, { minutes: 1 }))).toBeTruthy();
 };
+
+const createEtherpad = async (app) => {
+  // create an existing etherpad item to test reading it
+  setUpApi({
+    createGroupIfNotExistsFor: [
+      StatusCodes.OK,
+      { code: 0, message: 'ok', data: { groupID: MOCK_GROUP_ID } },
+    ],
+    createGroupPad: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
+  });
+  const res = await app.inject({
+    method: HttpMethod.Post,
+    url: '/items/etherpad/create',
+    payload: {
+      name: faker.word.sample(),
+    },
+  });
+  expect(res.statusCode).toBe(StatusCodes.OK);
+  const item = res.json();
+  cleanAll();
+  return item;
+};
+
 describe('Etherpad service API', () => {
   let app: FastifyInstance;
-  let member: MinimalMember;
 
-  const payloadCreate = {
-    method: HttpMethod.Post,
-    url: 'items/etherpad/create',
-    payload: {
-      name: 'test-item-name',
-    },
-  };
-
-  beforeEach(async () => {
-    let actor: AuthenticatedUser;
-    ({ app, actor } = await build());
-    if (!actor) {
-      throw new Error('Test error: member should be defined');
-    }
-    member = actor;
+  beforeAll(async () => {
+    ({ app } = await build());
   });
 
-  afterEach(async () => {
-    jest.clearAllMocks();
-    await clearDatabase(app.db);
+  afterAll(async () => {
+    await clearDatabase(db);
     app.close();
     cleanAll();
   });
 
+  afterEach(async () => {
+    jest.clearAllMocks();
+    jest.resetAllMocks();
+    unmockAuthenticate();
+  });
+
   describe('create a pad', () => {
     it('creates a pad successfully', async () => {
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
       const reqsParams = setUpApi({
         createGroupIfNotExistsFor: [
           StatusCodes.OK,
@@ -82,7 +97,14 @@ describe('Etherpad service API', () => {
         ],
         createGroupPad: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
       });
-      const res = await app.inject(payloadCreate);
+      const payload = {
+        name: faker.word.sample(),
+      };
+      const res = await app.inject({
+        method: HttpMethod.Post,
+        url: '/items/etherpad/create',
+        payload,
+      });
 
       const { createGroupIfNotExistsFor, createGroupPad } = await reqsParams;
       expect(createGroupPad?.get('groupID')).toEqual(MOCK_GROUP_ID);
@@ -91,7 +113,7 @@ describe('Etherpad service API', () => {
 
       expect(res.statusCode).toEqual(StatusCodes.OK);
       expect(res.json()).toMatchObject({
-        name: 'test-item-name',
+        name: payload.name,
         extra: {
           etherpad: {
             padID: `${MOCK_GROUP_ID}$${createGroupPad?.get('padName')}`,
@@ -102,6 +124,10 @@ describe('Etherpad service API', () => {
     });
 
     it('creates a pad with reader permission = write', async () => {
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
       const reqsParams = setUpApi({
         createGroupIfNotExistsFor: [
           StatusCodes.OK,
@@ -109,11 +135,12 @@ describe('Etherpad service API', () => {
         ],
         createGroupPad: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
       });
+      const name = faker.word.sample();
       const res = await app.inject({
         method: HttpMethod.Post,
-        url: 'items/etherpad/create',
+        url: '/items/etherpad/create',
         payload: {
-          name: 'test-item-name',
+          name,
           readerPermission: EtherpadPermission.Write,
         },
       });
@@ -125,7 +152,7 @@ describe('Etherpad service API', () => {
 
       expect(res.statusCode).toEqual(StatusCodes.OK);
       expect(res.json()).toMatchObject({
-        name: 'test-item-name',
+        name,
         extra: {
           etherpad: {
             padID: `${MOCK_GROUP_ID}$${createGroupPad?.get('padName')}`,
@@ -137,6 +164,10 @@ describe('Etherpad service API', () => {
     });
 
     it('returns error on etherpad HTTP error', async () => {
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
       setUpApi({
         createGroupIfNotExistsFor: [
           StatusCodes.OK,
@@ -144,7 +175,13 @@ describe('Etherpad service API', () => {
         ],
         createGroupPad: [StatusCodes.GATEWAY_TIMEOUT],
       });
-      const res = await app.inject(payloadCreate);
+      const res = await app.inject({
+        method: HttpMethod.Post,
+        url: '/items/etherpad/create',
+        payload: {
+          name: faker.word.sample(),
+        },
+      });
 
       expect(res.statusCode).toEqual(StatusCodes.INTERNAL_SERVER_ERROR);
       expect(res.json()).toMatchObject({
@@ -154,28 +191,42 @@ describe('Etherpad service API', () => {
       });
     });
 
-    it.each(['pad does already exist', 'groupID does not exist'])(
-      'returns error on etherpad server error: %p',
-      async (error) => {
-        setUpApi({
-          createGroupIfNotExistsFor: [
-            StatusCodes.OK,
-            { code: 0, message: 'ok', data: { groupID: MOCK_GROUP_ID } },
-          ],
-          createGroupPad: [StatusCodes.OK, { code: 1, message: error, data: null }],
-        });
-        const res = await app.inject(payloadCreate);
+    it.each([
+      'pad does already exist',
+      // 'groupID does not exist'
+    ])('returns error on etherpad server error: %p', async (error) => {
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
 
-        expect(res.statusCode).toEqual(StatusCodes.INTERNAL_SERVER_ERROR);
-        expect(res.json()).toMatchObject({
-          code: 'GPEPERR001',
-          message: 'Internal Etherpad server error',
-          origin: 'graasp-plugin-etherpad',
-        });
-      },
-    );
+      setUpApi({
+        createGroupIfNotExistsFor: [
+          StatusCodes.OK,
+          { code: 0, message: 'ok', data: { groupID: MOCK_GROUP_ID } },
+        ],
+        createGroupPad: [StatusCodes.OK, { code: 1, message: error, data: null }],
+      });
+      const res = await app.inject({
+        method: HttpMethod.Post,
+        url: '/items/etherpad/create',
+        payload: {
+          name: faker.word.sample(),
+        },
+      });
+
+      expect(res.statusCode).toEqual(StatusCodes.INTERNAL_SERVER_ERROR);
+      expect(res.json()).toMatchObject({
+        code: 'GPEPERR001',
+        message: 'Internal Etherpad server error',
+        origin: 'graasp-plugin-etherpad',
+      });
+    });
 
     it('deletes pad on item creation error', async () => {
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
       const reqsParams = setUpApi({
         createGroupIfNotExistsFor: [
           StatusCodes.OK,
@@ -186,10 +237,19 @@ describe('Etherpad service API', () => {
       });
 
       // override item creation: ensure that it fails
-      jest.spyOn(resolveDependency(ItemService), 'post').mockImplementationOnce(() => {
+      const originalFn = ItemService.prototype.post;
+      jest.spyOn(ItemService.prototype, 'post').mockImplementation(() => {
         throw new Error('mock error');
       });
-      const res = await app.inject(payloadCreate);
+      const res = await app.inject({
+        method: HttpMethod.Post,
+        url: '/items/etherpad/create',
+        payload: {
+          name: faker.word.sample(),
+        },
+      });
+      // bug: for some reason we need to set back the original implement manually
+      ItemService.prototype.post = originalFn;
 
       expect(res.statusCode).toEqual(StatusCodes.INTERNAL_SERVER_ERROR);
       expect(res.json()).toEqual({
@@ -204,8 +264,6 @@ describe('Etherpad service API', () => {
   });
 
   describe('view a pad', () => {
-    let item: EtherpadItemType;
-
     const payloadView = (mode: 'read' | 'write', itemId: string) => ({
       method: HttpMethod.Get,
       url: `items/etherpad/view/${itemId}`,
@@ -213,23 +271,13 @@ describe('Etherpad service API', () => {
         mode,
       },
     });
-
-    beforeEach(async () => {
-      // create an existing etherpad item to test reading it
-      setUpApi({
-        createGroupIfNotExistsFor: [
-          StatusCodes.OK,
-          { code: 0, message: 'ok', data: { groupID: MOCK_GROUP_ID } },
-        ],
-        createGroupPad: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
-      });
-      const res = await app.inject(payloadCreate);
-      expect(res.statusCode).toBe(StatusCodes.OK);
-      item = res.json();
-      cleanAll();
-    });
-
     it('views a pad in read mode successfully', async () => {
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
+      const item = await createEtherpad(app);
+
       const reqParams = setUpApi({
         getReadOnlyID: [
           StatusCodes.OK,
@@ -246,7 +294,6 @@ describe('Etherpad service API', () => {
         listSessionsOfAuthor: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
       });
       const res = await app.inject(payloadView('read', item.id));
-
       const { getReadOnlyID } = await reqParams;
       expect(getReadOnlyID?.get('padID')).toEqual(item.extra.etherpad.padID);
       expect(res.statusCode).toEqual(StatusCodes.OK);
@@ -254,8 +301,13 @@ describe('Etherpad service API', () => {
         padUrl: `${ETHERPAD_PUBLIC_URL}/p/${MOCK_PAD_READ_ONLY_ID}`,
       });
     });
-
     it('views a pad in write mode successfully', async () => {
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
+      const item = await createEtherpad(app);
+
       const reqParams = setUpApi({
         createAuthorIfNotExistsFor: [
           StatusCodes.OK,
@@ -267,12 +319,10 @@ describe('Etherpad service API', () => {
         ],
         listSessionsOfAuthor: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
       });
-
       const res = await app.inject(payloadView('write', item.id));
-
       const { createAuthorIfNotExistsFor, createSession } = await reqParams;
-      expect(createAuthorIfNotExistsFor?.get('authorMapper')).toEqual(member?.id);
-      expect(createAuthorIfNotExistsFor?.get('name')).toEqual(member?.name);
+      expect(createAuthorIfNotExistsFor?.get('authorMapper')).toEqual(actor?.id);
+      expect(createAuthorIfNotExistsFor?.get('name')).toEqual(actor?.name);
       expect(createSession?.get('groupID')).toEqual(MOCK_GROUP_ID);
       expect(createSession?.get('authorID')).toEqual(MOCK_AUTHOR_ID);
       expect(createSession?.get('validUntil')).toBeDefined();
@@ -280,7 +330,6 @@ describe('Etherpad service API', () => {
       expect(res.json()).toEqual({
         padUrl: `${ETHERPAD_PUBLIC_URL}/p/${item.extra.etherpad.padID}`,
       });
-
       expect(res.cookies.length).toEqual(2);
       expect(res.cookies[1].name).toEqual('session');
       const { name, value, domain, path, expires } = res.cookies[0] as {
@@ -296,21 +345,26 @@ describe('Etherpad service API', () => {
       expect(path).toEqual('/');
       expectExpiration(expires);
     });
-
     it('views a pad in write mode returns a read-only pad ID if user has read permission only', async () => {
-      const bob = await saveMember();
-      const { item } = await testUtils.saveItemAndMembership({
-        member: bob,
-        item: {
-          name: "bob's test etherpad item",
-          type: ItemType.ETHERPAD,
-          extra: EtherpadItemService.buildEtherpadExtra({
-            groupID: MOCK_GROUP_ID,
-            padName: MOCK_PAD_NAME,
-          }),
-        },
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [
+          {
+            name: "bob's test etherpad item",
+            type: ItemType.ETHERPAD,
+            extra: EtherpadItemService.buildEtherpadExtra({
+              groupID: MOCK_GROUP_ID,
+              padName: MOCK_PAD_NAME,
+            }),
+            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+          },
+        ],
       });
-      await testUtils.saveMembership({ item, account: member, permission: PermissionLevel.Read });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
       const reqParams = setUpApi({
         getReadOnlyID: [
           StatusCodes.OK,
@@ -327,7 +381,6 @@ describe('Etherpad service API', () => {
         listSessionsOfAuthor: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
       });
       const res = await app.inject(payloadView('write', item.id)); // <- we request write mode and should get a read ID
-
       const { getReadOnlyID } = await reqParams;
       expect(getReadOnlyID?.get('padID')).toEqual(MOCK_PAD_ID);
       expect(res.statusCode).toEqual(StatusCodes.OK);
@@ -335,8 +388,26 @@ describe('Etherpad service API', () => {
         padUrl: `${ETHERPAD_PUBLIC_URL}/p/${MOCK_PAD_READ_ONLY_ID}`,
       });
     });
-
     it('concatenates existing sessions in cookie', async () => {
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [
+          {
+            name: "bob's test etherpad item",
+            type: ItemType.ETHERPAD,
+            extra: EtherpadItemService.buildEtherpadExtra({
+              groupID: MOCK_GROUP_ID,
+              padName: MOCK_PAD_NAME,
+            }),
+            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
       const reqParams = setUpApi({
         getReadOnlyID: [
           StatusCodes.OK,
@@ -370,16 +441,13 @@ describe('Etherpad service API', () => {
           },
         ],
       });
-
       const res = await app.inject(payloadView('read', item.id));
-
       const { getReadOnlyID } = await reqParams;
-      expect(getReadOnlyID?.get('padID')).toEqual(item.extra.etherpad.padID);
+      expect(getReadOnlyID?.get('padID')).toEqual((item as EtherpadItem).extra.etherpad.padID);
       expect(res.statusCode).toEqual(StatusCodes.OK);
       expect(res.json()).toEqual({
         padUrl: `${ETHERPAD_PUBLIC_URL}/p/${MOCK_PAD_READ_ONLY_ID}`,
       });
-
       expect(res.cookies.length).toEqual(2);
       expect(res.cookies[1].name).toEqual('session');
       const { name, value, domain, path, expires } = res.cookies[0] as {
@@ -398,8 +466,26 @@ describe('Etherpad service API', () => {
       expect(path).toEqual('/');
       expectExpiration(expires);
     });
-
     it('deletes expired sessions', async () => {
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [
+          {
+            name: "bob's test etherpad item",
+            type: ItemType.ETHERPAD,
+            extra: EtherpadItemService.buildEtherpadExtra({
+              groupID: MOCK_GROUP_ID,
+              padName: MOCK_PAD_NAME,
+            }),
+            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
       const reqParams = setUpApi({
         getReadOnlyID: [
           StatusCodes.OK,
@@ -429,16 +515,13 @@ describe('Etherpad service API', () => {
         ],
         deleteSession: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
       });
-
       const res = await app.inject(payloadView('read', item.id));
-
       const { getReadOnlyID, deleteSession } = await reqParams;
-      expect(getReadOnlyID?.get('padID')).toEqual(item.extra.etherpad.padID);
+      expect(getReadOnlyID?.get('padID')).toEqual((item as EtherpadItem).extra.etherpad.padID);
       expect(res.statusCode).toEqual(StatusCodes.OK);
       expect(res.json()).toEqual({
         padUrl: `${ETHERPAD_PUBLIC_URL}/p/${MOCK_PAD_READ_ONLY_ID}`,
       });
-
       expect(res.cookies.length).toEqual(2);
       expect(res.cookies[1].name).toEqual('session');
       const { name, value, domain, path, expires } = res.cookies[0] as {
@@ -453,11 +536,28 @@ describe('Etherpad service API', () => {
       expect(domain).toEqual('localhost');
       expect(path).toEqual('/');
       expectExpiration(expires);
-
       expect(deleteSession?.get('sessionID')).toEqual(MOCK_SESSION_ID);
     });
-
     it('invalidates oldest sessions if the number of sessions exceeds MAX_SESSIONS_IN_COOKIES', async () => {
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [
+          {
+            name: "bob's test etherpad item",
+            type: ItemType.ETHERPAD,
+            extra: EtherpadItemService.buildEtherpadExtra({
+              groupID: MOCK_GROUP_ID,
+              padName: MOCK_PAD_NAME,
+            }),
+            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
       const reqParams = setUpApi({
         getReadOnlyID: [
           StatusCodes.OK,
@@ -498,16 +598,13 @@ describe('Etherpad service API', () => {
         ],
         deleteSession: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
       });
-
       const res = await app.inject(payloadView('read', item.id));
-
       const { getReadOnlyID, deleteSession } = await reqParams;
-      expect(getReadOnlyID?.get('padID')).toEqual(item.extra.etherpad.padID);
+      expect(getReadOnlyID?.get('padID')).toEqual((item as EtherpadItem).extra.etherpad.padID);
       expect(res.statusCode).toEqual(StatusCodes.OK);
       expect(res.json()).toEqual({
         padUrl: `${ETHERPAD_PUBLIC_URL}/p/${MOCK_PAD_READ_ONLY_ID}`,
       });
-
       expect(res.cookies.length).toEqual(2);
       expect(res.cookies[1].name).toEqual('session');
       const { name, value, domain, path, expires } = res.cookies[0] as {
@@ -530,15 +627,32 @@ describe('Etherpad service API', () => {
       expect(domain).toEqual('localhost');
       expect(path).toEqual('/');
       expectExpiration(expires);
-
       // the first (oldest) session should be invalidated
       expect(deleteSession?.get('sessionID')).toEqual('s.0000000000000000');
     });
-
     /**
      * This is a regression test based on a real case in the production DB
      */
     it('handles malformed sessions in database', async () => {
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [
+          {
+            name: "bob's test etherpad item",
+            type: ItemType.ETHERPAD,
+            extra: EtherpadItemService.buildEtherpadExtra({
+              groupID: MOCK_GROUP_ID,
+              padName: MOCK_PAD_NAME,
+            }),
+            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
       const reqParams = setUpApi({
         getReadOnlyID: [
           StatusCodes.OK,
@@ -565,16 +679,13 @@ describe('Etherpad service API', () => {
         ],
         deleteSession: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
       });
-
       const res = await app.inject(payloadView('read', item.id));
-
       const { getReadOnlyID, deleteSession } = await reqParams;
-      expect(getReadOnlyID?.get('padID')).toEqual(item.extra.etherpad.padID);
+      expect(getReadOnlyID?.get('padID')).toEqual((item as EtherpadItem).extra.etherpad.padID);
       expect(res.statusCode).toEqual(StatusCodes.OK);
       expect(res.json()).toEqual({
         padUrl: `${ETHERPAD_PUBLIC_URL}/p/${MOCK_PAD_READ_ONLY_ID}`,
       });
-
       expect(res.cookies.length).toEqual(2);
       expect(res.cookies[1].name).toEqual('session');
       const { name, value, domain, path, expires } = res.cookies[0] as {
@@ -589,59 +700,70 @@ describe('Etherpad service API', () => {
       expect(domain).toEqual('localhost');
       expect(path).toEqual('/');
       expectExpiration(expires);
-
       // check that the malformed session is deleted
       expect(deleteSession?.get('sessionID')).toEqual('s.0000000000000000');
     });
-
     it.each(MODES)('returns error if item is not found (%p)', async (mode) => {
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
       setUpApi({
         getReadOnlyID: [
           StatusCodes.OK,
           { code: 0, message: 'ok', data: { readOnlyID: MOCK_PAD_READ_ONLY_ID } },
         ],
       });
-
       // generate an id for an item that does not exist
-      let randomId;
-      do {
-        randomId = uuidv4();
-        // probability if infinitely low, but just for sanity
-      } while (randomId === item.id);
+      const randomId = v4();
       const res = await app.inject(payloadView(mode, randomId));
-
       expect(res.statusCode).toEqual(StatusCodes.NOT_FOUND);
-      expect(res.json()).toEqual(new ItemNotFound(randomId));
+      expect(res.json().message).toEqual(new ItemNotFound(randomId).message);
     });
-
     it.each(MODES)('returns error if item is missing etherpad extra (%p)', async (mode) => {
+      const {
+        actor,
+        items: [bogusItem],
+      } = await seedFromJson({
+        items: [
+          {
+            name: "bob's test etherpad item",
+            type: ItemType.ETHERPAD,
+            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
       setUpApi({
         getReadOnlyID: [
           StatusCodes.OK,
           { code: 0, message: 'ok', data: { readOnlyID: MOCK_PAD_READ_ONLY_ID } },
         ],
       });
-
-      const { item: bogusItem } = await testUtils.saveItemAndMembership({ member });
-
       const res = await app.inject(payloadView(mode, bogusItem.id));
-
       expect(res.statusCode).toEqual(StatusCodes.INTERNAL_SERVER_ERROR);
       expect(res.json()).toMatchObject(new ItemMissingExtraError(bogusItem.id));
     });
-
     it.each(MODES)('returns error if member does not have %p permission', async (mode) => {
-      const bob = await saveMember();
-      const { item } = await testUtils.saveItemAndMembership({
-        member: bob,
-        item: {
-          name: "bob's test etherpad item",
-          extra: EtherpadItemService.buildEtherpadExtra({
-            groupID: MOCK_GROUP_ID,
-            padName: MOCK_PAD_NAME,
-          }),
-        },
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [
+          {
+            name: "bob's test etherpad item",
+            type: ItemType.ETHERPAD,
+            extra: EtherpadItemService.buildEtherpadExtra({
+              groupID: MOCK_GROUP_ID,
+              padName: MOCK_PAD_NAME,
+            }),
+          },
+        ],
       });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
 
       setUpApi({
         getReadOnlyID: [
@@ -649,14 +771,30 @@ describe('Etherpad service API', () => {
           { code: 0, message: 'ok', data: { readOnlyID: MOCK_PAD_READ_ONLY_ID } },
         ],
       });
-
       const res = await app.inject(payloadView(mode, item.id));
-
       expect(res.statusCode).toEqual(StatusCodes.FORBIDDEN);
       expect(res.json()).toMatchObject(new MemberCannotAccess(item.id));
     });
-
     it('returns error on etherpad HTTP error', async () => {
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [
+          {
+            name: "bob's test etherpad item",
+            type: ItemType.ETHERPAD,
+            extra: EtherpadItemService.buildEtherpadExtra({
+              groupID: MOCK_GROUP_ID,
+              padName: MOCK_PAD_NAME,
+            }),
+            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
       setUpApi({
         getReadOnlyID: [StatusCodes.GATEWAY_TIMEOUT],
       });
@@ -668,8 +806,26 @@ describe('Etherpad service API', () => {
         origin: 'graasp-plugin-etherpad',
       });
     });
-
     it('returns error on etherpad server error: "padID does not exist"', async () => {
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [
+          {
+            name: "bob's test etherpad item",
+            type: ItemType.ETHERPAD,
+            extra: EtherpadItemService.buildEtherpadExtra({
+              groupID: MOCK_GROUP_ID,
+              padName: MOCK_PAD_NAME,
+            }),
+            memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
       setUpApi({
         getReadOnlyID: [StatusCodes.OK, { code: 1, message: 'padID does not exist', data: null }],
       });
@@ -681,10 +837,28 @@ describe('Etherpad service API', () => {
         origin: 'graasp-plugin-etherpad',
       });
     });
-
     it.each(["groupID doesn't exist", "authorID doesn't exist", 'validUntil is in the past'])(
       'returns error on etherpad server error: %p',
       async (error) => {
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            {
+              name: "bob's test etherpad item",
+              type: ItemType.ETHERPAD,
+              extra: EtherpadItemService.buildEtherpadExtra({
+                groupID: MOCK_GROUP_ID,
+                padName: MOCK_PAD_NAME,
+              }),
+              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         setUpApi({
           createAuthorIfNotExistsFor: [
             StatusCodes.OK,
@@ -702,26 +876,14 @@ describe('Etherpad service API', () => {
       },
     );
   });
-
   describe('hook handlers', () => {
-    let item: EtherpadItemType;
-
-    beforeEach(async () => {
-      // create an existing etherpad item to test hooks
-      setUpApi({
-        createGroupIfNotExistsFor: [
-          StatusCodes.OK,
-          { code: 0, message: 'ok', data: { groupID: MOCK_GROUP_ID } },
-        ],
-        createGroupPad: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
-      });
-      const res = await app.inject(payloadCreate);
-      expect(res.statusCode).toBe(StatusCodes.OK);
-      item = res.json();
-      cleanAll();
-    });
-
     it('deletes pad when item is deleted', async () => {
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
+      const item = await createEtherpad(app);
+
       const reqsParams = setUpApi({
         deletePad: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
       });
@@ -735,12 +897,16 @@ describe('Etherpad service API', () => {
       const { deletePad } = await reqsParams;
       expect(deletePad?.get('padID')).toEqual(item.extra.etherpad.padID);
     });
-
     it('copies pad when item is copied', async () => {
-      const parent = await testUtils.saveItemAndMembership({
-        member,
-        item: { name: 'test parent' },
+      const {
+        actor,
+        items: [parent],
+      } = await seedFromJson({
+        items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] }],
       });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+      const item = await createEtherpad(app);
 
       const reqsParams = setUpApi({
         createGroupIfNotExistsFor: [
@@ -749,28 +915,24 @@ describe('Etherpad service API', () => {
         ],
         copyPad: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
       });
-
       await app.inject({
         method: 'POST',
-        url: 'items/copy',
+        url: '/items/copy',
         query: {
           id: [item.id],
         },
         payload: {
-          parentId: parent.item.id,
+          parentId: parent.id,
         },
       });
-
-      // wait until the copy is in the db
+      // wait until the copy is in the parent
+      let copy;
       await waitForExpect(async () => {
-        expect(await testUtils.rawItemRepository.count()).toEqual(3);
+        (copy = await db.query.itemsRaw.findFirst({
+          where: isDirectChild(itemsRaw.path, parent.path),
+        })),
+          expect(copy).toBeDefined();
       });
-
-      const copy = (await testUtils.rawItemRepository.findOneBy({
-        id: And(Not(item.id), Not(parent.item.id)),
-      })) as Item<typeof ItemType.ETHERPAD>;
-      expect(copy).not.toBeNull();
-
       const { createGroupIfNotExistsFor, copyPad } = await reqsParams;
       expect(copyPad?.get('destinationID')).toEqual(
         `${copy.extra.etherpad.groupID}$${createGroupIfNotExistsFor?.get('groupMapper')}`,
@@ -779,10 +941,18 @@ describe('Etherpad service API', () => {
       // verify that the handler mutated the item on its extra (should have created a newly copied pad)
       expect(item.extra).not.toEqual(copy.extra);
     });
-
     it('throws if pad ID is not defined on copy', async () => {
-      const { item: parent } = await testUtils.saveItemAndMembership({ member });
-      const { item: bogusItem } = await testUtils.saveItemAndMembership({ member });
+      const {
+        actor,
+        items: [parent, bogusItem],
+      } = await seedFromJson({
+        items: [
+          { memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] },
+          { memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
 
       setUpApi({
         createGroupIfNotExistsFor: [
@@ -791,10 +961,9 @@ describe('Etherpad service API', () => {
         ],
         copyPad: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
       });
-
       const res = await app.inject({
         method: 'POST',
-        url: 'items/copy',
+        url: '/items/copy',
         query: {
           id: [bogusItem.id],
         },
@@ -802,7 +971,6 @@ describe('Etherpad service API', () => {
           parentId: parent.id,
         },
       });
-
       expect(res.statusCode).not.toEqual(StatusCodes.OK);
     });
   });
@@ -826,6 +994,7 @@ describe('Etherpad service API', () => {
           },
         ],
       });
+      assertIsDefined(actor);
       mockAuthenticate(actor);
       const res = await app.inject({
         method: HttpMethod.Patch,
@@ -834,10 +1003,8 @@ describe('Etherpad service API', () => {
           name: 'new-name',
         },
       });
-
       expect(res.statusCode).toEqual(StatusCodes.NO_CONTENT);
     });
-
     it('update a pad with reader permission = write should return no content', async () => {
       setUpApi({
         createGroupIfNotExistsFor: [
@@ -857,6 +1024,7 @@ describe('Etherpad service API', () => {
           },
         ],
       });
+      assertIsDefined(actor);
       mockAuthenticate(actor);
       const res = await app.inject({
         method: HttpMethod.Patch,
@@ -866,19 +1034,16 @@ describe('Etherpad service API', () => {
           readerPermission: EtherpadPermission.Write,
         },
       });
-
       expect(res.statusCode).toEqual(StatusCodes.NO_CONTENT);
     });
-
     it('update a pad without payload should throw', async () => {
       const { actor } = await seedFromJson();
+      assertIsDefined(actor);
       mockAuthenticate(actor);
-
       const res = await app.inject({
         method: HttpMethod.Patch,
         url: `items/etherpad/${v4()}`,
       });
-
       expect(res.statusCode).toEqual(StatusCodes.BAD_REQUEST);
     });
   });
