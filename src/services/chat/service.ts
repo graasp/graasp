@@ -93,7 +93,7 @@ export class ChatMessageService {
       message: updatedMessageWithCreator,
     });
 
-    return updatedMessage;
+    return updatedMessageWithCreator;
   }
 
   async deleteOne(

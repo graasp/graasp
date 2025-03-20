@@ -32,13 +32,14 @@ export class ItemValidationReviewRepository {
     itemValidationId: string,
     status: ItemValidationReviewStatus,
   ): Promise<ItemValidationReviewInsertDTO> {
-    return await db
+    const res = await db
       .insert(itemValidationReviews)
       .values({
         itemValidationId,
         status,
       })
-      .returning()[0];
+      .returning();
+    return res[0];
   }
 
   /**
@@ -52,10 +53,11 @@ export class ItemValidationReviewRepository {
     reviewerId: string,
     reason: string = '',
   ): Promise<ItemValidationReviewInsertDTO> {
-    return await db
+    const res = await db
       .update(itemValidationReviews)
       .set({ status, reason, reviewerId })
       .where(eq(itemValidationReviews.id, id))
-      .returning()[0];
+      .returning();
+    return res[0];
   }
 }

@@ -47,11 +47,12 @@ export class ChatMessageRepository {
    * Retrieves a message by its id
    * @param id Id of the message to retrieve
    */
-  async getOne(db: DBConnection, id: string): Promise<ChatMessageWithCreatorAndItem | undefined> {
-    return await db.query.chatMessagesTable.findFirst({
+  async getOne(db: DBConnection, id: string): Promise<ChatMessageWithCreator | undefined> {
+    const res = await db.query.chatMessagesTable.findFirst({
       where: eq(chatMessagesTable.id, id),
-      with: { item: true, creator: true },
+      with: { creator: true },
     });
+    return res;
   }
 
   /**
@@ -80,11 +81,12 @@ export class ChatMessageRepository {
     id: string,
     data: ChatMessageInsertDTO,
   ): Promise<ChatMessageRaw> {
-    return await db
+    const res = await db
       .update(chatMessagesTable)
       .set(data)
       .where(eq(chatMessagesTable.id, id))
-      .returning()[0];
+      .returning();
+    return res[0];
   }
 
   async deleteOne(db: DBConnection, id: string): Promise<void> {
