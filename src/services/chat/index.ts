@@ -69,10 +69,13 @@ const plugin: FastifyPluginAsyncTypebox<GraaspChatPluginOptions> = async (fastif
           body,
         } = request;
         const account = asDefined(user?.account);
-        await db.transaction(async (tx) => {
+        return await db.transaction(async (tx) => {
           const message = await chatService.postOne(tx, account, itemId, body);
           await actionChatService.postPostMessageAction(tx, request, message);
+          return message;
         });
+        // TODO: move websockets here so it stays consitent when the transaction fails for example.
+        // it will also allow to remove the need for a post-hook and make it explicit after the business has been done.
       },
     );
 

@@ -54,11 +54,12 @@ export class ChatMessageService {
       await this.mentionService.createManyForItem(db, actor, message, data.mentions);
     }
 
+    const messageWithCreator = { ...message, creator: actor };
     await this.hooks.runPostHooks('publish', actor, db, {
-      message,
+      message: messageWithCreator,
     });
 
-    return message;
+    return messageWithCreator;
   }
 
   async patchOne(
@@ -86,9 +87,10 @@ export class ChatMessageService {
       itemId,
       ...message,
     });
-
+    // assumes update can only be done by the author of the message
+    const updatedMessageWithCreator = { ...updatedMessage, creator: authenticatedUser };
     await this.hooks.runPostHooks('update', authenticatedUser, db, {
-      message: updatedMessage,
+      message: updatedMessageWithCreator,
     });
 
     return updatedMessage;

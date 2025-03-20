@@ -1,7 +1,7 @@
 import { PermissionLevel } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../drizzle/db';
-import { ChatMessageRaw } from '../../../drizzle/types';
+import { ChatMessageRaw, ChatMessageWithCreator } from '../../../drizzle/types';
 import { ItemService } from '../../item/service';
 import { WebsocketService } from '../../websockets/ws-service';
 import { ChatMessageService } from '../service';
@@ -22,7 +22,7 @@ export function registerChatWsHooks(
   // on new chat message published, broadcast to item chat channel
   chatService.hooks.setPostHook(
     'publish',
-    async (member, db, { message }: { message: ChatMessageRaw }) => {
+    async (member, db, { message }: { message: ChatMessageWithCreator }) => {
       websockets.publish(itemChatTopic, message.itemId, ItemChatEvent('publish', message));
     },
   );
@@ -30,7 +30,7 @@ export function registerChatWsHooks(
   // on update chat item, broadcast to item chat channel
   chatService.hooks.setPostHook(
     'update',
-    async (member, db, { message }: { message: ChatMessageRaw }) => {
+    async (member, db, { message }: { message: ChatMessageWithCreator }) => {
       websockets.publish(itemChatTopic, message.itemId, ItemChatEvent('update', message));
     },
   );
