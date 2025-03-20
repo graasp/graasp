@@ -1,6 +1,7 @@
 import { PermissionLevel } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../drizzle/db';
+import { ChatMessageRaw } from '../../../drizzle/types';
 import { ItemService } from '../../item/service';
 import { WebsocketService } from '../../websockets/ws-service';
 import { ChatMessageService } from '../service';
@@ -19,22 +20,31 @@ export function registerChatWsHooks(
   });
 
   // on new chat message published, broadcast to item chat channel
-  chatService.hooks.setPostHook('publish', async (member, db, { message }) => {
-    websockets.publish(itemChatTopic, message.item.id, ItemChatEvent('publish', message));
-  });
+  chatService.hooks.setPostHook(
+    'publish',
+    async (member, db, { message }: { message: ChatMessageRaw }) => {
+      websockets.publish(itemChatTopic, message.itemId, ItemChatEvent('publish', message));
+    },
+  );
 
   // on update chat item, broadcast to item chat channel
-  chatService.hooks.setPostHook('update', async (member, db, { message }) => {
-    websockets.publish(itemChatTopic, message.item.id, ItemChatEvent('update', message));
-  });
+  chatService.hooks.setPostHook(
+    'update',
+    async (member, db, { message }: { message: ChatMessageRaw }) => {
+      websockets.publish(itemChatTopic, message.itemId, ItemChatEvent('update', message));
+    },
+  );
 
   // on delete chat item, broadcast to item chat channel
-  chatService.hooks.setPostHook('delete', async (member, db, { message }) => {
-    websockets.publish(itemChatTopic, message.item.id, ItemChatEvent('delete', message));
-  });
+  chatService.hooks.setPostHook(
+    'delete',
+    async (member, db, { message }: { message: ChatMessageRaw }) => {
+      websockets.publish(itemChatTopic, message.itemId, ItemChatEvent('delete', message));
+    },
+  );
 
   // on clear chat, broadcast to item chat channel
-  chatService.hooks.setPostHook('clear', async (member, db, { itemId }) => {
+  chatService.hooks.setPostHook('clear', async (member, db, { itemId }: { itemId: string }) => {
     websockets.publish(itemChatTopic, itemId, ItemChatEvent('clear'));
   });
 }

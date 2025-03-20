@@ -6,6 +6,7 @@ import { chatMessagesTable } from '../../drizzle/schema';
 import {
   ChatMessageInsertDTO,
   ChatMessageRaw,
+  ChatMessageWithCreator,
   ChatMessageWithCreatorAndItem,
 } from '../../drizzle/types';
 import { DeleteException } from '../../repositories/errors';
@@ -18,7 +19,7 @@ export class ChatMessageRepository {
    * Retrieves all the messages related to the given item
    * @param itemId Id of item to retrieve messages for
    */
-  async getByItem(db: DBConnection, itemId: string): Promise<ChatMessageWithCreatorAndItem[]> {
+  async getByItem(db: DBConnection, itemId: string): Promise<ChatMessageWithCreator[]> {
     throwsIfParamIsInvalid('itemId', itemId);
 
     return await db.query.chatMessagesTable.findMany({
@@ -65,7 +66,8 @@ export class ChatMessageRepository {
       body: string;
     },
   ): Promise<ChatMessageRaw> {
-    return await db.insert(chatMessagesTable).values(message).returning()[0];
+    const res = await db.insert(chatMessagesTable).values(message).returning();
+    return res[0];
   }
 
   /**

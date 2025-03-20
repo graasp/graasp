@@ -3,11 +3,9 @@ import { singleton } from 'tsyringe';
 import { PermissionLevel } from '@graasp/sdk';
 
 import { DBConnection } from '../../drizzle/db';
-import { ChatMessageRaw } from '../../drizzle/types';
 import { AuthenticatedUser, MaybeUser } from '../../types';
 import HookManager from '../../utils/hook';
 import { BasicItemService } from '../item/basic.service';
-import { ItemService } from '../item/service';
 import { ChatMessageNotFound, MemberCannotDeleteMessage, MemberCannotEditMessage } from './errors';
 import { MentionService } from './plugins/mentions/service';
 import { ChatMessageRepository } from './repository';
@@ -57,7 +55,7 @@ export class ChatMessageService {
     }
 
     await this.hooks.runPostHooks('publish', actor, db, {
-      message: message,
+      message,
     });
 
     return message;

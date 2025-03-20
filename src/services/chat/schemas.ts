@@ -37,11 +37,12 @@ export const chatMessageSchemaRef = registerSchemaAsRef(
   customType.StrictObject(
     {
       id: customType.UUID(),
+      creatorId: customType.Nullable(customType.UUID()),
       creator: nullableAccountSchemaRef,
       createdAt: customType.DateTime(),
       updatedAt: customType.DateTime(),
       body: Type.String(),
-      item: itemSchemaRef,
+      itemId: customType.UUID(),
     },
     {
       description: 'Message from a member in a chat of an item.',
