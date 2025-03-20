@@ -1,5 +1,5 @@
 import { Readable } from 'stream';
-import { delay, inject, injectable } from 'tsyringe';
+import { delay, inject, singleton } from 'tsyringe';
 
 import {
   ItemType,
@@ -61,7 +61,7 @@ import { ItemThumbnailService } from './plugins/thumbnail/service';
 import { ItemRepository } from './repository';
 import { ItemChildrenParams, ItemSearchParams } from './types';
 
-@injectable()
+@singleton()
 export class ItemService {
   private readonly log: BaseLogger;
   private readonly thumbnailService: ThumbnailService;

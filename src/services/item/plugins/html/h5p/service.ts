@@ -58,7 +58,7 @@ export class H5PService extends HtmlService {
   /**
    * Helper to create H5P extra
    */
-  buildH5PExtra(contentId: string, filename: string): H5PItemExtra {
+  private buildH5PExtra(contentId: string, filename: string): H5PItemExtra {
     return {
       h5p: {
         contentId,
@@ -71,8 +71,9 @@ export class H5PService extends HtmlService {
   /**
    * Helper to build the local or remote path of the .h5p file
    */
-  buildH5PPath = (rootPath: string, filename: string) =>
-    path.join(rootPath, `${filename}.${H5P.H5P_FILE_EXTENSION}`);
+  buildH5PPath = (rootPath: string, filename: string) => {
+    return path.join(rootPath, `${filename}.${H5P.H5P_FILE_EXTENSION}`);
+  };
 
   /**
    * Get the H5P file url referenced by a given Item
@@ -151,15 +152,16 @@ export class H5PService extends HtmlService {
    * @param remoteRootPath Root path on the remote storage
    * @param member Actor member
    * @param parentId Optional parent id of the newly created item
+   * !! it's important to keep this syntax because of the reference to this
    */
-  private async createItemForH5PFile(
+  private createItemForH5PFile = async (
     db: DBConnection,
     member: MinimalMember,
     filename: string,
     contentId: string,
     parentId?: string,
     previousItemId?: string,
-  ): Promise<Item> {
+  ): Promise<Item> => {
     const metadata = {
       name: this.buildH5PPath('', filename),
       type: ItemType.H5P,
@@ -170,5 +172,5 @@ export class H5PService extends HtmlService {
       parentId,
       previousItemId,
     });
-  }
+  };
 }

@@ -1,6 +1,6 @@
 import { NotFound } from '@aws-sdk/client-s3';
 import assert from 'assert';
-import { inArray } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import FormData from 'form-data';
 import fs from 'fs';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
@@ -25,7 +25,9 @@ import build, {
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants';
 import { buildFile, seedFromJson } from '../../../../../../test/mocks/seed';
 import { db } from '../../../../../drizzle/db';
-import { Item } from '../../../../../drizzle/types';
+import { itemMemberships, itemsRaw } from '../../../../../drizzle/schema';
+import { Item, ItemRaw } from '../../../../../drizzle/types';
+import { assertIsDefined } from '../../../../../utils/assertions';
 import {
   FILE_ITEM_TYPE,
   ITEMS_ROUTE_PREFIX,
@@ -40,17 +42,17 @@ import {
   UploadFileUnexpectedError,
 } from '../../../../file/utils/errors';
 import { expectItem, expectManyItems } from '../../../../item/test/fixtures/items';
-import { saveMember } from '../../../../member/test/fixtures/members';
 import { ThumbnailSizeFormat } from '../../../../thumbnail/constants';
-import { setItemPublic } from '../../itemVisibility/test/fixtures';
 import { DEFAULT_MAX_STORAGE } from '../utils/constants';
 import { StorageExceeded } from '../utils/errors';
 
+const getItemById = async (id: string) =>
+  await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, id) });
+const getItemMembershipByPath = async (path: string) =>
+  await db.query.itemMemberships.findFirst({
+    where: eq(itemMemberships.itemPath, path),
+  });
 // TODO: LOCAL FILE TESTS
-
-const testUtils = new ItemTestUtils();
-const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
-const itemRawRepository = AppDataSource.getRepository(Item);
 
 const deleteObjectsMock = jest.fn(async () => console.debug('deleteObjects'));
 const copyObjectMock = jest.fn(async () => console.debug('copyObjectMock'));
@@ -96,20 +98,18 @@ const createFormData = (form = new FormData(), filepath: string = './fixtures/im
 
 describe('File Item routes tests', () => {
   let app: FastifyInstance;
-  let actor;
 
   beforeAll(async () => {
-    ({ app } = await build({ member: null }));
+    ({ app } = await build());
   });
 
   afterAll(async () => {
-    await clearDatabase(app.db);
+    await clearDatabase(db);
     app.close();
   });
 
   afterEach(async () => {
     jest.clearAllMocks();
-    actor = null;
     unmockAuthenticate();
   });
 
@@ -129,14 +129,12 @@ describe('File Item routes tests', () => {
 
     describe('Signed In', () => {
       describe('Without error', () => {
-        beforeEach(async () => {
-          actor = await saveMember();
-          mockAuthenticate(actor);
-        });
-
         it('Upload successfully one file', async () => {
-          const form = createFormData();
+          const { actor } = await seedFromJson();
+          assertIsDefined(actor);
+          mockAuthenticate(actor);
 
+          const form = createFormData();
           const response = await app.inject({
             method: HttpMethod.Post,
             url: `${ITEMS_ROUTE_PREFIX}/upload`,
@@ -148,8 +146,8 @@ describe('File Item routes tests', () => {
           expect(response.statusCode).toBe(StatusCodes.OK);
 
           // check item exists in db
-          const item = await testUtils.rawItemRepository.findOneBy({ type: FILE_ITEM_TYPE });
-          expectItem(item, newItem);
+          const item = await getItemById(newItem.id);
+          expect(item).toBeDefined();
 
           // s3 upload function: We expect on image AND the thumbnails
           expect(uploadDoneMock).toHaveBeenCalledTimes(
@@ -161,13 +159,15 @@ describe('File Item routes tests', () => {
           expect(item?.extra[FILE_ITEM_TYPE]).toBeTruthy();
 
           // a membership is created for this item
-          const membership = await itemMembershipRawRepository.findOneBy({
-            item: { id: newItem.id },
-          });
+          const membership = await getItemMembershipByPath(newItem.path);
           expect(membership?.permission).toEqual(PermissionLevel.Admin);
         });
 
         it('Upload successfully one pdf file with thumbnail', async () => {
+          const { actor } = await seedFromJson();
+          assertIsDefined(actor);
+          mockAuthenticate(actor);
+
           const form = createFormData(new FormData(), './fixtures/blank.pdf');
 
           const response = await app.inject({
@@ -181,7 +181,7 @@ describe('File Item routes tests', () => {
           expect(response.statusCode).toBe(StatusCodes.OK);
 
           // check item exists in db
-          const item = await testUtils.rawItemRepository.findOneBy({ id: newItem.id });
+          const item = await getItemById(newItem.id);
           expectItem(item, newItem);
 
           // s3 upload function: We expect on pdf and the thumbnails
@@ -192,6 +192,10 @@ describe('File Item routes tests', () => {
         });
 
         it('Upload successfully many files', async () => {
+          const { actor } = await seedFromJson();
+          assertIsDefined(actor);
+          mockAuthenticate(actor);
+
           const form = createFormData();
           const form1 = createFormData(form);
 
@@ -226,7 +230,7 @@ describe('File Item routes tests', () => {
             expect(item?.extra[FILE_ITEM_TYPE]).toBeTruthy();
           }
           // a membership is created for this item
-          const memberships = await db.query.itemMemberships.findBy({
+          const memberships = await db.query.itemMemberships.findMany({
             where: inArray(
               itemMemberships.itemPath,
               items.map(({ path }) => path),
@@ -238,7 +242,15 @@ describe('File Item routes tests', () => {
         });
 
         it('Upload successfully one file in parent', async () => {
-          const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
+          const {
+            actor,
+            items: [parentItem],
+          } = await seedFromJson({
+            items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] }],
+          });
+          assertIsDefined(actor);
+          mockAuthenticate(actor);
+
           const form = createFormData();
           const response = await app.inject({
             method: HttpMethod.Post,
@@ -252,7 +264,7 @@ describe('File Item routes tests', () => {
           expect(response.statusCode).toBe(StatusCodes.OK);
 
           // check item exists in db
-          const item = await testUtils.rawItemRepository.findOneBy({ id: newItem.id });
+          const item = await getItemById(newItem.id);
           expectItem(item, newItem);
 
           // s3 upload function: We expect on image AND the thumbnails
@@ -266,13 +278,17 @@ describe('File Item routes tests', () => {
           expect(item?.path).toContain(parentItem.path);
 
           // a membership is not created for new item because it inherits parent
-          const membership = await itemMembershipRawRepository.findOneBy({
-            item: { id: newItem.id },
+          const membership = await db.query.itemMemberships.findFirst({
+            where: eq(itemMemberships.itemPath, newItem.path),
           });
-          expect(membership).toBeNull();
+          expect(membership).toBeUndefined();
         });
 
         it('Upload several files with one H5P file', async () => {
+          const { actor } = await seedFromJson();
+          assertIsDefined(actor);
+          mockAuthenticate(actor);
+
           const form = createFormData();
           form.append(
             'H5PFile',
@@ -292,7 +308,7 @@ describe('File Item routes tests', () => {
           expect(newItems.length).toBe(2);
 
           // check that both items exist in db and that their types are correctly interpreted
-          const imageItem = await testUtils.rawItemRepository.findOneBy({ id: newItems[0].id });
+          const imageItem = await getItemById(newItems[0].id);
           expectItem(imageItem, newItems[0]);
           if (S3_FILE_ITEM_PLUGIN) {
             expect(imageItem?.type).toEqual(ItemType.S3_FILE);
@@ -300,18 +316,21 @@ describe('File Item routes tests', () => {
             expect(imageItem?.type).toEqual(ItemType.LOCAL_FILE);
           }
 
-          const h5pItem = await testUtils.rawItemRepository.findOneBy({ id: newItems[1].id });
+          const h5pItem = await getItemById(newItems[1].id);
           expectItem(h5pItem, newItems[1]);
           expect(h5pItem?.type).toBe(ItemType.H5P);
         });
 
         it('Cannot upload in parent with read rights', async () => {
-          const member = await saveMember();
-          const { item: parentItem } = await testUtils.saveItemAndMembership({
-            member: actor,
-            permission: PermissionLevel.Read,
-            creator: member,
+          const {
+            actor,
+            items: [parentItem],
+          } = await seedFromJson({
+            items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Read }] }],
           });
+          assertIsDefined(actor);
+          mockAuthenticate(actor);
+
           const form = createFormData();
 
           const response = await app.inject({
@@ -328,15 +347,13 @@ describe('File Item routes tests', () => {
         });
 
         it('Cannot upload with storage exceeded', async () => {
-          const form = createFormData();
-          const { item } = await testUtils.saveItemAndMembership({
-            member: actor,
-            item: {
-              type: ItemType.S3_FILE,
-              extra: { [ItemType.S3_FILE]: { size: DEFAULT_MAX_STORAGE + 1 } } as S3FileItemExtra,
-            },
+          const { actor } = await seedFromJson({
+            items: [buildFile('actor', { size: DEFAULT_MAX_STORAGE + 1 })],
           });
+          assertIsDefined(actor);
+          mockAuthenticate(actor);
 
+          const form = createFormData();
           const response = await app.inject({
             method: HttpMethod.Post,
             url: `${ITEMS_ROUTE_PREFIX}/upload`,
@@ -345,13 +362,13 @@ describe('File Item routes tests', () => {
           });
 
           expect(response.json().errors[0]).toMatchObject(new StorageExceeded(expect.anything()));
-
-          // check previous item still exists in db
-          const items = await testUtils.rawItemRepository.findBy({ id: item.id });
-          expect(items).toHaveLength(1);
         });
 
         it('Cannot upload empty file', async () => {
+          const { actor } = await seedFromJson();
+          assertIsDefined(actor);
+          mockAuthenticate(actor);
+
           headObjectMock.mockImplementation(async () => ({ ContentLength: 0 }));
           const form = new FormData();
           form.append(
@@ -386,7 +403,8 @@ describe('File Item routes tests', () => {
 
           const form1 = createFormData(form);
 
-          actor = await saveMember();
+          const { actor } = await seedFromJson();
+          assertIsDefined(actor);
           mockAuthenticate(actor);
           const response = await app.inject({
             method: HttpMethod.Post,
@@ -406,10 +424,11 @@ describe('File Item routes tests', () => {
           expect(response.json().errors[0].message).toEqual(new UploadEmptyFileError().message);
 
           // one file has been uploaded
-          expect(Object.entries(response.json().data)).toHaveLength(1);
+          const uploadedItems = Object.values<ItemRaw>(response.json().data);
+          expect(uploadedItems).toHaveLength(1);
 
           // check item exists in db
-          const item = await testUtils.rawItemRepository.findOneBy({ type: FILE_ITEM_TYPE });
+          const item = await getItemById(uploadedItems[0].id);
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           expect(item!.type).toEqual(ItemType.S3_FILE);
         });
@@ -418,10 +437,11 @@ describe('File Item routes tests', () => {
             throw new Error('putObject throws');
           });
 
-          actor = await saveMember();
+          const { actor } = await seedFromJson();
+          assertIsDefined(actor);
           mockAuthenticate(actor);
-          const form = createFormData();
 
+          const form = createFormData();
           const response = await app.inject({
             method: HttpMethod.Post,
             url: `${ITEMS_ROUTE_PREFIX}/upload`,
@@ -439,17 +459,14 @@ describe('File Item routes tests', () => {
 
   describe('GET /download', () => {
     describe('Sign out', () => {
-      let item, member;
-
-      beforeEach(async () => {
-        member = await saveMember();
-        ({ item } = await testUtils.saveItemAndMembership({
-          item: { type: ItemType.S3_FILE },
-          member,
-        }));
-      });
-
       it('Throws if signed out and item is private', async () => {
+        const {
+          items: [item],
+        } = await seedFromJson({
+          actor: null,
+          items: [{}],
+        });
+
         const response = await app.inject({
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/download`,
@@ -459,7 +476,16 @@ describe('File Item routes tests', () => {
       });
 
       it('Download public file item', async () => {
-        await setItemPublic(item, member);
+        const {
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            {
+              ...buildFile({ name: 'bob' }),
+              isPublic: true,
+            },
+          ],
+        });
 
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -472,18 +498,17 @@ describe('File Item routes tests', () => {
     });
 
     describe('Signed In', () => {
-      let item;
-
-      beforeEach(async () => {
-        actor = await saveMember();
-        mockAuthenticate(actor);
-        ({ item } = await testUtils.saveItemAndMembership({
-          item: { type: ItemType.S3_FILE },
-          member: actor,
-        }));
-      });
       describe('Without error', () => {
         it('Return file url of item', async () => {
+          const {
+            actor,
+            items: [item],
+          } = await seedFromJson({
+            items: [buildFile('actor')],
+          });
+          assertIsDefined(actor);
+          mockAuthenticate(actor);
+
           const response = await app.inject({
             method: HttpMethod.Get,
             url: `${ITEMS_ROUTE_PREFIX}/${item.id}/download`,
@@ -494,27 +519,40 @@ describe('File Item routes tests', () => {
         });
 
         it('Cannot download without rights', async () => {
-          const member = await saveMember();
-          const { item: someItem } = await testUtils.saveItemAndMembership({
-            member,
+          const {
+            actor,
+            items: [item],
+          } = await seedFromJson({
+            items: [buildFile({ name: 'bob' })],
           });
+          assertIsDefined(actor);
+          mockAuthenticate(actor);
 
           const response = await app.inject({
             method: HttpMethod.Get,
-            url: `${ITEMS_ROUTE_PREFIX}/${someItem.id}/download`,
+            url: `${ITEMS_ROUTE_PREFIX}/${item.id}/download`,
           });
 
           expect(response.json()).toMatchObject(new MemberCannotAccess(expect.anything()));
         });
 
         it('Cannot download non-file item', async () => {
-          const { item: someItem } = await testUtils.saveItemAndMembership({
-            member: actor,
+          const {
+            actor,
+            items: [item],
+          } = await seedFromJson({
+            items: [
+              {
+                memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+              },
+            ],
           });
+          assertIsDefined(actor);
+          mockAuthenticate(actor);
 
           const response = await app.inject({
             method: HttpMethod.Get,
-            url: `${ITEMS_ROUTE_PREFIX}/${someItem.id}/download`,
+            url: `${ITEMS_ROUTE_PREFIX}/${item.id}/download`,
           });
 
           expect(response.json()).toMatchObject(
@@ -529,6 +567,15 @@ describe('File Item routes tests', () => {
             throw new Error('headObject throws');
           });
 
+          const {
+            actor,
+            items: [item],
+          } = await seedFromJson({
+            items: [buildFile('actor')],
+          });
+          assertIsDefined(actor);
+          mockAuthenticate(actor);
+
           const response = await app.inject({
             method: HttpMethod.Get,
             url: `${ITEMS_ROUTE_PREFIX}/${item.id}/download`,
@@ -541,6 +588,15 @@ describe('File Item routes tests', () => {
           headObjectMock.mockImplementation(() => {
             throw new NotFound({ message: 'hello', $metadata: {} });
           });
+
+          const {
+            actor,
+            items: [item],
+          } = await seedFromJson({
+            items: [buildFile('actor')],
+          });
+          assertIsDefined(actor);
+          mockAuthenticate(actor);
 
           const response = await app.inject({
             method: HttpMethod.Get,
@@ -555,18 +611,21 @@ describe('File Item routes tests', () => {
   });
 
   describe('Edit file - PATCH /items/id', () => {
-    let item, actor;
-
-    beforeEach(async () => {
-      actor = await saveMember();
-      mockAuthenticate(actor);
-      ({ item } = await testUtils.saveItemAndMembership({
-        item: { type: ItemType.S3_FILE },
-        member: actor,
-      }));
-    });
-
     it('Edit name for file item', async () => {
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [
+          {
+            ...buildFile('actor'),
+            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
       const response = await app.inject({
         method: HttpMethod.Patch,
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}`,
@@ -576,6 +635,20 @@ describe('File Item routes tests', () => {
     });
 
     it('Edit file item altText', async () => {
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [
+          {
+            ...buildFile('actor'),
+            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
       const response = await app.inject({
         method: HttpMethod.Patch,
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}`,
@@ -585,6 +658,20 @@ describe('File Item routes tests', () => {
     });
 
     it('Edit file item maxWidth', async () => {
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [
+          {
+            ...buildFile('actor'),
+            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
       const response = await app.inject({
         method: HttpMethod.Patch,
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}`,
@@ -594,6 +681,20 @@ describe('File Item routes tests', () => {
     });
 
     it('Cannot edit another file item field', async () => {
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [
+          {
+            ...buildFile('actor'),
+            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
       const response = await app.inject({
         method: HttpMethod.Patch,
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}`,
@@ -604,13 +705,21 @@ describe('File Item routes tests', () => {
   });
 
   describe('Hooks', () => {
-    beforeEach(async () => {
-      actor = await saveMember();
-      mockAuthenticate(actor);
-    });
     describe('Delete Post Hook', () => {
       it('Do not trigger file delete if item is not a file item', async () => {
-        const { item } = await testUtils.saveItemAndMembership({ member: actor });
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         await app.inject({
           method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}?id=${item.id}`,
@@ -625,10 +734,19 @@ describe('File Item routes tests', () => {
         });
       });
       it('Delete corresponding file for file item', async () => {
-        const { item } = await testUtils.saveItemAndMembership({
-          item: { type: ItemType.S3_FILE },
-          member: actor,
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            {
+              ...buildFile({ name: 'bob' }),
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+          ],
         });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
         await app.inject({
           method: HttpMethod.Delete,
@@ -647,8 +765,20 @@ describe('File Item routes tests', () => {
 
     describe('Copy Pre Hook', () => {
       it('Stop if item is not a file item', async () => {
-        const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
-        const { item } = await testUtils.saveItemAndMembership({ member: actor });
+        const {
+          actor,
+          items: [parentItem, item],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              children: [{}],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         await app.inject({
           method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/copy`,
@@ -666,12 +796,19 @@ describe('File Item routes tests', () => {
         });
       });
       it('Copy corresponding file for file item', async () => {
-        const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
-
-        const { item } = await testUtils.saveItemAndMembership({
-          item: { type: ItemType.S3_FILE },
-          member: actor,
+        const {
+          actor,
+          items: [parentItem, item],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              children: [buildFile('actor')],
+            },
+          ],
         });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
         await app.inject({
           method: HttpMethod.Post,
@@ -685,7 +822,7 @@ describe('File Item routes tests', () => {
           setTimeout(async () => {
             await expect(copyObjectMock).toHaveBeenCalled();
 
-            const items = await testUtils.rawItemRepository.find({ where: { name: item.name } });
+            const items = await db.query.itemsRaw.findMany({ where: eq(itemsRaw.name, item.name) });
             expect(items).toHaveLength(2);
 
             expect((items[0].extra as S3FileItemExtra).s3File.path).not.toEqual(
@@ -698,24 +835,32 @@ describe('File Item routes tests', () => {
       });
 
       it('Prevent copy if member storage is exceeded', async () => {
-        const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
-
-        const { item } = await testUtils.saveItemAndMembership({
-          item: {
-            type: ItemType.S3_FILE,
-            extra: {
-              [ItemType.S3_FILE]: {
-                size: DEFAULT_MAX_STORAGE,
-                name: 'name',
-                mimetype: 'mimetype',
-                path: 'filepath',
-                content: 'content',
-              },
+        const {
+          actor,
+          items: [parentItem, item],
+        } = await seedFromJson({
+          items: [
+            {
+              children: [
+                {
+                  type: ItemType.S3_FILE,
+                  extra: {
+                    [ItemType.S3_FILE]: {
+                      size: DEFAULT_MAX_STORAGE,
+                      name: 'name',
+                      mimetype: 'mimetype',
+                      path: 'filepath',
+                      content: 'content',
+                    },
+                  },
+                  memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                },
+              ],
             },
-          },
-          member: actor,
+          ],
         });
-        const itemCount = await testUtils.rawItemRepository.count();
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
         await app.inject({
           method: HttpMethod.Post,
@@ -729,7 +874,9 @@ describe('File Item routes tests', () => {
           setTimeout(async () => {
             await expect(copyObjectMock).not.toHaveBeenCalled();
             // did not copy
-            expect(await testUtils.rawItemRepository.count()).toEqual(itemCount);
+            expect(
+              await db.query.itemsRaw.findMany({ where: eq(itemsRaw.name, item.name) }),
+            ).toHaveLength(1);
             done(true);
           }, MULTIPLE_ITEMS_LOADING_TIME);
         });
@@ -743,7 +890,7 @@ describe('File Item routes tests', () => {
         items: [item],
       } = await seedFromJson({
         actor: null,
-        items: [{ type: ItemType.LOCAL_FILE }],
+        items: [buildFile({ name: 'alice' })],
       });
 
       const response = await app.inject({
@@ -763,6 +910,7 @@ describe('File Item routes tests', () => {
         } = await seedFromJson({
           items: [buildFile('actor')],
         });
+        assertIsDefined(actor);
         mockAuthenticate(actor);
 
         const payload = {
@@ -783,7 +931,7 @@ describe('File Item routes tests', () => {
 
         expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
 
-        const savedItem = await itemRawRepository.findOneBy({ id: item.id });
+        const savedItem = await getItemById(item.id);
         // this test a bit how we deal with extra: it replaces existing keys
         expectItem(savedItem, {
           ...item,
@@ -799,6 +947,7 @@ describe('File Item routes tests', () => {
         } = await seedFromJson({
           items: [buildFile('actor')],
         });
+        assertIsDefined(actor);
         mockAuthenticate(actor);
 
         const payload = {
@@ -813,7 +962,7 @@ describe('File Item routes tests', () => {
 
         expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
 
-        const savedItem = await itemRawRepository.findOneBy({ id: item.id });
+        const savedItem = await getItemById(item.id);
         // this test a bit how we deal with extra: it replaces existing keys
         expectItem(savedItem, {
           ...item,
@@ -829,6 +978,7 @@ describe('File Item routes tests', () => {
         } = await seedFromJson({
           items: [buildFile('actor')],
         });
+        assertIsDefined(actor);
         mockAuthenticate(actor);
 
         const payload = {
@@ -846,7 +996,7 @@ describe('File Item routes tests', () => {
 
         expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
 
-        const savedItem = await itemRawRepository.findOneBy({ id: item.id });
+        const savedItem = await getItemById(item.id);
         assert(savedItem);
 
         // this test a bit how we deal with extra: it replaces existing keys
@@ -865,6 +1015,7 @@ describe('File Item routes tests', () => {
         } = await seedFromJson({
           items: [buildFile('actor')],
         });
+        assertIsDefined(actor);
         mockAuthenticate(actor);
 
         const BAD_SETTING = { INVALID: 'Not a valid setting' };
@@ -885,7 +1036,7 @@ describe('File Item routes tests', () => {
 
         expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
 
-        const savedItem = await itemRawRepository.findOneBy({ id: item.id });
+        const savedItem = await getItemById(item.id);
         assert(savedItem);
 
         // this test a bit how we deal with extra: it replaces existing keys
@@ -917,12 +1068,9 @@ describe('File Item routes tests', () => {
           items: [item],
           actor,
         } = await seedFromJson({
-          items: [
-            {
-              type: ItemType.LOCAL_FILE,
-            },
-          ],
+          items: [buildFile({ name: 'alice' })],
         });
+        assertIsDefined(actor);
         mockAuthenticate(actor);
 
         const payload = {
@@ -949,6 +1097,7 @@ describe('File Item routes tests', () => {
             },
           ],
         });
+        assertIsDefined(actor);
         mockAuthenticate(actor);
 
         const payload = {

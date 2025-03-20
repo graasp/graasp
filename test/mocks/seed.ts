@@ -3,6 +3,7 @@ import { v4 } from 'uuid';
 
 import {
   AppDataVisibility,
+  FileItemProperties,
   ItemLoginSchemaStatus,
   ItemLoginSchemaType,
   ItemType,
@@ -859,7 +860,7 @@ export async function seedFromJson(data: DataType = {}) {
  * @param member creator of the file
  * @returns file item structure
  */
-export function buildFile(member: ReferencedSeedActor) {
+export function buildFile(member: ReferencedSeedActor, extra: Partial<FileItemProperties> = {}) {
   return {
     type: ItemType.S3_FILE,
     extra: {
@@ -869,6 +870,7 @@ export function buildFile(member: ReferencedSeedActor) {
         mimetype: 'image/png',
         name: faker.system.fileName(),
         path: faker.system.filePath(),
+        ...extra,
       },
     },
     creator: member,

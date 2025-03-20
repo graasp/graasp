@@ -175,7 +175,6 @@ export abstract class HtmlService {
   ): Promise<Item> {
     // check member storage limit
     await this.storageService.checkRemainingStorage(db, actor);
-
     const contentId = v4();
     const tmpDir = await dir({ tmpdir: this.tempDir, unsafeCleanup: true });
     const targetFolder = path.join(tmpDir.path, contentId);
@@ -214,6 +213,7 @@ export abstract class HtmlService {
         // delete storage folder of this html package if upload or creation fails
         await this.fileService.deleteFolder(remoteRootPath);
         // rethrow above
+        log?.error(error);
         throw error;
       }
       // end of try-catch block for remote storage cleanup

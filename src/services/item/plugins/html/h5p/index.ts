@@ -8,7 +8,8 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../di/utils';
-import { db } from '../../../../../drizzle/db';
+import { DBConnection, db } from '../../../../../drizzle/db';
+import { MaybeUser } from '../../../../../types';
 import { asDefined } from '../../../../../utils/assertions';
 import { isAuthenticated, matchOne } from '../../../../auth/plugins/passport';
 import { assertIsMember, isMember } from '../../../../authentication';
@@ -148,7 +149,7 @@ const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
   /**
    * Copy H5P assets on item copy
    */
-  itemService.hooks.setPostHook('copy', async (actor, db, { original: item, copy }) => {
+  async function copyH5PAssets(actor: MaybeUser, db: DBConnection, { original: item, copy }) {
     // only execute this handler for H5P item types
     if (!isItemType(item, ItemType.H5P) || !isItemType(copy, ItemType.H5P)) {
       return;
@@ -161,7 +162,8 @@ const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
       original: item,
       copy: copy,
     });
-  });
+  }
+  itemService.hooks.setPostHook('copy', copyH5PAssets);
 };
 
 export default plugin;
