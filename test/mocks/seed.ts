@@ -26,6 +26,7 @@ import {
   invitationsTable,
   itemBookmarks,
   itemGeolocationsTable,
+  itemLikes,
   itemLoginSchemas,
   itemMemberships,
   itemTags as itemTagsTable,
@@ -50,6 +51,7 @@ import {
   ItemBookmarkRaw,
   ItemGeolocationInsertDTO,
   ItemGeolocationRaw,
+  ItemLikeRaw,
   ItemLoginSchemaRaw,
   ItemMembershipRaw,
   ItemRaw,
@@ -84,6 +86,7 @@ type SeedItem<M = SeedMember> = (Partial<Omit<ItemRaw, 'creator'>> & { creator?:
   isHidden?: boolean;
   isDeleted?: boolean;
   isBookmarked?: boolean;
+  likes?: M[];
   geolocation?: Omit<ItemGeolocationInsertDTO, 'itemPath'>;
   tags?: Pick<TagRaw, 'name' | 'category'>[];
   itemLoginSchema?: Partial<ItemLoginSchemaRaw> & {
@@ -150,6 +153,7 @@ const replaceActorInItems = (createdActor?: AccountRaw, items?: DataType['items'
       member: mr.member === ACTOR_STRING ? (createdActor as any) : mr.member,
     })),
     children: replaceActorInItems(createdActor, i.children),
+    likes: i.likes?.map((m) => (m === ACTOR_STRING ? (createdActor as any) : m)),
   }));
 };
 
@@ -196,6 +200,10 @@ function replaceAccountInItems(createdAccount: AccountRaw, items?: DataType['ite
       ...mr,
       member: getNameIfExists(mr.member) === createdAccount.name ? createdAccount : mr.member,
     }));
+    const likes = i.likes?.map((m) =>
+      getNameIfExists(m) === createdAccount.name ? createdAccount : m,
+    );
+    console.log(likes);
 
     return {
       ...i,
@@ -207,6 +215,7 @@ function replaceAccountInItems(createdAccount: AccountRaw, items?: DataType['ite
       appData,
       appSettings,
       membershipRequests,
+      likes,
     };
   });
 }
@@ -368,6 +377,7 @@ const getAllAccountsFromItems = (items: SeedItem[] = []) => {
       ...creatorsFromChatMessages,
       ...membersForMembershipRequests,
       ...getAllAccountsFromItems(i.children),
+      ...(i.likes ?? []),
     ];
 
     // get creator of item
@@ -616,6 +626,7 @@ export async function seedFromJson(data: DataType = {}) {
     chatMessages: ChatMessageRaw[];
     membershipRequests: MembershipRequestRaw[];
     bookmarks: ItemBookmarkRaw[];
+    likes: ItemLikeRaw[];
   } = {
     items: [],
     actor: undefined,
@@ -636,6 +647,7 @@ export async function seedFromJson(data: DataType = {}) {
     chatMessages: [],
     membershipRequests: [],
     bookmarks: [],
+    likes: [],
   };
 
   const { items: itemsWithActor, actor, members, actorProfile } = await processActor(data);
@@ -865,6 +877,19 @@ export async function seedFromJson(data: DataType = {}) {
   }, []);
   if (recycledDataValues.length) {
     await db.insert(recycledItemDatas).values(recycledDataValues);
+  }
+
+  // save likes
+  const likeValues = processedItems.reduce((acc, i) => {
+    if (i.likes) {
+      console.log(i.likes);
+      return acc.concat(i.likes.map((m) => ({ itemId: i.id, creatorId: m.id })));
+    }
+    return acc;
+  }, []);
+  console.log(likeValues);
+  if (likeValues.length) {
+    result.likes = await db.insert(itemLikes).values(likeValues).returning();
   }
 
   // save membership requests

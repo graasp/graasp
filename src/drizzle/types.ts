@@ -288,6 +288,7 @@ export type ShortLinkWithItem = ShortLinkRaw & { item: Item };
 // --- ItemLike
 export type ItemLikeRaw = typeof itemLikes.$inferSelect;
 export type ItemLikeWithItem = ItemLikeRaw & { item: Item };
+export type ItemLikeWithItemWithCreator = ItemLikeRaw & { item: ItemWithCreator };
 export type ItemLikeWithItemAndAccount = ItemLikeWithItem & {
   creator: Account;
 };

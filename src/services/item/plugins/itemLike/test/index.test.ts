@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { eq } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 
 import { FastifyInstance } from 'fastify';
@@ -10,27 +10,28 @@ import build, {
   mockAuthenticate,
   unmockAuthenticate,
 } from '../../../../../../test/app';
-import { ItemLikeRaw, ItemLikeWithItemAndAccount } from '../../../../../drizzle/types';
+import { seedFromJson } from '../../../../../../test/mocks/seed';
+import { db } from '../../../../../drizzle/db';
+import { itemLikes } from '../../../../../drizzle/schema';
+import { ItemLikeRaw } from '../../../../../drizzle/types';
 import { MinimalMember } from '../../../../../types';
+import { assertIsDefined } from '../../../../../utils/assertions';
 import { MemberCannotAccess } from '../../../../../utils/errors';
-import { saveMember } from '../../../../member/test/fixtures/members';
-import { ItemTestUtils, expectManyPackedItems } from '../../../test/fixtures/items';
-import { setItemPublic } from '../../itemVisibility/test/fixtures';
+import { assertIsMember } from '../../../../authentication';
+import { PermissionLevel } from '../../../../itemMembership/types';
+import { ItemWrapper } from '../../../ItemWrapper';
+import { expectManyPackedItems } from '../../../test/fixtures/items';
 import { ItemLikeNotFound } from '../errors';
-import { ItemLikeRepository } from '../itemLike.repository';
-import { saveItemLikes } from './utils';
-
-const testUtils = new ItemTestUtils();
 
 export const expectItemLike = (
-  newLike: ItemLikeWithItemAndAccount,
-  correctLike: ItemLikeWithItemAndAccount,
+  newLike: ItemLikeRaw | undefined,
+  correctLike: ItemLikeRaw,
   creator?: MinimalMember,
 ) => {
-  expect(newLike.item.id).toEqual(correctLike.item.id);
+  expect(newLike?.itemId).toEqual(correctLike.itemId);
 
-  if (newLike.creator && creator) {
-    expect(newLike.creator.id).toEqual(creator.id);
+  if (newLike?.creatorId && creator) {
+    expect(newLike?.creatorId).toEqual(creator.id);
   }
 };
 
@@ -49,27 +50,29 @@ export const expectManyItemLikes = (
   });
 };
 
-const getFullItemLike = (id) => {
-  return new ItemLikeRepository().getOne(id);
+const getFullItemLike = (id: string) => {
+  return db.query.itemLikes.findFirst({ where: eq(itemLikes.id, id) });
+};
+
+const getItemLikesByItem = (itemId: string) => {
+  return db.query.itemLikes.findMany({ where: eq(itemLikes.itemId, itemId) });
 };
 
 describe('Item Like', () => {
   let app: FastifyInstance;
-  let actor;
 
   beforeAll(async () => {
-    ({ app } = await build({ member: null }));
+    ({ app } = await build());
   });
 
   afterAll(async () => {
-    await clearDatabase(app.db);
+    await clearDatabase(db);
     app.close();
   });
 
   afterEach(async () => {
     jest.clearAllMocks();
     unmockAuthenticate();
-    actor = null;
   });
 
   describe('GET /liked', () => {
@@ -83,47 +86,35 @@ describe('Item Like', () => {
     });
 
     describe('Signed In', () => {
-      beforeEach(async () => {
-        actor = await saveMember();
-        mockAuthenticate(actor);
-      });
-
       it('Get item likes of a user', async () => {
-        const { item: item1, packedItem: packedItem1 } = await testUtils.saveItemAndMembership({
-          member: actor,
+        const { actor, items } = await seedFromJson({
+          items: [{ likes: ['actor'] }, { likes: ['actor'] }],
         });
-        const { item: item2, packedItem: packedItem2 } = await testUtils.saveItemAndMembership({
-          member: actor,
-        });
-        const items = [item1, item2];
-        await saveItemLikes(items, actor);
+        assertIsDefined(actor);
+        assertIsMember(actor);
+        mockAuthenticate(actor);
 
         const res = await app.inject({
           method: HttpMethod.Get,
           url: '/items/liked',
         });
-
         expect(res.statusCode).toBe(StatusCodes.OK);
 
         // check returned items
         expectManyPackedItems(
           res.json().map(({ item }) => item),
-          [packedItem1, packedItem2],
+          items.map((i) => new ItemWrapper({ ...i, creator: null }).packed()),
           actor,
         );
       });
 
       it('Get item likes of a user without trashed items', async () => {
-        const { item: item1 } = await testUtils.saveItemAndMembership({
-          member: actor,
+        const { actor, items } = await seedFromJson({
+          items: [{ likes: ['actor'], isDeleted: true }, { likes: ['actor'] }],
         });
-        const { item: item2, packedItem: packedItem2 } = await testUtils.saveItemAndMembership({
-          member: actor,
-        });
-        const items = [item1, item2];
-        await saveItemLikes(items, actor);
-        // mimic putting an item in the trash by softRemoving it
-        await testUtils.rawItemRepository.softDelete(item1.id);
+        assertIsDefined(actor);
+        assertIsMember(actor);
+        mockAuthenticate(actor);
 
         const res = await app.inject({
           method: HttpMethod.Get,
@@ -135,7 +126,7 @@ describe('Item Like', () => {
         // check returned items
         expectManyPackedItems(
           res.json().map(({ item }) => item),
-          [packedItem2],
+          items.map((i) => new ItemWrapper({ ...i, creator: null }).packed()),
           actor,
         );
       });
@@ -144,13 +135,13 @@ describe('Item Like', () => {
 
   describe('GET /:itemId/likes', () => {
     describe('Signed Out', () => {
-      let member;
-      beforeEach(async () => {
-        member = await saveMember();
-      });
-
       it('Throws if signed out', async () => {
-        const { item } = await testUtils.saveItemAndMembership({ member });
+        const {
+          items: [item],
+        } = await seedFromJson({
+          items: [{}],
+          actor: null,
+        });
         const response = await app.inject({
           method: HttpMethod.Get,
           url: `/items/${item.id}/likes`,
@@ -161,15 +152,14 @@ describe('Item Like', () => {
     });
 
     describe('Public', () => {
-      let member;
-      beforeEach(async () => {
-        member = await saveMember();
-      });
-
       it('Get like entries for public item', async () => {
-        const { item } = await testUtils.saveItemAndMembership({ member });
-        await setItemPublic(item, member);
-        const likes = await saveItemLikes([item], member);
+        const {
+          items: [item],
+          likes,
+        } = await seedFromJson({
+          items: [{ likes: ['actor'], isPublic: true }],
+        });
+
         const res = await app.inject({
           method: HttpMethod.Get,
           url: `/items/${item.id}/likes`,
@@ -181,11 +171,16 @@ describe('Item Like', () => {
       });
 
       it('Get like entries for public item in the trash', async () => {
-        const { item } = await testUtils.saveItemAndMembership({ member });
-        await setItemPublic(item, member);
-        await saveItemLikes([item], member);
-        // mimic putting an item in the trash by softDeleting it
-        await testUtils.rawItemRepository.softDelete(item.id);
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [{ likes: ['actor'], isPublic: true, isDeleted: true }],
+        });
+        assertIsDefined(actor);
+        assertIsMember(actor);
+        mockAuthenticate(actor);
+
         const res = await app.inject({
           method: HttpMethod.Get,
           url: `/items/${item.id}/likes`,
@@ -195,16 +190,27 @@ describe('Item Like', () => {
     });
 
     describe('Signed In', () => {
-      beforeEach(async () => {
-        actor = await saveMember();
-        mockAuthenticate(actor);
-      });
-
       it('Get like entries for item', async () => {
-        const { item: item1 } = await testUtils.saveItemAndMembership({ member: actor });
-        const { item: item2 } = await testUtils.saveItemAndMembership({ member: actor });
-        const items = [item1, item2];
-        const likes = await saveItemLikes(items, actor);
+        const {
+          actor,
+          items: [item1],
+          likes: [like],
+        } = await seedFromJson({
+          items: [
+            {
+              likes: ['actor'],
+              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            },
+            {
+              likes: ['actor'],
+              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMember(actor);
+        mockAuthenticate(actor);
+
         const res = await app.inject({
           method: HttpMethod.Get,
           url: `/items/${item1.id}/likes`,
@@ -212,13 +218,19 @@ describe('Item Like', () => {
         expect(res.statusCode).toBe(StatusCodes.OK);
         // get item like from repository with item (not returned in request)
         const fullItemLike = await getFullItemLike(res.json()[0].id);
-        expectItemLike(fullItemLike!, likes.find(({ item }) => item.id === item1.id)!);
+        expectItemLike(fullItemLike, like);
       });
 
       it('Cannot get like item if does not have rights', async () => {
-        const member = await saveMember();
-        const { item } = await testUtils.saveItemAndMembership({ member });
-        await saveItemLikes([item], member);
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [{ likes: ['actor'] }],
+        });
+        assertIsDefined(actor);
+        assertIsMember(actor);
+        mockAuthenticate(actor);
 
         const res = await app.inject({
           method: HttpMethod.Get,
@@ -228,10 +240,22 @@ describe('Item Like', () => {
       });
 
       it('Get like entries for public item', async () => {
-        const member = await saveMember();
-        const { item } = await testUtils.saveItemAndMembership({ member });
-        await setItemPublic(item, member);
-        const likes = await saveItemLikes([item], member);
+        const {
+          actor,
+          items: [item],
+          likes,
+        } = await seedFromJson({
+          items: [
+            {
+              likes: ['actor'],
+              isPublic: true,
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMember(actor);
+        mockAuthenticate(actor);
+
         const res = await app.inject({
           method: HttpMethod.Get,
           url: `/items/${item.id}/likes`,
@@ -245,6 +269,11 @@ describe('Item Like', () => {
     });
 
     it('Bad request if id is invalid', async () => {
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
+      assertIsMember(actor);
+      mockAuthenticate(actor);
+
       const res = await app.inject({
         method: HttpMethod.Get,
         url: '/items/invalid-id/likes',
@@ -255,8 +284,9 @@ describe('Item Like', () => {
 
   describe('POST /:itemId/like', () => {
     it('Throws if signed out', async () => {
-      const member = await saveMember();
-      const { item } = await testUtils.saveItemAndMembership({ member });
+      const {
+        items: [item],
+      } = await seedFromJson({ actor: null, items: [{}] });
 
       const response = await app.inject({
         method: HttpMethod.Post,
@@ -267,31 +297,45 @@ describe('Item Like', () => {
     });
 
     describe('Signed In', () => {
-      beforeEach(async () => {
-        actor = await saveMember();
-        mockAuthenticate(actor);
-      });
-
       it('Create like record', async () => {
-        const { item } = await testUtils.saveItemAndMembership({ member: actor });
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            {
+              likes: [{ name: 'bob' }],
+              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMember(actor);
+        mockAuthenticate(actor);
 
         const res = await app.inject({
           method: HttpMethod.Post,
           url: `/items/${item.id}/like`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
+
         // check received item like
         // since we don't have full item, deduce from saved value
-        const itemLike = res.json();
-        const saved = await getFullItemLike(itemLike.id);
-        expect(itemLike.id).toEqual(saved!.id);
-        expect(saved!.item.id).toEqual(item.id);
-        expect(saved!.creator.id).toEqual(actor.id);
+        const savedLikes = await getItemLikesByItem(item.id);
+        expect(savedLikes).toHaveLength(2);
+        expect(savedLikes[1]!.creatorId).toEqual(actor.id);
       });
 
       it('Cannot like item if does not have rights', async () => {
-        const member = await saveMember();
-        const { item } = await testUtils.saveItemAndMembership({ member });
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [{}],
+        });
+        assertIsDefined(actor);
+        assertIsMember(actor);
+        mockAuthenticate(actor);
 
         const res = await app.inject({
           method: HttpMethod.Post,
@@ -301,6 +345,11 @@ describe('Item Like', () => {
       });
 
       it('Bad request if id is invalid', async () => {
+        const { actor } = await seedFromJson();
+        assertIsDefined(actor);
+        assertIsMember(actor);
+        mockAuthenticate(actor);
+
         const res = await app.inject({
           method: HttpMethod.Post,
           url: '/items/invalid-id/like',
@@ -312,8 +361,9 @@ describe('Item Like', () => {
 
   describe('DELETE :itemId/like', () => {
     it('Throws if signed out', async () => {
-      const member = await saveMember();
-      const { item } = await testUtils.saveItemAndMembership({ member });
+      const {
+        items: [item],
+      } = await seedFromJson({ actor: null, items: [{}] });
 
       const response = await app.inject({
         method: HttpMethod.Delete,
@@ -324,14 +374,22 @@ describe('Item Like', () => {
     });
 
     describe('Signed In', () => {
-      beforeEach(async () => {
-        actor = await saveMember();
-        mockAuthenticate(actor);
-      });
-
       it('Delete item like', async () => {
-        const { item } = await testUtils.saveItemAndMembership({ member: actor });
-        const [itemLike] = await saveItemLikes([item], actor);
+        const {
+          actor,
+          items: [item],
+          likes: [itemLike],
+        } = await seedFromJson({
+          items: [
+            {
+              likes: ['actor'],
+              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMember(actor);
+        mockAuthenticate(actor);
 
         const res = await app.inject({
           method: HttpMethod.Delete,
@@ -342,10 +400,20 @@ describe('Item Like', () => {
       });
 
       it('Cannot dislike if have no rights on item', async () => {
-        const member = await saveMember();
-
-        const { item } = await testUtils.saveItemAndMembership({ member });
-        const [itemLike] = await saveItemLikes([item], member);
+        const {
+          actor,
+          items: [item],
+          likes: [itemLike],
+        } = await seedFromJson({
+          items: [
+            {
+              likes: ['actor'],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMember(actor);
+        mockAuthenticate(actor);
 
         const res = await app.inject({
           method: HttpMethod.Delete,
@@ -359,7 +427,19 @@ describe('Item Like', () => {
       });
 
       it('Cannot delete item like if did not like', async () => {
-        const { item } = await testUtils.saveItemAndMembership({ member: actor });
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        assertIsMember(actor);
+        mockAuthenticate(actor);
 
         const res = await app.inject({
           method: HttpMethod.Delete,
@@ -369,6 +449,13 @@ describe('Item Like', () => {
       });
 
       it('Bad request if item id is invalid', async () => {
+        const { actor } = await seedFromJson({
+          items: [{}],
+        });
+        assertIsDefined(actor);
+        assertIsMember(actor);
+        mockAuthenticate(actor);
+
         const res = await app.inject({
           method: HttpMethod.Delete,
           url: '/items/invalid-id/like',

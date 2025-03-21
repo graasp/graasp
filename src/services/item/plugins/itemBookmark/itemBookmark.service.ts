@@ -34,7 +34,7 @@ export class BookmarkService {
   }
 
   async getOwn(db: DBConnection, member: MinimalMember): Promise<PackedBookmarkedItem[]> {
-    const bookmarks = await this.itemBookmarkRepository.getFavoriteForMember(db, member.id);
+    const bookmarks = await this.itemBookmarkRepository.getBookmarksForMember(db, member.id);
 
     // filter out items user might not have access to
     // and packed item

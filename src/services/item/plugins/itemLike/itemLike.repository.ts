@@ -7,6 +7,7 @@ import {
   ItemLikeRaw,
   ItemLikeWithItem,
   ItemLikeWithItemAndAccount,
+  ItemLikeWithItemWithCreator,
 } from '../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../repositories/errors';
 import { ItemLikeNotFound } from './errors';
@@ -54,15 +55,15 @@ export class ItemLikeRepository {
   async getByCreator(
     db: DBConnection,
     creatorId: CreatorId,
-  ): Promise<ItemLikeWithItemAndAccount[]> {
+  ): Promise<ItemLikeWithItemWithCreator[]> {
     if (!creatorId) {
       throw new Error('creator Id is not defined');
     }
     const result = await db.query.itemLikes.findMany({
       where: eq(itemLikes.creatorId, creatorId),
-      with: { item: true, creator: true },
+      with: { item: { with: { creator: true } } },
     });
-    return result;
+    return result as ItemLikeWithItemWithCreator[];
   }
 
   /**

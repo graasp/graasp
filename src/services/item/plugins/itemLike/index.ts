@@ -55,7 +55,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       } = request;
       const member = asDefined(user?.account);
       assertIsMember(member);
-      db.transaction(async (tx) => {
+      await db.transaction(async (tx) => {
         await itemLikeService.post(tx, member, itemId);
         // action like item
         const item = await basicItemService.get(tx, member, itemId);
