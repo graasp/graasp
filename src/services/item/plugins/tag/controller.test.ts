@@ -1,3 +1,4 @@
+import { faker } from '@faker-js/faker';
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
@@ -10,50 +11,33 @@ import build, {
   mockAuthenticate,
   unmockAuthenticate,
 } from '../../../../../test/app';
-import { Item, ItemTagRaw, TagRaw } from '../../../../drizzle/types';
-import { saveMember } from '../../../member/test/fixtures/members';
-import { ItemTestUtils } from '../../test/fixtures/items';
-
-const testUtils = new ItemTestUtils();
-const tagRawRepository = AppDataSource.getRepository(Tag);
-const itemTagRawRepository = AppDataSource.getRepository(ItemTag);
-
-const createTagsForItem = async (item: Item, tags: TagRaw[]): Promise<ItemTagRaw[]> => {
-  const itemTags: ItemTagRaw[] = [];
-  for (const t of tags) {
-    itemTags.push(await itemTagRawRepository.save({ item, tag: t }));
-  }
-  return itemTags;
-};
+import { seedFromJson } from '../../../../../test/mocks/seed';
+import { db } from '../../../../drizzle/db';
+import { assertIsDefined } from '../../../../utils/assertions';
 
 describe('Item Tag Endpoints', () => {
   let app: FastifyInstance;
-  let actor;
-  let tags: TagRaw[];
 
   beforeAll(async () => {
-    ({ app } = await build({ member: null }));
-
-    const tag1 = await tagRawRepository.save({ name: 'tag1', category: TagCategory.Discipline });
-    const tag2 = await tagRawRepository.save({ name: 'tag2', category: TagCategory.Discipline });
-    const tag3 = await tagRawRepository.save({ name: 'tag3', category: TagCategory.Level });
-
-    tags = [tag1, tag2, tag3];
+    ({ app } = await build());
   });
 
   afterAll(async () => {
-    await clearDatabase(app.db);
+    await clearDatabase(db);
     app.close();
   });
 
   afterEach(async () => {
     jest.clearAllMocks();
-    actor = null;
     unmockAuthenticate();
   });
 
   describe('GET /:itemId/tags', () => {
     it('Throw for invalid item id', async () => {
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+
       const response = await app.inject({
         method: HttpMethod.Get,
         url: `/items/invalid/tags`,
@@ -63,9 +47,17 @@ describe('Item Tag Endpoints', () => {
 
     describe('Signed out', () => {
       it('Return tags for public item', async () => {
-        const member = await saveMember();
-        const { item } = await testUtils.savePublicItem({ member });
-        await createTagsForItem(item, tags);
+        const {
+          items: [item],
+          tags,
+        } = await seedFromJson({
+          items: [
+            {
+              isPublic: true,
+              tags: [{ name: faker.word.sample(), category: TagCategory.Discipline }],
+            },
+          ],
+        });
 
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -76,9 +68,15 @@ describe('Item Tag Endpoints', () => {
       });
 
       it('Throws for private item', async () => {
-        const member = await saveMember();
-        const item = await testUtils.saveItem({ actor: member });
-        await createTagsForItem(item, tags);
+        const {
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            {
+              tags: [{ name: faker.word.sample(), category: TagCategory.Discipline }],
+            },
+          ],
+        });
 
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -90,15 +88,21 @@ describe('Item Tag Endpoints', () => {
     });
 
     describe('Signed In', () => {
-      beforeEach(async () => {
-        actor = await saveMember();
-        mockAuthenticate(actor);
-      });
-
       it('Return tags for private item', async () => {
-        const member = await saveMember();
-        const { item } = await testUtils.saveItemAndMembership({ member: actor, creator: member });
-        await createTagsForItem(item, tags);
+        const {
+          items: [item],
+          tags,
+          actor,
+        } = await seedFromJson({
+          items: [
+            {
+              isPublic: true,
+              tags: [{ name: faker.word.sample(), category: TagCategory.Discipline }],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -110,7 +114,14 @@ describe('Item Tag Endpoints', () => {
       });
 
       it('Return no tag', async () => {
-        const { item } = await testUtils.saveItemAndMembership({ member: actor });
+        const {
+          items: [item],
+          actor,
+        } = await seedFromJson({
+          items: [{ memberships: [{ account: 'actor' }] }],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -122,9 +133,14 @@ describe('Item Tag Endpoints', () => {
       });
 
       it('Throw if does not have access to item', async () => {
-        const member = await saveMember();
-        const item = await testUtils.saveItem({ actor: member });
-        await createTagsForItem(item, tags);
+        const {
+          items: [item],
+          actor,
+        } = await seedFromJson({
+          items: [{}],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -148,9 +164,9 @@ describe('Item Tag Endpoints', () => {
 
     describe('Signed out', () => {
       it('Cannot add tag', async () => {
-        const member = await saveMember();
-        const { item } = await testUtils.savePublicItem({ member });
-        await createTagsForItem(item, tags);
+        const {
+          items: [item],
+        } = await seedFromJson({ actor: null, items: [{}] });
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -162,15 +178,20 @@ describe('Item Tag Endpoints', () => {
     });
 
     describe('Signed In', () => {
-      beforeEach(async () => {
-        actor = await saveMember();
-        mockAuthenticate(actor);
-      });
-
       it('Add tag for private item', async () => {
-        const member = await saveMember();
-        const { item } = await testUtils.saveItemAndMembership({ member: actor, creator: member });
-        await createTagsForItem(item, tags);
+        const {
+          items: [item],
+          actor,
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor' }],
+              tags: [{ name: faker.word.sample(), category: TagCategory.Discipline }],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -182,7 +203,19 @@ describe('Item Tag Endpoints', () => {
       });
 
       it('Cannot add tag with wrong category', async () => {
-        const { item } = await testUtils.saveItemAndMembership({ member: actor });
+        const {
+          items: [item],
+          actor,
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor' }],
+              tags: [{ name: faker.word.sample(), category: TagCategory.Discipline }],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -194,9 +227,18 @@ describe('Item Tag Endpoints', () => {
       });
 
       it('Throw if does not have access to item', async () => {
-        const member = await saveMember();
-        const item = await testUtils.saveItem({ actor: member });
-        await createTagsForItem(item, tags);
+        const {
+          items: [item],
+          actor,
+        } = await seedFromJson({
+          items: [
+            {
+              tags: [{ name: faker.word.sample(), category: TagCategory.Discipline }],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -227,7 +269,7 @@ describe('Item Tag Endpoints', () => {
     });
 
     describe('Signed out', () => {
-      it('Cannot delete tag', async () => {
+      it('Throw if signed out', async () => {
         const response = await app.inject({
           method: HttpMethod.Delete,
           url: `/items/${v4()}/tags/${v4()}`,
@@ -237,34 +279,49 @@ describe('Item Tag Endpoints', () => {
     });
 
     describe('Signed In', () => {
-      beforeEach(async () => {
-        actor = await saveMember();
-        mockAuthenticate(actor);
-      });
-
       it('Delete tag for private item', async () => {
-        const member = await saveMember();
-        const { item } = await testUtils.saveItemAndMembership({ member: actor, creator: member });
-        const itemTags = await createTagsForItem(item, tags);
+        const {
+          items: [item],
+          actor,
+          tags: [tag],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor' }],
+              tags: [{ name: faker.word.sample(), category: TagCategory.Discipline }],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: `/items/${item.id}/tags/${itemTags[0].tagId}`,
+          url: `/items/${item.id}/tags/${tag.id}`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
       });
 
       it('Cannot delete tag for item with write access', async () => {
-        const member = await saveMember();
-        const { item } = await testUtils.saveItemAndMembership({
-          member: actor,
-          creator: member,
-          permission: PermissionLevel.Write,
+        const {
+          items: [item],
+          actor,
+          tags: [tag],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+              tags: [{ name: faker.word.sample(), category: TagCategory.Discipline }],
+            },
+          ],
         });
-        const itemTags = await createTagsForItem(item, tags);
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: `/items/${item.id}/tags/${itemTags[0].tagId}`,
+          url: `/items/${item.id}/tags/${tag.id}`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
