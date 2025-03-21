@@ -1,3 +1,5 @@
+import { StatusCodes } from 'http-status-codes';
+
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../di/utils';
@@ -24,11 +26,12 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       schema: create,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole, guestAccountRole)],
     },
-    async ({ user, params: { itemId }, body: { type } }) => {
+    async ({ user, params: { itemId }, body: { type } }, reply) => {
       const account = asDefined(user?.account);
       await db.transaction(async (tx) => {
         await itemFlagService.post(tx, account, itemId, type);
       });
+      reply.status(StatusCodes.NO_CONTENT);
     },
   );
 };

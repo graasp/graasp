@@ -31,7 +31,7 @@ export class ItemFlagService {
     // only register member can report
     await this.basicItemService.get(db, actor, itemId);
 
-    return this.itemFlagRepository.addOne(db, {
+    await this.itemFlagRepository.addOne(db, {
       flagType,
       creatorId: actor.id,
       itemId,

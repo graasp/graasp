@@ -38,13 +38,7 @@ const create = {
     type: Type.Enum(FlagType),
   }),
   response: {
-    [StatusCodes.CREATED]: customType.StrictObject({
-      id: customType.UUID(),
-      type: customType.EnumString(Object.values(FlagType)),
-      createdAt: customType.DateTime(),
-      itemId: customType.Nullable(customType.UUID()),
-      creatorId: customType.Nullable(customType.UUID()),
-    }),
+    [StatusCodes.NO_CONTENT]: Type.Null(),
     '4xx': errorSchemaRef,
   },
 };
