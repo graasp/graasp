@@ -10,7 +10,7 @@ import {
   ITEMS_ROUTE_PREFIX,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
 } from '../../utils/config';
-import graaspChatbox from '../chat';
+import chatController from '../chat/chat.controller';
 import graaspItemLogin from '../itemLogin';
 import itemController from './item.controller';
 import actionItemPlugin from './plugins/action';
@@ -118,7 +118,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         fastify.register(graaspItemLikes);
 
-        fastify.register(fp(graaspChatbox));
+        fastify.register(fp(chatController));
 
         fastify.register(actionItemPlugin);
 

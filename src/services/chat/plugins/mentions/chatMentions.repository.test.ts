@@ -8,8 +8,11 @@ import { client, db } from '../../../../drizzle/db';
 import { chatMentionsTable } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { ChatMentionNotFound, NoChatMentionForMember } from '../../errors';
-import { expectChatMentions, expectRawChatMentions } from '../../test/chatMentions.expectations';
-import { ChatMentionRepository } from './repository';
+import {
+  expectFullChatMentions,
+  expectRawChatMentions,
+} from '../../test/chatMentions.expectations';
+import { ChatMentionRepository } from './chatMentions.repository';
 
 const repository = new ChatMentionRepository();
 
@@ -64,7 +67,7 @@ describe('ChatMentionRepository', () => {
 
       const result = await repository.getForAccount(db, actor.id);
       expect(result).toHaveLength(2);
-      expectChatMentions(result, mentions);
+      expectFullChatMentions(result, mentions);
     });
 
     it('returns empty if no value', async () => {

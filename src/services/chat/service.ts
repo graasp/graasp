@@ -3,11 +3,9 @@ import { singleton } from 'tsyringe';
 import { PermissionLevel } from '@graasp/sdk';
 
 import { DBConnection } from '../../drizzle/db';
-import { ChatMessageRaw } from '../../drizzle/types';
 import { AuthenticatedUser, MaybeUser } from '../../types';
 import HookManager from '../../utils/hook';
 import { BasicItemService } from '../item/basic.service';
-import { ItemService } from '../item/service';
 import { ChatMessageNotFound, MemberCannotDeleteMessage, MemberCannotEditMessage } from './errors';
 import { MentionService } from './plugins/mentions/service';
 import { ChatMessageRepository } from './repository';
@@ -56,11 +54,12 @@ export class ChatMessageService {
       await this.mentionService.createManyForItem(db, actor, message, data.mentions);
     }
 
+    const messageWithCreator = { ...message, creator: actor };
     await this.hooks.runPostHooks('publish', actor, db, {
-      message: message,
+      message: messageWithCreator,
     });
 
-    return message;
+    return messageWithCreator;
   }
 
   async patchOne(
@@ -88,12 +87,13 @@ export class ChatMessageService {
       itemId,
       ...message,
     });
-
+    // assumes update can only be done by the author of the message
+    const updatedMessageWithCreator = { ...updatedMessage, creator: authenticatedUser };
     await this.hooks.runPostHooks('update', authenticatedUser, db, {
-      message: updatedMessage,
+      message: updatedMessageWithCreator,
     });
 
-    return updatedMessage;
+    return updatedMessageWithCreator;
   }
 
   async deleteOne(

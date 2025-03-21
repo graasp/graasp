@@ -1,3 +1,4 @@
+import { eq, inArray } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
@@ -5,36 +6,59 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, MentionStatus } from '@graasp/sdk';
 
-import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
-import { ChatMentionRaw } from '../../../drizzle/types';
-import { MaybeUser, MinimalMember } from '../../../types';
-import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
-import { saveMember } from '../../member/test/fixtures/members';
-import { ChatMentionNotFound, MemberCannotAccessMention } from '../errors';
-import { expectChatMentions } from './chatMentions.expectations';
-import { saveItemWithChatMessages } from './chatMessage.test';
+import build, {
+  clearDatabase,
+  mockAuthenticate,
+  unmockAuthenticate,
+} from '../../../../../test/app';
+import { seedFromJson } from '../../../../../test/mocks/seed';
+import { db } from '../../../../drizzle/db';
+import { chatMentionsTable } from '../../../../drizzle/schema';
+import { AccountRaw, ChatMentionRaw, ChatMessageRaw } from '../../../../drizzle/types';
+import { MinimalMember } from '../../../../types';
+import { assertIsDefined } from '../../../../utils/assertions';
+import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
+import { saveMember } from '../../../member/test/fixtures/members';
+import { ChatMentionNotFound, MemberCannotAccessMention } from '../../errors';
+import { expectFullChatMentions } from '../../test/chatMentions.expectations';
 
 // create item, chat messages from another member and members
 // as well as mentions of actor
-const saveItemWithChatMessagesAndMentions = async (actor: MaybeUser) => {
-  const otherActor = await saveMember();
-  const { item, chatMessages, members } = await saveItemWithChatMessages(otherActor);
-  const chatMentions: ChatMentionRaw[] = [];
-  for (const c of chatMessages) {
-    chatMentions.push(await adminRepository.save({ account: actor, message: c }));
-  }
-  return { item, chatMessages, members, chatMentions };
+const saveItemWithChatMessagesAndMentions = async () => {
+  const {
+    actor,
+    items: [item],
+    chatMessages,
+    members,
+  } = await seedFromJson({
+    items: [
+      {
+        chatMessages: [
+          { creator: { name: 'one' } },
+          { creator: { name: 'two' } },
+          { creator: { name: 'three' } },
+        ],
+      },
+    ],
+  });
+  assertIsDefined(actor);
+  const chatMentions = await db
+    .insert(chatMentionsTable)
+    .values(chatMessages.map((m) => ({ messageId: m.id, accountId: actor.id })))
+    .returning();
+
+  return { item, chatMessages, members, chatMentions, actor };
 };
 
 describe('Chat Mention tests', () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
-    ({ app } = await build({ member: null }));
+    ({ app } = await build());
   });
 
   afterAll(async () => {
-    await clearDatabase(app.db);
+    await clearDatabase(db);
     app.close();
   });
 
@@ -57,17 +81,17 @@ describe('Chat Mention tests', () => {
 
     describe('Signed In', () => {
       it('Get successfully', async () => {
-        const actor = await saveMember();
+        const { chatMentions, actor } = await saveItemWithChatMessagesAndMentions();
         mockAuthenticate(actor);
-        const { chatMentions } = await saveItemWithChatMessagesAndMentions(actor);
         const response = await app.inject({
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/mentions`,
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
 
+        const result = await response.json();
         // check response value
-        expectChatMentions(response.json(), chatMentions);
+        expectFullChatMentions(result, chatMentions);
       });
     });
   });
@@ -86,14 +110,14 @@ describe('Chat Mention tests', () => {
     });
 
     describe('Signed In', () => {
-      let chatMessages: ChatMessage[];
-      let chatMentions: ChatMention[];
+      let chatMessages: ChatMessageRaw[];
+      let chatMentions: ChatMentionRaw[];
+      let actor: AccountRaw;
       const payload = { status: MentionStatus.Read };
 
       beforeEach(async () => {
-        const actor = await saveMember();
+        ({ chatMessages, chatMentions, actor } = await saveItemWithChatMessagesAndMentions());
         mockAuthenticate(actor);
-        ({ chatMessages, chatMentions } = await saveItemWithChatMessagesAndMentions(actor));
       });
 
       it('Patch successfully', async () => {
@@ -125,19 +149,27 @@ describe('Chat Mention tests', () => {
       });
 
       it('Throws if chat mention does not exist', async () => {
+        const id = v4();
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `${ITEMS_ROUTE_PREFIX}/mentions/${v4()}`,
+          url: `${ITEMS_ROUTE_PREFIX}/mentions/${id}`,
           payload,
         });
 
-        expect(response.json()).toMatchObject(new ChatMentionNotFound(expect.anything()));
+        expect(response.json()).toMatchObject({
+          code: 'GICERR006',
+          message: `Chat mention not found ${id}`,
+          statusCode: StatusCodes.NOT_FOUND,
+        });
       });
 
       it('Throws if member does not have access to mention', async () => {
         // create brand new user because fixtures are used for chatmessages and will already exists
         const member = await saveMember();
-        const mention = await adminRepository.save({ account: member, message: chatMessages[0] });
+        const [mention] = await db
+          .insert(chatMentionsTable)
+          .values({ accountId: member.id, messageId: chatMessages[0].id })
+          .returning();
 
         const response = await app.inject({
           method: HttpMethod.Patch,
@@ -162,14 +194,14 @@ describe('Chat Mention tests', () => {
 
     describe('Signed In', () => {
       let chatMentions: ChatMentionRaw[];
-      let chatMessages: ChatMentionRaw[];
+      let chatMessages: ChatMessageRaw[];
       let members: MinimalMember[];
+      let actor: AccountRaw;
 
       beforeEach(async () => {
-        const actor = await saveMember();
+        ({ chatMessages, chatMentions, members, actor } =
+          await saveItemWithChatMessagesAndMentions());
         mockAuthenticate(actor);
-        ({ chatMessages, chatMentions, members } =
-          await saveItemWithChatMessagesAndMentions(actor));
       });
 
       it('Delete successfully', async () => {
@@ -178,12 +210,23 @@ describe('Chat Mention tests', () => {
           url: `${ITEMS_ROUTE_PREFIX}/mentions/${chatMentions[0].id}`,
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
-        expect(response.json().id).toEqual(chatMentions[0].id);
+        const result = await response.json();
+        expect(result.id).toEqual(chatMentions[0].id);
 
-        expect(await adminRepository.countBy({ id: In(chatMentions.map(({ id }) => id)) })).toEqual(
-          chatMentions.length - 1,
-        );
-        expect(await adminRepository.findOneBy({ id: chatMentions[0].id })).toBeNull();
+        expect(
+          await db.$count(
+            chatMentionsTable,
+            inArray(
+              chatMentionsTable.id,
+              chatMentions.map(({ id }) => id),
+            ),
+          ),
+        ).toEqual(chatMentions.length - 1);
+        expect(
+          await db.query.chatMentionsTable.findFirst({
+            where: eq(chatMentionsTable.id, chatMentions[0].id),
+          }),
+        ).toBeUndefined();
       });
 
       it('Throws if chat mention id is incorrect', async () => {
@@ -195,19 +238,27 @@ describe('Chat Mention tests', () => {
       });
 
       it('Throws if chat mention does not exist', async () => {
+        const id = v4();
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: `${ITEMS_ROUTE_PREFIX}/mentions/${v4()}`,
+          url: `${ITEMS_ROUTE_PREFIX}/mentions/${id}`,
         });
-
-        expect(response.json()).toMatchObject(new ChatMentionNotFound(expect.anything()));
+        const result = await response.json();
+        expect(result).toMatchObject({
+          code: 'GICERR006',
+          message: `Chat mention not found ${id}`,
+          statusCode: 404,
+        });
       });
 
       it('Throws if member does not have access to chat message', async () => {
-        const mention = await adminRepository.save({
-          message: chatMessages[0],
-          account: members[0],
-        });
+        const [mention] = await db
+          .insert(chatMentionsTable)
+          .values({
+            messageId: chatMessages[0].id,
+            accountId: members[0].id,
+          })
+          .returning();
 
         const response = await app.inject({
           method: HttpMethod.Delete,
@@ -231,39 +282,36 @@ describe('Chat Mention tests', () => {
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
     });
 
-    describe('Signed In', () => {
-      let chatMentions: ChatMentionRaw[];
-      let chatMessages: ChatMessageRaw[];
-      let members: MinimalMember[];
+    it('Delete all successfully when signed in', async () => {
+      const { chatMessages, members, actor } = await saveItemWithChatMessagesAndMentions();
+      mockAuthenticate(actor);
 
-      beforeEach(async () => {
-        const actor = await saveMember();
-        mockAuthenticate(actor);
-        ({ chatMessages, members, chatMentions } =
-          await saveItemWithChatMessagesAndMentions(actor));
+      // more messages
+      const message = chatMessages[0];
+
+      const otherMentions = await db
+        .insert(chatMentionsTable)
+        .values(members.slice(0, 3).map((mem) => ({ accountId: mem.id, messageId: message.id })))
+        .returning();
+
+      const response = await app.inject({
+        method: HttpMethod.Delete,
+        url: `${ITEMS_ROUTE_PREFIX}/mentions`,
       });
+      expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
 
-      it('Delete all successfully', async () => {
-        // more messages
-        const otherMessages: ChatMentionRaw[] = [];
-        const message = chatMessages[0];
-        otherMessages.push(await adminRepository.save({ message, account: members[0] }));
-        otherMessages.push(await adminRepository.save({ message, account: members[1] }));
-        otherMessages.push(await adminRepository.save({ message, account: members[2] }));
-
-        const response = await app.inject({
-          method: HttpMethod.Delete,
-          url: `${ITEMS_ROUTE_PREFIX}/mentions`,
-        });
-        expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
-
-        expect(await adminRepository.countBy({ id: In(chatMentions.map(({ id }) => id)) })).toEqual(
-          0,
-        );
-        expect(
-          await adminRepository.countBy({ id: In(otherMessages.map(({ id }) => id)) }),
-        ).toEqual(otherMessages.length);
-      });
+      expect(await db.$count(chatMentionsTable, eq(chatMentionsTable.accountId, actor.id))).toEqual(
+        0,
+      );
+      expect(
+        await db.$count(
+          chatMentionsTable,
+          inArray(
+            chatMentionsTable.messageId,
+            otherMentions.map((oM) => oM.messageId),
+          ),
+        ),
+      ).toEqual(otherMentions.length);
     });
   });
 });

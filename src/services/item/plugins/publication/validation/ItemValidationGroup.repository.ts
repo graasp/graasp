@@ -77,9 +77,10 @@ export class ItemValidationGroupRepository {
    * @param {string} itemId id of the item being validated
    */
   async post(db: DBConnection, itemId: string): Promise<{ id: ItemValidationGroupRaw['id'] }> {
-    return await db
+    const res = await db
       .insert(itemValidationGroups)
       .values({ itemId })
-      .returning({ id: itemValidationGroups.id })[0];
+      .returning({ id: itemValidationGroups.id });
+    return res[0];
   }
 }

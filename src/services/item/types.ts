@@ -1,4 +1,4 @@
-import { ItemType, PermissionLevel, UnionOfConst } from '@graasp/sdk';
+import { ItemType, PermissionLevel, PermissionLevelOptions, UnionOfConst } from '@graasp/sdk';
 
 import { Account } from '../../drizzle/types';
 
@@ -33,7 +33,7 @@ export type ItemSearchParams = {
   keywords?: string[];
   sortBy?: SortBy;
   ordering?: Ordering;
-  permissions?: PermissionLevel[];
+  permissions?: PermissionLevelOptions[];
   types?: UnionOfConst<typeof ItemType>[];
 };
 

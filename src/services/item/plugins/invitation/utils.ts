@@ -3,7 +3,7 @@ import { parse } from 'papaparse';
 
 import { MultipartFile } from '@fastify/multipart';
 
-import { PermissionLevel } from '@graasp/sdk';
+import { PermissionLevelOptions } from '@graasp/sdk';
 
 import { CSV_MIMETYPE, EMAIL_COLUMN_NAME } from './constants';
 
@@ -11,7 +11,7 @@ export type CSVInvite = {
   email: string;
   name?: string;
   group_name?: string;
-  permission?: `${PermissionLevel}`;
+  permission?: PermissionLevelOptions;
 };
 
 export const parseCSV = (stream: Readable): Promise<{ rows: CSVInvite[]; header: string[] }> => {

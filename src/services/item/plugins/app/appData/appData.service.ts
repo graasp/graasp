@@ -5,6 +5,7 @@ import {
   FileItemType,
   PermissionLevel,
   PermissionLevelCompare,
+  PermissionLevelOptions,
   UUID,
 } from '@graasp/sdk';
 
@@ -33,8 +34,8 @@ const ownAppDataAbility = (appData: AppDataRaw, actor: MaybeUser) => {
 
 const itemVisibilityAppDataAbility = (
   appData: AppDataRaw,
-  permission: `${PermissionLevel}`,
-  memberPermission?: `${PermissionLevel}`,
+  permission: PermissionLevelOptions,
+  memberPermission?: PermissionLevelOptions,
 ) => {
   if (appData.visibility === AppDataVisibility.Item) {
     // can always read an app data with visibility item
@@ -268,7 +269,7 @@ export class AppDataService {
     db: DBConnection,
     actor: MaybeUser,
     appData: AppDataRaw,
-    permission: PermissionLevel,
+    permission: PermissionLevelOptions,
     inheritedMembership?: ItemMembershipRaw | null,
   ) {
     const isValid =

@@ -205,7 +205,7 @@ export type ChatMentionRaw = typeof chatMentionsTable.$inferSelect;
 export type ChatMentionWithMessage = ChatMentionRaw & {
   message: ChatMessageRaw;
 };
-export type ChatMentionWithMessageAndCreator = Omit<ChatMentionRaw, 'accountId' | 'messageId'> & {
+export type ChatMentionWithMessageAndCreator = ChatMentionRaw & {
   account: MinimalAccount;
   message: ChatMessageRaw;
 };

@@ -1,7 +1,13 @@
 import { Readable } from 'node:stream';
 import { singleton } from 'tsyringe';
 
-import { ItemGeolocation, ItemType, PermissionLevel, UUID } from '@graasp/sdk';
+import {
+  ItemGeolocation,
+  ItemType,
+  PermissionLevel,
+  PermissionLevelOptions,
+  UUID,
+} from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
 import { Item } from '../../../../drizzle/types';
@@ -58,7 +64,7 @@ export class FolderItemService extends ItemService {
     db: DBConnection,
     member: MaybeUser,
     itemId: Item['id'],
-    permission?: PermissionLevel,
+    permission?: PermissionLevelOptions,
   ): Promise<FolderItem> {
     const item = await this.basicItemService.get(db, member, itemId, permission);
     if (!isItemType(item, ItemType.FOLDER)) {

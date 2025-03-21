@@ -15,6 +15,7 @@ import { singleton } from 'tsyringe';
 import {
   PermissionLevel,
   PermissionLevelCompare,
+  PermissionLevelOptions,
   ResultOf,
   UUID,
   getChildFromPath,
@@ -57,9 +58,9 @@ type CreateItemMembershipBody = {
   itemPath: ItemPath;
   accountId: AccountId;
   creatorId?: CreatorId;
-  permission: `${PermissionLevel}`;
+  permission: PermissionLevelOptions;
 };
-type UpdateItemMembershipBody = { permission: `${PermissionLevel}` };
+type UpdateItemMembershipBody = { permission: PermissionLevelOptions };
 type KeyCompositionItemMembership = {
   itemPath: ItemPath;
   accountId: AccountId;
@@ -71,11 +72,11 @@ type ResultMoveHousekeeping = {
 type DetachedMoveHousekeepingType = {
   accountId: string;
   itemPath: string;
-  permission: PermissionLevel;
+  permission: PermissionLevelOptions;
 };
 type MoveHousekeepingType = DetachedMoveHousekeepingType & {
   action: number;
-  inherited: PermissionLevel;
+  inherited: PermissionLevelOptions;
   action2IgnoreInherited: boolean;
 };
 
@@ -845,7 +846,7 @@ export class ItemMembershipRepository {
       .select({
         accountId: itemMembershipTable.accountId,
         itemPath: sql<Item['path']>`'max(item_path::text)::ltree'`,
-        permission: sql<PermissionLevel>`max(permission)`,
+        permission: sql<PermissionLevelOptions>`max(permission)`,
       })
       .from(itemMembershipTable)
       .where(isAncestorOrSelf(itemMembershipTable.itemPath, item.path))

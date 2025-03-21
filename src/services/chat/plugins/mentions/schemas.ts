@@ -20,7 +20,7 @@ export const minimalChatMentionSchemaRef = registerSchemaAsRef(
   customType.StrictObject(
     {
       id: customType.UUID(),
-      account: accountSchemaRef,
+      accountId: customType.UUID(),
       createdAt: customType.DateTime(),
       updatedAt: customType.DateTime(),
       status: customType.EnumString(Object.values(MentionStatus)),
@@ -39,6 +39,9 @@ export const completeChatMentionSchemaRef = registerSchemaAsRef(
       minimalChatMentionSchemaRef,
       customType.StrictObject({
         message: rawChatMessageSchemaRef,
+      }),
+      customType.StrictObject({
+        account: accountSchemaRef,
       }),
     ],
     {

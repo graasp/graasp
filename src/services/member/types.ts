@@ -1,15 +1,8 @@
-import { and, eq, inArray } from 'drizzle-orm/sql';
-import { singleton } from 'tsyringe';
-
-import { AccountType, CompleteMember, ResultOf, UUID } from '@graasp/sdk';
+import { AccountType, CompleteMember } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import { DBConnection } from '../../drizzle/db';
-import { accountsTable, membersView } from '../../drizzle/schema';
-import { AccountInsertDTO, MemberCreationDTO } from '../../drizzle/types';
+import { membersView } from '../../drizzle/schema';
 import { MaybeUser, MemberInfo, MinimalMember } from '../../types';
-import { MemberNotFound } from '../../utils/errors';
-import { mapById } from '../utils';
 
 export type Member = {
   id: string;

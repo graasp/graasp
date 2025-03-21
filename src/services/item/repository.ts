@@ -625,7 +625,8 @@ export class ItemRepository {
     if (Object.values(newData).filter(Boolean).length === 0) {
       throw new NothingToUpdateItem();
     }
-    return (await db.update(itemsRaw).set(newData).where(eq(itemsRaw.id, id)).returning())[0];
+    const res = await db.update(itemsRaw).set(newData).where(eq(itemsRaw.id, id)).returning();
+    return res[0];
   }
 
   public async addOne(db: DBConnection, { item, creator, parentItem }: CreateItemBody) {

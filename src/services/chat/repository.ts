@@ -6,6 +6,7 @@ import { chatMessagesTable } from '../../drizzle/schema';
 import {
   ChatMessageInsertDTO,
   ChatMessageRaw,
+  ChatMessageWithCreator,
   ChatMessageWithCreatorAndItem,
 } from '../../drizzle/types';
 import { DeleteException } from '../../repositories/errors';
@@ -18,7 +19,7 @@ export class ChatMessageRepository {
    * Retrieves all the messages related to the given item
    * @param itemId Id of item to retrieve messages for
    */
-  async getByItem(db: DBConnection, itemId: string): Promise<ChatMessageWithCreatorAndItem[]> {
+  async getByItem(db: DBConnection, itemId: string): Promise<ChatMessageWithCreator[]> {
     throwsIfParamIsInvalid('itemId', itemId);
 
     return await db.query.chatMessagesTable.findMany({
@@ -46,11 +47,12 @@ export class ChatMessageRepository {
    * Retrieves a message by its id
    * @param id Id of the message to retrieve
    */
-  async getOne(db: DBConnection, id: string): Promise<ChatMessageWithCreatorAndItem | undefined> {
-    return await db.query.chatMessagesTable.findFirst({
+  async getOne(db: DBConnection, id: string): Promise<ChatMessageWithCreator | undefined> {
+    const res = await db.query.chatMessagesTable.findFirst({
       where: eq(chatMessagesTable.id, id),
-      with: { item: true, creator: true },
+      with: { creator: true },
     });
+    return res;
   }
 
   /**
@@ -65,7 +67,8 @@ export class ChatMessageRepository {
       body: string;
     },
   ): Promise<ChatMessageRaw> {
-    return await db.insert(chatMessagesTable).values(message).returning()[0];
+    const res = await db.insert(chatMessagesTable).values(message).returning();
+    return res[0];
   }
 
   /**
@@ -78,11 +81,12 @@ export class ChatMessageRepository {
     id: string,
     data: ChatMessageInsertDTO,
   ): Promise<ChatMessageRaw> {
-    return await db
+    const res = await db
       .update(chatMessagesTable)
       .set(data)
       .where(eq(chatMessagesTable.id, id))
-      .returning()[0];
+      .returning();
+    return res[0];
   }
 
   async deleteOne(db: DBConnection, id: string): Promise<void> {
