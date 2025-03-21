@@ -5,23 +5,17 @@ import { FastifyInstance } from 'fastify';
 
 import { FolderItemFactory, HttpMethod } from '@graasp/sdk';
 
-import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
-import { resolveDependency } from '../../../di/utils';
-import { ChatMessageRaw } from '../../../drizzle/types';
-import { MailerService } from '../../../plugins/mailer/mailer.service';
-import { MinimalMember } from '../../../types';
-import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
-import { ItemNotFound, MemberCannotAccess } from '../../../utils/errors';
-import { setItemPublic } from '../../item/plugins/itemVisibility/test/fixtures';
-import { ItemTestUtils } from '../../item/test/fixtures/items';
-import { saveMember } from '../../member/test/fixtures/members';
-import { ChatMessageNotFound, MemberCannotDeleteMessage, MemberCannotEditMessage } from '../errors';
-import { ChatMessageRepository } from '../repository';
-
-const testUtils = new ItemTestUtils();
-const memberRawRepository = AppDataSource.getRepository(Member);
-const adminChatMentionRepository = AppDataSource.getRepository(ChatMention);
-const rawChatMessageRepository = AppDataSource.getRepository(ChatMessage);
+import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../test/app';
+import { resolveDependency } from '../../di/utils';
+import { ChatMessageRaw } from '../../drizzle/types';
+import { MailerService } from '../../plugins/mailer/mailer.service';
+import { MinimalMember } from '../../types';
+import { ITEMS_ROUTE_PREFIX } from '../../utils/config';
+import { ItemNotFound, MemberCannotAccess } from '../../utils/errors';
+import { setItemPublic } from '../item/plugins/itemVisibility/test/fixtures';
+import { saveMember } from '../member/test/fixtures/members';
+import { ChatMessageNotFound, MemberCannotDeleteMessage, MemberCannotEditMessage } from './errors';
+import { ChatMessageRepository } from './repository';
 
 export const saveItemWithChatMessages = async (creator: MinimalMember) => {
   const { item } = await testUtils.saveItemAndMembership({ member: creator });

@@ -6,7 +6,7 @@ import build, { clearDatabase } from '../../../../../test/app';
 import { ChatMentionRaw, ChatMessageRaw } from '../../../../drizzle/types';
 import { ActionRepository } from '../../../action/action.repository';
 import { saveActions } from '../../../action/test/fixtures/actions';
-import { ChatMentionRepository } from '../../../chat/plugins/mentions/repository';
+import { ChatMentionRepository } from '../../../chat/plugins/mentions/chatMentions.repository';
 import { ChatMessageRepository } from '../../../chat/repository';
 import { saveChatMessages } from '../../../chat/test/fixtures';
 import { saveAppActions } from '../../../item/plugins/app/appAction/test/fixtures';

@@ -9,7 +9,6 @@ import { MemberCreationDTO, MemberRaw } from '../../drizzle/types';
 import { TRANSLATIONS } from '../../langs/constants';
 import { BaseLogger } from '../../logger';
 import { MailBuilder } from '../../plugins/mailer/builder';
-import { type MailerService } from '../../plugins/mailer/mailer.service';
 import { type MemberInfo } from '../../types';
 import {
   EMAIL_CHANGE_JWT_EXPIRATION_IN_MINUTES,

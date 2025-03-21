@@ -19,7 +19,7 @@ import { guestAccountRole } from '../itemLogin/strategies/guestAccountRole';
 import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
 import { ChatMessageNotFound } from './errors';
 import { ActionChatService } from './plugins/action/service';
-import mentionPlugin from './plugins/mentions';
+import mentionPlugin from './plugins/mentions/chatMentions.controller';
 import { clearChat, createChatMessage, deleteMessage, getChat, patchMessage } from './schemas';
 import { ChatMessageService } from './service';
 import { registerChatWsHooks } from './ws/hooks';

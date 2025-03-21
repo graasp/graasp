@@ -12,7 +12,7 @@ import { AuthorizationService } from '../../../authorization';
 import { ItemRepository } from '../../../item/repository';
 import { MemberRepository } from '../../../member/member.repository';
 import { MemberCannotAccessMention } from '../../errors';
-import { ChatMentionRepository } from './repository';
+import { ChatMentionRepository } from './chatMentions.repository';
 
 @singleton()
 export class MentionService {

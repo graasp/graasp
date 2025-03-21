@@ -3,11 +3,12 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifySchema } from 'fastify';
 
+import { PermissionLevel } from '@graasp/sdk';
+
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 import { errorSchemaRef } from '../../schemas/global';
 import { augmentedAccountSchemaRef, nullableAugmentedAccountSchemaRef } from '../account/schemas';
 import { itemSchemaRef } from '../item/schemas';
-import { PermissionLevel } from './types';
 
 export const itemMembershipSchemaRef = registerSchemaAsRef(
   'itemMembership',

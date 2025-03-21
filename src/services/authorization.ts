@@ -1,6 +1,12 @@
 import { singleton } from 'tsyringe';
 
-import { ItemVisibilityType, PermissionLevel, PermissionLevelCompare, ResultOf } from '@graasp/sdk';
+import {
+  ItemVisibilityType,
+  PermissionLevel,
+  PermissionLevelCompare,
+  PermissionLevelOptions,
+  ResultOf,
+} from '@graasp/sdk';
 
 import { DBConnection } from '../drizzle/db';
 import { Item, ItemMembershipRaw, ItemVisibilityWithItem } from '../drizzle/types';
@@ -14,7 +20,7 @@ import {
 import { ItemVisibilityRepository } from './item/plugins/itemVisibility/repository';
 import { ItemMembershipRepository } from './itemMembership/repository';
 
-const permissionMapping = {
+const permissionMapping: { [K in PermissionLevelOptions]: PermissionLevelOptions[] } = {
   [PermissionLevel.Read]: [PermissionLevel.Read],
   [PermissionLevel.Write]: [PermissionLevel.Read, PermissionLevel.Write],
   [PermissionLevel.Admin]: [PermissionLevel.Read, PermissionLevel.Write, PermissionLevel.Admin],
@@ -43,7 +49,7 @@ export class AuthorizationService {
    */
   public async validatePermissionMany(
     db: DBConnection,
-    permission: PermissionLevel,
+    permission: PermissionLevelOptions,
     actor: { id: string } | undefined,
     items: Item[],
   ): Promise<{
@@ -132,7 +138,7 @@ export class AuthorizationService {
 
   public async hasPermission(
     db: DBConnection,
-    permission: PermissionLevel,
+    permission: PermissionLevelOptions,
     actor: MaybeUser,
     item: Item,
   ) {
@@ -146,7 +152,7 @@ export class AuthorizationService {
 
   public async validatePermission(
     db: DBConnection,
-    permission: PermissionLevel,
+    permission: PermissionLevelOptions,
     actor: { id: string } | undefined,
     item: Item,
   ): Promise<{

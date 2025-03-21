@@ -1,7 +1,13 @@
 import { SQL } from 'drizzle-orm';
 import { and, eq, or } from 'drizzle-orm/sql';
 
-import { AppDataVisibility, FileItemType, ItemType, PermissionLevel } from '@graasp/sdk';
+import {
+  AppDataVisibility,
+  FileItemType,
+  ItemType,
+  PermissionLevel,
+  PermissionLevelOptions,
+} from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../drizzle/db';
 import { appDatas } from '../../../../../drizzle/schema';
@@ -71,7 +77,7 @@ export class AppDataRepository {
       accountId?: Account['id'];
       type?: string;
     } = {},
-    permission?: `${PermissionLevel}`,
+    permission?: PermissionLevelOptions,
   ): Promise<AppDataWithItemAndAccountAndCreator[]> {
     const { accountId, type } = filters;
 

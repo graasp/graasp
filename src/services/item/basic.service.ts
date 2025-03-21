@@ -13,6 +13,7 @@ import {
   Pagination,
   PermissionLevel,
   PermissionLevelCompare,
+  PermissionLevelOptions,
   ResultOf,
   UUID,
   buildPathFromIds,
@@ -226,7 +227,7 @@ export class BasicItemService {
     db: DBConnection,
     actor: MaybeUser,
     id: string,
-    permission: PermissionLevel = PermissionLevel.Read,
+    permission: PermissionLevelOptions = PermissionLevel.Read,
   ) {
     const item = await this.itemRepository.getOneOrThrow(db, id);
 
@@ -250,7 +251,7 @@ export class BasicItemService {
     db: DBConnection,
     actor: MaybeUser,
     id: string,
-    permission: PermissionLevel = PermissionLevel.Read,
+    permission: PermissionLevelOptions = PermissionLevel.Read,
   ) {
     const { item } = await this._get(db, actor, id, permission);
 
