@@ -237,13 +237,14 @@ const processActor = async ({
   items: SeedItem<SeedMember>[];
 }> => {
   // create actor if not null
-  let createdActor: AccountRaw | null = null;
+  const createdActor: AccountRaw | null = null;
   let actorProfile;
   let processedItems;
   if (actor !== null) {
     // replace actor data with default values if actor is undefined or 'actor'
     const actorData: Partial<AccountRaw> = typeof actor === 'string' || !actor ? {} : actor;
-    createdActor = (await db.insert(accountsTable).values(MemberFactory(actorData)).returning())[0];
+    const res = await db.insert(accountsTable).values(MemberFactory(actorData)).returning();
+    const createdActor = res[0];
 
     // a profile is defined
     if (actorData) {

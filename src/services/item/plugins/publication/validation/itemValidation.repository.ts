@@ -40,17 +40,16 @@ export class ItemValidationRepository {
     process: ItemValidationProcess,
     status = ItemValidationStatus.Pending,
   ): Promise<{ id: ItemValidation['id'] }> {
-    return (
-      await db
-        .insert(itemValidations)
-        .values({
-          itemId,
-          itemValidationGroupId,
-          process,
-          status,
-        })
-        .returning({ id: itemValidations.id })
-    )[0];
+    const res = await db
+      .insert(itemValidations)
+      .values({
+        itemId,
+        itemValidationGroupId,
+        process,
+        status,
+      })
+      .returning({ id: itemValidations.id });
+    return res[0];
   }
 
   async patch(
