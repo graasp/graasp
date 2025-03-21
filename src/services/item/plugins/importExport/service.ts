@@ -17,6 +17,7 @@ import { Item } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { MaybeUser, MinimalMember } from '../../../../types';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
+import { BasicItemService } from '../../basic.service';
 import { isItemType } from '../../discrimination';
 import { ItemService } from '../../service';
 import { EtherpadItemService } from '../etherpad/service';
@@ -38,6 +39,7 @@ export class ImportExportService {
   private readonly fileItemService: FileItemService;
   private readonly h5pService: H5PService;
   private readonly itemService: ItemService;
+  private readonly basicItemService: BasicItemService;
   private readonly etherpadService: EtherpadItemService;
   private readonly log: BaseLogger;
   private readonly mimetics: typeof mimetics;
@@ -47,12 +49,14 @@ export class ImportExportService {
     itemService: ItemService,
     h5pService: H5PService,
     etherpadService: EtherpadItemService,
+    basicItemService: BasicItemService,
     log: BaseLogger,
   ) {
     this.fileItemService = fileItemService;
     this.h5pService = h5pService;
     this.itemService = itemService;
     this.etherpadService = etherpadService;
+    this.basicItemService = basicItemService;
     this.log = log;
   }
 
@@ -384,6 +388,8 @@ export class ImportExportService {
   ) {
     const filenames = fs.readdirSync(folderPath);
 
+    console.log(filenames);
+
     const items: Item[] = [];
     for (const filename of filenames) {
       // import item from file excluding descriptions
@@ -439,7 +445,7 @@ export class ImportExportService {
     let parent: Item | undefined;
     if (parentId) {
       // check item permission
-      parent = await this.itemService.get(db, actor, parentId);
+      parent = await this.basicItemService.get(db, actor, parentId);
     }
 
     await this._import(db, actor, { parent, folderPath });
