@@ -882,12 +882,10 @@ export async function seedFromJson(data: DataType = {}) {
   // save likes
   const likeValues = processedItems.reduce((acc, i) => {
     if (i.likes) {
-      console.log(i.likes);
       return acc.concat(i.likes.map((m) => ({ itemId: i.id, creatorId: m.id })));
     }
     return acc;
   }, []);
-  console.log(likeValues);
   if (likeValues.length) {
     result.likes = await db.insert(itemLikes).values(likeValues).returning();
   }

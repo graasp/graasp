@@ -94,7 +94,7 @@ export class ShortcutItemService extends ItemService {
     const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
     // check item is shortcut
-    if (isItemType(item, ItemType.SHORTCUT)) {
+    if (!isItemType(item, ItemType.SHORTCUT)) {
       throw new WrongItemTypeError(item.type);
     }
 

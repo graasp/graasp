@@ -344,6 +344,17 @@ export class CannotModifyGuestItemMembership extends CoreError {
   }
 }
 
+export class NothingToUpdateItem extends CoreError {
+  constructor() {
+    super({
+      code: 'GERR036',
+      statusCode: StatusCodes.BAD_REQUEST,
+      // TODO
+      message: 'Nothing was provided to update the item',
+    });
+  }
+}
+
 export class UnexpectedError extends CoreError {
   constructor(data?: unknown) {
     super(

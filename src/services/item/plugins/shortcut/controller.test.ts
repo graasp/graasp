@@ -1,3 +1,4 @@
+import { eq } from 'drizzle-orm';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
@@ -11,35 +12,33 @@ import build, {
   mockAuthenticate,
   unmockAuthenticate,
 } from '../../../../../test/app';
+import { seedFromJson } from '../../../../../test/mocks/seed';
 import { resolveDependency } from '../../../../di/utils';
-import { Item } from '../../../../drizzle/types';
+import { db } from '../../../../drizzle/db';
+import { itemMemberships, itemsRaw } from '../../../../drizzle/schema';
+import { assertIsDefined } from '../../../../utils/assertions';
 import { MemberCannotAccess, MemberCannotWriteItem } from '../../../../utils/errors';
-import { saveMember } from '../../../member/test/fixtures/members';
 import { ItemService } from '../../service';
-import { ItemTestUtils, expectItem } from '../../test/fixtures/items';
+import { expectItem } from '../../test/fixtures/items';
 import { ActionItemService } from '../action/action.service';
-
-const itemMembershipRawRepository = AppDataSource.getRepository(ItemMembership);
-const testUtils = new ItemTestUtils();
 
 describe('Shortcut routes tests', () => {
   let app: FastifyInstance;
-  let actor;
 
   beforeAll(async () => {
-    ({ app } = await build({ member: null }));
+    ({ app } = await build());
   });
 
   afterAll(async () => {
-    await clearDatabase(app.db);
+    await clearDatabase(db);
     app.close();
   });
 
   afterEach(async () => {
     jest.clearAllMocks();
     unmockAuthenticate();
-    actor = null;
   });
+
   describe('POST /items/shortcuts', () => {
     it('Throws if signed out', async () => {
       const response = await app.inject({
@@ -54,9 +53,6 @@ describe('Shortcut routes tests', () => {
     describe('Signed In', () => {
       let waitForPostCreation: () => Promise<unknown>;
       beforeEach(async () => {
-        actor = await saveMember();
-        mockAuthenticate(actor);
-
         const itemService = resolveDependency(ItemService);
         const actionItemService = resolveDependency(ActionItemService);
 
@@ -74,7 +70,13 @@ describe('Shortcut routes tests', () => {
       });
 
       it('Create successfully', async () => {
-        const { item: target } = await testUtils.saveItemAndMembership({ member: actor });
+        const {
+          actor,
+          items: [target],
+        } = await seedFromJson({ items: [{ memberships: [{ account: 'actor' }] }] });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         const response = await app.inject({
           method: HttpMethod.Post,
           url: '/items/shortcuts',
@@ -90,21 +92,26 @@ describe('Shortcut routes tests', () => {
         await waitForPostCreation();
 
         // check item exists in db
-        const item = await testUtils.itemRepository.getOne(app.db, newItem.id);
+        const item = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, newItem.id) });
         expect(item?.id).toEqual(newItem.id);
+        // order is null for root
+        expect(item?.order).toBeNull();
 
         // a membership is created for this item
-        const membership = await itemMembershipRawRepository.findOneBy({
-          item: { id: newItem.id },
+        const membership = await db.query.itemMemberships.findFirst({
+          where: eq(itemMemberships.itemPath, newItem.path),
         });
         expect(membership?.permission).toEqual(PermissionLevel.Admin);
-
-        // order is null for root
-        expect(await testUtils.getOrderForItemId(newItem.id)).toBeNull();
       });
 
       it('Create without name', async () => {
-        const { item: target } = await testUtils.saveItemAndMembership({ member: actor });
+        const {
+          actor,
+          items: [target],
+        } = await seedFromJson({ items: [{ memberships: [{ account: 'actor' }] }] });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         const response = await app.inject({
           method: HttpMethod.Post,
           url: '/items/shortcuts',
@@ -115,6 +122,10 @@ describe('Shortcut routes tests', () => {
       });
 
       it('Bad request if name is invalid', async () => {
+        const { actor } = await seedFromJson();
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         // by default the item creator use an invalid item type
         const newItem = ShortcutItemFactory({ name: '' });
         const response = await app.inject({
@@ -137,6 +148,10 @@ describe('Shortcut routes tests', () => {
       });
 
       it('Bad request if parentId id is invalid', async () => {
+        const { actor } = await seedFromJson();
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         const payload = ShortcutItemFactory();
         const parentId = 'invalid-id';
         const response = await app.inject({
@@ -150,6 +165,10 @@ describe('Shortcut routes tests', () => {
       });
 
       it('Bad request if target id is invalid', async () => {
+        const { actor } = await seedFromJson();
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         const response = await app.inject({
           method: HttpMethod.Post,
           url: `/items/shortcuts`,
@@ -164,8 +183,9 @@ describe('Shortcut routes tests', () => {
 
   describe('PATCH /items/shortcuts/:id', () => {
     it('Throws if signed out', async () => {
-      const member = await saveMember();
-      const { item } = await testUtils.saveItemAndMembership({ member });
+      const {
+        items: [item],
+      } = await seedFromJson({ actor: null, items: [{}] });
 
       const response = await app.inject({
         method: HttpMethod.Patch,
@@ -177,25 +197,27 @@ describe('Shortcut routes tests', () => {
     });
 
     describe('Signed In', () => {
-      beforeEach(async () => {
-        actor = await saveMember();
-        mockAuthenticate(actor);
-      });
-
       it('Update successfully', async () => {
-        const { item } = await testUtils.saveItemAndMembership({
-          item: {
-            type: ItemType.SHORTCUT,
-            extra: {
-              [ItemType.SHORTCUT]: { target: v4() },
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            {
+              type: ItemType.SHORTCUT,
+              extra: {
+                [ItemType.SHORTCUT]: { target: v4() },
+              },
+              memberships: [{ account: 'actor' }],
             },
-          },
-          member: actor,
+          ],
         });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         const payload = {
           name: 'new name',
         };
-
         const response = await app.inject({
           method: HttpMethod.Patch,
           url: `/items/shortcuts/${item.id}`,
@@ -211,16 +233,24 @@ describe('Shortcut routes tests', () => {
       });
 
       it('Does not apply update for settings', async () => {
-        const { item } = await testUtils.saveItemAndMembership({
-          item: {
-            type: ItemType.SHORTCUT,
-            extra: {
-              [ItemType.SHORTCUT]: { target: v4() },
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            {
+              type: ItemType.SHORTCUT,
+              extra: {
+                [ItemType.SHORTCUT]: { target: v4() },
+              },
+              settings: { isCollapsible: false },
+              memberships: [{ account: 'actor' }],
             },
-            settings: { isCollapsible: false },
-          },
-          member: actor,
+          ],
         });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         const payload = {
           settings: { isCollapsible: true },
         };
@@ -230,15 +260,20 @@ describe('Shortcut routes tests', () => {
           url: `/items/shortcuts/${item.id}`,
           payload,
         });
+        console.log(response);
+        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
 
-        expect(response.statusCode).toBe(StatusCodes.OK);
-
-        const newItem = response.json();
+        const newItem = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, item.id) });
+        assertIsDefined(newItem);
         expect(newItem.settings.isCollapsible).toBe(false);
         expectItem(newItem, item);
       });
 
       it('Bad request if id is invalid', async () => {
+        const { actor } = await seedFromJson();
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         const payload = {
           name: 'new name',
         };
@@ -253,16 +288,25 @@ describe('Shortcut routes tests', () => {
       });
 
       it('Cannot update item if does not have membership', async () => {
+        const {
+          actor,
+          items: [shortcut],
+        } = await seedFromJson({
+          items: [
+            {
+              type: ItemType.SHORTCUT,
+              extra: {
+                [ItemType.SHORTCUT]: { target: v4() },
+              },
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         const payload = {
           name: 'new name',
         };
-        const member = await saveMember();
-        const { item } = await testUtils.saveItemAndMembership({ member });
-        const shortcut = await testUtils.saveItem({
-          item: ShortcutItemFactory() as unknown as Item,
-          parentItem: item,
-        });
-
         const response = await app.inject({
           method: HttpMethod.Patch,
           url: `/items/shortcuts/${shortcut.id}`,
@@ -273,29 +317,36 @@ describe('Shortcut routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
       });
       it('Cannot update item if has only read membership', async () => {
+        const {
+          actor,
+          items: [shortcut],
+        } = await seedFromJson({
+          items: [
+            {
+              type: ItemType.SHORTCUT,
+              extra: {
+                [ItemType.SHORTCUT]: { target: v4() },
+              },
+              settings: { isCollapsible: false },
+              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         const payload = {
           name: 'new name',
         };
-        const member = await saveMember();
-        const { item } = await testUtils.saveItemAndMembership({ member });
-        const shortcut = await testUtils.saveItem({
-          item: ShortcutItemFactory() as unknown as Item,
-          parentItem: item,
-        });
-        await testUtils.saveMembership({
-          item: shortcut,
-          account: actor,
-          permission: PermissionLevel.Read,
-        });
-
         const response = await app.inject({
           method: HttpMethod.Patch,
           url: `/items/shortcuts/${shortcut.id}`,
           payload,
         });
+        console.log(response);
 
-        expect(response.json()).toEqual(new MemberCannotWriteItem(shortcut.id));
         expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
+        expect(response.json().message).toEqual(new MemberCannotWriteItem(shortcut.id).message);
       });
     });
   });

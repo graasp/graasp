@@ -61,6 +61,7 @@ import {
   InvalidMoveTarget,
   ItemNotFolder,
   ItemNotFound,
+  NothingToUpdateItem,
   TooManyDescendants,
   UnexpectedError,
 } from '../../utils/errors';
@@ -620,6 +621,10 @@ export class ItemRepository {
       }
     }
 
+    // has at least one defined value to update
+    if (Object.values(newData).filter(Boolean).length === 0) {
+      throw new NothingToUpdateItem();
+    }
     return (await db.update(itemsRaw).set(newData).where(eq(itemsRaw.id, id)).returning())[0];
   }
 
