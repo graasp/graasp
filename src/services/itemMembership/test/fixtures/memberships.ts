@@ -1,21 +1,16 @@
 import {
-  ItemMembershipWithItemAndAccount,
+  ItemMembershipRaw,
   ItemMembershipWithItemAndAccountAndCreator,
 } from '../../../../drizzle/types';
 
 export const expectMembership = (
   newMembership:
-    | undefined
-    | (Pick<ItemMembershipWithItemAndAccount, 'permission' | 'item' | 'account'> & {
-        creator?: { id: string };
-      }),
-  correctMembership:
-    | undefined
     | Pick<
         ItemMembershipWithItemAndAccountAndCreator,
-        'permission' | 'item' | 'account' | 'creator'
-      >,
-  creator?: { id: string },
+        'creator' | 'account' | 'item' | 'permission'
+      >
+    | undefined,
+  correctMembership: ItemMembershipRaw | undefined,
 ) => {
   if (!newMembership || !correctMembership) {
     throw new Error(
@@ -23,12 +18,27 @@ export const expectMembership = (
     );
   }
   expect(newMembership.permission).toEqual(correctMembership.permission);
-  expect(newMembership.item.id).toContain(correctMembership.item.id);
-  expect(newMembership.account.type).toBeDefined();
-  if (newMembership.creator && creator) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    expect(newMembership.creator.id).toEqual(correctMembership!.creator!.id);
+  expect(newMembership.item.path).toContain(correctMembership.itemPath);
+  if (newMembership.creator) {
+    expect(newMembership.creator.id).toEqual(correctMembership.creatorId);
   }
+  expect(newMembership.account.type).toBeDefined();
+  expect(newMembership.account.id).toEqual(correctMembership.accountId);
+};
 
-  expect(newMembership.account.id).toEqual(correctMembership.account.id);
+export const expectMembershipRaw = (
+  newMembership: ItemMembershipRaw | undefined,
+  correctMembership: ItemMembershipRaw | undefined,
+) => {
+  if (!newMembership || !correctMembership) {
+    throw new Error(
+      'expectMembership.newMembership or expectMembership.correctMembership is undefined',
+    );
+  }
+  expect(newMembership.permission).toEqual(correctMembership.permission);
+  expect(newMembership.itemPath).toContain(correctMembership.itemPath);
+  // expect(newMembership.account.type).toBeDefined();
+  expect(newMembership.creatorId).toEqual(correctMembership.creatorId);
+
+  expect(newMembership.accountId).toEqual(correctMembership.accountId);
 };

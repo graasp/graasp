@@ -117,7 +117,7 @@ export const updateOne = {
     permission: customType.EnumString(Object.values(PermissionLevel)),
   }),
   response: {
-    [StatusCodes.OK]: itemMembershipSchemaRef,
+    [StatusCodes.NO_CONTENT]: Type.Null(),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
@@ -136,7 +136,7 @@ export const deleteOne = {
     purgeBelow: Type.Optional(Type.Boolean()),
   }),
   response: {
-    [StatusCodes.OK]: itemMembershipSchemaRef,
+    [StatusCodes.NO_CONTENT]: Type.Null(),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;

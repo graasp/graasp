@@ -1,3 +1,5 @@
+import { StatusCodes } from 'http-status-codes';
+
 import { fastifyCors } from '@fastify/cors';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
@@ -48,7 +50,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           schema: create,
           preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
         },
-        async ({ user, query: { itemId }, body }) => {
+        async ({ user, query: { itemId }, body }, reply) => {
           const account = asDefined(user?.account);
           await db.transaction(async (tx) => {
             await itemMembershipService.create(tx, account, {
@@ -57,6 +59,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
               memberId: body.accountId,
             });
           });
+          reply.status(StatusCodes.NO_CONTENT);
         },
       );
 
@@ -86,11 +89,12 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           schema: updateOne,
           preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
         },
-        async ({ user, params: { id }, body }) => {
+        async ({ user, params: { id }, body }, reply) => {
           const account = asDefined(user?.account);
           await db.transaction(async (tx) => {
             await itemMembershipService.patch(tx, account, id, body);
           });
+          reply.status(StatusCodes.NO_CONTENT);
         },
       );
 
@@ -98,13 +102,14 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       fastify.delete(
         '/:id',
         { schema: deleteOne, preHandler: isAuthenticated },
-        async ({ user, params: { id }, query: { purgeBelow } }) => {
+        async ({ user, params: { id }, query: { purgeBelow } }, reply) => {
           const account = asDefined(user?.account);
           await db.transaction(async (tx) => {
             await itemMembershipService.deleteOne(tx, account, id, {
               purgeBelow,
             });
           });
+          reply.status(StatusCodes.NO_CONTENT);
         },
       );
     },

@@ -170,16 +170,16 @@ export class ItemMembershipRepository {
   }
 
   async get(db: DBConnection, id: string): Promise<ItemMembershipWithItemAndAccount> {
-    const item = await db.query.itemMemberships.findFirst({
+    const im = await db.query.itemMemberships.findFirst({
       where: eq(itemMembershipTable.id, id),
       with: { account: true, item: true },
     });
 
-    if (!item) {
+    if (!im) {
       throw new ItemMembershipNotFound({ id });
     }
 
-    return item;
+    return im;
   }
 
   /**
@@ -244,7 +244,8 @@ export class ItemMembershipRepository {
   async getAllBellowItemPathForAccount(db: DBConnection, itemPath: ItemPath, accountId: string) {
     const membershipsBelowItemPath = db.query.itemMemberships.findMany({
       where: and(
-        sql`${itemMembershipTable.itemPath} <@ ${itemPath}`,
+        isDescendantOrSelf(itemMembershipTable.itemPath, itemPath),
+        ne(itemMembershipTable.itemPath, itemPath),
         eq(itemMembershipTable.accountId, accountId),
       ),
       with: { account: true },
