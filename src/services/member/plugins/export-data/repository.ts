@@ -1,5 +1,8 @@
 import { or } from 'drizzle-orm';
 import { desc, eq } from 'drizzle-orm/sql';
+import { singleton } from 'tsyringe';
+
+import { UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
 import {
@@ -27,10 +30,30 @@ import {
 } from '../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../repositories/errors';
 import { throwsIfParamIsInvalid } from '../../../../repositories/utils';
+import { MaybeUser } from '../../../../types';
+import { filterOutItems } from '../../../authorization.utils';
 import { NoChatMentionForMember } from '../../../chat/errors';
+import { ItemVisibilityRepository } from '../../../item/plugins/itemVisibility/repository';
+import { ItemService } from '../../../item/service';
 import { MemberIdentifierNotFound } from '../../../itemLogin/errors';
+import { ItemMembershipRepository } from '../../../itemMembership/repository';
 
+@singleton()
 export class ExportDataRepository {
+  private readonly itemService: ItemService;
+  private readonly itemVisibilityRepository: ItemVisibilityRepository;
+  private readonly itemMembershipRepository: ItemMembershipRepository;
+
+  constructor(
+    itemService: ItemService,
+    itemMembershipRepository: ItemMembershipRepository,
+    itemVisibilityRepository: ItemVisibilityRepository,
+  ) {
+    this.itemService = itemService;
+    this.itemMembershipRepository = itemMembershipRepository;
+    this.itemVisibilityRepository = itemVisibilityRepository;
+  }
+
   /**
    * Return all the items where the creator is the given actor.
    * It even returns the item if the actor is the creator but without permissions on it !
@@ -47,6 +70,23 @@ export class ExportDataRepository {
       where: eq(itemsRaw.creatorId, memberId),
       orderBy: desc(itemsRaw.updatedAt),
     });
+  }
+
+  async getFilteredDescendants(db: DBConnection, account: MaybeUser, itemId: UUID) {
+    const { descendants } = await this.itemService.getDescendants(db, account, itemId);
+    if (!descendants.length) {
+      return [];
+    }
+    // TODO optimize?
+    return filterOutItems(
+      db,
+      account,
+      {
+        itemMembershipRepository: this.itemMembershipRepository,
+        itemVisibilityRepository: this.itemVisibilityRepository,
+      },
+      descendants,
+    );
   }
 
   /**

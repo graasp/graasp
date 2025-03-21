@@ -3,6 +3,7 @@ import { v4 } from 'uuid';
 
 import {
   AppDataVisibility,
+  ExportActionsFormatting,
   FileItemProperties,
   ItemLoginSchemaStatus,
   ItemLoginSchemaType,
@@ -17,6 +18,7 @@ import {
 import { db } from '../../src/drizzle/db';
 import {
   accountsTable,
+  actionRequestExports,
   appActions,
   appDatas,
   appSettings,
@@ -41,6 +43,7 @@ import {
 } from '../../src/drizzle/schema';
 import {
   AccountRaw,
+  ActionRequestExportRaw,
   AppActionRaw,
   AppDataRaw,
   AppRaw,
@@ -109,6 +112,9 @@ type SeedItem<M = SeedMember> = (Partial<Omit<ItemRaw, 'creator'>> & { creator?:
   membershipRequests?: (Omit<Partial<MembershipRequestRaw>, 'memberId'> & {
     member: M;
   })[];
+  actionRequestExports?: (Omit<Partial<ActionRequestExportRaw>, 'memberId'> & {
+    member: M;
+  })[];
 };
 type DataType = {
   actor?: SeedActor | null;
@@ -154,6 +160,10 @@ const replaceActorInItems = (createdActor?: AccountRaw, items?: DataType['items'
     })),
     children: replaceActorInItems(createdActor, i.children),
     likes: i.likes?.map((m) => (m === ACTOR_STRING ? (createdActor as any) : m)),
+    actionRequestExports: i.actionRequestExports?.map((ar) => ({
+      ...ar,
+      member: ar.member === ACTOR_STRING ? (createdActor as any) : ar.member,
+    })),
   }));
 };
 
@@ -203,7 +213,12 @@ function replaceAccountInItems(createdAccount: AccountRaw, items?: DataType['ite
     const likes = i.likes?.map((m) =>
       getNameIfExists(m) === createdAccount.name ? createdAccount : m,
     );
-    console.log(likes);
+    const actionRequestExports = i.actionRequestExports?.map((ar) => {
+      return {
+        ...ar,
+        member: getNameIfExists(ar.member) === createdAccount.name ? createdAccount : ar.member,
+      };
+    });
 
     return {
       ...i,
@@ -216,6 +231,7 @@ function replaceAccountInItems(createdAccount: AccountRaw, items?: DataType['ite
       appSettings,
       membershipRequests,
       likes,
+      actionRequestExports,
     };
   });
 }
@@ -368,6 +384,12 @@ const getAllAccountsFromItems = (items: SeedItem[] = []) => {
       },
       [],
     );
+    const membersFromActionRequestExports = (i.actionRequestExports ?? [])?.reduce<SeedMember[]>(
+      (acc, m) => {
+        return [...acc, m.member].filter(Boolean);
+      },
+      [],
+    );
 
     const allAccounts = [
       ...accountsFromMemberships,
@@ -378,6 +400,7 @@ const getAllAccountsFromItems = (items: SeedItem[] = []) => {
       ...membersForMembershipRequests,
       ...getAllAccountsFromItems(i.children),
       ...(i.likes ?? []),
+      ...membersFromActionRequestExports,
     ];
 
     // get creator of item
@@ -901,6 +924,24 @@ export async function seedFromJson(data: DataType = {}) {
   }, []);
   if (membershipRequestValues.length) {
     await db.insert(membershipRequests).values(membershipRequestValues);
+  }
+
+  // save action export requests
+  const actionRequestExportsEntities = processedItems.reduce((acc, i) => {
+    if (i.actionRequestExports) {
+      return acc.concat(
+        i.actionRequestExports.map((ar) => ({
+          format: ExportActionsFormatting.JSON,
+          ...ar,
+          itemPath: i.path,
+          memberId: ar.member.id,
+        })),
+      );
+    }
+    return acc;
+  }, []);
+  if (actionRequestExportsEntities.length) {
+    await db.insert(actionRequestExports).values(actionRequestExportsEntities);
   }
 
   return result;

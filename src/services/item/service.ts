@@ -538,7 +538,7 @@ export class ItemService {
     );
   }
 
-  private async getDescendants(
+  async getDescendants(
     db: DBConnection,
     actor: MaybeUser,
     itemId: UUID,
@@ -556,22 +556,22 @@ export class ItemService {
     };
   }
 
-  async getFilteredDescendants(db: DBConnection, account: MaybeUser, itemId: UUID) {
-    const { descendants } = await this.getDescendants(db, account, itemId);
-    if (!descendants.length) {
-      return [];
-    }
-    // TODO optimize?
-    return filterOutItems(
-      db,
-      account,
-      {
-        itemMembershipRepository: this.itemMembershipRepository,
-        itemVisibilityRepository: this.itemVisibilityRepository,
-      },
-      descendants,
-    );
-  }
+  // async getFilteredDescendants(db: DBConnection, account: MaybeUser, itemId: UUID) {
+  //   const { descendants } = await this.getDescendants(db, account, itemId);
+  //   if (!descendants.length) {
+  //     return [];
+  //   }
+  //   // TODO optimize?
+  //   return filterOutItems(
+  //     db,
+  //     account,
+  //     {
+  //       itemMembershipRepository: this.itemMembershipRepository,
+  //       itemVisibilityRepository: this.itemVisibilityRepository,
+  //     },
+  //     descendants,
+  //   );
+  // }
 
   async getPackedDescendants(
     db: DBConnection,

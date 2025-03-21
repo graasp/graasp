@@ -12,6 +12,7 @@ import {
   AppDataRaw,
   AppSettingRaw,
   Item,
+  ItemRaw,
 } from '../../../../drizzle/types';
 import { AuthenticatedUser } from '../../../../types';
 import { UnauthorizedMember } from '../../../../utils/errors';
@@ -25,7 +26,9 @@ import {
 import { InvalidAggregationError } from '../../../action/utils/errors';
 import { ChatMessageRepository } from '../../../chat/repository';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
+import { ExportDataRepository } from '../../../member/plugins/export-data/repository';
 import { BasicItemService } from '../../basic.service';
+import { isItemType } from '../../discrimination';
 import { AppActionRepository } from '../app/appAction/appAction.repository';
 import { AppDataRepository } from '../app/appData/repository';
 import { AppSettingRepository } from '../app/appSetting/repository';
@@ -42,6 +45,7 @@ export class ActionItemService {
   private readonly chatMessageRepository: ChatMessageRepository;
   private readonly itemMembershipRepository: ItemMembershipRepository;
   private readonly appDataRepository: AppDataRepository;
+  private readonly exportDataRepository: ExportDataRepository;
 
   constructor(
     actionService: ActionService,
@@ -51,6 +55,8 @@ export class ActionItemService {
     appActionRepository: AppActionRepository,
     appSettingRepository: AppSettingRepository,
     appDataRepository: AppDataRepository,
+    chatMessageRepository: ChatMessageRepository,
+    exportDataRepository: ExportDataRepository,
   ) {
     this.actionService = actionService;
     this.basicItemService = basicItemService;
@@ -59,6 +65,8 @@ export class ActionItemService {
     this.appActionRepository = appActionRepository;
     this.appSettingRepository = appSettingRepository;
     this.appDataRepository = appDataRepository;
+    this.chatMessageRepository = chatMessageRepository;
+    this.exportDataRepository = exportDataRepository;
   }
 
   async getForItem(
@@ -191,14 +199,14 @@ export class ActionItemService {
       permission === PermissionLevel.Admin ? allMemberships.map(({ account }) => account) : [actor];
 
     // get descendants items
-    // TODO
-    const descendants = [];
-    // const descendants = await this.basicItemService.getFilteredDescendants(
-    //   db,
-    //   actor,
-    //   payload.itemId,
-    // );
-
+    let descendants: ItemRaw[] = [];
+    if (isItemType(item, ItemType.FOLDER)) {
+      descendants = await this.exportDataRepository.getFilteredDescendants(
+        db,
+        actor,
+        payload.itemId,
+      );
+    }
     // chatbox for all items
     const chatMessages = await this.chatMessageRepository.getByItems(db, [
       payload.itemId,
@@ -234,7 +242,19 @@ export class ActionItemService {
       };
     }
 
-    return { item };
+    return {
+      item,
+      descendants,
+      actions,
+      members,
+      itemMemberships: allMemberships,
+      chatMessages,
+      apps,
+      metadata: {
+        numActionsRetrieved: actions.length,
+        requestedSampleSize: payload.sampleSize ?? MAX_ACTIONS_SAMPLE_SIZE,
+      },
+    };
 
     // set all data in last task's result
     // return new BaseAnalytics({

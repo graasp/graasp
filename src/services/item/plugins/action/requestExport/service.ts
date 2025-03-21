@@ -16,12 +16,15 @@ import { MailBuilder } from '../../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../../plugins/mailer/mailer.service';
 import { MemberInfo, MinimalMember } from '../../../../../types';
 import { EXPORT_FILE_EXPIRATION, ZIP_MIMETYPE } from '../../../../action/constants';
-import { buildActionFilePath, buildItemTmpFolder } from '../../../../action/utils/export';
+import {
+  buildActionFilePath,
+  buildItemTmpFolder,
+  exportActionsInArchive,
+} from '../../../../action/utils/export';
 import { AuthorizationService } from '../../../../authorization';
 import FileService from '../../../../file/service';
 import { MemberService } from '../../../../member/member.service';
 import { BasicItemService } from '../../../basic.service';
-import { ItemService } from '../../../service';
 import { ActionItemService } from '../action.service';
 import { ActionRequestExportRepository } from './repository';
 
@@ -41,12 +44,16 @@ export class ActionRequestExportService {
     basicItemService: BasicItemService,
     fileService: FileService,
     mailerService: MailerService,
+    memberService: MemberService,
+    actionRequestExportRepository: ActionRequestExportRepository,
   ) {
     this.actionItemService = actionItemService;
     this.basicItemService = basicItemService;
     this.authorizationService = authorizationService;
     this.fileService = fileService;
     this.mailerService = mailerService;
+    this.memberService = memberService;
+    this.actionRequestExportRepository = actionRequestExportRepository;
   }
 
   async request(
@@ -161,17 +168,13 @@ export class ActionRequestExportService {
     });
 
     // create archive given base analytics
-
-    // const archive = await exportActionsInArchive({
-    //   storageFolder,
-    //   baseAnalytics,
-    //   // include all actions from any view
-    //   views: Object.values(Context),
-    //   format,
-    // });
-
-    // TODO
-    const archive = {} as any;
+    const archive = await exportActionsInArchive({
+      storageFolder,
+      baseAnalytics,
+      // include all actions from any view
+      views: Object.values(Context),
+      format,
+    });
 
     // upload file
     await this.fileService.upload(actor, {

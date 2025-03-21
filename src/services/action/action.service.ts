@@ -69,6 +69,7 @@ export class ActionService {
       accountId: member?.id,
       geolocation: geolocation ?? undefined,
       view,
+      itemId: a.item?.id,
       ...a,
       extra: a.extra ?? {},
     }));

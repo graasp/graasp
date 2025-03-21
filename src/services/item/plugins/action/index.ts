@@ -141,26 +141,29 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
       } = request;
       const member = asDefined(user?.account);
       assertIsMember(member);
-      db.transaction(async (tx) => {
-        const item = await requestExportService.request(tx, member, itemId, format);
-        if (item) {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackEvent('export', [itemId], { [item.id]: item }),
-          );
-        }
-      }).catch((e: Error) => {
-        log.error(e);
-        websockets.publish(
-          memberItemsTopic,
-          member.id,
-          ItemOpFeedbackErrorEvent('export', [itemId], e),
-        );
-      });
 
       // reply no content and let the server create the archive and send the mail
       reply.status(StatusCodes.NO_CONTENT);
+
+      await db
+        .transaction(async (tx) => {
+          const item = await requestExportService.request(tx, member, itemId, format);
+          if (item) {
+            websockets.publish(
+              memberItemsTopic,
+              member.id,
+              ItemOpFeedbackEvent('export', [itemId], { [item.id]: item }),
+            );
+          }
+        })
+        .catch((e: Error) => {
+          log.error(e);
+          websockets.publish(
+            memberItemsTopic,
+            member.id,
+            ItemOpFeedbackErrorEvent('export', [itemId], e),
+          );
+        });
     },
   );
 };
