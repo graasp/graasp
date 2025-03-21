@@ -34,7 +34,7 @@ export class BookmarkService {
   }
 
   async getOwn(db: DBConnection, member: MinimalMember): Promise<PackedBookmarkedItem[]> {
-    const favorites = await this.itemBookmarkRepository.getFavoriteForMember(db, member.id);
+    const bookmarks = await this.itemBookmarkRepository.getFavoriteForMember(db, member.id);
 
     // filter out items user might not have access to
     // and packed item
@@ -45,24 +45,24 @@ export class BookmarkService {
         itemMembershipRepository: this.itemMembershipRepository,
         itemVisibilityRepository: this.itemVisibilityRepository,
       },
-      favorites.map(({ item }) => item),
+      bookmarks.map(({ item }) => item),
     );
 
-    // insert back packed item inside favorite entities
+    // insert back packed item inside bookmark entities
     return filteredItems.map((item) => {
-      const fav = favorites.find(({ item: i }) => i.id === item.id);
+      const bookmark = bookmarks.find(({ item: i }) => i.id === item.id);
       // should never pass here
-      if (!fav) {
-        throw new Error(`favorite should be defined`);
+      if (!bookmark) {
+        throw new Error(`bookmark should be defined`);
       }
-      return { ...fav, item };
+      return { ...bookmark, item };
     });
   }
 
   async post(db: DBConnection, member: MinimalMember, itemId: string) {
     // get and check permissions
     const item = await this.basicItemService.get(db, member, itemId, PermissionLevel.Read);
-    return this.itemBookmarkRepository.post(db, item.id, member.id);
+    await this.itemBookmarkRepository.post(db, item.id, member.id);
   }
 
   async delete(db: DBConnection, member: MinimalMember, itemId: string) {

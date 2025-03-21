@@ -327,6 +327,7 @@ export type Publisher = any;
 // --- ItemBookmark
 export type ItemBookmarkRaw = typeof itemBookmarks.$inferSelect;
 export type ItemBookmarkRawWithItem = ItemBookmarkRaw & { item: Item };
+export type ItemBookmarkRawWithItemWithCreator = ItemBookmarkRaw & { item: ItemWithCreator };
 export type ItemBookmarkInsertDTO = typeof itemBookmarks.$inferInsert;
 export type ItemBookmarkRawWithItemAndAccount = ItemBookmarkRaw & {
   item: Item;

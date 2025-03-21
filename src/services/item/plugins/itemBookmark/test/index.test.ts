@@ -1,3 +1,4 @@
+import { eq } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 
 import { FastifyInstance } from 'fastify';
@@ -9,70 +10,65 @@ import build, {
   mockAuthenticate,
   unmockAuthenticate,
 } from '../../../../../../test/app';
+import { seedFromJson } from '../../../../../../test/mocks/seed';
+import { db } from '../../../../../drizzle/db';
+import { itemBookmarks } from '../../../../../drizzle/schema';
+import { assertIsDefined } from '../../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { saveMember } from '../../../../member/test/fixtures/members';
-import { ItemTestUtils } from '../../../test/fixtures/items';
+import { PermissionLevel } from '../../../../itemMembership/types';
 
-const rawRepository = AppDataSource.getRepository(ItemFavorite);
-const testUtils = new ItemTestUtils();
-
-describe('Favorite', () => {
+describe('Bookmarks', () => {
   let app: FastifyInstance;
-  let actor;
-  let member;
-  let item;
-  let favorite;
 
   beforeAll(async () => {
-    ({ app } = await build({ member: null }));
+    ({ app } = await build());
   });
 
   afterAll(async () => {
-    await clearDatabase(app.db);
+    await clearDatabase(db);
     app.close();
   });
 
   afterEach(async () => {
     jest.clearAllMocks();
     unmockAuthenticate();
-    actor = null;
-    member = null;
-    item = null;
-    favorite = null;
   });
 
-  describe('GET /favorite', () => {
+  describe('GET /bookmarks', () => {
     describe('Signed in', () => {
-      beforeEach(async () => {
-        actor = await saveMember();
-        mockAuthenticate(actor);
-        const { item } = await testUtils.saveItemAndMembership({ member: actor });
-        await testUtils.saveItemAndMembership({ member: actor }); // Unused second item
-
-        favorite = await rawRepository.save({ item, member: actor });
-      });
-
       it('Get favorite', async () => {
+        const {
+          actor,
+          members: [member],
+          bookmarks: [bookmark],
+        } = await seedFromJson({ items: [{ creator: { name: 'bob' }, isBookmarked: true }] });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         const res = await app.inject({
           method: HttpMethod.Get,
-          url: `${ITEMS_ROUTE_PREFIX}/favorite`,
+          url: `${ITEMS_ROUTE_PREFIX}/bookmarks`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
+
         expect(res.json()[0]).toMatchObject(
           expect.objectContaining({
             item: expect.objectContaining({
-              id: favorite.item.id,
-              creator: expect.objectContaining({ id: favorite.item.creator.id }),
+              id: bookmark.itemId,
+              creator: expect.objectContaining({ id: member.id }),
             }),
           }),
         );
       });
 
       it('Get favorite with trashed favorite item', async () => {
-        await testUtils.rawItemRepository.softDelete(favorite.item.id);
+        const { actor } = await seedFromJson({ items: [{ isDeleted: true, isBookmarked: true }] });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         const res = await app.inject({
           method: HttpMethod.Get,
-          url: `${ITEMS_ROUTE_PREFIX}/favorite`,
+          url: `${ITEMS_ROUTE_PREFIX}/bookmarks`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
         expect(res.json()).toStrictEqual([]);
@@ -80,82 +76,95 @@ describe('Favorite', () => {
     });
   });
 
-  describe('POST /favorite/:id', () => {
+  describe('POST /bookmark/:id', () => {
     describe('Signed out', () => {
-      beforeEach(async () => {
-        member = await saveMember();
-        ({ item } = await testUtils.saveItemAndMembership({ member }));
-      });
-
       it('Throws', async () => {
+        const {
+          items: [item],
+        } = await seedFromJson({ actor: null, items: [{}] });
+
         const res = await app.inject({
           method: HttpMethod.Post,
-          url: `${ITEMS_ROUTE_PREFIX}/favorite/${item.id}`,
+          url: `${ITEMS_ROUTE_PREFIX}/bookmarks/${item.id}`,
         });
         expect(res.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
       });
     });
 
     describe('Signed in', () => {
-      beforeEach(async () => {
-        actor = await saveMember();
-        mockAuthenticate(actor);
-        ({ item } = await testUtils.saveItemAndMembership({ member: actor }));
-      });
-
       it('Post a new favorite', async () => {
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Read }] }],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         const res = await app.inject({
           method: HttpMethod.Post,
-          url: `${ITEMS_ROUTE_PREFIX}/favorite/${item.id}`,
+          url: `${ITEMS_ROUTE_PREFIX}/bookmarks/${item.id}`,
+        });
+        expect(res.statusCode).toBe(StatusCodes.OK);
+
+        const favorites = await db.query.itemBookmarks.findMany({
+          where: eq(itemBookmarks.memberId, actor.id),
         });
 
-        const favorites = await new FavoriteRepository().getFavoriteForMember(actor.id);
-
-        expect(res.statusCode).toBe(StatusCodes.OK);
-        expect(res.json()).toMatchObject({ item: { id: item.id } });
         expect(favorites).toHaveLength(1);
-        expect(favorites[0]).toMatchObject({ item: { id: item.id } });
+        expect(favorites[0]).toMatchObject({ itemId: item.id });
       });
 
       it('Post the same favorite throws', async () => {
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Read }] }],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         // Add the favorite the first time
         await app.inject({
           method: HttpMethod.Post,
-          url: `${ITEMS_ROUTE_PREFIX}/favorite/${item.id}`,
+          url: `${ITEMS_ROUTE_PREFIX}/bookmarks/${item.id}`,
         });
 
         // Add the same favorite a second time
         const res = await app.inject({
           method: HttpMethod.Post,
-          url: `${ITEMS_ROUTE_PREFIX}/favorite/${item.id}`,
+          url: `${ITEMS_ROUTE_PREFIX}/bookmarks/${item.id}`,
         });
-
         expect(res.statusCode).toBe(StatusCodes.CONFLICT); // Assuming the POST endpoint returns 409 CONFLICT on duplicate
-        expect(res.json()).toMatchObject(new DuplicateFavoriteError(expect.anything()));
       });
 
       it('Bad request if id is invalid', async () => {
+        const { actor } = await seedFromJson();
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         const invalidId = '123456-invalid';
 
         const res = await app.inject({
           method: HttpMethod.Post,
-          url: `${ITEMS_ROUTE_PREFIX}/favorite/${invalidId}`,
+          url: `${ITEMS_ROUTE_PREFIX}/bookmarks/${invalidId}`,
         });
 
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
     });
-    describe('DELETE /favorite/:id', () => {
+    describe('DELETE /bookmark/:id', () => {
       describe('Signed out', () => {
-        beforeEach(async () => {
-          member = await saveMember();
-          ({ item } = await testUtils.saveItemAndMembership({ member }));
-        });
-
         it('Throws if not authenticated', async () => {
+          const {
+            items: [item],
+          } = await seedFromJson({ actor: null, items: [{}] });
+
           const res = await app.inject({
             method: HttpMethod.Delete,
-            url: `${ITEMS_ROUTE_PREFIX}/favorite/${item.id}`,
+            url: `${ITEMS_ROUTE_PREFIX}/bookmarks/${item.id}`,
           });
 
           expect(res.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -163,22 +172,26 @@ describe('Favorite', () => {
       });
 
       describe('Signed in', () => {
-        beforeEach(async () => {
-          actor = await saveMember();
-          mockAuthenticate(actor);
-          ({ item } = await testUtils.saveItemAndMembership({ member: actor }));
-          favorite = await new FavoriteRepository().post(item.id, actor.id);
-        });
-
         it('Delete removes favorite', async () => {
+          const {
+            actor,
+            items: [item],
+          } = await seedFromJson({
+            items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Read }] }],
+          });
+          assertIsDefined(actor);
+          mockAuthenticate(actor);
+
           const res = await app.inject({
             method: HttpMethod.Delete,
-            url: `${ITEMS_ROUTE_PREFIX}/favorite/${item.id}`,
+            url: `${ITEMS_ROUTE_PREFIX}/bookmarks/${item.id}`,
           });
 
           expect(res.statusCode).toBe(StatusCodes.OK);
 
-          const favorites = await new FavoriteRepository().getFavoriteForMember(actor.id);
+          const favorites = await db.query.itemBookmarks.findMany({
+            where: eq(itemBookmarks.memberId, actor.id),
+          });
           expect(favorites).toHaveLength(0);
         });
       });

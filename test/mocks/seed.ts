@@ -24,6 +24,7 @@ import {
   chatMessagesTable,
   guestPasswords,
   invitationsTable,
+  itemBookmarks,
   itemGeolocationsTable,
   itemLoginSchemas,
   itemMemberships,
@@ -46,6 +47,7 @@ import {
   ChatMessageRaw,
   GuestRaw,
   InvitationRaw,
+  ItemBookmarkRaw,
   ItemGeolocationInsertDTO,
   ItemGeolocationRaw,
   ItemLoginSchemaRaw,
@@ -81,6 +83,7 @@ type SeedItem<M = SeedMember> = (Partial<Omit<ItemRaw, 'creator'>> & { creator?:
   isPublic?: boolean;
   isHidden?: boolean;
   isDeleted?: boolean;
+  isBookmarked?: boolean;
   geolocation?: Omit<ItemGeolocationInsertDTO, 'itemPath'>;
   tags?: Pick<TagRaw, 'name' | 'category'>[];
   itemLoginSchema?: Partial<ItemLoginSchemaRaw> & {
@@ -472,6 +475,24 @@ async function createItemVisibilities(items: (SeedItem & { path: string })[]) {
   return [];
 }
 
+async function createItemBookmarks(items: (SeedItem & { id: string })[], actor: { id: string }) {
+  const bookmarks = items.reduce<{ itemId: string; memberId: string }[]>(
+    (acc, { id, isBookmarked }) => {
+      if (isBookmarked) {
+        acc.push({ itemId: id, memberId: actor.id });
+      }
+      return acc;
+    },
+    [],
+  );
+
+  if (bookmarks.length) {
+    return await db.insert(itemBookmarks).values(bookmarks).returning();
+  }
+
+  return [];
+}
+
 /**
  * Create item login schema, related guests, their passwords and memberships given items definition
  * @param items.itemLoginSchema defined by status, type, as well as guests and their passwords
@@ -594,6 +615,7 @@ export async function seedFromJson(data: DataType = {}) {
     invitations: InvitationRaw[];
     chatMessages: ChatMessageRaw[];
     membershipRequests: MembershipRequestRaw[];
+    bookmarks: ItemBookmarkRaw[];
   } = {
     items: [],
     actor: undefined,
@@ -613,6 +635,7 @@ export async function seedFromJson(data: DataType = {}) {
     invitations: [],
     chatMessages: [],
     membershipRequests: [],
+    bookmarks: [],
   };
 
   const { items: itemsWithActor, actor, members, actorProfile } = await processActor(data);
@@ -682,6 +705,11 @@ export async function seedFromJson(data: DataType = {}) {
       )[0];
       result.itemTags.push(itemTag);
     }
+  }
+
+  // save bookmarks
+  if (actor) {
+    result.bookmarks = await createItemBookmarks(processedItems, actor);
   }
 
   // save item geolocation

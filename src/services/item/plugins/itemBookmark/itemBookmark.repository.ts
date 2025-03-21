@@ -2,12 +2,13 @@ import { and, desc, eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { itemBookmarks, items } from '../../../../drizzle/schema';
+import { itemBookmarks, items, membersView } from '../../../../drizzle/schema';
 import {
   Item,
   ItemBookmarkInsertDTO,
-  ItemBookmarkRawWithItem,
   ItemBookmarkRawWithItemAndAccount,
+  ItemBookmarkRawWithItemWithCreator,
+  MemberRaw,
 } from '../../../../drizzle/types';
 import { MemberIdentifierNotFound } from '../../../itemLogin/errors';
 import { DuplicateBookmarkError, ItemBookmarkNotFound } from './errors';
@@ -18,39 +19,41 @@ export class ItemBookmarkRepository {
     if (!bookmarkId) {
       throw new ItemBookmarkNotFound(bookmarkId);
     }
-    const favorite = await db.query.itemBookmarks.findFirst({
+    const bookmark = await db.query.itemBookmarks.findFirst({
       where: eq(itemBookmarks.id, bookmarkId),
       with: { item: true, account: true },
     });
 
-    if (!favorite) {
+    if (!bookmark) {
       throw new ItemBookmarkNotFound(bookmarkId);
     }
-    return favorite;
+    return bookmark;
   }
 
   /**
-   * Get favorite items by given memberId.
+   * Get bookmark items by given memberId.
    * @param memberId user's id
    */
-  async getFavoriteForMember(
+  async getBookmarksForMember(
     db: DBConnection,
     memberId: string,
-  ): Promise<ItemBookmarkRawWithItem[]> {
+  ): Promise<ItemBookmarkRawWithItemWithCreator[]> {
     const bookmarks = await db
       .select()
       .from(itemBookmarks)
       .innerJoin(items, eq(itemBookmarks.itemId, items.id))
+      .leftJoin(membersView, eq(items.creatorId, membersView.id))
       .where(eq(itemBookmarks.memberId, memberId));
-    const bookmarksResult = bookmarks.map(({ item_favorite, item_view }) => ({
+
+    const bookmarksResult = bookmarks.map(({ item_favorite, item_view, members_view }) => ({
       ...item_favorite,
-      item: item_view,
+      item: { ...item_view, creator: members_view as MemberRaw | null },
     }));
     return bookmarksResult;
   }
 
   /**
-   * Return all the favorite items of the given member.
+   * Return all the bookmark items of the given member.
    * @param memberId ID of the member to retrieve the data.
    * @returns an array of favorites.
    */

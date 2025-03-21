@@ -66,11 +66,11 @@ export const filterOutItems = async (
 /**
  * Filtering function that takes out limited items (eg. hidden children) and return packed items
  *  */
-export const filterOutPackedItems = async (
+export const filterOutPackedItems = async <T extends Item = Item>(
   db: DBConnection,
   actor: MaybeUser,
   { itemMembershipRepository, itemVisibilityRepository },
-  items: Item[],
+  items: T[],
   itemsThumbnails?: ItemsThumbnails,
   options?: { showHidden?: boolean },
 ): Promise<PackedItem[]> => {

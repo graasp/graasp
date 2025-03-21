@@ -14,17 +14,20 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const bookmarkService = resolveDependency(BookmarkService);
 
   fastify.get(
-    '/favorite',
-    { schema: getOwnBookmark, preHandler: [isAuthenticated, matchOne(memberAccountRole)] },
+    '/bookmarks',
+    {
+      schema: getOwnBookmark,
+      preHandler: [isAuthenticated, matchOne(memberAccountRole)],
+    },
     async ({ user }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return bookmarkService.getOwn(db, member);
+      return await bookmarkService.getOwn(db, member);
     },
   );
 
   fastify.post(
-    '/favorite/:itemId',
+    '/bookmarks/:itemId',
     { schema: create, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async ({ user, params: { itemId } }) => {
       const member = asDefined(user?.account);
@@ -36,7 +39,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   );
 
   fastify.delete(
-    '/favorite/:itemId',
+    '/bookmarks/:itemId',
     { schema: deleteOne, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
     async ({ user, params: { itemId } }) => {
       const member = asDefined(user?.account);
