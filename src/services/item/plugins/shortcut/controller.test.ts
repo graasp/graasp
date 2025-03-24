@@ -260,7 +260,6 @@ describe('Shortcut routes tests', () => {
           url: `/items/shortcuts/${item.id}`,
           payload,
         });
-        console.log(response);
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
 
         const newItem = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, item.id) });
@@ -343,7 +342,6 @@ describe('Shortcut routes tests', () => {
           url: `/items/shortcuts/${shortcut.id}`,
           payload,
         });
-        console.log(response);
 
         expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
         expect(response.json().message).toEqual(new MemberCannotWriteItem(shortcut.id).message);

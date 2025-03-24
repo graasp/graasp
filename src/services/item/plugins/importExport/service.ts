@@ -388,8 +388,6 @@ export class ImportExportService {
   ) {
     const filenames = fs.readdirSync(folderPath);
 
-    console.log(filenames);
-
     const items: Item[] = [];
     for (const filename of filenames) {
       // import item from file excluding descriptions

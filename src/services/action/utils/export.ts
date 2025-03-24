@@ -5,7 +5,6 @@ import path from 'path';
 
 import { ExportActionsFormatting } from '@graasp/sdk';
 
-import { AppActionRaw, AppDataRaw, AppSettingRaw } from '../../../drizzle/types';
 import { TMP_FOLDER } from '../../../utils/config';
 import { CannotWriteFileError } from './errors';
 
@@ -90,7 +89,6 @@ export const exportActionsInArchive = async (args: {
   archive.pipe(outputStream);
 
   archive.directory(fileName, false);
-  console.log('wefojm');
   try {
     const fileFolderPath = path.join(storageFolder, archiveDate);
     mkdirSync(fileFolderPath);
@@ -103,7 +101,6 @@ export const exportActionsInArchive = async (args: {
 
       writeFileForFormat(viewFilepath, format, actionsPerView);
     });
-    console.log('ukiujhf');
 
     // create file for item
     const itemFilepath = path.join(
@@ -111,7 +108,6 @@ export const exportActionsInArchive = async (args: {
       buildActionFileName('item', archiveDate, format),
     );
     writeFileForFormat(itemFilepath, format, [baseAnalytics.item]);
-    console.log('tzutzr6tr');
 
     // create file for descendants
     const descendantsFilepath = path.join(
@@ -119,7 +115,6 @@ export const exportActionsInArchive = async (args: {
       buildActionFileName('descendants', archiveDate, format),
     );
     writeFileForFormat(descendantsFilepath, format, baseAnalytics.descendants);
-    console.log('tzujtzj');
 
     // create file for the members
     const membersFilepath = path.join(
@@ -127,7 +122,6 @@ export const exportActionsInArchive = async (args: {
       buildActionFileName('members', archiveDate, format),
     );
     writeFileForFormat(membersFilepath, format, baseAnalytics.members);
-    console.log('ergeg');
 
     // create file for the memberships
     const iMembershipsPath = path.join(
@@ -139,7 +133,6 @@ export const exportActionsInArchive = async (args: {
     // create file for the chat messages
     const chatPath = path.join(fileFolderPath, buildActionFileName('chat', archiveDate, format));
     writeFileForFormat(chatPath, format, baseAnalytics.chatMessages);
-    console.log('ujzhzrttrg');
 
     // merge together actions, data and settings from all app_items
     const { appActions = [], appData = [], appSettings = [] } = {};
@@ -165,7 +158,6 @@ export const exportActionsInArchive = async (args: {
           fileFolderPath,
           buildActionFileName('apps', archiveDate, format),
         );
-        console.log('hzegr');
         writeFileForFormat(appsPath, format, {
           appActions,
           appData,
@@ -182,7 +174,6 @@ export const exportActionsInArchive = async (args: {
           buildActionFileName('app_actions', archiveDate, format),
         );
         writeFileForFormat(appActionsPath, format, appActions);
-        console.log('jz6t5ergerg');
 
         const appDataPath = path.join(
           fileFolderPath,
@@ -199,7 +190,6 @@ export const exportActionsInArchive = async (args: {
         break;
       }
     }
-    console.log('hztr5z45');
 
     // add directory in archive
     archive.directory(fileFolderPath, fileName);

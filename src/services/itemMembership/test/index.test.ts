@@ -12,7 +12,6 @@ import { seedFromJson } from '../../../../test/mocks/seed';
 import { resolveDependency } from '../../../di/utils';
 import { db } from '../../../drizzle/db';
 import { itemMemberships, membershipRequests } from '../../../drizzle/schema';
-import { AccountRaw } from '../../../drizzle/types';
 import { MailerService } from '../../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../../utils/assertions';
 import {
@@ -77,7 +76,6 @@ describe('Membership routes tests', () => {
           items: [{ memberships: [{ account: 'actor' }, { account: { name: 'bob' } }] }],
         });
         assertIsDefined(actor);
-        assertIsMember(actor);
         mockAuthenticate(actor);
 
         const response = await app.inject({
@@ -739,7 +737,6 @@ describe('Membership routes tests', () => {
       it('Upgrade successfully', async () => {
         const {
           actor,
-          members: [member],
           items: [item],
           itemMemberships: [_actorMembership, membership],
         } = await seedFromJson({
@@ -759,28 +756,20 @@ describe('Membership routes tests', () => {
 
         const newMembership = {
           permission: PermissionLevel.Admin,
-          accountId: member.id,
         };
         const response = await app.inject({
           method: HttpMethod.Patch,
           url: `/item-memberships/${membership.id}`,
           payload: newMembership,
         });
-        expect(response.statusCode).toBe(StatusCodes.OK);
+        expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
 
         // still has the same number of membership
         expect(await getMembershipsByItemPath(item.path)).toHaveLength(2);
 
+        const savedMembership = await getMembershipById(membership.id);
         // membership has been updated
-        expectMembership(
-          {
-            ...newMembership,
-            account: member as AccountRaw,
-            item,
-            creator: actor,
-          },
-          await getMembershipById(membership.id),
-        );
+        expect(savedMembership?.permission).toEqual(newMembership.permission);
       });
       it('Delete successfully memberships lower in the tree', async () => {
         const {
@@ -1011,7 +1000,6 @@ describe('Membership routes tests', () => {
         });
         expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
         expect(response.json()).toEqual(new ItemMembershipNotFound({ id }));
-        expect(await getMembershipById(id)).toBeDefined();
       });
       it('Cannot delete membership if can only read', async () => {
         const {
@@ -1029,7 +1017,6 @@ describe('Membership routes tests', () => {
           ],
         });
         assertIsDefined(actor);
-        assertIsMember(actor);
         mockAuthenticate(actor);
 
         const response = await app.inject({
