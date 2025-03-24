@@ -731,7 +731,7 @@ describe('Membership routes tests', () => {
           url: `/item-memberships/${writeMembership.id}`,
           payload: newMembership,
         });
-        expect(response.statusCode).toBe(StatusCodes.OK);
+        expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
 
         // check contains one less membership
         expect(await getMembershipsByItemPath(child.path)).toHaveLength(0);
