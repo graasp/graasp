@@ -11,6 +11,7 @@ import {
   ItemVisibilityOptionsType,
   ItemVisibilityType,
   PermissionLevel,
+  PermissionLevelOptions,
   buildPathFromIds,
   getIdsFromPath,
 } from '@graasp/sdk';
@@ -80,7 +81,7 @@ type SeedMember = Partial<MemberRaw> & { profile?: Partial<MemberProfileRaw> };
 type SeedMembership<M = SeedMember> = Partial<Omit<ItemMembershipRaw, 'creator' | 'account'>> & {
   account: M;
   creator?: M | null;
-  permission?: `${PermissionLevel}`;
+  permission?: PermissionLevelOptions;
 };
 type SeedItem<M = SeedMember> = (Partial<Omit<ItemRaw, 'creator'>> & { creator?: M | null }) & {
   children?: SeedItem<M>[];
@@ -252,13 +253,14 @@ const processActor = async ({
   items: SeedItem<SeedMember>[];
 }> => {
   // create actor if not null
-  let createdActor: AccountRaw | null = null;
+  const createdActor: AccountRaw | null = null;
   let actorProfile;
   let processedItems;
   if (actor !== null) {
     // replace actor data with default values if actor is undefined or 'actor'
     const actorData: Partial<AccountRaw> = typeof actor === 'string' || !actor ? {} : actor;
-    createdActor = (await db.insert(accountsTable).values(MemberFactory(actorData)).returning())[0];
+    const res = await db.insert(accountsTable).values(MemberFactory(actorData)).returning();
+    const createdActor = res[0];
 
     // a profile is defined
     if (actorData) {
@@ -598,7 +600,7 @@ async function createItemLoginSchemasAndGuests(items: (SeedItem & { path: string
     const guestMemberships = guestsData.reduce<
       {
         accountId: string;
-        permission: PermissionLevel;
+        permission: PermissionLevelOptions;
         itemPath: string;
       }[]
     >((acc, { id, itemPath: path }) => {

@@ -6,7 +6,6 @@ import { FastifySchema } from 'fastify';
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 import { errorSchemaRef } from '../../schemas/global';
 import { nullableAccountSchemaRef } from '../account/schemas';
-import { itemSchemaRef } from '../item/schemas';
 
 /**
  * JSON schema definitions to validate requests and responses
@@ -37,11 +36,12 @@ export const chatMessageSchemaRef = registerSchemaAsRef(
   customType.StrictObject(
     {
       id: customType.UUID(),
+      creatorId: customType.Nullable(customType.UUID()),
       creator: nullableAccountSchemaRef,
       createdAt: customType.DateTime(),
       updatedAt: customType.DateTime(),
       body: Type.String(),
-      item: itemSchemaRef,
+      itemId: customType.UUID(),
     },
     {
       description: 'Message from a member in a chat of an item.',

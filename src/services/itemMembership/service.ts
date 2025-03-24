@@ -1,6 +1,6 @@
 import { singleton } from 'tsyringe';
 
-import { ClientManager, Context, PermissionLevel, UUID } from '@graasp/sdk';
+import { ClientManager, Context, PermissionLevel, PermissionLevelOptions, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../drizzle/db';
 import {
@@ -18,7 +18,6 @@ import { CannotDeleteOnlyAdmin, CannotModifyGuestItemMembership } from '../../ut
 import HookManager from '../../utils/hook';
 import { AuthorizationService } from '../authorization';
 import { BasicItemService } from '../item/basic.service';
-import { ItemService } from '../item/service';
 import { MemberRepository } from '../member/member.repository';
 import { MembershipRequestRepository } from './plugins/MembershipRequest/repository';
 import { ItemMembershipRepository } from './repository';
@@ -100,7 +99,7 @@ export class ItemMembershipService {
     account: AuthenticatedUser,
     item: ItemRaw,
     memberId: string,
-    permission: `${PermissionLevel}`,
+    permission: PermissionLevelOptions,
     // membership: { permission: PermissionLevel; itemId: UUID; memberId: UUID },
   ) {
     const member = await this.memberRepository.get(db, memberId);
@@ -128,7 +127,7 @@ export class ItemMembershipService {
   async create(
     db: DBConnection,
     actor: AuthenticatedUser,
-    membership: { permission: `${PermissionLevel}`; itemId: UUID; memberId: UUID },
+    membership: { permission: PermissionLevelOptions; itemId: UUID; memberId: UUID },
   ) {
     // check memberships
     const item = await this.basicItemService.get(
@@ -144,7 +143,7 @@ export class ItemMembershipService {
   async createMany(
     db: DBConnection,
     authenticatedUser: AuthenticatedUser,
-    memberships: { permission: `${PermissionLevel}`; accountId: UUID }[],
+    memberships: { permission: PermissionLevelOptions; accountId: UUID }[],
     itemId: UUID,
   ) {
     // check memberships
@@ -166,7 +165,7 @@ export class ItemMembershipService {
     db: DBConnection,
     authenticatedUser: AuthenticatedUser,
     itemMembershipId: string,
-    data: { permission: `${PermissionLevel}` },
+    data: { permission: PermissionLevelOptions },
   ) {
     // check memberships
     const membership = await this.itemMembershipRepository.get(db, itemMembershipId);

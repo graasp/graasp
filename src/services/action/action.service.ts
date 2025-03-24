@@ -8,7 +8,7 @@ import { ClientManager, Context } from '@graasp/sdk';
 import { DBConnection } from '../../drizzle/db';
 import { Item } from '../../drizzle/types';
 import { BaseLogger } from '../../logger';
-import { MaybeUser } from '../../types';
+import { AccountType, MaybeUser } from '../../types';
 import { MemberRepository } from '../member/member.repository';
 import { ActionRepository } from './action.repository';
 import { getGeolocationIp } from './utils/actions';
@@ -37,7 +37,11 @@ export class ActionService {
   ): Promise<void> {
     const { headers } = request;
     // expand member to the full account
-    const member = actor ? await this.memberRepository.get(db, actor.id) : null;
+    // only do it if it is an 'individual'
+    const member =
+      actor && actor.type === AccountType.Individual
+        ? await this.memberRepository.get(db, actor.id)
+        : null;
     //TODO: should we assert that the member is a "member" ?
     // prevent saving if member is defined and has disabled saveActions
     if (member && member.toMemberInfo().enableSaveActions === false) {
@@ -66,7 +70,7 @@ export class ActionService {
 
     const geolocation = ip ? getGeolocationIp(ip) : null;
     const completeActions = actions.map((a) => ({
-      accountId: member?.id,
+      accountId: actor?.id,
       geolocation: geolocation ?? undefined,
       view,
       itemId: a.item?.id,

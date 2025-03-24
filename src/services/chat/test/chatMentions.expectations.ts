@@ -1,30 +1,33 @@
-import { ChatMentionRaw, ChatMentionWithMessageAndCreator } from '../../../drizzle/types';
+import {
+  ChatMentionRaw,
+  ChatMentionWithMessage,
+  ChatMentionWithMessageAndCreator,
+} from '../../../drizzle/types';
 
-export const expectChatMentions = (
+export const expectFullChatMentions = (
   mentions: ChatMentionWithMessageAndCreator[],
   correctMentions: ChatMentionRaw[],
-  relations: { account?: boolean; message?: boolean } = {},
 ) => {
-  const relationsMessage = relations?.message ?? true;
-  const relationsMember = relations?.account ?? true;
-
   expect(mentions).toHaveLength(correctMentions.length);
   for (const m of mentions) {
     const correctMention = correctMentions.find(({ id }) => id === m.id)!;
 
-    // foreign keys
-    if (relationsMessage) {
-      expect(m.message.id).toEqual(correctMention.messageId);
-      expect(m.message.creatorId).toBeDefined();
-    } else {
-      expect(m.message).toBeUndefined();
-    }
+    expect(m.message.id).toEqual(correctMention.messageId);
+    expect(m.message.creatorId).toBeDefined();
+    expect(m.account.id).toEqual(correctMention.accountId);
+  }
+};
 
-    if (relationsMember) {
-      expect(m.account.id).toEqual(correctMention.accountId);
-    } else {
-      expect(m.account).toBeUndefined();
-    }
+export const expectChatMentions = (
+  mentions: ChatMentionWithMessage[],
+  correctMentions: ChatMentionRaw[],
+) => {
+  expect(mentions).toHaveLength(correctMentions.length);
+  for (const m of mentions) {
+    const correctMention = correctMentions.find(({ id }) => id === m.id)!;
+
+    expect(m.message.id).toEqual(correctMention.messageId);
+    expect(m.message.creatorId).toBeDefined();
   }
 };
 
