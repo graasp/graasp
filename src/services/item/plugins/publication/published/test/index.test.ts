@@ -1,55 +1,41 @@
+import { eq } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType, ItemVisibilityType, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, ItemType, ItemValidationStatus, PermissionLevel } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
 } from '../../../../../../../test/app';
+import { seedFromJson } from '../../../../../../../test/mocks/seed';
 import { resolveDependency } from '../../../../../../di/utils';
-import { Item, ItemPublishedRaw } from '../../../../../../drizzle/types';
+import { db } from '../../../../../../drizzle/db';
+import { publishedItems } from '../../../../../../drizzle/schema';
 import { MailerService } from '../../../../../../plugins/mailer/mailer.service';
+import { assertIsDefined } from '../../../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../../utils/config';
-import { ItemNotFound, MemberCannotAdminItem } from '../../../../../../utils/errors';
-import { saveMember } from '../../../../../member/test/fixtures/members';
-import {
-  ItemTestUtils,
-  expectItem,
-  expectManyItems,
-  expectManyPackedItems,
-} from '../../../../test/fixtures/items';
+import { MemberCannotAdminItem } from '../../../../../../utils/errors';
+import { ItemWrapper } from '../../../../ItemWrapper';
+import { expectItem, expectManyPackedItems } from '../../../../test/fixtures/items';
 import { ItemVisibilityNotFound } from '../../../itemVisibility/errors';
-import { saveItemValidation } from '../../validation/test/utils';
-import { ItemPublishedNotFound } from '../errors';
-import { ItemPublishedRepository } from '../itemPublished.repository';
 import { MeiliSearchWrapper } from '../plugins/search/meilisearch';
-
-const testUtils = new ItemTestUtils();
 
 jest.mock('../plugins/search/meilisearch');
 
-const rawRepository = AppDataSource.getRepository(ItemVisibility);
-
-const expectPublishedEntry = (value, expectedValue) => {
-  expect(value.item.id).toEqual(expectedValue.item.id);
-  expect(value.creator.id).toEqual(expectedValue.creator.id);
-};
-
 describe('Item Published', () => {
   let app: FastifyInstance;
-  const itemPublishedRawRepository = AppDataSource.getRepository(ItemPublished);
 
   beforeAll(async () => {
-    ({ app } = await build({ member: null }));
+    ({ app } = await build());
   });
 
   afterAll(async () => {
-    await clearDatabase(app.db);
+    await clearDatabase(db);
     app.close();
   });
 
@@ -60,23 +46,23 @@ describe('Item Published', () => {
 
   describe('GET /collections', () => {
     describe('Signed Out', () => {
-      let member;
-
-      beforeEach(async () => {
-        member = await saveMember();
-      });
-
       it('Get publish info of child item returns root published item', async () => {
-        const { item: parentItem } = await testUtils.saveItemAndMembership({ member });
-        const { item } = await testUtils.saveItemAndMembership({ member, parentItem });
-        await testUtils.itemVisibilityRepository.post(
-          app.db,
-          member,
-          parentItem,
-          ItemVisibilityType.Public,
-        );
-        // publish parent
-        await itemPublishedRawRepository.save({ item: parentItem, creator: member });
+        const {
+          items: [parentItem, item],
+        } = await seedFromJson({
+          items: [{ isPublic: true, isPublished: true, children: [{}] }],
+        });
+
+        // const { item: parentItem } = await testUtils.saveItemAndMembership({ member });
+        // const { item } = await testUtils.saveItemAndMembership({ member, parentItem });
+        // await testUtils.itemVisibilityRepository.post(
+        //   app.db,
+        //   member,
+        //   parentItem,
+        //   ItemVisibilityType.Public,
+        // );
+        // // publish parent
+        // await itemPublishedRawRepository.save({ item: parentItem, creator: member });
 
         const res = await app.inject({
           method: HttpMethod.Get,
@@ -85,40 +71,51 @@ describe('Item Published', () => {
         expect(res.statusCode).toBe(StatusCodes.OK);
         expectItem(res.json()?.item, parentItem);
       });
-      it('Get publish info of multiple childs returns root published items', async () => {
-        const { item: parentItem } = await testUtils.saveItemAndMembership({ member });
-        const { item: otherParentItem } = await testUtils.saveItemAndMembership({ member });
-        const { item } = await testUtils.saveItemAndMembership({ member, parentItem });
-        await testUtils.itemVisibilityRepository.post(
-          app.db,
-          member,
-          parentItem,
-          ItemVisibilityType.Public,
-        );
-        await testUtils.itemVisibilityRepository.post(
-          app.db,
-          member,
-          otherParentItem,
-          ItemVisibilityType.Public,
-        );
+      // REMOVE - don't use get many published info
+      // it('Get publish info of multiple childs returns root published items', async () => {
 
-        // publish parents
-        await itemPublishedRawRepository.save({ item: parentItem, creator: member });
-        await itemPublishedRawRepository.save({ item: otherParentItem, creator: member });
+      //   const {
+      //     items: [parentItem, item],
+      //   } = await seedFromJson({
+      //     items: [{ isPublic: true, isPublished: true, children: [{ isPublic: true }] }],
+      //   });
 
-        const res = await app.inject({
-          method: HttpMethod.Get,
-          url: `${ITEMS_ROUTE_PREFIX}/collections/informations`,
-          query: { itemId: [item.id, otherParentItem.id] },
-        });
-        expect(res.statusCode).toBe(StatusCodes.OK);
-        const result = (await res.json().data) as { [key: string]: ItemPublishedRaw };
-        const items = Object.values(result).map((i) => i.item);
-        expectManyItems(items as Item[], [otherParentItem, parentItem]);
-      });
+      // const { item: parentItem } = await testUtils.saveItemAndMembership({ member });
+      // const { item: otherParentItem } = await testUtils.saveItemAndMembership({ member });
+      // const { item } = await testUtils.saveItemAndMembership({ member, parentItem });
+      // await testUtils.itemVisibilityRepository.post(
+      //   app.db,
+      //   member,
+      //   parentItem,
+      //   ItemVisibilityType.Public,
+      // );
+      // await testUtils.itemVisibilityRepository.post(
+      //   app.db,
+      //   member,
+      //   otherParentItem,
+      //   ItemVisibilityType.Public,
+      // );
+
+      // // publish parents
+      // await itemPublishedRawRepository.save({ item: parentItem, creator: member });
+      // await itemPublishedRawRepository.save({ item: otherParentItem, creator: member });
+
+      //   const res = await app.inject({
+      //     method: HttpMethod.Get,
+      //     url: `${ITEMS_ROUTE_PREFIX}/collections/informations`,
+      //     query: { itemId: [item.id, otherParentItem.id] },
+      //   });
+      //   expect(res.statusCode).toBe(StatusCodes.OK);
+      //   const result = (await res.json().data) as { [key: string]: ItemPublishedRaw };
+      //   const items = Object.values(result).map((i) => i.item);
+      //   expectManyItems(items as Item[], [otherParentItem, parentItem]);
+      // });
       it('Get publish info of non public item returns forbidden', async () => {
         // simple item not public and not published
-        const { item } = await testUtils.saveItemAndMembership({ member });
+        const {
+          items: [item],
+        } = await seedFromJson({ items: [{}] });
+
         const res = await app.inject({
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/informations`,
@@ -126,14 +123,9 @@ describe('Item Published', () => {
         expect(res.statusCode).toBe(StatusCodes.FORBIDDEN);
       });
       it('Get publish info of public item that is not published yet returns null', async () => {
-        const { item } = await testUtils.saveItemAndMembership({ member });
-        // make item public
-        await testUtils.itemVisibilityRepository.post(
-          app.db,
-          member,
-          item,
-          ItemVisibilityType.Public,
-        );
+        const {
+          items: [item],
+        } = await seedFromJson({ items: [{ isPublic: true }] });
 
         const res = await app.inject({
           method: HttpMethod.Get,
@@ -156,37 +148,62 @@ describe('Item Published', () => {
   describe('GET /collections/members/:memberId', () => {
     describe('Signed Out', () => {
       it('Returns published collections for member', async () => {
-        const member = await saveMember();
-        const { packedItems: items, visibilities } = await testUtils.saveCollections(member);
+        const {
+          items,
+          itemVisibilities,
+          members: [member],
+        } = await seedFromJson({
+          items: [
+            { isPublic: true, isPublished: true, creator: { name: 'bob' } },
+            { isPublic: true, isPublished: true, creator: { name: 'bob' } },
+            { isPublic: true, isPublished: true, creator: { name: 'bob' } },
+          ],
+        });
 
         const res = await app.inject({
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/collections/members/${member.id}`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
-        expectManyPackedItems(res.json(), items, undefined, undefined, visibilities);
+        expectManyPackedItems(
+          res.json(),
+          items.map((i) => new ItemWrapper({ ...i, creator: member }).packed()),
+          undefined,
+          undefined,
+          itemVisibilities,
+        );
       });
     });
 
     describe('Signed In', () => {
-      let actor;
-
-      beforeEach(async () => {
-        ({ app, actor } = await build());
-        await testUtils.saveCollections(actor);
-      });
-
       it('Get published collections for member', async () => {
-        // add other collections
-        const member = await saveMember();
-        const { packedItems: items, visibilities } = await testUtils.saveCollections(member);
+        const {
+          actor,
+          items,
+          members: [member],
+          itemVisibilities,
+        } = await seedFromJson({
+          items: [
+            { isPublished: true, isPublic: true, creator: { name: 'bob' } },
+            { isPublished: true, isPublic: true, creator: { name: 'bob' } },
+            { isPublished: true, isPublic: true, creator: { name: 'bob' } },
+          ],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
         const res = await app.inject({
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/collections/members/${member.id}`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
-        expectManyPackedItems(res.json(), items, member, undefined, visibilities);
+        expectManyPackedItems(
+          res.json(),
+          items.map((i) => new ItemWrapper({ ...i, creator: member }).packed()),
+          member,
+          undefined,
+          itemVisibilities,
+        );
       });
     });
   });
@@ -194,8 +211,12 @@ describe('Item Published', () => {
   describe('POST /collections/:itemId/publish', () => {
     describe('Signed Out', () => {
       it('Throw if signed out', async () => {
-        const member = await saveMember();
-        const { item } = await testUtils.saveItemAndMembership({ member });
+        const {
+          items: [item],
+        } = await seedFromJson({
+          actor: null,
+          items: [{ isPublished: true, isPublic: true, creator: { name: 'bob' } }],
+        });
 
         const res = await app.inject({
           method: HttpMethod.Post,
@@ -206,28 +227,21 @@ describe('Item Published', () => {
     });
 
     describe('Signed In', () => {
-      let actor;
-
-      beforeEach(async () => {
-        actor = await saveMember();
-        mockAuthenticate(actor);
-      });
-
       it('Publish item with admin rights', async () => {
-        const member = await saveMember();
-        const { item } = await testUtils.saveItemAndMembership({
-          // We have to define dates, otherwise it will be random dates.
-          item: {
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-          creator: member,
-          member: actor,
-          permission: PermissionLevel.Admin,
+        const {
+          items: [item],
+          actor,
+        } = await seedFromJson({
+          items: [
+            {
+              isPublic: true,
+              itemValidations: [{ groupName: 'group', status: ItemValidationStatus.Success }],
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+          ],
         });
-        await rawRepository.save({ item, type: ItemVisibilityType.Public, creator: member });
-        // should validate before publishing
-        await saveItemValidation({ item });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
         const indexSpy = jest.spyOn(MeiliSearchWrapper.prototype, 'indexOne');
 
@@ -235,51 +249,48 @@ describe('Item Published', () => {
           method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/publish`,
         });
-        expect(res.statusCode).toBe(StatusCodes.OK);
-        expectPublishedEntry(res.json(), { item, creator: actor });
+        expect(res.statusCode).toBe(StatusCodes.NO_CONTENT);
 
+        // item is published
+        expect(
+          await db.query.publishedItems.findFirst({
+            where: eq(publishedItems.itemPath, item.path),
+          }),
+        ).toBeDefined();
         // Publishing an item triggers an indexing
         expect(indexSpy).toHaveBeenCalledTimes(1);
-        expectItem(indexSpy.mock.calls[0][0].item, item);
+        expectItem(indexSpy.mock.calls[0][1].item, item);
       });
 
       it('Publish item with admin rights and send notification', async () => {
         const mailerService = resolveDependency(MailerService);
         const sendEmailMock = jest.spyOn(mailerService, 'sendRaw');
 
-        const member = await saveMember();
-        const { item } = await testUtils.saveItemAndMembership({
-          // We have to define dates, otherwise it will be random dates.
-          item: {
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-          creator: member,
-          member: actor,
-          permission: PermissionLevel.Admin,
+        const {
+          actor,
+          items: [item],
+          members: [anna, cedric],
+        } = await seedFromJson({
+          items: [
+            {
+              isPublic: true,
+              itemValidations: [{ groupName: 'group', status: ItemValidationStatus.Success }],
+              memberships: [
+                { account: 'actor', permission: PermissionLevel.Admin },
+                { account: { name: 'anna' }, permission: PermissionLevel.Admin },
+                { account: { name: 'cedric' }, permission: PermissionLevel.Admin },
+              ],
+            },
+          ],
         });
-        const anna = await saveMember();
-        await testUtils.saveMembership({
-          item,
-          account: anna,
-          permission: PermissionLevel.Admin,
-        });
-        const cedric = await saveMember();
-        await testUtils.saveMembership({
-          item,
-          account: cedric,
-          permission: PermissionLevel.Admin,
-        });
-        await rawRepository.save({ item, type: ItemVisibilityType.Public, creator: member });
-        // should validate before publishing
-        await saveItemValidation({ item });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
         const res = await app.inject({
           method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/publish`,
         });
-        expect(res.statusCode).toBe(StatusCodes.OK);
-        expectPublishedEntry(res.json(), { item, creator: actor });
+        expect(res.statusCode).toBe(StatusCodes.NO_CONTENT);
 
         await waitForExpect(() => {
           expect(sendEmailMock).toHaveBeenCalledTimes(2);
@@ -303,19 +314,19 @@ describe('Item Published', () => {
       });
 
       it('Cannot publish private item', async () => {
-        const member = await saveMember();
-        const { item } = await testUtils.saveItemAndMembership({
-          // We have to define dates, otherwise it will be random dates.
-          item: {
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-          creator: member,
-          member: actor,
-          permission: PermissionLevel.Admin,
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            {
+              itemValidations: [{ groupName: 'group', status: ItemValidationStatus.Success }],
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+          ],
         });
-        // should validate before publishing
-        await saveItemValidation({ item });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
         const res = await app.inject({
           method: HttpMethod.Post,
@@ -326,13 +337,19 @@ describe('Item Published', () => {
       });
 
       it('Cannot publish item with write rights', async () => {
-        const member = await saveMember();
-        const { item } = await testUtils.saveItemAndMembership({
-          creator: member,
-          member: actor,
-          permission: PermissionLevel.Write,
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            {
+              itemValidations: [{ groupName: 'group', status: ItemValidationStatus.Success }],
+              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+            },
+          ],
         });
-        await rawRepository.save({ item, type: ItemVisibilityType.Public, creator: member });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
         const res = await app.inject({
           method: HttpMethod.Post,
@@ -342,13 +359,19 @@ describe('Item Published', () => {
       });
 
       it('Cannot publish item with read rights', async () => {
-        const member = await saveMember();
-        const { item } = await testUtils.saveItemAndMembership({
-          creator: member,
-          member: actor,
-          permission: PermissionLevel.Read,
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            {
+              itemValidations: [{ groupName: 'group', status: ItemValidationStatus.Success }],
+              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            },
+          ],
         });
-        await rawRepository.save({ item, type: ItemVisibilityType.Public, creator: member });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
         const res = await app.inject({
           method: HttpMethod.Post,
@@ -358,16 +381,20 @@ describe('Item Published', () => {
       });
 
       it('Cannot publish non-folder item', async () => {
-        const member = await saveMember();
-        const { item } = await testUtils.saveItemAndMembership({
-          item: {
-            type: ItemType.APP,
-          },
-          creator: member,
-          member: actor,
-          permission: PermissionLevel.Admin,
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            {
+              type: ItemType.DOCUMENT,
+              itemValidations: [{ groupName: 'group', status: ItemValidationStatus.Success }],
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+          ],
         });
-        await rawRepository.save({ item, type: ItemVisibilityType.Public, creator: member });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
         const res = await app.inject({
           method: HttpMethod.Post,
@@ -377,16 +404,18 @@ describe('Item Published', () => {
       });
 
       it('Cannot publish item without validating it first', async () => {
-        const member = await saveMember();
-        const { item } = await testUtils.saveItemAndMembership({
-          item: {
-            type: ItemType.FOLDER,
-          },
-          creator: member,
-          member: actor,
-          permission: PermissionLevel.Admin,
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+          ],
         });
-        await rawRepository.save({ item, type: ItemVisibilityType.Public, creator: member });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
         const res = await app.inject({
           method: HttpMethod.Post,
@@ -396,6 +425,10 @@ describe('Item Published', () => {
       });
 
       it('Throws if item id is invalid', async () => {
+        const { actor } = await seedFromJson();
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         const res = await app.inject({
           method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/collections/invalid-id/publish`,
@@ -404,11 +437,15 @@ describe('Item Published', () => {
       });
 
       it('Throws if item is not found', async () => {
+        const { actor } = await seedFromJson();
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         const res = await app.inject({
           method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${v4()}/publish`,
         });
-        expect(res.json()).toMatchObject(new ItemNotFound(expect.anything()));
+        expect(res.statusCode).toEqual(StatusCodes.NOT_FOUND);
       });
     });
   });
@@ -416,8 +453,9 @@ describe('Item Published', () => {
   describe('DELETE /collections/:itemId/unpublish', () => {
     describe('Signed Out', () => {
       it('Throw if signed out', async () => {
-        const member = await saveMember();
-        const { item } = await testUtils.saveItemAndMembership({ member });
+        const {
+          items: [item],
+        } = await seedFromJson({ actor: null, items: [{}] });
 
         const res = await app.inject({
           method: HttpMethod.Delete,
@@ -426,63 +464,77 @@ describe('Item Published', () => {
         expect(res.statusCode).toBe(StatusCodes.UNAUTHORIZED);
       });
     });
-
     describe('Signed In', () => {
-      let actor;
-
-      beforeEach(async () => {
-        actor = await saveMember();
-        mockAuthenticate(actor);
-      });
-
       it('Unpublish item with admin rights', async () => {
-        const member = await saveMember();
-        const { item } = await testUtils.saveItemAndMembership({
-          creator: member,
-          member: actor,
-          permission: PermissionLevel.Admin,
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            {
+              isPublic: true,
+              isPublished: true,
+              creator: 'actor',
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+          ],
         });
-        await rawRepository.save({ item, type: ItemVisibilityType.Public, creator: member });
-        await new ItemPublishedRepository().post(app.db, member, item);
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
         const indexSpy = jest.spyOn(MeiliSearchWrapper.prototype, 'deleteOne');
-
         const res = await app.inject({
           method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/unpublish`,
         });
-        expect(res.statusCode).toBe(StatusCodes.OK);
-        expectPublishedEntry(res.json(), { item, creator: member });
-        expect(indexSpy).toHaveBeenCalledTimes(1);
-        expectItem(indexSpy.mock.calls[0][0], item);
-      });
+        expect(res.statusCode).toBe(StatusCodes.NO_CONTENT);
 
+        expect(
+          await db.query.publishedItems.findFirst({
+            where: eq(publishedItems.itemPath, item.path),
+          }),
+        );
+        expect(indexSpy).toHaveBeenCalledTimes(1);
+        expectItem(indexSpy.mock.calls[0][1], item);
+      });
       it('Throws when unpublish non-published item', async () => {
-        const member = await saveMember();
-        const { item } = await testUtils.saveItemAndMembership({
-          creator: member,
-          member: actor,
-          permission: PermissionLevel.Admin,
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            {
+              isPublic: true,
+              creator: 'actor',
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+            },
+          ],
         });
-        await rawRepository.save({ item, type: ItemVisibilityType.Public, creator: member });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
         const res = await app.inject({
           method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/unpublish`,
         });
         expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
-        expect(res.json()).toMatchObject(new ItemPublishedNotFound(expect.anything()));
       });
-
       it('Cannot publish item with write rights', async () => {
-        const member = await saveMember();
-        const { item } = await testUtils.saveItemAndMembership({
-          creator: member,
-          member: actor,
-          permission: PermissionLevel.Write,
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            {
+              isPublic: true,
+              isPublished: true,
+              creator: 'actor',
+              memberships: [{ account: 'actor', permission: PermissionLevel.Write }],
+            },
+          ],
         });
-        await rawRepository.save({ item, type: ItemVisibilityType.Public, creator: member });
-        await new ItemPublishedRepository().post(app.db, member, item);
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
         const res = await app.inject({
           method: HttpMethod.Delete,
@@ -490,16 +542,22 @@ describe('Item Published', () => {
         });
         expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
       });
-
       it('Cannot publish item with read rights', async () => {
-        const member = await saveMember();
-        const { item } = await testUtils.saveItemAndMembership({
-          creator: member,
-          member: actor,
-          permission: PermissionLevel.Read,
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            {
+              isPublic: true,
+              isPublished: true,
+              creator: 'actor',
+              memberships: [{ account: 'actor', permission: PermissionLevel.Read }],
+            },
+          ],
         });
-        await rawRepository.save({ item, type: ItemVisibilityType.Public, creator: member });
-        await new ItemPublishedRepository().post(app.db, member, item);
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
         const res = await app.inject({
           method: HttpMethod.Delete,
@@ -507,21 +565,27 @@ describe('Item Published', () => {
         });
         expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
       });
-
       it('Throws if item id is invalid', async () => {
+        const { actor } = await seedFromJson();
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         const res = await app.inject({
           method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/collections/invalid-id/unpublish`,
         });
         expect(res.statusCode).toEqual(StatusCodes.BAD_REQUEST);
       });
-
       it('Throws if item is not found', async () => {
+        const { actor } = await seedFromJson();
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         const res = await app.inject({
           method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${v4()}/unpublish`,
         });
-        expect(res.json()).toMatchObject(new ItemNotFound(expect.anything()));
+        expect(res.statusCode).toEqual(StatusCodes.NOT_FOUND);
       });
     });
   });

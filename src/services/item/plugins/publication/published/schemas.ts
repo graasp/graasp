@@ -47,7 +47,7 @@ export const publishItem = {
     itemId: customType.UUID(),
   }),
   response: {
-    [StatusCodes.OK]: publishEntry,
+    [StatusCodes.NO_CONTENT]: Type.Null(),
     '4xx': errorSchemaRef,
   },
 };
@@ -62,7 +62,7 @@ export const unpublishItem = {
     itemId: customType.UUID(),
   }),
   response: {
-    [StatusCodes.OK]: Type.Null(),
+    [StatusCodes.NO_CONTENT]: Type.Null(),
     '4xx': errorSchemaRef,
   },
 };
@@ -81,20 +81,5 @@ export const getInformations = {
       Type.Composite([publishEntry, customType.StrictObject({ totalViews: Type.Number() })]),
     ),
     '4xx': errorSchemaRef,
-  },
-};
-
-export const getManyInformations = {
-  querystring: customType.StrictObject({
-    itemId: Type.Array(customType.UUID(), {
-      uniqueItems: true,
-      maxItems: MAX_TARGETS_FOR_READ_REQUEST,
-    }),
-  }),
-  response: {
-    [StatusCodes.OK]: customType.StrictObject({
-      data: Type.Record(Type.String({ format: 'uuid' }), publishEntry),
-      errors: Type.Array(errorSchemaRef),
-    }),
   },
 };

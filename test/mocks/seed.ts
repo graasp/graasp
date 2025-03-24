@@ -8,6 +8,8 @@ import {
   ItemLoginSchemaStatus,
   ItemLoginSchemaType,
   ItemType,
+  ItemValidationProcess,
+  ItemValidationStatus,
   ItemVisibilityOptionsType,
   ItemVisibilityType,
   PermissionLevel,
@@ -33,6 +35,8 @@ import {
   itemLoginSchemas,
   itemMemberships,
   itemTags as itemTagsTable,
+  itemValidationGroups,
+  itemValidations,
   itemVisibilities,
   itemsRaw,
   memberPasswords,
@@ -61,6 +65,7 @@ import {
   ItemMembershipRaw,
   ItemRaw,
   ItemTagRaw,
+  ItemValidationRaw,
   ItemVisibilityRaw,
   MemberProfileRaw,
   MemberRaw,
@@ -93,6 +98,10 @@ type SeedItem<M = SeedMember> = (Partial<Omit<ItemRaw, 'creator'>> & { creator?:
   isDeleted?: boolean;
   isBookmarked?: boolean;
   likes?: M[];
+  itemValidations?: (Partial<Omit<ItemValidationRaw, 'id' | 'itemId' | 'itemValidationGroupId'>> & {
+    groupName: string;
+    status: ItemValidationRaw['status'];
+  })[];
   geolocation?: Omit<ItemGeolocationInsertDTO, 'itemPath'>;
   tags?: Pick<TagRaw, 'name' | 'category'>[];
   itemLoginSchema?: Partial<ItemLoginSchemaRaw> & {
@@ -511,7 +520,7 @@ async function createItemVisibilities(items: (SeedItem & { path: string })[]) {
   return [];
 }
 
-async function createItemPublisheds(items: (SeedItem & { path: string })[]) {
+async function createItemPublisheds(items: (SeedItem & { id: string; path: string })[]) {
   const published = items.reduce<{ itemPath: string }[]>((acc, { path, isPublished }) => {
     if (isPublished) {
       acc.push({ itemPath: path });
@@ -523,7 +532,48 @@ async function createItemPublisheds(items: (SeedItem & { path: string })[]) {
     return await db.insert(publishedItems).values(published).returning();
   }
 
-  return [];
+  // get all item validation group names
+  const groupNameToId = new Map(
+    items.reduce<[string, { id: string; itemId: string }][]>((acc, { id, itemValidations }) => {
+      if (itemValidations) {
+        return acc.concat(itemValidations.map((iv) => [iv.groupName, { id: v4(), itemId: id }]));
+      }
+      return acc;
+    }, []),
+  );
+  // TODO: reverse array to keep highest entry?
+  if (groupNameToId.size) {
+    // generate item validation and set correct validation group id
+    const itemValidationEntities = items.reduce<
+      {
+        itemId;
+        itemValidationGroupId: string;
+        process: ItemValidationProcess;
+        status: ItemValidationStatus;
+      }[]
+    >((acc, { id, itemValidations }) => {
+      if (itemValidations) {
+        return acc.concat(
+          itemValidations.map((iv) => ({
+            itemId: id,
+            process: ItemValidationProcess.BadWordsDetection,
+            status: ItemValidationStatus.Success,
+            itemValidationGroupId: groupNameToId.get(iv.groupName)!.id,
+          })),
+        );
+      }
+      return acc;
+    }, []);
+
+    // save all groups
+    // const itemValidationGroupEntities = [...groupNameToId.values()].map(({ itemId, id }) => ({
+    //   id: v4(),
+    //   itemId,
+    // }));
+    await db.insert(itemValidationGroups).values([...groupNameToId.values()]);
+    // save all item validations
+    await db.insert(itemValidations).values(itemValidationEntities).returning();
+  }
 }
 
 async function createItemBookmarks(items: (SeedItem & { id: string })[], actor: { id: string }) {

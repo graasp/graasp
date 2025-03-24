@@ -1,3 +1,5 @@
+import { StatusCodes } from 'http-status-codes';
+
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { PermissionLevel } from '@graasp/sdk';
@@ -53,7 +55,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
       schema: publishItem,
     },
-    async ({ params, user }) => {
+    async ({ params, user }, reply) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
       await db.transaction(async (tx) => {
@@ -68,6 +70,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
         await itemPublishedService.post(tx, member, item, status);
       });
+      reply.status(StatusCodes.NO_CONTENT);
     },
   );
 
@@ -77,12 +80,13 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
       schema: unpublishItem,
     },
-    async ({ params, user }) => {
+    async ({ params, user }, reply) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
       await db.transaction(async (tx) => {
         await itemPublishedService.delete(tx, member, params.itemId);
       });
+      reply.status(StatusCodes.NO_CONTENT);
     },
   );
 };
