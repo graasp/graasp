@@ -1,4 +1,5 @@
 import { isBefore } from 'date-fns';
+import { and, count, eq } from 'drizzle-orm';
 import { singleton } from 'tsyringe';
 
 import { FastifyRequest } from 'fastify';
@@ -6,6 +7,7 @@ import { FastifyRequest } from 'fastify';
 import { Context, ItemType, PermissionLevel, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
+import { actionsTable } from '../../../../drizzle/schema';
 import {
   ActionWithItem,
   AppActionRaw,
@@ -328,14 +330,17 @@ export class ActionItemService {
     await this.actionService.postMany(db, user?.account, request, actions);
   }
 
-  // TODO
-  async getTotalViewsCountForItemPath(db, itemPath) {
-    // {
-    //   view: 'library',
-    //   types: ['collection-view'],
-    //   startDate: formatISO(publishedItem.createdAt),
-    //   endDate: formatISO(new Date()),
-    // }
-    return 5555;
+  async getTotalViewsCountForItemId(db: DBConnection, itemId: Item['id']) {
+    const res = await db
+      .select({ count: count() })
+      .from(actionsTable)
+      .where(
+        and(
+          eq(actionsTable.view, 'library'),
+          eq(actionsTable.type, 'collection-view'),
+          eq(actionsTable.itemId, itemId),
+        ),
+      );
+    return res[0].count;
   }
 }

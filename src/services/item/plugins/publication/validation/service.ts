@@ -104,7 +104,6 @@ export class ItemValidationService {
     );
 
     await this.validationQueue.removeInProgress(item.id);
-
     const operationResult = results.every((v) => v);
 
     // update publication date

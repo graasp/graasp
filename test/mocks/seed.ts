@@ -65,6 +65,7 @@ import {
   ItemMembershipRaw,
   ItemRaw,
   ItemTagRaw,
+  ItemValidationGroupRaw,
   ItemValidationRaw,
   ItemVisibilityRaw,
   MemberProfileRaw,
@@ -529,7 +530,7 @@ async function createItemPublisheds(items: (SeedItem & { id: string; path: strin
   }, []);
 
   if (published.length) {
-    return await db.insert(publishedItems).values(published).returning();
+    await db.insert(publishedItems).values(published).returning();
   }
 
   // get all item validation group names
@@ -570,10 +571,26 @@ async function createItemPublisheds(items: (SeedItem & { id: string; path: strin
     //   id: v4(),
     //   itemId,
     // }));
-    await db.insert(itemValidationGroups).values([...groupNameToId.values()]);
+    const itemValidationGroupResult = await db
+      .insert(itemValidationGroups)
+      .values([...groupNameToId.values()])
+      .returning();
+
     // save all item validations
-    await db.insert(itemValidations).values(itemValidationEntities).returning();
+    const itemValidationResults = await db
+      .insert(itemValidations)
+      .values(itemValidationEntities)
+      .returning();
+
+    return {
+      itemValidations: itemValidationResults,
+      itemValidationGroups: itemValidationGroupResult,
+    };
   }
+  return {
+    itemValidations: [],
+    itemValidationGroups: [],
+  };
 }
 
 async function createItemBookmarks(items: (SeedItem & { id: string })[], actor: { id: string }) {
@@ -718,6 +735,8 @@ export async function seedFromJson(data: DataType = {}) {
     membershipRequests: MembershipRequestRaw[];
     bookmarks: ItemBookmarkRaw[];
     likes: ItemLikeRaw[];
+    itemValidationGroups: ItemValidationGroupRaw[];
+    itemValidations: ItemValidationRaw[];
   } = {
     items: [],
     actor: undefined,
@@ -738,6 +757,8 @@ export async function seedFromJson(data: DataType = {}) {
     chatMessages: [],
     membershipRequests: [],
     bookmarks: [],
+    itemValidationGroups: [],
+    itemValidations: [],
     likes: [],
   };
 
@@ -792,7 +813,10 @@ export async function seedFromJson(data: DataType = {}) {
   result.itemMemberships = result.itemMemberships.concat(guestItemMemberships);
 
   // save published
-  await createItemPublisheds(processedItems);
+  const { itemValidationGroups: ivg, itemValidations: iv } =
+    await createItemPublisheds(processedItems);
+  result.itemValidations = iv;
+  result.itemValidationGroups = ivg;
 
   // save tags
   if (data.tags?.length) {

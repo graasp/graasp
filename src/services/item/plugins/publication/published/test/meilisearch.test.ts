@@ -29,15 +29,12 @@ import {
 import { BaseLogger } from '../../../../../../logger';
 import FileService from '../../../../../file/service';
 import { ItemMembershipRepository } from '../../../../../itemMembership/repository';
-import { ItemTestUtils } from '../../../../test/fixtures/items';
 import { ItemLikeRepository } from '../../../itemLike/itemLike.repository';
 import { ItemTagRepository } from '../../../tag/ItemTag.repository';
 import { ItemPublishedRepository } from '../itemPublished.repository';
 import { MeiliSearchWrapper } from '../plugins/search/meilisearch';
 
 jest.unmock('../plugins/search/meilisearch');
-
-const testUtils = new ItemTestUtils();
 
 const mockItemPublished = ({ id, path }: { id: string; path: string }) => {
   return {

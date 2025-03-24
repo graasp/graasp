@@ -75,49 +75,51 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
 
-      db.transaction(async (tx) => {
-        // get item and check permission
-        // only folder items are allowed as root for validation
-        const item = await folderItemService.getFolder(tx, member, itemId, PermissionLevel.Admin);
+      reply.status(StatusCodes.ACCEPTED);
+      reply.send(itemId);
 
-        const notifyOnValidationChanges = () => {
+      await db
+        .transaction(async (tx) => {
+          // get item and check permission
+          // only folder items are allowed as root for validation
+          const item = await folderItemService.getFolder(tx, member, itemId, PermissionLevel.Admin);
+
+          const notifyOnValidationChanges = () => {
+            websockets.publish(
+              memberItemsTopic,
+              member.id,
+              ItemOpFeedbackEvent('validate', [itemId], { [item.id]: item }),
+            );
+          };
+
+          const hasValidationSucceeded = await validationService.post(
+            tx,
+            item,
+            notifyOnValidationChanges,
+          );
+
+          if (hasValidationSucceeded) {
+            // publish automatically the item if it is valid.
+            // private item will be set to public automatically (should ask the user on the frontend).
+            await publishService.publishIfNotExist(
+              tx,
+              member,
+              itemId,
+              PublicationStatus.ReadyToPublish,
+            );
+          }
+
+          // the process could take long time, so let the process run in the background and return the itemId instead
+          notifyOnValidationChanges();
+        })
+        .catch((e: Error) => {
+          log.error(e);
           websockets.publish(
             memberItemsTopic,
             member.id,
-            ItemOpFeedbackEvent('validate', [itemId], { [item.id]: item }),
+            ItemOpFeedbackErrorEvent('validate', [itemId], e),
           );
-        };
-
-        const hasValidationSucceeded = await validationService.post(
-          tx,
-          item,
-          notifyOnValidationChanges,
-        );
-
-        if (hasValidationSucceeded) {
-          // publish automatically the item if it is valid.
-          // private item will be set to public automatically (should ask the user on the frontend).
-          await publishService.publishIfNotExist(
-            tx,
-            member,
-            itemId,
-            PublicationStatus.ReadyToPublish,
-          );
-        }
-
-        // the process could take long time, so let the process run in the background and return the itemId instead
-        notifyOnValidationChanges();
-      }).catch((e: Error) => {
-        log.error(e);
-        websockets.publish(
-          memberItemsTopic,
-          member.id,
-          ItemOpFeedbackErrorEvent('validate', [itemId], e),
-        );
-      });
-
-      reply.status(StatusCodes.ACCEPTED);
-      return itemId;
+        });
     },
   );
 

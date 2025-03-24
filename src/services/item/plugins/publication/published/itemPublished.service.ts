@@ -138,9 +138,9 @@ export class ItemPublishedService {
       return null;
     }
     // get views from the actions table
-    const totalViews = await this.actionItemService.getTotalViewsCountForItemPath(db, item.path);
+    const totalViews = await this.actionItemService.getTotalViewsCountForItemId(db, item.id);
     return {
-      totalViews: (totalViews?.[0] as ActionCount)?.actionCount,
+      totalViews,
       creator: publishedItem.item.creator,
       ...publishedItem,
     };
