@@ -159,48 +159,5 @@ export class SearchService {
     });
 
     //Is the published item deleted automatically when the item is deleted?
-
-    // Update index when item changes ------------------------------------------
-
-    itemService.hooks.setPostHook('delete', async (member, db, { item }) => {
-      try {
-        await this.meilisearchClient.deleteOne(db, item);
-      } catch {
-        this.logger.error('Error during indexation, Meilisearch may be down');
-      }
-    });
-
-    itemService.hooks.setPostHook('update', async (member, db, { item }) => {
-      try {
-        // Check if the item is published (or has published parent)
-        const published = await this.itemPublishedRepository.getForItem(db, item.path);
-
-        if (!published) {
-          return;
-        }
-        // update index
-        await this.meilisearchClient.indexOne(db, published);
-      } catch (e) {
-        this.logger.error('Error during indexation, Meilisearch may be down');
-      }
-    });
-
-    itemService.hooks.setPostHook('move', async (member, db, { destination }) => {
-      try {
-        // Check if published from moved item up to tree root
-        const published = await this.itemPublishedRepository.getForItem(db, destination.path);
-
-        if (published) {
-          // destination or moved item is published, we must update the index
-          // update index from published
-          await this.meilisearchClient.indexOne(db, published);
-        } else {
-          // nothing published, we must delete if it exists in index
-          await this.meilisearchClient.deleteOne(db, destination);
-        }
-      } catch (e) {
-        this.logger.error('Error during indexation, Meilisearch may be down');
-      }
-    });
   }
 }

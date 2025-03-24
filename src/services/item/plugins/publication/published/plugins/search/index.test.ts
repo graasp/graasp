@@ -1,3 +1,4 @@
+import { eq } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 import { MultiSearchParams } from 'meilisearch';
 import { v4 } from 'uuid';
@@ -5,40 +6,38 @@ import waitForExpect from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
 
-import {
-  HttpMethod,
-  ItemType,
-  ItemVisibilityType,
-  PermissionLevel,
-  TagCategory,
-} from '@graasp/sdk';
+import { HttpMethod, ItemType, PermissionLevel, TagCategory } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
 } from '../../../../../../../../test/app';
+import { seedFromJson } from '../../../../../../../../test/mocks/seed';
+import { db } from '../../../../../../../drizzle/db';
+import { itemsRaw } from '../../../../../../../drizzle/schema';
 import { Item } from '../../../../../../../drizzle/types';
+import { assertIsDefined } from '../../../../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../../../utils/config';
-import { saveMember } from '../../../../../../member/test/fixtures/members';
-import { ItemTestUtils } from '../../../../../test/fixtures/items';
-import { ItemPublishedRepository } from '../../itemPublished.repository';
 import { MeiliSearchWrapper } from './meilisearch';
-
-const testUtils = new ItemTestUtils();
 
 jest.mock('./meilisearch');
 
-const rawRepository = AppDataSource.getRepository(ItemVisibility);
-const itemPublishedRawRepository = AppDataSource.getRepository(ItemPublished);
-
 const MOCK_INDEX = 'mock-index';
+
+const moveDone = (id: string, dest: Item) => async () => {
+  const result = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, id) });
+  if (!result) {
+    throw new Error('item does not exist!');
+  }
+  expect(result.path.startsWith(dest.path)).toBeTruthy();
+};
 
 describe('Collection Search endpoints', () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
-    ({ app } = await build({ member: null }));
+    ({ app } = await build());
   });
 
   beforeEach(() => {
@@ -46,7 +45,7 @@ describe('Collection Search endpoints', () => {
   });
 
   afterAll(async () => {
-    await clearDatabase(app.db);
+    await clearDatabase(db);
     app.close();
   });
 
@@ -99,10 +98,9 @@ describe('Collection Search endpoints', () => {
   });
 
   describe('Signed in', () => {
-    let actor;
-
     it('Returns search results', async () => {
-      actor = await saveMember();
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
       mockAuthenticate(actor);
 
       const fakeResponse = {
@@ -132,7 +130,8 @@ describe('Collection Search endpoints', () => {
     });
 
     it('search with tags', async () => {
-      actor = await saveMember();
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
       mockAuthenticate(actor);
 
       const searchSpy = jest.spyOn(MeiliSearchWrapper.prototype, 'search');
@@ -162,7 +161,8 @@ describe('Collection Search endpoints', () => {
     });
 
     it('search with creator id', async () => {
-      actor = await saveMember();
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
       mockAuthenticate(actor);
 
       const searchSpy = jest.spyOn(MeiliSearchWrapper.prototype, 'search');
@@ -191,7 +191,8 @@ describe('Collection Search endpoints', () => {
     });
 
     it('works with empty filters', async () => {
-      actor = await saveMember();
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
       mockAuthenticate(actor);
 
       const searchSpy = jest.spyOn(MeiliSearchWrapper.prototype, 'search');
@@ -217,43 +218,36 @@ describe('Collection Search endpoints', () => {
     });
 
     describe('triggers indexation on changes', () => {
-      let item: Item;
-      let publishedFolder: Item;
       let indexSpy;
       let deleteSpy;
 
       beforeEach(async () => {
-        actor = await saveMember();
-        mockAuthenticate(actor);
-
-        // Start with a published item
-        const extra = {
-          [ItemType.DOCUMENT]: {
-            content: 'my text is here',
-          },
-        };
-        ({ item } = await testUtils.saveItemAndMembership({
-          item: { type: ItemType.DOCUMENT, extra },
-          creator: actor,
-          member: actor,
-          permission: PermissionLevel.Admin,
-        }));
-        await rawRepository.save({ item, type: ItemVisibilityType.Public, creator: actor });
-        await new ItemPublishedRepository().post(app.db, actor, item);
-
-        ({ item: publishedFolder } = await testUtils.saveItemAndMembership({ member: actor }));
-        await rawRepository.save({
-          item: publishedFolder,
-          type: ItemVisibilityType.Public,
-          creator: actor,
-        });
-        await itemPublishedRawRepository.save({ item: publishedFolder, creator: actor });
-
         indexSpy = jest.spyOn(MeiliSearchWrapper.prototype, 'indexOne');
         deleteSpy = jest.spyOn(MeiliSearchWrapper.prototype, 'deleteOne');
       });
 
       it('Patch item', async () => {
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            {
+              isPublic: true,
+              isPublished: true,
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              type: ItemType.DOCUMENT,
+              extra: {
+                [ItemType.DOCUMENT]: {
+                  content: 'my text is here',
+                },
+              },
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         const payload = {
           name: 'new name',
           extra: {
@@ -268,30 +262,32 @@ describe('Collection Search endpoints', () => {
           url: `/items/${item.id}`,
           payload,
         });
-
         expect(response.statusCode).toBe(StatusCodes.OK);
+
         expect(indexSpy).toHaveBeenCalledTimes(1);
-        expect(indexSpy.mock.calls[0][0].item).toMatchObject(payload);
+        expect(indexSpy.mock.calls[0][1].item).toMatchObject(payload);
       });
 
       describe('Move', () => {
-        let moveDone;
-        let unpublishedFolder: Item;
-
-        beforeEach(async () => {
-          moveDone = (id: string, dest: Item) => async () => {
-            const result = await testUtils.rawItemRepository.findOneBy({ id: id });
-            if (!result) {
-              throw new Error('item does not exist!');
-            }
-            expect(result.path.startsWith(dest.path)).toBeTruthy();
-          };
-          ({ item: unpublishedFolder } = await testUtils.saveItemAndMembership({
-            member: actor,
-          }));
-        });
-
         it('Move published into unpublished should be indexed', async () => {
+          const {
+            actor,
+            items: [item, unpublishedFolder],
+          } = await seedFromJson({
+            items: [
+              {
+                isPublic: true,
+                isPublished: true,
+                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              },
+              {
+                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              },
+            ],
+          });
+          assertIsDefined(actor);
+          mockAuthenticate(actor);
+
           const move1 = await app.inject({
             method: HttpMethod.Post,
             url: '/items/move',
@@ -303,15 +299,37 @@ describe('Collection Search endpoints', () => {
 
           expect(move1.statusCode).toBe(StatusCodes.ACCEPTED);
           await waitForExpect(moveDone(item.id, unpublishedFolder), 300);
-          expect(indexSpy).toHaveBeenCalledTimes(1);
-          // Path update is sent to index
-          expect(indexSpy.mock.calls[0][0].item.id).toEqual(item.id);
-          expect(
-            indexSpy.mock.calls[0][0].item.path.startsWith(unpublishedFolder.path),
-          ).toBeTruthy();
+          await waitForExpect(async () => {
+            expect(indexSpy).toHaveBeenCalledTimes(1);
+            // Path update is sent to index
+            expect(indexSpy.mock.calls[0][1].item.id).toEqual(item.id);
+            expect(
+              indexSpy.mock.calls[0][1].item.path.startsWith(unpublishedFolder.path),
+            ).toBeTruthy();
+          });
         });
 
         it('Move published into published folder should be indexed', async () => {
+          const {
+            actor,
+            items: [item, publishedFolder],
+          } = await seedFromJson({
+            items: [
+              {
+                isPublic: true,
+                isPublished: true,
+                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              },
+              {
+                isPublic: true,
+                isPublished: true,
+                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              },
+            ],
+          });
+          assertIsDefined(actor);
+          mockAuthenticate(actor);
+
           const move2 = await app.inject({
             method: HttpMethod.Post,
             url: '/items/move',
@@ -326,14 +344,28 @@ describe('Collection Search endpoints', () => {
           await waitForExpect(moveDone(item.id, publishedFolder), 300);
           expect(indexSpy).toHaveBeenCalledTimes(1);
           // Closest published at destination is reindexed
-          expect(indexSpy.mock.calls[0][0].item.id).toEqual(item.id);
+          expect(indexSpy.mock.calls[0][1].item.id).toEqual(item.id);
         });
 
         it('Move unpublished into published folder should be indexed', async () => {
-          const { item: unpublishedItem } = await testUtils.saveItemAndMembership({
-            member: actor,
-            item: { name: 'unpublishedItem' },
+          const {
+            actor,
+            items: [unpublishedItem, publishedFolder],
+          } = await seedFromJson({
+            items: [
+              {
+                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              },
+              {
+                isPublic: true,
+                isPublished: true,
+                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              },
+            ],
           });
+          assertIsDefined(actor);
+          mockAuthenticate(actor);
+
           const move3 = await app.inject({
             method: HttpMethod.Post,
             url: '/items/move',
@@ -347,14 +379,28 @@ describe('Collection Search endpoints', () => {
           await waitForExpect(moveDone(unpublishedItem.id, publishedFolder), 300);
           expect(indexSpy).toHaveBeenCalledTimes(1);
           // Topmost published at destination is reindexed
-          expect(indexSpy.mock.calls[0][0].item.id).toEqual(publishedFolder.id);
+          expect(indexSpy.mock.calls[0][1].item.id).toEqual(publishedFolder.id);
         });
 
         it(' Move unpublished nested inside published into unpublished should be deleted from index', async () => {
-          const { item: unpublishedItem } = await testUtils.saveItemAndMembership({
-            member: actor,
-            item: { name: 'unpublishedItem' },
+          const {
+            actor,
+            items: [_parent, unpublishedItem, unpublishedFolder],
+          } = await seedFromJson({
+            items: [
+              {
+                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+                isPublic: true,
+                isPublished: true,
+                children: [{}],
+              },
+              {
+                memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              },
+            ],
           });
+          assertIsDefined(actor);
+          mockAuthenticate(actor);
 
           const move4 = await app.inject({
             method: HttpMethod.Post,
@@ -369,7 +415,7 @@ describe('Collection Search endpoints', () => {
           await waitForExpect(moveDone(unpublishedItem.id, unpublishedFolder), 300);
           expect(deleteSpy).toHaveBeenCalledTimes(1);
           // item is deleted from index
-          expect(deleteSpy.mock.calls[0][0].id).toEqual(unpublishedItem.id);
+          expect(deleteSpy.mock.calls[0][1].id).toEqual(unpublishedItem.id);
         });
       });
     });
@@ -551,13 +597,11 @@ describe('Collection Search endpoints', () => {
         ],
       };
       jest.spyOn(MeiliSearchWrapper.prototype, 'search').mockResolvedValue(fakeResponse);
-
       const res = await app.inject({
         method: HttpMethod.Get,
         url: `${ITEMS_ROUTE_PREFIX}/collections/liked`,
       });
       expect(res.statusCode).toBe(StatusCodes.OK);
-
       // should return the likes property
       res.json().hits.forEach(({ likes }) => {
         expect(likes).toBeGreaterThanOrEqual(0);
@@ -664,13 +708,11 @@ describe('Collection Search endpoints', () => {
           ],
         };
         jest.spyOn(MeiliSearchWrapper.prototype, 'search').mockResolvedValue(fakeResponse);
-
         const res = await app.inject({
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/collections/recent?limit=2`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
-
         expect(res.json().hits).toHaveLength(2);
       });
     });

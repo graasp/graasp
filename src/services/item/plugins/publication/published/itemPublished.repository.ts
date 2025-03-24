@@ -1,4 +1,4 @@
-import { count, desc, eq, inArray, sql } from 'drizzle-orm';
+import { and, count, desc, eq, inArray, sql } from 'drizzle-orm';
 import { singleton } from 'tsyringe';
 
 import { DBConnection } from '../../../../../drizzle/db';
@@ -28,10 +28,17 @@ export class ItemPublishedRepository {
       .select()
       .from(publishedItems)
       // .innerJoin(membersView, eq(publishedItems.creatorId, membersView.id))
-      .innerJoin(items, isAncestorOrSelf(publishedItems.itemPath, itemPath))
-      .innerJoin(membersView, eq(items.creatorId, membersView.id))
+      .innerJoin(
+        items,
+        and(
+          isAncestorOrSelf(publishedItems.itemPath, itemPath),
+          eq(publishedItems.itemPath, items.path),
+        ),
+      )
+      .leftJoin(membersView, eq(items.creatorId, membersView.id))
       .orderBy(desc(sql`nlevel(${publishedItems.itemPath})`))
       .limit(1);
+
     if (res.length) {
       const entry = res[0];
       const mappedEntry = {

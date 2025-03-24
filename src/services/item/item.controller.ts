@@ -66,10 +66,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       reply.send(item);
 
       // background operations
-      await actionItemService.postPostAction(db, request, item);
       await db.transaction(async (tsx) => {
         await itemService.rescaleOrderForParent(tsx, member, item);
       });
+      await actionItemService.postPostAction(db, request, item);
     },
   );
 

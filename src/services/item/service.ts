@@ -617,7 +617,12 @@ export class ItemService {
     return this.itemWrapperService.merge(items, itemMemberships, visibilities, thumbnails);
   }
 
-  async patch(db: DBConnection, member: MinimalMember, itemId: UUID, body: Partial<Item>) {
+  async patch(
+    db: DBConnection,
+    member: MinimalMember,
+    itemId: UUID,
+    body: Partial<Item>,
+  ): Promise<Item> {
     // check memberships
     const item = await this.itemRepository.getOneOrThrow(db, itemId);
 
@@ -634,6 +639,18 @@ export class ItemService {
     const updated = await this.itemRepository.updateOne(db, item.id, body);
 
     await this.hooks.runPostHooks('update', member, db, { item: updated });
+
+    try {
+      // Check if the item is published (or has published parent)
+      const published = await this.itemPublishedRepository.getForItem(db, item.path);
+
+      // update index
+      if (published) {
+        await this.meilisearchWrapper.indexOne(db, published);
+      }
+    } catch (e) {
+      this.log.error('Error during indexation, Meilisearch may be down');
+    }
 
     return updated;
   }
@@ -670,6 +687,12 @@ export class ItemService {
     // post hook
     for (const item of items) {
       await this.hooks.runPostHooks('delete', actor, db, { item });
+
+      try {
+        await this.meilisearchWrapper.deleteOne(db, item);
+      } catch {
+        this.log.error('Error during indexation, Meilisearch may be down');
+      }
     }
 
     return item;
@@ -759,15 +782,33 @@ export class ItemService {
       destinationParent: parentItem,
     });
 
-    const result = await this._move(db, member, item, parentItem);
+    const destination = await this._move(db, member, item, parentItem);
     await this.hooks.runPostHooks('move', member, db, {
       source: item,
       sourceParentId: getParentFromPath(item.path),
       // QUESTION: send notification for root item?
-      destination: result[0],
+      destination,
     });
 
-    return { item, moved: result };
+    try {
+      // Check if published from moved item up to tree root
+      const published = await this.itemPublishedRepository.getForItem(db, destination.path);
+
+      if (published) {
+        // destination or moved item is published, we must update the index
+        // update index from published
+        console.log('wefouh');
+        await this.meilisearchWrapper.indexOne(db, published);
+      } else {
+        // nothing published, we must delete if it exists in index
+        await this.meilisearchWrapper.deleteOne(db, destination);
+      }
+    } catch (e) {
+      this.log.error(e);
+      this.log.error('Error during indexation, Meilisearch may be down');
+    }
+
+    return { item, moved: destination };
   }
 
   // TODO: optimize
@@ -825,6 +866,7 @@ export class ItemService {
     if (deletes.length) {
       await this.itemMembershipRepository.deleteManyByItemPathAndAccount(db, deletes);
     }
+
     return result;
   }
 

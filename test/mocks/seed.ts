@@ -38,6 +38,7 @@ import {
   memberPasswords,
   memberProfiles,
   membershipRequests,
+  publishedItems,
   publishers,
   recycledItemDatas,
   tags as tagsTable,
@@ -87,6 +88,7 @@ type SeedItem<M = SeedMember> = (Partial<Omit<ItemRaw, 'creator'>> & { creator?:
   children?: SeedItem<M>[];
   memberships?: SeedMembership<M>[];
   isPublic?: boolean;
+  isPublished?: boolean;
   isHidden?: boolean;
   isDeleted?: boolean;
   isBookmarked?: boolean;
@@ -509,6 +511,21 @@ async function createItemVisibilities(items: (SeedItem & { path: string })[]) {
   return [];
 }
 
+async function createItemPublisheds(items: (SeedItem & { path: string })[]) {
+  const published = items.reduce<{ itemPath: string }[]>((acc, { path, isPublished }) => {
+    if (isPublished) {
+      acc.push({ itemPath: path });
+    }
+    return acc;
+  }, []);
+
+  if (published.length) {
+    return await db.insert(publishedItems).values(published).returning();
+  }
+
+  return [];
+}
+
 async function createItemBookmarks(items: (SeedItem & { id: string })[], actor: { id: string }) {
   const bookmarks = items.reduce<{ itemId: string; memberId: string }[]>(
     (acc, { id, isBookmarked }) => {
@@ -724,6 +741,9 @@ export async function seedFromJson(data: DataType = {}) {
   result.guests = guests;
   result.itemMemberships = result.itemMemberships.concat(guestItemMemberships);
 
+  // save published
+  await createItemPublisheds(processedItems);
+
   // save tags
   if (data.tags?.length) {
     result.tags = await db.insert(tagsTable).values(data.tags).returning();
@@ -760,7 +780,6 @@ export async function seedFromJson(data: DataType = {}) {
   }
 
   // save apps
-  // const publisherValues = data.apps.map(({publisher}))
   const appValues = data.apps;
   if (appValues?.length) {
     const publishersEntities = await db
