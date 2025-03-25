@@ -1,145 +1,89 @@
-import { FastifyInstance } from 'fastify';
-
 import { PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../test/app';
-import { Item, ItemMembershipRaw } from '../../drizzle/types';
-import { MinimalMember } from '../../types';
-import { isMember } from '../authentication';
-import { ItemTestUtils } from '../item/test/fixtures/items';
-import { saveMember } from '../member/test/fixtures/members';
+import { clearDatabase } from '../../../test/app';
+import { seedFromJson } from '../../../test/mocks/seed';
+import { client, db } from '../../drizzle/db';
 import { ItemMembershipRepository } from './repository';
 
-const testUtils = new ItemTestUtils();
 const itemMembershipRepository = new ItemMembershipRepository();
 
-function crossArrayCheck(
-  itemArray: Item[],
-  itemMembershipArray: ItemMembershipRaw[],
-  crossIdMap: { [key in string]: string[] },
-): boolean {
-  return itemMembershipArray.every((m) => itemArray.some((i) => crossIdMap[i.path].includes(m.id)));
-}
-
 describe('ItemMembership Repository', () => {
-  let app: FastifyInstance;
-  let item: Item;
-  let creator: MinimalMember;
-
   beforeAll(async () => {
-    ({ app } = await build({ member: null }));
+    await client.connect();
   });
-
-  beforeEach(async () => {
-    creator = await saveMember();
-    item = await testUtils.saveItem({ actor: creator });
+  afterAll(async () => {
+    await client.end();
   });
-
   afterEach(async () => {
     jest.clearAllMocks();
-    await clearDatabase(app.db);
+    await clearDatabase(db);
   });
 
-  afterAll(async () => {
-    app.close();
-  });
-
-  describe('getAllWithPermission', () => {
+  describe('getAdminsForItem', () => {
     it('should return empty array when there is no corresponding permission', async () => {
-      const result = await itemMembershipRepository.getByItemPathAndPermission(
-        app.db,
-        item.path,
-        PermissionLevel.Admin,
-      );
+      const {
+        items: [item],
+      } = await seedFromJson({ items: [{}] });
+      const result = await itemMembershipRepository.getAdminsForItem(db, item.path);
       expect(result).toEqual([]);
     });
     it('should return all from the corresponding item', async () => {
-      const preset = {
-        [PermissionLevel.Admin]: 3,
-        [PermissionLevel.Read]: 6,
-        [PermissionLevel.Write]: 4,
-      };
-      for (const entry in preset) {
-        const permission = entry as PermissionLevel;
-        for (let i = 0; i < preset[permission]; i++) {
-          const temporaryMember = await saveMember();
-          await testUtils.saveMembership({ item, permission, account: temporaryMember });
-        }
-      }
+      const {
+        items: [item],
+        members: [bob, cedric],
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [
+              { account: { name: 'bob' }, permission: PermissionLevel.Admin },
+              { account: { name: 'cedric' }, permission: PermissionLevel.Admin },
+              { account: { name: 'anna' }, permission: PermissionLevel.Write },
+              { account: { name: 'david' }, permission: PermissionLevel.Read },
+            ],
+          },
+        ],
+      });
 
-      const result = await itemMembershipRepository.getByItemPathAndPermission(
-        app.db,
-        item.path,
-        PermissionLevel.Admin,
-      );
-      expect(result).toHaveLength(preset[PermissionLevel.Admin]);
-      expect(result.every((m) => m.permission === PermissionLevel.Admin)).toBe(true);
-      expect(
-        result.every((m) => {
-          const account = m.account;
-          if (isMember(account)) {
-            return Boolean(account.email);
-          }
-          return false;
-        }),
-      ).toBe(true);
+      const result = await itemMembershipRepository.getAdminsForItem(db, item.path);
+      expect(result).toHaveLength(2);
+      const admins = result.map((m) => m.id);
+      expect(admins).toContain(bob.id);
+      expect(admins).toContain(cedric.id);
     });
-    it('should return all from all ancestors items', async () => {
-      const parentItem = await testUtils.saveItem({ actor: creator, parentItem: item });
-      const targetItem = await testUtils.saveItem({ actor: creator, parentItem });
-      const siblingItem = await testUtils.saveItem({ actor: creator, parentItem });
-      const childItem = await testUtils.saveItem({ actor: creator, parentItem: targetItem });
-      const uncleItem = await testUtils.saveItem({ actor: creator, parentItem: item });
+    it('should return all from the ancestors', async () => {
+      const {
+        items: [_parent, child],
+        members: [bob, cedric, _c, _d, evian, fabrice],
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [
+              { account: { name: 'bob' }, permission: PermissionLevel.Admin },
+              { account: { name: 'cedric' }, permission: PermissionLevel.Admin },
+              { account: { name: 'anna' }, permission: PermissionLevel.Write },
+              { account: { name: 'david' }, permission: PermissionLevel.Read },
+            ],
+            children: [
+              {
+                memberships: [
+                  { account: { name: 'evian' }, permission: PermissionLevel.Admin },
+                  { account: { name: 'fabrice' }, permission: PermissionLevel.Admin },
+                  { account: { name: 'george' }, permission: PermissionLevel.Write },
+                  { account: { name: 'helene' }, permission: PermissionLevel.Read },
+                ],
+              },
+            ],
+          },
+        ],
+      });
 
-      const items = [item, parentItem, targetItem, siblingItem, childItem, uncleItem];
-
-      const preset = {
-        [PermissionLevel.Admin]: 3,
-        [PermissionLevel.Read]: 6,
-        [PermissionLevel.Write]: 4,
-      };
-
-      const memberships: Record<string, string[]> = Object.fromEntries(
-        items.map((i) => [i.path, []]),
-      );
-      for (const entry in preset) {
-        const permission = entry as PermissionLevel;
-        for (let i = 0; i < preset[permission]; i++) {
-          for (const item of items) {
-            const temporaryMember = await saveMember();
-            const membership = await testUtils.saveMembership({
-              item,
-              permission,
-              account: temporaryMember,
-            });
-            memberships[membership.item.path] = [
-              ...memberships[membership.item.path],
-              membership.id,
-            ];
-          }
-        }
-      }
-
-      const result = await itemMembershipRepository.getByItemPathAndPermission(
-        app.db,
-        targetItem.path,
-        PermissionLevel.Read,
-      );
-
-      const expectedItems = [targetItem, parentItem, item];
-
-      expect(result).toHaveLength(preset[PermissionLevel.Read] * expectedItems.length);
-      expect(result.every((m) => m.permission === PermissionLevel.Read)).toBe(true);
-      expect(
-        result.every((m) => {
-          const account = m.account;
-          if (isMember(account)) {
-            return Boolean(account.email);
-          }
-          return false;
-        }),
-      ).toBe(true);
-      expect(crossArrayCheck(expectedItems, result, memberships)).toBe(true);
+      const result = await itemMembershipRepository.getAdminsForItem(db, child.path);
+      expect(result).toHaveLength(4);
+      const admins = result.map((m) => m.id);
+      expect(admins).toContain(bob.id);
+      expect(admins).toContain(cedric.id);
+      expect(admins).toContain(evian.id);
+      expect(admins).toContain(fabrice.id);
     });
   });
 });

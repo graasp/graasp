@@ -1,27 +1,31 @@
-import { ItemGeolocationRaw } from '../../../../../drizzle/types';
+import {
+  ItemGeolocationRaw,
+  ItemGeolocationWithItemWithCreator,
+} from '../../../../../drizzle/types';
 import { PackedItemGeolocation } from '../service';
 
-// export const expectItemGeolocations = (
-//   results: ItemGeolocationRaw[] | null,
-//   expected: ItemGeolocationRaw[],
-// ) => {
-//   for (const ig of expected) {
-//     expect(results).toContainEqual(
-//       expect.objectContaining({
-//         lat: ig.lat,
-//         lng: ig.lng,
-//         addressLabel: ig.addressLabel,
-//         helperLabel: ig.helperLabel,
-//         country: ig.country,
-//         item: expect.objectContaining({
-//           id: ig.item.id,
-//           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-//           creator: expect.objectContaining({ id: ig.item.creator!.id }),
-//         }),
-//       }),
-//     );
-//   }
-// };
+export const expectItemGeolocations = (
+  results: ItemGeolocationRaw[] | null,
+  expected: ItemGeolocationWithItemWithCreator[],
+) => {
+  for (const ig of expected) {
+    expect(results).toContainEqual(
+      expect.objectContaining({
+        lat: ig.lat,
+        lng: ig.lng,
+        addressLabel: ig.addressLabel,
+        helperLabel: ig.helperLabel,
+        country: ig.country,
+        item: expect.objectContaining({
+          id: ig.item.id,
+          path: ig.item.path,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          creator: expect.objectContaining({ id: ig.item.creator!.id }),
+        }),
+      }),
+    );
+  }
+};
 
 export const expectPackedItemGeolocations = (
   results: PackedItemGeolocation[] | null,
