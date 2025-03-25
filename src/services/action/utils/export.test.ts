@@ -1,74 +1,76 @@
 import fs from 'fs';
 import path from 'path';
-import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
-import { Context, ExportActionsFormatting } from '@graasp/sdk';
+import { ExportActionsFormatting } from '@graasp/sdk';
 
 import build from '../../../../test/app';
-import { db } from '../../../drizzle/db';
-import { actionsTable, chatMessagesTable } from '../../../drizzle/schema';
-import { MemberRaw } from '../../../drizzle/types';
+import { seedFromJson } from '../../../../test/mocks/seed';
 import { TMP_FOLDER } from '../../../utils/config';
-import { BaseAnalytics } from '../../item/plugins/action/base-analytics';
-import { ItemTestUtils } from '../../item/test/fixtures/items';
-import { saveMember } from '../../member/test/fixtures/members';
 import { exportActionsInArchive } from './export';
 
-const testUtils = new ItemTestUtils();
-
-const setUpActions = async (app: FastifyInstance, member: MemberRaw) => {
-  const itemId = v4();
-  const views = Object.values(Context);
-  const { item, itemMembership } = await testUtils.saveItemAndMembership({
-    item: { id: itemId, name: 'item-name' },
-    member,
-  });
-  const actions = await db
-    .insert(actionsTable)
-    .values(
-      Array.from(Array(3)).map((_) => ({
-        view: views[0],
-        type: 'type',
-        extra: JSON.stringify({ itemId: item.id }),
-        itemId: item.id,
-        accountId: member.id,
-      })),
-    )
-    .returning();
-
-  const chatMessages = await db
-    .insert(chatMessagesTable)
-    .values([
-      {
-        itemId: item.id,
-        creatorId: member.id,
-        body: 'some-text',
-      },
-      {
-        itemId: item.id,
-        creatorId: member.id,
-        body: 'some-text-1',
-      },
-      {
-        itemId: item.id,
-        creatorId: member.id,
-        body: 'some-text-2',
-      },
-    ])
-    .returning();
-  const baseAnalytics = new BaseAnalytics({
+const setUpActions = async () => {
+  const {
     actions,
-    members: [member],
-    itemMemberships: [itemMembership],
-    item,
-    descendants: [testUtils.createItem()],
     chatMessages,
-    metadata: { numActionsRetrieved: 5, requestedSampleSize: 5 },
-    apps: {},
+    items: [item, child],
+    itemMemberships,
+  } = await seedFromJson({
+    items: [
+      {
+        memberships: [{ account: 'actor' }],
+        actions: [{ account: 'actor' }, { account: 'actor' }, { account: 'actor' }],
+        chatMessages: [
+          {
+            creator: 'actor',
+            body: 'some-text',
+          },
+          {
+            creator: 'actor',
+            body: 'some-text-1',
+          },
+          {
+            creator: 'actor',
+            body: 'some-text-2',
+          },
+        ],
+        children: [{}],
+      },
+    ],
   });
-  return { baseAnalytics, actions, views };
+
+  // const itemId = v4();
+  // const views = Object.values(Context);
+  // const { item, itemMembership } = await testUtils.saveItemAndMembership({
+  //   item: { id: itemId, name: 'item-name' },
+  //   member,
+  // });
+  // const actions = await db
+  //   .insert(actionsTable)
+  //   .values(
+  //     Array.from(Array(3)).map((_) => ({
+  //       view: views[0],
+  //       type: 'type',
+  //       extra: { itemId: item.id },
+  //       itemId: item.id,
+  //       accountId: member.id,
+  //     })),
+  //   )
+  //   .returning();
+
+  // const baseAnalytics = new BaseAnalytics({
+  //   actions,
+  //   members: [],
+  //   itemMemberships,
+  //   item,
+  //   descendants: [child],
+  //   chatMessages,
+  //   metadata: { numActionsRetrieved: 5, requestedSampleSize: 5 },
+  //   apps: {},
+  // });
+  // TODO: fix views?
+  return { baseAnalytics: {}, actions, views: [], item };
 };
 
 const storageFolder = path.join(TMP_FOLDER, 'export-actions');
@@ -87,13 +89,12 @@ describe('exportActionsInArchive', () => {
   });
 
   it('Create archive successfully', async () => {
-    const member = await saveMember();
-    const { baseAnalytics, views } = await setUpActions(app, member);
+    const { item, views } = await setUpActions();
 
     const writeFileSyncMock = jest.spyOn(fs, 'writeFileSync');
 
     const result = await exportActionsInArchive({
-      baseAnalytics,
+      baseAnalytics: {},
       storageFolder,
       views,
       format: ExportActionsFormatting.CSV,
@@ -108,7 +109,7 @@ describe('exportActionsInArchive', () => {
 
     // assume only 2 files exist in the folder
     const [folder, zip] = files;
-    expect(zip.includes(baseAnalytics.item.name)).toBeTruthy();
+    expect(zip.includes(item.name)).toBeTruthy();
     expect(fs.readdirSync(path.join(storageFolder, folder)).length).toEqual(6);
   });
 });

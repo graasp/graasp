@@ -15,23 +15,19 @@ import {
 } from '../plugins/action/test/utils';
 import { ItemRepository } from '../repository';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../ws/events';
-import { ItemTestUtils } from './fixtures/items';
-
-const testUtils = new ItemTestUtils();
 
 describe('Item websocket hooks', () => {
-  let app, actor, address;
+  let app, address;
   let ws: TestWsClient;
 
   beforeEach(async () => {
-    ({ app, actor, address } = await setupWsApp());
+    ({ app, address } = await setupWsApp());
     ws = new TestWsClient(address);
   });
 
   afterEach(async () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
-    actor = null;
     app.close();
     ws.close();
   });

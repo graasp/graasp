@@ -141,7 +141,6 @@ export class WebsocketService {
    */
   handleRequest(data: Data, actor: MaybeUser, client: WebSocket): void {
     const request = this.parse(typeof data === 'string' ? data : data?.toString());
-
     // validation error, send bad request
     if (request === undefined) {
       this.logger.info(

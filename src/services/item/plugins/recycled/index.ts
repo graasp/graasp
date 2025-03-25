@@ -108,13 +108,12 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         .transaction(async (tx) => {
           return await recycleBinService.restoreMany(tx, member, ids);
         })
-        .then(() => {
-          // TODO
-          // websockets.publish(
-          //   memberItemsTopic,
-          //   member.id,
-          //   ItemOpFeedbackEvent('restore', ids, items, items.errors),
-          // );
+        .then((items) => {
+          websockets.publish(
+            memberItemsTopic,
+            member.id,
+            ItemOpFeedbackEvent('restore', ids, { items }),
+          );
         })
         .catch((e: Error) => {
           log.error(e);

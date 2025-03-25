@@ -977,8 +977,8 @@ export class ItemRepository {
         ),
       );
   }
-  async recover(db: DBConnection, args: Item[]): Promise<void> {
-    await db
+  async recover(db: DBConnection, args: Item[]): Promise<ItemRaw[]> {
+    return await db
       .update(itemsRaw)
       .set({ deletedAt: null })
       .where(
@@ -986,7 +986,8 @@ export class ItemRepository {
           itemsRaw.id,
           args.map(({ id }) => id),
         ),
-      );
+      )
+      .returning();
   }
 
   /**

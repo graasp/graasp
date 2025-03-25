@@ -3,14 +3,20 @@ import waitForExpect from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemOpFeedbackEvent as ItemOpFeedbackEventType } from '@graasp/sdk';
+import {
+  HttpMethod,
+  ItemOpFeedbackEvent as ItemOpFeedbackEventType,
+  PermissionLevel,
+} from '@graasp/sdk';
 
-import { clearDatabase } from '../../../../../../../test/app';
+import { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../../../../test/app';
+import { seedFromJson } from '../../../../../../../test/mocks/seed';
+import { db } from '../../../../../../drizzle/db';
 import { Item } from '../../../../../../drizzle/types';
+import { assertIsDefined } from '../../../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../../utils/config';
 import { TestWsClient } from '../../../../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../../../../websockets/test/ws-app';
-import { ItemTestUtils } from '../../../../test/fixtures/items';
 import {
   ItemOpFeedbackErrorEvent,
   ItemOpFeedbackEvent,
@@ -18,31 +24,37 @@ import {
 } from '../../../../ws/events';
 import { expectValidateFeedbackOp } from '../../../action/test/utils';
 import { ItemValidationGroupRepository } from '../ItemValidationGroup.repository';
-import { saveItemValidation } from './utils';
-
-const testUtils = new ItemTestUtils();
 
 describe('asynchronous feedback', () => {
   let app: FastifyInstance;
-  let actor, address;
+  let address: string;
   let ws: TestWsClient;
 
-  beforeEach(async () => {
-    ({ app, actor, address } = await setupWsApp());
-    ws = new TestWsClient(address);
+  beforeAll(async () => {
+    ({ app, address } = await setupWsApp());
   });
 
-  afterEach(async () => {
-    jest.clearAllMocks();
-    await clearDatabase(app.db);
-    actor = null;
+  afterAll(async () => {
+    await clearDatabase(db);
     app.close();
     ws.close();
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+    unmockAuthenticate();
+  });
+
   it('member that initated the validate operation receives success feedback', async () => {
-    const { item } = await testUtils.saveItemAndMembership({ member: actor });
-    await saveItemValidation({ item });
+    const {
+      items: [item],
+      actor,
+    } = await seedFromJson({
+      items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] }],
+    });
+    assertIsDefined(actor);
+    mockAuthenticate(actor);
+    ws = new TestWsClient(address);
 
     const memberUpdates = await ws.subscribe<ItemOpFeedbackEventType<Item, 'validate'>>({
       topic: memberItemsTopic,
@@ -66,8 +78,15 @@ describe('asynchronous feedback', () => {
   });
 
   it('member that initated the validate operation receives failure feedback', async () => {
-    const { item } = await testUtils.saveItemAndMembership({ member: actor });
-    await saveItemValidation({ item });
+    const {
+      items: [item],
+      actor,
+    } = await seedFromJson({
+      items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] }],
+    });
+    assertIsDefined(actor);
+    mockAuthenticate(actor);
+    ws = new TestWsClient(address);
 
     const memberUpdates = await ws.subscribe<ItemOpFeedbackEventType<Item, 'validate'>>({
       topic: memberItemsTopic,

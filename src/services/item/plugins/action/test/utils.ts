@@ -114,5 +114,11 @@ export const expectDeleteMembershipFeedback = (
 ) => {
   expect(result.kind).toEqual(expected.kind);
   expect(result.op).toEqual(expected.op);
-  expectMembership(result.membership, expected.membership);
+
+  const resultMembership = result.membership;
+  const expectedM = expected.membership;
+  expect(resultMembership.permission).toEqual(expectedM.permission);
+  expect(resultMembership.itemPath).toContain(expectedM.itemPath);
+  expect(resultMembership.creatorId).toEqual(expectedM.creatorId);
+  expect(resultMembership.accountId).toEqual(expectedM.accountId);
 };

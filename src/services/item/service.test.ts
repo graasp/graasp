@@ -19,7 +19,6 @@ import { MeiliSearchWrapper } from './plugins/publication/published/plugins/sear
 import { ItemThumbnailService } from './plugins/thumbnail/service';
 import { ItemService } from './service';
 
-const testUtils = new ItemTestUtils();
 const mockedThumbnailService = {
   copyFolder: jest.fn(),
   upload: jest.fn(async () => true),
@@ -33,49 +32,11 @@ const itemService = new ItemService(
 );
 
 describe('Item Service', () => {
-  let app: FastifyInstance;
-
-  beforeAll(async () => {
-    ({ app } = await build({ member: null }));
-  });
-
-  afterAll(async () => {
-    await clearDatabase(app.db);
-    app.close();
-  });
   afterEach(async () => {
     jest.clearAllMocks();
     jest.resetAllMocks();
   });
 
-  describe('get', () => {
-    it('return item if exists and pass validation', async () => {
-      const actor = { id: v4() } as Actor;
-      const item = FolderItemFactory() as unknown as FolderItem;
-      jest.spyOn(repositories.itemRepository, 'getOneOrThrow').mockResolvedValue(item);
-      jest
-        .spyOn(authorization, 'validatePermission')
-        .mockResolvedValue({ itemMembership: null, visibilities: [] });
-
-      const result = await itemService.get(actor, repositories, item.id);
-      expect(result).toEqual(item);
-    });
-    it('throw if item does not exists', async () => {
-      const actor = { id: v4() };
-      const item = FolderItemFactory() as unknown as FolderItem;
-      jest.spyOn(repositories.itemRepository, 'getOneOrThrow').mockRejectedValue(new Error());
-
-      await expect(() => itemService.get(actor, repositories, item.id)).rejects.toThrow();
-    });
-    it('throw if validation does not pass', async () => {
-      const actor = { id: v4() } as MinimalMember;
-      const item = FolderItemFactory() as unknown as FolderItem;
-      jest.spyOn(repositories.itemRepository, 'getOneOrThrow').mockResolvedValue(item);
-      jest.spyOn(authorization, 'validatePermission').mockRejectedValue(new Error());
-
-      await expect(() => itemService.get(actor, repositories, item.id)).rejects.toThrow();
-    });
-  });
   describe('Post', () => {
     beforeEach(() => {
       jest

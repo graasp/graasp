@@ -113,7 +113,7 @@ export class RecycledBinService {
       }
     }
 
-    await this.itemRepository.recover(db, [...allDescendants, ...items]);
+    const recoveredItems = await this.itemRepository.recover(db, [...allDescendants, ...items]);
     await this.recycledItemRepository.deleteManyByItemPath(
       db,
       items.map((item) => item.path),
@@ -132,6 +132,6 @@ export class RecycledBinService {
       });
     }
 
-    return items;
+    return recoveredItems;
   }
 }

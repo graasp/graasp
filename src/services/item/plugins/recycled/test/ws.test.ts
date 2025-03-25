@@ -1,12 +1,18 @@
+import { and, eq, isNotNull, isNull } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 import waitForExpect from 'wait-for-expect';
 
-import { HttpMethod } from '@graasp/sdk';
+import { FastifyInstance } from 'fastify';
 
-import { clearDatabase } from '../../../../../../test/app';
+import { HttpMethod, PermissionLevel } from '@graasp/sdk';
+
+import { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../../../test/app';
+import { seedFromJson } from '../../../../../../test/mocks/seed';
+import { db } from '../../../../../drizzle/db';
+import { itemsRaw } from '../../../../../drizzle/schema';
+import { assertIsDefined } from '../../../../../utils/assertions';
 import { TestWsClient } from '../../../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../../../websockets/test/ws-app';
-import { ItemTestUtils } from '../../../test/fixtures/items';
 import {
   ItemEvent,
   ItemOpFeedbackErrorEvent,
@@ -15,29 +21,38 @@ import {
 } from '../../../ws/events';
 import { RecycledItemDataRepository } from '../repository';
 
-const recycledItemDataRawRepository = AppDataSource.getRepository(RecycledItemData);
-const testUtils = new ItemTestUtils();
-
 describe('Recycle websocket hooks', () => {
-  let app, actor, address;
+  let app: FastifyInstance;
+  let address: string;
   let ws: TestWsClient;
 
-  beforeEach(async () => {
-    ({ app, actor, address } = await setupWsApp());
-    ws = new TestWsClient(address);
+  beforeAll(async () => {
+    ({ app, address } = await setupWsApp());
   });
 
-  afterEach(async () => {
-    jest.clearAllMocks();
-    await clearDatabase(app.db);
-    actor = null;
+  afterAll(async () => {
+    await clearDatabase(db);
     app.close();
     ws.close();
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+    unmockAuthenticate();
+  });
+
   describe('asynchronous feedback', () => {
     it('member that initated the recycle operation receives success feedback', async () => {
-      const { item } = await testUtils.saveItemAndMembership({ member: actor });
+      const {
+        items: [item],
+        actor,
+      } = await seedFromJson({
+        items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] }],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+      ws = new TestWsClient(address);
+
       const memberUpdates = await ws.subscribe<ItemEvent>({
         topic: memberItemsTopic,
         channel: actor.id,
@@ -50,23 +65,33 @@ describe('Recycle websocket hooks', () => {
       expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        expect(await recycledItemDataRawRepository.count()).toEqual(1);
-      });
-      const updatedItem = await testUtils.rawItemRepository.findOne({
-        where: { id: item.id },
-        withDeleted: true,
-      });
-      if (!updatedItem) throw new Error('item should be found in test');
+        const updatedItem = await db.query.itemsRaw.findFirst({
+          where: and(eq(itemsRaw.id, item.id), isNotNull(itemsRaw.deletedAt)),
+        });
+        expect(updatedItem).toBeDefined();
+        assertIsDefined(updatedItem);
 
-      await waitForExpect(() => {
+        // remove deleted at prop
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { deletedAt, ...i } = updatedItem;
+
         expect(memberUpdates.find((v) => v.kind === 'feedback')).toMatchObject(
-          ItemOpFeedbackEvent('recycle', [item.id], { [item.id]: updatedItem }),
+          ItemOpFeedbackEvent('recycle', [item.id], { [item.id]: i }),
         );
       });
     });
 
     it('member that initated the recycle operation receives failure feedback', async () => {
-      const { item } = await testUtils.saveItemAndMembership({ member: actor });
+      const {
+        items: [item],
+        actor,
+      } = await seedFromJson({
+        items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] }],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+      ws = new TestWsClient(address);
+
       const memberUpdates = await ws.subscribe<ItemEvent>({
         topic: memberItemsTopic,
         channel: actor.id,
@@ -91,7 +116,20 @@ describe('Recycle websocket hooks', () => {
     });
 
     it('member that initated the restore operation receives success feedback', async () => {
-      const { item } = await testUtils.saveRecycledItem(actor);
+      const {
+        items: [item],
+        actor,
+      } = await seedFromJson({
+        items: [
+          {
+            isDeleted: true,
+            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+      ws = new TestWsClient(address);
 
       const memberUpdates = await ws.subscribe<ItemEvent>({
         topic: memberItemsTopic,
@@ -105,48 +143,49 @@ describe('Recycle websocket hooks', () => {
       expect(restore.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        expect(await recycledItemDataRawRepository.count()).toEqual(0);
-      });
-      const restored = await testUtils.rawItemRepository.findOneBy({ id: item.id });
-      if (!restored) {
-        throw new Error('item should be restored in test ');
-      }
-
-      await waitForExpect(() => {
-        const feedbackUpdate = memberUpdates.find((update) => update.kind === 'feedback');
-        expect(feedbackUpdate).toMatchObject(
-          ItemOpFeedbackEvent('restore', [item.id], { [item.id]: restored }),
-        );
-      });
-    });
-
-    // flacky test is disabed for the moment
-    it.skip('member that initated the restore operation receives failure feedback', async () => {
-      const { item } = await testUtils.saveRecycledItem(actor);
-
-      const memberUpdates = await ws.subscribe<ItemEvent>({
-        topic: memberItemsTopic,
-        channel: actor.id,
-      });
-
-      jest
-        .spyOn(RecycledItemDataRepository.prototype, 'deleteManyByItemPath')
-        .mockImplementation(async () => {
-          throw new Error('mock error');
+        const restored = await db.query.itemsRaw.findFirst({
+          where: and(eq(itemsRaw.id, item.id), isNull(itemsRaw.deletedAt)),
         });
+        assertIsDefined(restored);
 
-      const restore = await app.inject({
-        method: HttpMethod.Post,
-        url: `/items/restore?id=${item.id}`,
-      });
-      expect(restore.statusCode).toBe(StatusCodes.ACCEPTED);
-
-      await waitForExpect(() => {
         const feedbackUpdate = memberUpdates.find((update) => update.kind === 'feedback');
+
+        // remove deleted at prop
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { deletedAt, ...i } = restored;
         expect(feedbackUpdate).toMatchObject(
-          ItemOpFeedbackErrorEvent('restore', [item.id], new Error('mock error')),
+          ItemOpFeedbackEvent('restore', [item.id], { items: [restored] }),
         );
       });
     });
+
+    //   // flacky test is disabed for the moment
+    //   it.skip('member that initated the restore operation receives failure feedback', async () => {
+    //     const { item } = await testUtils.saveRecycledItem(actor);
+
+    //     const memberUpdates = await ws.subscribe<ItemEvent>({
+    //       topic: memberItemsTopic,
+    //       channel: actor.id,
+    //     });
+
+    //     jest
+    //       .spyOn(RecycledItemDataRepository.prototype, 'deleteManyByItemPath')
+    //       .mockImplementation(async () => {
+    //         throw new Error('mock error');
+    //       });
+
+    //     const restore = await app.inject({
+    //       method: HttpMethod.Post,
+    //       url: `/items/restore?id=${item.id}`,
+    //     });
+    //     expect(restore.statusCode).toBe(StatusCodes.ACCEPTED);
+
+    //     await waitForExpect(() => {
+    //       const feedbackUpdate = memberUpdates.find((update) => update.kind === 'feedback');
+    //       expect(feedbackUpdate).toMatchObject(
+    //         ItemOpFeedbackErrorEvent('restore', [item.id], new Error('mock error')),
+    //       );
+    //     });
+    //   });
   });
 });

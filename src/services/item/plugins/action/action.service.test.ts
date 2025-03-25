@@ -45,8 +45,6 @@ const service = new ActionItemService(
   new ActionService(itemService, memberService, MOCK_LOGGER),
   itemService,
 );
-const rawRepository = AppDataSource.getRepository(Action);
-const testUtils = new ItemTestUtils();
 
 describe('ActionItemService', () => {
   let app: FastifyInstance;

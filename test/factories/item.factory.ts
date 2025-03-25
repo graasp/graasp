@@ -12,7 +12,7 @@ import { ItemWithCreator } from '../../src/drizzle/types';
  * @returns complete item valid to be fed into the database
  */
 export const ItemFactory = (
-  itemArgs: Partial<ItemWithCreator> & { parentPath?: string },
+  itemArgs: Partial<ItemWithCreator> & { parentPath?: string } = {},
 ): ItemWithCreator => {
   const { parentPath, ...item } = itemArgs;
   const id = v4();

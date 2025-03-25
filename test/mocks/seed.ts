@@ -1129,12 +1129,13 @@ export async function seedFromJson(data: DataType = {}) {
       .returning();
   }
   // save actions from items
-  const itemActions = processedItems.reduce(
-    (acc, { id, actions }) =>
-      acc.concat(actions.map((a) => ({ ...a, itemId: id, accountId: a.account?.id }))),
-    [],
-  );
-  if (itemActions) {
+  const itemActions = processedItems.reduce((acc, { id, actions }) => {
+    if (actions?.length) {
+      return acc.concat(actions?.map((a) => ({ ...a, itemId: id, accountId: a.account?.id })));
+    }
+    return acc;
+  }, []);
+  if (itemActions.length) {
     result.actions = result.actions.concat(
       await db
         .insert(actionsTable)
