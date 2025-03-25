@@ -33,6 +33,11 @@ import {
 import { UnexpectedExportError } from './errors';
 import { buildTextContent, getFilenameFromItem } from './utils';
 
+/**
+ * Defines the properties of an individual item in the graasp export format.
+ * @property children Children items, if the item if of type FOLDER.
+ * @property mimetype Mimetype of the item. Present if the item is not of type FOLDER.
+ */
 export type GraaspExportItem = {
   id: string;
   name: string;
@@ -334,6 +339,7 @@ export class ImportExportService {
 
   /**
    * Recursively add items to the Graasp export file.
+   * Note that the shortcut items are excluded for now, they will be included in a later release.
    * @param args item - the item to add
    *             archive - reference to the zip file to which the files will be written
    *             itemManifest - reference to the item manifest list
@@ -354,6 +360,7 @@ export class ImportExportService {
     const exportItemId = v4();
     const itemPath = path.join(path.dirname('./'), exportItemId);
 
+    // TODO EXPORT treat the shortcut items correctly
     // ignore the shortcuts
     if (isItemType(item, ItemType.SHORTCUT)) {
       return itemManifest;

@@ -87,7 +87,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
   );
 
-  // export item
+  // export item as a zip containing raw files
   fastify.get(
     '/:itemId/export',
     {
@@ -161,14 +161,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = user?.account;
       const repositories = buildRepositories();
       const item = await itemService.get(member, repositories, itemId);
-
-      // trigger download action for a collection
-      const action = {
-        item,
-        type: ActionTriggers.ItemDownload,
-        extra: { itemId: item?.id },
-      };
-      await actionService.postMany(member, repositories, request, [action]);
 
       // allow browser to access content disposition
       reply.header('Access-Control-Expose-Headers', 'Content-Disposition');
