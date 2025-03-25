@@ -13,19 +13,19 @@ import {
 } from '../../../../drizzle/types';
 
 type ActionToTest = ActionRaw | ActionWithItem | ActionWithItemAndAccount;
-export const saveActions = async (actions: Partial<GraaspAction>[]): Promise<ActionInsertDTO[]> => {
-  const data = actions
-    .map((d) => ActionFactory(d))
-    // HACK: transform the extra to a string since the schema expects it to be a string
-    .map((a) => ({
-      ...a,
-      extra: JSON.stringify(a.extra) as string,
-      // HACK: this is because the type in the db is infered as a string and geoiplite could not be imported in the sdk
-      geolocation: a.geolocation as string,
-    }));
-  const res = await db.insert(actionsTable).values(data).returning();
-  return res;
-};
+// export const saveActions = async (actions: Partial<GraaspAction>[]): Promise<ActionInsertDTO[]> => {
+//   const data = actions
+//     .map((d) => ActionFactory(d))
+//     // HACK: transform the extra to a string since the schema expects it to be a string
+//     .map((a) => ({
+//       ...a,
+//       extra: JSON.stringify(a.extra) as string,
+//       // HACK: this is because the type in the db is infered as a string and geoiplite could not be imported in the sdk
+//       geolocation: a.geolocation as string,
+//     }));
+//   const res = await db.insert(actionsTable).values(data).returning();
+//   return res;
+// };
 
 export const getMemberActions = async (
   db: DBConnection,

@@ -3,6 +3,7 @@ import { v4 } from 'uuid';
 
 import {
   AppDataVisibility,
+  Context,
   ExportActionsFormatting,
   FileItemProperties,
   ItemLoginSchemaStatus,
@@ -22,6 +23,7 @@ import { db } from '../../src/drizzle/db';
 import {
   accountsTable,
   actionRequestExports,
+  actionsTable,
   appActions,
   appDatas,
   appSettings,
@@ -49,6 +51,7 @@ import {
 } from '../../src/drizzle/schema';
 import {
   AccountRaw,
+  ActionRaw,
   ActionRequestExportRaw,
   AppActionRaw,
   AppDataRaw,
@@ -75,6 +78,7 @@ import {
 } from '../../src/drizzle/types';
 import { encryptPassword } from '../../src/services/auth/plugins/password/utils';
 import { APPS_PUBLISHER_ID } from '../../src/utils/config';
+import { ActionFactory } from '../factories/action.factory';
 import { ItemFactory } from '../factories/item.factory';
 import { GuestFactory, MemberFactory } from '../factories/member.factory';
 
@@ -128,6 +132,10 @@ type SeedItem<M = SeedMember> = (Partial<Omit<ItemRaw, 'creator'>> & { creator?:
   actionRequestExports?: (Omit<Partial<ActionRequestExportRaw>, 'memberId'> & {
     member: M;
   })[];
+  actions?: Omit<SeedAction<M>, 'itemId'>[];
+};
+type SeedAction<M = SeedMember> = Partial<Pick<ActionRaw, 'type' | 'createdAt' | 'view'>> & {
+  account: M;
 };
 type DataType = {
   actor?: SeedActor | null;
@@ -135,6 +143,7 @@ type DataType = {
   items?: SeedItem<ReferencedSeedActor | SeedMember>[];
   tags?: Pick<TagRaw, 'name' | 'category'>[];
   apps?: Partial<AppRaw>[];
+  actions?: SeedAction<ReferencedSeedActor | SeedMember>[];
 };
 
 const replaceActorInItems = (createdActor?: AccountRaw, items?: DataType['items']): SeedItem[] => {
@@ -177,6 +186,24 @@ const replaceActorInItems = (createdActor?: AccountRaw, items?: DataType['items'
       ...ar,
       member: ar.member === ACTOR_STRING ? (createdActor as any) : ar.member,
     })),
+    actions: i.actions?.map((a) => ({
+      ...a,
+      account: a.account === ACTOR_STRING ? (createdActor as any) : a.account,
+    })),
+  }));
+};
+
+const replaceActorInActions = (
+  createdActor?: AccountRaw,
+  actions?: DataType['actions'],
+): SeedAction[] => {
+  if (!actions?.length) {
+    return [];
+  }
+
+  return actions.map((i) => ({
+    ...i,
+    account: i.account === ACTOR_STRING ? (createdActor as any) : (i.account ?? null),
   }));
 };
 
@@ -232,6 +259,12 @@ function replaceAccountInItems(createdAccount: AccountRaw, items?: DataType['ite
         member: getNameIfExists(ar.member) === createdAccount.name ? createdAccount : ar.member,
       };
     });
+    const actions = i.actions?.map((a) => {
+      return {
+        ...a,
+        account: getNameIfExists(a.account) === createdAccount.name ? createdAccount : a.account,
+      };
+    });
 
     return {
       ...i,
@@ -245,6 +278,7 @@ function replaceAccountInItems(createdAccount: AccountRaw, items?: DataType['ite
       membershipRequests,
       likes,
       actionRequestExports,
+      actions,
     };
   });
 }
@@ -258,16 +292,19 @@ const processActor = async ({
   actor,
   items,
   members,
+  actions,
 }: DataType): Promise<{
   actor: AccountRaw | null;
   members?: SeedMember[];
   actorProfile?: MemberProfileRaw;
   items: SeedItem<SeedMember>[];
+  actions: SeedAction[];
 }> => {
   // create actor if not null
   let createdActor: AccountRaw | null = null;
   let actorProfile;
   let processedItems;
+  let processedActions;
   if (actor !== null) {
     // replace actor data with default values if actor is undefined or 'actor'
     const actorData: Partial<AccountRaw> = typeof actor === 'string' || !actor ? {} : actor;
@@ -293,11 +330,19 @@ const processActor = async ({
     }
     // replace 'actor' in entities
     processedItems = replaceActorInItems(createdActor, items);
+    processedActions = replaceActorInActions(createdActor, actions);
   } else {
     // pass through
     processedItems = items;
+    processedActions = actions;
   }
-  return { actor: createdActor, items: processedItems, members, actorProfile };
+  return {
+    actor: createdActor,
+    items: processedItems,
+    members,
+    actorProfile,
+    actions: processedActions,
+  };
 };
 
 /**
@@ -403,6 +448,9 @@ const getAllAccountsFromItems = (items: SeedItem[] = []) => {
       },
       [],
     );
+    const accountsFromActions = (i.actions ?? [])?.reduce<SeedMember[]>((acc, m) => {
+      return [...acc, m.account].filter(Boolean);
+    }, []);
 
     const allAccounts = [
       ...accountsFromMemberships,
@@ -414,6 +462,7 @@ const getAllAccountsFromItems = (items: SeedItem[] = []) => {
       ...getAllAccountsFromItems(i.children),
       ...(i.likes ?? []),
       ...membersFromActionRequestExports,
+      ...accountsFromActions,
     ];
 
     // get creator of item
@@ -423,6 +472,10 @@ const getAllAccountsFromItems = (items: SeedItem[] = []) => {
 
     return allAccounts;
   });
+};
+
+const getAllAccountsFromActions = (actions: SeedAction[]) => {
+  return actions.flatMap((a) => (a.account ? [a.account] : []));
 };
 
 /**
@@ -435,12 +488,18 @@ const getAllAccountsFromItems = (items: SeedItem[] = []) => {
 function generateIdForMembers({
   members = [],
   items = [],
+  actions = [],
 }: {
   items?: SeedItem[];
   members?: SeedMember[];
+  actions?: SeedAction[];
 }) {
   // get all unique members
-  const allMembers = [...members, ...getAllAccountsFromItems(items)].filter((m, index, array) => {
+  const allMembers = [
+    ...members,
+    ...getAllAccountsFromItems(items),
+    ...getAllAccountsFromActions(actions),
+  ].filter((m, index, array) => {
     // return unique member by name
     if (m && 'name' in m) {
       return array.findIndex((a) => a && 'name' in a && a?.name === m.name) === index;
@@ -473,12 +532,14 @@ async function processMembers({
   actor,
   items = [],
   members = [],
+  actions = [],
 }: {
   actor?: AccountRaw | null;
   items?: SeedItem[];
   members?: SeedMember[];
+  actions?: SeedAction[];
 }) {
-  const membersWithIds = generateIdForMembers({ items, members })
+  const membersWithIds = generateIdForMembers({ items, members, actions })
     // ignore actor if it is defined
     .filter((m) => (actor ? m.id !== actor.id : true));
   if (membersWithIds.length) {
@@ -715,6 +776,7 @@ async function createItemLoginSchemasAndGuests(items: (SeedItem & { path: string
  */
 export async function seedFromJson(data: DataType = {}) {
   const result: {
+    actions: ActionRaw[];
     actor: AccountRaw | undefined | null;
     items: ItemRaw[];
     itemMemberships: ItemMembershipRaw[];
@@ -738,6 +800,7 @@ export async function seedFromJson(data: DataType = {}) {
     itemValidationGroups: ItemValidationGroupRaw[];
     itemValidations: ItemValidationRaw[];
   } = {
+    actions: [],
     items: [],
     actor: undefined,
     itemMemberships: [],
@@ -762,7 +825,13 @@ export async function seedFromJson(data: DataType = {}) {
     likes: [],
   };
 
-  const { items: itemsWithActor, actor, members, actorProfile } = await processActor(data);
+  const {
+    items: itemsWithActor,
+    actor,
+    members,
+    actorProfile,
+    actions: actionsWithActor,
+  } = await processActor(data);
   result.actor = actor;
   result.memberProfiles = actorProfile ? [actorProfile] : [];
   // save members and their relations
@@ -774,6 +843,7 @@ export async function seedFromJson(data: DataType = {}) {
     items: itemsWithActor,
     members,
     actor,
+    actions: actionsWithActor,
   });
   result.members = membersWithIds;
   result.memberProfiles = result.memberProfiles.concat(memberProfiles);
@@ -1036,6 +1106,41 @@ export async function seedFromJson(data: DataType = {}) {
   }, []);
   if (actionRequestExportsEntities.length) {
     await db.insert(actionRequestExports).values(actionRequestExportsEntities);
+  }
+
+  // replace actor and members in actions
+  const actionEntities = data.actions?.map((a) => {
+    let accountId: null | string = null;
+    if (a.account) {
+      if (actor && a.account === ACTOR_STRING) {
+        accountId = actor.id;
+      } else {
+        accountId =
+          membersWithIds.find((m) => m.name === (a.account as SeedMember).name)?.id ?? null;
+      }
+    }
+    return { ...a, accountId };
+  });
+  // save actions
+  if (actionEntities) {
+    result.actions = await db
+      .insert(actionsTable)
+      .values(actionEntities.map((a) => ActionFactory(a)))
+      .returning();
+  }
+  // save actions from items
+  const itemActions = processedItems.reduce(
+    (acc, { id, actions }) =>
+      acc.concat(actions.map((a) => ({ ...a, itemId: id, accountId: a.account?.id }))),
+    [],
+  );
+  if (itemActions) {
+    result.actions = result.actions.concat(
+      await db
+        .insert(actionsTable)
+        .values(itemActions.map((a) => ActionFactory(a)))
+        .returning(),
+    );
   }
 
   return result;

@@ -797,7 +797,6 @@ export class ItemService {
       if (published) {
         // destination or moved item is published, we must update the index
         // update index from published
-        console.log('wefouh');
         await this.meilisearchWrapper.indexOne(db, published);
       } else {
         // nothing published, we must delete if it exists in index

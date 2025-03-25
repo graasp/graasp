@@ -191,7 +191,6 @@ describe('Item Validation Tests', () => {
   //         method: HttpMethod.Get,
   //         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validations/${itemValidationGroup.id}`,
   //       });
-  //       console.log(res);
   //       expect(res.statusCode).toBe(StatusCodes.OK);
   //       expectItemValidation(res.json(), itemValidationGroup);
   //     });
