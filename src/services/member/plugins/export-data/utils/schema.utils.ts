@@ -15,6 +15,7 @@ export const ONE_OF = (types: PropertyType[]) => ({
 });
 export const STRING_TYPE = { type: 'string' };
 export const OBJECT_TYPE = { type: 'object' };
+export const NUMBER_TYPE = { type: 'number' };
 // To works with AJV (object date) and fastJson (string date)
 export const DATE_TYPE = ONE_OF([STRING_TYPE, OBJECT_TYPE]);
 export const NULL_TYPE = { type: 'null' };

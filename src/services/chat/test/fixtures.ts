@@ -1,27 +1,38 @@
+import { faker } from '@faker-js/faker';
+import { v4 } from 'uuid';
+
 import { ChatMentionRaw, ChatMessageRaw, Item } from '../../../drizzle/types';
 import { MinimalMember } from '../../../types';
 
-export const saveChatMessages = async ({
+export const ChatMessageWithMentionFactory = ({
   creator,
-  item,
+  // item,
   mentionMember,
 }: {
   creator: MinimalMember;
-  item: Item;
-  mentionMember?: MinimalMember;
-}) => {
-  const chatMentionRepo = AppDataSource.getRepository(ChatMention);
-  const rawChatMessageRepository = AppDataSource.getRepository(ChatMessage);
-  const chatMessages: ChatMessageRaw[] = [];
-  const chatMentions: ChatMentionRaw[] = [];
+  // item: Item;
+  mentionMember: MinimalMember;
+}): { chatMessage: ChatMessageRaw; chatMention: ChatMentionRaw } => {
   // mock the mention format of react-mention used in the chat-box
-  const mentionMessage = mentionMember ? `<!@${mentionMember.id}>[${mentionMember.name}]` : null;
+  const mentionMessage = `<!@${mentionMember.id}>[${mentionMember.name}]`;
 
-  for (let i = 0; i < 3; i++) {
-    const body = `${mentionMessage} some-text-${i} <!@${creator.id}>[${creator.name}]`;
-    const message = await rawChatMessageRepository.save({ item, creator, body });
-    chatMessages.push(message);
-    chatMentions.push(await chatMentionRepo.save({ account: mentionMember, message }));
-  }
-  return { chatMessages, chatMentions, mentionedMember: mentionMember };
+  const body = `${mentionMessage} some-text-${faker.word.sample()} <!@${creator.id}>[${creator.name}]`;
+  const chatMessage = {
+    id: v4(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    itemId: v4(),
+    creatorId: creator.id,
+    body,
+  };
+  const chatMention = {
+    accountId: mentionMember.id,
+    messageId: chatMessage.id,
+    id: v4(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    // TODO: fix type
+    status: 'read' as any,
+  };
+  return { chatMessage, chatMention };
 };

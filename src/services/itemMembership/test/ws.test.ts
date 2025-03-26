@@ -1,40 +1,49 @@
 import { StatusCodes } from 'http-status-codes';
 import waitForExpect from 'wait-for-expect';
 
-import { HttpMethod, PermissionLevel, Websocket, parseStringToDate } from '@graasp/sdk';
+import { FastifyInstance } from 'fastify';
 
-import { clearDatabase, mockAuthenticate } from '../../../../test/app';
-import { ItemMembershipRaw } from '../../../drizzle/types';
+import { HttpMethod, PermissionLevel, Websocket } from '@graasp/sdk';
+
+import { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
+import { seedFromJson } from '../../../../test/mocks/seed';
+import { db } from '../../../drizzle/db';
+import { assertIsDefined } from '../../../utils/assertions';
 import { MemberCannotAccess } from '../../../utils/errors';
 import { expectDeleteMembershipFeedback } from '../../item/plugins/action/test/utils';
-import { ItemTestUtils } from '../../item/test/fixtures/items';
-import { saveMember } from '../../member/test/fixtures/members';
 import { TestWsClient } from '../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../websockets/test/ws-app';
 import { ItemMembershipEvent, MembershipEvent, itemMembershipsTopic } from '../ws/events';
 
-const testUtils = new ItemTestUtils();
-
 describe('Item websocket hooks', () => {
-  let app, actor, address;
+  let app: FastifyInstance;
+  let address: string;
   let ws: TestWsClient;
 
-  beforeEach(async () => {
-    ({ app, actor, address } = await setupWsApp());
-    ws = new TestWsClient(address);
+  beforeAll(async () => {
+    ({ app, address } = await setupWsApp());
   });
 
-  afterEach(async () => {
-    jest.clearAllMocks();
-    await clearDatabase(app.db);
-    actor = null;
+  afterAll(async () => {
+    await clearDatabase(db);
     app.close();
     ws.close();
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+    unmockAuthenticate();
+  });
+
   describe('Subscribe to membership', () => {
     it('subscribes to item memberships successfully', async () => {
-      const { item } = await testUtils.saveItemAndMembership({ member: actor });
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({ items: [{ memberships: [{ account: 'actor' }] }] });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+      ws = new TestWsClient(address);
 
       const request = {
         realm: Websocket.Realms.Notif,
@@ -53,8 +62,14 @@ describe('Item websocket hooks', () => {
     });
 
     it('cannot subscribe to item memberships with no membership', async () => {
-      const anna = await saveMember();
-      const { item } = await testUtils.saveItemAndMembership({ member: anna });
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({ items: [{}] });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+      ws = new TestWsClient(address);
+
       const request = {
         realm: Websocket.Realms.Notif,
         topic: itemMembershipsTopic,
@@ -75,35 +90,35 @@ describe('Item websocket hooks', () => {
 
   describe('on create membership', () => {
     it('receives item membership create event', async () => {
-      const anna = await saveMember();
-      const bob = await saveMember();
-      const { item } = await testUtils.saveItemAndMembership({ member: anna });
-      await testUtils.saveMembership({
-        item,
-        account: actor,
-        permission: PermissionLevel.Read,
+      const {
+        actor,
+        items: [item],
+        members: [bob],
+      } = await seedFromJson({
+        members: [{ name: 'bob' }],
+        items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] }],
       });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+      ws = new TestWsClient(address);
 
       const membershipUpdates = await ws.subscribe<MembershipEvent>({
         topic: itemMembershipsTopic,
         channel: item.id,
       });
 
-      // perform request as anna
-      mockAuthenticate(anna);
-
+      const payload = { accountId: bob.id, permission: PermissionLevel.Read };
       const response = await app.inject({
         method: HttpMethod.Post,
-        url: `/item-memberships/${item.id}`,
-        payload: { memberships: [{ accountId: bob.id, permission: PermissionLevel.Read }] },
+        url: `/item-memberships?itemId=${item.id}`,
+        payload,
       });
-      expect(response.statusCode).toBe(StatusCodes.OK);
-      const [membership] = response.json();
+      expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
 
       await waitForExpect(() => {
         const [membershipCreate] = membershipUpdates;
         expect(membershipCreate).toMatchObject(
-          ItemMembershipEvent('create', parseStringToDate(membership) as ItemMembershipRaw),
+          ItemMembershipEvent('create', expect.objectContaining(payload)),
         );
       });
     });
@@ -111,34 +126,40 @@ describe('Item websocket hooks', () => {
 
   describe('on update membership', () => {
     it('receives item membership update event', async () => {
-      const anna = await saveMember();
-      const { item } = await testUtils.saveItemAndMembership({ member: anna });
-      const membership = await testUtils.saveMembership({
-        item,
-        account: actor,
-        permission: PermissionLevel.Read,
+      const {
+        actor,
+        items: [item],
+        itemMemberships: [membership],
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [
+              { account: { name: 'bob' }, permission: PermissionLevel.Read },
+              { account: 'actor', permission: PermissionLevel.Admin },
+            ],
+          },
+        ],
       });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+      ws = new TestWsClient(address);
 
       const membershipUpdates = await ws.subscribe<MembershipEvent>({
         topic: itemMembershipsTopic,
         channel: item.id,
       });
 
-      // perform request as anna
-      mockAuthenticate(anna);
-
       const response = await app.inject({
         method: HttpMethod.Patch,
         url: `/item-memberships/${membership.id}`,
         payload: { permission: PermissionLevel.Admin },
       });
-      expect(response.statusCode).toBe(StatusCodes.OK);
-      const result = response.json();
+      expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
 
       await waitForExpect(() => {
         const [membershipUpdate] = membershipUpdates;
         expect(membershipUpdate).toMatchObject(
-          ItemMembershipEvent('update', parseStringToDate(result) as ItemMembershipRaw),
+          ItemMembershipEvent('update', { ...membership, permission: PermissionLevel.Admin }),
         );
       });
     });
@@ -146,27 +167,34 @@ describe('Item websocket hooks', () => {
 
   describe('on delete membership', () => {
     it('receives item membership delete event', async () => {
-      const anna = await saveMember();
-      const { item } = await testUtils.saveItemAndMembership({ member: anna });
-      const membership = await testUtils.saveMembership({
-        item,
-        account: actor,
-        permission: PermissionLevel.Read,
+      const {
+        actor,
+        items: [item],
+        itemMemberships: [membership],
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [
+              { account: { name: 'bob' }, permission: PermissionLevel.Read },
+              { account: 'actor', permission: PermissionLevel.Admin },
+            ],
+          },
+        ],
       });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+      ws = new TestWsClient(address);
 
       const membershipUpdates = await ws.subscribe<MembershipEvent>({
         topic: itemMembershipsTopic,
         channel: item.id,
       });
 
-      // perform request as anna
-      mockAuthenticate(anna);
-
       const response = await app.inject({
         method: HttpMethod.Delete,
         url: `/item-memberships/${membership.id}`,
       });
-      expect(response.statusCode).toBe(StatusCodes.OK);
+      expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
 
       await waitForExpect(() => {
         const [membershipUpdate] = membershipUpdates;

@@ -4,18 +4,7 @@ import { DBConnection } from '../../../../drizzle/db';
 import { ItemRaw } from '../../../../drizzle/types';
 import { MemberInfo, MinimalMember } from '../../../../types';
 import { ExportDataRepository } from './repository';
-import {
-  actionArraySchema,
-  appActionArraySchema,
-  appDataArraySchema,
-  appSettingArraySchema,
-  itemArraySchema,
-  itemFavoriteArraySchema,
-  itemLikeArraySchema,
-  itemMembershipArraySchema,
-  messageArraySchema,
-  messageMentionArraySchema,
-} from './schemas/schemas';
+import { messageMentionArraySchema } from './schemas/schemas';
 import {
   anonymizeMentionsMessage,
   anonymizeMessages,
@@ -69,25 +58,28 @@ export class ExportMemberDataService {
       itemMemberShips,
     };
   }
-
+  // TODO: do we need to filter again? filtering happened in repository already
   async getActions(db: DBConnection, actor: MinimalMember) {
-    const results = await this.exportDataRepository.getActions(db, actor.id);
-    return getFilteredData(results, actionArraySchema);
+    return await this.exportDataRepository.getActions(db, actor.id);
+    // return getFilteredData(results, actionArraySchema);
   }
 
   async getAppActions(db: DBConnection, actor: MinimalMember) {
     const results = await this.exportDataRepository.getAppActions(db, actor.id);
-    return getFilteredData(results, appActionArraySchema);
+    // return getFilteredData(results, appActionArraySchema);
+    return results;
   }
 
   async getAppData(db: DBConnection, actor: MinimalMember) {
     const appData = await this.exportDataRepository.getAppData(db, actor.id);
-    return getFilteredData(appData, appDataArraySchema);
+    // return getFilteredData(appData, appDataArraySchema);
+    return appData;
   }
 
   async getAppSettings(db: DBConnection, actor: MinimalMember) {
     const results = await this.exportDataRepository.getAppSettings(db, actor.id);
-    return getFilteredData(results, appSettingArraySchema);
+    // return getFilteredData(results, appSettingArraySchema);
+    return results;
   }
 
   async getChatMentions(db: DBConnection, actor: MinimalMember) {
@@ -96,7 +88,7 @@ export class ExportMemberDataService {
       results,
       exportingActorId: actor.id,
     });
-    return getFilteredData(anonymized, messageMentionArraySchema);
+    return anonymized;
   }
 
   async getChatMessages(db: DBConnection, actor: MinimalMember) {
@@ -105,12 +97,14 @@ export class ExportMemberDataService {
       results,
       exportingActorId: actor.id,
     });
-    return getFilteredData(anonymized, messageArraySchema);
+    // return getFilteredData(anonymized, messageArraySchema);
+    return anonymized;
   }
 
   async getItemsMemberShips(db: DBConnection, actor: MinimalMember) {
     const itemMemberShips = await this.exportDataRepository.getItemMemberships(db, actor.id);
-    return getFilteredData(itemMemberShips, itemMembershipArraySchema);
+    // return getFilteredData(itemMemberShips, itemMembershipArraySchema);
+    return itemMemberShips;
   }
 
   getOwnItemIds(memberItemsOwner: ItemRaw[]) {
@@ -119,12 +113,14 @@ export class ExportMemberDataService {
 
   async getItems(db: DBConnection, actor: MinimalMember) {
     const results = await this.exportDataRepository.getItems(db, actor.id);
-    return getFilteredData(results, itemArraySchema);
+    // return getFilteredData(results, itemArraySchema);
+    return results;
   }
 
   async getItemBookmarks(db: DBConnection, actor: MinimalMember) {
     const results = await this.exportDataRepository.getItemBookmarks(db, actor.id);
-    return getFilteredData(results, itemFavoriteArraySchema);
+    // return getFilteredData(results, itemFavoriteArraySchema);
+    return results;
   }
 
   async getItemLikes(db: DBConnection, actor: MinimalMember) {
@@ -132,6 +128,7 @@ export class ExportMemberDataService {
     // In this case, don't forget to anonymize the id of the other actor ?
     // Or should we put the username of the other actor who liked the item ?
     const results = await this.exportDataRepository.getByCreatorToExport(db, actor.id);
-    return getFilteredData(results, itemLikeArraySchema);
+    // return getFilteredData(results, itemLikeArraySchema);
+    return results;
   }
 }

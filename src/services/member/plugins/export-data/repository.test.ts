@@ -1,27 +1,8 @@
-import { FastifyInstance } from 'fastify';
-
-import { PermissionLevel } from '@graasp/sdk';
-
-import build, { clearDatabase } from '../../../../../test/app';
-import { ChatMentionRaw, ChatMessageRaw } from '../../../../drizzle/types';
-import { ActionRepository } from '../../../action/action.repository';
-import { saveActions } from '../../../action/test/fixtures/actions';
-import { ChatMentionRepository } from '../../../chat/plugins/mentions/chatMentions.repository';
-import { ChatMessageRepository } from '../../../chat/repository';
-import { saveChatMessages } from '../../../chat/test/fixtures';
-import { saveAppActions } from '../../../item/plugins/app/appAction/test/fixtures';
-import { AppDataRepository } from '../../../item/plugins/app/appData/repository';
-import { saveAppData } from '../../../item/plugins/app/appData/test/fixtures';
-import { AppSettingRepository } from '../../../item/plugins/app/appSetting/repository';
-import { saveAppSettings } from '../../../item/plugins/app/appSetting/test/fixtures';
-import { ItemBookmarkRepository } from '../../../item/plugins/itemBookmark/itemBookmark.repository';
-import { saveItemFavorites } from '../../../item/plugins/itemBookmark/test/fixtures';
-import { ItemLikeRepository } from '../../../item/plugins/itemLike/itemLike.repository';
-import { saveItemLikes } from '../../../item/plugins/itemLike/test/utils';
-import { ItemRepository } from '../../../item/repository';
-import { ItemTestUtils } from '../../../item/test/fixtures/items';
-import { ItemMembershipRepository } from '../../../itemMembership/repository';
-import { saveMember } from '../../test/fixtures/members';
+import { clearDatabase } from '../../../../../test/app';
+import { seedFromJson } from '../../../../../test/mocks/seed';
+import { client, db } from '../../../../drizzle/db';
+import { assertIsDefined } from '../../../../utils/assertions';
+import { ExportDataRepository } from './repository';
 import {
   actionSchema,
   appActionSchema,
@@ -39,247 +20,294 @@ import { expectNoLeaksAndEquality } from './test/fixtures';
 /**
  * The repository tests ensure that no unwanted columns are leaked during the export.
  */
-
-const itemTestUtils = new ItemTestUtils();
+const repository = new ExportDataRepository();
 
 describe('DataMember Export', () => {
-  let app: FastifyInstance;
-  let exportingActor;
-  let randomUser;
-  let item;
-  let itemOfRandomUser;
+  // let app: FastifyInstance;
+  // let exportingActor;
+  // let randomUser;
+  // let item;
+  // let itemOfRandomUser;
 
-  beforeEach(async () => {
-    ({ app, actor: exportingActor } = await build());
-    randomUser = await saveMember();
+  // beforeEach(async () => {
+  //   ({ app, actor: exportingActor } = await build());
+  //   randomUser = await saveMember();
 
-    item = await itemTestUtils.saveItem({ actor: exportingActor });
-    itemOfRandomUser = await itemTestUtils.saveItem({ actor: randomUser });
+  //   item = await itemTestUtils.saveItem({ actor: exportingActor });
+  //   itemOfRandomUser = await itemTestUtils.saveItem({ actor: randomUser });
+  // });
+
+  beforeAll(async () => {
+    await client.connect();
   });
-
+  afterAll(async () => {
+    await client.end();
+  });
   afterEach(async () => {
     jest.clearAllMocks();
-    await clearDatabase(app.db);
-    exportingActor = null;
-    randomUser = null;
-    item = null;
-    app.close();
+    await clearDatabase(db);
   });
+
+  // afterAll(async () => {
+  //   await clearDatabase(db);
+  //   app.close();
+  // });
 
   describe('Actions', () => {
     it('get all Actions for the member', async () => {
       // save for exporting actor
-      const actions = await saveActions([
-        { item, account: exportingActor },
-        { item, account: exportingActor },
-        { item, account: exportingActor },
-      ]);
-      // on item of random user
-      const otherActions = await saveActions([
-        { item: itemOfRandomUser, account: exportingActor },
-        { item: itemOfRandomUser, account: exportingActor },
-        { item: itemOfRandomUser, account: exportingActor },
-      ]);
+      const {
+        actor,
+        actions: [a1, a2, _another1, _another2, ia1, ia2],
+      } = await seedFromJson({
+        actions: [
+          { account: 'actor' },
+          { account: 'actor' },
+          // noise
+          { account: { name: 'bob' } },
+          { account: { name: 'bob' } },
+        ],
+        items: [{ actions: [{ account: 'actor' }, { account: 'actor' }] }],
+      });
+      assertIsDefined(actor);
 
-      // noise: save for a random user
-      await saveActions([{ item, account: randomUser }]);
-      await saveActions([{ item: itemOfRandomUser, account: randomUser }]);
-
-      const results = await new ActionRepository().getForAccountExport(exportingActor.id);
-      expectNoLeaksAndEquality(results, [...actions, ...otherActions], actionSchema);
+      const results = await repository.getActions(db, actor.id);
+      expectNoLeaksAndEquality(results, [a1, a2, ia1, ia2], actionSchema);
     });
   });
 
   describe('AppActions', () => {
     it('get all AppActions for the member', async () => {
-      // save for exporting actor
-      const appActions = await saveAppActions({ item, member: exportingActor });
-      // on item of random user
-      const otherActions = await saveAppActions({
-        item: itemOfRandomUser,
-        member: exportingActor,
+      const {
+        actor,
+        appActions: [a1, a2],
+      } = await seedFromJson({
+        items: [
+          {
+            appActions: [
+              { account: 'actor' },
+              { account: 'actor' },
+              { account: { name: 'bob' } },
+              { account: { name: 'bob' } },
+            ],
+          },
+        ],
       });
+      assertIsDefined(actor);
 
-      // noise: for a random member
-      await saveAppActions({ item, member: randomUser });
-      await saveAppActions({ item: itemOfRandomUser, member: randomUser });
-
-      const results = await new AppActionRepository().getForMemberExport(exportingActor.id);
-      expectNoLeaksAndEquality(results, [...appActions, ...otherActions], appActionSchema);
+      const results = await repository.getAppActions(db, actor.id);
+      expectNoLeaksAndEquality(results, [a1, a2], appActionSchema);
     });
   });
 
   describe('AppData', () => {
     it('get all AppData for the member', async () => {
-      const appData = await saveAppData({ item, creator: exportingActor });
-      const appDataWithActorAsMember = await saveAppData({
-        item: itemOfRandomUser,
-        creator: randomUser,
-        account: exportingActor,
+      const {
+        actor,
+        appData: [a1, a2, a3, a4],
+      } = await seedFromJson({
+        items: [
+          {
+            appData: [
+              { account: 'actor', creator: 'actor' },
+              { account: 'actor', creator: 'actor' },
+              { account: { name: 'bob' }, creator: 'actor' },
+              { account: { name: 'bob' }, creator: 'actor' },
+              // noise
+              { account: { name: 'bob' }, creator: { name: 'bob' } },
+            ],
+          },
+        ],
       });
-      const appDataWithOtherMember = await saveAppData({
-        item,
-        creator: exportingActor,
-        account: randomUser,
-      });
+      assertIsDefined(actor);
 
-      // noise: for a random member
-      await saveAppData({ item: itemOfRandomUser, creator: randomUser });
-
-      const results = await new AppDataRepository().getForMemberExport(exportingActor.id);
-      expectNoLeaksAndEquality(
-        results,
-        [...appData, ...appDataWithActorAsMember, ...appDataWithOtherMember],
-        appDataSchema,
-      );
+      const results = await repository.getAppData(db, actor.id);
+      expectNoLeaksAndEquality(results, [a1, a2, a3, a4], appDataSchema);
     });
   });
 
   describe('AppSettings', () => {
     it('get all AppSettings for the member', async () => {
-      const appSettings = await saveAppSettings({ item, creator: exportingActor });
-      // noise: for a random member
-      await saveAppSettings({
-        item: itemOfRandomUser,
-        creator: randomUser,
+      const {
+        actor,
+        appSettings: [a1, a2],
+      } = await seedFromJson({
+        items: [
+          {
+            appSettings: [
+              { creator: 'actor' },
+              { creator: 'actor' },
+              // noise
+              { creator: { name: 'bob' } },
+            ],
+          },
+        ],
       });
+      assertIsDefined(actor);
 
-      const results = await new AppSettingRepository().getForMemberExport(exportingActor.id);
-      expectNoLeaksAndEquality(results, appSettings, appSettingSchema);
+      const results = await repository.getAppSettings(db, actor.id);
+      expectNoLeaksAndEquality(results, [a1, a2], appSettingSchema);
     });
   });
 
   describe('Chat', () => {
-    let chatMessages: ChatMessageRaw[];
-    let chatMentions: ChatMentionRaw[];
-
-    beforeEach(async () => {
-      // exporting member mentions another user, so this mention data is for the random user only.
-      ({ chatMessages } = await saveChatMessages({
-        item,
-        creator: exportingActor,
-        mentionMember: randomUser,
-      }));
-
-      ({ chatMentions } = await saveChatMessages({
-        item: itemOfRandomUser,
-        creator: randomUser,
-        mentionMember: exportingActor,
-      }));
-    });
-
     describe('ChatMentions', () => {
       it('get all ChatMentions for the member', async () => {
-        const results = await new ChatMentionRepository().getForMemberExport(exportingActor.id);
-        expectNoLeaksAndEquality(results, chatMentions, messageMentionSchema);
+        const {
+          actor,
+          chatMentions: [c1, _c, c2],
+          chatMessages: [cm1, cm2],
+        } = await seedFromJson({
+          items: [
+            {
+              chatMessages: [
+                { creator: 'actor', mentions: ['actor'] },
+                { creator: 'actor', mentions: [{ name: 'bob' }, 'actor'] },
+                // noise
+                { creator: { name: 'bob' }, mentions: [{ name: 'bob' }] },
+              ],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+
+        const results = await repository.getChatMentions(db, actor.id);
+
+        // change message because date is slightly different
+        expectNoLeaksAndEquality(
+          results.map((r) => ({
+            ...r,
+            message: { ...r.message, createdAt: 'anything', updatedAt: 'anything' },
+          })),
+          [
+            { ...c1, message: { ...cm1, createdAt: 'anything', updatedAt: 'anything' } },
+            { ...c2, message: { ...cm2, createdAt: 'anything', updatedAt: 'anything' } },
+          ],
+          messageMentionSchema,
+        );
       });
     });
 
     describe('ChatMessages', () => {
       it('get all Messages for the member', async () => {
-        const results = await new ChatMessageRepository().getExportByMember(exportingActor.id);
-        expectNoLeaksAndEquality(results, chatMessages, messageSchema);
+        const {
+          actor,
+          chatMessages: [c1, c2],
+        } = await seedFromJson({
+          items: [
+            {
+              chatMessages: [
+                { creator: 'actor', mentions: [{ name: 'bob' }] },
+                { creator: 'actor', mentions: [{ name: 'cedric' }] },
+                // noise
+                { creator: { name: 'bob' }, mentions: [{ name: 'cedric' }] },
+              ],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+
+        const results = await repository.getChatMessages(db, actor.id);
+
+        expectNoLeaksAndEquality(results, [c1, c2], messageSchema);
       });
     });
   });
 
   describe('Items', () => {
     it('get all Items for the member', async () => {
-      const items = [
-        item,
-        await itemTestUtils.saveItem({ actor: exportingActor }),
-        await itemTestUtils.saveItem({ actor: exportingActor }),
-        await itemTestUtils.saveItem({ actor: exportingActor }),
-      ];
+      const {
+        actor,
+        items: [i1, i2],
+      } = await seedFromJson({
+        items: [
+          {
+            creator: 'actor',
+          },
+          {
+            creator: 'actor',
+          },
+          // noise
+          {
+            creator: { name: 'bob' },
+          },
+        ],
+      });
+      assertIsDefined(actor);
 
-      // noise
-      await itemTestUtils.saveItem({ actor: randomUser });
-      await itemTestUtils.saveItem({ actor: randomUser });
-      await itemTestUtils.saveItem({ actor: randomUser });
+      const results = await repository.getItems(db, actor.id);
 
-      const results = await new ItemRepository().getForMemberExport(exportingActor.id);
-      expectNoLeaksAndEquality(results, items, itemSchema);
+      expectNoLeaksAndEquality(results, [i1, i2], itemSchema);
     });
 
-    it('get all Item Favorites for the member', async () => {
-      const items = [
-        await itemTestUtils.saveItem({ actor: exportingActor }),
-        await itemTestUtils.saveItem({ actor: exportingActor }),
-        await itemTestUtils.saveItem({ actor: exportingActor }),
-      ];
-      const favorites = await saveItemFavorites({
-        items,
-        member: exportingActor,
+    it('get all Item Bookmarks for the member', async () => {
+      const { actor, bookmarks } = await seedFromJson({
+        items: [
+          {
+            isBookmarked: true,
+            creator: 'actor',
+          },
+          {
+            isBookmarked: true,
+            creator: { name: 'bob' },
+          },
+          // noise
+          {
+            creator: 'actor',
+          },
+        ],
       });
+      assertIsDefined(actor);
 
-      // noise
-      await saveItemFavorites({ items: [itemOfRandomUser], member: randomUser });
-
-      const results = await new ItemBookmarkRepository().getForMemberExport(exportingActor.id);
-      expectNoLeaksAndEquality(results, favorites, itemFavoriteSchema);
+      const results = await repository.getItemBookmarks(db, actor.id);
+      expectNoLeaksAndEquality(results, bookmarks, itemFavoriteSchema);
     });
 
     it('get all Item Likes for the member', async () => {
-      // TODO: maybe insert beforeEach...
-      const items = [
-        await itemTestUtils.saveItem({ actor: exportingActor }),
-        await itemTestUtils.saveItem({ actor: exportingActor }),
-        await itemTestUtils.saveItem({ actor: exportingActor }),
-      ];
-      const likes = await saveItemLikes(items, exportingActor);
+      const { actor, likes } = await seedFromJson({
+        items: [
+          {
+            likes: ['actor'],
+            creator: 'actor',
+          },
+          {
+            likes: ['actor'],
+            creator: { name: 'bob' },
+          },
+          // noise
+          {
+            creator: 'actor',
+          },
+        ],
+      });
+      assertIsDefined(actor);
 
-      // noise
-      await saveItemLikes([itemOfRandomUser], randomUser);
-      await saveItemLikes(items, randomUser);
+      const results = await repository.getItemLikes(db, actor.id);
 
-      const results = await new ItemLikeRepository().getByCreatorToExport(exportingActor.id);
       expectNoLeaksAndEquality(results, likes, itemLikeSchema);
     });
 
     it('get all Item Memberships for the member', async () => {
-      const itemMembershipRepository = new ItemMembershipRepository();
-      // TODO: maybe insert beforeEach...
-      const actorItems = [
-        await itemTestUtils.saveItem({ actor: exportingActor }),
-        await itemTestUtils.saveItem({ actor: exportingActor }),
-        await itemTestUtils.saveItem({ actor: exportingActor }),
-      ];
-      const randomItems = [
-        await itemTestUtils.saveItem({ actor: randomUser }),
-        await itemTestUtils.saveItem({ actor: randomUser }),
-      ];
-
-      const memberships: ItemMembershipRaw[] = [];
-
-      for (const item of actorItems) {
-        const membership = await itemTestUtils.saveMembership({
-          item,
-          account: exportingActor,
-          permission: PermissionLevel.Admin,
-        });
-        memberships.push(membership);
-      }
-
-      for (const item of randomItems) {
-        const membership = await itemTestUtils.saveMembership({
-          item,
-          account: exportingActor,
-          permission: PermissionLevel.Read,
-        });
-        memberships.push(membership);
-      }
-
-      // noise
-      await itemTestUtils.saveItemAndMembership({ creator: exportingActor, member: randomUser });
-      await itemTestUtils.saveItemAndMembership({ creator: exportingActor, member: randomUser });
-      await itemTestUtils.saveItemAndMembership({
-        creator: exportingActor,
-        member: randomUser,
-        permission: PermissionLevel.Read,
+      const {
+        actor,
+        itemMemberships: [im1, im2, im3],
+      } = await seedFromJson({
+        items: [
+          {
+            memberships: [{ account: 'actor' }, { creator: 'actor', account: { name: 'bob' } }],
+          },
+          {
+            memberships: [{ account: 'actor' }],
+          },
+          // noise
+          {
+            memberships: [{ account: { name: 'bob' } }],
+          },
+        ],
       });
-
-      const results = await itemMembershipRepository.getForMemberExport(exportingActor.id);
-      expectNoLeaksAndEquality(results, memberships, itemMembershipSchema);
+      assertIsDefined(actor);
+      const results = await repository.getItemMemberships(db, actor.id);
+      expectNoLeaksAndEquality(results, [im1, im2, im3], itemMembershipSchema);
     });
   });
 });

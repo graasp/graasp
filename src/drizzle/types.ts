@@ -209,6 +209,9 @@ export type ChatMentionWithMessageAndCreator = ChatMentionRaw & {
   account: MinimalAccount;
   message: ChatMessageRaw;
 };
+export type ChatMentionWithMessageWithoutCreator = Omit<ChatMentionRaw, 'message'> & {
+  message: Omit<ChatMessageRaw, 'creatorId'>;
+};
 
 // --- Invitations
 export type InvitationInsertDTO = typeof invitationsTable.$inferInsert;

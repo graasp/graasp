@@ -28,6 +28,7 @@ import {
   appDatas,
   appSettings,
   apps,
+  chatMentionsTable,
   chatMessagesTable,
   guestPasswords,
   invitationsTable,
@@ -57,6 +58,7 @@ import {
   AppDataRaw,
   AppRaw,
   AppSettingRaw,
+  ChatMentionRaw,
   ChatMessageRaw,
   GuestRaw,
   InvitationRaw,
@@ -125,6 +127,7 @@ type SeedItem<M = SeedMember> = (Partial<Omit<ItemRaw, 'creator'>> & { creator?:
   invitations?: Partial<InvitationRaw>[];
   chatMessages?: (Omit<Partial<ChatMessageRaw>, 'creatorId'> & {
     creator: M | null;
+    mentions?: M[];
   })[];
   membershipRequests?: (Omit<Partial<MembershipRequestRaw>, 'memberId'> & {
     member: M;
@@ -175,6 +178,7 @@ const replaceActorInItems = (createdActor?: AccountRaw, items?: DataType['items'
     chatMessages: i.chatMessages?.map((ad) => ({
       ...ad,
       creator: ad.creator === ACTOR_STRING ? (createdActor as any) : ad.creator,
+      mentions: ad.mentions?.map((m) => (m === ACTOR_STRING ? (createdActor as any) : m)),
     })),
     membershipRequests: i.membershipRequests?.map((mr) => ({
       ...mr,
@@ -265,6 +269,15 @@ function replaceAccountInItems(createdAccount: AccountRaw, items?: DataType['ite
         account: getNameIfExists(a.account) === createdAccount.name ? createdAccount : a.account,
       };
     });
+    const chatMessages = i.chatMessages?.map((cm) => {
+      return {
+        ...cm,
+        creator: getNameIfExists(cm.creator) === createdAccount.name ? createdAccount : cm.creator,
+        mentions: cm.mentions?.map((m) =>
+          getNameIfExists(m) === createdAccount.name ? createdAccount : m,
+        ),
+      };
+    });
 
     return {
       ...i,
@@ -279,6 +292,7 @@ function replaceAccountInItems(createdAccount: AccountRaw, items?: DataType['ite
       likes,
       actionRequestExports,
       actions,
+      chatMessages,
     };
   });
 }
@@ -388,6 +402,7 @@ const processItemMemberships = (items: DataType['items'] = []) => {
       ?.map((im) => ({
         permission: PermissionLevel.Admin,
         accountId: (im.account as any).id,
+        creatorId: im.creator ? (im.creator as any).id : null,
         ...im,
       })) as ItemMembershipRaw[]
   );
@@ -423,12 +438,13 @@ const getAllAccountsFromItems = (items: SeedItem[] = []) => {
       return [...acc, m.creator];
     }, []);
 
-    // get all accounts from all app settings
+    // get all accounts from all chat message and mentions
     const creatorsFromChatMessages = (i.chatMessages ?? [])?.reduce<SeedMember[]>((acc, m) => {
-      if (!m.creator) {
-        return acc;
+      const accounts = [...(m.mentions ?? [])];
+      if (m.creator) {
+        accounts.push(m.creator);
       }
-      return [...acc, m.creator];
+      return [...acc, ...accounts];
     }, []);
 
     // get all accounts and creators from all app data
@@ -794,6 +810,7 @@ export async function seedFromJson(data: DataType = {}) {
     appData: AppDataRaw[];
     invitations: InvitationRaw[];
     chatMessages: ChatMessageRaw[];
+    chatMentions: ChatMentionRaw[];
     membershipRequests: MembershipRequestRaw[];
     bookmarks: ItemBookmarkRaw[];
     likes: ItemLikeRaw[];
@@ -818,6 +835,7 @@ export async function seedFromJson(data: DataType = {}) {
     appSettings: [],
     invitations: [],
     chatMessages: [],
+    chatMentions: [],
     membershipRequests: [],
     bookmarks: [],
     itemValidationGroups: [],
@@ -1043,6 +1061,8 @@ export async function seedFromJson(data: DataType = {}) {
     if (i.chatMessages) {
       return acc.concat(
         i.chatMessages.map((aa) => ({
+          id: v4(),
+          ...aa,
           creatorId: aa.creator.id,
           itemId: i.id,
           body: aa.body ?? faker.word.sample(),
@@ -1053,6 +1073,22 @@ export async function seedFromJson(data: DataType = {}) {
   }, []);
   if (chatMessageValues.length) {
     result.chatMessages = await db.insert(chatMessagesTable).values(chatMessageValues).returning();
+
+    // save chat mentions
+    const chatMentionValues = chatMessageValues.reduce((acc, cm) => {
+      console.log(cm.mentions);
+      const mentions = cm.mentions?.map((m) => ({ accountId: m.id, messageId: cm.id })) ?? [];
+
+      return acc.concat(mentions);
+    }, []);
+
+    console.log(chatMentionValues);
+    if (chatMentionValues.length) {
+      result.chatMentions = await db
+        .insert(chatMentionsTable)
+        .values(chatMentionValues)
+        .returning();
+    }
   }
 
   // save recycled data

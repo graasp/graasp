@@ -16,7 +16,7 @@ import {
   Item,
   ItemRaw,
 } from '../../../../drizzle/types';
-import { AuthenticatedUser } from '../../../../types';
+import { AuthenticatedUser, MaybeUser } from '../../../../types';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { ActionRepository } from '../../../action/action.repository';
 import { ActionService } from '../../../action/action.service';
@@ -26,14 +26,17 @@ import {
   MIN_ACTIONS_SAMPLE_SIZE,
 } from '../../../action/constants';
 import { InvalidAggregationError } from '../../../action/utils/errors';
+import { filterOutItems } from '../../../authorization.utils';
 import { ChatMessageRepository } from '../../../chat/repository';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { ExportDataRepository } from '../../../member/plugins/export-data/repository';
 import { BasicItemService } from '../../basic.service';
 import { isItemType } from '../../discrimination';
+import { ItemService } from '../../service';
 import { AppActionRepository } from '../app/appAction/appAction.repository';
 import { AppDataRepository } from '../app/appData/repository';
 import { AppSettingRepository } from '../app/appSetting/repository';
+import { ItemVisibilityRepository } from '../itemVisibility/repository';
 // import { BaseAnalytics } from './base-analytics';
 import { ItemActionType } from './utils';
 
@@ -48,6 +51,8 @@ export class ActionItemService {
   private readonly itemMembershipRepository: ItemMembershipRepository;
   private readonly appDataRepository: AppDataRepository;
   private readonly exportDataRepository: ExportDataRepository;
+  private readonly itemService: ItemService;
+  private readonly itemVisibilityRepository: ItemVisibilityRepository;
 
   constructor(
     actionService: ActionService,
@@ -59,6 +64,8 @@ export class ActionItemService {
     appDataRepository: AppDataRepository,
     chatMessageRepository: ChatMessageRepository,
     exportDataRepository: ExportDataRepository,
+    itemService: ItemService,
+    itemVisibilityRepository: ItemVisibilityRepository,
   ) {
     this.actionService = actionService;
     this.basicItemService = basicItemService;
@@ -69,6 +76,8 @@ export class ActionItemService {
     this.appDataRepository = appDataRepository;
     this.chatMessageRepository = chatMessageRepository;
     this.exportDataRepository = exportDataRepository;
+    this.itemService = itemService;
+    this.itemVisibilityRepository = itemVisibilityRepository;
   }
 
   async getForItem(
@@ -154,6 +163,23 @@ export class ActionItemService {
   //   return aggregateActions;
   // }
 
+  async getFilteredDescendants(db: DBConnection, account: MaybeUser, itemId: UUID) {
+    const { descendants } = await this.itemService.getDescendants(db, account, itemId);
+    if (!descendants.length) {
+      return [];
+    }
+    // TODO optimize?
+    return filterOutItems(
+      db,
+      account,
+      {
+        itemMembershipRepository: this.itemMembershipRepository,
+        itemVisibilityRepository: this.itemVisibilityRepository,
+      },
+      descendants,
+    );
+  }
+
   async getBaseAnalyticsForItem(
     db: DBConnection,
     actor: AuthenticatedUser,
@@ -203,11 +229,7 @@ export class ActionItemService {
     // get descendants items
     let descendants: ItemRaw[] = [];
     if (isItemType(item, ItemType.FOLDER)) {
-      descendants = await this.exportDataRepository.getFilteredDescendants(
-        db,
-        actor,
-        payload.itemId,
-      );
+      descendants = await this.getFilteredDescendants(db, actor, payload.itemId);
     }
     // chatbox for all items
     const chatMessages = await this.chatMessageRepository.getByItems(db, [

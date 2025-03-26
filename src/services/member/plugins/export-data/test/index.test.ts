@@ -6,13 +6,17 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
+import build, {
+  clearDatabase,
+  mockAuthenticate,
+  unmockAuthenticate,
+} from '../../../../../../test/app';
+import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { resolveDependency } from '../../../../../di/utils';
+import { db } from '../../../../../drizzle/db';
 import { MailerService } from '../../../../../plugins/mailer/mailer.service';
+import { assertIsDefined } from '../../../../../utils/assertions';
 import { MEMBER_EXPORT_DATA_ROUTE_PREFIX } from '../../../../../utils/config';
-import { ItemTestUtils } from '../../../../item/test/fixtures/items';
-
-const testUtils = new ItemTestUtils();
 
 const POST_URL = `/members${MEMBER_EXPORT_DATA_ROUTE_PREFIX}`;
 
@@ -50,19 +54,22 @@ jest.mock('@aws-sdk/lib-storage', () => {
 
 describe('Export Member Data Plugin Tests', () => {
   let app: FastifyInstance;
-  let actor;
+
+  beforeAll(async () => {
+    ({ app } = await build());
+  });
 
   afterEach(async () => {
     jest.clearAllMocks();
-    await clearDatabase(app.db);
-    actor = null;
+    unmockAuthenticate();
+  });
+  afterAll(async () => {
+    await clearDatabase(db);
     app.close();
   });
 
   describe('POST /export-data', () => {
     it('Cannot post action when signed out', async () => {
-      ({ app, actor } = await build({ member: null }));
-
       const response = await app.inject({
         method: HttpMethod.Post,
         url: POST_URL,
@@ -72,11 +79,12 @@ describe('Export Member Data Plugin Tests', () => {
     });
 
     it('Create archive and send email', async () => {
-      ({ app, actor } = await build());
       const mailerService = resolveDependency(MailerService);
       const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
 
-      await testUtils.saveItem({ actor });
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: HttpMethod.Post,

@@ -6,6 +6,7 @@ import {
   DATE_TYPE,
   NULLABLE_TYPE,
   NULL_TYPE,
+  NUMBER_TYPE,
   OBJECT_TYPE,
   ONE_OF,
   STRING_TYPE,
@@ -45,7 +46,7 @@ export const actionSchema = buildObjectSchema({
   type: STRING_TYPE,
   extra: OBJECT_TYPE,
   createdAt: DATE_TYPE,
-  item: externalItemSchema,
+  itemId: NULLABLE_TYPE(STRING_TYPE),
 });
 export const actionArraySchema = buildArraySchema(actionSchema);
 
@@ -54,20 +55,20 @@ export const appActionSchema = buildObjectSchema({
   data: OBJECT_TYPE,
   type: STRING_TYPE,
   createdAt: DATE_TYPE,
-  item: externalItemSchema,
+  itemId: STRING_TYPE,
 });
 export const appActionArraySchema = buildArraySchema(appActionSchema);
 
 export const appDataSchema = buildObjectSchema({
   id: STRING_TYPE,
-  account: externalMemberSchema(),
+  accountId: STRING_TYPE,
   data: OBJECT_TYPE,
   type: STRING_TYPE,
   visibility: STRING_TYPE,
-  creator: externalMemberSchema(true),
+  creatorId: STRING_TYPE,
   createdAt: DATE_TYPE,
   updatedAt: DATE_TYPE,
-  item: externalItemSchema,
+  itemId: STRING_TYPE,
 });
 export const appDataArraySchema = buildArraySchema(appDataSchema);
 
@@ -77,13 +78,13 @@ export const appSettingSchema = buildObjectSchema({
   name: STRING_TYPE,
   createdAt: DATE_TYPE,
   updatedAt: DATE_TYPE,
-  item: externalItemSchema,
+  itemId: STRING_TYPE,
 });
 export const appSettingArraySchema = buildArraySchema(appSettingSchema);
 
 export const messageSchema = buildObjectSchema({
   id: STRING_TYPE,
-  item: externalItemSchema,
+  itemId: STRING_TYPE,
   body: STRING_TYPE,
   updatedAt: DATE_TYPE,
   createdAt: DATE_TYPE,
@@ -95,7 +96,8 @@ export const externalMessageSchema = buildObjectSchema({
   body: STRING_TYPE,
   updatedAt: DATE_TYPE,
   createdAt: DATE_TYPE,
-  creator: externalMemberSchema(true),
+  creatorId: NULLABLE_TYPE(STRING_TYPE),
+  itemId: STRING_TYPE,
 });
 
 export const messageMentionSchema = buildObjectSchema({
@@ -103,7 +105,9 @@ export const messageMentionSchema = buildObjectSchema({
   createdAt: DATE_TYPE,
   updatedAt: DATE_TYPE,
   status: STRING_TYPE,
+  messageId: STRING_TYPE,
   message: externalMessageSchema,
+  accountId: STRING_TYPE,
 });
 export const messageMentionArraySchema = buildArraySchema(messageMentionSchema);
 
@@ -113,26 +117,27 @@ export const itemSchema = buildObjectSchema({
   type: STRING_TYPE,
   description: NULLABLE_TYPE(STRING_TYPE),
   path: STRING_TYPE,
-  creator: externalMemberSchema(true),
+  creatorId: STRING_TYPE,
   extra: OBJECT_TYPE,
   settings: OBJECT_TYPE,
   lang: STRING_TYPE,
   createdAt: DATE_TYPE,
   updatedAt: DATE_TYPE,
   deletedAt: ONE_OF([...DATE_TYPE.oneOf, NULL_TYPE]),
+  order: NULLABLE_TYPE(NUMBER_TYPE),
 });
 export const itemArraySchema = buildArraySchema(itemSchema);
 
 export const itemFavoriteSchema = buildObjectSchema({
   id: STRING_TYPE,
-  item: externalItemSchema,
+  itemId: STRING_TYPE,
   createdAt: DATE_TYPE,
 });
 export const itemFavoriteArraySchema = buildArraySchema(itemFavoriteSchema);
 
 export const itemLikeSchema = buildObjectSchema({
   id: STRING_TYPE,
-  item: externalItemSchema,
+  itemId: STRING_TYPE,
   createdAt: DATE_TYPE,
 });
 export const itemLikeArraySchema = buildArraySchema(itemLikeSchema);
@@ -140,7 +145,9 @@ export const itemLikeArraySchema = buildArraySchema(itemLikeSchema);
 export const itemMembershipSchema = buildObjectSchema({
   id: STRING_TYPE,
   permission: STRING_TYPE,
-  item: externalItemSchema,
+  itemPath: STRING_TYPE,
+  accountId: STRING_TYPE,
+  creatorId: NULLABLE_TYPE(STRING_TYPE),
   createdAt: DATE_TYPE,
   updatedAt: DATE_TYPE,
 });
