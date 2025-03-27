@@ -55,8 +55,8 @@ export class ShortLinkService {
 
     // check that the member can admin the item to be allowed to create short link
     await this.basicItemService.get(db, member, shortLink.itemId, PermissionLevel.Admin);
-
     const createdShortLink = await this.shortLinkRepository.addOne(db, shortLink);
+
     return ShortLinkDTO.from(createdShortLink);
   }
 

@@ -15,6 +15,7 @@ import {
   ItemVisibilityType,
   PermissionLevel,
   PermissionLevelOptions,
+  ShortLinkPlatform,
   buildPathFromIds,
   getIdsFromPath,
 } from '@graasp/sdk';
@@ -48,6 +49,7 @@ import {
   publishedItems,
   publishers,
   recycledItemDatas,
+  shortLinks,
   tags as tagsTable,
 } from '../../src/drizzle/schema';
 import {
@@ -76,6 +78,7 @@ import {
   MemberProfileRaw,
   MemberRaw,
   MembershipRequestRaw,
+  ShortLinkRaw,
   TagRaw,
 } from '../../src/drizzle/types';
 import { encryptPassword } from '../../src/services/auth/plugins/password/utils';
@@ -136,6 +139,7 @@ type SeedItem<M = SeedMember> = (Partial<Omit<ItemRaw, 'creator'>> & { creator?:
     member: M;
   })[];
   actions?: Omit<SeedAction<M>, 'itemId'>[];
+  shortLinks?: Partial<ShortLinkRaw>[];
 };
 type SeedAction<M = SeedMember> = Partial<Pick<ActionRaw, 'type' | 'createdAt' | 'view'>> & {
   account: M;
@@ -816,6 +820,7 @@ export async function seedFromJson(data: DataType = {}) {
     likes: ItemLikeRaw[];
     itemValidationGroups: ItemValidationGroupRaw[];
     itemValidations: ItemValidationRaw[];
+    shortLinks: ShortLinkRaw[];
   } = {
     actions: [],
     items: [],
@@ -841,6 +846,7 @@ export async function seedFromJson(data: DataType = {}) {
     itemValidationGroups: [],
     itemValidations: [],
     likes: [],
+    shortLinks: [],
   };
 
   const {
@@ -1076,13 +1082,11 @@ export async function seedFromJson(data: DataType = {}) {
 
     // save chat mentions
     const chatMentionValues = chatMessageValues.reduce((acc, cm) => {
-      console.log(cm.mentions);
       const mentions = cm.mentions?.map((m) => ({ accountId: m.id, messageId: cm.id })) ?? [];
 
       return acc.concat(mentions);
     }, []);
 
-    console.log(chatMentionValues);
     if (chatMentionValues.length) {
       result.chatMentions = await db
         .insert(chatMentionsTable)
@@ -1178,6 +1182,21 @@ export async function seedFromJson(data: DataType = {}) {
         .values(itemActions.map((a) => ActionFactory(a)))
         .returning(),
     );
+  }
+
+  // short links
+  const shortlinkEntities = processedItems.flatMap(({ id, shortLinks }) => {
+    return (
+      shortLinks?.map((s) => ({
+        platform: ShortLinkPlatform.Builder,
+        alias: faker.word.sample({ length: { min: 6, max: 40 } }),
+        ...s,
+        itemId: id,
+      })) ?? []
+    );
+  });
+  if (shortlinkEntities.length) {
+    result.shortLinks = await db.insert(shortLinks).values(shortlinkEntities).returning();
   }
 
   return result;

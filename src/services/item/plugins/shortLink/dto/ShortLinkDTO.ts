@@ -3,6 +3,9 @@ import { ShortLink } from '@graasp/sdk';
 import { ShortLinkRaw } from '../../../../../drizzle/types';
 
 export class ShortLinkDTO {
+  /**
+   * Strip sensible data
+   */
   public static from({
     alias,
     platform,

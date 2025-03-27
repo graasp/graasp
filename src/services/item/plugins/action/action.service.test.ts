@@ -22,12 +22,11 @@ import build, {
 import { BaseLogger } from '../../../../logger';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { MemberCannotAccess, UnauthorizedMember } from '../../../../utils/errors';
-import { saveActions } from '../../../action/test/fixtures/actions';
 import { MemberService } from '../../../member/member.service';
 import { saveMember } from '../../../member/test/fixtures/members';
 import { ThumbnailService } from '../../../thumbnail/service';
 import { ItemService } from '../../service';
-import { ItemTestUtils, expectItem } from '../../test/fixtures/items';
+import { expectItem } from '../../test/fixtures/items';
 import { saveAppActions } from '../app/appAction/test/fixtures';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../thumbnail/service';

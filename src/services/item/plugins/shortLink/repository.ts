@@ -8,12 +8,17 @@ import {
 } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
+import { DUPLICATE_ERROR_CODE } from '../../../../drizzle/errorCodes';
 import { shortLinks } from '../../../../drizzle/schema';
 import { ShortLinkInsertDTO, ShortLinkRaw, ShortLinkWithItem } from '../../../../drizzle/types';
 import { UpdateException } from '../../../../repositories/errors';
 import { throwsIfParamIsInvalid } from '../../../../repositories/utils';
 import { assertIsError } from '../../../../utils/assertions';
-import { ShortLinkLimitExceed, ShortLinkNotFound } from '../../../../utils/errors';
+import {
+  ShortLinkDuplication,
+  ShortLinkLimitExceed,
+  ShortLinkNotFound,
+} from '../../../../utils/errors';
 
 type CreateShortLinkBody = CreateShortLink;
 type UpdateShortLinkBody = UpdateShortLink;
@@ -29,14 +34,14 @@ export class ShortLinkRepository {
     }
 
     try {
-      const res = await db
-        .insert(shortLinks)
-        .values({ alias, platform, itemId })
-        .onConflictDoNothing()
-        .returning();
+      const res = await db.insert(shortLinks).values({ alias, platform, itemId }).returning();
 
       return res[0];
     } catch (e) {
+      // can throw on alias conflict
+      if (e.code === DUPLICATE_ERROR_CODE) {
+        throw new ShortLinkDuplication(alias);
+      }
       assertIsError(e);
       throw e;
     }
@@ -103,6 +108,9 @@ export class ShortLinkRepository {
 
       return updatedEntity;
     } catch (e) {
+      if (e.code === DUPLICATE_ERROR_CODE) {
+        throw new ShortLinkDuplication(entity.alias);
+      }
       assertIsError(e);
 
       throw new UpdateException(e.message);
