@@ -21,7 +21,7 @@ import { ItemMembershipRepository } from '../../../itemMembership/membership.rep
 import { EtherpadItem, isItemType } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../item.repository';
-import { ItemService } from '../../service';
+import { ItemService } from '../../item.service';
 import { MAX_SESSIONS_IN_COOKIE, PLUGIN_NAME } from './constants';
 import { EtherpadServerError, ItemMissingExtraError } from './errors';
 import { EtherpadServiceConfig } from './serviceConfig';

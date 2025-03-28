@@ -14,7 +14,7 @@ import {
 } from '../../../../auth/plugins/passport';
 import { assertIsMember } from '../../../../authentication';
 import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
-import { ItemService } from '../../../service';
+import { ItemService } from '../../../item.service';
 import { PublicationService } from '../publicationState/publication.service';
 import { ItemPublishedService } from './itemPublished.service';
 import graaspSearchPlugin from './plugins/search';

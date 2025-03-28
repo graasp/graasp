@@ -18,9 +18,9 @@ import { db } from '../../../../drizzle/db';
 import { itemMemberships, itemsRaw } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { MemberCannotAccess, MemberCannotWriteItem } from '../../../../utils/errors';
-import { ItemService } from '../../service';
+import { ItemService } from '../../item.service';
 import { expectItem } from '../../test/fixtures/items';
-import { ActionItemService } from '../action/action.service';
+import { ActionItemService } from '../action/itemAction.service';
 
 describe('Shortcut routes tests', () => {
   let app: FastifyInstance;

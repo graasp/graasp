@@ -6,7 +6,7 @@ import { asDefined } from '../../../../utils/assertions';
 import { isAuthenticated, matchOne } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { ActionItemService } from '../action/action.service';
+import { ActionItemService } from '../action/itemAction.service';
 import { createLink, getLinkMetadata, updateLink } from './schemas';
 import { EmbeddedLinkItemService } from './service';
 import { ensureProtocol } from './utils';

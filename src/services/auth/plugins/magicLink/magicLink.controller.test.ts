@@ -16,16 +16,14 @@ import {
 } from '@graasp/sdk';
 import { FAILURE_MESSAGES } from '@graasp/translations';
 
-import build, { clearDatabase } from '../../../../../test/app';
-import { MemberFactory } from '../../../../../test/factories/member.factory';
+import build, { MOCK_CAPTCHA, clearDatabase } from '../../../../../test/app';
+import { seedFromJson } from '../../../../../test/mocks/seed';
 import { URL_REGEX } from '../../../../../test/utils';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { accountsTable } from '../../../../drizzle/schema';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { JWT_SECRET } from '../../../../utils/config';
-import { saveMember } from '../../../member/test/fixtures/members';
-import { MOCK_CAPTCHA } from '../captcha/test/utils';
 
 jest.mock('node-fetch');
 
@@ -64,7 +62,10 @@ describe('Auth routes tests', () => {
       mockCaptchaValidation(RecaptchaAction.SignIn);
     });
     it('Sign In successfully', async () => {
-      const member = await saveMember();
+      const {
+        members: [member],
+      } = await seedFromJson({ members: [{}] });
+
       const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
       const response = await app.inject({
         method: HttpMethod.Post,
@@ -78,7 +79,10 @@ describe('Auth routes tests', () => {
     });
 
     it('Sign In successfully with given lang', async () => {
-      const member = await saveMember(MemberFactory({ extra: { lang: 'fr' } }));
+      const {
+        members: [member],
+      } = await seedFromJson({ members: [{ extra: { lang: 'fr' } }] });
+
       const { lang } = member.extra;
       const mockSendEmail = jest.spyOn(mailerService, 'sendRaw');
       const response = await app.inject({
@@ -135,7 +139,10 @@ describe('Auth routes tests', () => {
 
   describe('GET /auth', () => {
     it('Authenticate successfully', async () => {
-      const member = await saveMember(MemberFactory({ isValidated: false }));
+      const {
+        members: [member],
+      } = await seedFromJson({ members: [{ isValidated: false }] });
+
       const t = sign({ sub: member.id }, JWT_SECRET);
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -152,7 +159,10 @@ describe('Auth routes tests', () => {
     });
 
     it('Authenticate successfully with email validation', async () => {
-      const member = await saveMember(MemberFactory({ isValidated: false }));
+      const {
+        members: [member],
+      } = await seedFromJson({ members: [{ isValidated: false }] });
+
       const t = sign({ sub: member.id, emailValidation: true }, JWT_SECRET);
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -193,7 +203,10 @@ describe('Auth routes tests', () => {
     });
 
     it('Fail to authenticate if token is invalid', async () => {
-      const member = await saveMember();
+      const {
+        members: [member],
+      } = await seedFromJson({ members: [{}] });
+
       const t = sign({ sub: member.id }, 'secret');
       const response = await app.inject({
         method: HttpMethod.Get,

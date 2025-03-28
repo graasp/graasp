@@ -8,11 +8,11 @@ import build, { MOCK_LOGGER, clearDatabase } from '../../../test/app';
 import { ItemFactory } from '../../../test/factories/item.factory';
 import { ItemVisibilityFactory } from '../../../test/factories/itemVisibility.factory';
 import { saveMember } from '../member/test/fixtures/members';
-import { ThumbnailService } from '../thumbnail/service';
+import { ThumbnailService } from '../thumbnail/thumbnail.service';
 import { ItemWrapper, ItemWrapperService } from './ItemWrapper';
+import { ItemService } from './item.service';
 import { createTag, setItemPublic } from './plugins/itemVisibility/test/fixtures';
 import { ItemThumbnailService } from './plugins/thumbnail/itemThumbnail.service';
-import { ItemService } from './service';
 
 // const itemThumbnailService = new ItemThumbnailService(
 //   {} as unknown as ItemService,

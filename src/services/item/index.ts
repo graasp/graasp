@@ -13,9 +13,9 @@ import {
 import chatController from '../chat/chatMessage.controller';
 import graaspItemLogin from '../itemLogin/itemLogin.controller';
 import itemController from './item.controller';
-import actionItemPlugin from './plugins/action';
-import graaspApps from './plugins/app';
-import { plugin as graaspAppItem } from './plugins/app/controller';
+import actionItemPlugin from './plugins/action/itemAction.controller';
+import graaspApps from './plugins/app/app.controller';
+import { plugin as graaspAppItem } from './plugins/app/appItem.controller';
 import graaspDocumentItem from './plugins/document/controller';
 import { PREFIX_DOCUMENT } from './plugins/document/service';
 import graaspEmbeddedLinkItem from './plugins/embeddedLink/controller';
@@ -35,13 +35,13 @@ import graaspItemVisibility from './plugins/itemVisibility';
 import graaspItemPublicationState from './plugins/publication/publicationState';
 import graaspItemPublish from './plugins/publication/published';
 import graaspValidationPlugin from './plugins/publication/validation';
-import graaspRecycledItemData from './plugins/recycled';
+import graaspRecycledItemData from './plugins/recycled/recycled.controller';
 import ShortLinkService from './plugins/shortLink/shortlink.controller';
 import { SHORT_LINKS_ROUTE_PREFIX } from './plugins/shortLink/shortlink.service';
 import { plugin as graaspShortcutPlugin } from './plugins/shortcut/controller';
 import graaspItemTagPlugin from './plugins/tag/controller';
 import thumbnailsPlugin from './plugins/thumbnail/itemThumbnail.controller';
-import { itemWsHooks } from './ws/hooks';
+import { itemWsHooks } from './ws/item.hooks';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.decorate('file', {

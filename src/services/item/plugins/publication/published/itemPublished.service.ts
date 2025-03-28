@@ -24,7 +24,7 @@ import { MemberRepository } from '../../../../member/member.repository';
 import { ItemWrapperService } from '../../../ItemWrapper';
 import { BasicItemService } from '../../../basic.service';
 import { ItemRepository } from '../../../item.repository';
-import { ActionItemService } from '../../action/action.service';
+import { ActionItemService } from '../../action/itemAction.service';
 import { ItemVisibilityRepository } from '../../itemVisibility/repository';
 import {
   ItemIsNotValidated,

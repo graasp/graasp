@@ -21,7 +21,7 @@ import {
   ItemOpFeedbackErrorEvent,
   ItemOpFeedbackEvent,
   memberItemsTopic,
-} from '../../../../ws/events';
+} from '../../../../ws/item.events';
 import { expectValidateFeedbackOp } from '../../../action/test/utils';
 import { ItemValidationGroupRepository } from '../ItemValidationGroup.repository';
 

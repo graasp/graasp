@@ -89,3 +89,5 @@ export const MOCK_LOGGER = {
   error: jest.fn(),
   debug: jest.fn(),
 } as unknown as BaseLogger;
+
+export const MOCK_CAPTCHA = 'mockedCaptcha';

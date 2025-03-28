@@ -14,7 +14,7 @@ import {
   optionalIsAuthenticated,
 } from '../auth/plugins/passport';
 import { assertIsMember } from '../authentication';
-import FileService from '../file/service';
+import FileService from '../file/file.service';
 import {
   FILE_METADATA_MAX_PAGE_SIZE,
   FILE_METADATA_MIN_PAGE,

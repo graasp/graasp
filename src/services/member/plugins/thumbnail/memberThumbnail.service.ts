@@ -11,7 +11,7 @@ import {
   AVATAR_THUMBNAIL_PREFIX,
   ThumbnailService,
   ThumbnailServiceTransformer,
-} from '../../../thumbnail/service';
+} from '../../../thumbnail/thumbnail.service';
 import { MemberService } from '../../member.service';
 
 @singleton()

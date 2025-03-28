@@ -7,7 +7,7 @@ import { EtherpadPermission } from '@graasp/sdk';
 
 import { customType } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
-import { itemSchema, itemSchemaRef } from '../../schemas';
+import { itemSchema, itemSchemaRef } from '../../item.schemas';
 
 const readerPermissionType = Type.Union([
   Type.Literal(EtherpadPermission.Read),

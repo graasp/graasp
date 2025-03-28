@@ -16,7 +16,7 @@ import {
   ItemOpFeedbackErrorEvent,
   ItemOpFeedbackEvent,
   memberItemsTopic,
-} from '../../../ws/events';
+} from '../../../ws/item.events';
 import { ActionRequestExportRepository } from '../requestExport/repository';
 import { expectExportFeedbackOp } from './utils';
 

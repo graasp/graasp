@@ -12,7 +12,7 @@ import { MemberInfo, MinimalMember } from '../../../../../types';
 import { TMP_FOLDER } from '../../../../../utils/config';
 import { EXPORT_FILE_EXPIRATION, ZIP_MIMETYPE } from '../../../../action/constants';
 import { CannotWriteFileError } from '../../../../action/utils/errors';
-import FileService from '../../../../file/service';
+import FileService from '../../../../file/file.service';
 
 /**
  * DataToExport will be used to store each values in its own file with the name of the key.

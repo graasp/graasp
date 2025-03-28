@@ -5,7 +5,7 @@ import { FastifySchema } from 'fastify';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
-import { packedItemSchemaRef } from '../../schemas.packed';
+import { packedItemSchemaRef } from '../../item.schemas.packed';
 
 const packedBookmarkSchemaRef = registerSchemaAsRef(
   'packedBookmark',

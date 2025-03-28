@@ -19,7 +19,7 @@ import {
 import { StorageService } from '../../../../member/plugins/storage/memberStorage.service';
 import { H5PItem, isItemType } from '../../../discrimination';
 import { ItemRepository } from '../../../item.repository';
-import { ItemService } from '../../../service';
+import { ItemService } from '../../../item.service';
 import { HtmlService } from '../html.service';
 import { H5P_FILE_DOT_EXTENSION, H5P_FILE_MIME_TYPE } from './constants';
 import { H5P } from './validation/h5p';

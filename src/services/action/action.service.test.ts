@@ -7,15 +7,15 @@ import { db } from '../../drizzle/db';
 import { BaseLogger } from '../../logger';
 import { MailerService } from '../../plugins/mailer/mailer.service';
 import { ItemRepository } from '../item/item.repository';
+import { ItemService } from '../item/item.service';
 import { ItemGeolocationRepository } from '../item/plugins/geolocation/itemGeolocation.repository';
 import { MeiliSearchWrapper } from '../item/plugins/publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../item/plugins/thumbnail/itemThumbnail.service';
-import { ItemService } from '../item/service';
 import { ItemMembershipRepository } from '../itemMembership/membership.repository';
 import { MemberRepository } from '../member/member.repository';
 import { MemberService } from '../member/member.service';
 import { saveMember } from '../member/test/fixtures/members';
-import { ThumbnailService } from '../thumbnail/service';
+import { ThumbnailService } from '../thumbnail/thumbnail.service';
 import { ActionRepository } from './action.repository';
 import { ActionService } from './action.service';
 

@@ -16,6 +16,7 @@ import { AuthenticatedUser, MaybeUser } from '../../../../../types';
 import HookManager from '../../../../../utils/hook';
 import { AuthorizationService } from '../../../../authorization';
 import { ItemRepository } from '../../../item.repository';
+import { AppDataRepository } from './appData.repository';
 import {
   AppDataNotAccessible,
   AppDataNotFound,
@@ -23,7 +24,6 @@ import {
   PreventUpdateOtherAppData,
 } from './errors';
 import { InputAppData } from './interfaces/app-data';
-import { AppDataRepository } from './repository';
 
 const ownAppDataAbility = (appData: AppDataRaw, actor: MaybeUser) => {
   if (!actor) {

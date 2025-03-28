@@ -9,7 +9,7 @@ import { isAuthenticated, matchOne } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { getPostItemPayloadFromFormData } from '../../utils';
-import { ActionItemService } from '../action/action.service';
+import { ActionItemService } from '../action/itemAction.service';
 import { createFolder, createFolderWithThumbnail, updateFolder } from './schemas';
 import { FolderItemService } from './service';
 

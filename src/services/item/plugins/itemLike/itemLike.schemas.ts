@@ -3,8 +3,8 @@ import { StatusCodes } from 'http-status-codes';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
-import { itemSchemaRef } from '../../schemas';
-import { packedItemSchemaRef } from '../../schemas.packed';
+import { itemSchemaRef } from '../../item.schemas';
+import { packedItemSchemaRef } from '../../item.schemas.packed';
 
 export const itemLikeSchemaRef = registerSchemaAsRef(
   'itemLike',

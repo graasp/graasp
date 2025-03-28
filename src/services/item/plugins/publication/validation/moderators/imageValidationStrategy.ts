@@ -4,7 +4,7 @@ import { ItemType, ItemValidationProcess, ItemValidationStatus, getMimetype } fr
 
 import { IMAGE_CLASSIFIER_API_DI_KEY } from '../../../../../../di/constants';
 import { Item } from '../../../../../../drizzle/types';
-import FileService from '../../../../../file/service';
+import FileService from '../../../../../file/file.service';
 import { isItemType } from '../../../../discrimination';
 import { InvalidFileItemError } from '../errors';
 import { classifyImage } from '../processes/imageClassification';

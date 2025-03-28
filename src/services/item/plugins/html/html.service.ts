@@ -17,7 +17,7 @@ import { Item } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { MinimalMember } from '../../../../types';
 import { TMP_FOLDER } from '../../../../utils/config';
-import FileService, { FileServiceConfig } from '../../../file/service';
+import FileService, { FileServiceConfig } from '../../../file/file.service';
 import { fileRepositoryFactory } from '../../../file/utils/factory';
 import { StorageService } from '../../../member/plugins/storage/memberStorage.service';
 import { GraaspHtmlError, HtmlImportError } from './errors';

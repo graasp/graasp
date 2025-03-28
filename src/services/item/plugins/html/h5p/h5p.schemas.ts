@@ -6,7 +6,7 @@ import { FastifySchema } from 'fastify';
 
 import { customType } from '../../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../../schemas/global';
-import { itemSchemaRef } from '../../../schemas';
+import { itemSchemaRef } from '../../../item.schemas';
 import { H5P } from './validation/h5p';
 
 export const h5pImport = {

@@ -10,7 +10,7 @@ import {
   authenticateAppsJWT,
   guestAuthenticateAppsJWT,
 } from '../../../../../../auth/plugins/passport';
-import FileService from '../../../../../../file/service';
+import FileService from '../../../../../../file/file.service';
 import {
   DownloadFileUnexpectedError,
   UploadEmptyFileError,

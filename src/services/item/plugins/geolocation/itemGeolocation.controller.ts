@@ -9,7 +9,7 @@ import { asDefined } from '../../../../utils/assertions';
 import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { ItemService } from '../../service';
+import { ItemService } from '../../item.service';
 import {
   deleteGeolocation,
   geolocationReverse,

@@ -22,7 +22,7 @@ import { assertIsDefined } from '../../../../../utils/assertions';
 import { ETHERPAD_PUBLIC_URL } from '../../../../../utils/config';
 import { ItemNotFound, MemberCannotAccess } from '../../../../../utils/errors';
 import { EtherpadItem } from '../../../discrimination';
-import { ItemService } from '../../../service';
+import { ItemService } from '../../../item.service';
 import { MAX_SESSIONS_IN_COOKIE } from '../constants';
 import { ItemMissingExtraError } from '../errors';
 import { EtherpadItemService } from '../service';

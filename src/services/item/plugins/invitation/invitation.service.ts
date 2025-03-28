@@ -24,7 +24,7 @@ import { ItemMembershipService } from '../../../itemMembership/membership.servic
 import { MemberService } from '../../../member/member.service';
 import { MemberDTO } from '../../../member/types';
 import { isItemType } from '../../discrimination';
-import { ItemService } from '../../service';
+import { ItemService } from '../../item.service';
 import { InvitationRepository } from './invitation.repository';
 import { EMAIL_COLUMN_NAME, GROUP_COL_NAME, buildInvitationLink } from './utils/constants';
 import {

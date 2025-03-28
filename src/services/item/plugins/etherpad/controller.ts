@@ -10,7 +10,7 @@ import { asDefined } from '../../../../utils/assertions';
 import { isAuthenticated, matchOne } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { ItemService } from '../../service';
+import { ItemService } from '../../item.service';
 import { createEtherpad, getEtherpadFromItem, updateEtherpad } from './schemas';
 import { EtherpadItemService } from './service';
 

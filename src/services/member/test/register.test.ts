@@ -8,7 +8,7 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, MAX_USERNAME_LENGTH, MemberFactory, RecaptchaAction } from '@graasp/sdk';
 
-import build, { clearDatabase, unmockAuthenticate } from '../../../../test/app';
+import build, { MOCK_CAPTCHA, clearDatabase, unmockAuthenticate } from '../../../../test/app';
 import { seedFromJson } from '../../../../test/mocks/seed';
 import { mockCaptchaValidation } from '../../../../test/utils';
 import { resolveDependency } from '../../../di/utils';
@@ -17,7 +17,6 @@ import { accountsTable, invitationsTable, itemMemberships } from '../../../drizz
 import { MemberRaw } from '../../../drizzle/types';
 import { MailerService } from '../../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../../utils/assertions';
-import { MOCK_CAPTCHA } from '../../auth/plugins/captcha/test/utils';
 import { expectMember } from './fixtures/members';
 
 jest.mock('node-fetch');

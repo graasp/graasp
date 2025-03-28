@@ -148,7 +148,7 @@ type DataType = {
   actor?: SeedActor | null;
   members?: SeedMember[];
   items?: SeedItem<ReferencedSeedActor | SeedMember>[];
-  tags?: Pick<TagRaw, 'name' | 'category'>[];
+  tags?: (Pick<TagRaw, 'category'> & Partial<TagRaw>)[];
   apps?: Partial<AppRaw>[];
   actions?: SeedAction<ReferencedSeedActor | SeedMember>[];
 };
@@ -914,7 +914,10 @@ export async function seedFromJson(data: DataType = {}) {
 
   // save tags
   if (data.tags?.length) {
-    result.tags = await db.insert(tagsTable).values(data.tags).returning();
+    result.tags = await db
+      .insert(tagsTable)
+      .values(data.tags.map((t) => ({ name: faker.word.sample(), ...t })))
+      .returning();
   }
 
   const itemTags = processedItems.flatMap((item) =>

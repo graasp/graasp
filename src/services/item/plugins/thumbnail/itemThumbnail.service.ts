@@ -8,10 +8,10 @@ import { Item } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { MaybeUser, MinimalMember } from '../../../../types';
 import { AuthorizationService } from '../../../authorization';
-import { ThumbnailService } from '../../../thumbnail/service';
+import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { BasicItemService } from '../../basic.service';
 import { ItemRepository } from '../../item.repository';
-import { ItemService } from '../../service';
+import { ItemService } from '../../item.service';
 import { DEFAULT_ITEM_THUMBNAIL_SIZES } from './constants';
 import { ItemThumbnailSize, ItemsThumbnails } from './types';
 

@@ -16,14 +16,20 @@ import { db } from '../../drizzle/db';
 import { FastifyInstanceTypebox } from '../../plugins/typebox';
 import { asDefined } from '../../utils/assertions';
 import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../auth/plugins/passport';
-import { ItemService } from '../item/service';
+import { ItemService } from '../item/item.service';
 import { guestAccountRole } from '../itemLogin/strategies/guestAccountRole';
 import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
+import {
+  clearChat,
+  createChatMessage,
+  deleteMessage,
+  getChat,
+  patchMessage,
+} from './chatMessage.schemas';
 import { ChatMessageService } from './chatMessage.service';
 import { ChatMessageNotFound } from './errors';
-import { ActionChatService } from './plugins/action/service';
-import mentionPlugin from './plugins/mentions/chatMentions.controller';
-import { clearChat, createChatMessage, deleteMessage, getChat, patchMessage } from './schemas';
+import { ActionChatService } from './plugins/action/chatAction.service';
+import mentionPlugin from './plugins/mentions/chatMention.controller';
 import { registerChatWsHooks } from './ws/hooks';
 
 /**

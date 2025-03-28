@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { customType } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
-import { itemSchema, itemSchemaRef } from '../../schemas';
+import { itemSchema, itemSchemaRef } from '../../item.schemas';
 
 export const upload = {
   operationId: 'uploadFile',

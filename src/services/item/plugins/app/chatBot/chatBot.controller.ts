@@ -6,7 +6,7 @@ import { asDefined } from '../../../../../utils/assertions';
 import { OPENAI_DEFAULT_TEMPERATURE, OPENAI_GPT_VERSION } from '../../../../../utils/config';
 import { InvalidJWTItem } from '../../../../../utils/errors';
 import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
-import { ItemService } from '../../../service';
+import { ItemService } from '../../../item.service';
 import { ChatBotService } from './chatBot.service';
 import { create } from './schemas';
 

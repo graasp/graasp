@@ -12,12 +12,12 @@ import { assertIsDefined } from '../../utils/assertions';
 import { assertIsMember } from '../authentication';
 import * as authorization from '../authorization';
 import { saveMember } from '../member/test/fixtures/members';
-import { ThumbnailService } from '../thumbnail/service';
+import { ThumbnailService } from '../thumbnail/thumbnail.service';
 import { FolderItem } from './discrimination';
+import { ItemService } from './item.service';
 import { ItemVisibilityRepository } from './plugins/itemVisibility/repository';
 import { MeiliSearchWrapper } from './plugins/publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from './plugins/thumbnail/itemThumbnail.service';
-import { ItemService } from './service';
 
 const mockedThumbnailService = {
   copyFolder: jest.fn(),

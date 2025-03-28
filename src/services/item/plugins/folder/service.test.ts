@@ -5,10 +5,10 @@ import { AppItemFactory, FolderItemFactory, ItemType, PermissionLevel } from '@g
 import { MOCK_LOGGER } from '../../../../../test/app';
 import { Item } from '../../../../drizzle/types';
 import { MinimalMember } from '../../../../types';
-import { ThumbnailService } from '../../../thumbnail/service';
+import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../item.repository';
-import { ItemService } from '../../service';
+import { ItemService } from '../../item.service';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../thumbnail/itemThumbnail.service';
 import { FolderItemService } from './service';

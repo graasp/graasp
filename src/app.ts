@@ -15,8 +15,8 @@ import { plugin as passportPlugin } from './services/auth/plugins/passport';
 import ItemServiceApi from './services/item';
 import ItemMembershipServiceApi from './services/itemMembership/membership.controller';
 import MemberServiceApi from './services/member';
-import tagPlugin from './services/tag/controller';
-import websocketsPlugin from './services/websockets';
+import tagPlugin from './services/tag/tag.controller';
+import websocketsPlugin from './services/websockets/websocket.controller';
 import { REDIS_HOST, REDIS_PASSWORD, REDIS_PORT, REDIS_USERNAME } from './utils/config';
 
 export default async function (instance: FastifyInstance): Promise<void> {

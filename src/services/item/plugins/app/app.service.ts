@@ -11,9 +11,9 @@ import { APPS_JWT_SECRET } from '../../../../utils/config';
 import { AuthorizationService } from '../../../authorization';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ItemRepository } from '../../item.repository';
+import { AppRepository } from './app.repository';
 import { DEFAULT_JWT_EXPIRATION } from './constants';
-import { PublisherRepository } from './publisherRepository';
-import { AppRepository } from './repository';
+import { PublisherRepository } from './publisher.repository';
 import { checkTargetItemAndTokenItemMatch } from './utils';
 
 @singleton()

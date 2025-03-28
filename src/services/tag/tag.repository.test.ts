@@ -3,10 +3,10 @@ import { v4 } from 'uuid';
 
 import { TagCategory, TagFactory } from '@graasp/sdk';
 
+import { seedFromJson } from '../../../test/mocks/seed';
 import { client, db } from '../../drizzle/db';
 import { tags } from '../../drizzle/schema';
 import { IllegalArgumentException } from '../../repositories/errors';
-import { saveTag } from './fixtures/utils';
 import { TagRepository } from './tag.repository';
 
 const repository = new TagRepository();
@@ -29,13 +29,15 @@ describe('Tag Repository', () => {
       expect(await repository.get(db, v4())).toBeUndefined();
     });
     it('get tag', async () => {
-      // noise
-      await saveTag({ category: TagCategory.Discipline });
-
-      const tag = await saveTag({ category: TagCategory.Discipline });
-
-      // noise
-      await saveTag({ category: TagCategory.ResourceType });
+      const {
+        tags: [tag],
+      } = await seedFromJson({
+        tags: [
+          { category: TagCategory.Discipline },
+          { category: TagCategory.Discipline },
+          { category: TagCategory.ResourceType },
+        ],
+      });
 
       const result = await repository.get(db, tag.id);
       expect(result!.id).toEqual(tag.id);
@@ -61,8 +63,9 @@ describe('Tag Repository', () => {
       expect(result!.category).toEqual(tag.category);
     });
     it('cannot insert tag with sanitized name', async () => {
-      const tag = TagFactory({ name: 'my name1', category: TagCategory.Discipline });
-      await saveTag(tag);
+      await seedFromJson({
+        tags: [{ name: 'my name1', category: TagCategory.Discipline }],
+      });
 
       const tagToAdd = TagFactory({ name: 'my     name1', category: TagCategory.Discipline });
       await expect(() => repository.addOne(db, tagToAdd)).rejects.toThrow();
@@ -83,17 +86,27 @@ describe('Tag Repository', () => {
       expect(result.category).toEqual(tag.category);
     });
     it('return existing tag', async () => {
-      const tagInfo = TagFactory();
-      const tag = await saveTag(tagInfo);
+      const {
+        tags: [tag],
+      } = await seedFromJson({
+        tags: [{ category: TagCategory.Discipline }],
+      });
 
-      const result = await repository.addOneIfDoesNotExist(db, tagInfo);
+      const result = await repository.addOneIfDoesNotExist(db, {
+        name: tag.name,
+        category: tag.category as TagCategory,
+      });
 
       expect(result.id).toEqual(tag.id);
       expect(result.name).toEqual(tag.name);
       expect(result.category).toEqual(tag.category);
     });
     it('return tag with sanitized name', async () => {
-      const tag = await saveTag({ name: 'my name2', category: TagCategory.Discipline });
+      const {
+        tags: [tag],
+      } = await seedFromJson({
+        tags: [{ name: 'my name2', category: TagCategory.Discipline }],
+      });
       const tagNotSanitized = {
         name: 'my     name2',
         category: TagCategory.Discipline,

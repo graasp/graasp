@@ -22,10 +22,10 @@ import {
   exportActionsInArchive,
 } from '../../../../action/utils/export';
 import { AuthorizationService } from '../../../../authorization';
-import FileService from '../../../../file/service';
+import FileService from '../../../../file/file.service';
 import { MemberService } from '../../../../member/member.service';
 import { BasicItemService } from '../../../basic.service';
-import { ActionItemService } from '../action.service';
+import { ActionItemService } from '../itemAction.service';
 import { ActionRequestExportRepository } from './repository';
 
 @singleton()

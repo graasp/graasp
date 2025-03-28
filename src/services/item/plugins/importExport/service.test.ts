@@ -15,7 +15,7 @@ import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
 import { BaseLogger } from '../../../../logger';
 import { saveMember } from '../../../member/test/fixtures/members';
-import { ItemService } from '../../service';
+import { ItemService } from '../../item.service';
 import { EtherpadItemService } from '../etherpad/service';
 import FileItemService from '../file/service';
 import type { H5PService } from '../html/h5p/h5p.service';

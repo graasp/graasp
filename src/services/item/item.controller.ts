@@ -13,9 +13,8 @@ import { assertIsMember } from '../authentication';
 import { memberAccountRole } from '../member/strategies/memberAccountRole';
 import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
 import { ITEMS_PAGE_SIZE } from './constants';
-import { ActionItemService } from './plugins/action/action.service';
-import { copyMany, deleteMany, moveMany, reorder, updateOne } from './schemas';
-import { create, createWithThumbnail } from './schemas.create';
+import { copyMany, deleteMany, moveMany, reorder, updateOne } from './item.schemas';
+import { create, createWithThumbnail } from './item.schemas.create';
 import {
   getAccessible,
   getChildren,
@@ -23,10 +22,11 @@ import {
   getMany,
   getOne,
   getParentItems,
-} from './schemas.packed';
-import { ItemService } from './service';
+} from './item.schemas.packed';
+import { ItemService } from './item.service';
+import { ActionItemService } from './plugins/action/itemAction.service';
 import { getPostItemPayloadFromFormData } from './utils';
-import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from './ws/events';
+import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from './ws/item.events';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { websockets } = fastify;

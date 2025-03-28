@@ -19,7 +19,7 @@ import { itemsRaw } from '../../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../../utils/assertions';
 import { H5P_LOCAL_CONFIG, H5P_PATH_PREFIX, TMP_FOLDER } from '../../../../../utils/config';
 import { H5PItem } from '../../../discrimination';
-import { ItemService } from '../../../service';
+import { ItemService } from '../../../item.service';
 import { HtmlImportError } from '../errors';
 import { H5P_FILE_DOT_EXTENSION } from './constants';
 import { H5PInvalidManifestError } from './errors';

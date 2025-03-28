@@ -1,7 +1,7 @@
 import { singleton } from 'tsyringe';
 
 import { Item } from '../../../../../../drizzle/types';
-import FileService from '../../../../../file/service';
+import FileService from '../../../../../file/file.service';
 import { isImage } from '../utils';
 import { ImageValidationStrategy } from './imageValidationStrategy';
 import { TextValidationStrategy } from './textValidationStrategy';

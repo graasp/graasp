@@ -9,7 +9,7 @@ import { CRON_3AM_MONDAY, JobServiceBuilder } from '../jobs';
 import { BaseLogger } from '../logger';
 import { MailerService } from '../plugins/mailer/mailer.service';
 import { CachingService } from '../services/caching/service';
-import FileService from '../services/file/service';
+import FileService from '../services/file/file.service';
 import { fileRepositoryFactory } from '../services/file/utils/factory';
 import { wrapEtherpadErrors } from '../services/item/plugins/etherpad/etherpad';
 import { RandomPadNameFactory } from '../services/item/plugins/etherpad/service';

@@ -13,6 +13,7 @@ import { HttpMethod, RecaptchaAction } from '@graasp/sdk';
 import { FAILURE_MESSAGES } from '@graasp/translations';
 
 import build, {
+  MOCK_CAPTCHA,
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
@@ -33,7 +34,6 @@ import {
   REDIS_USERNAME,
 } from '../../../../utils/config';
 import { assertIsMember, assertIsMemberForTest } from '../../../authentication';
-import { MOCK_CAPTCHA } from '../captcha/test/utils';
 
 async function login(
   app: FastifyInstance,

@@ -8,7 +8,7 @@ import HookManager from '../../utils/hook';
 import { BasicItemService } from '../item/basic.service';
 import { ChatMessageRepository } from './chatMessage.repository';
 import { ChatMessageNotFound, MemberCannotDeleteMessage, MemberCannotEditMessage } from './errors';
-import { MentionService } from './plugins/mentions/service';
+import { MentionService } from './plugins/mentions/chatMention.service';
 
 @singleton()
 export class ChatMessageService {

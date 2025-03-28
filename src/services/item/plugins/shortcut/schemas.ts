@@ -5,7 +5,7 @@ import { FastifySchema } from 'fastify';
 
 import { customType } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
-import { itemSchema } from '../../schemas';
+import { itemSchema } from '../../item.schemas';
 
 export const shortcutSchema = Type.Composite([
   itemSchema,

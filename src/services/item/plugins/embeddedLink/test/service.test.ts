@@ -2,7 +2,7 @@ import fetch, { Response } from 'node-fetch';
 
 import { BaseLogger } from '../../../../../logger';
 import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN } from '../../../../../utils/config';
-import { ThumbnailService } from '../../../../thumbnail/service';
+import { ThumbnailService } from '../../../../thumbnail/thumbnail.service';
 import { MeiliSearchWrapper } from '../../publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../../thumbnail/itemThumbnail.service';
 import { EmbeddedLinkItemService } from '../service';

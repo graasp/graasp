@@ -15,7 +15,7 @@ import {
 } from '../../../../auth/plugins/passport';
 import { assertIsMember } from '../../../../authentication';
 import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
-import { ItemService } from '../../../service';
+import { ItemService } from '../../../item.service';
 import { appSettingsWsHooks } from '../ws/hooks';
 import appSettingFilePlugin from './plugins/file';
 import { create, deleteOne, getForOne, updateOne } from './schemas';

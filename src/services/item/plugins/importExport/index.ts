@@ -16,7 +16,7 @@ import { assertIsMember } from '../../../authentication';
 import '../../../authorization';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { BasicItemService } from '../../basic.service';
-import { ItemService } from '../../service';
+import { ItemService } from '../../item.service';
 import { ZIP_FILE_MIME_TYPES } from './constants';
 import { FileIsInvalidArchiveError } from './errors';
 import { zipExport, zipImport } from './schema';

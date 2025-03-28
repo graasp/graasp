@@ -6,10 +6,10 @@ import { MOCK_LOGGER } from '../../../../../test/app';
 import { ItemFactory } from '../../../../../test/factories/item.factory';
 import { db } from '../../../../drizzle/db';
 import { AuthorizationService } from '../../../authorization';
-import { ThumbnailService } from '../../../thumbnail/service';
+import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { BasicItemService } from '../../basic.service';
 import { ItemRepository } from '../../item.repository';
-import { ItemService } from '../../service';
+import { ItemService } from '../../item.service';
 import { ItemThumbnailService } from './itemThumbnail.service';
 import { constructMockedUrl, expectValidUrls } from './test/fixtures/utils';
 

@@ -9,7 +9,7 @@ import { FileItemProperties, MAX_ITEM_NAME_LENGTH, UUID } from '@graasp/sdk';
 import { DBConnection } from '../../../../../../../drizzle/db';
 import { AppSettingRaw, AppSettingWithItem, Item } from '../../../../../../../drizzle/types';
 import { AuthenticatedUser, MinimalMember } from '../../../../../../../types';
-import FileService from '../../../../../../file/service';
+import FileService from '../../../../../../file/file.service';
 import { NotAppSettingFile } from '../../errors';
 import { AppSettingRepository } from '../../repository';
 import { AppSettingService } from '../../service';

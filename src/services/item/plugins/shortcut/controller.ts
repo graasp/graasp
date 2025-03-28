@@ -6,8 +6,8 @@ import { asDefined } from '../../../../utils/assertions';
 import { isAuthenticated, matchOne } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { ItemService } from '../../service';
-import { ActionItemService } from '../action/action.service';
+import { ItemService } from '../../item.service';
+import { ActionItemService } from '../action/itemAction.service';
 import { createShortcut, updateShortcut } from './schemas';
 import { ShortcutItemService } from './service';
 

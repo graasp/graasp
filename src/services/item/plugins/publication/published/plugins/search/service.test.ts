@@ -2,7 +2,7 @@ import { v4 } from 'uuid';
 
 import { MOCK_LOGGER } from '../../../../../../../../test/app';
 import HookManager from '../../../../../../../utils/hook';
-import { ItemService } from '../../../../../service';
+import { ItemService } from '../../../../../item.service';
 import { MeiliSearchWrapper } from './meilisearch';
 import { SearchService } from './service';
 

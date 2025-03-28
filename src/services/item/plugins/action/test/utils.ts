@@ -1,7 +1,6 @@
 import { ItemOpFeedbackEvent } from '@graasp/sdk';
 
 import { Item } from '../../../../../drizzle/types';
-import { expectMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { MembershipEvent } from '../../../../itemMembership/ws/events';
 import { expectItem, expectManyItems } from '../../../test/fixtures/items';
 

@@ -19,7 +19,7 @@ import { MaybeUser, MinimalMember } from '../../../../types';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { BasicItemService } from '../../basic.service';
 import { isItemType } from '../../discrimination';
-import { ItemService } from '../../service';
+import { ItemService } from '../../item.service';
 import { EtherpadItemService } from '../etherpad/service';
 import FileItemService from '../file/service';
 import { H5PService } from '../html/h5p/h5p.service';

@@ -36,7 +36,7 @@ import {
 } from '../../../../utils/errors';
 import { assertIsMember, assertIsMemberForTest } from '../../../authentication';
 import { expectItem } from '../../test/fixtures/items';
-import { ActionItemService } from '../action/action.service';
+import { ActionItemService } from '../action/itemAction.service';
 import { FolderItemService } from './service';
 
 // Mock S3 libraries

@@ -16,7 +16,7 @@ import { assertIsMember, isMember } from '../../../../authentication';
 import { AuthorizationService } from '../../../../authorization';
 import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
 import { isItemType } from '../../../discrimination';
-import { ItemService } from '../../../service';
+import { ItemService } from '../../../item.service';
 import { FastifyStaticReply } from '../types';
 import {
   DEFAULT_H5P_ASSETS_ROUTE,
