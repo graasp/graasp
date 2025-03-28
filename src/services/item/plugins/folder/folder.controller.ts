@@ -10,8 +10,8 @@ import { assertIsMember } from '../../../authentication';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { getPostItemPayloadFromFormData } from '../../utils';
 import { ActionItemService } from '../action/itemAction.service';
-import { createFolder, createFolderWithThumbnail, updateFolder } from './schemas';
-import { FolderItemService } from './service';
+import { createFolder, createFolderWithThumbnail, updateFolder } from './folder.schemas';
+import { FolderItemService } from './folder.service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const folderItemService = resolveDependency(FolderItemService);

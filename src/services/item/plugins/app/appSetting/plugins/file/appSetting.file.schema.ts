@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { customType } from '../../../../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../../../../schemas/global';
-import { appSettingSchemaRef } from '../../schemas';
+import { appSettingSchemaRef } from '../../appSetting.schemas';
 
 export const upload = {
   operationId: 'createAppSettingFile',

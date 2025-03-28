@@ -11,8 +11,8 @@ import { isAuthenticated, matchOne } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { ItemService } from '../../item.service';
-import { createEtherpad, getEtherpadFromItem, updateEtherpad } from './schemas';
-import { EtherpadItemService } from './service';
+import { createEtherpad, getEtherpadFromItem, updateEtherpad } from './etherpad.schemas';
+import { EtherpadItemService } from './etherpad.service';
 
 const endpoints: FastifyPluginAsyncTypebox = async (fastify) => {
   const itemService = resolveDependency(ItemService);

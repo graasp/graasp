@@ -9,11 +9,11 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../../test/app';
-import { ItemFactory } from '../../../../../../test/factories/item.factory';
-import { seedFromJson } from '../../../../../../test/mocks/seed';
-import { db } from '../../../../../drizzle/db';
-import { assertIsDefined } from '../../../../../utils/assertions';
+} from '../../../../../test/app';
+import { ItemFactory } from '../../../../../test/factories/item.factory';
+import { seedFromJson } from '../../../../../test/mocks/seed';
+import { db } from '../../../../drizzle/db';
+import { assertIsDefined } from '../../../../utils/assertions';
 
 jest.mock('node-fetch');
 

@@ -21,7 +21,7 @@ import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../thumbnail/itemThumbnail.service';
-import { EtherpadItemService } from './service';
+import { EtherpadItemService } from './etherpad.service';
 import { EtherpadServiceConfig } from './serviceConfig';
 import { PadNameFactory } from './types';
 
@@ -272,6 +272,41 @@ describe('Etherpad Service', () => {
 
       // this is called only if returned mode is read, which is the case here
       expect(getReadOnlyIDMock).toHaveBeenCalled();
+    });
+  });
+
+  describe('Service helper methods', () => {
+    it('builds correct pad ID', () => {
+      expect(
+        EtherpadItemService.buildPadID({ groupID: 'g.s8oes9dhwrvt0zif', padName: 'test' }),
+      ).toEqual('g.s8oes9dhwrvt0zif$test');
+    });
+
+    it('builds correct relative pad path', () => {
+      expect(EtherpadItemService.buildPadPath({ padID: 'g.s8oes9dhwrvt0zif$test' })).toEqual(
+        '/p/g.s8oes9dhwrvt0zif$test',
+      );
+    });
+
+    it('builds correct absolute pad url', () => {
+      expect(
+        EtherpadItemService.buildPadPath(
+          { padID: 'g.s8oes9dhwrvt0zif$test' },
+          'http://localhost:9001',
+        ),
+      ).toEqual('http://localhost:9001/p/g.s8oes9dhwrvt0zif$test');
+    });
+
+    it('builds correct etherpad item extra', () => {
+      expect(
+        EtherpadItemService.buildEtherpadExtra({ groupID: 'g.s8oes9dhwrvt0zif', padName: 'test' }),
+      ).toEqual({
+        etherpad: {
+          padID: 'g.s8oes9dhwrvt0zif$test',
+          groupID: 'g.s8oes9dhwrvt0zif',
+          readerPermission: EtherpadPermission.Read,
+        },
+      });
     });
   });
 });

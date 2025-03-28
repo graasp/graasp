@@ -8,7 +8,7 @@ import { AuthenticatedUser, MaybeUser } from '../../../../../types';
 import { UnauthorizedMember } from '../../../../../utils/errors';
 import HookManager from '../../../../../utils/hook';
 import { BasicItemService } from '../../../basic.service';
-import { AppSettingRepository } from './repository';
+import { AppSettingRepository } from './appSetting.repository';
 
 @singleton()
 export class AppSettingService {

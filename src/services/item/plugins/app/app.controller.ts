@@ -16,7 +16,7 @@ import { generateToken, getContext, getList, getOwnMostUsedApps } from './app.sc
 import { AppService } from './app.service';
 import appActionPlugin from './appAction/appAction.controller';
 import appDataPlugin from './appData/appData.controller';
-import appSettingPlugin from './appSetting';
+import appSettingPlugin from './appSetting/appSetting.controller';
 import chatBotPlugin from './chatBot/chatBot.controller';
 import { AppsPluginOptions } from './types';
 

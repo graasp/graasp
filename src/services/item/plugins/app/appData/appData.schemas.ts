@@ -89,7 +89,7 @@ export const updateOne = {
     data: Type.Object({}, { additionalProperties: true }),
   }),
   response: {
-    [StatusCodes.OK]: appDataWithLegacyPropsSchemaRef,
+    [StatusCodes.NO_CONTENT]: Type.Null(),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;

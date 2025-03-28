@@ -10,9 +10,9 @@ import { DBConnection } from '../../../../../../../drizzle/db';
 import { AppSettingRaw, AppSettingWithItem, Item } from '../../../../../../../drizzle/types';
 import { AuthenticatedUser, MinimalMember } from '../../../../../../../types';
 import FileService from '../../../../../../file/file.service';
+import { AppSettingRepository } from '../../appSetting.repository';
+import { AppSettingService } from '../../appSetting.service';
 import { NotAppSettingFile } from '../../errors';
-import { AppSettingRepository } from '../../repository';
-import { AppSettingService } from '../../service';
 
 type AppSettingFileProperties = {
   path: string;

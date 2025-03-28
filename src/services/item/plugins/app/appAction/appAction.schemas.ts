@@ -62,7 +62,7 @@ export const create = {
     type: Type.String({ minLength: 3, maxLength: 25 }),
   }),
   response: {
-    [StatusCodes.OK]: appActionLegacySchemaRef,
+    [StatusCodes.NO_CONTENT]: Type.Null(),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;

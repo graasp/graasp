@@ -1,33 +1,81 @@
 import fetch from 'node-fetch';
 import { v4 } from 'uuid';
 
-import { FolderItemFactory, ItemType, LinkItemFactory } from '@graasp/sdk';
+import { ItemType, LinkItemFactory } from '@graasp/sdk';
 
 import { MOCK_LOGGER } from '../../../../../test/app';
+import { ItemFactory } from '../../../../../test/factories/item.factory';
+import { MemberFactory } from '../../../../../test/factories/member.factory';
+import { db } from '../../../../drizzle/db';
 import { Item } from '../../../../drizzle/types';
-import { MinimalMember } from '../../../../types';
 import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN } from '../../../../utils/config';
+import { AuthorizationService } from '../../../authorization';
+import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
-import { EmbeddedLinkItem } from '../../discrimination';
+import { ItemWrapperService } from '../../ItemWrapper';
+import { BasicItemService } from '../../basic.service';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
+import { ItemGeolocationRepository } from '../geolocation/itemGeolocation.repository';
+import { ItemVisibilityRepository } from '../itemVisibility/repository';
+import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../thumbnail/itemThumbnail.service';
-import { EmbeddedLinkItemService } from './service';
+import { EmbeddedLinkItemService } from './link.service';
 
 jest.mock('node-fetch');
 
+const itemRepository = { getOneOrThrow: jest.fn() } as unknown as ItemRepository;
+
 const linkService = new EmbeddedLinkItemService(
-  {} as unknown as ThumbnailService,
-  {} as unknown as ItemThumbnailService,
+  {} as ThumbnailService,
+  {} as ItemThumbnailService,
+  {} as ItemMembershipRepository,
   {} as MeiliSearchWrapper,
+  itemRepository,
+  {} as ItemPublishedRepository,
+  {} as ItemGeolocationRepository,
+  {} as AuthorizationService,
+  {} as ItemWrapperService,
+  {} as ItemVisibilityRepository,
+  {} as BasicItemService,
   MOCK_LOGGER,
   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
 );
-const id = v4();
-const MOCK_ITEM = LinkItemFactory({ id }) as unknown as EmbeddedLinkItem;
-const MOCK_URL = 'http://example.com';
+
+export const mockResponse = (response: Response) => {
+  (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => response as never);
+};
+
+export const mockHeaderResponse = (headers: { [key: string]: string }) => {
+  (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(
+    async () => ({ headers: new Headers(headers) }) as never,
+  );
+};
+
+const MOCK_URL = 'https://example.com';
+const THUMBNAIL_HREF = `${MOCK_URL}/24.png`;
+const ICON_HREF = `${MOCK_URL}/icon`;
+const HTML = 'html';
+
+export const FETCH_RESULT = {
+  meta: {
+    title: 'title',
+    description: 'description',
+  },
+  html: HTML,
+  links: [
+    {
+      rel: ['thumbnail'],
+      href: THUMBNAIL_HREF,
+    },
+    {
+      rel: ['icon'],
+      href: ICON_HREF,
+    },
+  ],
+};
 
 const iframelyResult = {
   meta: {
@@ -43,13 +91,6 @@ const iframelyResult = {
   icons: ['icon'],
   thumbnails: ['thumbnail'],
 };
-
-const MOCK_MEMBER = {} as MinimalMember;
-const itemRepository = {
-  getOneOrThrow: async () => {
-    return MOCK_ITEM;
-  },
-} as unknown as ItemRepository;
 
 describe('Link Service', () => {
   let fetchMock: jest.SpyInstance;
@@ -98,29 +139,93 @@ describe('Link Service', () => {
     });
   });
 
+  describe('Tests retrieving link metadata', () => {
+    it('Retrieve all metadata from URL', async () => {
+      mockResponse({ json: async () => FETCH_RESULT } as Response);
+      const metadata = await linkService.getLinkMetadata(MOCK_URL);
+      expect(metadata).toEqual({
+        title: FETCH_RESULT.meta.title,
+        description: FETCH_RESULT.meta.description,
+        html: HTML,
+        thumbnails: [THUMBNAIL_HREF],
+        icons: [ICON_HREF],
+      });
+    });
+  });
+
+  describe('Tests allowed to embbed links in iFrame', () => {
+    describe('Embedding is disallowed when X-Frame-Options is set', () => {
+      it('Embedding is disallowed when X-FRAME-OPTIONS is DENY', async () => {
+        mockHeaderResponse({ 'X-FRAME-OPTIONS': 'DENY' });
+        expect(await linkService.checkEmbeddingAllowed(MOCK_URL)).toBe(false);
+      });
+      it('Embedding is disallowed when x-frame-options is deny', async () => {
+        mockHeaderResponse({ 'x-frame-options': 'deny' });
+        expect(await linkService.checkEmbeddingAllowed(MOCK_URL)).toBe(false);
+      });
+      it('Embedding is disallowed when X-FRAME-OPTIONS is SAMEORIGIN', async () => {
+        mockHeaderResponse({ 'X-FRAME-OPTIONS': 'DENY' });
+        expect(await linkService.checkEmbeddingAllowed(MOCK_URL)).toBe(false);
+      });
+      it('Embedding is disallowed when x-frame-options is sameorigin', async () => {
+        mockHeaderResponse({ 'x-frame-options': 'sameorigin' });
+        expect(await linkService.checkEmbeddingAllowed(MOCK_URL)).toBe(false);
+      });
+    });
+
+    describe('Embedding is disallowed when Content-Security-Policy is set', () => {
+      it('Embedding is disallowed when content-security-policy is none', async () => {
+        mockHeaderResponse({ 'content-security-policy': "frame-ancestors 'none'" });
+        expect(await linkService.checkEmbeddingAllowed(MOCK_URL)).toBe(false);
+      });
+      it('Embedding is disallowed when CONTENT-SECURITY-POLICY is NONE', async () => {
+        mockHeaderResponse({ 'CONTENT-SECURITY-POLICY': "FRAME-ANCESTORS 'NONE'" });
+        expect(await linkService.checkEmbeddingAllowed(MOCK_URL)).toBe(false);
+      });
+      it('Embedding is disallowed when content-security-policy is self', async () => {
+        mockHeaderResponse({ 'content-security-policy': "frame-ancestors 'self'" });
+        expect(await linkService.checkEmbeddingAllowed(MOCK_URL)).toBe(false);
+      });
+      it('Embedding is disallowed when CONTENT-SECURITY-POLICY is self', async () => {
+        mockHeaderResponse({ 'CONTENT-SECURITY-POLICY': "FRAME-ANCESTORS 'SELF'" });
+        expect(await linkService.checkEmbeddingAllowed(MOCK_URL)).toBe(false);
+      });
+    });
+
+    describe('Embedding is allowed when X-Frame-Options and CSP are not set', () => {
+      it('Embedding is allowed', async () => {
+        mockHeaderResponse({});
+        expect(await linkService.checkEmbeddingAllowed(MOCK_URL)).toBe(true);
+      });
+    });
+  });
+
   describe('postWithOptions', () => {
     it('do not throw if iframely is unresponsive', async () => {
+      const member = MemberFactory();
+      const item = LinkItemFactory() as any;
+
       fetchMock = (fetch as jest.MockedFunction<typeof fetch>).mockRejectedValue(new Error());
 
       const itemServicePostMock = jest
         .spyOn(ItemService.prototype, 'post')
         .mockImplementation(async () => {
-          return MOCK_ITEM;
+          return item;
         });
 
-      expect(MOCK_ITEM.extra.embeddedLink.url).toBeDefined();
+      expect(item.extra.embeddedLink.url).toBeDefined();
 
       const args = {
         name: 'name',
         url: 'https://another-url.com',
       };
-      await linkService.postWithOptions(app.db, MOCK_MEMBER, args);
+      await linkService.postWithOptions(db, member, args);
 
       // call to iframely
       expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining(encodeURIComponent(args.url)));
 
       // call to item service with initial item name
-      expect(itemServicePostMock).toHaveBeenCalledWith(app.db, MOCK_MEMBER, {
+      expect(itemServicePostMock).toHaveBeenCalledWith(db, member, {
         item: {
           name: args.name,
           type: ItemType.LINK,
@@ -150,13 +255,14 @@ describe('Link Service', () => {
       });
 
       it('set correct default values for type, extra and settings', async () => {
+        const member = MemberFactory();
         const itemServicePostMock = jest
           .spyOn(ItemService.prototype, 'post')
           .mockImplementation(async () => {
             return {} as Item;
           });
 
-        await linkService.postWithOptions(app.db, MOCK_MEMBER, {
+        await linkService.postWithOptions(db, member, {
           name: 'name',
           url: MOCK_URL,
         });
@@ -167,7 +273,7 @@ describe('Link Service', () => {
         );
 
         // call to item service
-        expect(itemServicePostMock).toHaveBeenCalledWith(app.db, MOCK_MEMBER, {
+        expect(itemServicePostMock).toHaveBeenCalledWith(db, member, {
           item: {
             name: 'name',
             description: undefined,
@@ -192,6 +298,7 @@ describe('Link Service', () => {
         });
       });
       it('set defined values', async () => {
+        const member = MemberFactory();
         const itemServicePostMock = jest
           .spyOn(ItemService.prototype, 'post')
           .mockImplementation(async () => {
@@ -209,7 +316,7 @@ describe('Link Service', () => {
           geolocation: { lat: 1, lng: 1 },
           previousItemId: v4(),
         };
-        await linkService.postWithOptions(app.db, MOCK_MEMBER, args);
+        await linkService.postWithOptions(db, member, args);
 
         // call to iframely
         expect(fetchMock).toHaveBeenCalledWith(
@@ -217,7 +324,7 @@ describe('Link Service', () => {
         );
 
         // call to item service
-        expect(itemServicePostMock).toHaveBeenCalledWith(app.db, MOCK_MEMBER, {
+        expect(itemServicePostMock).toHaveBeenCalledWith(db, member, {
           item: {
             name: args.name,
             description: args.description,
@@ -247,49 +354,46 @@ describe('Link Service', () => {
   });
   describe('patchWithOptions', () => {
     it('do not throw if iframely is unresponsive', async () => {
+      const member = MemberFactory();
+      const item = LinkItemFactory() as any;
       fetchMock = (fetch as jest.MockedFunction<typeof fetch>).mockRejectedValue(new Error());
 
       const itemServicePatchMock = jest
         .spyOn(ItemService.prototype, 'patch')
         .mockImplementation(async () => {
-          return MOCK_ITEM;
+          return item;
         });
+      jest.spyOn(itemRepository, 'getOneOrThrow').mockResolvedValue({ ...item, creator: null });
 
-      expect(MOCK_ITEM.extra.embeddedLink.url).toBeDefined();
+      expect(item.extra.embeddedLink.url).toBeDefined();
 
       const args = {
         url: 'https://another-url.com',
       };
-      await linkService.patchWithOptions(app.db, MOCK_MEMBER, MOCK_ITEM.id, args);
+      await linkService.patchWithOptions(db, member, item.id, args);
 
       // call to iframely
       expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining(encodeURIComponent(args.url)));
 
       // call to item service with initial item name
-      expect(itemServicePatchMock).toHaveBeenCalledWith(
-        app.db,
-        MOCK_MEMBER,
-
-        MOCK_ITEM.id,
-        {
-          name: MOCK_ITEM.name,
-          type: ItemType.LINK,
-          // not defined in args
-          description: undefined,
-          lang: undefined,
-          extra: {
-            [ItemType.LINK]: {
-              icons: [],
-              thumbnails: [],
-              description: '',
-              title: '',
-              html: '',
-              url: args.url,
-            },
+      expect(itemServicePatchMock).toHaveBeenCalledWith(db, member, item.id, {
+        name: item.name,
+        type: ItemType.LINK,
+        // not defined in args
+        description: undefined,
+        lang: undefined,
+        extra: {
+          [ItemType.LINK]: {
+            icons: [],
+            thumbnails: [],
+            description: '',
+            title: '',
+            html: '',
+            url: args.url,
           },
-          settings: { showLinkButton: true, showLinkIframe: false },
         },
-      );
+        settings: { showLinkButton: true, showLinkIframe: false },
+      });
     });
     describe('mock iframely', () => {
       beforeEach(() => {
@@ -300,24 +404,33 @@ describe('Link Service', () => {
       });
 
       it('throw if item is not a link', async () => {
-        const FOLDER_ITEM = FolderItemFactory();
+        const member = MemberFactory();
+        const FOLDER_ITEM = ItemFactory();
+        jest
+          .spyOn(itemRepository, 'getOneOrThrow')
+          .mockResolvedValue({ ...FOLDER_ITEM, creator: null });
         await expect(() =>
-          linkService.patchWithOptions(app.db, MOCK_MEMBER, FOLDER_ITEM.id, { name: 'name' }),
+          linkService.patchWithOptions(db, member, FOLDER_ITEM.id, { name: 'name' }),
         ).rejects.toBeInstanceOf(WrongItemTypeError);
       });
       it('patch url changes link extra', async () => {
+        const member = MemberFactory();
+        const item = LinkItemFactory();
+
+        jest.spyOn(itemRepository, 'getOneOrThrow').mockResolvedValue(item as any);
+
         const itemServicePatchMock = jest
           .spyOn(ItemService.prototype, 'patch')
           .mockImplementation(async () => {
-            return MOCK_ITEM;
+            return item as any;
           });
 
-        expect(MOCK_ITEM.extra.embeddedLink.url).toBeDefined();
+        expect(item.extra.embeddedLink.url).toBeDefined();
 
         const args = {
           url: 'https://another-url.com',
         };
-        await linkService.patchWithOptions(app.db, MOCK_MEMBER, MOCK_ITEM.id, args);
+        await linkService.patchWithOptions(db, member, item.id, args);
 
         // call to iframely
         expect(fetchMock).toHaveBeenCalledWith(
@@ -325,70 +438,66 @@ describe('Link Service', () => {
         );
 
         // call to item service with initial item name
-        expect(itemServicePatchMock).toHaveBeenCalledWith(
-          app.db,
-          MOCK_MEMBER,
-
-          MOCK_ITEM.id,
-          {
-            name: MOCK_ITEM.name,
-            type: ItemType.LINK,
-            // not defined in args
-            description: undefined,
-            lang: undefined,
-            extra: {
-              [ItemType.LINK]: {
-                url: args.url,
-                description: iframelyResult.meta.description,
-                title: iframelyResult.meta.title,
-                html: iframelyResult.html,
-                icons: iframelyResult.icons,
-                thumbnails: iframelyResult.thumbnails,
-              },
+        expect(itemServicePatchMock).toHaveBeenCalledWith(db, member, item.id, {
+          name: item.name,
+          type: ItemType.LINK,
+          // not defined in args
+          description: undefined,
+          lang: undefined,
+          extra: {
+            [ItemType.LINK]: {
+              url: args.url,
+              description: iframelyResult.meta.description,
+              title: iframelyResult.meta.title,
+              html: iframelyResult.html,
+              icons: iframelyResult.icons,
+              thumbnails: iframelyResult.thumbnails,
             },
-            settings: { showLinkButton: true, showLinkIframe: false },
           },
-        );
+          settings: { showLinkButton: true, showLinkIframe: false },
+        });
       });
       it('patch item settings', async () => {
+        const member = MemberFactory();
+        const item = LinkItemFactory();
+
+        jest.spyOn(itemRepository, 'getOneOrThrow').mockResolvedValue(item as any);
+
         const itemServicePatchMock = jest
           .spyOn(ItemService.prototype, 'patch')
           .mockImplementation(async () => {
-            return MOCK_ITEM;
+            return item as unknown as Item;
           });
 
-        expect(MOCK_ITEM.extra.embeddedLink.url).toBeDefined();
+        expect(item.extra.embeddedLink.url).toBeDefined();
 
         const args = {
           settings: { isPinned: true },
         };
-        await linkService.patchWithOptions(app.db, MOCK_MEMBER, MOCK_ITEM.id, args);
+        await linkService.patchWithOptions(db, member, item.id, args);
 
         // call to item service with initial item name
-        expect(itemServicePatchMock).toHaveBeenCalledWith(
-          app.db,
-          MOCK_MEMBER,
-
-          MOCK_ITEM.id,
-          {
-            name: MOCK_ITEM.name,
-            type: ItemType.LINK,
-            // not defined in args
-            description: undefined,
-            lang: undefined,
-            extra: MOCK_ITEM.extra,
-            settings: { ...args.settings, showLinkButton: true, showLinkIframe: false },
-          },
-        );
+        expect(itemServicePatchMock).toHaveBeenCalledWith(db, member, item.id, {
+          name: item.name,
+          type: ItemType.LINK,
+          // not defined in args
+          description: undefined,
+          lang: undefined,
+          extra: item.extra,
+          settings: { ...args.settings, showLinkButton: true, showLinkIframe: false },
+        });
       });
       it('patch many properties without changing url', async () => {
+        const member = MemberFactory();
+        const item = LinkItemFactory();
+
+        jest.spyOn(itemRepository, 'getOneOrThrow').mockResolvedValue(item as any);
+
         const itemServicePatchMock = jest
           .spyOn(ItemService.prototype, 'patch')
-          .mockImplementation(async () => {
-            return MOCK_ITEM;
-          });
+          .mockResolvedValue(item as unknown as Item);
 
-        expect(MOCK_ITEM.extra.embeddedLink.url).toBeDefined();
+        expect(item.extra.embeddedLink.url).toBeDefined();
 
         const args = {
           name: 'newname',
@@ -397,35 +506,30 @@ describe('Link Service', () => {
           showLinkButton: false,
           showLinkIframe: true,
         };
-        await linkService.patchWithOptions(app.db, MOCK_MEMBER, MOCK_ITEM.id, args);
+        await linkService.patchWithOptions(db, member, item.id, args);
 
         // do not call iframely
         expect(fetchMock).not.toHaveBeenCalled();
 
         // call to item service with initial item name
-        expect(itemServicePatchMock).toHaveBeenCalledWith(
-          app.db,
-          MOCK_MEMBER,
-
-          MOCK_ITEM.id,
-          {
-            name: args.name,
-            type: ItemType.LINK,
-            description: args.description,
-            lang: args.lang,
-            extra: MOCK_ITEM.extra,
-            settings: { showLinkButton: false, showLinkIframe: true },
-          },
-        );
+        expect(itemServicePatchMock).toHaveBeenCalledWith(db, member, item.id, {
+          name: args.name,
+          type: ItemType.LINK,
+          description: args.description,
+          lang: args.lang,
+          extra: item.extra,
+          settings: { showLinkButton: false, showLinkIframe: true },
+        });
       });
 
       it('Cannot update not found item given id', async () => {
+        const member = MemberFactory();
         jest.spyOn(itemRepository, 'getOneOrThrow').mockImplementation(() => {
           throw new Error();
         });
 
         await expect(() =>
-          linkService.patchWithOptions(app.db, MOCK_MEMBER, v4(), { name: 'name' }),
+          linkService.patchWithOptions(db, member, v4(), { name: 'name' }),
         ).rejects.toThrow();
       });
     });

@@ -9,7 +9,7 @@ import { WebsocketService } from '../../../../websockets/ws-service';
 import { BasicItemService } from '../../../basic.service';
 import { AppActionService } from '../appAction/appAction.service';
 import { AppDataService } from '../appData/appData.service';
-import { AppSettingService } from '../appSetting/service';
+import { AppSettingService } from '../appSetting/appSetting.service';
 import {
   AppDataEvent,
   AppSettingEvent,

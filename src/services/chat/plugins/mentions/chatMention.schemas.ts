@@ -103,7 +103,7 @@ export const clearAllMentions = {
   description: 'Clear all mentions for current user.',
 
   response: {
-    [StatusCodes.OK]: Type.Array(completeChatMentionSchemaRef),
+    [StatusCodes.NO_CONTENT]: Type.Null(),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;

@@ -17,7 +17,7 @@ import {
   ItemOpFeedbackEvent,
   memberItemsTopic,
 } from '../../../ws/item.events';
-import { FolderItemService } from '../../folder/service';
+import { FolderItemService } from '../../folder/folder.service';
 import { ItemPublishedService } from '../published/itemPublished.service';
 import { getLatestItemValidationGroup, validateItem } from './schemas';
 import { ItemValidationService } from './service';

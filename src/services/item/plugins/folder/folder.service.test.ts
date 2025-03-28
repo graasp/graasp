@@ -11,7 +11,7 @@ import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../thumbnail/itemThumbnail.service';
-import { FolderItemService } from './service';
+import { FolderItemService } from './folder.service';
 
 const folderService = new FolderItemService(
   {} as unknown as ThumbnailService,

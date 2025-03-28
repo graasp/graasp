@@ -13,20 +13,20 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../../test/app';
-import { seedFromJson } from '../../../../../../test/mocks/seed';
-import { db } from '../../../../../drizzle/db';
-import { isDirectChild } from '../../../../../drizzle/operations';
-import { itemsRaw } from '../../../../../drizzle/schema';
-import { assertIsDefined } from '../../../../../utils/assertions';
-import { ETHERPAD_PUBLIC_URL } from '../../../../../utils/config';
-import { ItemNotFound, MemberCannotAccess } from '../../../../../utils/errors';
-import { EtherpadItem } from '../../../discrimination';
-import { ItemService } from '../../../item.service';
-import { MAX_SESSIONS_IN_COOKIE } from '../constants';
-import { ItemMissingExtraError } from '../errors';
-import { EtherpadItemService } from '../service';
-import { setUpApi } from './api';
+} from '../../../../../test/app';
+import { seedFromJson } from '../../../../../test/mocks/seed';
+import { db } from '../../../../drizzle/db';
+import { isDirectChild } from '../../../../drizzle/operations';
+import { itemsRaw } from '../../../../drizzle/schema';
+import { assertIsDefined } from '../../../../utils/assertions';
+import { ETHERPAD_PUBLIC_URL } from '../../../../utils/config';
+import { ItemNotFound, MemberCannotAccess } from '../../../../utils/errors';
+import { EtherpadItem } from '../../discrimination';
+import { ItemService } from '../../item.service';
+import { MAX_SESSIONS_IN_COOKIE } from './constants';
+import { ItemMissingExtraError } from './errors';
+import { EtherpadItemService } from './etherpad.service';
+import { setUpApi } from './test/api';
 
 const MOCK_GROUP_ID = 'g.s8oes9dhwrvt0zif';
 const MOCK_PAD_READ_ONLY_ID = 'r.s8oes9dhwrvt0zif';

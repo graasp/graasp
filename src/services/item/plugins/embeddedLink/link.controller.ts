@@ -7,17 +7,34 @@ import { isAuthenticated, matchOne } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { ActionItemService } from '../action/itemAction.service';
-import { createDocument, updateDocument } from './schemas';
-import { DocumentItemService } from './service';
+import { createLink, getLinkMetadata, updateLink } from './link.schemas';
+import { EmbeddedLinkItemService } from './link.service';
+import { ensureProtocol } from './utils';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const documentService = resolveDependency(DocumentItemService);
+  const { log } = fastify;
+  const embeddedLinkService = resolveDependency(EmbeddedLinkItemService);
   const actionItemService = resolveDependency(ActionItemService);
+
+  fastify.get(
+    '/metadata',
+    { schema: getLinkMetadata, preHandler: isAuthenticated },
+    async ({ query: { link } }) => {
+      const url = ensureProtocol(link);
+      const metadata = await embeddedLinkService.getLinkMetadata(url);
+      const isEmbeddingAllowed = await embeddedLinkService.checkEmbeddingAllowed(url, log);
+
+      return {
+        ...metadata,
+        isEmbeddingAllowed,
+      };
+    },
+  );
 
   fastify.post(
     '/',
     {
-      schema: createDocument,
+      schema: createLink,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
     async (request, reply) => {
@@ -30,7 +47,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       assertIsMember(member);
 
       const item = await db.transaction(async (tx) => {
-        const item = await documentService.postWithOptions(tx, member, {
+        const item = await embeddedLinkService.postWithOptions(tx, member, {
           ...data,
           previousItemId,
           parentId,
@@ -43,7 +60,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       // background operations
       await actionItemService.postPostAction(db, request, item);
       await db.transaction(async (tx) => {
-        await documentService.rescaleOrderForParent(tx, member, item);
+        await embeddedLinkService.rescaleOrderForParent(tx, member, item);
       });
     },
   );
@@ -51,7 +68,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.patch(
     '/:id',
     {
-      schema: updateDocument,
+      schema: updateLink,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
     async (request) => {
@@ -63,7 +80,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
       return await db.transaction(async (tx) => {
-        const item = await documentService.patchWithOptions(tx, member, id, body);
+        const item = await embeddedLinkService.patchWithOptions(tx, member, id, body);
         await actionItemService.postPatchAction(tx, request, item);
         return item;
       });

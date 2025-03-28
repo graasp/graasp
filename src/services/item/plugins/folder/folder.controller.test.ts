@@ -37,7 +37,7 @@ import {
 import { assertIsMember, assertIsMemberForTest } from '../../../authentication';
 import { expectItem } from '../../test/fixtures/items';
 import { ActionItemService } from '../action/itemAction.service';
-import { FolderItemService } from './service';
+import { FolderItemService } from './folder.service';
 
 // Mock S3 libraries
 const deleteObjectMock = jest.fn(async () => console.debug('deleteObjectMock'));

@@ -12,7 +12,7 @@ import { CachingService } from '../services/caching/service';
 import FileService from '../services/file/file.service';
 import { fileRepositoryFactory } from '../services/file/utils/factory';
 import { wrapEtherpadErrors } from '../services/item/plugins/etherpad/etherpad';
-import { RandomPadNameFactory } from '../services/item/plugins/etherpad/service';
+import { RandomPadNameFactory } from '../services/item/plugins/etherpad/etherpad.service';
 import { EtherpadServiceConfig } from '../services/item/plugins/etherpad/serviceConfig';
 import { SearchService } from '../services/item/plugins/publication/published/plugins/search/service';
 import {

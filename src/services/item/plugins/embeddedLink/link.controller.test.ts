@@ -6,7 +6,7 @@ import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, ItemType } from '@graasp/sdk';
+import { HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -18,7 +18,6 @@ import { db } from '../../../../drizzle/db';
 import { itemsRaw } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN } from '../../../../utils/config';
-import { PermissionLevel } from '../../../itemMembership/types';
 import { EmbeddedLinkItem } from '../../discrimination';
 import { FETCH_RESULT, METADATA } from './test/fixtures';
 

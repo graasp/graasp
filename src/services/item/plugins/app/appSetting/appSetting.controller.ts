@@ -17,9 +17,9 @@ import { assertIsMember } from '../../../../authentication';
 import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
 import { ItemService } from '../../../item.service';
 import { appSettingsWsHooks } from '../ws/hooks';
-import appSettingFilePlugin from './plugins/file';
-import { create, deleteOne, getForOne, updateOne } from './schemas';
-import { AppSettingService } from './service';
+import { create, deleteOne, getForOne, updateOne } from './appSetting.schemas';
+import { AppSettingService } from './appSetting.service';
+import appSettingFilePlugin from './plugins/file/appSetting.file.controller';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const itemService = resolveDependency(ItemService);

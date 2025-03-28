@@ -159,7 +159,7 @@ export const clearChat = {
     itemId: customType.UUID(),
   }),
   response: {
-    [StatusCodes.OK]: chatSchemaRef,
+    [StatusCodes.NO_CONTENT]: Type.Null(),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
