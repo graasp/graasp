@@ -16,7 +16,7 @@ import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../service';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
-import { ItemThumbnailService } from '../thumbnail/service';
+import { ItemThumbnailService } from '../thumbnail/itemThumbnail.service';
 import { DocumentItemService } from './service';
 
 const documentService = new DocumentItemService(

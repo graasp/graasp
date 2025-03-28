@@ -1,11 +1,12 @@
 import { singleton } from 'tsyringe';
 
+import { FlagType } from '@graasp/sdk';
+
 import { DBConnection } from '../../../../drizzle/db';
 import { itemFlags } from '../../../../drizzle/schema';
-import { FlagOptionsType } from './itemFlag.types';
 
 type CreateItemFlagBody = {
-  flagType: FlagOptionsType;
+  flagType: FlagType;
   creatorId: string;
   itemId: string;
 };

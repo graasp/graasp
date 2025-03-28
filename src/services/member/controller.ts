@@ -23,7 +23,7 @@ import {
 } from './constants';
 import { EmailAlreadyTaken } from './error';
 import { MemberService } from './member.service';
-import { StorageService } from './plugins/storage/service';
+import { StorageService } from './plugins/storage/memberStorage.service';
 import {
   deleteCurrent,
   getCurrent,

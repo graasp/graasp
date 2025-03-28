@@ -16,7 +16,7 @@ import { ThumbnailService } from '../thumbnail/service';
 import { FolderItem } from './discrimination';
 import { ItemVisibilityRepository } from './plugins/itemVisibility/repository';
 import { MeiliSearchWrapper } from './plugins/publication/published/plugins/search/meilisearch';
-import { ItemThumbnailService } from './plugins/thumbnail/service';
+import { ItemThumbnailService } from './plugins/thumbnail/itemThumbnail.service';
 import { ItemService } from './service';
 
 const mockedThumbnailService = {

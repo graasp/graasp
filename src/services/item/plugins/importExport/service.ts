@@ -22,7 +22,7 @@ import { isItemType } from '../../discrimination';
 import { ItemService } from '../../service';
 import { EtherpadItemService } from '../etherpad/service';
 import FileItemService from '../file/service';
-import { H5PService } from '../html/h5p/service';
+import { H5PService } from '../html/h5p/h5p.service';
 import {
   DESCRIPTION_EXTENSION,
   GRAASP_DOCUMENT_EXTENSION,

@@ -24,13 +24,13 @@ import graaspEnrollPlugin from './plugins/enroll';
 import graaspEtherpadPlugin from './plugins/etherpad/controller';
 import graaspFileItem from './plugins/file';
 import graaspFolderItem from './plugins/folder/controller';
-import itemGeolocationPlugin from './plugins/geolocation/index';
-import graaspH5PPlugin from './plugins/html/h5p';
+import itemGeolocationPlugin from './plugins/geolocation/itemGeolocation.controller';
+import graaspH5PPlugin from './plugins/html/h5p/h5p.controller';
 import graaspZipPlugin from './plugins/importExport';
-import graaspInvitationsPlugin from './plugins/invitation';
-import graaspFavoritePlugin from './plugins/itemBookmark';
-import graaspItemFlags from './plugins/itemFlag';
-import graaspItemLikes from './plugins/itemLike';
+import graaspInvitationsPlugin from './plugins/invitation/invitation.controller';
+import graaspFavoritePlugin from './plugins/itemBookmark/itemBookmark.controller';
+import graaspItemFlags from './plugins/itemFlag/itemFlag.controller';
+import graaspItemLikes from './plugins/itemLike/itemLike.controller';
 import graaspItemVisibility from './plugins/itemVisibility';
 import graaspItemPublicationState from './plugins/publication/publicationState';
 import graaspItemPublish from './plugins/publication/published';
@@ -40,7 +40,7 @@ import ShortLinkService from './plugins/shortLink/shortlink.controller';
 import { SHORT_LINKS_ROUTE_PREFIX } from './plugins/shortLink/shortlink.service';
 import { plugin as graaspShortcutPlugin } from './plugins/shortcut/controller';
 import graaspItemTagPlugin from './plugins/tag/controller';
-import thumbnailsPlugin from './plugins/thumbnail';
+import thumbnailsPlugin from './plugins/thumbnail/itemThumbnail.controller';
 import { itemWsHooks } from './ws/hooks';
 
 const plugin: FastifyPluginAsync = async (fastify) => {

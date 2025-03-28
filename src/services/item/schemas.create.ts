@@ -7,7 +7,7 @@ import { DocumentItemExtraFlavor, ItemType } from '@graasp/sdk';
 
 import { customType } from '../../plugins/typebox';
 import { errorSchemaRef } from '../../schemas/global';
-import { geoCoordinateSchemaRef } from './plugins/geolocation/schemas';
+import { geoCoordinateSchemaRef } from './plugins/geolocation/itemGeolocation.schemas';
 import { itemSchema, itemSchemaRef, settingsSchema } from './schemas';
 
 const baseItemCreateSchema = Type.Composite(

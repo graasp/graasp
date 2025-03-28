@@ -2,7 +2,7 @@ import {
   ItemGeolocationRaw,
   ItemGeolocationWithItemWithCreator,
 } from '../../../../../drizzle/types';
-import { PackedItemGeolocation } from '../service';
+import { PackedItemGeolocation } from '../itemGeolocation.service';
 
 export const expectItemGeolocations = (
   results: ItemGeolocationRaw[] | null,

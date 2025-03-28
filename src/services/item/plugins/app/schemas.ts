@@ -7,7 +7,7 @@ import { customType } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
 import { accountSchemaRef } from '../../../account/schemas';
 import { itemSchema, itemSchemaRef } from '../../schemas';
-import { geoCoordinateSchemaRef } from '../geolocation/schemas';
+import { geoCoordinateSchemaRef } from '../geolocation/itemGeolocation.schemas';
 
 export const generateToken = {
   operationId: 'generateAppToken',

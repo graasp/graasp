@@ -12,7 +12,7 @@ import { db } from '../../../../drizzle/db';
 import { asDefined } from '../../../../utils/assertions';
 import { MemberAlreadySignedUp } from '../../../../utils/errors';
 import { isMember } from '../../../authentication';
-import { InvitationService } from '../../../item/plugins/invitation/service';
+import { InvitationService } from '../../../item/plugins/invitation/invitation.service';
 import { MemberService } from '../../../member/member.service';
 import { getRedirectionLink } from '../../utils';
 import captchaPreHandler from '../captcha/index';

@@ -20,7 +20,7 @@ import { AuthorizationService } from '../authorization';
 import { BasicItemService } from '../item/basic.service';
 import { MemberRepository } from '../member/member.repository';
 import { ItemMembershipRepository } from './membership.repository';
-import { MembershipRequestRepository } from './plugins/MembershipRequest/repository';
+import { MembershipRequestRepository } from './plugins/MembershipRequest/membershipRequest.repository';
 
 @singleton()
 export class ItemMembershipService {

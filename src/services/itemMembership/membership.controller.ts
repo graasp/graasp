@@ -11,7 +11,7 @@ import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../auth/plug
 import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
 import { create, deleteOne, getItemMembershipsForItem, updateOne } from './membership.schemas';
 import { ItemMembershipService } from './membership.service';
-import MembershipRequestAPI from './plugins/MembershipRequest';
+import MembershipRequestAPI from './plugins/MembershipRequest/membershipRequest.controller';
 import { membershipWsHooks } from './ws/hooks';
 
 const ROUTES_PREFIX = '/item-memberships';

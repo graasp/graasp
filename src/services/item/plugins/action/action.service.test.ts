@@ -29,7 +29,7 @@ import { ItemService } from '../../service';
 import { expectItem } from '../../test/fixtures/items';
 import { saveAppActions } from '../app/appAction/test/fixtures';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
-import { ItemThumbnailService } from '../thumbnail/service';
+import { ItemThumbnailService } from '../thumbnail/itemThumbnail.service';
 import { ActionItemService } from './action.service';
 import { ItemActionType } from './utils';
 

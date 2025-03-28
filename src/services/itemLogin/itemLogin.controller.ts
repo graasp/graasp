@@ -16,7 +16,6 @@ import { assertIsMember } from '../authentication';
 import { AuthorizationService } from '../authorization';
 import { BasicItemService } from '../item/basic.service';
 import { ItemRepository } from '../item/item.repository';
-import { ItemService } from '../item/service';
 import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
 import { ItemLoginSchemaNotFound, ValidMemberSession } from './errors';
 import { ItemLoginService } from './itemLogin.service';

@@ -29,7 +29,7 @@ import { InvalidAggregationError } from '../../../action/utils/errors';
 import { filterOutItems } from '../../../authorization.utils';
 import { ChatMessageRepository } from '../../../chat/chatMessage.repository';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
-import { ExportDataRepository } from '../../../member/plugins/export-data/repository';
+import { ExportDataRepository } from '../../../member/plugins/export-data/memberExportData.repository';
 import { BasicItemService } from '../../basic.service';
 import { isItemType } from '../../discrimination';
 import { ItemService } from '../../service';

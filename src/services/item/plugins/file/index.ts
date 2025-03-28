@@ -13,11 +13,11 @@ import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../aut
 import { assertIsMember, isMember } from '../../../authentication';
 import { AuthorizationService } from '../../../authorization';
 import FileService from '../../../file/service';
-import { StorageService } from '../../../member/plugins/storage/service';
+import { StorageService } from '../../../member/plugins/storage/memberStorage.service';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../service';
-import { H5PService } from '../html/h5p/service';
+import { H5PService } from '../html/h5p/h5p.service';
 import { H5P_FILE_EXTENSION } from '../importExport/constants';
 import { download, updateFile, upload } from './schema';
 import FileItemService from './service';

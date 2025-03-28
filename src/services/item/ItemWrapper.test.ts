@@ -11,7 +11,7 @@ import { saveMember } from '../member/test/fixtures/members';
 import { ThumbnailService } from '../thumbnail/service';
 import { ItemWrapper, ItemWrapperService } from './ItemWrapper';
 import { createTag, setItemPublic } from './plugins/itemVisibility/test/fixtures';
-import { ItemThumbnailService } from './plugins/thumbnail/service';
+import { ItemThumbnailService } from './plugins/thumbnail/itemThumbnail.service';
 import { ItemService } from './service';
 
 // const itemThumbnailService = new ItemThumbnailService(

@@ -8,7 +8,7 @@ import { client, db } from '../../drizzle/db';
 import { actionsTable } from '../../drizzle/schema';
 import { assertIsDefined } from '../../utils/assertions';
 import { assertIsMemberForTest } from '../authentication';
-import { getPreviousMonthFromNow } from '../member/plugins/action/service';
+import { getPreviousMonthFromNow } from '../member/plugins/action/memberAction.service';
 import { ActionRepository } from './action.repository';
 import { DEFAULT_ACTIONS_SAMPLE_SIZE } from './constants';
 import { expectActions } from './test/fixtures/actions';

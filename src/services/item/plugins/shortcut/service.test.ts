@@ -10,7 +10,7 @@ import { ThumbnailService } from '../../../thumbnail/service';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../service';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
-import { ItemThumbnailService } from '../thumbnail/service';
+import { ItemThumbnailService } from '../thumbnail/itemThumbnail.service';
 import { ShortcutItemService } from './service';
 
 const shortcutService = new ShortcutItemService(

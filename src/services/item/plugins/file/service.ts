@@ -24,7 +24,7 @@ import { AuthorizationService } from '../../../authorization';
 import FileService from '../../../file/service';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
-import { StorageService } from '../../../member/plugins/storage/service';
+import { StorageService } from '../../../member/plugins/storage/memberStorage.service';
 import { ThumbnailService } from '../../../thumbnail/service';
 import { randomHexOf4 } from '../../../utils';
 import { ItemWrapperService } from '../../ItemWrapper';
@@ -33,11 +33,11 @@ import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../service';
 import { readPdfContent } from '../../utils';
-import { ItemGeolocationRepository } from '../geolocation/geolocation.repository';
+import { ItemGeolocationRepository } from '../geolocation/itemGeolocation.repository';
 import { ItemVisibilityRepository } from '../itemVisibility/repository';
 import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
-import { ItemThumbnailService } from '../thumbnail/service';
+import { ItemThumbnailService } from '../thumbnail/itemThumbnail.service';
 
 @singleton()
 class FileItemService extends ItemService {

@@ -13,7 +13,7 @@ import {
 } from '../../drizzle/types';
 import { ItemMembershipRepository } from '../itemMembership/membership.repository';
 import { ItemVisibilityRepository } from './plugins/itemVisibility/repository';
-import { ItemThumbnailService } from './plugins/thumbnail/service';
+import { ItemThumbnailService } from './plugins/thumbnail/itemThumbnail.service';
 import { ItemsThumbnails } from './plugins/thumbnail/types';
 
 type GraaspItem = Pick<

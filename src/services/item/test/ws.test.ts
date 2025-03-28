@@ -1,13 +1,23 @@
+import { and, eq, ne } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 import waitForExpect from 'wait-for-expect';
 
-import { HttpMethod, ItemOpFeedbackEvent as ItemOpFeedbackEventType } from '@graasp/sdk';
+import { FastifyInstance } from 'fastify';
 
-import { clearDatabase } from '../../../../test/app';
+import {
+  HttpMethod,
+  ItemOpFeedbackEvent as ItemOpFeedbackEventType,
+  PermissionLevel,
+} from '@graasp/sdk';
+
+import { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
+import { seedFromJson } from '../../../../test/mocks/seed';
+import { db } from '../../../drizzle/db';
+import { itemsRaw } from '../../../drizzle/schema';
 import { Item } from '../../../drizzle/types';
+import { assertIsDefined } from '../../../utils/assertions';
 import { TestWsClient } from '../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../websockets/test/ws-app';
-import { FolderItem } from '../discrimination';
 import { ItemRepository } from '../item.repository';
 import {
   expectCopyFeedbackOp,
@@ -17,24 +27,37 @@ import {
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../ws/events';
 
 describe('Item websocket hooks', () => {
-  let app, address;
+  let app: FastifyInstance;
+  let address: string;
   let ws: TestWsClient;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     ({ app, address } = await setupWsApp());
-    ws = new TestWsClient(address);
   });
 
-  afterEach(async () => {
-    jest.clearAllMocks();
-    await clearDatabase(app.db);
+  afterAll(async () => {
+    await clearDatabase(db);
     app.close();
     ws.close();
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+    unmockAuthenticate();
+  });
+
   describe('asynchronous feedback', () => {
     it('member that initiated the deleteMany operation receives success feedback', async () => {
-      const { item } = await testUtils.saveItemAndMembership({ member: actor });
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] }],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+      ws = new TestWsClient(address);
+
       const memberUpdates = await ws.subscribe<ItemOpFeedbackEventType<Item, 'delete'>>({
         topic: memberItemsTopic,
         channel: actor.id,
@@ -47,7 +70,9 @@ describe('Item websocket hooks', () => {
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        expect(await testUtils.rawItemRepository.findOneBy({ id: item.id })).toBe(null);
+        expect(
+          await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, item.id) }),
+        ).toBeUndefined();
       });
 
       await waitForExpect(() => {
@@ -60,7 +85,16 @@ describe('Item websocket hooks', () => {
     });
 
     it('member that initiated the deleteMany operation receives failure feedback', async () => {
-      const { item } = await testUtils.saveItemAndMembership({ member: actor });
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] }],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+      ws = new TestWsClient(address);
+
       const memberUpdates = await ws.subscribe<ItemOpFeedbackEventType<Item, 'delete'>>({
         topic: memberItemsTopic,
         channel: actor.id,
@@ -86,8 +120,19 @@ describe('Item websocket hooks', () => {
     });
 
     it('member that initiated the move operation receives success feedback', async () => {
-      const { item } = await testUtils.saveItemAndMembership({ member: actor });
-      const { item: newParent } = await testUtils.saveItemAndMembership({ member: actor });
+      const {
+        actor,
+        items: [newParent, item],
+      } = await seedFromJson({
+        items: [
+          { memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] },
+          { memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+      ws = new TestWsClient(address);
+
       const memberUpdates = await ws.subscribe<ItemOpFeedbackEventType<Item, 'move'>>({
         topic: memberItemsTopic,
         channel: actor.id,
@@ -102,7 +147,7 @@ describe('Item websocket hooks', () => {
 
       let moved;
       await waitForExpect(async () => {
-        moved = await testUtils.rawItemRepository.findOneBy({ id: item.id });
+        moved = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, item.id) });
         expect(moved?.path).toContain(newParent.path);
       });
 
@@ -116,8 +161,19 @@ describe('Item websocket hooks', () => {
     });
 
     it('member that initiated the move operation receives failure feedback', async () => {
-      const { item } = await testUtils.saveItemAndMembership({ member: actor });
-      const { item: newParent } = await testUtils.saveItemAndMembership({ member: actor });
+      const {
+        actor,
+        items: [newParent, item],
+      } = await seedFromJson({
+        items: [
+          { memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] },
+          { memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+      ws = new TestWsClient(address);
+
       const memberUpdates = await ws.subscribe<ItemOpFeedbackEventType<Item, 'move'>>({
         topic: memberItemsTopic,
         channel: actor.id,
@@ -144,8 +200,19 @@ describe('Item websocket hooks', () => {
     });
 
     it('member that initiated the copy operation receives success feedback', async () => {
-      const { item } = await testUtils.saveItemAndMembership({ member: actor });
-      const { item: newParent } = await testUtils.saveItemAndMembership({ member: actor });
+      const {
+        actor,
+        items: [newParent, item],
+      } = await seedFromJson({
+        items: [
+          { memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] },
+          { memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+      ws = new TestWsClient(address);
+
       const memberUpdates = await ws.subscribe<ItemOpFeedbackEventType<Item, 'copy'>>({
         topic: memberItemsTopic,
         channel: actor.id,
@@ -158,13 +225,11 @@ describe('Item websocket hooks', () => {
       });
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
-      let copied;
       await waitForExpect(async () => {
-        [copied] = await testUtils.itemRepository.getDescendants(app.db, newParent as FolderItem);
+        const [copied] = await db.query.itemsRaw.findMany({
+          where: and(eq(itemsRaw.name, newParent.name), ne(itemsRaw.id, item.id)),
+        });
         expect(copied).toBeDefined();
-      });
-
-      await waitForExpect(() => {
         const [feedbackUpdate] = memberUpdates;
         expectCopyFeedbackOp(
           feedbackUpdate,
@@ -174,8 +239,19 @@ describe('Item websocket hooks', () => {
     });
 
     it('member that initiated the copy operation receives failure feedback', async () => {
-      const { item } = await testUtils.saveItemAndMembership({ member: actor });
-      const { item: newParent } = await testUtils.saveItemAndMembership({ member: actor });
+      const {
+        actor,
+        items: [newParent, item],
+      } = await seedFromJson({
+        items: [
+          { memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] },
+          { memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
+      ws = new TestWsClient(address);
+
       const memberUpdates = await ws.subscribe<ItemOpFeedbackEventType<Item, 'copy'>>({
         topic: memberItemsTopic,
         channel: actor.id,

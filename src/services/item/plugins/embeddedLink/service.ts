@@ -26,11 +26,11 @@ import { EmbeddedLinkItem, isItemType } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../service';
-import { ItemGeolocationRepository } from '../geolocation/geolocation.repository';
+import { ItemGeolocationRepository } from '../geolocation/itemGeolocation.repository';
 import { ItemVisibilityRepository } from '../itemVisibility/repository';
 import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
-import { ItemThumbnailService } from '../thumbnail/service';
+import { ItemThumbnailService } from '../thumbnail/itemThumbnail.service';
 import { InvalidUrl } from './errors';
 import { isValidUrl } from './utils';
 

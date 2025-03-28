@@ -55,11 +55,11 @@ import { BasicItemService } from './basic.service';
 import { DEFAULT_ORDER, IS_COPY_REGEX, MAX_COPY_SUFFIX_LENGTH } from './constants';
 import { FolderItem, isItemType } from './discrimination';
 import { ItemRepository } from './item.repository';
-import { ItemGeolocationRepository } from './plugins/geolocation/geolocation.repository';
+import { ItemGeolocationRepository } from './plugins/geolocation/itemGeolocation.repository';
 import { ItemVisibilityRepository } from './plugins/itemVisibility/repository';
 import { ItemPublishedRepository } from './plugins/publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from './plugins/publication/published/plugins/search/meilisearch';
-import { ItemThumbnailService } from './plugins/thumbnail/service';
+import { ItemThumbnailService } from './plugins/thumbnail/itemThumbnail.service';
 import { ItemChildrenParams, ItemSearchParams } from './types';
 
 @singleton()

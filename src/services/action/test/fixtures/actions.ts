@@ -1,12 +1,9 @@
 import { eq } from 'drizzle-orm';
 
-import { ActionFactory, Action as GraaspAction } from '@graasp/sdk';
-
-import { DBConnection, db } from '../../../../drizzle/db';
+import { DBConnection } from '../../../../drizzle/db';
 import { actionsTable } from '../../../../drizzle/schema';
 import {
   Account,
-  ActionInsertDTO,
   ActionRaw,
   ActionWithItem,
   ActionWithItemAndAccount,
