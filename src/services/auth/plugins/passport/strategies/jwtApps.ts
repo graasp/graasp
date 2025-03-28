@@ -6,7 +6,7 @@ import { db } from '../../../../../drizzle/db';
 import { APPS_JWT_SECRET } from '../../../../../utils/config';
 import { UnauthorizedMember } from '../../../../../utils/errors';
 import { AccountRepository } from '../../../../account/account.repository';
-import { ItemRepository } from '../../../../item/repository';
+import { ItemRepository } from '../../../../item/item.repository';
 import { PassportStrategy } from '../strategies';
 import { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
 

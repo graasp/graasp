@@ -9,7 +9,7 @@ import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { AccountType, AuthenticatedUser } from '../../../../types';
 import { AuthorizationService } from '../../../authorization';
-import { ItemRepository } from '../../../item/repository';
+import { ItemRepository } from '../../../item/item.repository';
 import { MemberRepository } from '../../../member/member.repository';
 import { MemberCannotAccessMention } from '../../errors';
 import { ChatMentionRepository } from './chatMentions.repository';

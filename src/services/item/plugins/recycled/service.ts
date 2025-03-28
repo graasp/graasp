@@ -9,7 +9,7 @@ import { ItemNotFound } from '../../../../utils/errors';
 import HookManager from '../../../../utils/hook';
 import { AuthorizationService } from '../../../authorization';
 import { isItemType } from '../../discrimination';
-import { ItemRepository } from '../../repository';
+import { ItemRepository } from '../../item.repository';
 import { RecycledItemDataRepository } from './repository';
 
 @singleton()

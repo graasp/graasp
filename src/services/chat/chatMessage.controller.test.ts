@@ -1,27 +1,34 @@
+import { eq } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
-import { FolderItemFactory, HttpMethod } from '@graasp/sdk';
+import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../test/app';
 import { seedFromJson } from '../../../test/mocks/seed';
 import { resolveDependency } from '../../di/utils';
 import { db } from '../../drizzle/db';
+import { chatMentionsTable, chatMessagesTable } from '../../drizzle/schema';
+import { ChatMessageRaw } from '../../drizzle/types';
 import { MailerService } from '../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../utils/config';
 import { ItemNotFound, MemberCannotAccess } from '../../utils/errors';
-import { saveMember } from '../member/test/fixtures/members';
 import { ChatMessageNotFound, MemberCannotDeleteMessage, MemberCannotEditMessage } from './errors';
-import { ChatMessageRepository } from './repository';
 
-const expectChatMessages = (messages, correctMessages) => {
+const getMessagesByItemId = async (itemId: string) =>
+  await db.query.chatMessagesTable.findMany({
+    where: eq(chatMessagesTable.itemId, itemId),
+  });
+
+const expectChatMessages = (messages, correctMessages: ChatMessageRaw[]) => {
   expect(messages).toHaveLength(correctMessages.length);
   for (const message of messages) {
     const correctMessage = correctMessages.find(({ id }) => id === message.id);
-    expect(message.creator.id).toEqual(correctMessage.creator.id);
+    assertIsDefined(correctMessage);
+    expect(message.creator.id).toEqual(correctMessage.creatorId);
     expect(message.body).toEqual(correctMessage.body);
   }
 };
@@ -61,15 +68,16 @@ describe('Chat Message tests', () => {
       it('Get successfully', async () => {
         const {
           items: [item],
-          chatMessages,
           actor,
+          chatMessages,
         } = await seedFromJson({
           items: [
             {
+              memberships: [{ account: 'actor' }],
               chatMessages: [
-                { creator: { name: 'bob' } },
                 { creator: 'actor' },
-                { creator: { name: 'alice' } },
+                { creator: 'actor' },
+                { creator: { name: 'bob' } },
               ],
             },
           ],
@@ -90,9 +98,10 @@ describe('Chat Message tests', () => {
       });
 
       it('Throws if item id is incorrect', async () => {
-        const { actor } = await seedFromJson({});
+        const { actor } = await seedFromJson();
         assertIsDefined(actor);
         mockAuthenticate(actor);
+
         const response = await app.inject({
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/invalid-id/chat`,
@@ -101,29 +110,36 @@ describe('Chat Message tests', () => {
       });
 
       it('Throws if item does not exist', async () => {
-        const { actor } = await seedFromJson({});
+        const { actor } = await seedFromJson();
         assertIsDefined(actor);
         mockAuthenticate(actor);
+
+        const itemId = v4();
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `${ITEMS_ROUTE_PREFIX}/${v4()}/chat`,
+          url: `${ITEMS_ROUTE_PREFIX}/${itemId}/chat`,
         });
 
-        expect(response.json()).toMatchObject({ code: 'GERR001', message: ``, statusCode: 404 });
+        expect(response.json().message).toMatch(new ItemNotFound(itemId).message);
       });
 
       it('Throws if member does not have access to item', async () => {
-        // create brand new user because fixtures are used for chatmessages and will already exists
         const {
-          items: [item],
           actor,
-          members: [member],
+          items: [item],
         } = await seedFromJson({
-          items: [{}],
-          members: [{}],
+          items: [
+            {
+              chatMessages: [
+                { creator: 'actor' },
+                { creator: 'actor' },
+                { creator: { name: 'bob' } },
+              ],
+            },
+          ],
         });
         assertIsDefined(actor);
-        mockAuthenticate(member);
+        mockAuthenticate(actor);
 
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -136,9 +152,21 @@ describe('Chat Message tests', () => {
 
     describe('Public', () => {
       it('Get successfully', async () => {
-        const member = await saveMember();
-        const { item, chatMessages } = await saveItemWithChatMessages(member);
-        await setItemPublic(item, member);
+        const {
+          items: [item],
+          chatMessages,
+        } = await seedFromJson({
+          items: [
+            {
+              isPublic: true,
+              chatMessages: [
+                { creator: 'actor' },
+                { creator: 'actor' },
+                { creator: { name: 'bob' } },
+              ],
+            },
+          ],
+        });
 
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -156,7 +184,10 @@ describe('Chat Message tests', () => {
 
   describe('POST /item-id/chat', () => {
     it('Throws for private item', async () => {
-      const item = FolderItemFactory();
+      const {
+        items: [item],
+      } = await seedFromJson({ actor: null, items: [{}] });
+
       const payload = { body: 'hello' };
 
       const response = await app.inject({
@@ -169,17 +200,17 @@ describe('Chat Message tests', () => {
     });
 
     describe('Signed In', () => {
-      let item;
-
-      beforeEach(async () => {
-        actor = await saveMember();
-        mockAuthenticate(actor);
-        ({ item } = await saveItemWithChatMessages(actor));
-      });
-
       it('Post successfully', async () => {
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [{ memberships: [{ account: 'actor' }] }],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         const payload = { body: 'hello' };
-        const initialCount = await rawChatMessageRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -190,19 +221,28 @@ describe('Chat Message tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(response.json().body).toEqual(payload.body);
 
-        expect(await rawChatMessageRepository.count()).toEqual(initialCount + 1);
+        expect(await getMessagesByItemId(item.id)).toHaveLength(1);
       });
 
       it('Post successfully with mentions', async () => {
         const mailerService = resolveDependency(MailerService);
         const mock = jest.spyOn(mailerService, 'sendRaw');
 
-        const members = await memberRawRepository.find();
+        const {
+          actor,
+          items: [item],
+          members,
+        } = await seedFromJson({
+          items: [{ memberships: [{ account: 'actor' }] }],
+          members: [{ name: 'bob' }, { name: 'alice' }],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         const payload = {
           body: 'hello',
           mentions: members.map(({ id }) => id),
         };
-        const initialCount = await rawChatMessageRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -212,18 +252,24 @@ describe('Chat Message tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(response.json().body).toEqual(payload.body);
 
-        expect(await rawChatMessageRepository.count()).toEqual(initialCount + 1);
+        expect(await getMessagesByItemId(item.id)).toHaveLength(1);
 
         // check mentions and send email
-        const nbMentions = await adminChatMentionRepository.count();
-        expect(nbMentions).toEqual(members.length);
-
+        for (const m of members) {
+          const nbMention = await db.query.chatMentionsTable.findFirst({
+            where: eq(chatMentionsTable.accountId, m.id),
+          });
+          expect(nbMention).toBeDefined();
+        }
         expect(mock).toHaveBeenCalledTimes(members.length);
       });
 
       it('Throws if item id is incorrect', async () => {
-        const payload = { body: 'hello' };
+        const { actor } = await seedFromJson();
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
+        const payload = { body: 'hello' };
         const response = await app.inject({
           method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/invalid/chat`,
@@ -233,6 +279,15 @@ describe('Chat Message tests', () => {
       });
 
       it('Throws if body is incorrect', async () => {
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [{ memberships: [{ account: 'actor' }] }],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         const response = await app.inject({
           method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat`,
@@ -242,28 +297,36 @@ describe('Chat Message tests', () => {
       });
 
       it('Throws if item does not exist', async () => {
-        const payload = { body: 'hello' };
+        const { actor } = await seedFromJson();
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
+        const payload = { body: 'hello' };
+        const itemId = v4();
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `${ITEMS_ROUTE_PREFIX}/${v4()}/chat`,
+          url: `${ITEMS_ROUTE_PREFIX}/${itemId}/chat`,
           payload,
         });
 
-        expect(response.json()).toMatchObject(new ItemNotFound(expect.anything()));
+        expect(response.json().message).toMatch(new ItemNotFound(itemId).message);
       });
 
       it('Throws if member does not have access to item', async () => {
-        const payload = { body: 'hello' };
-        // create brand new user because fixtures are used for chatmessages and will already exists
-        const member = await saveMember();
-        const { item: otherItem } = await testUtils.saveItemAndMembership({
-          member,
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [{}],
         });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
+        const payload = { body: 'hello' };
 
         const response = await app.inject({
           method: HttpMethod.Post,
-          url: `${ITEMS_ROUTE_PREFIX}/${otherItem.id}/chat`,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat`,
           payload,
         });
 
@@ -274,7 +337,10 @@ describe('Chat Message tests', () => {
 
   describe('PATCH /item-id/chat/message-id', () => {
     it('Throws for private item', async () => {
-      const item = FolderItemFactory();
+      const {
+        items: [item],
+      } = await seedFromJson({ actor: null, items: [{}] });
+
       const payload = { body: 'hello' };
 
       const response = await app.inject({
@@ -287,24 +353,18 @@ describe('Chat Message tests', () => {
     });
 
     describe('Signed In', () => {
-      let item, chatMessages, members;
-
-      beforeEach(async () => {
-        actor = await saveMember();
-        mockAuthenticate(actor);
-        ({ item, chatMessages, members } = await saveItemWithChatMessages(actor));
-      });
-
       it('Patch successfully', async () => {
-        const payload = { body: 'hello' };
-        const chatMessage = await rawChatMessageRepository.save({
-          item,
-          creator: actor,
-          body: 'body',
+        const {
+          actor,
+          items: [item],
+          chatMessages: [chatMessage],
+        } = await seedFromJson({
+          items: [{ memberships: [{ account: 'actor' }], chatMessages: [{ creator: 'actor' }] }],
         });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
-        const initialCount = await rawChatMessageRepository.count();
-
+        const payload = { body: 'hello' };
         const response = await app.inject({
           method: HttpMethod.Patch,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat/${chatMessage.id}`,
@@ -313,23 +373,39 @@ describe('Chat Message tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(response.json().body).toEqual(payload.body);
 
-        expect(await rawChatMessageRepository.count()).toEqual(initialCount);
+        expect((await getMessagesByItemId(item.id))[0]).toBeDefined();
       });
 
       it('Throws if item id is incorrect', async () => {
-        const payload = { body: 'hello' };
+        const {
+          actor,
+          chatMessages: [chatMessage],
+        } = await seedFromJson({
+          items: [{ memberships: [{ account: 'actor' }], chatMessages: [{ creator: 'actor' }] }],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
+        const payload = { body: 'hello' };
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `${ITEMS_ROUTE_PREFIX}/invalid-id/chat/${chatMessages[0].id}`,
+          url: `${ITEMS_ROUTE_PREFIX}/invalid-id/chat/${chatMessage.id}`,
           payload,
         });
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
 
       it('Throws if chat message id is incorrect', async () => {
-        const payload = { body: 'hello' };
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [{ memberships: [{ account: 'actor' }] }],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
+        const payload = { body: 'hello' };
         const response = await app.inject({
           method: HttpMethod.Patch,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat/invalid-id`,
@@ -339,29 +415,56 @@ describe('Chat Message tests', () => {
       });
 
       it('Throws if body is incorrect', async () => {
+        const {
+          actor,
+          items: [item],
+          chatMessages: [chatMessage],
+        } = await seedFromJson({
+          items: [{ memberships: [{ account: 'actor' }], chatMessages: [{ creator: 'actor' }] }],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat/${chatMessages[0].id}`,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat/${chatMessage.id}`,
           payload: { wrong: 'payload' },
         });
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
 
       it('Throws if item does not exist', async () => {
-        const payload = { body: 'hello' };
+        const {
+          actor,
+          chatMessages: [chatMessage],
+        } = await seedFromJson({
+          items: [{ memberships: [{ account: 'actor' }], chatMessages: [{ creator: 'actor' }] }],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
+        const payload = { body: 'hello' };
+        const itemId = v4();
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `${ITEMS_ROUTE_PREFIX}/${v4()}/chat/${chatMessages[0].id}`,
+          url: `${ITEMS_ROUTE_PREFIX}/${itemId}/chat/${chatMessage.id}`,
           payload,
         });
 
-        expect(response.json()).toMatchObject(new ItemNotFound(expect.anything()));
+        expect(response.json().message).toMatch(new ItemNotFound(itemId).message);
       });
 
       it('Throws if chat message does not exist', async () => {
-        const payload = { body: 'hello' };
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [{ memberships: [{ account: 'actor' }] }],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
+        const payload = { body: 'hello' };
         const response = await app.inject({
           method: HttpMethod.Patch,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat/${v4()}`,
@@ -372,16 +475,20 @@ describe('Chat Message tests', () => {
       });
 
       it('Throws if member does not have access to item', async () => {
-        const payload = { body: 'hello' };
-        // create brand new user because fixtures are used for chatmessages and will already exists
-        const member = await saveMember();
-        const { item: otherItem } = await testUtils.saveItemAndMembership({
-          member,
+        const {
+          actor,
+          items: [item],
+          chatMessages: [chatMessage],
+        } = await seedFromJson({
+          items: [{ chatMessages: [{ creator: 'actor' }] }],
         });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
+        const payload = { body: 'hello' };
         const response = await app.inject({
           method: HttpMethod.Patch,
-          url: `${ITEMS_ROUTE_PREFIX}/${otherItem.id}/chat/${chatMessages[0].id}`,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat/${chatMessage.id}`,
           payload,
         });
 
@@ -389,13 +496,19 @@ describe('Chat Message tests', () => {
       });
 
       it('Throws if member does not have access to chat message', async () => {
-        const payload = { body: 'hello' };
-        const chatMessage = await rawChatMessageRepository.save({
-          item,
-          creator: members[0],
-          body: 'body',
+        const {
+          actor,
+          items: [item],
+          chatMessages: [chatMessage],
+        } = await seedFromJson({
+          items: [
+            { memberships: [{ account: 'actor' }], chatMessages: [{ creator: { name: 'bob' } }] },
+          ],
         });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
+        const payload = { body: 'hello' };
         const response = await app.inject({
           method: HttpMethod.Patch,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat/${chatMessage.id}`,
@@ -409,7 +522,11 @@ describe('Chat Message tests', () => {
 
   describe('DELETE /item-id/chat/message-id', () => {
     it('Throws for private item', async () => {
-      const item = FolderItemFactory();
+      const {
+        items: [item],
+      } = await seedFromJson({
+        items: [{}],
+      });
 
       const response = await app.inject({
         method: HttpMethod.Delete,
@@ -420,21 +537,16 @@ describe('Chat Message tests', () => {
     });
 
     describe('Signed In', () => {
-      let item, members;
-
-      beforeEach(async () => {
-        actor = await saveMember();
-        mockAuthenticate(actor);
-        ({ item, members } = await saveItemWithChatMessages(actor));
-      });
-
       it('Delete successfully', async () => {
-        const chatMessage = await rawChatMessageRepository.save({
-          item,
-          creator: actor,
-          body: 'body',
+        const {
+          actor,
+          items: [item],
+          chatMessages: [chatMessage],
+        } = await seedFromJson({
+          items: [{ memberships: [{ account: 'actor' }], chatMessages: [{ creator: 'actor' }] }],
         });
-        const initialCount = await rawChatMessageRepository.count();
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
         const response = await app.inject({
           method: HttpMethod.Delete,
@@ -443,11 +555,14 @@ describe('Chat Message tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(response.json().body).toEqual(chatMessage.body);
 
-        expect(await rawChatMessageRepository.count()).toEqual(initialCount - 1);
-        expect(await new ChatMessageRepository().getOne(chatMessage.id)).toBeNull();
+        expect(await getMessagesByItemId(item.id)).toHaveLength(0);
       });
 
       it('Throws if item id is incorrect', async () => {
+        const { actor } = await seedFromJson();
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         const response = await app.inject({
           method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/invalid-id/chat/${v4()}`,
@@ -456,6 +571,17 @@ describe('Chat Message tests', () => {
       });
 
       it('Throws if chat message id is incorrect', async () => {
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            { memberships: [{ account: 'actor' }], chatMessages: [{ creator: { name: 'bob' } }] },
+          ],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         const response = await app.inject({
           method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat/invalid-id`,
@@ -464,15 +590,31 @@ describe('Chat Message tests', () => {
       });
 
       it('Throws if item does not exist', async () => {
+        const { actor } = await seedFromJson({
+          items: [{}],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
+        const itemId = v4();
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: `${ITEMS_ROUTE_PREFIX}/${v4()}/chat/${v4()}`,
+          url: `${ITEMS_ROUTE_PREFIX}/${itemId}/chat/${v4()}`,
         });
 
-        expect(response.json()).toMatchObject(new ItemNotFound(expect.anything()));
+        expect(response.json().message).toMatch(new ItemNotFound(itemId).message);
       });
 
       it('Throws if chat message does not exist', async () => {
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [{ memberships: [{ account: 'actor' }] }],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         const response = await app.inject({
           method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat/${v4()}`,
@@ -482,26 +624,36 @@ describe('Chat Message tests', () => {
       });
 
       it('Throws if member does not have access to item', async () => {
-        // create brand new user because fixtures are used for chatmessages and will already exists
-        const member = await saveMember();
-        const { item: otherItem } = await testUtils.saveItemAndMembership({
-          member,
+        const {
+          actor,
+          items: [item],
+          chatMessages: [chatMessage],
+        } = await seedFromJson({
+          items: [{ chatMessages: [{ creator: 'actor' }] }],
         });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: `${ITEMS_ROUTE_PREFIX}/${otherItem.id}/chat/${v4()}`,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat/${chatMessage.id}`,
         });
 
-        expect(response.json()).toMatchObject(new MemberCannotAccess(expect.anything()));
+        expect(response.json()).toMatchObject(new MemberCannotAccess(item.id));
       });
 
       it('Throws if member does not have access to chat message', async () => {
-        const chatMessage = await rawChatMessageRepository.save({
-          item,
-          creator: members[0],
-          body: 'body',
+        const {
+          actor,
+          items: [item],
+          chatMessages: [chatMessage],
+        } = await seedFromJson({
+          items: [
+            { memberships: [{ account: 'actor' }], chatMessages: [{ creator: { name: 'bob' } }] },
+          ],
         });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
         const response = await app.inject({
           method: HttpMethod.Delete,
@@ -515,7 +667,11 @@ describe('Chat Message tests', () => {
 
   describe('DELETE /item-id/chat', () => {
     it('Throws for private item', async () => {
-      const item = FolderItemFactory();
+      const {
+        items: [item],
+      } = await seedFromJson({
+        items: [{}],
+      });
 
       const response = await app.inject({
         method: HttpMethod.Delete,
@@ -526,55 +682,39 @@ describe('Chat Message tests', () => {
     });
 
     describe('Signed In', () => {
-      let item;
-
-      beforeEach(async () => {
-        actor = await saveMember();
-        mockAuthenticate(actor);
-        ({ item } = await saveItemWithChatMessages(actor));
-      });
-
       it('Delete all successfully', async () => {
-        // more messages
-        const { item: anotherItem } = await testUtils.saveItemAndMembership({
-          member: actor,
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            {
+              memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+              chatMessages: [
+                { creator: { name: 'bob' } },
+                { creator: { name: 'cedric' } },
+                { creator: { name: 'alice' } },
+              ],
+            },
+          ],
         });
-        const otherMessages: ChatMessage[] = [];
-        otherMessages.push(
-          await rawChatMessageRepository.save({
-            item: anotherItem,
-            creator: actor,
-            body: 'dd',
-          }),
-        );
-        otherMessages.push(
-          await rawChatMessageRepository.save({
-            item: anotherItem,
-            creator: actor,
-            body: 'dd',
-          }),
-        );
-        otherMessages.push(
-          await rawChatMessageRepository.save({
-            item: anotherItem,
-            creator: actor,
-            body: 'dd',
-          }),
-        );
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
         const response = await app.inject({
           method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat`,
         });
-        expect(response.statusCode).toBe(StatusCodes.OK);
+        expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
 
-        expect(await rawChatMessageRepository.countBy({ item })).toEqual(0);
-        expect(await rawChatMessageRepository.countBy({ item: anotherItem })).toEqual(
-          otherMessages.length,
-        );
+        expect(await getMessagesByItemId(item.id)).toHaveLength(0);
       });
 
       it('Throws if item id is incorrect', async () => {
+        const { actor } = await seedFromJson();
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
         const response = await app.inject({
           method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/invalid-id/chat`,
@@ -583,24 +723,30 @@ describe('Chat Message tests', () => {
       });
 
       it('Throws if item does not exist', async () => {
+        const { actor } = await seedFromJson();
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+
+        const itemId = v4();
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: `${ITEMS_ROUTE_PREFIX}/${v4()}/chat`,
+          url: `${ITEMS_ROUTE_PREFIX}/${itemId}/chat`,
         });
 
-        expect(response.json()).toMatchObject(new ItemNotFound(expect.anything()));
+        expect(response.json().message).toEqual(new ItemNotFound(itemId).message);
       });
 
       it('Throws if member does not have access to item', async () => {
-        // create brand new user because fixtures are used for chatmessages and will already exists
-        const member = await saveMember();
-        const { item: otherItem } = await testUtils.saveItemAndMembership({
-          member,
-        });
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({ items: [{}] });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
         const response = await app.inject({
           method: HttpMethod.Delete,
-          url: `${ITEMS_ROUTE_PREFIX}/${otherItem.id}/chat`,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat`,
         });
 
         expect(response.json()).toMatchObject(new MemberCannotAccess(expect.anything()));

@@ -18,7 +18,7 @@ import {
   MemberCannotWriteItem,
 } from '../utils/errors';
 import { ItemVisibilityRepository } from './item/plugins/itemVisibility/repository';
-import { ItemMembershipRepository } from './itemMembership/repository';
+import { ItemMembershipRepository } from './itemMembership/membership.repository';
 
 const permissionMapping: { [K in PermissionLevelOptions]: PermissionLevelOptions[] } = {
   [PermissionLevel.Read]: [PermissionLevel.Read],

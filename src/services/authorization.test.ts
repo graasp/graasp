@@ -3,10 +3,10 @@ import { ItemVisibilityType, PermissionLevel } from '@graasp/sdk';
 import { ItemVisibilityFactory } from '../../test/factories/itemVisibility.factory';
 import { DBConnection } from '../drizzle/db';
 import { Item, ItemMembershipWithItemAndAccount } from '../drizzle/types';
-import { ItemMembershipRepository } from '../services/itemMembership/repository';
 import { MemberCannotAccess, MemberCannotAdminItem, MemberCannotWriteItem } from '../utils/errors';
 import { AuthorizationService } from './authorization';
 import { ItemVisibilityRepository } from './item/plugins/itemVisibility/repository';
+import { ItemMembershipRepository } from './itemMembership/membership.repository';
 
 const MOCK_DB = {} as unknown as DBConnection;
 

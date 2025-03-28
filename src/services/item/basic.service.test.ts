@@ -5,10 +5,10 @@ import { ItemFactory } from '../../../test/factories/item.factory';
 import { MemberFactory } from '../../../test/factories/member.factory';
 import { db } from '../../drizzle/db';
 import { AuthorizationService } from '../authorization';
-import { ItemMembershipRepository } from '../itemMembership/repository';
+import { ItemMembershipRepository } from '../itemMembership/membership.repository';
 import { BasicItemService } from './basic.service';
+import { ItemRepository } from './item.repository';
 import { ItemVisibilityRepository } from './plugins/itemVisibility/repository';
-import { ItemRepository } from './repository';
 
 const itemRepository = new ItemRepository();
 const authorizationService = new AuthorizationService(

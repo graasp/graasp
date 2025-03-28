@@ -6,12 +6,12 @@ import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../.
 import { db } from '../../drizzle/db';
 import { BaseLogger } from '../../logger';
 import { MailerService } from '../../plugins/mailer/mailer.service';
+import { ItemRepository } from '../item/item.repository';
 import { ItemGeolocationRepository } from '../item/plugins/geolocation/geolocation.repository';
 import { MeiliSearchWrapper } from '../item/plugins/publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../item/plugins/thumbnail/service';
-import { ItemRepository } from '../item/repository';
 import { ItemService } from '../item/service';
-import { ItemMembershipRepository } from '../itemMembership/repository';
+import { ItemMembershipRepository } from '../itemMembership/membership.repository';
 import { MemberRepository } from '../member/member.repository';
 import { MemberService } from '../member/member.service';
 import { saveMember } from '../member/test/fixtures/members';

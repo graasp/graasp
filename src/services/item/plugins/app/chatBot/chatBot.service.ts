@@ -5,7 +5,7 @@ import { ChatBotMessage, GPTVersion, PermissionLevel } from '@graasp/sdk';
 import { DBConnection } from '../../../../../drizzle/db';
 import { AuthenticatedUser } from '../../../../../types';
 import { AuthorizationService } from '../../../../authorization';
-import { ItemRepository } from '../../../repository';
+import { ItemRepository } from '../../../item.repository';
 import { fetchOpenAI } from './utils';
 
 @singleton()

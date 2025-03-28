@@ -13,11 +13,11 @@ import { isAuthenticated, matchOne } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
 import { AuthorizationService } from '../../../authorization';
 import { BasicItemService } from '../../../item/basic.service';
-import { ItemRepository } from '../../../item/repository';
+import { ItemRepository } from '../../../item/item.repository';
 import { ItemLoginSchemaExists } from '../../../itemLogin/errors';
-import { ItemLoginService } from '../../../itemLogin/service';
+import { ItemLoginService } from '../../../itemLogin/itemLogin.service';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { ItemMembershipService } from '../../service';
+import { ItemMembershipService } from '../../membership.service';
 import {
   ItemMembershipAlreadyExists,
   MembershipRequestAlreadyExists,

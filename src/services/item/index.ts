@@ -10,8 +10,8 @@ import {
   ITEMS_ROUTE_PREFIX,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
 } from '../../utils/config';
-import chatController from '../chat/chat.controller';
-import graaspItemLogin from '../itemLogin';
+import chatController from '../chat/chatMessage.controller';
+import graaspItemLogin from '../itemLogin/itemLogin.controller';
 import itemController from './item.controller';
 import actionItemPlugin from './plugins/action';
 import graaspApps from './plugins/app';
@@ -36,8 +36,8 @@ import graaspItemPublicationState from './plugins/publication/publicationState';
 import graaspItemPublish from './plugins/publication/published';
 import graaspValidationPlugin from './plugins/publication/validation';
 import graaspRecycledItemData from './plugins/recycled';
-import ShortLinkService from './plugins/shortLink';
-import { SHORT_LINKS_ROUTE_PREFIX } from './plugins/shortLink/service';
+import ShortLinkService from './plugins/shortLink/shortlink.controller';
+import { SHORT_LINKS_ROUTE_PREFIX } from './plugins/shortLink/shortlink.service';
 import { plugin as graaspShortcutPlugin } from './plugins/shortcut/controller';
 import graaspItemTagPlugin from './plugins/tag/controller';
 import thumbnailsPlugin from './plugins/thumbnail';

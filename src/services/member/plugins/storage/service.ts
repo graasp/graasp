@@ -5,9 +5,9 @@ import { FileItemType, MemberStorage, Pagination } from '@graasp/sdk';
 import { FILE_ITEM_TYPE_DI_KEY } from '../../../../di/constants';
 import { DBConnection } from '../../../../drizzle/db';
 import { MinimalMember } from '../../../../types';
+import { ItemRepository } from '../../../item/item.repository';
 import { DEFAULT_MAX_STORAGE } from '../../../item/plugins/file/utils/constants';
 import { StorageExceeded } from '../../../item/plugins/file/utils/errors';
-import { ItemRepository } from '../../../item/repository';
 
 @singleton()
 export class StorageService {

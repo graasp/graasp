@@ -7,7 +7,7 @@ import { PermissionLevel } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
-import { itemMembershipSchemaRef } from '../../../itemMembership/schemas';
+import { itemMembershipSchemaRef } from '../../../itemMembership/membership.schemas';
 import { itemSchemaRef } from '../../schemas';
 
 export const invitationSchemaRef = registerSchemaAsRef(

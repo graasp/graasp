@@ -11,16 +11,16 @@ import {
   PermissionLevel,
 } from '@graasp/sdk';
 
-import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
-import { seedFromJson } from '../../../../test/mocks/seed';
-import { db } from '../../../drizzle/db';
-import { guestsView, itemLoginSchemas, itemMemberships } from '../../../drizzle/schema';
-import { assertIsDefined } from '../../../utils/assertions';
-import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
-import { MemberCannotAdminItem } from '../../../utils/errors';
-import { assertIsMemberForTest } from '../../authentication';
-import { expectAccount } from '../../member/test/fixtures/members';
-import { CannotNestItemLoginSchema, ValidMemberSession } from '../errors';
+import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../test/app';
+import { seedFromJson } from '../../../test/mocks/seed';
+import { db } from '../../drizzle/db';
+import { guestsView, itemLoginSchemas, itemMemberships } from '../../drizzle/schema';
+import { assertIsDefined } from '../../utils/assertions';
+import { ITEMS_ROUTE_PREFIX } from '../../utils/config';
+import { MemberCannotAdminItem } from '../../utils/errors';
+import { assertIsMemberForTest } from '../authentication';
+import { expectAccount } from '../member/test/fixtures/members';
+import { CannotNestItemLoginSchema, ValidMemberSession } from './errors';
 
 const getGuest = async ({
   name,

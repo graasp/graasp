@@ -11,7 +11,7 @@ import {
   ItemWithCreator,
   MemberRaw,
 } from '../../drizzle/types';
-import { ItemMembershipRepository } from '../itemMembership/repository';
+import { ItemMembershipRepository } from '../itemMembership/membership.repository';
 import { ItemVisibilityRepository } from './plugins/itemVisibility/repository';
 import { ItemThumbnailService } from './plugins/thumbnail/service';
 import { ItemsThumbnails } from './plugins/thumbnail/types';

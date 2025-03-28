@@ -8,12 +8,12 @@ import { Item } from '../../../drizzle/types';
 import { TestWsClient } from '../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../websockets/test/ws-app';
 import { FolderItem } from '../discrimination';
+import { ItemRepository } from '../item.repository';
 import {
   expectCopyFeedbackOp,
   expectDeleteFeedbackOp,
   expectMoveFeedbackOp,
 } from '../plugins/action/test/utils';
-import { ItemRepository } from '../repository';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../ws/events';
 
 describe('Item websocket hooks', () => {

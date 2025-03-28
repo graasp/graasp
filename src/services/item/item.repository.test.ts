@@ -30,7 +30,7 @@ import { expectMember } from '../member/test/fixtures/members';
 import { MemberDTO } from '../member/types';
 import { DEFAULT_ORDER } from './constants';
 import { FolderItem } from './discrimination';
-import { ItemRepository } from './repository';
+import { ItemRepository } from './item.repository';
 import { expectItem, expectManyItems } from './test/fixtures/items';
 
 const alphabeticalOrder = (a: string, b: string) => a.localeCompare(b);

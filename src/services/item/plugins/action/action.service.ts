@@ -27,8 +27,8 @@ import {
 } from '../../../action/constants';
 import { InvalidAggregationError } from '../../../action/utils/errors';
 import { filterOutItems } from '../../../authorization.utils';
-import { ChatMessageRepository } from '../../../chat/repository';
-import { ItemMembershipRepository } from '../../../itemMembership/repository';
+import { ChatMessageRepository } from '../../../chat/chatMessage.repository';
+import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ExportDataRepository } from '../../../member/plugins/export-data/repository';
 import { BasicItemService } from '../../basic.service';
 import { isItemType } from '../../discrimination';

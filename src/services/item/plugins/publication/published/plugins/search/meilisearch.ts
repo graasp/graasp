@@ -33,7 +33,7 @@ import { BaseLogger } from '../../../../../../../logger';
 import { MEILISEARCH_STORE_LEGACY_PDF_CONTENT } from '../../../../../../../utils/config';
 import FileService from '../../../../../../file/service';
 import { isItemType } from '../../../../../discrimination';
-import { ItemRepository } from '../../../../../repository';
+import { ItemRepository } from '../../../../../item.repository';
 import { readPdfContent } from '../../../../../utils';
 import { ItemLikeRepository } from '../../../../itemLike/itemLike.repository';
 import { ItemVisibilityRepository } from '../../../../itemVisibility/repository';

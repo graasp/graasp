@@ -8,8 +8,8 @@ import { MaybeUser } from '../../types';
 import { asDefined, assertIsDefined } from '../../utils/assertions';
 import { InvalidPassword } from '../../utils/errors';
 import { verifyCurrentPassword } from '../auth/plugins/password/utils';
-import { ItemRepository } from '../item/repository';
-import { ItemMembershipRepository } from '../itemMembership/repository';
+import { ItemRepository } from '../item/item.repository';
+import { ItemMembershipRepository } from '../itemMembership/membership.repository';
 import {
   CannotRegisterOnFrozenItemLoginSchema,
   ItemLoginSchemaNotFound,

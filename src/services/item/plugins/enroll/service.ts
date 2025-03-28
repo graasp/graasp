@@ -9,10 +9,10 @@ import {
   CannotEnrollFrozenItemLoginSchema,
   CannotEnrollItemWithoutItemLoginSchema,
 } from '../../../itemLogin/errors';
-import { ItemLoginService } from '../../../itemLogin/service';
+import { ItemLoginService } from '../../../itemLogin/itemLogin.service';
+import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ItemMembershipAlreadyExists } from '../../../itemMembership/plugins/MembershipRequest/error';
-import { ItemMembershipRepository } from '../../../itemMembership/repository';
-import { ItemRepository } from '../../repository';
+import { ItemRepository } from '../../item.repository';
 
 @singleton()
 export class EnrollService {

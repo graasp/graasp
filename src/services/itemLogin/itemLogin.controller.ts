@@ -15,10 +15,11 @@ import {
 import { assertIsMember } from '../authentication';
 import { AuthorizationService } from '../authorization';
 import { BasicItemService } from '../item/basic.service';
-import { ItemRepository } from '../item/repository';
+import { ItemRepository } from '../item/item.repository';
 import { ItemService } from '../item/service';
 import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
 import { ItemLoginSchemaNotFound, ValidMemberSession } from './errors';
+import { ItemLoginService } from './itemLogin.service';
 import {
   deleteLoginSchema,
   getItemLoginSchema,
@@ -26,7 +27,6 @@ import {
   loginOrRegisterAsGuest,
   updateLoginSchema,
 } from './schemas';
-import { ItemLoginService } from './service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const itemLoginService = resolveDependency(ItemLoginService);

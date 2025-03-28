@@ -15,7 +15,7 @@ import { AppDataRaw, Item, ItemMembershipRaw } from '../../../../../drizzle/type
 import { AuthenticatedUser, MaybeUser } from '../../../../../types';
 import HookManager from '../../../../../utils/hook';
 import { AuthorizationService } from '../../../../authorization';
-import { ItemRepository } from '../../../repository';
+import { ItemRepository } from '../../../item.repository';
 import {
   AppDataNotAccessible,
   AppDataNotFound,

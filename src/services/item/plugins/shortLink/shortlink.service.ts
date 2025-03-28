@@ -18,7 +18,7 @@ import { BasicItemService } from '../../basic.service';
 import { ItemPublishedNotFound } from '../publication/published/errors';
 import { ItemPublishedService } from '../publication/published/itemPublished.service';
 import { ShortLinkDTO } from './dto/ShortLinkDTO';
-import { ShortLinkRepository } from './repository';
+import { ShortLinkRepository } from './shortlink.repository';
 
 export const SHORT_LINKS_ROUTE_PREFIX = '/short-links';
 export const SHORT_LINKS_LIST_ROUTE = '/list';

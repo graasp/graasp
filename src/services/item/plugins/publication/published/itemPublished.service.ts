@@ -19,11 +19,11 @@ import { MaybeUser, MinimalMember } from '../../../../../types';
 import HookManager from '../../../../../utils/hook';
 import { isMember } from '../../../../authentication';
 import { filterOutHiddenItems } from '../../../../authorization.utils';
-import { ItemMembershipRepository } from '../../../../itemMembership/repository';
+import { ItemMembershipRepository } from '../../../../itemMembership/membership.repository';
 import { MemberRepository } from '../../../../member/member.repository';
 import { ItemWrapperService } from '../../../ItemWrapper';
 import { BasicItemService } from '../../../basic.service';
-import { ItemRepository } from '../../../repository';
+import { ItemRepository } from '../../../item.repository';
 import { ActionItemService } from '../../action/action.service';
 import { ItemVisibilityRepository } from '../../itemVisibility/repository';
 import {

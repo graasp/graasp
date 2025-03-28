@@ -18,7 +18,7 @@ import {
 } from '../../../../../utils/config';
 import { StorageService } from '../../../../member/plugins/storage/service';
 import { H5PItem, isItemType } from '../../../discrimination';
-import { ItemRepository } from '../../../repository';
+import { ItemRepository } from '../../../item.repository';
 import { ItemService } from '../../../service';
 import { HtmlService } from '../service';
 import { H5P_FILE_DOT_EXTENSION, H5P_FILE_MIME_TYPE } from './constants';

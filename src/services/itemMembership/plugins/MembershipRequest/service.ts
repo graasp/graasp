@@ -9,7 +9,7 @@ import { BaseLogger } from '../../../../logger';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { AccountType, MinimalMember } from '../../../../types';
-import { ItemMembershipRepository } from '../../repository';
+import { ItemMembershipRepository } from '../../membership.repository';
 import { MembershipRequestRepository } from './repository';
 
 @singleton()

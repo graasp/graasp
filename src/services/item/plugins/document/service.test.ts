@@ -13,7 +13,7 @@ import { MinimalMember } from '../../../../types';
 import { ThumbnailService } from '../../../thumbnail/service';
 import { DocumentItem } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
-import { ItemRepository } from '../../repository';
+import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../service';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../thumbnail/service';

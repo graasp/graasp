@@ -15,7 +15,7 @@ import { AuthorizationService } from '../../../authorization';
 import FileService from '../../../file/service';
 import { StorageService } from '../../../member/plugins/storage/service';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { ItemRepository } from '../../repository';
+import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../service';
 import { H5PService } from '../html/h5p/service';
 import { H5P_FILE_EXTENSION } from '../importExport/constants';

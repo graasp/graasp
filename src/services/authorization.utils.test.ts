@@ -6,12 +6,12 @@ import { ItemFactory } from '../../test/factories/item.factory';
 import { MemberFactory } from '../../test/factories/member.factory';
 import { DBConnection } from '../drizzle/db';
 import { ItemVisibilityWithItem } from '../drizzle/types';
-import { ItemMembershipRepository } from '../services/itemMembership/repository';
 import { AccountType } from '../types';
 import { filterOutPackedDescendants } from './authorization.utils';
 import { PackedItem } from './item/ItemWrapper';
 import { ItemVisibilityRepository } from './item/plugins/itemVisibility/repository';
 import { expectPackedItem } from './item/test/fixtures/items';
+import { ItemMembershipRepository } from './itemMembership/membership.repository';
 
 const OWNER = { id: 'owner', name: 'owner', type: AccountType.Individual, isValidated: true };
 

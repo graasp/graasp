@@ -28,7 +28,7 @@ import {
 } from '../../../../../../drizzle/types';
 import { BaseLogger } from '../../../../../../logger';
 import FileService from '../../../../../file/service';
-import { ItemMembershipRepository } from '../../../../../itemMembership/repository';
+import { ItemMembershipRepository } from '../../../../../itemMembership/membership.repository';
 import { ItemLikeRepository } from '../../../itemLike/itemLike.repository';
 import { ItemTagRepository } from '../../../tag/ItemTag.repository';
 import { ItemPublishedRepository } from '../itemPublished.repository';

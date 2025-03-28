@@ -4,7 +4,7 @@ import { type DBConnection } from '../../../drizzle/db';
 import { ChatMessageRaw, ChatMessageWithCreator } from '../../../drizzle/types';
 import { ItemService } from '../../item/service';
 import { WebsocketService } from '../../websockets/ws-service';
-import { ChatMessageService } from '../service';
+import { ChatMessageService } from '../chatMessage.service';
 import { ItemChatEvent, itemChatTopic } from './events';
 
 export function registerChatWsHooks(

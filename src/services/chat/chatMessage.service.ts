@@ -6,9 +6,9 @@ import { DBConnection } from '../../drizzle/db';
 import { AuthenticatedUser, MaybeUser } from '../../types';
 import HookManager from '../../utils/hook';
 import { BasicItemService } from '../item/basic.service';
+import { ChatMessageRepository } from './chatMessage.repository';
 import { ChatMessageNotFound, MemberCannotDeleteMessage, MemberCannotEditMessage } from './errors';
 import { MentionService } from './plugins/mentions/service';
-import { ChatMessageRepository } from './repository';
 
 @singleton()
 export class ChatMessageService {
@@ -103,7 +103,8 @@ export class ChatMessageService {
     messageId: string,
   ) {
     // check permission
-    await this.basicItemService.get(db, authenticatedUser, itemId);
+    const d = await this.basicItemService.get(db, authenticatedUser, itemId);
+    console.log(d);
 
     const messageContent = await this.chatMessageRepository.getOne(db, messageId);
     if (!messageContent) {

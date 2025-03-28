@@ -6,6 +6,8 @@
  * Implements back-end functionalities for chatboxes
  * in Graasp as a fastify server plugin
  */
+import { StatusCodes } from 'http-status-codes';
+
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import fp from 'fastify-plugin';
 
@@ -17,11 +19,11 @@ import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../auth/plug
 import { ItemService } from '../item/service';
 import { guestAccountRole } from '../itemLogin/strategies/guestAccountRole';
 import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
+import { ChatMessageService } from './chatMessage.service';
 import { ChatMessageNotFound } from './errors';
 import { ActionChatService } from './plugins/action/service';
 import mentionPlugin from './plugins/mentions/chatMentions.controller';
 import { clearChat, createChatMessage, deleteMessage, getChat, patchMessage } from './schemas';
-import { ChatMessageService } from './service';
 import { registerChatWsHooks } from './ws/hooks';
 
 /**
@@ -95,16 +97,12 @@ const plugin: FastifyPluginAsyncTypebox<GraaspChatPluginOptions> = async (fastif
           params: { itemId, messageId },
           body,
         } = request;
-        try {
-          return await db.transaction(async (tx) => {
-            const member = asDefined(user?.account);
-            const message = await chatService.patchOne(tx, member, itemId, messageId, body);
-            await actionChatService.postPatchMessageAction(tx, request, message);
-            return message;
-          });
-        } catch (e: unknown) {
-          throw new ChatMessageNotFound(messageId);
-        }
+        return await db.transaction(async (tx) => {
+          const member = asDefined(user?.account);
+          const message = await chatService.patchOne(tx, member, itemId, messageId, body);
+          await actionChatService.postPatchMessageAction(tx, request, message);
+          return message;
+        });
       },
     );
 
@@ -121,15 +119,11 @@ const plugin: FastifyPluginAsyncTypebox<GraaspChatPluginOptions> = async (fastif
           params: { itemId, messageId },
         } = request;
         const member = asDefined(user?.account);
-        try {
-          return await db.transaction(async (tx) => {
-            const message = await chatService.deleteOne(tx, member, itemId, messageId);
-            await actionChatService.postDeleteMessageAction(tx, request, message);
-            return message;
-          });
-        } catch (e: unknown) {
-          throw new ChatMessageNotFound(messageId);
-        }
+        return await db.transaction(async (tx) => {
+          const message = await chatService.deleteOne(tx, member, itemId, messageId);
+          await actionChatService.postDeleteMessageAction(tx, request, message);
+          return message;
+        });
       },
     );
 
@@ -140,7 +134,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspChatPluginOptions> = async (fastif
         schema: clearChat,
         preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
       },
-      async (request) => {
+      async (request, reply) => {
         const {
           user,
           params: { itemId },
@@ -150,6 +144,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspChatPluginOptions> = async (fastif
           await chatService.clear(tx, member, itemId);
           await actionChatService.postClearMessageAction(tx, request, itemId);
         });
+        reply.status(StatusCodes.NO_CONTENT);
       },
     );
   });

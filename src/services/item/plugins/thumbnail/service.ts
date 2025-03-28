@@ -10,7 +10,7 @@ import { MaybeUser, MinimalMember } from '../../../../types';
 import { AuthorizationService } from '../../../authorization';
 import { ThumbnailService } from '../../../thumbnail/service';
 import { BasicItemService } from '../../basic.service';
-import { ItemRepository } from '../../repository';
+import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../service';
 import { DEFAULT_ITEM_THUMBNAIL_SIZES } from './constants';
 import { ItemThumbnailSize, ItemsThumbnails } from './types';

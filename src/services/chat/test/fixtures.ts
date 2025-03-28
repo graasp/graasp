@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { v4 } from 'uuid';
 
-import { ChatMentionRaw, ChatMessageRaw, Item } from '../../../drizzle/types';
+import { ChatMentionRaw, ChatMessageRaw } from '../../../drizzle/types';
 import { MinimalMember } from '../../../types';
 
 export const ChatMessageWithMentionFactory = ({

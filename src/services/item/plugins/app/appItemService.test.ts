@@ -3,12 +3,13 @@ import { v4 } from 'uuid';
 import { AppItemFactory, FolderItemFactory, ItemType } from '@graasp/sdk';
 
 import { MOCK_LOGGER } from '../../../../../test/app';
+import { MemberFactory } from '../../../../../test/factories/member.factory';
+import { db } from '../../../../drizzle/db';
 import { Item } from '../../../../drizzle/types';
-import { MinimalMember } from '../../../../types';
 import { ThumbnailService } from '../../../thumbnail/service';
 import { AppItem } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
-import { ItemRepository } from '../../repository';
+import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../service';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../thumbnail/service';
@@ -20,11 +21,12 @@ const appService = new AppItemService(
   {} as MeiliSearchWrapper,
   MOCK_LOGGER,
 );
+
 const id = v4();
 const MOCK_ITEM = AppItemFactory({ id }) as unknown as AppItem;
 const MOCK_URL = 'http://example.com';
 
-const MOCK_MEMBER = {} as MinimalMember;
+const MOCK_MEMBER = MemberFactory();
 const itemRepository = {
   getOneOrThrow: async () => {
     return MOCK_ITEM;
@@ -44,13 +46,13 @@ describe('App Service', () => {
           return {} as Item;
         });
 
-      await appService.postWithOptions(app.db, MOCK_MEMBER, {
+      await appService.postWithOptions(db, MOCK_MEMBER, {
         name: 'name',
         url: MOCK_URL,
       });
 
       // call to item service
-      expect(itemServicePostMock).toHaveBeenCalledWith(app.db, MOCK_MEMBER, {
+      expect(itemServicePostMock).toHaveBeenCalledWith(db, MOCK_MEMBER, {
         item: {
           name: 'name',
           description: undefined,
@@ -81,10 +83,10 @@ describe('App Service', () => {
         geolocation: { lat: 1, lng: 1 },
         previousItemId: v4(),
       };
-      await appService.postWithOptions(app.db, MOCK_MEMBER, args);
+      await appService.postWithOptions(db, MOCK_MEMBER, args);
 
       // call to item service
-      expect(itemServicePostMock).toHaveBeenCalledWith(app.db, MOCK_MEMBER, {
+      expect(itemServicePostMock).toHaveBeenCalledWith(db, MOCK_MEMBER, {
         item: {
           name: args.name,
           description: args.description,
@@ -106,7 +108,7 @@ describe('App Service', () => {
     it('throw if item is not a app', async () => {
       const FOLDER_ITEM = FolderItemFactory();
       await expect(() =>
-        appService.patch(app.db, MOCK_MEMBER, FOLDER_ITEM.id, { name: 'name' }),
+        appService.patch(db, MOCK_MEMBER, FOLDER_ITEM.id, { name: 'name' }),
       ).rejects.toBeInstanceOf(WrongItemTypeError);
     });
     it('patch item settings', async () => {
@@ -121,10 +123,10 @@ describe('App Service', () => {
       const args = {
         settings: { isPinned: true },
       };
-      await appService.patch(app.db, MOCK_MEMBER, MOCK_ITEM.id, args);
+      await appService.patch(db, MOCK_MEMBER, MOCK_ITEM.id, args);
 
       // call to item service with initial item name
-      expect(itemServicePatchMock).toHaveBeenCalledWith(app.db, MOCK_MEMBER, MOCK_ITEM.id, {
+      expect(itemServicePatchMock).toHaveBeenCalledWith(db, MOCK_MEMBER, MOCK_ITEM.id, {
         settings: args.settings,
       });
     });
@@ -142,10 +144,10 @@ describe('App Service', () => {
         description: 'newdescription',
         lang: 'de',
       };
-      await appService.patch(app.db, MOCK_MEMBER, MOCK_ITEM.id, args);
+      await appService.patch(db, MOCK_MEMBER, MOCK_ITEM.id, args);
 
       // call to item service with initial item name
-      expect(itemServicePatchMock).toHaveBeenCalledWith(app.db, MOCK_MEMBER, MOCK_ITEM.id, {
+      expect(itemServicePatchMock).toHaveBeenCalledWith(db, MOCK_MEMBER, MOCK_ITEM.id, {
         name: args.name,
         description: args.description,
         lang: args.lang,
@@ -158,7 +160,7 @@ describe('App Service', () => {
       });
 
       await expect(() =>
-        appService.patch(app.db, MOCK_MEMBER, v4(), { name: 'name' }),
+        appService.patch(db, MOCK_MEMBER, v4(), { name: 'name' }),
       ).rejects.toThrow();
     });
   });

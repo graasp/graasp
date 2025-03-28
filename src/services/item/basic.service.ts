@@ -7,7 +7,7 @@ import { ItemMembershipRaw, ItemVisibilityWithItem, ItemWithCreator } from '../.
 import { BaseLogger } from '../../logger';
 import { MaybeUser } from '../../types';
 import { AuthorizationService } from '../authorization';
-import { ItemRepository } from './repository';
+import { ItemRepository } from './item.repository';
 
 @singleton()
 export class BasicItemService {

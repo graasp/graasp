@@ -7,7 +7,7 @@ import { MOCK_LOGGER } from '../../../../../test/app';
 import { Item } from '../../../../drizzle/types';
 import { MinimalMember } from '../../../../types';
 import { ThumbnailService } from '../../../thumbnail/service';
-import { ItemRepository } from '../../repository';
+import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../service';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../thumbnail/service';

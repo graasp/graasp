@@ -6,7 +6,7 @@ import { DBConnection } from '../../../../drizzle/db';
 import { ItemBookmarkRaw } from '../../../../drizzle/types';
 import { MinimalMember } from '../../../../types';
 import { filterOutPackedItems } from '../../../authorization.utils';
-import { ItemMembershipRepository } from '../../../itemMembership/repository';
+import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { PackedItem } from '../../ItemWrapper';
 import { BasicItemService } from '../../basic.service';
 import { ItemVisibilityRepository } from '../itemVisibility/repository';

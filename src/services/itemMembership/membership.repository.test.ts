@@ -3,7 +3,7 @@ import { PermissionLevel } from '@graasp/sdk';
 import { clearDatabase } from '../../../test/app';
 import { seedFromJson } from '../../../test/mocks/seed';
 import { client, db } from '../../drizzle/db';
-import { ItemMembershipRepository } from './repository';
+import { ItemMembershipRepository } from './membership.repository';
 
 const itemMembershipRepository = new ItemMembershipRepository();
 

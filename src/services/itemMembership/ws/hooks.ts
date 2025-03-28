@@ -6,7 +6,7 @@ import { resolveDependency } from '../../../di/utils';
 import { DBConnection, db } from '../../../drizzle/db';
 import { BasicItemService } from '../../item/basic.service';
 import { WebsocketService } from '../../websockets/ws-service';
-import { ItemMembershipService } from '../service';
+import { ItemMembershipService } from '../membership.service';
 import { ItemMembershipEvent, itemMembershipsTopic } from './events';
 
 export function registerItemMembershipWsHooks(

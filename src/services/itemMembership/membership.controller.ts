@@ -9,9 +9,9 @@ import { FastifyInstanceTypebox } from '../../plugins/typebox';
 import { asDefined } from '../../utils/assertions';
 import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../auth/plugins/passport';
 import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
+import { create, deleteOne, getItemMembershipsForItem, updateOne } from './membership.schemas';
+import { ItemMembershipService } from './membership.service';
 import MembershipRequestAPI from './plugins/MembershipRequest';
-import { create, deleteOne, getItemMembershipsForItem, updateOne } from './schemas';
-import { ItemMembershipService } from './service';
 import { membershipWsHooks } from './ws/hooks';
 
 const ROUTES_PREFIX = '/item-memberships';

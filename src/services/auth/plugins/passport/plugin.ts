@@ -17,7 +17,7 @@ import {
   STAGING,
 } from '../../../../utils/config';
 import { AccountRepository } from '../../../account/account.repository';
-import { ItemRepository } from '../../../item/repository';
+import { ItemRepository } from '../../../item/item.repository';
 import { MemberRepository } from '../../../member/member.repository';
 import { MemberPasswordService } from '../password/service';
 import { SHORT_TOKEN_PARAM, TOKEN_PARAM } from './constants';

@@ -48,18 +48,18 @@ import {
   filterOutPackedDescendants,
   filterOutPackedItems,
 } from '../authorization.utils';
-import { ItemMembershipRepository } from '../itemMembership/repository';
+import { ItemMembershipRepository } from '../itemMembership/membership.repository';
 import { ThumbnailService } from '../thumbnail/service';
 import { ItemWrapper, ItemWrapperService, PackedItem } from './ItemWrapper';
 import { BasicItemService } from './basic.service';
 import { DEFAULT_ORDER, IS_COPY_REGEX, MAX_COPY_SUFFIX_LENGTH } from './constants';
 import { FolderItem, isItemType } from './discrimination';
+import { ItemRepository } from './item.repository';
 import { ItemGeolocationRepository } from './plugins/geolocation/geolocation.repository';
 import { ItemVisibilityRepository } from './plugins/itemVisibility/repository';
 import { ItemPublishedRepository } from './plugins/publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from './plugins/publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from './plugins/thumbnail/service';
-import { ItemRepository } from './repository';
 import { ItemChildrenParams, ItemSearchParams } from './types';
 
 @singleton()
