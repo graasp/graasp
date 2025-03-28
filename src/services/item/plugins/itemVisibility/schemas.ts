@@ -5,7 +5,7 @@ import { ItemVisibilityType } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
-import { nullableMemberSchemaRef } from '../../../member/schemas';
+import { nullableMemberSchemaRef } from '../../../member/member.schemas';
 
 export const itemVisibilitySchemaRef = registerSchemaAsRef(
   'itemVisibility',

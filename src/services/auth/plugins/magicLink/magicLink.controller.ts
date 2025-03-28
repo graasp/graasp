@@ -18,8 +18,8 @@ import { getRedirectionLink } from '../../utils';
 import captchaPreHandler from '../captcha/index';
 import { PassportStrategy } from '../passport/strategies';
 import { PassportInfo } from '../passport/types';
+import { auth, login, register } from './magicLink.schemas';
 import { MagicLinkService } from './magicLink.service';
-import { auth, login, register } from './schemas';
 
 const ERROR_SEARCH_PARAM = 'error';
 const ERROR_SEARCH_PARAM_HAS_ERROR = 'true';

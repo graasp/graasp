@@ -3,7 +3,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import magicLinkController from './plugins/magicLink/magicLink.controller';
 import mobileController from './plugins/mobile/mobile.controller';
-import passwordController from './plugins/password';
+import passwordController from './plugins/password/password.controller';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.register(async function (fastify) {

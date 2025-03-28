@@ -24,7 +24,7 @@ import {
 } from '../../../../utils/config';
 import { assertIsMember, assertIsMemberForTest } from '../../../authentication';
 import { expectItem } from '../../../item/test/fixtures/items';
-import { MemberPasswordService } from '../password/service';
+import { MemberPasswordService } from '../password/password.service';
 import {
   authenticateAppsJWT,
   authenticateEmailChange,

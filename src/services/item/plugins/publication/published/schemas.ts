@@ -5,7 +5,7 @@ import { MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
 import { customType } from '../../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../../schemas/global';
-import { nullableMemberSchemaRef } from '../../../../member/schemas';
+import { nullableMemberSchemaRef } from '../../../../member/member.schemas';
 import { itemSchemaRef } from '../../../schemas';
 import { packedItemSchemaRef } from '../../../schemas.packed';
 

@@ -27,8 +27,8 @@ import {
   postResetPasswordRequest,
   setPassword,
   updatePassword,
-} from './schemas';
-import { MemberPasswordService } from './service';
+} from './password.schemas';
+import { MemberPasswordService } from './password.service';
 
 const REDIRECTION_URL_PARAM = 'url';
 const AUTHENTICATION_FALLBACK_ROUTE = '/auth';

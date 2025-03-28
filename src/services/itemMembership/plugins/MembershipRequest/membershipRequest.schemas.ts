@@ -7,7 +7,7 @@ import { MembershipRequestStatus } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { itemSchemaRef } from '../../../item/schemas';
-import { memberSchemaRef } from '../../../member/schemas';
+import { memberSchemaRef } from '../../../member/member.schemas';
 
 const completeMembershipRequestSchema = customType.StrictObject({
   member: memberSchemaRef,

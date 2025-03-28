@@ -8,7 +8,7 @@ import { DBConnection } from '../../../../drizzle/db';
 import { itemTags, tags } from '../../../../drizzle/schema';
 import { Item, TagRaw } from '../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../repositories/errors';
-import { TagCategoryOptions, TagCount } from '../../../tag/schemas';
+import { TagCategoryOptions, TagCount } from '../../../tag/tag.schemas';
 import { TAG_COUNT_MAX_RESULTS } from './constants';
 import { ItemTagAlreadyExists } from './errors';
 

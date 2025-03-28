@@ -4,7 +4,7 @@ import { Authenticator } from '@fastify/passport';
 
 import { db } from '../../../../../drizzle/db';
 import { UnauthorizedMember } from '../../../../../utils/errors';
-import { MemberPasswordService } from '../../password/service';
+import { MemberPasswordService } from '../../password/password.service';
 import { PassportStrategy } from '../strategies';
 import { CustomStrategyOptions } from '../types';
 

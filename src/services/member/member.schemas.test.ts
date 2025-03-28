@@ -1,4 +1,4 @@
-import { EMAIL_REGEX } from './schemas';
+import { EMAIL_REGEX } from './member.schemas';
 
 describe('Email regex', () => {
   it('Allows basic CH emails', () => {

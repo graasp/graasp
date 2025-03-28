@@ -5,8 +5,8 @@ import { resolveDependency } from '../../di/utils';
 import { db } from '../../drizzle/db';
 import { FastifyInstanceTypebox } from '../../plugins/typebox';
 import { optionalIsAuthenticated } from '../auth/plugins/passport';
-import { getCountForTags } from './schemas';
-import { TagService } from './service';
+import { getCountForTags } from './tag.schemas';
+import { TagService } from './tag.service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const tagService = resolveDependency(TagService);

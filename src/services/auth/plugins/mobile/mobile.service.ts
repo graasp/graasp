@@ -6,7 +6,7 @@ import { DBConnection } from '../../../../drizzle/db';
 import { BaseLogger } from '../../../../logger';
 import { MemberAlreadySignedUp, MemberNotSignedUp } from '../../../../utils/errors';
 import { MemberRepository } from '../../../member/member.repository';
-import { AuthService } from '../../service';
+import { AuthService } from '../../auth.service';
 
 @singleton()
 export class MobileService {

@@ -23,9 +23,9 @@ import {
   authenticatePassword,
   authenticateRefreshToken,
 } from '../passport';
-import { MemberPasswordService } from '../password/service';
-import { authWeb, mPasswordLogin, mauth, mlogin, mregister } from './schemas';
-import { MobileService } from './service';
+import { MemberPasswordService } from '../password/password.service';
+import { authWeb, mPasswordLogin, mauth, mlogin, mregister } from './mobile.schemas';
+import { MobileService } from './mobile.service';
 
 // token based auth and endpoints for mobile
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {

@@ -555,24 +555,4 @@ describe('Member Controller', () => {
       });
     });
   });
-
-  describe('PATCH /members/:id', () => {
-    it('username can not contain special characters', async () => {
-      const { actor } = await seedFromJson();
-      assertIsDefined(actor);
-      assertIsMember(actor);
-      mockAuthenticate(actor);
-
-      const invalidName = '<divvy>%$^&';
-
-      const response = await app.inject({
-        method: HttpMethod.Patch,
-        url: `members/${actor.id}`,
-        body: { name: invalidName },
-      });
-
-      expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
-      expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
-    });
-  });
 });

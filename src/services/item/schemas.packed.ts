@@ -7,7 +7,7 @@ import { ItemType, MAX_TARGETS_FOR_READ_REQUEST, PermissionLevel } from '@graasp
 
 import { customType, registerSchemaAsRef } from '../../plugins/typebox';
 import { errorSchemaRef } from '../../schemas/global';
-import { nullableMemberSchemaRef } from '../member/schemas';
+import { nullableMemberSchemaRef } from '../member/member.schemas';
 import { ITEMS_PAGE_SIZE } from './constants';
 import { itemVisibilitySchemaRef } from './plugins/itemVisibility/schemas';
 import { Ordering, SortBy } from './types';

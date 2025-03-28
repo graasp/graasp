@@ -4,7 +4,6 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../di/utils';
 import { db } from '../../drizzle/db';
-import { AccountType } from '../../types';
 import { asDefined, assertIsDefined } from '../../utils/assertions';
 import { CannotModifyOtherMembers } from '../../utils/errors';
 import { AccountRepository } from '../account/account.repository';
@@ -22,8 +21,6 @@ import {
   FILE_METADATA_MIN_PAGE_SIZE,
 } from './constants';
 import { EmailAlreadyTaken } from './error';
-import { MemberService } from './member.service';
-import { StorageService } from './plugins/storage/memberStorage.service';
 import {
   deleteCurrent,
   getCurrent,
@@ -34,9 +31,10 @@ import {
   postChangeEmail,
   updateCurrent,
   updateOne,
-} from './schemas';
+} from './member.schemas';
+import { MemberService } from './member.service';
+import { StorageService } from './plugins/storage/memberStorage.service';
 import { memberAccountRole } from './strategies/memberAccountRole';
-import { CurrentMember } from './types';
 
 const controller: FastifyPluginAsyncTypebox = async (fastify) => {
   const fileService = resolveDependency(FileService);
@@ -111,27 +109,6 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
       const member = await memberService.get(db, id);
       // explicitly map the return object to not leak information
       return member.toPublicMember();
-    },
-  );
-  // TODO: mobile?? patch member? lang?
-  /**
-   * @deprecated use PATCH /members/current instead
-   */
-  // update member
-  fastify.patch(
-    '/:id',
-    { schema: updateOne, preHandler: isAuthenticated },
-    async ({ user, params: { id }, body }) => {
-      const member = asDefined(user?.account);
-      // handle partial change
-      // question: you can never remove a key?
-      if (member.id !== id) {
-        throw new CannotModifyOtherMembers({ id });
-      }
-      return db.transaction(async (tx) => {
-        const patchedMember = await memberService.patch(tx, id, body);
-        return patchedMember.toCurrent();
-      });
     },
   );
   // update current member

@@ -19,7 +19,7 @@ import {
 import { AccountRepository } from '../../../account/account.repository';
 import { ItemRepository } from '../../../item/item.repository';
 import { MemberRepository } from '../../../member/member.repository';
-import { MemberPasswordService } from '../password/service';
+import { MemberPasswordService } from '../password/password.service';
 import { SHORT_TOKEN_PARAM, TOKEN_PARAM } from './constants';
 import { PassportStrategy } from './strategies';
 import emailChangeStrategy from './strategies/emailChange';

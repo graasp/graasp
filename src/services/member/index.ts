@@ -2,7 +2,7 @@ import { fastifyCors } from '@fastify/cors';
 import { FastifyPluginAsync } from 'fastify';
 
 import { MEMBER_PROFILE_ROUTE_PREFIX } from '../../utils/config';
-import memberController from './controller';
+import memberController from './member.controller';
 import actionMemberPlugin from './plugins/action/memberAction.controller';
 import memberExportDataPlugin from './plugins/export-data/memberExportData.controller';
 import memberProfilePlugin from './plugins/profile/memberProfile.controller';

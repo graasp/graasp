@@ -7,7 +7,7 @@ import { TAG_NAME_MAX_LENGTH, TAG_NAME_PATTERN, TagCategory } from '@graasp/sdk'
 
 import { customType } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
-import { tagSchemaRef } from '../../../tag/schemas';
+import { tagSchemaRef } from '../../../tag/tag.schemas';
 
 export const getTagsForItem = {
   operationId: 'getTagsForItem',

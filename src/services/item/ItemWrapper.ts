@@ -7,7 +7,6 @@ import {
   Item,
   ItemMembershipRaw,
   ItemVisibilityRaw,
-  ItemVisibilityWithItem,
   ItemWithCreator,
   MemberRaw,
 } from '../../drizzle/types';
