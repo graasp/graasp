@@ -1,7 +1,8 @@
 import { v4 as uuidV4 } from 'uuid';
 
+import { seedFromJson } from '../../../test/mocks/seed';
 import { client, db } from '../../drizzle/db';
-import { saveMember } from '../member/test/fixtures/members';
+import { AccountRaw } from '../../drizzle/types';
 import { AccountDTO, AccountRepository } from './account.repository';
 
 const accountRepository = new AccountRepository();
@@ -16,10 +17,12 @@ describe('AccountRepository', () => {
 
   describe('get', () => {
     it('get member', async () => {
-      const member = await saveMember();
+      const {
+        members: [member],
+      } = await seedFromJson({ members: [{}] });
 
       const rawAccount = await accountRepository.get(db, member.id);
-      expect(rawAccount).toEqual(AccountDTO.from(member));
+      expect(rawAccount).toEqual(AccountDTO.from(member as AccountRaw));
     });
 
     it('return undefined for undefined id', async () => {

@@ -1,6 +1,11 @@
 import { v4 } from 'uuid';
 
-import { ItemVisibilityType, PackedFolderItemFactory, PermissionLevel } from '@graasp/sdk';
+import {
+  ItemVisibilityType,
+  PackedFolderItemFactory,
+  PermissionLevel,
+  PermissionLevelOptions,
+} from '@graasp/sdk';
 
 import { ItemFactory } from '../../test/factories/item.factory';
 import { MemberFactory } from '../../test/factories/member.factory';
@@ -33,13 +38,14 @@ const hiddenVisibility = {
   creatorId: null,
   type: ItemVisibilityType.Hidden,
   item: descendants[2],
+  itemPath: descendants[2].path,
 } as ItemVisibilityWithItem;
 
 /** build packed descendants for checking returned values
  * types don't play nicely because factory does not use the same types as the backend
  */
 const buildPackedDescendants = (
-  permission: PermissionLevel | null,
+  permission: PermissionLevelOptions | null,
   hiddenVisibility: ItemVisibilityWithItem,
 ): PackedItem[] => {
   const arr = descendants.map((descendant) =>

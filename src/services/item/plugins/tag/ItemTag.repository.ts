@@ -58,28 +58,6 @@ export class ItemTagRepository {
       .orderBy(desc(selectCols.count))
       .limit(TAG_COUNT_MAX_RESULTS);
 
-    // const q = this.repository
-    //   .createQueryBuilder('itemTag')
-    //   .select([
-    //     't.id AS id',
-    //     't.name AS name',
-    //     't.category AS category',
-    //     'count(t.id)::integer as count',
-    //   ])
-    //   .innerJoinAndSelect('tag', 't', 't.id = itemTag.tag_id AND t.name ILIKE :search', {
-    //     search: `%${search}%`,
-    //   });
-
-    // if (category) {
-    //   q.where('category = :category', { category });
-    // }
-
-    // const result = await q
-    //   .groupBy('t.id')
-    //   .orderBy('count', 'DESC')
-    //   .limit(TAG_COUNT_MAX_RESULTS)
-    //   .getRawMany<TagCount>();
-
     return res;
   }
 

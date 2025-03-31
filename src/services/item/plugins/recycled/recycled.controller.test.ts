@@ -11,16 +11,16 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../../test/app';
-import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants';
-import { seedFromJson } from '../../../../../../test/mocks/seed';
-import { db } from '../../../../../drizzle/db';
-import { itemsRaw, recycledItemDatas } from '../../../../../drizzle/schema';
-import { assertIsDefined } from '../../../../../utils/assertions';
-import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { assertIsMemberForTest } from '../../../../authentication';
-import { ITEMS_PAGE_SIZE } from '../../../constants';
-import { expectItem, expectManyItems } from '../../../test/fixtures/items';
+} from '../../../../../test/app';
+import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../test/constants';
+import { seedFromJson } from '../../../../../test/mocks/seed';
+import { db } from '../../../../drizzle/db';
+import { itemsRaw, recycledItemDatas } from '../../../../drizzle/schema';
+import { assertIsDefined } from '../../../../utils/assertions';
+import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
+import { assertIsMemberForTest } from '../../../authentication';
+import { ITEMS_PAGE_SIZE } from '../../constants';
+import { expectItem, expectManyItems } from '../../test/fixtures/items';
 
 describe('Recycle Bin Tests', () => {
   let app: FastifyInstance;

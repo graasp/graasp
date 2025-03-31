@@ -1,4 +1,5 @@
 import { Transporter, createTransport } from 'nodemailer';
+import { singleton } from 'tsyringe';
 
 import { applyLayout } from './layout';
 
@@ -18,6 +19,7 @@ export interface MailerOptions {
   fromEmail: string;
 }
 
+@singleton()
 export class MailerService {
   private readonly fromEmail: string;
   private readonly transporter: Transporter;

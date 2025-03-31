@@ -6,7 +6,7 @@ import { DEFAULT_LANG } from '@graasp/translations';
 import { DBConnection } from '../../drizzle/db';
 import { accountsTable } from '../../drizzle/schema';
 import { AccountRaw } from '../../drizzle/types';
-import { AccountType, AccountTypeOptions, MaybeUser } from '../../types';
+import { AccountType,  MaybeUser } from '../../types';
 import { CurrentMember } from '../member/types';
 
 // used by /current endpoint

@@ -8,7 +8,7 @@ import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, MemberFactory, ThumbnailSize } from '@graasp/sdk';
+import { HttpMethod, ThumbnailSize } from '@graasp/sdk';
 
 import build, {
   clearDatabase,
@@ -16,11 +16,12 @@ import build, {
   unmockAuthenticate,
 } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
-import { saveMember } from '../../test/fixtures/members';
+import { db } from '../../../../drizzle/db';
+import { assertIsDefined } from '../../../../utils/assertions';
 import { UploadFileNotImageError } from './utils/errors';
 
-const filepath = path.resolve(__dirname, './fixtures/image.png');
-const textPath = path.resolve(__dirname, './fixtures/emptyFile');
+const filepath = path.resolve(__dirname, './test/fixtures/image.png');
+const textPath = path.resolve(__dirname, './test/fixtures/emptyFile');
 
 const deleteObjectMock = jest.fn(async () => console.debug('deleteObjectMock'));
 const copyObjectMock = jest.fn(async () => console.debug('copyObjectMock'));
@@ -60,20 +61,25 @@ jest.mock('@aws-sdk/lib-storage', () => {
 describe('Thumbnail Plugin Tests', () => {
   let app: FastifyInstance;
 
+  beforeAll(async () => {
+    ({ app } = await build());
+  });
+
+  afterAll(async () => {
+    await clearDatabase(db);
+    app.close();
+  });
+
   afterEach(async () => {
     jest.clearAllMocks();
-    await clearDatabase(app.db);
-    app.close();
     unmockAuthenticate();
   });
 
   describe('GET /:id/avatar/:size', () => {
-    beforeEach(async () => {
-      ({ app } = await build({ member: null }));
-    });
-
     it('Get member avatar', async () => {
-      const member = await saveMember(MemberFactory({ extra: { hasAvatar: true } }));
+      const {
+        members: [member],
+      } = await seedFromJson({ members: [{ extra: { hasAvatar: true } }] });
 
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -84,7 +90,10 @@ describe('Thumbnail Plugin Tests', () => {
     });
 
     it('Successfully redirect to thumbnails of all different sizes', async () => {
-      const member = await saveMember(MemberFactory({ extra: { hasAvatar: true } }));
+      const {
+        members: [member],
+      } = await seedFromJson({ members: [{ extra: { hasAvatar: true } }] });
+
       for (const size of Object.values(ThumbnailSize)) {
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -96,7 +105,10 @@ describe('Thumbnail Plugin Tests', () => {
     });
 
     it('Successfully redirect to thumbnails of all different sizes', async () => {
-      const member = await saveMember(MemberFactory({ extra: { hasAvatar: true } }));
+      const {
+        members: [member],
+      } = await seedFromJson({ members: [{ extra: { hasAvatar: true } }] });
+
       for (const size of Object.values(ThumbnailSize)) {
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -108,7 +120,10 @@ describe('Thumbnail Plugin Tests', () => {
     });
 
     it('Successfully redirect to thumbnails of all different sizes for other member', async () => {
-      const member = await saveMember(MemberFactory({ extra: { hasAvatar: true } }));
+      const {
+        members: [member],
+      } = await seedFromJson({ members: [{ extra: { hasAvatar: true } }] });
+
       for (const size of Object.values(ThumbnailSize)) {
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -120,7 +135,10 @@ describe('Thumbnail Plugin Tests', () => {
     });
 
     it('Return avatar urls of member', async () => {
-      const member = await saveMember(MemberFactory({ extra: { hasAvatar: true } }));
+      const {
+        members: [member],
+      } = await seedFromJson({ members: [{ extra: { hasAvatar: true } }] });
+
       for (const size of Object.values(ThumbnailSize)) {
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -133,7 +151,10 @@ describe('Thumbnail Plugin Tests', () => {
     });
 
     it('Return empty response for member that do not have an avatar', async () => {
-      const member = await saveMember(MemberFactory({ extra: { hasAvatar: false } }));
+      const {
+        members: [member],
+      } = await seedFromJson({ members: [{ extra: { hasAvatar: false } }] });
+
       for (const size of Object.values(ThumbnailSize)) {
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -174,7 +195,9 @@ describe('Thumbnail Plugin Tests', () => {
     });
 
     it('Throw if cannot find avatar even if member has an avatar', async () => {
-      const member = await saveMember(MemberFactory({ extra: { hasAvatar: true } }));
+      const {
+        members: [member],
+      } = await seedFromJson({ members: [{ extra: { hasAvatar: true } }] });
 
       jest.spyOn(S3, 'getSignedUrl').mockImplementation(async () => {
         throw new Error('Not Found');
@@ -197,8 +220,6 @@ describe('Thumbnail Plugin Tests', () => {
       const form = new FormData();
       form.append('file', fileStream);
 
-      ({ app } = await build({ member: null }));
-
       const response = await app.inject({
         method: HttpMethod.Post,
         url: 'members/avatar',
@@ -210,14 +231,14 @@ describe('Thumbnail Plugin Tests', () => {
     });
 
     describe('Signed In', () => {
-      beforeEach(async () => {
-        ({ app } = await build());
-      });
-
       it('Successfully upload thumbnail', async () => {
         const fileStream2 = createReadStream(filepath);
         const form2 = new FormData();
         form2.append('file', fileStream2);
+
+        const { actor } = await seedFromJson();
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -233,6 +254,10 @@ describe('Thumbnail Plugin Tests', () => {
         const textFileStream = createReadStream(textPath);
         const form = new FormData();
         form.append('file', textFileStream);
+
+        const { actor } = await seedFromJson();
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
         const res = await app.inject({
           method: HttpMethod.Post,

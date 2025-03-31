@@ -9,6 +9,7 @@ import { MemberCreationDTO, MemberRaw } from '../../drizzle/types';
 import { TRANSLATIONS } from '../../langs/constants';
 import { BaseLogger } from '../../logger';
 import { MailBuilder } from '../../plugins/mailer/builder';
+import { MailerService } from '../../plugins/mailer/mailer.service';
 import { type MemberInfo } from '../../types';
 import {
   EMAIL_CHANGE_JWT_EXPIRATION_IN_MINUTES,
@@ -20,16 +21,12 @@ import { MemberRepository } from './member.repository';
 
 @singleton()
 export class MemberService {
-  // private readonly mailerService: MailerService;
+  private readonly mailerService: MailerService;
   private readonly log: BaseLogger;
   private readonly memberRepository: MemberRepository;
 
-  constructor(
-    // mailerService: MailerService,
-    log: BaseLogger,
-    memberRepository: MemberRepository,
-  ) {
-    // this.mailerService = mailerService;
+  constructor(mailerService: MailerService, log: BaseLogger, memberRepository: MemberRepository) {
+    this.mailerService = mailerService;
     this.memberRepository = memberRepository;
     this.log = log;
   }
@@ -144,9 +141,9 @@ export class MemberService {
       .build();
 
     // don't wait for mailer's response; log error and link if it fails.
-    // this.mailerService
-    // .send(mail, newEmail)
-    // .catch((err) => this.log.warn(err, `mailer failed. link: ${link}`));
+    this.mailerService
+      .send(mail, newEmail)
+      .catch((err) => this.log.warn(err, `mailer failed. link: ${link}`));
   }
 
   mailConfirmEmailChangeRequest(oldEmail: string, newEmail: string, lang: string) {
@@ -158,6 +155,6 @@ export class MemberService {
       .build();
 
     // don't wait for mailer's response; log error and link if it fails.
-    // this.mailerService.send(mail, oldEmail).catch((err) => this.log.warn(err, `mailer failed.`));
+    this.mailerService.send(mail, oldEmail).catch((err) => this.log.warn(err, `mailer failed.`));
   }
 }

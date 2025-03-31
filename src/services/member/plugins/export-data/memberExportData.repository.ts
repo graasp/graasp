@@ -1,4 +1,4 @@
-import { getTableColumns, or } from 'drizzle-orm';
+import { or } from 'drizzle-orm';
 import { desc, eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
@@ -20,8 +20,6 @@ import {
   AppActionRaw,
   AppDataRaw,
   AppSettingRaw,
-  ChatMentionRaw,
-  ChatMentionWithMessage,
   ChatMentionWithMessageWithoutCreator,
   ChatMessageRaw,
   Item,

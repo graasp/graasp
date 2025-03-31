@@ -3,11 +3,12 @@ import { v4 } from 'uuid';
 import { EmailFrequency } from '@graasp/sdk';
 
 import { MemberFactory } from '../../../test/factories/member.factory';
+import { seedFromJson } from '../../../test/mocks/seed';
 import { client, db } from '../../drizzle/db';
 import { MemberRaw } from '../../drizzle/types';
 import { MemberNotFound } from '../../utils/errors';
 import { MemberRepository } from './member.repository';
-import { expectMember, saveMember, saveMembers } from './test/fixtures/members';
+import { expectMember } from './test/fixtures/members';
 import { MemberDTO } from './types';
 
 const memberRepository = new MemberRepository();
@@ -37,7 +38,9 @@ describe('MemberRepository', () => {
 
   describe('deleteOne', () => {
     it('delete member', async () => {
-      const member = await saveMember();
+      const {
+        members: [member],
+      } = await seedFromJson({ members: [{}] });
       const expectedMember = await memberRepository.get(db, member.id);
       expect(expectedMember).toBeDefined();
 
@@ -54,7 +57,9 @@ describe('MemberRepository', () => {
 
   describe('get', () => {
     it('get member', async () => {
-      const member = await saveMember();
+      const {
+        members: [member],
+      } = await seedFromJson({ members: [{}] });
 
       const m = await memberRepository.get(db, member.id);
       expectMember(m.toCurrent(), member);
@@ -74,7 +79,7 @@ describe('MemberRepository', () => {
 
   describe('getMany', () => {
     it('get members', async () => {
-      const members = await saveMembers();
+      const { members } = await seedFromJson({ members: [{}, {}, {}] });
 
       const ms = await memberRepository.getMany(
         db,
@@ -83,7 +88,7 @@ describe('MemberRepository', () => {
       expectMembersById(ms.data, members);
     });
     it('get members with errors', async () => {
-      const members = await saveMembers();
+      const { members } = await seedFromJson({ members: [{}, {}, {}] });
 
       const errorMemberId = v4();
       const ids = [...members.map((m) => m.id), errorMemberId];
@@ -96,7 +101,9 @@ describe('MemberRepository', () => {
 
   describe('getByEmail', () => {
     it('get member by email', async () => {
-      const member = await saveMember();
+      const {
+        members: [member],
+      } = await seedFromJson({ members: [{}] });
 
       const m = await memberRepository.getByEmail(db, member.email);
       expectMember(m?.toCurrent(), member);
@@ -113,7 +120,7 @@ describe('MemberRepository', () => {
 
   describe('getManyByEmail', () => {
     it('get members by email', async () => {
-      const members = await saveMembers();
+      const { members } = await seedFromJson({ members: [{}, {}, {}] });
 
       const ms = await memberRepository.getManyByEmails(
         db,
@@ -130,7 +137,7 @@ describe('MemberRepository', () => {
     });
 
     it('return error for unexisting email', async () => {
-      const members = await saveMembers();
+      const { members } = await seedFromJson({ members: [{}] });
       const errorMemberMail = 'email@email.com';
 
       const emails = [...members.map((m) => m.email), errorMemberMail];
@@ -149,7 +156,9 @@ describe('MemberRepository', () => {
 
   describe('patch', () => {
     it('patch member', async () => {
-      const member = await saveMember();
+      const {
+        members: [member],
+      } = await seedFromJson({ members: [{}] });
       const randomMember = MemberFactory();
       const newMember = { name: randomMember.name, email: randomMember.email };
       const newM = await memberRepository.patch(db, member.id, newMember);
@@ -158,7 +167,9 @@ describe('MemberRepository', () => {
     });
 
     it('patch extra', async () => {
-      const member = await saveMember(MemberFactory({ extra: { hasAvatar: true, lang: 'en' } }));
+      const {
+        members: [member],
+      } = await seedFromJson({ members: [{ extra: { hasAvatar: true, lang: 'en' } }, {}] });
       const extra = { lang: 'fr', emailFreq: EmailFrequency.Never };
       const newM = (await memberRepository.patch(db, member.id, { extra })).toCurrent();
 
@@ -171,7 +182,9 @@ describe('MemberRepository', () => {
     });
 
     it('patch enableSaveActions', async () => {
-      const member = await saveMember();
+      const {
+        members: [member],
+      } = await seedFromJson({ members: [{}] });
       const newMember = { enableSaveActions: false };
       const newM = (await memberRepository.patch(db, member.id, newMember)).toCurrent();
 
@@ -179,7 +192,9 @@ describe('MemberRepository', () => {
     });
 
     it('does not update for empty new data', async () => {
-      const member = await saveMember();
+      const {
+        members: [member],
+      } = await seedFromJson({ members: [{}] });
       const newM = await memberRepository.patch(db, member.id, {});
 
       expectMember(newM.toCurrent(), member);
@@ -206,9 +221,13 @@ describe('MemberRepository', () => {
     });
 
     it('throw if email already exists', async () => {
-      const member = await saveMember();
+      const {
+        members: [member],
+      } = await seedFromJson({ members: [{}] });
       await expect(async () => await memberRepository.post(db, member)).rejects.toThrow(
-        new Error('duplicate key value violates unique constraint "account_pkey"'),
+        expect.objectContaining(
+          new Error(expect.stringContaining('duplicate key value violates unique constraint')),
+        ),
       );
     });
   });

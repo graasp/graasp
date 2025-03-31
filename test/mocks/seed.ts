@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker';
+import { inArray } from 'drizzle-orm';
 import { v4 } from 'uuid';
 
 import {
@@ -50,6 +51,7 @@ import {
   publishers,
   recycledItemDatas,
   shortLinks,
+  tags,
   tags as tagsTable,
 } from '../../src/drizzle/schema';
 import {
@@ -913,12 +915,16 @@ export async function seedFromJson(data: DataType = {}) {
   result.itemValidations = iv;
   result.itemValidationGroups = ivg;
 
-  // save tags
+  // save tags without throwing on conflict, return everything
   if (data.tags?.length) {
-    result.tags = await db
-      .insert(tagsTable)
-      .values(data.tags.map((t) => ({ name: faker.word.sample(), ...t })))
-      .returning();
+    const tagsWithName = data.tags.map((t) => ({ name: faker.word.words(), ...t }));
+    await db.insert(tagsTable).values(tagsWithName).onConflictDoNothing();
+    result.tags = await db.query.tags.findMany({
+      where: inArray(
+        tags.name,
+        tagsWithName.map(({ name }) => name),
+      ),
+    });
   }
 
   const itemTags = processedItems.flatMap((item) =>

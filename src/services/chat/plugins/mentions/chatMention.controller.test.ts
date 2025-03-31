@@ -18,8 +18,7 @@ import { AccountRaw, ChatMentionRaw, ChatMessageRaw } from '../../../../drizzle/
 import { MinimalMember } from '../../../../types';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
-import { saveMember } from '../../../member/test/fixtures/members';
-import { ChatMentionNotFound, MemberCannotAccessMention } from '../../errors';
+import { MemberCannotAccessMention } from '../../errors';
 import { expectFullChatMentions } from '../../test/chatMentions.expectations';
 
 // create item, chat messages from another member and members
@@ -110,13 +109,12 @@ describe('Chat Mention tests', () => {
     });
 
     describe('Signed In', () => {
-      let chatMessages: ChatMessageRaw[];
       let chatMentions: ChatMentionRaw[];
       let actor: AccountRaw;
       const payload = { status: MentionStatus.Read };
 
       beforeEach(async () => {
-        ({ chatMessages, chatMentions, actor } = await saveItemWithChatMessagesAndMentions());
+        ({ chatMentions, actor } = await saveItemWithChatMessagesAndMentions());
         mockAuthenticate(actor);
       });
 
@@ -165,11 +163,18 @@ describe('Chat Mention tests', () => {
 
       it('Throws if member does not have access to mention', async () => {
         // create brand new user because fixtures are used for chatmessages and will already exists
-        const member = await saveMember();
-        const [mention] = await db
-          .insert(chatMentionsTable)
-          .values({ accountId: member.id, messageId: chatMessages[0].id })
-          .returning();
+        const {
+          actor,
+          chatMentions: [mention],
+        } = await seedFromJson({
+          items: [
+            {
+              chatMessages: [{ creator: 'actor', mentions: [{ name: 'bob' }] }],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
 
         const response = await app.inject({
           method: HttpMethod.Patch,

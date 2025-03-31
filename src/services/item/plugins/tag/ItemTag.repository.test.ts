@@ -3,17 +3,24 @@ import { v4 } from 'uuid';
 
 import { FolderItemFactory, TagCategory } from '@graasp/sdk';
 
+import { seedFromJson } from '../../../../../test/mocks/seed';
 import { client, db } from '../../../../drizzle/db';
-import { itemTags, itemsRaw } from '../../../../drizzle/schema';
+import { itemTags, itemsRaw, tags } from '../../../../drizzle/schema';
 import { ItemInsertDTO } from '../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../repositories/errors';
 import { assertIsDefined } from '../../../../utils/assertions';
-import { saveTag } from '../../../tag/fixtures/utils';
 import { ItemTagRepository } from './ItemTag.repository';
 import { TAG_COUNT_MAX_RESULTS } from './constants';
 import { ItemTagAlreadyExists } from './errors';
 
 const repository = new ItemTagRepository();
+
+async function saveTag(t: { name?: string; category: TagCategory }) {
+  const {
+    tags: [tag],
+  } = await seedFromJson({ actor: null, tags: [t] });
+  return tag;
+}
 
 async function saveItem(item: ItemInsertDTO) {
   const res = await db.insert(itemsRaw).values(item).returning();
@@ -32,6 +39,8 @@ describe('ItemTag Repository', () => {
   });
 
   afterAll(async () => {
+    // less chaos if tag is wiped out
+    await db.delete(tags);
     await client.end();
   });
 
@@ -55,15 +64,18 @@ describe('ItemTag Repository', () => {
     it('get count for tags given search and category', async () => {
       const category = TagCategory.Discipline;
       const tag = await saveTag({ category });
-      const item = await saveItem(FolderItemFactory({ creator: null }));
-      await saveItemTag({ itemId: item.id, tagId: tag.id });
       const tag1 = await saveTag({ name: tag.name + ' second', category });
+
+      const item = await saveItem(FolderItemFactory({ creator: null }));
       const item1 = await saveItem(FolderItemFactory({ creator: null }));
+
+      // add tag once, tag1 twice
+      await saveItemTag({ itemId: item.id, tagId: tag.id });
       await saveItemTag({ itemId: item1.id, tagId: tag1.id });
       await saveItemTag({ itemId: item.id, tagId: tag1.id });
 
-      // noise
-      const tag2 = await saveTag({ name: tag.name + ' second', category: TagCategory.Level });
+      // noise not in same category, but can match search
+      const tag2 = await saveTag({ name: tag.name + ' third', category: TagCategory.Level });
       await saveItemTag({ itemId: item1.id, tagId: tag2.id });
 
       const tags = await repository.getCountBy(db, {
@@ -77,7 +89,7 @@ describe('ItemTag Repository', () => {
 
     // FIXME: we do not allow searching witout category
     it.skip('get count for tags given search without category', async () => {
-      // const tag = await saveTag();
+      // const tag = await saveTag({category:TagCategory.Discipline});
       // const item = await saveItem(FolderItemFactory({ creator: null }));
       // await saveItemTag({ itemId: item.id, tagId: tag.id });
       // const tag1 = await saveTag({ name: tag.name + ' second' });
@@ -140,13 +152,13 @@ describe('ItemTag Repository', () => {
     it('get tags for item', async () => {
       // save item with tags
       const item = await saveItem(FolderItemFactory({ creator: null }));
-      const tag1 = await saveTag();
-      const tag2 = await saveTag();
+      const tag1 = await saveTag({ category: TagCategory.Discipline });
+      const tag2 = await saveTag({ category: TagCategory.Discipline });
       await saveItemTag({ itemId: item.id, tagId: tag1.id });
       await saveItemTag({ itemId: item.id, tagId: tag2.id });
 
       // noise
-      const anotherTag = await saveTag();
+      const anotherTag = await saveTag({ category: TagCategory.Discipline });
       const anotherItem = await saveItem(FolderItemFactory({ creator: null }));
       await saveItemTag({ itemId: anotherItem.id, tagId: anotherTag.id });
 
@@ -157,7 +169,7 @@ describe('ItemTag Repository', () => {
 
   describe('createForItem', () => {
     it('throw for invalid item id', async () => {
-      const tag = await saveTag();
+      const tag = await saveTag({ category: TagCategory.Discipline });
       await expect(() => repository.create(db, undefined!, tag.id)).rejects.toThrow();
     });
     it('throw for invalid tag id', async () => {
@@ -166,7 +178,7 @@ describe('ItemTag Repository', () => {
       await expect(() => repository.create(db, item.id, undefined!)).rejects.toThrow();
     });
     it('throw for non-existing item', async () => {
-      const tag = await saveTag();
+      const tag = await saveTag({ category: TagCategory.Discipline });
       await expect(() => repository.create(db, v4(), tag.id)).rejects.toThrow();
     });
     it('throw for non-existing tag', async () => {
@@ -175,7 +187,7 @@ describe('ItemTag Repository', () => {
       await expect(() => repository.create(db, item.id, v4())).rejects.toThrow();
     });
     it('create tag for item', async () => {
-      const tag = await saveTag();
+      const tag = await saveTag({ category: TagCategory.Discipline });
       const item = await saveItem(FolderItemFactory({ creator: null }));
 
       await repository.create(db, item.id, tag.id);
@@ -186,7 +198,7 @@ describe('ItemTag Repository', () => {
       expect(result).toBeDefined();
     });
     it('throw if tag already exists for item', async () => {
-      const tag = await saveTag();
+      const tag = await saveTag({ category: TagCategory.Discipline });
       const item = await saveItem(FolderItemFactory({ creator: null }));
       await saveItemTag({ tagId: tag.id, itemId: item.id });
 
@@ -197,7 +209,7 @@ describe('ItemTag Repository', () => {
   });
   describe('delete', () => {
     it('throw for invalid item id', async () => {
-      const tag = await saveTag();
+      const tag = await saveTag({ category: TagCategory.Discipline });
       await expect(() => repository.delete(db, undefined!, tag.id)).rejects.toThrow();
     });
     it('throw for invalid tag id', async () => {
@@ -206,7 +218,7 @@ describe('ItemTag Repository', () => {
       await expect(() => repository.delete(db, item.id, undefined!)).rejects.toThrow();
     });
     it('does not throw for non-existing item', async () => {
-      const tag = await saveTag();
+      const tag = await saveTag({ category: TagCategory.Level });
       expect(await repository.delete(db, v4(), tag.id)).toBeUndefined();
     });
     it('does not throw for non-existing tag', async () => {
@@ -215,18 +227,18 @@ describe('ItemTag Repository', () => {
       expect(await repository.delete(db, item.id, v4())).toBeUndefined();
     });
     it('does not throw if tag is not associated with item', async () => {
-      const tag = await saveTag();
+      const tag = await saveTag({ category: TagCategory.Level });
       const item = await saveItem(FolderItemFactory({ creator: null }));
 
       expect(await repository.delete(db, item.id, tag.id)).toBeUndefined();
     });
     it('delete tag for item', async () => {
-      const tag = await saveTag();
+      const tag = await saveTag({ category: TagCategory.ResourceType });
       const item = await saveItem(FolderItemFactory({ creator: null }));
       await saveItemTag({ tagId: tag.id, itemId: item.id });
 
       // noise
-      const tag1 = await saveTag();
+      const tag1 = await saveTag({ category: TagCategory.Discipline });
       await saveItemTag({ tagId: tag1.id, itemId: item.id });
       const preResult = await db.query.itemTags.findFirst({
         where: and(eq(itemTags.itemId, item.id), eq(itemTags.tagId, tag.id)),
