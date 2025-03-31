@@ -21,30 +21,26 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../../test/app';
-import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants';
-import { buildFile, seedFromJson } from '../../../../../../test/mocks/seed';
-import { db } from '../../../../../drizzle/db';
-import { itemMemberships, itemsRaw } from '../../../../../drizzle/schema';
-import { Item, ItemRaw } from '../../../../../drizzle/types';
-import { assertIsDefined } from '../../../../../utils/assertions';
-import {
-  FILE_ITEM_TYPE,
-  ITEMS_ROUTE_PREFIX,
-  S3_FILE_ITEM_PLUGIN,
-} from '../../../../../utils/config';
-import { MemberCannotAccess, MemberCannotWriteItem } from '../../../../../utils/errors';
+} from '../../../../../test/app';
+import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../test/constants';
+import { buildFile, seedFromJson } from '../../../../../test/mocks/seed';
+import { db } from '../../../../drizzle/db';
+import { itemMemberships, itemsRaw } from '../../../../drizzle/schema';
+import { Item, ItemRaw } from '../../../../drizzle/types';
+import { assertIsDefined } from '../../../../utils/assertions';
+import { FILE_ITEM_TYPE, ITEMS_ROUTE_PREFIX, S3_FILE_ITEM_PLUGIN } from '../../../../utils/config';
+import { MemberCannotAccess, MemberCannotWriteItem } from '../../../../utils/errors';
 import {
   DownloadFileInvalidParameterError,
   DownloadFileUnexpectedError,
   S3FileNotFound,
   UploadEmptyFileError,
   UploadFileUnexpectedError,
-} from '../../../../file/utils/errors';
-import { expectItem, expectManyItems } from '../../../../item/test/fixtures/items';
-import { ThumbnailSizeFormat } from '../../../../thumbnail/constants';
-import { DEFAULT_MAX_STORAGE } from '../utils/constants';
-import { StorageExceeded } from '../utils/errors';
+} from '../../../file/utils/errors';
+import { ThumbnailSizeFormat } from '../../../thumbnail/constants';
+import { expectItem, expectManyItems } from '../../test/fixtures/items';
+import { DEFAULT_MAX_STORAGE } from './utils/constants';
+import { StorageExceeded } from './utils/errors';
 
 const getItemById = async (id: string) =>
   await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, id) });

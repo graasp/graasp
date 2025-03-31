@@ -1,3 +1,5 @@
+import { StatusCodes } from 'http-status-codes';
+
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import fp from 'fastify-plugin';
 
@@ -7,8 +9,8 @@ import { asDefined } from '../../../../utils/assertions';
 import { isAuthenticated, matchOne } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { enroll } from './schema';
-import { EnrollService } from './service';
+import { enroll } from './enroll.schema';
+import { EnrollService } from './enroll.service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const enrollService = resolveDependency(EnrollService);
@@ -19,7 +21,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       schema: enroll,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
-    async ({ user, params }) => {
+    async ({ user, params }, reply) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
       const { itemId } = params;
@@ -27,6 +29,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       await db.transaction(async (tx) => {
         await enrollService.enroll(tx, member, itemId);
       });
+      reply.status(StatusCodes.NO_CONTENT);
     },
   );
 };

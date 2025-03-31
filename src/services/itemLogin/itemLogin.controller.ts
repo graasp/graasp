@@ -18,14 +18,14 @@ import { BasicItemService } from '../item/basic.service';
 import { ItemRepository } from '../item/item.repository';
 import { validatedMemberAccountRole } from '../member/strategies/validatedMemberAccountRole';
 import { ItemLoginSchemaNotFound, ValidMemberSession } from './errors';
-import { ItemLoginService } from './itemLogin.service';
 import {
   deleteLoginSchema,
   getItemLoginSchema,
   getLoginSchemaType,
   loginOrRegisterAsGuest,
   updateLoginSchema,
-} from './schemas';
+} from './itemLogin.schemas';
+import { ItemLoginService } from './itemLogin.service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const itemLoginService = resolveDependency(ItemLoginService);

@@ -20,7 +20,7 @@ import graaspDocumentItem from './plugins/document/document.controller';
 import { PREFIX_DOCUMENT } from './plugins/document/document.service';
 import graaspEmbeddedLinkItem from './plugins/embeddedLink/link.controller';
 import { PREFIX_EMBEDDED_LINK } from './plugins/embeddedLink/link.service';
-import graaspEnrollPlugin from './plugins/enroll';
+import graaspEnrollPlugin from './plugins/enroll/enroll.controller';
 import graaspEtherpadPlugin from './plugins/etherpad/etherpad.controller';
 import graaspFileItem from './plugins/file/itemFile.controller';
 import graaspFolderItem from './plugins/folder/folder.controller';
@@ -32,7 +32,7 @@ import graaspFavoritePlugin from './plugins/itemBookmark/itemBookmark.controller
 import graaspItemFlags from './plugins/itemFlag/itemFlag.controller';
 import graaspItemLikes from './plugins/itemLike/itemLike.controller';
 import graaspItemVisibility from './plugins/itemVisibility/itemVisibility.controller';
-import graaspItemPublicationState from './plugins/publication/publicationState';
+import graaspItemPublicationState from './plugins/publication/publicationState/publication.controller';
 import graaspItemPublish from './plugins/publication/published/itemPublished.controller';
 import graaspValidationPlugin from './plugins/publication/validation/itemValidation.controller';
 import graaspRecycledItemData from './plugins/recycled/recycled.controller';

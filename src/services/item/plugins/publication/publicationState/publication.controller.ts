@@ -5,8 +5,8 @@ import { db } from '../../../../../drizzle/db';
 import { asDefined } from '../../../../../utils/assertions';
 import { UnauthorizedMember } from '../../../../../utils/errors';
 import { isAuthenticated } from '../../../../auth/plugins/passport';
+import { getPublicationState } from './publication.schemas';
 import { PublicationService } from './publication.service';
-import { getPublicationState } from './schemas';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const publicationService = resolveDependency(PublicationService);

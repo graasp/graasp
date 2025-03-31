@@ -1,7 +1,7 @@
 import { ItemType, ItemValidationStatus, PublicationStatus } from '@graasp/sdk';
 
-import { PublicationState } from '../publicationState';
-import { ItemMetadataFactory, ItemValidationGroupStatusFactory } from './fixtures';
+import { PublicationState } from './publicationState';
+import { ItemMetadataFactory, ItemValidationGroupStatusFactory } from './test/fixtures';
 
 describe('PublicationState', () => {
   describe('Private item', () => {

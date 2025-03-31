@@ -1,3 +1,4 @@
+import { eq } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 import { v4 as uuid } from 'uuid';
 
@@ -11,7 +12,11 @@ import build, {
   unmockAuthenticate,
 } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
+import { db } from '../../../../drizzle/db';
+import { itemMemberships } from '../../../../drizzle/schema';
+import { ItemMembershipWithItemAndAccountAndCreator } from '../../../../drizzle/types';
 import { assertIsDefined } from '../../../../utils/assertions';
+import { assertIsMember } from '../../../authentication';
 import {
   CannotEnrollFrozenItemLoginSchema,
   CannotEnrollItemWithoutItemLoginSchema,
@@ -22,7 +27,7 @@ describe('Enroll', () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
-    ({ app } = await build({ member: null }));
+    ({ app } = await build());
   });
 
   afterEach(async () => {
@@ -31,7 +36,7 @@ describe('Enroll', () => {
   });
 
   afterAll(async () => {
-    await clearDatabase(app.db);
+    await clearDatabase(db);
     app.close();
   });
 
@@ -43,22 +48,26 @@ describe('Enroll', () => {
       } = await seedFromJson({
         items: [{ itemLoginSchema: {} }],
       });
-      mockAuthenticate(actor);
       assertIsDefined(actor);
       assertIsMember(actor);
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/items/${item.id}/enroll`,
       });
 
-      expect(response.statusCode).toBe(StatusCodes.OK);
-      const itemMembership = await response.json();
-      expectMembership(itemMembership, {
-        creator: actor,
-        item,
+      expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
+      const itemMembership = await db.query.itemMemberships.findFirst({
+        where: eq(itemMemberships.itemPath, item.path),
+        with: { item: true, creator: true, account: true },
+      });
+      assertIsDefined(itemMembership);
+      expectMembership(itemMembership as ItemMembershipWithItemAndAccountAndCreator, {
+        creatorId: actor.id,
+        itemPath: item.path,
         permission: PermissionLevel.Read,
-        account: actor,
+        accountId: actor.id,
       });
     });
 
@@ -75,6 +84,7 @@ describe('Enroll', () => {
           },
         ],
       });
+      assertIsDefined(actor);
       mockAuthenticate(actor);
 
       const response = await app.inject({
@@ -100,6 +110,7 @@ describe('Enroll', () => {
         ],
       });
 
+      assertIsDefined(actor);
       mockAuthenticate(actor);
 
       const response = await app.inject({
@@ -136,6 +147,7 @@ describe('Enroll', () => {
     });
     it('rejects when item does not exist', async () => {
       const { actor } = await seedFromJson();
+      assertIsDefined(actor);
       mockAuthenticate(actor);
 
       const response = await app.inject({
@@ -152,22 +164,25 @@ describe('Enroll', () => {
       } = await seedFromJson({
         items: [{ creator: 'actor', itemLoginSchema: {} }],
       });
-      mockAuthenticate(actor);
       assertIsDefined(actor);
       assertIsMember(actor);
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/items/${item.id}/enroll`,
       });
 
-      expect(response.statusCode).toBe(StatusCodes.OK);
-      const itemMembership = await response.json();
-      expectMembership(itemMembership, {
-        creator: actor,
-        item,
+      expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
+      const itemMembership = await db.query.itemMemberships.findFirst({
+        where: eq(itemMemberships.itemPath, item.path),
+        with: { item: true, account: true, creator: true },
+      });
+      expectMembership(itemMembership as ItemMembershipWithItemAndAccountAndCreator, {
+        creatorId: actor.id,
+        itemPath: item.path,
         permission: PermissionLevel.Read,
-        account: actor,
+        accountId: actor.id,
       });
     });
     it('rejects when authenticated as the creator with membership', async () => {
@@ -177,9 +192,9 @@ describe('Enroll', () => {
       } = await seedFromJson({
         items: [{ creator: 'actor', memberships: [{ account: 'actor' }], itemLoginSchema: {} }],
       });
-      mockAuthenticate(actor);
       assertIsDefined(actor);
       assertIsMember(actor);
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: HttpMethod.Post,
@@ -195,6 +210,7 @@ describe('Enroll', () => {
       } = await seedFromJson({
         items: [{ memberships: [{ account: 'actor' }], itemLoginSchema: {} }],
       });
+      assertIsDefined(actor);
       mockAuthenticate(actor);
 
       const response = await app.inject({
@@ -212,6 +228,7 @@ describe('Enroll', () => {
       } = await seedFromJson({
         items: [{ creator: 'actor' }],
       });
+      assertIsDefined(actor);
       mockAuthenticate(actor);
 
       const response = await app.inject({

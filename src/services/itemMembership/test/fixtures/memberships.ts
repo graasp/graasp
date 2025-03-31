@@ -10,7 +10,7 @@ export const expectMembership = (
         'creator' | 'account' | 'item' | 'permission'
       >
     | undefined,
-  correctMembership: ItemMembershipRaw | undefined,
+  correctMembership: Omit<ItemMembershipRaw, 'id' | 'createdAt' | 'updatedAt'> | undefined,
 ) => {
   if (!newMembership || !correctMembership) {
     throw new Error(

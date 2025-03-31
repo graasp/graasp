@@ -16,7 +16,7 @@ import {
   getAvailable,
   getRedirection,
   updateShortLink,
-} from './schemas';
+} from './shortlink.schemas';
 import { SHORT_LINKS_LIST_ROUTE, ShortLinkService } from './shortlink.service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {

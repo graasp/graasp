@@ -10,14 +10,14 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../../../test/app';
-import { seedFromJson } from '../../../../../../../test/mocks/seed';
-import { db } from '../../../../../../drizzle/db';
-import { appActions } from '../../../../../../drizzle/schema';
-import { assertIsDefined } from '../../../../../../utils/assertions';
-import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
-import { assertIsMemberForTest } from '../../../../../authentication';
-import { getAccessToken } from '../../test/fixtures';
+} from '../../../../../../test/app';
+import { seedFromJson } from '../../../../../../test/mocks/seed';
+import { db } from '../../../../../drizzle/db';
+import { appActions } from '../../../../../drizzle/schema';
+import { assertIsDefined } from '../../../../../utils/assertions';
+import { APP_ITEMS_PREFIX } from '../../../../../utils/config';
+import { assertIsMemberForTest } from '../../../../authentication';
+import { getAccessToken } from '../test/fixtures';
 
 const expectAppActions = (values, expected) => {
   for (const expectValue of expected) {

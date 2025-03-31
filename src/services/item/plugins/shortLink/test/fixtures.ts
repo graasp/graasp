@@ -4,7 +4,7 @@ import { FastifyInstance } from 'fastify';
 
 import { ClientManager, Context, HttpMethod, UUID } from '@graasp/sdk';
 
-import { createShortLink, updateShortLink } from '../schemas';
+import { createShortLink, updateShortLink } from '../shortlink.schemas';
 import { SHORT_LINKS_FULL_PREFIX, SHORT_LINKS_LIST_ROUTE } from '../shortlink.service';
 
 export const MOCK_ALIAS = 'mocked-alias';

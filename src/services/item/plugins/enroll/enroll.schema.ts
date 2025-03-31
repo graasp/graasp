@@ -1,7 +1,7 @@
+import { Type } from '@sinclair/typebox';
 import { StatusCodes } from 'http-status-codes';
 
 import { customType } from '../../../../plugins/typebox';
-import { itemMembershipWithoutRelationsSchemaRef } from '../../../itemMembership/membership.schemas';
 
 export const enroll = {
   operationId: 'enroll',
@@ -13,6 +13,6 @@ export const enroll = {
     itemId: customType.UUID(),
   }),
   response: {
-    [StatusCodes.OK]: itemMembershipWithoutRelationsSchemaRef,
+    [StatusCodes.NO_CONTENT]: Type.Null(),
   },
 };
