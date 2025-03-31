@@ -9,7 +9,7 @@ import { ItemVisibilityWithItem } from '../drizzle/types';
 import { AccountType } from '../types';
 import { filterOutPackedDescendants } from './authorization.utils';
 import { PackedItem } from './item/ItemWrapper';
-import { ItemVisibilityRepository } from './item/plugins/itemVisibility/repository';
+import { ItemVisibilityRepository } from './item/plugins/itemVisibility/itemVisibility.repository';
 import { expectPackedItem } from './item/test/fixtures/items';
 import { ItemMembershipRepository } from './itemMembership/membership.repository';
 

@@ -17,9 +17,9 @@ import { BaseLogger } from '../../../../logger';
 import { saveMember } from '../../../member/test/fixtures/members';
 import { ItemService } from '../../item.service';
 import { EtherpadItemService } from '../etherpad/etherpad.service';
-import FileItemService from '../file/service';
+import FileItemService from '../file/itemFile.service';
 import type { H5PService } from '../html/h5p/h5p.service';
-import { ItemVisibilityRepository } from '../itemVisibility/repository';
+import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
 import { ImportExportService } from './service';
 
 describe('ZIP routes tests', () => {

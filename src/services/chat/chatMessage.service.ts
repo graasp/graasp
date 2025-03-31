@@ -103,8 +103,7 @@ export class ChatMessageService {
     messageId: string,
   ) {
     // check permission
-    const d = await this.basicItemService.get(db, authenticatedUser, itemId);
-    console.log(d);
+    await this.basicItemService.get(db, authenticatedUser, itemId);
 
     const messageContent = await this.chatMessageRepository.getOne(db, messageId);
     if (!messageContent) {

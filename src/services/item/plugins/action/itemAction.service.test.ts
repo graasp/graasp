@@ -29,7 +29,7 @@ import { ItemService } from '../../item.service';
 import { AppActionRepository } from '../app/appAction/appAction.repository';
 import { AppDataRepository } from '../app/appData/appData.repository';
 import { AppSettingRepository } from '../app/appSetting/appSetting.repository';
-import { ItemVisibilityRepository } from '../itemVisibility/repository';
+import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
 import { ActionItemService } from './itemAction.service';
 import { ItemActionType } from './utils';
 

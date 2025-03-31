@@ -8,7 +8,7 @@ import { AuthorizationService } from '../authorization';
 import { ItemMembershipRepository } from '../itemMembership/membership.repository';
 import { BasicItemService } from './basic.service';
 import { ItemRepository } from './item.repository';
-import { ItemVisibilityRepository } from './plugins/itemVisibility/repository';
+import { ItemVisibilityRepository } from './plugins/itemVisibility/itemVisibility.repository';
 
 const itemRepository = new ItemRepository();
 const authorizationService = new AuthorizationService(

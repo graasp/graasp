@@ -16,9 +16,14 @@ import { assertIsMember } from '../../../../authentication';
 import { validatedMemberAccountRole } from '../../../../member/strategies/validatedMemberAccountRole';
 import { ItemService } from '../../../item.service';
 import { PublicationService } from '../publicationState/publication.service';
+import {
+  getCollectionsForMember,
+  getInformations,
+  publishItem,
+  unpublishItem,
+} from './itemPublished.schemas';
 import { ItemPublishedService } from './itemPublished.service';
-import graaspSearchPlugin from './plugins/search';
-import { getCollectionsForMember, getInformations, publishItem, unpublishItem } from './schemas';
+import graaspSearchPlugin from './plugins/search/search.controller';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const itemPublishedService = resolveDependency(ItemPublishedService);

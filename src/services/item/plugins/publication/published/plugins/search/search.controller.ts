@@ -9,8 +9,8 @@ import { db } from '../../../../../../../drizzle/db';
 import { MEILISEARCH_REBUILD_SECRET } from '../../../../../../../utils/config';
 import { ActionService } from '../../../../../../action/action.service';
 import { optionalIsAuthenticated } from '../../../../../../auth/plugins/passport';
-import { getFacets, getMostLiked, getMostRecent, search } from './schemas';
-import { SearchService } from './service';
+import { getFacets, getMostLiked, getMostRecent, search } from './search.schemas';
+import { SearchService } from './search.service';
 
 export type SearchFields = {
   keywords?: string;

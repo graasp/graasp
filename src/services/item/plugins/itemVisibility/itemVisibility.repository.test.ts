@@ -4,7 +4,7 @@ import { seedFromJson } from '../../../../../test/mocks/seed';
 import { client, db } from '../../../../drizzle/db';
 import { itemVisibilities } from '../../../../drizzle/schema';
 import { expectItem } from '../../test/fixtures/items';
-import { ItemVisibilityRepository } from './repository';
+import { ItemVisibilityRepository } from './itemVisibility.repository';
 
 const repository = new ItemVisibilityRepository();
 

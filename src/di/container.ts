@@ -14,7 +14,7 @@ import { fileRepositoryFactory } from '../services/file/utils/factory';
 import { wrapEtherpadErrors } from '../services/item/plugins/etherpad/etherpad';
 import { RandomPadNameFactory } from '../services/item/plugins/etherpad/etherpad.service';
 import { EtherpadServiceConfig } from '../services/item/plugins/etherpad/serviceConfig';
-import { SearchService } from '../services/item/plugins/publication/published/plugins/search/service';
+import { SearchService } from '../services/item/plugins/publication/published/plugins/search/search.service';
 import {
   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
   FILE_ITEM_PLUGIN_OPTIONS,

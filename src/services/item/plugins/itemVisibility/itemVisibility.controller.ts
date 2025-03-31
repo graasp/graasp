@@ -6,8 +6,8 @@ import { asDefined } from '../../../../utils/assertions';
 import { isAuthenticated, matchOne } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { create, deleteOne } from './schemas';
-import { ItemVisibilityService } from './service';
+import { create, deleteOne } from './itemVisibility.schemas';
+import { ItemVisibilityService } from './itemVisibility.service';
 
 /**
  * Item Visibility plugin

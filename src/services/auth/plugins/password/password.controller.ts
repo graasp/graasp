@@ -12,7 +12,7 @@ import { LOGIN_TOKEN_EXPIRATION_IN_MINUTES, PUBLIC_URL } from '../../../../utils
 import { ActionService } from '../../../action/action.service';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { getRedirectionLink } from '../../utils';
-import captchaPreHandler from '../captcha';
+import captchaPreHandler from '../captcha/captcha';
 import {
   SHORT_TOKEN_PARAM,
   authenticatePassword,

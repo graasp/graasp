@@ -8,7 +8,7 @@ import { UnionOfConst } from '@graasp/sdk';
 
 import { resolveDependency } from '../di/utils';
 import { DBConnection, db } from '../drizzle/db';
-import { SearchService } from '../services/item/plugins/publication/published/plugins/search/service';
+import { SearchService } from '../services/item/plugins/publication/published/plugins/search/search.service';
 import { assertIsError } from '../utils/assertions';
 import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN, ETHERPAD_URL } from '../utils/config';
 

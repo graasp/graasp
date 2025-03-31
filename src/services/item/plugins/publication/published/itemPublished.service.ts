@@ -25,7 +25,7 @@ import { ItemWrapperService } from '../../../ItemWrapper';
 import { BasicItemService } from '../../../basic.service';
 import { ItemRepository } from '../../../item.repository';
 import { ActionItemService } from '../../action/itemAction.service';
-import { ItemVisibilityRepository } from '../../itemVisibility/repository';
+import { ItemVisibilityRepository } from '../../itemVisibility/itemVisibility.repository';
 import {
   ItemIsNotValidated,
   ItemPublicationAlreadyExists,

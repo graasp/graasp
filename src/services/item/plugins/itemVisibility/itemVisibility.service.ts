@@ -5,7 +5,7 @@ import { ItemVisibilityOptionsType, PermissionLevel } from '@graasp/sdk';
 import { DBConnection } from '../../../../drizzle/db';
 import { MinimalMember } from '../../../../types';
 import { BasicItemService } from '../../basic.service';
-import { ItemVisibilityRepository } from './repository';
+import { ItemVisibilityRepository } from './itemVisibility.repository';
 
 @singleton()
 export class ItemVisibilityService {

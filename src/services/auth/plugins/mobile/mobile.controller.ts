@@ -15,7 +15,7 @@ import {
 import { isMember } from '../../../authentication';
 import { MemberService } from '../../../member/member.service';
 import { generateAuthTokensPair, getRedirectionLink } from '../../utils';
-import captchaPreHandler from '../captcha';
+import captchaPreHandler from '../captcha/captcha';
 import {
   SHORT_TOKEN_PARAM,
   authenticateJWTChallengeVerifier,

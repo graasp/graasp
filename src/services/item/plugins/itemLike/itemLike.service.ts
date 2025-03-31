@@ -5,7 +5,7 @@ import { MaybeUser, MinimalMember } from '../../../../types';
 import { filterOutPackedItems } from '../../../authorization.utils';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { BasicItemService } from '../../basic.service';
-import { ItemVisibilityRepository } from '../itemVisibility/repository';
+import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
 import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
 import { ItemLikeRepository } from './itemLike.repository';

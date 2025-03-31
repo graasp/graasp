@@ -8,8 +8,8 @@ import { asDefined } from '../../../../utils/assertions';
 import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { createTagForItem, deleteTagForItem, getTagsForItem } from './schemas';
-import { ItemTagService } from './service';
+import { createTagForItem, deleteTagForItem, getTagsForItem } from './itemTag.schemas';
+import { ItemTagService } from './itemTag.service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const itemTagService = resolveDependency(ItemTagService);

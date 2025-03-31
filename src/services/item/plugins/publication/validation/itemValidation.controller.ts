@@ -19,8 +19,8 @@ import {
 } from '../../../ws/item.events';
 import { FolderItemService } from '../../folder/folder.service';
 import { ItemPublishedService } from '../published/itemPublished.service';
-import { getLatestItemValidationGroup, validateItem } from './schemas';
-import { ItemValidationService } from './service';
+import { getLatestItemValidationGroup, validateItem } from './itemValidation.schemas';
+import { ItemValidationService } from './itemValidation.service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { websockets } = fastify;

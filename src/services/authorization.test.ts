@@ -5,7 +5,7 @@ import { DBConnection } from '../drizzle/db';
 import { Item, ItemMembershipWithItemAndAccount } from '../drizzle/types';
 import { MemberCannotAccess, MemberCannotAdminItem, MemberCannotWriteItem } from '../utils/errors';
 import { AuthorizationService } from './authorization';
-import { ItemVisibilityRepository } from './item/plugins/itemVisibility/repository';
+import { ItemVisibilityRepository } from './item/plugins/itemVisibility/itemVisibility.repository';
 import { ItemMembershipRepository } from './itemMembership/membership.repository';
 
 const MOCK_DB = {} as unknown as DBConnection;

@@ -21,7 +21,7 @@ import { BasicItemService } from '../../basic.service';
 import { isItemType } from '../../discrimination';
 import { ItemService } from '../../item.service';
 import { EtherpadItemService } from '../etherpad/etherpad.service';
-import FileItemService from '../file/service';
+import FileItemService from '../file/itemFile.service';
 import { H5PService } from '../html/h5p/h5p.service';
 import {
   DESCRIPTION_EXTENSION,

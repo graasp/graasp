@@ -15,7 +15,7 @@ import { saveMember } from '../member/test/fixtures/members';
 import { ThumbnailService } from '../thumbnail/thumbnail.service';
 import { FolderItem } from './discrimination';
 import { ItemService } from './item.service';
-import { ItemVisibilityRepository } from './plugins/itemVisibility/repository';
+import { ItemVisibilityRepository } from './plugins/itemVisibility/itemVisibility.repository';
 import { MeiliSearchWrapper } from './plugins/publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from './plugins/thumbnail/itemThumbnail.service';
 

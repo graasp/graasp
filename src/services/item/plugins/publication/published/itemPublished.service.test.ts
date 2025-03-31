@@ -10,7 +10,7 @@ import { ItemMembershipRepository } from '../../../../itemMembership/membership.
 import { ItemWrapperService } from '../../../ItemWrapper';
 import { BasicItemService } from '../../../basic.service';
 import { ItemRepository } from '../../../item.repository';
-import { ItemVisibilityRepository } from '../../itemVisibility/repository';
+import { ItemVisibilityRepository } from '../../itemVisibility/itemVisibility.repository';
 import { ItemThumbnailService } from '../../thumbnail/itemThumbnail.service';
 import { ItemPublishedRepository } from './itemPublished.repository';
 import { ItemPublishedService } from './itemPublished.service';

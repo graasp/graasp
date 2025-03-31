@@ -19,8 +19,8 @@ import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
 import { H5PService } from '../html/h5p/h5p.service';
 import { H5P_FILE_EXTENSION } from '../importExport/constants';
-import { download, updateFile, upload } from './schema';
-import FileItemService from './service';
+import { download, updateFile, upload } from './itemFile.schema';
+import FileItemService from './itemFile.service';
 import { DEFAULT_MAX_FILE_SIZE, MAX_NUMBER_OF_FILES_UPLOAD } from './utils/constants';
 
 export interface GraaspPluginFileOptions {

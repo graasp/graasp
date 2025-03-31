@@ -24,7 +24,7 @@ import {
 import { assertIsDefined } from '../../../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../../utils/config';
 import { MemberCannotAdminItem } from '../../../../../../utils/errors';
-import { ItemValidationService } from '../service';
+import { ItemValidationService } from '../itemValidation.service';
 import { ItemModeratorValidate, stubItemModerator } from './utils';
 
 const VALIDATION_LOADING_TIME = 2000;

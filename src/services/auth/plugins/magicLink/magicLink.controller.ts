@@ -15,7 +15,7 @@ import { isMember } from '../../../authentication';
 import { InvitationService } from '../../../item/plugins/invitation/invitation.service';
 import { MemberService } from '../../../member/member.service';
 import { getRedirectionLink } from '../../utils';
-import captchaPreHandler from '../captcha/index';
+import captchaPreHandler from '../captcha/captcha';
 import { PassportStrategy } from '../passport/strategies';
 import { PassportInfo } from '../passport/types';
 import { auth, login, register } from './magicLink.schemas';

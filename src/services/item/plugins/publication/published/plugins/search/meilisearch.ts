@@ -36,12 +36,12 @@ import { isItemType } from '../../../../../discrimination';
 import { ItemRepository } from '../../../../../item.repository';
 import { readPdfContent } from '../../../../../utils';
 import { ItemLikeRepository } from '../../../../itemLike/itemLike.repository';
-import { ItemVisibilityRepository } from '../../../../itemVisibility/repository';
+import { ItemVisibilityRepository } from '../../../../itemVisibility/itemVisibility.repository';
 import { ItemTagRepository } from '../../../../tag/ItemTag.repository';
 import { stripHtml } from '../../../validation/utils';
 import { ItemPublishedNotFound } from '../../errors';
 import { ItemPublishedRepository } from '../../itemPublished.repository';
-import { Hit } from './schemas';
+import { Hit } from './search.schemas';
 
 const ACTIVE_INDEX = 'itemIndex';
 const ROTATING_INDEX = 'itemIndex_tmp'; // Used when reindexing

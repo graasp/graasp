@@ -11,7 +11,7 @@ import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from '../thumbnail/itemThumbnail.service';
-import { ShortcutItemService } from './service';
+import { ShortcutItemService } from './shortcut.service';
 
 const shortcutService = new ShortcutItemService(
   {} as unknown as ThumbnailService,

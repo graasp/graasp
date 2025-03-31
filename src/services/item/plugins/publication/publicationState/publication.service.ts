@@ -6,7 +6,7 @@ import { DBConnection } from '../../../../../drizzle/db';
 import { AuthenticatedUser } from '../../../../../types';
 import { ItemWrapper } from '../../../ItemWrapper';
 import { BasicItemService } from '../../../basic.service';
-import { ItemVisibilityRepository } from '../../itemVisibility/repository';
+import { ItemVisibilityRepository } from '../../itemVisibility/itemVisibility.repository';
 import { ItemPublishedRepository } from '../published/itemPublished.repository';
 import { ItemValidationGroupRepository } from '../validation/ItemValidationGroup.repository';
 import { ValidationQueue } from '../validation/validationQueue';

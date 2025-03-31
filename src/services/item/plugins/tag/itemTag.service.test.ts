@@ -10,7 +10,7 @@ import { ItemService } from '../../item.service';
 import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
 import { ItemTagRepository } from './ItemTag.repository';
-import { ItemTagService } from './service';
+import { ItemTagService } from './itemTag.service';
 
 const itemService = { get: jest.fn() as ItemService['get'] } as ItemService;
 const meilisearchWrapper = {

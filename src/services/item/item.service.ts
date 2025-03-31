@@ -56,7 +56,7 @@ import { DEFAULT_ORDER, IS_COPY_REGEX, MAX_COPY_SUFFIX_LENGTH } from './constant
 import { FolderItem, isItemType } from './discrimination';
 import { ItemRepository } from './item.repository';
 import { ItemGeolocationRepository } from './plugins/geolocation/itemGeolocation.repository';
-import { ItemVisibilityRepository } from './plugins/itemVisibility/repository';
+import { ItemVisibilityRepository } from './plugins/itemVisibility/itemVisibility.repository';
 import { ItemPublishedRepository } from './plugins/publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from './plugins/publication/published/plugins/search/meilisearch';
 import { ItemThumbnailService } from './plugins/thumbnail/itemThumbnail.service';

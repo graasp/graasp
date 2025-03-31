@@ -121,7 +121,7 @@ export class ItemVisibilityRepository {
     db: DBConnection,
     parent: Item,
     visibilityTypes: ItemVisibilityOptionsType[],
-  ) {
+  ): Promise<ItemVisibilityWithItem[]> {
     return await db.query.itemVisibilities.findMany({
       with: { item: true },
       where: and(

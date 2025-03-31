@@ -9,7 +9,7 @@ import { filterOutPackedItems } from '../../../authorization.utils';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { PackedItem } from '../../ItemWrapper';
 import { BasicItemService } from '../../basic.service';
-import { ItemVisibilityRepository } from '../itemVisibility/repository';
+import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
 import { ItemBookmarkRepository } from './itemBookmark.repository';
 
 type PackedBookmarkedItem = ItemBookmarkRaw & { item: PackedItem };

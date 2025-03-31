@@ -8,8 +8,8 @@ import { assertIsMember } from '../../../authentication';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { ItemService } from '../../item.service';
 import { ActionItemService } from '../action/itemAction.service';
-import { createShortcut, updateShortcut } from './schemas';
-import { ShortcutItemService } from './service';
+import { createShortcut, updateShortcut } from './shortcut.schemas';
+import { ShortcutItemService } from './shortcut.service';
 
 export const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const itemService = resolveDependency(ItemService);
