@@ -13,9 +13,9 @@ export class MemberProfileRepository {
     const {
       bio,
       visibility = false,
-      facebookID: facebookId,
-      linkedinID: linkedinId,
-      twitterID: twitterId,
+      facebookId: facebookId,
+      linkedinId: linkedinId,
+      twitterId: twitterId,
     } = payload;
 
     const memberProfile = await db

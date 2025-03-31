@@ -86,6 +86,7 @@ import { APPS_PUBLISHER_ID } from '../../src/utils/config';
 import { ActionFactory } from '../factories/action.factory';
 import { ItemFactory } from '../factories/item.factory';
 import { GuestFactory, MemberFactory } from '../factories/member.factory';
+import { MemberProfileFactory } from '../factories/memberProfile.factory';
 
 const ACTOR_STRING = 'actor';
 export type SeedActor = Partial<AccountRaw> & {
@@ -335,7 +336,7 @@ const processActor = async ({
         actorProfile = (
           await db
             .insert(memberProfiles)
-            .values({ ...actor.profile, memberId: createdActor.id })
+            .values([MemberProfileFactory({ ...actor.profile, memberId: createdActor.id })])
             .returning()
         )[0];
       }

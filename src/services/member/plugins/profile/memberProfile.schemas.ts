@@ -8,9 +8,9 @@ import { errorSchemaRef } from '../../../../schemas/global';
 
 const inputPublicProfileMemberSchema = customType.StrictObject({
   bio: Type.String(),
-  facebookID: Type.String(),
-  linkedinID: Type.String(),
-  twitterID: Type.String(),
+  facebookId: Type.String(),
+  linkedinId: Type.String(),
+  twitterId: Type.String(),
   visibility: Type.Boolean(),
 });
 
@@ -93,7 +93,7 @@ export const updateOwnProfile = {
 
   body: Type.Partial(inputPublicProfileMemberSchema),
   response: {
-    [StatusCodes.OK]: profileMemberSchemaRef,
+    [StatusCodes.NO_CONTENT]: Type.Null(),
     [StatusCodes.UNAUTHORIZED]: errorSchemaRef,
     '4xx': errorSchemaRef,
   },

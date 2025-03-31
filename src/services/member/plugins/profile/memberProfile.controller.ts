@@ -8,7 +8,6 @@ import { asDefined } from '../../../../utils/assertions';
 import { isAuthenticated, matchOne, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
 import { validatedMemberAccountRole } from '../../strategies/validatedMemberAccountRole';
-import { MemberProfileNotFound } from './errors';
 import {
   createOwnProfile,
   getOwnProfile,
@@ -66,14 +65,12 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       schema: updateOwnProfile,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
-    async ({ user, body }) => {
+    async ({ user, body }, reply) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      const profile = await memberProfileService.patch(db, member, body);
-      if (!profile) {
-        throw new MemberProfileNotFound();
-      }
-      return profile;
+
+      await memberProfileService.patch(db, member, body);
+      reply.status(StatusCodes.NO_CONTENT);
     },
   );
 };
