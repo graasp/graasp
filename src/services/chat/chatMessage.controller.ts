@@ -27,7 +27,6 @@ import {
   patchMessage,
 } from './chatMessage.schemas';
 import { ChatMessageService } from './chatMessage.service';
-import { ChatMessageNotFound } from './errors';
 import { ActionChatService } from './plugins/action/chatAction.service';
 import mentionPlugin from './plugins/mentions/chatMention.controller';
 import { registerChatWsHooks } from './ws/hooks';

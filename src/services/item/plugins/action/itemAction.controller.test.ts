@@ -12,15 +12,15 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../../test/app';
-import { seedFromJson } from '../../../../../../test/mocks/seed';
-import { resolveDependency } from '../../../../../di/utils';
-import { db } from '../../../../../drizzle/db';
-import { actionsTable } from '../../../../../drizzle/schema';
-import { MailerService } from '../../../../../plugins/mailer/mailer.service';
-import { assertIsDefined } from '../../../../../utils/assertions';
-import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { CannotPostAction } from '../errors';
+} from '../../../../../test/app';
+import { seedFromJson } from '../../../../../test/mocks/seed';
+import { resolveDependency } from '../../../../di/utils';
+import { db } from '../../../../drizzle/db';
+import { actionsTable } from '../../../../drizzle/schema';
+import { MailerService } from '../../../../plugins/mailer/mailer.service';
+import { assertIsDefined } from '../../../../utils/assertions';
+import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
+import { CannotPostAction } from './errors';
 
 const BUILDER_HOST = ClientManager.getInstance().getURLByContext(Context.Builder);
 

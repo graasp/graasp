@@ -3213,7 +3213,7 @@ describe('validatePermissionMany for many items', () => {
 
     jest
       .spyOn(itemMembershipRepository, 'getInheritedMany')
-      .mockImplementation(async (_db, _items, memberId) => ({
+      .mockImplementation(async (_db, _items, _memberId) => ({
         data: { [SHARED_ITEM.id]: sharedMembership },
         errors: [],
       }));

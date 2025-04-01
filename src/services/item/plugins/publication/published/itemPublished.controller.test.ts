@@ -11,19 +11,19 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../../../test/app';
-import { seedFromJson } from '../../../../../../../test/mocks/seed';
-import { resolveDependency } from '../../../../../../di/utils';
-import { db } from '../../../../../../drizzle/db';
-import { publishedItems } from '../../../../../../drizzle/schema';
-import { MailerService } from '../../../../../../plugins/mailer/mailer.service';
-import { assertIsDefined } from '../../../../../../utils/assertions';
-import { ITEMS_ROUTE_PREFIX } from '../../../../../../utils/config';
-import { MemberCannotAdminItem } from '../../../../../../utils/errors';
-import { ItemWrapper } from '../../../../ItemWrapper';
-import { expectItem, expectManyPackedItems } from '../../../../test/fixtures/items';
-import { ItemVisibilityNotFound } from '../../../itemVisibility/errors';
-import { MeiliSearchWrapper } from '../plugins/search/meilisearch';
+} from '../../../../../../test/app';
+import { seedFromJson } from '../../../../../../test/mocks/seed';
+import { resolveDependency } from '../../../../../di/utils';
+import { db } from '../../../../../drizzle/db';
+import { publishedItems } from '../../../../../drizzle/schema';
+import { MailerService } from '../../../../../plugins/mailer/mailer.service';
+import { assertIsDefined } from '../../../../../utils/assertions';
+import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
+import { MemberCannotAdminItem } from '../../../../../utils/errors';
+import { ItemWrapper } from '../../../ItemWrapper';
+import { expectItem, expectManyPackedItems } from '../../../test/fixtures/items';
+import { ItemVisibilityNotFound } from '../../itemVisibility/errors';
+import { MeiliSearchWrapper } from './plugins/search/meilisearch';
 
 jest.mock('../plugins/search/meilisearch');
 

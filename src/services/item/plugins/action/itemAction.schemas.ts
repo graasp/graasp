@@ -15,12 +15,9 @@ import {
 
 import { customType } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
-import { accountSchemaRef, nullableAccountSchemaRef } from '../../../account/account.schemas';
+import { nullableAccountSchemaRef } from '../../../account/account.schemas';
 import { MAX_ACTIONS_SAMPLE_SIZE, MIN_ACTIONS_SAMPLE_SIZE } from '../../../action/constants';
-import { itemSchema, itemSchemaRef } from '../../item.schemas';
-import { appActionSchemaRef } from '../app/appAction/appAction.schemas';
-import { appDataSchemaRef } from '../app/appData/appData.schemas';
-import { appSettingSchemaRef } from '../app/appSetting/appSetting.schemas';
+import { itemSchema } from '../../item.schemas';
 import { ItemActionType } from './utils';
 
 const actionSchema = customType.StrictObject({

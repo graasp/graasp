@@ -1,13 +1,9 @@
 import { Readable } from 'node:stream';
-import { v4 } from 'uuid';
 
-import { FastifyInstance } from 'fastify';
+import { ItemGeolocation, ItemType, ItemVisibilityType } from '@graasp/sdk';
 
-import { FolderItemFactory, ItemGeolocation, ItemType, ItemVisibilityType } from '@graasp/sdk';
-
-import build, { MOCK_LOGGER, clearDatabase, mockAuthenticate } from '../../../test/app';
+import { MOCK_LOGGER, mockAuthenticate } from '../../../test/app';
 import { seedFromJson } from '../../../test/mocks/seed';
-import { MinimalMember } from '../../types';
 import { assertIsDefined } from '../../utils/assertions';
 import { assertIsMember } from '../authentication';
 import * as authorization from '../authorization';

@@ -1,16 +1,10 @@
 import { describe } from 'node:test';
 
-import { FastifyInstance } from 'fastify';
-
 import { ItemVisibilityType } from '@graasp/sdk';
 
-import build, { MOCK_LOGGER, clearDatabase } from '../../../test/app';
 import { ItemFactory } from '../../../test/factories/item.factory';
 import { ItemVisibilityFactory } from '../../../test/factories/itemVisibility.factory';
-import { ThumbnailService } from '../thumbnail/thumbnail.service';
-import { ItemWrapper, ItemWrapperService } from './ItemWrapper';
-import { ItemService } from './item.service';
-import { ItemThumbnailService } from './plugins/thumbnail/itemThumbnail.service';
+import { ItemWrapper } from './ItemWrapper';
 
 // const itemThumbnailService = new ItemThumbnailService(
 //   {} as unknown as ItemService,

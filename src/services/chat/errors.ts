@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 
-import createError from '@fastify/error';
+import { createError } from '@fastify/error';
 
 import { ErrorFactory } from '@graasp/sdk';
 

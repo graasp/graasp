@@ -1,5 +1,4 @@
 import { Readable } from 'stream';
-import { singleton } from 'tsyringe';
 
 import { Account } from '@graasp/sdk';
 

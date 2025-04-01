@@ -125,7 +125,7 @@ export class TooManyChildren extends CoreError {
   }
 }
 export class TooManyDescendants extends CoreError {
-  constructor(data?: number) {
+  constructor(data: string) {
     super(
       {
         code: 'GERR011',

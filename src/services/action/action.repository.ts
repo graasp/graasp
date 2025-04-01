@@ -1,7 +1,7 @@
 import { addMonths, formatISO } from 'date-fns';
-import { and, between, count, desc, eq, inArray } from 'drizzle-orm/sql';
+import { and, between, desc, eq } from 'drizzle-orm/sql';
 
-import { AggregateBy, AggregateFunction, AggregateMetric, UUID } from '@graasp/sdk';
+import { UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../drizzle/db';
 import { isDescendantOrSelf } from '../../drizzle/operations';
@@ -9,9 +9,6 @@ import { actionsTable, items } from '../../drizzle/schema';
 import { ActionInsertDTO, ActionWithItem } from '../../drizzle/types';
 import { MemberIdentifierNotFound } from '../itemLogin/errors';
 import { DEFAULT_ACTIONS_SAMPLE_SIZE } from './constants';
-import { CountGroupByOptions } from './types';
-import { aggregateExpressionNames, buildAggregateExpression } from './utils/actions';
-import { validateAggregationParameters } from './utils/utils';
 
 export class ActionRepository {
   /**

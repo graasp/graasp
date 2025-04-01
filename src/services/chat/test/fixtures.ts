@@ -31,8 +31,7 @@ export const ChatMessageWithMentionFactory = ({
     id: v4(),
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    // TODO: fix type
-    status: 'read' as any,
+    status: 'read' as const,
   };
   return { chatMessage, chatMention };
 };

@@ -19,7 +19,7 @@ import { itemsRaw } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN } from '../../../../utils/config';
 import { EmbeddedLinkItem } from '../../discrimination';
-import { FETCH_RESULT, METADATA } from './test/fixtures';
+import { FETCH_RESULT } from './link.service.test';
 
 const MOCK_URL = 'https://url.com';
 

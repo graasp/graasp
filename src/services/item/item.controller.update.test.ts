@@ -1451,7 +1451,7 @@ describe('Item routes tests', () => {
         const {
           actor,
           items: [parentItem, item1, item2, item3],
-          itemMemberships: [_parentIm, im1],
+          itemMemberships: [_parentIm, _im1],
         } = await seedFromJson({
           items: [
             {

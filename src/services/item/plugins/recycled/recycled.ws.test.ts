@@ -6,20 +6,20 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
-import { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../../../test/app';
-import { seedFromJson } from '../../../../../../test/mocks/seed';
-import { db } from '../../../../../drizzle/db';
-import { itemsRaw } from '../../../../../drizzle/schema';
-import { assertIsDefined } from '../../../../../utils/assertions';
-import { TestWsClient } from '../../../../websockets/test/test-websocket-client';
-import { setupWsApp } from '../../../../websockets/test/ws-app';
+import { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../../test/app';
+import { seedFromJson } from '../../../../../test/mocks/seed';
+import { db } from '../../../../drizzle/db';
+import { itemsRaw } from '../../../../drizzle/schema';
+import { assertIsDefined } from '../../../../utils/assertions';
+import { TestWsClient } from '../../../websockets/test/test-websocket-client';
+import { setupWsApp } from '../../../websockets/test/ws-app';
 import {
   ItemEvent,
   ItemOpFeedbackErrorEvent,
   ItemOpFeedbackEvent,
   memberItemsTopic,
-} from '../../../ws/item.events';
-import { RecycledItemDataRepository } from '../repository';
+} from '../../ws/item.events';
+import { RecycledItemDataRepository } from './recycled.repository';
 
 describe('Recycle websocket hooks', () => {
   let app: FastifyInstance;
@@ -154,7 +154,7 @@ describe('Recycle websocket hooks', () => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { deletedAt, ...i } = restored;
         expect(feedbackUpdate).toMatchObject(
-          ItemOpFeedbackEvent('restore', [item.id], { items: [restored] }),
+          ItemOpFeedbackEvent('restore', [item.id], { items: restored }),
         );
       });
     });

@@ -11,21 +11,21 @@ import build, {
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
-} from '../../../../../../../test/app';
-import { seedFromJson } from '../../../../../../../test/mocks/seed';
-import { db } from '../../../../../../drizzle/db';
-import { itemValidations } from '../../../../../../drizzle/schema';
+} from '../../../../../../test/app';
+import { seedFromJson } from '../../../../../../test/mocks/seed';
+import { db } from '../../../../../drizzle/db';
+import { itemValidations } from '../../../../../drizzle/schema';
 import {
   Item,
   ItemValidationGroupRaw,
   ItemValidationGroupWithItemAndValidations,
   ItemValidationRaw,
-} from '../../../../../../drizzle/types';
-import { assertIsDefined } from '../../../../../../utils/assertions';
-import { ITEMS_ROUTE_PREFIX } from '../../../../../../utils/config';
-import { MemberCannotAdminItem } from '../../../../../../utils/errors';
-import { ItemValidationService } from '../itemValidation.service';
-import { ItemModeratorValidate, stubItemModerator } from './utils';
+} from '../../../../../drizzle/types';
+import { assertIsDefined } from '../../../../../utils/assertions';
+import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
+import { MemberCannotAdminItem } from '../../../../../utils/errors';
+import { ItemValidationService } from './itemValidation.service';
+import { ItemModeratorValidate, stubItemModerator } from './test/utils';
 
 const VALIDATION_LOADING_TIME = 2000;
 
