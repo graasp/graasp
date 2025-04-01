@@ -359,7 +359,7 @@ export class ImportExportService {
    */
   private async addItemToGraaspExport(
     db: DBConnection,
-    actor: Actor,
+    actor: MaybeUser,
     args: {
       item: Item;
       archive: ZipFile;
@@ -404,7 +404,7 @@ export class ImportExportService {
     }
 
     // treat single items
-    const { stream, name, mimetype } = await this.fetchItemData(actor, repositories, item);
+    const { stream, name, mimetype } = await this.fetchItemData(db, actor, item);
 
     itemManifest.push({
       id: exportItemId,
@@ -423,7 +423,7 @@ export class ImportExportService {
    * @param item The root item
    * @returns A zip file promise
    */
-  async exportRaw(db: DBConnection, actor: Actor, item: Item) {
+  async exportRaw(db: DBConnection, actor: MaybeUser, item: Item) {
     // init archive
     const archive = new ZipFile();
     archive.outputStream.on('error', function (err) {
@@ -450,7 +450,7 @@ export class ImportExportService {
    * @param item The root item
    * @returns A zip file promise
    */
-  async exportGraasp(db: DBConnection, actor: Actor, item: Item) {
+  async exportGraasp(db: DBConnection, actor: MaybeUser, item: Item) {
     // init archive
     const archive = new ZipFile();
     archive.outputStream.on('error', function (err) {

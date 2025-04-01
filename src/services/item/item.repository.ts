@@ -117,7 +117,7 @@ export class ItemRepository {
       .where(isDescendantOrSelf(items.path, item.path));
 
     if (numberOfDescendants > maximum) {
-      throw new TooManyDescendants(item.id);
+      throw new TooManyDescendants(numberOfDescendants);
     }
   }
 

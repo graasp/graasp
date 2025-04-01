@@ -30,6 +30,7 @@ import { ItemGeolocationRepository } from '../geolocation/itemGeolocation.reposi
 import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
 import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
+import { RecycledBinService } from '../recycled/recycled.service';
 import { ItemThumbnailService } from '../thumbnail/itemThumbnail.service';
 import { InvalidUrl } from './errors';
 import { isValidUrl } from './utils';
@@ -83,6 +84,7 @@ export class EmbeddedLinkItemService extends ItemService {
     itemWrapperService: ItemWrapperService,
     itemVisibilityRepository: ItemVisibilityRepository,
     basicItemService: BasicItemService,
+    recycledBinService: RecycledBinService,
     log: BaseLogger,
     @inject(IFRAMELY_API_DI_KEY) iframelyHrefOrigin: string,
   ) {
@@ -98,6 +100,7 @@ export class EmbeddedLinkItemService extends ItemService {
       itemWrapperService,
       itemVisibilityRepository,
       basicItemService,
+      recycledBinService,
       log,
     );
     this.iframelyHrefOrigin = iframelyHrefOrigin;

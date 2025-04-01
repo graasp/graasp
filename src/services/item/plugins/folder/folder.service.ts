@@ -26,6 +26,7 @@ import { ItemGeolocationRepository } from '../geolocation/itemGeolocation.reposi
 import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
 import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
+import { RecycledBinService } from '../recycled/recycled.service';
 import { ItemThumbnailService } from '../thumbnail/itemThumbnail.service';
 
 @singleton()
@@ -42,6 +43,7 @@ export class FolderItemService extends ItemService {
     itemWrapperService: ItemWrapperService,
     itemVisibilityRepository: ItemVisibilityRepository,
     basicItemService: BasicItemService,
+    recycledBinService: RecycledBinService,
     log: BaseLogger,
   ) {
     super(
@@ -56,6 +58,7 @@ export class FolderItemService extends ItemService {
       itemWrapperService,
       itemVisibilityRepository,
       basicItemService,
+      recycledBinService,
       log,
     );
   }

@@ -1,4 +1,4 @@
-import { ItemType, PermissionLevel, PermissionLevelOptions, UnionOfConst } from '@graasp/sdk';
+import { ItemType, PermissionLevelOptions, UnionOfConst } from '@graasp/sdk';
 
 import { Account } from '../../drizzle/types';
 

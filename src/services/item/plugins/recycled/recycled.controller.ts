@@ -116,7 +116,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           websockets.publish(
             memberItemsTopic,
             member.id,
-            ItemOpFeedbackEvent('restore', ids, { items }),
+            ItemOpFeedbackEvent('restore', ids, Object.fromEntries(items.map((i) => [i.id, i]))),
           );
         })
         .catch((e: Error) => {
