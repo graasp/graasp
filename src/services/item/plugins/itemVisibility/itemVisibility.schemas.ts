@@ -65,12 +65,9 @@ const deleteOne = {
     type: customType.EnumString(Object.values(ItemVisibilityType)),
   }),
   response: {
-    [StatusCodes.OK]: Type.Object(
-      { item: Type.Object({ path: Type.String() }) },
-      {
-        description: 'Successful Response',
-      },
-    ),
+    [StatusCodes.NO_CONTENT]: Type.Null({
+      description: 'Successful Response',
+    }),
     '4xx': errorSchemaRef,
   },
 };

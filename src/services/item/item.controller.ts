@@ -278,10 +278,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       await db
         .transaction(async (tsx) => {
           const items = await itemService.deleteMany(tsx, member, ids);
-          await actionItemService.postManyDeleteAction(tsx, request, items);
           return items;
         })
-        .then((items) => {
+        .then(async (items) => {
+          await actionItemService.postManyDeleteAction(db, request, items);
           websockets.publish(
             memberItemsTopic,
             member.id,

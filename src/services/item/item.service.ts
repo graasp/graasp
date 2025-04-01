@@ -59,6 +59,7 @@ import { ItemGeolocationRepository } from './plugins/geolocation/itemGeolocation
 import { ItemVisibilityRepository } from './plugins/itemVisibility/itemVisibility.repository';
 import { ItemPublishedRepository } from './plugins/publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from './plugins/publication/published/plugins/search/meilisearch';
+import { RecycledBinService } from './plugins/recycled/recycled.service';
 import { ItemThumbnailService } from './plugins/thumbnail/itemThumbnail.service';
 import { ItemChildrenParams, ItemSearchParams } from './types';
 
@@ -76,6 +77,7 @@ export class ItemService {
   private readonly itemWrapperService: ItemWrapperService;
   private readonly itemVisibilityRepository: ItemVisibilityRepository;
   public readonly basicItemService: BasicItemService;
+  public readonly recycledBinService: RecycledBinService;
 
   hooks = new HookManager<{
     create: { pre: { item: Partial<Item> }; post: { item: Item } };
@@ -113,6 +115,7 @@ export class ItemService {
     itemWrapperService: ItemWrapperService,
     itemVisibilityRepository: ItemVisibilityRepository,
     basicItemService: BasicItemService,
+    recycledBinService: RecycledBinService,
     log: BaseLogger,
   ) {
     this.thumbnailService = thumbnailService;
@@ -126,6 +129,7 @@ export class ItemService {
     this.itemWrapperService = itemWrapperService;
     this.itemVisibilityRepository = itemVisibilityRepository;
     this.basicItemService = basicItemService;
+    this.recycledBinService = recycledBinService;
     this.log = log;
   }
 
@@ -669,7 +673,7 @@ export class ItemService {
         ordered: false,
       });
       if (descendants.length > MAX_DESCENDANTS_FOR_DELETE) {
-        throw new TooManyDescendants(itemId);
+        throw new TooManyDescendants(descendants.length);
       }
       items = [...descendants, item];
     }
@@ -707,32 +711,36 @@ export class ItemService {
     // check memberships
     // can get soft deleted items
     // QUESTION: move to recycle bin and the endpoint can only delete recycled items
-    const { data: itemsMap } = await this.itemRepository.getMany(db, itemIds, {
-      throwOnError: true,
-      withDeleted: true,
-    });
-    const allItems = Object.values(itemsMap);
+    // const { data: itemsMap } = await this.itemRepository.getMany(db, itemIds, {
+    //   throwOnError: true,
+    //   withDeleted: true,
+    // });
+    // const allItems = Object.values(itemsMap);
 
-    // TODO: optimize
-    const allDescendants = await Promise.all(
-      allItems.map(async (item) => {
-        await this.authorizationService.validatePermission(db, PermissionLevel.Admin, actor, item);
-        if (!isItemType(item, ItemType.FOLDER)) {
-          return [];
-        }
-        // check how "big the tree is" below the item
-        // we do not use checkNumberOfDescendants because we use descendants
-        const descendants = await this.itemRepository.getDescendants(db, item, {
-          ordered: false,
-        });
-        if (descendants.length > MAX_DESCENDANTS_FOR_DELETE) {
-          throw new TooManyDescendants(item.id);
-        }
-        return descendants;
-      }),
-    );
+    // // TODO: optimize
+    // const allDescendants = await Promise.all(
+    //   allItems.map(async (item) => {
+    //     await this.authorizationService.validatePermission(db, PermissionLevel.Admin, actor, item);
+    //     if (!isItemType(item, ItemType.FOLDER)) {
+    //       return [];
+    //     }
+    //     // check how "big the tree is" below the item
+    //     // we do not use checkNumberOfDescendants because we use descendants
+    //     const descendants = await this.itemRepository.getDescendants(db, item, {
+    //       ordered: false,
+    //     });
+    //     if (descendants.length > MAX_DESCENDANTS_FOR_DELETE) {
+    //       throw new TooManyDescendants(item.id);
+    //     }
+    //     return descendants;
+    //   }),
+    // );
 
-    const items = [...allDescendants.flat(), ...allItems];
+    const items = await this.recycledBinService.getDeletedTreesById(db, actor, itemIds);
+    // do not delete too many items at the same time
+    if (items.length > MAX_DESCENDANTS_FOR_DELETE) {
+      throw new TooManyDescendants(items.length);
+    }
 
     // pre hook
     for (const item of items) {
@@ -749,7 +757,7 @@ export class ItemService {
       await this.hooks.runPostHooks('delete', actor, db, { item });
     }
 
-    return allItems;
+    return items;
   }
 
   /////// -------- MOVE

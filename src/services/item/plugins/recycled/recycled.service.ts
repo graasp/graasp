@@ -47,6 +47,29 @@ export class RecycledBinService {
     return await this.recycledItemRepository.getOwnRecycledItems(db, member, pagination);
   }
 
+  async getDeletedTreesById(db: DBConnection, member: MinimalMember, ids: Item['id'][]) {
+    const items = await this.recycledItemRepository.getDeletedTreesById(db, ids);
+
+    // validate permission on parents
+    const rootItems = items.filter(({ id }) => ids.includes(id));
+    await this.authorizationService.validatePermissionMany(
+      db,
+      PermissionLevel.Admin,
+      member,
+      rootItems,
+    );
+
+    return items;
+  }
+
+  async getManyById(
+    db: DBConnection,
+    member: MinimalMember,
+    pagination: Pagination,
+  ): Promise<Paginated<Item>> {
+    return await this.recycledItemRepository.getOwnRecycledItems(db, member, pagination);
+  }
+
   async recycleMany(db: DBConnection, actor: MinimalMember, itemIds: string[]) {
     const itemsResult = await this.itemRepository.getMany(db, itemIds, { throwOnError: true });
     const { data: idsToItems } = itemsResult;

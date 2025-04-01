@@ -1,3 +1,5 @@
+import { StatusCodes } from 'http-status-codes';
+
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { resolveDependency } from '../../../../di/utils';
@@ -38,12 +40,13 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.delete(
     '/:itemId/visibilities/:type',
     { schema: deleteOne, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
-    async ({ user, params: { itemId, type } }) => {
-      return db.transaction(async (tx) => {
+    async ({ user, params: { itemId, type } }, reply) => {
+      await db.transaction(async (tx) => {
         const member = asDefined(user?.account);
         assertIsMember(member);
         return itemVisibilityService.deleteOne(tx, member, itemId, type);
       });
+      reply.status(StatusCodes.NO_CONTENT);
     },
   );
 };

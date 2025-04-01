@@ -1,4 +1,5 @@
 import { count, eq, getTableColumns, inArray } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 import { and, asc, desc, isNotNull, ne } from 'drizzle-orm/sql';
 
 import { Paginated, Pagination, PermissionLevel } from '@graasp/sdk';
@@ -131,5 +132,23 @@ export class RecycledItemDataRepository {
     return await db.query.itemsRaw.findMany({
       where: and(isNotNull(itemsRaw.deletedAt), inArray(itemsRaw.id, itemIds)),
     });
+  }
+
+  /**
+   * Returns flat array of all items below items with ids, including self
+   * @param db
+   * @param ids
+   */
+  async getDeletedTreesById(db: DBConnection, ids: Item['id'][]) {
+    const descendants = alias(itemsRaw, 'descendants');
+
+    const trees = await db
+      .select()
+      .from(itemsRaw)
+
+      .innerJoin(descendants, and(isDescendantOrSelf(itemsRaw.path, descendants.path)))
+      .where(inArray(itemsRaw.id, ids));
+
+    return trees.map(({ descendants }) => descendants);
   }
 }
