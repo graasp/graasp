@@ -1,20 +1,14 @@
 import { Strategy as CustomStrategy } from 'passport-custom';
-import { DataSource } from 'typeorm';
 
 import fastifyPassport from '@fastify/passport';
 import { fastify } from 'fastify';
 
-import { CompleteMember } from '@graasp/sdk';
-
 import registerAppPlugins from '../src/app';
 import { resetDependencies } from '../src/di/utils';
+import { DBConnection } from '../src/drizzle/db';
 import { BaseLogger } from '../src/logger';
 import ajvFormats from '../src/schemas/ajvFormats';
-import { Account } from '../src/services/account/entities/account';
 import { PassportStrategy } from '../src/services/auth/plugins/passport';
-import { Member } from '../src/services/member/entities/member';
-import { saveMember } from '../src/services/member/test/fixtures/members';
-import { DB_TEST_SCHEMA } from './constants';
 
 const originalSessionStrategy = fastifyPassport.strategy(PassportStrategy.Session)!;
 let originalStrictSessionStrategy;
@@ -23,7 +17,9 @@ let originalStrictSessionStrategy;
  * Override the session strategy to always validate the request. Set the given Account to request.user.member on authentications
  * @param account Account to set to request.user.member
  */
-export function mockAuthenticate(account: Account | undefined) {
+export function mockAuthenticate<T extends { id: string; name: string; type: string }>(
+  account: T | undefined,
+) {
   if (!originalStrictSessionStrategy) {
     originalStrictSessionStrategy = fastifyPassport.strategy(PassportStrategy.StrictSession);
   }
@@ -44,7 +40,7 @@ export function unmockAuthenticate() {
   }
 }
 
-const build = async ({ member }: { member?: CompleteMember | null } = {}) => {
+const build = async () => {
   // Reset dependencies before each test to ensure
   // having new singleton instances in every tests.
   resetDependencies();
@@ -69,28 +65,22 @@ const build = async ({ member }: { member?: CompleteMember | null } = {}) => {
 
   await registerAppPlugins(app);
 
+  // TODO: find out how to clear the DB in drizzle
   // drop all the database and synchronize schemas
-  await app.db.synchronize(true);
+  // await db.(true);
 
-  const savedMember: Member | undefined = member !== null ? await saveMember(member) : undefined;
-  if (savedMember) {
-    mockAuthenticate(savedMember);
-  } else {
-    // Set the original session strategy back
-    unmockAuthenticate();
-  }
-
-  return { app, actor: savedMember };
+  return { app };
 };
 
-export const clearDatabase = async (db: DataSource) => {
-  const entities = db.entityMetadatas;
-  for (const entity of entities) {
-    const repository = db.getRepository(entity.name);
-    await repository.query(
-      `TRUNCATE ${DB_TEST_SCHEMA}.${entity.tableName} RESTART IDENTITY CASCADE;`,
-    );
-  }
+export const clearDatabase = async (db: DBConnection) => {
+  // TODO: ?
+  // const entities = db.entityMetadatas;
+  // for (const entity of entities) {
+  //   const repository = db.getRepository(entity.name);
+  //   await repository.query(
+  //     `TRUNCATE ${DB_TEST_SCHEMA}.${entity.tableName} RESTART IDENTITY CASCADE;`,
+  //   );
+  // }
 };
 
 export default build;
@@ -98,4 +88,7 @@ export default build;
 export const MOCK_LOGGER = {
   error: jest.fn(),
   debug: jest.fn(),
+  info: jest.fn(),
 } as unknown as BaseLogger;
+
+export const MOCK_CAPTCHA = 'mockedCaptcha';

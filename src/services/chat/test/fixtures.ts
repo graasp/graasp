@@ -1,30 +1,38 @@
-import { AppDataSource } from '../../../plugins/datasource';
-import { Item } from '../../item/entities/Item';
-import { Member } from '../../member/entities/member';
-import { ChatMessage } from '../chatMessage';
-import { ChatMention } from '../plugins/mentions/chatMention';
+import { faker } from '@faker-js/faker';
+import { v4 } from 'uuid';
 
-export const saveChatMessages = async ({
+import { ChatMentionRaw, ChatMessageRaw } from '../../../drizzle/types';
+import { MinimalMember } from '../../../types';
+
+export const ChatMessageWithMentionFactory = ({
   creator,
-  item,
+  // item,
   mentionMember,
 }: {
-  creator: Member;
-  item: Item;
-  mentionMember?: Member;
-}) => {
-  const chatMentionRepo = AppDataSource.getRepository(ChatMention);
-  const rawChatMessageRepository = AppDataSource.getRepository(ChatMessage);
-  const chatMessages: ChatMessage[] = [];
-  const chatMentions: ChatMention[] = [];
+  creator: MinimalMember;
+  // item: Item;
+  mentionMember: MinimalMember;
+}): { chatMessage: ChatMessageRaw; chatMention: ChatMentionRaw } => {
   // mock the mention format of react-mention used in the chat-box
-  const mentionMessage = mentionMember ? `<!@${mentionMember.id}>[${mentionMember.name}]` : null;
+  const mentionMessage = `<!@${mentionMember.id}>[${mentionMember.name}]`;
 
-  for (let i = 0; i < 3; i++) {
-    const body = `${mentionMessage} some-text-${i} <!@${creator.id}>[${creator.name}]`;
-    const message = await rawChatMessageRepository.save({ item, creator, body });
-    chatMessages.push(message);
-    chatMentions.push(await chatMentionRepo.save({ account: mentionMember, message }));
-  }
-  return { chatMessages, chatMentions, mentionedMember: mentionMember };
+  const body = `${mentionMessage} some-text-${faker.word.sample()} <!@${creator.id}>[${creator.name}]`;
+  const chatMessage = {
+    id: v4(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    itemId: v4(),
+    creatorId: creator.id,
+    body,
+  };
+  const chatMention = {
+    accountId: mentionMember.id,
+    messageId: chatMessage.id,
+    id: v4(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    // TODO: fix type
+    status: 'read' as any,
+  };
+  return { chatMessage, chatMention };
 };

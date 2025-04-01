@@ -11,7 +11,8 @@ import { FastifyBaseLogger } from 'fastify';
 
 import { ItemType, UnionOfConst, getMimetype } from '@graasp/sdk';
 
-import { Item, isItemType } from '../../entities/Item';
+import { Item } from '../../../../drizzle/types';
+import { isItemType } from '../../discrimination';
 import { APP_URL_PREFIX, TMP_IMPORT_ZIP_FOLDER_PATH, URL_PREFIX } from './constants';
 
 export const prepareZip = async (file: Readable, log?: FastifyBaseLogger) => {

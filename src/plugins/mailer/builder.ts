@@ -5,7 +5,7 @@ import { DEFAULT_LANG } from '@graasp/translations';
 import i18next from '../../i18n';
 import { TRANSLATIONS } from '../../langs/constants';
 import { GRAASP_LANDING_PAGE_ORIGIN } from '../../utils/constants';
-import { Mail } from './service';
+import { type Mail } from './mailer.service';
 
 type CssStyles = { [key: string]: string };
 

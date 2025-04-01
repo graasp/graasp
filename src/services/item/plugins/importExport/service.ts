@@ -1,26 +1,27 @@
 import fs, { existsSync } from 'fs';
 import { readFile } from 'fs/promises';
-import { MAGIC_MIME_TYPE, Magic } from 'mmmagic';
+import mimetics from 'mimetics';
 import fetch from 'node-fetch';
 import path from 'path';
 import sanitize from 'sanitize-html';
 import { Readable } from 'stream';
-import { DataSource } from 'typeorm';
-import util from 'util';
+import { singleton } from 'tsyringe';
 import { v4 } from 'uuid';
 import { ZipFile } from 'yazl';
 
 import { ItemSettings, ItemType, ItemTypeUnion, getMimetype } from '@graasp/sdk';
 
+import { DBConnection } from '../../../../drizzle/db';
+import { Item } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
-import { Repositories, buildRepositories } from '../../../../utils/repositories';
+import { MaybeUser, MinimalMember } from '../../../../types';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
-import { Actor, Member } from '../../../member/entities/member';
-import { Item, isItemType } from '../../entities/Item';
-import { ItemService } from '../../service';
-import { EtherpadItemService } from '../etherpad/service';
-import FileItemService from '../file/service';
-import { H5PService } from '../html/h5p/service';
+import { BasicItemService } from '../../basic.service';
+import { isItemType } from '../../discrimination';
+import { ItemService } from '../../item.service';
+import { EtherpadItemService } from '../etherpad/etherpad.service';
+import FileItemService from '../file/itemFile.service';
+import { H5PService } from '../html/h5p/h5p.service';
 import {
   DESCRIPTION_EXTENSION,
   GRAASP_DOCUMENT_EXTENSION,
@@ -49,30 +50,29 @@ export type GraaspExportItem = {
   mimetype?: string;
 };
 
-const magic = new Magic(MAGIC_MIME_TYPE);
-const asyncDetectFile = util.promisify(magic.detectFile.bind(magic));
-
+@singleton()
 export class ImportExportService {
   private readonly fileItemService: FileItemService;
   private readonly h5pService: H5PService;
   private readonly itemService: ItemService;
+  private readonly basicItemService: BasicItemService;
   private readonly etherpadService: EtherpadItemService;
-  private readonly db: DataSource;
   private readonly log: BaseLogger;
+  private readonly mimetics: typeof mimetics;
 
   constructor(
-    db: DataSource,
     fileItemService: FileItemService,
     itemService: ItemService,
     h5pService: H5PService,
     etherpadService: EtherpadItemService,
+    basicItemService: BasicItemService,
     log: BaseLogger,
   ) {
-    this.db = db;
     this.fileItemService = fileItemService;
     this.h5pService = h5pService;
     this.itemService = itemService;
     this.etherpadService = etherpadService;
+    this.basicItemService = basicItemService;
     this.log = log;
   }
 
@@ -92,13 +92,12 @@ export class ImportExportService {
   /**
    * private function that create an item and its necessary membership with given parameters
    * @param {Member} actor creator
-   * @param {Repositories} repositories
    * @param {any} options.filename filename of the file to import
    * @returns {any}
    */
   private async _saveItemFromFilename(
-    actor: Member,
-    repositories: Repositories,
+    db: DBConnection,
+    actor: MinimalMember,
     options: {
       filename: string;
       folderPath: string;
@@ -129,7 +128,7 @@ export class ImportExportService {
       const description = await this._getDescriptionForFilepath(path.join(filepath, filename));
 
       this.log.debug(`create folder from '${filename}'`);
-      return this.itemService.post(actor, repositories, {
+      return this.itemService.post(db, actor, {
         item: {
           description,
           name: filename,
@@ -170,7 +169,7 @@ export class ImportExportService {
               },
             },
           };
-          return this.itemService.post(actor, repositories, {
+          return this.itemService.post(db, actor, {
             item: newItem,
             parentId: parent?.id,
           });
@@ -185,7 +184,7 @@ export class ImportExportService {
               },
             },
           };
-          return this.itemService.post(actor, repositories, {
+          return this.itemService.post(db, actor, {
             item: newItem,
             parentId: parent?.id,
           });
@@ -206,15 +205,21 @@ export class ImportExportService {
             },
           },
         };
-        return this.itemService.post(actor, repositories, { item: newItem, parentId: parent?.id });
+        return this.itemService.post(db, actor, {
+          item: newItem,
+          parentId: parent?.id,
+        });
       }
 
       // normal files
       default: {
-        const mimetype = await asyncDetectFile(filepath);
+        // TODO: replace by file-type library once we are in ESM
+        const fileTypeAnalysis = await mimetics.parseAsync(fs.readFileSync(filepath));
+        const mimetype = fileTypeAnalysis?.mime ?? 'text/plain';
+
         // upload file
         const file = fs.createReadStream(filepath);
-        const item = await this.fileItemService.upload(actor, repositories, {
+        const item = await this.fileItemService.upload(db, actor, {
           filename,
           mimetype,
           description,
@@ -228,14 +233,18 @@ export class ImportExportService {
   }
 
   async fetchItemData(
+    db: DBConnection,
     actor,
-    repositories,
     item,
-  ): Promise<{ name: string; stream: NodeJS.ReadableStream; mimetype: string }> {
+  ): Promise<{
+    name: string;
+    stream: NodeJS.ReadableStream;
+    mimetype: string;
+  }> {
     switch (true) {
       case isItemType(item, ItemType.LOCAL_FILE) || isItemType(item, ItemType.S3_FILE): {
         const mimetype = getMimetype(item.extra) || 'application/octet-stream';
-        const url = await this.fileItemService.getUrl(actor, repositories, {
+        const url = await this.fileItemService.getUrl(db, actor, {
           itemId: item.id,
         });
         const res = await fetch(url);
@@ -251,7 +260,11 @@ export class ImportExportService {
         const res = await fetch(h5pUrl);
 
         const filename = getFilenameFromItem(item);
-        return { mimetype: 'application/octet-stream', name: filename, stream: res.body };
+        return {
+          mimetype: 'application/octet-stream',
+          name: filename,
+          stream: res.body,
+        };
       }
       case isItemType(item, ItemType.DOCUMENT): {
         return {
@@ -277,7 +290,7 @@ export class ImportExportService {
       case isItemType(item, ItemType.ETHERPAD): {
         return {
           stream: Readable.from(
-            await this.etherpadService.getEtherpadContentFromItem(actor, item.id),
+            await this.etherpadService.getEtherpadContentFromItem(db, actor, item.id),
           ),
           name: getFilenameFromItem(item),
           mimetype: 'text/html',
@@ -290,12 +303,11 @@ export class ImportExportService {
   /**
    * Add item in archive, recursively add children in folder
    * @param actor
-   * @param repositories
    * @param args
    */
   private async _addItemToZip(
-    actor: Actor,
-    repositories: Repositories,
+    db: DBConnection,
+    actor: MaybeUser,
     args: {
       item: Item;
       archiveRootPath: string;
@@ -315,10 +327,10 @@ export class ImportExportService {
     if (isItemType(item, ItemType.FOLDER)) {
       // append description
       const folderPath = path.join(archiveRootPath, item.name);
-      const children = await this.itemService.getChildren(actor, repositories, item.id);
+      const children = await this.itemService.getChildren(db, actor, item.id);
       const result = await Promise.all(
         children.map((child) =>
-          this._addItemToZip(actor, repositories, {
+          this._addItemToZip(db, actor, {
             item: child,
             archiveRootPath: folderPath,
             archive,
@@ -333,7 +345,7 @@ export class ImportExportService {
     }
 
     // save single item
-    const { stream, name } = await this.fetchItemData(actor, repositories, item);
+    const { stream, name } = await this.fetchItemData(db, actor, item);
     return archive.addReadStream(stream, path.join(archiveRootPath, name));
   }
 
@@ -346,8 +358,8 @@ export class ImportExportService {
    * @returns A full manifest promise for the given item
    */
   private async addItemToGraaspExport(
+    db: DBConnection,
     actor: Actor,
-    repositories: Repositories,
     args: {
       item: Item;
       archive: ZipFile;
@@ -369,11 +381,11 @@ export class ImportExportService {
     // treat folder items recursively
     const childrenManifest: GraaspExportItem[] = [];
     if (isItemType(item, ItemType.FOLDER)) {
-      const childrenItems = await this.itemService.getChildren(actor, repositories, item.id, {
+      const childrenItems = await this.itemService.getChildren(db, actor, item.id, {
         ordered: true,
       });
       for (const child of childrenItems) {
-        await this.addItemToGraaspExport(actor, repositories, {
+        await this.addItemToGraaspExport(db, actor, {
           item: child,
           archive,
           itemManifest: childrenManifest,
@@ -411,7 +423,7 @@ export class ImportExportService {
    * @param item The root item
    * @returns A zip file promise
    */
-  async exportRaw(actor: Actor, repositories: Repositories, item: Item) {
+  async exportRaw(db: DBConnection, actor: Actor, item: Item) {
     // init archive
     const archive = new ZipFile();
     archive.outputStream.on('error', function (err) {
@@ -421,7 +433,7 @@ export class ImportExportService {
     const rootPath = path.dirname('./');
 
     // import items in zip recursively
-    await this._addItemToZip(actor, repositories, {
+    await this._addItemToZip(db, actor, {
       item,
       archiveRootPath: rootPath,
       archive,
@@ -438,7 +450,7 @@ export class ImportExportService {
    * @param item The root item
    * @returns A zip file promise
    */
-  async exportGraasp(actor: Actor, repositories: Repositories, item: Item) {
+  async exportGraasp(db: DBConnection, actor: Actor, item: Item) {
     // init archive
     const archive = new ZipFile();
     archive.outputStream.on('error', function (err) {
@@ -447,7 +459,7 @@ export class ImportExportService {
     // path used to index files in archive
     const rootPath = path.dirname('./');
 
-    const manifest = await this.addItemToGraaspExport(actor, repositories, {
+    const manifest = await this.addItemToGraaspExport(db, actor, {
       item,
       archive,
       itemManifest: [],
@@ -467,13 +479,12 @@ export class ImportExportService {
   /**
    * Util recursive function that create graasp item given folder content
    * @param actor
-   * @param repositories
    * @param options.parent parent item might be saved in
    * @param options.folderPath current path in archive of the parent
    */
   async _import(
-    actor: Member,
-    repositories: Repositories,
+    db: DBConnection,
+    actor: MinimalMember,
     { parent, folderPath }: { parent?: Item; folderPath: string },
   ) {
     const filenames = fs.readdirSync(folderPath);
@@ -486,8 +497,8 @@ export class ImportExportService {
         try {
           // transaction is necessary since we are adding data
           // we don't add it at the very top to allow partial zip to be updated
-          await this.db.transaction(async (manager) => {
-            const item = await this._saveItemFromFilename(actor, buildRepositories(manager), {
+          await db.transaction(async (tx) => {
+            const item = await this._saveItemFromFilename(tx, actor, {
               filename,
               folderPath,
               parent,
@@ -513,7 +524,7 @@ export class ImportExportService {
     for (const newItem of items) {
       const { type, name } = newItem;
       if (type === ItemType.FOLDER) {
-        await this._import(actor, repositories, {
+        await this._import(db, actor, {
           folderPath: path.join(folderPath, name),
           parent: newItem,
         });
@@ -522,8 +533,8 @@ export class ImportExportService {
   }
 
   async import(
-    actor: Member,
-    repositories: Repositories,
+    db: DBConnection,
+    actor: MinimalMember,
     {
       folderPath,
       targetFolder,
@@ -533,10 +544,10 @@ export class ImportExportService {
     let parent: Item | undefined;
     if (parentId) {
       // check item permission
-      parent = await this.itemService.get(actor, repositories, parentId);
+      parent = await this.basicItemService.get(db, actor, parentId);
     }
 
-    await this._import(actor, repositories, { parent, folderPath });
+    await this._import(db, actor, { parent, folderPath });
 
     // delete zip and content
     fs.rmSync(targetFolder, { recursive: true });

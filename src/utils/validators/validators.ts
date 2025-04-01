@@ -2,12 +2,6 @@ import { InvalidUrlError, RegexValidatorError, UrlMissingProtocolError } from '.
 import { Validator, Variable } from './types';
 import { urlContainsProtocol, valueShouldBeDefined } from './utils';
 
-export class RequiredValidator implements Validator {
-  public validate({ name, value }: Variable) {
-    return { name, value: valueShouldBeDefined(name, value) };
-  }
-}
-
 export class UrlValidator implements Validator {
   public validate({ name, value }: Variable) {
     const strUrl = valueShouldBeDefined(name, value);

@@ -5,16 +5,7 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, ItemLoginSchemaType } from '@graasp/sdk';
 
-import { AppDataSource } from '../../../plugins/datasource';
 import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
-import { ItemTestUtils } from '../../item/test/fixtures/items';
-import { Guest } from '../../itemLogin/entities/guest';
-import { ItemLoginSchema } from '../../itemLogin/entities/itemLoginSchema';
-
-const testUtils = new ItemTestUtils();
-
-const rawItemLoginSchemaRepository = AppDataSource.getRepository(ItemLoginSchema);
-const rawGuestRepository = AppDataSource.getRepository(Guest);
 
 /**
  * Setup environment for a guest logging in

@@ -1,17 +1,20 @@
 import { ShortLink } from '@graasp/sdk';
 
-import { ShortLink as Entity } from '../entities/ShortLink';
+import { ShortLinkRaw } from '../../../../../drizzle/types';
 
 export class ShortLinkDTO {
+  /**
+   * Strip sensible data
+   */
   public static from({
     alias,
     platform,
-    item,
-  }: Pick<Entity, 'alias' | 'platform' | 'item'>): ShortLink {
+    itemId,
+  }: Pick<ShortLinkRaw, 'alias' | 'platform' | 'itemId'>): ShortLink {
     return {
       alias,
       platform,
-      itemId: item.id,
+      itemId,
     };
   }
 }

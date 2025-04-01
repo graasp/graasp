@@ -1,3 +1,4 @@
+import { and, eq, ne } from 'drizzle-orm';
 import FormData, { Readable } from 'form-data';
 import fs from 'fs';
 import { readFile } from 'fs/promises';
@@ -16,13 +17,21 @@ import build, {
   unmockAuthenticate,
 } from '../../../../../../test/app';
 import { seedFromJson } from '../../../../../../test/mocks/seed';
+import { db } from '../../../../../drizzle/db';
+import { isDescendantOrSelf } from '../../../../../drizzle/operations';
+import { itemsRaw } from '../../../../../drizzle/schema';
+import { assertIsDefined } from '../../../../../utils/assertions';
 import { LocalFileRepository } from '../../../../file/repositories/local';
-import { saveMember } from '../../../../member/test/fixtures/members';
-import { ItemTestUtils } from '../../../test/fixtures/items';
 import { GRAASP_MANIFEST_FILENAME } from '../constants';
 import { GraaspExportItem } from '../service';
 import { prepareZip } from '../utils';
 import * as ARCHIVE_CONTENT from './fixtures/archive';
+
+const getItemByName = async (itemName: string) => {
+  return await db.query.itemsRaw.findFirst({
+    where: eq(itemsRaw.name, itemName),
+  });
+};
 
 // we need a different form data for each test
 const createFormData = (filename: string) => {
@@ -100,8 +109,6 @@ const setupActorAndItems = async () => {
 
 jest.mock('node-fetch');
 
-const testUtils = new ItemTestUtils();
-
 const uploadDoneMock = jest.fn(async () => console.debug('aws s3 storage upload'));
 const deleteObjectMock = jest.fn(async () => console.debug('deleteObjectMock'));
 const copyObjectMock = jest.fn(async () => console.debug('copyObjectMock'));
@@ -151,11 +158,11 @@ describe('ZIP routes tests', () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
-    ({ app } = await build({ member: null }));
+    ({ app } = await build());
   });
 
   afterAll(async () => {
-    await clearDatabase(app.db);
+    await clearDatabase(db);
     app.close();
   });
 
@@ -173,8 +180,10 @@ describe('ZIP routes tests', () => {
 
   describe('POST /zip-import', () => {
     it('Import successfully at root if signed in', async () => {
-      const actor = await saveMember();
+      const { actor } = await seedFromJson();
+      assertIsDefined(actor);
       mockAuthenticate(actor);
+
       const form = createFormData('archive.zip');
 
       const response = await app.inject({
@@ -232,21 +241,22 @@ describe('ZIP routes tests', () => {
           }
         }
 
-        const child = await testUtils.rawItemRepository.findOne({
-          where: { name: ARCHIVE_CONTENT.childContent.name },
-        });
-        const folderItem = await testUtils.rawItemRepository.findOne({
-          where: { name: ARCHIVE_CONTENT.folder.name },
-        });
+        const child = await getItemByName(ARCHIVE_CONTENT.childContent.name);
+        const folderItem = await getItemByName(ARCHIVE_CONTENT.folder.name);
+        assertIsDefined(folderItem);
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        expect(child!.path).toContain(folderItem!.path);
+        expect(child!.path).toContain(folderItem.path);
       }, 5000);
     });
     it('Import successfully in folder if signed in', async () => {
-      const actor = await saveMember();
+      const {
+        actor,
+        items: [parentItem],
+      } = await seedFromJson({ items: [{ memberships: [{ account: 'actor' }] }] });
+      assertIsDefined(actor);
       mockAuthenticate(actor);
+
       const form = createFormData('archive.zip');
-      const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
 
       const response = await app.inject({
         method: HttpMethod.Post,
@@ -259,11 +269,12 @@ describe('ZIP routes tests', () => {
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        const items = await testUtils.rawItemRepository
-          .createQueryBuilder('item')
-          .leftJoinAndSelect('item.creator', 'creator')
-          .where('item.path <@ :path AND item.path != :path', { path: parentItem.path })
-          .getMany();
+        const items = await db.query.itemsRaw.findMany({
+          where: and(
+            isDescendantOrSelf(itemsRaw.path, parentItem.path),
+            ne(itemsRaw.id, parentItem.id),
+          ),
+        });
         expect(items).toHaveLength(8);
 
         for (const file of ARCHIVE_CONTENT.archive) {
@@ -273,8 +284,7 @@ describe('ZIP routes tests', () => {
           }
           expect(item.type).toEqual(file.type);
           expect(item.description).toContain(file.description);
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          expect(item.creator!.id).toEqual(actor.id);
+          expect(item.creatorId).toEqual(actor.id);
 
           if (item.type === ItemType.S3_FILE) {
             expect((item.extra[ItemType.S3_FILE] as { name: string }).name).toEqual(
@@ -292,22 +302,20 @@ describe('ZIP routes tests', () => {
           }
         }
 
-        const child = await testUtils.rawItemRepository.findOne({
-          where: { name: ARCHIVE_CONTENT.childContent.name },
-        });
-        const folderItem = await testUtils.rawItemRepository.findOne({
-          where: { name: ARCHIVE_CONTENT.folder.name },
-        });
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const child = await getItemByName(ARCHIVE_CONTENT.childContent.name);
+        const folderItem = await getItemByName(ARCHIVE_CONTENT.folder.name);
         expect(child!.path).toContain(folderItem!.path);
       }, 5000);
     });
     it('Import archive in folder with empty folder', async () => {
-      const actor = await saveMember();
+      const {
+        actor,
+        items: [parentItem],
+      } = await seedFromJson({ items: [{ memberships: [{ account: 'actor' }] }] });
+      assertIsDefined(actor);
       mockAuthenticate(actor);
-      const form = createFormData('empty.zip');
-      const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
 
+      const form = createFormData('empty.zip');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/items/zip-import',
@@ -319,20 +327,24 @@ describe('ZIP routes tests', () => {
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        const items = await testUtils.rawItemRepository
-          .createQueryBuilder('item')
-          .leftJoinAndSelect('item.creator', 'creator')
-          .where('item.path <@ :path AND item.path != :path', { path: parentItem.path })
-          .getMany();
+        const items = await db.query.itemsRaw.findMany({
+          where: and(
+            isDescendantOrSelf(itemsRaw.path, parentItem.path),
+            ne(itemsRaw.id, parentItem.id),
+          ),
+        });
         expect(items).toHaveLength(1);
       }, 1000);
     });
     it('Import in folder and sanitize html, txt and description', async () => {
-      const actor = await saveMember();
+      const {
+        actor,
+        items: [parentItem],
+      } = await seedFromJson({ items: [{ memberships: [{ account: 'actor' }] }] });
+      assertIsDefined(actor);
       mockAuthenticate(actor);
-      const form = createFormData('htmlAndText.zip');
-      const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
 
+      const form = createFormData('htmlAndText.zip');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/items/zip-import',
@@ -344,11 +356,12 @@ describe('ZIP routes tests', () => {
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        const items = await testUtils.rawItemRepository
-          .createQueryBuilder('item')
-          .leftJoinAndSelect('item.creator', 'creator')
-          .where('item.path <@ :path AND item.path != :path', { path: parentItem.path })
-          .getMany();
+        const items = await db.query.itemsRaw.findMany({
+          where: and(
+            isDescendantOrSelf(itemsRaw.path, parentItem.path),
+            ne(itemsRaw.id, parentItem.id),
+          ),
+        });
         expect(items).toHaveLength(2);
 
         for (const item of items) {
@@ -398,12 +411,14 @@ describe('ZIP routes tests', () => {
 
   describe('POST /export', () => {
     it('Export successfully if signed in', async () => {
-      const actor = await saveMember();
-      mockAuthenticate(actor);
-      const { item } = await testUtils.saveItemAndMembership({
-        member: actor,
-        item: { name: 'itemname' },
+      const {
+        actor,
+        items: [item],
+      } = await seedFromJson({
+        items: [{ name: 'item-name', memberships: [{ account: 'actor' }] }],
       });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
 
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -414,7 +429,8 @@ describe('ZIP routes tests', () => {
     });
 
     it('Export successfully h5p file', async () => {
-      const actor = await saveMember();
+      const { actor } = await seedFromJson({});
+      assertIsDefined(actor);
       mockAuthenticate(actor);
 
       // mocks - fetching some h5p content

@@ -1,11 +1,18 @@
+import { singleton } from 'tsyringe';
+
 import { ItemVisibilityType, ResultOf, ThumbnailsBySize } from '@graasp/sdk';
 
-import { Repositories } from '../../utils/repositories';
-import { ItemMembership } from '../itemMembership/entities/ItemMembership';
-import { Actor } from '../member/entities/member';
-import { Item } from './entities/Item';
-import { ItemVisibility } from './plugins/itemVisibility/ItemVisibility';
-import { ItemThumbnailService } from './plugins/thumbnail/service';
+import { DBConnection } from '../../drizzle/db';
+import {
+  Item,
+  ItemMembershipRaw,
+  ItemVisibilityRaw,
+  ItemWithCreator,
+  MemberRaw,
+} from '../../drizzle/types';
+import { ItemMembershipRepository } from '../itemMembership/membership.repository';
+import { ItemVisibilityRepository } from './plugins/itemVisibility/itemVisibility.repository';
+import { ItemThumbnailService } from './plugins/thumbnail/itemThumbnail.service';
 import { ItemsThumbnails } from './plugins/thumbnail/types';
 
 type GraaspItem = Pick<
@@ -14,34 +21,36 @@ type GraaspItem = Pick<
   | 'name'
   | 'type'
   | 'path'
-  | 'geolocation'
   | 'description'
   | 'extra'
   | 'createdAt'
-  | 'creator'
   | 'updatedAt'
   | 'settings'
   | 'lang'
->;
+> & {
+  creator: MemberRaw | null;
+  // TODO: purposely remove geolocation -> lets create a new endpoint
+  // geolocation: string
+};
 
 export type PackedItem = GraaspItem & {
   // permission can be undefined because the item is public
-  permission: ItemMembership['permission'] | null;
-  hidden?: ItemVisibility;
-  public?: ItemVisibility;
+  permission: ItemMembershipRaw['permission'] | null;
+  hidden?: ItemVisibilityRaw;
+  public?: ItemVisibilityRaw;
   thumbnails?: ThumbnailsBySize;
 };
 
 export class ItemWrapper {
-  item: Item;
-  actorPermission?: { permission: ItemMembership['permission'] } | null;
-  visibilities?: ItemVisibility[] | null;
+  item: ItemWithCreator;
+  actorPermission?: { permission: ItemMembershipRaw['permission'] } | null;
+  visibilities?: ItemVisibilityRaw[] | null;
   private readonly thumbnails?: ThumbnailsBySize;
 
   constructor(
-    item: Item,
-    im?: { permission: ItemMembership['permission'] } | null,
-    visibilities?: ItemVisibility[] | null,
+    item: ItemWithCreator,
+    im?: { permission: ItemMembershipRaw['permission'] } | null,
+    visibilities?: ItemVisibilityRaw[] | null,
     thumbnails?: ThumbnailsBySize,
   ) {
     this.item = item;
@@ -51,15 +60,51 @@ export class ItemWrapper {
   }
 
   /**
+   * build item unit with complementary info, such as permission
+   * @returns item unit with permission
+   */
+  packed(): PackedItem {
+    // sort visibilities to retrieve the most restrictive (highest) visibility first
+    if (this.visibilities) {
+      this.visibilities.sort((a, b) => (a.itemPath.length > b.itemPath.length ? 1 : -1));
+    }
+
+    return {
+      ...this.item,
+      permission: this.actorPermission?.permission ?? null,
+      hidden: this.visibilities?.find((t) => t.type === ItemVisibilityType.Hidden),
+      public: this.visibilities?.find((t) => t.type === ItemVisibilityType.Public),
+      thumbnails: this.thumbnails,
+    };
+  }
+}
+
+@singleton()
+export class ItemWrapperService {
+  private readonly itemVisibilityRepository: ItemVisibilityRepository;
+  private readonly itemMembershipRepository: ItemMembershipRepository;
+  private readonly itemThumbnailService: ItemThumbnailService;
+
+  constructor(
+    itemVisibilityRepository: ItemVisibilityRepository,
+    itemMembershipRepository: ItemMembershipRepository,
+    itemThumbnailService: ItemThumbnailService,
+  ) {
+    this.itemVisibilityRepository = itemVisibilityRepository;
+    this.itemMembershipRepository = itemMembershipRepository;
+    this.itemThumbnailService = itemThumbnailService;
+  }
+
+  /**
    * merge items and their permission in a result of structure
    * @param items result of many items
    * @param memberships result memberships for many items
    * @returns PackedItem[]
    */
-  static merge(
-    items: Item[],
-    memberships: ResultOf<ItemMembership | null>,
-    visibilities?: ResultOf<ItemVisibility[] | null>,
+  merge(
+    items: ItemWithCreator[],
+    memberships: ResultOf<ItemMembershipRaw | null>,
+    visibilities?: ResultOf<ItemVisibilityRaw[] | null>,
     itemsThumbnails?: ItemsThumbnails,
   ): PackedItem[] {
     const data: PackedItem[] = [];
@@ -71,7 +116,7 @@ export class ItemWrapper {
       // sort visibilities to retrieve the most restrictive (highest) visibility first
       const itemVisibilities = visibilities?.data?.[i.id];
       if (itemVisibilities) {
-        itemVisibilities.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
+        itemVisibilities.sort((a, b) => (a.itemPath.length > b.itemPath.length ? 1 : -1));
       }
 
       data.push({
@@ -92,10 +137,10 @@ export class ItemWrapper {
    * @param memberships result memberships for many items
    * @returns ResultOf<PackedItem>
    */
-  static mergeResult(
-    items: ResultOf<Item>,
-    memberships: ResultOf<ItemMembership | null>,
-    visibilities?: ResultOf<ItemVisibility[] | null>,
+  mergeResult(
+    items: ResultOf<ItemWithCreator>,
+    memberships: ResultOf<ItemMembershipRaw | null>,
+    visibilities?: ResultOf<ItemVisibilityRaw[] | null>,
     itemsThumbnails?: ItemsThumbnails,
   ): ResultOf<PackedItem> {
     const data: ResultOf<PackedItem>['data'] = {};
@@ -107,7 +152,7 @@ export class ItemWrapper {
       // sort visibilities to retrieve the most restrictive (highest) visibility first
       const itemVisibilities = visibilities?.data?.[i.id];
       if (itemVisibilities) {
-        itemVisibilities.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
+        itemVisibilities.sort((a, b) => (a.itemPath.length > b.itemPath.length ? 1 : -1));
       }
 
       data[i.id] = {
@@ -122,12 +167,10 @@ export class ItemWrapper {
     return { data, errors: [...items.errors, ...memberships.errors] };
   }
 
-  static async createPackedItems(
-    actor: Actor,
-    repositories: Repositories,
-    itemThumbnailService: ItemThumbnailService,
-    items: Item[],
-    memberships?: ResultOf<ItemMembership[]>,
+  async createPackedItems(
+    db: DBConnection,
+    items: ItemWithCreator[],
+    memberships?: ResultOf<ItemMembershipRaw[]>,
     { withDeleted = false }: { withDeleted?: boolean } = {},
   ): Promise<PackedItem[]> {
     // no items, so nothing to fetch
@@ -135,15 +178,17 @@ export class ItemWrapper {
       return [];
     }
 
-    const visibilities = await repositories.itemVisibilityRepository.getForManyItems(items, {
+    const visibilities = await this.itemVisibilityRepository.getForManyItems(db, items, {
       withDeleted,
     });
 
     const m =
       memberships ??
-      (await repositories.itemMembershipRepository.getForManyItems(items, { withDeleted }));
+      (await this.itemMembershipRepository.getForManyItems(db, items, {
+        withDeleted,
+      }));
 
-    const itemsThumbnails = await itemThumbnailService.getUrlsByItems(items);
+    const itemsThumbnails = await this.itemThumbnailService.getUrlsByItems(items);
 
     return items.map((item) => {
       const permission = m.data[item.id][0]?.permission;
@@ -163,24 +208,5 @@ export class ItemWrapper {
         ...(thumbnails ? { thumbnails } : {}),
       } as unknown as PackedItem;
     });
-  }
-
-  /**
-   * build item unit with complementary info, such as permission
-   * @returns item unit with permission
-   */
-  packed(): PackedItem {
-    // sort visibilities to retrieve the most restrictive (highest) visibility first
-    if (this.visibilities) {
-      this.visibilities.sort((a, b) => (a.item.path.length > b.item.path.length ? 1 : -1));
-    }
-
-    return {
-      ...this.item,
-      permission: this.actorPermission?.permission ?? null,
-      hidden: this.visibilities?.find((t) => t.type === ItemVisibilityType.Hidden),
-      public: this.visibilities?.find((t) => t.type === ItemVisibilityType.Public),
-      thumbnails: this.thumbnails,
-    };
   }
 }

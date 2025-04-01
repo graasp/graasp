@@ -6,15 +6,19 @@ import { MultipartFields, MultipartFile } from '@fastify/multipart';
 
 import { ItemGeolocation, ItemType, ItemTypeUnion, isChildOf } from '@graasp/sdk';
 
+import { Item, ItemRaw } from '../../drizzle/types';
 import { NoFileProvided } from '../../utils/errors';
-import { FolderItem, Item, isItemType } from './entities/Item';
+import { FolderItem, isItemType } from './discrimination';
 import { validateGeolocation, validateSettings } from './validation';
 
-const itemOrderFn = (a: Item, b: Item) => {
+const itemOrderFn = (a: ItemRaw, b: ItemRaw) => {
   return (a.order ?? 0) - (b.order ?? 0);
 };
 // cannot use sdk sort because of createdAt type
-export const sortChildrenForTreeWith = (descendants: Item[], parentItem: FolderItem): Item[] => {
+export const sortChildrenForTreeWith = <T extends ItemRaw>(
+  descendants: T[],
+  parentItem: FolderItem,
+): T[] => {
   const directChildren = descendants.filter((child) => isChildOf(child.path, parentItem.path));
 
   // order

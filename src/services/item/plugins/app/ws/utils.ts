@@ -1,6 +1,6 @@
 import { ItemType, Websocket } from '@graasp/sdk';
 
-import { Item } from '../../../entities/Item';
+import { Item } from '../../../../../drizzle/types';
 
 export const checkItemIsApp = (item: Item): void => {
   if (item.type !== ItemType.APP) {

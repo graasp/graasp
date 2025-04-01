@@ -1,12 +1,9 @@
 /**
  * App websocket events are registered under these topics
  */
-import { AppAction } from '../appAction/appAction';
-import { AppData } from '../appData/appData';
-import { AppSetting } from '../appSetting/appSettings';
+import { AppActionRaw, AppDataRaw, AppSettingRaw } from '../../../../../drizzle/types';
 
 // changes on app entities
-// TODO: Move these topics to graasp/sdk
 export const appDataTopic = 'app-data';
 export const appActionsTopic = 'app-actions';
 export const appSettingsTopic = 'app-settings';
@@ -26,7 +23,7 @@ interface AppEvent {
  */
 interface AppDataEvent extends AppEvent {
   kind: typeof appDataTopic;
-  appData: AppData;
+  appData: AppDataRaw;
 }
 
 /**
@@ -36,7 +33,7 @@ interface AppDataEvent extends AppEvent {
  * @returns instance of app data event
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const AppDataEvent = (op: AppDataEvent['op'], appData: AppData): AppDataEvent => ({
+export const AppDataEvent = (op: AppDataEvent['op'], appData: AppDataRaw): AppDataEvent => ({
   kind: appDataTopic,
   op,
   appData,
@@ -47,7 +44,7 @@ export const AppDataEvent = (op: AppDataEvent['op'], appData: AppData): AppDataE
  */
 interface AppActionEvent extends AppEvent {
   kind: typeof appActionsTopic;
-  appAction: AppAction;
+  appAction: AppActionRaw;
 }
 
 /**
@@ -57,7 +54,10 @@ interface AppActionEvent extends AppEvent {
  * @returns instance of app action event
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const AppActionEvent = (op: AppActionEvent['op'], appAction: AppAction): AppActionEvent => ({
+export const AppActionEvent = (
+  op: AppActionEvent['op'],
+  appAction: AppActionRaw,
+): AppActionEvent => ({
   kind: appActionsTopic,
   op,
   appAction,
@@ -68,7 +68,7 @@ export const AppActionEvent = (op: AppActionEvent['op'], appAction: AppAction): 
  */
 interface AppSettingEvent extends AppEvent {
   kind: typeof appSettingsTopic;
-  appSetting: AppSetting;
+  appSetting: AppSettingRaw;
 }
 
 /**
@@ -80,7 +80,7 @@ interface AppSettingEvent extends AppEvent {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const AppSettingEvent = (
   op: AppSettingEvent['op'],
-  appSetting: AppSetting,
+  appSetting: AppSettingRaw,
 ): AppSettingEvent => ({
   kind: appSettingsTopic,
   op,

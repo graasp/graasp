@@ -3,8 +3,9 @@ import striptags from 'striptags';
 
 import { ItemType, MimeTypes, getMimetype } from '@graasp/sdk';
 
+import { Item } from '../../../../../drizzle/types';
 import { TMP_FOLDER } from '../../../../../utils/config';
-import { Item, isItemType } from '../../../entities/Item';
+import { LocalFileItem, S3FileItem, isItemType } from '../../../discrimination';
 
 export const stripHtml = (str?: string | null): string => (str ? striptags(str) : '');
 
@@ -15,7 +16,7 @@ export const isFileType = (item: Item) => {
   return isItemType(item, ItemType.S3_FILE) || isItemType(item, ItemType.LOCAL_FILE);
 };
 
-export const isImage = (item: Item): item is Item<'s3File'> | Item<'file'> => {
+export const isImage = (item: Item): item is S3FileItem | LocalFileItem => {
   if (!isFileType(item)) {
     return false;
   }

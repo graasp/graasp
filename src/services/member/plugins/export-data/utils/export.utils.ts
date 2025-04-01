@@ -7,12 +7,12 @@ import { DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS } from '@graasp/sdk';
 
 import { TRANSLATIONS } from '../../../../../langs/constants';
 import { MailBuilder } from '../../../../../plugins/mailer/builder';
-import { MailerService } from '../../../../../plugins/mailer/service';
+import { MailerService } from '../../../../../plugins/mailer/mailer.service';
+import { MemberInfo, MinimalMember } from '../../../../../types';
 import { TMP_FOLDER } from '../../../../../utils/config';
-import { EXPORT_FILE_EXPIRATION, ZIP_MIMETYPE } from '../../../../action/constants/constants';
+import { EXPORT_FILE_EXPIRATION, ZIP_MIMETYPE } from '../../../../action/constants';
 import { CannotWriteFileError } from '../../../../action/utils/errors';
-import FileService from '../../../../file/service';
-import { Member } from '../../../entities/member';
+import FileService from '../../../../file/file.service';
 
 /**
  * DataToExport will be used to store each values in its own file with the name of the key.
@@ -142,7 +142,7 @@ export class ArchiveDataExporter {
     uploadedRootFolder,
   }: {
     fileService: FileService;
-    member: Member;
+    member: MinimalMember;
     exportId: string;
     dataToExport: DataToExport;
     storageFolder: string;
@@ -197,7 +197,7 @@ export class RequestDataExportService {
     this.mailerService = mailerService;
   }
 
-  private async _sendExportLinkInMail(actor: Member, exportId: string, archiveDate: Date) {
+  private async _sendExportLinkInMail(actor: MemberInfo, exportId: string, archiveDate: Date) {
     const filepath = buildUploadedExportFilePath(this.ROOT_EXPORT_FOLDER, exportId, archiveDate);
     const link = await this.fileService.getUrl({
       path: filepath,
@@ -220,7 +220,7 @@ export class RequestDataExportService {
   }
 
   async requestExport(
-    member: Member,
+    memberInfo: MemberInfo,
     exportId: string,
     dataRetriever: () => Promise<DataToExport>,
   ) {
@@ -235,7 +235,7 @@ export class RequestDataExportService {
     // archives the data and upload it.
     const { archiveCreationTime } = await new ArchiveDataExporter().createAndUploadArchive({
       fileService: this.fileService,
-      member,
+      member: memberInfo,
       exportId,
       dataToExport,
       storageFolder: tmpFolder,
@@ -253,6 +253,6 @@ export class RequestDataExportService {
       console.error(`${tmpFolder} was not found, and was not deleted`);
     }
 
-    this._sendExportLinkInMail(member, exportId, archiveCreationTime);
+    this._sendExportLinkInMail(memberInfo, exportId, archiveCreationTime);
   }
 }

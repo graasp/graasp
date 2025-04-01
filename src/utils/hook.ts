@@ -1,11 +1,11 @@
 import { FastifyBaseLogger } from 'fastify';
 
-import { Actor } from '../services/member/entities/member';
-import { Repositories } from './repositories';
+import { DBConnection } from '../drizzle/db';
+import { MaybeUser } from '../types';
 
 export type Handler<Data> = (
-  actor: Actor,
-  repositories: Repositories,
+  actor: MaybeUser,
+  db: DBConnection,
   data: Data,
   log?: FastifyBaseLogger,
 ) => Promise<void>;
@@ -28,15 +28,15 @@ class HookManager<EventMap extends { [event: string]: { pre: unknown; post: unkn
 
   async runPostHooks<Event extends keyof EventMap>(
     event: Event,
-    actor: Actor,
-    repositories: Repositories,
+    actor: MaybeUser,
+    db: DBConnection,
     data: EventMap[Event]['post'],
     log?: FastifyBaseLogger,
   ) {
     // TODO: allsettled?
     const hooks = this.postHooks.get(event);
     if (hooks) {
-      await Promise.all(hooks.map((f) => f(actor, repositories, data, log)));
+      await Promise.all(hooks.map((f) => f(actor, db, data, log)));
     }
   }
 
@@ -51,15 +51,15 @@ class HookManager<EventMap extends { [event: string]: { pre: unknown; post: unkn
 
   async runPreHooks<Event extends keyof EventMap>(
     event: Event,
-    actor: Actor,
-    repositories: Repositories,
+    actor: MaybeUser,
+    db: DBConnection,
     data: EventMap[Event]['pre'],
     log?: FastifyBaseLogger,
   ) {
     // TODO: allsettled?
     const hooks = this.preHooks.get(event);
     if (hooks) {
-      await Promise.all(hooks.map((f) => f(actor, repositories, data, log)));
+      await Promise.all(hooks.map((f) => f(actor, db, data, log)));
     }
   }
 }

@@ -1,6 +1,6 @@
 import { ItemValidationProcess, ItemValidationStatus } from '@graasp/sdk';
 
-import { Item } from '../../../../entities/Item';
+import { Item } from '../../../../../../drizzle/types';
 
 export type ValidationProcessResult = {
   status: ItemValidationStatus;

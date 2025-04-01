@@ -1,5 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 
+import { createError } from '@fastify/error';
+
 import { ErrorFactory } from '@graasp/sdk';
 import { FAILURE_MESSAGES } from '@graasp/translations';
 
@@ -14,18 +16,12 @@ export class ExpectedEnvVariable extends Error {
 
 export const CoreError = ErrorFactory('core');
 
-export class ItemNotFound extends CoreError {
-  constructor(itemId: string) {
-    super(
-      {
-        code: 'GERR001',
-        statusCode: StatusCodes.NOT_FOUND,
-        message: FAILURE_MESSAGES.ITEM_NOT_FOUND,
-      },
-      itemId,
-    );
-  }
-}
+export const ItemNotFound = createError(
+  'GERR001',
+  FAILURE_MESSAGES.ITEM_NOT_FOUND,
+  StatusCodes.NOT_FOUND,
+);
+
 export class MemberCannotReadItem extends CoreError {
   constructor(itemId: string) {
     super(
@@ -129,7 +125,7 @@ export class TooManyChildren extends CoreError {
   }
 }
 export class TooManyDescendants extends CoreError {
-  constructor(data?: string) {
+  constructor(data?: number) {
     super(
       {
         code: 'GERR011',
@@ -152,18 +148,9 @@ export class InvalidMoveTarget extends CoreError {
     );
   }
 }
-export class MemberNotFound extends CoreError {
-  constructor(data?: { email?: string; id?: string }) {
-    super(
-      {
-        code: 'GERR013',
-        statusCode: StatusCodes.NOT_FOUND,
-        message: FAILURE_MESSAGES.MEMBER_NOT_FOUND,
-      },
-      data,
-    );
-  }
-}
+
+export const MemberNotFound = createError('GERR013', 'MEMBER_NOT_FOUND', StatusCodes.NOT_FOUND);
+
 export class CannotModifyOtherMembers extends CoreError {
   constructor(member: { id: string }) {
     super(
@@ -354,6 +341,17 @@ export class CannotModifyGuestItemMembership extends CoreError {
       },
       data,
     );
+  }
+}
+
+export class NothingToUpdateItem extends CoreError {
+  constructor() {
+    super({
+      code: 'GERR036',
+      statusCode: StatusCodes.BAD_REQUEST,
+      // TODO
+      message: 'Nothing was provided to update the item',
+    });
   }
 }
 

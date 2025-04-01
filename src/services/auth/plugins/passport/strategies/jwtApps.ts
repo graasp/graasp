@@ -2,10 +2,11 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 
 import { Authenticator } from '@fastify/passport';
 
+import { db } from '../../../../../drizzle/db';
 import { APPS_JWT_SECRET } from '../../../../../utils/config';
 import { UnauthorizedMember } from '../../../../../utils/errors';
-import { AccountRepository } from '../../../../account/repository';
-import { ItemRepository } from '../../../../item/repository';
+import { AccountRepository } from '../../../../account/account.repository';
+import { ItemRepository } from '../../../../item/item.repository';
 import { PassportStrategy } from '../strategies';
 import { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
 
@@ -34,17 +35,18 @@ export default (
         }
 
         // Fetch Member datas
-        const account = await accountRepository.get(accountId);
+        const account = await accountRepository.get(db, accountId);
+
         // Member can be undefined if authorized.
-        if (strict && !account) {
+        if (strict && !account.exists()) {
           return done(new UnauthorizedMember(), false);
         }
 
         // Fetch Item datas
         try {
-          const item = await itemRepository.getOneOrThrow(itemId);
+          const item = await itemRepository.getOneOrThrow(db, itemId);
           return done(null, {
-            account,
+            account: account.toMaybeUser(),
             app: {
               item,
               origin,
