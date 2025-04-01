@@ -49,8 +49,10 @@ export class ActionService {
     }
 
     // prevent saving if item disabled analytics
-    actions.filter((action) => action.item?.settings?.enableSaveActions ?? true);
-    if (actions.length === 0) {
+    const filteredActions = actions.filter(
+      (action) => action.item?.settings?.enableSaveActions ?? true,
+    );
+    if (filteredActions.length === 0) {
       return;
     }
 
@@ -69,7 +71,7 @@ export class ActionService {
     const ip = addresses.pop();
 
     const geolocation = ip ? getGeolocationIp(ip) : null;
-    const completeActions = actions.map((a) => ({
+    const completeActions = filteredActions.map((a) => ({
       accountId: actor?.id,
       geolocation: geolocation ?? undefined,
       view,
