@@ -721,7 +721,7 @@ describe('File Item routes tests', () => {
           url: `${ITEMS_ROUTE_PREFIX}?id=${item.id}`,
         });
 
-        await new Promise(async (done) => {
+        await new Promise((done) => {
           setTimeout(async () => {
             await expect(deleteObjectsMock).not.toHaveBeenCalled();
 
@@ -749,7 +749,7 @@ describe('File Item routes tests', () => {
           url: `${ITEMS_ROUTE_PREFIX}?id=${item.id}`,
         });
 
-        await new Promise(async (done) => {
+        await new Promise((done) => {
           setTimeout(async () => {
             await expect(deleteObjectsMock).toHaveBeenCalled();
 
@@ -783,7 +783,7 @@ describe('File Item routes tests', () => {
           },
         });
 
-        await new Promise(async (done) => {
+        await new Promise((done) => {
           setTimeout(async () => {
             await expect(copyObjectMock).not.toHaveBeenCalled();
 
@@ -814,7 +814,7 @@ describe('File Item routes tests', () => {
           },
         });
 
-        await new Promise(async (done) => {
+        await new Promise((done) => {
           setTimeout(async () => {
             await expect(copyObjectMock).toHaveBeenCalled();
 
@@ -866,7 +866,7 @@ describe('File Item routes tests', () => {
           },
         });
 
-        await new Promise(async (done) => {
+        await new Promise((done) => {
           setTimeout(async () => {
             await expect(copyObjectMock).not.toHaveBeenCalled();
             // did not copy
