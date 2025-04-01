@@ -32,7 +32,7 @@ import { MembershipRequestRepository } from '../services/itemMembership/plugins/
 import { ItemMembershipRepository } from '../services/itemMembership/repository';
 import MemberProfileRepository from '../services/member/plugins/profile/repository';
 import { MemberRepository } from '../services/member/repository';
-import { TagRepository } from '../services/tag/Tag.repository';
+import { TagRepository } from '../services/tag/tag.repository';
 
 export type Repositories = {
   actionRepository: ActionRepository;

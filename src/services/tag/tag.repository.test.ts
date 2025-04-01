@@ -6,8 +6,8 @@ import { TagCategory, TagFactory } from '@graasp/sdk';
 import { AppDataSource } from '../../plugins/datasource';
 import { IllegalArgumentException } from '../../repositories/errors';
 import { Tag } from './Tag.entity';
-import { TagRepository } from './Tag.repository';
 import { saveTag } from './fixtures/utils';
+import { TagRepository } from './tag.repository';
 
 describe('Tag Repository', () => {
   let db: DataSource;

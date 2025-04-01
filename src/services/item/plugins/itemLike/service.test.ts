@@ -5,7 +5,7 @@ import { TagFactory } from '@graasp/sdk';
 import { Repositories } from '../../../../utils/repositories';
 import { Member } from '../../../member/entities/member';
 import { Tag } from '../../../tag/Tag.entity';
-import { TagRepository } from '../../../tag/Tag.repository';
+import { TagRepository } from '../../../tag/tag.repository';
 import { Item } from '../../entities/Item';
 import { ItemService } from '../../service';
 import { ItemPublished } from '../publication/published/entities/itemPublished';
