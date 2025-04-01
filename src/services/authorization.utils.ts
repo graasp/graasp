@@ -4,7 +4,9 @@ import { DBConnection } from '../drizzle/db';
 import { Item, ItemWithCreator } from '../drizzle/types';
 import { MaybeUser } from '../types';
 import { ItemWrapper, type PackedItem } from './item/ItemWrapper';
+import { ItemVisibilityRepository } from './item/plugins/itemVisibility/itemVisibility.repository';
 import { ItemsThumbnails } from './item/plugins/thumbnail/types';
+import { ItemMembershipRepository } from './itemMembership/membership.repository';
 
 /**
  * Internal filtering function that takes out limited items (eg. hidden children)
@@ -12,7 +14,13 @@ import { ItemsThumbnails } from './item/plugins/thumbnail/types';
 const _filterOutItems = async (
   db: DBConnection,
   actor: MaybeUser,
-  { itemMembershipRepository, itemVisibilityRepository },
+  {
+    itemMembershipRepository,
+    itemVisibilityRepository,
+  }: {
+    itemMembershipRepository: ItemMembershipRepository;
+    itemVisibilityRepository: ItemVisibilityRepository;
+  },
   items: Item[],
   options?: { showHidden?: boolean },
 ) => {
@@ -55,7 +63,13 @@ const _filterOutItems = async (
 export const filterOutItems = async (
   db: DBConnection,
   actor: MaybeUser,
-  { itemMembershipRepository, itemVisibilityRepository },
+  {
+    itemMembershipRepository,
+    itemVisibilityRepository,
+  }: {
+    itemMembershipRepository: ItemMembershipRepository;
+    itemVisibilityRepository: ItemVisibilityRepository;
+  },
   items: Item[],
 ): Promise<Item[]> => {
   return (
@@ -69,7 +83,13 @@ export const filterOutItems = async (
 export const filterOutPackedItems = async <T extends Item = Item>(
   db: DBConnection,
   actor: MaybeUser,
-  { itemMembershipRepository, itemVisibilityRepository },
+  {
+    itemMembershipRepository,
+    itemVisibilityRepository,
+  }: {
+    itemMembershipRepository: ItemMembershipRepository;
+    itemVisibilityRepository: ItemVisibilityRepository;
+  },
   items: T[],
   itemsThumbnails?: ItemsThumbnails,
   options?: { showHidden?: boolean },

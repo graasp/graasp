@@ -8,21 +8,39 @@ import {
 } from '@graasp/sdk';
 
 import { MOCK_LOGGER } from '../../../../../test/app';
+import { client, db } from '../../../../drizzle/db';
 import { Item } from '../../../../drizzle/types';
 import { MinimalMember } from '../../../../types';
+import { AuthorizationService } from '../../../authorization';
+import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
+import { ItemWrapperService } from '../../ItemWrapper';
+import { BasicItemService } from '../../basic.service';
 import { DocumentItem } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
+import { ItemGeolocationRepository } from '../geolocation/itemGeolocation.repository';
+import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
+import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
+import { RecycledBinService } from '../recycled/recycled.service';
 import { ItemThumbnailService } from '../thumbnail/itemThumbnail.service';
 import { DocumentItemService } from './document.service';
 
 const documentService = new DocumentItemService(
-  {} as unknown as ThumbnailService,
-  {} as unknown as ItemThumbnailService,
-  {} as unknown as MeiliSearchWrapper,
+  {} as ThumbnailService,
+  {} as ItemThumbnailService,
+  {} as ItemMembershipRepository,
+  {} as MeiliSearchWrapper,
+  {} as ItemRepository,
+  {} as ItemPublishedRepository,
+  {} as ItemGeolocationRepository,
+  {} as AuthorizationService,
+  {} as ItemWrapperService,
+  {} as ItemVisibilityRepository,
+  {} as BasicItemService,
+  {} as RecycledBinService,
   MOCK_LOGGER,
 );
 const id = v4();
@@ -36,6 +54,12 @@ const itemRepository = {
 } as unknown as ItemRepository;
 
 describe('Document Service', () => {
+  beforeAll(async () => {
+    await client.connect();
+  });
+  afterAll(async () => {
+    await client.end();
+  });
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -48,13 +72,13 @@ describe('Document Service', () => {
           return {} as Item;
         });
 
-      await documentService.postWithOptions(app.db, MOCK_MEMBER, {
+      await documentService.postWithOptions(db, MOCK_MEMBER, {
         name: 'name',
         content: 'text',
       });
 
       // call to item service
-      expect(itemServicePostMock).toHaveBeenCalledWith(app.db, MOCK_MEMBER, {
+      expect(itemServicePostMock).toHaveBeenCalledWith(db, MOCK_MEMBER, {
         item: {
           name: 'name',
           description: undefined,
@@ -76,13 +100,13 @@ describe('Document Service', () => {
           return {} as Item;
         });
 
-      await documentService.postWithOptions(app.db, MOCK_MEMBER, {
+      await documentService.postWithOptions(db, MOCK_MEMBER, {
         name: 'name',
         content: 'mycontent<script>text</script>',
       });
 
       // call to item service
-      expect(itemServicePostMock).toHaveBeenCalledWith(app.db, MOCK_MEMBER, {
+      expect(itemServicePostMock).toHaveBeenCalledWith(db, MOCK_MEMBER, {
         item: {
           name: 'name',
           description: undefined,
@@ -115,10 +139,10 @@ describe('Document Service', () => {
         geolocation: { lat: 1, lng: 1 },
         previousItemId: v4(),
       };
-      await documentService.postWithOptions(app.db, MOCK_MEMBER, args);
+      await documentService.postWithOptions(db, MOCK_MEMBER, args);
 
       // call to item service
-      expect(itemServicePostMock).toHaveBeenCalledWith(app.db, MOCK_MEMBER, {
+      expect(itemServicePostMock).toHaveBeenCalledWith(db, MOCK_MEMBER, {
         item: {
           name: args.name,
           description: args.description,
@@ -142,7 +166,7 @@ describe('Document Service', () => {
     it('throw if item is not a document', async () => {
       const FOLDER_ITEM = FolderItemFactory();
       await expect(() =>
-        documentService.patchWithOptions(app.db, MOCK_MEMBER, FOLDER_ITEM.id, { name: 'name' }),
+        documentService.patchWithOptions(db, MOCK_MEMBER, FOLDER_ITEM.id, { name: 'name' }),
       ).rejects.toBeInstanceOf(WrongItemTypeError);
     });
     it('sanitize content', async () => {
@@ -157,10 +181,10 @@ describe('Document Service', () => {
       const args = {
         content: 'mycontent<script>script</script>',
       };
-      await documentService.patchWithOptions(app.db, MOCK_MEMBER, MOCK_ITEM.id, args);
+      await documentService.patchWithOptions(db, MOCK_MEMBER, MOCK_ITEM.id, args);
 
       // call to item service with initial item name
-      expect(itemServicePatchMock).toHaveBeenCalledWith(app.db, MOCK_MEMBER, MOCK_ITEM.id, {
+      expect(itemServicePatchMock).toHaveBeenCalledWith(db, MOCK_MEMBER, MOCK_ITEM.id, {
         name: MOCK_ITEM.name,
         type: ItemType.DOCUMENT,
         extra: {
@@ -188,10 +212,10 @@ describe('Document Service', () => {
         isRaw: true,
         flavor: DocumentItemExtraFlavor.Error,
       };
-      await documentService.patchWithOptions(app.db, MOCK_MEMBER, MOCK_ITEM.id, args);
+      await documentService.patchWithOptions(db, MOCK_MEMBER, MOCK_ITEM.id, args);
 
       // call to item service with initial item name
-      expect(itemServicePatchMock).toHaveBeenCalledWith(app.db, MOCK_MEMBER, MOCK_ITEM.id, {
+      expect(itemServicePatchMock).toHaveBeenCalledWith(db, MOCK_MEMBER, MOCK_ITEM.id, {
         name: args.name,
         type: ItemType.DOCUMENT,
         description: args.description,
@@ -212,7 +236,7 @@ describe('Document Service', () => {
       });
 
       await expect(() =>
-        documentService.patchWithOptions(app.db, MOCK_MEMBER, v4(), { name: 'name' }),
+        documentService.patchWithOptions(db, MOCK_MEMBER, v4(), { name: 'name' }),
       ).rejects.toThrow();
     });
   });

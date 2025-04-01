@@ -1,3 +1,4 @@
+import { eq } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
@@ -11,7 +12,9 @@ import build, {
   unmockAuthenticate,
 } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
-import { ItemVisibilityRaw } from '../../../../drizzle/types';
+import { db } from '../../../../drizzle/db';
+import { itemVisibilities } from '../../../../drizzle/schema';
+import { assertIsDefined } from '../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
 import {
   CannotModifyParentVisibility,
@@ -20,23 +23,23 @@ import {
 } from './errors';
 
 export const saveTagsForItem = async ({ item, creator }) => {
-  const itemVisibilities: ItemVisibilityRaw[] = [];
-  itemVisibilities.push(
-    await rawItemTagRepository.save({ item, creator, type: ItemVisibilityType.Hidden }),
-  );
+  const res = await db
+    .insert(itemVisibilities)
+    .values({ itemPath: item.path, creatorId: creator.id, type: ItemVisibilityType.Hidden })
+    .returning();
 
-  return itemVisibilities;
+  return res;
 };
 
 describe('Item Visibility', () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
-    ({ app } = await build({ member: null }));
+    ({ app } = await build());
   });
 
   afterAll(async () => {
-    await clearDatabase(app.db);
+    await clearDatabase(db);
     app.close();
   });
 
@@ -67,6 +70,7 @@ describe('Item Visibility', () => {
           actor,
           items: [item],
         } = await seedFromJson({ items: [{ memberships: [{ account: 'actor' }] }] });
+        assertIsDefined(actor);
         mockAuthenticate(actor);
 
         const res = await app.inject({
@@ -85,6 +89,7 @@ describe('Item Visibility', () => {
         } = await seedFromJson({
           items: [{ isHidden: true, memberships: [{ account: 'actor' }] }],
         });
+        assertIsDefined(actor);
         mockAuthenticate(actor);
 
         const res = await app.inject({
@@ -103,6 +108,7 @@ describe('Item Visibility', () => {
         } = await seedFromJson({
           items: [{ isHidden: true, memberships: [{ account: 'actor' }], children: [{}] }],
         });
+        assertIsDefined(actor);
         mockAuthenticate(actor);
 
         const res = await app.inject({
@@ -170,6 +176,7 @@ describe('Item Visibility', () => {
               },
             ],
           });
+          assertIsDefined(actor);
           mockAuthenticate(actor);
 
           const res = await app.inject({
@@ -179,12 +186,12 @@ describe('Item Visibility', () => {
 
           expect(res.statusCode).toBe(StatusCodes.OK);
           expect(res.json().item.path).toEqual(parentItem.path);
-          const itemVisibility = await rawItemTagRepository.findOneBy({
-            id: parentPublicVisibility.id,
+          const itemVisibility = await db.query.itemVisibilities.findFirst({
+            where: eq(itemVisibilities.id, parentPublicVisibility.id),
           });
           expect(itemVisibility).toBeNull();
-          const childItemTag = await rawItemTagRepository.findOneBy({
-            id: childPublicVisibility.id,
+          const childItemTag = await db.query.itemVisibilities.findFirst({
+            where: eq(itemVisibilities.id, childPublicVisibility.id),
           });
           expect(childItemTag).toBeNull();
         });
@@ -201,6 +208,7 @@ describe('Item Visibility', () => {
               },
             ],
           });
+          assertIsDefined(actor);
           mockAuthenticate(actor);
 
           const res = await app.inject({
@@ -220,6 +228,7 @@ describe('Item Visibility', () => {
               },
             ],
           });
+          assertIsDefined(actor);
           mockAuthenticate(actor);
 
           const res = await app.inject({

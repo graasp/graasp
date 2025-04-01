@@ -481,6 +481,7 @@ describe('ZIP routes tests', () => {
           },
         ],
       });
+      assertIsDefined(actor);
       mockAuthenticate(actor);
 
       const response = await app.inject({
@@ -493,6 +494,7 @@ describe('ZIP routes tests', () => {
 
     it('Graasp export recreates the file structure', async () => {
       const { actor, folderItem, firstLevelItems, secondLevelItems } = await setupActorAndItems();
+      assertIsDefined(actor);
       mockAuthenticate(actor);
 
       const response = await app.inject({

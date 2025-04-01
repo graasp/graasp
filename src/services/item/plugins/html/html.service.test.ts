@@ -2,6 +2,7 @@ import { ItemType } from '@graasp/sdk';
 
 import { BaseLogger } from '../../../../logger';
 import { StorageService } from '../../../member/plugins/storage/memberStorage.service';
+import { ItemRepository } from '../../item.repository';
 import { HtmlService } from './html.service';
 import { HtmlValidator } from './validator';
 
@@ -36,7 +37,7 @@ describe('Html Service', () => {
       config: { s3: MOCK_S3_CONFIG },
       type: ItemType.S3_FILE,
     },
-    new MockStorageService(ItemType.LOCAL_FILE),
+    new MockStorageService(ItemType.LOCAL_FILE, {} as ItemRepository),
     'prefix',
     'mimetype',
     'ext',

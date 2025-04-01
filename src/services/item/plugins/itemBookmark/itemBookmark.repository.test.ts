@@ -4,15 +4,19 @@ import { seedFromJson } from '../../../../../test/mocks/seed';
 import { client, db } from '../../../../drizzle/db';
 import { itemBookmarks } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
-import { saveMember } from '../../../member/test/fixtures/members';
 import { DuplicateBookmarkError, ItemBookmarkNotFound } from './errors';
 import { ItemBookmarkRepository } from './itemBookmark.repository';
 
 const repository = new ItemBookmarkRepository();
 
 async function prepareTest() {
-  const { items, actor } = await seedFromJson({
+  const {
+    items,
+    actor,
+    members: [m1],
+  } = await seedFromJson({
     items: [{ creator: 'actor' }, { creator: 'actor' }],
+    members: [{}],
   });
   expect(actor).toBeDefined();
   assertIsDefined(actor);
@@ -22,7 +26,6 @@ async function prepareTest() {
     .returning();
 
   // noise
-  const m1 = await saveMember();
   await repository.post(db, items[0].id, m1.id);
 
   return { favorites, items, actor };
@@ -64,7 +67,7 @@ describe('ItemBookmark Repository', () => {
   describe('getFavoriteForMember', () => {
     it('returns all favorites for member', async () => {
       const { actor, favorites } = await prepareTest();
-      const result = await repository.getFavoriteForMember(db, actor.id);
+      const result = await repository.getBookmarksForMember(db, actor.id);
       expect(result).toHaveLength(favorites.length);
       for (const f of favorites) {
         const match = result.find((r) => r.id === f.id);
@@ -75,7 +78,7 @@ describe('ItemBookmark Repository', () => {
     });
 
     it('returns empty array if no favorite', async () => {
-      const result = await repository.getFavoriteForMember(db, v4());
+      const result = await repository.getBookmarksForMember(db, v4());
       expect(result).toHaveLength(0);
     });
   });

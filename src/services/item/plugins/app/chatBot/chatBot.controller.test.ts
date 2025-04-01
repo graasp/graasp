@@ -4,15 +4,15 @@ import { FastifyInstance } from 'fastify';
 
 import { GPTVersion, HttpMethod } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
+import build, { mockAuthenticate } from '../../../../../../test/app';
+import { seedFromJson } from '../../../../../../test/mocks/seed';
+import { assertIsDefined } from '../../../../../utils/assertions';
 import { APP_ITEMS_PREFIX } from '../../../../../utils/config';
 import {
   OpenAILengthError,
   OpenAITimeOutError,
   OpenAIUnknownStopError,
 } from '../../../../../utils/errors';
-import { saveMember } from '../../../../member/test/fixtures/members';
-import { AppTestUtils } from '../test/fixtures';
 import { FinishReason } from './chatBot.types';
 import { DOCKER_MOCKED_BODY, DOCKER_MOCKED_RESPONSE, mockResponse } from './test/fixtures';
 
@@ -29,14 +29,12 @@ function expectException(response, ex) {
 
 describe('Chat Bot Tests', () => {
   let app: FastifyInstance;
-  let actor;
   let item, token;
   const CHAT_PATH = 'chat-bot';
 
   afterEach(async () => {
     jest.clearAllMocks();
-    await clearDatabase(app.db);
-    actor = null;
+    // await clearDatabase(db);
     item = null;
     token = null;
     app.close();
@@ -45,8 +43,7 @@ describe('Chat Bot Tests', () => {
   describe('POST /:itemId/chat-bot', () => {
     describe('Sign Out', () => {
       beforeEach(async () => {
-        ({ app } = await build({ member: null }));
-        const member = await saveMember();
+        ({ app } = await build());
 
         ({ item, token } = await testUtils.setUp(app, actor, member));
       });
@@ -63,7 +60,10 @@ describe('Chat Bot Tests', () => {
 
     describe('Test Finish Reasons', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        ({ app } = await build());
+        const { actor } = await seedFromJson();
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
         ({ item, token } = await testUtils.setUp(app, actor, actor));
       });
 
@@ -117,7 +117,7 @@ describe('Chat Bot Tests', () => {
 
     describe('Sign In', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        ({ app } = await build());
         ({ item, token } = await testUtils.setUp(app, actor, actor));
         mockResponse(FinishReason.STOP, DOCKER_MOCKED_RESPONSE);
       });
@@ -278,7 +278,7 @@ describe('Chat Bot Tests', () => {
 
     describe('Try access as unauthorized item', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        ({ app } = await build());
         ({ item, token } = await testUtils.setUp(app, actor, actor));
         mockResponse(FinishReason.STOP);
       });

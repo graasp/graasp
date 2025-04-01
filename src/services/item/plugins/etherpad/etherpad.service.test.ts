@@ -11,16 +11,16 @@ import {
 
 import { MOCK_LOGGER } from '../../../../../test/app';
 import { resolveDependency } from '../../../../di/utils';
-import { ItemMembershipRaw } from '../../../../drizzle/types';
+import { db } from '../../../../drizzle/db';
+import { ItemMembershipWithItemAndAccount, ItemRaw, MemberRaw } from '../../../../drizzle/types';
 import { MinimalMember } from '../../../../types';
+import { AuthorizationService } from '../../../authorization';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
-import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
+import { BasicItemService } from '../../basic.service';
 import { EtherpadItem } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
-import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
-import { ItemThumbnailService } from '../thumbnail/itemThumbnail.service';
 import { EtherpadItemService } from './etherpad.service';
 import { EtherpadServiceConfig } from './serviceConfig';
 import { PadNameFactory } from './types';
@@ -31,10 +31,9 @@ const padNameFactory = {
   getName: () => 'padName',
 } as PadNameFactory;
 const etherPadConfig = resolveDependency(EtherpadServiceConfig);
-const itemService = new ItemService(
-  {} as ThumbnailService,
-  {} as ItemThumbnailService,
-  {} as MeiliSearchWrapper,
+const itemService = new BasicItemService(
+  {} as ItemRepository,
+  {} as AuthorizationService,
   MOCK_LOGGER,
 );
 const etherpad = {
@@ -51,7 +50,9 @@ const etherpadService = new EtherpadItemService(
   etherpad,
   padNameFactory,
   etherPadConfig,
-  itemService,
+  {} as ItemService,
+  {} as ItemRepository,
+  {} as ItemMembershipRepository,
   MOCK_LOGGER,
 );
 const id = v4();
@@ -78,7 +79,7 @@ const repositories = {
       return {};
     },
   } as unknown as ItemMembershipRepository,
-} as repositoriesUtils.Repositories;
+};
 
 describe('Etherpad Service', () => {
   afterEach(() => {
@@ -94,12 +95,12 @@ describe('Etherpad Service', () => {
         });
 
       const readerPermission = EtherpadPermission.Write;
-      await etherpadService.createEtherpadItem(MOCK_MEMBER, repositories, {
+      await etherpadService.createEtherpadItem(db, MOCK_MEMBER, {
         name: 'newName',
         readerPermission,
       });
 
-      expect(itemServiceCreateMock).toHaveBeenCalledWith(MOCK_MEMBER, repositories, {
+      expect(itemServiceCreateMock).toHaveBeenCalledWith(db, MOCK_MEMBER, {
         item: {
           name: 'newName',
           type: ItemType.ETHERPAD,
@@ -121,11 +122,11 @@ describe('Etherpad Service', () => {
           return MOCK_ITEM;
         });
 
-      await etherpadService.createEtherpadItem(MOCK_MEMBER, repositories, {
+      await etherpadService.createEtherpadItem(db, MOCK_MEMBER, {
         name: 'newName',
       });
 
-      expect(itemServiceCreateMock).toHaveBeenCalledWith(MOCK_MEMBER, repositories, {
+      expect(itemServiceCreateMock).toHaveBeenCalledWith(db, MOCK_MEMBER, {
         item: {
           name: 'newName',
           type: ItemType.ETHERPAD,
@@ -146,18 +147,9 @@ describe('Etherpad Service', () => {
     it('throw if item is not an etherpad', async () => {
       const FOLDER_ITEM = FolderItemFactory();
       await expect(() =>
-        etherpadService.patchWithOptions(
-          MOCK_MEMBER,
-          {
-            itemRepository: {
-              getOneOrThrow: async () => {
-                return FOLDER_ITEM;
-              },
-            } as unknown as ItemRepository,
-          } as repositoriesUtils.Repositories,
-          FOLDER_ITEM.id,
-          { readerPermission: EtherpadPermission.Write },
-        ),
+        etherpadService.patchWithOptions(db, MOCK_MEMBER, FOLDER_ITEM.id, {
+          readerPermission: EtherpadPermission.Write,
+        }),
       ).rejects.toBeInstanceOf(WrongItemTypeError);
     });
     it('patch readerPermission', async () => {
@@ -170,7 +162,7 @@ describe('Etherpad Service', () => {
       expect(MOCK_ITEM.extra.etherpad.readerPermission).toBeUndefined();
 
       const readerPermission = PermissionLevel.Write;
-      await etherpadService.patchWithOptions(MOCK_MEMBER, repositories, MOCK_ITEM.id, {
+      await etherpadService.patchWithOptions(db, MOCK_MEMBER, MOCK_ITEM.id, {
         readerPermission,
       });
 
@@ -192,7 +184,7 @@ describe('Etherpad Service', () => {
           return MOCK_ITEM;
         });
 
-      await etherpadService.patchWithOptions(MOCK_MEMBER, repositories, MOCK_ITEM.id, {
+      await etherpadService.patchWithOptions(db, MOCK_MEMBER, MOCK_ITEM.id, {
         name: 'newName',
         settings: { isCollapsible: true },
       });
@@ -210,7 +202,7 @@ describe('Etherpad Service', () => {
       });
 
       await expect(() =>
-        etherpadService.patchWithOptions(MOCK_MEMBER, repositories, v4(), {
+        etherpadService.patchWithOptions(db, MOCK_MEMBER, v4(), {
           readerPermission: PermissionLevel.Write,
         }),
       ).rejects.toThrow();
@@ -218,7 +210,6 @@ describe('Etherpad Service', () => {
   });
   describe('getEtherpadFromItem', () => {
     beforeEach(() => {
-      jest.spyOn(repositoriesUtils, 'buildRepositories').mockReturnValue(repositories);
       jest.spyOn(etherpad, 'createAuthorIfNotExistsFor').mockResolvedValue({ authorID: v4() });
       jest.spyOn(etherpad, 'createSession').mockResolvedValue({ sessionID: v4() });
       jest.spyOn(etherpad, 'deleteSession').mockResolvedValue(null);
@@ -229,46 +220,53 @@ describe('Etherpad Service', () => {
 
     it('return write for reader with write permission', async () => {
       // readerPermission is write
-      jest.spyOn(itemService, 'get').mockResolvedValue(
-        EtherpadItemFactory({
+      jest.spyOn(itemService, 'get').mockResolvedValue({
+        ...EtherpadItemFactory({
           extra: {
             etherpad: { padID: v4(), groupID: v4(), readerPermission: PermissionLevel.Write },
           },
-        }) as unknown as EtherpadItem,
-      );
+        }),
+        creatorId: 'some',
+        order: 23,
+        creator: {} as MemberRaw,
+      });
 
       // actor has read permission
-      jest
-        .spyOn(repositories.itemMembershipRepository, 'getInherited')
-        .mockResolvedValue({ permission: PermissionLevel.Read } as unknown as ItemMembershipRaw);
+      jest.spyOn(repositories.itemMembershipRepository, 'getInherited').mockResolvedValue({
+        permission: PermissionLevel.Read,
+        item: {} as ItemRaw,
+      } as ItemMembershipWithItemAndAccount);
       const getReadOnlyIDMock = jest.spyOn(etherpad, 'getReadOnlyID');
 
       // actor require write
-      await etherpadService.getEtherpadFromItem(MOCK_MEMBER, MOCK_ITEM.id, 'write');
+      await etherpadService.getEtherpadFromItem(db, MOCK_MEMBER, MOCK_ITEM.id, 'write');
 
       // this is called only if returned mode is read, which shouldn't be the case here
       expect(getReadOnlyIDMock).not.toHaveBeenCalled();
     });
     it('return read for reader with no permission even if asked for write', async () => {
       // readerPermission is read
-      jest.spyOn(itemService, 'get').mockResolvedValue(
-        EtherpadItemFactory({
+      jest.spyOn(itemService, 'get').mockResolvedValue({
+        ...EtherpadItemFactory({
           extra: {
             etherpad: { padID: v4(), groupID: v4(), readerPermission: PermissionLevel.Read },
           },
-        }) as unknown as EtherpadItem,
-      );
+        }),
+        creatorId: 'some',
+        order: 23,
+        creator: {} as MemberRaw,
+      });
 
       // permission is read
-      jest
-        .spyOn(repositories.itemMembershipRepository, 'getInherited')
-        .mockResolvedValue({ permission: PermissionLevel.Read } as unknown as ItemMembershipRaw);
+      jest.spyOn(repositories.itemMembershipRepository, 'getInherited').mockResolvedValue({
+        permission: PermissionLevel.Read,
+      } as ItemMembershipWithItemAndAccount);
       const getReadOnlyIDMock = jest
         .spyOn(etherpad, 'getReadOnlyID')
         .mockResolvedValue({ readOnlyID: v4() });
 
       // request write
-      await etherpadService.getEtherpadFromItem(app.db, MOCK_MEMBER, MOCK_ITEM.id, 'write');
+      await etherpadService.getEtherpadFromItem(db, MOCK_MEMBER, MOCK_ITEM.id, 'write');
 
       // this is called only if returned mode is read, which is the case here
       expect(getReadOnlyIDMock).toHaveBeenCalled();

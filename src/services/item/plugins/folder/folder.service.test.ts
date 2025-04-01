@@ -3,20 +3,38 @@ import { v4 } from 'uuid';
 import { AppItemFactory, FolderItemFactory, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { MOCK_LOGGER } from '../../../../../test/app';
-import { Item } from '../../../../drizzle/types';
+import { db } from '../../../../drizzle/db';
+import { Item, ItemWithCreator } from '../../../../drizzle/types';
 import { MinimalMember } from '../../../../types';
+import { AuthorizationService } from '../../../authorization';
+import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
+import { ItemWrapperService } from '../../ItemWrapper';
+import { BasicItemService } from '../../basic.service';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
+import { ItemGeolocationRepository } from '../geolocation/itemGeolocation.repository';
+import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
+import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
+import { RecycledBinService } from '../recycled/recycled.service';
 import { ItemThumbnailService } from '../thumbnail/itemThumbnail.service';
 import { FolderItemService } from './folder.service';
 
 const folderService = new FolderItemService(
-  {} as unknown as ThumbnailService,
-  {} as unknown as ItemThumbnailService,
+  {} as ThumbnailService,
+  {} as ItemThumbnailService,
+  {} as ItemMembershipRepository,
   {} as MeiliSearchWrapper,
+  {} as ItemRepository,
+  {} as ItemPublishedRepository,
+  {} as ItemGeolocationRepository,
+  {} as AuthorizationService,
+  {} as ItemWrapperService,
+  {} as ItemVisibilityRepository,
+  {} as BasicItemService,
+  {} as RecycledBinService,
   MOCK_LOGGER,
 );
 const id = v4();
@@ -36,17 +54,17 @@ describe('Folder Service', () => {
 
   describe('get', () => {
     it('return folder', async () => {
-      const folderItem = FolderItemFactory() as unknown as Item;
+      const folderItem = FolderItemFactory() as ItemWithCreator;
       const itemServicePostMock = jest
-        .spyOn(ItemService.prototype, 'get')
+        .spyOn(BasicItemService.prototype, 'get')
         .mockImplementation(async () => {
           return folderItem;
         });
 
-      expect(await folderService.get(app.db, MOCK_MEMBER, folderItem.id)).toEqual(folderItem);
+      expect(await folderService.getFolder(db, MOCK_MEMBER, folderItem.id)).toEqual(folderItem);
 
       expect(itemServicePostMock).toHaveBeenCalledWith(
-        app.db,
+        db,
         MOCK_MEMBER,
 
         folderItem.id,
@@ -56,19 +74,19 @@ describe('Folder Service', () => {
 
     it('return folder for permission', async () => {
       const permission = PermissionLevel.Write;
-      const folderItem = FolderItemFactory() as unknown as Item;
+      const folderItem = FolderItemFactory() as ItemWithCreator;
       const itemServicePostMock = jest
-        .spyOn(ItemService.prototype, 'get')
+        .spyOn(BasicItemService.prototype, 'get')
         .mockImplementation(async () => {
           return folderItem;
         });
 
-      expect(await folderService.get(app.db, MOCK_MEMBER, folderItem.id, permission)).toEqual(
+      expect(await folderService.getFolder(db, MOCK_MEMBER, folderItem.id, permission)).toEqual(
         folderItem,
       );
 
       expect(itemServicePostMock).toHaveBeenCalledWith(
-        app.db,
+        db,
         MOCK_MEMBER,
 
         folderItem.id,
@@ -77,14 +95,14 @@ describe('Folder Service', () => {
     });
 
     it('throw if item is not a folder', async () => {
-      const appItem = AppItemFactory() as unknown as Item;
-      jest.spyOn(ItemService.prototype, 'get').mockImplementation(async () => {
+      const appItem = AppItemFactory() as ItemWithCreator;
+      jest.spyOn(BasicItemService.prototype, 'get').mockImplementation(async () => {
         return appItem;
       });
 
-      await expect(() => folderService.get(app.db, MOCK_MEMBER, appItem.id)).rejects.toBeInstanceOf(
-        WrongItemTypeError,
-      );
+      await expect(() =>
+        folderService.getFolder(db, MOCK_MEMBER, appItem.id),
+      ).rejects.toBeInstanceOf(WrongItemTypeError);
     });
   });
 
@@ -96,9 +114,9 @@ describe('Folder Service', () => {
           return {} as Item;
         });
 
-      await folderService.post(app.db, MOCK_MEMBER, { item: { name: 'name' } });
+      await folderService.post(db, MOCK_MEMBER, { item: { name: 'name', type: 'folder' } });
 
-      expect(itemServicePostMock).toHaveBeenCalledWith(app.db, MOCK_MEMBER, {
+      expect(itemServicePostMock).toHaveBeenCalledWith(db, MOCK_MEMBER, {
         item: { name: 'name', extra: { [ItemType.FOLDER]: {} }, type: ItemType.FOLDER },
       });
     });
@@ -106,7 +124,7 @@ describe('Folder Service', () => {
   describe('patch', () => {
     it('throw if item is not a folder', async () => {
       await expect(() =>
-        folderService.patch(app.db, MOCK_MEMBER, MOCK_ITEM.id, { name: 'name' }),
+        folderService.patch(db, MOCK_MEMBER, MOCK_ITEM.id, { name: 'name' }),
       ).rejects.toThrow();
     });
     it('use item service patch', async () => {
@@ -116,7 +134,7 @@ describe('Folder Service', () => {
           return MOCK_ITEM;
         });
 
-      await folderService.patch(app.db, MOCK_MEMBER, MOCK_ITEM.id, { name: 'name' });
+      await folderService.patch(db, MOCK_MEMBER, MOCK_ITEM.id, { name: 'name' });
 
       expect(itemServicePatchMock).toHaveBeenCalledWith(MOCK_MEMBER, MOCK_ITEM.id, {
         name: 'name',
@@ -129,7 +147,7 @@ describe('Folder Service', () => {
       });
 
       await expect(() =>
-        folderService.patch(app.db, MOCK_MEMBER, v4(), { name: 'name' }),
+        folderService.patch(db, MOCK_MEMBER, v4(), { name: 'name' }),
       ).rejects.toThrow();
     });
   });

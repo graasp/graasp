@@ -21,6 +21,7 @@ import { ItemGeolocationRepository } from '../geolocation/itemGeolocation.reposi
 import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
 import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
+import { RecycledBinService } from '../recycled/recycled.service';
 import { ItemThumbnailService } from '../thumbnail/itemThumbnail.service';
 import { EmbeddedLinkItemService } from './link.service';
 
@@ -40,6 +41,7 @@ const linkService = new EmbeddedLinkItemService(
   {} as ItemWrapperService,
   {} as ItemVisibilityRepository,
   {} as BasicItemService,
+  {} as RecycledBinService,
   MOCK_LOGGER,
   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
 );
