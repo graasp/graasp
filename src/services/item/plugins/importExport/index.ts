@@ -87,7 +87,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
   );
 
-  // download item
+  // export item as a zip containing raw files
   fastify.get(
     '/:itemId/export',
     {
@@ -132,15 +132,41 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       }
 
       // generate archive stream
-      const archiveStream = await importExportService.export(
-        member,
-        repositories,
-        {
-          item,
-          reply,
-        },
-        log,
-      );
+      const archiveStream = await importExportService.exportRaw(member, repositories, item);
+
+      try {
+        reply.raw.setHeader('Content-Disposition', `filename="${encodeFilename(item.name)}.zip"`);
+      } catch (e) {
+        // TODO: send sentry error
+        log?.error(e);
+        reply.raw.setHeader('Content-Disposition', 'filename="download.zip"');
+      }
+      reply.type('application/octet-stream');
+      return archiveStream.outputStream;
+    },
+  );
+
+  // export item in graasp format
+  fastify.get(
+    '/:itemId/graasp-export',
+    {
+      schema: zipExport,
+      preHandler: optionalIsAuthenticated,
+    },
+    async (request, reply) => {
+      const {
+        user,
+        params: { itemId },
+      } = request;
+      const member = user?.account;
+      const repositories = buildRepositories();
+      const item = await itemService.get(member, repositories, itemId);
+
+      // allow browser to access content disposition
+      reply.header('Access-Control-Expose-Headers', 'Content-Disposition');
+
+      // generate archive stream
+      const archiveStream = await importExportService.exportGraasp(member, repositories, item);
 
       try {
         reply.raw.setHeader('Content-Disposition', `filename="${encodeFilename(item.name)}.zip"`);

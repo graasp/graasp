@@ -1,12 +1,11 @@
 import * as nodeFetch from 'node-fetch';
 import { ZipFile } from 'yazl';
 
-import { FastifyInstance, FastifyReply } from 'fastify';
+import { FastifyInstance } from 'fastify';
 
 import { ItemType, ItemVisibilityType } from '@graasp/sdk';
 
 import build, {
-  MOCK_LOGGER,
   clearDatabase,
   mockAuthenticate,
   unmockAuthenticate,
@@ -70,8 +69,7 @@ describe('ZIP routes tests', () => {
         resolveDependency(BaseLogger),
       );
       const repositories = buildRepositories();
-      const reply = {} as unknown as FastifyReply;
-      await importExportService.export(actor, repositories, { item, reply }, MOCK_LOGGER);
+      await importExportService.exportRaw(actor, repositories, item);
 
       // called for parent and one child
       expect(mock).toHaveBeenCalledTimes(2);
