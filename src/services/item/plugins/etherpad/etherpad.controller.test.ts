@@ -928,10 +928,10 @@ describe('Etherpad service API', () => {
       // wait until the copy is in the parent
       let copy;
       await waitForExpect(async () => {
-        (copy = await db.query.itemsRaw.findFirst({
+        copy = await db.query.itemsRaw.findFirst({
           where: isDirectChild(itemsRaw.path, parent.path),
-        })),
-          expect(copy).toBeDefined();
+        });
+        expect(copy).toBeDefined();
       });
       const { createGroupIfNotExistsFor, copyPad } = await reqsParams;
       expect(copyPad?.get('destinationID')).toEqual(
