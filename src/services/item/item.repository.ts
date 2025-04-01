@@ -1,4 +1,4 @@
-import { isNull } from 'drizzle-orm';
+import { isNull, or } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import {
   SQL,
@@ -35,7 +35,14 @@ import {
 import { DEFAULT_LANG } from '@graasp/translations';
 
 import { DBConnection } from '../../drizzle/db';
-import { isAncestorOrSelf, isDescendantOrSelf, isDirectChild } from '../../drizzle/operations';
+import {
+  isAncestorOrSelf,
+  isDescendantOrSelf,
+  isDirectChild,
+  itemFullTextSearch,
+  itemFullTextSearchWithMemberLang,
+  keywordSearch,
+} from '../../drizzle/operations';
 import {
   accountsTable,
   itemColumns,
@@ -56,6 +63,7 @@ import {
 } from '../../drizzle/types';
 import { IllegalArgumentException } from '../../repositories/errors';
 import { AuthenticatedUser, MaybeUser, MinimalMember } from '../../types';
+import { ALLOWED_SEARCH_LANGS } from '../../utils/config';
 import {
   HierarchyTooDeep,
   InvalidMoveTarget,
@@ -65,6 +73,7 @@ import {
   TooManyDescendants,
   UnexpectedError,
 } from '../../utils/errors';
+import { isMember } from '../authentication';
 import {
   FILE_METADATA_DEFAULT_PAGE_SIZE,
   FILE_METADATA_MAX_PAGE_SIZE,
@@ -281,35 +290,24 @@ export class ItemRepository {
       andConditions.push(inArray(items.type, types));
     }
 
-    // TODO: enable back
-    // const allKeywords = params?.keywords?.filter((s) => s && s.length);
-    // if (allKeywords?.length) {
-    //   const keywordsString = allKeywords.join(' ');
+    // keyword search
+    const allKeywords = params?.keywords?.filter((s) => s && s.length);
+    if (allKeywords && allKeywords.length) {
+      const keywordsString = allKeywords.join(' ');
 
-    //   // search in english by default
-    //   const matchEnglishSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery('english', ${keywordsString})`;
-
-    //   // no dictionary
-    //   const matchSimpleSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery('simple', ${keywordsString})`;
-
-    //   // raw words search
-    //   const matchRawWordSearchConditions = allKeywords.map((k) => ilike(items.name, `%${k}%`));
-
-    //   const searchConditions = [
-    //     matchEnglishSearchCondition,
-    //     matchSimpleSearchCondition,
-    //     ...matchRawWordSearchConditions,
-    //   ];
-
-    //   // search by member lang
-    //   const memberLang = actor && isMember(actor) ? actor?.lang : DEFAULT_LANG;
-    //   if (memberLang && ALLOWED_SEARCH_LANGS[memberLang]) {
-    //     const matchMemberLangSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery(${ALLOWED_SEARCH_LANGS[memberLang]}, ${keywordsString})`;
-    //     searchConditions.push(matchMemberLangSearchCondition);
-    //   }
-
-    //   andConditions.push(or(...searchConditions));
-    // }
+      andConditions.push(
+        or(
+          // search without lang
+          itemFullTextSearch(items, 'simple', keywordsString),
+          // search in english
+          itemFullTextSearch(items, 'english', keywordsString),
+          // search in member lang
+          itemFullTextSearchWithMemberLang(actor, items, keywordsString),
+          // raw words search
+          ...keywordSearch(items.name, allKeywords),
+        ),
+      );
+    }
 
     // use createdAt for ordering by default
     // or use order for ordering
@@ -1165,7 +1163,7 @@ export class ItemRepository {
     // order by iom.updated_at desc
     // ;
 
-    const andConditions = [isNull(itemsRaw.deletedAt)];
+    const andConditions: (SQL<unknown> | undefined)[] = [isNull(itemsRaw.deletedAt)];
     if (creatorId) {
       andConditions.push(eq(itemsRaw.creatorId, creatorId));
     }
@@ -1174,6 +1172,25 @@ export class ItemRepository {
     }
     if (types?.length) {
       andConditions.push(inArray(itemsRaw.type, types));
+    }
+
+    // keyword search
+    const allKeywords = keywords?.filter((s) => s && s.length);
+    if (allKeywords && allKeywords.length) {
+      const keywordsString = allKeywords.join(' ');
+
+      andConditions.push(
+        or(
+          // search without lang
+          itemFullTextSearch(itemsRaw, 'simple', keywordsString),
+          // search in english
+          itemFullTextSearch(itemsRaw, 'english', keywordsString),
+          // search in member lang
+          itemFullTextSearchWithMemberLang(account, itemsRaw, keywordsString),
+          // raw words search
+          ...keywordSearch(itemsRaw.name, allKeywords),
+        ),
+      );
     }
 
     // for account, get all direct items that have permissions, ordered by path
@@ -1221,7 +1238,6 @@ export class ItemRepository {
       }
     }
 
-    // TODO: COMPLETE WITH SEARCH AND EVERYTHING
     // select top most items from above subquery
     const result = await db
       .select()
@@ -1250,103 +1266,5 @@ export class ItemRepository {
       })),
       pagination: { page, pageSize },
     };
-
-    // const query = await db
-    //   .select()
-    //   .from(itemMembershipTable)
-    //   .leftJoin(items, eq(itemMembershipTable.itemPath, items.path))
-    //   .leftJoin(membersView, eq(membersView.id, items.creatorId))
-    //   .where(eq(itemMembershipTable.accountId, account.id))
-    //   // returns only top most item
-    //   .andWhere((qb) => {
-    //     const subQuery = qb
-    //       .subQuery()
-    //       .from(itemMembershipTable, 'im1')
-    //       .select('im1.item.path')
-    //       .where('im.item_path <@ im1.item_path')
-    //       .andWhere('im1.account_id = :actorId', { actorId: account.id })
-    //       .orderBy('im1.item_path', 'ASC')
-    //       .limit(1);
-
-    //     if (permissions) {
-    //       subQuery.andWhere('im1.permission IN (:...permissions)', { permissions });
-    //     }
-    //     return 'item.path =' + subQuery.getQuery();
-    //   });
-
-    // const allKeywords = keywords?.filter((s) => s && s.length);
-    // if (allKeywords?.length) {
-    //   const keywordsString = allKeywords.join(' ');
-    //   query.andWhere(
-    //     new Brackets((q) => {
-    //       // search in english by default
-    //       q.where("item.search_document @@ plainto_tsquery('english', :keywords)", {
-    //         keywords: keywordsString,
-    //       });
-
-    //       // no dictionary
-    //       q.orWhere("item.search_document @@ plainto_tsquery('simple', :keywords)", {
-    //         keywords: keywordsString,
-    //       });
-
-    //       // raw words search
-    //       allKeywords.forEach((k, idx) => {
-    //         q.orWhere(`item.name ILIKE :k_${idx}`, {
-    //           [`k_${idx}`]: `%${k}%`,
-    //         });
-    //       });
-
-    //       // search by member lang
-    //       const memberLang = isMember(account) ? account.lang : DEFAULT_LANG;
-    //       const memberLangKey = memberLang as keyof typeof ALLOWED_SEARCH_LANGS;
-    //       if (memberLang != DEFAULT_LANG && ALLOWED_SEARCH_LANGS[memberLangKey]) {
-    //         q.orWhere('item.search_document @@ plainto_tsquery(:lang, :keywords)', {
-    //           keywords: keywordsString,
-    //           lang: ALLOWED_SEARCH_LANGS[memberLangKey],
-    //         });
-    //       }
-    //     }),
-    //   );
-    // }
-
-    // if (creatorId) {
-    //   query.andWhere('item.creator = :creatorId', { creatorId });
-    // }
-
-    // if (permissions) {
-    //   query.andWhere('im.permission IN (:...permissions)', { permissions });
-    // }
-
-    // if (types) {
-    //   query.andWhere('item.type IN (:...types)', { types });
-    // }
-
-    // if (sortBy) {
-    //   // map strings to correct sort by column
-    //   let mappedSortBy;
-    //   switch (sortBy) {
-    //     case SortBy.ItemType:
-    //       mappedSortBy = 'item.type';
-    //       break;
-    //     case SortBy.ItemUpdatedAt:
-    //       mappedSortBy = 'item.updated_at';
-    //       break;
-    //     case SortBy.ItemCreatedAt:
-    //       mappedSortBy = 'item.created_at';
-    //       break;
-    //     case SortBy.ItemCreatorName:
-    //       mappedSortBy = 'creator.name';
-    //       break;
-    //     case SortBy.ItemName:
-    //       mappedSortBy = 'item.name';
-    //       break;
-    //   }
-    //   if (mappedSortBy) {
-    //     query.orderBy(mappedSortBy, orderingToUpperCase(ordering));
-    //   }
-    // }
-
-    // const [im, totalCount] = await query.offset(skip).limit(limit).getManyAndCount();
-    // return { data: im, totalCount, pagination };
   }
 }
