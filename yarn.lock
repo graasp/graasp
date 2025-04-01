@@ -7565,7 +7565,7 @@ __metadata:
     tsyringe: "npm:4.8.0"
     typeorm: "npm:0.3.19"
     typescript: "npm:5.5.4"
-    url-http: "npm:1.2.2"
+    url-http: "npm:1.2.3"
     uuid: "npm:10.0.0"
     wait-for-expect: "npm:3.0.2"
     ws: "npm:8.18.0"
@@ -12899,14 +12899,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"url-http@npm:1.2.2":
-  version: 1.2.2
-  resolution: "url-http@npm:1.2.2"
+"url-http@npm:1.2.3":
+  version: 1.2.3
+  resolution: "url-http@npm:1.2.3"
   dependencies:
     punycode-regex: "npm:~1.0.1"
     re2: "npm:~1.21.0"
     url-regex-safe: "npm:~4.0.0"
-  checksum: 10/4bf2cc9f308ad1d29ec61a09d8999d91a59a88b39468ce44fc328575195d74ca09855ae524f41c374a6d9e312125bf5145c00d48ee40156457bac71d7c46aba8
+  checksum: 10/5e26c94334919f57a1f579fc8978e817c8c042062807040ffcb2f48576710dff228d403e3581af65c1dcb485f21696b1707f0bc4be5ca4c1c232ec34833d3942
   languageName: node
   linkType: hard
 
