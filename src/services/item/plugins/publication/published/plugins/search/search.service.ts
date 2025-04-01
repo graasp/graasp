@@ -10,7 +10,6 @@ import {
   GET_MOST_RECENT_ITEMS_MAXIMUM,
 } from '../../../../../../../utils/config';
 import { ItemService } from '../../../../../item.service';
-import { ItemPublishedRepository } from '../../itemPublished.repository';
 import { ItemPublishedService } from '../../itemPublished.service';
 import { MeiliSearchWrapper } from './meilisearch';
 
@@ -30,18 +29,15 @@ type SearchFilters = Partial<{
 export class SearchService {
   private readonly meilisearchClient: MeiliSearchWrapper;
   private readonly logger: BaseLogger;
-  private readonly itemPublishedRepository: ItemPublishedRepository;
 
   constructor(
     itemService: ItemService,
     itemPublishedService: ItemPublishedService,
     meilisearchClient: MeiliSearchWrapper,
-    itemPublishedRepository: ItemPublishedRepository,
     logger: BaseLogger,
   ) {
     this.meilisearchClient = meilisearchClient;
     this.logger = logger;
-    this.itemPublishedRepository = itemPublishedRepository;
     this.registerSearchHooks(itemService, itemPublishedService);
   }
 

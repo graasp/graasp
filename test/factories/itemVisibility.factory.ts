@@ -8,5 +8,6 @@ export const ItemVisibilityFactory = (
   createdAt: new Date().toISOString(),
   creatorId: null,
   id: v4(),
+  itemPath: itemVisibility.item.path,
   ...itemVisibility,
 });

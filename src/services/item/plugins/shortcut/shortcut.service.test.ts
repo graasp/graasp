@@ -4,25 +4,43 @@ import { v4 } from 'uuid';
 import { FolderItemFactory, ItemType } from '@graasp/sdk';
 
 import { MOCK_LOGGER } from '../../../../../test/app';
-import { Item } from '../../../../drizzle/types';
+import { client, db } from '../../../../drizzle/db';
+import { Item, ItemWithCreator } from '../../../../drizzle/types';
 import { MinimalMember } from '../../../../types';
+import { AuthorizationService } from '../../../authorization';
+import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
+import { ItemWrapperService } from '../../ItemWrapper';
+import { BasicItemService } from '../../basic.service';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
+import { ItemGeolocationRepository } from '../geolocation/itemGeolocation.repository';
+import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
+import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
+import { RecycledBinService } from '../recycled/recycled.service';
 import { ItemThumbnailService } from '../thumbnail/itemThumbnail.service';
 import { ShortcutItemService } from './shortcut.service';
 
 const shortcutService = new ShortcutItemService(
+  {} as unknown as BasicItemService,
   {} as unknown as ThumbnailService,
   {} as unknown as ItemThumbnailService,
+  {} as unknown as ItemMembershipRepository,
   {} as MeiliSearchWrapper,
+  {} as unknown as ItemRepository,
+  {} as unknown as ItemPublishedRepository,
+  {} as unknown as ItemGeolocationRepository,
+  {} as unknown as AuthorizationService,
+  {} as unknown as ItemWrapperService,
+  {} as unknown as ItemVisibilityRepository,
+  {} as unknown as RecycledBinService,
   MOCK_LOGGER,
 );
 const id = v4();
 const MOCK_ITEM = { id, type: ItemType.SHORTCUT } as Item;
 
-const MOCK_MEMBER = { extra: { lang: 'en' } } as MinimalMember;
+const MOCK_MEMBER = { lang: 'en' } as MinimalMember;
 const itemRepository = {
   getOneOrThrow: async () => {
     return MOCK_ITEM;
@@ -30,6 +48,12 @@ const itemRepository = {
 } as unknown as ItemRepository;
 
 describe('Shortcut Service', () => {
+  beforeAll(async () => {
+    await client.connect();
+  });
+  afterAll(async () => {
+    await client.end();
+  });
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -41,12 +65,14 @@ describe('Shortcut Service', () => {
         .mockImplementation(async () => {
           return {} as Item;
         });
-      jest.spyOn(ItemService.prototype, 'get').mockImplementation(async (_m, _r, id) => {
-        return { id } as Item;
-      });
+      jest
+        .spyOn(BasicItemService.prototype, 'get')
+        .mockImplementation(async (_db, _actor, id, _permission) => {
+          return { id } as ItemWithCreator;
+        });
 
       const target = v4();
-      await shortcutService.postWithOptions(app.db, MOCK_MEMBER, {
+      await shortcutService.postWithOptions(db, MOCK_MEMBER, {
         target,
         item: { name: 'name', description: 'description' },
       });
@@ -66,12 +92,12 @@ describe('Shortcut Service', () => {
         .mockImplementation(async () => {
           return {} as Item;
         });
-      const targetItem = FolderItemFactory({ id }) as unknown as Item;
-      jest.spyOn(ItemService.prototype, 'get').mockImplementation(async () => {
+      const targetItem = FolderItemFactory({ id }) as ItemWithCreator;
+      jest.spyOn(BasicItemService.prototype, 'get').mockImplementation(async () => {
         return targetItem;
       });
 
-      await shortcutService.postWithOptions(app.db, MOCK_MEMBER, {
+      await shortcutService.postWithOptions(db, MOCK_MEMBER, {
         target: targetItem.id,
         item: {},
       });
@@ -90,10 +116,10 @@ describe('Shortcut Service', () => {
       });
     });
     it('throw if target does not exist', async () => {
-      jest.spyOn(ItemService.prototype, 'get').mockRejectedValue(new Error());
+      jest.spyOn(BasicItemService.prototype, 'get').mockRejectedValue(new Error());
 
       await expect(() =>
-        shortcutService.postWithOptions(app.db, MOCK_MEMBER, {
+        shortcutService.postWithOptions(db, MOCK_MEMBER, {
           target: v4(),
           item: { name: 'name', description: 'description' },
         }),
@@ -103,7 +129,7 @@ describe('Shortcut Service', () => {
   describe('patch', () => {
     it('throw if item is not a shortcut', async () => {
       await expect(() =>
-        shortcutService.patch(app.db, MOCK_MEMBER, MOCK_ITEM.id, { name: 'name' }),
+        shortcutService.patch(db, MOCK_MEMBER, MOCK_ITEM.id, { name: 'name' }),
       ).rejects.toThrow();
     });
     it('use item service patch', async () => {
@@ -113,7 +139,7 @@ describe('Shortcut Service', () => {
           return MOCK_ITEM;
         });
 
-      await shortcutService.patch(app.db, MOCK_MEMBER, MOCK_ITEM.id, { name: 'name' });
+      await shortcutService.patch(db, MOCK_MEMBER, MOCK_ITEM.id, { name: 'name' });
 
       expect(itemServicePatchMock).toHaveBeenCalledWith(MOCK_MEMBER, MOCK_ITEM.id, {
         name: 'name',
@@ -126,7 +152,7 @@ describe('Shortcut Service', () => {
       });
 
       await expect(() =>
-        shortcutService.patch(app.db, MOCK_MEMBER, v4(), { name: 'name' }),
+        shortcutService.patch(db, MOCK_MEMBER, v4(), { name: 'name' }),
       ).rejects.toThrow();
     });
   });

@@ -5,7 +5,7 @@ import { FastifyInstance, PassportUser } from 'fastify';
 import build, { mockAuthenticate, unmockAuthenticate } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { MinimalMember } from '../../../../types';
-import { asDefined } from '../../../../utils/assertions';
+import { asDefined, assertIsDefined } from '../../../../utils/assertions';
 import { assertIsMember } from '../../../authentication';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { isAuthenticated, matchOne } from './preHandlers';
@@ -27,7 +27,7 @@ describe('matchOne', () => {
   }
 
   beforeAll(async () => {
-    ({ app } = await build({ member: null }));
+    ({ app } = await build());
 
     handler = jest.fn();
     preHandler = jest.fn(async () => {});
@@ -43,6 +43,7 @@ describe('matchOne', () => {
 
   beforeEach(async () => {
     const { actor } = await seedFromJson();
+    assertIsDefined(actor);
     mockAuthenticate(actor);
     const definedActor = asDefined(actor);
     assertIsMember(definedActor);

@@ -24,7 +24,7 @@ describe('Validated Member', () => {
     member.isValidated = true;
     expect(validatedMemberAccountRole.test(req)).toBe(true);
 
-    const guest = GuestFactory({});
+    const guest = GuestFactory({ itemLoginSchemaId: v4() });
     guest.type = AccountType.Guest;
     req.user.account = guest;
     expect(validatedMemberAccountRole.test(req)).toBe(false);

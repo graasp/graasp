@@ -1,3 +1,5 @@
+import { v4 } from 'uuid';
+
 import { FastifyRequest } from 'fastify';
 
 import { AccountType } from '@graasp/sdk';
@@ -18,7 +20,7 @@ describe('Member Account Role', () => {
     req.user.account = member;
     expect(memberAccountRole.test(req)).toBe(true);
 
-    const guest = GuestFactory({});
+    const guest = GuestFactory({ itemLoginSchemaId: v4() });
     guest.type = AccountType.Guest;
     req.user.account = guest;
     expect(memberAccountRole.test(req)).toBe(false);
