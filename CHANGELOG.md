@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.66.0](https://github.com/graasp/graasp/compare/v1.65.2...v1.66.0) (2025-04-01)
+
+
+### Features
+
+* **graasp-export:** export in graasp format ([#1796](https://github.com/graasp/graasp/issues/1796)) ([37eab43](https://github.com/graasp/graasp/commit/37eab43dcd262682f8b78de3d41c398bb6bbd252))
+
+
+### Bug Fixes
+
+* rename tag repository files ([f72bf18](https://github.com/graasp/graasp/commit/f72bf184262c4d761b657421f4b76233a6e41fa4))
+* tag rename ([186ef1a](https://github.com/graasp/graasp/commit/186ef1a099e7366cd85cec1959b535a39e175032))
+
 ## [1.65.2](https://github.com/graasp/graasp/compare/v1.65.1...v1.65.2) (2025-03-17)
 
 
