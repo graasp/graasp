@@ -95,7 +95,7 @@ const controller: FastifyPluginAsyncTypebox = async (fastify) => {
         { page, pageSize },
       );
       return {
-        ...storageFilesMetadata,
+        data: storageFilesMetadata,
         pagination: { page, pageSize },
       };
     },

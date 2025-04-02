@@ -44,9 +44,6 @@ export const getOwnRecycledItems = {
   response: {
     [StatusCodes.OK]: customType.StrictObject({
       data: Type.Array(itemSchemaRef),
-      totalCount: Type.Number({
-        minimum: 0,
-      }),
       pagination: customType.Pagination({
         page: {
           minimum: 0,

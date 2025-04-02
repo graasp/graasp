@@ -44,13 +44,8 @@ export class StorageService {
     type: FileItemType,
     pagination: Pagination,
   ) {
-    const { data, totalCount } = await this.itemRepository.getFilesMetadata(
-      db,
-      member?.id,
-      type,
-      pagination,
-    );
-    return { data, totalCount };
+    const entities = await this.itemRepository.getFilesMetadata(db, member?.id, type, pagination);
+    return entities;
   }
 
   // check the user has enough storage to create a new item given its size

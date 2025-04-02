@@ -48,7 +48,7 @@ export const createOwnProfile = {
   summary: 'Create profile for current member',
   description: 'Create profile for current member.',
 
-  body: inputPublicProfileMemberSchema,
+  body: Type.Partial(inputPublicProfileMemberSchema, { minProperties: 1 }),
   response: {
     [StatusCodes.CREATED]: profileMemberSchemaRef,
     [StatusCodes.UNAUTHORIZED]: errorSchemaRef,

@@ -97,7 +97,6 @@ export const getAccessible = {
   response: {
     [StatusCodes.OK]: Type.Object({
       data: Type.Array(packedItemSchemaRef),
-      totalCount: Type.Integer(),
     }),
     '4xx': errorSchemaRef,
   },

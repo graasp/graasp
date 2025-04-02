@@ -92,7 +92,6 @@ describe('Recycle Bin Tests', () => {
           expectManyItems(dbDeletedItems, recycledItems);
           // check response recycled items
           expectManyItems(response.data, recycledItems, actor);
-          expect(response.totalCount).toEqual(2);
           expect(response.pagination.page).toEqual(1);
           expect(response.pagination.pageSize).toEqual(ITEMS_PAGE_SIZE);
         });
@@ -148,7 +147,6 @@ describe('Recycle Bin Tests', () => {
           // receive last created item
           const response = res.json();
           expect(response.data).toHaveLength(1);
-          expect(response.totalCount).toEqual(recycledItems.length);
           expect(response.pagination.page).toEqual(2);
           expect(response.pagination.pageSize).toEqual(5);
         });
@@ -192,7 +190,6 @@ describe('Recycle Bin Tests', () => {
 
           // check response recycled item
           expectManyItems(response.data, recycledItems, actor);
-          expect(response.totalCount).toEqual(2);
           expect(response.pagination.page).toEqual(1);
           expect(response.pagination.pageSize).toEqual(ITEMS_PAGE_SIZE);
         });
@@ -227,7 +224,6 @@ describe('Recycle Bin Tests', () => {
           // should not return child item for actor
           // does not return parent because actor has read permissio
           expect(res.json().data).toHaveLength(0);
-          expect(response.totalCount).toEqual(0);
           expect(response.pagination.page).toEqual(1);
           expect(response.pagination.pageSize).toEqual(ITEMS_PAGE_SIZE);
         });

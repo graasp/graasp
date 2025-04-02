@@ -189,7 +189,6 @@ export const getStorageFiles = {
     [StatusCodes.OK]: customType.StrictObject(
       {
         data: Type.Array(fileItemMetadata),
-        totalCount: Type.Integer(),
         pagination: customType.Pagination({
           page: {
             minimum: FILE_METADATA_MIN_PAGE,

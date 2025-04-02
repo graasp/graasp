@@ -480,7 +480,7 @@ export class ItemService {
     params: ItemSearchParams,
     pagination: Pagination,
   ): Promise<Paginated<PackedItem>> {
-    const { data: items, totalCount } = await this.itemRepository.getAccessibleItems(
+    const { data: items } = await this.itemRepository.getAccessibleItems(
       db,
       member,
       params,
@@ -488,7 +488,7 @@ export class ItemService {
     );
 
     const packedItems = await this.itemWrapperService.createPackedItems(db, items);
-    return { data: packedItems, totalCount, pagination };
+    return { data: packedItems, pagination };
   }
 
   private async _getChildren(

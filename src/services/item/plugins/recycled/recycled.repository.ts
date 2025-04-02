@@ -83,9 +83,7 @@ export class RecycledItemDataRepository {
       .offset(skip)
       .limit(limit);
 
-    const totalCount = (await db.select({ count: count() }).from(query))[0].count;
-
-    return { data, totalCount, pagination };
+    return { data, pagination };
   }
 
   // warning: this call removes from the table

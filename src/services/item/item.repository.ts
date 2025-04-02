@@ -904,12 +904,7 @@ export class ItemRepository {
         : undefined,
     }));
 
-    const [{ totalCount }] = await db
-      .select({ totalCount: count() })
-      .from(items)
-      .where(and(eq(items.creatorId, memberId), eq(items.type, itemType)));
-
-    return { data: entities, totalCount: totalCount };
+    return entities;
   }
 
   /**
@@ -1247,29 +1242,12 @@ export class ItemRepository {
       .offset(skip)
       .limit(limit);
 
-    // TODO: optimize
-    const [{ totalCount }] = await db
-      .select({ totalCount: count() })
-      .from(iom)
-      .where(
-        lte(
-          iom.rNb,
-          db
-            .select({ rNb: join.rNb })
-            .from(join)
-            .where(isAncestorOrSelf(join.path, iom.path))
-            .orderBy(asc(join.rNb))
-            .limit(1),
-        ),
-      );
-
     // TODO: pagination
     return {
       data: result.map(({ item_and_ordered_membership, members_view }) => ({
         ...item_and_ordered_membership,
         creator: members_view as MemberRaw | null,
       })),
-      totalCount,
       pagination: { page, pageSize },
     };
 

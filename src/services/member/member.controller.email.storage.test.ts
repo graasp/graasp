@@ -338,7 +338,6 @@ describe('Member Controller', () => {
       });
       expect(response.statusCode).toBe(StatusCodes.OK);
       const resultDefault = await response.json();
-      expect(resultDefault.totalCount).toBe(2);
       expect(resultDefault.pagination.page).toBe(1);
       expect(resultDefault.pagination.pageSize).toBe(10);
       expect(resultDefault.data.length).toBe(2);
@@ -386,7 +385,6 @@ describe('Member Controller', () => {
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
         const resultDefault = await response.json();
-        expect(resultDefault.totalCount).toBe(totalFiles);
         expect(resultDefault.pagination.page).toBe(1);
         expect(resultDefault.pagination.pageSize).toBe(10);
         expect(resultDefault.data.length).toBe(10);
@@ -412,7 +410,6 @@ describe('Member Controller', () => {
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
         const resultPage1 = await response.json();
-        expect(resultPage1.totalCount).toBe(totalFiles);
         expect(resultPage1.pagination.page).toBe(page);
         expect(resultPage1.pagination.pageSize).toBe(pageSize);
         expect(resultPage1.data.length).toBe(pageSize);
@@ -425,7 +422,6 @@ describe('Member Controller', () => {
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
         const resultPage2 = await response.json();
-        expect(resultPage2.totalCount).toBe(totalFiles);
         expect(resultPage2.pagination.page).toBe(page);
         expect(resultPage2.pagination.pageSize).toBe(pageSize);
         expect(resultPage2.data.length).toBe(pageSize);
@@ -441,7 +437,6 @@ describe('Member Controller', () => {
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
         const resultPage3 = await response.json();
-        expect(resultPage3.totalCount).toBe(totalFiles);
         expect(resultPage3.pagination.page).toBe(page);
         expect(resultPage3.pagination.pageSize).toBe(pageSize);
         expect(resultPage3.data.length).toBe(3);
@@ -458,7 +453,6 @@ describe('Member Controller', () => {
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
         const resultPage4 = await response.json();
-        expect(resultPage4.totalCount).toBe(totalFiles);
         expect(resultPage4.pagination.page).toBe(page);
         expect(resultPage4.pagination.pageSize).toBe(pageSize);
         expect(resultPage4.data.length).toBe(0);
@@ -489,7 +483,6 @@ describe('Member Controller', () => {
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
         const resultPage1 = await response.json();
-        expect(resultPage1.totalCount).toBe(totalFiles);
         expect(resultPage1.pagination.page).toBe(page);
         expect(resultPage1.pagination.pageSize).toBe(pageSize);
         expect(resultPage1.data.length).toBe(pageSize);
@@ -502,7 +495,6 @@ describe('Member Controller', () => {
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
         const resultPage2 = await response.json();
-        expect(resultPage2.totalCount).toBe(totalFiles);
         expect(resultPage2.pagination.page).toBe(page);
         expect(resultPage2.pagination.pageSize).toBe(pageSize);
         expect(resultPage2.data.length).toBe(pageSize);
@@ -518,7 +510,6 @@ describe('Member Controller', () => {
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
         const resultPage3 = await response.json();
-        expect(resultPage3.totalCount).toBe(totalFiles);
         expect(resultPage3.pagination.page).toBe(page);
         expect(resultPage3.pagination.pageSize).toBe(pageSize);
         expect(resultPage3.data.length).toBe(1);
@@ -535,7 +526,6 @@ describe('Member Controller', () => {
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
         const resultPage4 = await response.json();
-        expect(resultPage4.totalCount).toBe(totalFiles);
         expect(resultPage4.pagination.page).toBe(page);
         expect(resultPage4.pagination.pageSize).toBe(pageSize);
         expect(resultPage4.data.length).toBe(0);

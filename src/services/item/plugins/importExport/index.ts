@@ -18,7 +18,7 @@ import { validatedMemberAccountRole } from '../../../member/strategies/validated
 import { BasicItemService } from '../../basic.service';
 import { ZIP_FILE_MIME_TYPES } from './constants';
 import { FileIsInvalidArchiveError } from './errors';
-import { zipExport, zipImport } from './schema';
+import { graaspZipExport, zipExport, zipImport } from './schema';
 import { ImportExportService } from './service';
 import { prepareZip } from './utils';
 
@@ -154,7 +154,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.get(
     '/:itemId/graasp-export',
     {
-      schema: zipExport,
+      schema: graaspZipExport,
       preHandler: optionalIsAuthenticated,
     },
     async (request, reply) => {

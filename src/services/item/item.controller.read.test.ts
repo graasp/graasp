@@ -803,7 +803,7 @@ describe('Item routes tests', () => {
           url: '/items/accessible',
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
-        const { data, totalCount } = response.json<{ data: PackedItem[]; totalCount: number }>();
+        const { data } = response.json<{ data: PackedItem[] }>();
 
         const ims = [im1, im2, im3, im4, im6];
         const packedItems = [parentItem1, item2, item3, parentItem4, item6].map((i) => {
@@ -815,7 +815,6 @@ describe('Item routes tests', () => {
           ).packed();
         });
 
-        expect(totalCount).toEqual(packedItems.length);
         expect(data).toHaveLength(packedItems.length);
 
         expectManyPackedItems(data, packedItems);
@@ -915,8 +914,7 @@ describe('Item routes tests', () => {
         const packedItems = [item1, item2].map((i) =>
           new ItemWrapper({ ...i, creator: bob }, { permission: PermissionLevel.Admin }).packed(),
         );
-        const { data, totalCount } = response.json();
-        expect(totalCount).toEqual(packedItems.length);
+        const { data } = response.json();
         expect(data).toHaveLength(packedItems.length);
         expectManyPackedItems(data, packedItems);
       });
@@ -954,8 +952,7 @@ describe('Item routes tests', () => {
         const packedItems = [item3, item1, item2].map((i) =>
           new ItemWrapper({ ...i, creator: actor }, { permission: PermissionLevel.Admin }).packed(),
         );
-        const { data, totalCount } = response.json();
-        expect(totalCount).toEqual(packedItems.length);
+        const { data } = response.json();
         expect(data).toHaveLength(packedItems.length);
         expectManyPackedItems(data, packedItems);
         // check order
@@ -996,8 +993,7 @@ describe('Item routes tests', () => {
         const packedItems = [item3, item1, item2].map((i) =>
           new ItemWrapper({ ...i, creator: actor }, { permission: PermissionLevel.Admin }).packed(),
         );
-        const { data, totalCount } = response.json();
-        expect(totalCount).toEqual(packedItems.length);
+        const { data } = response.json();
         expect(data).toHaveLength(packedItems.length);
         expectManyPackedItems(data, packedItems);
         // check order
@@ -1038,8 +1034,7 @@ describe('Item routes tests', () => {
         const packedItems = [item2, item1, item3].map((i) =>
           new ItemWrapper({ ...i, creator: actor }, { permission: PermissionLevel.Admin }).packed(),
         );
-        const { data, totalCount } = response.json();
-        expect(totalCount).toEqual(packedItems.length);
+        const { data } = response.json();
         expect(data).toHaveLength(packedItems.length);
         expectManyPackedItems(data, packedItems);
         // check order
@@ -1117,8 +1112,7 @@ describe('Item routes tests', () => {
 
         expect(response.statusCode).toBe(StatusCodes.OK);
 
-        const { data, totalCount } = response.json();
-        expect(totalCount).toEqual(1);
+        const { data } = response.json();
         expect(data).toHaveLength(1);
         expect(data[0].id).toEqual(item1.id);
       });
@@ -1156,8 +1150,7 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
 
         const items = [item2, item3];
-        const { data, totalCount } = response.json();
-        expect(totalCount).toEqual(items.length);
+        const { data } = response.json();
         expect(data).toHaveLength(items.length);
         // check order
         items.forEach((i, idx) => expect(data[idx].id).toEqual(i.id));
@@ -1209,9 +1202,8 @@ describe('Item routes tests', () => {
 
         expect(response.statusCode).toBe(StatusCodes.OK);
 
-        const { data, totalCount } = response.json();
+        const { data } = response.json();
         const sortedData = data.sort(sortByName);
-        expect(totalCount).toEqual(folders.length);
         expect(data).toHaveLength(folders.length);
         folders.forEach((folder, idx) => {
           expectPackedItem(sortedData[idx], folder);
@@ -1324,8 +1316,7 @@ describe('Item routes tests', () => {
 
         expect(response.statusCode).toBe(StatusCodes.OK);
 
-        const { data, totalCount } = response.json();
-        expect(totalCount).toEqual(3);
+        const { data } = response.json();
         expect(data).toHaveLength(1);
         expect(data[0].id).toEqual(item3.id);
       });
