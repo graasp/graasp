@@ -2,6 +2,7 @@ import { config } from 'dotenv';
 import os from 'os';
 
 import { ClientManager, Context, FileItemType, GPTVersion, ItemType } from '@graasp/sdk';
+import { DEFAULT_LANG } from '@graasp/translations';
 
 import {
   LocalFileConfiguration,
@@ -379,6 +380,9 @@ export const ALLOWED_SEARCH_LANGS = {
   fr: 'french',
   it: 'italian',
 };
+export function getSearchLang(lang: string) {
+  return ALLOWED_SEARCH_LANGS[lang] ?? ALLOWED_SEARCH_LANGS[DEFAULT_LANG];
+}
 
 // Geolocation API Key
 export const GEOLOCATION_API_KEY = process.env.GEOLOCATION_API_KEY ?? '';

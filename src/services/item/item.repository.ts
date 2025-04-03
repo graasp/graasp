@@ -40,8 +40,8 @@ import {
   isDescendantOrSelf,
   isDirectChild,
   itemFullTextSearch,
-  itemFullTextSearchWithMemberLang,
   keywordSearch,
+  transformLangToReconfigLang,
 } from '../../drizzle/operations';
 import {
   accountsTable,
@@ -63,7 +63,7 @@ import {
 } from '../../drizzle/types';
 import { IllegalArgumentException } from '../../repositories/errors';
 import { AuthenticatedUser, MaybeUser, MinimalMember } from '../../types';
-import { ALLOWED_SEARCH_LANGS } from '../../utils/config';
+import { getSearchLang } from '../../utils/config';
 import {
   HierarchyTooDeep,
   InvalidMoveTarget,
@@ -295,14 +295,14 @@ export class ItemRepository {
     if (allKeywords && allKeywords.length) {
       const keywordsString = allKeywords.join(' ');
 
+      // gather distinct involved languages, from actor and item
+      const memberLang = actor && isMember(actor) && actor.lang ? actor.lang : DEFAULT_LANG;
+      const langs = ['simple', transformLangToReconfigLang(items.lang), getSearchLang(memberLang)];
+
       andConditions.push(
         or(
-          // search without lang
-          itemFullTextSearch(items, 'simple', keywordsString),
-          // search in english
-          itemFullTextSearch(items, 'english', keywordsString),
-          // search in member lang
-          itemFullTextSearchWithMemberLang(actor, items, keywordsString),
+          // search with involved languages
+          ...langs.map((l) => itemFullTextSearch(items, l, keywordsString)),
           // raw words search
           ...keywordSearch(items.name, allKeywords),
         ),
@@ -1179,14 +1179,18 @@ export class ItemRepository {
     if (allKeywords && allKeywords.length) {
       const keywordsString = allKeywords.join(' ');
 
+      // gather distinct involved languages, from actor
+      const memberLang = account.lang ?? DEFAULT_LANG;
+      const langs = [
+        'simple',
+        getSearchLang(memberLang),
+        transformLangToReconfigLang(itemsRaw.lang),
+      ];
+
       andConditions.push(
         or(
-          // search without lang
-          itemFullTextSearch(itemsRaw, 'simple', keywordsString),
-          // search in english
-          itemFullTextSearch(itemsRaw, 'english', keywordsString),
-          // search in member lang
-          itemFullTextSearchWithMemberLang(account, itemsRaw, keywordsString),
+          // search with involved languages
+          ...langs.map((l) => itemFullTextSearch(itemsRaw, l, keywordsString)),
           // raw words search
           ...keywordSearch(itemsRaw.name, allKeywords),
         ),

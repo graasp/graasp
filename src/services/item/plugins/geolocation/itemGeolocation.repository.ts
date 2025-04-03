@@ -2,7 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import { iso1A2Code } from '@rapideditor/country-coder';
-import { SQL, and, between, desc, eq, ilike, or, sql } from 'drizzle-orm';
+import { SQL, and, between, desc, eq, or } from 'drizzle-orm';
 import fetch from 'node-fetch';
 
 import { DEFAULT_LANG } from '@graasp/translations';
@@ -12,8 +12,8 @@ import {
   isAncestorOrSelf,
   isDescendantOrSelf,
   itemFullTextSearch,
-  itemFullTextSearchWithMemberLang,
   keywordSearch,
+  transformLangToReconfigLang,
 } from '../../../../drizzle/operations';
 import { accountsTable, itemGeolocationsTable, items } from '../../../../drizzle/schema';
 import {
@@ -24,7 +24,7 @@ import {
   MemberRaw,
 } from '../../../../drizzle/types';
 import { MaybeUser } from '../../../../types';
-import { ALLOWED_SEARCH_LANGS, GEOLOCATION_API_HOST } from '../../../../utils/config';
+import { GEOLOCATION_API_HOST, getSearchLang } from '../../../../utils/config';
 import { isMember } from '../../../authentication';
 import { MissingGeolocationSearchParams, PartialItemGeolocation } from './errors';
 
@@ -132,14 +132,14 @@ export class ItemGeolocationRepository {
     if (allKeywords && allKeywords.length) {
       const keywordsString = allKeywords.join(' ');
 
+      // gather distinct involved languages, from actor and item
+      const memberLang = actor && isMember(actor) && actor.lang ? actor.lang : DEFAULT_LANG;
+      const langs = ['simple', transformLangToReconfigLang(items.lang), getSearchLang(memberLang)];
+
       andConditions.push(
         or(
-          // search without lang
-          itemFullTextSearch(items, 'simple', keywordsString),
-          // search in english
-          itemFullTextSearch(items, 'english', keywordsString),
-          // search in member lang
-          itemFullTextSearchWithMemberLang(actor, items, keywordsString),
+          // search with involved languages
+          ...langs.map((l) => itemFullTextSearch(items, l, keywordsString)),
           // raw words search
           ...keywordSearch(items.name, allKeywords),
         ),

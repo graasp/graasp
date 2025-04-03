@@ -737,7 +737,6 @@ export const itemsRaw = pgTable(
       'btree',
       table.creatorId.asc().nullsLast().op('uuid_ops'),
     ),
-    // --------------
     index('IDX_gist_item_path').using('gist', table.path.asc().nullsLast().op('gist_ltree_ops')),
     foreignKey({
       columns: [table.creatorId],

@@ -2,12 +2,6 @@ import { SQL, ilike } from 'drizzle-orm';
 import { PgColumn } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm/sql';
 
-import { DEFAULT_LANG } from '@graasp/translations';
-
-import { isMember } from '../services/authentication';
-import { MaybeUser } from '../types';
-import { ALLOWED_SEARCH_LANGS } from '../utils/config';
-
 export function isAncestorOrSelf(column: PgColumn, path: string | PgColumn): SQL {
   return sql`${column} @> ${path}`;
 }
@@ -55,26 +49,17 @@ export function keywordSearch(column: PgColumn, allKeywords: string[]) {
 }
 
 /**
- * return full text search query using the actor lang. If the lang is the default one or is not defined, return undefined.
- * @param actor
- * @param table
- * @param keywordsString
- * @returns search query with actor lang, undefined if lang is the default one or does not exist
+ * returns sql operation to transform a column lang into a usable regconfig lang for tsvector search. Necessary for dynamic lang coming from a column
+ * @param column lang column reference
+ * @returns
  */
-export function itemFullTextSearchWithMemberLang(
-  actor: MaybeUser,
-  table: {
-    name: PgColumn;
-    description: PgColumn;
-    extra: PgColumn;
-  },
-  keywordsString: string,
-) {
-  const memberLang = actor && isMember(actor) ? actor.lang : DEFAULT_LANG;
-  const memberLangKey = memberLang as keyof typeof ALLOWED_SEARCH_LANGS;
-  if (memberLang != DEFAULT_LANG && ALLOWED_SEARCH_LANGS[memberLangKey]) {
-    return itemFullTextSearch(table, ALLOWED_SEARCH_LANGS[memberLangKey], keywordsString);
-  }
-
-  return undefined;
+export function transformLangToReconfigLang(column: PgColumn) {
+  return sql`case ${column} 
+            when 'en' then 'english'::regconfig 
+            when 'fr' then 'french'::regconfig 
+            when 'it' then 'italian'::regconfig 
+            when 'de' then 'german'::regconfig 
+            when 'es' then 'spanish'::regconfig 
+            else 'english'::regconfig 
+            end`;
 }
