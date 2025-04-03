@@ -4,12 +4,16 @@ import { singleton } from 'tsyringe';
 import { DBConnection } from '../../../../drizzle/db';
 import { memberProfiles } from '../../../../drizzle/schema';
 import { MemberNotFound } from '../../../../utils/errors';
-import { MemberProfileCreationError } from './errors';
+import { MemberProfileCreationError, MemberProfilePropertiesEmpty } from './errors';
 import { IMemberProfile } from './types';
 
 @singleton()
 export class MemberProfileRepository {
-  async createOne(db: DBConnection, memberId: string, payload: IMemberProfile) {
+  async createOne(db: DBConnection, memberId: string, payload: Partial<IMemberProfile>) {
+    if (Object.values(payload).length === 0) {
+      throw new MemberProfilePropertiesEmpty();
+    }
+
     const {
       bio,
       visibility = false,
@@ -70,6 +74,10 @@ export class MemberProfileRepository {
   }
 
   async patch(db: DBConnection, memberId: string, data: Partial<IMemberProfile>) {
+    if (Object.values(data).length === 0) {
+      throw new MemberProfilePropertiesEmpty();
+    }
+
     return await db.update(memberProfiles).set(data).where(eq(memberProfiles.memberId, memberId));
   }
 }

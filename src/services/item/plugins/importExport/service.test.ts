@@ -5,7 +5,6 @@ import { db } from '../../../../drizzle/db';
 
 describe('ZIP routes tests', () => {
   let app: FastifyInstance;
-  let actor;
 
   beforeAll(async () => {
     ({ app } = await build());

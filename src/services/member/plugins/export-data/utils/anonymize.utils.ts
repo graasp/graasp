@@ -1,10 +1,6 @@
 import fastJson from 'fast-json-stringify';
 
-import {
-  ChatMentionWithMessage,
-  ChatMentionWithMessageWithoutCreator,
-  ChatMessageRaw,
-} from '../../../../../drizzle/types';
+import { ChatMentionWithMessageWithoutCreator } from '../../../../../drizzle/types';
 
 const ANONYMIZED_ID = 'anonymous-id';
 const CURRENT_ACTOR_ID = 'you';

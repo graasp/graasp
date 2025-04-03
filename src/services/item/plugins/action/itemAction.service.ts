@@ -15,7 +15,6 @@ import {
   AppSettingRaw,
   Item,
   ItemRaw,
-  MinimalAccount,
 } from '../../../../drizzle/types';
 import { AuthenticatedUser, MaybeUser } from '../../../../types';
 import { UnauthorizedMember } from '../../../../utils/errors';

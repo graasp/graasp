@@ -24,3 +24,13 @@ export class MemberProfileCreationError extends GraaspMemberProfileError {
     });
   }
 }
+
+export class MemberProfilePropertiesEmpty extends GraaspMemberProfileError {
+  constructor() {
+    super({
+      code: 'GMPERR003',
+      statusCode: StatusCodes.BAD_REQUEST,
+      message: 'All properties of the member profile are empty',
+    });
+  }
+}

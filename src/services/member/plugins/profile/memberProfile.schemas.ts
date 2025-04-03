@@ -91,7 +91,7 @@ export const updateOwnProfile = {
   summary: 'Update profile of current member',
   description: 'Update profile of current member',
 
-  body: Type.Partial(inputPublicProfileMemberSchema),
+  body: Type.Partial(inputPublicProfileMemberSchema, { minProperties: 1 }),
   response: {
     [StatusCodes.NO_CONTENT]: Type.Null(),
     [StatusCodes.UNAUTHORIZED]: errorSchemaRef,

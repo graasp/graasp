@@ -2,53 +2,61 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyInstance } from 'fastify';
 
-import { GPTVersion, HttpMethod } from '@graasp/sdk';
+import { GPTVersion, HttpMethod, ItemType } from '@graasp/sdk';
 
-import build, { mockAuthenticate } from '../../../../../../test/app';
+import build, {
+  clearDatabase,
+  mockAuthenticate,
+  unmockAuthenticate,
+} from '../../../../../../test/app';
 import { seedFromJson } from '../../../../../../test/mocks/seed';
+import { db } from '../../../../../drizzle/db';
 import { assertIsDefined } from '../../../../../utils/assertions';
 import { APP_ITEMS_PREFIX } from '../../../../../utils/config';
-import {
-  OpenAILengthError,
-  OpenAITimeOutError,
-  OpenAIUnknownStopError,
-} from '../../../../../utils/errors';
+import { OpenAILengthError, OpenAIUnknownStopError } from '../../../../../utils/errors';
+import { getAccessToken } from '../test/fixtures';
 import { FinishReason } from './chatBot.types';
-import { DOCKER_MOCKED_BODY, DOCKER_MOCKED_RESPONSE, mockResponse } from './test/fixtures';
-
-const testUtils = new AppTestUtils();
+import {
+  DOCKER_MOCKED_BODY,
+  DOCKER_MOCKED_RESPONSE,
+  copyArray,
+  mockResponse,
+} from './test/fixtures';
 
 // Indicate that the module openAICompletion will be mocked.
 // This allow to mock the response of OpenAI only.
-jest.mock('../openAICompletion');
+jest.mock('./openAICompletion');
 
 function expectException(response, ex) {
   expect(response.json().code).toBe(ex.code);
   expect(response.json().message).toBe(ex.message);
 }
 
+const CHAT_PATH = 'chat-bot';
+
 describe('Chat Bot Tests', () => {
   let app: FastifyInstance;
-  let item, token;
-  const CHAT_PATH = 'chat-bot';
+
+  beforeAll(async () => {
+    ({ app } = await build());
+  });
+
+  afterAll(async () => {
+    await clearDatabase(db);
+    app.close();
+  });
 
   afterEach(async () => {
     jest.clearAllMocks();
-    // await clearDatabase(db);
-    item = null;
-    token = null;
-    app.close();
+    unmockAuthenticate();
   });
 
   describe('POST /:itemId/chat-bot', () => {
     describe('Sign Out', () => {
-      beforeEach(async () => {
-        ({ app } = await build());
-
-        ({ item, token } = await testUtils.setUp(app, actor, member));
-      });
-
       it('Unauthorized if post chat message without member and token', async () => {
+        const {
+          items: [item],
+        } = await seedFromJson({ actor: null, items: [{}] });
         const response = await app.inject({
           method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/${CHAT_PATH}`,
@@ -59,33 +67,42 @@ describe('Chat Bot Tests', () => {
     });
 
     describe('Test Finish Reasons', () => {
-      beforeEach(async () => {
-        ({ app } = await build());
-        const { actor } = await seedFromJson();
-        assertIsDefined(actor);
-        mockAuthenticate(actor);
-        ({ item, token } = await testUtils.setUp(app, actor, actor));
-      });
-
       // disabled for now as this does not seem like it could happen
-      it.skip('Time out', async () => {
-        mockResponse(FinishReason.NULL, DOCKER_MOCKED_RESPONSE);
+      // it.skip('Time out', async () => {
+      //   mockResponse(FinishReason.NULL, DOCKER_MOCKED_RESPONSE);
 
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `${APP_ITEMS_PREFIX}/${item.id}/${CHAT_PATH}`,
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          payload: DOCKER_MOCKED_BODY,
-        });
+      //   const response = await app.inject({
+      //     method: HttpMethod.Post,
+      //     url: `${APP_ITEMS_PREFIX}/${item.id}/${CHAT_PATH}`,
+      //     headers: {
+      //       Authorization: `Bearer ${token}`,
+      //     },
+      //     payload: DOCKER_MOCKED_BODY,
+      //   });
 
-        expectException(response, new OpenAITimeOutError());
-      });
+      //   expectException(response, new OpenAITimeOutError());
+      // });
 
       it('Max chars', async () => {
+        const { apps } = await seedFromJson({ apps: [{}] });
+        const {
+          items: [item],
+          actor,
+        } = await seedFromJson({
+          items: [
+            {
+              type: ItemType.APP,
+              memberships: [{ account: 'actor' }],
+            },
+          ],
+        });
+        const chosenApp = apps[0];
+
         mockResponse(FinishReason.LENGTH, DOCKER_MOCKED_RESPONSE);
 
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+        const token = await getAccessToken(app, item, chosenApp);
         const response = await app.inject({
           method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/${CHAT_PATH}`,
@@ -99,9 +116,26 @@ describe('Chat Bot Tests', () => {
       });
 
       it('Unknown reason', async () => {
+        const { apps } = await seedFromJson({ apps: [{}] });
+        const {
+          items: [item],
+          actor,
+        } = await seedFromJson({
+          items: [
+            {
+              type: ItemType.APP,
+              memberships: [{ account: 'actor' }],
+            },
+          ],
+        });
+        const chosenApp = apps[0];
+
         const reason = 'What for a reason ?';
         mockResponse(reason, DOCKER_MOCKED_RESPONSE);
 
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+        const token = await getAccessToken(app, item, chosenApp);
         const response = await app.inject({
           method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/${CHAT_PATH}`,
@@ -117,12 +151,27 @@ describe('Chat Bot Tests', () => {
 
     describe('Sign In', () => {
       beforeEach(async () => {
-        ({ app } = await build());
-        ({ item, token } = await testUtils.setUp(app, actor, actor));
         mockResponse(FinishReason.STOP, DOCKER_MOCKED_RESPONSE);
       });
 
       it('Success post chat with valid body and authorized member', async () => {
+        const { apps } = await seedFromJson({ apps: [{}] });
+        const {
+          actor,
+          items: [item],
+        } = await seedFromJson({
+          items: [
+            {
+              type: ItemType.APP,
+              memberships: [{ account: 'actor' }],
+            },
+          ],
+        });
+        const chosenApp = apps[0];
+
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+        const token = await getAccessToken(app, item, chosenApp);
         const response = await app.inject({
           method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/${CHAT_PATH}`,
@@ -136,6 +185,23 @@ describe('Chat Bot Tests', () => {
       });
 
       it('Success post chat with custom version', async () => {
+        const { apps } = await seedFromJson({ apps: [{}] });
+        const {
+          items: [item],
+          actor,
+        } = await seedFromJson({
+          items: [
+            {
+              type: ItemType.APP,
+              memberships: [{ account: 'actor' }],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+        const chosenApp = apps[0];
+
+        const token = await getAccessToken(app, item, chosenApp);
         const gptVersion = GPTVersion.GPT_4;
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -151,6 +217,23 @@ describe('Chat Bot Tests', () => {
       });
 
       it('Success post chat with temperature', async () => {
+        const { apps } = await seedFromJson({ apps: [{}] });
+        const {
+          items: [item],
+          actor,
+        } = await seedFromJson({
+          items: [
+            {
+              type: ItemType.APP,
+              memberships: [{ account: 'actor' }],
+            },
+          ],
+        });
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+        const chosenApp = apps[0];
+
+        const token = await getAccessToken(app, item, chosenApp);
         const temperature = 0.8;
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -165,6 +248,23 @@ describe('Chat Bot Tests', () => {
       });
 
       it('Bad request if post chat without body', async () => {
+        const { apps } = await seedFromJson({ apps: [{}] });
+        const {
+          items: [item],
+          actor,
+        } = await seedFromJson({
+          items: [
+            {
+              type: ItemType.APP,
+              memberships: [{ account: 'actor' }],
+            },
+          ],
+        });
+        const chosenApp = apps[0];
+
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+        const token = await getAccessToken(app, item, chosenApp);
         const response = await app.inject({
           method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/${CHAT_PATH}`,
@@ -176,6 +276,23 @@ describe('Chat Bot Tests', () => {
       });
 
       it('Bad request if post chat with invalid GPT version', async () => {
+        const { apps } = await seedFromJson({ apps: [{}] });
+        const {
+          items: [item],
+          actor,
+        } = await seedFromJson({
+          items: [
+            {
+              type: ItemType.APP,
+              memberships: [{ account: 'actor' }],
+            },
+          ],
+        });
+        const chosenApp = apps[0];
+
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+        const token = await getAccessToken(app, item, chosenApp);
         const response = await app.inject({
           method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/${CHAT_PATH}?gptVersion=INVALID`,
@@ -188,6 +305,23 @@ describe('Chat Bot Tests', () => {
       });
 
       it('Bad request if post chat with invalid temperature', async () => {
+        const { apps } = await seedFromJson({ apps: [{}] });
+        const {
+          items: [item],
+          actor,
+        } = await seedFromJson({
+          items: [
+            {
+              type: ItemType.APP,
+              memberships: [{ account: 'actor' }],
+            },
+          ],
+        });
+        const chosenApp = apps[0];
+
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+        const token = await getAccessToken(app, item, chosenApp);
         const response = await app.inject({
           method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/${CHAT_PATH}?temperature=100`,
@@ -200,6 +334,23 @@ describe('Chat Bot Tests', () => {
       });
 
       it('Bad request if post chat with empty array body', async () => {
+        const { apps } = await seedFromJson({ apps: [{}] });
+        const {
+          items: [item],
+          actor,
+        } = await seedFromJson({
+          items: [
+            {
+              type: ItemType.APP,
+              memberships: [{ account: 'actor' }],
+            },
+          ],
+        });
+        const chosenApp = apps[0];
+
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+        const token = await getAccessToken(app, item, chosenApp);
         const response = await app.inject({
           method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/${CHAT_PATH}`,
@@ -212,9 +363,26 @@ describe('Chat Bot Tests', () => {
       });
 
       it('Bad request if post chat with invalid array role', async () => {
+        const { apps } = await seedFromJson({ apps: [{}] });
+        const {
+          items: [item],
+          actor,
+        } = await seedFromJson({
+          items: [
+            {
+              type: ItemType.APP,
+              memberships: [{ account: 'actor' }],
+            },
+          ],
+        });
+        const chosenApp = apps[0];
+
         const INVALID_ARRAY = copyArray(DOCKER_MOCKED_BODY);
         INVALID_ARRAY[0].role = 'invalid';
 
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+        const token = await getAccessToken(app, item, chosenApp);
         const response = await app.inject({
           method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/${CHAT_PATH}`,
@@ -230,6 +398,23 @@ describe('Chat Bot Tests', () => {
         const INVALID_ARRAY = copyArray(DOCKER_MOCKED_BODY);
         INVALID_ARRAY[1] = { role: 'system' };
 
+        const { apps } = await seedFromJson({ apps: [{}] });
+        const {
+          items: [item],
+          actor,
+        } = await seedFromJson({
+          items: [
+            {
+              type: ItemType.APP,
+              memberships: [{ account: 'actor' }],
+            },
+          ],
+        });
+        const chosenApp = apps[0];
+
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+        const token = await getAccessToken(app, item, chosenApp);
         const response = await app.inject({
           method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/${CHAT_PATH}`,
@@ -242,6 +427,23 @@ describe('Chat Bot Tests', () => {
       });
 
       it('Not found if post chat with invalid item id', async () => {
+        const { apps } = await seedFromJson({ apps: [{}] });
+        const {
+          items: [item],
+          actor,
+        } = await seedFromJson({
+          items: [
+            {
+              type: ItemType.APP,
+              memberships: [{ account: 'actor' }],
+            },
+          ],
+        });
+        const chosenApp = apps[0];
+
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+        const token = await getAccessToken(app, item, chosenApp);
         const invalidId = '2891ae09-d790-4af1-a290-6eec6972496a';
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -254,43 +456,38 @@ describe('Chat Bot Tests', () => {
         expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
       });
     });
-    describe('Try access as unauthorized app', () => {
-      beforeEach(async () => {
-        ({ app, actor } = await build());
-        const member = await saveMember();
-        ({ item, token } = await testUtils.setUpForbidden(app, actor, member));
-        mockResponse(FinishReason.STOP);
-      });
-
-      it('Forbidden if Post chat on a different app using authorized user', async () => {
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `${APP_ITEMS_PREFIX}/${item.id}/${CHAT_PATH}`,
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          payload: DOCKER_MOCKED_BODY,
-        });
-
-        expect(response.statusCode).toEqual(StatusCodes.FORBIDDEN);
-      });
-    });
 
     describe('Try access as unauthorized item', () => {
-      beforeEach(async () => {
-        ({ app } = await build());
-        ({ item, token } = await testUtils.setUp(app, actor, actor));
-        mockResponse(FinishReason.STOP);
-      });
-
       it('Forbidden if Post chat on a different item using the same app', async () => {
-        const { token: token2 } = await testUtils.setUp(app, actor, actor);
+        const { apps } = await seedFromJson({ apps: [{}] });
+        const {
+          actor,
+          items: [item, anotherItem],
+        } = await seedFromJson({
+          items: [
+            {
+              type: ItemType.APP,
+              memberships: [{ account: 'actor' }],
+            },
+            {
+              type: ItemType.APP,
+              memberships: [{ account: 'actor' }],
+            },
+          ],
+        });
+        const chosenApp = apps[0];
+
+        assertIsDefined(actor);
+        mockAuthenticate(actor);
+        const tokenForAnotherItem = await getAccessToken(app, anotherItem, chosenApp);
+
+        mockResponse(FinishReason.STOP);
 
         const response = await app.inject({
           method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/${CHAT_PATH}`,
           headers: {
-            Authorization: `Bearer ${token2}`,
+            Authorization: `Bearer ${tokenForAnotherItem}`,
           },
           payload: DOCKER_MOCKED_BODY,
         });

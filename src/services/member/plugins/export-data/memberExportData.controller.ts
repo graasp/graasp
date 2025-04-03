@@ -1,6 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { FastifyPluginAsync } from 'fastify';
 
 import { resolveDependency } from '../../../../di/utils';

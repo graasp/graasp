@@ -1,4 +1,4 @@
-import { injectable, singleton } from 'tsyringe';
+import { singleton } from 'tsyringe';
 
 import {
   ClientManager,
@@ -33,10 +33,6 @@ import {
 } from './errors';
 import { ItemPublishedRepository } from './itemPublished.repository';
 import { MeiliSearchWrapper } from './plugins/search/meilisearch';
-
-interface ActionCount {
-  actionCount: number;
-}
 
 @singleton()
 export class ItemPublishedService {

@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { beforeAll } from '@jest/globals';
 import { eq } from 'drizzle-orm';
-import { ReasonPhrases, StatusCodes } from 'http-status-codes';
+import { StatusCodes } from 'http-status-codes';
 import { sign as jwtSign } from 'jsonwebtoken';
 import waitForExpect from 'wait-for-expect';
 

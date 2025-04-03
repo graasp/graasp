@@ -1,4 +1,4 @@
-import { count, eq, getTableColumns, inArray } from 'drizzle-orm';
+import { eq, getTableColumns, inArray } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { and, asc, desc, isNotNull, ne } from 'drizzle-orm/sql';
 

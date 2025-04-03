@@ -4,7 +4,6 @@ import { singleton } from 'tsyringe';
 import { DBConnection } from '../../../../../drizzle/db';
 import { itemValidationGroups } from '../../../../../drizzle/schema';
 import {
-  ItemValidationGroupInsertDTO,
   ItemValidationGroupRaw,
   ItemValidationGroupWithItemAndValidations,
 } from '../../../../../drizzle/types';

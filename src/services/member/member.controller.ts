@@ -5,7 +5,6 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { resolveDependency } from '../../di/utils';
 import { db } from '../../drizzle/db';
 import { asDefined, assertIsDefined } from '../../utils/assertions';
-import { CannotModifyOtherMembers } from '../../utils/errors';
 import { AccountRepository } from '../account/account.repository';
 import {
   authenticateEmailChange,
@@ -30,7 +29,6 @@ import {
   patchChangeEmail,
   postChangeEmail,
   updateCurrent,
-  updateOne,
 } from './member.schemas';
 import { MemberService } from './member.service';
 import { StorageService } from './plugins/storage/memberStorage.service';

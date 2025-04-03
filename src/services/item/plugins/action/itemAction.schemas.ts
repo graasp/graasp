@@ -15,21 +15,21 @@ import {
 
 import { customType } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
-import { nullableAccountSchemaRef } from '../../../account/account.schemas';
+// import { nullableAccountSchemaRef } from '../../../account/account.schemas';
 import { MAX_ACTIONS_SAMPLE_SIZE, MIN_ACTIONS_SAMPLE_SIZE } from '../../../action/constants';
-import { itemSchema } from '../../item.schemas';
+// import { itemSchema } from '../../item.schemas';
 import { ItemActionType } from './utils';
 
-const actionSchema = customType.StrictObject({
-  id: customType.UUID(),
-  account: Type.Optional(nullableAccountSchemaRef),
-  item: Type.Optional(customType.Nullable(Type.Omit(itemSchema, ['creator']))),
-  view: Type.Enum(Context),
-  type: Type.String(),
-  extra: Type.Object({}),
-  geolocation: Type.Optional(customType.Nullable(Type.Object({}))),
-  createdAt: customType.DateTime(),
-});
+// const actionSchema = customType.StrictObject({
+//   id: customType.UUID(),
+//   account: Type.Optional(nullableAccountSchemaRef),
+//   item: Type.Optional(customType.Nullable(Type.Omit(itemSchema, ['creator']))),
+//   view: Type.Enum(Context),
+//   type: Type.String(),
+//   extra: Type.Object({}),
+//   geolocation: Type.Optional(customType.Nullable(Type.Object({}))),
+//   createdAt: customType.DateTime(),
+// });
 
 // schema for getting item analytics with view and requestedSampleSize query parameters
 export const getItemActions = {

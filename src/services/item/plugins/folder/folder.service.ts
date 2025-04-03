@@ -1,13 +1,7 @@
 import { Readable } from 'node:stream';
 import { singleton } from 'tsyringe';
 
-import {
-  ItemGeolocation,
-  ItemType,
-  PermissionLevel,
-  PermissionLevelOptions,
-  UUID,
-} from '@graasp/sdk';
+import { ItemGeolocation, ItemType, PermissionLevelOptions, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
 import { Item } from '../../../../drizzle/types';

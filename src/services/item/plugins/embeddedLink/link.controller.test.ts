@@ -119,7 +119,7 @@ describe('Tests Embedded Link Controller', () => {
         .get(`/iframely`)
         .query({ uri: validUrl })
         .reply(200, {
-          meta: METADATA,
+          meta: iframelyResult.meta,
           links: [
             {
               rel: ['thumbnail'],

@@ -15,8 +15,9 @@ export class MemberProfileService {
     this.memberProfileRepository = memberProfileRepository;
   }
 
-  async post(db: DBConnection, member: MinimalMember, data: IMemberProfile) {
+  async post(db: DBConnection, member: MinimalMember, data: Partial<IMemberProfile>) {
     const profile = await this.memberProfileRepository.createOne(db, member.id, data);
+
     return profile;
   }
 
