@@ -325,9 +325,6 @@ export type ItemValidationGroupInsertDTO = typeof itemValidationGroups.$inferIns
 export type ItemValidationReviewRaw = typeof itemValidationReviews.$inferSelect;
 export type ItemValidationReviewInsertDTO = typeof itemValidationReviews.$inferInsert;
 
-// --- Publisher
-export type Publisher = any;
-
 // --- ItemBookmark
 export type ItemBookmarkRaw = typeof itemBookmarks.$inferSelect;
 export type ItemBookmarkRawWithItem = ItemBookmarkRaw & { item: Item };

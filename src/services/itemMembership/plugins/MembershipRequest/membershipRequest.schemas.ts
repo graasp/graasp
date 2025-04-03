@@ -21,13 +21,6 @@ export const completeMembershipRequestSchemaRef = registerSchemaAsRef(
   completeMembershipRequestSchema,
 );
 
-const createdMembershipRequestSchema = customType.StrictObject({
-  id: customType.UUID(),
-  memberId: customType.UUID(),
-  itemId: customType.UUID(),
-  createdAt: customType.DateTime(),
-});
-
 export const simpleMembershipRequestSchemaRef = registerSchemaAsRef(
   'simpleMembershipRequest',
   'Simple Membership Request',

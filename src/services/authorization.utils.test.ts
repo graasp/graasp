@@ -54,8 +54,6 @@ const buildPackedDescendants = (
     }),
   );
   const idx = arr.findIndex(({ id }) => id === hiddenVisibility.item.id);
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-expect-error
   arr[idx].hidden = hiddenVisibility;
   return arr as unknown as PackedItem[];
 };

@@ -76,8 +76,7 @@ describe('Short links routes tests', () => {
         const response = await injectGet(app, shortLink.alias);
         expect(response.statusCode).toEqual(StatusCodes.MOVED_TEMPORARILY);
         expect(response.headers.location).toEqual(
-          // TODO: fix type
-          getRedirection(item.id, shortLink.platform as any),
+          getRedirection(item.id, shortLink.platform as Context),
         );
       });
     });

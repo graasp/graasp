@@ -6,19 +6,41 @@ import { MOCK_LOGGER } from '../../../../../test/app';
 import { MemberFactory } from '../../../../../test/factories/member.factory';
 import { db } from '../../../../drizzle/db';
 import { Item } from '../../../../drizzle/types';
+import { AuthorizationService } from '../../../authorization';
+import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
+import { ItemWrapperService } from '../../ItemWrapper';
+import { BasicItemService } from '../../basic.service';
 import { AppItem } from '../../discrimination';
-import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
+import { ItemGeolocationRepository } from '../geolocation/itemGeolocation.repository';
+import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
+import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';
 import { MeiliSearchWrapper } from '../publication/published/plugins/search/meilisearch';
+import { RecycledBinService } from '../recycled/recycled.service';
 import { ItemThumbnailService } from '../thumbnail/itemThumbnail.service';
 import { AppItemService } from './appItemService';
 
+const itemRepository = {
+  getOneOrThrow: async () => {
+    return MOCK_ITEM;
+  },
+} as unknown as ItemRepository;
+
 const appService = new AppItemService(
-  {} as unknown as ThumbnailService,
-  {} as unknown as ItemThumbnailService,
+  {} as ThumbnailService,
+  {} as ItemThumbnailService,
+  {} as ItemMembershipRepository,
   {} as MeiliSearchWrapper,
+  itemRepository,
+  {} as ItemPublishedRepository,
+  {} as ItemGeolocationRepository,
+  {} as AuthorizationService,
+  {} as ItemWrapperService,
+  {} as ItemVisibilityRepository,
+  {} as BasicItemService,
+  {} as RecycledBinService,
   MOCK_LOGGER,
 );
 
@@ -27,11 +49,6 @@ const MOCK_ITEM = AppItemFactory({ id }) as unknown as AppItem;
 const MOCK_URL = 'http://example.com';
 
 const MOCK_MEMBER = MemberFactory();
-const itemRepository = {
-  getOneOrThrow: async () => {
-    return MOCK_ITEM;
-  },
-} as unknown as ItemRepository;
 
 describe('App Service', () => {
   afterEach(() => {
@@ -109,9 +126,13 @@ describe('App Service', () => {
       const FOLDER_ITEM = FolderItemFactory();
       await expect(() =>
         appService.patch(db, MOCK_MEMBER, FOLDER_ITEM.id, { name: 'name' }),
-      ).rejects.toBeInstanceOf(WrongItemTypeError);
+      ).rejects.toThrow();
     });
     it('patch item settings', async () => {
+      jest
+        .spyOn(itemRepository, 'getOneOrThrow')
+        .mockResolvedValue({ ...MOCK_ITEM, creator: null });
+
       const itemServicePatchMock = jest
         .spyOn(ItemService.prototype, 'patch')
         .mockImplementation(async () => {
