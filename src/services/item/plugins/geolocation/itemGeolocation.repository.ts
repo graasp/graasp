@@ -2,13 +2,19 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import { iso1A2Code } from '@rapideditor/country-coder';
-import { SQL, and, between, desc, eq } from 'drizzle-orm';
+import { SQL, and, between, desc, eq, or } from 'drizzle-orm';
 import fetch from 'node-fetch';
 
 import { DEFAULT_LANG } from '@graasp/translations';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { isAncestorOrSelf, isDescendantOrSelf } from '../../../../drizzle/operations';
+import {
+  isAncestorOrSelf,
+  isDescendantOrSelf,
+  itemFullTextSearch,
+  keywordSearch,
+  transformLangToReconfigLang,
+} from '../../../../drizzle/operations';
 import { accountsTable, itemGeolocationsTable, items } from '../../../../drizzle/schema';
 import {
   Item,
@@ -18,7 +24,8 @@ import {
   MemberRaw,
 } from '../../../../drizzle/types';
 import { MaybeUser } from '../../../../types';
-import { ALLOWED_SEARCH_LANGS, GEOLOCATION_API_HOST } from '../../../../utils/config';
+import { GEOLOCATION_API_HOST, getSearchLang } from '../../../../utils/config';
+import { isMember } from '../../../authentication';
 import { MissingGeolocationSearchParams, PartialItemGeolocation } from './errors';
 
 export class ItemGeolocationRepository {
@@ -100,7 +107,7 @@ export class ItemGeolocationRepository {
 
     // reunite where conditions
     // is direct child
-    const andConditions: SQL[] = [];
+    const andConditions: (SQL | undefined)[] = [];
 
     if (
       typeof lat1 === 'number' &&
@@ -120,37 +127,24 @@ export class ItemGeolocationRepository {
       andConditions.push(isDescendantOrSelf(items.path, parentItem.path));
     }
 
-    // .where('path ~ ${${parent.path}.*{1}}', { path: `${parent.path}.*{1}` });
+    // keyword search
+    const allKeywords = keywords?.filter((s) => s && s.length);
+    if (allKeywords && allKeywords.length) {
+      const keywordsString = allKeywords.join(' ');
 
-    // TODO
-    // const allKeywords = keywords?.filter((s) => s && s.length);
-    // if (allKeywords?.length) {
-    //   const keywordsString = allKeywords.join(' ');
+      // gather distinct involved languages, from actor and item
+      const memberLang = actor && isMember(actor) && actor.lang ? actor.lang : DEFAULT_LANG;
+      const langs = ['simple', transformLangToReconfigLang(items.lang), getSearchLang(memberLang)];
 
-    //   // search in english by default
-    //   const matchEnglishSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery('english', ${keywordsString})`;
-
-    //   // no dictionary
-    //   const matchSimpleSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery('simple', ${keywordsString})`;
-
-    //   // raw words search
-    //   const matchRawWordSearchConditions = allKeywords.map((k) => ilike(items.name, `%${k}%`));
-
-    //   const searchConditions = [
-    //     matchEnglishSearchCondition,
-    //     matchSimpleSearchCondition,
-    //     ...matchRawWordSearchConditions,
-    //   ];
-
-    //   // search by member lang
-    //   const memberLang = actor && isMember(actor) ? actor?.lang : DEFAULT_LANG;
-    //   if (memberLang && ALLOWED_SEARCH_LANGS[memberLang]) {
-    //     const matchMemberLangSearchCondition = sql`${items.searchDocument} @@ plainto_tsquery(${ALLOWED_SEARCH_LANGS[memberLang]}, ${keywordsString})`;
-    //     searchConditions.push(matchMemberLangSearchCondition);
-    //   }
-
-    //   andConditions.push(or(...searchConditions));
-    // }
+      andConditions.push(
+        or(
+          // search with involved languages
+          ...langs.map((l) => itemFullTextSearch(items, l, keywordsString)),
+          // raw words search
+          ...keywordSearch(items.name, allKeywords),
+        ),
+      );
+    }
 
     const result = await db
       .select()

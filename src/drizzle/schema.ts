@@ -729,45 +729,7 @@ export const itemsRaw = pgTable(
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
     deletedAt: timestamp('deleted_at', { mode: 'string' }), // HACK: the softdeletion mechanism relies on the deletedAt being null or having a date
     lang: varchar().default('en').notNull(),
-    // TODO: failed to parse database type 'tsvector'
-    //     searchDocument: unknown('search_document').notNull()
-    //       .generatedAlwaysAs(sql`((((((((((((((((((((((((((((((((((((setweight(to_tsvector('simple'::regconfig, (name)::text), 'A'::"char") || ''::tsvector) || setweight(to_tsvector('english'::regconfig, (name)::text), 'A'::"char")) || ''::tsvector) || setweight(to_tsvector('french'::regconfig, (name)::text), 'A'::"char")) || ''::tsvector) ||
-    // CASE
-    //     WHEN ((lang)::text = 'de'::text) THEN to_tsvector('german'::regconfig, (name)::text)
-    //     WHEN ((lang)::text = 'it'::text) THEN to_tsvector('italian'::regconfig, (name)::text)
-    //     WHEN ((lang)::text = 'es'::text) THEN to_tsvector('spanish'::regconfig, (name)::text)
-    //     ELSE ''::tsvector
-    // END) || ''::tsvector) || setweight(to_tsvector('english'::regconfig, (COALESCE(description, ''::character varying))::text), 'B'::"char")) || ''::tsvector) || setweight(to_tsvector('french'::regconfig, (COALESCE(description, ''::character varying))::text), 'B'::"char")) || ''::tsvector) ||
-    // CASE
-    //     WHEN ((lang)::text = 'de'::text) THEN setweight(to_tsvector('german'::regconfig, (COALESCE(description, ''::character varying))::text), 'B'::"char")
-    //     WHEN ((lang)::text = 'it'::text) THEN setweight(to_tsvector('italian'::regconfig, (COALESCE(description, ''::character varying))::text), 'B'::"char")
-    //     WHEN ((lang)::text = 'es'::text) THEN setweight(to_tsvector('spanish'::regconfig, (COALESCE(description, ''::character varying))::text), 'B'::"char")
-    //     ELSE ''::tsvector
-    // END) || ''::tsvector) || setweight(to_tsvector('english'::regconfig, COALESCE(((settings)::jsonb -> 'tags'::text), '{}'::jsonb)), 'C'::"char")) || ''::tsvector) || setweight(to_tsvector('french'::regconfig, COALESCE(((settings)::jsonb -> 'tags'::text), '{}'::jsonb)), 'C'::"char")) || ''::tsvector) ||
-    // CASE
-    //     WHEN ((lang)::text = 'de'::text) THEN setweight(to_tsvector('german'::regconfig, COALESCE(((settings)::jsonb -> 'tags'::text), '{}'::jsonb)), 'C'::"char")
-    //     WHEN ((lang)::text = 'it'::text) THEN setweight(to_tsvector('italian'::regconfig, COALESCE(((settings)::jsonb -> 'tags'::text), '{}'::jsonb)), 'C'::"char")
-    //     WHEN ((lang)::text = 'es'::text) THEN setweight(to_tsvector('spanish'::regconfig, COALESCE(((settings)::jsonb -> 'tags'::text), '{}'::jsonb)), 'C'::"char")
-    //     ELSE ''::tsvector
-    // END) || ''::tsvector) || setweight(to_tsvector('english'::regconfig, COALESCE((((replace(extra, '\u0000'::text, ''::text))::jsonb -> 'document'::text) ->> 'content'::text), '{}'::text)), 'D'::"char")) || ''::tsvector) || setweight(to_tsvector('french'::regconfig, COALESCE((((replace(extra, '\u0000'::text, ''::text))::jsonb -> 'document'::text) ->> 'content'::text), '{}'::text)), 'D'::"char")) || ''::tsvector) ||
-    // CASE
-    //     WHEN ((lang)::text = 'de'::text) THEN setweight(to_tsvector('german'::regconfig, COALESCE((((replace(extra, '\u0000'::text, ''::text))::jsonb -> 'document'::text) ->> 'content'::text), '{}'::text)), 'D'::"char")
-    //     WHEN ((lang)::text = 'it'::text) THEN setweight(to_tsvector('italian'::regconfig, COALESCE((((replace(extra, '\u0000'::text, ''::text))::jsonb -> 'document'::text) ->> 'content'::text), '{}'::text)), 'D'::"char")
-    //     WHEN ((lang)::text = 'es'::text) THEN setweight(to_tsvector('spanish'::regconfig, COALESCE((((replace(extra, '\u0000'::text, ''::text))::jsonb -> 'document'::text) ->> 'content'::text), '{}'::text)), 'D'::"char")
-    //     ELSE ''::tsvector
-    // END) || ''::tsvector) || setweight(to_tsvector('english'::regconfig, COALESCE((((replace(extra, '\u0000'::text, ''::text))::jsonb -> 'file'::text) -> 'content'::text), '{}'::jsonb)), 'D'::"char")) || ''::tsvector) || setweight(to_tsvector('french'::regconfig, COALESCE((((replace(extra, '\u0000'::text, ''::text))::jsonb -> 'file'::text) -> 'content'::text), '{}'::jsonb)), 'D'::"char")) || ''::tsvector) ||
-    // CASE
-    //     WHEN ((lang)::text = 'de'::text) THEN setweight(to_tsvector('german'::regconfig, COALESCE((((replace(extra, '\u0000'::text, ''::text))::jsonb -> 'file'::text) -> 'content'::text), '{}'::jsonb)), 'D'::"char")
-    //     WHEN ((lang)::text = 'it'::text) THEN setweight(to_tsvector('italian'::regconfig, COALESCE((((replace(extra, '\u0000'::text, ''::text))::jsonb -> 'file'::text) -> 'content'::text), '{}'::jsonb)), 'D'::"char")
-    //     WHEN ((lang)::text = 'es'::text) THEN setweight(to_tsvector('spanish'::regconfig, COALESCE((((replace(extra, '\u0000'::text, ''::text))::jsonb -> 'file'::text) -> 'content'::text), '{}'::jsonb)), 'D'::"char")
-    //     ELSE ''::tsvector
-    // END) || ''::tsvector) || setweight(to_tsvector('english'::regconfig, COALESCE((((replace(extra, '\u0000'::text, ''::text))::jsonb -> 's3File'::text) -> 'content'::text), '{}'::jsonb)), 'D'::"char")) || ''::tsvector) || setweight(to_tsvector('french'::regconfig, COALESCE((((replace(extra, '\u0000'::text, ''::text))::jsonb -> 's3File'::text) -> 'content'::text), '{}'::jsonb)), 'D'::"char")) || ''::tsvector) ||
-    // CASE
-    //     WHEN ((lang)::text = 'de'::text) THEN setweight(to_tsvector('german'::regconfig, COALESCE((((replace(extra, '\u0000'::text, ''::text))::jsonb -> 's3File'::text) -> 'content'::text), '{}'::jsonb)), 'D'::"char")
-    //     WHEN ((lang)::text = 'it'::text) THEN setweight(to_tsvector('italian'::regconfig, COALESCE((((replace(extra, '\u0000'::text, ''::text))::jsonb -> 's3File'::text) -> 'content'::text), '{}'::jsonb)), 'D'::"char")
-    //     WHEN ((lang)::text = 'es'::text) THEN setweight(to_tsvector('spanish'::regconfig, COALESCE((((replace(extra, '\u0000'::text, ''::text))::jsonb -> 's3File'::text) -> 'content'::text), '{}'::jsonb)), 'D'::"char")
-    //     ELSE ''::tsvector
-    // END)`),
+
     order: customNumeric('order'),
   },
   (table) => [
@@ -775,10 +737,6 @@ export const itemsRaw = pgTable(
       'btree',
       table.creatorId.asc().nullsLast().op('uuid_ops'),
     ),
-    // index('IDX_gin_item_search_document').using(
-    //   'gin',
-    //   table.searchDocument.asc().nullsLast().op('tsvector_ops'),
-    // ),
     index('IDX_gist_item_path').using('gist', table.path.asc().nullsLast().op('gist_ltree_ops')),
     foreignKey({
       columns: [table.creatorId],
