@@ -107,8 +107,6 @@ To configure the application, you'll need to change the values in `.env.developm
 
 # Default protocol is already set
 # PROTOCOL=http
-# The hostname is set by ./.devcontainer/docker-compose.yml
-# HOSTNAME=0.0.0.0
 PORT=3000
 COOKIE_DOMAIN=localhost
 CORS_ORIGIN_REGEX=^http?:\/\/(localhost)?:[0-9]{4}$
@@ -120,7 +118,6 @@ CORS_ORIGIN_REGEX=^http?:\/\/(localhost)?:[0-9]{4}$
 # DB_HOST=db
 # If you use read replicas, set the hostnames here (separated by commas)
 # DB_READ_REPLICA_HOSTS=
-DATABASE_LOGS=true
 
 ### Sessions
 

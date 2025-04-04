@@ -296,7 +296,11 @@ export class EtherpadItemService {
           // normal case: check if session is expired
           // Date takes miliseconds but the etherpads deals with seconds
           const isExpired = isBefore(new Date(validUntil * 1000), now);
-          isExpired ? expired.add(id) : valid.add(id);
+          if (isExpired) {
+            expired.add(id);
+          } else {
+            valid.add(id);
+          }
         }
         return { valid, expired };
       },
