@@ -3,6 +3,7 @@ coverage
 dist
 docs
 node_modules
+.pnpm-store
 test
 tmp
 **/test
