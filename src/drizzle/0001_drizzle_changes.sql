@@ -11,6 +11,9 @@ DROP TABLE "typeorm_metadata" CASCADE;--> statement-breakpoint
 ALTER TABLE "member_profile" RENAME COLUMN "facebookID" TO "facebookId";--> statement-breakpoint
 ALTER TABLE "member_profile" RENAME COLUMN "linkedinID" TO "linkedinId";--> statement-breakpoint
 ALTER TABLE "member_profile" RENAME COLUMN "twitterID" TO "twitterId";--> statement-breakpoint
+
+ALTER TABLE "short_link" RENAME COLUMN "createdAt" TO "created_at";--> statement-breakpoint
+
 ALTER TABLE "account" DROP CONSTRAINT "FK_account_item_login_schema_id";
 --> statement-breakpoint
 ALTER TABLE "item_login_schema" DROP CONSTRAINT "FK_b4a263d8c8392a73e0a1febf7d3";

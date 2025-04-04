@@ -106,7 +106,7 @@ export const messageMentionSchema = buildObjectSchema({
   updatedAt: DATE_TYPE,
   status: STRING_TYPE,
   messageId: STRING_TYPE,
-  message: externalMessageSchema,
+  message: messageSchema,
   accountId: STRING_TYPE,
 });
 export const messageMentionArraySchema = buildArraySchema(messageMentionSchema);

@@ -364,6 +364,7 @@ describe('Link Service', () => {
     it('do not throw if iframely is unresponsive', async () => {
       const member = MemberFactory();
       const item = ItemFactory({
+        type: ItemType.LINK,
         extra: { embeddedLink: { url: faker.internet.url() } },
       }) as EmbeddedLinkItem;
       expect(item.extra.embeddedLink.url).toBeDefined();
@@ -425,6 +426,7 @@ describe('Link Service', () => {
       it('patch url changes link extra', async () => {
         const member = MemberFactory();
         const item = ItemFactory({
+          type: ItemType.LINK,
           extra: { embeddedLink: { url: faker.internet.url() } },
         }) as EmbeddedLinkItem;
         expect(item.extra.embeddedLink.url).toBeDefined();
@@ -470,6 +472,7 @@ describe('Link Service', () => {
       it('patch item settings', async () => {
         const member = MemberFactory();
         const item = ItemFactory({
+          type: ItemType.LINK,
           extra: { embeddedLink: { url: faker.internet.url() } },
         }) as EmbeddedLinkItem;
 
@@ -502,6 +505,7 @@ describe('Link Service', () => {
       it('patch many properties without changing url', async () => {
         const member = MemberFactory();
         const item = ItemFactory({
+          type: ItemType.LINK,
           extra: { embeddedLink: { url: faker.internet.url() } },
         }) as EmbeddedLinkItem;
         expect(item.extra.embeddedLink.url).toBeDefined();

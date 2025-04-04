@@ -72,11 +72,12 @@ describe('Recycle websocket hooks', () => {
         assertIsDefined(updatedItem);
 
         // remove deleted at prop
+        // remove createdAt and updatedAt because of type incompatibility
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { deletedAt, ...i } = updatedItem;
+        const { deletedAt, createdAt, updatedAt, ...i } = updatedItem;
 
         expect(memberUpdates.find((v) => v.kind === 'feedback')).toMatchObject(
-          ItemOpFeedbackEvent('recycle', [item.id], { [item.id]: i }),
+          ItemOpFeedbackEvent('recycle', [item.id], { [item.id]: i } as never),
         );
       });
     });
@@ -151,10 +152,11 @@ describe('Recycle websocket hooks', () => {
         const feedbackUpdate = memberUpdates.find((update) => update.kind === 'feedback');
 
         // remove deleted at prop
+        // remove createdAt and updatedAt because of type incompatibility
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { deletedAt, ...i } = restored;
+        const { deletedAt, createdAt, updatedAt, ...r } = restored;
         expect(feedbackUpdate).toMatchObject(
-          ItemOpFeedbackEvent('restore', [item.id], { items: restored }),
+          ItemOpFeedbackEvent('restore', [item.id], { [item.id]: r as never }),
         );
       });
     });
