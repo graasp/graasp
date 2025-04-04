@@ -1,11 +1,13 @@
+import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { Strategy as CustomStrategy } from 'passport-custom';
+import { resolve } from 'path';
 
 import fastifyPassport from '@fastify/passport';
 import { fastify } from 'fastify';
 
 import registerAppPlugins from '../src/app';
 import { resetDependencies } from '../src/di/utils';
-import { DBConnection } from '../src/drizzle/db';
+import { DBConnection, client, db } from '../src/drizzle/db';
 import { BaseLogger } from '../src/logger';
 import ajvFormats from '../src/schemas/ajvFormats';
 import { PassportStrategy } from '../src/services/auth/plugins/passport';
@@ -71,6 +73,15 @@ const build = async () => {
 
   return { app };
 };
+
+export async function clientConnect() {
+  await client.connect();
+  // This command run all migrations from the migrations folder and apply changes to the database
+  // WARNING: This command needs to reference the drizzle folder from the location of execution of node (dist folder...) this is why the path is weird.
+  await migrate(db, {
+    migrationsFolder: resolve(__dirname, '../src/drizzle'),
+  });
+}
 
 export const clearDatabase = async (db: DBConnection) => {
   // TODO: ?

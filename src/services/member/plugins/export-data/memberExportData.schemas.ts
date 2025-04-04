@@ -128,12 +128,12 @@ export const itemSchema = buildObjectSchema({
 });
 export const itemArraySchema = buildArraySchema(itemSchema);
 
-export const itemFavoriteSchema = buildObjectSchema({
+export const itemBookmarkSchema = buildObjectSchema({
   id: STRING_TYPE,
   itemId: STRING_TYPE,
   createdAt: DATE_TYPE,
 });
-export const itemFavoriteArraySchema = buildArraySchema(itemFavoriteSchema);
+export const itemBookmarkArraySchema = buildArraySchema(itemBookmarkSchema);
 
 export const itemLikeSchema = buildObjectSchema({
   id: STRING_TYPE,

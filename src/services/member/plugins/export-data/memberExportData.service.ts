@@ -41,7 +41,7 @@ export class ExportMemberDataService {
     const chatMessages = await this.getChatMessages(db, actor);
 
     const items = await this.getItems(db, actor);
-    const itemFavorites = await this.getItemBookmarks(db, actor);
+    const itemBookmarks = await this.getItemBookmarks(db, actor);
     const itemLikes = await this.getItemLikes(db, actor);
     const itemMemberShips = await this.getItemsMemberShips(db, actor);
 
@@ -53,7 +53,7 @@ export class ExportMemberDataService {
       chatMentions,
       chatMessages,
       items,
-      itemFavorites,
+      itemBookmarks,
       itemLikes,
       itemMemberShips,
     };

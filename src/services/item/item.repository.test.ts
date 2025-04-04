@@ -12,6 +12,7 @@ import {
   buildPathFromIds,
 } from '@graasp/sdk';
 
+import { clientConnect } from '../../../test/app';
 import { ItemFactory } from '../../../test/factories/item.factory';
 import { buildFile, seedFromJson } from '../../../test/mocks/seed';
 import { client, db } from '../../drizzle/db';
@@ -97,7 +98,7 @@ const itemRawRepository = {
 
 describe('Item Repository', () => {
   beforeAll(async () => {
-    await client.connect();
+    await clientConnect();
   });
 
   afterAll(async () => {

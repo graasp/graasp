@@ -8,7 +8,7 @@ import {
   appActionSchema,
   appDataSchema,
   appSettingSchema,
-  itemFavoriteSchema,
+  itemBookmarkSchema,
   itemLikeSchema,
   itemMembershipSchema,
   itemSchema,
@@ -260,7 +260,7 @@ describe('DataMember Export', () => {
       assertIsDefined(actor);
 
       const results = await repository.getItemBookmarks(db, actor.id);
-      expectNoLeaksAndEquality(results, bookmarks, itemFavoriteSchema);
+      expectNoLeaksAndEquality(results, bookmarks, itemBookmarkSchema);
     });
 
     it('get all Item Likes for the member', async () => {
