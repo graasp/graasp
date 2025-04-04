@@ -10,38 +10,38 @@ import {
   ITEMS_ROUTE_PREFIX,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
 } from '../../utils/config';
-import graaspChatbox from '../chat';
-import graaspItemLogin from '../itemLogin';
-import itemController from './controller';
-import actionItemPlugin from './plugins/action';
-import graaspApps from './plugins/app';
-import { plugin as graaspAppItem } from './plugins/app/controller';
-import graaspDocumentItem from './plugins/document/controller';
-import { PREFIX_DOCUMENT } from './plugins/document/service';
-import graaspEmbeddedLinkItem from './plugins/embeddedLink/controller';
-import { PREFIX_EMBEDDED_LINK } from './plugins/embeddedLink/service';
-import graaspEnrollPlugin from './plugins/enroll';
-import graaspEtherpadPlugin from './plugins/etherpad/controller';
-import graaspFileItem from './plugins/file';
-import graaspFolderItem from './plugins/folder/controller';
-import itemGeolocationPlugin from './plugins/geolocation/index';
-import graaspH5PPlugin from './plugins/html/h5p';
+import chatController from '../chat/chatMessage.controller';
+import graaspItemLogin from '../itemLogin/itemLogin.controller';
+import itemController from './item.controller';
+import actionItemPlugin from './plugins/action/itemAction.controller';
+import graaspApps from './plugins/app/app.controller';
+import { plugin as graaspAppItem } from './plugins/app/appItem.controller';
+import graaspDocumentItem from './plugins/document/document.controller';
+import { PREFIX_DOCUMENT } from './plugins/document/document.service';
+import graaspEmbeddedLinkItem from './plugins/embeddedLink/link.controller';
+import { PREFIX_EMBEDDED_LINK } from './plugins/embeddedLink/link.service';
+import graaspEnrollPlugin from './plugins/enroll/enroll.controller';
+import graaspEtherpadPlugin from './plugins/etherpad/etherpad.controller';
+import graaspFileItem from './plugins/file/itemFile.controller';
+import graaspFolderItem from './plugins/folder/folder.controller';
+import itemGeolocationPlugin from './plugins/geolocation/itemGeolocation.controller';
+import graaspH5PPlugin from './plugins/html/h5p/h5p.controller';
 import graaspZipPlugin from './plugins/importExport';
-import graaspInvitationsPlugin from './plugins/invitation';
-import graaspFavoritePlugin from './plugins/itemFavorite';
-import graaspItemFlags from './plugins/itemFlag';
-import graaspItemLikes from './plugins/itemLike';
-import graaspItemVisibility from './plugins/itemVisibility';
-import graaspItemPublicationState from './plugins/publication/publicationState';
-import graaspItemPublish from './plugins/publication/published';
-import graaspValidationPlugin from './plugins/publication/validation';
-import graaspRecycledItemData from './plugins/recycled';
-import ShortLinkService from './plugins/shortLink';
-import { SHORT_LINKS_ROUTE_PREFIX } from './plugins/shortLink/service';
-import { plugin as graaspShortcutPlugin } from './plugins/shortcut/controller';
-import graaspItemTagPlugin from './plugins/tag/controller';
-import thumbnailsPlugin from './plugins/thumbnail';
-import { itemWsHooks } from './ws/hooks';
+import graaspInvitationsPlugin from './plugins/invitation/invitation.controller';
+import graaspFavoritePlugin from './plugins/itemBookmark/itemBookmark.controller';
+import graaspItemFlags from './plugins/itemFlag/itemFlag.controller';
+import graaspItemLikes from './plugins/itemLike/itemLike.controller';
+import graaspItemVisibility from './plugins/itemVisibility/itemVisibility.controller';
+import graaspItemPublicationState from './plugins/publication/publicationState/publication.controller';
+import graaspItemPublish from './plugins/publication/published/itemPublished.controller';
+import graaspValidationPlugin from './plugins/publication/validation/itemValidation.controller';
+import graaspRecycledItemData from './plugins/recycled/recycled.controller';
+import ShortLinkService from './plugins/shortLink/shortlink.controller';
+import { SHORT_LINKS_ROUTE_PREFIX } from './plugins/shortLink/shortlink.service';
+import { plugin as graaspShortcutPlugin } from './plugins/shortcut/shortcut.controller';
+import graaspItemTagPlugin from './plugins/tag/itemTag.controller';
+import thumbnailsPlugin from './plugins/thumbnail/itemThumbnail.controller';
+import { itemWsHooks } from './ws/item.hooks';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.decorate('file', {
@@ -51,7 +51,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   // this needs to execute before 'create()' and 'updateOne()' are called
   // because graaspApps extends the schemas
-  fastify.register(graaspApps, {
+  await fastify.register(graaspApps, {
     jwtSecret: APPS_JWT_SECRET,
     prefix: APP_ITEMS_PREFIX,
     publisherId: APPS_PUBLISHER_ID,
@@ -64,7 +64,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.register(fastifyCors, fastify.corsPluginOptions);
       }
 
-      // // plugins that don't require authentication
+      // plugins that don't require authentication
       fastify.register(graaspItemLogin);
 
       fastify.register(graaspFavoritePlugin);
@@ -118,7 +118,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         fastify.register(graaspItemLikes);
 
-        fastify.register(fp(graaspChatbox));
+        fastify.register(fp(chatController));
 
         fastify.register(actionItemPlugin);
 

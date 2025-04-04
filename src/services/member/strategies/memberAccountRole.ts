@@ -1,5 +1,5 @@
-import { RessourceAuthorizationStrategy } from '../../authorization';
-import { isMember } from '../entities/member';
+import { RessourceAuthorizationStrategy } from '../../auth/plugins/passport';
+import { isMember } from '../../authentication';
 import { NotMember } from '../error';
 
 /**

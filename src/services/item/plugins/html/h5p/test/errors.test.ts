@@ -1,10 +1,10 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { Item } from '../../../../entities/Item';
+import { ItemFactory } from '../../../../../../../test/factories/item.factory';
 import { HtmlImportError, HtmlItemNotFoundError } from '../../errors';
 import { H5PInvalidFileError } from '../errors';
 
-const MOCK_ITEM = new Item();
+const MOCK_ITEM = ItemFactory({});
 
 describe('Custom errors', () => {
   it('builds correct InvalidH5PFileError', () => {

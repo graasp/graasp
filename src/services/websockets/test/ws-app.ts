@@ -1,7 +1,5 @@
 import { FastifyInstance } from 'fastify';
 
-import { CompleteMember } from '@graasp/sdk';
-
 import build from '../../../../test/app';
 
 const MAX_PORT = 65535;
@@ -21,9 +19,9 @@ async function listenOnRandomPort(app: FastifyInstance): Promise<string> {
   }
 }
 
-export async function setupWsApp({ member }: { member?: CompleteMember | null } = {}) {
-  const { app, actor } = await build(member ? { member } : undefined);
+export async function setupWsApp() {
+  const { app } = await build();
   await app.ready();
   const address = await listenOnRandomPort(app);
-  return { app, actor, address };
+  return { app, address };
 }

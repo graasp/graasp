@@ -8,13 +8,13 @@ services:
       dockerfile: Dockerfile
       args:
         # [Choice] Node.js version: 14, 12, 10
-        VARIANT: 20
+        VARIANT: 22
         # On Linux, you may need to update USER_UID and USER_GID below if not your local UID is not 1000.
         USER_UID: 1000
         USER_GID: 1000
     environment:
       # sane default to allow the server to bind to any interface in the container
-      HOSTNAME: 0.0.0.0 
+      HOSTNAME: 0.0.0.0
       # temporary storage for files inside the container
       FILE_STORAGE_ROOT_PATH: /tmp/graasp-file-item-storage
       # the localfile config host points to the static file server defined below
@@ -28,6 +28,7 @@ services:
       DB_NAME: graasp
       DB_USERNAME: graasper
       DB_PASSWORD: graasper
+      DB_PORT: 5432
       # the Etherpad config is set by the "etherpad" service below
       ETHERPAD_URL: http://etherpad:9001
       ETHERPAD_PUBLIC_URL: http://localhost:9001
@@ -58,7 +59,7 @@ services:
 
   db:
     container_name: db
-    image: postgres:15
+    image: postgres:15.8-alpine
     restart: on-failure
     ports:
       - 5432:5432

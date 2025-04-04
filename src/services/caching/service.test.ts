@@ -19,15 +19,18 @@ describe('CachingService Tests', () => {
     await cache.delete(MOCKED_PATH);
   };
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     ({ app } = await build());
     cache = resolveDependency(FILE_SERVICE_URLS_CACHING_DI_KEY);
+  });
+
+  afterAll(async () => {
+    app.close();
   });
 
   afterEach(async () => {
     await resetValidations();
     jest.clearAllMocks();
-    app.close();
   });
 
   it('Empty cache returns given URL once, but then returns the cached URL', async () => {

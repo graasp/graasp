@@ -3,15 +3,14 @@ import { FastifyPluginAsync } from 'fastify';
 import { AppDataVisibility, PermissionLevel } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../../di/utils';
-import { buildRepositories } from '../../../../../utils/repositories';
-import { validatePermission } from '../../../../authorization';
+import { db } from '../../../../../drizzle/db';
+import { AuthorizationService } from '../../../../authorization';
 import { WebsocketService } from '../../../../websockets/ws-service';
-import { ItemService } from '../../../service';
-import { AppActionService } from '../appAction/service';
-import { AppDataService } from '../appData/service';
-import { AppSettingService } from '../appSetting/service';
+import { BasicItemService } from '../../../basic.service';
+import { AppActionService } from '../appAction/appAction.service';
+import { AppDataService } from '../appData/appData.service';
+import { AppSettingService } from '../appSetting/appSetting.service';
 import {
-  AppActionEvent,
   AppDataEvent,
   AppSettingEvent,
   appActionsTopic,
@@ -21,66 +20,28 @@ import {
 import { checkItemIsApp } from './utils';
 
 /**
- * helper to register app data topic
- */
-function registerAppDataTopic(
-  websockets: WebsocketService,
-  appDataService: AppDataService,
-  itemService: ItemService,
-) {
-  websockets.register(appDataTopic, async (req) => {
-    const { channel: id, member } = req;
-    const repositories = buildRepositories();
-    const item = await itemService.get(member, repositories, id);
-    await validatePermission(repositories, PermissionLevel.Read, member, item);
-    checkItemIsApp(item);
-  });
-
-  // on post app data, notify apps of new app data
-  appDataService.hooks.setPostHook('post', async (member, repositories, { appData, itemId }) => {
-    if (itemId !== undefined && appData.visibility === AppDataVisibility.Item) {
-      websockets.publish(appDataTopic, itemId, AppDataEvent('post', appData));
-    }
-  });
-
-  appDataService.hooks.setPostHook('patch', async (member, repositories, { appData, itemId }) => {
-    if (itemId !== undefined && appData.visibility === AppDataVisibility.Item) {
-      websockets.publish(appDataTopic, itemId, AppDataEvent('patch', appData));
-    }
-  });
-
-  appDataService.hooks.setPostHook('delete', async (member, repositories, { appData, itemId }) => {
-    if (itemId !== undefined && appData.visibility === AppDataVisibility.Item) {
-      websockets.publish(appDataTopic, itemId, AppDataEvent('delete', appData));
-    }
-  });
-}
-
-/**
  * helper to register app action topic
  */
 function registerAppActionTopic(
   websockets: WebsocketService,
   appActionService: AppActionService,
-  itemService: ItemService,
+  basicItemService: BasicItemService,
 ) {
+  const authorizationService = resolveDependency(AuthorizationService);
   websockets.register(appActionsTopic, async (req) => {
     const { channel: id, member } = req;
-    const repositories = buildRepositories();
-    const item = await itemService.get(member, repositories, id);
-    await validatePermission(repositories, PermissionLevel.Admin, member, item);
+    const item = await basicItemService.get(db, member, id);
+    await authorizationService.validatePermission(db, PermissionLevel.Admin, member, item);
     checkItemIsApp(item);
   });
 
+  // TODO ENABLE!!
   // on post app action, notify apps of new app action
-  appActionService.hooks.setPostHook(
-    'post',
-    async (member, repositories, { appAction, itemId }) => {
-      if (itemId !== undefined) {
-        websockets.publish(appActionsTopic, itemId, AppActionEvent('post', appAction));
-      }
-    },
-  );
+  // appActionService.hooks.setPostHook('post', async (member, { appAction, itemId }) => {
+  //   if (itemId !== undefined) {
+  //     websockets.publish(appActionsTopic, itemId, AppActionEvent('post', appAction));
+  //   }
+  // });
 }
 
 /**
@@ -89,43 +50,34 @@ function registerAppActionTopic(
 function registerAppSettingsTopic(
   websockets: WebsocketService,
   appSettingService: AppSettingService,
-  itemService: ItemService,
+  basicItemService: BasicItemService,
 ) {
+  const authorizationService = resolveDependency(AuthorizationService);
   websockets.register(appSettingsTopic, async (req) => {
     const { channel: id, member } = req;
-    const repositories = buildRepositories();
-    const item = await itemService.get(member, repositories, id);
-    await validatePermission(repositories, PermissionLevel.Read, member, item);
+    const item = await basicItemService.get(db, member, id);
+    await authorizationService.validatePermission(db, PermissionLevel.Read, member, item);
     checkItemIsApp(item);
   });
 
   // on post app data, notify apps of new app data
-  appSettingService.hooks.setPostHook(
-    'post',
-    async (member, repositories, { appSetting, itemId }) => {
-      if (itemId !== undefined) {
-        websockets.publish(appSettingsTopic, itemId, AppSettingEvent('post', appSetting));
-      }
-    },
-  );
+  appSettingService.hooks.setPostHook('post', async (member, thisDb, { appSetting, itemId }) => {
+    if (itemId !== undefined) {
+      websockets.publish(appSettingsTopic, itemId, AppSettingEvent('post', appSetting));
+    }
+  });
 
-  appSettingService.hooks.setPostHook(
-    'patch',
-    async (member, repositories, { appSetting, itemId }) => {
-      if (itemId !== undefined) {
-        websockets.publish(appSettingsTopic, itemId, AppSettingEvent('patch', appSetting));
-      }
-    },
-  );
+  appSettingService.hooks.setPostHook('patch', async (member, thisDb, { appSetting, itemId }) => {
+    if (itemId !== undefined) {
+      websockets.publish(appSettingsTopic, itemId, AppSettingEvent('patch', appSetting));
+    }
+  });
 
-  appSettingService.hooks.setPostHook(
-    'delete',
-    async (member, repositories, { appSetting, itemId }) => {
-      if (itemId !== undefined) {
-        websockets.publish(appSettingsTopic, itemId, AppSettingEvent('delete', appSetting));
-      }
-    },
-  );
+  appSettingService.hooks.setPostHook('delete', async (member, thisDb, { appSetting, itemId }) => {
+    if (itemId !== undefined) {
+      websockets.publish(appSettingsTopic, itemId, AppSettingEvent('delete', appSetting));
+    }
+  });
 }
 
 interface GraaspPluginAppDataWsHooksOptions {
@@ -137,12 +89,41 @@ interface GraaspPluginAppDataWsHooksOptions {
  */
 export const appDataWsHooks: FastifyPluginAsync<GraaspPluginAppDataWsHooksOptions> = async (
   fastify,
-  options,
 ) => {
   const { websockets } = fastify;
-  const { appDataService } = options;
-  const itemService = resolveDependency(ItemService);
-  registerAppDataTopic(websockets, appDataService, itemService);
+
+  /**
+   * helper to register app data topic
+   */
+  const authorizationService = resolveDependency(AuthorizationService);
+  const basicItemService = resolveDependency(BasicItemService);
+  const appDataService = resolveDependency(AppDataService);
+
+  websockets.register(appDataTopic, async (req) => {
+    const { channel: id, member } = req;
+    const item = await basicItemService.get(db, member, id);
+    await authorizationService.validatePermission(db, PermissionLevel.Read, member, item);
+    checkItemIsApp(item);
+  });
+
+  // on post app data, notify apps of new app data
+  appDataService.hooks.setPostHook('post', async (member, thisDb, { appData, itemId }) => {
+    if (itemId !== undefined && appData.visibility === AppDataVisibility.Item) {
+      websockets.publish(appDataTopic, itemId, AppDataEvent('post', appData));
+    }
+  });
+
+  appDataService.hooks.setPostHook('patch', async (member, thisDb, { appData, itemId }) => {
+    if (itemId !== undefined && appData.visibility === AppDataVisibility.Item) {
+      websockets.publish(appDataTopic, itemId, AppDataEvent('patch', appData));
+    }
+  });
+
+  appDataService.hooks.setPostHook('delete', async (member, thisDb, { appData, itemId }) => {
+    if (itemId !== undefined && appData.visibility === AppDataVisibility.Item) {
+      websockets.publish(appDataTopic, itemId, AppDataEvent('delete', appData));
+    }
+  });
 };
 
 interface GraaspPluginAppActionsWsHooksOptions {
@@ -158,8 +139,8 @@ export const appActionsWsHooks: FastifyPluginAsync<GraaspPluginAppActionsWsHooks
 ) => {
   const { websockets } = fastify;
   const { appActionService } = options;
-  const itemService = resolveDependency(ItemService);
-  registerAppActionTopic(websockets, appActionService, itemService);
+  const basicItemService = resolveDependency(BasicItemService);
+  registerAppActionTopic(websockets, appActionService, basicItemService);
 };
 
 interface GraaspPluginAppSettingsWsHooksOptions {
@@ -175,6 +156,6 @@ export const appSettingsWsHooks: FastifyPluginAsync<GraaspPluginAppSettingsWsHoo
 ) => {
   const { websockets } = fastify;
   const { appSettingService } = options;
-  const itemService = resolveDependency(ItemService);
-  registerAppSettingsTopic(websockets, appSettingService, itemService);
+  const basicItemService = resolveDependency(BasicItemService);
+  registerAppSettingsTopic(websockets, appSettingService, basicItemService);
 };

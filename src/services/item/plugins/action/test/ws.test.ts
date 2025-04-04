@@ -5,20 +5,20 @@ import { FastifyInstance } from 'fastify';
 
 import { HttpMethod, ItemOpFeedbackEvent as ItemOpFeedbackEventType } from '@graasp/sdk';
 
-import { clearDatabase } from '../../../../../../test/app';
+import { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../../../test/app';
+import { seedFromJson } from '../../../../../../test/mocks/seed';
+import { db } from '../../../../../drizzle/db';
+import { Item } from '../../../../../drizzle/types';
+import { assertIsDefined } from '../../../../../utils/assertions';
 import { TestWsClient } from '../../../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../../../websockets/test/ws-app';
-import { Item } from '../../../entities/Item';
-import { ItemTestUtils } from '../../../test/fixtures/items';
 import {
   ItemOpFeedbackErrorEvent,
   ItemOpFeedbackEvent,
   memberItemsTopic,
-} from '../../../ws/events';
+} from '../../../ws/item.events';
 import { ActionRequestExportRepository } from '../requestExport/repository';
 import { expectExportFeedbackOp } from './utils';
-
-const testUtils = new ItemTestUtils();
 
 const uploadDoneMock = jest.fn(async () => console.debug('aws s3 storage upload'));
 const deleteObjectMock = jest.fn(async () => console.debug('deleteObjectMock'));
@@ -54,25 +54,33 @@ jest.mock('@aws-sdk/lib-storage', () => {
 
 describe('asynchronous feedback', () => {
   let app: FastifyInstance;
-  let actor;
-  let address;
+  let address: string;
   let ws: TestWsClient;
 
-  beforeEach(async () => {
-    ({ app, actor, address } = await setupWsApp());
-    ws = new TestWsClient(address);
+  beforeAll(async () => {
+    ({ app, address } = await setupWsApp());
   });
 
-  afterEach(async () => {
-    jest.clearAllMocks();
-    await clearDatabase(app.db);
-    actor = null;
+  afterAll(async () => {
+    await clearDatabase(db);
     app.close();
     ws.close();
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+    unmockAuthenticate();
+  });
+
   it('member that initated the export operation receives success feedback', async () => {
-    const { item } = await testUtils.saveItemAndMembership({ member: actor });
+    const {
+      actor,
+      items: [item],
+    } = await seedFromJson({ items: [{ memberships: [{ account: 'actor' }] }] });
+    assertIsDefined(actor);
+    mockAuthenticate(actor);
+    ws = new TestWsClient(address);
+
     const memberUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
 
     const response = await app.inject({
@@ -89,7 +97,14 @@ describe('asynchronous feedback', () => {
   });
 
   it('member that initated the export operation receives failure feedback', async () => {
-    const { item } = await testUtils.saveItemAndMembership({ member: actor });
+    const {
+      actor,
+      items: [item],
+    } = await seedFromJson({ items: [{ memberships: [{ account: 'actor' }] }] });
+    assertIsDefined(actor);
+    mockAuthenticate(actor);
+    ws = new TestWsClient(address);
+
     const memberUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
 
     jest.spyOn(ActionRequestExportRepository.prototype, 'getLast').mockImplementation(async () => {

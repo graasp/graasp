@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { ErrorFactory } from '@graasp/sdk';
 
-import { PLUGIN_NAME } from './constants';
+export const PLUGIN_NAME = 'graasp-plugin-item-visibilities';
 
 export const GraaspItemVisibilityError = ErrorFactory(PLUGIN_NAME);
 

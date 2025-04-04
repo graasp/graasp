@@ -9,7 +9,7 @@ import {
   S3FileItemFactory,
 } from '@graasp/sdk';
 
-import { Item } from '../../entities/Item';
+import { Item } from '../../../../drizzle/types';
 import { getFilenameFromItem } from './utils';
 
 describe('File name', () => {
