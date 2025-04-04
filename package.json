@@ -38,7 +38,9 @@
     "pre-commit": "yarn prettier:check && yarn lint",
     "openapi:generate": "node dist/scripts/generateOpenAPI.js",
     "openapi:lint": "vacuum lint ./openapi.json",
-    "openapi:report": "vacuum html-report ./openapi.json vacuum-report.html"
+    "openapi:report": "vacuum html-report ./openapi.json vacuum-report.html",
+    "migration:run": "yarn drizzle-kit migrate",
+    "migration:check": "yarn drizzle-kit check"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.669.0",
