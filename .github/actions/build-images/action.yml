@@ -1,0 +1,42 @@
+name: Build backend and migration image
+description: Build, package and distribute server image and migration via docker container images pushed to a registry
+
+inputs:
+  tag:
+    description: 'Image tag'
+    required: true
+  aws-ecr-uri:
+    description: "AWS ECR URI, similar to 'public.ecr.aws/ecr-default-alias'"
+    required: true
+
+runs:
+  using: composite
+  env:
+
+  steps:
+    - name: Set image tags
+      run: |
+        core_tag_short="graasp:core-${{ inputs.tag }}"
+        echo "CORE_TAG_SHORT=$core_tag_short" >> $GITHUB_ENV
+        echo "CORE_TAG_FULL=${{ inputs.aws-ecr-uri }}/$core_tag_short" >> $GITHUB_ENV
+
+        migrate_tag_short="graasp:migrate-${{ inputs.tag }}"
+        echo "MIGRATE_TAG_SHORT=$migrate_tag_short" >> $GITHUB_ENV
+        echo "MIGRATE_TAG_FULL=${{ inputs.aws-ecr-uri }}/$core_tag_short" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Authenticate Docker to AWS ECR
+      run: aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ inputs.aws-ecr-uri }}
+      shell: bash
+
+    - name: Build and push backend image
+      run: |
+        docker build -t ${{ env.CORE_TAG_FULL }} -f docker/Dockerfile --build-arg APP_VERSION=${{ inputs.tag }} .
+        docker push ${{ env.CORE_TAG_FULL }}
+      shell: bash
+
+    - name: Build and push migration image
+      run: |
+        docker build -t ${{ env.MIGRATE_TAG_FULL }} -f docker/migrate.Dockerfile .
+        docker push ${{ env.MIGRATE_TAG_FULL }}
+      shell: bash
