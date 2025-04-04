@@ -13,7 +13,6 @@ import { DBConnection } from '../../../../../drizzle/db';
 import { appDatas } from '../../../../../drizzle/schema';
 import {
   Account,
-  AppDataInsertDTO,
   AppDataRaw,
   AppDataWithItemAndAccountAndCreator,
 } from '../../../../../drizzle/types';
@@ -28,7 +27,7 @@ export class AppDataRepository {
   async addOne(
     db: DBConnection,
     { itemId, actorId, appData }: CreateAppDataBody,
-  ): Promise<AppDataInsertDTO> {
+  ): Promise<AppDataRaw> {
     const savedValue = await db
       .insert(appDatas)
       .values({
@@ -43,7 +42,11 @@ export class AppDataRepository {
     return savedValue[0];
   }
 
-  async updateOne(db: DBConnection, appDataId: string, body: Partial<AppDataRaw>): Promise<void> {
+  async updateOne(
+    db: DBConnection,
+    appDataId: string,
+    body: Partial<AppDataRaw>,
+  ): Promise<AppDataRaw> {
     // we shouldn't update file data
     const originalData = await db.query.appDatas.findFirst({ where: eq(appDatas.id, appDataId) });
 
@@ -56,7 +59,13 @@ export class AppDataRepository {
       throw new PreventUpdateAppDataFile(originalData.id);
     }
 
-    await db.update(appDatas).set(body).where(eq(appDatas.id, appDataId));
+    const patchedAppData = await db
+      .update(appDatas)
+      .set(body)
+      .where(eq(appDatas.id, appDataId))
+      .returning();
+
+    return patchedAppData[0];
   }
 
   async getOne(

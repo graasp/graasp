@@ -645,7 +645,7 @@ export const shortLinks = pgTable(
   {
     alias: varchar({ length: 255 }).primaryKey().notNull(),
     platform: shortLinkPlatformEnum().notNull(),
-    createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     itemId: uuid('item_id').notNull(),
   },
   (table) => [

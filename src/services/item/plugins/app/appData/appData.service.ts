@@ -118,16 +118,15 @@ export class AppDataService {
       itemId,
       actorId: account.id,
     });
-    if (appDataId) {
-      const appData = await this.appDataRepository.getOne(db, appDataId);
-      if (appData) {
-        await this.hooks.runPostHooks('post', account, db, {
-          appData,
-          itemId,
-        });
-      }
-      return appData;
+    // get relations
+    const appData = await this.appDataRepository.getOne(db, appDataId);
+    if (appData) {
+      await this.hooks.runPostHooks('post', account, db, {
+        appData,
+        itemId,
+      });
     }
+    return appData;
   }
 
   async patch(
@@ -173,6 +172,8 @@ export class AppDataService {
     });
 
     await this.appDataRepository.updateOne(db, appDataId, body);
+
+    // get relations
     const appData = await this.appDataRepository.getOne(db, appDataId);
     if (appData) {
       await this.hooks.runPostHooks('patch', account, db, {

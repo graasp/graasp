@@ -70,7 +70,7 @@ export const create = {
     accountId: Type.Optional(customType.UUID()),
   }),
   response: {
-    [StatusCodes.NO_CONTENT]: Type.Null(),
+    [StatusCodes.NO_CONTENT]: appDataSchemaRef,
     '4xx': errorSchemaRef,
   },
 };
@@ -89,7 +89,7 @@ export const updateOne = {
     data: Type.Object({}, { additionalProperties: true }),
   }),
   response: {
-    [StatusCodes.NO_CONTENT]: Type.Null(),
+    [StatusCodes.NO_CONTENT]: appDataSchemaRef,
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;

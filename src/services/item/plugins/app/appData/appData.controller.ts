@@ -31,12 +31,11 @@ const appDataPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
         schema: create,
         preHandler: authenticateAppsJWT,
       },
-      async ({ user, params: { itemId }, body }, reply) => {
+      async ({ user, params: { itemId }, body }) => {
         const member = asDefined(user?.account);
-        await db.transaction(async (tx) => {
-          await appDataService.post(tx, member, itemId, body);
+        return await db.transaction(async (tx) => {
+          return await appDataService.post(tx, member, itemId, body);
         });
-        reply.status(StatusCodes.NO_CONTENT);
       },
     );
 
@@ -44,12 +43,11 @@ const appDataPlugin: FastifyPluginAsyncTypebox = async (fastify) => {
     fastify.patch(
       '/:itemId/app-data/:id',
       { schema: updateOne, preHandler: authenticateAppsJWT },
-      async ({ user, params: { itemId, id: appDataId }, body }, reply) => {
+      async ({ user, params: { itemId, id: appDataId }, body }) => {
         const member = asDefined(user?.account);
-        await db.transaction(async (tx) => {
-          await appDataService.patch(tx, member, itemId, appDataId, body);
+        return await db.transaction(async (tx) => {
+          return await appDataService.patch(tx, member, itemId, appDataId, body);
         });
-        reply.status(StatusCodes.NO_CONTENT);
       },
     );
 

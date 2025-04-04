@@ -206,5 +206,8 @@ jobs:
         run: |
           yarn
 
+      - name: apply migrations on empty database
+        run: yarn migration:run
+
       - name: yarn test
         run: yarn test:ci --shard=${{ matrix.shard }}
