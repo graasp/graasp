@@ -11,15 +11,15 @@ describe('ItemPublishedRepository', () => {
     await client.connect();
   });
 
-  afterAll(async () => {
-    await client.end();
+  afterAll(() => {
+    client.end();
   });
 
   describe('getForMember', () => {
     // SKIP: function has been commented out in the repository
     it.skip('get published items for member', async () => {
       // create 3 folders that we will then publish
-      const { items, actor } = await seedFromJson({
+      const { items } = await seedFromJson({
         items: [
           { creator: 'actor', type: 'folder' },
           { creator: 'actor', type: 'folder' },

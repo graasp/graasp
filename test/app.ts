@@ -1,13 +1,11 @@
-import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { Strategy as CustomStrategy } from 'passport-custom';
-import { resolve } from 'path';
 
 import fastifyPassport from '@fastify/passport';
 import { fastify } from 'fastify';
 
 import registerAppPlugins from '../src/app';
 import { resetDependencies } from '../src/di/utils';
-import { DBConnection, client, db } from '../src/drizzle/db';
+import { DBConnection } from '../src/drizzle/db';
 import { BaseLogger } from '../src/logger';
 import ajvFormats from '../src/schemas/ajvFormats';
 import { PassportStrategy } from '../src/services/auth/plugins/passport';

@@ -1,6 +1,6 @@
 import { singleton } from 'tsyringe';
 
-import { ClientManager, Context, PermissionLevel } from '@graasp/sdk';
+import { ClientManager, Context } from '@graasp/sdk';
 
 import { type DBConnection } from '../../../../drizzle/db';
 import { Item } from '../../../../drizzle/types';

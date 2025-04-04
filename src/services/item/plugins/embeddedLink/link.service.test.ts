@@ -1,7 +1,8 @@
+import { faker } from '@faker-js/faker';
 import fetch from 'node-fetch';
 import { v4 } from 'uuid';
 
-import { ItemType, LinkItemFactory } from '@graasp/sdk';
+import { ItemType } from '@graasp/sdk';
 
 import { MOCK_LOGGER } from '../../../../../test/app';
 import { ItemFactory } from '../../../../../test/factories/item.factory';
@@ -14,6 +15,7 @@ import { ItemMembershipRepository } from '../../../itemMembership/membership.rep
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { ItemWrapperService } from '../../ItemWrapper';
 import { BasicItemService } from '../../basic.service';
+import { EmbeddedLinkItem } from '../../discrimination';
 import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
@@ -205,17 +207,23 @@ describe('Link Service', () => {
   describe('postWithOptions', () => {
     it('do not throw if iframely is unresponsive', async () => {
       const member = MemberFactory();
-      const item = LinkItemFactory() as any;
+      const item = ItemFactory({
+        extra: {
+          [ItemType.LINK]: {
+            url: faker.internet.url(),
+            icons: [],
+            thumbnails: [],
+            description: '',
+            title: '',
+            html: '',
+          },
+        },
+      }) as EmbeddedLinkItem;
+      expect(item.extra.embeddedLink.url).toBeDefined();
 
       fetchMock = (fetch as jest.MockedFunction<typeof fetch>).mockRejectedValue(new Error());
 
-      const itemServicePostMock = jest
-        .spyOn(ItemService.prototype, 'post')
-        .mockImplementation(async () => {
-          return item;
-        });
-
-      expect(item.extra.embeddedLink.url).toBeDefined();
+      const itemServicePostMock = jest.spyOn(ItemService.prototype, 'post').mockResolvedValue(item);
 
       const args = {
         name: 'name',
@@ -303,9 +311,7 @@ describe('Link Service', () => {
         const member = MemberFactory();
         const itemServicePostMock = jest
           .spyOn(ItemService.prototype, 'post')
-          .mockImplementation(async () => {
-            return {} as any;
-          });
+          .mockResolvedValue(ItemFactory());
 
         const args = {
           name: 'name',
@@ -357,7 +363,10 @@ describe('Link Service', () => {
   describe('patchWithOptions', () => {
     it('do not throw if iframely is unresponsive', async () => {
       const member = MemberFactory();
-      const item = LinkItemFactory() as any;
+      const item = ItemFactory({
+        extra: { embeddedLink: { url: faker.internet.url() } },
+      }) as EmbeddedLinkItem;
+      expect(item.extra.embeddedLink.url).toBeDefined();
       fetchMock = (fetch as jest.MockedFunction<typeof fetch>).mockRejectedValue(new Error());
 
       const itemServicePatchMock = jest
@@ -366,8 +375,6 @@ describe('Link Service', () => {
           return item;
         });
       jest.spyOn(itemRepository, 'getOneOrThrow').mockResolvedValue({ ...item, creator: null });
-
-      expect(item.extra.embeddedLink.url).toBeDefined();
 
       const args = {
         url: 'https://another-url.com',
@@ -417,17 +424,18 @@ describe('Link Service', () => {
       });
       it('patch url changes link extra', async () => {
         const member = MemberFactory();
-        const item = LinkItemFactory();
+        const item = ItemFactory({
+          extra: { embeddedLink: { url: faker.internet.url() } },
+        }) as EmbeddedLinkItem;
+        expect(item.extra.embeddedLink.url).toBeDefined();
 
-        jest.spyOn(itemRepository, 'getOneOrThrow').mockResolvedValue(item as any);
+        jest.spyOn(itemRepository, 'getOneOrThrow').mockResolvedValue({ ...item, creator: null });
 
         const itemServicePatchMock = jest
           .spyOn(ItemService.prototype, 'patch')
           .mockImplementation(async () => {
-            return item as any;
+            return item;
           });
-
-        expect(item.extra.embeddedLink.url).toBeDefined();
 
         const args = {
           url: 'https://another-url.com',
@@ -461,9 +469,11 @@ describe('Link Service', () => {
       });
       it('patch item settings', async () => {
         const member = MemberFactory();
-        const item = LinkItemFactory();
+        const item = ItemFactory({
+          extra: { embeddedLink: { url: faker.internet.url() } },
+        }) as EmbeddedLinkItem;
 
-        jest.spyOn(itemRepository, 'getOneOrThrow').mockResolvedValue(item as any);
+        jest.spyOn(itemRepository, 'getOneOrThrow').mockResolvedValue({ ...item, creator: null });
 
         const itemServicePatchMock = jest
           .spyOn(ItemService.prototype, 'patch')
@@ -491,15 +501,16 @@ describe('Link Service', () => {
       });
       it('patch many properties without changing url', async () => {
         const member = MemberFactory();
-        const item = LinkItemFactory();
+        const item = ItemFactory({
+          extra: { embeddedLink: { url: faker.internet.url() } },
+        }) as EmbeddedLinkItem;
+        expect(item.extra.embeddedLink.url).toBeDefined();
 
-        jest.spyOn(itemRepository, 'getOneOrThrow').mockResolvedValue(item as any);
+        jest.spyOn(itemRepository, 'getOneOrThrow').mockResolvedValue({ ...item, creator: null });
 
         const itemServicePatchMock = jest
           .spyOn(ItemService.prototype, 'patch')
           .mockResolvedValue(item as unknown as Item);
-
-        expect(item.extra.embeddedLink.url).toBeDefined();
 
         const args = {
           name: 'newname',

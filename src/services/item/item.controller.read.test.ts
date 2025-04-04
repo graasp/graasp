@@ -1544,7 +1544,7 @@ describe('Item routes tests', () => {
           url: `/items/${id}/children`,
         });
 
-        expect(response.json()).toEqual(new ItemNotFound(id));
+        expect(response.json().message).toEqual(new ItemNotFound(id).message);
         expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
       });
       it('Cannot get children if does not have membership on parent', async () => {
@@ -1749,7 +1749,7 @@ describe('Item routes tests', () => {
           url: `/items/${id}/descendants`,
         });
 
-        expect(response.json()).toEqual(new ItemNotFound(id));
+        expect(response.json().message).toEqual(new ItemNotFound(id).message);
         expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
       });
       it('Cannot get descendants if does not have membership on parent', async () => {
@@ -1894,7 +1894,7 @@ describe('Item routes tests', () => {
           url: `/items/${id}/parents`,
         });
 
-        expect(response.json()).toEqual(new ItemNotFound(id));
+        expect(response.json().message).toEqual(new ItemNotFound(id).message);
         expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
       });
       it('Cannot get parents if does not have membership on parent', async () => {

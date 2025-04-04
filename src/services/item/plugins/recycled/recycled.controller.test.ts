@@ -134,8 +134,6 @@ describe('Recycle Bin Tests', () => {
           assertIsMemberForTest(actor);
           mockAuthenticate(actor);
 
-          const recycledItems = [item0, item1, item2, item3, item4, item5];
-
           const res = await app.inject({
             method: HttpMethod.Get,
             url: '/items/recycled',

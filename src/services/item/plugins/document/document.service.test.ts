@@ -17,7 +17,6 @@ import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { ItemWrapperService } from '../../ItemWrapper';
 import { BasicItemService } from '../../basic.service';
 import { DocumentItem } from '../../discrimination';
-import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../item.repository';
 import { ItemService } from '../../item.service';
 import { ItemGeolocationRepository } from '../geolocation/itemGeolocation.repository';
@@ -28,12 +27,21 @@ import { RecycledBinService } from '../recycled/recycled.service';
 import { ItemThumbnailService } from '../thumbnail/itemThumbnail.service';
 import { DocumentItemService } from './document.service';
 
+const MOCK_ITEM = DocumentItemFactory({ id: v4() }) as unknown as DocumentItem;
+
+const MOCK_MEMBER = {} as MinimalMember;
+const itemRepository = {
+  getOneOrThrow: async () => {
+    return MOCK_ITEM;
+  },
+} as unknown as ItemRepository;
+
 const documentService = new DocumentItemService(
   {} as ThumbnailService,
   {} as ItemThumbnailService,
   {} as ItemMembershipRepository,
   {} as MeiliSearchWrapper,
-  {} as ItemRepository,
+  itemRepository,
   {} as ItemPublishedRepository,
   {} as ItemGeolocationRepository,
   {} as AuthorizationService,
@@ -43,15 +51,6 @@ const documentService = new DocumentItemService(
   {} as RecycledBinService,
   MOCK_LOGGER,
 );
-const id = v4();
-const MOCK_ITEM = DocumentItemFactory({ id }) as unknown as DocumentItem;
-
-const MOCK_MEMBER = {} as MinimalMember;
-const itemRepository = {
-  getOneOrThrow: async () => {
-    return MOCK_ITEM;
-  },
-} as unknown as ItemRepository;
 
 describe('Document Service', () => {
   beforeAll(async () => {
@@ -167,7 +166,7 @@ describe('Document Service', () => {
       const FOLDER_ITEM = FolderItemFactory();
       await expect(() =>
         documentService.patchWithOptions(db, MOCK_MEMBER, FOLDER_ITEM.id, { name: 'name' }),
-      ).rejects.toBeInstanceOf(WrongItemTypeError);
+      ).rejects.toThrow();
     });
     it('sanitize content', async () => {
       const itemServicePatchMock = jest

@@ -12,7 +12,6 @@ import { itemSchemaRef } from '../../../item.schemas';
 
 const appDataSchema = customType.StrictObject(
   {
-    // Object Definition
     id: customType.UUID(),
     account: accountSchemaRef,
     item: itemSchemaRef,

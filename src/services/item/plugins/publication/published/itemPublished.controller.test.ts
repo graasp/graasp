@@ -25,7 +25,7 @@ import { expectItem, expectManyPackedItems } from '../../../test/fixtures/items'
 import { ItemVisibilityNotFound } from '../../itemVisibility/errors';
 import { MeiliSearchWrapper } from './plugins/search/meilisearch';
 
-jest.mock('../plugins/search/meilisearch');
+jest.mock('./plugins/search/meilisearch');
 
 describe('Item Published', () => {
   let app: FastifyInstance;

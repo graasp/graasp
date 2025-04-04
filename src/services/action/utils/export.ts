@@ -80,7 +80,8 @@ export const exportActionsInArchive = async (args: {
   // timestamp and datetime are used to build folder name and human readable filename
   const timestamp = new Date();
   const archiveDate = buildArchiveDateAsName(timestamp);
-  const fileName = `${baseAnalytics.item.name}_${archiveDate}`;
+  // TODO: use item name for title
+  const fileName = `actions_${archiveDate}`;
 
   // create tmp dir
   const outputPath = path.join(storageFolder, `${fileName}.zip`);

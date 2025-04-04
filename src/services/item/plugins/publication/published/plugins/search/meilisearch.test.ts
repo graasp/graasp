@@ -457,7 +457,7 @@ describe('MeilisearchWrapper', () => {
 
   describe('rebuilds index', () => {
     it('reindex all items', async () => {
-      jest.spyOn(db, 'transaction').mockImplementation(async (fn) => await fn({} as any));
+      jest.spyOn(db, 'transaction').mockImplementation(async (fn) => await fn({} as never));
       const publishedItemsInDb = Array.from({ length: 13 }, (_, index) => {
         return mockItemPublished({ id: index.toString(), path: index.toString() });
       });

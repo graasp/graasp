@@ -4,12 +4,7 @@ import { DBConnection } from '../../../../drizzle/db';
 import { ItemRaw } from '../../../../drizzle/types';
 import { MemberInfo, MinimalMember } from '../../../../types';
 import { ExportDataRepository } from './memberExportData.repository';
-import { messageMentionArraySchema } from './memberExportData.schemas';
-import {
-  anonymizeMentionsMessage,
-  anonymizeMessages,
-  getFilteredData,
-} from './utils/anonymize.utils';
+import { anonymizeMentionsMessage, anonymizeMessages } from './utils/anonymize.utils';
 import { RequestDataExportService } from './utils/export.utils';
 
 @singleton()

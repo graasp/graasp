@@ -47,7 +47,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user, params: { itemId }, body }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return db.transaction(async (tx) => {
+      return await db.transaction(async (tx) => {
         return await appSettingService.post(tx, member, itemId, body);
       });
     },
@@ -63,8 +63,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async ({ user, params: { itemId, id: appSettingId }, body }) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return db.transaction(async (tx) => {
-        return appSettingService.patch(tx, member, itemId, appSettingId, body);
+      return await db.transaction(async (tx) => {
+        return await appSettingService.patch(tx, member, itemId, appSettingId, body);
       });
     },
   );
