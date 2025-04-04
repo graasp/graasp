@@ -24,6 +24,8 @@ env:
   DB_PASSWORD: docker
   DB_USERNAME: docker
   DB_NAME: docker
+  DB_PORT: '5432'
+  DB_DISABLE_SSL: true
   DB_HOST: localhost
   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN: 'http://localhost:1234'
   ETHERPAD_API_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
