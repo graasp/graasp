@@ -1431,7 +1431,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${parent.id}/children?ordered=true`,
+          url: `/items/${parent.id}/children`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.OK);

@@ -113,7 +113,6 @@ export const getChildren = {
   }),
   querystring: Type.Partial(
     customType.StrictObject({
-      ordered: Type.Boolean({ default: true }),
       keywords: Type.Array(Type.String()),
       types: Type.Array(Type.Enum(ItemType)),
     }),

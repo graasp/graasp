@@ -175,9 +175,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.get(
     '/:id/children',
     { schema: getChildren, preHandler: optionalIsAuthenticated },
-    async ({ user, params: { id }, query: { ordered, types, keywords } }) => {
+    async ({ user, params: { id }, query: { types, keywords } }) => {
       return itemService.getPackedChildren(db, user?.account, id, {
-        ordered,
         types,
         keywords,
       });
