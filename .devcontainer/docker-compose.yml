@@ -14,7 +14,7 @@ services:
         USER_GID: 1000
     environment:
       # sane default to allow the server to bind to any interface in the container
-      HOSTNAME: 0.0.0.0
+      HOSTNAME: localhost
       # temporary storage for files inside the container
       FILE_STORAGE_ROOT_PATH: /tmp/graasp-file-item-storage
       # the localfile config host points to the static file server defined below
@@ -24,11 +24,7 @@ services:
       # enpoint of the nudenet model
       IMAGE_CLASSIFIER_API: http://nudenet:8080/sync
       # the DB config is set by the "db" service below
-      DB_HOST: db
-      DB_NAME: graasp
-      DB_USERNAME: graasper
-      DB_PASSWORD: graasper
-      DB_PORT: 5432
+      DB_CONNECTION: postgres://graasper:graasper@db:5432/graasp
       # the Etherpad config is set by the "etherpad" service below
       ETHERPAD_URL: http://etherpad:9001
       ETHERPAD_PUBLIC_URL: http://localhost:9001
