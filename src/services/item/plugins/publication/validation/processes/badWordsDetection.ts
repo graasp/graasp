@@ -1,12 +1,12 @@
-import BadWordsFilter from 'bad-words';
-import frenchBadwordsListPLugin from 'french-badwords-list';
+// import BadWordsFilter from 'bad-words';
+// import frenchBadwordsListPLugin from 'french-badwords-list';
 
-export const buildWordList = (badWordsFilter: BadWordsFilter): void => {
-  // this package does not have a TS one, so I have to use 'require' here
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const frenchBadwordsList = frenchBadwordsListPLugin.array as Array<string>;
-  badWordsFilter.addWords(...frenchBadwordsList);
-};
+// export const buildWordList = (badWordsFilter: BadWordsFilter): void => {
+//   // this package does not have a TS one, so I have to use 'require' here
+//   // eslint-disable-next-line @typescript-eslint/no-var-requires
+//   const frenchBadwordsList = frenchBadwordsListPLugin.array as Array<string>;
+//   badWordsFilter.addWords(...frenchBadwordsList);
+// };
 
 /**
  * TODO: This function code is disabled since there were a lot of false postivives being generated.

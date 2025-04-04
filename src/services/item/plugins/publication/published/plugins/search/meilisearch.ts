@@ -147,7 +147,7 @@ export class MeiliSearchWrapper {
           finishedTask.error ? `Error: ${finishedTask.error}` : ''
         }`,
       );
-    } catch (e) {
+    } catch (_e) {
       // catch timeout while waiting
     }
   }

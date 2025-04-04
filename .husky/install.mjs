@@ -4,5 +4,9 @@
 if (process.env.NODE_ENV === 'production' || process.env.CI === 'true') {
   process.exit(0);
 }
-const husky = (await import('husky')).default;
-husky.install();
+try {
+  const { default: install } = await import('husky');
+  install();
+} catch {
+  process.exit(0);
+}
