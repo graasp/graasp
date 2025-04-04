@@ -12,9 +12,9 @@ const plugin: FastifyPluginAsync = async (_fastify) => {
 
   // This command run all migrations from the migrations folder and apply changes to the database
   // WARNING: This command needs to reference the drizzle folder from the location of execution of node (dist folder...) this is why the path is weird.
-  // await migrate(db, {
-  //   migrationsFolder: resolve(__dirname, '../../src/drizzle'),
-  // });
+  await migrate(db, {
+    migrationsFolder: resolve(__dirname, '../../src/drizzle'),
+  });
 };
 
 export default plugin;
