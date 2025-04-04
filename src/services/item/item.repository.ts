@@ -269,6 +269,28 @@ export class ItemRepository {
     }));
   }
 
+  /**
+   * return children of given parent, non-ordered
+   * @param db
+   * @param parent
+   * @returns
+   */
+  async getNonOrderedChildren(db: DBConnection, parent: Item): Promise<ItemRaw[]> {
+    if (parent.type !== ItemType.FOLDER) {
+      throw new ItemNotFolder({ id: parent.id });
+    }
+
+    return await db.select().from(items).where(isDirectChild(items.path, parent.path));
+  }
+
+  /**
+   * return children of given parent, ordered by order
+   * @param db
+   * @param actor
+   * @param parent
+   * @param params
+   * @returns
+   */
   async getChildren(
     db: DBConnection,
     actor: MaybeUser,
@@ -309,14 +331,6 @@ export class ItemRepository {
       );
     }
 
-    // use createdAt for ordering by default
-    // or use order for ordering
-    let orderByValues = [asc(items.createdAt)];
-    if (params?.ordered) {
-      // backup order by in case two items has same ordering
-      orderByValues = [asc(items.order), asc(items.createdAt)];
-    }
-
     // normally no need anymore with typeorm
     // if (options.withOrder) {
     //   query.addSelect('item.order');
@@ -327,7 +341,9 @@ export class ItemRepository {
       .from(items)
       .leftJoin(membersView, eq(items.creatorId, membersView.id))
       .where(and(...andConditions))
-      .orderBy(() => orderByValues);
+      // use order for ordering
+      // backup order by in case two items has same ordering
+      .orderBy(() => [asc(items.order), asc(items.createdAt)]);
 
     return result.map(({ item_view, members_view }) => ({
       ...item_view,

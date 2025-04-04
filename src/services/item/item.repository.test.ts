@@ -361,7 +361,7 @@ describe('Item Repository', () => {
       assertIsDefined(actor);
       const maybeUser = new MemberDTO(actor).toMaybeUser();
 
-      const data = await itemRepository.getChildren(db, maybeUser, parent, { ordered: true });
+      const data = await itemRepository.getChildren(db, maybeUser, parent);
       expect(data).toHaveLength(children.length);
       // verify order and content
       childrenInOrder.forEach((child, idx) => {

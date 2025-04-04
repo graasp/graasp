@@ -38,7 +38,6 @@ export type ItemSearchParams = {
 };
 
 export type ItemChildrenParams = {
-  ordered?: boolean;
   types?: UnionOfConst<typeof ItemType>[];
   keywords?: string[];
 };

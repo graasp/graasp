@@ -235,8 +235,10 @@ export class ItemPublishedService {
   async touchUpdatedAt(db: DBConnection, item: { id: Item['id']; path: Item['path'] }) {
     const updatedAt = await this.itemPublishedRepository.touchUpdatedAt(db, item.path);
 
-    // change value in meilisearch index
-    await this.meilisearchWrapper.updateItem(item.id, { updatedAt });
+    if (updatedAt) {
+      // change value in meilisearch index
+      await this.meilisearchWrapper.updateItem(item.id, { updatedAt });
+    }
   }
 
   async getItemsForMember(db: DBConnection, actor: MaybeUser, memberId: UUID) {

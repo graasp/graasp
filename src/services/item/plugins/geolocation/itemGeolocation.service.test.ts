@@ -56,7 +56,7 @@ describe('ItemGeolocationService', () => {
 
   afterAll(async () => {
     await clearDatabase(db);
-    client.end();
+    await client.end();
   });
 
   afterEach(async () => {

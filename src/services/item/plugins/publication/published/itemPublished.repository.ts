@@ -67,38 +67,6 @@ export class ItemPublishedRepository {
     }));
   }
 
-  // async getForMember(db: DBConnection, memberId: string): Promise<Item[]> {
-  //   const itemPublished = await this.repository
-  //     .createQueryBuilder('pi')
-  //     // join with memberships that are at or above the item published
-  //     // add the condition that the membership needs to be admin or write
-  //     .innerJoin(
-  //       'item_membership',
-  //       'im',
-  //       'im.item_path @> pi.item_path and im.permission IN (:...permissions)',
-  //       { permissions: [PermissionLevel.Admin, PermissionLevel.Write] },
-  //     )
-  //     // add a condition to the join to keep only relations for the accountId we are interested in
-  //     // this removes the need for the accountId in the where condition
-  //     .innerJoin('account', 'm', 'im.account_id = m.id and m.id = :accountId', {
-  //       accountId: memberId,
-  //     })
-  //     // these two joins are for typeorm to get the relation data
-  //     .innerJoinAndSelect('pi.item', 'item') // will ignore soft delted items
-  //     .innerJoinAndSelect('item.creator', 'account') // will ignore null creators (deleted accounts)
-  //     .getMany();
-
-  //   return itemPublished.map(({ item }) => item);
-  // }
-
-  // // return public item entry? contains when it was published
-  // async getAllItems(db: DBConnection) {
-  //   const publishedRows = await this.repository.find({
-  //     relations: { item: true },
-  //   });
-  //   return publishedRows.map(({ item }) => item);
-  // }
-
   // Must Implement a proper Paginated<Type> if more complex pagination is needed in the future
   async getPaginatedItems(
     db: DBConnection,
@@ -151,11 +119,15 @@ export class ItemPublishedRepository {
     return publishedInfos.map(({ item }) => item);
   }
 
-  async touchUpdatedAt(db: DBConnection, path: Item['path']): Promise<string> {
+  async touchUpdatedAt(db: DBConnection, path: Item['path']): Promise<string | null> {
     const updatedAt = new Date().toISOString();
 
-    await db.update(publishedItems).set({ updatedAt }).where(eq(publishedItems.itemPath, path));
+    const result = await db
+      .update(publishedItems)
+      .set({ updatedAt })
+      .where(eq(publishedItems.itemPath, path))
+      .returning();
 
-    return updatedAt;
+    return result.length > 0 ? updatedAt : null;
   }
 }

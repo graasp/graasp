@@ -381,9 +381,7 @@ export class ImportExportService {
     // treat folder items recursively
     const childrenManifest: GraaspExportItem[] = [];
     if (isItemType(item, ItemType.FOLDER)) {
-      const childrenItems = await this.itemService.getChildren(db, actor, item.id, {
-        ordered: true,
-      });
+      const childrenItems = await this.itemService.getChildren(db, actor, item.id);
       for (const child of childrenItems) {
         await this.addItemToGraaspExport(db, actor, {
           item: child,
