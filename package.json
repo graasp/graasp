@@ -12,12 +12,12 @@
   "license": "AGPL-3.0-only",
   "author": "Graasp",
   "scripts": {
-    "start": "pnpm serve",
-    "build": "pnpm lint && pnpm build-ts",
+    "start": "yarn serve",
+    "build": "yarn lint && yarn build-ts",
     "serve": "NODE_PATH=./dist node dist/server.js",
     "watch-node": "NODE_PATH=./dist nodemon dist/server.js",
-    "dev": "pnpm run watch",
-    "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"pnpm watch-ts\" \"pnpm watch-node\"",
+    "dev": "yarn run watch",
+    "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"yarn watch-ts\" \"yarn watch-node\"",
     "seed": "ts-node -e 'import seed from \"./test/mocks/index\";seed();'",
     "test": "jest --forceExit --verbose --runInBand --detectOpenHandles",
     "test:ci": "jest --forceExit --verbose --coverage --silent --detectOpenHandles --maxWorkers=2",
@@ -28,15 +28,15 @@
     "lint": "eslint '**/*.{js,ts}'",
     "prettier:check": "prettier --check \"{src,test}/**/*.ts\"",
     "prettier:write": "prettier --write \"{src,test}/**/*.ts\"",
-    "check": "pnpm prettier:check && pnpm lint && pnpm type-check",
-    "debug": "pnpm build && pnpm watch-debug",
+    "check": "yarn prettier:check && yarn lint && yarn type-check",
+    "debug": "yarn build && yarn watch-debug",
     "serve-debug": "NODE_PATH=./dist nodemon --inspect dist/server.js",
     "serve-debug-break": "NODE_PATH=./dist nodemon --inspect-brk dist/server.js",
-    "watch-debug": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"pnpm watch-ts\" \"pnpm serve-debug\"",
+    "watch-debug": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"yarn watch-ts\" \"yarn serve-debug\"",
     "hooks:uninstall": "husky uninstall",
     "hooks:install": "node .husky/install.mjs",
     "postinstall": "node .husky/install.mjs",
-    "pre-commit": "pnpm prettier:check && pnpm lint",
+    "pre-commit": "yarn prettier:check && yarn lint",
     "openapi:generate": "node dist/scripts/generateOpenAPI.js",
     "openapi:lint": "vacuum lint ./openapi.json",
     "openapi:report": "vacuum html-report ./openapi.json vacuum-report.html",
@@ -65,7 +65,7 @@
     "@graasp/sdk": "github:graasp/graasp-sdk#drizzle",
     "@graasp/translations": "1.43.0",
     "@rapideditor/country-coder": "5.3.1",
-    "@sentry/node": "9.11.0",
+    "@sentry/node": "7.119.2",
     "@sentry/tracing": "7.120.3",
     "@sinclair/typebox": "0.34.33",
     "ajv": "8.17.1",
@@ -167,22 +167,10 @@
     "ts-jest": "29.3.1",
     "ts-node": "10.9.2",
     "tsx": "4.19.3",
-    "typescript": "5.8.2",
+    "typescript": "5.5.4",
     "wait-for-expect": "3.0.2"
   },
   "resolutions": {
     "sodium-native": "4.2.0"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@quobix/vacuum",
-      "bcrypt",
-      "esbuild",
-      "h5p-standalone",
-      "msgpackr-extract",
-      "re2",
-      "sharp",
-      "sodium-native"
-    ]
   }
 }

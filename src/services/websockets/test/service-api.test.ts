@@ -3,7 +3,6 @@
  *
  * Tests for {@link service-api.ts}
  */
-
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import waitForExpect from 'wait-for-expect';
 import { WebSocket } from 'ws';
