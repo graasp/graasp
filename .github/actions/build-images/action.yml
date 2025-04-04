@@ -8,12 +8,23 @@ inputs:
   aws-ecr-uri:
     description: "AWS ECR URI, similar to 'public.ecr.aws/ecr-default-alias'"
     required: true
+  aws-role-arn:
+    description: 'AWS Role to assume'
+    required: true
 
 runs:
   using: composite
-  env:
-
   steps:
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-assume-role: ${{ inputs.aws-role-arn }}
+        aws-region: us-east-1
+
+    - name: Authenticate Docker to AWS ECR
+      run: aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ inputs.aws-ecr-uri }}
+      shell: bash
+
     - name: Set image tags
       run: |
         core_tag_short="graasp:core-${{ inputs.tag }}"
@@ -23,10 +34,6 @@ runs:
         migrate_tag_short="graasp:migrate-${{ inputs.tag }}"
         echo "MIGRATE_TAG_SHORT=$migrate_tag_short" >> $GITHUB_ENV
         echo "MIGRATE_TAG_FULL=${{ inputs.aws-ecr-uri }}/$core_tag_short" >> $GITHUB_ENV
-      shell: bash
-
-    - name: Authenticate Docker to AWS ECR
-      run: aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ inputs.aws-ecr-uri }}
       shell: bash
 
     - name: Build and push backend image
