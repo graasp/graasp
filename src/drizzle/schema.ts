@@ -90,7 +90,10 @@ export const publishedItems = pgTable(
         onUpdate: 'cascade',
         onDelete: 'cascade',
       }),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => sql.raw('DEFAULT')),
   },
   (table) => [
     index('IDX_gist_item_published_path').using(
@@ -119,7 +122,10 @@ export const itemMemberships = pgTable(
       .notNull()
       .references(() => accountsTable.id, { onDelete: 'cascade' }),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => sql.raw('DEFAULT')),
   },
   (table) => [
     index('IDX_5ac5bdde333fca6bbeaf177ef9').using(
@@ -153,7 +159,10 @@ export const memberPasswords = pgTable(
     id: uuid().primaryKey().defaultRandom().notNull(),
     password: varchar({ length: 100 }).notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => sql.raw('DEFAULT')),
     memberId: uuid('member_id').references(() => accountsTable.id, {
       onDelete: 'cascade',
     }),
@@ -274,7 +283,10 @@ export const chatMessagesTable = pgTable(
     itemId: uuid('item_id').notNull(),
     creatorId: uuid('creator_id'),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => sql.raw('DEFAULT')),
     body: varchar({ length: 500 }).notNull(),
   },
   (table) => [
@@ -302,7 +314,10 @@ export const chatMentionsTable = pgTable(
       .references(() => accountsTable.id)
       .notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => sql.raw('DEFAULT')),
     status: chatMentionStatusEnum().default('unread').notNull(),
   },
   (table) => [
@@ -330,7 +345,10 @@ export const appDatas = pgTable(
     creatorId: uuid('creator_id'),
     visibility: varchar().notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => sql.raw('DEFAULT')),
   },
   (table) => [
     index('IDX_6079b3bb63c13f815f7dd8d8a2').using(
@@ -390,7 +408,10 @@ export const appSettings = pgTable(
     name: varchar().notNull(),
     data: jsonb().$type<object>().default({}).notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => sql.raw('DEFAULT')),
   },
   (table) => [
     index('IDX_61546c650608c1e68789c64915').using(
@@ -423,7 +444,10 @@ export const invitationsTable = pgTable(
     email: varchar({ length: 100 }).notNull(),
     permission: permissionEnum().default('read').notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => sql.raw('DEFAULT')),
   },
   (table) => [
     foreignKey({
@@ -449,7 +473,10 @@ export const publishers = pgTable(
     name: varchar({ length: 250 }).notNull(),
     origins: text().array().notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => sql.raw('DEFAULT')),
   },
   (table) => [unique('publisher_name_key').on(table.name)],
 );
@@ -464,7 +491,10 @@ export const apps = pgTable(
     url: varchar({ length: 250 }).notNull(),
     publisherId: uuid('publisher_id').notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => sql.raw('DEFAULT')),
     extra: jsonb().$type<object>().default({}).notNull(),
   },
   (table) => [
@@ -505,7 +535,10 @@ export const itemValidations = pgTable(
     result: varchar(),
     itemValidationGroupId: uuid('item_validation_group_id').notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => sql.raw('DEFAULT')),
   },
   (table) => [
     foreignKey({
@@ -531,7 +564,10 @@ export const itemValidationReviews = pgTable(
     status: varchar().notNull(),
     reason: varchar(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => sql.raw('DEFAULT')),
   },
   (table) => [
     foreignKey({
@@ -582,7 +618,10 @@ export const memberProfiles = pgTable(
     linkedinId: varchar({ length: 100 }),
     twitterId: varchar({ length: 100 }),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => sql.raw('DEFAULT')),
     memberId: uuid('member_id')
       .notNull()
       .references(() => accountsTable.id),
@@ -671,7 +710,10 @@ export const itemGeolocationsTable = pgTable(
     lng: doublePrecision().notNull(),
     country: varchar({ length: 4 }),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => sql.raw('DEFAULT')),
     itemPath: ltree('item_path').notNull(),
     addressLabel: varchar({ length: 300 }),
     helperLabel: varchar({ length: 300 }),
@@ -726,7 +768,10 @@ export const itemsRaw = pgTable(
     extra: jsonb().$type<object>().default({}).notNull(),
     settings: jsonb().$type<ItemSettings>().default({}).notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => sql.raw('DEFAULT')),
     deletedAt: timestamp('deleted_at', { mode: 'string' }), // HACK: the softdeletion mechanism relies on the deletedAt being null or having a date
     lang: varchar().default('en').notNull(),
 
@@ -787,7 +832,10 @@ export const accountsTable = pgTable(
     extra: jsonb().$type<CompleteMember['extra']>().default({}).notNull(),
     type: accountTypeEnum().default('individual').notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => sql.raw('DEFAULT')),
     userAgreementsDate: timestamp('user_agreements_date', { mode: 'string' }),
     enableSaveActions: boolean('enable_save_actions').default(true),
     lastAuthenticatedAt: timestamp('last_authenticated_at', { mode: 'string' }),
@@ -843,7 +891,10 @@ export const guestPasswords = pgTable(
     id: uuid().primaryKey().defaultRandom().notNull(),
     password: varchar({ length: 100 }).notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => sql.raw('DEFAULT')),
     guestId: uuid('guest_id'),
   },
   (table) => [
@@ -862,7 +913,10 @@ export const itemLoginSchemas = pgTable(
     id: uuid().primaryKey().defaultRandom().notNull(),
     type: itemLoginSchemaTypeEnum().notNull(),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => sql.raw('DEFAULT')),
     itemPath: ltree('item_path')
       .notNull()
       .references(() => itemsRaw.path, {
