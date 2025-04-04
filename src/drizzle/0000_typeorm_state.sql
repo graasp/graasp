@@ -436,7 +436,7 @@ CREATE INDEX "IDX_gist_item_visibility_path" ON "item_visibility" USING gist ("i
 CREATE INDEX "IDX_43c8a0471d5e58f99fc9c36b99" ON "short_link" USING btree ("item_id" uuid_ops);--> statement-breakpoint
 CREATE INDEX "IDX_91fa43bc5482dc6b00892baf01" ON "member_profile" USING btree ("member_id" uuid_ops);--> statement-breakpoint
 CREATE INDEX "IDX_item_like_item" ON "item_like" USING btree ("item_id" uuid_ops);--> statement-breakpoint
-CREATE INDEX "IDX_item_tag_item" ON "item_tag" USING btree ("item_id" uuid_ops);
+CREATE INDEX "IDX_item_tag_item" ON "item_tag" USING btree ("item_id" uuid_ops);--> statement-breakpoint
 
 -- -- -- -- -- -- -- -- -- -- -- -- -- --
 -- TYPEORM MIGRATION - Comment up to here
@@ -444,4 +444,4 @@ CREATE INDEX "IDX_item_tag_item" ON "item_tag" USING btree ("item_id" uuid_ops);
 
 -- Keep this is you migrate from typeorm
 create table "test" (id text not null);--> statement-breakpoint
-drop table "test";
+drop table "test";--> statement-breakpoint
