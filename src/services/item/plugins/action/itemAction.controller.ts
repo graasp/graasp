@@ -186,9 +186,13 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
       const {
         user,
         params: { id: itemId },
+        query: { startDate, endDate },
       } = request;
 
-      await itemActionService.getActionsByDay(db, itemId, user?.account);
+      return await itemActionService.getActionsByDay(db, itemId, user?.account, {
+        startDate,
+        endDate,
+      });
     },
   );
 };

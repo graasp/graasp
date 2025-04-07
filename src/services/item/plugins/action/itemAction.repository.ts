@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { count, sql } from 'drizzle-orm';
+import { count, gte, lte, sql } from 'drizzle-orm';
 import { and, eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
@@ -15,7 +15,14 @@ export class ItemActionRepository {
     return name.trim().replace(/ +(?= )/g, '');
   }
 
-  async getActionsByDay(db: DBConnection, itemId: Item['id'], actor: MaybeUser): Promise<void> {
+  async getActionsByDay(
+    db: DBConnection,
+    itemId: Item['id'],
+    actor: MaybeUser,
+    params,
+  ): Promise<any> {
+    const { startDate, endDate, view } = params;
+
     const actions = await db
       .select({
         day: sql<string>`date_trunc('day', ${actionsTable.createdAt})`,
@@ -24,7 +31,14 @@ export class ItemActionRepository {
         count: count(),
       })
       .from(actionsTable)
-      .where(eq(actionsTable.itemId, itemId))
+      .where(
+        and(
+          eq(actionsTable.itemId, itemId),
+          gte(actionsTable.createdAt, startDate),
+          lte(actionsTable.createdAt, endDate),
+          eq(actionsTable.view, view),
+        ),
+      )
       .groupBy(() => [
         sql`date_trunc('day', ${actionsTable.createdAt})`,
         actionsTable.accountId,
@@ -39,6 +53,7 @@ export class ItemActionRepository {
       const { type, count } = value;
 
       acc[idx] = {
+        date: idx,
         count: Object.assign(acc[idx]?.count ?? {}, {
           [type]: (acc[idx]?.count?.[type] ?? 0) + count,
         }),
@@ -53,5 +68,6 @@ export class ItemActionRepository {
     }, {});
 
     console.log(a);
+    return a;
   }
 }

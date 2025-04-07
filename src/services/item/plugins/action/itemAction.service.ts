@@ -370,9 +370,9 @@ export class ItemActionService {
     return res[0].count;
   }
 
-  async getActionsByDay(db: DBConnection, itemId: Item['id'], actor: MaybeUser) {
+  async getActionsByDay(db: DBConnection, itemId: Item['id'], actor: MaybeUser, params) {
     // await this.basicItemService.get(db, actor, itemId);
 
-    return this.itemActionRepository.getActionsByDay(db, itemId, actor);
+    return this.itemActionRepository.getActionsByDay(db, itemId, actor, params);
   }
 }

@@ -143,8 +143,7 @@ export class RecycledItemDataRepository {
     const trees = await db
       .select()
       .from(itemsRaw)
-
-      .innerJoin(descendants, and(isDescendantOrSelf(itemsRaw.path, descendants.path)))
+      .innerJoin(descendants, and(isDescendantOrSelf(descendants.path, itemsRaw.path)))
       .where(inArray(itemsRaw.id, ids));
 
     return trees.map(({ descendants }) => descendants);

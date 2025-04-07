@@ -86,19 +86,19 @@ export const getItemActionsByDay = {
   params: customType.StrictObject({
     id: customType.UUID(),
   }),
-  // querystring: customType.StrictObject({
-  //   requestedSampleSize: Type.Optional(
-  //     Type.Number({
-  //       minimum: MIN_ACTIONS_SAMPLE_SIZE,
-  //       maximum: MAX_ACTIONS_SAMPLE_SIZE,
-  //     }),
-  //   ),
-  //   view: Type.Optional(Type.Enum(Context)),
-  //   startDate: Type.Optional(Type.String({ format: 'date-time' })),
-  //   endDate: Type.Optional(Type.String({ format: 'date-time' })),
-  // }),
+  querystring: customType.StrictObject({
+    // requestedSampleSize: Type.Optional(
+    //   Type.Number({
+    //     minimum: MIN_ACTIONS_SAMPLE_SIZE,
+    //     maximum: MAX_ACTIONS_SAMPLE_SIZE,
+    //   }),
+    // ),
+    // view: Type.Optional(Type.Enum(Context)),
+    startDate: Type.Optional(Type.String({ format: 'date-time' })),
+    endDate: Type.Optional(Type.String({ format: 'date-time' })),
+  }),
   response: {
-    [StatusCodes.OK]: {},
+    // [StatusCodes.OK]: {},
     // TODO: enable back
     // [StatusCodes.OK]: customType.StrictObject({
     //   actions: Type.Array(actionSchema),

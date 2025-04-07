@@ -694,7 +694,7 @@ describe('Item routes tests', () => {
       assertIsDefined(actor);
       assertIsMemberForTest(actor);
       mockAuthenticate(actor);
-      const imageStream = fs.createReadStream(path.resolve(__dirname, './fixtures/image.png'));
+      const imageStream = fs.createReadStream(path.resolve(__dirname, './test/fixtures/image.png'));
       const itemName = 'Test Item';
       const payload = new FormData();
       payload.append('name', itemName);
@@ -1128,6 +1128,7 @@ describe('Item routes tests', () => {
             },
           ],
         });
+        items.sort((a, b) => (a.path > b.path ? 1 : -1));
         const [root, parent] = items;
         assertIsDefined(actor);
         assertIsMemberForTest(actor);
@@ -1148,6 +1149,7 @@ describe('Item routes tests', () => {
               items.map((i) => i.id),
             ),
           });
+
           expect(remaining).toHaveLength(1);
           expect(remaining[0].id).toEqual(root.id);
           // should keep root membership for actor and member

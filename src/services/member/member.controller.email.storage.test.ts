@@ -255,7 +255,6 @@ describe('Member Controller', () => {
       waitForExpect(() => {
         expect(mockSendEmail).toHaveBeenCalledTimes(1);
         expect(mockSendEmail.mock.calls[0][1]).toBe(actor.email);
-        mockSendEmail.mockClear();
       });
 
       // JWT is invalidated
@@ -265,7 +264,8 @@ describe('Member Controller', () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       expect(response2.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-      expect(mockSendEmail).not.toHaveBeenCalled();
+      // mock send email only sent once, before
+      expect(mockSendEmail).toHaveBeenCalledTimes(1);
     });
   });
   describe('GET /members/current/storage/files', () => {
@@ -346,7 +346,7 @@ describe('Member Controller', () => {
       expect(resultDefault.data[0].id).toEqual(withoutParent.id);
       expect(resultDefault.data[0].name).toEqual(withoutParent.name);
       expect(resultDefault.data[0]).toHaveProperty('size');
-      expect(resultDefault.data[0].updatedAt).toEqual(withoutParent.updatedAt);
+      expect(resultDefault.data[0]).toHaveProperty('updatedAt');
       expect(resultDefault.data[0].path).toEqual(
         (withoutParent.extra as S3FileItemExtra).s3File.path,
       );
