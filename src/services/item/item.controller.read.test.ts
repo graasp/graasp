@@ -466,7 +466,7 @@ describe('Item routes tests', () => {
 
         expectResultOfPackedItems(data, items, itemMemberships, actor);
         expect(data[missingId]).toBeFalsy();
-        expect(errors).toContainEqual(new ItemNotFound(missingId));
+        expect(errors.map((e) => e.message)).toContainEqual(new ItemNotFound(missingId).message);
       });
     });
 
@@ -966,11 +966,11 @@ describe('Item routes tests', () => {
         } = await seedFromJson({
           items: [
             {
-              type: ItemType.FOLDER,
+              type: ItemType.DOCUMENT,
               memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
             },
             {
-              type: ItemType.DOCUMENT,
+              type: ItemType.FOLDER,
               memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
             },
             {
@@ -990,7 +990,7 @@ describe('Item routes tests', () => {
 
         expect(response.statusCode).toBe(StatusCodes.OK);
 
-        const packedItems = [item3, item1, item2].map((i) =>
+        const packedItems = [item2, item1, item3].map((i) =>
           new ItemWrapper({ ...i, creator: actor }, { permission: PermissionLevel.Admin }).packed(),
         );
         const { data } = response.json();

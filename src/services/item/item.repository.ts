@@ -930,7 +930,6 @@ export class ItemRepository {
     db: DBConnection,
     memberId: MinimalMember['id'],
   ): Promise<ItemWithCreator[]> {
-    // get for membership write and admin -> createquerybuilder
     const result = await db
       .select()
       .from(items)

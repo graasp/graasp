@@ -154,9 +154,24 @@ describe('Item Published', () => {
           members: [member],
         } = await seedFromJson({
           items: [
-            { isPublic: true, isPublished: true, creator: { name: 'bob' } },
-            { isPublic: true, isPublished: true, creator: { name: 'bob' } },
-            { isPublic: true, isPublished: true, creator: { name: 'bob' } },
+            {
+              isPublic: true,
+              isPublished: true,
+              creator: { name: 'bob' },
+              memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+            },
+            {
+              isPublic: true,
+              isPublished: true,
+              creator: { name: 'bob' },
+              memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+            },
+            {
+              isPublic: true,
+              isPublished: true,
+              creator: { name: 'bob' },
+              memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+            },
           ],
         });
 
@@ -167,7 +182,12 @@ describe('Item Published', () => {
         expect(res.statusCode).toBe(StatusCodes.OK);
         expectManyPackedItems(
           res.json(),
-          items.map((i) => new ItemWrapper({ ...i, creator: member }).packed()),
+          items.map((i) =>
+            new ItemWrapper(
+              { ...i, creator: member },
+              { permission: PermissionLevel.Admin },
+            ).packed(),
+          ),
           undefined,
           undefined,
           itemVisibilities,
@@ -184,9 +204,24 @@ describe('Item Published', () => {
           itemVisibilities,
         } = await seedFromJson({
           items: [
-            { isPublished: true, isPublic: true, creator: { name: 'bob' } },
-            { isPublished: true, isPublic: true, creator: { name: 'bob' } },
-            { isPublished: true, isPublic: true, creator: { name: 'bob' } },
+            {
+              isPublished: true,
+              isPublic: true,
+              creator: { name: 'bob' },
+              memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+            },
+            {
+              isPublished: true,
+              isPublic: true,
+              creator: { name: 'bob' },
+              memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+            },
+            {
+              isPublished: true,
+              isPublic: true,
+              creator: { name: 'bob' },
+              memberships: [{ account: { name: 'bob' }, permission: PermissionLevel.Admin }],
+            },
           ],
         });
         assertIsDefined(actor);
@@ -199,7 +234,12 @@ describe('Item Published', () => {
         expect(res.statusCode).toBe(StatusCodes.OK);
         expectManyPackedItems(
           res.json(),
-          items.map((i) => new ItemWrapper({ ...i, creator: member }).packed()),
+          items.map((i) =>
+            new ItemWrapper(
+              { ...i, creator: member },
+              { permission: PermissionLevel.Admin },
+            ).packed(),
+          ),
           member,
           undefined,
           itemVisibilities,
