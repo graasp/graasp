@@ -25,7 +25,7 @@ volumes:
   meilisearch_data:
 
 x-shared_environment: &shared_environment
-  DB_CONNECTION: postgres://graasper:graasper@db:5432/graasp
+  DB_CONNECTION: # update with your own value
   # needed when running in local, unless you you use a DB which has SSL
   DB_DISABLE_SSL: true
   DB_HOST: db

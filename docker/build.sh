@@ -32,7 +32,7 @@ aws_identity=$(aws sts get-caller-identity)
 if [ $? -eq 0 ]; then
   echo -e "Using AWS identity:\n$aws_identity"
 else
-  echo "AWS CLI is not authenticated, please ensure the cli is autenticated before running this scipt";
+  echo "AWS CLI is not authenticated, please ensure the cli is authenticated before running this script";
   exit 1
 fi
 
