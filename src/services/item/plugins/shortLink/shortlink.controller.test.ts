@@ -364,7 +364,7 @@ describe('Short links routes tests', () => {
 
           const shortLinkPayload = {
             itemId: item.id,
-            alias: faker.word.sample({ length: { min: 10, max: 50 } }),
+            alias: 'my-alias-is-cool',
             platform: ShortLinkPlatform.Builder,
           };
           const response = await injectPost(app, shortLinkPayload);

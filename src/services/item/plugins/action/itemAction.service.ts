@@ -371,7 +371,7 @@ export class ItemActionService {
   }
 
   async getActionsByDay(db: DBConnection, itemId: Item['id'], actor: MaybeUser) {
-    await this.basicItemService.get(db, actor, itemId);
+    // await this.basicItemService.get(db, actor, itemId);
 
     return this.itemActionRepository.getActionsByDay(db, itemId, actor);
   }

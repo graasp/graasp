@@ -1,3 +1,4 @@
+import { format } from 'date-fns';
 import { count, sql } from 'drizzle-orm';
 import { and, eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
@@ -20,7 +21,7 @@ export class ItemActionRepository {
         day: sql<string>`date_trunc('day', ${actionsTable.createdAt})`,
         accountId: actionsTable.accountId,
         type: actionsTable.type,
-        views: count(),
+        count: count(),
       })
       .from(actionsTable)
       .where(eq(actionsTable.itemId, itemId))
@@ -31,13 +32,23 @@ export class ItemActionRepository {
       ])
       .limit(5000);
 
+    console.log(actions);
+
     const a = actions.reduce((acc, value) => {
-      const idx = new Date(value.day).toLocaleDateString('');
-      if (acc[idx]) {
-        acc[idx].count += value.views;
-      } else {
-        acc[idx] = { count: value.views };
-      }
+      const idx = format(value.day, 'yyyy/MM/dd');
+      const { type, count } = value;
+
+      acc[idx] = {
+        count: Object.assign(acc[idx]?.count ?? {}, {
+          [type]: (acc[idx]?.count?.[type] ?? 0) + count,
+        }),
+        personal:
+          actor && actor.id === value.accountId
+            ? Object.assign(acc[idx]?.personal ?? {}, {
+                [type]: (acc[idx]?.personal?.[type] ?? 0) + count,
+              })
+            : (acc[idx]?.personal ?? {}),
+      };
       return acc;
     }, {});
 

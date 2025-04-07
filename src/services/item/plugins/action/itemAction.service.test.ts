@@ -555,11 +555,21 @@ describe('ItemActionService', () => {
     it('postPostAction', async () => {
       const {
         items: [item],
+        actor,
       } = await seedFromJson({ items: [{}] });
+      const actionPostMany = jest.spyOn(actionService, 'postMany').mockResolvedValue();
+      assertIsDefined(actor);
+      assertIsMember(actor);
 
-      await service.postPostAction(db, MOCK_REQUEST, item);
-      const actions = await getActionsByItemForType(item.id, ItemActionType.Create);
-      expect(actions).toHaveLength(1);
+      await service.postPostAction(db, { ...MOCK_REQUEST, user: { account: actor } }, item);
+      expect(actionPostMany.mock.calls[0][1]).toEqual(actor);
+      expect(actionPostMany.mock.calls[0][3]).toEqual([
+        {
+          item,
+          type: ItemActionType.Create,
+          extra: { itemId: item.id },
+        },
+      ]);
     });
 
     it('postPatchAction', async () => {
