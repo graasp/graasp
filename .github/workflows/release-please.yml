@@ -28,6 +28,8 @@ jobs:
         uses: ./.github/actions/build-images
         with:
           tag: ${{ steps.release.outputs.tag_name }}
+          aws-ecr-uri: public.ecr.aws/i3k4i6f8 # should this be a var ?
+          aws-role-arn: ${{ vars.AWS_ROLE_ARN }}
 
       # ------ Legacy behavior ---
       # put created tag in an env variable to be sent to the dispatch
