@@ -37,11 +37,12 @@ import { AppActionRepository } from '../app/appAction/appAction.repository';
 import { AppDataRepository } from '../app/appData/appData.repository';
 import { AppSettingRepository } from '../app/appSetting/appSetting.repository';
 import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
+import { ItemActionRepository } from './itemAction.repository';
 // import { BaseAnalytics } from './base-analytics';
 import { ItemActionType } from './utils';
 
 @singleton()
-export class ActionItemService {
+export class ItemActionService {
   private readonly basicItemService: BasicItemService;
   private readonly actionService: ActionService;
   private readonly actionRepository: ActionRepository;
@@ -53,6 +54,7 @@ export class ActionItemService {
   private readonly exportDataRepository: ExportDataRepository;
   private readonly itemService: ItemService;
   private readonly itemVisibilityRepository: ItemVisibilityRepository;
+  private readonly itemActionRepository: ItemActionRepository;
 
   constructor(
     actionService: ActionService,
@@ -66,6 +68,7 @@ export class ActionItemService {
     exportDataRepository: ExportDataRepository,
     itemService: ItemService,
     itemVisibilityRepository: ItemVisibilityRepository,
+    itemActionRepository: ItemActionRepository,
   ) {
     this.actionService = actionService;
     this.basicItemService = basicItemService;
@@ -78,6 +81,7 @@ export class ActionItemService {
     this.exportDataRepository = exportDataRepository;
     this.itemService = itemService;
     this.itemVisibilityRepository = itemVisibilityRepository;
+    this.itemActionRepository = itemActionRepository;
   }
 
   async getForItem(
@@ -364,5 +368,11 @@ export class ActionItemService {
         ),
       );
     return res[0].count;
+  }
+
+  async getActionsByDay(db: DBConnection, itemId: Item['id'], actor: MaybeUser) {
+    await this.basicItemService.get(db, actor, itemId);
+
+    return this.itemActionRepository.getActionsByDay(db, itemId, actor);
   }
 }

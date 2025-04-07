@@ -19,7 +19,7 @@ import { assertIsDefined } from '../../../../utils/assertions';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { ActionRepository } from '../../../action/action.repository';
 import { ActionService } from '../../../action/action.service';
-import { assertIsMemberForTest } from '../../../authentication';
+import { assertIsMember, assertIsMemberForTest } from '../../../authentication';
 import { ChatMessageRepository } from '../../../chat/chatMessage.repository';
 import { ItemMembershipRepository } from '../../../itemMembership/membership.repository';
 import { MemberService } from '../../../member/member.service';
@@ -30,16 +30,19 @@ import { AppActionRepository } from '../app/appAction/appAction.repository';
 import { AppDataRepository } from '../app/appData/appData.repository';
 import { AppSettingRepository } from '../app/appSetting/appSetting.repository';
 import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
-import { ActionItemService } from './itemAction.service';
+import { ItemActionRepository } from './itemAction.repository';
+import { ItemActionService } from './itemAction.service';
 import { ItemActionType } from './utils';
 
 const itemService = {} as ItemService;
 const basicItemService = { get: jest.fn() } as unknown as BasicItemService;
+const actionRepository = new ActionRepository();
+const actionService = new ActionService(actionRepository, {} as MemberService, MOCK_LOGGER);
 
-const service = new ActionItemService(
-  new ActionService(new ActionRepository(), {} as MemberService, MOCK_LOGGER),
+const service = new ItemActionService(
+  actionService,
   basicItemService,
-  new ActionRepository(),
+  actionRepository,
   new ItemMembershipRepository(),
   new AppActionRepository(),
   new AppSettingRepository(),
@@ -48,6 +51,7 @@ const service = new ActionItemService(
   new ExportDataRepository(),
   itemService as ItemService,
   new ItemVisibilityRepository(),
+  new ItemActionRepository(),
 );
 
 const getActionsByItemForType = async (itemId, type) => {
@@ -64,7 +68,7 @@ const MOCK_REQUEST = {
   },
 } as unknown as FastifyRequest;
 
-describe('ActionItemService', () => {
+describe('ItemActionService', () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
@@ -560,14 +564,23 @@ describe('ActionItemService', () => {
 
     it('postPatchAction', async () => {
       const {
+        actor,
         items: [item],
       } = await seedFromJson({ items: [{}] });
+      const actionPostMany = jest.spyOn(actionService, 'postMany').mockResolvedValue();
+      assertIsDefined(actor);
+      assertIsMember(actor);
 
       const body = { name: faker.word.sample() };
-      await service.postPatchAction(db, { ...MOCK_REQUEST, body }, item);
-      const actions = await getActionsByItemForType(item.id, ItemActionType.Update);
-      expect(actions).toHaveLength(1);
-      expect(actions[0].extra).toMatchObject({ itemId: item.id, body });
+      await service.postPatchAction(db, { ...MOCK_REQUEST, user: { account: actor }, body }, item);
+      expect(actionPostMany.mock.calls[0][1]).toEqual(actor);
+      expect(actionPostMany.mock.calls[0][3]).toEqual([
+        {
+          item,
+          type: ItemActionType.Update,
+          extra: { itemId: item.id, body },
+        },
+      ]);
     });
 
     it('postManyDeleteAction', async () => {

@@ -24,7 +24,7 @@ import { MemberRepository } from '../../../../member/member.repository';
 import { ItemWrapperService } from '../../../ItemWrapper';
 import { BasicItemService } from '../../../basic.service';
 import { ItemRepository } from '../../../item.repository';
-import { ActionItemService } from '../../action/itemAction.service';
+import { ItemActionService } from '../../action/itemAction.service';
 import { ItemVisibilityRepository } from '../../itemVisibility/itemVisibility.repository';
 import {
   ItemIsNotValidated,
@@ -46,7 +46,7 @@ export class ItemPublishedService {
   private readonly itemPublishedRepository: ItemPublishedRepository;
   private readonly itemRepository: ItemRepository;
   private readonly memberRepository: MemberRepository;
-  private readonly actionItemService: ActionItemService;
+  private readonly itemActionService: ItemActionService;
 
   hooks = new HookManager<{
     create: {
@@ -66,7 +66,7 @@ export class ItemPublishedService {
     itemWrapperService: ItemWrapperService,
     itemRepository: ItemRepository,
     memberRepository: MemberRepository,
-    actionItemService: ActionItemService,
+    itemActionService: ItemActionService,
     log: BaseLogger,
   ) {
     this.log = log;
@@ -79,7 +79,7 @@ export class ItemPublishedService {
     this.memberRepository = memberRepository;
     this.itemWrapperService = itemWrapperService;
     this.mailerService = mailerService;
-    this.actionItemService = actionItemService;
+    this.itemActionService = itemActionService;
   }
 
   async _notifyContributors(db: DBConnection, actor: MinimalMember, item: Item): Promise<void> {
@@ -134,7 +134,7 @@ export class ItemPublishedService {
       return null;
     }
     // get views from the actions table
-    const totalViews = await this.actionItemService.getTotalViewsCountForItemId(db, item.id);
+    const totalViews = await this.itemActionService.getTotalViewsCountForItemId(db, item.id);
     return {
       totalViews,
       creator: publishedItem.item.creator,

@@ -20,7 +20,7 @@ import { assertIsDefined } from '../../../../utils/assertions';
 import { MemberCannotAccess, MemberCannotWriteItem } from '../../../../utils/errors';
 import { ItemService } from '../../item.service';
 import { expectItem } from '../../test/fixtures/items';
-import { ActionItemService } from '../action/itemAction.service';
+import { ItemActionService } from '../action/itemAction.service';
 
 describe('Shortcut routes tests', () => {
   let app: FastifyInstance;
@@ -54,17 +54,17 @@ describe('Shortcut routes tests', () => {
       let waitForPostCreation: () => Promise<unknown>;
       beforeEach(async () => {
         const itemService = resolveDependency(ItemService);
-        const actionItemService = resolveDependency(ActionItemService);
+        const itemActionService = resolveDependency(ItemActionService);
 
         const itemServiceRescaleOrderForParent = jest.spyOn(itemService, 'rescaleOrderForParent');
-        const actionItemServicePostPostAction = jest.spyOn(actionItemService, 'postPostAction');
+        const itemActionServicePostPostAction = jest.spyOn(itemActionService, 'postPostAction');
 
         // The API's is still working with the database after responding to an item post request,
         // so we need to wait for the work to be done so we don't have flacky deadlock exceptions.
         waitForPostCreation = async () => {
           return await waitForExpect(async () => {
             expect(itemServiceRescaleOrderForParent).toHaveBeenCalled();
-            expect(actionItemServicePostPostAction).toHaveBeenCalled();
+            expect(itemActionServicePostPostAction).toHaveBeenCalled();
           });
         };
       });

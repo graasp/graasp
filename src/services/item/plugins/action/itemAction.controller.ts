@@ -24,8 +24,13 @@ import {
   memberItemsTopic,
 } from '../../ws/item.events';
 import { CannotPostAction } from './errors';
-import { exportActions, getItemActions, postAction } from './itemAction.schemas';
-import { ActionItemService } from './itemAction.service';
+import {
+  exportActions,
+  getItemActions,
+  getItemActionsByDay,
+  postAction,
+} from './itemAction.schemas';
+import { ItemActionService } from './itemAction.service';
 import { ActionRequestExportService } from './requestExport/service';
 
 export interface GraaspActionsOptions {
@@ -42,7 +47,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
 
   const itemService = resolveDependency(ItemService);
   const actionService = resolveDependency(ActionService);
-  const actionItemService = resolveDependency(ActionItemService);
+  const itemActionService = resolveDependency(ItemActionService);
   const requestExportService = resolveDependency(ActionRequestExportService);
 
   // get actions and more data matching the given `id`
@@ -55,7 +60,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
     async ({ user, params: { id }, query }) => {
       const authenticatedUser = asDefined(user?.account);
       // remove itemMemberships from return
-      const result = await actionItemService.getBaseAnalyticsForItem(db, authenticatedUser, {
+      const result = await itemActionService.getBaseAnalyticsForItem(db, authenticatedUser, {
         sampleSize: query.requestedSampleSize,
         itemId: id,
         view: query.view?.toLowerCase(),
@@ -74,7 +79,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
   //     preHandler: isAuthenticated,
   //   },
   //   async ({ user, params: { id }, query }) => {
-  //     return actionItemService.getAnalyticsAggregation(db, user?.account, {
+  //     return itemActionService.getAnalyticsAggregation(db, user?.account, {
   //       sampleSize: query.requestedSampleSize,
   //       itemId: id,
   //       view: query.view?.toLowerCase(),
@@ -168,6 +173,22 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
             ItemOpFeedbackErrorEvent('export', [itemId], e),
           );
         });
+    },
+  );
+
+  fastify.get(
+    '/:id/actions/actions-by-day',
+    {
+      schema: getItemActionsByDay,
+      preHandler: [optionalIsAuthenticated],
+    },
+    async (request, reply) => {
+      const {
+        user,
+        params: { id: itemId },
+      } = request;
+
+      await itemActionService.getActionsByDay(db, itemId, user?.account);
     },
   );
 };

@@ -6,13 +6,13 @@ import { asDefined } from '../../../../utils/assertions';
 import { isAuthenticated, matchOne } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { ActionItemService } from '../action/itemAction.service';
+import { ItemActionService } from '../action/itemAction.service';
 import { createDocument, updateDocument } from './document.schemas';
 import { DocumentItemService } from './document.service';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const documentService = resolveDependency(DocumentItemService);
-  const actionItemService = resolveDependency(ActionItemService);
+  const itemActionService = resolveDependency(ItemActionService);
 
   fastify.post(
     '/',
@@ -41,7 +41,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       reply.send(item);
 
       // background operations
-      await actionItemService.postPostAction(db, request, item);
+      await itemActionService.postPostAction(db, request, item);
       await db.transaction(async (tx) => {
         await documentService.rescaleOrderForParent(tx, member, item);
       });
@@ -64,7 +64,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       assertIsMember(member);
       return await db.transaction(async (tx) => {
         const item = await documentService.patchWithOptions(tx, member, id, body);
-        await actionItemService.postPatchAction(tx, request, item);
+        await itemActionService.postPatchAction(tx, request, item);
         return item;
       });
     },

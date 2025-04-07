@@ -36,7 +36,7 @@ import {
 } from '../../utils/errors';
 import { assertIsMemberForTest } from '../authentication';
 import { ItemService } from './item.service';
-import { ActionItemService } from './plugins/action/itemAction.service';
+import { ItemActionService } from './plugins/action/itemAction.service';
 import { expectItem } from './test/fixtures/items';
 import { getItemWithDepth } from './test/utils';
 
@@ -195,8 +195,8 @@ describe('Item routes tests', () => {
           ItemService.prototype,
           'rescaleOrderForParent',
         );
-        const actionItemServicePostPostAction = jest.spyOn(
-          ActionItemService.prototype,
+        const itemActionServicePostPostAction = jest.spyOn(
+          ItemActionService.prototype,
           'postPostAction',
         );
 
@@ -205,7 +205,7 @@ describe('Item routes tests', () => {
         waitForPostCreation = async () => {
           return await waitForExpect(async () => {
             expect(itemServiceRescaleOrderForParent).toHaveBeenCalled();
-            expect(actionItemServicePostPostAction).toHaveBeenCalled();
+            expect(itemActionServicePostPostAction).toHaveBeenCalled();
           });
         };
       });

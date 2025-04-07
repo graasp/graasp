@@ -10,7 +10,7 @@ import { MemberRepository } from '../../../../member/member.repository';
 import { ItemWrapperService } from '../../../ItemWrapper';
 import { BasicItemService } from '../../../basic.service';
 import { ItemRepository } from '../../../item.repository';
-import { ActionItemService } from '../../action/itemAction.service';
+import { ItemActionService } from '../../action/itemAction.service';
 import { ItemVisibilityRepository } from '../../itemVisibility/itemVisibility.repository';
 import { ItemPublishedRepository } from './itemPublished.repository';
 import { ItemPublishedService } from './itemPublished.service';
@@ -32,7 +32,7 @@ const itemPublishedService = new ItemPublishedService(
   {} as ItemWrapperService,
   {} as ItemRepository,
   {} as MemberRepository,
-  {} as ActionItemService,
+  {} as ItemActionService,
   MOCK_LOGGER,
 );
 

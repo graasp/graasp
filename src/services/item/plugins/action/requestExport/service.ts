@@ -25,13 +25,13 @@ import { AuthorizationService } from '../../../../authorization';
 import FileService from '../../../../file/file.service';
 import { MemberService } from '../../../../member/member.service';
 import { BasicItemService } from '../../../basic.service';
-import { ActionItemService } from '../itemAction.service';
+import { ItemActionService } from '../itemAction.service';
 import { ActionRequestExportRepository } from './repository';
 
 @singleton()
 export class ActionRequestExportService {
   private readonly fileService: FileService;
-  private readonly actionItemService: ActionItemService;
+  private readonly itemActionService: ItemActionService;
   private readonly basicItemService: BasicItemService;
   private readonly authorizationService: AuthorizationService;
   private readonly mailerService: MailerService;
@@ -39,7 +39,7 @@ export class ActionRequestExportService {
   private readonly actionRequestExportRepository: ActionRequestExportRepository;
 
   constructor(
-    actionItemService: ActionItemService,
+    itemActionService: ItemActionService,
     authorizationService: AuthorizationService,
     basicItemService: BasicItemService,
     fileService: FileService,
@@ -47,7 +47,7 @@ export class ActionRequestExportService {
     memberService: MemberService,
     actionRequestExportRepository: ActionRequestExportRepository,
   ) {
-    this.actionItemService = actionItemService;
+    this.itemActionService = itemActionService;
     this.basicItemService = basicItemService;
     this.authorizationService = authorizationService;
     this.fileService = fileService;
@@ -163,7 +163,7 @@ export class ActionRequestExportService {
     format: ExportActionsFormatting,
   ): Promise<ActionRequestExportRaw> {
     // get actions and more data
-    const baseAnalytics = await this.actionItemService.getBaseAnalyticsForItem(db, actor, {
+    const baseAnalytics = await this.itemActionService.getBaseAnalyticsForItem(db, actor, {
       itemId,
     });
 

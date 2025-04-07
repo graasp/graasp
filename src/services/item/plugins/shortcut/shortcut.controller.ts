@@ -7,14 +7,14 @@ import { isAuthenticated, matchOne } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { ItemService } from '../../item.service';
-import { ActionItemService } from '../action/itemAction.service';
+import { ItemActionService } from '../action/itemAction.service';
 import { createShortcut, updateShortcut } from './shortcut.schemas';
 import { ShortcutItemService } from './shortcut.service';
 
 export const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const itemService = resolveDependency(ItemService);
   const shortcutService = resolveDependency(ShortcutItemService);
-  const actionItemService = resolveDependency(ActionItemService);
+  const itemActionService = resolveDependency(ItemActionService);
 
   fastify.post(
     '/shortcuts',
@@ -45,7 +45,7 @@ export const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       reply.send(newItem);
 
       // background operations
-      await actionItemService.postPostAction(db, request, newItem);
+      await itemActionService.postPostAction(db, request, newItem);
       await db.transaction(async (tx) => {
         await itemService.rescaleOrderForParent(tx, member, newItem);
       });
@@ -75,7 +75,7 @@ export const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       reply.send(item);
 
       // background operations
-      await actionItemService.postPostAction(db, request, item);
+      await itemActionService.postPostAction(db, request, item);
       await db.transaction(async (tx) => {
         await itemService.rescaleOrderForParent(tx, member, item);
       });

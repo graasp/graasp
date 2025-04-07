@@ -24,7 +24,7 @@ import {
   getParentItems,
 } from './item.schemas.packed';
 import { ItemService } from './item.service';
-import { ActionItemService } from './plugins/action/itemAction.service';
+import { ItemActionService } from './plugins/action/itemAction.service';
 import { getPostItemPayloadFromFormData } from './utils';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from './ws/item.events';
 
@@ -32,7 +32,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { websockets } = fastify;
 
   const itemService = resolveDependency(ItemService);
-  const actionItemService = resolveDependency(ActionItemService);
+  const itemActionService = resolveDependency(ItemActionService);
 
   // create item
   // question: add link hook here? or have another endpoint?
@@ -69,7 +69,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       await db.transaction(async (tsx) => {
         await itemService.rescaleOrderForParent(tsx, member, item);
       });
-      await actionItemService.postPostAction(db, request, item);
+      await itemActionService.postPostAction(db, request, item);
     },
   );
 
@@ -115,7 +115,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
             geolocation,
             thumbnail,
           });
-          await actionItemService.postPostAction(tsx, request, item);
+          await itemActionService.postPostAction(tsx, request, item);
           return item;
         });
       },
@@ -221,7 +221,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       assertIsMember(member);
       return await db.transaction(async (tsx) => {
         const item = await itemService.patch(tsx, member, id, body);
-        await actionItemService.postPatchAction(tsx, request, item);
+        await itemActionService.postPatchAction(tsx, request, item);
         return item;
       });
     },
@@ -280,7 +280,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           return items;
         })
         .then(async (items) => {
-          await actionItemService.postManyDeleteAction(db, request, items);
+          await itemActionService.postManyDeleteAction(db, request, items);
           websockets.publish(
             memberItemsTopic,
             member.id,
@@ -320,7 +320,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       await db
         .transaction(async (tsx) => {
           const results = await itemService.moveMany(tsx, member, ids, parentId);
-          await actionItemService.postManyMoveAction(tsx, request, results.items);
+          await itemActionService.postManyMoveAction(tsx, request, results.items);
           return results;
         })
         .then(({ items, moved }) => {

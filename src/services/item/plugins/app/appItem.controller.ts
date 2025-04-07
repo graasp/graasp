@@ -6,7 +6,7 @@ import { asDefined } from '../../../../utils/assertions';
 import { isAuthenticated, matchOne } from '../../../auth/plugins/passport';
 import { assertIsMember } from '../../../authentication';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
-import { ActionItemService } from '../action/itemAction.service';
+import { ItemActionService } from '../action/itemAction.service';
 import { createApp, updateApp } from './app.schemas';
 import { AppItemService } from './appItemService';
 import { AppsPluginOptions } from './types';
@@ -14,7 +14,7 @@ import { AppsPluginOptions } from './types';
 export const plugin: FastifyPluginAsyncTypebox<AppsPluginOptions> = async (fastify) => {
   // service for item app api
   const appItemService = resolveDependency(AppItemService);
-  const actionItemService = resolveDependency(ActionItemService);
+  const itemActionService = resolveDependency(ItemActionService);
 
   fastify.post(
     '/apps',
@@ -43,7 +43,7 @@ export const plugin: FastifyPluginAsyncTypebox<AppsPluginOptions> = async (fasti
       reply.send(item);
 
       // background operations
-      await actionItemService.postPostAction(db, request, item);
+      await itemActionService.postPostAction(db, request, item);
       await db.transaction(async (tx) => {
         await appItemService.rescaleOrderForParent(tx, member, item);
       });
@@ -66,7 +66,7 @@ export const plugin: FastifyPluginAsyncTypebox<AppsPluginOptions> = async (fasti
       assertIsMember(member);
       return await db.transaction(async (tx) => {
         const item = await appItemService.patch(tx, member, id, body);
-        await actionItemService.postPatchAction(tx, request, item);
+        await itemActionService.postPatchAction(tx, request, item);
         return item;
       });
     },

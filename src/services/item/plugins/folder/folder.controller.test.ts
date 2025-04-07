@@ -36,7 +36,7 @@ import {
 } from '../../../../utils/errors';
 import { assertIsMember, assertIsMemberForTest } from '../../../authentication';
 import { expectItem } from '../../test/fixtures/items';
-import { ActionItemService } from '../action/itemAction.service';
+import { ItemActionService } from '../action/itemAction.service';
 import { FolderItemService } from './folder.service';
 
 // Mock S3 libraries
@@ -106,17 +106,17 @@ describe('Folder routes tests', () => {
       let waitForPostCreation: () => Promise<unknown>;
       beforeEach(async () => {
         const folderService = resolveDependency(FolderItemService);
-        const actionItemService = resolveDependency(ActionItemService);
+        const itemActionService = resolveDependency(ItemActionService);
 
         const itemServiceRescaleOrderForParent = jest.spyOn(folderService, 'rescaleOrderForParent');
-        const actionItemServicePostPostAction = jest.spyOn(actionItemService, 'postPostAction');
+        const itemActionServicePostPostAction = jest.spyOn(itemActionService, 'postPostAction');
 
         // The API's is still working with the database after responding to an item post request,
         // so we need to wait for the work to be done so we don't have flacky deadlock exceptions.
         waitForPostCreation = async () => {
           return await waitForExpect(async () => {
             expect(itemServiceRescaleOrderForParent).toHaveBeenCalled();
-            expect(actionItemServicePostPostAction).toHaveBeenCalled();
+            expect(itemActionServicePostPostAction).toHaveBeenCalled();
           });
         };
       });
