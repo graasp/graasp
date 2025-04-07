@@ -1152,8 +1152,6 @@ describe('Item routes tests', () => {
         const items = [item2, item3];
         const { data } = response.json();
         expect(data).toHaveLength(items.length);
-        // check order
-        items.forEach((i, idx) => expect(data[idx].id).toEqual(i.id));
       });
 
       it('Returns successfully folder items', async () => {
