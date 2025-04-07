@@ -319,7 +319,7 @@ describe('Short links routes tests', () => {
           assertIsDefined(actor);
           mockAuthenticate(actor);
 
-          const alias = faker.word.sample({ length: { min: 10, max: 20 } });
+          const alias = faker.word.sample({ length: { min: 10, max: 50 } });
           const response = await injectPost(app, {
             itemId: item.id,
             alias,

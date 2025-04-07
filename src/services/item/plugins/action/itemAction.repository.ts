@@ -15,9 +15,9 @@ export class ItemActionRepository {
   }
 
   async getActionsByDay(db: DBConnection, itemId: Item['id'], actor: MaybeUser): Promise<void> {
-    const actions = db
+    const actions = await db
       .select({
-        day: sql`date_trunc('day', ${actionsTable.createdAt})`,
+        day: sql<string>`date_trunc('day', ${actionsTable.createdAt})`,
         accountId: actionsTable.accountId,
         type: actionsTable.type,
         views: count(),
@@ -31,6 +31,16 @@ export class ItemActionRepository {
       ])
       .limit(5000);
 
-    console.log(actions);
+    const a = actions.reduce((acc, value) => {
+      const idx = new Date(value.day).toLocaleDateString('');
+      if (acc[idx]) {
+        acc[idx].count += value.views;
+      } else {
+        acc[idx] = { count: value.views };
+      }
+      return acc;
+    }, {});
+
+    console.log(a);
   }
 }
