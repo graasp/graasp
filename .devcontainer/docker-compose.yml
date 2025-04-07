@@ -21,7 +21,7 @@ services:
       FILE_STORAGE_HOST: http://localhost:1081
       # H5P local storage host used in local only
       H5P_FILE_STORAGE_HOST: http://localhost:1081
-      # enpoint of the nudenet model
+      # endpoint of the nudenet model
       IMAGE_CLASSIFIER_API: http://nudenet:8080/sync
       # the DB config is set by the "db" service below
       DB_CONNECTION: postgres://graasper:graasper@db:5432/graasp

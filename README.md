@@ -128,7 +128,6 @@ SECURE_SESSION_SECRET_KEY=<secret-key>
 
 ### Auth
 
-TOKEN_BASED_AUTH=true
 # JWT secret (can use the same command as for SECURE_SESSION_SECRET_KEY)
 JWT_SECRET=<secret-key>
 # Auth JWT secret (can use the same command as for SECURE_SESSION_SECRET_KEY)
