@@ -22,8 +22,12 @@ import { RecycledBinService } from '../recycled/recycled.service';
 import { ItemThumbnailService } from '../thumbnail/itemThumbnail.service';
 import { ShortcutItemService } from './shortcut.service';
 
+const basicItemService = {
+  get: jest.fn(),
+} as unknown as BasicItemService;
+
 const shortcutService = new ShortcutItemService(
-  {} as unknown as BasicItemService,
+  basicItemService,
   {} as unknown as ThumbnailService,
   {} as unknown as ItemThumbnailService,
   {} as unknown as ItemMembershipRepository,
@@ -66,7 +70,7 @@ describe('Shortcut Service', () => {
           return {} as Item;
         });
       jest
-        .spyOn(BasicItemService.prototype, 'get')
+        .spyOn(basicItemService, 'get')
         .mockImplementation(async (_db, _actor, id, _permission) => {
           return { id } as ItemWithCreator;
         });

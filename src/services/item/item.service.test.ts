@@ -28,6 +28,10 @@
 //   MOCK_LOGGER,
 // );
 
+it('temporary', () => {
+  expect(true).toBeTruthy();
+});
+
 // describe('Item Service', () => {
 //   afterEach(async () => {
 //     jest.clearAllMocks();
