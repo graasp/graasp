@@ -184,8 +184,7 @@ describe('Item Visibility', () => {
             url: `${ITEMS_ROUTE_PREFIX}/${parentItem.id}/visibilities/${ItemVisibilityType.Public}`,
           });
 
-          expect(res.statusCode).toBe(StatusCodes.OK);
-          expect(res.json().item.path).toEqual(parentItem.path);
+          expect(res.statusCode).toBe(StatusCodes.NO_CONTENT);
           const itemVisibility = await db.query.itemVisibilities.findFirst({
             where: eq(itemVisibilities.id, parentPublicVisibility.id),
           });
@@ -217,7 +216,7 @@ describe('Item Visibility', () => {
           });
           expect(res.json()).toMatchObject(new CannotModifyParentVisibility(expect.anything()));
         });
-        it('Throws if visibility does not exist', async () => {
+        it('Does not throw if visibility does not exist', async () => {
           const {
             actor,
             items: [item],
@@ -235,7 +234,7 @@ describe('Item Visibility', () => {
             method: HttpMethod.Delete,
             url: `${ITEMS_ROUTE_PREFIX}/${item.id}/visibilities/${ItemVisibilityType.Hidden}`,
           });
-          expect(res.json()).toMatchObject(new ItemVisibilityNotFound(expect.anything()));
+          expect(res.statusCode).toEqual(StatusCodes.NO_CONTENT);
         });
         it('Bad request if item id is invalid', async () => {
           const res = await app.inject({

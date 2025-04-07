@@ -46,12 +46,8 @@ const itemLikeService = new ItemLikeService(
 const MOCK_LIKE = { creatorId: v4(), itemId: v4() } as ItemLikeRaw;
 
 describe('Item Like post', () => {
-  beforeEach(async () => {
-    await client.connect();
-  });
   afterEach(async () => {
     jest.clearAllMocks();
-    await client.end();
   });
   it('does not update like count for indexed item if it is not published', async () => {
     jest.spyOn(itemService, 'get').mockResolvedValue({} as ItemWithCreator);

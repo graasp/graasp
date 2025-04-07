@@ -419,13 +419,14 @@ describe('App Data Tests', () => {
             },
             payload,
           });
-          expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
+          expect(response.statusCode).toEqual(StatusCodes.OK);
           const savedAppData = await db.query.appDatas.findFirst({
             where: eq(appDatas.type, payload.type),
           });
           assertIsDefined(savedAppData);
           expect(savedAppData.data).toEqual(payload.data);
           expect(savedAppData.itemId).toEqual(item.id);
+          expectAppDatas([response.json()], [savedAppData]);
         });
         it('Post app data to some member', async () => {
           const { apps } = await seedFromJson({ apps: [{}] });
@@ -459,7 +460,7 @@ describe('App Data Tests', () => {
             },
             payload: { ...payload, accountId: bob.id },
           });
-          expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
+          expect(response.statusCode).toEqual(StatusCodes.OK);
           const newAppData = await db.query.appDatas.findFirst({
             where: and(eq(appDatas.type, payload.type), eq(appDatas.accountId, bob.id)),
           });
@@ -467,6 +468,7 @@ describe('App Data Tests', () => {
           expect(newAppData.data).toEqual(payload.data);
           expect(newAppData.accountId).toEqual(bob.id);
           expect(newAppData.creatorId).toEqual(actor.id);
+          expectAppDatas([response.json()], [newAppData]);
         });
         it('Invalid item id throws', async () => {
           const { apps } = await seedFromJson({ apps: [{}] });
@@ -531,7 +533,7 @@ describe('App Data Tests', () => {
             },
             payload: { ...payload, accountId: bob.id },
           });
-          expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
+          expect(response.statusCode).toEqual(StatusCodes.OK);
           const newAppData = await db.query.appDatas.findFirst({
             where: eq(appDatas.type, payload.type),
           });
@@ -539,6 +541,7 @@ describe('App Data Tests', () => {
           expect(newAppData.data).toEqual(payload.data);
           expect(newAppData.accountId).toEqual(bob.id);
           expect(newAppData.creatorId).toEqual(actor.id);
+          expectAppDatas([response.json()], [newAppData]);
         });
       });
     });
@@ -587,11 +590,12 @@ describe('App Data Tests', () => {
           },
           payload: updatedData,
         });
-        expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
+        expect(response.statusCode).toEqual(StatusCodes.OK);
         const savedAppData = await db.query.appDatas.findFirst({
           where: eq(appDatas.id, chosenAppData.id),
         });
         expect(savedAppData).toMatchObject(updatedData);
+        expectAppDatas([response.json()], [savedAppData]);
       });
       it('Invalid item id throws bad request', async () => {
         const { apps } = await seedFromJson({ apps: [{}] });
@@ -726,11 +730,13 @@ describe('App Data Tests', () => {
           },
           payload: { data: updatedData.data },
         });
-        expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
+        expect(response.statusCode).toEqual(StatusCodes.OK);
         const savedAppData = await db.query.appDatas.findFirst({
           where: eq(appDatas.id, a.id),
         });
+        assertIsDefined(savedAppData);
         expect(savedAppData).toMatchObject(updatedData);
+        expectAppDatas([response.json()], [savedAppData]);
       });
       it("Cannot patch someone else's app data", async () => {
         const { apps } = await seedFromJson({ apps: [{}] });
