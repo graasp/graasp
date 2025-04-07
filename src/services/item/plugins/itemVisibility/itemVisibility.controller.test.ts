@@ -188,11 +188,11 @@ describe('Item Visibility', () => {
           const itemVisibility = await db.query.itemVisibilities.findFirst({
             where: eq(itemVisibilities.id, parentPublicVisibility.id),
           });
-          expect(itemVisibility).toBeNull();
+          expect(itemVisibility).toBeUndefined();
           const childItemTag = await db.query.itemVisibilities.findFirst({
             where: eq(itemVisibilities.id, childPublicVisibility.id),
           });
-          expect(childItemTag).toBeNull();
+          expect(childItemTag).toBeUndefined();
         });
         it('Cannot delete inherited visibility', async () => {
           const {

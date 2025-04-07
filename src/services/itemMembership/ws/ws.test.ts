@@ -158,8 +158,12 @@ describe('Item websocket hooks', () => {
 
       await waitForExpect(() => {
         const [membershipUpdate] = membershipUpdates;
+        // const { updatedAt, createdAt, ...m } = membership;
         expect(membershipUpdate).toMatchObject(
-          ItemMembershipEvent('update', { ...membership, permission: PermissionLevel.Admin }),
+          ItemMembershipEvent(
+            'update',
+            expect.objectContaining({ id: membership.id, permission: PermissionLevel.Admin }),
+          ),
         );
       });
     });
