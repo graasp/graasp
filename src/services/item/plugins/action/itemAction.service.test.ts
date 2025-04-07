@@ -594,48 +594,85 @@ describe('ItemActionService', () => {
         ],
       });
       assertIsDefined(actor);
-      mockAuthenticate(actor);
+      assertIsMember(actor);
+      const actionPostMany = jest.spyOn(actionService, 'postMany').mockResolvedValue();
 
-      await service.postManyDeleteAction(db, MOCK_REQUEST, [item1, item2]);
+      await service.postManyDeleteAction(db, { ...MOCK_REQUEST, user: { account: actor } }, [
+        item1,
+        item2,
+      ]);
 
-      // cannot use getActionsByItemForType because item prop is not defined because item is deleted
-      const actions = await db.query.actionsTable.findMany({
-        where: eq(actionsTable.type, ItemActionType.Delete),
-      });
-      expect(
-        actions.filter((a) => (a.extra as { itemId: string }).itemId === item1.id),
-      ).toHaveLength(1);
-      expect(
-        actions.filter((a) => (a.extra as { itemId: string }).itemId === item2.id),
-      ).toHaveLength(1);
+      expect(actionPostMany.mock.calls[0][1]).toEqual(actor);
+      expect(actionPostMany.mock.calls[0][3]).toEqual([
+        {
+          type: ItemActionType.Delete,
+          extra: { itemId: item1.id },
+        },
+        {
+          type: ItemActionType.Delete,
+          extra: { itemId: item2.id },
+        },
+      ]);
     });
 
     it('postManyMoveAction', async () => {
       const {
         items: [item],
+        actor,
       } = await seedFromJson({
         items: [{ memberships: [{ account: 'actor', permission: PermissionLevel.Admin }] }],
       });
+      const actionPostMany = jest.spyOn(actionService, 'postMany').mockResolvedValue();
+      assertIsDefined(actor);
+      assertIsMember(actor);
 
       const body = { parentId: v4() };
-      await service.postManyMoveAction(db, { ...MOCK_REQUEST, body }, [item, item]);
-      const actions = await getActionsByItemForType(item.id, ItemActionType.Move);
-      expect(actions).toHaveLength(2);
-      expect(actions[0].extra).toMatchObject({ itemId: item.id, body });
-      expect(actions[1].extra).toMatchObject({ itemId: item.id, body });
+      await service.postManyMoveAction(db, { ...MOCK_REQUEST, user: { account: actor }, body }, [
+        item,
+        item,
+      ]);
+      expect(actionPostMany.mock.calls[0][1]).toEqual(actor);
+      expect(actionPostMany.mock.calls[0][3]).toEqual([
+        {
+          item,
+          type: ItemActionType.Move,
+          extra: { itemId: item.id, body },
+        },
+        {
+          item,
+          type: ItemActionType.Move,
+          extra: { itemId: item.id, body },
+        },
+      ]);
     });
 
     it('postManyCopyAction', async () => {
       const {
         items: [item],
+        actor,
       } = await seedFromJson({ items: [{}] });
+      const actionPostMany = jest.spyOn(actionService, 'postMany').mockResolvedValue();
+      assertIsDefined(actor);
+      assertIsMember(actor);
 
       const body = { parentId: v4() };
-      await service.postManyCopyAction(db, { ...MOCK_REQUEST, body }, [item, item]);
-      const actions = await getActionsByItemForType(item.id, ItemActionType.Copy);
-      expect(actions).toHaveLength(2);
-      expect(actions[0].extra).toMatchObject({ itemId: item.id, body });
-      expect(actions[1].extra).toMatchObject({ itemId: item.id, body });
+      await service.postManyCopyAction(db, { ...MOCK_REQUEST, user: { account: actor }, body }, [
+        item,
+        item,
+      ]);
+      expect(actionPostMany.mock.calls[0][1]).toEqual(actor);
+      expect(actionPostMany.mock.calls[0][3]).toEqual([
+        {
+          item,
+          type: ItemActionType.Copy,
+          extra: { itemId: item.id, body },
+        },
+        {
+          item,
+          type: ItemActionType.Copy,
+          extra: { itemId: item.id, body },
+        },
+      ]);
     });
   });
 });
