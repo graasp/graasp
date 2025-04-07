@@ -2,7 +2,7 @@ import { sql } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsyncTypebox, Type } from '@fastify/type-provider-typebox';
-import { FastifySchema } from 'fastify';
+import { FastifyBaseLogger, FastifySchema } from 'fastify';
 
 import { UnionOfConst } from '@graasp/sdk';
 
@@ -10,7 +10,11 @@ import { resolveDependency } from '../di/utils';
 import { DBConnection, db } from '../drizzle/db';
 import { SearchService } from '../services/item/plugins/publication/published/plugins/search/search.service';
 import { assertIsError } from '../utils/assertions';
-import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN, ETHERPAD_URL } from '../utils/config';
+import {
+  APP_VERSION,
+  EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
+  ETHERPAD_URL,
+} from '../utils/config';
 
 const Status = {
   Healthy: 'healthy',
@@ -88,7 +92,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.get('/status', async (_, reply) => {
     const searchService = resolveDependency(SearchService);
     const api = new HealthyStatus().format();
-    const database = (await getDBStatusCheck()).format();
+    const database = (await getDBStatusCheck(fastify.log)).format();
     const etherpad = (await getEtherpadStatusCheck()).format();
     const meilisearch = (await getSearchStatusCheck(searchService)).format();
     const iframely = (await getIframelyStatusCheck()).format();
@@ -104,14 +108,21 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       // add nudenet, etc...
     };
   });
+
+  fastify.get('/version', async (_, reply) => {
+    // allow request cross origin
+    reply.header('Access-Control-Allow-Origin', '*');
+    return APP_VERSION;
+  });
 };
 
-const getDBStatusCheck = async (): Promise<ServiceStatus> => {
+const getDBStatusCheck = async (log: FastifyBaseLogger): Promise<ServiceStatus> => {
   try {
     // this just checks that we can execute queries on the database.
     // if tables are locked it will still execute fine as long as the connection is working
     const res = await db.execute(sql`select 1 result;`);
-    if (res[0].result === 1) {
+    log.error('value', res.rows[0]);
+    if (res.rows[0]['result'] === 1) {
       return new HealthyStatus();
     }
     return new UnHealthyStatus('Database');

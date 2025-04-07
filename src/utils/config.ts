@@ -125,7 +125,6 @@ export const REGISTER_TOKEN_EXPIRATION_IN_MINUTES = 60;
 export const LOGIN_TOKEN_EXPIRATION_IN_MINUTES = 30;
 
 // Token based auth
-export const TOKEN_BASED_AUTH = process.env.TOKEN_BASED_AUTH === 'true';
 if (!process.env.AUTH_TOKEN_JWT_SECRET) {
   throw new Error('process.env.AUTH_TOKEN_JWT_SECRET should be defined');
 }
