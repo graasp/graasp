@@ -359,51 +359,35 @@ describe('Service plugin', () => {
       expect(contents.includes('valid.txt')).toBeTruthy();
     });
   });
-});
 
-describe('Upload valid .h5p package after previous item id', () => {
-  let app: FastifyInstance;
+  describe('Upload valid .h5p package after previous item id', () => {
+    it('save h5p item after previous item', async () => {
+      const {
+        actor,
+        items: [parent, previousItem],
+      } = await seedFromJson({
+        items: [
+          {
+            children: [{ order: 30 }],
+            memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      mockAuthenticate(actor);
 
-  beforeAll(async () => {
-    ({ app } = await build());
-  });
+      const res = await injectH5PImport(app, {
+        parentId: parent.id,
+        previousItemId: previousItem.id,
+      });
+      expect(res.statusCode).toEqual(StatusCodes.OK);
 
-  afterAll(async () => {
-    await clearDatabase(db);
-    app.close();
-  });
-
-  afterEach(async () => {
-    jest.clearAllMocks();
-    await cleanFiles();
-  });
-
-  it('save h5p item after previous item', async () => {
-    const {
-      actor,
-      items: [parent, previousItem],
-    } = await seedFromJson({
-      items: [
-        {
-          children: [{ order: 30 }],
-          memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-        },
-      ],
+      // expect order is after previous item
+      const item = res.json();
+      const itemWithOrder = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, item.id) });
+      assertIsDefined(itemWithOrder);
+      assertIsDefined(previousItem.order);
+      expect(itemWithOrder.order).toBeGreaterThan(previousItem.order);
     });
-    assertIsDefined(actor);
-    mockAuthenticate(actor);
-
-    const res = await injectH5PImport(app, {
-      parentId: parent.id,
-      previousItemId: previousItem.id,
-    });
-    expect(res.statusCode).toEqual(StatusCodes.OK);
-
-    // expect order is after previous item
-    const item = res.json();
-    const itemWithOrder = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, item.id) });
-    assertIsDefined(itemWithOrder);
-    assertIsDefined(previousItem.order);
-    expect(itemWithOrder.order).toBeGreaterThan(previousItem.order);
   });
 });

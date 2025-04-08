@@ -86,7 +86,7 @@ jest.mock('@aws-sdk/lib-storage', () => {
 });
 
 // we need a different form data for each test
-const createFormData = (form = new FormData(), filepath: string = './fixtures/image.png') => {
+const createFormData = (form = new FormData(), filepath: string = './test/fixtures/image.png') => {
   form.append('myfile', fs.createReadStream(path.resolve(__dirname, filepath)));
 
   return form;
@@ -164,7 +164,7 @@ describe('File Item routes tests', () => {
           assertIsDefined(actor);
           mockAuthenticate(actor);
 
-          const form = createFormData(new FormData(), './fixtures/blank.pdf');
+          const form = createFormData(new FormData(), './test/fixtures/blank.pdf');
 
           const response = await app.inject({
             method: HttpMethod.Post,
@@ -288,7 +288,7 @@ describe('File Item routes tests', () => {
           const form = createFormData();
           form.append(
             'H5PFile',
-            fs.createReadStream(path.resolve(__dirname, './fixtures/dummy.h5p')),
+            fs.createReadStream(path.resolve(__dirname, './test/fixtures/dummy.h5p')),
           );
 
           const response = await app.inject({
@@ -369,7 +369,7 @@ describe('File Item routes tests', () => {
           const form = new FormData();
           form.append(
             'myfile',
-            fs.createReadStream(path.resolve(__dirname, './fixtures/emptyFile')),
+            fs.createReadStream(path.resolve(__dirname, './test/fixtures/emptyFile')),
           );
 
           const response = await app.inject({
@@ -394,7 +394,7 @@ describe('File Item routes tests', () => {
           const form = new FormData();
           form.append(
             'myfile',
-            fs.createReadStream(path.resolve(__dirname, './fixtures/emptyFile')),
+            fs.createReadStream(path.resolve(__dirname, './test/fixtures/emptyFile')),
           );
 
           const form1 = createFormData(form);
@@ -794,12 +794,12 @@ describe('File Item routes tests', () => {
       it('Copy corresponding file for file item', async () => {
         const {
           actor,
-          items: [parentItem, item],
+          items: [_parentItem, item, target],
         } = await seedFromJson({
           items: [
             {
               memberships: [{ account: 'actor', permission: PermissionLevel.Admin }],
-              children: [buildFile('actor')],
+              children: [buildFile('actor'), {}],
             },
           ],
         });
@@ -810,7 +810,7 @@ describe('File Item routes tests', () => {
           method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/copy?id=${item.id}`,
           payload: {
-            parentId: parentItem.id,
+            parentId: target.id,
           },
         });
 

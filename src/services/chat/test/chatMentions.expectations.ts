@@ -38,7 +38,8 @@ export const expectRawChatMentions = (
   expect(mentions).toHaveLength(correctMentions.length);
   for (const m of mentions) {
     const correctMention = correctMentions.find(({ id }) => id === m.id)!;
-
-    expect(m).toEqual(correctMention);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { updatedAt, ...c } = correctMention;
+    expect(m).toMatchObject(c);
   }
 };

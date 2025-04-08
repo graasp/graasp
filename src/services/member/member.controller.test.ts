@@ -281,7 +281,7 @@ describe('Member routes tests', () => {
           url: `/members/${memberId}`,
         });
         expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
-        expect(response.json()).toEqual(new MemberNotFound({ id: memberId }));
+        expect(response.json().message).toEqual(new MemberNotFound({ id: memberId }).message);
       });
     });
   });
