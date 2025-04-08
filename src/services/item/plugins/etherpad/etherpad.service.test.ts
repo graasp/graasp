@@ -93,13 +93,11 @@ describe('Etherpad Service', () => {
     //     .mockImplementation(async () => {
     //       return MOCK_ITEM;
     //     });
-
     //   const readerPermission = EtherpadPermission.Write;
     //   await etherpadService.createEtherpadItem(db, MOCK_MEMBER, {
     //     name: 'newName',
     //     readerPermission,
     //   });
-
     //   expect(itemServiceCreateMock).toHaveBeenCalledWith(db, MOCK_MEMBER, {
     //     item: {
     //       name: 'newName',
@@ -121,11 +119,9 @@ describe('Etherpad Service', () => {
     //     .mockImplementation(async () => {
     //       return MOCK_ITEM;
     //     });
-
     //   await etherpadService.createEtherpadItem(db, MOCK_MEMBER, {
     //     name: 'newName',
     //   });
-
     //   expect(itemServiceCreateMock).toHaveBeenCalledWith(db, MOCK_MEMBER, {
     //     item: {
     //       name: 'newName',
@@ -166,17 +162,17 @@ describe('Etherpad Service', () => {
     //     readerPermission,
     //   });
 
-      // call to item service with initial item name
-      expect(itemServicePatchMock).toHaveBeenCalledWith(MOCK_MEMBER, repositories, MOCK_ITEM.id, {
-        extra: {
-          [ItemType.ETHERPAD]: {
-            readerPermission: PermissionLevel.Write,
-            padID: MOCK_ITEM.extra.etherpad.padID,
-            groupID: MOCK_ITEM.extra.etherpad.groupID,
-          },
-        },
-      });
-    });
+    // call to item service with initial item name
+    //   expect(itemServicePatchMock).toHaveBeenCalledWith(MOCK_MEMBER, repositories, MOCK_ITEM.id, {
+    //     extra: {
+    //       [ItemType.ETHERPAD]: {
+    //         readerPermission: PermissionLevel.Write,
+    //         padID: MOCK_ITEM.extra.etherpad.padID,
+    //         groupID: MOCK_ITEM.extra.etherpad.groupID,
+    //       },
+    //     },
+    //   });
+    // });
     // it('patch name and settings', async () => {
     //   const itemServicePatchMock = jest
     //     .spyOn(ItemService.prototype, 'patch')

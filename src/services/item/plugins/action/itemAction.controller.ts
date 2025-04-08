@@ -28,6 +28,7 @@ import {
   exportActions,
   getItemActions,
   getItemActionsByDay,
+  getItemActionsByHour,
   getItemActionsByWeekday,
   postAction,
 } from './itemAction.schemas';
@@ -166,6 +167,26 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
       } = request;
 
       return await itemActionService.getActionsByDay(db, itemId, user?.account, {
+        startDate,
+        endDate,
+      });
+    },
+  );
+
+  fastify.get(
+    '/:id/actions/actions-by-hour',
+    {
+      schema: getItemActionsByHour,
+      preHandler: [optionalIsAuthenticated],
+    },
+    async (request, reply) => {
+      const {
+        user,
+        params: { id: itemId },
+        query: { startDate, endDate },
+      } = request;
+
+      return await itemActionService.getActionsByHour(db, itemId, user?.account, {
         startDate,
         endDate,
       });
