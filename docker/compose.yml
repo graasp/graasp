@@ -5,14 +5,7 @@
 #     docker compose -f docker/compose.yml up -d
 #
 # The first time you will have to also start the migration container
-#     docker compose -f docker/compose.yml run \
-#       -e DB_HOST=db \
-#       -e DB_NAME=graasp \
-#       -e DB_USERNAME=graasper \
-#       -e DB_PASSWORD=graasper \
-#       -e DB_DISABLE_SSL=true \
-#       -e DB_PORT=5432 \
-#       migrate
+#     docker compose -f docker/compose.yml run -e DB_CONNECTION=postgres://graasper:graasper@db:5432/graasp?sslmode=disable migrate
 #
 #
 
@@ -25,14 +18,9 @@ volumes:
   meilisearch_data:
 
 x-shared_environment: &shared_environment
-  DB_CONNECTION: # update with your own value
-  # needed when running in local, unless you you use a DB which has SSL
-  DB_DISABLE_SSL: true
-  DB_HOST: db
-  DB_NAME: graasp
-  DB_USERNAME: graasper
-  DB_PASSWORD: graasper
-  DB_PORT: 5432
+  # shape of the connection string:
+  # postgres://user:password@host:port/db_name?sslmode=disable
+  DB_CONNECTION: postgres://graasper:graasper@db:5432/graasp?sslmode=disable # update with your own value
 
 services:
   core:
@@ -132,7 +120,12 @@ services:
     ports:
       - "5432:5432"
     volumes:
+      # a docker volume to persist the postgres data
+      # Delete this volume if you want to reset your DB
       - postgres-data:/var/lib/postgresql/data
+      # copy the init script inside the docker container where it will be executed
+      # WARNING: It will only be executed when there is no data mounted to the container
+      # If you want to execute it, down the container, delete the volume associated to it and up the container again, it should execute.
       - ../bootstrapDB.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
       POSTGRES_DB: docker
@@ -164,6 +157,8 @@ services:
       DB_TYPE: postgres
       DB_HOST: db
       DB_PORT: 5432
+      # These credentials are created by the init script run on the DB, if the container goes into a restart loop
+      # ensure that the correct database and users have been created. (You should ensure the init script is run)
       DB_NAME: etherpad
       DB_USER: etherpad
       DB_PASS: etherpad
