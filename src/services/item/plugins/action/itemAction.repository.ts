@@ -72,4 +72,61 @@ export class ItemActionRepository {
     console.log(a);
     return a;
   }
+
+  async getActionsByWeekday(
+    db: DBConnection,
+    itemId: Item['id'],
+    actor: MaybeUser,
+    params,
+  ): Promise<any> {
+    const { startDate, endDate, view } = params;
+
+    const actions = await db
+      .select({
+        day: sql<number>`extract(dow from ${actionsTable.createdAt})`,
+        accountId: actionsTable.accountId,
+        type: actionsTable.type,
+        count: count(),
+      })
+      .from(actionsTable)
+      .where(
+        and(
+          eq(actionsTable.itemId, itemId),
+          // gte(actionsTable.createdAt, startDate),
+          // lte(actionsTable.createdAt, endDate),
+          // eq(actionsTable.view, view),
+        ),
+      )
+      .groupBy(() => [
+        sql`date_trunc('day', ${actionsTable.createdAt})`,
+        actionsTable.accountId,
+        actionsTable.type,
+      ])
+      .limit(5000);
+
+    console.log(actions);
+
+    const a = actions.reduce((acc, value) => {
+      const { type, count, day: idx } = value;
+
+      acc[idx] = {
+        date: idx,
+        count: Object.assign(acc[idx]?.count ?? {}, {
+          all: (acc[idx]?.count?.all ?? 0) + count,
+          [type]: (acc[idx]?.count?.[type] ?? 0) + count,
+        }),
+        personal:
+          actor && actor.id === value.accountId
+            ? Object.assign(acc[idx]?.personal ?? {}, {
+                all: (acc[idx]?.personal?.all ?? 0) + count,
+                [type]: (acc[idx]?.personal?.[type] ?? 0) + count,
+              })
+            : (acc[idx]?.personal ?? {}),
+      };
+      return acc;
+    }, {});
+
+    console.log(a);
+    return a;
+  }
 }

@@ -27,7 +27,7 @@ import {
 
 jest.mock('node-fetch');
 
-describe('Member Controller', () => {
+describe('Member Storage Controller', () => {
   let app: FastifyInstance;
   let mockSendEmail: jest.SpyInstance;
 
@@ -326,7 +326,10 @@ describe('Member Controller', () => {
         actor,
         items: [withoutParent, parent, child],
       } = await seedFromJson({
-        items: [buildFile('actor'), { children: [buildFile('actor')] }],
+        items: [
+          buildFile('actor', { size: 1000 }),
+          { children: [buildFile('actor', { size: 100 })] },
+        ],
       });
       assertIsDefined(actor);
       assertIsMember(actor);

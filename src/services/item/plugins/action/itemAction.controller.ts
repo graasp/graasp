@@ -28,6 +28,7 @@ import {
   exportActions,
   getItemActions,
   getItemActionsByDay,
+  getItemActionsByWeekday,
   postAction,
 } from './itemAction.schemas';
 import { ItemActionService } from './itemAction.service';
@@ -190,6 +191,26 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
       } = request;
 
       return await itemActionService.getActionsByDay(db, itemId, user?.account, {
+        startDate,
+        endDate,
+      });
+    },
+  );
+
+  fastify.get(
+    '/:id/actions/actions-by-weekday',
+    {
+      schema: getItemActionsByWeekday,
+      preHandler: [optionalIsAuthenticated],
+    },
+    async (request, reply) => {
+      const {
+        user,
+        params: { id: itemId },
+        query: { startDate, endDate },
+      } = request;
+
+      return await itemActionService.getActionsByWeekday(db, itemId, user?.account, {
         startDate,
         endDate,
       });

@@ -375,4 +375,10 @@ export class ItemActionService {
 
     return this.itemActionRepository.getActionsByDay(db, itemId, actor, params);
   }
+
+  async getActionsByWeekday(db: DBConnection, itemId: Item['id'], actor: MaybeUser, params) {
+    // await this.basicItemService.get(db, actor, itemId);
+
+    return this.itemActionRepository.getActionsByWeekday(db, itemId, actor, params);
+  }
 }

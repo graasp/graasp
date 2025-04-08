@@ -80,30 +80,6 @@ describe('Action Plugin Tests', () => {
   });
 
   describe('POST /:id/actions', () => {
-    describe('Sign Out', () => {
-      it('Cannot post action when signed out', async () => {
-        const {
-          items: [item],
-        } = await seedFromJson({ actor: null, items: [{}] });
-
-        const body = {
-          type: faker.word.sample(),
-        };
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions`,
-          body,
-          headers: {
-            Origin: BUILDER_HOST.toString(),
-          },
-        });
-
-        expect(response.statusCode).toEqual(StatusCodes.FORBIDDEN);
-        expect(
-          await db.query.actionsTable.findFirst({ where: eq(actionsTable.type, body.type) }),
-        ).toBeUndefined();
-      });
-    });
     describe('Public', () => {
       it('Post action for public item', async () => {
         const {
@@ -121,7 +97,7 @@ describe('Action Plugin Tests', () => {
             Origin: BUILDER_HOST.origin,
           },
         });
-
+        console.log(response);
         expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
         const actions = await getActionsByItemId(item.id);
         expect(actions).toHaveLength(1);
@@ -150,6 +126,7 @@ describe('Action Plugin Tests', () => {
             Origin: BUILDER_HOST.origin,
           },
         });
+        console.log(response);
         expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
         const actions = await getActionsByItemId(item.id);
         expect(actions).toHaveLength(1);
@@ -230,6 +207,31 @@ describe('Action Plugin Tests', () => {
         expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
         const actions = await getActionsByItemId(item.id);
         expect(actions).toHaveLength(0);
+      });
+    });
+
+    describe('Sign Out', () => {
+      it('Cannot post action when signed out', async () => {
+        const {
+          items: [item],
+        } = await seedFromJson({ actor: null, items: [{}] });
+
+        const body = {
+          type: faker.word.sample(),
+        };
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions`,
+          body,
+          headers: {
+            Origin: BUILDER_HOST.toString(),
+          },
+        });
+
+        expect(response.statusCode).toEqual(StatusCodes.FORBIDDEN);
+        expect(
+          await db.query.actionsTable.findFirst({ where: eq(actionsTable.type, body.type) }),
+        ).toBeUndefined();
       });
     });
   });

@@ -1221,7 +1221,7 @@ export function buildFile(member: ReferencedSeedActor, extra: Partial<FileItemPr
     type: ItemType.S3_FILE,
     extra: {
       [ItemType.S3_FILE]: {
-        size: faker.number.int({ min: 1, max: 1000 }),
+        size: extra[ItemType.S3_FILE]?.size ?? faker.number.int({ min: 1, max: 1000 }),
         content: 'content',
         mimetype: 'image/png',
         name: faker.system.fileName(),

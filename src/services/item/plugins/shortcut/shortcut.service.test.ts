@@ -52,12 +52,6 @@ const itemRepository = {
 } as unknown as ItemRepository;
 
 describe('Shortcut Service', () => {
-  beforeAll(async () => {
-    await client.connect();
-  });
-  afterAll(async () => {
-    await client.end();
-  });
   afterEach(() => {
     jest.clearAllMocks();
   });
