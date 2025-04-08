@@ -27,6 +27,7 @@ env:
   DB_PORT: '5432'
   DB_DISABLE_SSL: true
   DB_HOST: localhost
+  DB_CONNECTION: postgres://docker:docker@localhost:5432/docker?sslmode=disable
   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN: 'http://localhost:1234'
   ETHERPAD_API_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
   ETHERPAD_PUBLIC_URL: 'http://localhost:9001'
