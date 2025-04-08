@@ -24,6 +24,15 @@ import { AccountType, CompleteMember, ItemSettings, ItemTypeUnion } from '@graas
 
 import { customNumeric, ltree } from './customTypes';
 
+export const actionViewEnum = pgEnum('action_view_enum', [
+  'builder',
+  'player',
+  'library',
+  'explorer',
+  'account',
+  'auth',
+  'unknown',
+]);
 export const actionRequestExportFormatEnum = pgEnum('action_request_export_format_enum', [
   'json',
   'csv',
@@ -672,7 +681,7 @@ export const actionsTable = pgTable(
   'action',
   {
     id: uuid().primaryKey().defaultRandom().notNull(),
-    view: varchar().notNull(),
+    view: actionViewEnum().default('unknown').notNull(),
     type: varchar().notNull(),
     extra: jsonb().$type<object>().default({}).notNull(),
     geolocation: jsonb().$type<geoip.Lookup>(),

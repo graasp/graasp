@@ -323,7 +323,6 @@ describe('Short links routes tests', () => {
             alias,
             platform: Context.Library,
           });
-          console.log(response);
           expect(response.statusCode).toEqual(StatusCodes.OK);
           expect(response.json().alias).toEqual(alias);
           expect(response.json().platform).toEqual(Context.Library);

@@ -1,12 +1,13 @@
 import { singleton } from 'tsyringe';
 
-import { ActionTriggers, Context } from '@graasp/sdk';
+import { ActionTriggers } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
 import { BaseLogger } from '../../../../logger';
 import { MemberInfo } from '../../../../types';
 import { MemberNotSignedUp } from '../../../../utils/errors';
 import { ActionRepository } from '../../../action/action.repository';
+import { View } from '../../../item/plugins/action/itemAction.schemas';
 import { MemberRepository } from '../../../member/member.repository';
 import { AuthService } from '../../auth.service';
 
@@ -43,7 +44,7 @@ export class MagicLinkService {
         {
           creatorId: member.id,
           type: ActionTriggers.MemberLogin,
-          view: Context.Unknown,
+          view: View.Unknown,
           extra: { type: 'email' },
         },
       ];

@@ -10,6 +10,7 @@ import { ActionInsertDTO } from '../../../../drizzle/types';
 import { asDefined } from '../../../../utils/assertions';
 import { LOGIN_TOKEN_EXPIRATION_IN_MINUTES, PUBLIC_URL } from '../../../../utils/config';
 import { ActionService } from '../../../action/action.service';
+import { View } from '../../../item/plugins/action/itemAction.schemas';
 import { validatedMemberAccountRole } from '../../../member/strategies/validatedMemberAccountRole';
 import { getRedirectionLink } from '../../utils';
 import captchaPreHandler from '../captcha/captcha';
@@ -186,7 +187,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         const action = {
           accountId: member.id,
           type: ActionTriggers.ResetPassword,
-          view: Context.Auth,
+          view: View.Auth,
           extra: {},
         } satisfies ActionInsertDTO;
         // Do not await the action to be saved. It is not critical.

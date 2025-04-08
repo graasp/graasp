@@ -2,9 +2,8 @@ import { faker } from '@faker-js/faker';
 import { subMinutes, subMonths } from 'date-fns';
 import geoip from 'geoip-lite';
 
-import { Context } from '@graasp/sdk';
-
 import { ActionRaw } from '../../src/drizzle/types';
+import { View } from '../../src/services/item/plugins/action/itemAction.schemas';
 
 export const ActionFactory = (a: Partial<ActionRaw> = {}): ActionRaw => {
   const now = subMinutes(new Date(), 1); // Today's date
@@ -15,7 +14,7 @@ export const ActionFactory = (a: Partial<ActionRaw> = {}): ActionRaw => {
     // member and item default to null
     accountId: null,
     itemId: null,
-    view: faker.helpers.arrayElement(Object.values(Context)),
+    view: faker.helpers.arrayElement(Object.values(View)),
     type: faker.lorem.word(),
     extra: { value: faker.lorem.word() },
     createdAt: faker.date.between({ from: oneMonthAgo, to: now }).toISOString(),

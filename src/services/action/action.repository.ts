@@ -7,6 +7,7 @@ import { DBConnection } from '../../drizzle/db';
 import { isDescendantOrSelf } from '../../drizzle/operations';
 import { actionsTable, items } from '../../drizzle/schema';
 import { ActionInsertDTO, ActionWithItem } from '../../drizzle/types';
+import { ViewOptions } from '../item/plugins/action/itemAction.schemas';
 import { MemberIdentifierNotFound } from '../itemLogin/errors';
 import { DEFAULT_ACTIONS_SAMPLE_SIZE } from './constants';
 
@@ -71,7 +72,7 @@ export class ActionRepository {
     itemPath: UUID,
     filters?: {
       sampleSize?: number;
-      view?: string;
+      view?: ViewOptions;
       accountId?: UUID;
       startDate?: string;
       endDate?: string;

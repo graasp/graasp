@@ -64,38 +64,13 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
       const result = await itemActionService.getBaseAnalyticsForItem(db, authenticatedUser, {
         sampleSize: query.requestedSampleSize,
         itemId: id,
-        view: query.view?.toLowerCase(),
+        view: query.view,
         startDate: query.startDate,
         endDate: query.endDate,
       });
-      return result;
+      return result.actions;
     },
   );
-
-  // get actions aggregate data matching the given `id`
-  // fastify.get(
-  //   '/:id/actions/aggregation',
-  //   {
-  //     schema: getAggregateActions,
-  //     preHandler: isAuthenticated,
-  //   },
-  //   async ({ user, params: { id }, query }) => {
-  //     return itemActionService.getAnalyticsAggregation(db, user?.account, {
-  //       sampleSize: query.requestedSampleSize,
-  //       itemId: id,
-  //       view: query.view?.toLowerCase(),
-  //       type: query.type,
-  //       countGroupBy: query.countGroupBy,
-  //       aggregationParams: {
-  //         aggregateFunction: query.aggregateFunction,
-  //         aggregateMetric: query.aggregateMetric,
-  //         aggregateBy: query.aggregateBy,
-  //       },
-  //       startDate: query.startDate,
-  //       endDate: query.endDate,
-  //     });
-  //   },
-  // );
 
   fastify.post(
     '/:id/actions',

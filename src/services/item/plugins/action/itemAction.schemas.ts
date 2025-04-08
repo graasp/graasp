@@ -8,28 +8,42 @@ import {
   AggregateBy,
   AggregateFunction,
   AggregateMetric,
-  Context,
   CountGroupBy,
   ExportActionsFormatting,
+  UnionOfConst,
 } from '@graasp/sdk';
 
 import { customType } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
 // import { nullableAccountSchemaRef } from '../../../account/account.schemas';
 import { MAX_ACTIONS_SAMPLE_SIZE, MIN_ACTIONS_SAMPLE_SIZE } from '../../../action/constants';
+import { itemSchemaRef } from '../../item.schemas';
 // import { itemSchema } from '../../item.schemas';
 import { ItemActionType } from './utils';
 
-// const actionSchema = customType.StrictObject({
-//   id: customType.UUID(),
-//   account: Type.Optional(nullableAccountSchemaRef),
-//   item: Type.Optional(customType.Nullable(Type.Omit(itemSchema, ['creator']))),
-//   view: Type.Enum(Context),
-//   type: Type.String(),
-//   extra: Type.Object({}),
-//   geolocation: Type.Optional(customType.Nullable(Type.Object({}))),
-//   createdAt: customType.DateTime(),
-// });
+export const View = {
+  Builder: 'builder',
+  Player: 'player',
+  Library: 'library',
+  Explorer: 'explorer',
+  Account: 'account',
+  Auth: 'auth',
+  Unknown: 'unknown',
+} as const;
+const ViewValues = Object.values(View);
+export type ViewOptions = UnionOfConst<typeof View>;
+
+const actionSchema = customType.StrictObject({
+  id: customType.UUID(),
+  // account: Type.Optional(nullableAccountSchemaRef),
+  accountId: customType.Nullable(customType.UUID()),
+  item: customType.Nullable(Type.Omit(itemSchemaRef, ['creator'])),
+  view: customType.EnumString(ViewValues),
+  type: Type.String(),
+  extra: Type.Object({}),
+  geolocation: Type.Optional(customType.Nullable(Type.Object({}))),
+  createdAt: customType.DateTime(),
+});
 
 // schema for getting item analytics with view and requestedSampleSize query parameters
 export const getItemActions = {
@@ -48,12 +62,12 @@ export const getItemActions = {
         maximum: MAX_ACTIONS_SAMPLE_SIZE,
       }),
     ),
-    view: Type.Optional(Type.Enum(Context)),
+    view: Type.Optional(customType.EnumString(ViewValues)),
     startDate: Type.Optional(Type.String({ format: 'date-time' })),
     endDate: Type.Optional(Type.String({ format: 'date-time' })),
   }),
   response: {
-    [StatusCodes.OK]: {},
+    [StatusCodes.OK]: Type.Array(actionSchema),
     // TODO: enable back
     // [StatusCodes.OK]: customType.StrictObject({
     //   actions: Type.Array(actionSchema),
@@ -185,7 +199,7 @@ export const getAggregateActions = {
         maximum: MAX_ACTIONS_SAMPLE_SIZE,
       }),
     ),
-    view: Type.Optional(Type.Enum(Context, { description: 'Filter by view' })),
+    view: Type.Optional(customType.EnumString(ViewValues, { description: 'Filter by view' })),
     type: Type.Optional(Type.Array(Type.String(), { description: 'Filter by type' })),
     countGroupBy: Type.Array(Type.Enum(CountGroupBy), { description: 'Field to group by on' }),
     aggregateFunction: Type.Enum(AggregateFunction, {

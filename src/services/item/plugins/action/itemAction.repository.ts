@@ -121,7 +121,6 @@ export class ItemActionRepository {
       return acc;
     }, {});
 
-    console.log(a);
     return a;
   }
 }

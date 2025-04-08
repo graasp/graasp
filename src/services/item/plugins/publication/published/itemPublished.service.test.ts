@@ -20,7 +20,7 @@ const meiliSearchWrapper = {
   updateItem: jest.fn(),
 } as unknown as MeiliSearchWrapper;
 
-const itemPublishedRepository = {} as ItemPublishedRepository;
+const itemPublishedRepository = new ItemPublishedRepository();
 
 const itemPublishedService = new ItemPublishedService(
   {} as BasicItemService,

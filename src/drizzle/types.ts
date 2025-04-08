@@ -182,7 +182,7 @@ export type ActionInsertDTO = typeof actionsTable.$inferInsert;
 export type ActionRaw = typeof actionsTable.$inferSelect;
 // this is type that matches the automatically linked entities from typeORM,
 // we should check each usage location to see if including the realtions is necessary or not
-export type ActionWithItem = Omit<typeof actionsTable.$inferSelect, 'accountId' | 'itemId'> & {
+export type ActionWithItem = typeof actionsTable.$inferSelect & {
   item: NullableItem;
 };
 export type ActionWithItemAndAccount = ActionWithItem & {

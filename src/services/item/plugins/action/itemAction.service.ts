@@ -38,6 +38,7 @@ import { AppDataRepository } from '../app/appData/appData.repository';
 import { AppSettingRepository } from '../app/appSetting/appSetting.repository';
 import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
 import { ItemActionRepository } from './itemAction.repository';
+import { View, ViewOptions } from './itemAction.schemas';
 // import { BaseAnalytics } from './base-analytics';
 import { ItemActionType } from './utils';
 
@@ -88,9 +89,9 @@ export class ItemActionService {
     db: DBConnection,
     actor: AuthenticatedUser,
     itemId: string,
-    filters: { view?: Context; sampleSize?: number } = {},
+    filters: { view?: ViewOptions; sampleSize?: number } = {},
   ): Promise<ActionWithItem[]> {
-    const { view = Context.Builder, sampleSize = DEFAULT_ACTIONS_SAMPLE_SIZE } = filters;
+    const { view = View.Builder, sampleSize = DEFAULT_ACTIONS_SAMPLE_SIZE } = filters;
 
     // prevent access from unautorized members
     if (!actor) {
@@ -190,7 +191,7 @@ export class ItemActionService {
     payload: {
       itemId: string;
       sampleSize?: number;
-      view?: string;
+      view?: ViewOptions;
       startDate?: string;
       endDate?: string;
     },
@@ -220,7 +221,6 @@ export class ItemActionService {
       startDate: payload.startDate,
       endDate: payload.endDate,
     });
-
     // get memberships
     const inheritedMemberships = await this.itemMembershipRepository.getForItem(db, item);
     // TODO: use db argument passed from the transaction

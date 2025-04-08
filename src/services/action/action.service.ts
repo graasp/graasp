@@ -3,12 +3,13 @@ import { singleton } from 'tsyringe';
 import { forwarded } from '@fastify/forwarded';
 import { FastifyRequest } from 'fastify';
 
-import { ClientManager, Context } from '@graasp/sdk';
+import { ClientManager } from '@graasp/sdk';
 
 import { DBConnection } from '../../drizzle/db';
 import { Item } from '../../drizzle/types';
 import { BaseLogger } from '../../logger';
 import { AccountType, MaybeUser } from '../../types';
+import { View } from '../item/plugins/action/itemAction.schemas';
 import { MemberRepository } from '../member/member.repository';
 import { ActionRepository } from './action.repository';
 import { getGeolocationIp } from './utils/actions';
@@ -56,7 +57,7 @@ export class ActionService {
       return;
     }
 
-    let view = Context.Unknown;
+    let view = View.Unknown;
     try {
       if (headers?.origin) {
         view = ClientManager.getInstance().getContextByLink(headers?.origin);
