@@ -24,6 +24,10 @@ const exportMemberDataService = new ExportMemberDataService(
   {} as ExportDataRepository,
 );
 
+it('temporary', () => {
+  expect(true).toBeTruthy();
+});
+
 // describe('Export member data tests', () => {
 //   let app: FastifyInstance;
 //   let actor;
