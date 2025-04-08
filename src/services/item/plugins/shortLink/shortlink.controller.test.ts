@@ -1,4 +1,3 @@
-import { faker } from '@faker-js/faker';
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
@@ -273,13 +272,12 @@ describe('Short links routes tests', () => {
           assertIsDefined(actor);
           mockAuthenticate(actor);
 
-          const alias = faker.word.sample({ length: { min: 10, max: 20 } });
+          const alias = 'my-alias';
           const response = await injectPost(app, {
             itemId: item.id,
             alias,
             platform: shortlink.platform,
           });
-
           expectException(response, new ShortLinkLimitExceed(alias, shortlink.platform));
         });
       });
@@ -319,12 +317,13 @@ describe('Short links routes tests', () => {
           assertIsDefined(actor);
           mockAuthenticate(actor);
 
-          const alias = faker.word.sample({ length: { min: 10, max: 50 } });
+          const alias = 'my-alias';
           const response = await injectPost(app, {
             itemId: item.id,
             alias,
             platform: Context.Library,
           });
+          console.log(response);
           expect(response.statusCode).toEqual(StatusCodes.OK);
           expect(response.json().alias).toEqual(alias);
           expect(response.json().platform).toEqual(Context.Library);

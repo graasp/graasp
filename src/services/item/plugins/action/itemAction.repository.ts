@@ -34,9 +34,9 @@ export class ItemActionRepository {
       .where(
         and(
           eq(actionsTable.itemId, itemId),
-          gte(actionsTable.createdAt, startDate),
-          lte(actionsTable.createdAt, endDate),
-          eq(actionsTable.view, view),
+          // gte(actionsTable.createdAt, startDate),
+          // lte(actionsTable.createdAt, endDate),
+          // eq(actionsTable.view, view),
         ),
       )
       .groupBy(() => [
@@ -55,11 +55,13 @@ export class ItemActionRepository {
       acc[idx] = {
         date: idx,
         count: Object.assign(acc[idx]?.count ?? {}, {
+          all: (acc[idx]?.count?.all ?? 0) + count,
           [type]: (acc[idx]?.count?.[type] ?? 0) + count,
         }),
         personal:
           actor && actor.id === value.accountId
             ? Object.assign(acc[idx]?.personal ?? {}, {
+                all: (acc[idx]?.personal?.all ?? 0) + count,
                 [type]: (acc[idx]?.personal?.[type] ?? 0) + count,
               })
             : (acc[idx]?.personal ?? {}),
