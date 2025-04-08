@@ -46,8 +46,6 @@ export class ItemActionRepository {
       ])
       .limit(5000);
 
-    console.log(actions);
-
     const a = actions.reduce((acc, value) => {
       const idx = format(value.day, 'yyyy/MM/dd');
       const { type, count } = value;
@@ -69,7 +67,6 @@ export class ItemActionRepository {
       return acc;
     }, {});
 
-    console.log(a);
     return a;
   }
 
@@ -98,19 +95,17 @@ export class ItemActionRepository {
         ),
       )
       .groupBy(() => [
-        sql`date_trunc('day', ${actionsTable.createdAt})`,
+        sql`extract(dow from ${actionsTable.createdAt})`,
         actionsTable.accountId,
         actionsTable.type,
       ])
       .limit(5000);
 
-    console.log(actions);
-
     const a = actions.reduce((acc, value) => {
       const { type, count, day: idx } = value;
 
       acc[idx] = {
-        date: idx,
+        weekday: idx,
         count: Object.assign(acc[idx]?.count ?? {}, {
           all: (acc[idx]?.count?.all ?? 0) + count,
           [type]: (acc[idx]?.count?.[type] ?? 0) + count,
