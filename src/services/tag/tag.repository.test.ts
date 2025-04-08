@@ -18,6 +18,10 @@ describe('Tag Repository', () => {
   afterAll(async () => {
     await client.end();
   });
+  afterEach(async () => {
+    // delete all tags to prevent adding duplicates
+    await db.delete(tags);
+  });
 
   describe('get', () => {
     it('throw for invalid id', async () => {
