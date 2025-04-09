@@ -25,7 +25,7 @@ import build, {
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../test/constants';
 import { buildFile, seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
-import { itemMemberships, itemsRaw } from '../../../../drizzle/schema';
+import { itemMembershipsTable, itemsRawTable } from '../../../../drizzle/schema';
 import { Item, ItemRaw } from '../../../../drizzle/types';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { FILE_ITEM_TYPE, ITEMS_ROUTE_PREFIX, S3_FILE_ITEM_PLUGIN } from '../../../../utils/config';
@@ -43,10 +43,10 @@ import { DEFAULT_MAX_STORAGE } from './utils/constants';
 import { StorageExceeded } from './utils/errors';
 
 const getItemById = async (id: string) =>
-  await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, id) });
+  await db.query.itemsRawTable.findFirst({ where: eq(itemsRawTable.id, id) });
 const getItemMembershipByPath = async (path: string) =>
-  await db.query.itemMemberships.findFirst({
-    where: eq(itemMemberships.itemPath, path),
+  await db.query.itemMembershipsTable.findFirst({
+    where: eq(itemMembershipsTable.itemPath, path),
   });
 // TODO: LOCAL FILE TESTS
 
@@ -207,9 +207,9 @@ describe('File Item routes tests', () => {
           expect(response.statusCode).toBe(StatusCodes.OK);
 
           // check item exists in db
-          const newItems = await db.query.itemsRaw.findMany({
+          const newItems = await db.query.itemsRawTable.findMany({
             where: inArray(
-              itemsRaw.id,
+              itemsRawTable.id,
               items.map(({ id }) => id),
             ),
           });
@@ -226,9 +226,9 @@ describe('File Item routes tests', () => {
             expect(item?.extra[FILE_ITEM_TYPE]).toBeTruthy();
           }
           // a membership is created for this item
-          const memberships = await db.query.itemMemberships.findMany({
+          const memberships = await db.query.itemMembershipsTable.findMany({
             where: inArray(
-              itemMemberships.itemPath,
+              itemMembershipsTable.itemPath,
               items.map(({ path }) => path),
             ),
           });
@@ -274,8 +274,8 @@ describe('File Item routes tests', () => {
           expect(item?.path).toContain(parentItem.path);
 
           // a membership is not created for new item because it inherits parent
-          const membership = await db.query.itemMemberships.findFirst({
-            where: eq(itemMemberships.itemPath, newItem.path),
+          const membership = await db.query.itemMembershipsTable.findFirst({
+            where: eq(itemMembershipsTable.itemPath, newItem.path),
           });
           expect(membership).toBeUndefined();
         });
@@ -818,7 +818,9 @@ describe('File Item routes tests', () => {
           setTimeout(async () => {
             await expect(copyObjectMock).toHaveBeenCalled();
 
-            const items = await db.query.itemsRaw.findMany({ where: eq(itemsRaw.name, item.name) });
+            const items = await db.query.itemsRawTable.findMany({
+              where: eq(itemsRawTable.name, item.name),
+            });
             expect(items).toHaveLength(2);
 
             expect((items[0].extra as S3FileItemExtra).s3File.path).not.toEqual(
@@ -871,7 +873,7 @@ describe('File Item routes tests', () => {
             await expect(copyObjectMock).not.toHaveBeenCalled();
             // did not copy
             expect(
-              await db.query.itemsRaw.findMany({ where: eq(itemsRaw.name, item.name) }),
+              await db.query.itemsRawTable.findMany({ where: eq(itemsRawTable.name, item.name) }),
             ).toHaveLength(1);
             done(true);
           }, MULTIPLE_ITEMS_LOADING_TIME);

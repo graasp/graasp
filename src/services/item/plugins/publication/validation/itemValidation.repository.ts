@@ -3,29 +3,32 @@ import { eq } from 'drizzle-orm';
 import { ItemValidationProcess, ItemValidationStatus } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../drizzle/db';
-import { type ItemValidation, itemValidations } from '../../../../../drizzle/schema';
+import { itemValidationsTable } from '../../../../../drizzle/schema';
+import { ItemValidationRaw } from '../../../../../drizzle/types';
 import { ItemValidationGroupNotFound, ItemValidationNotFound } from './errors';
 
 export class ItemValidationRepository {
-  async get(db: DBConnection, id: string): Promise<ItemValidation> {
+  async get(db: DBConnection, id: string): Promise<ItemValidationRaw> {
     // additional check that id is not null
     // o/w empty parameter to findOneBy return the first entry
     if (!id) {
       throw new ItemValidationNotFound(id);
     }
-    const result = await db.query.itemValidations.findFirst({ where: eq(itemValidations.id, id) });
+    const result = await db.query.itemValidationsTable.findFirst({
+      where: eq(itemValidationsTable.id, id),
+    });
     if (!result) {
       throw new ItemValidationNotFound(id);
     }
     return result;
   }
 
-  async getForGroup(db: DBConnection, groupId: string): Promise<ItemValidation[]> {
+  async getForGroup(db: DBConnection, groupId: string): Promise<ItemValidationRaw[]> {
     if (!groupId) {
       throw new ItemValidationGroupNotFound(groupId);
     }
-    return db.query.itemValidations.findMany({
-      where: eq(itemValidations.itemValidationGroupId, groupId),
+    return db.query.itemValidationsTable.findMany({
+      where: eq(itemValidationsTable.itemValidationGroupId, groupId),
     });
   }
 
@@ -39,16 +42,16 @@ export class ItemValidationRepository {
     itemValidationGroupId: string,
     process: ItemValidationProcess,
     status = ItemValidationStatus.Pending,
-  ): Promise<{ id: ItemValidation['id'] }> {
+  ): Promise<{ id: ItemValidationRaw['id'] }> {
     const res = await db
-      .insert(itemValidations)
+      .insert(itemValidationsTable)
       .values({
         itemId,
         itemValidationGroupId,
         process,
         status,
       })
-      .returning({ id: itemValidations.id });
+      .returning({ id: itemValidationsTable.id });
     return res[0];
   }
 
@@ -57,6 +60,9 @@ export class ItemValidationRepository {
     itemValidationId: string,
     args: { result?: string; status: ItemValidationStatus },
   ): Promise<void> {
-    await db.update(itemValidations).set(args).where(eq(itemValidations.id, itemValidationId));
+    await db
+      .update(itemValidationsTable)
+      .set(args)
+      .where(eq(itemValidationsTable.id, itemValidationId));
   }
 }

@@ -13,7 +13,7 @@ import build, {
 } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
-import { memberProfiles } from '../../../../drizzle/schema';
+import { memberProfilesTable } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { MEMBER_PROFILE_ROUTE_PREFIX } from '../../../../utils/config';
 
@@ -268,8 +268,8 @@ describe('Profile Member routes tests', () => {
         });
 
         expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
-        const res = await db.query.memberProfiles.findFirst({
-          where: eq(memberProfiles.memberId, actor.id),
+        const res = await db.query.memberProfilesTable.findFirst({
+          where: eq(memberProfilesTable.memberId, actor.id),
         });
         assertIsDefined(res);
         expect(res.bio).toEqual(payload.bio);

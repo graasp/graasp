@@ -15,7 +15,7 @@ import build, {
 import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { resolveDependency } from '../../../../../di/utils';
 import { db } from '../../../../../drizzle/db';
-import { publishedItems } from '../../../../../drizzle/schema';
+import { publishedItemsTable } from '../../../../../drizzle/schema';
 import { MailerService } from '../../../../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
@@ -293,8 +293,8 @@ describe('Item Published', () => {
 
         // item is published
         expect(
-          await db.query.publishedItems.findFirst({
-            where: eq(publishedItems.itemPath, item.path),
+          await db.query.publishedItemsTable.findFirst({
+            where: eq(publishedItemsTable.itemPath, item.path),
           }),
         ).toBeDefined();
         // Publishing an item triggers an indexing
@@ -530,8 +530,8 @@ describe('Item Published', () => {
         expect(res.statusCode).toBe(StatusCodes.NO_CONTENT);
 
         expect(
-          await db.query.publishedItems.findFirst({
-            where: eq(publishedItems.itemPath, item.path),
+          await db.query.publishedItemsTable.findFirst({
+            where: eq(publishedItemsTable.itemPath, item.path),
           }),
         );
         expect(indexSpy).toHaveBeenCalledTimes(1);

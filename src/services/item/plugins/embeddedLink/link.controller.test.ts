@@ -15,7 +15,7 @@ import build, {
 } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
-import { itemsRaw } from '../../../../drizzle/schema';
+import { itemsRawTable } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN } from '../../../../utils/config';
 import { EmbeddedLinkItem } from '../../discrimination';
@@ -456,8 +456,8 @@ describe('Tests Embedded Link Controller', () => {
 
         expect(response.statusCode).toBe(StatusCodes.OK);
 
-        const savedItem = (await db.query.itemsRaw.findFirst({
-          where: eq(itemsRaw.id, initialItem.id),
+        const savedItem = (await db.query.itemsRawTable.findFirst({
+          where: eq(itemsRawTable.id, initialItem.id),
         })) as EmbeddedLinkItem;
         assertIsDefined(savedItem);
         expect(savedItem.settings.isCollapsible).toEqual(true);

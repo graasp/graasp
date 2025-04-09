@@ -19,7 +19,7 @@ import build, {
 import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { db } from '../../../../../drizzle/db';
 import { isDescendantOrSelf } from '../../../../../drizzle/operations';
-import { itemsRaw } from '../../../../../drizzle/schema';
+import { itemsRawTable } from '../../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../../utils/assertions';
 import { LocalFileRepository } from '../../../../file/repositories/local';
 import { GRAASP_MANIFEST_FILENAME } from '../constants';
@@ -28,8 +28,8 @@ import { prepareZip } from '../utils';
 import * as ARCHIVE_CONTENT from './fixtures/archive';
 
 const getItemByName = async (itemName: string) => {
-  return await db.query.itemsRaw.findFirst({
-    where: eq(itemsRaw.name, itemName),
+  return await db.query.itemsRawTable.findFirst({
+    where: eq(itemsRawTable.name, itemName),
   });
 };
 
@@ -269,10 +269,10 @@ describe('ZIP routes tests', () => {
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        const items = await db.query.itemsRaw.findMany({
+        const items = await db.query.itemsRawTable.findMany({
           where: and(
-            isDescendantOrSelf(itemsRaw.path, parentItem.path),
-            ne(itemsRaw.id, parentItem.id),
+            isDescendantOrSelf(itemsRawTable.path, parentItem.path),
+            ne(itemsRawTable.id, parentItem.id),
           ),
         });
         expect(items).toHaveLength(8);
@@ -327,10 +327,10 @@ describe('ZIP routes tests', () => {
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        const items = await db.query.itemsRaw.findMany({
+        const items = await db.query.itemsRawTable.findMany({
           where: and(
-            isDescendantOrSelf(itemsRaw.path, parentItem.path),
-            ne(itemsRaw.id, parentItem.id),
+            isDescendantOrSelf(itemsRawTable.path, parentItem.path),
+            ne(itemsRawTable.id, parentItem.id),
           ),
         });
         expect(items).toHaveLength(1);
@@ -356,10 +356,10 @@ describe('ZIP routes tests', () => {
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        const items = await db.query.itemsRaw.findMany({
+        const items = await db.query.itemsRawTable.findMany({
           where: and(
-            isDescendantOrSelf(itemsRaw.path, parentItem.path),
-            ne(itemsRaw.id, parentItem.id),
+            isDescendantOrSelf(itemsRawTable.path, parentItem.path),
+            ne(itemsRawTable.id, parentItem.id),
           ),
         });
         expect(items).toHaveLength(2);

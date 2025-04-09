@@ -5,7 +5,7 @@ import { singleton } from 'tsyringe';
 
 import { DBConnection } from '../../../../drizzle/db';
 import { isDescendantOrSelf } from '../../../../drizzle/operations';
-import { actionsTable, itemsRaw } from '../../../../drizzle/schema';
+import { actionsTable, itemsRawTable } from '../../../../drizzle/schema';
 import { Item } from '../../../../drizzle/types';
 import { MaybeUser } from '../../../../types';
 
@@ -36,9 +36,9 @@ export class ItemActionRepository {
     const { startDate, endDate } = params;
 
     const itemAndDescendants = db
-      .select({ id: itemsRaw.id })
-      .from(itemsRaw)
-      .where(isDescendantOrSelf(itemsRaw.path, itemPath));
+      .select({ id: itemsRawTable.id })
+      .from(itemsRawTable)
+      .where(isDescendantOrSelf(itemsRawTable.path, itemPath));
 
     const subActions = db
       .select()
@@ -111,9 +111,9 @@ export class ItemActionRepository {
     const { startDate, endDate } = params;
 
     const itemAndDescendants = db
-      .select({ id: itemsRaw.id })
-      .from(itemsRaw)
-      .where(isDescendantOrSelf(itemsRaw.path, itemPath));
+      .select({ id: itemsRawTable.id })
+      .from(itemsRawTable)
+      .where(isDescendantOrSelf(itemsRawTable.path, itemPath));
 
     const subActions = db
       .select()
@@ -187,9 +187,9 @@ export class ItemActionRepository {
     const { startDate, endDate } = params;
 
     const itemAndDescendants = db
-      .select({ id: itemsRaw.id })
-      .from(itemsRaw)
-      .where(isDescendantOrSelf(itemsRaw.path, itemPath));
+      .select({ id: itemsRawTable.id })
+      .from(itemsRawTable)
+      .where(isDescendantOrSelf(itemsRawTable.path, itemPath));
 
     const subActions = db
       .select(getTableColumns(actionsTable))

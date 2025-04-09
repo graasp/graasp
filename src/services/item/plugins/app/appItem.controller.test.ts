@@ -12,7 +12,7 @@ import build, {
 } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
-import { itemMemberships, itemsRaw } from '../../../../drizzle/schema';
+import { itemMembershipsTable, itemsRawTable } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { assertIsMemberForTest } from '../../../authentication';
 import { expectItem } from '../../test/fixtures/items';
@@ -80,12 +80,14 @@ describe('App Item tests', () => {
         expectItem(newItem, expectedItem);
 
         // check item exists in db
-        const item = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, newItem.id) });
+        const item = await db.query.itemsRawTable.findFirst({
+          where: eq(itemsRawTable.id, newItem.id),
+        });
         expectItem(item, expectedItem);
 
         // a membership is created for this item
-        const membership = await db.query.itemMemberships.findFirst({
-          where: eq(itemMemberships.itemPath, newItem.path),
+        const membership = await db.query.itemMembershipsTable.findFirst({
+          where: eq(itemMembershipsTable.itemPath, newItem.path),
         });
         expect(membership?.permission).toEqual(PermissionLevel.Admin);
       });

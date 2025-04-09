@@ -7,10 +7,10 @@ import { Paginated, Pagination, PermissionLevel } from '@graasp/sdk';
 import { DBConnection } from '../../../../drizzle/db';
 import { isDescendantOrSelf } from '../../../../drizzle/operations';
 import {
-  itemMemberships,
-  itemsRaw,
+  itemMembershipsTable,
+  itemsRawTable,
   membersView,
-  recycledItemDatas,
+  recycledItemDatasTable,
 } from '../../../../drizzle/schema';
 import { Item, ItemRaw } from '../../../../drizzle/types';
 import { throwsIfParamIsInvalid } from '../../../../repositories/utils';
@@ -28,7 +28,7 @@ export class RecycledItemDataRepository {
     db: DBConnection,
     { itemPath, creatorId }: CreateRecycledItemDataBody,
   ): Promise<void> {
-    await db.insert(recycledItemDatas).values({ itemPath, creatorId });
+    await db.insert(recycledItemDatasTable).values({ itemPath, creatorId });
   }
 
   // warning: this call insert in the table
@@ -36,7 +36,7 @@ export class RecycledItemDataRepository {
   // should we move to core item?
   async addMany(db: DBConnection, items: Item[], creator: MinimalMember): Promise<void> {
     const recycled = items.map((item) => ({ itemPath: item.path, creatorId: creator.id }));
-    await db.insert(recycledItemDatas).values(recycled);
+    await db.insert(recycledItemDatasTable).values(recycled);
   }
 
   async getOwnRecycledItems(
@@ -49,27 +49,27 @@ export class RecycledItemDataRepository {
     const skip = (page - 1) * limit;
 
     const query = db
-      .select(getTableColumns(itemsRaw))
+      .select(getTableColumns(itemsRawTable))
       // start with smaller table that can have the most contraints: membership with admin and accountId
-      .from(itemMemberships)
+      .from(itemMembershipsTable)
       // we want to join on recycled item
       .innerJoin(
-        itemsRaw,
+        itemsRawTable,
         // reduce size by getting only recycled items
         and(
-          isDescendantOrSelf(itemsRaw.path, itemMemberships.itemPath),
-          isNotNull(itemsRaw.deletedAt),
+          isDescendantOrSelf(itemsRawTable.path, itemMembershipsTable.itemPath),
+          isNotNull(itemsRawTable.deletedAt),
         ),
       )
       // get top most recycled item
-      .innerJoin(recycledItemDatas, eq(recycledItemDatas.itemPath, itemsRaw.path))
+      .innerJoin(recycledItemDatasTable, eq(recycledItemDatasTable.itemPath, itemsRawTable.path))
       // return item's creator
-      .leftJoin(membersView, eq(itemsRaw.creatorId, membersView.id))
+      .leftJoin(membersView, eq(itemsRawTable.creatorId, membersView.id))
       // item membership constraints
       .where(
         and(
-          eq(itemMemberships.accountId, account.id),
-          eq(itemMemberships.permission, PermissionLevel.Admin),
+          eq(itemMembershipsTable.accountId, account.id),
+          eq(itemMembershipsTable.permission, PermissionLevel.Admin),
         ),
       )
       .as('subquery');
@@ -91,7 +91,9 @@ export class RecycledItemDataRepository {
   // should we move to core item?
   async deleteManyByItemPath(db: DBConnection, itemsPath: Item['path'][]): Promise<void> {
     throwsIfParamIsInvalid('itemsPath', itemsPath);
-    await db.delete(recycledItemDatas).where(inArray(recycledItemDatas.itemPath, itemsPath));
+    await db
+      .delete(recycledItemDatasTable)
+      .where(inArray(recycledItemDatasTable.itemPath, itemsPath));
   }
 
   /**
@@ -113,22 +115,22 @@ export class RecycledItemDataRepository {
 
     return await db
       .select()
-      .from(itemsRaw)
+      .from(itemsRawTable)
       .where(
         and(
           and(
-            isDescendantOrSelf(itemsRaw.path, item.path),
-            ne(itemsRaw.id, item.id),
-            isNotNull(itemsRaw.deletedAt),
+            isDescendantOrSelf(itemsRawTable.path, item.path),
+            ne(itemsRawTable.id, item.id),
+            isNotNull(itemsRawTable.deletedAt),
           ),
         ),
       )
-      .orderBy(asc(itemsRaw.path));
+      .orderBy(asc(itemsRawTable.path));
   }
 
   async getManyDeletedItemsById(db: DBConnection, itemIds: string[]): Promise<ItemRaw[]> {
-    return await db.query.itemsRaw.findMany({
-      where: and(isNotNull(itemsRaw.deletedAt), inArray(itemsRaw.id, itemIds)),
+    return await db.query.itemsRawTable.findMany({
+      where: and(isNotNull(itemsRawTable.deletedAt), inArray(itemsRawTable.id, itemIds)),
     });
   }
 
@@ -138,13 +140,13 @@ export class RecycledItemDataRepository {
    * @param ids
    */
   async getDeletedTreesById(db: DBConnection, ids: Item['id'][]) {
-    const descendants = alias(itemsRaw, 'descendants');
+    const descendants = alias(itemsRawTable, 'descendants');
 
     const trees = await db
       .select()
-      .from(itemsRaw)
-      .innerJoin(descendants, and(isDescendantOrSelf(descendants.path, itemsRaw.path)))
-      .where(inArray(itemsRaw.id, ids));
+      .from(itemsRawTable)
+      .innerJoin(descendants, and(isDescendantOrSelf(descendants.path, itemsRawTable.path)))
+      .where(inArray(itemsRawTable.id, ids));
 
     return trees.map(({ descendants }) => descendants);
   }

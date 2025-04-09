@@ -5,7 +5,7 @@ import { TagCategory, TagFactory } from '@graasp/sdk';
 
 import { seedFromJson } from '../../../test/mocks/seed';
 import { client, db } from '../../drizzle/db';
-import { tags } from '../../drizzle/schema';
+import { tagsTable } from '../../drizzle/schema';
 import { IllegalArgumentException } from '../../repositories/errors';
 import { TagRepository } from './tag.repository';
 
@@ -20,7 +20,7 @@ describe('Tag Repository', () => {
   });
   afterEach(async () => {
     // delete all tags to prevent adding duplicates
-    await db.delete(tags);
+    await db.delete(tagsTable);
   });
 
   describe('get', () => {
@@ -60,8 +60,8 @@ describe('Tag Repository', () => {
       const tag = TagFactory();
       await repository.addOne(db, tag);
 
-      const result = await db.query.tags.findFirst({
-        where: and(eq(tags.name, tag.name), eq(tags.category, tag.category)),
+      const result = await db.query.tagsTable.findFirst({
+        where: and(eq(tagsTable.name, tag.name), eq(tagsTable.category, tag.category)),
       });
       expect(result!.name).toEqual(tag.name);
       expect(result!.category).toEqual(tag.category);

@@ -25,9 +25,9 @@ import { DBConnection, db } from '../../drizzle/db';
 import { isAncestorOrSelf, isDescendantOrSelf } from '../../drizzle/operations';
 import {
   accountsTable,
-  itemMemberships as itemMembershipTable,
+  itemMembershipsTable,
   items,
-  itemsRaw,
+  itemsRawTable,
   membersView,
 } from '../../drizzle/schema';
 import {
@@ -85,8 +85,8 @@ export class ItemMembershipRepository {
   constructor() {}
 
   async getOne(db: DBConnection, id: string): Promise<ItemMembershipRaw | undefined> {
-    const res = await db.query.itemMemberships.findFirst({
-      where: eq(itemMembershipTable.id, id),
+    const res = await db.query.itemMembershipsTable.findFirst({
+      where: eq(itemMembershipsTable.id, id),
       with: { creator: true, item: true, account: true },
     });
     return res;
@@ -98,7 +98,7 @@ export class ItemMembershipRepository {
    */
   async addMany(db: DBConnection, memberships: CreateItemMembershipBody[]) {
     const itemsMemberships = await db
-      .insert(itemMembershipTable)
+      .insert(itemMembershipsTable)
       .values(
         memberships.map((m) => ({
           permission: m.permission,
@@ -117,8 +117,8 @@ export class ItemMembershipRepository {
     itemMembershipId: string,
     args: { purgeBelow?: boolean } = { purgeBelow: true },
   ): Promise<void> {
-    const itemMembership = await db.query.itemMemberships.findFirst({
-      where: eq(itemMembershipTable.id, itemMembershipId),
+    const itemMembership = await db.query.itemMembershipsTable.findFirst({
+      where: eq(itemMembershipsTable.id, itemMembershipId),
     });
     if (!itemMembership) {
       throw new ItemMembershipNotFound();
@@ -135,15 +135,15 @@ export class ItemMembershipRepository {
       if (itemMembershipsBelow.length > 0) {
         // return list of subtasks for task manager to execute and
         // delete all memberships in the (sub)tree, one by one, in reverse order (bottom > top)
-        await db.delete(itemMembershipTable).where(
+        await db.delete(itemMembershipsTable).where(
           inArray(
-            itemMembershipTable.id,
+            itemMembershipsTable.id,
             itemMembershipsBelow.map(({ id }) => id),
           ),
         );
       }
     }
-    await db.delete(itemMembershipTable).where(eq(itemMembershipTable.id, itemMembershipId));
+    await db.delete(itemMembershipsTable).where(eq(itemMembershipsTable.id, itemMembershipId));
   }
 
   /**
@@ -160,19 +160,19 @@ export class ItemMembershipRepository {
   ): Promise<void> {
     for (const { itemPath, accountId } of composedKeys) {
       await db
-        .delete(itemMembershipTable)
+        .delete(itemMembershipsTable)
         .where(
           and(
-            eq(itemMembershipTable.itemPath, itemPath),
-            eq(itemMembershipTable.accountId, accountId),
+            eq(itemMembershipsTable.itemPath, itemPath),
+            eq(itemMembershipsTable.accountId, accountId),
           ),
         );
     }
   }
 
   async get(db: DBConnection, id: string): Promise<ItemMembershipWithItemAndAccount> {
-    const im = await db.query.itemMemberships.findFirst({
-      where: eq(itemMembershipTable.id, id),
+    const im = await db.query.itemMembershipsTable.findFirst({
+      where: eq(itemMembershipsTable.id, id),
       with: { account: true, item: true },
     });
 
@@ -198,11 +198,11 @@ export class ItemMembershipRepository {
     }
 
     const res = await db
-      .select({ id: itemMembershipTable.id })
-      .from(itemMembershipTable)
-      .leftJoin(items, eq(items.path, itemMembershipTable.itemPath))
+      .select({ id: itemMembershipsTable.id })
+      .from(itemMembershipsTable)
+      .leftJoin(items, eq(items.path, itemMembershipsTable.itemPath))
       // TODO: we should probably check for ancestors of the item with itemId input to have a membership.
-      .where(and(eq(itemMembershipTable.accountId, accountId), eq(items.id, itemId)));
+      .where(and(eq(itemMembershipsTable.accountId, accountId), eq(items.id, itemId)));
     // we were able to get a result, so the accountId has a membership on the item
     if (res.length >= 1) {
       return true;
@@ -222,10 +222,10 @@ export class ItemMembershipRepository {
     }
 
     // CHECK: does it need to take into account inheritance ?
-    return await db.query.itemMemberships.findFirst({
+    return await db.query.itemMembershipsTable.findFirst({
       where: and(
-        eq(itemMembershipTable.accountId, accountId),
-        eq(itemMembershipTable.itemPath, itemPath),
+        eq(itemMembershipsTable.accountId, accountId),
+        eq(itemMembershipsTable.itemPath, itemPath),
       ),
       with: {
         account: true,
@@ -235,19 +235,19 @@ export class ItemMembershipRepository {
   }
 
   async getAllBellowItemPath(db: DBConnection, itemPath: ItemPath) {
-    const membershipsBelowItemPath = db.query.itemMemberships.findMany({
-      where: sql`${itemMembershipTable.itemPath} <@ ${itemPath}`,
+    const membershipsBelowItemPath = db.query.itemMembershipsTable.findMany({
+      where: sql`${itemMembershipsTable.itemPath} <@ ${itemPath}`,
       with: { account: true },
     });
     return membershipsBelowItemPath;
   }
 
   async getAllBellowItemPathForAccount(db: DBConnection, itemPath: ItemPath, accountId: string) {
-    const membershipsBelowItemPath = db.query.itemMemberships.findMany({
+    const membershipsBelowItemPath = db.query.itemMembershipsTable.findMany({
       where: and(
-        isDescendantOrSelf(itemMembershipTable.itemPath, itemPath),
-        ne(itemMembershipTable.itemPath, itemPath),
-        eq(itemMembershipTable.accountId, accountId),
+        isDescendantOrSelf(itemMembershipsTable.itemPath, itemPath),
+        ne(itemMembershipsTable.itemPath, itemPath),
+        eq(itemMembershipsTable.accountId, accountId),
       ),
       with: { account: true },
     });
@@ -270,15 +270,15 @@ export class ItemMembershipRepository {
     }: { considerLocal?: boolean; selectItem?: boolean } = {},
   ): Promise<ItemMembershipRaw[]> {
     const andConditions = [
-      isDescendantOrSelf(itemMembershipTable.itemPath, itemPath),
-      eq(itemMembershipTable.accountId, accountId),
+      isDescendantOrSelf(itemMembershipsTable.itemPath, itemPath),
+      eq(itemMembershipsTable.accountId, accountId),
     ];
 
     if (!considerLocal) {
-      andConditions.push(ne(itemMembershipTable.itemPath, itemPath));
+      andConditions.push(ne(itemMembershipsTable.itemPath, itemPath));
     }
 
-    return await db.query.itemMemberships.findMany({
+    return await db.query.itemMembershipsTable.findMany({
       where: and(...andConditions),
       with: {
         item: selectItem ? true : undefined,
@@ -294,8 +294,8 @@ export class ItemMembershipRepository {
     actor: AuthenticatedUser,
     { startWith }: { startWith?: string },
   ): Promise<string[]> {
-    const im = alias(itemMembershipTable, 'im');
-    const im1 = alias(itemMembershipTable, 'im1');
+    const im = alias(itemMembershipsTable, 'im');
+    const im1 = alias(itemMembershipsTable, 'im1');
 
     const andConditions = [
       eq(im.accountId, actor.id),
@@ -345,13 +345,13 @@ export class ItemMembershipRepository {
     db: DBConnection,
     item: Item,
   ): Promise<ItemMembershipWithItemAndCompleteAccount[]> {
-    const andConditions: SQL[] = [eq(itemsRaw.id, item.id)];
+    const andConditions: SQL[] = [eq(itemsRawTable.id, item.id)];
 
     const memberships = await db
       .select()
-      .from(itemMembershipTable)
-      .innerJoin(accountsTable, eq(itemMembershipTable.accountId, accountsTable.id))
-      .innerJoin(itemsRaw, isAncestorOrSelf(itemMembershipTable.itemPath, itemsRaw.path))
+      .from(itemMembershipsTable)
+      .innerJoin(accountsTable, eq(itemMembershipsTable.accountId, accountsTable.id))
+      .innerJoin(itemsRawTable, isAncestorOrSelf(itemMembershipsTable.itemPath, itemsRawTable.path))
       .where(and(...andConditions));
     const mappedMemberships = memberships.map(({ item, account, item_membership }) => ({
       item,
@@ -376,21 +376,21 @@ export class ItemMembershipRepository {
 
     const ids = items.map((i) => i.id);
 
-    const andConditions: SQL[] = [inArray(itemsRaw.id, ids)];
+    const andConditions: SQL[] = [inArray(itemsRawTable.id, ids)];
 
     if (!withDeleted) {
-      andConditions.push(isNull(itemsRaw.deletedAt));
+      andConditions.push(isNull(itemsRawTable.deletedAt));
     }
 
     if (accountId) {
-      andConditions.push(eq(itemMembershipTable.accountId, accountId));
+      andConditions.push(eq(itemMembershipsTable.accountId, accountId));
     }
 
     const memberships = await db
       .select()
-      .from(itemMembershipTable)
-      .innerJoin(accountsTable, eq(itemMembershipTable.accountId, accountsTable.id))
-      .innerJoin(itemsRaw, isAncestorOrSelf(itemMembershipTable.itemPath, itemsRaw.path))
+      .from(itemMembershipsTable)
+      .innerJoin(accountsTable, eq(itemMembershipsTable.accountId, accountsTable.id))
+      .innerJoin(itemsRawTable, isAncestorOrSelf(itemMembershipsTable.itemPath, itemsRawTable.path))
       .where(and(...andConditions));
     const mappedMemberships = memberships.map(({ item, account, item_membership }) => ({
       item,
@@ -425,28 +425,28 @@ export class ItemMembershipRepository {
     const ids = inputItems.map((i) => i.id);
 
     const andConditions = [
-      isNull(itemsRaw.deletedAt),
-      eq(itemMembershipTable.accountId, accountId),
+      isNull(itemsRawTable.deletedAt),
+      eq(itemMembershipsTable.accountId, accountId),
     ];
 
     if (!considerLocal) {
-      andConditions.push(notInArray(itemsRaw.id, ids));
+      andConditions.push(notInArray(itemsRawTable.id, ids));
     }
     const memberships = await db
       .select({
-        ...getTableColumns(itemMembershipTable),
-        item: getTableColumns(itemsRaw),
+        ...getTableColumns(itemMembershipsTable),
+        item: getTableColumns(itemsRawTable),
         account: getTableColumns(accountsTable),
         // Keep only closest membership per descendant
-        descendantId: itemsRaw.id,
+        descendantId: itemsRawTable.id,
       })
-      .from(itemMembershipTable)
-      .innerJoin(accountsTable, eq(itemMembershipTable.accountId, accountsTable.id))
+      .from(itemMembershipsTable)
+      .innerJoin(accountsTable, eq(itemMembershipsTable.accountId, accountsTable.id))
       // Map each membership to the item it can affect
-      .innerJoin(itemsRaw, isAncestorOrSelf(itemMembershipTable.itemPath, itemsRaw.path))
+      .innerJoin(itemsRawTable, isAncestorOrSelf(itemMembershipsTable.itemPath, itemsRawTable.path))
       .where(and(...andConditions))
       // Keep only closest membership per descendant
-      .orderBy(() => [asc(itemsRaw.id), desc(sql`nlevel(${itemMembershipTable.itemPath})`)]);
+      .orderBy(() => [asc(itemsRawTable.id), desc(sql`nlevel(${itemMembershipsTable.itemPath})`)]);
 
     // const query = this.repository
     // .createQueryBuilder('item_membership')
@@ -486,25 +486,25 @@ export class ItemMembershipRepository {
     accountId: AccountId,
     considerLocal = false,
   ): Promise<ItemMembershipWithItemAndAccount | null> {
-    const andConditions = [eq(itemMembershipTable.accountId, accountId)];
+    const andConditions = [eq(itemMembershipsTable.accountId, accountId)];
 
     if (!considerLocal) {
-      andConditions.push(ne(itemMembershipTable.itemPath, itemPath));
+      andConditions.push(ne(itemMembershipsTable.itemPath, itemPath));
     }
 
     const memberships = await db
       .select()
-      .from(itemMembershipTable)
+      .from(itemMembershipsTable)
       .innerJoin(
-        itemsRaw,
+        itemsRawTable,
         and(
-          eq(itemMembershipTable.itemPath, itemsRaw.path),
-          isAncestorOrSelf(itemMembershipTable.itemPath, itemPath),
+          eq(itemMembershipsTable.itemPath, itemsRawTable.path),
+          isAncestorOrSelf(itemMembershipsTable.itemPath, itemPath),
         ),
       )
-      .innerJoin(accountsTable, eq(itemMembershipTable.accountId, accountsTable.id))
+      .innerJoin(accountsTable, eq(itemMembershipsTable.accountId, accountsTable.id))
       .where(and(...andConditions))
-      .orderBy(desc(sql`nlevel(${itemMembershipTable.itemPath})`));
+      .orderBy(desc(sql`nlevel(${itemMembershipsTable.itemPath})`));
 
     const mappedMemberships = memberships.map(({ item, account, item_membership }) => ({
       item,
@@ -546,8 +546,8 @@ export class ItemMembershipRepository {
   //   ids: string[],
   //   args: { throwOnError?: boolean } = { throwOnError: false },
   // ): Promise<ResultOf<ItemMembershipWithItemAndAccount>> {
-  //   const result = await db.query.itemMemberships.findMany({
-  //     where: inArray(itemMembershipTable.id, ids),
+  //   const result = await db.query.itemMembershipsTable.findMany({
+  //     where: inArray(itemMembershipsTable.id, ids),
   //     with: {
   //       account: true,
   //       item: true,
@@ -570,12 +570,12 @@ export class ItemMembershipRepository {
   async getAdminsForItem(db: DBConnection, itemPath: string): Promise<MemberRaw[]> {
     return (await db
       .select(getViewSelectedFields(membersView))
-      .from(itemMembershipTable)
-      .innerJoin(membersView, eq(membersView.id, itemMembershipTable.accountId))
+      .from(itemMembershipsTable)
+      .innerJoin(membersView, eq(membersView.id, itemMembershipsTable.accountId))
       .where(
         and(
-          isAncestorOrSelf(itemMembershipTable.itemPath, itemPath),
-          eq(itemMembershipTable.permission, PermissionLevel.Admin),
+          isAncestorOrSelf(itemMembershipsTable.itemPath, itemPath),
+          eq(itemMembershipsTable.permission, PermissionLevel.Admin),
         ),
       )) as MemberRaw[]; // TODO: fix type
   }
@@ -627,9 +627,9 @@ export class ItemMembershipRepository {
 
     tasks.push(
       db
-        .update(itemMembershipTable)
+        .update(itemMembershipsTable)
         .set({ permission })
-        .where(eq(itemMembershipTable.id, itemMembershipId)),
+        .where(eq(itemMembershipsTable.id, itemMembershipId)),
     );
     // TODO: optimize
     await Promise.all(tasks);
@@ -681,7 +681,7 @@ export class ItemMembershipRepository {
 
     // create new membership
     const itemMembership = await db
-      .insert(itemMembershipTable)
+      .insert(itemMembershipsTable)
       .values({
         permission,
         itemPath: itemPath,
@@ -697,7 +697,7 @@ export class ItemMembershipRepository {
   // UTILS
 
   private async delete(db: DBConnection, membershipId: string) {
-    await db.delete(itemMembershipTable).where(eq(itemMembershipTable.id, membershipId));
+    await db.delete(itemMembershipsTable).where(eq(itemMembershipsTable.id, membershipId));
   }
 
   /**
@@ -722,13 +722,13 @@ export class ItemMembershipRepository {
     // retrieve its best permission and the path to the deepest element (closest to the element).
     const rows = await db
       .select({
-        accountId: itemMembershipTable.accountId,
+        accountId: itemMembershipsTable.accountId,
         itemPath: sql<Item['path']>`'max(item_path::text)::ltree'`,
         permission: sql<PermissionLevelOptions>`max(permission)`,
       })
-      .from(itemMembershipTable)
-      .where(isAncestorOrSelf(itemMembershipTable.itemPath, item.path))
-      .groupBy(itemMembershipTable.accountId);
+      .from(itemMembershipsTable)
+      .where(isAncestorOrSelf(itemMembershipsTable.itemPath, item.path))
+      .groupBy(itemMembershipsTable.accountId);
 
     // const rows = (await this.repository
     //   .createQueryBuilder('item_membership')

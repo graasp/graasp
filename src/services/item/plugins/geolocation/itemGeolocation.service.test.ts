@@ -8,7 +8,7 @@ import { PermissionLevel } from '@graasp/sdk';
 import build, { clearDatabase } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { client, db } from '../../../../drizzle/db';
-import { itemGeolocationsTable, itemsRaw } from '../../../../drizzle/schema';
+import { itemGeolocationsTable, itemsRawTable } from '../../../../drizzle/schema';
 import { BaseLogger } from '../../../../logger';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { ItemNotFound, MemberCannotAccess, MemberCannotWriteItem } from '../../../../utils/errors';

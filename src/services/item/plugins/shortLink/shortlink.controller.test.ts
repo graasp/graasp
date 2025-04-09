@@ -12,7 +12,7 @@ import build, {
 } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
-import { shortLinks } from '../../../../drizzle/schema';
+import { shortLinksTable } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { ShortLinkDuplication, ShortLinkLimitExceed } from '../../../../utils/errors';
 import { ItemPublishedNotFound } from '../publication/published/errors';
@@ -45,7 +45,7 @@ describe('Short links routes tests', () => {
 
   afterEach(async () => {
     // important to clear shortlinks because alias are unique over all the db
-    await db.delete(shortLinks);
+    await db.delete(shortLinksTable);
     jest.clearAllMocks();
     unmockAuthenticate();
   });

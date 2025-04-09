@@ -5,15 +5,15 @@ import { singleton } from 'tsyringe';
 import { DBConnection } from '../../../../drizzle/db';
 import {
   actionsTable,
-  appActions,
-  appDatas,
-  appSettings,
+  appActionsTable,
+  appDataTable,
+  appSettingsTable,
   chatMentionsTable,
   chatMessagesTable,
-  itemBookmarks,
-  itemLikes,
-  itemMemberships,
-  itemsRaw,
+  itemBookmarksTable,
+  itemLikesTable,
+  itemMembershipsTable,
+  itemsRawTable,
 } from '../../../../drizzle/schema';
 import {
   ActionRaw,
@@ -47,9 +47,9 @@ export class ExportDataRepository {
       throw new MemberIdentifierNotFound();
     }
 
-    return db.query.itemsRaw.findMany({
-      where: eq(itemsRaw.creatorId, memberId),
-      orderBy: desc(itemsRaw.updatedAt),
+    return db.query.itemsRawTable.findMany({
+      where: eq(itemsRawTable.creatorId, memberId),
+      orderBy: desc(itemsRawTable.updatedAt),
     });
   }
 
@@ -63,9 +63,12 @@ export class ExportDataRepository {
       throw new MemberIdentifierNotFound();
     }
 
-    return await db.query.itemMemberships.findMany({
-      where: or(eq(itemMemberships.accountId, accountId), eq(itemMemberships.creatorId, accountId)),
-      orderBy: desc(itemMemberships.updatedAt),
+    return await db.query.itemMembershipsTable.findMany({
+      where: or(
+        eq(itemMembershipsTable.accountId, accountId),
+        eq(itemMembershipsTable.creatorId, accountId),
+      ),
+      orderBy: desc(itemMembershipsTable.updatedAt),
     });
   }
 
@@ -142,10 +145,10 @@ export class ExportDataRepository {
       throw new IllegalArgumentException('The accountId must be defined');
     }
 
-    return await db.query.appActions.findMany({
+    return await db.query.appActionsTable.findMany({
       columns: { id: true, type: true, data: true, createdAt: true, itemId: true },
-      where: eq(appActions.accountId, accountId),
-      orderBy: desc(appActions.createdAt),
+      where: eq(appActionsTable.accountId, accountId),
+      orderBy: desc(appActionsTable.createdAt),
     });
   }
 
@@ -159,9 +162,9 @@ export class ExportDataRepository {
       throw new IllegalArgumentException('The accountId must be defined');
     }
 
-    return await db.query.appDatas.findMany({
-      where: or(eq(appDatas.accountId, accountId), eq(appDatas.creatorId, accountId)),
-      orderBy: desc(appDatas.createdAt),
+    return await db.query.appDataTable.findMany({
+      where: or(eq(appDataTable.accountId, accountId), eq(appDataTable.creatorId, accountId)),
+      orderBy: desc(appDataTable.createdAt),
     });
   }
   /**
@@ -177,10 +180,10 @@ export class ExportDataRepository {
       throw new MemberIdentifierNotFound();
     }
 
-    return await db.query.appSettings.findMany({
+    return await db.query.appSettingsTable.findMany({
       columns: { creatorId: false },
-      where: eq(appSettings.creatorId, memberId),
-      orderBy: desc(appSettings.createdAt),
+      where: eq(appSettingsTable.creatorId, memberId),
+      orderBy: desc(appSettingsTable.createdAt),
     });
   }
 
@@ -202,10 +205,10 @@ export class ExportDataRepository {
     if (!memberId) {
       throw new MemberIdentifierNotFound();
     }
-    const result = await db.query.itemBookmarks.findMany({
+    const result = await db.query.itemBookmarksTable.findMany({
       columns: { id: true, createdAt: true, itemId: true },
-      where: eq(itemBookmarks.memberId, memberId),
-      orderBy: desc(itemBookmarks.createdAt),
+      where: eq(itemBookmarksTable.memberId, memberId),
+      orderBy: desc(itemBookmarksTable.createdAt),
     });
 
     return result;
@@ -228,10 +231,10 @@ export class ExportDataRepository {
     if (!memberId) {
       throw new MemberIdentifierNotFound();
     }
-    const result = await db.query.itemLikes.findMany({
+    const result = await db.query.itemLikesTable.findMany({
       columns: { id: true, createdAt: true, itemId: true },
-      where: eq(itemLikes.creatorId, memberId),
-      orderBy: desc(itemLikes.createdAt),
+      where: eq(itemLikesTable.creatorId, memberId),
+      orderBy: desc(itemLikesTable.createdAt),
     });
 
     return result;
@@ -245,9 +248,9 @@ export class ExportDataRepository {
   async getByCreatorToExport(db: DBConnection, creatorId: string): Promise<ItemLikeWithItem[]> {
     throwsIfParamIsInvalid('creatorId', creatorId);
 
-    return await db.query.itemLikes.findMany({
-      where: eq(itemLikes.creatorId, creatorId),
-      orderBy: desc(itemLikes.createdAt),
+    return await db.query.itemLikesTable.findMany({
+      where: eq(itemLikesTable.creatorId, creatorId),
+      orderBy: desc(itemLikesTable.createdAt),
       with: {
         item: true,
       },

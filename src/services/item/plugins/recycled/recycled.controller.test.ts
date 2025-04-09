@@ -15,7 +15,7 @@ import build, {
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../test/constants';
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
-import { itemsRaw, recycledItemDatas } from '../../../../drizzle/schema';
+import { itemsRawTable, recycledItemDatasTable } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
 import { assertIsMemberForTest } from '../../../authentication';
@@ -86,8 +86,8 @@ describe('Recycle Bin Tests', () => {
           const response = res.json();
           expect(res.statusCode).toBe(StatusCodes.OK);
 
-          const dbDeletedItems = await db.query.itemsRaw.findMany({
-            where: eq(itemsRaw.creatorId, actor.id),
+          const dbDeletedItems = await db.query.itemsRawTable.findMany({
+            where: eq(itemsRawTable.creatorId, actor.id),
           });
           expectManyItems(dbDeletedItems, recycledItems);
           // check response recycled items
@@ -97,10 +97,7 @@ describe('Recycle Bin Tests', () => {
         });
 
         it('Successfully get second page with smaller page size', async () => {
-          const {
-            actor,
-            items: [item0, item1, item2, item3, item4, item5],
-          } = await seedFromJson({
+          const { actor } = await seedFromJson({
             items: [
               {
                 isDeleted: true,
@@ -278,15 +275,15 @@ describe('Recycle Bin Tests', () => {
           await new Promise((res) => {
             setTimeout(async () => {
               // check items are soft deleted
-              const saved = await db.query.itemsRaw.findMany({
-                where: and(isNotNull(itemsRaw.deletedAt), inArray(itemsRaw.id, itemIds)),
+              const saved = await db.query.itemsRawTable.findMany({
+                where: and(isNotNull(itemsRawTable.deletedAt), inArray(itemsRawTable.id, itemIds)),
               });
               expectManyItems(saved, items);
 
               // check recycle item entries
-              const savedEntries = await db.query.recycledItemDatas.findMany({
+              const savedEntries = await db.query.recycledItemDatasTable.findMany({
                 where: inArray(
-                  recycledItemDatas.itemPath,
+                  recycledItemDatasTable.itemPath,
                   items.map(({ path }) => path),
                 ),
               });
@@ -324,15 +321,15 @@ describe('Recycle Bin Tests', () => {
           await new Promise((res) => {
             setTimeout(async () => {
               // check items are NOT soft deleted
-              const savedNotDeleted = await db.query.itemsRaw.findMany({
-                where: and(isNull(itemsRaw.deletedAt), inArray(itemsRaw.id, itemIds)),
+              const savedNotDeleted = await db.query.itemsRawTable.findMany({
+                where: and(isNull(itemsRawTable.deletedAt), inArray(itemsRawTable.id, itemIds)),
               });
               expect(savedNotDeleted).toHaveLength(items.length);
 
               // check NO recycle item entries
-              const savedEntries = await db.query.recycledItemDatas.findMany({
+              const savedEntries = await db.query.recycledItemDatasTable.findMany({
                 where: inArray(
-                  recycledItemDatas.itemPath,
+                  recycledItemDatasTable.itemPath,
                   items.map(({ path }) => path),
                 ),
               });
@@ -413,8 +410,8 @@ describe('Recycle Bin Tests', () => {
           expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
           await waitForExpect(async () => {
             expect(
-              await db.query.itemsRaw.findMany({
-                where: and(isNull(itemsRaw.deletedAt), inArray(itemsRaw.id, itemIds)),
+              await db.query.itemsRawTable.findMany({
+                where: and(isNull(itemsRawTable.deletedAt), inArray(itemsRawTable.id, itemIds)),
               }),
             ).toHaveLength(items.length);
           }, MULTIPLE_ITEMS_LOADING_TIME);
@@ -490,8 +487,8 @@ describe('Recycle Bin Tests', () => {
           // did not restore any items
           await waitForExpect(async () => {
             expect(
-              await db.query.itemsRaw.findMany({
-                where: and(isNotNull(itemsRaw.deletedAt), inArray(itemsRaw.id, itemIds)),
+              await db.query.itemsRawTable.findMany({
+                where: and(isNotNull(itemsRawTable.deletedAt), inArray(itemsRawTable.id, itemIds)),
               }),
             ).toHaveLength(items.length);
           }, MULTIPLE_ITEMS_LOADING_TIME);
@@ -523,8 +520,8 @@ describe('Recycle Bin Tests', () => {
           // did not restore any items
           await waitForExpect(async () => {
             expect(
-              await db.query.itemsRaw.findMany({
-                where: and(isNotNull(itemsRaw.deletedAt), inArray(itemsRaw.id, itemIds)),
+              await db.query.itemsRawTable.findMany({
+                where: and(isNotNull(itemsRawTable.deletedAt), inArray(itemsRawTable.id, itemIds)),
               }),
             ).toHaveLength(items.length);
           }, MULTIPLE_ITEMS_LOADING_TIME);
@@ -560,13 +557,13 @@ describe('Recycle Bin Tests', () => {
 
       await waitForExpect(async () => {
         expect(
-          await db.query.recycledItemDatas.findMany({
-            where: eq(recycledItemDatas.itemPath, parentItem.path),
+          await db.query.recycledItemDatasTable.findMany({
+            where: eq(recycledItemDatasTable.itemPath, parentItem.path),
           }),
         ).toHaveLength(1);
         expect(
-          await db.query.itemsRaw.findMany({
-            where: and(isNotNull(itemsRaw.deletedAt), eq(itemsRaw.id, childItem.id)),
+          await db.query.itemsRawTable.findMany({
+            where: and(isNotNull(itemsRawTable.deletedAt), eq(itemsRawTable.id, childItem.id)),
           }),
         ).toHaveLength(1);
       });
@@ -579,14 +576,14 @@ describe('Recycle Bin Tests', () => {
 
       await waitForExpect(async () => {
         expect(
-          await db.query.recycledItemDatas.findMany({
-            where: eq(recycledItemDatas.itemPath, parentItem.path),
+          await db.query.recycledItemDatasTable.findMany({
+            where: eq(recycledItemDatasTable.itemPath, parentItem.path),
           }),
         ).toHaveLength(0);
       });
 
-      const restoredChild = await db.query.itemsRaw.findFirst({
-        where: and(eq(itemsRaw.id, childItem.id), isNull(itemsRaw.deletedAt)),
+      const restoredChild = await db.query.itemsRawTable.findFirst({
+        where: and(eq(itemsRawTable.id, childItem.id), isNull(itemsRawTable.deletedAt)),
       });
       // the recycle/restore operation changed the updatedAt value, but we can't know when from the outside
       expectItem(restoredChild!, childItem);

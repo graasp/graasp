@@ -13,7 +13,7 @@ import build, {
 } from '../../../../../../test/app';
 import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { db } from '../../../../../drizzle/db';
-import { appActions } from '../../../../../drizzle/schema';
+import { appActionsTable } from '../../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../../utils/assertions';
 import { APP_ITEMS_PREFIX } from '../../../../../utils/config';
 import { assertIsMemberForTest } from '../../../../authentication';
@@ -257,14 +257,14 @@ describe('App Actions Tests', () => {
         });
         expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
 
-        const newAppAction = await db.query.appActions.findFirst({
-          where: and(eq(appActions.type, payload.type), eq(appActions.itemId, item.id)),
+        const newAppAction = await db.query.appActionsTable.findFirst({
+          where: and(eq(appActionsTable.type, payload.type), eq(appActionsTable.itemId, item.id)),
         });
         assertIsDefined(newAppAction);
         expect(newAppAction.type).toEqual(payload.type);
         expect(newAppAction.data).toEqual(payload.data);
-        const savedAppAction = await db.query.appActions.findFirst({
-          where: eq(appActions.id, newAppAction.id),
+        const savedAppAction = await db.query.appActionsTable.findFirst({
+          where: eq(appActionsTable.id, newAppAction.id),
         });
         expectAppActions([newAppAction], [savedAppAction]);
       });

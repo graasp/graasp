@@ -15,7 +15,12 @@ import {
 import { ItemFactory } from '../../../test/factories/item.factory';
 import { buildFile, seedFromJson } from '../../../test/mocks/seed';
 import { client, db } from '../../drizzle/db';
-import { items, itemsRaw, publishedItems, recycledItemDatas } from '../../drizzle/schema';
+import {
+  items,
+  itemsRawTable,
+  publishedItemsTable,
+  recycledItemDatasTable,
+} from '../../drizzle/schema';
 import { Item } from '../../drizzle/types';
 import { assertIsDefined } from '../../utils/assertions';
 import {
@@ -37,11 +42,11 @@ const alphabeticalOrder = (a: string, b: string) => a.localeCompare(b);
 
 // TODO: remove when this can be handled by the seed
 async function saveRecycledItem(item: Item, creatorId: string) {
-  await db.insert(recycledItemDatas).values({ itemPath: item.path, creatorId });
+  await db.insert(recycledItemDatasTable).values({ itemPath: item.path, creatorId });
   await db
-    .update(itemsRaw)
+    .update(itemsRawTable)
     .set({ deletedAt: new Date().toISOString() })
-    .where(eq(itemsRaw.id, item.id));
+    .where(eq(itemsRawTable.id, item.id));
 }
 
 // TODO: remove when this can be handled by the seed
@@ -71,7 +76,7 @@ const saveCollections = async () => {
   });
 
   for (const item of items) {
-    await db.insert(publishedItems).values({ itemPath: item.path, creatorId: member.id });
+    await db.insert(publishedItemsTable).values({ itemPath: item.path, creatorId: member.id });
   }
   return { items, member };
 };

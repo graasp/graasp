@@ -15,7 +15,7 @@ import build, {
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
-import { itemMemberships, itemsRaw } from '../../../../drizzle/schema';
+import { itemMembershipsTable, itemsRawTable } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { MemberCannotAccess, MemberCannotWriteItem } from '../../../../utils/errors';
 import { ItemService } from '../../item.service';
@@ -92,14 +92,16 @@ describe('Shortcut routes tests', () => {
         await waitForPostCreation();
 
         // check item exists in db
-        const item = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, newItem.id) });
+        const item = await db.query.itemsRawTable.findFirst({
+          where: eq(itemsRawTable.id, newItem.id),
+        });
         expect(item?.id).toEqual(newItem.id);
         // order is null for root
         expect(item?.order).toBeNull();
 
         // a membership is created for this item
-        const membership = await db.query.itemMemberships.findFirst({
-          where: eq(itemMemberships.itemPath, newItem.path),
+        const membership = await db.query.itemMembershipsTable.findFirst({
+          where: eq(itemMembershipsTable.itemPath, newItem.path),
         });
         expect(membership?.permission).toEqual(PermissionLevel.Admin);
       });
@@ -262,7 +264,9 @@ describe('Shortcut routes tests', () => {
         });
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
 
-        const newItem = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, item.id) });
+        const newItem = await db.query.itemsRawTable.findFirst({
+          where: eq(itemsRawTable.id, item.id),
+        });
         assertIsDefined(newItem);
         expect(newItem.settings.isCollapsible).toBe(false);
         expectItem(newItem, item);

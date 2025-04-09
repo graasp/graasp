@@ -14,7 +14,7 @@ import {
 import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../test/app';
 import { seedFromJson } from '../../../test/mocks/seed';
 import { db } from '../../drizzle/db';
-import { guestsView, itemLoginSchemas, itemMemberships } from '../../drizzle/schema';
+import { guestsView, itemLoginSchemasTable, itemMembershipsTable } from '../../drizzle/schema';
 import { assertIsDefined } from '../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../utils/config';
 import { MemberCannotAdminItem } from '../../utils/errors';
@@ -42,8 +42,8 @@ const getGuest = async ({
 };
 
 const getItemLoginSchemaById = async (ilsId) => {
-  return await db.query.itemLoginSchemas.findFirst({
-    where: eq(itemLoginSchemas.id, ilsId),
+  return await db.query.itemLoginSchemasTable.findFirst({
+    where: eq(itemLoginSchemasTable.id, ilsId),
   });
 };
 
@@ -516,8 +516,8 @@ describe('Item Login Tests', () => {
         const member = res.json();
 
         // membership is saved on the right path
-        const membership = await db.query.itemMemberships.findFirst({
-          where: eq(itemMemberships.accountId, member.id),
+        const membership = await db.query.itemMembershipsTable.findFirst({
+          where: eq(itemMembershipsTable.accountId, member.id),
           with: { item: true, account: true },
         });
         expect(membership?.item.path).toEqual(parentItem.path);

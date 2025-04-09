@@ -5,7 +5,7 @@ import { singleton } from 'tsyringe';
 import { UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { itemTags, tags } from '../../../../drizzle/schema';
+import { itemTagsTable, tagsTable } from '../../../../drizzle/schema';
 import { Item, TagRaw } from '../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../repositories/errors';
 import { TagCategoryOptions, TagCount } from '../../../tag/tag.schemas';
@@ -22,12 +22,12 @@ export class ItemTagRepository {
     const result = await db
       .select(
         // only take the tags columns
-        getTableColumns(tags),
+        getTableColumns(tagsTable),
       )
-      .from(tags)
-      .leftJoin(itemTags, eq(tags.id, itemTags.tagId))
-      .where(eq(itemTags.itemId, itemId))
-      .orderBy(asc(tags.category), asc(tags.name));
+      .from(tagsTable)
+      .leftJoin(itemTagsTable, eq(tagsTable.id, itemTagsTable.tagId))
+      .where(eq(itemTagsTable.itemId, itemId))
+      .orderBy(asc(tagsTable.category), asc(tagsTable.name));
 
     return result;
   }
@@ -46,15 +46,15 @@ export class ItemTagRepository {
       throw new IllegalArgumentException(`search is invalid: "${search}"`);
     }
     const selectCols = {
-      id: tags.id,
-      name: tags.name,
-      category: tags.category,
-      count: db.$count(itemTags, eq(itemTags.tagId, tags.id)),
+      id: tagsTable.id,
+      name: tagsTable.name,
+      category: tagsTable.category,
+      count: db.$count(itemTagsTable, eq(itemTagsTable.tagId, tagsTable.id)),
     };
     const res = await db
       .select(selectCols)
-      .from(tags)
-      .where(and(ilike(tags.name, `%${search}%`), eq(tags.category, category)))
+      .from(tagsTable)
+      .where(and(ilike(tagsTable.name, `%${search}%`), eq(tagsTable.category, category)))
       .orderBy(desc(selectCols.count))
       .limit(TAG_COUNT_MAX_RESULTS);
 
@@ -63,7 +63,7 @@ export class ItemTagRepository {
 
   async create(db: DBConnection, itemId: UUID, tagId: TagRaw['id']): Promise<void> {
     try {
-      await db.insert(itemTags).values({ itemId, tagId });
+      await db.insert(itemTagsTable).values({ itemId, tagId });
     } catch (e) {
       throw new ItemTagAlreadyExists({ itemId, tagId });
     }
@@ -74,6 +74,8 @@ export class ItemTagRepository {
       throw new IllegalArgumentException(`Given 'itemId' or 'tagId' is undefined!`);
     }
     // remove association between item and tag in tag association table
-    await db.delete(itemTags).where(and(eq(itemTags.tagId, tagId), eq(itemTags.itemId, itemId)));
+    await db
+      .delete(itemTagsTable)
+      .where(and(eq(itemTagsTable.tagId, tagId), eq(itemTagsTable.itemId, itemId)));
   }
 }

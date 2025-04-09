@@ -20,7 +20,7 @@ import build, {
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
-import { accountsTable, invitationsTable, itemMemberships } from '../../../../drizzle/schema';
+import { accountsTable, invitationsTable, itemMembershipsTable } from '../../../../drizzle/schema';
 import { InvitationRaw } from '../../../../drizzle/types';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../../../utils/assertions';
@@ -179,8 +179,8 @@ describe('Invitation Plugin', () => {
         expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
 
         // a membership is created
-        const memberships = await db.query.itemMemberships.findMany({
-          where: eq(itemMemberships.accountId, toMember.id),
+        const memberships = await db.query.itemMembershipsTable.findMany({
+          where: eq(itemMembershipsTable.accountId, toMember.id),
         });
         expect(memberships).toHaveLength(1);
         expect(memberships[0].permission).toEqual(PermissionLevel.Read);
@@ -821,8 +821,8 @@ describe('Invitation Plugin', () => {
         });
         expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
         // no membership created
-        const memberships = await db.query.itemMemberships.findMany({
-          where: eq(itemMemberships.itemPath, item.path),
+        const memberships = await db.query.itemMembershipsTable.findMany({
+          where: eq(itemMembershipsTable.itemPath, item.path),
         });
         expect(memberships).toHaveLength(1); // contains only actor membership
 
@@ -877,8 +877,8 @@ describe('Invitation Plugin', () => {
         expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
 
         // no membership created
-        const memberships = await db.query.itemMemberships.findMany({
-          where: eq(itemMemberships.itemPath, item.path),
+        const memberships = await db.query.itemMembershipsTable.findMany({
+          where: eq(itemMembershipsTable.itemPath, item.path),
         });
         expect(memberships).toHaveLength(1); // get actor membership
 
@@ -957,11 +957,11 @@ describe('Invitation Plugin', () => {
           expect(savedInvitation).toBeFalsy();
 
           // membership has been created
-          const membership = await db.query.itemMemberships.findFirst({
+          const membership = await db.query.itemMembershipsTable.findFirst({
             where: and(
-              eq(itemMemberships.permission, invitation.permission),
-              eq(itemMemberships.accountId, member.id),
-              eq(itemMemberships.itemPath, item.path),
+              eq(itemMembershipsTable.permission, invitation.permission),
+              eq(itemMembershipsTable.accountId, member.id),
+              eq(itemMembershipsTable.itemPath, item.path),
             ),
           });
           expect(membership).toBeTruthy();
@@ -1000,8 +1000,8 @@ describe('Invitation Plugin', () => {
             }),
           ).toHaveLength(1);
           expect(
-            await db.query.itemMemberships.findMany({
-              where: eq(itemMemberships.itemPath, item.path),
+            await db.query.itemMembershipsTable.findMany({
+              where: eq(itemMembershipsTable.itemPath, item.path),
             }),
           ).toHaveLength(1);
           done(true);

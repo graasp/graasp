@@ -1,6 +1,6 @@
 import { v4 } from 'uuid';
 
-import { AppItemFactory, FolderItemFactory, ItemType, PermissionLevel } from '@graasp/sdk';
+import { AppItemFactory, ItemType } from '@graasp/sdk';
 
 import { MOCK_LOGGER } from '../../../../../test/app';
 import { db } from '../../../../drizzle/db';
@@ -11,9 +11,7 @@ import { ItemMembershipRepository } from '../../../itemMembership/membership.rep
 import { ThumbnailService } from '../../../thumbnail/thumbnail.service';
 import { ItemWrapperService } from '../../ItemWrapper';
 import { BasicItemService } from '../../basic.service';
-import { WrongItemTypeError } from '../../errors';
 import { ItemRepository } from '../../item.repository';
-import { ItemService } from '../../item.service';
 import { ItemGeolocationRepository } from '../geolocation/itemGeolocation.repository';
 import { ItemVisibilityRepository } from '../itemVisibility/itemVisibility.repository';
 import { ItemPublishedRepository } from '../publication/published/itemPublished.repository';

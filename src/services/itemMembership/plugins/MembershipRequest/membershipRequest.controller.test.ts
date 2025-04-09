@@ -14,7 +14,7 @@ import build, {
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
-import { membershipRequests } from '../../../../drizzle/schema';
+import { membershipRequestsTable } from '../../../../drizzle/schema';
 import { Item } from '../../../../drizzle/types';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../../../utils/assertions';
@@ -363,10 +363,10 @@ describe('MembershipRequest', () => {
       });
 
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
-      const membershipRequest = await db.query.membershipRequests.findFirst({
+      const membershipRequest = await db.query.membershipRequestsTable.findFirst({
         where: and(
-          eq(membershipRequests.itemId, item.id),
-          eq(membershipRequests.memberId, actor.id),
+          eq(membershipRequestsTable.itemId, item.id),
+          eq(membershipRequestsTable.memberId, actor.id),
         ),
       });
       assertIsDefined(membershipRequest);
@@ -414,10 +414,10 @@ describe('MembershipRequest', () => {
       });
 
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
-      const membershipRequest = await db.query.membershipRequests.findFirst({
+      const membershipRequest = await db.query.membershipRequestsTable.findFirst({
         where: and(
-          eq(membershipRequests.itemId, targetItem.id),
-          eq(membershipRequests.memberId, actor.id),
+          eq(membershipRequestsTable.itemId, targetItem.id),
+          eq(membershipRequestsTable.memberId, actor.id),
         ),
       });
       expect(membershipRequest).toBeDefined();
@@ -499,10 +499,10 @@ describe('MembershipRequest', () => {
         url: `/items/${item.id}/memberships/requests`,
       });
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
-      const membershipRequest = await db.query.membershipRequests.findFirst({
+      const membershipRequest = await db.query.membershipRequestsTable.findFirst({
         where: and(
-          eq(membershipRequests.itemId, item.id),
-          eq(membershipRequests.memberId, actor.id),
+          eq(membershipRequestsTable.itemId, item.id),
+          eq(membershipRequestsTable.memberId, actor.id),
         ),
       });
       expect(membershipRequest).toBeDefined();
@@ -550,10 +550,10 @@ describe('MembershipRequest', () => {
         url: `/items/${item.id}/memberships/requests/${member.id}`,
       });
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
-      const membershipRequest = await db.query.membershipRequests.findFirst({
+      const membershipRequest = await db.query.membershipRequestsTable.findFirst({
         where: and(
-          eq(membershipRequests.itemId, item.id),
-          eq(membershipRequests.memberId, member.id),
+          eq(membershipRequestsTable.itemId, item.id),
+          eq(membershipRequestsTable.memberId, member.id),
         ),
       });
       expect(membershipRequest).toBeUndefined();

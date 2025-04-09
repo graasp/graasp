@@ -9,7 +9,7 @@ import {
 
 import { DBConnection } from '../../../../drizzle/db';
 import { DUPLICATE_ERROR_CODE } from '../../../../drizzle/errorCodes';
-import { shortLinks } from '../../../../drizzle/schema';
+import { shortLinksTable } from '../../../../drizzle/schema';
 import { ShortLinkInsertDTO, ShortLinkRaw, ShortLinkWithItem } from '../../../../drizzle/types';
 import { UpdateException } from '../../../../repositories/errors';
 import { throwsIfParamIsInvalid } from '../../../../repositories/utils';
@@ -34,7 +34,7 @@ export class ShortLinkRepository {
     }
 
     try {
-      const res = await db.insert(shortLinks).values({ alias, platform, itemId }).returning();
+      const res = await db.insert(shortLinksTable).values({ alias, platform, itemId }).returning();
 
       return res[0];
     } catch (e) {
@@ -57,8 +57,8 @@ export class ShortLinkRepository {
 
     const result = await db
       .select({ count: count() })
-      .from(shortLinks)
-      .where(and(eq(shortLinks.itemId, itemId), eq(shortLinks.platform, platform)));
+      .from(shortLinksTable)
+      .where(and(eq(shortLinksTable.itemId, itemId), eq(shortLinksTable.platform, platform)));
 
     return result[0].count;
   }
@@ -66,15 +66,15 @@ export class ShortLinkRepository {
   async getByItem(db: DBConnection, itemId: string): Promise<ShortLinkRaw[]> {
     throwsIfParamIsInvalid('itemId', itemId);
 
-    return await db.query.shortLinks.findMany({
-      where: eq(shortLinks.itemId, itemId),
-      orderBy: asc(shortLinks.createdAt),
+    return await db.query.shortLinksTable.findMany({
+      where: eq(shortLinksTable.itemId, itemId),
+      orderBy: asc(shortLinksTable.createdAt),
     });
   }
 
   async getOne(db: DBConnection, alias: string): Promise<ShortLinkWithItem> {
-    const shortLink = await db.query.shortLinks.findFirst({
-      where: eq(shortLinks.alias, alias),
+    const shortLink = await db.query.shortLinksTable.findFirst({
+      where: eq(shortLinksTable.alias, alias),
       with: { item: true },
     });
 
@@ -95,9 +95,9 @@ export class ShortLinkRepository {
 
     try {
       const res = await db
-        .update(shortLinks)
+        .update(shortLinksTable)
         .set(entity)
-        .where(eq(shortLinks.alias, alias))
+        .where(eq(shortLinksTable.alias, alias))
         .returning();
 
       const updatedEntity = res.at(0);
@@ -118,6 +118,6 @@ export class ShortLinkRepository {
   }
 
   async deleteOne(db: DBConnection, alias: string): Promise<void> {
-    await db.delete(shortLinks).where(eq(shortLinks.alias, alias)).returning();
+    await db.delete(shortLinksTable).where(eq(shortLinksTable.alias, alias)).returning();
   }
 }

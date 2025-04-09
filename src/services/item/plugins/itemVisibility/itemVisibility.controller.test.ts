@@ -13,18 +13,14 @@ import build, {
 } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
-import { itemVisibilities } from '../../../../drizzle/schema';
+import { itemVisibilitiesTable } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
-import {
-  CannotModifyParentVisibility,
-  ConflictingVisibilitiesInTheHierarchy,
-  ItemVisibilityNotFound,
-} from './errors';
+import { CannotModifyParentVisibility, ConflictingVisibilitiesInTheHierarchy } from './errors';
 
 export const saveTagsForItem = async ({ item, creator }) => {
   const res = await db
-    .insert(itemVisibilities)
+    .insert(itemVisibilitiesTable)
     .values({ itemPath: item.path, creatorId: creator.id, type: ItemVisibilityType.Hidden })
     .returning();
 
@@ -185,12 +181,12 @@ describe('Item Visibility', () => {
           });
 
           expect(res.statusCode).toBe(StatusCodes.NO_CONTENT);
-          const itemVisibility = await db.query.itemVisibilities.findFirst({
-            where: eq(itemVisibilities.id, parentPublicVisibility.id),
+          const itemVisibility = await db.query.itemVisibilitiesTable.findFirst({
+            where: eq(itemVisibilitiesTable.id, parentPublicVisibility.id),
           });
           expect(itemVisibility).toBeUndefined();
-          const childItemTag = await db.query.itemVisibilities.findFirst({
-            where: eq(itemVisibilities.id, childPublicVisibility.id),
+          const childItemTag = await db.query.itemVisibilitiesTable.findFirst({
+            where: eq(itemVisibilitiesTable.id, childPublicVisibility.id),
           });
           expect(childItemTag).toBeUndefined();
         });

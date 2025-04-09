@@ -15,7 +15,7 @@ import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { resolveDependency } from '../../../../../di/utils';
 import { db } from '../../../../../drizzle/db';
 import { isDirectChild } from '../../../../../drizzle/operations';
-import { itemsRaw } from '../../../../../drizzle/schema';
+import { itemsRawTable } from '../../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../../utils/assertions';
 import { H5P_LOCAL_CONFIG, H5P_PATH_PREFIX, TMP_FOLDER } from '../../../../../utils/config';
 import { H5PItem } from '../../../discrimination';
@@ -207,8 +207,8 @@ describe('Service plugin', () => {
       let copiedH5P;
       await waitForExpect(async () => {
         // expect(false).toBeTruthy();
-        copiedH5P = await db.query.itemsRaw.findFirst({
-          where: isDirectChild(itemsRaw.path, targetParent.path),
+        copiedH5P = await db.query.itemsRawTable.findFirst({
+          where: isDirectChild(itemsRawTable.path, targetParent.path),
         });
         expect(copiedH5P).toBeDefined();
       }, 5000); // the above line ensures exists
@@ -384,7 +384,9 @@ describe('Service plugin', () => {
 
       // expect order is after previous item
       const item = res.json();
-      const itemWithOrder = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, item.id) });
+      const itemWithOrder = await db.query.itemsRawTable.findFirst({
+        where: eq(itemsRawTable.id, item.id),
+      });
       assertIsDefined(itemWithOrder);
       assertIsDefined(previousItem.order);
       expect(itemWithOrder.order).toBeGreaterThan(previousItem.order);

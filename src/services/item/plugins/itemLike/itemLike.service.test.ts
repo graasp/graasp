@@ -1,6 +1,6 @@
 import { v4 } from 'uuid';
 
-import { client, db } from '../../../../drizzle/db';
+import { db } from '../../../../drizzle/db';
 import {
   ItemLikeRaw,
   ItemPublishedWithItemWithCreator,

@@ -16,34 +16,34 @@ import {
 import { MinimalGuest, MinimalMember } from '../types';
 import {
   accountsTable,
-  actionRequestExports,
+  actionRequestExportsTable,
   actionsTable,
-  appActions,
-  appDatas,
-  appSettings,
-  apps,
+  appActionsTable,
+  appDataTable,
+  appSettingsTable,
+  appsTable,
   chatMentionsTable,
   chatMessagesTable,
   guestsView,
   invitationsTable,
-  itemBookmarks,
+  itemBookmarksTable,
   itemGeolocationsTable,
-  itemLikes,
-  itemLoginSchemas,
-  itemMemberships,
-  itemTags,
-  itemValidationGroups,
-  itemValidationReviews,
-  itemValidations,
-  itemVisibilities,
+  itemLikesTable,
+  itemLoginSchemasTable,
+  itemMembershipsTable,
+  itemTagsTable,
+  itemValidationGroupsTable,
+  itemValidationReviewsTable,
+  itemValidationsTable,
+  itemVisibilitiesTable,
   items,
-  itemsRaw,
-  memberProfiles,
+  itemsRawTable,
+  memberProfilesTable,
   membersView,
-  membershipRequests,
-  publishedItems,
-  shortLinks,
-  tags,
+  membershipRequestsTable,
+  publishedItemsTable,
+  shortLinksTable,
+  tagsTable,
 } from './schema';
 
 export type AccountInsertDTO = typeof accountsTable.$inferInsert;
@@ -74,7 +74,7 @@ export type MemberRaw = Omit<typeof membersView.$inferSelect, 'type'> & {
   isValidated: boolean;
 };
 
-export type ItemLoginSchemaRaw = typeof itemLoginSchemas.$inferSelect;
+export type ItemLoginSchemaRaw = typeof itemLoginSchemasTable.$inferSelect;
 export type ItemLoginSchemaWithItem = ItemLoginSchemaRaw & { item: Item };
 export type GuestInsertDTO = typeof accountsTable.$inferInsert;
 export type GuestRaw = Omit<typeof guestsView.$inferSelect, 'type'> & {
@@ -87,7 +87,7 @@ export type GuestWithItemLoginSchema = GuestRaw & {
 /**
  * Raw insert type used when creating an item
  */
-export type ItemInsertDTO = typeof itemsRaw.$inferInsert;
+export type ItemInsertDTO = typeof itemsRawTable.$inferInsert;
 
 /**
  * Raw return type given when retrieveing from the db.
@@ -161,16 +161,16 @@ export type MinimalItemForInsert = {
 };
 
 // --- ItemVisibilities
-export type ItemVisibilityRaw = typeof itemVisibilities.$inferSelect;
+export type ItemVisibilityRaw = typeof itemVisibilitiesTable.$inferSelect;
 export type ItemVisibilityWithItem = ItemVisibilityRaw & {
   item: Item;
 };
 
 // ---- Published items
 
-export type ItemPublishedRaw = typeof publishedItems.$inferSelect;
+export type ItemPublishedRaw = typeof publishedItemsTable.$inferSelect;
 
-export type ItemPublishedWithItem = Omit<typeof publishedItems.$inferSelect, 'itemPath'> & {
+export type ItemPublishedWithItem = Omit<typeof publishedItemsTable.$inferSelect, 'itemPath'> & {
   item: Item;
 };
 export type ItemPublishedWithItemWithCreator = ItemPublishedRaw & {
@@ -224,16 +224,16 @@ export type InvitationWithItemAndCreator = Omit<InvitationWithItem, 'creatorId'>
 };
 
 // --- Tags
-export type TagRaw = typeof tags.$inferSelect;
-export type TagCreationDTO = typeof tags.$inferInsert;
+export type TagRaw = typeof tagsTable.$inferSelect;
+export type TagCreationDTO = typeof tagsTable.$inferInsert;
 
 // --- ItemTags
-export type ItemTagInsertDTO = typeof itemTags.$inferInsert;
-export type ItemTagRaw = typeof itemTags.$inferSelect;
+export type ItemTagInsertDTO = typeof itemTagsTable.$inferInsert;
+export type ItemTagRaw = typeof itemTagsTable.$inferSelect;
 
 // --- ItemMembership
-export type ItemMembershipRaw = typeof itemMemberships.$inferSelect;
-export type ItemMembershipInsertDTO = typeof itemMemberships.$inferInsert;
+export type ItemMembershipRaw = typeof itemMembershipsTable.$inferSelect;
+export type ItemMembershipInsertDTO = typeof itemMembershipsTable.$inferInsert;
 export type ItemMembershipWithItem = ItemMembershipRaw & {
   item: ItemRaw;
 };
@@ -254,10 +254,10 @@ export type ItemMembershipWithItemAndAccountAndCreator = Omit<
 };
 
 // -- App
-export type AppRaw = typeof apps.$inferSelect;
+export type AppRaw = typeof appsTable.$inferSelect;
 
 // --- AppAction
-export type AppActionRaw = typeof appActions.$inferSelect;
+export type AppActionRaw = typeof appActionsTable.$inferSelect;
 export type AppActionWithItem = AppActionRaw & {
   item: Item;
 };
@@ -267,13 +267,13 @@ export type AppActionWithItemAndAccount = AppActionRaw & {
 };
 
 // --- AppSetting
-export type AppSettingInsertDTO = typeof appSettings.$inferInsert;
-export type AppSettingRaw = typeof appSettings.$inferSelect;
+export type AppSettingInsertDTO = typeof appSettingsTable.$inferInsert;
+export type AppSettingRaw = typeof appSettingsTable.$inferSelect;
 export type AppSettingWithItem = AppSettingRaw & { item: Item };
 
 // --- AppData
-export type AppDataInsertDTO = typeof appDatas.$inferInsert;
-export type AppDataRaw = typeof appDatas.$inferSelect;
+export type AppDataInsertDTO = typeof appDataTable.$inferInsert;
+export type AppDataRaw = typeof appDataTable.$inferSelect;
 export type AppDataWithItem = AppDataRaw & {
   item: Item;
 };
@@ -284,12 +284,12 @@ export type AppDataWithItemAndAccountAndCreator = AppDataRaw & {
 };
 
 // --- ShortLink
-export type ShortLinkRaw = typeof shortLinks.$inferSelect;
-export type ShortLinkInsertDTO = typeof shortLinks.$inferInsert;
+export type ShortLinkRaw = typeof shortLinksTable.$inferSelect;
+export type ShortLinkInsertDTO = typeof shortLinksTable.$inferInsert;
 export type ShortLinkWithItem = ShortLinkRaw & { item: Item };
 
 // --- ItemLike
-export type ItemLikeRaw = typeof itemLikes.$inferSelect;
+export type ItemLikeRaw = typeof itemLikesTable.$inferSelect;
 export type ItemLikeWithItem = ItemLikeRaw & { item: Item };
 export type ItemLikeWithItemWithCreator = ItemLikeRaw & { item: ItemWithCreator };
 export type ItemLikeWithItemAndAccount = ItemLikeWithItem & {
@@ -305,12 +305,12 @@ export type ItemGeolocationWithItemWithCreator = ItemGeolocationRaw & {
 };
 
 // --- ItemValidation
-export type ItemValidationRaw = typeof itemValidations.$inferSelect;
+export type ItemValidationRaw = typeof itemValidationsTable.$inferSelect;
 export type ItemValidationWithItem = ItemValidationRaw & { item: Item };
-export type ItemValidationInsertDTO = typeof itemValidations.$inferInsert;
+export type ItemValidationInsertDTO = typeof itemValidationsTable.$inferInsert;
 
 // --- ItemValidationGroup
-export type ItemValidationGroupRaw = typeof itemValidationGroups.$inferSelect;
+export type ItemValidationGroupRaw = typeof itemValidationGroupsTable.$inferSelect;
 export type ItemValidationGroupWithItemAndValidations = ItemValidationGroupRaw & {
   item: Item;
   itemValidations: ItemValidationRaw[];
@@ -319,26 +319,26 @@ export type ItemValidationGroupWithItemAndValidationsWithItem = ItemValidationGr
   item: Item;
   itemValidations: ItemValidationWithItem[];
 };
-export type ItemValidationGroupInsertDTO = typeof itemValidationGroups.$inferInsert;
+export type ItemValidationGroupInsertDTO = typeof itemValidationGroupsTable.$inferInsert;
 
 // --- ItemValidationReview
-export type ItemValidationReviewRaw = typeof itemValidationReviews.$inferSelect;
-export type ItemValidationReviewInsertDTO = typeof itemValidationReviews.$inferInsert;
+export type ItemValidationReviewRaw = typeof itemValidationReviewsTable.$inferSelect;
+export type ItemValidationReviewInsertDTO = typeof itemValidationReviewsTable.$inferInsert;
 
 // --- ItemBookmark
-export type ItemBookmarkRaw = typeof itemBookmarks.$inferSelect;
+export type ItemBookmarkRaw = typeof itemBookmarksTable.$inferSelect;
 export type ItemBookmarkRawWithItem = ItemBookmarkRaw & { item: Item };
 export type ItemBookmarkRawWithItemWithCreator = ItemBookmarkRaw & { item: ItemWithCreator };
-export type ItemBookmarkInsertDTO = typeof itemBookmarks.$inferInsert;
+export type ItemBookmarkInsertDTO = typeof itemBookmarksTable.$inferInsert;
 export type ItemBookmarkRawWithItemAndAccount = ItemBookmarkRaw & {
   item: Item;
   account: Account;
 };
 
 // --- MemberProfile
-export type MemberProfileRaw = typeof memberProfiles.$inferSelect;
-export type MemberProfileInsertDTO = typeof memberProfiles.$inferInsert;
+export type MemberProfileRaw = typeof memberProfilesTable.$inferSelect;
+export type MemberProfileInsertDTO = typeof memberProfilesTable.$inferInsert;
 
-export type ActionRequestExportRaw = typeof actionRequestExports.$inferSelect;
+export type ActionRequestExportRaw = typeof actionRequestExportsTable.$inferSelect;
 
-export type MembershipRequestRaw = typeof membershipRequests.$inferSelect;
+export type MembershipRequestRaw = typeof membershipRequestsTable.$inferSelect;

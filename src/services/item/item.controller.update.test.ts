@@ -24,7 +24,7 @@ import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../.
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../test/constants';
 import { SeedActor, seedFromJson } from '../../../test/mocks/seed';
 import { db } from '../../drizzle/db';
-import { itemGeolocationsTable, itemMemberships, itemsRaw } from '../../drizzle/schema';
+import { itemGeolocationsTable, itemMembershipsTable, itemsRawTable } from '../../drizzle/schema';
 import { assertIsDefined } from '../../utils/assertions';
 import {
   HierarchyTooDeep,
@@ -41,9 +41,9 @@ import { expectItem } from './test/fixtures/items';
 import { getItemWithDepth } from './test/utils';
 
 const getItemOrder = async (item: { id: string }) => {
-  const val = await db.query.itemsRaw.findFirst({
+  const val = await db.query.itemsRawTable.findFirst({
     columns: { order: true },
-    where: eq(itemsRaw.id, item.id),
+    where: eq(itemsRawTable.id, item.id),
   });
   if (val) {
     return val.order;
@@ -232,14 +232,16 @@ describe('Item routes tests', () => {
         await waitForPostCreation();
 
         // check item exists in db
-        const item = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, newItem.id) });
+        const item = await db.query.itemsRawTable.findFirst({
+          where: eq(itemsRawTable.id, newItem.id),
+        });
         expect(item).toBeDefined();
         // order is null for root
         expect(item!.order).toBeNull();
 
         // a membership is created for this item
-        const membership = await await db.query.itemMemberships.findFirst({
-          where: eq(itemMemberships.itemPath, newItem.path),
+        const membership = await await db.query.itemMembershipsTable.findFirst({
+          where: eq(itemMembershipsTable.itemPath, newItem.path),
         });
         expect(membership).toBeDefined();
         expect(membership!.permission).toEqual(PermissionLevel.Admin);
@@ -279,8 +281,8 @@ describe('Item routes tests', () => {
         await waitForPostCreation();
 
         // a membership does not need to be created for item with admin rights
-        const newMembership = await db.query.itemMemberships.findFirst({
-          where: eq(itemMemberships.itemPath, newItem.path),
+        const newMembership = await db.query.itemMembershipsTable.findFirst({
+          where: eq(itemMembershipsTable.itemPath, newItem.path),
         });
         expect(newMembership).toBeUndefined();
       });
@@ -318,8 +320,8 @@ describe('Item routes tests', () => {
         // one membership for sharing
         // admin for the new item
         expect(
-          await db.query.itemMemberships.findFirst({
-            where: eq(itemMemberships.itemPath, newItem.path),
+          await db.query.itemMembershipsTable.findFirst({
+            where: eq(itemMembershipsTable.itemPath, newItem.path),
           }),
         ).toBeDefined();
       });
@@ -1068,12 +1070,12 @@ describe('Item routes tests', () => {
         expect(response.json()).toEqual(items.map(({ id }) => id));
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
         await waitForExpect(async () => {
-          const remaining = await db.query.itemsRaw.findMany({
-            where: inArray(itemsRaw.id, [item1.id, item2.id]),
+          const remaining = await db.query.itemsRawTable.findMany({
+            where: inArray(itemsRawTable.id, [item1.id, item2.id]),
           });
           expect(remaining).toHaveLength(0);
-          const memberships = await db.query.itemMemberships.findMany({
-            where: inArray(itemMemberships.id, [im1.id, im2.id]),
+          const memberships = await db.query.itemMembershipsTable.findMany({
+            where: inArray(itemMembershipsTable.id, [im1.id, im2.id]),
           });
           expect(memberships).toHaveLength(0);
         }, MULTIPLE_ITEMS_LOADING_TIME);
@@ -1102,12 +1104,12 @@ describe('Item routes tests', () => {
         expect(response.json()).toEqual([item1.id]);
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
         await waitForExpect(async () => {
-          const remaining = await db.query.itemsRaw.findFirst({
-            where: eq(itemsRaw.id, item1.id),
+          const remaining = await db.query.itemsRawTable.findFirst({
+            where: eq(itemsRawTable.id, item1.id),
           });
           expect(remaining).toBeUndefined();
-          const memberships = await db.query.itemMemberships.findFirst({
-            where: eq(itemMemberships.id, im1.id),
+          const memberships = await db.query.itemMembershipsTable.findFirst({
+            where: eq(itemMembershipsTable.id, im1.id),
           });
           expect(memberships).toBeUndefined();
         }, MULTIPLE_ITEMS_LOADING_TIME);
@@ -1143,9 +1145,9 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
         await waitForExpect(async () => {
           // should keep root
-          const remaining = await db.query.itemsRaw.findMany({
+          const remaining = await db.query.itemsRawTable.findMany({
             where: inArray(
-              itemsRaw.id,
+              itemsRawTable.id,
               items.map((i) => i.id),
             ),
           });
@@ -1153,9 +1155,9 @@ describe('Item routes tests', () => {
           expect(remaining).toHaveLength(1);
           expect(remaining[0].id).toEqual(root.id);
           // should keep root membership for actor and member
-          const memberships = await db.query.itemMemberships.findMany({
+          const memberships = await db.query.itemMembershipsTable.findMany({
             where: inArray(
-              itemMemberships.id,
+              itemMembershipsTable.id,
               ims.map((i) => i.id),
             ),
           });
@@ -1207,8 +1209,8 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
         // items should still exist
         await waitForExpect(async () => {
-          const remaining = await db.query.itemsRaw.findMany({
-            where: inArray(itemsRaw.id, itemIds),
+          const remaining = await db.query.itemsRawTable.findMany({
+            where: inArray(itemsRawTable.id, itemIds),
           });
           expect(remaining).toHaveLength(items.length);
         });
@@ -1434,11 +1436,13 @@ describe('Item routes tests', () => {
         await waitForExpect(async () => {
           // expect(true).toBe(false);
           for (const item of items) {
-            const result = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, item.id) });
+            const result = await db.query.itemsRawTable.findFirst({
+              where: eq(itemsRawTable.id, item.id),
+            });
             expect(result!.path.startsWith(parent.path)).toBeTruthy();
             // membership should have been deleted because has admin rights on parent
-            const im = await db.query.itemMemberships.findFirst({
-              where: eq(itemMemberships.id, im1.id),
+            const im = await db.query.itemMembershipsTable.findFirst({
+              where: eq(itemMembershipsTable.id, im1.id),
             });
             expect(im).toBeUndefined();
           }
@@ -1477,7 +1481,9 @@ describe('Item routes tests', () => {
         // item should have a differnt path
         await waitForExpect(async () => {
           for (const item of items) {
-            const result = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, item.id) });
+            const result = await db.query.itemsRawTable.findFirst({
+              where: eq(itemsRawTable.id, item.id),
+            });
             if (!result) {
               throw new Error('item does not exist!');
             }
@@ -1512,14 +1518,16 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
         // item should have a different path
         await waitForExpect(async () => {
-          const result = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, item.id) });
+          const result = await db.query.itemsRawTable.findFirst({
+            where: eq(itemsRawTable.id, item.id),
+          });
           if (!result) {
             throw new Error('item does not exist!');
           }
           expect(result.path.startsWith(parentItem.path)).toBeFalsy();
           // membership should have been created
-          const im = await db.query.itemMemberships.findFirst({
-            where: eq(itemMemberships.itemPath, result.path),
+          const im = await db.query.itemMembershipsTable.findFirst({
+            where: eq(itemMembershipsTable.itemPath, result.path),
           });
           expect(im).toBeDefined();
         }, MULTIPLE_ITEMS_LOADING_TIME);
@@ -1551,14 +1559,16 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
         // item should have a different path
         await waitForExpect(async () => {
-          const result = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, item.id) });
+          const result = await db.query.itemsRawTable.findFirst({
+            where: eq(itemsRawTable.id, item.id),
+          });
           if (!result) {
             throw new Error('item does not exist!');
           }
           expect(result.path.startsWith(parentItem.path)).toBeTruthy();
           // membership should have been deleted
-          const im = await db.query.itemMemberships.findFirst({
-            where: eq(itemMemberships.itemPath, result.path),
+          const im = await db.query.itemMembershipsTable.findFirst({
+            where: eq(itemMembershipsTable.itemPath, result.path),
           });
           expect(im).toBeUndefined();
         }, MULTIPLE_ITEMS_LOADING_TIME);
@@ -1595,7 +1605,9 @@ describe('Item routes tests', () => {
         // item should have a different path
         await waitForExpect(async () => {
           for (const item of items) {
-            const result = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, item.id) });
+            const result = await db.query.itemsRawTable.findFirst({
+              where: eq(itemsRawTable.id, item.id),
+            });
             if (!result) {
               throw new Error('item does not exist!');
             }
@@ -1633,7 +1645,9 @@ describe('Item routes tests', () => {
         // wait a bit for tasks to complete
         await waitForExpect(async () => {
           for (const item of items) {
-            const result = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, item.id) });
+            const result = await db.query.itemsRawTable.findFirst({
+              where: eq(itemsRawTable.id, item.id),
+            });
             if (!result) {
               throw new Error('item does not exist!');
             }
@@ -1693,7 +1707,9 @@ describe('Item routes tests', () => {
         // item should have a different path
         await waitForExpect(async () => {
           for (const item of items) {
-            const result = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, item.id) });
+            const result = await db.query.itemsRawTable.findFirst({
+              where: eq(itemsRawTable.id, item.id),
+            });
             if (!result) {
               throw new Error('item does not exist!');
             }
@@ -1756,11 +1772,11 @@ describe('Item routes tests', () => {
         // wait a bit for tasks to complete
         await waitForExpect(async () => {
           for (const { name, creatorId } of items) {
-            const itemsInDb1 = await db.query.itemsRaw.findMany({
-              where: eq(itemsRaw.name, name),
+            const itemsInDb1 = await db.query.itemsRawTable.findMany({
+              where: eq(itemsRawTable.name, name),
             });
-            const itemsInDb2 = await db.query.itemsRaw.findMany({
-              where: eq(itemsRaw.name, `${name} (2)`),
+            const itemsInDb2 = await db.query.itemsRawTable.findMany({
+              where: eq(itemsRawTable.name, `${name} (2)`),
             });
             expect(itemsInDb1).toHaveLength(1);
             expect(itemsInDb2).toHaveLength(1);
@@ -1780,12 +1796,12 @@ describe('Item routes tests', () => {
             expect(itemsInDb[0].path).not.toEqual(itemsInDb[1].path);
             expect(itemsInDb2[0].order).toBeNull();
             // check it created a new membership per item
-            const m1 = await db.query.itemMemberships.findFirst({
-              where: eq(itemMemberships.itemPath, itemsInDb1[0].path),
+            const m1 = await db.query.itemMembershipsTable.findFirst({
+              where: eq(itemMembershipsTable.itemPath, itemsInDb1[0].path),
             });
             expect(m1).toBeDefined();
-            const m2 = await db.query.itemMemberships.findFirst({
-              where: eq(itemMemberships.itemPath, itemsInDb2[0].path),
+            const m2 = await db.query.itemMembershipsTable.findFirst({
+              where: eq(itemMembershipsTable.itemPath, itemsInDb2[0].path),
             });
             expect(m2).toBeDefined();
           }
@@ -1829,18 +1845,21 @@ describe('Item routes tests', () => {
           // contains twice the items (and the target item)
           const orders: (number | null)[] = [];
           for (const { id, name } of items) {
-            const itemsInDb = await db.query.itemsRaw.findMany({
-              where: and(eq(itemsRaw.name, name), eq(itemsRaw.id, id)),
+            const itemsInDb = await db.query.itemsRawTable.findMany({
+              where: and(eq(itemsRawTable.name, name), eq(itemsRawTable.id, id)),
             });
             expect(itemsInDb).toHaveLength(1);
-            const copiedItemInDb = await db.query.itemsRaw.findMany({
-              where: and(eq(itemsRaw.name, name), ne(itemsRaw.id, id)),
+            const copiedItemInDb = await db.query.itemsRawTable.findMany({
+              where: and(eq(itemsRawTable.name, name), ne(itemsRawTable.id, id)),
             });
             expect(copiedItemInDb).toHaveLength(1);
             orders.push(copiedItemInDb[0].order);
             // check it did not create a new membership because user is admin of parent
-            const newCountMembership = await db.query.itemMemberships.findMany({
-              where: inArray(itemMemberships.itemPath, [itemsInDb[0].path, copiedItemInDb[0].path]),
+            const newCountMembership = await db.query.itemMembershipsTable.findMany({
+              where: inArray(itemMembershipsTable.itemPath, [
+                itemsInDb[0].path,
+                copiedItemInDb[0].path,
+              ]),
             });
             expect(newCountMembership).toHaveLength(1);
           }
@@ -1887,17 +1906,20 @@ describe('Item routes tests', () => {
         await waitForExpect(async () => {
           // contains twice the items (and the target item)
           for (const { id, name } of items) {
-            const itemsInDb = await db.query.itemsRaw.findMany({
-              where: and(eq(itemsRaw.name, name), eq(itemsRaw.id, id)),
+            const itemsInDb = await db.query.itemsRawTable.findMany({
+              where: and(eq(itemsRawTable.name, name), eq(itemsRawTable.id, id)),
             });
             expect(itemsInDb).toHaveLength(1);
-            const copiedItemInDb = await db.query.itemsRaw.findMany({
-              where: and(eq(itemsRaw.name, name), ne(itemsRaw.id, id)),
+            const copiedItemInDb = await db.query.itemsRawTable.findMany({
+              where: and(eq(itemsRawTable.name, name), ne(itemsRawTable.id, id)),
             });
             expect(copiedItemInDb).toHaveLength(1);
             // check it created a new membership because user is writer of parent
-            const newCountMembership = await db.query.itemMemberships.findMany({
-              where: inArray(itemMemberships.itemPath, [itemsInDb[0].path, copiedItemInDb[0].path]),
+            const newCountMembership = await db.query.itemMembershipsTable.findMany({
+              where: inArray(itemMembershipsTable.itemPath, [
+                itemsInDb[0].path,
+                copiedItemInDb[0].path,
+              ]),
             });
             expect(newCountMembership).toHaveLength(2);
           }
@@ -1940,18 +1962,18 @@ describe('Item routes tests', () => {
         // wait a bit for tasks to complete
         await waitForExpect(async () => {
           // contains twice the items (and the target item)
-          const itemsInDb1 = await db.query.itemsRaw.findMany({
-            where: eq(itemsRaw.name, item.name),
+          const itemsInDb1 = await db.query.itemsRawTable.findMany({
+            where: eq(itemsRawTable.name, item.name),
           });
           // 2 is added because there is already an item with the same name in the root
-          const itemsInDb2 = await db.query.itemsRaw.findMany({
-            where: eq(itemsRaw.name, `${item.name} (2)`),
+          const itemsInDb2 = await db.query.itemsRawTable.findMany({
+            where: eq(itemsRawTable.name, `${item.name} (2)`),
           });
           expect(itemsInDb1).toHaveLength(1);
           expect(itemsInDb2).toHaveLength(1);
           // check it created a new membership because user is writer of parent
-          const newCountMembership = await db.query.itemMemberships.findMany({
-            where: inArray(itemMemberships.itemPath, [itemsInDb1[0].path, itemsInDb2[0].path]),
+          const newCountMembership = await db.query.itemMembershipsTable.findMany({
+            where: inArray(itemMembershipsTable.itemPath, [itemsInDb1[0].path, itemsInDb2[0].path]),
           });
           expect(newCountMembership).toHaveLength(2);
         }, MULTIPLE_ITEMS_LOADING_TIME);
@@ -1990,16 +2012,19 @@ describe('Item routes tests', () => {
         await waitForExpect(async () => {
           // contains twice the items (and the target item)
           for (const { id, name } of items) {
-            const itemsInDb = await db.query.itemsRaw.findMany({
-              where: and(eq(itemsRaw.name, name), eq(itemsRaw.id, id)),
+            const itemsInDb = await db.query.itemsRawTable.findMany({
+              where: and(eq(itemsRawTable.name, name), eq(itemsRawTable.id, id)),
             });
             expect(itemsInDb).toHaveLength(1);
-            const copiedItemInDb = await db.query.itemsRaw.findMany({
-              where: and(eq(itemsRaw.name, name), ne(itemsRaw.id, id)),
+            const copiedItemInDb = await db.query.itemsRawTable.findMany({
+              where: and(eq(itemsRawTable.name, name), ne(itemsRawTable.id, id)),
             });
             expect(copiedItemInDb).toHaveLength(1);
-            const newCountMembership = await db.query.itemMemberships.findMany({
-              where: inArray(itemMemberships.itemPath, [itemsInDb[0].path, copiedItemInDb[0].path]),
+            const newCountMembership = await db.query.itemMembershipsTable.findMany({
+              where: inArray(itemMembershipsTable.itemPath, [
+                itemsInDb[0].path,
+                copiedItemInDb[0].path,
+              ]),
             });
             expect(newCountMembership).toHaveLength(2);
             expect(copiedItemInDb[0].order).toBeNull();
@@ -2036,8 +2061,8 @@ describe('Item routes tests', () => {
         // wait a bit for tasks to complete
         await waitForExpect(async () => {
           for (const item of items) {
-            const results = await db.query.itemsRaw.findMany({
-              where: and(eq(itemsRaw.name, item.name), ne(itemsRaw.id, item.id)),
+            const results = await db.query.itemsRawTable.findMany({
+              where: and(eq(itemsRawTable.name, item.name), ne(itemsRawTable.id, item.id)),
             });
             expect(results).toHaveLength(1);
             expect(results[0].path.startsWith(parentItem.path)).toBeTruthy();
@@ -2075,8 +2100,8 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
         // wait a bit for tasks to complete
         await waitForExpect(async () => {
-          const itemsInDb = await db.query.itemsRaw.findMany({
-            where: eq(itemsRaw.name, item.name),
+          const itemsInDb = await db.query.itemsRawTable.findMany({
+            where: eq(itemsRawTable.name, item.name),
           });
           expect(itemsInDb).toHaveLength(2);
           for (const i of itemsInDb) {
@@ -2131,12 +2156,12 @@ describe('Item routes tests', () => {
         // wait a bit for tasks to complete
         await waitForExpect(async () => {
           for (const item of items) {
-            const itemsInDb1 = await db.query.itemsRaw.findMany({
-              where: eq(itemsRaw.name, item.name),
+            const itemsInDb1 = await db.query.itemsRawTable.findMany({
+              where: eq(itemsRawTable.name, item.name),
             });
             expect(itemsInDb1).toHaveLength(1);
-            const itemsInDb2 = await db.query.itemsRaw.findMany({
-              where: eq(itemsRaw.name, `${item.name} (2)`),
+            const itemsInDb2 = await db.query.itemsRawTable.findMany({
+              where: eq(itemsRawTable.name, `${item.name} (2)`),
             });
             expect(itemsInDb2).toHaveLength(0);
           }
@@ -2171,12 +2196,12 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
         // wait a bit for tasks to complete
         await waitForExpect(async () => {
-          const itemsInDb1 = await db.query.itemsRaw.findMany({
-            where: eq(itemsRaw.name, item.name),
+          const itemsInDb1 = await db.query.itemsRawTable.findMany({
+            where: eq(itemsRawTable.name, item.name),
           });
           expect(itemsInDb1).toHaveLength(1);
-          const itemsInDb2 = await db.query.itemsRaw.findMany({
-            where: eq(itemsRaw.name, `${item.name} (2)`),
+          const itemsInDb2 = await db.query.itemsRawTable.findMany({
+            where: eq(itemsRawTable.name, `${item.name} (2)`),
           });
           expect(itemsInDb2).toHaveLength(0);
         }, MULTIPLE_ITEMS_LOADING_TIME);

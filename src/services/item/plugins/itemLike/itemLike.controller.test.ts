@@ -12,7 +12,7 @@ import build, {
 } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
-import { itemLikes } from '../../../../drizzle/schema';
+import { itemLikesTable } from '../../../../drizzle/schema';
 import { ItemLikeRaw } from '../../../../drizzle/types';
 import { MinimalMember } from '../../../../types';
 import { assertIsDefined } from '../../../../utils/assertions';
@@ -50,11 +50,11 @@ export const expectManyItemLikes = (
 };
 
 const getFullItemLike = (id: string) => {
-  return db.query.itemLikes.findFirst({ where: eq(itemLikes.id, id) });
+  return db.query.itemLikesTable.findFirst({ where: eq(itemLikesTable.id, id) });
 };
 
 const getItemLikesByItem = (itemId: string) => {
-  return db.query.itemLikes.findMany({ where: eq(itemLikes.itemId, itemId) });
+  return db.query.itemLikesTable.findMany({ where: eq(itemLikesTable.itemId, itemId) });
 };
 
 describe('Item Like', () => {

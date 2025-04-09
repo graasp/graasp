@@ -11,7 +11,7 @@ import build, { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../.
 import { seedFromJson } from '../../../test/mocks/seed';
 import { resolveDependency } from '../../di/utils';
 import { db } from '../../drizzle/db';
-import { itemMemberships, membershipRequests } from '../../drizzle/schema';
+import { itemMembershipsTable, membershipRequestsTable } from '../../drizzle/schema';
 import { MailerService } from '../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../utils/assertions';
 import {
@@ -28,11 +28,13 @@ import { assertIsMember } from '../authentication';
 import { expectMembership } from './test/fixtures/memberships';
 
 const getMembershipById = async (id: string) => {
-  return await db.query.itemMemberships.findFirst({ where: eq(itemMemberships.id, id) });
+  return await db.query.itemMembershipsTable.findFirst({ where: eq(itemMembershipsTable.id, id) });
 };
 
 const getMembershipsByItemPath = async (path: string) => {
-  return await db.query.itemMemberships.findMany({ where: eq(itemMemberships.itemPath, path) });
+  return await db.query.itemMembershipsTable.findMany({
+    where: eq(itemMembershipsTable.itemPath, path),
+  });
 };
 
 describe('Membership routes tests', () => {
@@ -407,26 +409,26 @@ describe('Membership routes tests', () => {
         });
         expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
         expect(
-          await db.query.membershipRequests.findFirst({
+          await db.query.membershipRequestsTable.findFirst({
             where: and(
-              eq(membershipRequests.memberId, member.id),
-              eq(membershipRequests.itemId, parentItem.id),
+              eq(membershipRequestsTable.memberId, member.id),
+              eq(membershipRequestsTable.itemId, parentItem.id),
             ),
           }),
         ).toBeDefined();
         expect(
-          await db.query.membershipRequests.findFirst({
+          await db.query.membershipRequestsTable.findFirst({
             where: and(
-              eq(membershipRequests.memberId, member.id),
-              eq(membershipRequests.itemId, targetItem.id),
+              eq(membershipRequestsTable.memberId, member.id),
+              eq(membershipRequestsTable.itemId, targetItem.id),
             ),
           }),
         ).toBeUndefined();
         expect(
-          await db.query.membershipRequests.findFirst({
+          await db.query.membershipRequestsTable.findFirst({
             where: and(
-              eq(membershipRequests.memberId, member.id),
-              eq(membershipRequests.itemId, childItem.id),
+              eq(membershipRequestsTable.memberId, member.id),
+              eq(membershipRequestsTable.itemId, childItem.id),
             ),
           }),
         ).toBeDefined();

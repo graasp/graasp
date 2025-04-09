@@ -1,6 +1,6 @@
 import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { client, db } from '../../../../../drizzle/db';
-import { publishedItems } from '../../../../../drizzle/schema';
+import { publishedItemsTable } from '../../../../../drizzle/schema';
 import { ItemPublishedRepository } from './itemPublished.repository';
 
 const repository = new ItemPublishedRepository();
@@ -32,7 +32,7 @@ describe('ItemPublishedRepository', () => {
       });
 
       // publish item
-      await db.insert(publishedItems).values({ itemPath: item.path });
+      await db.insert(publishedItemsTable).values({ itemPath: item.path });
 
       const result = await repository.touchUpdatedAt(db, item.path);
       expect(new Date(result!).getTime() - new Date(updatedAt).getTime()).toBeLessThanOrEqual(200);

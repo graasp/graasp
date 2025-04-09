@@ -10,7 +10,7 @@ import {
 } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../drizzle/db';
-import { appDatas } from '../../../../../drizzle/schema';
+import { appDataTable } from '../../../../../drizzle/schema';
 import {
   Account,
   AppDataRaw,
@@ -29,7 +29,7 @@ export class AppDataRepository {
     { itemId, actorId, appData }: CreateAppDataBody,
   ): Promise<AppDataRaw> {
     const savedValue = await db
-      .insert(appDatas)
+      .insert(appDataTable)
       .values({
         visibility: AppDataVisibility.Member,
         ...appData,
@@ -48,7 +48,9 @@ export class AppDataRepository {
     body: Partial<AppDataRaw>,
   ): Promise<AppDataRaw> {
     // we shouldn't update file data
-    const originalData = await db.query.appDatas.findFirst({ where: eq(appDatas.id, appDataId) });
+    const originalData = await db.query.appDataTable.findFirst({
+      where: eq(appDataTable.id, appDataId),
+    });
 
     if (!originalData) {
       throw new AppDataNotFound(appDataId);
@@ -60,9 +62,9 @@ export class AppDataRepository {
     }
 
     const patchedAppData = await db
-      .update(appDatas)
+      .update(appDataTable)
       .set(body)
-      .where(eq(appDatas.id, appDataId))
+      .where(eq(appDataTable.id, appDataId))
       .returning();
 
     return patchedAppData[0];
@@ -72,8 +74,8 @@ export class AppDataRepository {
     db: DBConnection,
     id: string,
   ): Promise<AppDataWithItemAndAccountAndCreator | undefined> {
-    return await db.query.appDatas.findFirst({
-      where: eq(appDatas.id, id),
+    return await db.query.appDataTable.findFirst({
+      where: eq(appDataTable.id, id),
       with: { account: true, creator: true, item: true },
     });
   }
@@ -90,31 +92,34 @@ export class AppDataRepository {
   ): Promise<AppDataWithItemAndAccountAndCreator[]> {
     const { accountId, type } = filters;
 
-    const andConditions: (SQL | undefined)[] = [eq(appDatas.itemId, itemId)];
+    const andConditions: (SQL | undefined)[] = [eq(appDataTable.itemId, itemId)];
 
     // filter app data to only include requested type
     if (type) {
-      andConditions.push(eq(appDatas.type, type));
+      andConditions.push(eq(appDataTable.type, type));
     }
 
     // restrict app data access if user is not an admin
     if (permission !== PermissionLevel.Admin) {
       const orConditions: (SQL | undefined)[] = [
         // - visibility: item
-        eq(appDatas.visibility, AppDataVisibility.Item),
+        eq(appDataTable.visibility, AppDataVisibility.Item),
       ];
 
       if (accountId) {
         orConditions.push(
           // - visibility: account & account: id
           // additionally get account's app data if defined
-          and(eq(appDatas.visibility, AppDataVisibility.Member), eq(appDatas.accountId, accountId)),
+          and(
+            eq(appDataTable.visibility, AppDataVisibility.Member),
+            eq(appDataTable.accountId, accountId),
+          ),
         );
       }
       andConditions.push(or(...orConditions));
     }
 
-    return await db.query.appDatas.findMany({
+    return await db.query.appDataTable.findMany({
       where: and(...andConditions),
       with: {
         creator: true,
@@ -125,6 +130,6 @@ export class AppDataRepository {
   }
 
   async deleteOne(db: DBConnection, id: string): Promise<void> {
-    await db.delete(appDatas).where(eq(appDatas.id, id));
+    await db.delete(appDataTable).where(eq(appDataTable.id, id));
   }
 }

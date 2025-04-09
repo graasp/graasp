@@ -9,7 +9,7 @@ import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 import { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
-import { itemsRaw } from '../../../../drizzle/schema';
+import { itemsRawTable } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { TestWsClient } from '../../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../../websockets/test/ws-app';
@@ -65,8 +65,8 @@ describe('Recycle websocket hooks', () => {
       expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        const updatedItem = await db.query.itemsRaw.findFirst({
-          where: and(eq(itemsRaw.id, item.id), isNotNull(itemsRaw.deletedAt)),
+        const updatedItem = await db.query.itemsRawTable.findFirst({
+          where: and(eq(itemsRawTable.id, item.id), isNotNull(itemsRawTable.deletedAt)),
         });
         expect(updatedItem).toBeDefined();
         assertIsDefined(updatedItem);
@@ -144,8 +144,8 @@ describe('Recycle websocket hooks', () => {
       expect(restore.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        const restored = await db.query.itemsRaw.findFirst({
-          where: and(eq(itemsRaw.id, item.id), isNull(itemsRaw.deletedAt)),
+        const restored = await db.query.itemsRawTable.findFirst({
+          where: and(eq(itemsRawTable.id, item.id), isNull(itemsRawTable.deletedAt)),
         });
         assertIsDefined(restored);
 

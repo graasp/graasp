@@ -149,8 +149,8 @@ describe('App Data Tests - Legacy', () => {
   //       },
   //       payload: { data: updatedData.data },
   //     });
-  //     const savedValue = await db.query.appDatas.findFirst({
-  //       where: eq(appDatas.id, chosenAppData.id),
+  //     const savedValue = await db.query.appDataTable.findFirst({
+  //       where: eq(appDataTable.id, chosenAppData.id),
   //     });
   //     expect(response.json().member.id).toBeDefined();
   //   });

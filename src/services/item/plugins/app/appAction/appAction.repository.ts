@@ -3,7 +3,7 @@ import { and, eq, inArray } from 'drizzle-orm/sql';
 import { ResultOf } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../drizzle/db';
-import { appActions } from '../../../../../drizzle/schema';
+import { appActionsTable } from '../../../../../drizzle/schema';
 import { AppActionWithItemAndAccount } from '../../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../../repositories/errors';
 import { mapById } from '../../../../utils';
@@ -19,7 +19,7 @@ type CreateAppActionBody = {
 export class AppActionRepository {
   async addOne(db: DBConnection, { itemId, accountId, appAction }: CreateAppActionBody) {
     return await db
-      .insert(appActions)
+      .insert(appActionsTable)
       .values({
         ...appAction,
         itemId,
@@ -29,8 +29,8 @@ export class AppActionRepository {
   }
 
   async getOne(db: DBConnection, id: string) {
-    return await db.query.appActions.findFirst({
-      where: eq(appActions.id, id),
+    return await db.query.appActionsTable.findFirst({
+      where: eq(appActionsTable.id, id),
       with: { account: true },
     });
   }
@@ -45,10 +45,10 @@ export class AppActionRepository {
     }
 
     const { accountId } = filters;
-    return await db.query.appActions.findMany({
+    return await db.query.appActionsTable.findMany({
       where: and(
-        eq(appActions.itemId, itemId),
-        accountId ? eq(appActions.accountId, accountId) : undefined,
+        eq(appActionsTable.itemId, itemId),
+        accountId ? eq(appActionsTable.accountId, accountId) : undefined,
       ),
       with: { account: true, item: true },
     });
@@ -66,10 +66,10 @@ export class AppActionRepository {
     }
 
     // here it is ok to have some app actions where the item or the member are null (because of missing or soft-deleted relations)
-    const result = await db.query.appActions.findMany({
+    const result = await db.query.appActionsTable.findMany({
       where: and(
-        inArray(appActions.itemId, itemIds),
-        accountId ? eq(appActions.accountId, accountId) : undefined,
+        inArray(appActionsTable.itemId, itemIds),
+        accountId ? eq(appActionsTable.accountId, accountId) : undefined,
       ),
       with: { item: true, account: true },
     });

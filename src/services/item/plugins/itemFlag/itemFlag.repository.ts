@@ -3,7 +3,7 @@ import { singleton } from 'tsyringe';
 import { FlagType } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { itemFlags } from '../../../../drizzle/schema';
+import { itemFlagsTable } from '../../../../drizzle/schema';
 
 type CreateItemFlagBody = {
   flagType: FlagType;
@@ -17,6 +17,6 @@ export class ItemFlagRepository {
     db: DBConnection,
     { flagType, creatorId, itemId }: CreateItemFlagBody,
   ): Promise<void> {
-    await db.insert(itemFlags).values({ type: flagType, creatorId, itemId });
+    await db.insert(itemFlagsTable).values({ type: flagType, creatorId, itemId });
   }
 }

@@ -13,7 +13,7 @@ import {
 import { clearDatabase, mockAuthenticate, unmockAuthenticate } from '../../../../test/app';
 import { seedFromJson } from '../../../../test/mocks/seed';
 import { db } from '../../../drizzle/db';
-import { itemsRaw } from '../../../drizzle/schema';
+import { itemsRawTable } from '../../../drizzle/schema';
 import { Item } from '../../../drizzle/types';
 import { assertIsDefined } from '../../../utils/assertions';
 import { TestWsClient } from '../../websockets/test/test-websocket-client';
@@ -71,7 +71,7 @@ describe('Item websocket hooks', () => {
 
       await waitForExpect(async () => {
         expect(
-          await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, item.id) }),
+          await db.query.itemsRawTable.findFirst({ where: eq(itemsRawTable.id, item.id) }),
         ).toBeUndefined();
       });
 
@@ -147,7 +147,7 @@ describe('Item websocket hooks', () => {
 
       let moved;
       await waitForExpect(async () => {
-        moved = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, item.id) });
+        moved = await db.query.itemsRawTable.findFirst({ where: eq(itemsRawTable.id, item.id) });
         expect(moved?.path).toContain(newParent.path);
       });
 
@@ -226,8 +226,8 @@ describe('Item websocket hooks', () => {
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        const [copied] = await db.query.itemsRaw.findMany({
-          where: and(eq(itemsRaw.name, newParent.name), ne(itemsRaw.id, item.id)),
+        const [copied] = await db.query.itemsRawTable.findMany({
+          where: and(eq(itemsRawTable.name, newParent.name), ne(itemsRawTable.id, item.id)),
         });
         expect(copied).toBeDefined();
         const [feedbackUpdate] = memberUpdates;

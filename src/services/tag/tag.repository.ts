@@ -4,7 +4,7 @@ import { singleton } from 'tsyringe';
 import { TagCategory } from '@graasp/sdk';
 
 import { DBConnection } from '../../drizzle/db';
-import { tags } from '../../drizzle/schema';
+import { tagsTable } from '../../drizzle/schema';
 import { TagRaw } from '../../drizzle/types';
 import { IllegalArgumentException } from '../../repositories/errors';
 
@@ -19,13 +19,13 @@ export class TagRepository {
     if (!tagId) {
       throw new IllegalArgumentException('tagId is not valid');
     }
-    const tag = await db.query.tags.findFirst({ where: eq(tags.id, tagId) });
+    const tag = await db.query.tagsTable.findFirst({ where: eq(tagsTable.id, tagId) });
     return tag;
   }
 
   async addOne(db: DBConnection, tag: { name: string; category: TagCategory }): Promise<TagRaw> {
     const createdTag = await db
-      .insert(tags)
+      .insert(tagsTable)
       .values({ name: this.sanitizeName(tag.name), category: tag.category })
       .returning();
     if (createdTag.length != 1) {
@@ -38,10 +38,10 @@ export class TagRepository {
     db: DBConnection,
     tagInfo: { name: string; category: TagCategory },
   ): Promise<TagRaw> {
-    const tag = await db.query.tags.findFirst({
+    const tag = await db.query.tagsTable.findFirst({
       where: and(
-        eq(tags.name, this.sanitizeName(tagInfo.name)),
-        eq(tags.category, tagInfo.category),
+        eq(tagsTable.name, this.sanitizeName(tagInfo.name)),
+        eq(tagsTable.category, tagInfo.category),
       ),
     });
 

@@ -140,7 +140,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   // fastify.get(
   //   '/validations/reviews',
   //   {
-  //     // schema: itemValidationReviews
+  //     // schema: itemValidationReviewsTable
   //   },
   //   async ({ member, log }) => {
   //     return validationService.getValidationReviews(member, buildRepositories());

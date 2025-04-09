@@ -2,7 +2,7 @@ import { v4 } from 'uuid';
 
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { client, db } from '../../../../drizzle/db';
-import { itemBookmarks } from '../../../../drizzle/schema';
+import { itemBookmarksTable } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { DuplicateBookmarkError, ItemBookmarkNotFound } from './errors';
 import { ItemBookmarkRepository } from './itemBookmark.repository';
@@ -21,7 +21,7 @@ async function prepareTest() {
   expect(actor).toBeDefined();
   assertIsDefined(actor);
   const favorites = await db
-    .insert(itemBookmarks)
+    .insert(itemBookmarksTable)
     .values(items.map((i) => ({ itemId: i.id, memberId: actor.id })))
     .returning();
 

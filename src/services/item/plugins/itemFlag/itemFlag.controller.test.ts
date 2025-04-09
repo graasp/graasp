@@ -13,7 +13,7 @@ import build, {
 } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
-import { itemFlags } from '../../../../drizzle/schema';
+import { itemFlagsTable } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
 
@@ -96,8 +96,8 @@ describe('Item Flag Tests', () => {
           payload,
         });
         expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
-        const flagContent = await db.query.itemFlags.findFirst({
-          where: eq(itemFlags.itemId, item.id),
+        const flagContent = await db.query.itemFlagsTable.findFirst({
+          where: eq(itemFlagsTable.itemId, item.id),
         });
         assertIsDefined(flagContent);
         expect(flagContent.type).toEqual(payload.type);

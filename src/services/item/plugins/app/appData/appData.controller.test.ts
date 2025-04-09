@@ -14,7 +14,7 @@ import build, {
 } from '../../../../../../test/app';
 import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { db } from '../../../../../drizzle/db';
-import { appDatas } from '../../../../../drizzle/schema';
+import { appDataTable } from '../../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../../utils/assertions';
 import { APP_ITEMS_PREFIX } from '../../../../../utils/config';
 import { assertIsMemberForTest } from '../../../../authentication';
@@ -420,8 +420,8 @@ describe('App Data Tests', () => {
             payload,
           });
           expect(response.statusCode).toEqual(StatusCodes.OK);
-          const savedAppData = await db.query.appDatas.findFirst({
-            where: eq(appDatas.type, payload.type),
+          const savedAppData = await db.query.appDataTable.findFirst({
+            where: eq(appDataTable.type, payload.type),
           });
           assertIsDefined(savedAppData);
           expect(savedAppData.data).toEqual(payload.data);
@@ -461,8 +461,8 @@ describe('App Data Tests', () => {
             payload: { ...payload, accountId: bob.id },
           });
           expect(response.statusCode).toEqual(StatusCodes.OK);
-          const newAppData = await db.query.appDatas.findFirst({
-            where: and(eq(appDatas.type, payload.type), eq(appDatas.accountId, bob.id)),
+          const newAppData = await db.query.appDataTable.findFirst({
+            where: and(eq(appDataTable.type, payload.type), eq(appDataTable.accountId, bob.id)),
           });
           assertIsDefined(newAppData);
           expect(newAppData.data).toEqual(payload.data);
@@ -534,8 +534,8 @@ describe('App Data Tests', () => {
             payload: { ...payload, accountId: bob.id },
           });
           expect(response.statusCode).toEqual(StatusCodes.OK);
-          const newAppData = await db.query.appDatas.findFirst({
-            where: eq(appDatas.type, payload.type),
+          const newAppData = await db.query.appDataTable.findFirst({
+            where: eq(appDataTable.type, payload.type),
           });
           assertIsDefined(newAppData);
           expect(newAppData.data).toEqual(payload.data);
@@ -591,8 +591,8 @@ describe('App Data Tests', () => {
           payload: updatedData,
         });
         expect(response.statusCode).toEqual(StatusCodes.OK);
-        const savedAppData = await db.query.appDatas.findFirst({
-          where: eq(appDatas.id, chosenAppData.id),
+        const savedAppData = await db.query.appDataTable.findFirst({
+          where: eq(appDataTable.id, chosenAppData.id),
         });
         expect(savedAppData).toMatchObject(updatedData);
         expectAppDatas([response.json()], [savedAppData]);
@@ -693,8 +693,8 @@ describe('App Data Tests', () => {
           payload: { data: updatedData.data },
         });
         expect(response.json()).toMatchObject(new PreventUpdateAppDataFile(fileAppData.id));
-        const savedAppData = await db.query.appDatas.findFirst({
-          where: eq(appDatas.id, fileAppData.id),
+        const savedAppData = await db.query.appDataTable.findFirst({
+          where: eq(appDataTable.id, fileAppData.id),
         });
         expect(savedAppData).toMatchObject(fileAppData);
       });
@@ -731,8 +731,8 @@ describe('App Data Tests', () => {
           payload: { data: updatedData.data },
         });
         expect(response.statusCode).toEqual(StatusCodes.OK);
-        const savedAppData = await db.query.appDatas.findFirst({
-          where: eq(appDatas.id, a.id),
+        const savedAppData = await db.query.appDataTable.findFirst({
+          where: eq(appDataTable.id, a.id),
         });
         assertIsDefined(savedAppData);
         expect(savedAppData).toMatchObject(updatedData);
@@ -837,10 +837,10 @@ describe('App Data Tests', () => {
         });
         expect(response.statusCode).toEqual(StatusCodes.OK);
         expect(response.body).toEqual(chosenAppData.id);
-        const appSetting = await db.query.appDatas.findFirst({
-          where: eq(appDatas.id, chosenAppData.id),
+        const appData = await db.query.appDataTable.findFirst({
+          where: eq(appDataTable.id, chosenAppData.id),
         });
-        expect(appSetting).toBeFalsy();
+        expect(appData).toBeFalsy();
       });
       it('Delete app data with invalid id throws', async () => {
         const { apps } = await seedFromJson({ apps: [{}] });

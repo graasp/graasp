@@ -22,7 +22,7 @@ import { seedFromJson } from '../../../../../test/mocks/seed';
 import { TOKEN_REGEX, mockCaptchaValidationOnce } from '../../../../../test/utils';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
-import { memberPasswords } from '../../../../drizzle/schema';
+import { memberPasswordsTable } from '../../../../drizzle/schema';
 import { MemberRaw } from '../../../../drizzle/types';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../../../utils/assertions';
@@ -534,8 +534,8 @@ describe('Password', () => {
         },
       });
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
-      const savedPasswordEntity = await db.query.memberPasswords.findFirst({
-        where: eq(memberPasswords.memberId, currentMember.id),
+      const savedPasswordEntity = await db.query.memberPasswordsTable.findFirst({
+        where: eq(memberPasswordsTable.memberId, currentMember.id),
       });
       assertIsDefined(savedPasswordEntity);
       const areTheSame = await compare(newPassword, savedPasswordEntity.password);
@@ -558,8 +558,8 @@ describe('Password', () => {
         },
       });
       expect(response.statusCode).toBe(StatusCodes.CONFLICT);
-      const savedPasswordEntity = await db.query.memberPasswords.findFirst({
-        where: eq(memberPasswords.memberId, currentMember.id),
+      const savedPasswordEntity = await db.query.memberPasswordsTable.findFirst({
+        where: eq(memberPasswordsTable.memberId, currentMember.id),
       });
       assertIsDefined(savedPasswordEntity);
       const areTheSame = await compare(newPassword, savedPasswordEntity.password);
@@ -615,8 +615,8 @@ describe('Password', () => {
         },
       });
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
-      const savedPasswordEntity = await db.query.memberPasswords.findFirst({
-        where: eq(memberPasswords.memberId, currentMember.id),
+      const savedPasswordEntity = await db.query.memberPasswordsTable.findFirst({
+        where: eq(memberPasswordsTable.memberId, currentMember.id),
       });
       assertIsDefined(savedPasswordEntity);
       const areTheSame = await compare(newPassword, savedPasswordEntity.password);
@@ -641,8 +641,8 @@ describe('Password', () => {
         },
       });
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-      const savedPasswordEntity = await db.query.memberPasswords.findFirst({
-        where: eq(memberPasswords.memberId, currentMember.id),
+      const savedPasswordEntity = await db.query.memberPasswordsTable.findFirst({
+        where: eq(memberPasswordsTable.memberId, currentMember.id),
       });
       assertIsDefined(savedPasswordEntity);
       const areTheSame = await compare(newPassword, savedPasswordEntity.password);

@@ -13,7 +13,7 @@ import build, {
 } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
-import { itemMemberships } from '../../../../drizzle/schema';
+import { itemMembershipsTable } from '../../../../drizzle/schema';
 import { ItemMembershipWithItemAndAccountAndCreator } from '../../../../drizzle/types';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { assertIsMember } from '../../../authentication';
@@ -58,8 +58,8 @@ describe('Enroll', () => {
       });
 
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
-      const itemMembership = await db.query.itemMemberships.findFirst({
-        where: eq(itemMemberships.itemPath, item.path),
+      const itemMembership = await db.query.itemMembershipsTable.findFirst({
+        where: eq(itemMembershipsTable.itemPath, item.path),
         with: { item: true, creator: true, account: true },
       });
       assertIsDefined(itemMembership);
@@ -174,8 +174,8 @@ describe('Enroll', () => {
       });
 
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
-      const itemMembership = await db.query.itemMemberships.findFirst({
-        where: eq(itemMemberships.itemPath, item.path),
+      const itemMembership = await db.query.itemMembershipsTable.findFirst({
+        where: eq(itemMembershipsTable.itemPath, item.path),
         with: { item: true, account: true, creator: true },
       });
       expectMembership(itemMembership as ItemMembershipWithItemAndAccountAndCreator, {

@@ -4,7 +4,7 @@ import { singleton } from 'tsyringe';
 import { UUID, isPasswordStrong } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { MemberPasswordRaw, memberPasswords } from '../../../../drizzle/schema';
+import { MemberPasswordRaw, memberPasswordsTable } from '../../../../drizzle/schema';
 import { MemberNotFound } from '../../../../utils/errors';
 import { PasswordNotStrong } from './errors';
 import { encryptPassword } from './utils';
@@ -18,15 +18,15 @@ export class MemberPasswordRepository {
       throw new MemberNotFound({ id: memberId });
     }
 
-    const memberPassword = await db.query.memberPasswords.findFirst({
-      where: eq(memberPasswords.memberId, memberId),
+    const memberPassword = await db.query.memberPasswordsTable.findFirst({
+      where: eq(memberPasswordsTable.memberId, memberId),
     });
 
     return memberPassword;
   }
 
   async post(db: DBConnection, memberId: UUID, newEncryptedPassword: string): Promise<void> {
-    await db.insert(memberPasswords).values({
+    await db.insert(memberPasswordsTable).values({
       memberId,
       password: newEncryptedPassword,
     });
@@ -41,13 +41,13 @@ export class MemberPasswordRepository {
     const hash = await encryptPassword(newPassword);
 
     await db
-      .insert(memberPasswords)
+      .insert(memberPasswordsTable)
       .values({
         memberId,
         password: hash,
       })
       .onConflictDoUpdate({
-        target: memberPasswords.memberId,
+        target: memberPasswordsTable.memberId,
         set: {
           memberId,
           password: hash,

@@ -2,7 +2,7 @@ import { and, desc, eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { itemBookmarks, items, membersView } from '../../../../drizzle/schema';
+import { itemBookmarksTable, items, membersView } from '../../../../drizzle/schema';
 import {
   Item,
   ItemBookmarkInsertDTO,
@@ -19,8 +19,8 @@ export class ItemBookmarkRepository {
     if (!bookmarkId) {
       throw new ItemBookmarkNotFound(bookmarkId);
     }
-    const bookmark = await db.query.itemBookmarks.findFirst({
-      where: eq(itemBookmarks.id, bookmarkId),
+    const bookmark = await db.query.itemBookmarksTable.findFirst({
+      where: eq(itemBookmarksTable.id, bookmarkId),
       with: { item: true, account: true },
     });
 
@@ -40,10 +40,10 @@ export class ItemBookmarkRepository {
   ): Promise<ItemBookmarkRawWithItemWithCreator[]> {
     const bookmarks = await db
       .select()
-      .from(itemBookmarks)
-      .innerJoin(items, eq(itemBookmarks.itemId, items.id))
+      .from(itemBookmarksTable)
+      .innerJoin(items, eq(itemBookmarksTable.itemId, items.id))
       .leftJoin(membersView, eq(items.creatorId, membersView.id))
-      .where(eq(itemBookmarks.memberId, memberId));
+      .where(eq(itemBookmarksTable.memberId, memberId));
 
     const bookmarksResult = bookmarks.map(({ item_favorite, item_view, members_view }) => ({
       ...item_favorite,
@@ -70,10 +70,10 @@ export class ItemBookmarkRepository {
     if (!memberId) {
       throw new MemberIdentifierNotFound();
     }
-    const result = await db.query.itemBookmarks.findMany({
+    const result = await db.query.itemBookmarksTable.findMany({
       columns: { id: true, createdAt: true, itemId: true },
-      where: eq(itemBookmarks.memberId, memberId),
-      orderBy: desc(itemBookmarks.createdAt),
+      where: eq(itemBookmarksTable.memberId, memberId),
+      orderBy: desc(itemBookmarksTable.createdAt),
     });
 
     return result;
@@ -81,7 +81,7 @@ export class ItemBookmarkRepository {
 
   async post(db: DBConnection, itemId: string, memberId: string): Promise<ItemBookmarkInsertDTO> {
     const createdBookmark = await db
-      .insert(itemBookmarks)
+      .insert(itemBookmarksTable)
       .values({ itemId, memberId })
       .returning()
       .onConflictDoNothing();
@@ -94,8 +94,8 @@ export class ItemBookmarkRepository {
 
   async deleteOne(db: DBConnection, itemId: string, memberId: string): Promise<Item['id']> {
     await db
-      .delete(itemBookmarks)
-      .where(and(eq(itemBookmarks.itemId, itemId), eq(itemBookmarks.memberId, memberId)));
+      .delete(itemBookmarksTable)
+      .where(and(eq(itemBookmarksTable.itemId, itemId), eq(itemBookmarksTable.memberId, memberId)));
 
     return itemId;
   }

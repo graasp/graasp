@@ -2,7 +2,7 @@ import { and, eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { memberProfiles } from '../../../../drizzle/schema';
+import { memberProfilesTable } from '../../../../drizzle/schema';
 import { MemberNotFound } from '../../../../utils/errors';
 import { MemberProfileCreationError, MemberProfilePropertiesEmpty } from './errors';
 import { IMemberProfile } from './types';
@@ -23,7 +23,7 @@ export class MemberProfileRepository {
     } = payload;
 
     const memberProfile = await db
-      .insert(memberProfiles)
+      .insert(memberProfilesTable)
       .values({
         bio,
         visibility,
@@ -33,14 +33,14 @@ export class MemberProfileRepository {
         memberId,
       })
       .returning({
-        id: memberProfiles.id,
-        createdAt: memberProfiles.createdAt,
-        updatedAt: memberProfiles.updatedAt,
-        visibility: memberProfiles.visibility,
-        bio: memberProfiles.bio,
-        twitterId: memberProfiles.twitterId,
-        facebookId: memberProfiles.facebookId,
-        linkedinId: memberProfiles.linkedinId,
+        id: memberProfilesTable.id,
+        createdAt: memberProfilesTable.createdAt,
+        updatedAt: memberProfilesTable.updatedAt,
+        visibility: memberProfilesTable.visibility,
+        bio: memberProfilesTable.bio,
+        twitterId: memberProfilesTable.twitterId,
+        facebookId: memberProfilesTable.facebookId,
+        linkedinId: memberProfilesTable.linkedinId,
       });
     // ensure there is only a single element
     if (memberProfile.length != 1) {
@@ -53,8 +53,8 @@ export class MemberProfileRepository {
     if (!memberId) {
       throw new MemberNotFound({ id: memberId });
     }
-    const memberProfile = await db.query.memberProfiles.findFirst({
-      where: eq(memberProfiles.memberId, memberId),
+    const memberProfile = await db.query.memberProfilesTable.findFirst({
+      where: eq(memberProfilesTable.memberId, memberId),
       with: { member: true },
     });
 
@@ -65,8 +65,11 @@ export class MemberProfileRepository {
     if (!memberId) {
       throw new MemberNotFound({ id: memberId });
     }
-    const memberProfile = await db.query.memberProfiles.findFirst({
-      where: and(eq(memberProfiles.memberId, memberId), eq(memberProfiles.visibility, visibility)),
+    const memberProfile = await db.query.memberProfilesTable.findFirst({
+      where: and(
+        eq(memberProfilesTable.memberId, memberId),
+        eq(memberProfilesTable.visibility, visibility),
+      ),
       with: { member: true },
     });
 
@@ -78,6 +81,9 @@ export class MemberProfileRepository {
       throw new MemberProfilePropertiesEmpty();
     }
 
-    return await db.update(memberProfiles).set(data).where(eq(memberProfiles.memberId, memberId));
+    return await db
+      .update(memberProfilesTable)
+      .set(data)
+      .where(eq(memberProfilesTable.memberId, memberId));
   }
 }

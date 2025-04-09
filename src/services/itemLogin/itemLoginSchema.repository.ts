@@ -5,7 +5,7 @@ import { UnionOfConst } from '@graasp/sdk';
 
 import { DBConnection } from '../../drizzle/db';
 import { isAncestorOrSelf } from '../../drizzle/operations';
-import { itemLoginSchemas, items } from '../../drizzle/schema';
+import { itemLoginSchemasTable, items } from '../../drizzle/schema';
 import { ItemLoginSchemaRaw, ItemLoginSchemaWithItem } from '../../drizzle/types';
 import { throwsIfParamIsInvalid } from '../../repositories/utils';
 import { CannotNestItemLoginSchema } from './errors';
@@ -38,11 +38,11 @@ export class ItemLoginSchemaRepository {
     throwsIfParamIsInvalid('item', itemId);
     // TODO: check this works
     const results = await db
-      .select(getTableColumns(itemLoginSchemas))
-      .from(itemLoginSchemas)
+      .select(getTableColumns(itemLoginSchemasTable))
+      .from(itemLoginSchemasTable)
       .innerJoin(
         items,
-        and(isAncestorOrSelf(itemLoginSchemas.itemPath, items.path), eq(items.id, itemId)),
+        and(isAncestorOrSelf(itemLoginSchemasTable.itemPath, items.path), eq(items.id, itemId)),
       );
     const firstResult = results[0];
     return firstResult;
@@ -54,8 +54,8 @@ export class ItemLoginSchemaRepository {
   ): Promise<ItemLoginSchemaWithItem | undefined> {
     throwsIfParamIsInvalid('itemPath', itemPath);
 
-    return await db.query.itemLoginSchemas.findFirst({
-      where: isAncestorOrSelf(itemLoginSchemas.itemPath, itemPath),
+    return await db.query.itemLoginSchemasTable.findFirst({
+      where: isAncestorOrSelf(itemLoginSchemasTable.itemPath, itemPath),
       with: { item: true },
     });
   }
@@ -70,7 +70,7 @@ export class ItemLoginSchemaRepository {
       throw new CannotNestItemLoginSchema(itemPath);
     }
 
-    return await db.insert(itemLoginSchemas).values({ itemPath, type });
+    return await db.insert(itemLoginSchemasTable).values({ itemPath, type });
   }
 
   async put(
@@ -86,15 +86,15 @@ export class ItemLoginSchemaRepository {
       }
 
       await db
-        .update(itemLoginSchemas)
+        .update(itemLoginSchemasTable)
         .set({ type, status })
-        .where(eq(itemLoginSchemas.id, itemLoginSchema.id));
+        .where(eq(itemLoginSchemasTable.id, itemLoginSchema.id));
     } else {
-      await db.insert(itemLoginSchemas).values({ itemPath, type, status });
+      await db.insert(itemLoginSchemasTable).values({ itemPath, type, status });
       // QUESTION: this does not look efficient if we need to check on path
       // .onConflictDoUpdate({
-      //   target: itemLoginSchemas.itemPath,
-      //   targetWhere: isAncestorOrSelf(itemLoginSchemas.itemPath, itemPath),
+      //   target: itemLoginSchemasTable.itemPath,
+      //   targetWhere: isAncestorOrSelf(itemLoginSchemasTable.itemPath, itemPath),
       //   set: {
       //     type,
       //     status,
@@ -113,8 +113,8 @@ export class ItemLoginSchemaRepository {
     }
 
     const res = await db
-      .delete(itemLoginSchemas)
-      .where(eq(itemLoginSchemas.id, entity.id))
+      .delete(itemLoginSchemasTable)
+      .where(eq(itemLoginSchemasTable.id, entity.id))
       .returning();
     return res[0];
   }

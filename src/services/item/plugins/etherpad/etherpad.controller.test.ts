@@ -17,7 +17,7 @@ import build, {
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
 import { isDirectChild } from '../../../../drizzle/operations';
-import { itemsRaw } from '../../../../drizzle/schema';
+import { itemsRawTable } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { ETHERPAD_PUBLIC_URL } from '../../../../utils/config';
 import { ItemNotFound, MemberCannotAccess } from '../../../../utils/errors';
@@ -928,8 +928,8 @@ describe('Etherpad service API', () => {
       // wait until the copy is in the parent
       let copy;
       await waitForExpect(async () => {
-        copy = await db.query.itemsRaw.findFirst({
-          where: isDirectChild(itemsRaw.path, parent.path),
+        copy = await db.query.itemsRawTable.findFirst({
+          where: isDirectChild(itemsRawTable.path, parent.path),
         });
         expect(copy).toBeDefined();
       });

@@ -16,7 +16,7 @@ import build, {
 } from '../../../../../test/app';
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { db } from '../../../../drizzle/db';
-import { itemsRaw } from '../../../../drizzle/schema';
+import { itemsRawTable } from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX, THUMBNAILS_ROUTE_PREFIX } from '../../../../utils/config';
 import { MemberCannotAccess } from '../../../../utils/errors';
@@ -236,7 +236,9 @@ describe('Thumbnail Plugin Tests', () => {
         expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
         expect(uploadDoneMock).toHaveBeenCalledTimes(Object.values(ThumbnailSize).length);
 
-        const savedItem = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, item.id) });
+        const savedItem = await db.query.itemsRawTable.findFirst({
+          where: eq(itemsRawTable.id, item.id),
+        });
         expect(savedItem!.settings.hasThumbnail).toBeTruthy();
       });
 
@@ -261,7 +263,9 @@ describe('Thumbnail Plugin Tests', () => {
           headers: form3.getHeaders(),
         });
         expect(response.json()).toMatchObject(new MemberCannotAccess(expect.anything()));
-        const savedItem = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, item.id) });
+        const savedItem = await db.query.itemsRawTable.findFirst({
+          where: eq(itemsRawTable.id, item.id),
+        });
         expect(savedItem!.settings?.hasThumbnail).toBeFalsy();
       });
 
@@ -292,7 +296,9 @@ describe('Thumbnail Plugin Tests', () => {
 
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
         expect(res.json()).toEqual(new UploadFileNotImageError());
-        const savedItem = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, item.id) });
+        const savedItem = await db.query.itemsRawTable.findFirst({
+          where: eq(itemsRawTable.id, item.id),
+        });
         expect(savedItem!.settings?.hasThumbnail).toBeFalsy();
       });
     });
@@ -320,7 +326,9 @@ describe('Thumbnail Plugin Tests', () => {
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}${THUMBNAILS_ROUTE_PREFIX}`,
         });
         expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
-        const savedItem = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, item.id) });
+        const savedItem = await db.query.itemsRawTable.findFirst({
+          where: eq(itemsRawTable.id, item.id),
+        });
         expect(savedItem!.settings?.hasThumbnail).toBeFalsy();
       });
 
@@ -344,7 +352,9 @@ describe('Thumbnail Plugin Tests', () => {
         });
 
         expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
-        const savedItem = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, item.id) });
+        const savedItem = await db.query.itemsRawTable.findFirst({
+          where: eq(itemsRawTable.id, item.id),
+        });
         expect(savedItem!.settings?.hasThumbnail).toBeTruthy();
       });
     });

@@ -4,7 +4,7 @@ import { FolderItemFactory } from '@graasp/sdk';
 
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { client, db } from '../../../../drizzle/db';
-import { itemLikes } from '../../../../drizzle/schema';
+import { itemLikesTable } from '../../../../drizzle/schema';
 import { IllegalArgumentException } from '../../../../repositories/errors';
 import { ItemLikeRepository } from './itemLike.repository';
 
@@ -40,7 +40,7 @@ describe('ItemLike Repository', () => {
         members: [{}, {}],
       });
       const likes = await db
-        .insert(itemLikes)
+        .insert(itemLikesTable)
         .values([
           { itemId: item.id, creatorId: creator.id },
           { itemId: item.id, creatorId: other.id },
@@ -78,7 +78,7 @@ describe('ItemLike Repository', () => {
       });
       // save 2 likes by different members
       await db
-        .insert(itemLikes)
+        .insert(itemLikesTable)
         .values([
           { itemId: item.id, creatorId: creator.id },
           { itemId: item.id, creatorId: other.id },

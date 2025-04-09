@@ -3,14 +3,14 @@ import { and, arrayContains, count, desc, eq, sql } from 'drizzle-orm/sql';
 import { AuthTokenSubject } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { apps, items, publishers } from '../../../../drizzle/schema';
+import { appsTable, items, publishersTable } from '../../../../drizzle/schema';
 import { AppRaw } from '../../../../drizzle/types';
 import { InvalidApplicationOrigin } from './errors';
 
 export class AppRepository {
   async getAll(db: DBConnection, publisherId: string): Promise<AppRaw[]> {
-    return await db.query.apps.findMany({
-      where: eq(apps.publisherId, publisherId),
+    return await db.query.appsTable.findMany({
+      where: eq(appsTable.publisherId, publisherId),
     });
   }
 
@@ -19,14 +19,17 @@ export class AppRepository {
     memberId: string,
   ): Promise<{ url: string; name: string; count: number }[]> {
     const data = await db
-      .select({ url: apps.url, name: apps.name, count: count(items.id) })
-      .from(apps)
+      .select({ url: appsTable.url, name: appsTable.name, count: count(items.id) })
+      .from(appsTable)
       .innerJoin(
         items,
-        and(eq(sql`${items.extra}::json->'app'->>'url'`, apps.url), eq(items.creatorId, memberId)),
+        and(
+          eq(sql`${items.extra}::json->'app'->>'url'`, appsTable.url),
+          eq(items.creatorId, memberId),
+        ),
       )
       // TODO: verify
-      .groupBy(apps.id)
+      .groupBy(appsTable.id)
       // .groupBy((t) => [t.id, t.url, t.name])
       .orderBy(desc(sql.raw('count')));
 
@@ -39,13 +42,13 @@ export class AppRepository {
   ): Promise<void> {
     const valid = await db
       .select()
-      .from(apps)
-      .where(eq(apps.key, appDetails.key))
+      .from(appsTable)
+      .where(eq(appsTable.key, appDetails.key))
       .rightJoin(
-        publishers,
+        publishersTable,
         and(
-          eq(publishers.id, apps.publisherId),
-          arrayContains(publishers.origins, [appDetails.origin]),
+          eq(publishersTable.id, appsTable.publisherId),
+          arrayContains(publishersTable.origins, [appDetails.origin]),
         ),
       );
     if (!valid) {

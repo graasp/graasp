@@ -4,7 +4,7 @@ import { singleton } from 'tsyringe';
 import { ExportActionsFormatting, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../drizzle/db';
-import { actionRequestExports } from '../../../../../drizzle/schema';
+import { actionRequestExportsTable } from '../../../../../drizzle/schema';
 import { ActionRequestExportRaw } from '../../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../../repositories/errors';
 import { DEFAULT_REQUEST_EXPORT_INTERVAL } from '../../../../action/constants';
@@ -29,7 +29,7 @@ export class ActionRequestExportRepository {
       throw new IllegalArgumentException('itemPath for export request is illegal');
     }
     const res = await db
-      .insert(actionRequestExports)
+      .insert(actionRequestExportsTable)
       .values({
         memberId,
         itemPath,
@@ -56,12 +56,12 @@ export class ActionRequestExportRepository {
     },
   ): Promise<ActionRequestExportRaw | undefined> {
     const lowerLimitDate = new Date(Date.now() - DEFAULT_REQUEST_EXPORT_INTERVAL);
-    return await db.query.actionRequestExports.findFirst({
+    return await db.query.actionRequestExportsTable.findFirst({
       where: and(
-        eq(actionRequestExports.memberId, memberId),
-        eq(actionRequestExports.itemPath, itemPath),
-        eq(actionRequestExports.format, format),
-        gte(actionRequestExports.createdAt, lowerLimitDate.toISOString()),
+        eq(actionRequestExportsTable.memberId, memberId),
+        eq(actionRequestExportsTable.itemPath, itemPath),
+        eq(actionRequestExportsTable.format, format),
+        gte(actionRequestExportsTable.createdAt, lowerLimitDate.toISOString()),
       ),
     });
   }

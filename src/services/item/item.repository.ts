@@ -46,11 +46,11 @@ import {
 import {
   accountsTable,
   itemColumns,
-  itemMemberships,
+  itemMembershipsTable,
   items,
-  itemsRaw,
+  itemsRawTable,
   membersView,
-  publishedItems,
+  publishedItemsTable,
 } from '../../drizzle/schema';
 import {
   Item,
@@ -236,8 +236,8 @@ export class ItemRepository {
   async getDeletedById(db: DBConnection, id: string): Promise<Item> {
     const item = await db
       .select()
-      .from(itemsRaw)
-      .where(and(eq(itemsRaw.id, id), isNotNull(itemsRaw.deletedAt)))
+      .from(itemsRawTable)
+      .where(and(eq(itemsRawTable.id, id), isNotNull(itemsRawTable.deletedAt)))
       .limit(1);
 
     if (!item.length) {
@@ -531,11 +531,14 @@ export class ItemRepository {
       .select()
       .from(items)
       .leftJoin(accountsTable, eq(items.creatorId, accountsTable.id))
-      .innerJoin(itemMemberships, isDescendantOrSelf(itemMemberships.itemPath, items.path))
+      .innerJoin(
+        itemMembershipsTable,
+        isDescendantOrSelf(itemMembershipsTable.itemPath, items.path),
+      )
       .where(
         and(
           eq(items.creatorId, memberId),
-          eq(itemMemberships.permission, PermissionLevel.Admin),
+          eq(itemMembershipsTable.permission, PermissionLevel.Admin),
           eq(sql`nlevel(${items.path})`, 1),
         ),
       )
@@ -588,16 +591,16 @@ export class ItemRepository {
     //   (Paths in memberships will be updated automatically -
     //    ON UPDATE CASCADE in item_membership's fk from `item_path` to item's `path`)
     const pathSql = parentItem
-      ? sql`${parentItem.path} || subpath(${itemsRaw.path}, nlevel(${item.path}) - 1)`
-      : sql`subpath(${itemsRaw.path}, nlevel(${item.path}) - 1)`;
+      ? sql`${parentItem.path} || subpath(${itemsRawTable.path}, nlevel(${item.path}) - 1)`
+      : sql`subpath(${itemsRawTable.path}, nlevel(${item.path}) - 1)`;
 
     // get new order value
     const order = await this.getNextOrderCount(db, parentItem?.path);
 
     const res = await db
-      .update(itemsRaw)
+      .update(itemsRawTable)
       .set({ path: pathSql, order })
-      .where(isDescendantOrSelf(itemsRaw.path, item.path))
+      .where(isDescendantOrSelf(itemsRawTable.path, item.path))
       .returning();
     return res[0];
     // this.repository
@@ -639,7 +642,11 @@ export class ItemRepository {
     if (Object.values(newData).filter(Boolean).length === 0) {
       throw new NothingToUpdateItem();
     }
-    const res = await db.update(itemsRaw).set(newData).where(eq(itemsRaw.id, id)).returning();
+    const res = await db
+      .update(itemsRawTable)
+      .set(newData)
+      .where(eq(itemsRawTable.id, id))
+      .returning();
     return res[0];
   }
 
@@ -650,7 +657,7 @@ export class ItemRepository {
       parent: parentItem,
     });
 
-    const result = await db.insert(itemsRaw).values(newItem).returning();
+    const result = await db.insert(itemsRawTable).values(newItem).returning();
 
     return result[0];
   }
@@ -669,7 +676,7 @@ export class ItemRepository {
       }),
     );
 
-    const result = await db.insert(itemsRaw).values(newItems).returning();
+    const result = await db.insert(itemsRawTable).values(newItems).returning();
 
     return result;
   }
@@ -695,7 +702,7 @@ export class ItemRepository {
 
     // return copy item + all descendants
     const newItems = [...treeItemsCopy.values()].map(({ copy }) => copy);
-    const createdItems = await db.insert(itemsRaw).values(newItems).returning();
+    const createdItems = await db.insert(itemsRawTable).values(newItems).returning();
 
     const newItemRef = createdItems[0];
     if (!newItemRef) {
@@ -933,12 +940,12 @@ export class ItemRepository {
     const result = await db
       .select()
       .from(items)
-      .innerJoin(publishedItems, eq(publishedItems.itemPath, items.path))
+      .innerJoin(publishedItemsTable, eq(publishedItemsTable.itemPath, items.path))
       .innerJoin(
-        itemMemberships,
+        itemMembershipsTable,
         and(
-          isAncestorOrSelf(itemMemberships.itemPath, items.path),
-          inArray(itemMemberships.permission, [PermissionLevel.Admin, PermissionLevel.Write]),
+          isAncestorOrSelf(itemMembershipsTable.itemPath, items.path),
+          inArray(itemMembershipsTable.permission, [PermissionLevel.Admin, PermissionLevel.Write]),
         ),
       )
       .innerJoin(
@@ -972,26 +979,26 @@ export class ItemRepository {
     return [result, totalCount];
   }
   async delete(db: DBConnection, args: Item['id'][]): Promise<void> {
-    await db.delete(itemsRaw).where(inArray(itemsRaw.id, args));
+    await db.delete(itemsRawTable).where(inArray(itemsRawTable.id, args));
   }
   async softRemove(db: DBConnection, args: Item[]): Promise<void> {
     await db
-      .update(itemsRaw)
+      .update(itemsRawTable)
       .set({ deletedAt: new Date().toISOString() })
       .where(
         inArray(
-          itemsRaw.id,
+          itemsRawTable.id,
           args.map(({ id }) => id),
         ),
       );
   }
   async recover(db: DBConnection, args: Item[]): Promise<ItemRaw[]> {
     return await db
-      .update(itemsRaw)
+      .update(itemsRawTable)
       .set({ deletedAt: null })
       .where(
         inArray(
-          itemsRaw.id,
+          itemsRawTable.id,
           args.map(({ id }) => id),
         ),
       )
@@ -1111,7 +1118,7 @@ export class ItemRepository {
     } else {
       order = await this.getNextOrderCount(db, parentPath, previousItemId);
     }
-    await db.update(itemsRaw).set({ order }).where(eq(itemsRaw.id, item.id));
+    await db.update(itemsRawTable).set({ order }).where(eq(itemsRawTable.id, item.id));
 
     // TODO: optimize
     return await this.getOneOrThrow(db, item.id);
@@ -1144,7 +1151,7 @@ export class ItemRepository {
       // can update in disorder
       await Promise.all(
         values.map(async (i) => {
-          return await db.update(itemsRaw).set(i).where(eq(itemsRaw.id, i.id));
+          return await db.update(itemsRawTable).set(i).where(eq(itemsRawTable.id, i.id));
         }),
       );
     }
@@ -1178,15 +1185,15 @@ export class ItemRepository {
     // order by iom.updated_at desc
     // ;
 
-    const andConditions: (SQL<unknown> | undefined)[] = [isNull(itemsRaw.deletedAt)];
+    const andConditions: (SQL<unknown> | undefined)[] = [isNull(itemsRawTable.deletedAt)];
     if (creatorId) {
-      andConditions.push(eq(itemsRaw.creatorId, creatorId));
+      andConditions.push(eq(itemsRawTable.creatorId, creatorId));
     }
     if (permissions?.length) {
-      andConditions.push(inArray(itemMemberships.permission, permissions));
+      andConditions.push(inArray(itemMembershipsTable.permission, permissions));
     }
     if (types?.length) {
-      andConditions.push(inArray(itemsRaw.type, types));
+      andConditions.push(inArray(itemsRawTable.type, types));
     }
 
     // keyword search
@@ -1199,15 +1206,15 @@ export class ItemRepository {
       const langs = [
         'simple',
         getSearchLang(memberLang),
-        transformLangToReconfigLang(itemsRaw.lang),
+        transformLangToReconfigLang(itemsRawTable.lang),
       ];
 
       andConditions.push(
         or(
           // search with involved languages
-          ...langs.map((l) => itemFullTextSearch(itemsRaw, l, keywordsString)),
+          ...langs.map((l) => itemFullTextSearch(itemsRawTable, l, keywordsString)),
           // raw words search
-          ...keywordSearch(itemsRaw.name, allKeywords),
+          ...keywordSearch(itemsRawTable.name, allKeywords),
         ),
       );
     }
@@ -1219,13 +1226,16 @@ export class ItemRepository {
         ...itemColumns,
         rNb: sql`row_number() OVER (ORDER BY path)`.as('row_number'),
       })
-      .from(itemsRaw)
+      .from(itemsRawTable)
       .innerJoin(
-        itemMemberships,
-        and(eq(itemMemberships.itemPath, itemsRaw.path), eq(itemMemberships.accountId, account.id)),
+        itemMembershipsTable,
+        and(
+          eq(itemMembershipsTable.itemPath, itemsRawTable.path),
+          eq(itemMembershipsTable.accountId, account.id),
+        ),
       )
       .where(and(...andConditions))
-      .orderBy(asc(itemsRaw.path));
+      .orderBy(asc(itemsRawTable.path));
 
     const iom = itemAndOrderedMemberships.as('item_and_ordered_membership');
     const join = itemAndOrderedMemberships.as('join');

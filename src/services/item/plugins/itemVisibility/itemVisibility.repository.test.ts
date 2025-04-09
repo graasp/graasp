@@ -2,7 +2,7 @@ import { ItemVisibilityOptionsType, ItemVisibilityType } from '@graasp/sdk';
 
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { client, db } from '../../../../drizzle/db';
-import { itemVisibilities } from '../../../../drizzle/schema';
+import { itemVisibilitiesTable } from '../../../../drizzle/schema';
 import { expectItem } from '../../test/fixtures/items';
 import { ItemVisibilityRepository } from './itemVisibility.repository';
 
@@ -15,7 +15,7 @@ async function saveVisibility({
   type: ItemVisibilityOptionsType;
   itemPath: string;
 }) {
-  const res = await db.insert(itemVisibilities).values({ type, itemPath }).returning();
+  const res = await db.insert(itemVisibilitiesTable).values({ type, itemPath }).returning();
   return res[0];
 }
 

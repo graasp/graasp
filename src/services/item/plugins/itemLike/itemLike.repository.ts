@@ -2,7 +2,7 @@ import { and, eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { itemLikes } from '../../../../drizzle/schema';
+import { itemLikesTable } from '../../../../drizzle/schema';
 import {
   ItemLikeRaw,
   ItemLikeWithItem,
@@ -30,7 +30,7 @@ export class ItemLikeRepository {
    * @param itemId item's id
    */
   async addOne(db: DBConnection, { creatorId, itemId }: CreateItemLikeBody): Promise<ItemLikeRaw> {
-    const result = await db.insert(itemLikes).values({ itemId, creatorId }).returning();
+    const result = await db.insert(itemLikesTable).values({ itemId, creatorId }).returning();
     if (result.length != 1) {
       throw new Error('Expected to receive, created item, but did not get it.');
     }
@@ -38,8 +38,8 @@ export class ItemLikeRepository {
   }
 
   async getOne(db: DBConnection, id: string): Promise<ItemLikeWithItemAndAccount> {
-    const result = await db.query.itemLikes.findFirst({
-      where: eq(itemLikes.id, id),
+    const result = await db.query.itemLikesTable.findFirst({
+      where: eq(itemLikesTable.id, id),
       with: { item: true, creator: true },
     });
     if (!result) {
@@ -59,8 +59,8 @@ export class ItemLikeRepository {
     if (!creatorId) {
       throw new Error('creator Id is not defined');
     }
-    const result = await db.query.itemLikes.findMany({
-      where: eq(itemLikes.creatorId, creatorId),
+    const result = await db.query.itemLikesTable.findMany({
+      where: eq(itemLikesTable.creatorId, creatorId),
       with: { item: { with: { creator: true } } },
     });
     return result as ItemLikeWithItemWithCreator[];
@@ -72,8 +72,8 @@ export class ItemLikeRepository {
    */
   async getByItemId(db: DBConnection, itemId: ItemId): Promise<ItemLikeWithItem[]> {
     this.throwsIfParamIsInvalid('itemId', itemId);
-    const res = await db.query.itemLikes.findMany({
-      where: eq(itemLikes.itemId, itemId),
+    const res = await db.query.itemLikesTable.findMany({
+      where: eq(itemLikesTable.itemId, itemId),
       with: { item: true },
     });
 
@@ -87,7 +87,7 @@ export class ItemLikeRepository {
    */
   async getCountByItemId(db: DBConnection, itemId: ItemId): Promise<number> {
     this.throwsIfParamIsInvalid('itemId', itemId);
-    const res = await db.$count(itemLikes, eq(itemLikes.itemId, itemId));
+    const res = await db.$count(itemLikesTable, eq(itemLikesTable.itemId, itemId));
     return res;
   }
 
@@ -102,8 +102,8 @@ export class ItemLikeRepository {
     itemId: ItemId,
   ): Promise<ItemLikeRaw> {
     const result = await db
-      .delete(itemLikes)
-      .where(and(eq(itemLikes.itemId, itemId), eq(itemLikes.creatorId, creatorId)))
+      .delete(itemLikesTable)
+      .where(and(eq(itemLikesTable.itemId, itemId), eq(itemLikesTable.creatorId, creatorId)))
       .returning();
 
     if (result.length != 1) {

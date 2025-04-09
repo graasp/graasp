@@ -13,7 +13,7 @@ import { seedFromJson } from '../../../../../test/mocks/seed';
 import { mockCaptchaValidation } from '../../../../../test/utils';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
-import { accountsTable, invitationsTable, itemMemberships } from '../../../../drizzle/schema';
+import { accountsTable, invitationsTable, itemMembershipsTable } from '../../../../drizzle/schema';
 import { MemberRaw } from '../../../../drizzle/types';
 import { MailerService } from '../../../../plugins/mailer/mailer.service';
 import { assertIsDefined } from '../../../../utils/assertions';
@@ -256,11 +256,11 @@ describe('POST /register', () => {
       });
       expect(savedInvitation).toBeUndefined();
 
-      const membership = await db.query.itemMemberships.findFirst({
+      const membership = await db.query.itemMembershipsTable.findFirst({
         where: and(
-          eq(itemMemberships.permission, invitation.permission),
-          eq(itemMemberships.accountId, member.id),
-          eq(itemMemberships.itemPath, invitation.itemPath),
+          eq(itemMembershipsTable.permission, invitation.permission),
+          eq(itemMembershipsTable.accountId, member.id),
+          eq(itemMembershipsTable.itemPath, invitation.itemPath),
         ),
       });
       expect(membership).toBeTruthy();

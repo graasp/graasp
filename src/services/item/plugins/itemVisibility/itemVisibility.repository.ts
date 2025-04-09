@@ -6,7 +6,7 @@ import { ItemVisibilityOptionsType, ResultOf, getChildFromPath } from '@graasp/s
 
 import { DBConnection } from '../../../../drizzle/db';
 import { isAncestorOrSelf, isDescendantOrSelf } from '../../../../drizzle/operations';
-import { itemVisibilities, items, itemsRaw } from '../../../../drizzle/schema';
+import { itemVisibilitiesTable, items, itemsRawTable } from '../../../../drizzle/schema';
 import { Item, ItemVisibilityRaw, ItemVisibilityWithItem } from '../../../../drizzle/types';
 import { MinimalMember } from '../../../../types';
 import { mapById } from '../../../utils';
@@ -29,9 +29,11 @@ export class ItemVisibilityRepository {
   ): Promise<ItemVisibilityWithItem> {
     const result = await db
       .select()
-      .from(itemVisibilities)
-      .innerJoin(items, eq(items.path, itemVisibilities.itemPath))
-      .where(and(eq(itemVisibilities.type, visibilityType), isAncestorOrSelf(items.path, itemPath)))
+      .from(itemVisibilitiesTable)
+      .innerJoin(items, eq(items.path, itemVisibilitiesTable.itemPath))
+      .where(
+        and(eq(itemVisibilitiesTable.type, visibilityType), isAncestorOrSelf(items.path, itemPath)),
+      )
       .limit(1);
 
     if (shouldThrow && result.length != 1) {
@@ -55,11 +57,11 @@ export class ItemVisibilityRepository {
     item: Item,
     visibilityTypes: ItemVisibilityOptionsType[],
   ): Promise<ResultOf<boolean>> {
-    const hasVisibilities = await db.query.itemVisibilities.findMany({
+    const hasVisibilities = await db.query.itemVisibilitiesTable.findMany({
       with: { item: true },
       where: and(
-        isAncestorOrSelf(itemVisibilities.itemPath, item.path),
-        inArray(itemVisibilities.type, visibilityTypes),
+        isAncestorOrSelf(itemVisibilitiesTable.itemPath, item.path),
+        inArray(itemVisibilitiesTable.type, visibilityTypes),
       ),
     });
 
@@ -81,12 +83,12 @@ export class ItemVisibilityRepository {
     }
 
     const pathsCondition = items.map(({ path }) => {
-      return isAncestorOrSelf(itemVisibilities.itemPath, path);
+      return isAncestorOrSelf(itemVisibilitiesTable.itemPath, path);
     });
 
-    return await db.query.itemVisibilities.findMany({
+    return await db.query.itemVisibilitiesTable.findMany({
       with: { item: true },
-      where: and(inArray(itemVisibilities.type, visibilityTypes), or(...pathsCondition)),
+      where: and(inArray(itemVisibilitiesTable.type, visibilityTypes), or(...pathsCondition)),
     });
   }
 
@@ -122,11 +124,11 @@ export class ItemVisibilityRepository {
     parent: Item,
     visibilityTypes: ItemVisibilityOptionsType[],
   ): Promise<ItemVisibilityWithItem[]> {
-    return await db.query.itemVisibilities.findMany({
+    return await db.query.itemVisibilitiesTable.findMany({
       with: { item: true },
       where: and(
-        isDescendantOrSelf(itemVisibilities.itemPath, parent.path),
-        inArray(itemVisibilities.type, visibilityTypes),
+        isDescendantOrSelf(itemVisibilitiesTable.itemPath, parent.path),
+        inArray(itemVisibilitiesTable.type, visibilityTypes),
       ),
     });
   }
@@ -137,12 +139,12 @@ export class ItemVisibilityRepository {
     visibilityType: ItemVisibilityOptionsType,
   ): Promise<ResultOf<boolean>> {
     const pathsCondition = items.map(({ path }) => {
-      return isAncestorOrSelf(itemVisibilities.itemPath, path);
+      return isAncestorOrSelf(itemVisibilitiesTable.itemPath, path);
     });
 
-    const haveVisibility = await db.query.itemVisibilities.findMany({
+    const haveVisibility = await db.query.itemVisibilitiesTable.findMany({
       with: { item: true },
-      where: and(eq(itemVisibilities.type, visibilityType), or(...pathsCondition)),
+      where: and(eq(itemVisibilitiesTable.type, visibilityType), or(...pathsCondition)),
     });
 
     const mapByPath = mapById({
@@ -178,7 +180,7 @@ export class ItemVisibilityRepository {
     }
 
     const result = await db
-      .insert(itemVisibilities)
+      .insert(itemVisibilitiesTable)
       .values({ itemPath: itemPath, type, creatorId: creatorId })
       .returning();
     if (result.length != 1) {
@@ -201,11 +203,11 @@ export class ItemVisibilityRepository {
     // but does not change the behavior
     // cannot use leftJoinAndSelect for delete, so we select first
     await db
-      .delete(itemVisibilities)
+      .delete(itemVisibilitiesTable)
       .where(
         and(
-          isDescendantOrSelf(itemVisibilities.itemPath, item.path),
-          eq(itemVisibilities.type, type),
+          isDescendantOrSelf(itemVisibilitiesTable.itemPath, item.path),
+          eq(itemVisibilitiesTable.type, type),
         ),
       );
   }
@@ -227,8 +229,8 @@ export class ItemVisibilityRepository {
    * @param  {Item} item
    */
   async getByItemPath(db: DBConnection, itemPath: string): Promise<ItemVisibilityWithItem[]> {
-    const res = await db.query.itemVisibilities.findMany({
-      where: isAncestorOrSelf(itemVisibilities.itemPath, itemPath),
+    const res = await db.query.itemVisibilitiesTable.findMany({
+      where: isAncestorOrSelf(itemVisibilitiesTable.itemPath, itemPath),
       with: { item: true },
     });
     return res;
@@ -250,16 +252,16 @@ export class ItemVisibilityRepository {
     }
 
     const pathsCondition = or(
-      ...inputItems.map(({ path }) => isAncestorOrSelf(itemVisibilities.itemPath, path)),
+      ...inputItems.map(({ path }) => isAncestorOrSelf(itemVisibilitiesTable.itemPath, path)),
     );
     const deletedCondition = withDeleted
-      ? isNotNull(itemsRaw.deletedAt)
-      : isNull(itemsRaw.deletedAt);
+      ? isNotNull(itemsRawTable.deletedAt)
+      : isNull(itemsRawTable.deletedAt);
 
     const visibilities = await db
       .select()
-      .from(itemVisibilities)
-      .innerJoin(itemsRaw, eq(itemVisibilities.itemPath, itemsRaw.path))
+      .from(itemVisibilitiesTable)
+      .innerJoin(itemsRawTable, eq(itemVisibilitiesTable.itemPath, itemsRawTable.path))
       .where(and(pathsCondition, deletedCondition));
 
     const transformedVisibilities = visibilities.map(({ item, item_visibility }) => ({
@@ -300,9 +302,9 @@ export class ItemVisibilityRepository {
       .map(({ type }) => ({ itemPath: copyPath, type, creator }));
 
     if (visibilitiesToInsert.length) {
-      await db.insert(itemVisibilities).values(visibilitiesToInsert);
+      await db.insert(itemVisibilitiesTable).values(visibilitiesToInsert);
       // await this.repository.insert(
-      //   itemVisibilities
+      //   itemVisibilitiesTable
       //     .filter((visibility) => !excludeTypes?.includes(visibility.type))
       //     .map(({ type }) => ({ item: { path: copy.path }, type, creator })),
       // );

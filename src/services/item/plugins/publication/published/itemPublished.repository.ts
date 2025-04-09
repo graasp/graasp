@@ -3,7 +3,7 @@ import { singleton } from 'tsyringe';
 
 import { DBConnection } from '../../../../../drizzle/db';
 import { isAncestorOrSelf } from '../../../../../drizzle/operations';
-import { items, membersView, publishedItems } from '../../../../../drizzle/schema';
+import { items, membersView, publishedItemsTable } from '../../../../../drizzle/schema';
 import {
   Item,
   ItemPublishedRaw,
@@ -26,17 +26,17 @@ export class ItemPublishedRepository {
   ): Promise<ItemPublishedWithItemWithCreator | null> {
     const res = await db
       .select()
-      .from(publishedItems)
+      .from(publishedItemsTable)
       // .innerJoin(membersView, eq(publishedItems.creatorId, membersView.id))
       .innerJoin(
         items,
         and(
-          isAncestorOrSelf(publishedItems.itemPath, itemPath),
-          eq(publishedItems.itemPath, items.path),
+          isAncestorOrSelf(publishedItemsTable.itemPath, itemPath),
+          eq(publishedItemsTable.itemPath, items.path),
         ),
       )
       .leftJoin(membersView, eq(items.creatorId, membersView.id))
-      .orderBy(desc(sql`nlevel(${publishedItems.itemPath})`))
+      .orderBy(desc(sql`nlevel(${publishedItemsTable.itemPath})`))
       .limit(1);
 
     if (res.length) {
@@ -57,8 +57,8 @@ export class ItemPublishedRepository {
   ): Promise<ItemPublishedWithItemWithCreator[]> {
     const result = await db
       .select()
-      .from(publishedItems)
-      .innerJoin(items, inArray(publishedItems.itemPath, itemPaths))
+      .from(publishedItemsTable)
+      .innerJoin(items, inArray(publishedItemsTable.itemPath, itemPaths))
       .leftJoin(membersView, eq(items.creatorId, membersView.id));
 
     return result.map(({ item_published, item_view, members_view }) => ({
@@ -75,9 +75,9 @@ export class ItemPublishedRepository {
   ): Promise<[ItemPublishedWithItemWithCreator[], number]> {
     const results = await db
       .select()
-      .from(publishedItems)
+      .from(publishedItemsTable)
       // will ignore soft deleted item
-      .innerJoin(items, eq(publishedItems.itemPath, items.path))
+      .innerJoin(items, eq(publishedItemsTable.itemPath, items.path))
       // will ignore null creator id (deleted
       .innerJoin(membersView, eq(items.creatorId, membersView.id))
       .offset((page - 1) * pageSize)
@@ -86,13 +86,13 @@ export class ItemPublishedRepository {
       ...item_published,
       item: { ...item_view, creator: members_view as MemberRaw },
     }));
-    const total = (await db.select({ count: count() }).from(publishedItems))[0].count;
+    const total = (await db.select({ count: count() }).from(publishedItemsTable))[0].count;
 
     return [mappedResults, total];
   }
 
   async post(db: DBConnection, creator: MinimalMember, item: Item): Promise<void> {
-    await db.insert(publishedItems).values({
+    await db.insert(publishedItemsTable).values({
       itemPath: item.path,
       creatorId: creator.id,
     });
@@ -105,12 +105,12 @@ export class ItemPublishedRepository {
       throw new ItemPublishedNotFound(item.id);
     }
 
-    await db.delete(publishedItems).where(eq(publishedItems.id, entry.id));
+    await db.delete(publishedItemsTable).where(eq(publishedItemsTable.id, entry.id));
     return entry;
   }
 
   async getRecentItems(db: DBConnection, limit: number = 10): Promise<Item[]> {
-    const publishedInfos = await db.query.publishedItems.findMany({
+    const publishedInfos = await db.query.publishedItemsTable.findMany({
       with: { item: true, account: true },
       orderBy: desc(items.createdAt),
       limit,
@@ -123,9 +123,9 @@ export class ItemPublishedRepository {
     const updatedAt = new Date().toISOString();
 
     const result = await db
-      .update(publishedItems)
+      .update(publishedItemsTable)
       .set({ updatedAt })
-      .where(eq(publishedItems.itemPath, path))
+      .where(eq(publishedItemsTable.itemPath, path))
       .returning();
 
     return result.length > 0 ? updatedAt : null;

@@ -5,7 +5,7 @@ import { UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../drizzle/db';
 import { isAncestorOrSelf } from '../../drizzle/operations';
-import { accountsTable, guestsView, itemLoginSchemas } from '../../drizzle/schema';
+import { accountsTable, guestsView, itemLoginSchemasTable } from '../../drizzle/schema';
 import { GuestRaw, GuestWithItemLoginSchema, Item } from '../../drizzle/types';
 import { AccountType } from '../../types';
 
@@ -21,10 +21,10 @@ export class GuestRepository {
       .select()
       .from(guestsView)
       .innerJoin(
-        itemLoginSchemas,
+        itemLoginSchemasTable,
         and(
-          eq(itemLoginSchemas.id, guestsView.itemLoginSchemaId),
-          isAncestorOrSelf(itemLoginSchemas.itemPath, item.path),
+          eq(itemLoginSchemasTable.id, guestsView.itemLoginSchemaId),
+          isAncestorOrSelf(itemLoginSchemasTable.itemPath, item.path),
         ),
       )
       .where(eq(guestsView.name, username));

@@ -13,7 +13,7 @@ import build, {
 } from '../../../../../../test/app';
 import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { db } from '../../../../../drizzle/db';
-import { appSettings } from '../../../../../drizzle/schema';
+import { appSettingsTable } from '../../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../../utils/assertions';
 import { APP_ITEMS_PREFIX } from '../../../../../utils/config';
 import { MemberCannotAdminItem } from '../../../../../utils/errors';
@@ -317,8 +317,8 @@ describe('Apps Settings Tests', () => {
         const newAppSetting = response.json();
         expect(newAppSetting.name).toEqual(appSetting.name);
         expect(newAppSetting.data).toEqual(appSetting.data);
-        const savedAppSetting = await db.query.appSettings.findFirst({
-          where: eq(appSettings.id, newAppSetting.id),
+        const savedAppSetting = await db.query.appSettingsTable.findFirst({
+          where: eq(appSettingsTable.id, newAppSetting.id),
         });
         expectAppSettings([newAppSetting], [savedAppSetting]);
       });
@@ -631,8 +631,8 @@ describe('Apps Settings Tests', () => {
           },
         });
         expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
-        const appSetting = await db.query.appSettings.findFirst({
-          where: eq(appSettings.id, chosenAppSetting.id),
+        const appSetting = await db.query.appSettingsTable.findFirst({
+          where: eq(appSettingsTable.id, chosenAppSetting.id),
         });
         expect(appSetting).toBeUndefined();
       });

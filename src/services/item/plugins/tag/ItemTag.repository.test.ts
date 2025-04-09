@@ -5,7 +5,7 @@ import { FolderItemFactory, TagCategory } from '@graasp/sdk';
 
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { client, db } from '../../../../drizzle/db';
-import { itemTags, itemsRaw, tags } from '../../../../drizzle/schema';
+import { itemTagsTable, itemsRawTable, tagsTable } from '../../../../drizzle/schema';
 import { ItemInsertDTO } from '../../../../drizzle/types';
 import { IllegalArgumentException } from '../../../../repositories/errors';
 import { assertIsDefined } from '../../../../utils/assertions';
@@ -23,14 +23,14 @@ async function saveTag(t: { name?: string; category: TagCategory }) {
 }
 
 async function saveItem(item: ItemInsertDTO) {
-  const res = await db.insert(itemsRaw).values(item).returning();
+  const res = await db.insert(itemsRawTable).values(item).returning();
   const newItem = res[0];
   assertIsDefined(newItem);
   return newItem;
 }
 
 async function saveItemTag(args: { itemId: string; tagId: string }) {
-  await db.insert(itemTags).values(args);
+  await db.insert(itemTagsTable).values(args);
 }
 
 describe('ItemTag Repository', () => {
@@ -40,7 +40,7 @@ describe('ItemTag Repository', () => {
 
   afterAll(async () => {
     // less chaos if tag is wiped out
-    await db.delete(tags);
+    await db.delete(tagsTable);
     await client.end();
   });
 
@@ -192,8 +192,8 @@ describe('ItemTag Repository', () => {
 
       await repository.create(db, item.id, tag.id);
 
-      const result = await db.query.itemTags.findFirst({
-        where: and(eq(itemTags.itemId, item.id), eq(itemTags.tagId, tag.id)),
+      const result = await db.query.itemTagsTable.findFirst({
+        where: and(eq(itemTagsTable.itemId, item.id), eq(itemTagsTable.tagId, tag.id)),
       });
       expect(result).toBeDefined();
     });
@@ -240,25 +240,25 @@ describe('ItemTag Repository', () => {
       // noise
       const tag1 = await saveTag({ category: TagCategory.Discipline });
       await saveItemTag({ tagId: tag1.id, itemId: item.id });
-      const preResult = await db.query.itemTags.findFirst({
-        where: and(eq(itemTags.itemId, item.id), eq(itemTags.tagId, tag.id)),
+      const preResult = await db.query.itemTagsTable.findFirst({
+        where: and(eq(itemTagsTable.itemId, item.id), eq(itemTagsTable.tagId, tag.id)),
       });
       expect(preResult).toBeDefined();
 
       await repository.delete(db, item.id, tag.id);
 
-      const result = await db.query.itemTags.findFirst({
-        where: and(eq(itemTags.itemId, item.id), eq(itemTags.tagId, tag.id)),
+      const result = await db.query.itemTagsTable.findFirst({
+        where: and(eq(itemTagsTable.itemId, item.id), eq(itemTagsTable.tagId, tag.id)),
       });
       expect(result).toBeUndefined();
 
       // noise still exists
-      const result1 = await db.query.itemTags.findFirst({
-        where: and(eq(itemTags.itemId, item.id), eq(itemTags.tagId, tag1.id)),
+      const result1 = await db.query.itemTagsTable.findFirst({
+        where: and(eq(itemTagsTable.itemId, item.id), eq(itemTagsTable.tagId, tag1.id)),
         with: { tag: true },
       });
       expect(result1).toBeDefined();
-      expect(result1?.tag.id).toEqual(tag1.id);
+      expect(result1?.tag?.id).toEqual(tag1.id);
     });
   });
 });

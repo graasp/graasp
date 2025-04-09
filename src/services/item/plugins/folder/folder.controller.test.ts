@@ -26,7 +26,11 @@ import build, {
 import { seedFromJson } from '../../../../../test/mocks/seed';
 import { resolveDependency } from '../../../../di/utils';
 import { db } from '../../../../drizzle/db';
-import { itemGeolocationsTable, itemMemberships, itemsRaw } from '../../../../drizzle/schema';
+import {
+  itemGeolocationsTable,
+  itemMembershipsTable,
+  itemsRawTable,
+} from '../../../../drizzle/schema';
 import { assertIsDefined } from '../../../../utils/assertions';
 import {
   ItemNotFolder,
@@ -142,17 +146,21 @@ describe('Folder routes tests', () => {
         await waitForPostCreation();
 
         // check item exists in db
-        const item = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, newItem.id) });
+        const item = await db.query.itemsRawTable.findFirst({
+          where: eq(itemsRawTable.id, newItem.id),
+        });
         expect(item?.id).toEqual(newItem.id);
 
         // a membership is created for this item
-        const membership = await db.query.itemMemberships.findFirst({
-          where: eq(itemMemberships.itemPath, newItem.path),
+        const membership = await db.query.itemMembershipsTable.findFirst({
+          where: eq(itemMembershipsTable.itemPath, newItem.path),
         });
         expect(membership?.permission).toEqual(PermissionLevel.Admin);
 
         // order is null for root
-        const savedItem = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, newItem.id) });
+        const savedItem = await db.query.itemsRawTable.findFirst({
+          where: eq(itemsRawTable.id, newItem.id),
+        });
         assertIsDefined(savedItem);
         expect(savedItem.order).toBeNull();
       });
@@ -178,13 +186,15 @@ describe('Folder routes tests', () => {
         await waitForPostCreation();
 
         // a membership does not need to be created for item with admin rights
-        const nbItemMemberships = await db.query.itemMemberships.findMany({
-          where: eq(itemMemberships.itemPath, newItem.path),
+        const nbItemMemberships = await db.query.itemMembershipsTable.findMany({
+          where: eq(itemMembershipsTable.itemPath, newItem.path),
         });
         expect(nbItemMemberships).toHaveLength(0);
 
         // add at beginning, before current child
-        const savedItem = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, newItem.id) });
+        const savedItem = await db.query.itemsRawTable.findFirst({
+          where: eq(itemsRawTable.id, newItem.id),
+        });
         assertIsDefined(savedItem);
         expect(savedItem.order).toBeLessThan(child.order!);
       });
@@ -217,11 +227,11 @@ describe('Folder routes tests', () => {
         // one membership for sharing
         // admin for the new item
         expect(
-          await db.query.itemMemberships.findMany({
+          await db.query.itemMembershipsTable.findMany({
             where: and(
-              eq(itemMemberships.itemPath, newItem.path),
-              eq(itemMemberships.permission, PermissionLevel.Admin),
-              eq(itemMemberships.accountId, actor.id),
+              eq(itemMembershipsTable.itemPath, newItem.path),
+              eq(itemMembershipsTable.permission, PermissionLevel.Admin),
+              eq(itemMembershipsTable.accountId, actor.id),
             ),
           }),
         ).toHaveLength(1);
@@ -372,7 +382,9 @@ describe('Folder routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
         await waitForPostCreation();
 
-        const savedItem = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, newItem.id) });
+        const savedItem = await db.query.itemsRawTable.findFirst({
+          where: eq(itemsRawTable.id, newItem.id),
+        });
         assertIsDefined(savedItem);
         expect(savedItem.order).toBeGreaterThan(previousItem.order!);
         expect(savedItem.order).toBeLessThan(afterItem.order!);
@@ -402,7 +414,9 @@ describe('Folder routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
         await waitForPostCreation();
 
-        const savedItem = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, newItem.id) });
+        const savedItem = await db.query.itemsRawTable.findFirst({
+          where: eq(itemsRawTable.id, newItem.id),
+        });
         assertIsDefined(savedItem);
         expect(savedItem.order).toBeGreaterThan(previousItem.order!);
       });
@@ -435,7 +449,9 @@ describe('Folder routes tests', () => {
         await waitForPostCreation();
 
         // should be after child, since another child is not valid
-        const savedItem = await db.query.itemsRaw.findFirst({ where: eq(itemsRaw.id, newItem.id) });
+        const savedItem = await db.query.itemsRawTable.findFirst({
+          where: eq(itemsRawTable.id, newItem.id),
+        });
         assertIsDefined(savedItem);
         assertIsDefined(child.order);
         assertIsDefined(anotherChild.order);
@@ -455,8 +471,8 @@ describe('Folder routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
         // no item nor geolocation is created
         expect(
-          await db.query.itemsRaw.findMany({
-            where: eq(itemsRaw.name, payload.name),
+          await db.query.itemsRawTable.findMany({
+            where: eq(itemsRawTable.name, payload.name),
           }),
         ).toHaveLength(0);
 
@@ -469,8 +485,8 @@ describe('Folder routes tests', () => {
         expect(response1.statusCode).toBe(StatusCodes.BAD_REQUEST);
         // no item nor geolocation is created
         expect(
-          await db.query.itemsRaw.findMany({
-            where: eq(itemsRaw.name, payload.name),
+          await db.query.itemsRawTable.findMany({
+            where: eq(itemsRawTable.name, payload.name),
           }),
         ).toHaveLength(0);
       });

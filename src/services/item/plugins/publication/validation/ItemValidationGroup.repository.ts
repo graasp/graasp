@@ -2,7 +2,7 @@ import { desc, eq } from 'drizzle-orm';
 import { singleton } from 'tsyringe';
 
 import { DBConnection } from '../../../../../drizzle/db';
-import { itemValidationGroups } from '../../../../../drizzle/schema';
+import { itemValidationGroupsTable } from '../../../../../drizzle/schema';
 import {
   ItemValidationGroupRaw,
   ItemValidationGroupWithItemAndValidations,
@@ -16,8 +16,8 @@ export class ItemValidationGroupRepository {
    * @param {string} iVId id of the item being checked
    */
   async get(db: DBConnection, id: string): Promise<ItemValidationGroupWithItemAndValidations> {
-    const ivg = await db.query.itemValidationGroups.findFirst({
-      where: eq(itemValidationGroups.id, id),
+    const ivg = await db.query.itemValidationGroupsTable.findFirst({
+      where: eq(itemValidationGroupsTable.id, id),
       with: { item: true, itemValidations: true },
     });
 
@@ -39,26 +39,26 @@ export class ItemValidationGroupRepository {
     if (!itemId) {
       throw new ItemValidationGroupNotFound(itemId);
     }
-    const result = await db.query.itemValidationGroups.findFirst({
-      where: eq(itemValidationGroups.itemId, itemId),
-      orderBy: desc(itemValidationGroups.createdAt),
+    const result = await db.query.itemValidationGroupsTable.findFirst({
+      where: eq(itemValidationGroupsTable.itemId, itemId),
+      orderBy: desc(itemValidationGroupsTable.createdAt),
       with: { item: true, itemValidations: true },
     });
     return result;
 
     // const result = await db
     //   .select()
-    //   .from(itemValidationGroups)
-    //   .innerJoin(items, eq(itemValidationGroups.itemId, itemId))
+    //   .from(itemValidationGroupsTable)
+    //   .innerJoin(items, eq(itemValidationGroupsTable.itemId, itemId))
     //   .innerJoin(
     //     itemValidations,
-    //     eq(itemValidationGroups.id, itemValidations.itemValidationGroupId),
+    //     eq(itemValidationGroupsTable.id, itemValidations.itemValidationGroupId),
     //   )
     //   // needed?
     //   // get items in item validations, linked to wanter item validation group
     //   // .innerJoin(items, eq(items.id, itemValidations.itemId))
-    //   .where(eq(itemValidationGroups.itemId, itemId))
-    //   .orderBy(desc(itemValidationGroups.createdAt))
+    //   .where(eq(itemValidationGroupsTable.itemId, itemId))
+    //   .orderBy(desc(itemValidationGroupsTable.createdAt))
     //   .limit(0);
 
     // return result.reduce<ItemValidationGroupWithItemAndValidationsWithItem>(
@@ -77,9 +77,9 @@ export class ItemValidationGroupRepository {
    */
   async post(db: DBConnection, itemId: string): Promise<{ id: ItemValidationGroupRaw['id'] }> {
     const res = await db
-      .insert(itemValidationGroups)
+      .insert(itemValidationGroupsTable)
       .values({ itemId })
-      .returning({ id: itemValidationGroups.id });
+      .returning({ id: itemValidationGroupsTable.id });
     return res[0];
   }
 }

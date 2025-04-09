@@ -23,35 +23,34 @@ import {
 import { db } from '../../src/drizzle/db';
 import {
   accountsTable,
-  actionRequestExports,
+  actionRequestExportsTable,
   actionsTable,
-  appActions,
-  appDatas,
-  appSettings,
-  apps,
+  appActionsTable,
+  appDataTable,
+  appSettingsTable,
+  appsTable,
   chatMentionsTable,
   chatMessagesTable,
-  guestPasswords,
+  guestPasswordsTable,
   invitationsTable,
-  itemBookmarks,
+  itemBookmarksTable,
   itemGeolocationsTable,
-  itemLikes,
-  itemLoginSchemas,
-  itemMemberships,
-  itemTags as itemTagsTable,
-  itemValidationGroups,
-  itemValidations,
-  itemVisibilities,
-  itemsRaw,
-  memberPasswords,
-  memberProfiles,
-  membershipRequests,
-  publishedItems,
-  publishers,
-  recycledItemDatas,
-  shortLinks,
-  tags,
-  tags as tagsTable,
+  itemLikesTable,
+  itemLoginSchemasTable,
+  itemMembershipsTable,
+  itemTagsTable,
+  itemValidationGroupsTable,
+  itemValidationsTable,
+  itemVisibilitiesTable,
+  itemsRawTable,
+  memberPasswordsTable,
+  memberProfilesTable,
+  membershipRequestsTable,
+  publishedItemsTable,
+  publishersTable,
+  recycledItemDatasTable,
+  shortLinksTable,
+  tagsTable,
 } from '../../src/drizzle/schema';
 import {
   AccountRaw,
@@ -336,13 +335,13 @@ const processActor = async ({
       if (actor?.profile) {
         actorProfile = (
           await db
-            .insert(memberProfiles)
+            .insert(memberProfilesTable)
             .values([MemberProfileFactory({ ...actor.profile, memberId: createdActor.id })])
             .returning()
         )[0];
       }
       if (actor?.password) {
-        await db.insert(memberPasswords).values({
+        await db.insert(memberPasswordsTable).values({
           password: await encryptPassword(actor.password),
           memberId: createdActor.id,
         });
@@ -571,7 +570,7 @@ async function processMembers({
       .returning();
     const profiles = membersWithIds.map((m) => m.profile).filter(Boolean) as MemberProfileRaw[];
     const savedMemberProfiles = profiles.length
-      ? await db.insert(memberProfiles).values(profiles).returning()
+      ? await db.insert(memberProfilesTable).values(profiles).returning()
       : [];
     const processedItems = savedMembers.reduce((acc, m) => replaceAccountInItems(m, acc), items);
     return {
@@ -598,7 +597,7 @@ async function createItemVisibilities(items: (SeedItem & { path: string })[]) {
   );
 
   if (visibilities.length) {
-    return await db.insert(itemVisibilities).values(visibilities).returning();
+    return await db.insert(itemVisibilitiesTable).values(visibilities).returning();
   }
 
   return [];
@@ -613,7 +612,7 @@ async function createItemPublisheds(items: (SeedItem & { id: string; path: strin
   }, []);
 
   if (published.length) {
-    await db.insert(publishedItems).values(published).returning();
+    await db.insert(publishedItemsTable).values(published).returning();
   }
 
   // get all item validation group names
@@ -655,13 +654,13 @@ async function createItemPublisheds(items: (SeedItem & { id: string; path: strin
     //   itemId,
     // }));
     const itemValidationGroupResult = await db
-      .insert(itemValidationGroups)
+      .insert(itemValidationGroupsTable)
       .values([...groupNameToId.values()])
       .returning();
 
     // save all item validations
     const itemValidationResults = await db
-      .insert(itemValidations)
+      .insert(itemValidationsTable)
       .values(itemValidationEntities)
       .returning();
 
@@ -688,7 +687,7 @@ async function createItemBookmarks(items: (SeedItem & { id: string })[], actor: 
   );
 
   if (bookmarks.length) {
-    return await db.insert(itemBookmarks).values(bookmarks).returning();
+    return await db.insert(itemBookmarksTable).values(bookmarks).returning();
   }
 
   return [];
@@ -724,7 +723,7 @@ async function createItemLoginSchemasAndGuests(items: (SeedItem & { path: string
   let itemLoginSchemasValues: ItemLoginSchemaRaw[] = [];
   if (itemLoginSchemasData.length) {
     itemLoginSchemasValues = await db
-      .insert(itemLoginSchemas)
+      .insert(itemLoginSchemasTable)
       .values(itemLoginSchemasData)
       .returning();
   }
@@ -759,7 +758,7 @@ async function createItemLoginSchemasAndGuests(items: (SeedItem & { path: string
       }
     }
     if (guestPasswordsValues.length) {
-      await db.insert(guestPasswords).values(guestPasswordsValues);
+      await db.insert(guestPasswordsTable).values(guestPasswordsValues);
     }
 
     // save guest memberships
@@ -778,11 +777,11 @@ async function createItemLoginSchemasAndGuests(items: (SeedItem & { path: string
         },
       ]);
     }, []);
-    memberships = await db.insert(itemMemberships).values(guestMemberships).returning();
+    memberships = await db.insert(itemMembershipsTable).values(guestMemberships).returning();
   }
 
   return {
-    itemLoginSchemas: itemLoginSchemasValues,
+    itemLoginSchemasTable: itemLoginSchemasValues,
     guests,
     itemMemberships: memberships,
   };
@@ -878,7 +877,7 @@ export async function seedFromJson(data: DataType = {}) {
   const processedItems = generateIdAndPathForItems(itemsWithAccounts);
   if (processedItems.length) {
     result.items = await db
-      .insert(itemsRaw)
+      .insert(itemsRawTable)
       .values(
         processedItems.map((i) => ({
           ...ItemFactory({ ...i, creatorId: i.creator?.id }),
@@ -892,7 +891,7 @@ export async function seedFromJson(data: DataType = {}) {
   const itemMembershipsEntities = processItemMemberships(processedItems);
   if (itemMembershipsEntities.length) {
     result.itemMemberships = await db
-      .insert(itemMemberships)
+      .insert(itemMembershipsTable)
       .values(itemMembershipsEntities)
       .returning();
   }
@@ -900,11 +899,11 @@ export async function seedFromJson(data: DataType = {}) {
   // save item visibilities
   result.itemVisibilities = await createItemVisibilities(processedItems);
   const {
-    itemLoginSchemas,
+    itemLoginSchemasTable,
     guests,
     itemMemberships: guestItemMemberships,
   } = await createItemLoginSchemasAndGuests(processedItems);
-  result.itemLoginSchemas = itemLoginSchemas;
+  result.itemLoginSchemas = itemLoginSchemasTable;
   result.guests = guests;
   result.itemMemberships = result.itemMemberships.concat(guestItemMemberships);
 
@@ -918,9 +917,9 @@ export async function seedFromJson(data: DataType = {}) {
   if (data.tags?.length) {
     const tagsWithName = data.tags.map((t) => ({ name: faker.word.words(), ...t }));
     await db.insert(tagsTable).values(tagsWithName).onConflictDoNothing();
-    result.tags = await db.query.tags.findMany({
+    result.tags = await db.query.tagsTable.findMany({
       where: inArray(
-        tags.name,
+        tagsTable.name,
         tagsWithName.map(({ name }) => name),
       ),
     });
@@ -960,21 +959,21 @@ export async function seedFromJson(data: DataType = {}) {
   const appValues = data.apps;
   if (appValues?.length) {
     const publishersEntities = await db
-      .insert(publishers)
+      .insert(publishersTable)
       .values({
         id: APPS_PUBLISHER_ID,
         name: faker.word.sample(),
         origins: [faker.internet.url()],
       })
       .onConflictDoUpdate({
-        target: publishers.id,
+        target: publishersTable.id,
         set: {
           origins: [faker.internet.url()],
         },
       })
       .returning();
     result.apps = await db
-      .insert(apps)
+      .insert(appsTable)
       .values(
         appValues.map((app) => ({
           name: faker.word.words(5),
@@ -985,7 +984,7 @@ export async function seedFromJson(data: DataType = {}) {
         })),
       )
       .onConflictDoUpdate({
-        target: publishers.id,
+        target: publishersTable.id,
         set: {
           description: faker.word.sample(),
           url: `${publishersEntities[0].origins[0]}/${faker.word.sample()}`,
@@ -1011,7 +1010,7 @@ export async function seedFromJson(data: DataType = {}) {
     return acc;
   }, []);
   if (appActionValues.length) {
-    result.appActions = await db.insert(appActions).values(appActionValues).returning();
+    result.appActions = await db.insert(appActionsTable).values(appActionValues).returning();
   }
 
   // save app data
@@ -1032,7 +1031,7 @@ export async function seedFromJson(data: DataType = {}) {
     return acc;
   }, []);
   if (appDataValues.length) {
-    result.appData = await db.insert(appDatas).values(appDataValues).returning();
+    result.appData = await db.insert(appDataTable).values(appDataValues).returning();
   }
 
   // save app settings
@@ -1051,7 +1050,7 @@ export async function seedFromJson(data: DataType = {}) {
     return acc;
   }, []);
   if (appSettingValues.length) {
-    result.appSettings = await db.insert(appSettings).values(appSettingValues).returning();
+    result.appSettings = await db.insert(appSettingsTable).values(appSettingValues).returning();
   }
 
   // save invitations
@@ -1112,7 +1111,7 @@ export async function seedFromJson(data: DataType = {}) {
     return acc;
   }, []);
   if (recycledDataValues.length) {
-    await db.insert(recycledItemDatas).values(recycledDataValues);
+    await db.insert(recycledItemDatasTable).values(recycledDataValues);
   }
 
   // save likes
@@ -1123,7 +1122,7 @@ export async function seedFromJson(data: DataType = {}) {
     return acc;
   }, []);
   if (likeValues.length) {
-    result.likes = await db.insert(itemLikes).values(likeValues).returning();
+    result.likes = await db.insert(itemLikesTable).values(likeValues).returning();
   }
 
   // save membership requests
@@ -1136,7 +1135,7 @@ export async function seedFromJson(data: DataType = {}) {
     return acc;
   }, []);
   if (membershipRequestValues.length) {
-    await db.insert(membershipRequests).values(membershipRequestValues);
+    await db.insert(membershipRequestsTable).values(membershipRequestValues);
   }
 
   // save action export requests
@@ -1154,7 +1153,7 @@ export async function seedFromJson(data: DataType = {}) {
     return acc;
   }, []);
   if (actionRequestExportsEntities.length) {
-    await db.insert(actionRequestExports).values(actionRequestExportsEntities);
+    await db.insert(actionRequestExportsTable).values(actionRequestExportsEntities);
   }
 
   // replace actor and members in actions
@@ -1205,7 +1204,7 @@ export async function seedFromJson(data: DataType = {}) {
     );
   });
   if (shortlinkEntities.length) {
-    result.shortLinks = await db.insert(shortLinks).values(shortlinkEntities).returning();
+    result.shortLinks = await db.insert(shortLinksTable).values(shortlinkEntities).returning();
   }
 
   return result;

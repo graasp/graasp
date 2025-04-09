@@ -4,7 +4,7 @@ import { singleton } from 'tsyringe';
 import { PermissionLevel } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../drizzle/db';
-import { appActions } from '../../../../../drizzle/schema';
+import { appActionsTable } from '../../../../../drizzle/schema';
 import { AppActionWithItemAndAccount } from '../../../../../drizzle/types';
 import { AuthenticatedUser } from '../../../../../types';
 import { AuthorizationService } from '../../../../authorization';
@@ -34,8 +34,8 @@ export class AppActionService {
     db: DBConnection,
     actionId: string,
   ): Promise<AppActionWithItemAndAccount | undefined> {
-    return db.query.appActions.findFirst({
-      where: eq(appActions.id, actionId),
+    return db.query.appActionsTable.findFirst({
+      where: eq(appActionsTable.id, actionId),
       with: { account: true, item: true },
     });
   }

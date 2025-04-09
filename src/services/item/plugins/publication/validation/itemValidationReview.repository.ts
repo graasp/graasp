@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm';
 import { ItemValidationReviewStatus } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../../drizzle/db';
-import { itemValidationReviews } from '../../../../../drizzle/schema';
+import { itemValidationReviewsTable } from '../../../../../drizzle/schema';
 import { ItemValidationReviewInsertDTO } from '../../../../../drizzle/types';
 
 export class ItemValidationReviewRepository {
@@ -13,8 +13,8 @@ export class ItemValidationReviewRepository {
   //   if (!id) {
   //     throw new ItemValidationReviewNotFound({ id });
   //   }
-  //   const result = await db.query.itemValidationReviews.findFirst({
-  //     where: eq(itemValidationReviews.id, id),
+  //   const result = await db.query.itemValidationReviewsTable.findFirst({
+  //     where: eq(itemValidationReviewsTable.id, id),
   //   });
   //   if (!result) {
   //     throw new ItemValidationReviewNotFound({ id });
@@ -33,7 +33,7 @@ export class ItemValidationReviewRepository {
     status: ItemValidationReviewStatus,
   ): Promise<ItemValidationReviewInsertDTO> {
     const res = await db
-      .insert(itemValidationReviews)
+      .insert(itemValidationReviewsTable)
       .values({
         itemValidationId,
         status,
@@ -54,9 +54,9 @@ export class ItemValidationReviewRepository {
     reason: string = '',
   ): Promise<ItemValidationReviewInsertDTO> {
     const res = await db
-      .update(itemValidationReviews)
+      .update(itemValidationReviewsTable)
       .set({ status, reason, reviewerId })
-      .where(eq(itemValidationReviews.id, id))
+      .where(eq(itemValidationReviewsTable.id, id))
       .returning();
     return res[0];
   }

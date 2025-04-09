@@ -14,7 +14,7 @@ import build, {
 } from '../../../../../../test/app';
 import { seedFromJson } from '../../../../../../test/mocks/seed';
 import { db } from '../../../../../drizzle/db';
-import { itemValidations } from '../../../../../drizzle/schema';
+import { itemValidationsTable } from '../../../../../drizzle/schema';
 import {
   Item,
   ItemValidationGroupRaw,
@@ -322,8 +322,8 @@ describe('Item Validation Tests', () => {
         await waitForExpect(async () => {
           // previous and newly created validation group
           expect(
-            await db.query.itemValidations.findMany({
-              where: eq(itemValidations.itemId, item.id),
+            await db.query.itemValidationsTable.findMany({
+              where: eq(itemValidationsTable.itemId, item.id),
             }),
           ).toHaveLength(2);
         });
@@ -405,8 +405,8 @@ describe('Item Validation Tests', () => {
           setTimeout(async () => {
             // check no created entries
             expect(
-              await db.query.itemValidations.findMany({
-                where: eq(itemValidations.itemId, item.id),
+              await db.query.itemValidationsTable.findMany({
+                where: eq(itemValidationsTable.itemId, item.id),
               }),
             ).toHaveLength(0);
             res(true);
@@ -435,8 +435,8 @@ describe('Item Validation Tests', () => {
           setTimeout(async () => {
             // check no created entries
             expect(
-              await db.query.itemValidations.findMany({
-                where: eq(itemValidations.itemId, item.id),
+              await db.query.itemValidationsTable.findMany({
+                where: eq(itemValidationsTable.itemId, item.id),
               }),
             ).toHaveLength(0);
             res(true);

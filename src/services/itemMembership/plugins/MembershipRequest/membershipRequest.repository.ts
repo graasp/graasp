@@ -2,7 +2,7 @@ import { and, eq } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
 import { type DBConnection } from '../../../../drizzle/db';
-import { membershipRequests } from '../../../../drizzle/schema';
+import { membershipRequestsTable } from '../../../../drizzle/schema';
 import { ItemNotFound, MemberNotFound } from '../../../../utils/errors';
 import { AccountNotFound } from '../../../account/errors';
 
@@ -15,8 +15,11 @@ export class MembershipRequestRepository {
       throw new ItemNotFound(itemId);
     }
 
-    return await db.query.membershipRequests.findFirst({
-      where: and(eq(membershipRequests.memberId, memberId), eq(membershipRequests.itemId, itemId)),
+    return await db.query.membershipRequestsTable.findFirst({
+      where: and(
+        eq(membershipRequestsTable.memberId, memberId),
+        eq(membershipRequestsTable.itemId, itemId),
+      ),
       with: {
         member: true,
         item: true,
@@ -32,7 +35,7 @@ export class MembershipRequestRepository {
     }
 
     return await db
-      .insert(membershipRequests)
+      .insert(membershipRequestsTable)
       .values({
         memberId,
         itemId,
@@ -44,8 +47,8 @@ export class MembershipRequestRepository {
     if (!itemId) {
       throw new ItemNotFound(itemId);
     }
-    const res = await db.query.membershipRequests.findMany({
-      where: eq(membershipRequests.itemId, itemId),
+    const res = await db.query.membershipRequestsTable.findMany({
+      where: eq(membershipRequestsTable.itemId, itemId),
       with: { member: true },
     });
     return res.map((r) => ({
@@ -57,8 +60,13 @@ export class MembershipRequestRepository {
 
   async deleteOne(db: DBConnection, memberId: string, itemId: string) {
     const res = await db
-      .delete(membershipRequests)
-      .where(and(eq(membershipRequests.memberId, memberId), eq(membershipRequests.itemId, itemId)))
+      .delete(membershipRequestsTable)
+      .where(
+        and(
+          eq(membershipRequestsTable.memberId, memberId),
+          eq(membershipRequestsTable.itemId, itemId),
+        ),
+      )
       .returning();
     return res[0];
   }
