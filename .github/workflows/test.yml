@@ -114,7 +114,7 @@ jobs:
       - name: apply migrations on empty database
         run: yarn migration:run
 
-      - name: check migrations are synced with the current codebase
+      - name: check migrations are correct
         run: yarn migration:check
 
   test-node:

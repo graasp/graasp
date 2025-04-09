@@ -74,7 +74,7 @@ ALTER TABLE "category" ALTER COLUMN "id" SET DEFAULT gen_random_uuid();--> state
 ALTER TABLE "chat_message" ALTER COLUMN "id" SET DEFAULT gen_random_uuid();--> statement-breakpoint
 ALTER TABLE "chat_message" ALTER COLUMN "item_id" SET NOT NULL;--> statement-breakpoint
 
-ALTER TABLE "invitation" ALTER COLUMN "id" SET DEFAULT gen_random_uuid();--> statement-breakpoint
+ALTER TABLE "invitation" ALTER COLUMN "id" SET DEFAULT gen_random_uuid();--> statement-breakpoint 
 
 CREATE TYPE "public"."permission_enum" AS ENUM('read', 'write', 'admin');--> statement-breakpoint
 ALTER TABLE "invitation" ADD COLUMN "permission_new" permission_enum NOT NULL DEFAULT 'read'::permission_enum;--> statement-breakpoint
@@ -84,7 +84,7 @@ ALTER TABLE "invitation" RENAME COLUMN "permission_new" TO "permission";--> stat
 
 
 ALTER TABLE "app_data" ALTER COLUMN "id" SET DEFAULT gen_random_uuid();--> statement-breakpoint
-
+ 
 -- create a new column for the data of appdata
 
 ALTER TABLE "app_data" ADD COLUMN "data_new" jsonb NOT NULL DEFAULT '{}'::jsonb;--> statement-breakpoint
@@ -129,8 +129,14 @@ UPDATE "action" SET "geolocation_new" = "geolocation"::jsonb WHERE "geolocation"
 ALTER TABLE "action" DROP COLUMN "geolocation"--> statement-breakpoint
 ALTER TABLE "action" RENAME COLUMN "geolocation_new" TO "geolocation";--> statement-breakpoint
 
-ALTER TABLE "guest_password" ALTER COLUMN "id" SET DEFAULT gen_random_uuid();--> statement-breakpoint
+-- convert view column
+CREATE TYPE "public"."action_view_enum" AS ENUM('builder', 'player', 'library', 'explorer', 'account', 'auth', 'unknown');--> statement-breakpoint
+ALTER TABLE "action" ADD COLUMN "view_new" action_view_enum DEFAULT 'unknown'::action_view_enum;--> statement-breakpoint
+UPDATE "action" SET "view_new" = "view"::action_view_enum WHERE "view" IS NOT NULL; --> statement-breakpoint
+ALTER TABLE "action" DROP COLUMN "view"--> statement-breakpoint
+ALTER TABLE "action" RENAME COLUMN "view_new" TO "view";--> 
 
+ALTER TABLE "guest_password" ALTER COLUMN "id" SET DEFAULT gen_random_uuid();--> statement-breakpoint
 
 -- Update extra column type to jsonb
 DROP INDEX "IDX_gin_item_search_document";--> statement-breakpoint
@@ -204,6 +210,6 @@ ALTER TABLE "item_membership" ADD CONSTRAINT "item_membership_account_id_account
 ALTER TABLE "member_profile" ADD CONSTRAINT "member_profile_member_id_account_id_fk" FOREIGN KEY ("member_id") REFERENCES "public"."account"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "member_password" ADD CONSTRAINT "member_password_member_id_account_id_fk" FOREIGN KEY ("member_id") REFERENCES "public"."account"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 
-CREATE VIEW "public"."guests_view" AS (select "id", "name", "email", "extra", "type", "created_at", "updated_at", "user_agreements_date", "enable_save_actions", "last_authenticated_at", "is_validated", "item_login_schema_id" from "account" where ("account"."type" = 'guest' and "account"."item_login_schema_id" is not null));--> statement-breakpoint
+CREATE VIEW "public"."guests_view" AS (select "id", "name", "extra", "type", "created_at", "updated_at", "last_authenticated_at", "is_validated", "item_login_schema_id" from "account" where ("account"."type" = 'guest' and "account"."item_login_schema_id" is not null));--> statement-breakpoint
 CREATE VIEW "public"."item_view" AS (select "id", "name", "type", "description", "path", "creator_id", "extra", "settings", "created_at", "updated_at", "lang", "order" from "item" where "item"."deleted_at" is null);--> statement-breakpoint
 CREATE VIEW "public"."members_view" AS (select "id", "name", "email", "extra", "type", "created_at", "updated_at", "user_agreements_date", "enable_save_actions", "last_authenticated_at", "is_validated" from "account" where ("account"."type" = 'individual' and "account"."email" is not null));--> statement-breakpoint

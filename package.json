@@ -39,6 +39,7 @@
     "openapi:generate": "node dist/scripts/generateOpenAPI.js",
     "openapi:lint": "vacuum lint ./openapi.json",
     "openapi:report": "vacuum html-report ./openapi.json vacuum-report.html",
+    "migration:generate": "yarn drizzle-kit generate",
     "migration:run": "yarn drizzle-kit migrate",
     "migration:check": "yarn drizzle-kit check"
   },
