@@ -1,10 +1,11 @@
 import { format } from 'date-fns';
-import { count, desc, gte, lte, sql } from 'drizzle-orm';
-import { and, eq } from 'drizzle-orm/sql';
+import { count, desc, getTableColumns, gte, inArray, lte, sql } from 'drizzle-orm';
+import { and } from 'drizzle-orm/sql';
 import { singleton } from 'tsyringe';
 
 import { DBConnection } from '../../../../drizzle/db';
-import { actionsTable } from '../../../../drizzle/schema';
+import { isDescendantOrSelf } from '../../../../drizzle/operations';
+import { actionsTable, itemsRaw } from '../../../../drizzle/schema';
 import { Item } from '../../../../drizzle/types';
 import { MaybeUser } from '../../../../types';
 
@@ -17,18 +18,34 @@ export class ItemActionRepository {
 
   async getActionsByHour(
     db: DBConnection,
-    itemId: Item['id'],
+    itemPath: Item['path'],
     actor: MaybeUser,
     params,
-  ): Promise<any> {
+  ): Promise<{
+    [hour: number]: {
+      count: {
+        all: number;
+        [actionType: string]: number;
+      };
+      personal: {
+        all: number;
+        [actionType: string]: number;
+      };
+    };
+  }> {
     const { startDate, endDate } = params;
+
+    const itemAndDescendants = db
+      .select({ id: itemsRaw.id })
+      .from(itemsRaw)
+      .where(isDescendantOrSelf(itemsRaw.path, itemPath));
 
     const subActions = db
       .select()
       .from(actionsTable)
       .where(
         and(
-          eq(actionsTable.itemId, itemId),
+          inArray(actionsTable.itemId, itemAndDescendants),
           gte(actionsTable.createdAt, startDate),
           lte(actionsTable.createdAt, endDate),
         ),
@@ -39,7 +56,7 @@ export class ItemActionRepository {
 
     const actions = await db
       .select({
-        hour: sql<string>`extract(hour from ${subActions.createdAt})`,
+        hour: sql<number>`extract(hour from ${subActions.createdAt})`,
         accountId: subActions.accountId,
         type: subActions.type,
         count: count(),
@@ -51,7 +68,7 @@ export class ItemActionRepository {
         subActions.type,
       ]);
 
-    const a = actions.reduce((acc, value) => {
+    const result = actions.reduce((acc, value) => {
       const { type, count, hour: idx } = value;
 
       acc[idx] = {
@@ -71,23 +88,39 @@ export class ItemActionRepository {
       return acc;
     }, {});
 
-    return a;
+    return result;
   }
 
   async getActionsByDay(
     db: DBConnection,
-    itemId: Item['id'],
+    itemPath: Item['path'],
     actor: MaybeUser,
     params,
-  ): Promise<any> {
+  ): Promise<{
+    [day: string]: {
+      count: {
+        all: number;
+        [actionType: string]: number;
+      };
+      personal: {
+        all: number;
+        [actionType: string]: number;
+      };
+    };
+  }> {
     const { startDate, endDate } = params;
+
+    const itemAndDescendants = db
+      .select({ id: itemsRaw.id })
+      .from(itemsRaw)
+      .where(isDescendantOrSelf(itemsRaw.path, itemPath));
 
     const subActions = db
       .select()
       .from(actionsTable)
       .where(
         and(
-          eq(actionsTable.itemId, itemId),
+          inArray(actionsTable.itemId, itemAndDescendants),
           gte(actionsTable.createdAt, startDate),
           lte(actionsTable.createdAt, endDate),
         ),
@@ -104,20 +137,13 @@ export class ItemActionRepository {
         count: count(),
       })
       .from(subActions)
-      .where(
-        and(
-          eq(subActions.itemId, itemId),
-          gte(actionsTable.createdAt, startDate),
-          lte(actionsTable.createdAt, endDate),
-        ),
-      )
       .groupBy(() => [
         sql`date_trunc('day', ${subActions.createdAt})`,
         subActions.accountId,
         subActions.type,
       ]);
 
-    const a = actions.reduce((acc, value) => {
+    const result = actions.reduce((acc, value) => {
       const idx = format(value.day, 'yyyy/MM/dd');
       const { type, count } = value;
 
@@ -138,23 +164,39 @@ export class ItemActionRepository {
       return acc;
     }, {});
 
-    return a;
+    return result;
   }
 
   async getActionsByWeekday(
     db: DBConnection,
-    itemId: Item['id'],
+    itemPath: Item['path'],
     actor: MaybeUser,
     params,
-  ): Promise<any> {
+  ): Promise<{
+    [weekday: number]: {
+      count: {
+        all: number;
+        [actionType: string]: number;
+      };
+      personal: {
+        all: number;
+        [actionType: string]: number;
+      };
+    };
+  }> {
     const { startDate, endDate } = params;
 
+    const itemAndDescendants = db
+      .select({ id: itemsRaw.id })
+      .from(itemsRaw)
+      .where(isDescendantOrSelf(itemsRaw.path, itemPath));
+
     const subActions = db
-      .select()
+      .select(getTableColumns(actionsTable))
       .from(actionsTable)
       .where(
         and(
-          eq(actionsTable.itemId, itemId),
+          inArray(actionsTable.itemId, itemAndDescendants),
           gte(actionsTable.createdAt, startDate),
           lte(actionsTable.createdAt, endDate),
         ),
@@ -177,7 +219,7 @@ export class ItemActionRepository {
         subActions.type,
       ]);
 
-    const a = actions.reduce((acc, value) => {
+    const result = actions.reduce((acc, value) => {
       const { type, count, day: idx } = value;
 
       acc[idx] = {
@@ -197,6 +239,6 @@ export class ItemActionRepository {
       return acc;
     }, {});
 
-    return a;
+    return result;
   }
 }

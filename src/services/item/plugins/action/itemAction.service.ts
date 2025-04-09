@@ -4,7 +4,7 @@ import { singleton } from 'tsyringe';
 
 import { FastifyRequest } from 'fastify';
 
-import { Context, ItemType, PermissionLevel, UUID } from '@graasp/sdk';
+import { ItemType, PermissionLevel, UUID } from '@graasp/sdk';
 
 import { DBConnection } from '../../../../drizzle/db';
 import { actionsTable } from '../../../../drizzle/schema';
@@ -126,48 +126,6 @@ export class ItemActionService {
     });
   }
 
-  // async getAnalyticsAggregation(
-  //   db: DBConnection,
-  //   actor: MaybeUser,
-  //   payload: {
-  //     itemId: string;
-  //     sampleSize?: number;
-  //     view?: string;
-  //     type?: string[];
-  //     countGroupBy: CountGroupBy[];
-  //     aggregationParams?: {
-  //       aggregateFunction: AggregateFunction;
-  //       aggregateMetric: AggregateMetric;
-  //       aggregateBy?: AggregateBy[];
-  //     };
-  //     startDate?: string;
-  //     endDate?: string;
-  //   },
-  // ) {
-  //   // check rights
-  //   const item = await this.itemService.get(db, actor, payload.itemId, PermissionLevel.Read);
-
-  //   if (payload.startDate && payload.endDate && isBefore(payload.endDate, payload.startDate)) {
-  //     throw new InvalidAggregationError('start date should be before end date');
-  //   }
-  //   // get actions aggregation
-  //   const aggregateActions = await this.actionRepository.getAggregationForItem(
-  //     db,
-  //     item.path,
-  //     {
-  //       sampleSize: payload.sampleSize,
-  //       view: payload.view,
-  //       types: payload.type,
-  //       startDate: payload.startDate,
-  //       endDate: payload.endDate,
-  //     },
-  //     payload.countGroupBy,
-  //     payload.aggregationParams,
-  //   );
-
-  //   return aggregateActions;
-  // }
-
   async getFilteredDescendants(db: DBConnection, account: MaybeUser, itemId: UUID) {
     const { descendants } = await this.itemService.getDescendants(db, account, itemId);
     if (!descendants.length) {
@@ -283,21 +241,6 @@ export class ItemActionService {
         requestedSampleSize: payload.sampleSize ?? MAX_ACTIONS_SAMPLE_SIZE,
       },
     };
-
-    // set all data in last task's result
-    // return new BaseAnalytics({
-    //   item,
-    //   descendants,
-    //   actions,
-    //   members,
-    //   itemMemberships: allMemberships,
-    //   chatMessages,
-    //   apps,
-    //   metadata: {
-    //     numActionsRetrieved: actions.length,
-    //     requestedSampleSize: payload.sampleSize ?? MAX_ACTIONS_SAMPLE_SIZE,
-    //   },
-    // });
   }
 
   async postPostAction(db: DBConnection, request: FastifyRequest, item: Item) {
@@ -371,20 +314,20 @@ export class ItemActionService {
   }
 
   async getActionsByHour(db: DBConnection, itemId: Item['id'], actor: MaybeUser, params) {
-    await this.basicItemService.get(db, actor, itemId);
+    const item = await this.basicItemService.get(db, actor, itemId);
 
-    return this.itemActionRepository.getActionsByHour(db, itemId, actor, params);
+    return this.itemActionRepository.getActionsByHour(db, item.path, actor, params);
   }
 
   async getActionsByDay(db: DBConnection, itemId: Item['id'], actor: MaybeUser, params) {
-    await this.basicItemService.get(db, actor, itemId);
+    const item = await this.basicItemService.get(db, actor, itemId);
 
-    return this.itemActionRepository.getActionsByDay(db, itemId, actor, params);
+    return this.itemActionRepository.getActionsByDay(db, item.path, actor, params);
   }
 
   async getActionsByWeekday(db: DBConnection, itemId: Item['id'], actor: MaybeUser, params) {
-    await this.basicItemService.get(db, actor, itemId);
+    const item = await this.basicItemService.get(db, actor, itemId);
 
-    return this.itemActionRepository.getActionsByWeekday(db, itemId, actor, params);
+    return this.itemActionRepository.getActionsByWeekday(db, item.path, actor, params);
   }
 }

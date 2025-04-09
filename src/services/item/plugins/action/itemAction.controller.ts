@@ -26,7 +26,6 @@ import {
 import { CannotPostAction } from './errors';
 import {
   exportActions,
-  getItemActions,
   getItemActionsByDay,
   getItemActionsByHour,
   getItemActionsByWeekday,
@@ -51,27 +50,6 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
   const actionService = resolveDependency(ActionService);
   const itemActionService = resolveDependency(ItemActionService);
   const requestExportService = resolveDependency(ActionRequestExportService);
-
-  // get actions and more data matching the given `id`
-  fastify.get(
-    '/:id/actions',
-    {
-      schema: getItemActions,
-      preHandler: isAuthenticated,
-    },
-    async ({ user, params: { id }, query }) => {
-      const authenticatedUser = asDefined(user?.account);
-      // remove itemMemberships from return
-      const result = await itemActionService.getBaseAnalyticsForItem(db, authenticatedUser, {
-        sampleSize: query.requestedSampleSize,
-        itemId: id,
-        view: query.view,
-        startDate: query.startDate,
-        endDate: query.endDate,
-      });
-      return result.actions;
-    },
-  );
 
   fastify.post(
     '/:id/actions',
@@ -159,7 +137,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
       schema: getItemActionsByDay,
       preHandler: [optionalIsAuthenticated],
     },
-    async (request, reply) => {
+    async (request) => {
       const {
         user,
         params: { id: itemId },
@@ -179,7 +157,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
       schema: getItemActionsByHour,
       preHandler: [optionalIsAuthenticated],
     },
-    async (request, reply) => {
+    async (request) => {
       const {
         user,
         params: { id: itemId },
@@ -199,7 +177,7 @@ const plugin: FastifyPluginAsyncTypebox<GraaspActionsOptions> = async (fastify) 
       schema: getItemActionsByWeekday,
       preHandler: [optionalIsAuthenticated],
     },
-    async (request, reply) => {
+    async (request) => {
       const {
         user,
         params: { id: itemId },
