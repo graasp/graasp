@@ -123,12 +123,23 @@ describe('Link Service', () => {
       // should not contain normal spaces
       expect(title).not.toContain(' ');
 
-      mockResponse({
-        meta: {
-          title,
-          description: 'description-patch',
-        },
-      });
+      // mockResponse({
+      //   meta: {
+      //     title,
+      //     description: 'description-patch',
+      //   },
+      // });
+      jest.spyOn(fetch, 'default').mockImplementation(
+        async () =>
+          ({
+            json: async () => ({
+              meta: {
+                title,
+                description: 'description-patch',
+              },
+            }),
+          }) as never,
+      );
 
       const result = await linkService.getLinkMetadata(MOCK_URL);
 
