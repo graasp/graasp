@@ -48,16 +48,6 @@ const linkService = new EmbeddedLinkItemService(
   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
 );
 
-export const mockResponse = (response: Response) => {
-  (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => response as never);
-};
-
-export const mockHeaderResponse = (headers: { [key: string]: string }) => {
-  (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(
-    async () => ({ headers: new Headers(headers) }) as never,
-  );
-};
-
 const MOCK_URL = 'https://example.com';
 const THUMBNAIL_HREF = `${MOCK_URL}/24.png`;
 const ICON_HREF = `${MOCK_URL}/icon`;
@@ -81,6 +71,24 @@ export const FETCH_RESULT = {
   ],
 };
 
+export const mockResponse = (response: object) => {
+  return jest.spyOn(fetch, 'default').mockImplementation(
+    async () =>
+      ({
+        json: async () => response,
+      }) as never,
+  );
+};
+export const mockReject = (error: Error) => {
+  return jest.spyOn(fetch, 'default').mockRejectedValue(error);
+};
+
+export const mockHeaderResponse = (headers: { [key: string]: string }) => {
+  jest
+    .spyOn(fetch, 'default')
+    .mockImplementation(async () => ({ headers: new Headers(headers) }) as never);
+};
+
 const iframelyResult = {
   meta: {
     title: 'title-patch',
@@ -97,8 +105,6 @@ const iframelyResult = {
 };
 
 describe('Link Service', () => {
-  let fetchMock: jest.SpyInstance;
-
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -117,16 +123,11 @@ describe('Link Service', () => {
       // should not contain normal spaces
       expect(title).not.toContain(' ');
 
-      fetchMock = (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
-        return {
-          json: async () => ({
-            meta: {
-              title,
-              description: 'description-patch',
-            },
-          }),
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any;
+      mockResponse({
+        meta: {
+          title,
+          description: 'description-patch',
+        },
       });
 
       const result = await linkService.getLinkMetadata(MOCK_URL);
@@ -145,7 +146,7 @@ describe('Link Service', () => {
 
   describe('Tests retrieving link metadata', () => {
     it('Retrieve all metadata from URL', async () => {
-      mockResponse({ json: async () => FETCH_RESULT } as Response);
+      mockResponse(FETCH_RESULT);
       const metadata = await linkService.getLinkMetadata(MOCK_URL);
       expect(metadata).toEqual({
         title: FETCH_RESULT.meta.title,
@@ -221,7 +222,7 @@ describe('Link Service', () => {
       }) as EmbeddedLinkItem;
       expect(item.extra.embeddedLink.url).toBeDefined();
 
-      fetchMock = (fetch as jest.MockedFunction<typeof fetch>).mockRejectedValue(new Error());
+      const fetchMock = mockReject(new Error());
 
       const itemServicePostMock = jest.spyOn(ItemService.prototype, 'post').mockResolvedValue(item);
 
@@ -257,13 +258,6 @@ describe('Link Service', () => {
       });
     });
     describe('mock iframely', () => {
-      beforeEach(() => {
-        fetchMock = (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          return { json: async () => iframelyResult } as any;
-        });
-      });
-
       it('set correct default values for type, extra and settings', async () => {
         const member = MemberFactory();
         const itemServicePostMock = jest
@@ -271,6 +265,7 @@ describe('Link Service', () => {
           .mockImplementation(async () => {
             return {} as Item;
           });
+        const fetchMock = mockResponse(iframelyResult);
 
         await linkService.postWithOptions(db, member, {
           name: 'name',
@@ -312,6 +307,7 @@ describe('Link Service', () => {
         const itemServicePostMock = jest
           .spyOn(ItemService.prototype, 'post')
           .mockResolvedValue(ItemFactory());
+        const fetchMock = mockResponse(iframelyResult);
 
         const args = {
           name: 'name',
@@ -368,7 +364,7 @@ describe('Link Service', () => {
         extra: { embeddedLink: { url: faker.internet.url() } },
       }) as EmbeddedLinkItem;
       expect(item.extra.embeddedLink.url).toBeDefined();
-      fetchMock = (fetch as jest.MockedFunction<typeof fetch>).mockRejectedValue(new Error());
+      const fetchMock = mockReject(new Error());
 
       const itemServicePatchMock = jest
         .spyOn(ItemService.prototype, 'patch')
@@ -406,16 +402,10 @@ describe('Link Service', () => {
       });
     });
     describe('mock iframely', () => {
-      beforeEach(() => {
-        fetchMock = (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          return { json: async () => iframelyResult } as any;
-        });
-      });
-
       it('throw if item is not a link', async () => {
         const member = MemberFactory();
         const FOLDER_ITEM = ItemFactory();
+        mockResponse(iframelyResult);
         jest
           .spyOn(itemRepository, 'getOneOrThrow')
           .mockResolvedValue({ ...FOLDER_ITEM, creator: null });
@@ -430,6 +420,7 @@ describe('Link Service', () => {
           extra: { embeddedLink: { url: faker.internet.url() } },
         }) as EmbeddedLinkItem;
         expect(item.extra.embeddedLink.url).toBeDefined();
+        const fetchMock = mockResponse(iframelyResult);
 
         jest.spyOn(itemRepository, 'getOneOrThrow').mockResolvedValue({ ...item, creator: null });
 
@@ -475,6 +466,7 @@ describe('Link Service', () => {
           type: ItemType.LINK,
           extra: { embeddedLink: { url: faker.internet.url() } },
         }) as EmbeddedLinkItem;
+        mockResponse(iframelyResult);
 
         jest.spyOn(itemRepository, 'getOneOrThrow').mockResolvedValue({ ...item, creator: null });
 
@@ -509,6 +501,7 @@ describe('Link Service', () => {
           extra: { embeddedLink: { url: faker.internet.url() } },
         }) as EmbeddedLinkItem;
         expect(item.extra.embeddedLink.url).toBeDefined();
+        const fetchMock = mockResponse(iframelyResult);
 
         jest.spyOn(itemRepository, 'getOneOrThrow').mockResolvedValue({ ...item, creator: null });
 

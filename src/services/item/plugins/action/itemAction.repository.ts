@@ -21,7 +21,7 @@ export class ItemActionRepository {
     actor: MaybeUser,
     params,
   ): Promise<any> {
-    const { startDate, endDate, view } = params;
+    const { startDate, endDate } = params;
 
     const subActions = db
       .select()
@@ -29,9 +29,8 @@ export class ItemActionRepository {
       .where(
         and(
           eq(actionsTable.itemId, itemId),
-          // gte(actionsTable.createdAt, startDate),
-          // lte(actionsTable.createdAt, endDate),
-          // eq(actionsTable.view, view),
+          gte(actionsTable.createdAt, startDate),
+          lte(actionsTable.createdAt, endDate),
         ),
       )
       .orderBy(desc(actionsTable.createdAt))
@@ -81,7 +80,7 @@ export class ItemActionRepository {
     actor: MaybeUser,
     params,
   ): Promise<any> {
-    const { startDate, endDate, view } = params;
+    const { startDate, endDate } = params;
 
     const subActions = db
       .select()
@@ -89,9 +88,8 @@ export class ItemActionRepository {
       .where(
         and(
           eq(actionsTable.itemId, itemId),
-          // gte(actionsTable.createdAt, startDate),
-          // lte(actionsTable.createdAt, endDate),
-          // eq(actionsTable.view, view),
+          gte(actionsTable.createdAt, startDate),
+          lte(actionsTable.createdAt, endDate),
         ),
       )
       .orderBy(desc(actionsTable.createdAt))
@@ -109,9 +107,8 @@ export class ItemActionRepository {
       .where(
         and(
           eq(subActions.itemId, itemId),
-          // gte(actionsTable.createdAt, startDate),
-          // lte(actionsTable.createdAt, endDate),
-          // eq(actionsTable.view, view),
+          gte(actionsTable.createdAt, startDate),
+          lte(actionsTable.createdAt, endDate),
         ),
       )
       .groupBy(() => [
@@ -150,7 +147,7 @@ export class ItemActionRepository {
     actor: MaybeUser,
     params,
   ): Promise<any> {
-    const { startDate, endDate, view } = params;
+    const { startDate, endDate } = params;
 
     const subActions = db
       .select()
@@ -158,9 +155,8 @@ export class ItemActionRepository {
       .where(
         and(
           eq(actionsTable.itemId, itemId),
-          // gte(actionsTable.createdAt, startDate),
-          // lte(actionsTable.createdAt, endDate),
-          // eq(actionsTable.view, view),
+          gte(actionsTable.createdAt, startDate),
+          lte(actionsTable.createdAt, endDate),
         ),
       )
       .orderBy(desc(actionsTable.createdAt))
