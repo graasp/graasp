@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
 
 import build from '../../../../test/app';
+import { HOST_LISTEN_ADDRESS } from '../../../utils/config';
 
 const MAX_PORT = 65535;
 const MIN_PORT = 1025;
@@ -9,7 +10,7 @@ async function listenOnRandomPort(app: FastifyInstance): Promise<string> {
   try {
     return await app.listen({
       port: Math.floor(Math.random() * (MAX_PORT - MIN_PORT)) + MIN_PORT,
-      host: '0.0.0.0',
+      host: HOST_LISTEN_ADDRESS,
     });
   } catch (error) {
     if (error.code === 'EADDRINUSE') {

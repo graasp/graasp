@@ -10,7 +10,7 @@ import {
   CORS_ORIGIN_REGEX,
   DEV,
   ENVIRONMENT,
-  HOSTNAME,
+  HOST_LISTEN_ADDRESS,
   PORT,
   PROD,
 } from './utils/config';
@@ -57,7 +57,7 @@ const start = async () => {
   await registerAppPlugins(instance);
 
   try {
-    await instance.listen({ port: PORT, host: HOSTNAME });
+    await instance.listen({ port: PORT, host: HOST_LISTEN_ADDRESS });
     instance.log.info('App is running version %s in %s mode', APP_VERSION, ENVIRONMENT);
     if (DEV) {
       // greet the world

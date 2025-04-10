@@ -1,5 +1,5 @@
 import { Redis } from 'ioredis';
-import { sign } from 'jsonwebtoken';
+import { SignOptions, sign } from 'jsonwebtoken';
 import { singleton } from 'tsyringe';
 import { v4 as uuid } from 'uuid';
 
@@ -68,7 +68,7 @@ export class MemberPasswordService {
    * @param expiration The expiration time of the token.
    * @returns A promise to be resolved with the generated token.
    */
-  generateToken(data: { sub: string; challenge?: string }, expiration: string) {
+  generateToken(data: { sub: string; challenge?: string }, expiration: SignOptions['expiresIn']) {
     return sign(data, JWT_SECRET, {
       expiresIn: expiration,
     });
