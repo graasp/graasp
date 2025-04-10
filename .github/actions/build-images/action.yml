@@ -1,5 +1,5 @@
 name: Build backend and migration image
-description: Build, package and distribute server image and migration via docker container images pushed to a registry
+description: Build, package and distribute server and migration images via docker container images pushed to a registry
 
 inputs:
   tag:

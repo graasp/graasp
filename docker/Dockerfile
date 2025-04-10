@@ -42,35 +42,10 @@ EXPOSE 3000
 
 WORKDIR /app
 
+# Copy the installed dumb-init system from build image
 COPY --from=build /usr/bin/dumb-init /usr/bin/dumb-init
 
-# Add needed packages
-# RUN apk update \
-#     && apk upgrade \
-#     && apk add \
-#         yarn \
-#     # Python and GCC are necessary for mmmagic dependency.
-#         python3 \
-#         py3-pip \
-#         make \
-#         build-base \
-#     # Ghostscript and GraphicsMagick are necessary for pdf2pic library
-#         ghostscript \
-#         graphicsmagick \
-#     && apk cache clean
-
-# COPY ./package.json ./
-# COPY ./.yarnrc.yml ./
-# COPY ./.yarn/ ./.yarn/
-# COPY ./yarn.lock ./
-
-
-# # Husky's script are needed for postinstall script
-# COPY  ./.husky ./.husky
-
-# # Install the application
-# RUN yarn set version berry
-# RUN yarn workspaces focus --all --production
+# Copy the dependencies and compiled server code
 COPY --chown=node:node --from=build ./app/node_modules ./node_modules
 COPY --chown=node:node --from=build ./app/dist ./dist
 

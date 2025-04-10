@@ -5,7 +5,15 @@ import { fastify } from 'fastify';
 import registerAppPlugins from './app';
 import ajvFormats from './schemas/ajvFormats';
 import { initSentry } from './sentry';
-import { APP_VERSION, CORS_ORIGIN_REGEX, DEV, ENVIRONMENT, PORT, PROD } from './utils/config';
+import {
+  APP_VERSION,
+  CORS_ORIGIN_REGEX,
+  DEV,
+  ENVIRONMENT,
+  HOST_LISTEN_ADDRESS,
+  PORT,
+  PROD,
+} from './utils/config';
 import { GREETING } from './utils/constants';
 
 export const instance = fastify({
@@ -49,7 +57,7 @@ const start = async () => {
   await registerAppPlugins(instance);
 
   try {
-    await instance.listen({ port: PORT, host: '0.0.0.0' });
+    await instance.listen({ port: PORT, host: HOST_LISTEN_ADDRESS });
     instance.log.info('App is running version %s in %s mode', APP_VERSION, ENVIRONMENT);
     if (DEV) {
       // greet the world
