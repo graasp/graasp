@@ -21,12 +21,6 @@ env:
   AUTH_TOKEN_JWT_SECRET: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
   COOKIE_DOMAIN: localhost
   CLIENT_HOST: http://localhost:3114
-  DB_PASSWORD: docker
-  DB_USERNAME: docker
-  DB_NAME: docker
-  DB_PORT: '5432'
-  DB_DISABLE_SSL: true
-  DB_HOST: localhost
   DB_CONNECTION: postgres://docker:docker@localhost:5432/docker?sslmode=disable
   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN: 'http://localhost:1234'
   ETHERPAD_API_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
@@ -138,23 +132,6 @@ jobs:
           POSTGRES_DB: ${{ env.DB_NAME }}
         ports:
           - 5432:5432 # exposing 5432 port for application to use
-        # Set health checks to wait until postgres has started
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-      postgres-2:
-        # Docker Hub image
-        image: postgres
-        # Provide the password for postgres
-        env:
-          POSTGRES_PASSWORD: ${{ env.DB_PASSWORD }}
-          POSTGRES_USER: ${{ env.DB_USERNAME }}
-          POSTGRES_DB: ${{ env.DB_NAME }}
-        ports:
-          - 5433:5432 # exposing 5432 port for application to use
         # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready

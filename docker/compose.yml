@@ -55,7 +55,7 @@ services:
       # the Mailer config is set by the "mailer" service below
       MAILER_CONFIG_SMTP_HOST: mailer
       MAILER_CONFIG_SMTP_PORT: 1025
-      MAILER_CONFIG_SMTP_USE_SSL: 'false' # only for dev purposes
+      MAILER_CONFIG_SMTP_USE_SSL: 'false' # enable if your mail server supports SSL (if using the local mailcatcher, disable SSL)
       MAILER_CONFIG_USERNAME: docker
       MAILER_CONFIG_PASSWORD: docker
 
@@ -76,7 +76,7 @@ services:
       ETHERPAD_PUBLIC_URL: http://localhost:9001
       # Optional, if the etherpad cookie domain is different from the domain of the public URL
       ETHERPAD_COOKIE_DOMAIN: localhost
-      # Api key is set by ./.devcontainer/etherpad/devApiKey.txt
+      # Api key should be the same as the one mounted inside the etherpad container
       ETHERPAD_API_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 
       # Redis
