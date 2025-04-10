@@ -41,7 +41,7 @@
     "openapi:report": "vacuum html-report ./openapi.json vacuum-report.html",
     "migration:generate": "yarn drizzle-kit generate",
     "migration:run": "yarn drizzle-kit migrate",
-    "migration:check": "yarn drizzle-kit check"
+    "migration:check": "yarn drizzle-kit generate --name=migrationtest --out=./src/drizzle --schema=./src/drizzle/schema.ts --dialect=postgresql && (find ./src/drizzle | grep migrationtest) && exit 1"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.669.0",

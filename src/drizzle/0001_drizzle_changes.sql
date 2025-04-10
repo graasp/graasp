@@ -1,6 +1,5 @@
--- Enable these if you are running on a db that has the role table
--- ALTER TABLE "role" DISABLE ROW LEVEL SECURITY;--> statement-breakpoint
--- DROP TABLE "role" CASCADE;--> statement-breakpoint
+ALTER TABLE IF EXISTS "role" DISABLE ROW LEVEL SECURITY;--> statement-breakpoint
+DROP TABLE IF EXISTS "role" CASCADE;--> statement-breakpoint
 
 ALTER TABLE "migrations" DISABLE ROW LEVEL SECURITY;--> statement-breakpoint
 DROP TABLE "migrations" CASCADE;--> statement-breakpoint
@@ -134,7 +133,8 @@ CREATE TYPE "public"."action_view_enum" AS ENUM('builder', 'player', 'library', 
 ALTER TABLE "action" ADD COLUMN "view_new" action_view_enum DEFAULT 'unknown'::action_view_enum;--> statement-breakpoint
 UPDATE "action" SET "view_new" = "view"::action_view_enum WHERE "view" IS NOT NULL; --> statement-breakpoint
 ALTER TABLE "action" DROP COLUMN "view"--> statement-breakpoint
-ALTER TABLE "action" RENAME COLUMN "view_new" TO "view";--> 
+ALTER TABLE "action" RENAME COLUMN "view_new" TO "view";--> statement-breakpoint
+ALTER TABLE "action" ALTER COLUMN "view" SET NOT NULL;--> statement-breakpoint
 
 ALTER TABLE "guest_password" ALTER COLUMN "id" SET DEFAULT gen_random_uuid();--> statement-breakpoint
 
