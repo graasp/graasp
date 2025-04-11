@@ -68,18 +68,15 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       preHandler: isAuthenticated,
     },
     async ({ user, params: { id: itemId } }) => {
-      return await db.transaction(async (tx) => {
-        const item = await basicItemService.get(tx, user?.account, itemId, PermissionLevel.Admin);
-        const itemLoginSchema = await itemLoginService.getByItemPath(tx, item.path);
-        if (!itemLoginSchema) {
-          throw new ItemLoginSchemaNotFound({ itemId });
-        }
-        return itemLoginSchema;
-      });
+      const item = await basicItemService.get(db, user?.account, itemId, PermissionLevel.Admin);
+      const itemLoginSchema = await itemLoginService.getByItemPath(db, item.path);
+      if (!itemLoginSchema) {
+        throw new ItemLoginSchemaNotFound({ itemId });
+      }
+      return itemLoginSchema;
     },
   );
 
-  // TODO: MOBILE
   // log in to item
   fastify.post(
     '/:id/login',

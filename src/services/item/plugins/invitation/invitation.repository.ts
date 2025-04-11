@@ -136,19 +136,20 @@ export class InvitationRepository {
       where: isAncestorOrSelf(invitationsTable.itemPath, itemPath),
     });
 
-    await db.insert(invitationsTable).values(
-      data
-        .filter(
-          (i) =>
-            // exclude duplicate item-email combinations that are already invited
-            !existingEntries.find(({ email, item }) => email === i.email && item.path === itemPath),
-        )
-        .map((inv) => ({
-          ...inv,
-          itemPath,
-          creator,
-        })),
-    );
+    const newInvitations = data
+      .filter(
+        (i) =>
+          // exclude duplicate item-email combinations that are already invited
+          !existingEntries.find(({ email, item }) => email === i.email && item.path === itemPath),
+      )
+      .map((inv) => ({
+        ...inv,
+        itemPath,
+        creator,
+      }));
+    if (newInvitations.length) {
+      await db.insert(invitationsTable).values(newInvitations);
+    }
   }
 
   async updateOne(
