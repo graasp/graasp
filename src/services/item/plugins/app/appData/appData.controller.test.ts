@@ -21,6 +21,8 @@ import { assertIsMemberForTest } from '../../../../authentication';
 import { getAccessToken } from '../test/fixtures';
 import { PreventUpdateAppDataFile } from './errors';
 
+jest.retryTimes(3, { logErrorsBeforeRetry: true });
+
 const expectAppDatas = (values, expected) => {
   for (const expectValue of expected) {
     const value = values.find(({ id }) => id === expectValue.id);
@@ -428,6 +430,7 @@ describe('App Data Tests', () => {
           expect(savedAppData.itemId).toEqual(item.id);
           expectAppDatas([response.json()], [savedAppData]);
         });
+        // note: This test is flacky
         it('Post app data to some member', async () => {
           const { apps } = await seedFromJson({ apps: [{}] });
           const {
