@@ -8,4 +8,4 @@ registerValue(FASTIFY_LOGGER_DI_KEY, console);
 jest.mock('../src/services/item/plugins/publication/published/plugins/search/meilisearch');
 
 // some tests are flacky and need to be retested
-jest.retryTimes(3, { logErrorsBeforeRetry: true });
+// jest.retryTimes(3, { logErrorsBeforeRetry: true });
