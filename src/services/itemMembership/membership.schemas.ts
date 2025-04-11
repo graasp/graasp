@@ -68,26 +68,7 @@ export const create = {
   }),
   body: createItemMembershipSchema,
   response: {
-    [StatusCodes.OK]: itemMembershipSchemaRef,
-    '4xx': errorSchemaRef,
-  },
-} as const satisfies FastifySchema;
-
-// schema for creating many item memberships
-export const createMany = {
-  operationId: 'createManyItemMemberships',
-  tags: ['item-membership'],
-  summary: 'Create access to item for many accounts',
-  description: 'Create access to item for many account, given permissions',
-
-  params: customType.StrictObject({
-    itemId: customType.UUID(),
-  }),
-  body: customType.StrictObject({
-    memberships: Type.Array(createItemMembershipSchema),
-  }),
-  response: {
-    [StatusCodes.OK]: Type.Array(itemMembershipSchemaRef),
+    [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
@@ -121,7 +102,7 @@ export const updateOne = {
     permission: customType.EnumString(Object.values(PermissionLevel)),
   }),
   response: {
-    [StatusCodes.NO_CONTENT]: Type.Null(),
+    [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
@@ -140,7 +121,7 @@ export const deleteOne = {
     purgeBelow: Type.Optional(Type.Boolean()),
   }),
   response: {
-    [StatusCodes.NO_CONTENT]: Type.Null(),
+    [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;

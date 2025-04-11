@@ -63,25 +63,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         },
       );
 
-      // Not used?
-      // // create many item memberships
-      // fastify.post(
-      //   '/:itemId',
-      //   {
-      //     schema: createMany,
-      //     preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
-      //   },
-      //   async ({ user, params: { itemId }, body }) => {
-      //     const account = asDefined(user?.account);
-      //     // BUG: because we use this call to save csv member
-      //     // we have to return immediately
-      //     // solution: it's probably simpler to upload a csv and handle it in the back
-      //     return db.transaction((tx) => {
-      //       return itemMembershipService.createMany(tx, account, body.memberships, itemId);
-      //     });
-      //   },
-      // );
-
       // update item membership
       fastify.patch(
         '/:id',

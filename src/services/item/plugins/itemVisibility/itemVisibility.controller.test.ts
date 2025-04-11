@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
@@ -73,9 +73,14 @@ describe('Item Visibility', () => {
           method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/visibilities/${ItemVisibilityType.Hidden}`,
         });
-        expect(res.statusCode).toBe(StatusCodes.OK);
-        expect(res.json().type).toEqual(ItemVisibilityType.Hidden);
-        expect(res.json().item.path).toEqual(item.path);
+        expect(res.statusCode).toBe(StatusCodes.NO_CONTENT);
+        const savedValue = await db.query.itemVisibilitiesTable.findFirst({
+          where: and(
+            eq(itemVisibilitiesTable.itemPath, item.path),
+            eq(itemVisibilitiesTable.type, ItemVisibilityType.Hidden),
+          ),
+        });
+        expect(savedValue).toBeDefined();
       });
 
       it('Cannot create visibility if exists for item', async () => {
