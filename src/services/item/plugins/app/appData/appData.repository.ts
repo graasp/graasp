@@ -25,10 +25,10 @@ type CreateAppDataBody = { appData: InputAppData; itemId: string; actorId: Accou
 
 export class AppDataRepository {
   async addOne(
-    db: DBConnection,
+    dbConnection: DBConnection,
     { itemId, actorId, appData }: CreateAppDataBody,
   ): Promise<AppDataRaw> {
-    const savedValue = await db
+    const savedValue = await dbConnection
       .insert(appDataTable)
       .values({
         visibility: AppDataVisibility.Member,
@@ -43,12 +43,12 @@ export class AppDataRepository {
   }
 
   async updateOne(
-    db: DBConnection,
+    dbConnection: DBConnection,
     appDataId: string,
     body: Partial<AppDataRaw>,
   ): Promise<AppDataRaw> {
     // we shouldn't update file data
-    const originalData = await db.query.appDataTable.findFirst({
+    const originalData = await dbConnection.query.appDataTable.findFirst({
       where: eq(appDataTable.id, appDataId),
     });
 
@@ -61,7 +61,7 @@ export class AppDataRepository {
       throw new PreventUpdateAppDataFile(originalData.id);
     }
 
-    const patchedAppData = await db
+    const patchedAppData = await dbConnection
       .update(appDataTable)
       .set(body)
       .where(eq(appDataTable.id, appDataId))
@@ -71,17 +71,17 @@ export class AppDataRepository {
   }
 
   async getOne(
-    db: DBConnection,
+    dbConnection: DBConnection,
     id: string,
   ): Promise<AppDataWithItemAndAccountAndCreator | undefined> {
-    return await db.query.appDataTable.findFirst({
+    return await dbConnection.query.appDataTable.findFirst({
       where: eq(appDataTable.id, id),
       with: { account: true, creator: true, item: true },
     });
   }
 
   async getForItem(
-    db: DBConnection,
+    dbConnection: DBConnection,
     itemId: string,
     filters: {
       visibility?: AppDataVisibility;
@@ -119,7 +119,7 @@ export class AppDataRepository {
       andConditions.push(or(...orConditions));
     }
 
-    return await db.query.appDataTable.findMany({
+    return await dbConnection.query.appDataTable.findMany({
       where: and(...andConditions),
       with: {
         creator: true,
@@ -129,7 +129,7 @@ export class AppDataRepository {
     });
   }
 
-  async deleteOne(db: DBConnection, id: string): Promise<void> {
-    await db.delete(appDataTable).where(eq(appDataTable.id, id));
+  async deleteOne(dbConnection: DBConnection, id: string): Promise<void> {
+    await dbConnection.delete(appDataTable).where(eq(appDataTable.id, id));
   }
 }

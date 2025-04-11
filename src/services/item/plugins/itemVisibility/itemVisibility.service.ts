@@ -21,14 +21,14 @@ export class ItemVisibilityService {
   }
 
   async post(
-    db: DBConnection,
+    dbConnection: DBConnection,
     member: MinimalMember,
     id: string,
     visibilityType: ItemVisibilityOptionsType,
   ) {
-    const item = await this.basicItemService.get(db, member, id, PermissionLevel.Admin);
+    const item = await this.basicItemService.get(dbConnection, member, id, PermissionLevel.Admin);
     const newVisibility = await this.itemVisibilityRepository.post(
-      db,
+      dbConnection,
       member.id,
       item.path,
       visibilityType,
@@ -40,14 +40,14 @@ export class ItemVisibilityService {
   }
 
   async deleteOne(
-    db: DBConnection,
+    dbConnection: DBConnection,
     member: MinimalMember,
     id: string,
     visibilityType: ItemVisibilityOptionsType,
   ) {
-    const item = await this.basicItemService.get(db, member, id, PermissionLevel.Admin);
+    const item = await this.basicItemService.get(dbConnection, member, id, PermissionLevel.Admin);
 
-    await this.itemVisibilityRepository.deleteOne(db, item, visibilityType);
+    await this.itemVisibilityRepository.deleteOne(dbConnection, item, visibilityType);
     return { item: { path: item.path } };
   }
 }

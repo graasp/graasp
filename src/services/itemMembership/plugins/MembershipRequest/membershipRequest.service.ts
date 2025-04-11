@@ -31,20 +31,20 @@ export class MembershipRequestService {
     this.log = log;
   }
 
-  async getAllByItem(db: DBConnection, itemId: string) {
-    return await this.membershipRequestRepository.getAllByItem(db, itemId);
+  async getAllByItem(dbConnection: DBConnection, itemId: string) {
+    return await this.membershipRequestRepository.getAllByItem(dbConnection, itemId);
   }
 
-  async get(db: DBConnection, memberId: string, itemId: string) {
-    return await this.membershipRequestRepository.get(db, memberId, itemId);
+  async get(dbConnection: DBConnection, memberId: string, itemId: string) {
+    return await this.membershipRequestRepository.get(dbConnection, memberId, itemId);
   }
 
-  async post(db: DBConnection, memberId: string, itemId: string) {
-    return await this.membershipRequestRepository.post(db, memberId, itemId);
+  async post(dbConnection: DBConnection, memberId: string, itemId: string) {
+    return await this.membershipRequestRepository.post(dbConnection, memberId, itemId);
   }
 
-  async notifyAdmins(db: DBConnection, member: MinimalMember, item: Item) {
-    const admins = await this.itemMembershipRepository.getAdminsForItem(db, item.path);
+  async notifyAdmins(dbConnection: DBConnection, member: MinimalMember, item: Item) {
+    const admins = await this.itemMembershipRepository.getAdminsForItem(dbConnection, item.path);
 
     const link = ClientManager.getInstance().getLinkByContext(
       Context.Builder,
@@ -81,7 +81,7 @@ export class MembershipRequestService {
     }
   }
 
-  async deleteOne(db: DBConnection, memberId: string, itemId: string) {
-    return await this.membershipRequestRepository.deleteOne(db, memberId, itemId);
+  async deleteOne(dbConnection: DBConnection, memberId: string, itemId: string) {
+    return await this.membershipRequestRepository.deleteOne(dbConnection, memberId, itemId);
   }
 }

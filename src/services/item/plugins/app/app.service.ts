@@ -4,7 +4,7 @@ import { singleton } from 'tsyringe';
 
 import { AuthTokenSubject, ItemType, PermissionLevel } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import { Item, MinimalAccount } from '../../../../drizzle/types';
 import { AuthenticatedUser, MaybeUser } from '../../../../types';
 import { APPS_JWT_SECRET } from '../../../../utils/config';
@@ -40,34 +40,39 @@ export class AppService {
     this.publisherRepository = publisherRepository;
   }
 
-  async getAllValidAppOrigins(db: DBConnection) {
-    return this.publisherRepository.getAllValidAppOrigins(db);
+  async getAllValidAppOrigins(dbConnection: DBConnection) {
+    return this.publisherRepository.getAllValidAppOrigins(dbConnection);
   }
 
-  async getAllApps(db: DBConnection, publisherId: string) {
-    return this.appRepository.getAll(db, publisherId);
+  async getAllApps(dbConnection: DBConnection, publisherId: string) {
+    return this.appRepository.getAll(dbConnection, publisherId);
   }
 
-  async getMostUsedApps(db: DBConnection, account: AuthenticatedUser) {
-    return this.appRepository.getMostUsedApps(db, account.id);
+  async getMostUsedApps(dbConnection: DBConnection, account: AuthenticatedUser) {
+    return this.appRepository.getMostUsedApps(dbConnection, account.id);
   }
 
   async getApiAccessToken(
-    db: DBConnection,
+    dbConnection: DBConnection,
     actor: MaybeUser,
     itemId: string,
     appDetails: { origin: string; key: string },
   ) {
     // check item is app
-    const item = await this.itemRepository.getOneOrThrow(db, itemId);
+    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
     if (item.type !== ItemType.APP) {
       throw new Error('item is not app'); // TODO
     }
 
     // check actor has access to item
-    await this.authorizationService.validatePermission(db, PermissionLevel.Read, actor, item);
+    await this.authorizationService.validatePermission(
+      dbConnection,
+      PermissionLevel.Read,
+      actor,
+      item,
+    );
 
-    await this.appRepository.isValidAppOrigin(db, appDetails);
+    await this.appRepository.isValidAppOrigin(dbConnection, appDetails);
 
     const authTokenSubject = this.appRepository.generateApiAccessTokenSubject(
       actor?.id,
@@ -82,12 +87,12 @@ export class AppService {
   }
 
   async getContext(
-    db: DBConnection,
+    dbConnection: DBConnection,
     actor: MaybeUser,
     itemId: string,
     requestDetails?: AuthTokenSubject,
   ) {
-    const item = await this.itemRepository.getOneOrThrow(db, itemId);
+    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
     if (item.type !== ItemType.APP) {
       throw new Error('Item is not an app');
     }
@@ -99,7 +104,7 @@ export class AppService {
     // return member data only if authenticated
     let members: MinimalAccount[] = [];
     if (actor) {
-      members = await this.getTreeMembers(db, actor, item);
+      members = await this.getTreeMembers(dbConnection, actor, item);
     }
 
     return { item, members };
@@ -107,11 +112,11 @@ export class AppService {
 
   // used in apps: get members from tree
   async getTreeMembers(
-    db: DBConnection,
+    dbConnection: DBConnection,
     actor: AuthenticatedUser,
     item: Item,
   ): Promise<MinimalAccount[]> {
-    const memberships = await this.itemMembershipRepository.getForItem(db, item);
+    const memberships = await this.itemMembershipRepository.getForItem(dbConnection, item);
     // get members only without duplicate
     return uniqBy(
       memberships.map(({ account }) => account),

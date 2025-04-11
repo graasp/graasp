@@ -8,14 +8,14 @@ import { AccountNotFound } from '../../../account/errors';
 
 @singleton()
 export class MembershipRequestRepository {
-  async get(db: DBConnection, memberId: string, itemId: string) {
+  async get(dbConnection: DBConnection, memberId: string, itemId: string) {
     if (!memberId) {
       throw new AccountNotFound();
     } else if (!itemId) {
       throw new ItemNotFound(itemId);
     }
 
-    return await db.query.membershipRequestsTable.findFirst({
+    return await dbConnection.query.membershipRequestsTable.findFirst({
       where: and(
         eq(membershipRequestsTable.memberId, memberId),
         eq(membershipRequestsTable.itemId, itemId),
@@ -27,14 +27,14 @@ export class MembershipRequestRepository {
     });
   }
 
-  async post(db: DBConnection, memberId: string, itemId: string) {
+  async post(dbConnection: DBConnection, memberId: string, itemId: string) {
     if (!memberId) {
       throw new MemberNotFound();
     } else if (!itemId) {
       throw new ItemNotFound(itemId);
     }
 
-    return await db
+    return await dbConnection
       .insert(membershipRequestsTable)
       .values({
         memberId,
@@ -43,11 +43,11 @@ export class MembershipRequestRepository {
       .returning();
   }
 
-  async getAllByItem(db: DBConnection, itemId: string) {
+  async getAllByItem(dbConnection: DBConnection, itemId: string) {
     if (!itemId) {
       throw new ItemNotFound(itemId);
     }
-    const res = await db.query.membershipRequestsTable.findMany({
+    const res = await dbConnection.query.membershipRequestsTable.findMany({
       where: eq(membershipRequestsTable.itemId, itemId),
       with: { member: true },
     });
@@ -58,8 +58,8 @@ export class MembershipRequestRepository {
     }));
   }
 
-  async deleteOne(db: DBConnection, memberId: string, itemId: string) {
-    const res = await db
+  async deleteOne(dbConnection: DBConnection, memberId: string, itemId: string) {
+    const res = await dbConnection
       .delete(membershipRequestsTable)
       .where(
         and(

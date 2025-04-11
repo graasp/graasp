@@ -25,22 +25,22 @@ export class RecycledItemDataRepository {
   // but does not soft delete the item
   // should we move to core item?
   async addOne(
-    db: DBConnection,
+    dbConnection: DBConnection,
     { itemPath, creatorId }: CreateRecycledItemDataBody,
   ): Promise<void> {
-    await db.insert(recycledItemDatasTable).values({ itemPath, creatorId });
+    await dbConnection.insert(recycledItemDatasTable).values({ itemPath, creatorId });
   }
 
   // warning: this call insert in the table
   // but does not soft delete the item
   // should we move to core item?
-  async addMany(db: DBConnection, items: Item[], creator: MinimalMember): Promise<void> {
+  async addMany(dbConnection: DBConnection, items: Item[], creator: MinimalMember): Promise<void> {
     const recycled = items.map((item) => ({ itemPath: item.path, creatorId: creator.id }));
-    await db.insert(recycledItemDatasTable).values(recycled);
+    await dbConnection.insert(recycledItemDatasTable).values(recycled);
   }
 
   async getOwnRecycledItems(
-    db: DBConnection,
+    dbConnection: DBConnection,
     account: MinimalMember,
     pagination: Pagination,
   ): Promise<Paginated<Item>> {
@@ -48,7 +48,7 @@ export class RecycledItemDataRepository {
     const limit = Math.min(pageSize, ITEMS_PAGE_SIZE_MAX);
     const skip = (page - 1) * limit;
 
-    const query = db
+    const query = dbConnection
       .select(getTableColumns(itemsRawTable))
       // start with smaller table that can have the most contraints: membership with admin and accountId
       .from(itemMembershipsTable)
@@ -74,7 +74,7 @@ export class RecycledItemDataRepository {
       )
       .as('subquery');
 
-    const data = await db
+    const data = await dbConnection
       .select()
       .from(query)
       // show most recently deleted items first
@@ -89,9 +89,9 @@ export class RecycledItemDataRepository {
   // warning: this call removes from the table
   // but does not soft delete the item
   // should we move to core item?
-  async deleteManyByItemPath(db: DBConnection, itemsPath: Item['path'][]): Promise<void> {
+  async deleteManyByItemPath(dbConnection: DBConnection, itemsPath: Item['path'][]): Promise<void> {
     throwsIfParamIsInvalid('itemsPath', itemsPath);
-    await db
+    await dbConnection
       .delete(recycledItemDatasTable)
       .where(inArray(recycledItemDatasTable.itemPath, itemsPath));
   }
@@ -103,7 +103,7 @@ export class RecycledItemDataRepository {
    * @param {string[]} [options.types] filter out the items by type. If undefined or empty, all types are returned.
    * @returns {Item[]}
    */
-  async getDeletedDescendants(db: DBConnection, item: FolderItem): Promise<Item[]> {
+  async getDeletedDescendants(dbConnection: DBConnection, item: FolderItem): Promise<Item[]> {
     // TODO: no need with drizzle
     // need order column to further sort in this function or afterwards
     // if (ordered || selectOrder) {
@@ -113,7 +113,7 @@ export class RecycledItemDataRepository {
     //   return query.getMany();
     // }
 
-    return await db
+    return await dbConnection
       .select()
       .from(itemsRawTable)
       .where(
@@ -128,8 +128,8 @@ export class RecycledItemDataRepository {
       .orderBy(asc(itemsRawTable.path));
   }
 
-  async getManyDeletedItemsById(db: DBConnection, itemIds: string[]): Promise<ItemRaw[]> {
-    return await db.query.itemsRawTable.findMany({
+  async getManyDeletedItemsById(dbConnection: DBConnection, itemIds: string[]): Promise<ItemRaw[]> {
+    return await dbConnection.query.itemsRawTable.findMany({
       where: and(isNotNull(itemsRawTable.deletedAt), inArray(itemsRawTable.id, itemIds)),
     });
   }
@@ -139,10 +139,10 @@ export class RecycledItemDataRepository {
    * @param db
    * @param ids
    */
-  async getDeletedTreesById(db: DBConnection, ids: Item['id'][]) {
+  async getDeletedTreesById(dbConnection: DBConnection, ids: Item['id'][]) {
     const descendants = alias(itemsRawTable, 'descendants');
 
-    const trees = await db
+    const trees = await dbConnection
       .select()
       .from(itemsRawTable)
       .innerJoin(descendants, and(isDescendantOrSelf(descendants.path, itemsRawTable.path)))

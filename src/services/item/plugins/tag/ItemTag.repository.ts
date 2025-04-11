@@ -14,12 +14,12 @@ import { ItemTagAlreadyExists } from './errors';
 
 @singleton()
 export class ItemTagRepository {
-  async getByItemId(db: DBConnection, itemId: UUID): Promise<TagRaw[]> {
+  async getByItemId(dbConnection: DBConnection, itemId: UUID): Promise<TagRaw[]> {
     if (!itemId) {
       throw new IllegalArgumentException(`The given 'itemId' is undefined!`);
     }
 
-    const result = await db
+    const result = await dbConnection
       .select(
         // only take the tags columns
         getTableColumns(tagsTable),
@@ -33,7 +33,7 @@ export class ItemTagRepository {
   }
 
   async getCountBy(
-    db: DBConnection,
+    dbConnection: DBConnection,
     {
       search,
       category,
@@ -49,9 +49,9 @@ export class ItemTagRepository {
       id: tagsTable.id,
       name: tagsTable.name,
       category: tagsTable.category,
-      count: db.$count(itemTagsTable, eq(itemTagsTable.tagId, tagsTable.id)),
+      count: dbConnection.$count(itemTagsTable, eq(itemTagsTable.tagId, tagsTable.id)),
     };
-    const res = await db
+    const res = await dbConnection
       .select(selectCols)
       .from(tagsTable)
       .where(and(ilike(tagsTable.name, `%${search}%`), eq(tagsTable.category, category)))
@@ -61,20 +61,20 @@ export class ItemTagRepository {
     return res;
   }
 
-  async create(db: DBConnection, itemId: UUID, tagId: TagRaw['id']): Promise<void> {
+  async create(dbConnection: DBConnection, itemId: UUID, tagId: TagRaw['id']): Promise<void> {
     try {
-      await db.insert(itemTagsTable).values({ itemId, tagId });
+      await dbConnection.insert(itemTagsTable).values({ itemId, tagId });
     } catch (e) {
       throw new ItemTagAlreadyExists({ itemId, tagId });
     }
   }
 
-  async delete(db: DBConnection, itemId: Item['id'], tagId: TagRaw['id']): Promise<void> {
+  async delete(dbConnection: DBConnection, itemId: Item['id'], tagId: TagRaw['id']): Promise<void> {
     if (!itemId || !tagId) {
       throw new IllegalArgumentException(`Given 'itemId' or 'tagId' is undefined!`);
     }
     // remove association between item and tag in tag association table
-    await db
+    await dbConnection
       .delete(itemTagsTable)
       .where(and(eq(itemTagsTable.tagId, tagId), eq(itemTagsTable.itemId, itemId)));
   }

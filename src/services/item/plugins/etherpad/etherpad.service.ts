@@ -12,7 +12,7 @@ import {
 } from '@graasp/sdk';
 
 import { ETHERPAD_NAME_FACTORY_DI_KEY } from '../../../../di/constants';
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import { Item, MinimalAccount } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { AuthenticatedUser, MinimalMember } from '../../../../types';
@@ -106,7 +106,7 @@ export class EtherpadItemService {
    * Creates a new Etherpad item linked to a pad in the service
    */
   public async createEtherpadItem(
-    db: DBConnection,
+    dbConnection: DBConnection,
     member: MinimalMember,
     args: { readerPermission?: EtherpadPermissionType; name: string },
     parentId?: string,
@@ -118,7 +118,7 @@ export class EtherpadItemService {
     });
 
     try {
-      return this.itemService.post(db, member, {
+      return this.itemService.post(dbConnection, member, {
         item: {
           name: args.name,
           type: ItemType.ETHERPAD,
@@ -146,14 +146,14 @@ export class EtherpadItemService {
    * Updates Etherpad item
    */
   public async patchWithOptions(
-    db: DBConnection,
+    dbConnection: DBConnection,
     member: MinimalMember,
     itemId: Item['id'],
     body: Partial<Pick<Item, 'settings' | 'name' | 'lang'>> & {
       readerPermission?: EtherpadPermissionType;
     },
   ) {
-    const item = await this.itemRepository.getOneOrThrow(db, itemId);
+    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // check item is link
     if (!isItemType(item, ItemType.ETHERPAD)) {
@@ -177,14 +177,14 @@ export class EtherpadItemService {
       };
     }
 
-    return this.itemService.patch(db, member, itemId, newProps);
+    return this.itemService.patch(dbConnection, member, itemId, newProps);
   }
 
   /**
    * Helper to determine the final viewing mode of an etherpad
    */
   private async checkMode(
-    db: DBConnection,
+    dbConnection: DBConnection,
     requestedMode: 'read' | 'write',
     account: MinimalAccount,
     item: EtherpadItem,
@@ -197,7 +197,7 @@ export class EtherpadItemService {
     // check that permission is at least write
 
     const membership = await this.itemMembershipRepository.getInherited(
-      db,
+      dbConnection,
       item.path,
       account.id,
       true,
@@ -228,18 +228,18 @@ export class EtherpadItemService {
    * containing all valid sessions for pads for a given member (including the requested pad)
    */
   public async getEtherpadFromItem(
-    db: DBConnection,
+    dbConnection: DBConnection,
     account: AuthenticatedUser,
     itemId: string,
     mode: 'read' | 'write',
   ) {
-    const item = await this.itemService.basicItemService.get(db, account, itemId);
+    const item = await this.itemService.basicItemService.get(dbConnection, account, itemId);
 
     if (!isItemType(item, ItemType.ETHERPAD) || !item.extra?.etherpad) {
       throw new ItemMissingExtraError(item?.id);
     }
 
-    const checkedMode = await this.checkMode(db, mode, account, item);
+    const checkedMode = await this.checkMode(dbConnection, mode, account, item);
 
     const { padID, groupID } = item.extra.etherpad;
 
@@ -375,11 +375,11 @@ export class EtherpadItemService {
    * @returns {string} html content of the etherpad
    */
   public async getEtherpadContentFromItem(
-    db: DBConnection,
+    dbConnection: DBConnection,
     account: AuthenticatedUser,
     itemId: string,
   ): Promise<string> {
-    const item = await this.itemService.basicItemService.get(db, account, itemId);
+    const item = await this.itemService.basicItemService.get(dbConnection, account, itemId);
 
     if (!isItemType(item, ItemType.ETHERPAD) || !item.extra?.etherpad) {
       throw new ItemMissingExtraError(item?.id);

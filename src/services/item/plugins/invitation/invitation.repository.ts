@@ -28,13 +28,13 @@ type Email = InvitationRaw['email'];
 @singleton()
 export class InvitationRepository {
   // async addOne(
-  //   db: DBConnection,
+  //   dbConnection: DBConnection,
   //   { partialInvitations, itemPath, creatorId }: CreateInvitationBody,
   // ) {
   //   throwsIfParamIsInvalid('itemPath', itemPath);
   //   throwsIfParamIsInvalid('creatorId', creatorId);
 
-  //   return await db
+  //   return await dbConnection
   //     .insert(invitations)
   //     .values(
   //       partialInvitations.map((inv) => ({
@@ -46,9 +46,9 @@ export class InvitationRepository {
   //     .returning();
   // }
 
-  async getOne(db: DBConnection, id: string): Promise<InvitationWithItem | null> {
+  async getOne(dbConnection: DBConnection, id: string): Promise<InvitationWithItem | null> {
     throwsIfParamIsInvalid('id', id);
-    const entity = await db
+    const entity = await dbConnection
       .select()
       .from(invitationsTable)
       .where(and(eq(invitationsTable.id, id)))
@@ -68,12 +68,12 @@ export class InvitationRepository {
   //  * @param id Invitation id
   //  */
   // async getOneByIdAndByCreatorOrThrow(
-  //   db: DBConnection,
+  //   dbConnection: DBConnection,
   //   id: string,
   // ): Promise<InvitationWithItem | null> {
   //   throwsIfParamIsInvalid('id', id);
 
-  //   const entity = await db
+  //   const entity = await dbConnection
   //     .select()
   //     .from(invitationsTable)
   //     .where(and(eq(invitationsTable.id, id)))
@@ -92,20 +92,23 @@ export class InvitationRepository {
    * Get invitations for item path and below
    * @param itemPath Item path
    */
-  async getManyByItem(db: DBConnection, itemPath: ItemPath): Promise<InvitationWithItem[]> {
+  async getManyByItem(
+    dbConnection: DBConnection,
+    itemPath: ItemPath,
+  ): Promise<InvitationWithItem[]> {
     throwsIfParamIsInvalid('itemPath', itemPath);
 
-    return await db.query.invitationsTable.findMany({
+    return await dbConnection.query.invitationsTable.findMany({
       where: isAncestorOrSelf(invitationsTable.itemPath, itemPath),
       with: { item: true },
     });
   }
 
-  async getManyByEmail(db: DBConnection, email: Email): Promise<InvitationWithItem[]> {
+  async getManyByEmail(dbConnection: DBConnection, email: Email): Promise<InvitationWithItem[]> {
     throwsIfParamIsInvalid('email', email);
     const lowercaseEmail = email.toLowerCase();
 
-    const res = await db.query.invitationsTable.findMany({
+    const res = await dbConnection.query.invitationsTable.findMany({
       where: eq(invitationsTable.email, lowercaseEmail),
       with: { item: true },
     });
@@ -120,7 +123,7 @@ export class InvitationRepository {
    * @param creator user responsible for the creation of invitations
    */
   async addMany(
-    db: DBConnection,
+    dbConnection: DBConnection,
     partialInvitations: Pick<InvitationInsertDTO, 'permission' | 'email'>[],
     itemPath: string,
     creator: AuthenticatedUser,
@@ -131,7 +134,7 @@ export class InvitationRepository {
       email: inv.email?.toLowerCase(),
     }));
     // get invitations for the item and its parents
-    const existingEntries = await db.query.invitationsTable.findMany({
+    const existingEntries = await dbConnection.query.invitationsTable.findMany({
       with: { item: true },
       where: isAncestorOrSelf(invitationsTable.itemPath, itemPath),
     });
@@ -148,29 +151,29 @@ export class InvitationRepository {
         creator,
       }));
     if (newInvitations.length) {
-      await db.insert(invitationsTable).values(newInvitations);
+      await dbConnection.insert(invitationsTable).values(newInvitations);
     }
   }
 
   async updateOne(
-    db: DBConnection,
+    dbConnection: DBConnection,
     invitationId: string,
     body: Partial<InvitationInsertDTO>,
   ): Promise<void> {
-    await db
+    await dbConnection
       .update(invitationsTable)
       .set(body)
       .where(eq(invitationsTable.id, invitationId))
       .returning();
   }
 
-  async deleteManyByEmail(db: DBConnection, email: Email): Promise<void> {
+  async deleteManyByEmail(dbConnection: DBConnection, email: Email): Promise<void> {
     throwsIfParamIsInvalid('email', email);
 
-    await db.delete(invitationsTable).where(eq(invitationsTable.email, email));
+    await dbConnection.delete(invitationsTable).where(eq(invitationsTable.email, email));
   }
 
-  async delete(db: DBConnection, invitationId: string): Promise<void> {
-    await db.delete(invitationsTable).where(eq(invitationsTable.id, invitationId));
+  async delete(dbConnection: DBConnection, invitationId: string): Promise<void> {
+    await dbConnection.delete(invitationsTable).where(eq(invitationsTable.id, invitationId));
   }
 }

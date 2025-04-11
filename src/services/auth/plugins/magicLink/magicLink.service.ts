@@ -34,9 +34,9 @@ export class MagicLinkService {
     await this.authService.generateRegisterLinkAndEmailIt(member, { url });
   }
 
-  async login(db: DBConnection, body: { email: string }, url?: string) {
+  async login(dbConnection: DBConnection, body: { email: string }, url?: string) {
     const { email } = body;
-    const member = await this.memberRepository.getByEmail(db, email);
+    const member = await this.memberRepository.getByEmail(dbConnection, email);
 
     if (member) {
       await this.authService.generateLoginLinkAndEmailIt(member.toMemberInfo(), { url });
@@ -48,7 +48,7 @@ export class MagicLinkService {
           extra: { type: 'email' },
         },
       ];
-      await this.actionRepository.postMany(db, actions);
+      await this.actionRepository.postMany(dbConnection, actions);
     } else {
       this.log.warn(`Login attempt with non-existent email '${email}'`);
       throw new MemberNotSignedUp({ email });

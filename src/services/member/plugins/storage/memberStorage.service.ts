@@ -28,34 +28,39 @@ export class StorageService {
   }
 
   async getStorageLimits(
-    db: DBConnection,
+    dbConnection: DBConnection,
     member: MinimalMember,
     type: FileItemType,
   ): Promise<MemberStorage> {
     return {
-      current: await this.itemRepository.getItemSumSize(db, member?.id, type),
+      current: await this.itemRepository.getItemSumSize(dbConnection, member?.id, type),
       maximum: await this.getMaximumStorageSize(),
     };
   }
 
   async getStorageFilesMetadata(
-    db: DBConnection,
+    dbConnection: DBConnection,
     member: MinimalMember,
     type: FileItemType,
     pagination: Pagination,
   ) {
-    const entities = await this.itemRepository.getFilesMetadata(db, member?.id, type, pagination);
+    const entities = await this.itemRepository.getFilesMetadata(
+      dbConnection,
+      member?.id,
+      type,
+      pagination,
+    );
     return entities;
   }
 
   // check the user has enough storage to create a new item given its size
   // get the complete storage
   // todo: include more item types
-  async checkRemainingStorage(db: DBConnection, member: MinimalMember, size: number = 0) {
+  async checkRemainingStorage(dbConnection: DBConnection, member: MinimalMember, size: number = 0) {
     const { id: memberId } = member;
 
     const currentStorage = await this.itemRepository.getItemSumSize(
-      db,
+      dbConnection,
       memberId,
       this.fileItemType,
     );

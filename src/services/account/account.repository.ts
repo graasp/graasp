@@ -97,8 +97,8 @@ export class AccountDTO {
 
 @singleton()
 export class AccountRepository {
-  async get(db: DBConnection, id: string): Promise<AccountDTO> {
-    const result = await db.query.accountsTable.findFirst({
+  async get(dbConnection: DBConnection, id: string): Promise<AccountDTO> {
+    const result = await dbConnection.query.accountsTable.findFirst({
       where: eq(accountsTable.id, id),
     });
 

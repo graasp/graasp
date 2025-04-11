@@ -168,7 +168,7 @@ export class ItemWrapperService {
   }
 
   async createPackedItems(
-    db: DBConnection,
+    dbConnection: DBConnection,
     items: ItemWithCreator[],
     memberships?: ResultOf<ItemMembershipRaw[]>,
     { withDeleted = false }: { withDeleted?: boolean } = {},
@@ -178,13 +178,13 @@ export class ItemWrapperService {
       return [];
     }
 
-    const visibilities = await this.itemVisibilityRepository.getForManyItems(db, items, {
+    const visibilities = await this.itemVisibilityRepository.getForManyItems(dbConnection, items, {
       withDeleted,
     });
 
     const m =
       memberships ??
-      (await this.itemMembershipRepository.getForManyItems(db, items, {
+      (await this.itemMembershipRepository.getForManyItems(dbConnection, items, {
         withDeleted,
       }));
 

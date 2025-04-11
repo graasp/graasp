@@ -84,7 +84,7 @@ export class H5PService extends HtmlService {
   }
 
   async copy(
-    db: DBConnection,
+    dbConnection: DBConnection,
     member: MinimalMember,
     {
       original: item,
@@ -114,14 +114,14 @@ export class H5PService extends HtmlService {
       newFolderPath: this.buildContentPath(remoteRootPath),
     });
 
-    await this.itemRepository.updateOne(db, copy.id, {
+    await this.itemRepository.updateOne(dbConnection, copy.id, {
       name: this.buildH5PPath('', newName),
       extra: { h5p: this.buildH5PExtra(newContentId, newName).h5p },
     });
   }
 
   async createH5PItem(
-    db: DBConnection,
+    dbConnection: DBConnection,
     actor: MinimalMember,
     filename: string,
     stream: Readable,
@@ -130,7 +130,7 @@ export class H5PService extends HtmlService {
     log?: FastifyBaseLogger,
   ): Promise<H5PItem> {
     const item = await super.createItem(
-      db,
+      dbConnection,
       actor,
       filename,
       stream,
@@ -155,7 +155,7 @@ export class H5PService extends HtmlService {
    * !! it's important to keep this syntax because of the reference to this
    */
   private createItemForH5PFile = async (
-    db: DBConnection,
+    dbConnection: DBConnection,
     member: MinimalMember,
     filename: string,
     contentId: string,
@@ -167,7 +167,7 @@ export class H5PService extends HtmlService {
       type: ItemType.H5P,
       extra: this.buildH5PExtra(contentId, filename),
     };
-    return this.itemService.post(db, member, {
+    return this.itemService.post(dbConnection, member, {
       item: metadata,
       parentId,
       previousItemId,

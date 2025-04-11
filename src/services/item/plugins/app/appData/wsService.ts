@@ -6,6 +6,7 @@ import { BasicItemService } from '../../../basic.service';
 @singleton()
 export class WSService {
   constructor(bs: BasicItemService, a: AuthorizationService) {
+    // TODO !!!!!!!!!!!!!!
     // websockets.register(appDataTopic, async (req) => {
     //   const { channel: id, member } = req;
     //   const item = await basicItemService.get(db, member, id);

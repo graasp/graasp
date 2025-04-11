@@ -82,9 +82,13 @@ export class ItemPublishedService {
     this.itemActionService = itemActionService;
   }
 
-  async _notifyContributors(db: DBConnection, actor: MinimalMember, item: Item): Promise<void> {
+  async _notifyContributors(
+    dbConnection: DBConnection,
+    actor: MinimalMember,
+    item: Item,
+  ): Promise<void> {
     // send email to contributors except yourself
-    const memberships = await this.itemMembershipRepository.getForItem(db, item);
+    const memberships = await this.itemMembershipRepository.getForItem(dbConnection, item);
     const contributors = memberships
       .filter(
         ({ permission, account }) =>
@@ -110,7 +114,7 @@ export class ItemPublishedService {
           .build();
 
         // TODO: does not seem efficient
-        const memberWithEmail = await this.memberRepository.get(db, member.id);
+        const memberWithEmail = await this.memberRepository.get(dbConnection, member.id);
 
         await this.mailerService.send(mail, memberWithEmail.email).catch((err) => {
           this.log.warn(err, `mailerService failed. published link: ${link}`);
@@ -119,22 +123,30 @@ export class ItemPublishedService {
     }
   }
 
-  async get(db: DBConnection, actor: MaybeUser, itemId: string) {
-    const item = await this.basicItemService.get(db, actor, itemId);
+  async get(dbConnection: DBConnection, actor: MaybeUser, itemId: string) {
+    const item = await this.basicItemService.get(dbConnection, actor, itemId);
 
     // item should be public first
-    await this.itemVisibilityRepository.getType(db, item.path, ItemVisibilityType.Public, {
-      shouldThrow: true,
-    });
+    await this.itemVisibilityRepository.getType(
+      dbConnection,
+      item.path,
+      ItemVisibilityType.Public,
+      {
+        shouldThrow: true,
+      },
+    );
 
     // get item published entry
-    const publishedItem = await this.itemPublishedRepository.getForItem(db, item.path);
+    const publishedItem = await this.itemPublishedRepository.getForItem(dbConnection, item.path);
 
     if (!publishedItem) {
       return null;
     }
     // get views from the actions table
-    const totalViews = await this.itemActionService.getTotalViewsCountForItemId(db, item.id);
+    const totalViews = await this.itemActionService.getTotalViewsCountForItemId(
+      dbConnection,
+      item.id,
+    );
     return {
       totalViews,
       creator: publishedItem.item.creator,
@@ -143,20 +155,25 @@ export class ItemPublishedService {
   }
 
   async publishIfNotExist(
-    db: DBConnection,
+    dbConnection: DBConnection,
     member: MinimalMember,
     itemId: string,
     publicationStatus: PublicationStatus,
   ) {
-    const item = await this.basicItemService.get(db, member, itemId, PermissionLevel.Admin);
+    const item = await this.basicItemService.get(
+      dbConnection,
+      member,
+      itemId,
+      PermissionLevel.Admin,
+    );
 
-    const itemPublished = await this.itemPublishedRepository.getForItem(db, item.path);
+    const itemPublished = await this.itemPublishedRepository.getForItem(dbConnection, item.path);
 
     if (itemPublished) {
       return itemPublished;
     }
 
-    await this.post(db, member, item, publicationStatus, {
+    await this.post(dbConnection, member, item, publicationStatus, {
       canBePrivate: true,
     });
   }
@@ -180,7 +197,7 @@ export class ItemPublishedService {
   }
 
   async post(
-    db: DBConnection,
+    dbConnection: DBConnection,
     member: MinimalMember,
     item: Item,
     publicationStatus: PublicationStatus,
@@ -191,7 +208,7 @@ export class ItemPublishedService {
 
     // item should be public first
     const visibility = await this.itemVisibilityRepository.getType(
-      db,
+      dbConnection,
       item.path,
       ItemVisibilityType.Public,
       {
@@ -203,37 +220,47 @@ export class ItemPublishedService {
     // it's usefull to publish the item automatically after the validation.
     // the user is asked to set the item to public in the frontend.
     if (!visibility && canBePrivate) {
-      await this.itemVisibilityRepository.post(db, member.id, item.path, ItemVisibilityType.Public);
+      await this.itemVisibilityRepository.post(
+        dbConnection,
+        member.id,
+        item.path,
+        ItemVisibilityType.Public,
+      );
     }
 
     // TODO: check validation is alright
 
-    await this.itemPublishedRepository.post(db, member, item);
-    const published = await this.itemPublishedRepository.getForItem(db, item.path);
+    await this.itemPublishedRepository.post(dbConnection, member, item);
+    const published = await this.itemPublishedRepository.getForItem(dbConnection, item.path);
     if (published) {
-      await this.meilisearchWrapper.indexOne(db, published);
+      await this.meilisearchWrapper.indexOne(dbConnection, published);
     }
 
     //TODO: should we sent a publish hooks for all descendants? If yes take inspiration from delete method in ItemService
-    this._notifyContributors(db, member, item);
+    this._notifyContributors(dbConnection, member, item);
 
     return published;
   }
 
-  async delete(db: DBConnection, member: MinimalMember, itemId: string) {
-    const item = await this.basicItemService.get(db, member, itemId, PermissionLevel.Admin);
+  async delete(dbConnection: DBConnection, member: MinimalMember, itemId: string) {
+    const item = await this.basicItemService.get(
+      dbConnection,
+      member,
+      itemId,
+      PermissionLevel.Admin,
+    );
 
-    await this.hooks.runPreHooks('delete', member, db, { item });
+    await this.hooks.runPreHooks('delete', member, dbConnection, { item });
 
-    const result = await this.itemPublishedRepository.deleteForItem(db, item);
+    const result = await this.itemPublishedRepository.deleteForItem(dbConnection, item);
 
-    await this.hooks.runPostHooks('delete', member, db, { item });
+    await this.hooks.runPostHooks('delete', member, dbConnection, { item });
 
     return result;
   }
 
-  async touchUpdatedAt(db: DBConnection, item: { id: Item['id']; path: Item['path'] }) {
-    const updatedAt = await this.itemPublishedRepository.touchUpdatedAt(db, item.path);
+  async touchUpdatedAt(dbConnection: DBConnection, item: { id: Item['id']; path: Item['path'] }) {
+    const updatedAt = await this.itemPublishedRepository.touchUpdatedAt(dbConnection, item.path);
 
     if (updatedAt) {
       // change value in meilisearch index
@@ -241,17 +268,17 @@ export class ItemPublishedService {
     }
   }
 
-  async getItemsForMember(db: DBConnection, actor: MaybeUser, memberId: UUID) {
-    const items = await this.itemRepository.getPublishedItemsForMember(db, memberId);
+  async getItemsForMember(dbConnection: DBConnection, actor: MaybeUser, memberId: UUID) {
+    const items = await this.itemRepository.getPublishedItemsForMember(dbConnection, memberId);
 
-    return this.itemWrapperService.createPackedItems(db, items);
+    return this.itemWrapperService.createPackedItems(dbConnection, items);
   }
 
-  async getRecentItems(db: DBConnection, actor: MaybeUser, limit?: number) {
-    const items = await this.itemPublishedRepository.getRecentItems(db, limit);
+  async getRecentItems(dbConnection: DBConnection, actor: MaybeUser, limit?: number) {
+    const items = await this.itemPublishedRepository.getRecentItems(dbConnection, limit);
 
     return filterOutHiddenItems(
-      db,
+      dbConnection,
       { itemVisibilityRepository: this.itemVisibilityRepository },
       items,
     );

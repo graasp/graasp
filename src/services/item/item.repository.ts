@@ -117,10 +117,14 @@ export class ItemRepository {
     }
   }
 
-  async checkNumberOfDescendants(db: DBConnection, item: Item, maximum: number): Promise<void> {
+  async checkNumberOfDescendants(
+    dbConnection: DBConnection,
+    item: Item,
+    maximum: number,
+  ): Promise<void> {
     // check how "big the tree is" below the item
 
-    const [{ count: numberOfDescendants }] = await db
+    const [{ count: numberOfDescendants }] = await dbConnection
       .select({ count: count() })
       .from(items)
       .where(isDescendantOrSelf(items.path, item.path));
@@ -195,8 +199,8 @@ export class ItemRepository {
   }
 
   // TODO: note: removed , options = { withDeleted: false }
-  async getOne(db: DBConnection, id: string): Promise<ItemWithCreator | null> {
-    const results = await db
+  async getOne(dbConnection: DBConnection, id: string): Promise<ItemWithCreator | null> {
+    const results = await dbConnection
       .select()
       .from(items)
       .leftJoin(accountsTable, eq(items.creatorId, accountsTable.id))
@@ -215,8 +219,8 @@ export class ItemRepository {
   }
 
   // TODO: note: removed  options: Pick<FindOneOptions<Item>, 'withDeleted'> = { withDeleted: false },
-  async getOneOrThrow(db: DBConnection, id: string): Promise<ItemWithCreator> {
-    const result = await db
+  async getOneOrThrow(dbConnection: DBConnection, id: string): Promise<ItemWithCreator> {
+    const result = await dbConnection
       .select()
       .from(items)
       .leftJoin(accountsTable, eq(items.creatorId, accountsTable.id))
@@ -233,8 +237,8 @@ export class ItemRepository {
   }
 
   // TODO: note: removed  options: Pick<FindOneOptions<Item>, 'withDeleted'> = { withDeleted: false },
-  async getDeletedById(db: DBConnection, id: string): Promise<Item> {
-    const item = await db
+  async getDeletedById(dbConnection: DBConnection, id: string): Promise<Item> {
+    const item = await dbConnection
       .select()
       .from(itemsRawTable)
       .where(and(eq(itemsRawTable.id, id), isNotNull(itemsRawTable.deletedAt)))
@@ -251,12 +255,12 @@ export class ItemRepository {
    * options.includeCreator {boolean} if true, return full creator
    * options.types {boolean} if defined, filter out the items
    * */
-  async getAncestors(db: DBConnection, item: Item): Promise<ItemWithCreator[]> {
+  async getAncestors(dbConnection: DBConnection, item: Item): Promise<ItemWithCreator[]> {
     if (!item.path.includes('.')) {
       return [];
     }
 
-    const result = await db
+    const result = await dbConnection
       .select()
       .from(items)
       .leftJoin(accountsTable, eq(items.creatorId, accountsTable.id))
@@ -275,12 +279,12 @@ export class ItemRepository {
    * @param parent
    * @returns
    */
-  async getNonOrderedChildren(db: DBConnection, parent: Item): Promise<ItemRaw[]> {
+  async getNonOrderedChildren(dbConnection: DBConnection, parent: Item): Promise<ItemRaw[]> {
     if (parent.type !== ItemType.FOLDER) {
       throw new ItemNotFolder({ id: parent.id });
     }
 
-    return await db.select().from(items).where(isDirectChild(items.path, parent.path));
+    return await dbConnection.select().from(items).where(isDirectChild(items.path, parent.path));
   }
 
   /**
@@ -292,7 +296,7 @@ export class ItemRepository {
    * @returns
    */
   async getChildren(
-    db: DBConnection,
+    dbConnection: DBConnection,
     actor: MaybeUser,
     parent: Item,
     params?: ItemChildrenParams,
@@ -336,7 +340,7 @@ export class ItemRepository {
     //   query.addSelect('item.order');
     // }
 
-    const result = await db
+    const result = await dbConnection
       .select()
       .from(items)
       .leftJoin(membersView, eq(items.creatorId, membersView.id))
@@ -352,7 +356,7 @@ export class ItemRepository {
   }
 
   async getChildrenNames(
-    db: DBConnection,
+    dbConnection: DBConnection,
     parent: Item,
     { startWith }: { startWith?: string },
   ): Promise<string[]> {
@@ -362,7 +366,7 @@ export class ItemRepository {
       whereConditions.push(ilike(items.name, `${startWith}%`));
     }
 
-    const itemNames = await db
+    const itemNames = await dbConnection
       .select({ name: items.name })
       .from(items)
       .where(and(...whereConditions));
@@ -377,7 +381,7 @@ export class ItemRepository {
    * @returns {Item[]}
    */
   async getDescendants(
-    db: DBConnection,
+    dbConnection: DBConnection,
     item: FolderItem,
     options?: { ordered?: boolean; types?: ItemTypeUnion[] },
   ): Promise<ItemWithCreator[]> {
@@ -398,7 +402,7 @@ export class ItemRepository {
     //   return query.getMany();
     // }
 
-    const result = await db
+    const result = await dbConnection
       .select()
       .from(items)
       .leftJoin(membersView, eq(items.creatorId, membersView.id))
@@ -414,7 +418,7 @@ export class ItemRepository {
   }
 
   // async getManyDescendants(
-  //   db: DBConnection,
+  //   dbConnection: DBConnection,
   //   items: Item[],
   //   { withDeleted = false }: { withDeleted?: boolean } = {},
   // ): Promise<Item[]> {
@@ -454,7 +458,7 @@ export class ItemRepository {
   //   //   return query.getMany();
   //   // }
 
-  //   const result = await db
+  //   const result = await dbConnection
   //     .select()
   //     .from(items)
   //     .leftJoin(membersView, eq(items.creatorId, membersView.id))
@@ -470,7 +474,7 @@ export class ItemRepository {
   // }
 
   async getMany(
-    db: DBConnection,
+    dbConnection: DBConnection,
     ids: string[],
     args: { throwOnError?: boolean; withDeleted?: boolean } = {},
   ): Promise<ResultOf<ItemWithCreator>> {
@@ -485,7 +489,7 @@ export class ItemRepository {
     // order: args.ordered ? { order: 'ASC' } : {},
 
     const result = (
-      await db
+      await dbConnection
         .select()
         .from(items)
         .leftJoin(accountsTable, eq(items.creatorId, accountsTable.id))
@@ -508,8 +512,8 @@ export class ItemRepository {
     return mappedResult;
   }
 
-  async getNumberOfLevelsToFarthestChild(db: DBConnection, item: Item): Promise<number> {
-    const farthestItem = await db
+  async getNumberOfLevelsToFarthestChild(dbConnection: DBConnection, item: Item): Promise<number> {
+    const farthestItem = await dbConnection
       .select({ path: items.path })
       .from(items)
       .where(and(isDescendantOrSelf(items.path, item.path), ne(items.id, item.id)))
@@ -526,8 +530,8 @@ export class ItemRepository {
     return farthestItem?.[0]?.path?.split('.')?.length ?? 0;
   }
 
-  async getOwn(db: DBConnection, memberId: string): Promise<Item[]> {
-    const result = await db
+  async getOwn(dbConnection: DBConnection, memberId: string): Promise<Item[]> {
+    const result = await dbConnection
       .select()
       .from(items)
       .leftJoin(accountsTable, eq(items.creatorId, accountsTable.id))
@@ -560,7 +564,7 @@ export class ItemRepository {
     //   .getMany();
   }
 
-  async move(db: DBConnection, item: Item, parentItem?: Item): Promise<Item> {
+  async move(dbConnection: DBConnection, item: Item, parentItem?: Item): Promise<Item> {
     if (parentItem) {
       // attaching tree to new parent item
       const { id: parentItemId, path: parentItemPath } = parentItem;
@@ -595,9 +599,9 @@ export class ItemRepository {
       : sql`subpath(${itemsRawTable.path}, nlevel(${item.path}) - 1)`;
 
     // get new order value
-    const order = await this.getNextOrderCount(db, parentItem?.path);
+    const order = await this.getNextOrderCount(dbConnection, parentItem?.path);
 
-    const res = await db
+    const res = await dbConnection
       .update(itemsRawTable)
       .set({ path: pathSql, order })
       .where(isDescendantOrSelf(itemsRawTable.path, item.path))
@@ -611,14 +615,14 @@ export class ItemRepository {
     //   .execute();
   }
 
-  async updateOne(db: DBConnection, id: string, data: Partial<Item>): Promise<Item> {
+  async updateOne(dbConnection: DBConnection, id: string, data: Partial<Item>): Promise<Item> {
     // update only if data is not empty
     if (!Object.keys(data).length) {
       throw new IllegalArgumentException("The item's body cannot be empty!");
     }
 
     // TODO: extra + settings
-    const item = await this.getOneOrThrow(db, id);
+    const item = await this.getOneOrThrow(dbConnection, id);
 
     // only allow for item type specific changes in extra
     const newData = data;
@@ -642,7 +646,7 @@ export class ItemRepository {
     if (Object.values(newData).filter(Boolean).length === 0) {
       throw new NothingToUpdateItem();
     }
-    const res = await db
+    const res = await dbConnection
       .update(itemsRawTable)
       .set(newData)
       .where(eq(itemsRawTable.id, id))
@@ -650,20 +654,20 @@ export class ItemRepository {
     return res[0];
   }
 
-  public async addOne(db: DBConnection, { item, creator, parentItem }: CreateItemBody) {
+  public async addOne(dbConnection: DBConnection, { item, creator, parentItem }: CreateItemBody) {
     const newItem = this.createOne({
       ...item,
       creator,
       parent: parentItem,
     });
 
-    const result = await db.insert(itemsRawTable).values(newItem).returning();
+    const result = await dbConnection.insert(itemsRawTable).values(newItem).returning();
 
     return result[0];
   }
 
   public async addMany(
-    db: DBConnection,
+    dbConnection: DBConnection,
     items: (Partial<Item> & Pick<Item, 'name' | 'type'>)[],
     creator: MinimalMember,
     parent?: Item,
@@ -676,14 +680,14 @@ export class ItemRepository {
       }),
     );
 
-    const result = await db.insert(itemsRawTable).values(newItems).returning();
+    const result = await dbConnection.insert(itemsRawTable).values(newItems).returning();
 
     return result;
   }
 
   /////// -------- COPY
   async copy(
-    db: DBConnection,
+    dbConnection: DBConnection,
     item: Item,
     creator: MinimalMember,
     siblingsName: string[],
@@ -698,11 +702,11 @@ export class ItemRepository {
     }
 
     // copy (memberships from origin are not copied/kept)
-    const treeItemsCopy = await this._copy(db, item, creator, siblingsName, parentItem);
+    const treeItemsCopy = await this._copy(dbConnection, item, creator, siblingsName, parentItem);
 
     // return copy item + all descendants
     const newItems = [...treeItemsCopy.values()].map(({ copy }) => copy);
-    const createdItems = await db.insert(itemsRawTable).values(newItems).returning();
+    const createdItems = await dbConnection.insert(itemsRawTable).values(newItems).returning();
 
     const newItemRef = createdItems[0];
     if (!newItemRef) {
@@ -710,7 +714,7 @@ export class ItemRepository {
     }
 
     return {
-      copyRoot: await this.getOneOrThrow(db, newItemRef.id),
+      copyRoot: await this.getOneOrThrow(dbConnection, newItemRef.id),
       treeCopyMap: treeItemsCopy,
     };
   }
@@ -723,7 +727,7 @@ export class ItemRepository {
    * @param parentItem Parent item whose path will 'prefix' all paths
    */
   private async _copy(
-    db: DBConnection,
+    dbConnection: DBConnection,
     original: Item,
     creator: MinimalMember,
     siblingsName: string[],
@@ -732,7 +736,7 @@ export class ItemRepository {
     const old2New = new Map<string, { copy: MinimalItemForInsert; original: Item }>();
 
     // get next order value
-    const order = await this.getNextOrderCount(db, parentItem?.path);
+    const order = await this.getNextOrderCount(dbConnection, parentItem?.path);
     // copy target parent
     const copiedItem = this.createOne({
       ...original,
@@ -745,7 +749,7 @@ export class ItemRepository {
 
     // handle descendants - change path
     if (isItemType(original, ItemType.FOLDER)) {
-      await this.copyDescendants(db, original, creator, old2New);
+      await this.copyDescendants(dbConnection, original, creator, old2New);
     }
 
     return old2New;
@@ -757,12 +761,12 @@ export class ItemRepository {
    * @param old2New mapping from original item to copied data, in-place updates
    */
   private async copyDescendants(
-    db: DBConnection,
+    dbConnection: DBConnection,
     original: FolderItem,
     creator: MinimalMember,
     old2New: Map<string, { copy: MinimalItemForInsert; original: Item }>,
   ): Promise<void> {
-    const descendants = await this.getDescendants(db, original, {
+    const descendants = await this.getDescendants(dbConnection, original, {
       ordered: true,
     });
     for (const element of descendants) {
@@ -863,11 +867,11 @@ export class ItemRepository {
    * @returns total storage used by file items
    */
   async getItemSumSize(
-    db: DBConnection,
+    dbConnection: DBConnection,
     memberId: string,
     itemType: FileItemType,
   ): Promise<number> {
-    const result = await db
+    const result = await dbConnection
       .select({
         total: sql<string>`SUM(((${items.extra}::jsonb->${itemType})::jsonb->'size')::bigint)`,
       })
@@ -878,7 +882,7 @@ export class ItemRepository {
   }
 
   async getFilesMetadata(
-    db: DBConnection,
+    dbConnection: DBConnection,
     memberId: string,
     itemType: FileItemType,
     { page = FILE_METADATA_MIN_PAGE, pageSize = FILE_METADATA_DEFAULT_PAGE_SIZE }: Pagination,
@@ -888,7 +892,7 @@ export class ItemRepository {
 
     // bug: it is important to select manually the fields we need, as alias on a view does not automatically generate the correct return values (wrong alias name)
     const parentTable = alias(items, 'parent');
-    const result = await db
+    const result = await dbConnection
       .select({
         id: items.id,
         name: items.name,
@@ -934,10 +938,10 @@ export class ItemRepository {
    * @returns published items for given member
    */
   async getPublishedItemsForMember(
-    db: DBConnection,
+    dbConnection: DBConnection,
     memberId: MinimalMember['id'],
   ): Promise<ItemWithCreator[]> {
-    const result = await db
+    const result = await dbConnection
       .select()
       .from(items)
       .innerJoin(publishedItemsTable, eq(publishedItemsTable.itemPath, items.path))
@@ -961,10 +965,10 @@ export class ItemRepository {
 
   // TODO: remove??
   async findAndCount(
-    db: DBConnection,
+    dbConnection: DBConnection,
     args: { where: { type: ItemTypeEnumKeys }; take: number; skip: number; order: SQL },
   ): Promise<[Item[], number]> {
-    const result = await db
+    const result = await dbConnection
       .select()
       .from(items)
       .where(eq(items.type, args.where.type))
@@ -973,16 +977,19 @@ export class ItemRepository {
       .offset(args.skip);
 
     const totalCount = (
-      await db.select({ count: count() }).from(items).where(eq(items.type, args.where.type))
+      await dbConnection
+        .select({ count: count() })
+        .from(items)
+        .where(eq(items.type, args.where.type))
     )[0].count;
 
     return [result, totalCount];
   }
-  async delete(db: DBConnection, args: Item['id'][]): Promise<void> {
-    await db.delete(itemsRawTable).where(inArray(itemsRawTable.id, args));
+  async delete(dbConnection: DBConnection, args: Item['id'][]): Promise<void> {
+    await dbConnection.delete(itemsRawTable).where(inArray(itemsRawTable.id, args));
   }
-  async softRemove(db: DBConnection, args: Item[]): Promise<void> {
-    await db
+  async softRemove(dbConnection: DBConnection, args: Item[]): Promise<void> {
+    await dbConnection
       .update(itemsRawTable)
       .set({ deletedAt: new Date().toISOString() })
       .where(
@@ -992,8 +999,8 @@ export class ItemRepository {
         ),
       );
   }
-  async recover(db: DBConnection, args: Item[]): Promise<ItemRaw[]> {
-    return await db
+  async recover(dbConnection: DBConnection, args: Item[]): Promise<ItemRaw[]> {
+    return await dbConnection
       .update(itemsRawTable)
       .set({ deletedAt: null })
       .where(
@@ -1014,7 +1021,7 @@ export class ItemRepository {
    * @returns {number|null} next valid order value
    */
   async getNextOrderCount(
-    db: DBConnection,
+    dbConnection: DBConnection,
     parentPath?: Item['path'],
     previousItemId?: Item['id'],
   ): Promise<number | null> {
@@ -1029,7 +1036,7 @@ export class ItemRepository {
 
     if (previousItemId) {
       // might not exist
-      const previousItems = await db
+      const previousItems = await dbConnection
         .select({ id: items.id, order: items.order })
         .from(items)
         .where(and(eq(items.id, previousItemId), isDirectChild(items.path, parentPath)))
@@ -1053,7 +1060,7 @@ export class ItemRepository {
         }
       }
     }
-    const result = await db
+    const result = await dbConnection
       .select({
         next: sql<number>`(${items.order} + (lead(${items.order}, 1, ${items.order} + ( ${DEFAULT_ORDER} *2)) OVER (ORDER BY ${items.order})))/2`.as(
           'next',
@@ -1085,13 +1092,16 @@ export class ItemRepository {
    * @param parentPath scope of the order
    * @returns {number|null} first valid order value, can be `null` for root
    */
-  async getFirstOrderValue(db: DBConnection, parentPath?: Item['path']): Promise<number | null> {
+  async getFirstOrderValue(
+    dbConnection: DBConnection,
+    parentPath?: Item['path'],
+  ): Promise<number | null> {
     // no order for root
     if (!parentPath) {
       return null;
     }
 
-    const result = await db
+    const result = await dbConnection
       .select({ order: items.order })
       .from(items)
       .where(and(isDescendantOrSelf(items.path, parentPath), ne(items.path, parentPath)))
@@ -1105,7 +1115,7 @@ export class ItemRepository {
   }
 
   async reorder(
-    db: DBConnection,
+    dbConnection: DBConnection,
     item: Item,
     parentPath: Item['path'],
     previousItemId?: string,
@@ -1114,18 +1124,22 @@ export class ItemRepository {
     let order;
     if (!previousItemId) {
       // warning: by design reordering among one item will decrease this item order
-      order = await this.getFirstOrderValue(db, parentPath);
+      order = await this.getFirstOrderValue(dbConnection, parentPath);
     } else {
-      order = await this.getNextOrderCount(db, parentPath, previousItemId);
+      order = await this.getNextOrderCount(dbConnection, parentPath, previousItemId);
     }
-    await db.update(itemsRawTable).set({ order }).where(eq(itemsRawTable.id, item.id));
+    await dbConnection.update(itemsRawTable).set({ order }).where(eq(itemsRawTable.id, item.id));
 
     // TODO: optimize
-    return await this.getOneOrThrow(db, item.id);
+    return await this.getOneOrThrow(dbConnection, item.id);
   }
 
-  async rescaleOrder(db: DBConnection, actor: AuthenticatedUser, parentItem: Item): Promise<void> {
-    const children = await this.getChildren(db, actor, parentItem);
+  async rescaleOrder(
+    dbConnection: DBConnection,
+    actor: AuthenticatedUser,
+    parentItem: Item,
+  ): Promise<void> {
+    const children = await this.getChildren(dbConnection, actor, parentItem);
 
     // no need to rescale for less than 2 items
     if (children.length < 2) {
@@ -1151,7 +1165,7 @@ export class ItemRepository {
       // can update in disorder
       await Promise.all(
         values.map(async (i) => {
-          return await db.update(itemsRawTable).set(i).where(eq(itemsRawTable.id, i.id));
+          return await dbConnection.update(itemsRawTable).set(i).where(eq(itemsRawTable.id, i.id));
         }),
       );
     }
@@ -1161,7 +1175,7 @@ export class ItemRepository {
    *  get accessible items for actor and given params
    *  */
   async getAccessibleItems(
-    db: DBConnection,
+    dbConnection: DBConnection,
     account: MinimalMember,
     {
       creatorId,
@@ -1221,7 +1235,7 @@ export class ItemRepository {
 
     // for account, get all direct items that have permissions, ordered by path
     // TODO: use (getViewSelectedFields(items)); to use item view
-    const itemAndOrderedMemberships = db
+    const itemAndOrderedMemberships = dbConnection
       .select({
         ...itemColumns,
         rNb: sql`row_number() OVER (ORDER BY path)`.as('row_number'),
@@ -1268,14 +1282,14 @@ export class ItemRepository {
     }
 
     // select top most items from above subquery
-    const result = await db
+    const result = await dbConnection
       .select()
       .from(iom)
       .leftJoin(membersView, eq(iom.creatorId, membersView.id))
       .where(
         lte(
           iom.rNb,
-          db
+          dbConnection
             .select({ rNb: join.rNb })
             .from(join)
             .where(isAncestorOrSelf(join.path, iom.path))

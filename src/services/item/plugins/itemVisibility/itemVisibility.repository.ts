@@ -22,12 +22,12 @@ export class ItemVisibilityRepository {
   constructor() {}
 
   async getType(
-    db: DBConnection,
+    dbConnection: DBConnection,
     itemPath: Item['path'],
     visibilityType: ItemVisibilityOptionsType,
     { shouldThrow = false } = {},
   ): Promise<ItemVisibilityWithItem> {
-    const result = await db
+    const result = await dbConnection
       .select()
       .from(itemVisibilitiesTable)
       .innerJoin(items, eq(items.path, itemVisibilitiesTable.itemPath))
@@ -53,11 +53,11 @@ export class ItemVisibilityRepository {
    * @returns map type => whether item has this visibility type
    */
   async hasMany(
-    db: DBConnection,
+    dbConnection: DBConnection,
     item: Item,
     visibilityTypes: ItemVisibilityOptionsType[],
   ): Promise<ResultOf<boolean>> {
-    const hasVisibilities = await db.query.itemVisibilitiesTable.findMany({
+    const hasVisibilities = await dbConnection.query.itemVisibilitiesTable.findMany({
       with: { item: true },
       where: and(
         isAncestorOrSelf(itemVisibilitiesTable.itemPath, item.path),
@@ -73,7 +73,7 @@ export class ItemVisibilityRepository {
   }
 
   private async getManyVisibilitiesForTypes(
-    db: DBConnection,
+    dbConnection: DBConnection,
     items: Item[],
     visibilityTypes: ItemVisibilityOptionsType[],
   ): Promise<ItemVisibilityWithItem[]> {
@@ -86,18 +86,22 @@ export class ItemVisibilityRepository {
       return isAncestorOrSelf(itemVisibilitiesTable.itemPath, path);
     });
 
-    return await db.query.itemVisibilitiesTable.findMany({
+    return await dbConnection.query.itemVisibilitiesTable.findMany({
       with: { item: true },
       where: and(inArray(itemVisibilitiesTable.type, visibilityTypes), or(...pathsCondition)),
     });
   }
 
   async getManyForMany(
-    db: DBConnection,
+    dbConnection: DBConnection,
     items: Item[],
     visibilityTypes: ItemVisibilityOptionsType[],
   ) {
-    const visibilities = await this.getManyVisibilitiesForTypes(db, items, visibilityTypes);
+    const visibilities = await this.getManyVisibilitiesForTypes(
+      dbConnection,
+      items,
+      visibilityTypes,
+    );
 
     const mapByPath = mapById({
       keys: items.map(({ path }) => path),
@@ -120,11 +124,11 @@ export class ItemVisibilityRepository {
    * @returns visibility array
    */
   async getManyBelowAndSelf(
-    db: DBConnection,
+    dbConnection: DBConnection,
     parent: Item,
     visibilityTypes: ItemVisibilityOptionsType[],
   ): Promise<ItemVisibilityWithItem[]> {
-    return await db.query.itemVisibilitiesTable.findMany({
+    return await dbConnection.query.itemVisibilitiesTable.findMany({
       with: { item: true },
       where: and(
         isDescendantOrSelf(itemVisibilitiesTable.itemPath, parent.path),
@@ -134,7 +138,7 @@ export class ItemVisibilityRepository {
   }
 
   async hasForMany(
-    db: DBConnection,
+    dbConnection: DBConnection,
     items: Item[],
     visibilityType: ItemVisibilityOptionsType,
   ): Promise<ResultOf<boolean>> {
@@ -142,7 +146,7 @@ export class ItemVisibilityRepository {
       return isAncestorOrSelf(itemVisibilitiesTable.itemPath, path);
     });
 
-    const haveVisibility = await db.query.itemVisibilitiesTable.findMany({
+    const haveVisibility = await dbConnection.query.itemVisibilitiesTable.findMany({
       with: { item: true },
       where: and(eq(itemVisibilitiesTable.type, visibilityType), or(...pathsCondition)),
     });
@@ -169,17 +173,17 @@ export class ItemVisibilityRepository {
    * @param  {ItemVisibilityOptionsType} type
    */
   async post(
-    db: DBConnection,
+    dbConnection: DBConnection,
     creatorId: string,
     itemPath: string,
     type: ItemVisibilityOptionsType,
   ): Promise<ItemVisibilityRaw> {
-    const existingVisibility = await this.getType(db, itemPath, type);
+    const existingVisibility = await this.getType(dbConnection, itemPath, type);
     if (existingVisibility) {
       throw new ConflictingVisibilitiesInTheHierarchy({ itemPath, type });
     }
 
-    const result = await db
+    const result = await dbConnection
       .insert(itemVisibilitiesTable)
       .values({ itemPath: itemPath, type, creatorId: creatorId })
       .returning();
@@ -194,15 +198,19 @@ export class ItemVisibilityRepository {
    * @param  {Item} item
    * @param  {ItemVisibilityOptionsType} type
    */
-  async deleteOne(db: DBConnection, item: Item, type: ItemVisibilityOptionsType): Promise<void> {
+  async deleteOne(
+    dbConnection: DBConnection,
+    item: Item,
+    type: ItemVisibilityOptionsType,
+  ): Promise<void> {
     // delete from parent only
-    await this.isNotInherited(db, item, type);
+    await this.isNotInherited(dbConnection, item, type);
 
     // delete item visibility
     // we delete descendants visibilities, they happen on copy, move, or if you had on ancestor
     // but does not change the behavior
     // cannot use leftJoinAndSelect for delete, so we select first
-    await db
+    await dbConnection
       .delete(itemVisibilitiesTable)
       .where(
         and(
@@ -213,12 +221,12 @@ export class ItemVisibilityRepository {
   }
 
   async isNotInherited(
-    db: DBConnection,
+    dbConnection: DBConnection,
     item: Item,
     type: ItemVisibilityOptionsType,
     { shouldThrow = true } = {},
   ): Promise<void> {
-    const entry = await this.getType(db, item.path, type);
+    const entry = await this.getType(dbConnection, item.path, type);
     if (entry && entry.item.path !== item.path && shouldThrow) {
       throw new CannotModifyParentVisibility(entry);
     }
@@ -228,8 +236,11 @@ export class ItemVisibilityRepository {
    * Get all visibilities for one item
    * @param  {Item} item
    */
-  async getByItemPath(db: DBConnection, itemPath: string): Promise<ItemVisibilityWithItem[]> {
-    const res = await db.query.itemVisibilitiesTable.findMany({
+  async getByItemPath(
+    dbConnection: DBConnection,
+    itemPath: string,
+  ): Promise<ItemVisibilityWithItem[]> {
+    const res = await dbConnection.query.itemVisibilitiesTable.findMany({
       where: isAncestorOrSelf(itemVisibilitiesTable.itemPath, itemPath),
       with: { item: true },
     });
@@ -242,7 +253,7 @@ export class ItemVisibilityRepository {
    * @param  {Item[]} items
    */
   async getForManyItems(
-    db: DBConnection,
+    dbConnection: DBConnection,
     inputItems: Item[],
     { withDeleted = false }: { withDeleted?: boolean } = {},
   ): Promise<ResultOf<ItemVisibilityWithItem[]>> {
@@ -258,7 +269,7 @@ export class ItemVisibilityRepository {
       ? isNotNull(itemsRawTable.deletedAt)
       : isNull(itemsRawTable.deletedAt);
 
-    const visibilities = await db
+    const visibilities = await dbConnection
       .select()
       .from(itemVisibilitiesTable)
       .innerJoin(itemsRawTable, eq(itemVisibilitiesTable.itemPath, itemsRawTable.path))
@@ -290,19 +301,19 @@ export class ItemVisibilityRepository {
    * @param  {ItemVisibilityOptionsType[] | undefined} excludeTypes
    */
   async copyAll(
-    db: DBConnection,
+    dbConnection: DBConnection,
     creator: MinimalMember,
     original: Item,
     copyPath: Item['path'],
     excludeTypes?: ItemVisibilityOptionsType[],
   ): Promise<void> {
-    const originalVisibilities = await this.getByItemPath(db, original.path);
+    const originalVisibilities = await this.getByItemPath(dbConnection, original.path);
     const visibilitiesToInsert = originalVisibilities
       .filter((visibility) => !excludeTypes?.includes(visibility.type))
       .map(({ type }) => ({ itemPath: copyPath, type, creator }));
 
     if (visibilitiesToInsert.length) {
-      await db.insert(itemVisibilitiesTable).values(visibilitiesToInsert);
+      await dbConnection.insert(itemVisibilitiesTable).values(visibilitiesToInsert);
       // await this.repository.insert(
       //   itemVisibilitiesTable
       //     .filter((visibility) => !excludeTypes?.includes(visibility.type))

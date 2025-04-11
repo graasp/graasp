@@ -58,7 +58,7 @@ export class ShortcutItemService extends ItemService {
   }
 
   async postWithOptions(
-    db: DBConnection,
+    dbConnection: DBConnection,
     member: MinimalMember,
     args: {
       item: Partial<Pick<Item, 'description' | 'name'>>;
@@ -70,14 +70,14 @@ export class ShortcutItemService extends ItemService {
     const { target, item, ...properties } = args;
     const { description, name: definedName } = item;
 
-    const targetItem = await this.basicItemService.get(db, member, target);
+    const targetItem = await this.basicItemService.get(dbConnection, member, target);
 
     // generate name from target item if not defined
     const name =
       definedName ??
       i18next.t('DEFAULT_SHORTCUT_NAME', { name: targetItem.name, lng: member.lang });
 
-    return (await super.post(db, member, {
+    return (await super.post(dbConnection, member, {
       ...properties,
       item: {
         name,
@@ -89,12 +89,12 @@ export class ShortcutItemService extends ItemService {
   }
 
   async patch(
-    db: DBConnection,
+    dbConnection: DBConnection,
     member: MinimalMember,
     itemId: Item['id'],
     body: Partial<Pick<Item, 'name' | 'description'>>,
   ): Promise<ShortcutItem> {
-    const item = await this.itemRepository.getOneOrThrow(db, itemId);
+    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // check item is shortcut
     if (!isItemType(item, ItemType.SHORTCUT)) {
@@ -103,7 +103,7 @@ export class ShortcutItemService extends ItemService {
 
     const { name, description } = body;
 
-    return (await super.patch(db, member, item.id, {
+    return (await super.patch(dbConnection, member, item.id, {
       name,
       description,
     })) as ShortcutItem;

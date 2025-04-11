@@ -9,7 +9,7 @@ import { IMemberProfile } from './types';
 
 @singleton()
 export class MemberProfileRepository {
-  async createOne(db: DBConnection, memberId: string, payload: Partial<IMemberProfile>) {
+  async createOne(dbConnection: DBConnection, memberId: string, payload: Partial<IMemberProfile>) {
     if (Object.values(payload).length === 0) {
       throw new MemberProfilePropertiesEmpty();
     }
@@ -22,7 +22,7 @@ export class MemberProfileRepository {
       twitterId: twitterId,
     } = payload;
 
-    const memberProfile = await db
+    const memberProfile = await dbConnection
       .insert(memberProfilesTable)
       .values({
         bio,
@@ -49,11 +49,11 @@ export class MemberProfileRepository {
     return memberProfile[0];
   }
 
-  async getOwn(db: DBConnection, memberId: string) {
+  async getOwn(dbConnection: DBConnection, memberId: string) {
     if (!memberId) {
       throw new MemberNotFound({ id: memberId });
     }
-    const memberProfile = await db.query.memberProfilesTable.findFirst({
+    const memberProfile = await dbConnection.query.memberProfilesTable.findFirst({
       where: eq(memberProfilesTable.memberId, memberId),
       with: { member: true },
     });
@@ -61,11 +61,11 @@ export class MemberProfileRepository {
     return memberProfile;
   }
 
-  async getByMemberId(db: DBConnection, memberId: string, visibility: boolean) {
+  async getByMemberId(dbConnection: DBConnection, memberId: string, visibility: boolean) {
     if (!memberId) {
       throw new MemberNotFound({ id: memberId });
     }
-    const memberProfile = await db.query.memberProfilesTable.findFirst({
+    const memberProfile = await dbConnection.query.memberProfilesTable.findFirst({
       where: and(
         eq(memberProfilesTable.memberId, memberId),
         eq(memberProfilesTable.visibility, visibility),
@@ -76,12 +76,12 @@ export class MemberProfileRepository {
     return memberProfile;
   }
 
-  async patch(db: DBConnection, memberId: string, data: Partial<IMemberProfile>) {
+  async patch(dbConnection: DBConnection, memberId: string, data: Partial<IMemberProfile>) {
     if (Object.values(data).length === 0) {
       throw new MemberProfilePropertiesEmpty();
     }
 
-    return await db
+    return await dbConnection
       .update(memberProfilesTable)
       .set(data)
       .where(eq(memberProfilesTable.memberId, memberId));

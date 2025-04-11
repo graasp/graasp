@@ -15,11 +15,14 @@ import { DuplicateBookmarkError, ItemBookmarkNotFound } from './errors';
 
 @singleton()
 export class ItemBookmarkRepository {
-  async get(db: DBConnection, bookmarkId: string): Promise<ItemBookmarkRawWithItemAndAccount> {
+  async get(
+    dbConnection: DBConnection,
+    bookmarkId: string,
+  ): Promise<ItemBookmarkRawWithItemAndAccount> {
     if (!bookmarkId) {
       throw new ItemBookmarkNotFound(bookmarkId);
     }
-    const bookmark = await db.query.itemBookmarksTable.findFirst({
+    const bookmark = await dbConnection.query.itemBookmarksTable.findFirst({
       where: eq(itemBookmarksTable.id, bookmarkId),
       with: { item: true, account: true },
     });
@@ -35,10 +38,10 @@ export class ItemBookmarkRepository {
    * @param memberId user's id
    */
   async getBookmarksForMember(
-    db: DBConnection,
+    dbConnection: DBConnection,
     memberId: string,
   ): Promise<ItemBookmarkRawWithItemWithCreator[]> {
-    const bookmarks = await db
+    const bookmarks = await dbConnection
       .select()
       .from(itemBookmarksTable)
       .innerJoin(items, eq(itemBookmarksTable.itemId, items.id))
@@ -58,7 +61,7 @@ export class ItemBookmarkRepository {
    * @returns an array of favorites.
    */
   async getForMemberExport(
-    db: DBConnection,
+    dbConnection: DBConnection,
     memberId: string,
   ): Promise<
     {
@@ -70,7 +73,7 @@ export class ItemBookmarkRepository {
     if (!memberId) {
       throw new MemberIdentifierNotFound();
     }
-    const result = await db.query.itemBookmarksTable.findMany({
+    const result = await dbConnection.query.itemBookmarksTable.findMany({
       columns: { id: true, createdAt: true, itemId: true },
       where: eq(itemBookmarksTable.memberId, memberId),
       orderBy: desc(itemBookmarksTable.createdAt),
@@ -79,8 +82,12 @@ export class ItemBookmarkRepository {
     return result;
   }
 
-  async post(db: DBConnection, itemId: string, memberId: string): Promise<ItemBookmarkInsertDTO> {
-    const createdBookmark = await db
+  async post(
+    dbConnection: DBConnection,
+    itemId: string,
+    memberId: string,
+  ): Promise<ItemBookmarkInsertDTO> {
+    const createdBookmark = await dbConnection
       .insert(itemBookmarksTable)
       .values({ itemId, memberId })
       .returning()
@@ -92,8 +99,12 @@ export class ItemBookmarkRepository {
     return createdBookmark[0];
   }
 
-  async deleteOne(db: DBConnection, itemId: string, memberId: string): Promise<Item['id']> {
-    await db
+  async deleteOne(
+    dbConnection: DBConnection,
+    itemId: string,
+    memberId: string,
+  ): Promise<Item['id']> {
+    await dbConnection
       .delete(itemBookmarksTable)
       .where(and(eq(itemBookmarksTable.itemId, itemId), eq(itemBookmarksTable.memberId, memberId)));
 

@@ -2,7 +2,7 @@ import { singleton } from 'tsyringe';
 
 import { PermissionLevel } from '@graasp/sdk';
 
-import { DBConnection } from '../../drizzle/db';
+import { type DBConnection } from '../../drizzle/db';
 import { AuthenticatedUser, MaybeUser } from '../../types';
 import HookManager from '../../utils/hook';
 import { BasicItemService } from '../item/basic.service';
@@ -27,23 +27,23 @@ export class ChatMessageService {
     this.chatMessageRepository = chatMessageRepository;
   }
 
-  async getForItem(db: DBConnection, actor: MaybeUser, itemId: string) {
+  async getForItem(dbConnection: DBConnection, actor: MaybeUser, itemId: string) {
     // check permission
-    await this.basicItemService.get(db, actor, itemId);
+    await this.basicItemService.get(dbConnection, actor, itemId);
 
-    return await this.chatMessageRepository.getByItem(db, itemId);
+    return await this.chatMessageRepository.getByItem(dbConnection, itemId);
   }
 
   async postOne(
-    db: DBConnection,
+    dbConnection: DBConnection,
     actor: AuthenticatedUser,
     itemId: string,
     data: { body: string; mentions?: string[] },
   ) {
     // check permission
-    await this.basicItemService.get(db, actor, itemId);
+    await this.basicItemService.get(dbConnection, actor, itemId);
 
-    const message = await this.chatMessageRepository.addOne(db, {
+    const message = await this.chatMessageRepository.addOne(dbConnection, {
       itemId,
       creatorId: actor.id,
       body: data.body,
@@ -51,11 +51,11 @@ export class ChatMessageService {
 
     // post the mentions that are sent with the message
     if (data.mentions?.length) {
-      await this.mentionService.createManyForItem(db, actor, message, data.mentions);
+      await this.mentionService.createManyForItem(dbConnection, actor, message, data.mentions);
     }
 
     const messageWithCreator = { ...message, creator: actor };
-    await this.hooks.runPostHooks('publish', actor, db, {
+    await this.hooks.runPostHooks('publish', actor, dbConnection, {
       message: messageWithCreator,
     });
 
@@ -63,17 +63,17 @@ export class ChatMessageService {
   }
 
   async patchOne(
-    db: DBConnection,
+    dbConnection: DBConnection,
     authenticatedUser: AuthenticatedUser,
     itemId: string,
     messageId: string,
     message: { body: string },
   ) {
     // check permission
-    await this.basicItemService.get(db, authenticatedUser, itemId);
+    await this.basicItemService.get(dbConnection, authenticatedUser, itemId);
 
     // check right to make sure that the user is editing his own message
-    const messageContent = await this.chatMessageRepository.getOne(db, messageId);
+    const messageContent = await this.chatMessageRepository.getOne(dbConnection, messageId);
 
     if (!messageContent) {
       throw new ChatMessageNotFound(messageId);
@@ -83,13 +83,13 @@ export class ChatMessageService {
       throw new MemberCannotEditMessage(messageId);
     }
 
-    const updatedMessage = await this.chatMessageRepository.updateOne(db, messageId, {
+    const updatedMessage = await this.chatMessageRepository.updateOne(dbConnection, messageId, {
       itemId,
       ...message,
     });
     // assumes update can only be done by the author of the message
     const updatedMessageWithCreator = { ...updatedMessage, creator: authenticatedUser };
-    await this.hooks.runPostHooks('update', authenticatedUser, db, {
+    await this.hooks.runPostHooks('update', authenticatedUser, dbConnection, {
       message: updatedMessageWithCreator,
     });
 
@@ -97,15 +97,15 @@ export class ChatMessageService {
   }
 
   async deleteOne(
-    db: DBConnection,
+    dbConnection: DBConnection,
     authenticatedUser: AuthenticatedUser,
     itemId: string,
     messageId: string,
   ) {
     // check permission
-    await this.basicItemService.get(db, authenticatedUser, itemId);
+    await this.basicItemService.get(dbConnection, authenticatedUser, itemId);
 
-    const messageContent = await this.chatMessageRepository.getOne(db, messageId);
+    const messageContent = await this.chatMessageRepository.getOne(dbConnection, messageId);
     if (!messageContent) {
       throw new ChatMessageNotFound(messageId);
     }
@@ -117,22 +117,22 @@ export class ChatMessageService {
     // TODO: get associated mentions to push the update in the websockets
     // await mentionRepository.getMany()
 
-    await this.chatMessageRepository.deleteOne(db, messageId);
+    await this.chatMessageRepository.deleteOne(dbConnection, messageId);
 
-    await this.hooks.runPostHooks('delete', authenticatedUser, db, {
+    await this.hooks.runPostHooks('delete', authenticatedUser, dbConnection, {
       message: messageContent,
     });
 
     return messageContent;
   }
 
-  async clear(db: DBConnection, authenticatedUser: AuthenticatedUser, itemId: string) {
+  async clear(dbConnection: DBConnection, authenticatedUser: AuthenticatedUser, itemId: string) {
     // check rights for accessing the chat and sufficient right to clear the conversation
     // user should be an admin of the item
-    await this.basicItemService.get(db, authenticatedUser, itemId, PermissionLevel.Admin);
+    await this.basicItemService.get(dbConnection, authenticatedUser, itemId, PermissionLevel.Admin);
 
-    await this.hooks.runPostHooks('clear', authenticatedUser, db, { itemId });
+    await this.hooks.runPostHooks('clear', authenticatedUser, dbConnection, { itemId });
 
-    await this.chatMessageRepository.deleteByItem(db, itemId);
+    await this.chatMessageRepository.deleteByItem(dbConnection, itemId);
   }
 }

@@ -8,13 +8,13 @@ import { ItemValidationRaw } from '../../../../../drizzle/types';
 import { ItemValidationGroupNotFound, ItemValidationNotFound } from './errors';
 
 export class ItemValidationRepository {
-  async get(db: DBConnection, id: string): Promise<ItemValidationRaw> {
+  async get(dbConnection: DBConnection, id: string): Promise<ItemValidationRaw> {
     // additional check that id is not null
     // o/w empty parameter to findOneBy return the first entry
     if (!id) {
       throw new ItemValidationNotFound(id);
     }
-    const result = await db.query.itemValidationsTable.findFirst({
+    const result = await dbConnection.query.itemValidationsTable.findFirst({
       where: eq(itemValidationsTable.id, id),
     });
     if (!result) {
@@ -23,11 +23,11 @@ export class ItemValidationRepository {
     return result;
   }
 
-  async getForGroup(db: DBConnection, groupId: string): Promise<ItemValidationRaw[]> {
+  async getForGroup(dbConnection: DBConnection, groupId: string): Promise<ItemValidationRaw[]> {
     if (!groupId) {
       throw new ItemValidationGroupNotFound(groupId);
     }
-    return db.query.itemValidationsTable.findMany({
+    return await dbConnection.query.itemValidationsTable.findMany({
       where: eq(itemValidationsTable.itemValidationGroupId, groupId),
     });
   }
@@ -37,13 +37,13 @@ export class ItemValidationRepository {
    * @param {string} itemId id of the item being validated
    */
   async post(
-    db: DBConnection,
+    dbConnection: DBConnection,
     itemId: string,
     itemValidationGroupId: string,
     process: ItemValidationProcess,
     status = ItemValidationStatus.Pending,
   ): Promise<{ id: ItemValidationRaw['id'] }> {
-    const res = await db
+    const res = await dbConnection
       .insert(itemValidationsTable)
       .values({
         itemId,
@@ -56,11 +56,11 @@ export class ItemValidationRepository {
   }
 
   async patch(
-    db: DBConnection,
+    dbConnection: DBConnection,
     itemValidationId: string,
     args: { result?: string; status: ItemValidationStatus },
   ): Promise<void> {
-    await db
+    await dbConnection
       .update(itemValidationsTable)
       .set(args)
       .where(eq(itemValidationsTable.id, itemValidationId));

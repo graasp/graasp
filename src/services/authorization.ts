@@ -48,7 +48,7 @@ export class AuthorizationService {
    * @throws if the user cannot access the item
    */
   public async validatePermissionMany(
-    db: DBConnection,
+    dbConnection: DBConnection,
     permission: PermissionLevelOptions,
     actor: { id: string } | undefined,
     items: Item[],
@@ -66,9 +66,9 @@ export class AuthorizationService {
 
     // batch request for all items
     const inheritedMemberships = actor
-      ? await this.itemMembershipRepository.getInheritedMany(db, items, actor.id, true)
+      ? await this.itemMembershipRepository.getInheritedMany(dbConnection, items, actor.id, true)
       : null;
-    const visibilities = await this.itemVisibilityRepository.getManyForMany(db, items, [
+    const visibilities = await this.itemVisibilityRepository.getManyForMany(dbConnection, items, [
       ItemVisibilityType.Public,
       ItemVisibilityType.Hidden,
     ]);
@@ -137,13 +137,13 @@ export class AuthorizationService {
   }
 
   public async hasPermission(
-    db: DBConnection,
+    dbConnection: DBConnection,
     permission: PermissionLevelOptions,
     actor: MaybeUser,
     item: Item,
   ) {
     try {
-      await this.validatePermission(db, permission, actor, item);
+      await this.validatePermission(dbConnection, permission, actor, item);
       return true;
     } catch (err: unknown) {
       return false;
@@ -151,7 +151,7 @@ export class AuthorizationService {
   }
 
   public async validatePermission(
-    db: DBConnection,
+    dbConnection: DBConnection,
     permission: PermissionLevelOptions,
     actor: { id: string } | undefined,
     item: Item,
@@ -163,12 +163,12 @@ export class AuthorizationService {
     // but do not fetch membership for signed out member
 
     const inheritedMembership = actor
-      ? await this.itemMembershipRepository.getInherited(db, item.path, actor.id, true)
+      ? await this.itemMembershipRepository.getInherited(dbConnection, item.path, actor.id, true)
       : null;
     const highest = inheritedMembership?.permission;
     const isValid = highest && permissionMapping[highest].includes(permission);
     let isPublic = false;
-    const visibilities = await this.itemVisibilityRepository.getByItemPath(db, item.path);
+    const visibilities = await this.itemVisibilityRepository.getByItemPath(dbConnection, item.path);
     if (highest === PermissionLevel.Read || permission === PermissionLevel.Read) {
       isPublic = Boolean(visibilities.find((t) => t.type === ItemVisibilityType.Public));
     }
@@ -211,9 +211,9 @@ export class AuthorizationService {
   }
 
   // TODO: This is only used here but should probably be put in a better place than the plugin file
-  async isItemVisible(db: DBConnection, actor: MaybeUser, itemPath: Item['path']) {
+  async isItemVisible(dbConnection: DBConnection, actor: MaybeUser, itemPath: Item['path']) {
     const isHidden = await this.itemVisibilityRepository.getType(
-      db,
+      dbConnection,
       itemPath,
       ItemVisibilityType.Hidden,
     );
@@ -226,7 +226,7 @@ export class AuthorizationService {
 
       // Check if the actor has at least write permission
       const membership = await this.itemMembershipRepository.getByAccountAndItemPath(
-        db,
+        dbConnection,
         actor?.id,
         itemPath,
       );

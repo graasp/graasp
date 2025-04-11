@@ -2,7 +2,7 @@ import { singleton } from 'tsyringe';
 
 import { ClientManager, Context, MentionStatus, PermissionLevel } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import { ChatMessageRaw, Item } from '../../../../drizzle/types';
 import { TRANSLATIONS } from '../../../../langs/constants';
 import { MailBuilder } from '../../../../plugins/mailer/builder';
@@ -72,21 +72,30 @@ export class MentionService {
   }
 
   async createManyForItem(
-    db: DBConnection,
+    dbConnection: DBConnection,
     account: AuthenticatedUser,
     message: ChatMessageRaw,
     mentionedMembers: string[],
   ) {
     // check actor has access to item
-    const item = await this.itemRepository.getOneOrThrow(db, message.itemId);
-    await this.authorizationService.validatePermission(db, PermissionLevel.Read, account, item);
+    const item = await this.itemRepository.getOneOrThrow(dbConnection, message.itemId);
+    await this.authorizationService.validatePermission(
+      dbConnection,
+      PermissionLevel.Read,
+      account,
+      item,
+    );
 
     // TODO: optimize ? suppose same item - validate multiple times
-    const mentions = await this.chatMentionRepository.postMany(db, mentionedMembers, message.id);
+    const mentions = await this.chatMentionRepository.postMany(
+      dbConnection,
+      mentionedMembers,
+      message.id,
+    );
 
     mentions.forEach(async (mention) => {
       const { accountId } = mention;
-      const member = await this.memberRepository.get(db, accountId);
+      const member = await this.memberRepository.get(dbConnection, accountId);
       const memberInfo = member.toMemberInfo();
       if (memberInfo.type === AccountType.Individual) {
         this.sendMentionNotificationEmail({
@@ -100,12 +109,12 @@ export class MentionService {
     return mentions;
   }
 
-  async getForAccount(db: DBConnection, authenticatedUser: AuthenticatedUser) {
-    return this.chatMentionRepository.getForAccount(db, authenticatedUser.id);
+  async getForAccount(dbConnection: DBConnection, authenticatedUser: AuthenticatedUser) {
+    return this.chatMentionRepository.getForAccount(dbConnection, authenticatedUser.id);
   }
 
-  async get(db: DBConnection, authenticatedUser: AuthenticatedUser, mentionId: string) {
-    const mentionContent = await this.chatMentionRepository.get(db, mentionId);
+  async get(dbConnection: DBConnection, authenticatedUser: AuthenticatedUser, mentionId: string) {
+    const mentionContent = await this.chatMentionRepository.get(dbConnection, mentionId);
 
     if (mentionContent.accountId !== authenticatedUser.id) {
       throw new MemberCannotAccessMention({ id: mentionId });
@@ -115,26 +124,30 @@ export class MentionService {
   }
 
   async patch(
-    db: DBConnection,
+    dbConnection: DBConnection,
     authenticatedUser: AuthenticatedUser,
     mentionId: string,
     status: MentionStatus,
   ) {
     // check permission
-    await this.get(db, authenticatedUser, mentionId);
+    await this.get(dbConnection, authenticatedUser, mentionId);
 
-    return this.chatMentionRepository.patch(db, mentionId, status);
+    return this.chatMentionRepository.patch(dbConnection, mentionId, status);
   }
 
-  async deleteOne(db: DBConnection, authenticatedUser: AuthenticatedUser, mentionId: string) {
+  async deleteOne(
+    dbConnection: DBConnection,
+    authenticatedUser: AuthenticatedUser,
+    mentionId: string,
+  ) {
     // check permission
-    await this.get(db, authenticatedUser, mentionId);
+    await this.get(dbConnection, authenticatedUser, mentionId);
 
-    return this.chatMentionRepository.deleteOne(db, mentionId);
+    return this.chatMentionRepository.deleteOne(dbConnection, mentionId);
   }
 
-  async deleteAll(db: DBConnection, authenticatedUser: AuthenticatedUser) {
-    await this.chatMentionRepository.deleteAll(db, authenticatedUser.id);
+  async deleteAll(dbConnection: DBConnection, authenticatedUser: AuthenticatedUser) {
+    await this.chatMentionRepository.deleteAll(dbConnection, authenticatedUser.id);
     //     const clearedChat: Chat = { id: this.targetId, messages: [] };
     //     await this.postHookHandler?.(clearedChat, this.actor, { log, handler });
   }

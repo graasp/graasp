@@ -33,10 +33,10 @@ export class EnrollService {
     this.itemMembershipRepository = itemMembershipRepository;
   }
 
-  async enroll(db: DBConnection, member: MinimalMember, itemId: UUID) {
-    const item = await this.itemRepository.getOneOrThrow(db, itemId);
+  async enroll(dbConnection: DBConnection, member: MinimalMember, itemId: UUID) {
+    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
-    const itemLoginSchema = await this.itemLoginService.getByItemPath(db, item.path);
+    const itemLoginSchema = await this.itemLoginService.getByItemPath(dbConnection, item.path);
     if (!itemLoginSchema || itemLoginSchema.status === ItemLoginSchemaStatus.Disabled) {
       throw new CannotEnrollItemWithoutItemLoginSchema();
     } else if (itemLoginSchema.status === ItemLoginSchemaStatus.Freeze) {
@@ -44,11 +44,18 @@ export class EnrollService {
     }
 
     // Check if the member already has an access to the item (from membership or item visibility), if so, throw an error
-    if (await this.authorizationService.hasPermission(db, PermissionLevel.Read, member, item)) {
+    if (
+      await this.authorizationService.hasPermission(
+        dbConnection,
+        PermissionLevel.Read,
+        member,
+        item,
+      )
+    ) {
       throw new ItemMembershipAlreadyExists();
     }
 
-    await this.itemMembershipRepository.addOne(db, {
+    await this.itemMembershipRepository.addOne(dbConnection, {
       itemPath: item.path,
       permission: PermissionLevel.Read,
       accountId: member.id,

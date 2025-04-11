@@ -156,12 +156,12 @@ export abstract class HtmlService {
   }
 
   async createItem(
-    db: DBConnection,
+    dbConnection: DBConnection,
     actor: MinimalMember,
     filename: string,
     stream: Readable,
     onComplete: (
-      db: DBConnection,
+      dbConnection: DBConnection,
       actor: MinimalMember,
       baseName: string,
       contentId: string,
@@ -174,7 +174,7 @@ export abstract class HtmlService {
     log?: FastifyBaseLogger,
   ): Promise<Item> {
     // check member storage limit
-    await this.storageService.checkRemainingStorage(db, actor);
+    await this.storageService.checkRemainingStorage(dbConnection, actor);
     const contentId = v4();
     const tmpDir = await dir({ tmpdir: this.tempDir, unsafeCleanup: true });
     const targetFolder = path.join(tmpDir.path, contentId);
@@ -200,7 +200,7 @@ export abstract class HtmlService {
         // upload whole folder to public storage
         await this.upload(actor, targetFolder, remoteRootPath, log);
         const item = await onComplete(
-          db,
+          dbConnection,
           actor,
           baseName,
           contentId,

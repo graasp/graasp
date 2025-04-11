@@ -25,16 +25,19 @@ type UpdateShortLinkBody = UpdateShortLink;
 
 export class ShortLinkRepository {
   async addOne(
-    db: DBConnection,
+    dbConnection: DBConnection,
     { alias, platform, itemId }: CreateShortLinkBody,
   ): Promise<ShortLinkRaw> {
     throwsIfParamIsInvalid('alias', alias);
-    if ((await this.countByItemAndPlatform(db, itemId, platform)) > 0) {
+    if ((await this.countByItemAndPlatform(dbConnection, itemId, platform)) > 0) {
       throw new ShortLinkLimitExceed(itemId, platform);
     }
 
     try {
-      const res = await db.insert(shortLinksTable).values({ alias, platform, itemId }).returning();
+      const res = await dbConnection
+        .insert(shortLinksTable)
+        .values({ alias, platform, itemId })
+        .returning();
 
       return res[0];
     } catch (e) {
@@ -48,14 +51,14 @@ export class ShortLinkRepository {
   }
 
   private async countByItemAndPlatform(
-    db: DBConnection,
+    dbConnection: DBConnection,
     itemId: string,
     platform: UnionOfConst<typeof ShortLinkPlatform>,
   ): Promise<number> {
     throwsIfParamIsInvalid('itemId', itemId);
     throwsIfParamIsInvalid('platform', platform);
 
-    const result = await db
+    const result = await dbConnection
       .select({ count: count() })
       .from(shortLinksTable)
       .where(and(eq(shortLinksTable.itemId, itemId), eq(shortLinksTable.platform, platform)));
@@ -63,17 +66,17 @@ export class ShortLinkRepository {
     return result[0].count;
   }
 
-  async getByItem(db: DBConnection, itemId: string): Promise<ShortLinkRaw[]> {
+  async getByItem(dbConnection: DBConnection, itemId: string): Promise<ShortLinkRaw[]> {
     throwsIfParamIsInvalid('itemId', itemId);
 
-    return await db.query.shortLinksTable.findMany({
+    return await dbConnection.query.shortLinksTable.findMany({
       where: eq(shortLinksTable.itemId, itemId),
       orderBy: asc(shortLinksTable.createdAt),
     });
   }
 
-  async getOne(db: DBConnection, alias: string): Promise<ShortLinkWithItem> {
-    const shortLink = await db.query.shortLinksTable.findFirst({
+  async getOne(dbConnection: DBConnection, alias: string): Promise<ShortLinkWithItem> {
+    const shortLink = await dbConnection.query.shortLinksTable.findFirst({
       where: eq(shortLinksTable.alias, alias),
       with: { item: true },
     });
@@ -86,7 +89,7 @@ export class ShortLinkRepository {
   }
 
   async updateOne(
-    db: DBConnection,
+    dbConnection: DBConnection,
     alias: string,
     entity: UpdateShortLinkBody,
   ): Promise<ShortLinkInsertDTO> {
@@ -94,7 +97,7 @@ export class ShortLinkRepository {
     throwsIfParamIsInvalid('alias', alias);
 
     try {
-      const res = await db
+      const res = await dbConnection
         .update(shortLinksTable)
         .set(entity)
         .where(eq(shortLinksTable.alias, alias))
@@ -117,7 +120,7 @@ export class ShortLinkRepository {
     }
   }
 
-  async deleteOne(db: DBConnection, alias: string): Promise<void> {
-    await db.delete(shortLinksTable).where(eq(shortLinksTable.alias, alias)).returning();
+  async deleteOne(dbConnection: DBConnection, alias: string): Promise<void> {
+    await dbConnection.delete(shortLinksTable).where(eq(shortLinksTable.alias, alias)).returning();
   }
 }

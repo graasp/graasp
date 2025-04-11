@@ -57,7 +57,7 @@ export class AppItemService extends ItemService {
   }
 
   async postWithOptions(
-    db: DBConnection,
+    dbConnection: DBConnection,
     member: MinimalMember,
     args: Partial<Pick<Item, 'description' | 'lang'>> &
       Pick<Item, 'name'> & {
@@ -76,25 +76,25 @@ export class AppItemService extends ItemService {
       lang,
       extra: { app: { url } },
     };
-    return (await super.post(db, member, {
+    return (await super.post(dbConnection, member, {
       item: newItem,
       ...options,
     })) as AppItem;
   }
 
   async patch(
-    db: DBConnection,
+    dbConnection: DBConnection,
     member: MinimalMember,
     itemId: UUID,
     args: Partial<Pick<Item, 'name' | 'description' | 'lang' | 'settings'>>,
   ): Promise<AppItem> {
-    const item = await this.itemRepository.getOneOrThrow(db, itemId);
+    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // check item is app
     if (!isItemType(item, ItemType.APP)) {
       throw new WrongItemTypeError(item.type);
     }
 
-    return (await super.patch(db, member, itemId, args)) as AppItem;
+    return (await super.patch(dbConnection, member, itemId, args)) as AppItem;
   }
 }

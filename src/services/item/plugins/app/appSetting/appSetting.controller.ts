@@ -28,7 +28,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.register(appSettingsWsHooks, { appSettingService });
 
   // copy app settings and related files on item copy
-  const hook = async (actor: AuthenticatedUser, db: DBConnection, { original, copy }) => {
+  const hook = async (actor: AuthenticatedUser, dbConnection: DBConnection, { original, copy }) => {
     if (original.type !== ItemType.APP || copy.type !== ItemType.APP) return;
 
     await appSettingService.copyForItem(db, actor, original, copy.id);

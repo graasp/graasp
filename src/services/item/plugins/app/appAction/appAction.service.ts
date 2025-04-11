@@ -3,7 +3,7 @@ import { singleton } from 'tsyringe';
 
 import { PermissionLevel } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../../drizzle/db';
+import { type DBConnection } from '../../../../../drizzle/db';
 import { appActionsTable } from '../../../../../drizzle/schema';
 import { AppActionWithItemAndAccount } from '../../../../../drizzle/types';
 import { AuthenticatedUser } from '../../../../../types';
@@ -31,34 +31,39 @@ export class AppActionService {
   }
 
   async getOne(
-    db: DBConnection,
+    dbConnection: DBConnection,
     actionId: string,
   ): Promise<AppActionWithItemAndAccount | undefined> {
-    return db.query.appActionsTable.findFirst({
+    return await dbConnection.query.appActionsTable.findFirst({
       where: eq(appActionsTable.id, actionId),
       with: { account: true, item: true },
     });
   }
 
   async post(
-    db: DBConnection,
+    dbConnection: DBConnection,
     account: AuthenticatedUser,
     itemId: string,
     body: InputAppAction,
   ): Promise<AppActionWithItemAndAccount> {
     // check item exists? let post fail?
-    const item = await this.itemRepository.getOneOrThrow(db, itemId);
+    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // posting an app action is allowed to readers
-    await this.authorizationService.validatePermission(db, PermissionLevel.Read, account, item);
+    await this.authorizationService.validatePermission(
+      dbConnection,
+      PermissionLevel.Read,
+      account,
+      item,
+    );
 
-    const rawAppActions = await this.appActionRepository.addOne(db, {
+    const rawAppActions = await this.appActionRepository.addOne(dbConnection, {
       itemId,
       accountId: account.id,
       appAction: body,
     });
 
-    const appAction = await this.getOne(db, rawAppActions[0].id);
+    const appAction = await this.getOne(dbConnection, rawAppActions[0].id);
     if (!appAction) {
       throw new Error('expected to get app action on creation');
     }
@@ -67,17 +72,17 @@ export class AppActionService {
   }
 
   async getForItem(
-    db: DBConnection,
+    dbConnection: DBConnection,
     account: AuthenticatedUser,
     itemId: string,
     filters: SingleItemGetFilter,
   ) {
     // check item exists
-    const item = await this.itemRepository.getOneOrThrow(db, itemId);
+    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // posting an app action is allowed to readers
     const { itemMembership } = await this.authorizationService.validatePermission(
-      db,
+      dbConnection,
       PermissionLevel.Read,
       account,
       item,
@@ -94,23 +99,23 @@ export class AppActionService {
       }
     }
 
-    return this.appActionRepository.getForItem(db, itemId, {
+    return this.appActionRepository.getForItem(dbConnection, itemId, {
       accountId: fMemberId,
     });
   }
 
   async getForManyItems(
-    db: DBConnection,
+    dbConnection: DBConnection,
     account: AuthenticatedUser,
     itemIds: string[],
     filters: ManyItemsGetFilter,
   ) {
     // check item exists
-    const item = await this.itemRepository.getOneOrThrow(db, itemIds[0]);
+    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemIds[0]);
 
     // posting an app action is allowed to readers
     const { itemMembership } = await this.authorizationService.validatePermission(
-      db,
+      dbConnection,
       PermissionLevel.Read,
       account,
       item,
@@ -126,6 +131,6 @@ export class AppActionService {
     }
 
     // TODO: get only memberId or with visibility
-    return this.appActionRepository.getForManyItems(db, itemIds, filters);
+    return this.appActionRepository.getForManyItems(dbConnection, itemIds, filters);
   }
 }

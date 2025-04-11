@@ -35,7 +35,12 @@ class AppDataFileService {
     this.appDataRepository = appDataRepository;
   }
 
-  async upload(db: DBConnection, account: AuthenticatedUser, file: MultipartFile, item: Item) {
+  async upload(
+    dbConnection: DBConnection,
+    account: AuthenticatedUser,
+    file: MultipartFile,
+    item: Item,
+  ) {
     const { filename, mimetype, file: stream } = file;
     const appDataId = v4();
     const filepath = this.buildFilePath(item.id, appDataId); // parentId, filename
@@ -69,7 +74,7 @@ class AppDataFileService {
 
     // const name = filename.substring(0, ORIGINAL_FILENAME_TRUNCATE_LIMIT);
 
-    const appData = await this.appDataRepository.addOne(db, {
+    const appData = await this.appDataRepository.addOne(dbConnection, {
       itemId: item.id,
       actorId: account.id,
       appData: {
@@ -86,12 +91,12 @@ class AppDataFileService {
   }
 
   async download(
-    db: DBConnection,
+    dbConnection: DBConnection,
     account: AuthenticatedUser,
     { item, appDataId }: { item: Item; appDataId: UUID },
   ) {
     // get app data and check it is a file
-    const appData = await this.appDataService.get(db, account, item, appDataId);
+    const appData = await this.appDataService.get(dbConnection, account, item, appDataId);
     const fileProp = appData.data[this.fileService.fileType] as FileItemProperties;
     if (!fileProp) {
       throw new NotAppDataFile(appData);
@@ -106,7 +111,7 @@ class AppDataFileService {
     return result;
   }
 
-  async deleteOne(db: DBConnection, appData: AppDataRaw) {
+  async deleteOne(dbConnection: DBConnection, appData: AppDataRaw) {
     // TODO: check rights? but only use in posthook
     try {
       // delete file only if type is the current file type

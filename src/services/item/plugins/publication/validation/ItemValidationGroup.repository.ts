@@ -1,7 +1,7 @@
 import { desc, eq } from 'drizzle-orm';
 import { singleton } from 'tsyringe';
 
-import { DBConnection } from '../../../../../drizzle/db';
+import { type DBConnection } from '../../../../../drizzle/db';
 import { itemValidationGroupsTable } from '../../../../../drizzle/schema';
 import {
   ItemValidationGroupRaw,
@@ -15,8 +15,11 @@ export class ItemValidationGroupRepository {
    * Get item validation groups of given iVId
    * @param {string} iVId id of the item being checked
    */
-  async get(db: DBConnection, id: string): Promise<ItemValidationGroupWithItemAndValidations> {
-    const ivg = await db.query.itemValidationGroupsTable.findFirst({
+  async get(
+    dbConnection: DBConnection,
+    id: string,
+  ): Promise<ItemValidationGroupWithItemAndValidations> {
+    const ivg = await dbConnection.query.itemValidationGroupsTable.findFirst({
       where: eq(itemValidationGroupsTable.id, id),
       with: { item: true, itemValidations: true },
     });
@@ -33,20 +36,20 @@ export class ItemValidationGroupRepository {
    * @param {string} itemId id of the item being checked
    */
   async getLastForItem(
-    db: DBConnection,
+    dbConnection: DBConnection,
     itemId: string,
   ): Promise<ItemValidationGroupWithItemAndValidations | undefined> {
     if (!itemId) {
       throw new ItemValidationGroupNotFound(itemId);
     }
-    const result = await db.query.itemValidationGroupsTable.findFirst({
+    const result = await dbConnection.query.itemValidationGroupsTable.findFirst({
       where: eq(itemValidationGroupsTable.itemId, itemId),
       orderBy: desc(itemValidationGroupsTable.createdAt),
       with: { item: true, itemValidations: true },
     });
     return result;
 
-    // const result = await db
+    // const result = await dbConnection
     //   .select()
     //   .from(itemValidationGroupsTable)
     //   .innerJoin(items, eq(itemValidationGroupsTable.itemId, itemId))
@@ -75,8 +78,11 @@ export class ItemValidationGroupRepository {
    * Create an entry for the automatic validation process in item-validation-group
    * @param {string} itemId id of the item being validated
    */
-  async post(db: DBConnection, itemId: string): Promise<{ id: ItemValidationGroupRaw['id'] }> {
-    const res = await db
+  async post(
+    dbConnection: DBConnection,
+    itemId: string,
+  ): Promise<{ id: ItemValidationGroupRaw['id'] }> {
+    const res = await dbConnection
       .insert(itemValidationGroupsTable)
       .values({ itemId })
       .returning({ id: itemValidationGroupsTable.id });

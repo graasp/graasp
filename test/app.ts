@@ -72,7 +72,7 @@ const build = async () => {
   return { app };
 };
 
-export const clearDatabase = async (db: DBConnection) => {
+export const clearDatabase = async (dbConnection: DBConnection) => {
   // TODO: ?
   // const entities = db.entityMetadatas;
   // for (const entity of entities) {

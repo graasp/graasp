@@ -13,7 +13,7 @@ import {
 } from '@graasp/sdk';
 
 import { IFRAMELY_API_DI_KEY } from '../../../../di/constants';
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import { Item } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { MinimalMember } from '../../../../types';
@@ -221,7 +221,7 @@ export class EmbeddedLinkItemService extends ItemService {
   }
 
   async postWithOptions(
-    db: DBConnection,
+    dbConnection: DBConnection,
     member: MinimalMember,
     args: Partial<Pick<Item, 'description' | 'lang'>> &
       Pick<Item, 'name'> & {
@@ -242,14 +242,14 @@ export class EmbeddedLinkItemService extends ItemService {
       { showLinkButton, showLinkIframe },
       { embeddedLink },
     );
-    return (await super.post(db, member, {
+    return (await super.post(dbConnection, member, {
       item: newItem,
       ...options,
     })) as EmbeddedLinkItem;
   }
 
   async patchWithOptions(
-    db: DBConnection,
+    dbConnection: DBConnection,
     member: MinimalMember,
     itemId: UUID,
     args: Partial<Pick<Item, 'name' | 'description' | 'lang' | 'settings'>> & {
@@ -258,7 +258,7 @@ export class EmbeddedLinkItemService extends ItemService {
       showLinkButton?: boolean;
     },
   ): Promise<EmbeddedLinkItem> {
-    const item = await this.itemRepository.getOneOrThrow(db, itemId);
+    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // check item is link
     if (!isItemType(item, ItemType.LINK)) {
@@ -284,6 +284,6 @@ export class EmbeddedLinkItemService extends ItemService {
         embeddedLink,
       },
     );
-    return (await super.patch(db, member, itemId, newItem)) as EmbeddedLinkItem;
+    return (await super.patch(dbConnection, member, itemId, newItem)) as EmbeddedLinkItem;
   }
 }

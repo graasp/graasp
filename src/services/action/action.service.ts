@@ -5,7 +5,7 @@ import { FastifyRequest } from 'fastify';
 
 import { ClientManager } from '@graasp/sdk';
 
-import { DBConnection } from '../../drizzle/db';
+import { type DBConnection } from '../../drizzle/db';
 import { Item } from '../../drizzle/types';
 import { BaseLogger } from '../../logger';
 import { AccountType, MaybeUser } from '../../types';
@@ -31,7 +31,7 @@ export class ActionService {
   }
 
   async postMany(
-    db: DBConnection,
+    dbConnection: DBConnection,
     actor: MaybeUser,
     request: FastifyRequest,
     actions: { item?: Item; type: string; extra: unknown }[],
@@ -41,7 +41,7 @@ export class ActionService {
     // only do it if it is an 'individual'
     const member =
       actor && actor.type === AccountType.Individual
-        ? await this.memberRepository.get(db, actor.id)
+        ? await this.memberRepository.get(dbConnection, actor.id)
         : null;
     //TODO: should we assert that the member is a "member" ?
     // prevent saving if member is defined and has disabled saveActions
@@ -81,6 +81,6 @@ export class ActionService {
       extra: a.extra ?? {},
     }));
 
-    await this.actionRepository.postMany(db, completeActions);
+    await this.actionRepository.postMany(dbConnection, completeActions);
   }
 }

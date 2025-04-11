@@ -40,20 +40,20 @@ export class RecycledBinService {
   }>();
 
   async getOwn(
-    db: DBConnection,
+    dbConnection: DBConnection,
     member: MinimalMember,
     pagination: Pagination,
   ): Promise<Paginated<Item>> {
-    return await this.recycledItemRepository.getOwnRecycledItems(db, member, pagination);
+    return await this.recycledItemRepository.getOwnRecycledItems(dbConnection, member, pagination);
   }
 
-  async getDeletedTreesById(db: DBConnection, member: MinimalMember, ids: Item['id'][]) {
-    const items = await this.recycledItemRepository.getDeletedTreesById(db, ids);
+  async getDeletedTreesById(dbConnection: DBConnection, member: MinimalMember, ids: Item['id'][]) {
+    const items = await this.recycledItemRepository.getDeletedTreesById(dbConnection, ids);
 
     // validate permission on parents
     const rootItems = items.filter(({ id }) => ids.includes(id));
     await this.authorizationService.validatePermissionMany(
-      db,
+      dbConnection,
       PermissionLevel.Admin,
       member,
       rootItems,
@@ -63,52 +63,61 @@ export class RecycledBinService {
   }
 
   async getManyById(
-    db: DBConnection,
+    dbConnection: DBConnection,
     member: MinimalMember,
     pagination: Pagination,
   ): Promise<Paginated<Item>> {
-    return await this.recycledItemRepository.getOwnRecycledItems(db, member, pagination);
+    return await this.recycledItemRepository.getOwnRecycledItems(dbConnection, member, pagination);
   }
 
-  async recycleMany(db: DBConnection, actor: MinimalMember, itemIds: string[]) {
-    const itemsResult = await this.itemRepository.getMany(db, itemIds, { throwOnError: true });
+  async recycleMany(dbConnection: DBConnection, actor: MinimalMember, itemIds: string[]) {
+    const itemsResult = await this.itemRepository.getMany(dbConnection, itemIds, {
+      throwOnError: true,
+    });
     const { data: idsToItems } = itemsResult;
     const items = Object.values(idsToItems);
 
     // if item is already deleted, it will throw not found here
     for (const item of items) {
-      await this.authorizationService.validatePermission(db, PermissionLevel.Admin, actor, item);
+      await this.authorizationService.validatePermission(
+        dbConnection,
+        PermissionLevel.Admin,
+        actor,
+        item,
+      );
     }
 
     let allDescendants: Item[] = [];
     for (const item of items) {
-      await this.hooks.runPreHooks('recycle', actor, db, { item, isRecycledRoot: true });
+      await this.hooks.runPreHooks('recycle', actor, dbConnection, { item, isRecycledRoot: true });
       if (isItemType(item, ItemType.FOLDER)) {
-        allDescendants = allDescendants.concat(await this.itemRepository.getDescendants(db, item));
+        allDescendants = allDescendants.concat(
+          await this.itemRepository.getDescendants(dbConnection, item),
+        );
       }
     }
     for (const d of allDescendants) {
-      await this.hooks.runPreHooks('recycle', actor, db, {
+      await this.hooks.runPreHooks('recycle', actor, dbConnection, {
         item: d,
         isRecycledRoot: false,
       });
     }
 
-    await this.itemRepository.softRemove(db, [...allDescendants, ...items]);
-    await this.recycledItemRepository.addMany(db, items, actor);
+    await this.itemRepository.softRemove(dbConnection, [...allDescendants, ...items]);
+    await this.recycledItemRepository.addMany(dbConnection, items, actor);
 
     for (const d of allDescendants) {
-      this.hooks.runPostHooks('recycle', actor, db, { item: d, isRecycledRoot: false });
+      this.hooks.runPostHooks('recycle', actor, dbConnection, { item: d, isRecycledRoot: false });
     }
     for (const item of items) {
-      await this.hooks.runPostHooks('recycle', actor, db, { item, isRecycledRoot: true });
+      await this.hooks.runPostHooks('recycle', actor, dbConnection, { item, isRecycledRoot: true });
     }
 
     return itemsResult;
   }
 
-  async restoreMany(db: DBConnection, member: MinimalMember, itemIds: string[]) {
-    const items = await this.recycledItemRepository.getManyDeletedItemsById(db, itemIds);
+  async restoreMany(dbConnection: DBConnection, member: MinimalMember, itemIds: string[]) {
+    const items = await this.recycledItemRepository.getManyDeletedItemsById(dbConnection, itemIds);
 
     // throw if one provided id does not have a corresponding item
     if (items.length !== itemIds.length) {
@@ -116,18 +125,26 @@ export class RecycledBinService {
     }
 
     for (const item of items) {
-      await this.authorizationService.validatePermission(db, PermissionLevel.Admin, member, item);
+      await this.authorizationService.validatePermission(
+        dbConnection,
+        PermissionLevel.Admin,
+        member,
+        item,
+      );
     }
 
     // since the subtree is currently soft-deleted before recovery, need withDeleted=true
 
     let allDescendants: Item[] = [];
     for (const item of items) {
-      await this.hooks.runPreHooks('restore', member, db, { item, isRestoredRoot: true });
+      await this.hooks.runPreHooks('restore', member, dbConnection, { item, isRestoredRoot: true });
       if (isItemType(item, ItemType.FOLDER)) {
-        const descendants = await this.recycledItemRepository.getDeletedDescendants(db, item);
+        const descendants = await this.recycledItemRepository.getDeletedDescendants(
+          dbConnection,
+          item,
+        );
         for (const d of descendants) {
-          await this.hooks.runPreHooks('restore', member, db, {
+          await this.hooks.runPreHooks('restore', member, dbConnection, {
             item: d,
             isRestoredRoot: false,
           });
@@ -136,20 +153,23 @@ export class RecycledBinService {
       }
     }
 
-    const recoveredItems = await this.itemRepository.recover(db, [...allDescendants, ...items]);
+    const recoveredItems = await this.itemRepository.recover(dbConnection, [
+      ...allDescendants,
+      ...items,
+    ]);
     await this.recycledItemRepository.deleteManyByItemPath(
-      db,
+      dbConnection,
       items.map((item) => item.path),
     );
 
     for (const item of items) {
-      await this.hooks.runPostHooks('restore', member, db, {
+      await this.hooks.runPostHooks('restore', member, dbConnection, {
         item,
         isRestoredRoot: true,
       });
     }
     for (const d of allDescendants) {
-      await this.hooks.runPostHooks('restore', member, db, {
+      await this.hooks.runPostHooks('restore', member, dbConnection, {
         item: d,
         isRestoredRoot: false,
       });

@@ -12,12 +12,12 @@ import { AccountType } from '../../types';
 @singleton()
 export class GuestRepository {
   async getForItemAndUsername(
-    db: DBConnection,
+    dbConnection: DBConnection,
     item: Item,
     username: string,
   ): Promise<GuestWithItemLoginSchema | undefined> {
     // TODO: use guestsView
-    const res = await db
+    const res = await dbConnection
       .select()
       .from(guestsView)
       .innerJoin(
@@ -40,10 +40,10 @@ export class GuestRepository {
   }
 
   async addOne(
-    db: DBConnection,
+    dbConnection: DBConnection,
     guestData: { name: string; itemLoginSchemaId: string },
   ): Promise<GuestRaw> {
-    const res = await db
+    const res = await dbConnection
       .insert(accountsTable)
       .values({ ...guestData, type: AccountType.Guest })
       .returning();
@@ -55,8 +55,8 @@ export class GuestRepository {
     return { ...guest, type: AccountType.Guest } as GuestRaw;
   }
 
-  async refreshLastAuthenticatedAt(db: DBConnection, id: UUID) {
-    const res = await db
+  async refreshLastAuthenticatedAt(dbConnection: DBConnection, id: UUID) {
+    const res = await dbConnection
       .update(accountsTable)
       .set({ lastAuthenticatedAt: new Date().toISOString() })
       .where(eq(accountsTable.id, id))

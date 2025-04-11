@@ -4,7 +4,7 @@ import { FastifyRequest } from 'fastify';
 
 import { Context, UUID } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import { ChatMessageRaw } from '../../../../drizzle/types';
 import { ActionService } from '../../../action/action.service';
 
@@ -23,7 +23,11 @@ export class ActionChatService {
     this.actionService = actionService;
   }
 
-  async postPostMessageAction(db: DBConnection, request: FastifyRequest, message: ChatMessageRaw) {
+  async postPostMessageAction(
+    dbConnection: DBConnection,
+    request: FastifyRequest,
+    message: ChatMessageRaw,
+  ) {
     const { user } = request;
     const action = {
       itemId: message.itemId,
@@ -35,10 +39,14 @@ export class ActionChatService {
       // view: ??
     };
 
-    await this.actionService.postMany(db, user?.account, request, [action]);
+    await this.actionService.postMany(dbConnection, user?.account, request, [action]);
   }
 
-  async postPatchMessageAction(db: DBConnection, request: FastifyRequest, message: ChatMessageRaw) {
+  async postPatchMessageAction(
+    dbConnection: DBConnection,
+    request: FastifyRequest,
+    message: ChatMessageRaw,
+  ) {
     const { user } = request;
     const action = {
       itemId: message.itemId,
@@ -50,11 +58,11 @@ export class ActionChatService {
       // FIX: add view from which the action was created
       // view: ??
     };
-    await this.actionService.postMany(db, user?.account, request, [action]);
+    await this.actionService.postMany(dbConnection, user?.account, request, [action]);
   }
 
   async postDeleteMessageAction(
-    db: DBConnection,
+    dbConnection: DBConnection,
     request: FastifyRequest,
     message: ChatMessageRaw,
   ) {
@@ -66,16 +74,16 @@ export class ActionChatService {
       // FIX: add view from which the action was created
       // view: ??
     };
-    await this.actionService.postMany(db, user?.account, request, [action]);
+    await this.actionService.postMany(dbConnection, user?.account, request, [action]);
   }
 
-  async postClearMessageAction(db: DBConnection, request: FastifyRequest, itemId: UUID) {
+  async postClearMessageAction(dbConnection: DBConnection, request: FastifyRequest, itemId: UUID) {
     const { user } = request;
     const action = {
       type: ChatActionType.Clear,
       extra: JSON.stringify({ itemId }),
       view: Context.Builder,
     };
-    await this.actionService.postMany(db, user?.account, request, [action]);
+    await this.actionService.postMany(dbConnection, user?.account, request, [action]);
   }
 }

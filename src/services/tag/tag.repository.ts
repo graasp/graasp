@@ -15,16 +15,19 @@ export class TagRepository {
     return name.trim().replace(/ +(?= )/g, '');
   }
 
-  async get(db: DBConnection, tagId: TagRaw['id']): Promise<TagRaw | undefined> {
+  async get(dbConnection: DBConnection, tagId: TagRaw['id']): Promise<TagRaw | undefined> {
     if (!tagId) {
       throw new IllegalArgumentException('tagId is not valid');
     }
-    const tag = await db.query.tagsTable.findFirst({ where: eq(tagsTable.id, tagId) });
+    const tag = await dbConnection.query.tagsTable.findFirst({ where: eq(tagsTable.id, tagId) });
     return tag;
   }
 
-  async addOne(db: DBConnection, tag: { name: string; category: TagCategory }): Promise<TagRaw> {
-    const createdTag = await db
+  async addOne(
+    dbConnection: DBConnection,
+    tag: { name: string; category: TagCategory },
+  ): Promise<TagRaw> {
+    const createdTag = await dbConnection
       .insert(tagsTable)
       .values({ name: this.sanitizeName(tag.name), category: tag.category })
       .returning();
@@ -35,10 +38,10 @@ export class TagRepository {
   }
 
   async addOneIfDoesNotExist(
-    db: DBConnection,
+    dbConnection: DBConnection,
     tagInfo: { name: string; category: TagCategory },
   ): Promise<TagRaw> {
-    const tag = await db.query.tagsTable.findFirst({
+    const tag = await dbConnection.query.tagsTable.findFirst({
       where: and(
         eq(tagsTable.name, this.sanitizeName(tagInfo.name)),
         eq(tagsTable.category, tagInfo.category),
@@ -49,6 +52,6 @@ export class TagRepository {
       return tag;
     }
 
-    return await this.addOne(db, tagInfo);
+    return await this.addOne(dbConnection, tagInfo);
   }
 }

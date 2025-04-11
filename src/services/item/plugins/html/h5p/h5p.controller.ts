@@ -135,7 +135,7 @@ const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
   /**
    * Delete H5P assets on item delete
    */
-  itemService.hooks.setPostHook('delete', async (actor, db, { item }) => {
+  itemService.hooks.setPostHook('delete', async (actor, _dbConnection, { item }) => {
     if (!isItemType(item, ItemType.H5P)) {
       return;
     }
@@ -149,7 +149,11 @@ const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
   /**
    * Copy H5P assets on item copy
    */
-  async function copyH5PAssets(actor: MaybeUser, db: DBConnection, { original: item, copy }) {
+  async function copyH5PAssets(
+    actor: MaybeUser,
+    dbConnection: DBConnection,
+    { original: item, copy },
+  ) {
     // only execute this handler for H5P item types
     if (!isItemType(item, ItemType.H5P) || !isItemType(copy, ItemType.H5P)) {
       return;
@@ -158,7 +162,7 @@ const plugin: FastifyPluginAsyncTypebox<H5PPluginOptions> = async (fastify) => {
       return;
     }
 
-    await h5pService.copy(db, actor, {
+    await h5pService.copy(dbConnection, actor, {
       original: item,
       copy: copy,
     });

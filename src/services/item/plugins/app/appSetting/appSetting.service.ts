@@ -2,7 +2,7 @@ import { singleton } from 'tsyringe';
 
 import { PermissionLevel, UUID } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../../drizzle/db';
+import { type DBConnection } from '../../../../../drizzle/db';
 import { AppSettingInsertDTO, AppSettingRaw, Item, ItemRaw } from '../../../../../drizzle/types';
 import { AuthenticatedUser, MaybeUser } from '../../../../../types';
 import { UnauthorizedMember } from '../../../../../utils/errors';
@@ -51,25 +51,25 @@ export class AppSettingService {
   }
 
   async post(
-    db: DBConnection,
+    dbConnection: DBConnection,
     member: AuthenticatedUser,
     itemId: string,
     body: Omit<AppSettingInsertDTO, 'itemId' | 'memberId'>,
   ) {
     // posting an app setting is allowed to admin only
-    await this.basicItemService.get(db, member, itemId, PermissionLevel.Admin);
+    await this.basicItemService.get(dbConnection, member, itemId, PermissionLevel.Admin);
 
-    await this.hooks.runPreHooks('post', member, db, {
+    await this.hooks.runPreHooks('post', member, dbConnection, {
       appSetting: body,
       itemId,
     });
 
-    const appSetting = await this.appSettingRepository.addOne(db, {
+    const appSetting = await this.appSettingRepository.addOne(dbConnection, {
       ...body,
       itemId,
       creatorId: member.id,
     });
-    await this.hooks.runPostHooks('post', member, db, {
+    await this.hooks.runPostHooks('post', member, dbConnection, {
       appSetting,
       itemId,
     });
@@ -77,22 +77,22 @@ export class AppSettingService {
   }
 
   async patch(
-    db: DBConnection,
+    dbConnection: DBConnection,
     member: AuthenticatedUser,
     itemId: string,
     appSettingId: string,
     body: Partial<AppSettingInsertDTO>,
   ) {
     // patching requires admin rights
-    await this.basicItemService.get(db, member, itemId, PermissionLevel.Admin);
+    await this.basicItemService.get(dbConnection, member, itemId, PermissionLevel.Admin);
 
-    await this.hooks.runPreHooks('patch', member, db, {
+    await this.hooks.runPreHooks('patch', member, dbConnection, {
       appSetting: { ...body, id: appSettingId },
       itemId,
     });
 
-    const appSetting = await this.appSettingRepository.updateOne(db, appSettingId, body);
-    await this.hooks.runPostHooks('patch', member, db, {
+    const appSetting = await this.appSettingRepository.updateOne(dbConnection, appSettingId, body);
+    await this.hooks.runPostHooks('patch', member, dbConnection, {
       appSetting,
       itemId,
     });
@@ -100,47 +100,52 @@ export class AppSettingService {
   }
 
   async deleteOne(
-    db: DBConnection,
+    dbConnection: DBConnection,
     member: AuthenticatedUser,
     itemId: string,
     appSettingId: string,
   ) {
     // delete an app data is allowed to admins
-    await this.basicItemService.get(db, member, itemId, PermissionLevel.Admin);
+    await this.basicItemService.get(dbConnection, member, itemId, PermissionLevel.Admin);
 
-    const appSetting = await this.appSettingRepository.getOneOrThrow(db, appSettingId);
+    const appSetting = await this.appSettingRepository.getOneOrThrow(dbConnection, appSettingId);
 
-    await this.hooks.runPreHooks('delete', member, db, {
+    await this.hooks.runPreHooks('delete', member, dbConnection, {
       appSettingId,
       itemId,
     });
 
-    await this.appSettingRepository.deleteOne(db, appSettingId);
+    await this.appSettingRepository.deleteOne(dbConnection, appSettingId);
 
-    await this.hooks.runPostHooks('delete', member, db, { appSetting, itemId });
+    await this.hooks.runPostHooks('delete', member, dbConnection, { appSetting, itemId });
   }
 
-  async get(db: DBConnection, actor: MaybeUser, itemId: string, appSettingId: UUID) {
+  async get(dbConnection: DBConnection, actor: MaybeUser, itemId: string, appSettingId: UUID) {
     // get app setting is allowed to readers
-    await this.basicItemService.get(db, actor, itemId);
+    await this.basicItemService.get(dbConnection, actor, itemId);
 
-    return await this.appSettingRepository.getOneOrThrow(db, appSettingId);
+    return await this.appSettingRepository.getOneOrThrow(dbConnection, appSettingId);
   }
 
-  async getForItem(db: DBConnection, actor: MaybeUser, itemId: string, name?: string) {
+  async getForItem(dbConnection: DBConnection, actor: MaybeUser, itemId: string, name?: string) {
     // item can be public
     // get app setting is allowed to readers
-    await this.basicItemService.get(db, actor, itemId);
+    await this.basicItemService.get(dbConnection, actor, itemId);
 
-    return this.appSettingRepository.getForItem(db, itemId, name);
+    return this.appSettingRepository.getForItem(dbConnection, itemId, name);
   }
 
-  async copyForItem(db: DBConnection, actor: MaybeUser, original: Item, copyItemId: ItemRaw['id']) {
+  async copyForItem(
+    dbConnection: DBConnection,
+    actor: MaybeUser,
+    original: Item,
+    copyItemId: ItemRaw['id'],
+  ) {
     if (!actor) {
       throw new UnauthorizedMember();
     }
     try {
-      const appSettings = await this.getForItem(db, actor, original.id);
+      const appSettings = await this.getForItem(dbConnection, actor, original.id);
       const newAppSettings: AppSettingRaw[] = [];
       for (const appSetting of appSettings) {
         const copyData = {
@@ -149,19 +154,19 @@ export class AppSettingService {
           itemId: copyItemId,
           creator: { id: actor.id },
         };
-        await this.hooks.runPreHooks('copyMany', actor, db, {
+        await this.hooks.runPreHooks('copyMany', actor, dbConnection, {
           appSettings,
           originalItemId: original.id,
           copyItemId: copyItemId,
         });
-        const newSetting = await this.appSettingRepository.addOne(db, {
+        const newSetting = await this.appSettingRepository.addOne(dbConnection, {
           ...copyData,
           itemId: copyItemId,
           creatorId: appSetting.creatorId,
         });
         newAppSettings.push(newSetting);
       }
-      await this.hooks.runPostHooks('copyMany', actor, db, {
+      await this.hooks.runPostHooks('copyMany', actor, dbConnection, {
         appSettings: newAppSettings,
         originalItemId: original.id,
         copyItemId: copyItemId,

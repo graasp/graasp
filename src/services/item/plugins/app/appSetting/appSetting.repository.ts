@@ -2,7 +2,7 @@ import { and, eq } from 'drizzle-orm';
 
 import { FileItemType, ItemType } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../../drizzle/db';
+import { type DBConnection } from '../../../../../drizzle/db';
 import { appSettingsTable } from '../../../../../drizzle/schema';
 import { AppSettingInsertDTO, AppSettingRaw } from '../../../../../drizzle/types';
 import { ItemNotFound } from '../../../../../utils/errors';
@@ -11,18 +11,21 @@ import { AppSettingNotFound, PreventUpdateAppSettingFile } from './errors';
 type UpdateAppSettingBody = Partial<AppSettingRaw>;
 
 export class AppSettingRepository {
-  async addOne(db: DBConnection, appSetting: AppSettingInsertDTO): Promise<AppSettingRaw> {
-    const res = await db.insert(appSettingsTable).values(appSetting).returning();
+  async addOne(
+    dbConnection: DBConnection,
+    appSetting: AppSettingInsertDTO,
+  ): Promise<AppSettingRaw> {
+    const res = await dbConnection.insert(appSettingsTable).values(appSetting).returning();
     return res[0];
   }
 
   async updateOne(
-    db: DBConnection,
+    dbConnection: DBConnection,
     appSettingId: string,
     body: UpdateAppSettingBody,
   ): Promise<AppSettingRaw> {
     // we shouldn't update file data
-    const originalData = await db.query.appSettingsTable.findFirst({
+    const originalData = await dbConnection.query.appSettingsTable.findFirst({
       where: eq(appSettingsTable.id, appSettingId),
     });
 
@@ -38,7 +41,7 @@ export class AppSettingRepository {
       throw new PreventUpdateAppSettingFile(originalData);
     }
 
-    const res = await db
+    const res = await dbConnection
       .update(appSettingsTable)
       .set(body)
       .where(eq(appSettingsTable.id, appSettingId))
@@ -46,26 +49,33 @@ export class AppSettingRepository {
     return res[0];
   }
 
-  async deleteOne(db: DBConnection, appSettingId: string) {
-    await db.delete(appSettingsTable).where(eq(appSettingsTable.id, appSettingId)).returning();
+  async deleteOne(dbConnection: DBConnection, appSettingId: string) {
+    await dbConnection
+      .delete(appSettingsTable)
+      .where(eq(appSettingsTable.id, appSettingId))
+      .returning();
   }
 
-  async getOne(db: DBConnection, id: string) {
-    return await db.query.appSettingsTable.findFirst({
+  async getOne(dbConnection: DBConnection, id: string) {
+    return await dbConnection.query.appSettingsTable.findFirst({
       where: eq(appSettingsTable.id, id),
       with: { creator: true, item: true },
     });
   }
 
-  async getOneOrThrow(db: DBConnection, id: string) {
-    const data = await this.getOne(db, id);
+  async getOneOrThrow(dbConnection: DBConnection, id: string) {
+    const data = await this.getOne(dbConnection, id);
     if (!data) {
       throw new AppSettingNotFound(id);
     }
     return data;
   }
 
-  async getForItem(db: DBConnection, itemId: string, name?: string): Promise<AppSettingRaw[]> {
+  async getForItem(
+    dbConnection: DBConnection,
+    itemId: string,
+    name?: string,
+  ): Promise<AppSettingRaw[]> {
     if (!itemId) {
       throw new ItemNotFound(itemId);
     }
@@ -75,7 +85,7 @@ export class AppSettingRepository {
       whereConditions.push(eq(appSettingsTable.name, name));
     }
 
-    return await db.query.appSettingsTable.findMany({
+    return await dbConnection.query.appSettingsTable.findMany({
       where: and(...whereConditions),
       with: { creator: true, item: true },
     });

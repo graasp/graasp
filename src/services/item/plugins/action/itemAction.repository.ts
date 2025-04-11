@@ -17,7 +17,7 @@ export class ItemActionRepository {
   }
 
   async getActionsByHour(
-    db: DBConnection,
+    dbConnection: DBConnection,
     itemPath: Item['path'],
     actor: MaybeUser,
     params,
@@ -35,12 +35,12 @@ export class ItemActionRepository {
   }> {
     const { startDate, endDate } = params;
 
-    const itemAndDescendants = db
+    const itemAndDescendants = dbConnection
       .select({ id: itemsRawTable.id })
       .from(itemsRawTable)
       .where(isDescendantOrSelf(itemsRawTable.path, itemPath));
 
-    const subActions = db
+    const subActions = dbConnection
       .select()
       .from(actionsTable)
       .where(
@@ -54,7 +54,7 @@ export class ItemActionRepository {
       .limit(5000)
       .as('subActions');
 
-    const actions = await db
+    const actions = await dbConnection
       .select({
         hour: sql<number>`extract(hour from ${subActions.createdAt})`,
         accountId: subActions.accountId,
@@ -92,7 +92,7 @@ export class ItemActionRepository {
   }
 
   async getActionsByDay(
-    db: DBConnection,
+    dbConnection: DBConnection,
     itemPath: Item['path'],
     actor: MaybeUser,
     params,
@@ -110,12 +110,12 @@ export class ItemActionRepository {
   }> {
     const { startDate, endDate } = params;
 
-    const itemAndDescendants = db
+    const itemAndDescendants = dbConnection
       .select({ id: itemsRawTable.id })
       .from(itemsRawTable)
       .where(isDescendantOrSelf(itemsRawTable.path, itemPath));
 
-    const subActions = db
+    const subActions = dbConnection
       .select()
       .from(actionsTable)
       .where(
@@ -129,7 +129,7 @@ export class ItemActionRepository {
       .limit(5000)
       .as('subActions');
 
-    const actions = await db
+    const actions = await dbConnection
       .select({
         day: sql<string>`date_trunc('day', ${subActions.createdAt})`,
         accountId: subActions.accountId,
@@ -168,7 +168,7 @@ export class ItemActionRepository {
   }
 
   async getActionsByWeekday(
-    db: DBConnection,
+    dbConnection: DBConnection,
     itemPath: Item['path'],
     actor: MaybeUser,
     params,
@@ -186,12 +186,12 @@ export class ItemActionRepository {
   }> {
     const { startDate, endDate } = params;
 
-    const itemAndDescendants = db
+    const itemAndDescendants = dbConnection
       .select({ id: itemsRawTable.id })
       .from(itemsRawTable)
       .where(isDescendantOrSelf(itemsRawTable.path, itemPath));
 
-    const subActions = db
+    const subActions = dbConnection
       .select(getTableColumns(actionsTable))
       .from(actionsTable)
       .where(
@@ -205,7 +205,7 @@ export class ItemActionRepository {
       .limit(5000)
       .as('subActions');
 
-    const actions = await db
+    const actions = await dbConnection
       .select({
         day: sql<number>`extract(dow from ${subActions.createdAt})`,
         accountId: subActions.accountId,

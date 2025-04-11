@@ -94,7 +94,7 @@ export class DocumentItemService extends ItemService {
   }
 
   async postWithOptions(
-    db: DBConnection,
+    dbConnection: DBConnection,
     member: MinimalMember,
     args: {
       name: Item['name'];
@@ -116,20 +116,20 @@ export class DocumentItemService extends ItemService {
         flavor,
       }),
     );
-    return (await this.post(db, member, {
+    return (await this.post(dbConnection, member, {
       item: newItem,
       ...options,
     })) as DocumentItem;
   }
 
   async patchWithOptions(
-    db: DBConnection,
+    dbConnection: DBConnection,
     member: MinimalMember,
     itemId: UUID,
     args: Partial<Pick<Item, 'name' | 'description' | 'lang'>> &
       Partial<DocumentItemExtraProperties>,
   ): Promise<DocumentItem> {
-    const item = await this.itemRepository.getOneOrThrow(db, itemId);
+    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // check item is document
     if (!isItemType(item, ItemType.DOCUMENT)) {
@@ -150,6 +150,6 @@ export class DocumentItemService extends ItemService {
         item.extra.document,
       ),
     );
-    return (await this.patch(db, member, itemId, newItem)) as DocumentItem;
+    return (await this.patch(dbConnection, member, itemId, newItem)) as DocumentItem;
   }
 }

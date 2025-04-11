@@ -21,11 +21,16 @@ export class ItemFlagService {
     return Object.values(FlagType);
   }
 
-  async post(db: DBConnection, actor: AuthenticatedUser, itemId: string, flagType: FlagType) {
+  async post(
+    dbConnection: DBConnection,
+    actor: AuthenticatedUser,
+    itemId: string,
+    flagType: FlagType,
+  ) {
     // only register member can report
-    await this.basicItemService.get(db, actor, itemId);
+    await this.basicItemService.get(dbConnection, actor, itemId);
 
-    await this.itemFlagRepository.addOne(db, {
+    await this.itemFlagRepository.addOne(dbConnection, {
       flagType,
       creatorId: actor.id,
       itemId,

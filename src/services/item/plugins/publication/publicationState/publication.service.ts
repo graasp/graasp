@@ -34,10 +34,19 @@ export class PublicationService {
     this.validationQueue = validationQueue;
   }
 
-  public async computeStateForItem(db: DBConnection, member: AuthenticatedUser, itemId: string) {
-    const item = await this.basicItemService.get(db, member, itemId, PermissionLevel.Admin);
+  public async computeStateForItem(
+    dbConnection: DBConnection,
+    member: AuthenticatedUser,
+    itemId: string,
+  ) {
+    const item = await this.basicItemService.get(
+      dbConnection,
+      member,
+      itemId,
+      PermissionLevel.Admin,
+    );
     const publicVisibility = await this.itemVisibilityRepository.getType(
-      db,
+      dbConnection,
       item.path,
       ItemVisibilityType.Public,
       {
@@ -49,8 +58,9 @@ export class PublicationService {
       undefined,
       publicVisibility ? [publicVisibility] : [],
     ).packed();
-    const validationGroup = await this.validationRepository.getLastForItem(db, itemId);
-    const publishedEntry = (await this.publishedRepository.getForItem(db, item.path)) ?? undefined;
+    const validationGroup = await this.validationRepository.getLastForItem(dbConnection, itemId);
+    const publishedEntry =
+      (await this.publishedRepository.getForItem(dbConnection, item.path)) ?? undefined;
     const isValidationInProgress = await this.validationQueue.isInProgress(item.path);
 
     return new PublicationState(packedItem, {

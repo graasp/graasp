@@ -2,7 +2,7 @@ import { singleton } from 'tsyringe';
 
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import { BaseLogger } from '../../../../logger';
 import { MemberAlreadySignedUp, MemberNotSignedUp } from '../../../../utils/errors';
 import { MemberRepository } from '../../../member/member.repository';
@@ -21,7 +21,7 @@ export class MobileService {
   }
 
   async register(
-    db: DBConnection,
+    dbConnection: DBConnection,
     {
       name,
       email,
@@ -36,7 +36,7 @@ export class MobileService {
     lang = DEFAULT_LANG,
   ) {
     // check if member w/ email already exists
-    const member = await this.memberRepository.getByEmail(db, email);
+    const member = await this.memberRepository.getByEmail(dbConnection, email);
 
     if (!member) {
       const data = {
@@ -46,7 +46,7 @@ export class MobileService {
         enableSaveActions,
       };
 
-      const newMember = await this.memberRepository.post(db, data);
+      const newMember = await this.memberRepository.post(dbConnection, data);
       await this.authService.generateRegisterLinkAndEmailIt(newMember.toMemberInfo(), {
         challenge,
       });
@@ -57,8 +57,11 @@ export class MobileService {
     }
   }
 
-  async login(db: DBConnection, { email, challenge }: { email: string; challenge: string }) {
-    const member = await this.memberRepository.getByEmail(db, email);
+  async login(
+    dbConnection: DBConnection,
+    { email, challenge }: { email: string; challenge: string },
+  ) {
+    const member = await this.memberRepository.getByEmail(dbConnection, email);
 
     if (member) {
       await this.authService.generateLoginLinkAndEmailIt(member.toMemberInfo(), { challenge });

@@ -14,9 +14,9 @@ type CreateItemFlagBody = {
 @singleton()
 export class ItemFlagRepository {
   async addOne(
-    db: DBConnection,
+    dbConnection: DBConnection,
     { flagType, creatorId, itemId }: CreateItemFlagBody,
   ): Promise<void> {
-    await db.insert(itemFlagsTable).values({ type: flagType, creatorId, itemId });
+    await dbConnection.insert(itemFlagsTable).values({ type: flagType, creatorId, itemId });
   }
 }

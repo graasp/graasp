@@ -3,7 +3,7 @@ import { inject, singleton } from 'tsyringe';
 import { PermissionLevel } from '@graasp/sdk';
 
 import { GEOLOCATION_API_KEY_DI_KEY } from '../../../../di/constants';
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import { Item, ItemGeolocationRaw } from '../../../../drizzle/types';
 import { MaybeUser, MinimalMember } from '../../../../types';
 import { AuthorizationService } from '../../../authorization';
@@ -39,24 +39,29 @@ export class ItemGeolocationService {
     this.geolocationKey = geolocationKey;
   }
 
-  async delete(db: DBConnection, member: MinimalMember, itemId: Item['id']) {
+  async delete(dbConnection: DBConnection, member: MinimalMember, itemId: Item['id']) {
     // check item exists and actor has permission
-    const item = await this.basicItemService.get(db, member, itemId, PermissionLevel.Write);
+    const item = await this.basicItemService.get(
+      dbConnection,
+      member,
+      itemId,
+      PermissionLevel.Write,
+    );
 
-    return this.itemGeolocationRepository.delete(db, item);
+    return this.itemGeolocationRepository.delete(dbConnection, item);
   }
 
-  async getByItem(db: DBConnection, actor: MaybeUser, itemId: Item['id']) {
+  async getByItem(dbConnection: DBConnection, actor: MaybeUser, itemId: Item['id']) {
     // check item exists and actor has permission
-    const item = await this.basicItemService.get(db, actor, itemId);
+    const item = await this.basicItemService.get(dbConnection, actor, itemId);
 
-    const geoloc = await this.itemGeolocationRepository.getByItem(db, item.path);
+    const geoloc = await this.itemGeolocationRepository.getByItem(dbConnection, item.path);
 
     return geoloc;
   }
 
   async getIn(
-    db: DBConnection,
+    dbConnection: DBConnection,
     actor: MaybeUser,
     query: {
       parentItemId?: Item['id'];
@@ -69,10 +74,15 @@ export class ItemGeolocationService {
   ): Promise<PackedItemGeolocation[]> {
     let parentItem: Item | undefined;
     if (query.parentItemId) {
-      parentItem = await this.basicItemService.get(db, actor, query.parentItemId);
+      parentItem = await this.basicItemService.get(dbConnection, actor, query.parentItemId);
     }
 
-    const geoloc = await this.itemGeolocationRepository.getItemsIn(db, actor, query, parentItem);
+    const geoloc = await this.itemGeolocationRepository.getItemsIn(
+      dbConnection,
+      actor,
+      query,
+      parentItem,
+    );
 
     // check if there are any items with a geolocation, if not return early
     const itemsWithGeoloc = geoloc.map(({ item }) => item);
@@ -82,7 +92,7 @@ export class ItemGeolocationService {
 
     const { itemMemberships, visibilities } =
       await this.authorizationService.validatePermissionMany(
-        db,
+        dbConnection,
         PermissionLevel.Read,
         actor,
         geoloc.map(({ item }) => item),
@@ -120,20 +130,25 @@ export class ItemGeolocationService {
   }
 
   async put(
-    db: DBConnection,
+    dbConnection: DBConnection,
     member: MinimalMember,
     itemId: Item['id'],
     geolocation: Pick<ItemGeolocationRaw, 'lat' | 'lng'> &
       Pick<Partial<ItemGeolocationRaw>, 'addressLabel' | 'helperLabel'>,
   ) {
     // check item exists and member has permission
-    const item = await this.basicItemService.get(db, member, itemId, PermissionLevel.Write);
+    const item = await this.basicItemService.get(
+      dbConnection,
+      member,
+      itemId,
+      PermissionLevel.Write,
+    );
 
-    return this.itemGeolocationRepository.put(db, item.path, geolocation);
+    return this.itemGeolocationRepository.put(dbConnection, item.path, geolocation);
   }
 
   async getAddressFromCoordinates(
-    db: DBConnection,
+    dbConnection: DBConnection,
     query: Pick<ItemGeolocationRaw, 'lat' | 'lng'> & { lang?: string },
   ) {
     if (!this.geolocationKey) {
@@ -143,7 +158,10 @@ export class ItemGeolocationService {
     return this.itemGeolocationRepository.getAddressFromCoordinates(query, this.geolocationKey);
   }
 
-  async getSuggestionsForQuery(db: DBConnection, query: { query: string; lang?: string }) {
+  async getSuggestionsForQuery(
+    dbConnection: DBConnection,
+    query: { query: string; lang?: string },
+  ) {
     if (!this.geolocationKey) {
       throw new MissingGeolocationApiKey();
     }

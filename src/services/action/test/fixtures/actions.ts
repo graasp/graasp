@@ -25,10 +25,10 @@ type ActionToTest = ActionRaw | ActionWithItem | ActionWithItemAndAccount;
 // };
 
 export const getMemberActions = async (
-  db: DBConnection,
+  dbConnection: DBConnection,
   memberId: Account['id'],
 ): Promise<ActionWithItem[]> => {
-  const res = await db.query.actionsTable.findMany({
+  const res = await dbConnection.query.actionsTable.findMany({
     where: eq(actionsTable.accountId, memberId),
     with: { item: true },
   });

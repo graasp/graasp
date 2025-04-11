@@ -9,7 +9,7 @@ import {
   UUID,
 } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../../drizzle/db';
+import { type DBConnection } from '../../../../../drizzle/db';
 import { ActionRequestExportRaw, Item } from '../../../../../drizzle/types';
 import { TRANSLATIONS } from '../../../../../langs/constants';
 import { MailBuilder } from '../../../../../plugins/mailer/builder';
@@ -57,23 +57,23 @@ export class ActionRequestExportService {
   }
 
   async request(
-    db: DBConnection,
+    dbConnection: DBConnection,
     minimalMember: MinimalMember,
     itemId: UUID,
     format: ExportActionsFormatting,
   ) {
     // check member has admin access to the item
-    const member = await this.memberService.get(db, minimalMember.id);
-    const item = await this.basicItemService.get(db, minimalMember, itemId);
+    const member = await this.memberService.get(dbConnection, minimalMember.id);
+    const item = await this.basicItemService.get(dbConnection, minimalMember, itemId);
     await this.authorizationService.validatePermission(
-      db,
+      dbConnection,
       PermissionLevel.Admin,
       minimalMember,
       item,
     );
 
     // get last export entry within interval
-    const lastRequestExport = await this.actionRequestExportRepository.getLast(db, {
+    const lastRequestExport = await this.actionRequestExportRepository.getLast(dbConnection, {
       memberId: member?.id,
       itemPath: item.path,
       format,
@@ -98,7 +98,7 @@ export class ActionRequestExportService {
     fs.mkdirSync(tmpFolder, { recursive: true });
 
     const requestExport = await this._createAndUploadArchive(
-      db,
+      dbConnection,
       minimalMember,
       itemId,
       tmpFolder,
@@ -156,16 +156,20 @@ export class ActionRequestExportService {
   }
 
   async _createAndUploadArchive(
-    db,
+    dbConnection,
     actor: MinimalMember,
     itemId: UUID,
     storageFolder: string,
     format: ExportActionsFormatting,
   ): Promise<ActionRequestExportRaw> {
     // get actions and more data
-    const baseAnalytics = await this.itemActionService.getBaseAnalyticsForItem(db, actor, {
-      itemId,
-    });
+    const baseAnalytics = await this.itemActionService.getBaseAnalyticsForItem(
+      dbConnection,
+      actor,
+      {
+        itemId,
+      },
+    );
 
     // create archive given base analytics
     const archive = await exportActionsInArchive({
@@ -184,7 +188,7 @@ export class ActionRequestExportService {
     });
 
     // create request row
-    const requestExport = await this.actionRequestExportRepository.addOne(db, {
+    const requestExport = await this.actionRequestExportRepository.addOne(dbConnection, {
       itemPath: baseAnalytics.item.path,
       memberId: actor.id,
       createdAt: archive.timestamp.toISOString(),

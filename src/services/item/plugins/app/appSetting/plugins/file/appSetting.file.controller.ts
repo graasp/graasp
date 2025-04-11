@@ -48,7 +48,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
   // register post delete handler to remove the file object after item delete
   const deleteHook = async (
     actor: AuthenticatedUser,
-    db: DBConnection,
+    dbConnection: DBConnection,
     { appSetting }: { appSetting: AppSettingRaw; itemId: string },
   ) => {
     await appSettingFileService.deleteOne(db, actor, appSetting);
@@ -58,7 +58,7 @@ const basePlugin: FastifyPluginAsyncTypebox<GraaspPluginFileOptions> = async (fa
   // app setting copy hook
   const hook = async (
     actor: MinimalMember,
-    db: DBConnection,
+    dbConnection: DBConnection,
     {
       appSettings,
     }: {

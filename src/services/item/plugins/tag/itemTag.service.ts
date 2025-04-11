@@ -33,55 +33,60 @@ export class ItemTagService {
   }
 
   async create(
-    db: DBConnection,
+    dbConnection: DBConnection,
     authenticatedUser: AuthenticatedUser,
     itemId: UUID,
     tagInfo: { name: string; category: TagCategory },
   ) {
     // Get item and check permission
     const item = await this.basicItemService.get(
-      db,
+      dbConnection,
       authenticatedUser,
       itemId,
       PermissionLevel.Admin,
     );
 
     // create tag if does not exist
-    const tag = await this.tagRepository.addOneIfDoesNotExist(db, tagInfo);
+    const tag = await this.tagRepository.addOneIfDoesNotExist(dbConnection, tagInfo);
 
-    const result = await this.itemTagRepository.create(db, itemId, tag.id);
+    const result = await this.itemTagRepository.create(dbConnection, itemId, tag.id);
 
     // update index if item is published
-    const publishedItem = await this.itemPublishedRepository.getForItem(db, item.path);
+    const publishedItem = await this.itemPublishedRepository.getForItem(dbConnection, item.path);
     if (publishedItem) {
-      await this.meilisearchClient.indexOne(db, publishedItem);
+      await this.meilisearchClient.indexOne(dbConnection, publishedItem);
     }
 
     return result;
   }
 
-  async getByItemId(db: DBConnection, actor: MaybeUser, itemId: UUID) {
+  async getByItemId(dbConnection: DBConnection, actor: MaybeUser, itemId: UUID) {
     // Get item and check permission
-    await this.basicItemService.get(db, actor, itemId, PermissionLevel.Read);
+    await this.basicItemService.get(dbConnection, actor, itemId, PermissionLevel.Read);
 
-    return await this.itemTagRepository.getByItemId(db, itemId);
+    return await this.itemTagRepository.getByItemId(dbConnection, itemId);
   }
 
-  async delete(db: DBConnection, authenticatedUser: AuthenticatedUser, itemId: UUID, tagId: UUID) {
+  async delete(
+    dbConnection: DBConnection,
+    authenticatedUser: AuthenticatedUser,
+    itemId: UUID,
+    tagId: UUID,
+  ) {
     // Get item and check permission
     const item = await this.basicItemService.get(
-      db,
+      dbConnection,
       authenticatedUser,
       itemId,
       PermissionLevel.Admin,
     );
 
     // update index if item is published
-    const publishedItem = await this.itemPublishedRepository.getForItem(db, item.path);
+    const publishedItem = await this.itemPublishedRepository.getForItem(dbConnection, item.path);
     if (publishedItem) {
-      await this.meilisearchClient.indexOne(db, publishedItem);
+      await this.meilisearchClient.indexOne(dbConnection, publishedItem);
     }
 
-    return await this.itemTagRepository.delete(db, itemId, tagId);
+    return await this.itemTagRepository.delete(dbConnection, itemId, tagId);
   }
 }

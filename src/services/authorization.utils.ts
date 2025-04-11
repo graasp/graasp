@@ -12,7 +12,7 @@ import { ItemMembershipRepository } from './itemMembership/membership.repository
  * Internal filtering function that takes out limited items (eg. hidden children)
  *  */
 const _filterOutItems = async (
-  db: DBConnection,
+  dbConnection: DBConnection,
   actor: MaybeUser,
   {
     itemMembershipRepository,
@@ -31,12 +31,12 @@ const _filterOutItems = async (
 
   // TODO: optimize with on query
   const { data: memberships } = actor
-    ? await itemMembershipRepository.getForManyItems(db, items, {
+    ? await itemMembershipRepository.getForManyItems(dbConnection, items, {
         accountId: actor.id,
       })
     : { data: [] };
 
-  const visibilities = await itemVisibilityRepository.getManyForMany(db, items, [
+  const visibilities = await itemVisibilityRepository.getManyForMany(dbConnection, items, [
     ItemVisibilityType.Hidden,
     ItemVisibilityType.Public,
   ]);
@@ -61,7 +61,7 @@ const _filterOutItems = async (
  * Filtering function that takes out limited items (eg. hidden children)
  *  */
 export const filterOutItems = async (
-  db: DBConnection,
+  dbConnection: DBConnection,
   actor: MaybeUser,
   {
     itemMembershipRepository,
@@ -73,7 +73,12 @@ export const filterOutItems = async (
   items: Item[],
 ): Promise<Item[]> => {
   return (
-    await _filterOutItems(db, actor, { itemMembershipRepository, itemVisibilityRepository }, items)
+    await _filterOutItems(
+      dbConnection,
+      actor,
+      { itemMembershipRepository, itemVisibilityRepository },
+      items,
+    )
   ).items;
 };
 
@@ -81,7 +86,7 @@ export const filterOutItems = async (
  * Filtering function that takes out limited items (eg. hidden children) and return packed items
  *  */
 export const filterOutPackedItems = async <T extends Item = Item>(
-  db: DBConnection,
+  dbConnection: DBConnection,
   actor: MaybeUser,
   {
     itemMembershipRepository,
@@ -99,7 +104,7 @@ export const filterOutPackedItems = async <T extends Item = Item>(
     memberships,
     visibilities,
   } = await _filterOutItems(
-    db,
+    dbConnection,
     actor,
     { itemMembershipRepository, itemVisibilityRepository },
     items,
@@ -126,7 +131,7 @@ export const filterOutPackedItems = async <T extends Item = Item>(
  * @param descendants flat list of descendants of item
  *  */
 export const filterOutPackedDescendants = async (
-  db: DBConnection,
+  dbConnection: DBConnection,
   actor: MaybeUser,
   { itemMembershipRepository, itemVisibilityRepository },
   item: Item,
@@ -141,12 +146,12 @@ export const filterOutPackedDescendants = async (
   }
 
   const allMemberships = actor
-    ? await itemMembershipRepository.getAllBelow(db, item.path, actor.id, {
+    ? await itemMembershipRepository.getAllBelow(dbConnection, item.path, actor.id, {
         considerLocal: true,
         selectItem: true,
       })
     : [];
-  const visibilities = await itemVisibilityRepository.getManyBelowAndSelf(db, item, [
+  const visibilities = await itemVisibilityRepository.getManyBelowAndSelf(dbConnection, item, [
     ItemVisibilityType.Hidden,
     ItemVisibilityType.Public,
   ]);
@@ -188,7 +193,7 @@ export const filterOutPackedDescendants = async (
  * It does not show hidden for admin as well, which is useful for published items
  *  */
 export const filterOutHiddenItems = async (
-  db: DBConnection,
+  dbConnection: DBConnection,
   { itemVisibilityRepository },
   items: Item[],
 ) => {
@@ -196,7 +201,11 @@ export const filterOutHiddenItems = async (
     return [];
   }
 
-  const isHidden = await itemVisibilityRepository.hasForMany(db, items, ItemVisibilityType.Hidden);
+  const isHidden = await itemVisibilityRepository.hasForMany(
+    dbConnection,
+    items,
+    ItemVisibilityType.Hidden,
+  );
   return items.filter((item) => {
     return !isHidden.data[item.id];
   });

@@ -44,7 +44,7 @@ export class ActionMemberService {
   }
 
   async getFilteredActions(
-    db: DBConnection,
+    dbConnection: DBConnection,
     authenticatedUser: AuthenticatedUser,
     filters: { startDate?: string; endDate?: string },
   ) {
@@ -52,10 +52,14 @@ export class ActionMemberService {
     const start = startDate ? new Date(startDate) : getPreviousMonthFromNow();
     const end = endDate ? new Date(endDate) : new Date();
 
-    const actions = await this.actionRepository.getAccountActions(db, authenticatedUser.id, {
-      startDate: start,
-      endDate: end,
-    });
+    const actions = await this.actionRepository.getAccountActions(
+      dbConnection,
+      authenticatedUser.id,
+      {
+        startDate: start,
+        endDate: end,
+      },
+    );
 
     // filter actions based on permission validity
     const [actionsWithoutPermission, actionsNeedPermission] = partition(actions, (action) => {
@@ -67,7 +71,7 @@ export class ActionMemberService {
     ).filter(Boolean);
 
     const { itemMemberships } = await this.authorizationService.validatePermissionMany(
-      db,
+      dbConnection,
       PermissionLevel.Read,
       authenticatedUser,
       setOfItemsToCheckPermission as ItemRaw[],
@@ -80,7 +84,7 @@ export class ActionMemberService {
   }
 
   async deleteAllForMember(
-    db: DBConnection,
+    dbConnection: DBConnection,
     authenticatedUser: AuthenticatedUser,
     memberId: string,
   ): Promise<void> {
@@ -88,6 +92,6 @@ export class ActionMemberService {
       throw new CannotModifyOtherMembers({ id: memberId });
     }
 
-    await this.actionRepository.deleteAllForAccount(db, memberId);
+    await this.actionRepository.deleteAllForAccount(dbConnection, memberId);
   }
 }

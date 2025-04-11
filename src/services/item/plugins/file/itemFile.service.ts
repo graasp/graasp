@@ -15,8 +15,8 @@ import {
   getFileExtension,
 } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
-import { Item } from '../../../../drizzle/types';
+import { type DBConnection } from '../../../../drizzle/db';
+import { type Item } from '../../../../drizzle/types';
 import { BaseLogger } from '../../../../logger';
 import { MaybeUser, MinimalMember } from '../../../../types';
 import { asDefined } from '../../../../utils/assertions';
@@ -89,7 +89,7 @@ class FileItemService extends ItemService {
   }
 
   async upload(
-    db: DBConnection,
+    dbConnection: DBConnection,
     actor: MinimalMember,
     {
       description,
@@ -110,7 +110,7 @@ class FileItemService extends ItemService {
     const filepath = this.buildFilePath(getFileExtension(filename)); // parentId, filename
 
     // check member storage limit
-    await this.storageService.checkRemainingStorage(db, actor);
+    await this.storageService.checkRemainingStorage(dbConnection, actor);
 
     return await withTmpFile(async ({ path }) => {
       // Write uploaded file to a temporary file
@@ -159,7 +159,7 @@ class FileItemService extends ItemService {
         creator: actor,
       };
 
-      const newItem = await super.post(db, actor, {
+      const newItem = await super.post(dbConnection, actor, {
         item,
         parentId,
         previousItemId,
@@ -169,24 +169,34 @@ class FileItemService extends ItemService {
       // allow failures
       try {
         if (MimeTypes.isImage(mimetype)) {
-          await this.itemThumbnailService.upload(db, actor, newItem.id, fs.createReadStream(path));
+          await this.itemThumbnailService.upload(
+            dbConnection,
+            actor,
+            newItem.id,
+            fs.createReadStream(path),
+          );
         } else if (MimeTypes.isPdf(mimetype)) {
           // Convert first page of PDF to image buffer and upload as thumbnail
           const outputImg = await convertPDFtoImageFromPath(path)(1, { responseType: 'buffer' });
           const buffer = asDefined(outputImg.buffer);
-          await this.itemThumbnailService.upload(db, actor, newItem.id, Readable.from(buffer));
+          await this.itemThumbnailService.upload(
+            dbConnection,
+            actor,
+            newItem.id,
+            Readable.from(buffer),
+          );
         }
       } catch (e) {
         console.error(e);
       }
 
       // retrieve item again since hasThumbnail might have changed
-      return await this.itemRepository.getOneOrThrow(db, newItem.id);
+      return await this.itemRepository.getOneOrThrow(dbConnection, newItem.id);
     });
   }
 
   async getFile(
-    db: DBConnection,
+    dbConnection: DBConnection,
     actor: MaybeUser,
     {
       itemId,
@@ -196,8 +206,13 @@ class FileItemService extends ItemService {
   ) {
     // prehook: get item and input in download call ?
     // check rights
-    const item = await this.itemRepository.getOneOrThrow(db, itemId);
-    await this.authorizationService.validatePermission(db, PermissionLevel.Read, actor, item);
+    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
+    await this.authorizationService.validatePermission(
+      dbConnection,
+      PermissionLevel.Read,
+      actor,
+      item,
+    );
     const extraData = item.extra[this.fileService.fileType] as FileItemProperties;
     const result = await this.fileService.getFile(actor, {
       id: itemId,
@@ -208,7 +223,7 @@ class FileItemService extends ItemService {
   }
 
   async getUrl(
-    db: DBConnection,
+    dbConnection: DBConnection,
     actor: MaybeUser,
     {
       itemId,
@@ -218,8 +233,13 @@ class FileItemService extends ItemService {
   ) {
     // prehook: get item and input in download call ?
     // check rights
-    const item = await this.itemRepository.getOneOrThrow(db, itemId);
-    await this.authorizationService.validatePermission(db, PermissionLevel.Read, actor, item);
+    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
+    await this.authorizationService.validatePermission(
+      dbConnection,
+      PermissionLevel.Read,
+      actor,
+      item,
+    );
     const extraData = item.extra[this.fileService.fileType] as FileItemProperties | undefined;
 
     const result = await this.fileService.getUrl({
@@ -229,7 +249,7 @@ class FileItemService extends ItemService {
     return result;
   }
 
-  async copyFile(db: DBConnection, member: MinimalMember, { copy }: { original; copy }) {
+  async copyFile(dbConnection: DBConnection, member: MinimalMember, { copy }: { original; copy }) {
     const { id, extra } = copy; // full copy with new `id`
     const { path: originalPath, mimetype, name } = extra[this.fileService.fileType];
     const newFilePath = this.buildFilePath(getFileExtension(name));
@@ -250,30 +270,30 @@ class FileItemService extends ItemService {
 
     // update item copy's 'extra'
     if (this.fileService.fileType === ItemType.S3_FILE) {
-      await this.itemRepository.updateOne(db, copy.id, {
+      await this.itemRepository.updateOne(dbConnection, copy.id, {
         extra: { s3File: { ...extra.s3File, path: filepath } },
       });
     } else {
-      await this.itemRepository.updateOne(db, copy.id, {
+      await this.itemRepository.updateOne(dbConnection, copy.id, {
         extra: { file: { ...extra.s3File, path: filepath } },
       });
     }
   }
 
   async update(
-    db: DBConnection,
+    dbConnection: DBConnection,
     member: MinimalMember,
     itemId: Item['id'],
     body: Partial<Pick<Item, 'name' | 'description' | 'settings' | 'lang'>>,
   ) {
-    const item = await this.itemRepository.getOneOrThrow(db, itemId);
+    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // check item is file
     if (!([ItemType.LOCAL_FILE, ItemType.S3_FILE] as Item['type'][]).includes(item.type)) {
       throw new WrongItemTypeError(item.type);
     }
 
-    await super.patch(db, member, item.id, body);
+    await super.patch(dbConnection, member, item.id, body);
   }
 }
 

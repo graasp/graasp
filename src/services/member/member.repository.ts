@@ -12,20 +12,20 @@ import { MemberDTO } from './types';
 
 @singleton()
 export class MemberRepository {
-  async deleteOne(db: DBConnection, id: string) {
+  async deleteOne(dbConnection: DBConnection, id: string) {
     // need to use the accounts table as we can not delete from a view (membersView)
-    await db
+    await dbConnection
       .delete(accountsTable)
       .where(and(eq(accountsTable.id, id), eq(accountsTable.type, AccountType.Individual)));
   }
 
-  async get(db: DBConnection, id: string): Promise<MemberDTO> {
+  async get(dbConnection: DBConnection, id: string): Promise<MemberDTO> {
     // additional check that id is not null
     // o/w empty parameter to findOneBy return the first entry
     if (!id) {
       throw new MemberNotFound({ id });
     }
-    const m = await db.select().from(membersView).where(eq(membersView.id, id));
+    const m = await dbConnection.select().from(membersView).where(eq(membersView.id, id));
 
     if (!m.length) {
       throw new MemberNotFound({ id });
@@ -33,8 +33,11 @@ export class MemberRepository {
     return new MemberDTO(m[0]);
   }
 
-  async getMany(db: DBConnection, ids: string[]): Promise<ResultOf<MemberDTO>> {
-    const members = await db.select().from(membersView).where(inArray(membersView.id, ids));
+  async getMany(dbConnection: DBConnection, ids: string[]): Promise<ResultOf<MemberDTO>> {
+    const members = await dbConnection
+      .select()
+      .from(membersView)
+      .where(inArray(membersView.id, ids));
     return mapById({
       keys: ids,
       findElement: (id) => {
@@ -47,9 +50,12 @@ export class MemberRepository {
     });
   }
 
-  async getByEmail(db: DBConnection, emailString: string): Promise<MemberDTO | null> {
+  async getByEmail(dbConnection: DBConnection, emailString: string): Promise<MemberDTO | null> {
     const email = emailString.toLowerCase();
-    const member = await db.select().from(membersView).where(eq(membersView.email, email));
+    const member = await dbConnection
+      .select()
+      .from(membersView)
+      .where(eq(membersView.email, email));
 
     if (!member.length) {
       return null;
@@ -58,8 +64,14 @@ export class MemberRepository {
     return new MemberDTO(member[0]);
   }
 
-  async getManyByEmails(db: DBConnection, emails: string[]): Promise<ResultOf<MemberDTO>> {
-    const members = await db.select().from(membersView).where(inArray(membersView.email, emails));
+  async getManyByEmails(
+    dbConnection: DBConnection,
+    emails: string[],
+  ): Promise<ResultOf<MemberDTO>> {
+    const members = await dbConnection
+      .select()
+      .from(membersView)
+      .where(inArray(membersView.email, emails));
     return mapById({
       keys: emails,
       findElement: (email) => {
@@ -73,7 +85,7 @@ export class MemberRepository {
   }
 
   async patch(
-    db: DBConnection,
+    dbConnection: DBConnection,
     id: UUID,
     body: Partial<
       Pick<
@@ -93,7 +105,11 @@ export class MemberRepository {
     }
 
     if (body.extra) {
-      const [member] = await db.select().from(membersView).where(eq(membersView.id, id)).limit(1);
+      const [member] = await dbConnection
+        .select()
+        .from(membersView)
+        .where(eq(membersView.id, id))
+        .limit(1);
       newData.extra = Object.assign({}, member.extra, body?.extra);
     }
 
@@ -112,7 +128,7 @@ export class MemberRepository {
     // update if newData is not empty
     if (Object.keys(newData).length) {
       // TODO: check member exists
-      const res = await db
+      const res = await dbConnection
         .update(accountsTable)
         .set(newData)
         .where(eq(accountsTable.id, id))
@@ -123,11 +139,11 @@ export class MemberRepository {
       return new MemberDTO(res[0]);
     }
 
-    return this.get(db, id);
+    return this.get(dbConnection, id);
   }
 
   async post(
-    db: DBConnection,
+    dbConnection: DBConnection,
     data: Partial<MemberCreationDTO> & Pick<MemberCreationDTO, 'email' | 'name'>,
   ): Promise<MemberDTO> {
     const email = data.email.toLowerCase();
@@ -137,7 +153,7 @@ export class MemberRepository {
     // The frontend avoids sending agreement data to prevent manipulation of the agreement date.
     // The agreements links are included in the registration email as a reminder.
     const userAgreementsDate = new Date().toISOString();
-    const res = await db
+    const res = await dbConnection
       .insert(accountsTable)
       .values({
         ...data,

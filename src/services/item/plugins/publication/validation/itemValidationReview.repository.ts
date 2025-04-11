@@ -7,13 +7,13 @@ import { itemValidationReviewsTable } from '../../../../../drizzle/schema';
 import { ItemValidationReviewInsertDTO } from '../../../../../drizzle/types';
 
 export class ItemValidationReviewRepository {
-  // private async get(db: DBConnection, id: string): Promise<ItemValidationReview> {
+  // private async get(dbConnection: DBConnection, id: string): Promise<ItemValidationReview> {
   //   // additional check that id is not null
   //   // o/w empty parameter to findOneBy return the first entry
   //   if (!id) {
   //     throw new ItemValidationReviewNotFound({ id });
   //   }
-  //   const result = await db.query.itemValidationReviewsTable.findFirst({
+  //   const result = await dbConnection.query.itemValidationReviewsTable.findFirst({
   //     where: eq(itemValidationReviewsTable.id, id),
   //   });
   //   if (!result) {
@@ -28,11 +28,11 @@ export class ItemValidationReviewRepository {
    * @param status review status
    */
   async post(
-    db: DBConnection,
+    dbConnection: DBConnection,
     itemValidationId: string,
     status: ItemValidationReviewStatus,
   ): Promise<ItemValidationReviewInsertDTO> {
-    const res = await db
+    const res = await dbConnection
       .insert(itemValidationReviewsTable)
       .values({
         itemValidationId,
@@ -47,13 +47,13 @@ export class ItemValidationReviewRepository {
    * @param itemValidationReviewEntry entry with updated data
    */
   async patch(
-    db: DBConnection,
+    dbConnection: DBConnection,
     id: string,
     status: ItemValidationReviewStatus,
     reviewerId: string,
     reason: string = '',
   ): Promise<ItemValidationReviewInsertDTO> {
-    const res = await db
+    const res = await dbConnection
       .update(itemValidationReviewsTable)
       .set({ status, reason, reviewerId })
       .where(eq(itemValidationReviewsTable.id, id))

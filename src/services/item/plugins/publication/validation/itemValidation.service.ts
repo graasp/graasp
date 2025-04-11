@@ -51,24 +51,33 @@ export class ItemValidationService {
     return p;
   }
 
-  async getLastItemValidationGroupForItem(db: DBConnection, member: MinimalMember, item: Item) {
-    const group = await this.itemValidationGroupRepository.getLastForItem(db, item.id);
+  async getLastItemValidationGroupForItem(
+    dbConnection: DBConnection,
+    member: MinimalMember,
+    item: Item,
+  ) {
+    const group = await this.itemValidationGroupRepository.getLastForItem(dbConnection, item.id);
 
     // check permissions
-    await this.authorizationService.validatePermission(db, PermissionLevel.Admin, member, item);
+    await this.authorizationService.validatePermission(
+      dbConnection,
+      PermissionLevel.Admin,
+      member,
+      item,
+    );
 
     return group;
   }
 
   async getItemValidationGroup(
-    db: DBConnection,
+    dbConnection: DBConnection,
     member: MinimalMember,
     itemValidationGroupId: string,
   ) {
-    const group = await this.itemValidationGroupRepository.get(db, itemValidationGroupId);
+    const group = await this.itemValidationGroupRepository.get(dbConnection, itemValidationGroupId);
 
     await this.authorizationService.validatePermission(
-      db,
+      dbConnection,
       PermissionLevel.Admin,
       member,
       group.item,
@@ -77,11 +86,11 @@ export class ItemValidationService {
     return group;
   }
 
-  async post(db: DBConnection, item: FolderItem, onValidationStarted?: () => void) {
-    const descendants = await this.itemRepository.getDescendants(db, item);
+  async post(dbConnection: DBConnection, item: FolderItem, onValidationStarted?: () => void) {
+    const descendants = await this.itemRepository.getDescendants(dbConnection, item);
 
     // create record in item-validation
-    const iVG = await this.itemValidationGroupRepository.post(db, item.id);
+    const iVG = await this.itemValidationGroupRepository.post(dbConnection, item.id);
 
     // indicates that the item's validation is pending
     await this.validationQueue.addInProgress(item.id);
@@ -94,7 +103,11 @@ export class ItemValidationService {
     const results = await Promise.all(
       items.map(async (currItem) => {
         try {
-          const validationResults = await this.contentModerator.validate(db, currItem, iVG.id);
+          const validationResults = await this.contentModerator.validate(
+            dbConnection,
+            currItem,
+            iVG.id,
+          );
           return validationResults.every((v) => v === ItemValidationStatus.Success);
         } catch (e) {
           this.logger.error(e);
@@ -108,7 +121,7 @@ export class ItemValidationService {
 
     // update publication date
     if (operationResult) {
-      await this.itemPublishedService.touchUpdatedAt(db, item);
+      await this.itemPublishedService.touchUpdatedAt(dbConnection, item);
     }
 
     return operationResult;

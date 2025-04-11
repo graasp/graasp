@@ -5,7 +5,7 @@ import { MaybeUser } from '../types';
 
 export type Handler<Data> = (
   actor: MaybeUser,
-  db: DBConnection,
+  dbConnection: DBConnection,
   data: Data,
   log?: FastifyBaseLogger,
 ) => Promise<void>;
@@ -29,14 +29,14 @@ class HookManager<EventMap extends { [event: string]: { pre: unknown; post: unkn
   async runPostHooks<Event extends keyof EventMap>(
     event: Event,
     actor: MaybeUser,
-    db: DBConnection,
+    dbConnection: DBConnection,
     data: EventMap[Event]['post'],
     log?: FastifyBaseLogger,
   ) {
     // TODO: allsettled?
     const hooks = this.postHooks.get(event);
     if (hooks) {
-      await Promise.all(hooks.map((f) => f(actor, db, data, log)));
+      await Promise.all(hooks.map((f) => f(actor, dbConnection, data, log)));
     }
   }
 
@@ -52,14 +52,14 @@ class HookManager<EventMap extends { [event: string]: { pre: unknown; post: unkn
   async runPreHooks<Event extends keyof EventMap>(
     event: Event,
     actor: MaybeUser,
-    db: DBConnection,
+    dbConnection: DBConnection,
     data: EventMap[Event]['pre'],
     log?: FastifyBaseLogger,
   ) {
     // TODO: allsettled?
     const hooks = this.preHooks.get(event);
     if (hooks) {
-      await Promise.all(hooks.map((f) => f(actor, db, data, log)));
+      await Promise.all(hooks.map((f) => f(actor, dbConnection, data, log)));
     }
   }
 }

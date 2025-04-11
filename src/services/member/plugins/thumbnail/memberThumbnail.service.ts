@@ -32,18 +32,18 @@ export class MemberThumbnailService {
   }
 
   // upload self avatar
-  async upload(db: DBConnection, actor: MinimalMember, file: Readable) {
+  async upload(dbConnection: DBConnection, actor: MinimalMember, file: Readable) {
     await this.thumbnailService.upload(actor, actor.id, file);
 
     // update item that should have thumbnail
-    await this.memberService.patch(db, actor.id, {
+    await this.memberService.patch(dbConnection, actor.id, {
       extra: { hasAvatar: true },
     });
   }
 
   // get member's avatar
   async getFile(
-    db: DBConnection,
+    dbConnection: DBConnection,
     actor: MaybeUser,
     { size, memberId }: { memberId: string; size: string },
   ) {
@@ -56,8 +56,8 @@ export class MemberThumbnailService {
   }
 
   // get member's avatar
-  async getUrl(db: DBConnection, { size, memberId }: { memberId: string; size: string }) {
-    const account = await this.accountRepository.get(db, memberId);
+  async getUrl(dbConnection: DBConnection, { size, memberId }: { memberId: string; size: string }) {
+    const account = await this.accountRepository.get(dbConnection, memberId);
 
     if (!account.exists()) {
       throw new AccountNotFound(memberId);

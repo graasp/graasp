@@ -31,27 +31,27 @@ export class MemberService {
     this.log = log;
   }
 
-  async get(db: DBConnection, id: string) {
-    return this.memberRepository.get(db, id);
+  async get(dbConnection: DBConnection, id: string) {
+    return this.memberRepository.get(dbConnection, id);
   }
 
-  async getByEmail(db: DBConnection, email: string) {
-    return await this.memberRepository.getByEmail(db, email);
+  async getByEmail(dbConnection: DBConnection, email: string) {
+    return await this.memberRepository.getByEmail(dbConnection, email);
   }
 
-  async getMany(db: DBConnection, ids: string[]) {
-    return this.memberRepository.getMany(db, ids);
+  async getMany(dbConnection: DBConnection, ids: string[]) {
+    return this.memberRepository.getMany(dbConnection, ids);
   }
 
-  async getManyByEmails(db: DBConnection, emails: string[]) {
+  async getManyByEmails(dbConnection: DBConnection, emails: string[]) {
     return this.memberRepository.getManyByEmails(
-      db,
+      dbConnection,
       emails.map((email) => email.trim().toLowerCase()),
     );
   }
 
   async post(
-    db: DBConnection,
+    dbConnection: DBConnection,
     body: Partial<MemberCreationDTO> & Pick<MemberCreationDTO, 'email' | 'name'>,
     lang = DEFAULT_LANG,
   ) {
@@ -61,7 +61,7 @@ export class MemberService {
     const email = body.email.toLowerCase();
 
     // check if member w/ email already exists
-    const member = await this.memberRepository.getByEmail(db, email);
+    const member = await this.memberRepository.getByEmail(dbConnection, email);
 
     if (!member) {
       const newMember = {
@@ -69,7 +69,7 @@ export class MemberService {
         extra: { lang },
       };
 
-      const member = await this.memberRepository.post(db, newMember);
+      const member = await this.memberRepository.post(dbConnection, newMember);
 
       return member;
     } else {
@@ -78,11 +78,11 @@ export class MemberService {
   }
 
   async patch(
-    db: DBConnection,
+    dbConnection: DBConnection,
     id: UUID,
     body: Partial<Pick<MemberRaw, 'extra' | 'email' | 'name' | 'enableSaveActions'>>,
   ) {
-    return this.memberRepository.patch(db, id, {
+    return this.memberRepository.patch(dbConnection, id, {
       name: body.name,
       email: body.email,
       extra: body?.extra,
@@ -90,21 +90,21 @@ export class MemberService {
     });
   }
 
-  async deleteCurrent(memberId: string, db: DBConnection) {
-    await this.memberRepository.deleteOne(db, memberId);
+  async deleteCurrent(memberId: string, dbConnection: DBConnection) {
+    await this.memberRepository.deleteOne(dbConnection, memberId);
   }
 
-  async deleteOne(db: DBConnection, id: UUID) {
-    return this.memberRepository.deleteOne(db, id);
+  async deleteOne(dbConnection: DBConnection, id: UUID) {
+    return this.memberRepository.deleteOne(dbConnection, id);
   }
 
-  async refreshLastAuthenticatedAt(db: DBConnection, id: UUID) {
-    return await this.memberRepository.patch(db, id, {
+  async refreshLastAuthenticatedAt(dbConnection: DBConnection, id: UUID) {
+    return await this.memberRepository.patch(dbConnection, id, {
       lastAuthenticatedAt: new Date().toISOString(),
     });
   }
-  async validate(db: DBConnection, id: UUID) {
-    return await this.memberRepository.patch(db, id, { isValidated: true });
+  async validate(dbConnection: DBConnection, id: UUID) {
+    return await this.memberRepository.patch(dbConnection, id, { isValidated: true });
   }
 
   createEmailChangeRequest(member: MemberInfo, newEmail: string) {

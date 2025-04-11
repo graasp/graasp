@@ -21,10 +21,10 @@ export class ItemPublishedRepository {
    * @returns published entry if the item is published, null otherwise
    */
   async getForItem(
-    db: DBConnection,
+    dbConnection: DBConnection,
     itemPath: Item['path'],
   ): Promise<ItemPublishedWithItemWithCreator | null> {
-    const res = await db
+    const res = await dbConnection
       .select()
       .from(publishedItemsTable)
       // .innerJoin(membersView, eq(publishedItems.creatorId, membersView.id))
@@ -52,10 +52,10 @@ export class ItemPublishedRepository {
   }
 
   async getForItems(
-    db: DBConnection,
+    dbConnection: DBConnection,
     itemPaths: Item['path'][],
   ): Promise<ItemPublishedWithItemWithCreator[]> {
-    const result = await db
+    const result = await dbConnection
       .select()
       .from(publishedItemsTable)
       .innerJoin(items, inArray(publishedItemsTable.itemPath, itemPaths))
@@ -69,11 +69,11 @@ export class ItemPublishedRepository {
 
   // Must Implement a proper Paginated<Type> if more complex pagination is needed in the future
   async getPaginatedItems(
-    db: DBConnection,
+    dbConnection: DBConnection,
     page: number = 1,
     pageSize: number = 20,
   ): Promise<[ItemPublishedWithItemWithCreator[], number]> {
-    const results = await db
+    const results = await dbConnection
       .select()
       .from(publishedItemsTable)
       // will ignore soft deleted item
@@ -86,31 +86,32 @@ export class ItemPublishedRepository {
       ...item_published,
       item: { ...item_view, creator: members_view as MemberRaw },
     }));
-    const total = (await db.select({ count: count() }).from(publishedItemsTable))[0].count;
+    const total = (await dbConnection.select({ count: count() }).from(publishedItemsTable))[0]
+      .count;
 
     return [mappedResults, total];
   }
 
-  async post(db: DBConnection, creator: MinimalMember, item: Item): Promise<void> {
-    await db.insert(publishedItemsTable).values({
+  async post(dbConnection: DBConnection, creator: MinimalMember, item: Item): Promise<void> {
+    await dbConnection.insert(publishedItemsTable).values({
       itemPath: item.path,
       creatorId: creator.id,
     });
   }
 
-  async deleteForItem(db: DBConnection, item: Item): Promise<ItemPublishedRaw> {
-    const entry = await this.getForItem(db, item.path);
+  async deleteForItem(dbConnection: DBConnection, item: Item): Promise<ItemPublishedRaw> {
+    const entry = await this.getForItem(dbConnection, item.path);
 
     if (!entry) {
       throw new ItemPublishedNotFound(item.id);
     }
 
-    await db.delete(publishedItemsTable).where(eq(publishedItemsTable.id, entry.id));
+    await dbConnection.delete(publishedItemsTable).where(eq(publishedItemsTable.id, entry.id));
     return entry;
   }
 
-  async getRecentItems(db: DBConnection, limit: number = 10): Promise<Item[]> {
-    const publishedInfos = await db.query.publishedItemsTable.findMany({
+  async getRecentItems(dbConnection: DBConnection, limit: number = 10): Promise<Item[]> {
+    const publishedInfos = await dbConnection.query.publishedItemsTable.findMany({
       with: { item: true, account: true },
       orderBy: desc(items.createdAt),
       limit,
@@ -119,10 +120,10 @@ export class ItemPublishedRepository {
     return publishedInfos.map(({ item }) => item);
   }
 
-  async touchUpdatedAt(db: DBConnection, path: Item['path']): Promise<string | null> {
+  async touchUpdatedAt(dbConnection: DBConnection, path: Item['path']): Promise<string | null> {
     const updatedAt = new Date().toISOString();
 
-    const result = await db
+    const result = await dbConnection
       .update(publishedItemsTable)
       .set({ updatedAt })
       .where(eq(publishedItemsTable.itemPath, path))

@@ -58,12 +58,12 @@ export class FolderItemService extends ItemService {
   }
 
   async getFolder(
-    db: DBConnection,
+    dbConnection: DBConnection,
     member: MaybeUser,
     itemId: Item['id'],
     permission?: PermissionLevelOptions,
   ): Promise<FolderItem> {
-    const item = await this.basicItemService.get(db, member, itemId, permission);
+    const item = await this.basicItemService.get(dbConnection, member, itemId, permission);
     if (!isItemType(item, ItemType.FOLDER)) {
       throw new WrongItemTypeError(item.type);
     }
@@ -71,7 +71,7 @@ export class FolderItemService extends ItemService {
   }
 
   async postWithOptions(
-    db: DBConnection,
+    dbConnection: DBConnection,
     member: MinimalMember,
     args: {
       item: Partial<Pick<Item, 'description' | 'settings' | 'lang'>> & Pick<Item, 'name'>;
@@ -81,25 +81,25 @@ export class FolderItemService extends ItemService {
       previousItemId?: Item['id'];
     },
   ): Promise<FolderItem> {
-    return (await super.post(db, member, {
+    return (await super.post(dbConnection, member, {
       ...args,
       item: { ...args.item, type: ItemType.FOLDER, extra: { folder: {} } },
     })) as FolderItem;
   }
 
   async patch(
-    db: DBConnection,
+    dbConnection: DBConnection,
     member: MinimalMember,
     itemId: UUID,
     body: Partial<Pick<Item, 'name' | 'description' | 'settings' | 'lang'>>,
   ): Promise<FolderItem> {
-    const item = await this.itemRepository.getOneOrThrow(db, itemId);
+    const item = await this.itemRepository.getOneOrThrow(dbConnection, itemId);
 
     // check item is folder
     if (item.type !== ItemType.FOLDER) {
       throw new WrongItemTypeError(item.type);
     }
 
-    return (await super.patch(db, member, item.id, body)) as FolderItem;
+    return (await super.patch(dbConnection, member, item.id, body)) as FolderItem;
   }
 }

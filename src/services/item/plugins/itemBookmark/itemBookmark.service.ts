@@ -33,13 +33,16 @@ export class BookmarkService {
     this.itemVisibilityRepository = itemVisibilityRepository;
   }
 
-  async getOwn(db: DBConnection, member: MinimalMember): Promise<PackedBookmarkedItem[]> {
-    const bookmarks = await this.itemBookmarkRepository.getBookmarksForMember(db, member.id);
+  async getOwn(dbConnection: DBConnection, member: MinimalMember): Promise<PackedBookmarkedItem[]> {
+    const bookmarks = await this.itemBookmarkRepository.getBookmarksForMember(
+      dbConnection,
+      member.id,
+    );
 
     // filter out items user might not have access to
     // and packed item
     const filteredItems = await filterOutPackedItems(
-      db,
+      dbConnection,
       member,
       {
         itemMembershipRepository: this.itemMembershipRepository,
@@ -59,13 +62,18 @@ export class BookmarkService {
     });
   }
 
-  async post(db: DBConnection, member: MinimalMember, itemId: string) {
+  async post(dbConnection: DBConnection, member: MinimalMember, itemId: string) {
     // get and check permissions
-    const item = await this.basicItemService.get(db, member, itemId, PermissionLevel.Read);
-    await this.itemBookmarkRepository.post(db, item.id, member.id);
+    const item = await this.basicItemService.get(
+      dbConnection,
+      member,
+      itemId,
+      PermissionLevel.Read,
+    );
+    await this.itemBookmarkRepository.post(dbConnection, item.id, member.id);
   }
 
-  async delete(db: DBConnection, member: MinimalMember, itemId: string) {
-    return this.itemBookmarkRepository.deleteOne(db, itemId, member.id);
+  async delete(dbConnection: DBConnection, member: MinimalMember, itemId: string) {
+    return this.itemBookmarkRepository.deleteOne(dbConnection, itemId, member.id);
   }
 }

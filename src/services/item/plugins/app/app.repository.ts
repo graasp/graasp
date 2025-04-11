@@ -2,23 +2,23 @@ import { and, arrayContains, count, desc, eq, sql } from 'drizzle-orm/sql';
 
 import { AuthTokenSubject } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import { appsTable, items, publishersTable } from '../../../../drizzle/schema';
 import { AppRaw } from '../../../../drizzle/types';
 import { InvalidApplicationOrigin } from './errors';
 
 export class AppRepository {
-  async getAll(db: DBConnection, publisherId: string): Promise<AppRaw[]> {
-    return await db.query.appsTable.findMany({
+  async getAll(dbConnection: DBConnection, publisherId: string): Promise<AppRaw[]> {
+    return await dbConnection.query.appsTable.findMany({
       where: eq(appsTable.publisherId, publisherId),
     });
   }
 
   async getMostUsedApps(
-    db: DBConnection,
+    dbConnection: DBConnection,
     memberId: string,
   ): Promise<{ url: string; name: string; count: number }[]> {
-    const data = await db
+    const data = await dbConnection
       .select({ url: appsTable.url, name: appsTable.name, count: count(items.id) })
       .from(appsTable)
       .innerJoin(
@@ -37,10 +37,10 @@ export class AppRepository {
   }
 
   async isValidAppOrigin(
-    db: DBConnection,
+    dbConnection: DBConnection,
     appDetails: { key: string; origin: string },
   ): Promise<void> {
-    const valid = await db
+    const valid = await dbConnection
       .select()
       .from(appsTable)
       .where(eq(appsTable.key, appDetails.key))

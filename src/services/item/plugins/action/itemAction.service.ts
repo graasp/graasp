@@ -6,7 +6,7 @@ import { FastifyRequest } from 'fastify';
 
 import { ItemType, PermissionLevel, UUID } from '@graasp/sdk';
 
-import { DBConnection } from '../../../../drizzle/db';
+import { type DBConnection } from '../../../../drizzle/db';
 import { actionsTable } from '../../../../drizzle/schema';
 import {
   ActionWithItem,
@@ -86,7 +86,7 @@ export class ItemActionService {
   }
 
   async getForItem(
-    db: DBConnection,
+    dbConnection: DBConnection,
     actor: AuthenticatedUser,
     itemId: string,
     filters: { view?: ViewOptions; sampleSize?: number } = {},
@@ -99,11 +99,11 @@ export class ItemActionService {
     }
 
     // check right and get item
-    const item = await this.basicItemService.get(db, actor, itemId, PermissionLevel.Read);
+    const item = await this.basicItemService.get(dbConnection, actor, itemId, PermissionLevel.Read);
 
     // check permission
     const permission = (
-      await this.itemMembershipRepository.getInherited(db, item.path, actor.id, true)
+      await this.itemMembershipRepository.getInherited(dbConnection, item.path, actor.id, true)
     )?.permission;
 
     // Check validity of the requestSampleSize parameter (it is a number between min and max constants)
@@ -119,21 +119,21 @@ export class ItemActionService {
     }
 
     // get actions
-    return this.actionRepository.getForItem(db, item.path, {
+    return this.actionRepository.getForItem(dbConnection, item.path, {
       sampleSize: size,
       view,
       accountId: permission === PermissionLevel.Admin ? undefined : actor.id,
     });
   }
 
-  async getFilteredDescendants(db: DBConnection, account: MaybeUser, itemId: UUID) {
-    const { descendants } = await this.itemService.getDescendants(db, account, itemId);
+  async getFilteredDescendants(dbConnection: DBConnection, account: MaybeUser, itemId: UUID) {
+    const { descendants } = await this.itemService.getDescendants(dbConnection, account, itemId);
     if (!descendants.length) {
       return [];
     }
     // TODO optimize?
     return filterOutItems(
-      db,
+      dbConnection,
       account,
       {
         itemMembershipRepository: this.itemMembershipRepository,
@@ -144,7 +144,7 @@ export class ItemActionService {
   }
 
   async getBaseAnalyticsForItem(
-    db: DBConnection,
+    dbConnection: DBConnection,
     actor: AuthenticatedUser,
     payload: {
       itemId: string;
@@ -160,11 +160,16 @@ export class ItemActionService {
     }
 
     // check right and get item
-    const item = await this.basicItemService.get(db, actor, payload.itemId, PermissionLevel.Read);
+    const item = await this.basicItemService.get(
+      dbConnection,
+      actor,
+      payload.itemId,
+      PermissionLevel.Read,
+    );
 
     // check permission
     const permission = actor
-      ? (await this.itemMembershipRepository.getInherited(db, item.path, actor.id, true))
+      ? (await this.itemMembershipRepository.getInherited(dbConnection, item.path, actor.id, true))
           ?.permission
       : null;
 
@@ -172,7 +177,7 @@ export class ItemActionService {
       throw new InvalidAggregationError('start date should be before end date');
     }
     // check membership and get actions
-    const actions = await this.actionRepository.getForItem(db, item.path, {
+    const actions = await this.actionRepository.getForItem(dbConnection, item.path, {
       sampleSize: payload.sampleSize,
       view: payload.view,
       accountId: permission === PermissionLevel.Admin ? undefined : actor.id,
@@ -180,9 +185,12 @@ export class ItemActionService {
       endDate: payload.endDate,
     });
     // get memberships
-    const inheritedMemberships = await this.itemMembershipRepository.getForItem(db, item);
+    const inheritedMemberships = await this.itemMembershipRepository.getForItem(dbConnection, item);
     // TODO: use db argument passed from the transaction
-    const itemMemberships = await this.itemMembershipRepository.getAllBellowItemPath(db, item.path);
+    const itemMemberships = await this.itemMembershipRepository.getAllBellowItemPath(
+      dbConnection,
+      item.path,
+    );
     const allMemberships = [...inheritedMemberships, ...itemMemberships];
     // get members
     const members =
@@ -191,10 +199,10 @@ export class ItemActionService {
     // get descendants items
     let descendants: ItemRaw[] = [];
     if (isItemType(item, ItemType.FOLDER)) {
-      descendants = await this.getFilteredDescendants(db, actor, payload.itemId);
+      descendants = await this.getFilteredDescendants(dbConnection, actor, payload.itemId);
     }
     // chatbox for all items
-    const chatMessages = await this.chatMessageRepository.getByItems(db, [
+    const chatMessages = await this.chatMessageRepository.getByItems(dbConnection, [
       payload.itemId,
       ...descendants.map(({ id }) => id),
     ]);
@@ -210,7 +218,7 @@ export class ItemActionService {
     const appItems = [item, ...descendants].filter(({ type }) => type === ItemType.APP);
     for (const { id: appId } of appItems) {
       const appData = await this.appDataRepository.getForItem(
-        db,
+        dbConnection,
         appId,
         {},
         // needs investigating: does this mean a reader could export the actions of an item and see all users responses ?
@@ -218,8 +226,8 @@ export class ItemActionService {
       );
       // TODO member id?
       // todo: create getForItems?
-      const appActions = await this.appActionRepository.getForItem(db, appId, {});
-      const appSettings = await this.appSettingRepository.getForItem(db, appId);
+      const appActions = await this.appActionRepository.getForItem(dbConnection, appId, {});
+      const appSettings = await this.appSettingRepository.getForItem(dbConnection, appId);
 
       apps[appId] = {
         data: appData,
@@ -243,17 +251,17 @@ export class ItemActionService {
     };
   }
 
-  async postPostAction(db: DBConnection, request: FastifyRequest, item: Item) {
+  async postPostAction(dbConnection: DBConnection, request: FastifyRequest, item: Item) {
     const { user } = request;
     const action = {
       item,
       type: ItemActionType.Create,
       extra: { itemId: item.id },
     };
-    await this.actionService.postMany(db, user?.account, request, [action]);
+    await this.actionService.postMany(dbConnection, user?.account, request, [action]);
   }
 
-  async postPatchAction(db: DBConnection, request: FastifyRequest, item: Item) {
+  async postPatchAction(dbConnection: DBConnection, request: FastifyRequest, item: Item) {
     const { user } = request;
     const action = {
       item,
@@ -262,20 +270,20 @@ export class ItemActionService {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       extra: { itemId: item.id, body: request.body as any },
     };
-    await this.actionService.postMany(db, user?.account, request, [action]);
+    await this.actionService.postMany(dbConnection, user?.account, request, [action]);
   }
 
-  async postManyDeleteAction(db: DBConnection, request: FastifyRequest, items: Item[]) {
+  async postManyDeleteAction(dbConnection: DBConnection, request: FastifyRequest, items: Item[]) {
     const { user } = request;
     const actions = items.map((item) => ({
       // cannot include item since is has been deleted
       type: ItemActionType.Delete,
       extra: { itemId: item.id },
     }));
-    await this.actionService.postMany(db, user?.account, request, actions);
+    await this.actionService.postMany(dbConnection, user?.account, request, actions);
   }
 
-  async postManyMoveAction(db: DBConnection, request: FastifyRequest, items: Item[]) {
+  async postManyMoveAction(dbConnection: DBConnection, request: FastifyRequest, items: Item[]) {
     const { user } = request;
     const actions = items.map((item) => ({
       item,
@@ -284,10 +292,10 @@ export class ItemActionService {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       extra: { itemId: item.id, body: request.body as any },
     }));
-    await this.actionService.postMany(db, user?.account, request, actions);
+    await this.actionService.postMany(dbConnection, user?.account, request, actions);
   }
 
-  async postManyCopyAction(db: DBConnection, request: FastifyRequest, items: Item[]) {
+  async postManyCopyAction(dbConnection: DBConnection, request: FastifyRequest, items: Item[]) {
     const { user } = request;
     const actions = items.map((item) => ({
       item,
@@ -296,11 +304,11 @@ export class ItemActionService {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       extra: { itemId: item.id, body: request.body as any },
     }));
-    await this.actionService.postMany(db, user?.account, request, actions);
+    await this.actionService.postMany(dbConnection, user?.account, request, actions);
   }
 
-  async getTotalViewsCountForItemId(db: DBConnection, itemId: Item['id']) {
-    const res = await db
+  async getTotalViewsCountForItemId(dbConnection: DBConnection, itemId: Item['id']) {
+    const res = await dbConnection
       .select({ count: count() })
       .from(actionsTable)
       .where(
@@ -313,21 +321,26 @@ export class ItemActionService {
     return res[0].count;
   }
 
-  async getActionsByHour(db: DBConnection, itemId: Item['id'], actor: MaybeUser, params) {
-    const item = await this.basicItemService.get(db, actor, itemId);
+  async getActionsByHour(dbConnection: DBConnection, itemId: Item['id'], actor: MaybeUser, params) {
+    const item = await this.basicItemService.get(dbConnection, actor, itemId);
 
-    return this.itemActionRepository.getActionsByHour(db, item.path, actor, params);
+    return this.itemActionRepository.getActionsByHour(dbConnection, item.path, actor, params);
   }
 
-  async getActionsByDay(db: DBConnection, itemId: Item['id'], actor: MaybeUser, params) {
-    const item = await this.basicItemService.get(db, actor, itemId);
+  async getActionsByDay(dbConnection: DBConnection, itemId: Item['id'], actor: MaybeUser, params) {
+    const item = await this.basicItemService.get(dbConnection, actor, itemId);
 
-    return this.itemActionRepository.getActionsByDay(db, item.path, actor, params);
+    return this.itemActionRepository.getActionsByDay(dbConnection, item.path, actor, params);
   }
 
-  async getActionsByWeekday(db: DBConnection, itemId: Item['id'], actor: MaybeUser, params) {
-    const item = await this.basicItemService.get(db, actor, itemId);
+  async getActionsByWeekday(
+    dbConnection: DBConnection,
+    itemId: Item['id'],
+    actor: MaybeUser,
+    params,
+  ) {
+    const item = await this.basicItemService.get(dbConnection, actor, itemId);
 
-    return this.itemActionRepository.getActionsByWeekday(db, item.path, actor, params);
+    return this.itemActionRepository.getActionsByWeekday(dbConnection, item.path, actor, params);
   }
 }

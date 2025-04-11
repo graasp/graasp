@@ -35,13 +35,13 @@ export class ItemGeolocationRepository {
    * @param copy copied item
    */
   async copy(
-    db: DBConnection,
+    dbConnection: DBConnection,
     original: { path: Item['path'] },
     copy: { path: Item['path'] },
   ): Promise<void> {
-    const geoloc = await this.getByItem(db, original.path);
+    const geoloc = await this.getByItem(dbConnection, original.path);
     if (geoloc) {
-      await db.insert(itemGeolocationsTable).values({
+      await dbConnection.insert(itemGeolocationsTable).values({
         itemPath: copy.path,
         lat: geoloc.lat,
         lng: geoloc.lng,
@@ -56,8 +56,10 @@ export class ItemGeolocationRepository {
    * Delete a geolocation given an item
    * @param item item to delete
    */
-  async delete(db: DBConnection, item: Item): Promise<void> {
-    await db.delete(itemGeolocationsTable).where(eq(itemGeolocationsTable.itemPath, item.path));
+  async delete(dbConnection: DBConnection, item: Item): Promise<void> {
+    await dbConnection
+      .delete(itemGeolocationsTable)
+      .where(eq(itemGeolocationsTable.itemPath, item.path));
   }
 
   /**
@@ -71,7 +73,7 @@ export class ItemGeolocationRepository {
    * @returns item geolocations within bounding box. Does not include inheritance.
    */
   async getItemsIn(
-    db: DBConnection,
+    dbConnection: DBConnection,
     actor: MaybeUser,
     {
       lat1,
@@ -146,7 +148,7 @@ export class ItemGeolocationRepository {
       );
     }
 
-    const result = await db
+    const result = await dbConnection
       .select()
       .from(itemGeolocationsTable)
       // use view to filter out recycled items
@@ -165,10 +167,10 @@ export class ItemGeolocationRepository {
    * @returns geolocation for this item
    */
   async getByItem(
-    db: DBConnection,
+    dbConnection: DBConnection,
     itemPath: Item['path'],
   ): Promise<ItemGeolocationWithItem | undefined> {
-    const geoloc = await db.query.itemGeolocationsTable.findFirst({
+    const geoloc = await dbConnection.query.itemGeolocationsTable.findFirst({
       where: isAncestorOrSelf(itemGeolocationsTable.itemPath, itemPath),
       with: { item: true },
       orderBy: desc(itemGeolocationsTable.itemPath),
@@ -184,7 +186,7 @@ export class ItemGeolocationRepository {
    * @param geolocation lat and lng values, optional addressLabel
    */
   async put(
-    db: DBConnection,
+    dbConnection: DBConnection,
     itemPath: Item['path'],
     geolocation: Pick<ItemGeolocationRaw, 'lat' | 'lng'> &
       Pick<Partial<ItemGeolocationRaw>, 'addressLabel' | 'helperLabel'>,
@@ -198,7 +200,7 @@ export class ItemGeolocationRepository {
     // country might not exist because the point is outside borders
     const country = iso1A2Code([geolocation.lng, geolocation.lat]);
 
-    await db
+    await dbConnection
       .insert(itemGeolocationsTable)
       .values({
         itemPath,

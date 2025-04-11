@@ -9,7 +9,7 @@ import { ItemValidationModerator } from '../moderators/itemValidationModerator';
 import { StrategyExecutorFactory } from '../moderators/strategyExecutorFactory';
 
 export type ItemModeratorValidate = (
-  db: DBConnection,
+  dbConnection: DBConnection,
   itemToValidate: Item,
   itemValidationGroupId: ItemValidationGroupRaw['id'],
 ) => Promise<ItemValidationStatus[]>;
@@ -24,11 +24,11 @@ class StubItemModerator extends ItemValidationModerator {
   }
 
   async validate(
-    db: DBConnection,
+    dbConnection: DBConnection,
     itemToValidate: Item,
     itemValidationGroupId: ItemValidationGroupRaw['id'],
   ) {
-    return await this.validateImpl(db, itemToValidate, itemValidationGroupId);
+    return await this.validateImpl(dbConnection, itemToValidate, itemValidationGroupId);
   }
 }
 

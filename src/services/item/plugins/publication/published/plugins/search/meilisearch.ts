@@ -256,15 +256,15 @@ export class MeiliSearchWrapper {
   }
 
   async indexOne(
-    db: DBConnection,
+    dbConnection: DBConnection,
     itemPublished: ItemPublishedWithItemWithCreator,
     targetIndex: ALLOWED_INDICES = ACTIVE_INDEX,
   ): Promise<EnqueuedTask> {
-    return this.index(db, [itemPublished], targetIndex);
+    return this.index(dbConnection, [itemPublished], targetIndex);
   }
 
   async index(
-    db: DBConnection,
+    dbConnection: DBConnection,
     manyItemPublished: ItemPublishedWithItemWithCreator[],
     targetIndex: ALLOWED_INDICES = ACTIVE_INDEX,
   ): Promise<EnqueuedTask> {
@@ -276,9 +276,11 @@ export class MeiliSearchWrapper {
         item: ItemWithCreator;
       }[] = [];
       for (const p of manyItemPublished) {
-        const isHidden = await this.itemVisibilityRepository.getManyBelowAndSelf(db, p.item, [
-          ItemVisibilityType.Hidden,
-        ]);
+        const isHidden = await this.itemVisibilityRepository.getManyBelowAndSelf(
+          dbConnection,
+          p.item,
+          [ItemVisibilityType.Hidden],
+        );
 
         itemsToIndex.push({
           publicationUpdatedAt: p.updatedAt,
@@ -287,7 +289,7 @@ export class MeiliSearchWrapper {
         });
 
         const descendants = isItemType(p.item, ItemType.FOLDER)
-          ? await this.itemRepository.getDescendants(db, p.item)
+          ? await this.itemRepository.getDescendants(dbConnection, p.item)
           : [];
 
         itemsToIndex = itemsToIndex.concat(
@@ -306,14 +308,14 @@ export class MeiliSearchWrapper {
           // Publishing and categories are implicit/inherited on children, we are forced to query the database to check these
           // More efficient way to get this info? Do the db query for all item at once ?
           // This part might slow the app when we index many items or an item with many children.
-          const publishedRoot = await this.itemPublishedRepository.getForItem(db, i.path);
+          const publishedRoot = await this.itemPublishedRepository.getForItem(dbConnection, i.path);
           if (!publishedRoot) {
             throw new ItemPublishedNotFound(i.id);
           }
 
-          const tags = await this.itemTagRepository.getByItemId(db, i.id);
+          const tags = await this.itemTagRepository.getByItemId(dbConnection, i.id);
 
-          const likesCount = await this.itemLikeRepository.getCountByItemId(db, i.id);
+          const likesCount = await this.itemLikeRepository.getCountByItemId(dbConnection, i.id);
 
           return {
             ...(await this.parseItem(
@@ -346,12 +348,12 @@ export class MeiliSearchWrapper {
     }
   }
 
-  async deleteOne(db: DBConnection, item: Item) {
+  async deleteOne(dbConnection: DBConnection, item: Item) {
     try {
       let itemsToIndex = [item];
       if (isItemType(item, ItemType.FOLDER)) {
         itemsToIndex = itemsToIndex.concat(
-          await this.itemRepository.getDescendants(db, item, { ordered: false }),
+          await this.itemRepository.getDescendants(dbConnection, item, { ordered: false }),
         );
       }
 
@@ -364,14 +366,14 @@ export class MeiliSearchWrapper {
   }
 
   // Update the PDF that were stored before the indexing feature to add the content in database
-  private async storeMissingPdfContent(db: DBConnection) {
+  private async storeMissingPdfContent(dbConnection: DBConnection) {
     this.logger.info('PDF BACKFILL: Start adding content to PDFs added before the search feature');
 
     let total = 0;
     let currentPage = 1;
     // Paginate with 1000 items per page
     while (currentPage === 1 || (currentPage - 1) * 1000 < total) {
-      const [fileItems, totalCount] = await this.itemRepository.findAndCount(db, {
+      const [fileItems, totalCount] = await this.itemRepository.findAndCount(dbConnection, {
         where: { type: ItemType.S3_FILE },
         take: 1000,
         skip: (currentPage - 1) * 1000,
@@ -404,7 +406,7 @@ export class MeiliSearchWrapper {
             path: s3extra.path,
           });
           const content = await readPdfContent(url);
-          await this.itemRepository.updateOne(db, item.id, {
+          await this.itemRepository.updateOne(dbConnection, item.id, {
             extra: { [ItemType.S3_FILE]: { content } } as S3FileItemExtra,
           });
         } catch (e) {

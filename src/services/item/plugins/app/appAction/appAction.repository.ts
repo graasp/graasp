@@ -17,8 +17,8 @@ type CreateAppActionBody = {
 };
 
 export class AppActionRepository {
-  async addOne(db: DBConnection, { itemId, accountId, appAction }: CreateAppActionBody) {
-    return await db
+  async addOne(dbConnection: DBConnection, { itemId, accountId, appAction }: CreateAppActionBody) {
+    return await dbConnection
       .insert(appActionsTable)
       .values({
         ...appAction,
@@ -28,15 +28,15 @@ export class AppActionRepository {
       .returning();
   }
 
-  async getOne(db: DBConnection, id: string) {
-    return await db.query.appActionsTable.findFirst({
+  async getOne(dbConnection: DBConnection, id: string) {
+    return await dbConnection.query.appActionsTable.findFirst({
       where: eq(appActionsTable.id, id),
       with: { account: true },
     });
   }
 
   async getForItem(
-    db: DBConnection,
+    dbConnection: DBConnection,
     itemId: string,
     filters: SingleItemGetFilter,
   ): Promise<AppActionWithItemAndAccount[]> {
@@ -45,7 +45,7 @@ export class AppActionRepository {
     }
 
     const { accountId } = filters;
-    return await db.query.appActionsTable.findMany({
+    return await dbConnection.query.appActionsTable.findMany({
       where: and(
         eq(appActionsTable.itemId, itemId),
         accountId ? eq(appActionsTable.accountId, accountId) : undefined,
@@ -55,7 +55,7 @@ export class AppActionRepository {
   }
 
   async getForManyItems(
-    db: DBConnection,
+    dbConnection: DBConnection,
     itemIds: string[],
     filters: ManyItemsGetFilter,
   ): Promise<ResultOf<AppActionWithItemAndAccount[]>> {
@@ -66,7 +66,7 @@ export class AppActionRepository {
     }
 
     // here it is ok to have some app actions where the item or the member are null (because of missing or soft-deleted relations)
-    const result = await db.query.appActionsTable.findMany({
+    const result = await dbConnection.query.appActionsTable.findMany({
       where: and(
         inArray(appActionsTable.itemId, itemIds),
         accountId ? eq(appActionsTable.accountId, accountId) : undefined,

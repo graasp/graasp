@@ -29,16 +29,22 @@ export class ItemLikeRepository {
    * @param memberId user's id
    * @param itemId item's id
    */
-  async addOne(db: DBConnection, { creatorId, itemId }: CreateItemLikeBody): Promise<ItemLikeRaw> {
-    const result = await db.insert(itemLikesTable).values({ itemId, creatorId }).returning();
+  async addOne(
+    dbConnection: DBConnection,
+    { creatorId, itemId }: CreateItemLikeBody,
+  ): Promise<ItemLikeRaw> {
+    const result = await dbConnection
+      .insert(itemLikesTable)
+      .values({ itemId, creatorId })
+      .returning();
     if (result.length != 1) {
       throw new Error('Expected to receive, created item, but did not get it.');
     }
     return result[0];
   }
 
-  async getOne(db: DBConnection, id: string): Promise<ItemLikeWithItemAndAccount> {
-    const result = await db.query.itemLikesTable.findFirst({
+  async getOne(dbConnection: DBConnection, id: string): Promise<ItemLikeWithItemAndAccount> {
+    const result = await dbConnection.query.itemLikesTable.findFirst({
       where: eq(itemLikesTable.id, id),
       with: { item: true, creator: true },
     });
@@ -53,13 +59,13 @@ export class ItemLikeRepository {
    * @param creatorId user's id
    */
   async getByCreator(
-    db: DBConnection,
+    dbConnection: DBConnection,
     creatorId: CreatorId,
   ): Promise<ItemLikeWithItemWithCreator[]> {
     if (!creatorId) {
       throw new Error('creator Id is not defined');
     }
-    const result = await db.query.itemLikesTable.findMany({
+    const result = await dbConnection.query.itemLikesTable.findMany({
       where: eq(itemLikesTable.creatorId, creatorId),
       with: { item: { with: { creator: true } } },
     });
@@ -70,9 +76,9 @@ export class ItemLikeRepository {
    * Get likes for item
    * @param itemId
    */
-  async getByItemId(db: DBConnection, itemId: ItemId): Promise<ItemLikeWithItem[]> {
+  async getByItemId(dbConnection: DBConnection, itemId: ItemId): Promise<ItemLikeWithItem[]> {
     this.throwsIfParamIsInvalid('itemId', itemId);
-    const res = await db.query.itemLikesTable.findMany({
+    const res = await dbConnection.query.itemLikesTable.findMany({
       where: eq(itemLikesTable.itemId, itemId),
       with: { item: true },
     });
@@ -85,9 +91,9 @@ export class ItemLikeRepository {
    * @param itemId
    * @returns number of likes for item
    */
-  async getCountByItemId(db: DBConnection, itemId: ItemId): Promise<number> {
+  async getCountByItemId(dbConnection: DBConnection, itemId: ItemId): Promise<number> {
     this.throwsIfParamIsInvalid('itemId', itemId);
-    const res = await db.$count(itemLikesTable, eq(itemLikesTable.itemId, itemId));
+    const res = await dbConnection.$count(itemLikesTable, eq(itemLikesTable.itemId, itemId));
     return res;
   }
 
@@ -97,11 +103,11 @@ export class ItemLikeRepository {
    * @param itemId item's id
    */
   async deleteOneByCreatorAndItem(
-    db: DBConnection,
+    dbConnection: DBConnection,
     creatorId: CreatorId,
     itemId: ItemId,
   ): Promise<ItemLikeRaw> {
-    const result = await db
+    const result = await dbConnection
       .delete(itemLikesTable)
       .where(and(eq(itemLikesTable.itemId, itemId), eq(itemLikesTable.creatorId, creatorId)))
       .returning();

@@ -27,7 +27,7 @@ export class ItemValidationModerator {
   }
 
   async validate(
-    db: DBConnection,
+    dbConnection: DBConnection,
     item: Item,
     itemValidationGroupId: ItemValidationGroupRaw['id'],
   ): Promise<ItemValidationStatus[]> {
@@ -37,7 +37,7 @@ export class ItemValidationModerator {
         this.strategyExecutorFactory.createStrategyExecutors(item).map(async (strategyExecutor) => {
           try {
             return await this.executeValidationProcess(
-              db,
+              dbConnection,
               item,
               itemValidationGroupId,
               strategyExecutor,
@@ -53,13 +53,18 @@ export class ItemValidationModerator {
   }
 
   private async executeValidationProcess(
-    db: DBConnection,
+    dbConnection: DBConnection,
     item: Item,
     groupId: string,
     { process, validate }: StrategyExecutor,
   ): Promise<ItemValidationStatus> {
     // create pending validation
-    const itemValidation = await this.itemValidationRepository.post(db, item?.id, groupId, process);
+    const itemValidation = await this.itemValidationRepository.post(
+      dbConnection,
+      item?.id,
+      groupId,
+      process,
+    );
 
     let status: ItemValidationStatus;
     let result: string | undefined = undefined;
@@ -77,14 +82,14 @@ export class ItemValidationModerator {
     // create review entry if validation failed
     if (status === ItemValidationStatus.Failure) {
       await this.itemValidationReviewRepository.post(
-        db,
+        dbConnection,
         itemValidation.id,
         ItemValidationReviewStatus.Pending,
       );
     }
 
     // update item validation
-    await this.itemValidationRepository.patch(db, itemValidation.id, { result, status });
+    await this.itemValidationRepository.patch(dbConnection, itemValidation.id, { result, status });
 
     return status;
   }

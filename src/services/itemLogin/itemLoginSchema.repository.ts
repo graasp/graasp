@@ -34,10 +34,13 @@ type CreateItemLoginSchemaBody = {
 
 @singleton()
 export class ItemLoginSchemaRepository {
-  async getOneByItemId(db: DBConnection, itemId: ItemId): Promise<ItemLoginSchemaRaw | undefined> {
+  async getOneByItemId(
+    dbConnection: DBConnection,
+    itemId: ItemId,
+  ): Promise<ItemLoginSchemaRaw | undefined> {
     throwsIfParamIsInvalid('item', itemId);
     // TODO: check this works
-    const results = await db
+    const results = await dbConnection
       .select(getTableColumns(itemLoginSchemasTable))
       .from(itemLoginSchemasTable)
       .innerJoin(
@@ -49,48 +52,48 @@ export class ItemLoginSchemaRepository {
   }
 
   async getOneByItemPath(
-    db: DBConnection,
+    dbConnection: DBConnection,
     itemPath: ItemPath,
   ): Promise<ItemLoginSchemaWithItem | undefined> {
     throwsIfParamIsInvalid('itemPath', itemPath);
 
-    return await db.query.itemLoginSchemasTable.findFirst({
+    return await dbConnection.query.itemLoginSchemasTable.findFirst({
       where: isAncestorOrSelf(itemLoginSchemasTable.itemPath, itemPath),
       with: { item: true },
     });
   }
 
   async addOne(
-    db: DBConnection,
+    dbConnection: DBConnection,
     { itemPath, type = ItemLoginSchemaType.Username }: CreateItemLoginSchemaBody,
   ) {
-    const existingItemLoginSchema = await this.getOneByItemPath(db, itemPath);
+    const existingItemLoginSchema = await this.getOneByItemPath(dbConnection, itemPath);
     // if item login schema is inherited
     if (existingItemLoginSchema && existingItemLoginSchema?.itemPath !== itemPath) {
       throw new CannotNestItemLoginSchema(itemPath);
     }
 
-    return await db.insert(itemLoginSchemasTable).values({ itemPath, type });
+    return await dbConnection.insert(itemLoginSchemasTable).values({ itemPath, type });
   }
 
   async put(
-    db: DBConnection,
+    dbConnection: DBConnection,
     itemPath: ItemLoginSchemaRaw['itemPath'],
     { type, status },
   ): Promise<void> {
-    const itemLoginSchema = await this.getOneByItemPath(db, itemPath);
+    const itemLoginSchema = await this.getOneByItemPath(dbConnection, itemPath);
     if (itemLoginSchema) {
       // cannot update item login schema if it is requested from the child
       if (itemLoginSchema.itemPath !== itemPath) {
         throw new CannotNestItemLoginSchema(itemLoginSchema.itemPath);
       }
 
-      await db
+      await dbConnection
         .update(itemLoginSchemasTable)
         .set({ type, status })
         .where(eq(itemLoginSchemasTable.id, itemLoginSchema.id));
     } else {
-      await db.insert(itemLoginSchemasTable).values({ itemPath, type, status });
+      await dbConnection.insert(itemLoginSchemasTable).values({ itemPath, type, status });
       // QUESTION: this does not look efficient if we need to check on path
       // .onConflictDoUpdate({
       //   target: itemLoginSchemasTable.itemPath,
@@ -103,16 +106,16 @@ export class ItemLoginSchemaRepository {
     }
   }
 
-  async deleteOneByItemId(db: DBConnection, itemId: string) {
+  async deleteOneByItemId(dbConnection: DBConnection, itemId: string) {
     throwsIfParamIsInvalid('itemId', itemId);
 
-    const entity = await this.getOneByItemId(db, itemId);
+    const entity = await this.getOneByItemId(dbConnection, itemId);
 
     if (!entity) {
       throw new Error('could not find entity before deletion');
     }
 
-    const res = await db
+    const res = await dbConnection
       .delete(itemLoginSchemasTable)
       .where(eq(itemLoginSchemasTable.id, entity.id))
       .returning();
