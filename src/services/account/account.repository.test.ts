@@ -11,8 +11,8 @@ describe('AccountRepository', () => {
   beforeAll(async () => {
     await client.connect();
   });
-  afterAll(async () => {
-    await client.end();
+  afterAll(() => {
+    client.end();
   });
 
   describe('get', () => {

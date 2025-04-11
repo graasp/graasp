@@ -57,8 +57,8 @@ describe('ChatMentionRepository', () => {
     await client.connect();
   });
 
-  afterAll(async () => {
-    await client.end();
+  afterAll(() => {
+    client.end();
   });
 
   describe('getForMember', () => {

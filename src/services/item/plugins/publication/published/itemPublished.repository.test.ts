@@ -10,8 +10,8 @@ describe('ItemPublishedRepository', () => {
     await client.connect();
   });
 
-  afterAll(async () => {
-    await client.end();
+  afterAll(() => {
+    client.end();
   });
 
   describe('touchUpdatedAt', () => {

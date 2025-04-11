@@ -19,7 +19,7 @@ export const getMemberFilteredActions = {
     endDate: Type.Optional(Type.String({ format: 'date-time' })),
   }),
   response: {
-    [StatusCodes.OK]: Type.Object({}, { additionalProperties: true }),
+    [StatusCodes.OK]: Type.Array(Type.Object({}, { additionalProperties: true })),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;

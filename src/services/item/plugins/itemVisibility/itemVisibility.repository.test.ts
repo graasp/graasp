@@ -24,8 +24,8 @@ describe('getManyBelowAndSelf', () => {
     await client.connect();
   });
 
-  afterAll(async () => {
-    await client.end();
+  afterAll(() => {
+    client.end();
   });
 
   it('get empty', async () => {

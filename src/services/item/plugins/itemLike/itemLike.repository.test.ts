@@ -15,8 +15,8 @@ describe('ItemLike Repository', () => {
     await client.connect();
   });
 
-  afterAll(async () => {
-    await client.end();
+  afterAll(() => {
+    client.end();
   });
 
   describe('getByItemIdId', () => {

@@ -6,9 +6,9 @@ describe('Seed', () => {
     // connect to Database
     await client.connect();
   });
-  afterAll(async () => {
+  afterAll(() => {
     // close connection to db
-    await client.end();
+    client.end();
   });
 
   it('Does not create an account', async () => {

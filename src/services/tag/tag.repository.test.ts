@@ -15,8 +15,8 @@ describe('Tag Repository', () => {
   beforeAll(async () => {
     await client.connect();
   });
-  afterAll(async () => {
-    await client.end();
+  afterAll(() => {
+    client.end();
   });
   afterEach(async () => {
     // delete all tags to prevent adding duplicates

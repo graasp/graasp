@@ -24,7 +24,7 @@ describe('ItemGeolocationRepository', () => {
   });
 
   afterAll(async () => {
-    await client.end();
+    client.end();
     await clearDatabase(db);
   });
 

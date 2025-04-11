@@ -41,7 +41,7 @@ describe('ItemTag Repository', () => {
   afterAll(async () => {
     // less chaos if tag is wiped out
     await db.delete(tagsTable);
-    await client.end();
+    client.end();
   });
 
   describe('getCountBy', () => {
