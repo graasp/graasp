@@ -40,3 +40,20 @@ export const zipExport = {
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
+
+export const graaspZipExport = {
+  operationId: 'graaspZipExport',
+  tags: ['item', 'export'],
+  summary: 'Export content',
+  description:
+    'Export content. Return raw file for single item, or a ZIP with structure and items for a folder.',
+
+  params: customType.StrictObject({
+    itemId: customType.UUID(),
+  }),
+  response: {
+    // return a stream
+    [StatusCodes.OK]: { content: Type.String() },
+    '4xx': errorSchemaRef,
+  },
+} as const satisfies FastifySchema;

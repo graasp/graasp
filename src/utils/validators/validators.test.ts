@@ -6,7 +6,7 @@ import {
   numberValidator,
 } from './fixtures';
 import { validateVar } from './utils';
-import { RegexValidator, RequiredValidator, UrlValidator } from './validators';
+import { RegexValidator, UrlValidator } from './validators';
 
 describe('Test Validators', () => {
   describe('UrlValidator', () => {
@@ -56,45 +56,6 @@ describe('Test Validators', () => {
             value: 'https://localhost:9000',
           },
           urlValidator,
-        ),
-      ).not.toThrow();
-    });
-  });
-
-  describe('RequiredValidator', () => {
-    const requiredValidator = new RequiredValidator();
-    it('Undefined variable should throw if RequiredValidator is used', () => {
-      expect(() =>
-        validateVar(
-          {
-            name: 'TestVariable',
-            value: undefined,
-          },
-          requiredValidator,
-        ),
-      ).toThrow(UndefinedVariableError);
-    });
-
-    it('Empty variable should throw if RequiredValidator is used', () => {
-      expect(() =>
-        validateVar(
-          {
-            name: 'TestVariable',
-            value: undefined,
-          },
-          requiredValidator,
-        ),
-      ).toThrow(UndefinedVariableError);
-    });
-
-    it('Defined variable should not throw', () => {
-      expect(() =>
-        validateVar(
-          {
-            name: 'TestVariable',
-            value: 'ok',
-          },
-          requiredValidator,
         ),
       ).not.toThrow();
     });

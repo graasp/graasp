@@ -4,7 +4,7 @@ import { Authenticator } from '@fastify/passport';
 
 import { PASSWORD_RESET_JWT_SECRET } from '../../../../../utils/config';
 import { MemberNotFound, UnauthorizedMember } from '../../../../../utils/errors';
-import { MemberPasswordService } from '../../password/service';
+import { MemberPasswordService } from '../../password/password.service';
 import { PassportStrategy } from '../strategies';
 import { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
 

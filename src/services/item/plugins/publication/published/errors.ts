@@ -1,21 +1,16 @@
 import { StatusCodes } from 'http-status-codes';
 
+import { createError } from '@fastify/error';
+
 import { ErrorFactory, ItemTypeUnion, PublishableItemTypeChecker } from '@graasp/sdk';
 
 export const GraaspPublishedError = ErrorFactory('graasp-plugin-published-item');
 
-export class ItemPublishedNotFound extends GraaspPublishedError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GPPIERR001',
-        statusCode: StatusCodes.NOT_FOUND,
-        message: 'Published Item Entry not found',
-      },
-      data,
-    );
-  }
-}
+export const ItemPublishedNotFound = createError(
+  'GPPIERR001',
+  'Published Item Entry not found',
+  StatusCodes.NOT_FOUND,
+);
 
 export class ItemTypeNotAllowedToPublish extends GraaspPublishedError {
   constructor(itemId: string, itemType: ItemTypeUnion) {

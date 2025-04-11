@@ -8,7 +8,7 @@ import {
   OpenAIQuotaError,
   OpenAIUnknownStopError,
 } from '../../../../../utils/errors';
-import { FinishReason } from './interfaces/finishReason';
+import { FinishReason } from './chatBot.types';
 import { openAICompletion } from './openAICompletion';
 
 export const fetchOpenAI = async (

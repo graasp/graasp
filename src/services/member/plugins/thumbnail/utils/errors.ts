@@ -19,16 +19,3 @@ export class UploadFileNotImageError extends ThumbnailError {
     );
   }
 }
-
-export class UndefinedItemError extends ThumbnailError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GPTERR002',
-        statusCode: StatusCodes.METHOD_NOT_ALLOWED,
-        message: FAILURE_MESSAGES.FILE_IS_NOT_IMAGE,
-      },
-      data,
-    );
-  }
-}

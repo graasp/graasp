@@ -16,15 +16,18 @@ describe('Validation Queue Tests', () => {
     await validationQueue.removeInProgress(childPath);
   };
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     ({ app } = await build());
     validationQueue = resolveDependency(ValidationQueue);
+  });
+
+  afterAll(() => {
+    app.close();
   });
 
   afterEach(async () => {
     await resetValidations();
     jest.clearAllMocks();
-    app.close();
   });
 
   it('Adds new validation', async () => {
@@ -49,7 +52,7 @@ describe('Validation Queue Tests', () => {
       await validationQueue.addInProgress(childPath);
     };
 
-    expect(addTwice()).rejects.toBeInstanceOf(ItemValidationAlreadyExist);
+    await expect(() => addTwice()).rejects.toBeInstanceOf(ItemValidationAlreadyExist);
   });
 
   it('Retrieves child validation', async () => {

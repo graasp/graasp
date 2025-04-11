@@ -8,7 +8,7 @@ import { Ajv } from 'ajv/dist/jtd';
 
 import { Websocket } from '@graasp/sdk';
 
-import { clientMessageSchema, serverMessageSchema } from './schemas';
+import { clientMessageSchema, serverMessageSchema } from './schemas/message';
 
 const ajv = new Ajv();
 

@@ -1,0 +1,344 @@
+import {
+  AppItemExtra,
+  DocumentItemExtra,
+  EtherpadItemExtra,
+  FolderItemExtra,
+  H5PItemExtra,
+  ItemSettings,
+  LinkItemExtra,
+  LinkItemSettings,
+  LocalFileItemExtra,
+  S3FileItemExtra,
+  ShortcutItemExtra,
+  UnionOfConst,
+} from '@graasp/sdk';
+
+import { MinimalGuest, MinimalMember } from '../types';
+import {
+  accountsTable,
+  actionRequestExportsTable,
+  actionsTable,
+  appActionsTable,
+  appDataTable,
+  appSettingsTable,
+  appsTable,
+  chatMentionsTable,
+  chatMessagesTable,
+  guestsView,
+  invitationsTable,
+  itemBookmarksTable,
+  itemGeolocationsTable,
+  itemLikesTable,
+  itemLoginSchemasTable,
+  itemMembershipsTable,
+  itemTagsTable,
+  itemValidationGroupsTable,
+  itemValidationReviewsTable,
+  itemValidationsTable,
+  itemVisibilitiesTable,
+  items,
+  itemsRawTable,
+  memberProfilesTable,
+  membersView,
+  membershipRequestsTable,
+  publishedItemsTable,
+  shortLinksTable,
+  tagsTable,
+} from './schema';
+
+export type AccountInsertDTO = typeof accountsTable.$inferInsert;
+export type AccountRaw = typeof accountsTable.$inferSelect;
+/**
+ * Minimal account
+ * This denotes an "identity" on the server
+ * It should be enough for most operations
+ */
+export type MinimalAccount = {
+  id: string;
+  name: string;
+};
+
+// evaluate if it would be enough to specify "minimal account" on items and such
+export type Account = MinimalAccount;
+export type NullableAccount = Account | null;
+
+// HACK: Using inferSelect since this is a PGView and it does not allow to insert on the view
+// HACK: Remove the too wide "type" from the select which allows a union and add over it the more specific single value type of individual
+export type MemberCreationDTO = Omit<typeof membersView.$inferSelect, 'type'> & {
+  email: string;
+  type: 'individual';
+};
+export type MemberRaw = Omit<typeof membersView.$inferSelect, 'type'> & {
+  type: 'individual';
+  email: string;
+  isValidated: boolean;
+};
+
+export type ItemLoginSchemaRaw = typeof itemLoginSchemasTable.$inferSelect;
+export type ItemLoginSchemaWithItem = ItemLoginSchemaRaw & { item: Item };
+export type GuestInsertDTO = typeof accountsTable.$inferInsert;
+export type GuestRaw = Omit<typeof guestsView.$inferSelect, 'type'> & {
+  type: 'guest';
+};
+export type GuestWithItemLoginSchema = GuestRaw & {
+  itemLoginSchema: ItemLoginSchemaRaw | null;
+};
+
+/**
+ * Raw insert type used when creating an item
+ */
+export type ItemInsertDTO = typeof itemsRawTable.$inferInsert;
+
+/**
+ * Raw return type given when retrieveing from the db.
+ */
+export type ItemRaw = typeof items.$inferSelect;
+
+// TODO: RENAME
+export type Item = ItemRaw;
+export type NullableItem = Item | null;
+
+/**
+ * Item types
+ */
+export const ItemType = {
+  APP: 'app',
+  DOCUMENT: 'document',
+  FOLDER: 'folder',
+  LINK: 'embeddedLink',
+  LOCAL_FILE: 'file',
+  S3_FILE: 's3File',
+  SHORTCUT: 'shortcut',
+  H5P: 'h5p',
+  ETHERPAD: 'etherpad',
+} as const;
+export type ItemTypeUnion = UnionOfConst<typeof ItemType>;
+
+export type ItemExtraMap = {
+  [ItemType.APP]: AppItemExtra;
+  [ItemType.DOCUMENT]: DocumentItemExtra;
+  [ItemType.ETHERPAD]: EtherpadItemExtra;
+  [ItemType.FOLDER]: FolderItemExtra;
+  [ItemType.H5P]: H5PItemExtra;
+  [ItemType.LINK]: LinkItemExtra;
+  [ItemType.LOCAL_FILE]: LocalFileItemExtra;
+  [ItemType.S3_FILE]: S3FileItemExtra;
+  [ItemType.SHORTCUT]: ShortcutItemExtra;
+};
+
+export type ItemSettingsMap = {
+  [ItemType.APP]: ItemSettings;
+  [ItemType.DOCUMENT]: ItemSettings;
+  [ItemType.ETHERPAD]: ItemSettings;
+  [ItemType.FOLDER]: ItemSettings;
+  [ItemType.H5P]: ItemSettings;
+  [ItemType.LINK]: LinkItemSettings;
+  [ItemType.LOCAL_FILE]: ItemSettings;
+  [ItemType.S3_FILE]: ItemSettings;
+  [ItemType.SHORTCUT]: ItemSettings;
+};
+
+// local type alias to simplify the notation
+export type ItemTypeEnumKeys = keyof ItemExtraMap;
+
+export type ItemWithType<T extends ItemTypeEnumKeys> = Item & {
+  extra: ItemExtraMap[T];
+  settings: ItemSettingsMap[T];
+};
+// note: cannot combine nicely Item and ItemWithCreator when defined with omit
+// export type ItemWithCreator = Omit<Item, 'creatorId'> & { creator: Account };
+export type ItemWithCreator = ItemRaw & { creator: MemberRaw | null };
+
+// item created by the server with necessary properties
+export type MinimalItemForInsert = {
+  id: ItemRaw['id'];
+  name: ItemRaw['name'];
+  type: ItemRaw['type'];
+  path: ItemRaw['path'];
+  extra: ItemRaw['extra'];
+  settings: ItemRaw['settings'];
+  order?: ItemRaw['order'];
+};
+
+// --- ItemVisibilities
+export type ItemVisibilityRaw = typeof itemVisibilitiesTable.$inferSelect;
+export type ItemVisibilityWithItem = ItemVisibilityRaw & {
+  item: Item;
+};
+
+// ---- Published items
+
+export type ItemPublishedRaw = typeof publishedItemsTable.$inferSelect;
+
+export type ItemPublishedWithItem = Omit<typeof publishedItemsTable.$inferSelect, 'itemPath'> & {
+  item: Item;
+};
+export type ItemPublishedWithItemWithCreator = ItemPublishedRaw & {
+  item: ItemWithCreator;
+};
+
+// --- Actions
+export type ActionInsertDTO = typeof actionsTable.$inferInsert;
+export type ActionRaw = typeof actionsTable.$inferSelect;
+// this is type that matches the automatically linked entities from typeORM,
+// we should check each usage location to see if including the realtions is necessary or not
+export type ActionWithItem = typeof actionsTable.$inferSelect & {
+  item: NullableItem;
+};
+export type ActionWithItemAndAccount = ActionWithItem & {
+  account: NullableAccount;
+};
+
+// --- ChatMessage
+export type ChatMessageInsertDTO = typeof chatMessagesTable.$inferInsert;
+export type ChatMessageRaw = typeof chatMessagesTable.$inferSelect;
+export type ChatMessageWithItem = ChatMessageRaw & { item: Item };
+export type ChatMessageWithCreator = ChatMessageRaw & {
+  creator: NullableAccount;
+};
+export type ChatMessageWithCreatorAndItem = ChatMessageWithCreator & {
+  item: Item;
+};
+
+// --- ChatMentions
+export type ChatMentionRaw = typeof chatMentionsTable.$inferSelect;
+export type ChatMentionWithMessage = ChatMentionRaw & {
+  message: ChatMessageRaw;
+};
+export type ChatMentionWithMessageAndCreator = ChatMentionRaw & {
+  account: MinimalAccount;
+  message: ChatMessageRaw;
+};
+export type ChatMentionWithMessageWithoutCreator = Omit<ChatMentionRaw, 'message'> & {
+  message: Omit<ChatMessageRaw, 'creatorId'>;
+};
+
+// --- Invitations
+export type InvitationInsertDTO = typeof invitationsTable.$inferInsert;
+export type InvitationRaw = typeof invitationsTable.$inferSelect;
+export type InvitationWithItem = InvitationRaw & {
+  item: Item;
+};
+export type InvitationWithItemAndCreator = Omit<InvitationWithItem, 'creatorId'> & {
+  creator: NullableAccount;
+};
+
+// --- Tags
+export type TagRaw = typeof tagsTable.$inferSelect;
+export type TagCreationDTO = typeof tagsTable.$inferInsert;
+
+// --- ItemTags
+export type ItemTagInsertDTO = typeof itemTagsTable.$inferInsert;
+export type ItemTagRaw = typeof itemTagsTable.$inferSelect;
+
+// --- ItemMembership
+export type ItemMembershipRaw = typeof itemMembershipsTable.$inferSelect;
+export type ItemMembershipInsertDTO = typeof itemMembershipsTable.$inferInsert;
+export type ItemMembershipWithItem = ItemMembershipRaw & {
+  item: ItemRaw;
+};
+export type ItemMembershipWithItemAndAccount = ItemMembershipWithItem & {
+  // TODO: special type for get memberships - needs email
+  account: AccountRaw;
+};
+export type ItemMembershipWithItemAndCompleteAccount = ItemMembershipWithItem & {
+  // TODO: special type for get memberships - needs email
+  account: MinimalGuest | (MinimalMember & { email: string });
+};
+export type ItemMembershipWithItemAndAccountAndCreator = Omit<
+  ItemMembershipWithItem,
+  'accountId'
+> & {
+  account: AccountRaw;
+  creator: AccountRaw;
+};
+
+// -- App
+export type AppRaw = typeof appsTable.$inferSelect;
+
+// --- AppAction
+export type AppActionRaw = typeof appActionsTable.$inferSelect;
+export type AppActionWithItem = AppActionRaw & {
+  item: Item;
+};
+export type AppActionWithItemAndAccount = AppActionRaw & {
+  item: Item;
+  account: MinimalAccount;
+};
+
+// --- AppSetting
+export type AppSettingInsertDTO = typeof appSettingsTable.$inferInsert;
+export type AppSettingRaw = typeof appSettingsTable.$inferSelect;
+export type AppSettingWithItem = AppSettingRaw & { item: Item };
+
+// --- AppData
+export type AppDataInsertDTO = typeof appDataTable.$inferInsert;
+export type AppDataRaw = typeof appDataTable.$inferSelect;
+export type AppDataWithItem = AppDataRaw & {
+  item: Item;
+};
+export type AppDataWithItemAndAccountAndCreator = AppDataRaw & {
+  item: Item;
+  account: Account;
+  creator: Account | null;
+};
+
+// --- ShortLink
+export type ShortLinkRaw = typeof shortLinksTable.$inferSelect;
+export type ShortLinkInsertDTO = typeof shortLinksTable.$inferInsert;
+export type ShortLinkWithItem = ShortLinkRaw & { item: Item };
+
+// --- ItemLike
+export type ItemLikeRaw = typeof itemLikesTable.$inferSelect;
+export type ItemLikeWithItem = ItemLikeRaw & { item: Item };
+export type ItemLikeWithItemWithCreator = ItemLikeRaw & { item: ItemWithCreator };
+export type ItemLikeWithItemAndAccount = ItemLikeWithItem & {
+  creator: Account;
+};
+
+// --- ItemGeolocation
+export type ItemGeolocationRaw = typeof itemGeolocationsTable.$inferSelect;
+export type ItemGeolocationInsertDTO = typeof itemGeolocationsTable.$inferInsert;
+export type ItemGeolocationWithItem = ItemGeolocationRaw & { item: Item };
+export type ItemGeolocationWithItemWithCreator = ItemGeolocationRaw & {
+  item: ItemWithCreator;
+};
+
+// --- ItemValidation
+export type ItemValidationRaw = typeof itemValidationsTable.$inferSelect;
+export type ItemValidationWithItem = ItemValidationRaw & { item: Item };
+export type ItemValidationInsertDTO = typeof itemValidationsTable.$inferInsert;
+
+// --- ItemValidationGroup
+export type ItemValidationGroupRaw = typeof itemValidationGroupsTable.$inferSelect;
+export type ItemValidationGroupWithItemAndValidations = ItemValidationGroupRaw & {
+  item: Item;
+  itemValidations: ItemValidationRaw[];
+};
+export type ItemValidationGroupWithItemAndValidationsWithItem = ItemValidationGroupRaw & {
+  item: Item;
+  itemValidations: ItemValidationWithItem[];
+};
+export type ItemValidationGroupInsertDTO = typeof itemValidationGroupsTable.$inferInsert;
+
+// --- ItemValidationReview
+export type ItemValidationReviewRaw = typeof itemValidationReviewsTable.$inferSelect;
+export type ItemValidationReviewInsertDTO = typeof itemValidationReviewsTable.$inferInsert;
+
+// --- ItemBookmark
+export type ItemBookmarkRaw = typeof itemBookmarksTable.$inferSelect;
+export type ItemBookmarkRawWithItem = ItemBookmarkRaw & { item: Item };
+export type ItemBookmarkRawWithItemWithCreator = ItemBookmarkRaw & { item: ItemWithCreator };
+export type ItemBookmarkInsertDTO = typeof itemBookmarksTable.$inferInsert;
+export type ItemBookmarkRawWithItemAndAccount = ItemBookmarkRaw & {
+  item: Item;
+  account: Account;
+};
+
+// --- MemberProfile
+export type MemberProfileRaw = typeof memberProfilesTable.$inferSelect;
+export type MemberProfileInsertDTO = typeof memberProfilesTable.$inferInsert;
+
+export type ActionRequestExportRaw = typeof actionRequestExportsTable.$inferSelect;
+
+export type MembershipRequestRaw = typeof membershipRequestsTable.$inferSelect;
