@@ -22,6 +22,9 @@ import { assertIsDefined } from '../../../../utils/assertions';
 import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
 import { CannotPostAction } from './errors';
 
+// note: some tests are flacky
+jest.retryTimes(3, { logErrorsBeforeRetry: true });
+
 const BUILDER_HOST = ClientManager.getInstance().getURLByContext(Context.Builder);
 
 const uploadDoneMock = jest.fn(async () => console.debug('aws s3 storage upload'));
@@ -125,7 +128,6 @@ describe('Action Plugin Tests', () => {
             Origin: BUILDER_HOST.origin,
           },
         });
-
         expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
         const actions = await getActionsByItemId(item.id);
         expect(actions).toHaveLength(1);

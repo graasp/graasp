@@ -1,3 +1,5 @@
+import { StatusCodes } from 'http-status-codes';
+
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { ItemLoginSchemaStatus, PermissionLevel } from '@graasp/sdk';
@@ -124,7 +126,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       schema: deleteLoginSchema,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
-    async ({ user, params: { id: itemId } }) => {
+    async ({ user, params: { id: itemId } }, reply) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
 
@@ -132,8 +134,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         // Validate permission
         await basicItemService.get(tx, member, itemId, PermissionLevel.Admin);
         try {
-          const { id } = await itemLoginService.delete(tx, itemId);
-          return id;
+          await itemLoginService.delete(tx, itemId);
+          reply.status(StatusCodes.NO_CONTENT);
         } catch (e: unknown) {
           throw new ItemLoginSchemaNotFound({ itemId });
         }

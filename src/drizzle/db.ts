@@ -13,7 +13,6 @@ export const client = new Pool({
   password: process.env.DB_PASSWORD!,
   database: process.env.DB_NAME!,
   max: DB_CONNECTION_POOL_SIZE,
-  query_timeout: 2000,
 });
 
 // { schema } is used for relational queries

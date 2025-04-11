@@ -115,10 +115,6 @@ export class ItemLoginSchemaRepository {
       throw new Error('could not find entity before deletion');
     }
 
-    const res = await dbConnection
-      .delete(itemLoginSchemasTable)
-      .where(eq(itemLoginSchemasTable.id, entity.id))
-      .returning();
-    return res[0];
+    await dbConnection.delete(itemLoginSchemasTable).where(eq(itemLoginSchemasTable.id, entity.id));
   }
 }

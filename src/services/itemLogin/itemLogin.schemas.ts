@@ -117,7 +117,7 @@ export const deleteLoginSchema = {
     id: customType.UUID(),
   }),
   response: {
-    [StatusCodes.OK]: itemLoginSchemaSchemaRef,
+    [StatusCodes.OK]: Type.Null({ descriptipn: 'Successful Response' }),
     '4xx': errorSchemaRef,
     '5xx': errorSchemaRef,
   },
