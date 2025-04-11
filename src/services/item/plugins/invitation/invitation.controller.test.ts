@@ -647,8 +647,7 @@ describe('Invitation Plugin', () => {
           method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations/${invitations[0].id}`,
         });
-        expect(response.statusCode).toEqual(StatusCodes.OK);
-        expect(response.body).toEqual(invitations[0].id);
+        expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
       });
       it('throw if item id is invalid', async () => {
         const { invitations, actor } = await seedFromJson({

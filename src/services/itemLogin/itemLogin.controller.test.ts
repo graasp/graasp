@@ -790,7 +790,7 @@ describe('Item Login Tests', () => {
           payload: { type: ItemLoginSchemaType.Username },
         });
 
-        expect(res.statusCode).toBe(StatusCodes.OK);
+        expect(res.statusCode).toBe(StatusCodes.NO_CONTENT);
         const itemLoginSchema = await getItemLoginSchemaById(ils.id);
         assertIsDefined(itemLoginSchema);
         expect(itemLoginSchema.type).toEqual(ItemLoginSchemaType.Username);
@@ -824,7 +824,7 @@ describe('Item Login Tests', () => {
           payload: { type: newType },
         });
 
-        expect(res.statusCode).toBe(StatusCodes.OK);
+        expect(res.statusCode).toBe(StatusCodes.NO_CONTENT);
         const itemLoginSchema = await getItemLoginSchemaById(ils.id);
         assertIsDefined(itemLoginSchema);
         expect(itemLoginSchema.type).toEqual(newType);
@@ -857,7 +857,7 @@ describe('Item Login Tests', () => {
           payload: { type: newType },
         });
 
-        expect(res.statusCode).toBe(StatusCodes.OK);
+        expect(res.statusCode).toBe(StatusCodes.NO_CONTENT);
         const itemLoginSchema = await getItemLoginSchemaById(ils.id);
         assertIsDefined(itemLoginSchema);
         expect(itemLoginSchema.type).toEqual(newType);
@@ -891,7 +891,7 @@ describe('Item Login Tests', () => {
           payload: { status: newStatus },
         });
 
-        expect(res.statusCode).toBe(StatusCodes.OK);
+        expect(res.statusCode).toBe(StatusCodes.NO_CONTENT);
         const itemLoginSchema = await getItemLoginSchemaById(ils.id);
         assertIsDefined(itemLoginSchema);
         expect(itemLoginSchema.type).toEqual(ItemLoginSchemaType.Username);
@@ -928,7 +928,7 @@ describe('Item Login Tests', () => {
           payload: newPayload,
         });
 
-        expect(res.statusCode).toBe(StatusCodes.OK);
+        expect(res.statusCode).toBe(StatusCodes.NO_CONTENT);
         const itemLoginSchema = await getItemLoginSchemaById(ils.id);
         assertIsDefined(itemLoginSchema);
         expect(itemLoginSchema.type).toEqual(newPayload.type);

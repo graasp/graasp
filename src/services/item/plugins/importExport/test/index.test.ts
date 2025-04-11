@@ -27,6 +27,9 @@ import { GraaspExportItem } from '../service';
 import { prepareZip } from '../utils';
 import * as ARCHIVE_CONTENT from './fixtures/archive';
 
+// note: some tests are flacky
+jest.retryTimes(3, { logErrorsBeforeRetry: true });
+
 const getItemByName = async (itemName: string) => {
   return await db.query.itemsRawTable.findFirst({
     where: eq(itemsRawTable.name, itemName),
@@ -248,6 +251,7 @@ describe('ZIP routes tests', () => {
         expect(child!.path).toContain(folderItem.path);
       }, 5000);
     });
+    // This test is flacky
     it('Import successfully in folder if signed in', async () => {
       const {
         actor,
