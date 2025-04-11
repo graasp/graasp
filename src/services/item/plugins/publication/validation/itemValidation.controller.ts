@@ -45,20 +45,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
   );
 
-  // // get validation group
-  // fastify.get(
-  //   '/:itemId/validations/:itemValidationGroupId',
-  //   {
-  //     schema: getItemValidationGroup,
-  //     preHandler: [isAuthenticated, matchOne(memberAccountRole)],
-  //   },
-  //   async ({ user, params: { itemValidationGroupId } }) => {
-  //     const member = asDefined(user?.account);
-  //     assertIsMember(member);
-  //     return await validationService.getItemValidationGroup(db, member, itemValidationGroupId);
-  //   },
-  // );
-
   // validate item with given itemId in param
   fastify.post(
     '/:itemId/validate',

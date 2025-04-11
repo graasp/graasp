@@ -159,7 +159,7 @@ export const deleteOne = {
 
   params: Type.Object({ id: customType.UUID(), invitationId: customType.UUID() }),
   response: {
-    [StatusCodes.OK]: customType.UUID({ description: 'Successful Response' }),
+    [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;

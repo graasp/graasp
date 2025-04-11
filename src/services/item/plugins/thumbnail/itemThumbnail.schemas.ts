@@ -12,6 +12,11 @@ export const upload = {
   params: customType.StrictObject({
     id: customType.UUID(),
   }),
+  response: {
+    [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
+    '4xx': errorSchemaRef,
+    [StatusCodes.INTERNAL_SERVER_ERROR]: errorSchemaRef,
+  },
 } as const satisfies FastifySchema;
 
 export const download = {

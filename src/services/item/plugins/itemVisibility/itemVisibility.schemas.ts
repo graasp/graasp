@@ -37,18 +37,9 @@ const create = {
     type: customType.EnumString(Object.values(ItemVisibilityType)),
   }),
   response: {
-    [StatusCodes.CREATED]: customType.StrictObject(
-      {
-        id: customType.UUID(),
-        type: customType.EnumString(Object.values(ItemVisibilityType)),
-        item: Type.Object({ path: Type.String() }),
-        creator: Type.Optional(nullableMemberSchemaRef),
-        createdAt: customType.DateTime(),
-      },
-      {
-        description: 'Successful Response',
-      },
-    ),
+    [StatusCodes.NO_CONTENT]: Type.Null({
+      description: 'Successful Response',
+    }),
     '4xx': errorSchemaRef,
   },
 };

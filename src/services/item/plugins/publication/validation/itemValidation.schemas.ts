@@ -30,23 +30,6 @@ const itemValidationGroupSchema = customType.StrictObject(
   },
 );
 
-const itemValidationGroupWithItemSchema = Type.Intersect(
-  [
-    itemValidationGroupSchema,
-    Type.Object({
-      itemValidations: Type.Array(
-        customType.StrictObject({
-          item: itemSchemaRef,
-        }),
-      ),
-    }),
-  ],
-  {
-    additionalProperties: false,
-    description: 'Group of validations for an item, with nested items',
-  },
-);
-
 export const getLatestItemValidationGroup = {
   operationId: 'getLatestItemValidationGroup',
   tags: ['collection', 'validation'],
@@ -58,22 +41,6 @@ export const getLatestItemValidationGroup = {
   }),
   response: {
     [StatusCodes.OK]: customType.Nullable(itemValidationGroupSchema),
-    '4xx': errorSchemaRef,
-  },
-} as const satisfies FastifySchema;
-
-export const getItemValidationGroup = {
-  operationId: 'getItemValidationGroup',
-  tags: ['collection', 'validation'],
-  summary: 'Get item validation group by id',
-  description: `Get item validation group by id.`,
-
-  params: customType.StrictObject({
-    itemId: customType.UUID(),
-    itemValidationGroupId: customType.UUID(),
-  }),
-  response: {
-    [StatusCodes.OK]: itemValidationGroupWithItemSchema,
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;

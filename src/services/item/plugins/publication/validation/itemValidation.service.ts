@@ -69,23 +69,6 @@ export class ItemValidationService {
     return group;
   }
 
-  async getItemValidationGroup(
-    dbConnection: DBConnection,
-    member: MinimalMember,
-    itemValidationGroupId: string,
-  ) {
-    const group = await this.itemValidationGroupRepository.get(dbConnection, itemValidationGroupId);
-
-    await this.authorizationService.validatePermission(
-      dbConnection,
-      PermissionLevel.Admin,
-      member,
-      group.item,
-    );
-
-    return group;
-  }
-
   async post(dbConnection: DBConnection, item: FolderItem, onValidationStarted?: () => void) {
     const descendants = await this.itemRepository.getDescendants(dbConnection, item);
 

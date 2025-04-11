@@ -45,7 +45,7 @@ export const create = {
     itemId: customType.UUID(),
   }),
   response: {
-    [StatusCodes.NO_CONTENT]: Type.Null(),
+    [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;

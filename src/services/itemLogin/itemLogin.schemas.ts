@@ -101,7 +101,7 @@ export const updateLoginSchema = {
   }),
   body: Type.Partial(Type.Pick(itemLoginSchemaSchema, ['status', 'type']), { minProperties: 1 }),
   response: {
-    [StatusCodes.OK]: itemLoginSchemaSchemaRef,
+    [StatusCodes.OK]: Type.Null({ descriptipn: 'Successful Response' }),
     '4xx': errorSchemaRef,
     '5xx': errorSchemaRef,
   },

@@ -27,16 +27,7 @@ export class ItemVisibilityService {
     visibilityType: ItemVisibilityOptionsType,
   ) {
     const item = await this.basicItemService.get(dbConnection, member, id, PermissionLevel.Admin);
-    const newVisibility = await this.itemVisibilityRepository.post(
-      dbConnection,
-      member.id,
-      item.path,
-      visibilityType,
-    );
-    return {
-      ...newVisibility,
-      item: { path: item.path },
-    };
+    await this.itemVisibilityRepository.post(dbConnection, member.id, item.path, visibilityType);
   }
 
   async deleteOne(

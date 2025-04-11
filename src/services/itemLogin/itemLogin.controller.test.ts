@@ -1075,7 +1075,7 @@ describe('Item Login Tests', () => {
           method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema`,
         });
-        expect(res.statusCode).toBe(StatusCodes.OK);
+        expect(res.statusCode).toBe(StatusCodes.NO_CONTENT);
 
         // item login schema should not exist anymore
         const itemLoginSchema = await getItemLoginSchemaById(ils.id);

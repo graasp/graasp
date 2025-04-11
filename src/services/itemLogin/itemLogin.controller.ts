@@ -109,14 +109,15 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       // set member in request - throws if does not exist
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
-    async ({ user, params: { id: itemId }, body: { type, status } }) => {
+    async ({ user, params: { id: itemId }, body: { type, status } }, reply) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return await db.transaction(async (tx) => {
+      await db.transaction(async (tx) => {
         const item = await basicItemService.get(tx, member, itemId, PermissionLevel.Admin); // Validate permissions
 
         await itemLoginService.updateOrCreate(tx, item.path, type, status);
       });
+      reply.status(StatusCodes.NO_CONTENT);
     },
   );
 

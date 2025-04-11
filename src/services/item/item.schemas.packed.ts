@@ -97,6 +97,13 @@ export const getAccessible = {
   response: {
     [StatusCodes.OK]: Type.Object({
       data: Type.Array(packedItemSchemaRef),
+      pagination: customType.Pagination({
+        page: {
+          minimum: 0,
+          default: 1,
+        },
+        pageSize: { minimum: 1, default: ITEMS_PAGE_SIZE },
+      }),
     }),
     '4xx': errorSchemaRef,
   },

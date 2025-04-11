@@ -190,13 +190,13 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       schema: deleteOne,
       preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
     },
-    async ({ user, params: { invitationId } }) => {
+    async ({ user, params: { invitationId } }, reply) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
       await db.transaction(async (tx) => {
         await invitationService.delete(tx, member, invitationId);
       });
-      return invitationId;
+      reply.status(StatusCodes.NO_CONTENT);
     },
   );
 

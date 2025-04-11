@@ -27,12 +27,13 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.post(
     '/:itemId/visibilities/:type',
     { schema: create, preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)] },
-    async ({ user, params: { itemId, type } }) => {
+    async ({ user, params: { itemId, type } }, reply) => {
       const member = asDefined(user?.account);
       assertIsMember(member);
-      return db.transaction(async (tx) => {
-        return itemVisibilityService.post(tx, member, itemId, type);
+      await db.transaction(async (tx) => {
+        await itemVisibilityService.post(tx, member, itemId, type);
       });
+      reply.status(StatusCodes.NO_CONTENT);
     },
   );
 
