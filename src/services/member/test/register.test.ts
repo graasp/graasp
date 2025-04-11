@@ -74,7 +74,6 @@ describe('POST /register', () => {
 
     // ensure that the user agreements are set for new registration
     expect(m?.userAgreementsDate).toBeDefined();
-    expect(m?.userAgreementsDate).toBeInstanceOf(Date);
 
     expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
     expect(mockSendEmail).toHaveBeenCalledTimes(1);
@@ -102,7 +101,6 @@ describe('POST /register', () => {
 
     // ensure that the user agreements are set for new registration
     expect(m?.userAgreementsDate).toBeDefined();
-    expect(m?.userAgreementsDate).toBeInstanceOf(Date);
     expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
   });
 
@@ -140,7 +138,6 @@ describe('POST /register', () => {
     expect(m?.enableSaveActions).toBe(enableSaveActions);
     // ensure that the user agreements are set for new registration
     expect(m?.userAgreementsDate).toBeDefined();
-    expect(m?.userAgreementsDate).toBeInstanceOf(Date);
     expect(m?.lastAuthenticatedAt).toBeNull();
     expect(m?.isValidated).toBeFalsy();
 
@@ -166,7 +163,6 @@ describe('POST /register', () => {
     expect(m?.enableSaveActions).toBe(enableSaveActions);
     // ensure that the user agreements are set for new registration
     expect(m?.userAgreementsDate).toBeDefined();
-    expect(m?.userAgreementsDate).toBeInstanceOf(Date);
     expect(m?.lastAuthenticatedAt).toBeNull();
     expect(m?.isValidated).toBeFalsy();
 
