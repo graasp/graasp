@@ -143,7 +143,7 @@
     "@types/lodash.partition": "^4",
     "@types/mime": "3.0.4",
     "@types/mmmagic": "0.4.33",
-    "@types/node": "20.14.13",
+    "@types/node": "22.14.1",
     "@types/node-fetch": "2",
     "@types/nodemailer": "6.4.15",
     "@types/papaparse": "5.3.14",
