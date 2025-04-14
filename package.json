@@ -19,7 +19,7 @@
     "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"yarn watch-ts\" \"yarn watch-node\"",
     "seed": "ts-node -e 'import seed from \"./test/mocks/index\";seed();'",
     "test": "jest --forceExit --verbose --runInBand",
-    "test:ci": "jest --forceExit --verbose --coverage --silent --maxWorkers=2",
+    "test:ci": "jest --forceExit --verbose --coverage --silent --runInBand",
     "test:watch": "yarn test --watchAll",
     "build-ts": "tsc -p tsconfig.build.json",
     "watch-ts": "tsc -w -p tsconfig.build.json",

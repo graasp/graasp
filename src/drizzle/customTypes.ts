@@ -14,7 +14,7 @@ export const customNumeric = customType<{ data: number; driverData: string }>({
     return String(value);
   },
   fromDriver(value: string): number {
-    // TODO: to have better validation, specify a validation to run agains the data that was parsed
+    // TODO: to have better validation, specify a validation to run against the data that was parsed
     return +value;
   },
 });

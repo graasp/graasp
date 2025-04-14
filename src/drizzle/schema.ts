@@ -694,7 +694,7 @@ export const actionsTable = pgTable(
       table.itemId.asc().nullsLast().op('uuid_ops'),
     ),
     index('IDX_action_account_id').using('btree', table.accountId.asc().nullsLast().op('uuid_ops')),
-    // FIXME: We should probably cascade on delete, as there is not reason why we would want to keep the actions around after item deletion
+    // FIXME: We should probably cascade on delete, as there is no reason why we would want to keep the actions around after item deletion
     // Eventually if we wanted to keep a trace of the things that happened to the capsule for debugging and internal analysis,
     // but then we should probably keep them somewhere else and only store user/educational actions in here.
     foreignKey({
