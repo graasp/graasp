@@ -412,7 +412,7 @@ export class InvitationService {
       memberships: ItemMembershipRaw[];
       invitations: InvitationRaw[];
     }>();
-    for await (const [groupName, users] of Object.entries(dataByGroupName)) {
+    for (const [groupName, users] of Object.entries(dataByGroupName)) {
       // Copy the template to the new location
       const { copy: newItem } = await this.itemService.copy(
         dbConnection,

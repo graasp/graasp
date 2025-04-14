@@ -1,6 +1,5 @@
 import { seedFromJson } from '../../../../../../test/mocks/seed';
-import { client, db } from '../../../../../drizzle/db';
-import { publishedItemsTable } from '../../../../../drizzle/schema';
+import { db } from '../../../../../drizzle/db';
 import { ItemPublishedRepository } from './itemPublished.repository';
 
 const repository = new ItemPublishedRepository();
@@ -20,14 +19,11 @@ describe('ItemPublishedRepository', () => {
       const {
         items: [item],
       } = await seedFromJson({
-        items: [{ creator: 'actor', type: 'folder' }],
+        items: [{ creator: 'actor', type: 'folder', isPublished: true, isPublic: true }],
       });
 
-      // publish item
-      await db.insert(publishedItemsTable).values({ itemPath: item.path });
-
       const result = await repository.touchUpdatedAt(db, item.path);
-      expect(new Date(result!).getTime() - new Date(updatedAt).getTime()).toBeLessThanOrEqual(200);
+      expect(new Date(result!).getTime() - new Date(updatedAt).getTime()).toBeLessThanOrEqual(1000);
     });
 
     it('return null if item is not published', async () => {

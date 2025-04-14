@@ -2,9 +2,23 @@ import { describe } from 'node:test';
 
 import { ItemVisibilityType } from '@graasp/sdk';
 
+import { MOCK_LOGGER } from '../../../test/app';
 import { ItemFactory } from '../../../test/factories/item.factory';
 import { ItemVisibilityFactory } from '../../../test/factories/itemVisibility.factory';
-import { ItemWrapper } from './ItemWrapper';
+import { seedFromJson } from '../../../test/mocks/seed';
+import { DBConnection } from '../../drizzle/db';
+import { items } from '../../drizzle/schema';
+import { assertIsDefined } from '../../utils/assertions';
+import { assertIsMemberForTest } from '../authentication';
+import { AuthorizationService } from '../authorization';
+import { ItemMembershipRepository } from '../itemMembership/membership.repository';
+import { ThumbnailService } from '../thumbnail/thumbnail.service';
+import { ItemWrapper, ItemWrapperService } from './ItemWrapper';
+import { BasicItemService } from './basic.service';
+import { ItemRepository } from './item.repository';
+import { ItemService } from './item.service';
+import { ItemVisibilityRepository } from './plugins/itemVisibility/itemVisibility.repository';
+import { ItemThumbnailService } from './plugins/thumbnail/itemThumbnail.service';
 
 // const itemThumbnailService = new ItemThumbnailService(
 //   {} as unknown as ItemService,
@@ -49,35 +63,63 @@ describe('ItemWrapper', () => {
   });
 });
 
-// describe('ItemWrapperService', () => {
-//   describe('createPackedItems', () => {
-//     it('Return the most restrictive visibilities for child item', async () => {
-//       const itemThumbnailService = new ItemThumbnailService(
-//         {} as unknown as ItemService,
-//         {} as unknown as ThumbnailService,
-//         MOCK_LOGGER,
-//       );
-//       jest.spyOn(itemThumbnailService, 'getUrlsByItems').mockImplementation(async () => ({}));
+describe('ItemWrapperService', () => {
+  describe('createPackedItems', () => {
+    it('Return the most restrictive visibilities for child item', async () => {
+      const MOCK_DB = {} as DBConnection;
+      const { actor, items, itemMemberships, itemVisibilities } = await seedFromJson({
+        items: [
+          {
+            isPublic: true,
+            memberships: [{ account: 'actor' }],
+          },
+          {
+            isHidden: true,
+            memberships: [{ account: 'actor' }],
+          },
+        ],
+      });
+      assertIsDefined(actor);
+      assertIsMemberForTest(actor);
 
-//       const actor = await saveMember();
-//       const { item: parentItem } = await testUtils.saveItemAndMembership({});
-//       const { item } = await testUtils.saveItemAndMembership({ parentItem });
+      const itemVisibilityRepository = {
+        getForManyItems: jest.fn(),
+      } as unknown as ItemVisibilityRepository;
+      jest.spyOn(itemVisibilityRepository, 'getForManyItems').mockImplementation(async () => ({
+        data: {
+          [items[0].id]: [itemVisibilities[0]],
+          [items[1].id]: [itemVisibilities[1]],
+        } as any,
+        errors: [],
+      }));
 
-//       const hiddenVisibility = await rawItemTagRepository.save(
-//         await createTag({ item, type: ItemVisibilityType.Hidden }),
-//       );
-//       const parentPublicTag = await setItemPublic(parentItem);
-//       await setItemPublic(item);
+      const resultOfMemberships = {
+        data: { [items[0].id]: [itemMemberships[0]], [items[1].id]: [itemMemberships[1]] },
+        errors: [],
+      } as any;
+      const itemMembershipRepository = {
+        getForManyItems: jest.fn(),
+      } as unknown as ItemMembershipRepository;
+      jest
+        .spyOn(itemMembershipRepository, 'getForManyItems')
+        .mockImplementation(async () => resultOfMemberships);
 
-//       const [packedItem] = await ItemWrapper.createPackedItems(
-//         actor,
-//         repositories,
-//         itemThumbnailService,
-//         [item],
-//       );
-//       expect(packedItem.public!.id).toEqual(parentPublicTag.id);
-//       // should return parent visibility, not item visibility
-//       expect(packedItem.hidden!.id).toEqual(hiddenVisibility.id);
-//     });
-//   });
-// });
+      const itemThumbnailService = { getUrlsByItems: jest.fn() } as unknown as ItemThumbnailService;
+      jest.spyOn(itemThumbnailService, 'getUrlsByItems').mockImplementation(async () => ({}));
+
+      const packedItems = await new ItemWrapperService(
+        itemVisibilityRepository,
+        itemMembershipRepository,
+        itemThumbnailService,
+      ).createPackedItems(
+        MOCK_DB,
+        items.map((i) => ({ ...i, creator: actor })),
+        resultOfMemberships,
+      );
+
+      expect(packedItems[0].public!.id).toEqual(itemVisibilities[0].id);
+      // should return parent visibility, not item visibility
+      expect(packedItems[1].hidden!.id).toEqual(itemVisibilities[1].id);
+    });
+  });
+});
