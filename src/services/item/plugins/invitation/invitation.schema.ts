@@ -7,7 +7,7 @@ import { PermissionLevel } from '@graasp/sdk';
 
 import { customType, registerSchemaAsRef } from '../../../../plugins/typebox';
 import { errorSchemaRef } from '../../../../schemas/global';
-import { itemMembershipSchemaRef } from '../../../itemMembership/membership.schemas';
+import { itemMembershipWithoutRelationsSchemaRef } from '../../../itemMembership/membership.schemas';
 import { itemSchemaRef } from '../../item.schemas';
 
 export const invitationSchemaRef = registerSchemaAsRef(
@@ -20,6 +20,25 @@ export const invitationSchemaRef = registerSchemaAsRef(
       name: Type.Optional(customType.Nullable(Type.String())),
       permission: customType.EnumString(Object.values(PermissionLevel)),
       item: itemSchemaRef,
+      createdAt: customType.DateTime(),
+      updatedAt: customType.DateTime(),
+    },
+    {
+      description:
+        'Invitation for a non-registered user to access an item. The user is identified by email.',
+    },
+  ),
+);
+export const invitationWithoutRelationSchemaRef = registerSchemaAsRef(
+  'invitationWithoutRelations',
+  'Invitation Without Relations',
+  customType.StrictObject(
+    {
+      id: customType.UUID(),
+      email: Type.String({ format: 'email' }),
+      name: Type.Optional(customType.Nullable(Type.String())),
+      permission: customType.EnumString(Object.values(PermissionLevel)),
+      itemPath: Type.String(),
       createdAt: customType.DateTime(),
       updatedAt: customType.DateTime(),
     },
@@ -64,13 +83,7 @@ export const inviteFromCSV = {
     id: customType.UUID(),
   }),
   response: {
-    [StatusCodes.OK]: Type.Object(
-      {
-        memberships: Type.Array(itemMembershipSchemaRef),
-        invitations: Type.Array(invitationSchemaRef),
-      },
-      { description: 'Successful Response' },
-    ),
+    [StatusCodes.NO_CONTENT]: Type.Null({ description: 'Successful Response' }),
     '4xx': errorSchemaRef,
   },
 } as const satisfies FastifySchema;
@@ -92,8 +105,8 @@ export const inviteFromCSVWithTemplate = {
     [StatusCodes.OK]: Type.Array(
       Type.Object({
         groupName: Type.String(),
-        memberships: Type.Array(itemMembershipSchemaRef),
-        invitations: Type.Array(invitationSchemaRef),
+        memberships: Type.Array(itemMembershipWithoutRelationsSchemaRef),
+        invitations: Type.Array(invitationWithoutRelationSchemaRef),
       }),
       { description: 'Successful Response' },
     ),

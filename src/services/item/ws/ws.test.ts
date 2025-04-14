@@ -258,7 +258,7 @@ describe('Item websocket hooks', () => {
       });
 
       jest.spyOn(ItemRepository.prototype, 'copy').mockImplementation(async () => {
-        throw new Error('mock error');
+        throw new Error('mock implementation of item copy to throw an error');
       });
 
       const response = await app.inject({

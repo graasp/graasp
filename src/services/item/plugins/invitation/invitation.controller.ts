@@ -81,7 +81,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         schema: inviteFromCSVWithTemplate,
         preHandler: [isAuthenticated, matchOne(validatedMemberAccountRole)],
       },
-      async (request, reply) => {
+      async (request) => {
         const { query, params, user } = request;
         const member = asDefined(user?.account);
         assertIsMember(member);
@@ -103,7 +103,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         const { id: itemId } = params;
         const { templateId } = query;
 
-        await db.transaction(
+        return await db.transaction(
           async (tx) =>
             await invitationService.createStructureForCSVAndTemplate(
               tx,
@@ -113,7 +113,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
               uploadedFile,
             ),
         );
-        reply.status(StatusCodes.NO_CONTENT);
       },
     );
     // post invitations from a csv file

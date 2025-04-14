@@ -873,7 +873,7 @@ describe('Invitation Plugin', () => {
           payload: form,
           headers: form.getHeaders(),
         });
-        expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
+        expect(response.statusCode).toEqual(StatusCodes.OK);
 
         // no membership created
         const memberships = await db.query.itemMembershipsTable.findMany({
